@@ -552,6 +552,44 @@ def live_clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
     return now + pd.Timedelta(hours=float(start)), "window"   # not reached: after the last step nothing counts
 
 
+def water_passed_time(ov: pd.DataFrame, now: pd.Timestamp,
+                      recent_h: float = config.RECENT_SPILL_HOURS) -> tuple[pd.Timestamp | None, object]:
+    """When the water from the last spill live_now_risk counts has passed the spot: each counted
+    spill's end (now, for one running now, as if it stopped now) plus its travel time, and the
+    latest of those. Returns that time and the index label in `ov` of the overflow that sets it,
+    or (None, None) with no counted spill. Every counted spill with any weight takes part, however
+    small its share: this bound is meant to err late."""
+    if ov.empty:
+        return None, None
+    active = (ov["status"] == 1).to_numpy()
+    end = pd.to_datetime(ov["latest_event_end"], utc=True)
+    hrs_since = ((now - end).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
+    counted = (active | ((hrs_since >= 0) & (hrs_since <= recent_h))) & (ov["weight"].to_numpy(dtype=float) > 0)
+    if not counted.any():
+        return None, None
+    passes = np.where(active, 0.0, -hrs_since) + ov["travel_h"].to_numpy(dtype=float)   # hours from now
+    passes = np.where(counted, passes, -np.inf)
+    k = int(np.argmax(passes))
+    return now + pd.Timedelta(hours=float(passes[k])), ov.index[k]
+
+
+def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT) -> tuple[pd.Timestamp | None, str | None, object]:
+    """The time to tell a swimmer right now's risk should be back to low, erring late: the later of
+    live_clear_time (the model's live risk run forward) and water_passed_time. live_now_risk takes no
+    account of travel time: a spill 20 h upstream that ends now starts dying off now in the model,
+    while its water is still reaching the spot until 20 h from now. The live risk itself, and so the
+    headline, is unchanged; only the time said is held back.
+    Returns (time, what set it: 'die-off', 'window' or 'travel', the index label in `ov` of the
+    overflow whose water sets it when 'travel', else None); (None, None, None) when the risk is low."""
+    at, by = live_clear_time(ov, now, cut)
+    if at is None:
+        return None, None, None
+    passed, who = water_passed_time(ov, now)
+    if passed is not None and passed > at:
+        return passed, "travel", who
+    return at, by, None
+
+
 def risk_label(r: float) -> str:
     if r < LOW_CUT:
         return "low"

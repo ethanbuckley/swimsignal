@@ -1,22 +1,32 @@
-"""When a spot should be back at low risk after a spill (transport.live_clear_time), and which
-overflows a risk comes from (risk_shares, spread_count, forecast.source_of): the fields behind the
-page's "Where the risk comes from" (index.html, whereFrom)."""
+"""When a spot should be back at low risk after a spill (transport.live_clear_time, water_passed_time,
+clear_time), and which overflows a risk comes from (risk_shares, spread_count, forecast.source_of):
+the fields behind the page's "Where the risk comes from" (index.html, whereFrom)."""
 
 import math
 
 import numpy as np
 import pandas as pd
 
-from dipcast.model.transport import LOW_CUT, daily_effects, live_clear_time, live_now_risk, risk_shares, spread_count
+from dipcast.model.transport import (
+    LOW_CUT,
+    clear_time,
+    daily_effects,
+    live_clear_time,
+    live_now_risk,
+    risk_shares,
+    spread_count,
+    water_passed_time,
+)
 
 NOW = pd.Timestamp("2026-10-04 00:16", tz="Europe/London")
 
 
-def _ov(weights, status, ended_h_ago) -> pd.DataFrame:
+def _ov(weights, status, ended_h_ago, travel_h=None) -> pd.DataFrame:
     """Upstream overflows as upstream_overflows gives them, with live status: `ended_h_ago` is the
     hours since each one's latest spill ended (None: never, or still running)."""
     end = [pd.NaT if h is None else (NOW - pd.Timedelta(hours=h)).tz_convert("UTC") for h in ended_h_ago]
-    return pd.DataFrame({"weight": weights, "status": status, "latest_event_end": end})
+    return pd.DataFrame({"weight": weights, "status": status, "latest_event_end": end,
+                         "travel_h": [0.0] * len(weights) if travel_h is None else travel_h})
 
 
 def _risk_at(ov: pd.DataFrame, t: pd.Timestamp) -> float:
@@ -62,6 +72,32 @@ def test_no_clear_time_when_already_low():
     assert live_clear_time(_ov([0.1], [1], [None]), NOW) == (None, None)       # running, but little reaches here
     assert live_clear_time(_ov([1.0], [0], [49.0]), NOW) == (None, None)       # past the window
     assert live_clear_time(_ov([], [], []), NOW) == (None, None)
+
+
+def test_the_time_said_waits_for_the_water_from_a_far_spill():
+    """The live risk takes no account of travel time, so the model alone would clear before the water
+    from a spill 30 h upstream has reached the spot. A near spill that ended an hour ago (weight 0.5)
+    and a far one running now (0.05, 30 h away): the live risk run forward is under low in about 16 h,
+    but the far water is still passing until 30 h from now (if it stops now)."""
+    ov = _ov([0.5, 0.05], [0, 1], [1.0, None], travel_h=[0.5, 30.0])
+    model, by = live_clear_time(ov, NOW)
+    assert by == "die-off" and 14 < (model - NOW) / pd.Timedelta(hours=1) < 18
+    passed, who = water_passed_time(ov, NOW)
+    assert passed == NOW + pd.Timedelta(hours=30) and who == 1
+    assert clear_time(ov, NOW) == (NOW + pd.Timedelta(hours=30), "travel", 1)
+    # The headline's risk is untouched: still live_now_risk's.
+    assert abs(live_now_risk(ov, NOW)[0] - (1 - (1 - 0.5 * 10 ** (-1 / 30)) * (1 - 0.05))) < 1e-12
+    # A finished spill's water passes at its end plus its travel time; one past the window is not counted.
+    ov2 = _ov([0.5, 0.3, 0.9], [0, 0, 0], [1.0, 10.0, 60.0], travel_h=[0.5, 30.0, 40.0])
+    assert water_passed_time(ov2, NOW) == (NOW + pd.Timedelta(hours=20), 1)
+
+
+def test_the_model_time_stands_when_the_water_has_passed_sooner():
+    ov = _ov([0.9], [1], [None], travel_h=[2.0])
+    at, by = live_clear_time(ov, NOW)
+    assert clear_time(ov, NOW) == (at, by, None) and by == "die-off"
+    assert clear_time(_ov([0.1], [1], [None], travel_h=[30.0]), NOW) == (None, None, None)   # low now: nothing to say
+    assert water_passed_time(_ov([0.5], [0], [None]), NOW) == (None, None)                    # never spilled
 
 
 def test_shares_split_the_combined_risk_exactly():
@@ -146,8 +182,20 @@ def test_forecast_point_writes_the_clear_time_and_the_sources(monkeypatch):
         assert (d["risk_from_later_spills"] == 0) if k == 0 else (0 < d["risk_from_later_spills"] <= d["risk"])
 
 
+def test_forecast_point_names_the_overflow_whose_water_sets_the_time(monkeypatch):
+    # The near overflow finished an hour ago; the far one, 30 h away, is discharging now.
+    ov = _upstream().assign(status=[0, 1], travel_h=[3.3, 30.0],
+                            latest_event_end=[(NOW - pd.Timedelta(hours=1)).tz_convert("UTC"), pd.NaT])
+    out = _forecast(monkeypatch, ov, _Steady())
+    now = out["now"]
+    assert now["clears_by"] == "travel" and now["clears_after"] == {"site_id": "B2", "site_name": "Burley CSO"}
+    issued = pd.Timestamp(out["query"]["issued_at"])
+    assert abs((pd.Timestamp(now["clears_at"]) - issued) / pd.Timedelta(hours=1) - 30) < 1 / 60 + 1e-9   # rounded to the minute
+
+
 def test_a_quiet_low_spot_gets_no_clear_time_and_no_sources(monkeypatch):
     ov = _upstream().assign(status=0, latest_event_end=pd.NaT)
     out = _forecast(monkeypatch, ov, _Steady(0.01, 0.01))
     assert out["now"]["clears_at"] is None and out["now"]["clears_by"] is None and "source" not in out["now"]
+    assert "clears_after" not in out["now"]
     assert all(d["risk"] < LOW_CUT and "source" not in d for d in out["days"])

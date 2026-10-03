@@ -18,10 +18,10 @@ from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_fea
 from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.transport import (
     LOW_CUT,
+    clear_time,
     combine_daily,
     daily_effects,
     history_days,
-    live_clear_time,
     live_now_risk,
     locate_pin,
     missing_share,
@@ -343,15 +343,18 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
         except Exception as e:  # noqa: BLE001 - an optional layer must not fail the forecast
             log.warning("E. coli model skipped: %s", e)
 
-    # When right now's risk falls back to low if the spills stop now (transport.live_clear_time), and
-    # which overflows it comes from: written where the page says them, moderate or worse, or while an
-    # overflow upstream is discharging.
-    clears_at, clears_by = live_clear_time(ov, now)
+    # When right now's risk should be back to low if the spills stop now, erring late (transport.clear_time:
+    # never before the water from a counted spill has passed), and which overflows it comes from:
+    # written where the page says them, moderate or worse, or while an overflow upstream is discharging.
+    clears_at, clears_by, last_water = clear_time(ov, now)
     spilling = bool(len(ov)) and bool((ov["status"] == 1).any())
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk),
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
                                             "feed_down_upstream", "feed_down")},
                   "clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
+                  # The overflow whose water passing sets the time, when travel does ('travel').
+                  **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}}
+                     if clears_by == "travel" else {}),
                   **({"source": source_of(ov, risk_shares(now_contrib.to_numpy(dtype=float)))}
                      if now_risk >= LOW_CUT or (spilling and now_risk > 0) else {})}
     out["days"] = day_rows
