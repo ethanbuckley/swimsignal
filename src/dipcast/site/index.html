@@ -318,6 +318,8 @@
   .big.veryhigh, .big-head.veryhigh { color:var(--k-veryhigh); } .big.clear, .big-head.clear { color:var(--k-clear); }
   .answer .why { margin:8px 0 0; font-weight:600; line-height:1.35; }
   .answer .next { margin:2px 0 0; line-height:1.35; }
+  /* What to do at the level: in ink, as a sentence, never a level's colour or a box (levels.js, levelAction). */
+  .answer .act { margin:10px auto 0; max-width:24em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   .answer .issued { margin:10px 0 0; }
   .answer .flow { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   /* Every tile is built the same way: a label with its icon, one figure, one drawing, one sentence, and
@@ -778,6 +780,7 @@
           <dt><span class="badge b-na">No river connection: overflows cannot reach this lake</span></dt><dd>A lake with no river flowing into it in the network, so sewage from an overflow cannot reach it by water. The same other risks apply.</dd>
           <dt><span class="badge b-na">No level</span></dt><dd>No forecast in this update, or no river or lake on the network near the spot. There is nothing to go by, which is not the same as clean water.</dd>
         </dl>
+        <p class="small muted">Under its level, a spot's page says in one line what to do, from published health advice for swimmers. <a href="methods.html#actions">Each line and its sources</a>.</p>
       </details>
       <details class="more"><summary>What each part of a spot's page means</summary>
         <dl>
@@ -1270,22 +1273,23 @@ const nameCase = s => String(s ?? '').replace(/[A-Za-z']+/g, w => /^[A-Z']{4,}$/
 // follows with "risk" at the same size (a bare "High" read as high what); what set it and when; and
 // where the five days go. A day picked in the five days (iso) gives that day's, and its date.
 // Without a level, the headline in place of the word; under a plain level, the other risks and the rain.
+// Then what to do at that level, that day (act: levels.js, levelAction and dayAction).
 function answerParts(d, iso = null) {
   if (iso && daily(d)) {
     const x = d.days.slice(0, 5).find(y => y.date === iso), r = x ? risk(d, x) : { level: null };
     const when = (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     return { word: r.level ? cap(r.level) : null, tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub: !r.level ? '' : r.by === 'record' ? `Rated poor: ${poorReason(iso)}` : rank(r.level) > 0 ? cap(because(r)) : '', next: when };
+      sub: !r.level ? '' : r.by === 'record' ? `Rated poor: ${poorReason(iso)}` : rank(r.level) > 0 ? cap(because(r)) : '', next: when, act: dayAction(d, iso) };
   }
   const l = level(d), [h, w] = headParts(d);
   if (ORDER[l] === undefined) return { word: null, tone: headTone(d), head: h,
-    sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '' };
+    sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
   // headParts gives the level, "risk" and when ("High risk today") and what set it, or a rating, or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
   const sub = h === 'Rated poor' ? `Rated poor: ${w}` : h.startsWith('Rated ') ? h
     : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when) : [w && cap(w), when].filter(Boolean).join(' ');
-  return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d) };
+  return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
@@ -1436,10 +1440,12 @@ function riverTile(rs) {
     vis: nil(rs.typical_low_m) || nil(rs.typical_high_m) ? '' : rangeBar(rs),
     say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more };
 }
-// The answer's words, which a picked day fills again (showDay).
+// The answer's words, which a picked day fills again (showDay). What to do comes after the facts it
+// follows from, before the river's separate hazard.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso);
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
+    + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
+    + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
 // Under the headline, on every day's view, kept in view: the river high or rising fast at a gauge on
 // the spot's own river, and any Environment Agency flood alert in force nearby (experience.js,
 // flowFacts). A different hazard, said in ink and never in a level's colour, and not part of the level.

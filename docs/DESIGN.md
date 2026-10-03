@@ -453,6 +453,19 @@ to rivers. The same sentences go in a plan for today, and the flood ones in the 
 "Local warnings" row. The River level tile keeps its own words in ink too ("High water", "Usual
 level"): "High" in a level's colour read as a pollution level.
 
+### What to do (4 October 2026)
+
+NSW Beachwatch gives an action with each of its levels; SwimSignal gave a level and why, and left the
+decision to the reader. The answer now has one line on what to do, after where the five days go and
+before the river line and the issue time (`levelAction` and `dayAction` in `levels.js`, `.act` in
+`index.html`). It is a sentence in ink, centred as the answer is: never a level's colour, a box or a
+bold lead, so it reads as following from the level rather than as a second one. A picked day gets that
+day's line, and very high names its day: "Avoid swimming here tomorrow: choose a lower day or spot." A
+water rated poor, algae at the last check and the spots without a level have lines of their own. No
+line says a spot is safe. The embed card and `alerts.json` carry the same line; the saved cards and
+the list leave it out, since they are for comparing spots. Each line and its sources are on the Method
+page (`methods.html#actions`), which `tests/site_actions.test.cjs` checks word for word.
+
 ### Water temperature (3 October 2026)
 
 The Water temperature tile (`waterTile` in `index.html`; the reading is

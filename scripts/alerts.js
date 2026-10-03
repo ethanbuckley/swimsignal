@@ -1,6 +1,6 @@
-// Each spot's level and headline, for the alerts service (push/): written beside spots.json by
-// scripts/build_site.py. The rules are the page's own (src/dipcast/site/levels.js), run here in
-// Node, so an alert says what the page says.
+// Each spot's level, headline and what to do, for the alerts service (push/): written beside
+// spots.json by scripts/build_site.py. The rules are the page's own (src/dipcast/site/levels.js),
+// run here in Node, so an alert says what the page says.
 //
 //   node scripts/alerts.js site/data/spots.json site/data/alerts.json https://example.org/swim/
 const fs = require('fs');
@@ -18,7 +18,7 @@ const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the page and build_site.py use the same
 const spots = {};
 for (const s of data.spots) {
   const level = L.level(s);
-  spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s),
+  spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: L.levelAction(s),
     url: PAGE_ID.test(s.id) ? `${root}spot/${s.id}/` : `${root}?spot=${encodeURIComponent(s.id)}` };
 }
 // The data credits travel with every published data file (build_site.data_credits).
