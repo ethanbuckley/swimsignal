@@ -30,3 +30,31 @@ text = "Closed for winter: the last day of the 2026 season was Sunday 27 Septemb
 status = "confirmed"
 source = "https://www.cotswoldcountryparkandbeach.com/admission"
 source_name = "Cotswold Country Park and Beach"
+
+[[fact]]
+topic = "toilets"
+text = "Two toilet blocks, one at each end of the park, and a disabled toilet at the main entrance. Open during business hours."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
+source_name = "Cotswold Country Park and Beach"
+
+[[fact]]
+topic = "changing"
+text = "Basic changing rooms, male and female, at AquaVenture, with small keyed lockers for keys, wallets and phones held by the lifeguards. No toilets at AquaVenture, and no showers anywhere on site."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
+source_name = "Cotswold Country Park and Beach"
+
+[[fact]]
+topic = "fees"
+text = "An admission season pass costs £120 and lasts a year from purchase; the park is closed in winter."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
+source_name = "Cotswold Country Park and Beach"
+
+[[fact]]
+topic = "rules"
+text = "Swim only from the beach out to the buoy line, where the lifeguards watch. Do not swim from any other point around South or North Lake."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
+source_name = "Cotswold Country Park and Beach"
