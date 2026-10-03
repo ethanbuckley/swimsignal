@@ -39,6 +39,7 @@ data/raw/*
 !data/raw/coastal_catalogue.json
 !data/raw/coastal_wqa_points.json
 !data/raw/places.json
+!data/raw/outside_england.json
 /site/
 .claude/
 /state/

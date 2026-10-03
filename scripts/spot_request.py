@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import functools
 import io
 import json
 import logging
@@ -42,6 +43,7 @@ MIN_DECIMALS = 3           # 0.001 degrees is about 110 m of latitude: the form 
 MIN_GRID_DIGITS = 3        # per axis: 100 m squares
 NEARBY_M = 300.0           # an existing spot this close is probably the same place
 GB = {"lat": (49.8, 60.95), "lon": (-8.7, 1.8)}
+OUTSIDE_ENGLAND = ROOT / "data" / "raw" / "outside_england.json"   # scripts/make_outside_england.py
 W3W_URL = "https://api.what3words.com/v3/convert-to-coordinates"
 OS_NAMES_URL = "https://api.os.uk/search/names/v1/find"
 USER_AGENT = "SwimSignal spot-request bot (github.com/ethanbuckley/swimsignal)"
@@ -340,6 +342,24 @@ def _metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * 6_371_000 * math.asin(math.sqrt(a))
 
 
+@functools.cache
+def _outside_shape():
+    import shapely
+    from shapely.geometry import shape
+    g = shape(json.loads(OUTSIDE_ENGLAND.read_text())["geometry"])
+    shapely.prepare(g)
+    return g
+
+
+def outside_england(lat: float, lon: float) -> bool | None:
+    """Whether the point is in Wales or Scotland, or their estuaries, where SwimSignal has no overflow
+    data; None when the file is missing."""
+    if not OUTSIDE_ENGLAND.exists():
+        return None
+    import shapely
+    return bool(_outside_shape().contains(shapely.Point(lon, lat)))
+
+
 def nearest_listed(lat: float, lon: float, spots: list[dict], within_m: float = NEARBY_M) -> dict | None:
     """The spots.csv row nearest the point, if one is within `within_m`."""
     best = None
@@ -396,7 +416,7 @@ def place(point: Point, req: Request, net, overflows, spots: list[dict], check=N
     out = {"location": loc, "kind": kind, "hint": hint, "max_km": config.MAX_UPSTREAM_KM,
            "nearest": None if nearest is None or nearest.snap is None else
            {"watercourse": nearest.watercourse, "metres": round(nearest.snap.dist_m)},
-           "nearby": nearest_listed(point.lat, point.lon, spots)}
+           "nearby": nearest_listed(point.lat, point.lon, spots), "outside_england": outside_england(point.lat, point.lon)}
     if pin.mode == "none":
         return out
     up = upstream_overflows(net, pin, overflows, velocity_ms=river_velocity(None))
@@ -443,8 +463,9 @@ def _cap(text: str) -> str:
 def _water(loc: dict) -> str:
     mode, d = loc.get("mode"), loc.get("snap_distance_m")
     if mode == "isolated":
-        return ("A lake with no river flowing in on the map. Storm overflows cannot reach it by water, so "
-                "SwimSignal could list it but would have no sewage risk to forecast there.")
+        return ("A lake with no river flowing in on the map, so no storm overflow is traced to it and SwimSignal "
+                "could list it but would have no sewage risk to forecast there. A reservoir filled by pumping from a "
+                "river can still take in river water.")
     if mode == "lake":
         name = loc.get("watercourse") or "An unnamed lake"
         if loc.get("lake_source") == "polygon" and loc.get("lake_area_km2"):
@@ -480,6 +501,8 @@ def _check_line(res: dict) -> str:
 
 
 THANKS = "Thanks for the request."
+OUTSIDE = ("not known. The point is outside England, and SwimSignal's overflow data covers England only, so a "
+           "forecast here would show no spills whatever happens upstream.")
 FAILED = ("The automatic check could not run this time, so a maintainer will place the spot by hand. Nothing more "
           "is needed from you for now.")
 INTRO = ("This is an automatic check of where the spot sits on SwimSignal's river map. A maintainer reads every "
@@ -513,7 +536,9 @@ def compose(req: Request, point: Point | None, problem: str | None, res: dict | 
         nr = res["nearest"]
         lines.append(f"- **Nearest water:** {_cap(_the(nr['watercourse']))}, {_km_or_m(nr['metres'])} away. "
                      f"The spot's name says {_the(res['hint'])}, so it goes there instead.")
-    if loc.get("mode") != "isolated":
+    if res.get("outside_england"):
+        lines.append(f"- **Storm overflows upstream:** {OUTSIDE}")
+    elif loc.get("mode") != "isolated":
         lines.append(f"- **Storm overflows upstream:** {_overflow_line(res['overflows'], res['max_km'])}")
     lines.append(f"- **Placement check:** {_check_line(res)}")
     if res.get("nearby"):

@@ -542,6 +542,9 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
   forecast for the spot itself, which only listed spots get.
 - No practical guide, no notes on a visit, no reviews and no river or flood line.
 - The map rings the point with the open spot's teal ring; the point has no marker of its own.
+- A click in Wales or Scotland, or on their estuaries, reads "Not covered by the forecast" and "SwimSignal
+  has overflow data for England only, so it has no forecast here.", with no request button. The overflow
+  data covers England only, so "No sewage risk" there would be false (`outside_england.json`).
 
 ### What was kept on purpose
 
