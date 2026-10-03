@@ -52,6 +52,11 @@ def test_catalogue_scope_historical_rating_and_safe_rendering():
     assert "2025 rating: Good" in rendered
     assert 'data-advice-expires="2026-09-16T08:29:00+01:00"' in rendered
     assert "not mean clean water" in rendered and "check the signs" in rendered
+    # Times as people read them, in UK time, with the exact value kept in the element (3 Oct 2026
+    # the live page showed "Snapshot 2026-10-03T21:45:47.570920+01:00").
+    assert 'Snapshot <time datetime="2026-09-15T12:00:00+01:00">15 Sep 2026, 12:00</time>.' in rendered
+    assert 'expires <time datetime="2026-09-16T08:29:00+01:00">16 Sep 2026, 08:29</time>' in rendered
+    assert coastal.when("not a time <b>") == "not a time &lt;b&gt;"
 
 
 def test_source_failures_preserve_catalogue_but_never_advice():
@@ -128,6 +133,7 @@ def test_refused_live_catalogue_uses_dated_names_and_never_cached_advice(tmp_pat
     assert snapshot["catalogue_fetched_at"] == "2026-09-14T12:00:00+01:00"
     assert snapshot["sites"][0]["advice"] == {"state": "unavailable"}
     assert "New designations or changed ratings may not be included" in coastal.render(snapshot)
+    assert 'retrieved <time datetime="2026-09-14T12:00:00+01:00">14 Sep 2026, 12:00</time>.' in coastal.render(snapshot)
 
 
 def test_invalid_or_future_catalogue_fallback_is_not_published(tmp_path, monkeypatch):

@@ -35,6 +35,7 @@ function evidenceRows(s, iso, issued, generatedAt = null) {
 // a rise whose last reading is over six hours old, or a build over a day old. So a stale reading never
 // shows "River high", whether the build found it stale or it went stale on a phone since.
 const FLOW_MAX_H = { reading: 24, rise: 6, build: 24 };
+const FLOOD_SERVICE = 'https://check-for-flooding.service.gov.uk/';
 const hoursAgo = (iso, now) => { const t = Date.parse(iso); return Number.isNaN(t) ? Infinity : (now - t) / 36e5; };
 const clockTime = iso => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
 function flowFacts(s, now = Date.now(), generatedAt = null) {
@@ -46,6 +47,9 @@ function flowFacts(s, now = Date.now(), generatedAt = null) {
     out.push({ lead: 'River rising fast', say: `the gauge at ${rs.station} rose ${rs.rise_6h_m.toFixed(2)} m between ${clockTime(rs.rise_from)} and ${clockTime(rs.rise_to)}` });
   const fl = (s.flood_alerts || []).filter(f => f && f.severity);
   if (fl.length) out.push({ flood: true, lead: `${fl[0].severity} in force nearby`, area: fl[0].area || '', url: fl[0].url || '', more: fl.length - 1 });
+  // null is "the EA did not answer", which must not read as none in force ([]); a spot without the
+  // field (an unlisted point) says nothing.
+  else if (s.flood_alerts === null) out.push({ flood: true, unchecked: true, lead: 'Flood alerts not checked' });
   return out;
 }
 // One fact as a sentence: plain text for the comparison, or HTML for the answer (escaped here, with
@@ -54,6 +58,8 @@ const htmlText = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<
 function flowSentence(f, html = false) {
   const e = html ? htmlText : x => x, lead = html ? `<b>${e(f.lead)}</b>` : f.lead;
   if (!f.flood) return `${lead}: ${e(f.say)}.`;
+  if (f.unchecked) return `${lead}: the Environment Agency did not answer when this forecast was made. `
+    + (html ? `<a href="${FLOOD_SERVICE}">Check flood warnings</a>.` : `Check flood warnings at ${FLOOD_SERVICE}.`);
   const area = !f.area ? '' : html && f.url ? `<a href="${e(f.url)}">${e(f.area)}</a>` : e(f.area);
   return `${lead} (Environment Agency)${area ? ': ' + area : ''}${f.more ? ` and ${f.more} more` : ''}.`;
 }

@@ -845,7 +845,18 @@ real-time data API (Beta)", which the footer, the terms and the data credits
 carry. Open-Meteo's daily high, sunrise and sunset (three daily variables over
 five days weigh one call per spot per build). Both are fetched by
 `build_site.attach_river_levels` and `attach_weather` after the forecasts, in
-the refresh step only, and a failure leaves a spot without them. The list and
+the refresh step only, and a failure leaves a spot without them. From the
+evening of 3 Oct 2026 the build asks for every gauge's latest reading in one request
+(`/data/readings?latest&parameter=level`, about 4,100 measures, 1.3 MB) and
+keeps each spot's gauge and usual range for a week in
+`state/cache/ea_level_stations.json`, using an older pick for up to 30 days
+while the stations lookup fails (`flows.level_lookup`). Before, it asked three
+times a spot, about 300 requests a build; on 3 Oct 8 to 79 of them a build met
+HTTP 403 or a timeout, and the build that published at 21:45 had a level for
+63 spots where the bulk request gave 104 of 105. A gauge's stage reading is
+taken before any other level it publishes, and metres above its datum (m,
+mASD) before mAOD, because the usual range is for the stage above its datum.
+The list and
 the Saved page say which day this week has the most spots at low (`bestDay` in
 `levels.js`). A spot's page can draw its forecast into a picture for a swim
 group's chat (a canvas on the device; nothing is uploaded until the share
@@ -869,7 +880,11 @@ linked to the area's page on check-for-flooding.service.gov.uk. Severity 4,
 "Warning no longer in force", is left out: on 3 Oct 2026 it was the only item
 the service held for England. The build asks spot by spot only when the
 national list holds an alert in force, so on most days the floods cost one
-request. A gauge on another watercourse, or a lake's,
+request. That request goes first, before the river levels: asked after them it
+was refused in 6 of the 8 builds from 16:26 to 21:42 on 3 Oct 2026, leaving
+every spot unchecked. When the EA does not answer, the page says "Flood alerts
+not checked" and links to the flood-warning service rather than saying
+nothing, which would read as none in force, and the build log warns. A gauge on another watercourse, or a lake's,
 gives no river word. The words are `flows.flow_state` and `flows.flood_alerts`,
 fetched by `build_site.attach_flow_state` after the levels, in the refresh step
 only; the comparison's "Local warnings" row names the flood alert too. The page

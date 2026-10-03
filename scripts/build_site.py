@@ -518,7 +518,9 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
     """The Environment Agency's nearest level gauge, on the spot's own river where it has one, as
     an observation beside the forecast: the latest level, the gauge's usual range and a word for
     where the level sits. The forecast itself is unchanged (forecast_point runs with gauge=False):
-    the API version scales travel speed by the level; the site only shows it. The spot's own river
+    the API version scales travel speed by the level; the site only shows it. By default the readings
+    come in one request for every gauge and each spot's gauge is kept for a week (flows.level_lookup),
+    so the build asks the EA a few times rather than three times a spot. The spot's own river
     is spots.csv's `river`, else the snapped watercourse. A "latest" reading over
     flows.MAX_READING_AGE_H old is not the level now (Salisbury's was 708 h old on 2 Oct 2026): it
     is kept as `last_level_m` with `stale: true` and its age, and `level_m`, `index` and `label`
@@ -527,9 +529,11 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
     from concurrent.futures import ThreadPoolExecutor
     from datetime import UTC, datetime
 
-    from dipcast.ingest.flows import MAX_READING_AGE_H, nearest_level_station, reading_fields
+    from dipcast.ingest.flows import MAX_READING_AGE_H, level_lookup, reading_fields
     from dipcast.network.names import same_river
-    lookup = lookup or nearest_level_station
+    save = None
+    if lookup is None:   # every reading in one request, each spot's gauge kept a week (flows.level_lookup)
+        lookup, save = level_lookup(config.CACHE / "ea_level_stations.json")
     now = now or datetime.now(UTC)
 
     def one(r: dict) -> dict | None:
@@ -549,11 +553,31 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         states = list(pool.map(one, results))
+    if save:
+        try:
+            save()
+        except OSError as e:
+            log.warning("river level gauges not kept for the next build: %s", e)
     n = 0
     for r, s in zip(results, states, strict=True):
         r["river_state"] = s
         n += s is not None and not s["stale"]
     return n
+
+
+def asked_now(ask):
+    """Ask now and answer later: a function returning ask()'s answer, or raising its error. The build
+    asks for the national flood list before the river levels, whose requests the EA's gateway has
+    answered with HTTP 403 by the time the flood list came last (3 Oct 2026)."""
+    try:
+        answer = ask()
+    except Exception as e:  # noqa: BLE001 - re-raised where the answer is used
+        error = e
+
+        def again():
+            raise error
+        return again
+    return lambda: answer
 
 
 def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None) -> dict:
@@ -1048,10 +1072,13 @@ def build(refresh: bool = True) -> dict:
     attach_access(results)
     n_algae = attach_algae(results, fetch=refresh)
     n_classified = attach_classifications(results)
-    # Network only, like the levels, and before their burst of EA requests: two requests in all.
+    # Network only, like the levels, and before their EA requests: one request for the national flood
+    # list, two for the water temperatures.
+    from dipcast.ingest.flows import floods_in_force_anywhere
+    any_floods = asked_now(floods_in_force_anywhere) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
-    n_flows = attach_flow_state(results) if refresh else {}     # river high or rising, flood alerts: not part of the level
+    n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
     n_weather = attach_weather(results) if refresh else 0
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
@@ -1060,6 +1087,9 @@ def build(refresh: bool = True) -> dict:
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
+    if n_flows.get("flood_alerts_unchecked"):
+        health["warnings"].append(f"flood alerts not checked for {n_flows['flood_alerts_unchecked']} of {len(results)} spots: "
+                                  "the Environment Agency did not answer; their pages say so")
     health["water_temperature"] = n_water_temp
     for w in health["warnings"]:
         announce(w)

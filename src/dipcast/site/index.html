@@ -1696,7 +1696,7 @@ function freshness() {
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${new Date(DATA.generated_at).toLocaleString('en-GB')}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
   if (b.forecast_failed) h += `<p class="small muted">${b.forecast_failed} of ${b.spots} spots have no forecast in this build${b.today_rain_unavailable ? `; ${b.today_rain_unavailable} more have no rainfall data for today` : ''}.</p>`;
-  else if (b.today_rain_unavailable) h += `<p class="small muted">${b.today_rain_unavailable} spots have no rainfall data for today in this build.</p>`;
+  else if (b.today_rain_unavailable) h += `<p class="small muted">${b.today_rain_unavailable === 1 ? '1 spot has' : `${b.today_rain_unavailable} spots have`} no rainfall data for today in this build.</p>`;
   return h;
 }
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
@@ -1839,7 +1839,7 @@ function drawSpots() {
   ul.innerHTML = items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
-  document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spots.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
+  document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   const clear = document.getElementById('clear-filters');
   if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); });
   bindItems(ul);

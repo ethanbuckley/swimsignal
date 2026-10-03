@@ -159,6 +159,17 @@ def fetch(now=None, client=None):
     return snapshot
 
 
+def when(iso):
+    """A source time as people read it, in UK time ("3 Oct 2026, 21:45"), in a <time> element that
+    keeps the exact value. Unreadable values are shown as they came."""
+    try:
+        t = instant(iso)
+    except (ValueError, TypeError):
+        return escape(str(iso))
+    t = t.astimezone(TZ)
+    return f'<time datetime="{escape(t.isoformat(), quote=True)}">{t.day} {t:%b %Y, %H:%M}</time>'
+
+
 def render(snapshot):
     """Server-rendered list works without JavaScript; dates are always visible."""
     if not snapshot or not snapshot.get("sites"):
@@ -174,16 +185,16 @@ def render(snapshot):
         historical = f'{rating["year"]} rating: {rating["value"]}' if rating else "Historical rating unavailable"
         stamp = ''
         if advice.get("expires_at"):
-            stamp = f'<br>Issued {escape(advice["published_at"])}; expires {escape(advice["expires_at"])}'
+            stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         cards.append(f'<li class="coastal-site"><a href="{escape(site["profile"], quote=True)}">{escape(site["name"])}</a>'
                      f'<p class="small">{escape(site["kind"].title())} · {escape(historical)}<br>'
                      f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}</p></li>')
     return (f'<p class="small">{len(cards)} designated coastal and estuary bathing waters. Snapshot '
-            f'{escape(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
+            f'{when(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
             'and check the signs before swimming. Missing advice does not mean clean water.</p>'
             + (f'<p class="small">The live catalogue could not be retrieved; names and historical ratings use '
-               f'the official catalogue retrieved {escape(snapshot["catalogue_fetched_at"])}. '
+               f'the official catalogue retrieved {when(snapshot["catalogue_fetched_at"])}. '
                'New designations or changed ratings may not be included.</p>' if snapshot.get("catalogue_state") == "cached" else '') +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
