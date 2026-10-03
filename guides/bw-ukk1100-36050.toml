@@ -1,0 +1,95 @@
+# Henleaze Lake, Bristol. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "No car park. A few spaces in the grounds for Blue Badge holders and people with a temporary access need."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/facilities/"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "parking"
+text = "Members with mobility issues reserve a space by phoning the lake during swimming hours, 0117 962 0696."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/find-us/"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "path"
+text = "Henleaze Lake, Lake Road, Henleaze, Bristol BS10 5HG. Buses 2, 2a, 10 and 11 stop at Lake Road (Southmead Road), under two minutes away. Cyclists dismount at the top of the drive."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/find-us/"
+source_name = "Henleaze Swimming Club"
+
+[[fact]]
+topic = "entry"
+text = "Into the water only by the steps, the diving platform, the diving boards and the pontoon. No jumping or diving from the lake's edge, and no entry anywhere else."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/media/1603/health-safety-leaflet-2026.pdf"
+source_name = "Henleaze Swimming Club"
+
+[[fact]]
+topic = "entry"
+text = "The pontoons and diving boards are at the southern end of the lake."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukk1100-36050"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "toilets"
+text = "Toilets and a shower block, with an accessible toilet and shower."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/facilities/"
+source_name = "Henleaze Swimming Club"
+
+[[fact]]
+topic = "changing"
+text = "Communal changing and cubicles for women (left) and men (right), and some gender-neutral cubicles. Two showers, and a sauna for over-18s."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/facilities/"
+source_name = "Henleaze Swimming Club"
+
+[[fact]]
+topic = "fees"
+text = "A guest swim costs £8 for adults, £5 for juniors, students and over-66s. There is no space for new Community Access users at present."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/swimming-membership/"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "fees"
+text = "Every guest must be booked ahead and pay by card over the phone; no cash."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/media/1603/health-safety-leaflet-2026.pdf"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "hours"
+text = "Summer 2026 season from 2 May to the end of October, with shorter hours through October. Every session must be booked; last entry 30 minutes before it ends. In winter 2026 to 2027 it opens on Wednesdays, Fridays and weekends, times to be confirmed."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/swimming-opening-times-2026/"
+source_name = "Henleaze Swimming Club"
+
+[[fact]]
+topic = "rules"
+text = "Open to members and their guests only. Members must pass a 50-metre swim test. Adult members may bring up to two guests."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/swimming-membership/"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "rules"
+text = "Junior guests take a 50-metre swim test on their first visit each year."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/media/1604/hsc-guest-info-sheet-2026.pdf"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "rules"
+text = "Under-13s must have an adult with them at all times. Lifeguards hold a pool or open-water lifesaving qualification."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/media/1603/health-safety-leaflet-2026.pdf"
+source_name = "Henleaze Swimming Club"
+[[fact]]
+topic = "rules"
+text = "Winter swimming is for adult members and Community Access users who have passed the test and paid the winter subscription."
+status = "confirmed"
+source = "https://www.henleazeswimmingclub.org/swimming/swimming-opening-times-2026/"
+source_name = "Henleaze Swimming Club"

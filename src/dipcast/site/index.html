@@ -666,6 +666,32 @@
   .rv-close { position:fixed; top:calc(8px + env(safe-area-inset-top)); right:calc(8px + env(safe-area-inset-right)); display:flex; align-items:center; justify-content:center;
     width:44px; height:44px; padding:0; border:0; border-radius:50%; background:var(--float); color:var(--ink); cursor:pointer; }
   .rv-close .ic { width:20px; height:20px; vertical-align:0; }
+
+  /* A spot's practical guide (guide.js; the facts are in guides/). A tile after the forecast's, built as
+     they are: the label, one sentence on how it was checked, then the facts as a ruled list, a topic's
+     name over its facts. Who says so sits under each fact in the meta size, in words ("Confirmed",
+     "A swimmer's suggestion"), never in a colour: colour here means a level. A photo runs the tile's
+     width with its numbered labels on it, round as dots are, and the key beneath. */
+  #guide { scroll-margin-top:calc(var(--header-h) + 8px); }
+  dl.g-facts { margin:10px 0 0; }
+  .g-row { padding:10px 0; border-top:1px solid var(--hair); }
+  .g-row dt { font-size:var(--fs-note); font-weight:600; line-height:1.3; color:var(--muted); }
+  .g-row dd { margin:4px 0 0; }
+  .g-row dd + dd { margin-top:10px; }
+  .g-text { margin:0; font-size:var(--fs-note); line-height:1.45; overflow-wrap:anywhere; }
+  .g-src { margin:3px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); overflow-wrap:anywhere; }
+  .g-src a { color:var(--muted); }
+  .g-who { font-weight:600; color:var(--ink); }
+  .g-gap { margin:0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  .g-photo { margin:12px 0 0; }
+  .g-pic { position:relative; overflow:hidden; border-radius:var(--radius); background:var(--line); }
+  .g-pic img { display:block; width:100%; height:100%; object-fit:cover; }
+  .g-pin { position:absolute; display:flex; align-items:center; justify-content:center; width:24px; height:24px; margin:-12px 0 0 -12px; border-radius:50%;
+    background:var(--ink); color:var(--on-fill); box-shadow:0 0 0 2px var(--on-fill); font-size:var(--fs-meta); font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+  ol.g-key { margin:8px 0 0; padding-left:22px; font-size:var(--fs-note); line-height:1.4; }
+  ol.g-key li::marker { font-weight:700; }
+  .g-cap { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  .g-ask { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.45; }
 </style>
 </head>
 <body class="view-list">
@@ -766,6 +792,7 @@
 </nav>
 <script src="vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
+<script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
@@ -1206,6 +1233,7 @@ const ICON = {   // the one stroke set, as the search, map, bookmark and check
   map: glyph('<path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/>'),
   pin: glyph('<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/>'),
   table: glyph('<path d="M4 5h16v14H4ZM4 10h16M4 14.5h16M10 5v14"/>'),
+  route: glyph('<path d="M12 21V3"/><path d="M5.5 5.5h10l3 2.5-3 2.5h-10ZM18.5 13.5h-10l-3 2.5 3 2.5h10Z"/>'),   // a signpost: the practical guide
 };
 // Overflow names come in capitals from some feeds ("LITTLE SALKELD WwTW"): a word of four or more
 // capitals is set in normal case; shorter ones (CSO, STW, PS) and mixed ones (WwTW) are kept.
@@ -2163,7 +2191,8 @@ function render(d) {
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:
   // above, on a small phone, it pushed the level below the fold.
   const where = `<div class="loc phone-only"><div id="loc-map" aria-hidden="true"></div><button type="button" class="loc-open" id="loc-open" aria-label="Open map at ${esc(d.name)}">Open map</button></div>`;
-  const tiles = `<div class="tiles">${facts(d).map(tile).join('')}</div>`;
+  // The practical guide (guide.js) after the forecast's tiles: parking, paths, entry and exit, fees.
+  const tiles = `<div class="tiles">${facts(d).map(tile).join('')}</div>` + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);

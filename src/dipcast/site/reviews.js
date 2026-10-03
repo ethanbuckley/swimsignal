@@ -129,7 +129,7 @@ async function mountReviews(d) {
   if (!reviewable(d)) return;
   const data = await reviewsLoad();
   if (turn !== reviewTurn || !data || !data.on) return;
-  const after = document.querySelector('#result .stack > .tiles');
+  const after = document.querySelector('#result .stack > #guide') || document.querySelector('#result .stack > .tiles');   // after the practical guide (guide.js)
   if (!after || document.getElementById('reviews')) return;
   const mine = reviewsNow(), tidy = reviewsTidy(mine, data);
   if (tidy.length < mine.length) reviewsKeep(tidy);
