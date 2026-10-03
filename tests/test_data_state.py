@@ -14,42 +14,50 @@ T = pd.Timestamp("2026-10-04 08:00", tz="UTC")
 MS = lambda ts: int(pd.Timestamp(ts).value // 1_000_000)
 
 
-def test_every_layer_is_the_hubs_schema():
+def test_every_layer_is_the_hubs_schema_and_maps_to_its_names():
     """All nine layers carry the hub's ten fields and an object id, no flag for validation,
-    dry weather or high river, and Status coded 1 Start, 0 Stop, -1 Offline."""
+    dry weather or high river, and Status coded 1 Start, 0 Stop, -1 Offline. South West Water
+    spells them in camelCase, which an exact match never read."""
     from dipcast import config
-    from dipcast.ingest.live import RENAME
+    from dipcast.ingest.live import RENAME, hub_names
     assert set(FIELDS) == set(config.LIVE_FEEDS)
-    want = {k.lower() for k in RENAME}
     for company, layer in FIELDS.items():
-        names = {f.lower() for f in layer["fields"] if f.lower() != "objectid"}
-        assert names == want, company
+        names = [f for f in layer["fields"] if f.lower() != "objectid"]
+        assert len(names) == len(RENAME), company
+        mapped = hub_names(pd.DataFrame(columns=names)).columns
+        assert set(mapped) == set(RENAME), company
         assert layer["status_domain"] == {"1": "Start", "0": "Stop", "-1": "Offline"}, company
+    assert sorted(n for n in FIELDS["South West Water"]["fields"] if n not in RENAME and n != "ObjectId") == [
+        "company", "lastUpdated", "latestEventEnd", "latestEventStart", "latitude", "longitude",
+        "receivingWaterCourse", "status", "statusStart"]
 
 
-def _rows(stamped: bool):
+def _sww_rows(stamped: bool):
+    """Rows in South West Water's spelling."""
     t = MS("2026-10-04 07:50") if stamped else None
-    return [{"Id": f"S{i}", "Company": "X", "Status": s, "StatusStart": t, "LatestEventStart": None, "LatestEventEnd": None,
-             "Latitude": 50.5, "Longitude": -3.8, "ReceivingWaterCourse": "River Dart", "LastUpdated": t}
-            for i, s in enumerate([0, 1])]
+    return [{"Id": f"SWW{i}", "company": "South West Water", "status": s, "statusStart": t, "latestEventStart": None,
+             "latestEventEnd": None, "latitude": None, "longitude": None, "receivingWaterCourse": "River Dart",
+             "lastUpdated": t, "_x": -3.8, "_y": 50.5 + 0.01 * i} for i, s in enumerate([0, 1])]
 
 
-def test_fetch_live_asks_the_layer_only_when_records_carry_no_stamp(monkeypatch):
+def test_fetch_live_reads_camel_case_fields_and_asks_the_layer_only_when_records_carry_no_stamp(monkeypatch):
     from dipcast.ingest import live
     asked = []
     monkeypatch.setattr(live, "layer_edit_time", lambda url: asked.append(url) or MS("2026-10-04 07:58"))
-    monkeypatch.setattr(live, "fetch_all", lambda url, **kw: _rows(stamped=True))
-    df = live.fetch_live({"X": "https://x/0"})
-    assert df["last_updated"].notna().all() and df["layer_edited_at"].isna().all() and asked == []
-    monkeypatch.setattr(live, "fetch_all", lambda url, **kw: _rows(stamped=False))
-    df = live.fetch_live({"X": "https://x/0"})
+    monkeypatch.setattr(live, "fetch_all", lambda url, **kw: _sww_rows(stamped=True))
+    df = live.fetch_live({"South West Water": "https://x/0"})
+    assert df["last_updated"].notna().all() and df["status_start"].notna().all()
+    assert (df["receiving_watercourse"] == "River Dart").all() and df["lat"].notna().all()   # geometry, as before
+    assert df["layer_edited_at"].isna().all() and asked == []
+    monkeypatch.setattr(live, "fetch_all", lambda url, **kw: _sww_rows(stamped=False))
+    df = live.fetch_live({"South West Water": "https://x/0"})
     assert df["last_updated"].isna().all() and asked == ["https://x/0"]
     assert (df["layer_edited_at"] == pd.Timestamp("2026-10-04 07:58", tz="UTC")).all()
 
     def fail(url):
         raise RuntimeError("ArcGIS request failed after 4 attempts")
     monkeypatch.setattr(live, "layer_edit_time", fail)
-    assert live.fetch_live({"X": "https://x/0"})["layer_edited_at"].isna().all()   # stale, never current
+    assert live.fetch_live({"South West Water": "https://x/0"})["layer_edited_at"].isna().all()   # stale, never current
 
 
 def test_layer_edit_time_reads_the_layers_data_edit_date(monkeypatch):

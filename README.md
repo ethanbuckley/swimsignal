@@ -544,12 +544,24 @@ checked, so the page cannot show them.
 | Anglian Water | the hub's | every record, each refresh | 23:26 UTC |
 | Northumbrian Water | the hub's | a record only when it changes | 23:19 |
 | Severn Trent Water | the hub's | every record, each refresh | 23:19 |
-| South West Water | the hub's in camelCase, all but `Id` (`status`, `statusStart`, `lastUpdated`, ...) | none read: `fetch_live` matches `LastUpdated` exactly | 23:20, schema rewritten at the same time |
+| South West Water | the hub's in camelCase, all but `Id` (`status`, `statusStart`, `lastUpdated`, ...) | none read so far (below) | 23:20, schema rewritten at the same time |
 | Southern Water | the hub's | a record only when it changes | 20:58 |
 | Thames Water | the hub's | every record, each refresh | 23:23 |
 | United Utilities | the hub's | every record, each refresh | 23:03 |
 | Wessex Water | the hub's | every record, each refresh | 23:23 |
 | Yorkshire Water | the hub's | every record, each refresh | 23:18 |
+
+Until 4 Oct `fetch_live` matched field names exactly, so it never read South
+West Water's `statusStart`, `latestEventStart`, `latestEventEnd`,
+`lastUpdated`, `receivingWaterCourse`, `latitude` or `longitude`, whatever
+they held; its locations came from the point geometry. It now reads field
+names whatever their case (`hub_names`). Whether those fields hold values was
+not checked, since no data query was made. The 2 Oct correction above found
+no `LastUpdated` or event times on any South West Water row; a check of
+`live_latest.parquet`, which this code wrote, could not have seen them. If
+they do hold values, South West Water's overflows get record stamps and event
+times from the next poll, and the scorer will score their days when the rules
+above are met.
 
 **Algae (an observation, not a forecast; 28 Sep 2026).** At every sampling visit to a
 bathing water the EA sampler records one of four levels of algae: none, a trace (1-2

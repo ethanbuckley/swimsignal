@@ -41,7 +41,7 @@ COLS = [
 # company). Every one is the National Storm Overflow Hub's schema and nothing else: the ten fields
 # below and an object id. Status is a coded value in all nine: 1 "Start" (discharging), 0 "Stop"
 # (not discharging), -1 "Offline" (the monitor is not reporting). South West Water's layer spells
-# every field but Id in camelCase (status, statusStart, lastUpdated, ...).
+# every field but Id in camelCase (status, statusStart, lastUpdated, ...), which hub_names maps.
 # No layer has a field for a record's validation or verification, a dry-weather spill or a high
 # river: where a company shows such a flag, it is not in these feeds, so data_states cannot say it.
 RENAME = {
@@ -50,6 +50,16 @@ RENAME = {
     "Latitude": "lat", "Longitude": "lon", "ReceivingWaterCourse": "receiving_watercourse",
     "LastUpdated": "last_updated",
 }
+
+
+def hub_names(df: pd.DataFrame) -> pd.DataFrame:
+    """Field names in the hub's spelling, whatever their case. Until 4 Oct 2026 the names were
+    matched exactly, so South West Water's statusStart, latestEventStart, latestEventEnd,
+    lastUpdated, receivingWaterCourse, latitude and longitude were never read, whatever they held.
+    A name already in the hub's spelling is left alone."""
+    want = {k.lower(): k for k in RENAME}
+    return df.rename(columns={c: want[c.lower()] for c in df.columns
+                              if c.lower() in want and c != want[c.lower()] and want[c.lower()] not in df.columns})
 
 
 def _layer_edited_at(company: str, url: str) -> pd.Timestamp:
@@ -71,7 +81,7 @@ def fetch_live(companies: dict[str, str] | None = None) -> pd.DataFrame:
         except Exception as e:  # noqa: BLE001 - one dead feed must not kill the poll
             log.error("live feed failed for %s: %s", company, e)
             continue
-        df = pd.DataFrame(rows).rename(columns=RENAME)
+        df = hub_names(pd.DataFrame(rows)).rename(columns=RENAME)
         df["company"] = company
         # A layer whose records carry no stamp at all: its own last edit is the only evidence the
         # feed is current, read for data_states (one more small request). The coverage file and the
