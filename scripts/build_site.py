@@ -23,6 +23,7 @@ from pathlib import Path
 import pandas as pd
 
 from dipcast import __version__, config
+from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, load_poll_log, load_verification, samples_status
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
@@ -60,7 +61,7 @@ REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type
             ('href="/static/fonts/SourceSerif4-latin.woff2"', 'href="fonts/SourceSerif4-latin.woff2"'),
             ("fetch('/api/verification')", "fetch('data/verification.json')"),
             ('href="/methods"', 'href="methods.html"'), ('href="/methods#', 'href="methods.html#'),
-            ('href="/verification#', 'href="verification.html#')]
+            ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"')]
 BRAND = "SwimSignal"
 # The home page leads with the name, for search; every other page is "Page · SwimSignal" (docs/DESIGN.md, Words).
 HOME_TITLE = f"{BRAND} · pollution risk forecasts for swim spots"
@@ -882,7 +883,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = with_build(TEMPLATE.read_text(), stamp)
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
-    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html"]:
+    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html"]:
         s = (STATIC / name).read_text()
         for a, b in REWRITES:
             s = s.replace(a, b)
@@ -1040,6 +1041,7 @@ def build(refresh: bool = True) -> dict:
         results.append({"id": r.id, "name": r.name, "kind": r.kind, "river": _river_of(r), "source": r.source,
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
                         **({"osm_id": r.osm_id} if getattr(r, "osm_id", "") else {}), **f})
+    attach_access(results)
     n_algae = attach_algae(results, fetch=refresh)
     n_classified = attach_classifications(results)
     # Network only, like the levels, and before their burst of EA requests: two requests in all.

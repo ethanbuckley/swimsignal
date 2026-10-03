@@ -204,6 +204,15 @@ def test_what3words_with_a_key():
     assert "did not answer" in key.problem and "did not answer" in down.problem
 
 
+def test_ambiguous_place_names_do_not_select_the_first_match():
+    def get(url, params):
+        assert params["maxresults"] == 5
+        return Fake(200, {"results": [{"GAZETTEER_ENTRY": {"NAME1": "Newport"}},
+                                     {"GAZETTEER_ENTRY": {"NAME1": "Newport"}}]})
+    result = sr.geocode(sr.parse_location("Newport"), env={"OS_API_KEY": "k"}, get=get)
+    assert result.point is None and "more than one match" in result.problem
+
+
 def test_a_place_name_with_a_key_is_approximate():
     x, y = 407500.0, 454500.0
     entry = {"NAME1": "Bolton Abbey", "LOCAL_TYPE": "Village", "COUNTY_UNITARY": "North Yorkshire",

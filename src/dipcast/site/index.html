@@ -754,7 +754,7 @@
       </details>
     </section>
     <footer class="fine">
-      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="coverage.html">Coasts, Wales, Scotland and algae</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
       <p>Data: storm overflow status from Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and Yorkshire Water via the National Storm Overflow Hub (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; combined and modelled by SwimSignal) · Environment Agency data © Environment Agency copyright and/or database right (<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>); river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), from Met Office forecasts © Crown copyright (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>) · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
     </footer>
   </main>
@@ -1125,7 +1125,8 @@ function standing(d, iso) {
 const check = d => { const url = (d.classification || {}).url;
   return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
-    : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`; };
+    : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`
+    + (d.access ? `<p class="check"><b>Access:</b> ${esc(d.access.text)}${/^https:\/\//.test(d.access.url || '') ? ` <a href="${esc(d.access.url)}">Authority guidance</a>.` : ''} Desk check ${esc(d.access.checked_at)}; current signs have not been inspected.</p>` : ''); };
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
 function ratingHistory(cl) {
   const h = (cl.history || []).filter(([y]) => y !== cl.year); if (!h.length) return '';
