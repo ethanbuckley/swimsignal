@@ -31,6 +31,9 @@ const Embed = (() => {
     + 'Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that '
     + 'may be made of the Copernicus information or data it contains. '
     + `None of these bodies endorses SwimSignal. ${out('terms.html#data', 'All credits and licences')}.`;
+  // A spot from spots-osm.csv shows OpenStreetMap's name and position, so ODbL asks for its notice
+  // wherever it is shown; the spot's page has it in the line over the name (its notes).
+  const OSM = `Location © ${out('https://www.openstreetmap.org/copyright', 'OpenStreetMap contributors')} (ODbL 1.0). `;
 
   // The five days as the spot's page shows them, a row each: the day, its level and a bar. The bar
   // fills the day's band, one quarter for low to four for very high. The spot's page also places a
@@ -62,7 +65,7 @@ const Embed = (() => {
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
     return h + `<p class="check">${check(s)}</p>`
       + `<p class="foot">Issued ${esc(issued)}, ${ago(age)} ago · ${out(page, 'Full forecast on SwimSignal', 'back')}</p>`
-      + `<p class="credit">${CREDIT}</p>`;
+      + `<p class="credit">${s.source === 'openstreetmap' ? OSM : ''}${CREDIT}</p>`;
   }
 
   // No spot by that id (or none asked for): say how to find one, and keep the way to the site.
@@ -93,7 +96,7 @@ const Embed = (() => {
     el.innerHTML = card(s, data);
   }
 
-  return { card, missing, failed, start, STALE_MIN, CREDIT };
+  return { card, missing, failed, start, STALE_MIN, CREDIT, OSM };
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Embed;

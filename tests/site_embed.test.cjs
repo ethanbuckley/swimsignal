@@ -43,6 +43,14 @@ test('the caveat, the issue time, the link back and the credits are always on th
   assert.ok(!h.includes('Stale'));
 });
 
+test('a spot from OpenStreetMap carries its location notice, and only such a spot', () => {
+  const osm = {...river, id: 'osm-x', source: 'openstreetmap', notes: 'Location © OpenStreetMap contributors'};
+  const h = Embed.card(osm, DATA, NOW);
+  assert.ok(h.includes(`<p class="credit">${Embed.OSM}${Embed.CREDIT}</p>`));
+  assert.ok(h.includes('Location © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL 1.0).'));
+  assert.ok(!Embed.card(river, DATA, NOW).includes('OpenStreetMap'));
+});
+
 test('a forecast over eight hours old says so', () => {
   assert.ok(!Embed.card(river, DATA, Date.parse(GEN) + Embed.STALE_MIN * 60e3).includes('Stale'));
   const h = Embed.card(river, DATA, Date.parse(GEN) + 10 * 3600e3);
