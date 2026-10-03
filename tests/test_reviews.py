@@ -31,15 +31,15 @@ def review(i, spot="wharfe-burnsall", swam="2026-09-14", photos=0, again=True, *
 class Worker:
     """The review Worker's two public answers, and a count of what was asked."""
 
-    def __init__(self, reviews, down=False, bad_photo=None):
-        self.reviews, self.down, self.bad_photo, self.asked = reviews, down, bad_photo, []
+    def __init__(self, reviews, down=False, bad_photo=None, visits=()):
+        self.reviews, self.down, self.bad_photo, self.visits, self.asked = reviews, down, bad_photo, list(visits), []
 
     def __call__(self, url):
         self.asked.append(url)
         if self.down:
             raise httpx.ConnectError("no route to host")
         if url == URL + "published":
-            return json.dumps({"generated_at": "2026-10-03T12:00:00Z", "reviews": self.reviews}).encode()
+            return json.dumps({"generated_at": "2026-10-03T12:00:00Z", "reviews": self.reviews, "visits": self.visits}).encode()
         name = url.removeprefix(URL + "photos/")
         return b"<html>not a photo</html>" if name == self.bad_photo else JPEG + name.encode()
 
@@ -73,7 +73,7 @@ def test_published_reviews_and_their_photos_reach_the_site(tmp_path):
     worker = Worker([review(1, swam="2026-08-01", photos=2), review(2, swam="2026-09-20", again=False), review(3, spot="gone-spot", photos=1),
                      {**review(4), "swam_on": "yesterday"}, review(5, swam="2026-09-20")])
     out = rv.write_reviews(tmp_path, URL, spot_ids=["wharfe-burnsall", "another"], get=worker, cache=tmp_path / "cache")
-    assert out == {"on": True, "source": "service", "published": 3, "photos": 2}
+    assert out == {"on": True, "source": "service", "published": 3, "notes": 0, "photos": 2}
     index = json.loads((tmp_path / "reviews" / "index.json").read_text())
     assert index["on"] is True and index["submit"] == URL and index["complete"] is True
     assert list(index["spots"]) == ["wharfe-burnsall"]   # a spot this build does not have is left out
@@ -88,6 +88,30 @@ def test_published_reviews_and_their_photos_reach_the_site(tmp_path):
     assert photos == [f"{one}-0-t.jpg", f"{one}-0.jpg", f"{one}-1-t.jpg", f"{one}-1.jpg"]
     assert (tmp_path / "reviews" / "photos" / f"{one}-0.jpg").read_bytes().startswith(b"\xff\xd8\xff")
     assert not any("gone-spot" in u or f"{3:020x}" in u for u in worker.asked)
+
+
+def visit(i, spot="wharfe-burnsall", seen="2026-10-02", until="2026-10-03", kinds=("busy",), photos=0, **extra):
+    return {"id": f"{100 + i:020x}", "spot": spot, "seen_on": seen, "until": until, "kinds": list(kinds), "text": "", "confirmed_on": None,
+            "confirmations": 0, "verified": "", "photos": [{"w": 1280, "h": 960, "tw": 320, "th": 240}] * photos, **extra}
+
+
+def test_notes_on_a_visit_reach_the_site_until_their_last_day(tmp_path):
+    notes = [visit(1, kinds=("steps", "busy"), until="2026-11-01", photos=1), visit(2, seen="2026-10-03"),
+             visit(3, until="2026-10-02"),                               # ended yesterday
+             visit(4, spot="gone-spot"), {**visit(5), "kinds": []},     # a spot not built; no ticks
+             visit(6, kinds=("algae",), until="2026-10-09", verified="EA notice, 3 Oct")]
+    out = rv.write_reviews(tmp_path, URL, spot_ids=["wharfe-burnsall"], get=Worker([], visits=notes), cache=tmp_path / "cache",
+                           today="2026-10-03")
+    assert out["notes"] == 3 and out["photos"] == 1
+    rows = json.loads((tmp_path / "reviews" / "index.json").read_text())["visits"]["wharfe-burnsall"]
+    assert [r["id"] for r in rows] == [f"{102:020x}", f"{106:020x}", f"{101:020x}"]   # newest visit first
+    assert rows[1]["verified"] == "EA notice, 3 Oct" and rows[2]["kinds"] == ["steps", "busy"]
+    assert set(rows[0]) == {"id", "kinds", "seen_on", "confirmed_on", "confirmations", "until", "text", "verified", "photos"}
+    assert sorted(p.name for p in (tmp_path / "reviews" / "photos").iterdir()) == [f"{101:020x}-0-t.jpg", f"{101:020x}-0.jpg"]
+    # The next day only the lasting ones are left, and the ended note's photo leaves the cache with it.
+    rv.write_reviews(tmp_path, URL, spot_ids=["wharfe-burnsall"], get=Worker([], visits=notes), cache=tmp_path / "cache", today="2026-11-02")
+    assert json.loads((tmp_path / "reviews" / "index.json").read_text())["visits"] == {}
+    assert not list((tmp_path / "cache" / "photos").iterdir())
 
 
 def test_photos_are_fetched_once_and_leave_with_their_review(tmp_path):
@@ -156,10 +180,14 @@ def test_the_page_loads_the_reviews_script_from_its_build(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
     stamp = bs.shell_stamp()
-    assert f'<script src="reviews.js?v={stamp}">' in (tmp_path / "index.html").read_text()
-    assert (tmp_path / "reviews.js").read_bytes() == (bs.TEMPLATE.parent / "reviews.js").read_bytes()
+    page = (tmp_path / "index.html").read_text()
     sw = (tmp_path / "sw.js").read_text()
-    assert "`reviews.js?v=${BUILD}`" in sw and "/reviews/photos/" in sw
+    for script in ("reviews.js", "visits.js"):   # the notes on a visit after the reviews, whose parts they use
+        assert f'<script src="{script}?v={stamp}">' in page
+        assert (tmp_path / script).read_bytes() == (bs.TEMPLATE.parent / script).read_bytes()
+        assert f"`{script}?v=${{BUILD}}`" in sw
+    assert page.index('src="reviews.js') < page.index('src="visits.js')
+    assert "/reviews/photos/" in sw
 
 
 def test_a_failing_photo_service_costs_the_build_little(tmp_path):

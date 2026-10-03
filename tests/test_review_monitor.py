@@ -66,3 +66,16 @@ def test_corrupt_checkpoint_and_invalid_server_summary(tmp_path):
     result = monitor.check(monitor.DEFAULT_URL, path, token=lambda: "test", get=get)
     assert result["needs_attention"] and result["state"]["error"] == "ValueError"
     assert "private invalid value" not in path.read_text()
+
+
+def test_notes_on_a_visit_waiting_are_announced_and_an_older_service_still_reads(tmp_path):
+    path = tmp_path / "state.json"
+    data = {**summary(), "visits_pending": 1, "latest_visit_pending_at": "2026-10-03T19:00:00Z",
+            "visits_reported": 0, "latest_visit_report_at": None}
+    def get(url, **kwargs):
+        return httpx.Response(200, json=data, request=httpx.Request("GET", url))
+    first = monitor.check(monitor.DEFAULT_URL, path, token=lambda: "t", get=get)
+    assert first["notices"] == ["New note on a visit to check; 1 waiting."]
+    assert not monitor.check(monitor.DEFAULT_URL, path, token=lambda: "t", get=get)["needs_attention"]
+    data = summary()   # a service from before notes: no visit counts at all
+    assert not monitor.check(monitor.DEFAULT_URL, path, token=lambda: "t", get=get)["needs_attention"]

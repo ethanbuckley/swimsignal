@@ -692,6 +692,18 @@
   ol.g-key li::marker { font-weight:700; }
   .g-cap { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
   .g-ask { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.45; }
+  /* Notes on a visit (visits.js): built as the reviews are, before them. The ticks are the yes or no's
+     chips, two to a row; a note of pollution or algae carries its own line saying it is not verified;
+     and a muted line keeps a good note from reading as the all-clear. No level colours: a note is not
+     a level. */
+  .vn-kinds { grid-template-columns:repeat(2, minmax(0, 1fr)); max-width:none; }
+  #vn-form fieldset + fieldset { margin-top:16px; }   /* a second question, spaced as the rest: a legend's own margin is ignored */
+  .vn-kinds span { padding:6px 10px; text-align:center; line-height:1.25; }
+  #visits:focus { outline:none; }
+  #visits { scroll-margin-top:calc(var(--header-h) + 8px); }
+  .vn-flag { margin:2px 0 0; font-size:var(--fs-meta); font-weight:600; line-height:1.35; }
+  .vn-caveat { padding:12px 0 10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.4; color:var(--muted); }
+  .vn-pol a { color:inherit; }
 </style>
 </head>
 <body class="view-list">
@@ -793,6 +805,7 @@
 <script src="vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
+<script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
@@ -1724,7 +1737,7 @@ function freshness() {
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${new Date(DATA.generated_at).toLocaleString('en-GB')}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
   if (b.forecast_failed) h += `<p class="small muted">${b.forecast_failed} of ${b.spots} spots have no forecast in this build${b.today_rain_unavailable ? `; ${b.today_rain_unavailable} more have no rainfall data for today` : ''}.</p>`;
-  else if (b.today_rain_unavailable) h += `<p class="small muted">${b.today_rain_unavailable} spots have no rainfall data for today in this build.</p>`;
+  else if (b.today_rain_unavailable) h += `<p class="small muted">${b.today_rain_unavailable === 1 ? '1 spot has' : `${b.today_rain_unavailable} spots have`} no rainfall data for today in this build.</p>`;
   return h;
 }
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
@@ -1867,7 +1880,7 @@ function drawSpots() {
   ul.innerHTML = items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
-  document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spots.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
+  document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   const clear = document.getElementById('clear-filters');
   if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); });
   bindItems(ul);
@@ -2215,8 +2228,9 @@ function render(d) {
     more.setAttribute('aria-expanded', String(all)); more.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap();
 }
-// Swimmers' reviews (reviews.js), if that script arrived: without it the rest of the spot still draws.
-const reviewsFor = d => { if (typeof mountReviews === 'function') mountReviews(d); };
+// Swimmers' reviews (reviews.js) and notes on a visit (visits.js), if those scripts arrived: without them
+// the rest of the spot still draws.
+const reviewsFor = d => { if (typeof mountReviews === 'function') mountReviews(d); if (typeof mountVisits === 'function') mountVisits(d); };
 function bindBack() { const b = document.getElementById('back'); if (b) b.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
   if (history.state && history.state.from) history.back();   // came from the list, Saved or the map: back to it, where it was (popstate)
   else { keepPlace(); history.pushState(null, '', ROOT.pathname); renderList(); scrollTop(); } }); }   // a shared link: stay on the site

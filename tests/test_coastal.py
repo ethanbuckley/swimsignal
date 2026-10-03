@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 import httpx
@@ -52,6 +52,11 @@ def test_catalogue_scope_historical_rating_and_safe_rendering():
     assert "2025 rating: Good" in rendered
     assert 'data-advice-expires="2026-09-16T08:29:00+01:00"' in rendered
     assert "not mean clean water" in rendered and "check the signs" in rendered
+    # Times as people read them, in UK time, with the exact value kept in the element (3 Oct 2026
+    # the live page showed "Snapshot 2026-10-03T21:45:47.570920+01:00").
+    assert 'Snapshot <time datetime="2026-09-15T12:00:00+01:00">15 Sep 2026, 12:00</time>.' in rendered
+    assert 'expires <time datetime="2026-09-16T08:29:00+01:00">16 Sep 2026, 08:29</time>' in rendered
+    assert coastal.when("not a time <b>") == "not a time &lt;b&gt;"
 
 
 def test_source_failures_preserve_catalogue_but_never_advice():
@@ -128,6 +133,7 @@ def test_refused_live_catalogue_uses_dated_names_and_never_cached_advice(tmp_pat
     assert snapshot["catalogue_fetched_at"] == "2026-09-14T12:00:00+01:00"
     assert snapshot["sites"][0]["advice"] == {"state": "unavailable"}
     assert "New designations or changed ratings may not be included" in coastal.render(snapshot)
+    assert 'retrieved <time datetime="2026-09-14T12:00:00+01:00">14 Sep 2026, 12:00</time>.' in coastal.render(snapshot)
 
 
 def test_invalid_or_future_catalogue_fallback_is_not_published(tmp_path, monkeypatch):
@@ -139,3 +145,99 @@ def test_invalid_or_future_catalogue_fallback_is_not_published(tmp_path, monkeyp
         with httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(503))) as client:
             snapshot = coastal.fetch(NOW, client)
         assert snapshot["status"] == "unavailable" and snapshot["sites"] == []
+
+
+# ------------------------------------------------------------------------------ dated samples
+POINT = "NE-49100178"
+OBS = [  # archive JSON-LD, as ingest.wqa._observations returns it (times local, as published)
+    {"hasSamplingPoint": {"notation": POINT}, "phenomenonTime": "2026-09-08T11:16:00", "hasSimpleResult": "45", "det": "2348"},
+    {"hasSamplingPoint": {"notation": POINT}, "phenomenonTime": "2026-09-08T11:16:00", "hasSimpleResult": "18", "det": "3723"},
+    {"hasSamplingPoint": {"notation": POINT}, "phenomenonTime": "2026-09-11T10:53:00", "hasSimpleResult": "<10", "det": "2348"},
+    {"hasSamplingPoint": {"notation": POINT}, "phenomenonTime": "2026-09-13T09:00:00", "hasSimpleResult": "30", "det": "3723"},  # no E. coli
+    {"hasSamplingPoint": {"notation": POINT}, "phenomenonTime": "nonsense", "hasSimpleResult": "999", "det": "2348"},
+    {"hasSamplingPoint": {"notation": "OTHER"}, "phenomenonTime": "2026-09-14T09:00:00", "hasSimpleResult": "5", "det": "2348"},
+]
+
+
+def _observations(points, since, code, purposes, batch):
+    assert purposes == "MS" and points == [POINT] and since == "2026-08-29T00:00:00" and batch == 25
+    return [o for o in OBS if o["det"] == code]
+
+
+def _points(tmp_path, extra=None):
+    f = tmp_path / "points.json"
+    f.write_text(json.dumps({"checked_at": "2026-10-03T22:00:00+01:00", "points": {KEY: {"point": POINT, "evidence": "label"}, **(extra or {})}}))
+    return f
+
+
+def test_latest_sample_pairs_both_results_from_one_visit_and_keeps_its_time():
+    since = coastal.sample_window(datetime.fromisoformat("2026-10-03T22:00:00+01:00"))
+    assert since.isoformat() == "2026-08-29"
+    got = coastal.latest_samples({KEY: {"point": POINT}}, since, observations=_observations)
+    # 11 Sep is the latest sample with E. coli; its enterococci were not in the archive, so None, not 8 Sep's.
+    assert got == {KEY: {"taken_at": "2026-09-11T10:53:00+01:00", "ecoli": {"value": 10.0, "qualifier": "<"},
+                         "enterococci": None, "point": POINT}}
+    assert coastal.sample_window(datetime.fromisoformat("2027-02-10T12:00:00+00:00")).isoformat() == "2026-08-01"
+    assert coastal.sample_window(datetime.fromisoformat("2026-12-10T12:00:00+00:00")).isoformat() == "2026-08-01"
+
+
+def test_sample_states_are_explicit_and_a_failed_archive_never_reads_as_none(tmp_path):
+    now = datetime.fromisoformat("2026-10-03T22:00:00+01:00")
+    other = "ukc2102-03700"
+    snapshot = {"sites": [{"id": KEY}, {"id": other}, {"id": "ukc2102-03800"}], "fetched_at": now.isoformat()}
+    found = {KEY: {"taken_at": "2026-09-11T10:53:00+01:00", "ecoli": {"value": 45.0, "qualifier": "="},
+                   "enterococci": {"value": 18.0, "qualifier": "="}, "point": POINT}}
+    out = coastal.attach_samples(snapshot, now, _points(tmp_path, {other: {"point": "X-1"}}), fetch=lambda p, s: found)
+    states = [s["sample"]["state"] for s in out["sites"]]
+    assert states == ["ok", "none", "unmapped"]
+    assert out["samples"]["state"] == "ok" and out["samples"]["since"] == "2026-08-29"
+    line = coastal.sample_line(out["sites"][0]["sample"], "2026-08-29")
+    assert line == ('Latest archived EA sample <time datetime="2026-09-11T10:53:00+01:00">11 Sep 2026, 10:53</time>: '
+                    'E. coli 45, intestinal enterococci 18 per 100 ml')
+    assert coastal.sample_line({"state": "none"}, "2026-08-29").startswith("No EA sample in the archive since <time")
+
+    def refused(points, since):
+        raise httpx.HTTPStatusError("503", request=httpx.Request("GET", "https://x/"), response=httpx.Response(503))
+
+    out = coastal.attach_samples({"sites": [{"id": KEY}]}, now, _points(tmp_path), fetch=refused)
+    assert out["sites"][0]["sample"] == {"state": "unavailable"} and out["samples"]["error"] == "HTTP 503"
+    assert "unavailable" in coastal.sample_line(out["sites"][0]["sample"], None)
+    rendered = coastal.render({"sites": [{**coastal.parse([SITE], [], now)[0], "sample": {"state": "ok", **found[KEY]}}],
+                               "fetched_at": now.isoformat(), "samples": {"state": "ok", "fetched_at": now.isoformat()}})
+    assert "E. coli 45, intestinal enterococci 18 per 100 ml" in rendered and "not today" in rendered
+
+
+def test_samples_are_asked_at_most_every_six_hours_and_a_dated_answer_outlasts_a_failure(tmp_path):
+    now = datetime.fromisoformat("2026-10-03T22:00:00+01:00")
+    cache, asked = tmp_path / "samples.json", []
+    found = {KEY: {"taken_at": "2026-09-11T10:53:00+01:00", "ecoli": {"value": 45.0, "qualifier": "="}, "enterococci": None, "point": POINT}}
+
+    def fetch(points, since):
+        asked.append(since)
+        return found
+
+    def broken(points, since):
+        raise httpx.ReadTimeout("slow")
+
+    coastal.attach_samples({"sites": [{"id": KEY}]}, now, _points(tmp_path), cache=cache, fetch=fetch)
+    later = coastal.attach_samples({"sites": [{"id": KEY}]}, now + timedelta(hours=5), _points(tmp_path), cache=cache, fetch=fetch)
+    assert len(asked) == 1 and later["sites"][0]["sample"]["state"] == "ok"   # from the cache, with its own time
+    assert later["samples"]["fetched_at"] == now.isoformat()
+    stale = coastal.attach_samples({"sites": [{"id": KEY}]}, now + timedelta(days=2), _points(tmp_path), cache=cache, fetch=broken)
+    assert stale["samples"]["state"] == "cached" and stale["sites"][0]["sample"]["state"] == "ok"
+    gone = coastal.attach_samples({"sites": [{"id": KEY}]}, now + timedelta(days=4), _points(tmp_path), cache=cache, fetch=broken)
+    assert gone["sites"][0]["sample"] == {"state": "unavailable"}   # over three days old: not shown
+    missing = coastal.attach_samples({"sites": [{"id": KEY}]}, now, tmp_path / "absent.json", fetch=fetch)
+    assert missing["sites"][0]["sample"] == {"state": "unmapped"} and len(asked) == 1
+
+
+def test_an_archive_point_matches_only_its_own_bathing_water_number():
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from map_coastal_wqa import labelled
+    points = [{"notation": "NW-88009847", "prefLabel": "AINSDALE AT AINSDALESEFTON MBC (41300)"},
+              {"notation": "NW-1", "prefLabel": "SOMEWHERE (141300)"},
+              {"notation": "NW-2", "prefLabel": "PONTINS OUTFALL AT AINSDALE BEACH"},
+              {"notation": "NW-3", "prefLabel": "AINSDALE (41300) INVESTIGATION"}]
+    assert labelled(points, "41300") == ["NW-88009847"]

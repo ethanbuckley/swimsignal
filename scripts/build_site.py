@@ -519,7 +519,9 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
     """The Environment Agency's nearest level gauge, on the spot's own river where it has one, as
     an observation beside the forecast: the latest level, the gauge's usual range and a word for
     where the level sits. The forecast itself is unchanged (forecast_point runs with gauge=False):
-    the API version scales travel speed by the level; the site only shows it. The spot's own river
+    the API version scales travel speed by the level; the site only shows it. By default the readings
+    come in one request for every gauge and each spot's gauge is kept for a week (flows.level_lookup),
+    so the build asks the EA a few times rather than three times a spot. The spot's own river
     is spots.csv's `river`, else the snapped watercourse. A "latest" reading over
     flows.MAX_READING_AGE_H old is not the level now (Salisbury's was 708 h old on 2 Oct 2026): it
     is kept as `last_level_m` with `stale: true` and its age, and `level_m`, `index` and `label`
@@ -528,9 +530,11 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
     from concurrent.futures import ThreadPoolExecutor
     from datetime import UTC, datetime
 
-    from dipcast.ingest.flows import MAX_READING_AGE_H, nearest_level_station, reading_fields
+    from dipcast.ingest.flows import MAX_READING_AGE_H, level_lookup, reading_fields
     from dipcast.network.names import same_river
-    lookup = lookup or nearest_level_station
+    save = None
+    if lookup is None:   # every reading in one request, each spot's gauge kept a week (flows.level_lookup)
+        lookup, save = level_lookup(config.CACHE / "ea_level_stations.json")
     now = now or datetime.now(UTC)
 
     def one(r: dict) -> dict | None:
@@ -550,11 +554,31 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         states = list(pool.map(one, results))
+    if save:
+        try:
+            save()
+        except OSError as e:
+            log.warning("river level gauges not kept for the next build: %s", e)
     n = 0
     for r, s in zip(results, states, strict=True):
         r["river_state"] = s
         n += s is not None and not s["stale"]
     return n
+
+
+def asked_now(ask):
+    """Ask now and answer later: a function returning ask()'s answer, or raising its error. The build
+    asks for the national flood list before the river levels, whose requests the EA's gateway has
+    answered with HTTP 403 by the time the flood list came last (3 Oct 2026)."""
+    try:
+        answer = ask()
+    except Exception as e:  # noqa: BLE001 - re-raised where the answer is used
+        error = e
+
+        def again():
+            raise error
+        return again
+    return lambda: answer
 
 
 def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None) -> dict:
@@ -737,6 +761,8 @@ def with_build(template: str, stamp: str) -> str:
 # scripts above are.
 SHELL_SOURCES.append(TEMPLATE.parent / "reviews.js")
 VERSIONED_SCRIPTS += ('<script src="reviews.js"></script>',)
+SHELL_SOURCES.append(TEMPLATE.parent / "visits.js")   # and the notes on a visit, which use it
+VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
 # Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "guide.js")
 VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
@@ -753,6 +779,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     (site / "sw.js").write_text(sw.replace(SW_BUILD, f"const BUILD = '{stamp}';"))   # the offline copy; see the file
     shutil.copy(TEMPLATE.parent / "experience.js", site / "experience.js")
     shutil.copy(TEMPLATE.parent / "reviews.js", site / "reviews.js")   # swimmers' reviews (src/dipcast/reviews.py)
+    shutil.copy(TEMPLATE.parent / "visits.js", site / "visits.js")   # quick notes on a visit, beside them
     shutil.copy(TEMPLATE.parent / "guide.js", site / "guide.js")   # practical guides (src/dipcast/guides.py)
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
@@ -1054,10 +1081,13 @@ def build(refresh: bool = True) -> dict:
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
     n_classified = attach_classifications(results)
-    # Network only, like the levels, and before their burst of EA requests: two requests in all.
+    # Network only, like the levels, and before their EA requests: one request for the national flood
+    # list, two for the water temperatures.
+    from dipcast.ingest.flows import floods_in_force_anywhere
+    any_floods = asked_now(floods_in_force_anywhere) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
-    n_flows = attach_flow_state(results) if refresh else {}     # river high or rising, flood alerts: not part of the level
+    n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
     n_weather = attach_weather(results) if refresh else 0
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
@@ -1066,6 +1096,9 @@ def build(refresh: bool = True) -> dict:
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
+    if n_flows.get("flood_alerts_unchecked"):
+        health["warnings"].append(f"flood alerts not checked for {n_flows['flood_alerts_unchecked']} of {len(results)} spots: "
+                                  "the Environment Agency did not answer; their pages say so")
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
@@ -1075,10 +1108,14 @@ def build(refresh: bool = True) -> dict:
     credits = data_credits(site_url())
     health["anypoint"] = write_any_point(SITE, credits)
     health["guide_photos"] = copy_photos(SITE, results)
+    from dipcast.coastal import attach_samples
     from dipcast.coastal import fetch as fetch_coastal
-    coastal = fetch_coastal()
+    # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
+    coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
-    health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"])}
+    health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
+                         "samples": coastal.get("samples", {}).get("state"),
+                         "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"])}
     push = push_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,

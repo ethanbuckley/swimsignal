@@ -4,6 +4,7 @@ every linked scale fail and the index went missing (seen near Pangbourne: statio
 2180TH, the Pang at Tidmarsh). Then the words beside the pollution level that come from
 the gauges and the EA's flood alerts: "high", "rising fast" and the alerts in force."""
 
+import json
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -282,3 +283,144 @@ def test_a_lake_never_gets_a_river_word():
                          any_alerts=lambda: True, workers=1, now=NOW)
     assert [s["flow_state"] for s in spots] == [None, None] and asked == []
     assert spots[0]["flood_alerts"] == flood
+
+
+# ------------------------------------------------------------------------------ fewer requests
+# On 3 Oct 2026 the build asked the EA about 300 times for the spots' gauges, three requests a spot,
+# and met HTTP 403 or a timeout 8 to 79 times a build; the national flood list, asked after them,
+# was refused in 6 of 8 builds, leaving every spot's flood alerts unchecked. Now one request carries
+# every gauge's latest reading, each spot's gauge is kept for a week, and the flood list goes first.
+def _station(ref: str, measures: list[tuple[str, str, str]]) -> dict:
+    return {"stationReference": ref, "label": ref, "riverName": "River Thames", "lat": 51.41, "long": -0.31,
+            "stageScale": {"typicalRangeLow": 1.0, "typicalRangeHigh": 2.0},
+            "measures": [{"@id": f"http://{EA}/flood-monitoring/id/measures/{ref}-level-{q.lower()}-i-15_min-{u}",
+                          "parameter": p, "qualifier": q, "unitName": u} for q, u, p in measures]}
+
+
+def test_a_gauge_reads_its_stage_in_metres_above_its_datum_first():
+    """The stage scale's usual range is for the stage above the gauge's datum: Kingston (3400TH)
+    publishes its stage in mAOD and mASD, Silsden (L1515) in m and with no unit."""
+    kingston = _station("3400TH", [("Stage", "mAOD", "level"), ("Stage", "mASD", "level")])
+    assert flows._level_measures(kingston) == ["3400TH-level-stage-i-15_min-mASD", "3400TH-level-stage-i-15_min-mAOD"]
+    silsden = _station("L1515", [("Stage", "---", "level"), ("Stage", "m", "level")])
+    assert flows._level_measures(silsden)[0] == "L1515-level-stage-i-15_min-m"
+    sluice = _station("1029TH", [("Downstage", "mASD", "level"), ("Stage", "mAOD", "level"), ("Flow", "m3/s", "flow")])
+    assert flows._level_measures(sluice) == ["1029TH-level-stage-i-15_min-mAOD", "1029TH-level-downstage-i-15_min-mASD"]
+    one = dict(sluice, measures=sluice["measures"][1])   # a single measure comes as an object, not a list
+    assert flows._level_measures(one) == ["1029TH-level-stage-i-15_min-mAOD"]
+
+
+def test_a_gauge_without_its_preferred_reading_takes_the_next_and_never_another_station():
+    pick = {"ref": "3400TH", "station": "Kingston", "river": "River Thames", "lat": 51.41, "lon": -0.31,
+            "typical_low": 1.0, "typical_high": 2.0, "rloi": "7071",
+            "measures": ["3400TH-level-stage-i-15_min-mASD", "3400TH-level-stage-i-15_min-mAOD"]}
+    readings = {"3400TH-level-stage-i-15_min-mAOD": ("2026-10-03T20:30:00Z", 4.6),
+                "3404TH-level-stage-i-15_min-mASD": ("2026-10-03T20:30:00Z", 1.5)}
+    st = flows.river_state(pick, readings)
+    assert (st.measure, st.level_m) == ("3400TH-level-stage-i-15_min-mAOD", 4.6)
+    st = flows.river_state(pick, {"3404TH-level-stage-i-15_min-mASD": ("2026-10-03T20:30:00Z", 1.5)})
+    assert st.level_m is None and st.measure is None and st.station == "Kingston"
+    # A stations list without measures: the station's own stage reading, not its downstage one.
+    bare = {**pick, "measures": []}
+    st = flows.river_state(bare, {"3400TH-level-downstage-i-15_min-mASD": ("t", 0.3), "3400TH-level-stage-i-15_min-mASD": ("t", 1.4)})
+    assert st.measure == "3400TH-level-stage-i-15_min-mASD"
+
+
+def test_latest_levels_is_one_request_and_skips_readings_that_are_not_one_number(monkeypatch):
+    asked = _fake_ea_paths(monkeypatch, {"/flood-monitoring/data/readings": {"items": [
+        {"measure": f"http://{EA}/flood-monitoring/id/measures/F1902-level-stage-i-15_min-m", "dateTime": "2026-10-03T20:30:00Z", "value": 0.225},
+        {"measure": f"http://{EA}/flood-monitoring/id/measures/E1-level-stage-i-15_min-m", "dateTime": "2026-10-03T20:30:00Z", "value": [0.1, 0.2]},
+        {"measure": f"http://{EA}/flood-monitoring/id/measures/E2-level-stage-i-15_min-m", "dateTime": "2026-10-03T20:30:00Z", "value": True},
+        {"measure": f"http://{EA}/flood-monitoring/id/measures/E3-flow--i-15_min-m3_s", "dateTime": "2026-10-03T20:30:00Z", "value": 4.2},
+        {"measure": "http://evil.example/x y", "value": 1.0}, "not a reading"]}})
+    got = flows.latest_levels()
+    assert got == {"F1902-level-stage-i-15_min-m": ("2026-10-03T20:30:00Z", 0.225)}
+    assert len(asked) == 1 and asked[0].url.params.get("parameter") == "level" and "latest" in asked[0].url.params
+
+
+def _pick(ref="F1902", complete=True):
+    return {"ref": ref, "station": ref, "river": "River Wharfe", "lat": 53.93, "lon": -1.82, "typical_low": 0.09,
+            "typical_high": 1.8 if complete else None, "rloi": None, "measures": [f"{ref}-level-stage-i-15_min-m"], "complete": complete}
+
+
+def test_level_lookup_asks_for_each_gauge_once_a_week_and_keeps_old_ones_while_the_ea_refuses(tmp_path):
+    path, day = tmp_path / "ea_level_stations.json", 86400
+    readings = {"F1902-level-stage-i-15_min-m": ("2026-10-03T20:30:00Z", 0.225)}
+    picks, latest_calls = [], []
+
+    def pick(lat, lon, dist, river):
+        picks.append(lat)
+        return _pick()
+
+    def latest():
+        latest_calls.append(1)
+        return readings
+
+    lookup, save = flows.level_lookup(path, now=0.0, latest=latest, pick=pick)
+    assert [lookup(53.9 + i / 100, -1.8, 15, "River Wharfe").level_m for i in range(3)] == [0.225] * 3
+    save()
+    assert len(latest_calls) == 1 and len(picks) == 3   # one readings request for all three spots
+
+    lookup, save = flows.level_lookup(path, now=6 * day, latest=latest, pick=pick)
+    assert lookup(53.9, -1.8, 15, "River Wharfe").station == "F1902" and len(picks) == 3   # kept: no stations request
+
+    def refused(lat, lon, dist, river):
+        raise httpx.HTTPStatusError("403", request=httpx.Request("GET", f"https://{EA}/"), response=httpx.Response(403))
+
+    lookup, save = flows.level_lookup(path, now=20 * day, latest=latest, pick=refused)
+    assert lookup(53.9, -1.8, 15, "River Wharfe").level_m == 0.225   # past its week, but the EA refused: the old gauge
+    lookup, save = flows.level_lookup(path, now=31 * day, latest=latest, pick=refused)
+    assert lookup(53.9, -1.8, 15, "River Wharfe") is None   # over a month old: not used
+    save()
+    assert json.loads(path.read_text()) == {}   # and dropped from the file
+
+
+def test_level_lookup_does_not_keep_a_gauge_without_its_range_and_asks_nothing_when_readings_failed(tmp_path):
+    path = tmp_path / "picks.json"
+    picks = []
+
+    def partial(lat, lon, dist, river):
+        picks.append(lat)
+        return _pick(complete=False)
+
+    lookup, save = flows.level_lookup(path, now=0.0, latest=lambda: {}, pick=partial)
+    st = lookup(53.9, -1.8, 15, "River Wharfe")
+    assert st.typical_high is None and st.level_m is None
+    save()
+    lookup, save = flows.level_lookup(path, now=60.0, latest=lambda: {}, pick=partial)
+    lookup(53.9, -1.8, 15, "River Wharfe")
+    assert len(picks) == 2   # asked again: the range-less pick was not kept
+
+    def broken():
+        raise httpx.ReadTimeout("slow")
+
+    lookup, save = flows.level_lookup(path, now=120.0, latest=broken, pick=partial)
+    assert lookup(53.9, -1.8, 15, "River Wharfe") is None and len(picks) == 2   # no readings: no stations requests
+
+
+def test_a_damaged_gauge_file_is_asked_again(tmp_path):
+    path = tmp_path / "picks.json"
+    path.write_text('{"53.90000,-1.80000,15,wharfe": {"at": 0, "pick": {"ref": 1}}, "x": "not an entry"}')
+    lookup, save = flows.level_lookup(path, now=10.0, latest=lambda: {}, pick=lambda *a: _pick())
+    assert lookup(53.9, -1.8, 15, "River Wharfe").station == "F1902"
+    save()
+    assert "x" not in path.read_text()
+    path.write_text("not json")
+    lookup, save = flows.level_lookup(path, now=10.0, latest=lambda: {}, pick=lambda *a: None)
+    assert lookup(53.9, -1.8, 15, "River Wharfe") is None
+
+
+def test_the_flood_list_is_asked_before_the_levels_and_its_refusal_is_kept_for_later():
+    bs = _build_site()
+    order = []
+    ok = bs.asked_now(lambda: order.append("floods") or True)
+    assert order == ["floods"] and ok() is True and ok() is True and order == ["floods"]
+
+    def refused():
+        raise httpx.HTTPStatusError("403", request=httpx.Request("GET", f"https://{EA}/"), response=httpx.Response(403))
+
+    later = bs.asked_now(refused)
+    with pytest.raises(httpx.HTTPStatusError):
+        later()
+    spots = [{"id": "a", "name": "a", "lat": 53.9, "lon": -1.8}]
+    assert bs.attach_flow_state(spots, alerts=lambda lat, lon: [], any_alerts=later, workers=1, now=NOW)["flood_alerts_unchecked"] == 1
