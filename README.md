@@ -962,7 +962,10 @@ saved spot that has just turned high or very high, at most once a spot in 20
 hours, and sends them 15 a run (about 450 an hour on Cloudflare's free plan). The page shows the switch only when the repository variables
 `DIPCAST_PUSH_URL` and `DIPCAST_VAPID_PUBLIC_KEY` are set, and the privacy
 notice gains its alerts section only then. On an iPhone, alerts work only in
-the Home Screen app.
+the Home Screen app. The same Worker can send the alerts by email, from the
+same list of risen spots, after a double opt-in and with an unsubscribe link in
+every email; it is off until set up (`push/README.md`, "Email alerts"), and
+the page offers it only when `DIPCAST_EMAIL_URL` is set.
 
 **Reviews** (`reviews/`, deployed 3 October 2026; moderation and setup: `reviews/README.md`). A swimmer can
 say whether they would swim at a spot again, when they swam, what it was like,
@@ -1060,7 +1063,9 @@ no substitute for a solicitor before any of these happens.
   (personal and household processing is exempt); payments or ads would end that.
 - **Email alerts.** The privacy notice promises an update before they exist:
   collect addresses only with clear consent, put an unsubscribe link in every
-  email, and have a processor agreement with the email service.
+  email, and have a processor agreement with the email service. Built that way
+  and off (`push/README.md`, "Email alerts"); the privacy section is added
+  only when they are on, and needs the operator's approval first.
 - **Subscriptions.** Selling them brings in pre-contract information and 14-day
   cancellation rights (Consumer Contracts Regulations 2013), and whatever
   subscription rules of the Digital Markets, Competition and Consumers Act 2024
