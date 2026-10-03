@@ -10,6 +10,7 @@ import pandas as pd
 from shapely.geometry import Point
 
 from dipcast import config
+from dipcast.ingest.live import data_states, with_data_states
 from dipcast.network.names import QUALIFIERS
 from dipcast.network.rivers import _TO_BNG, RiverNetwork
 
@@ -104,6 +105,7 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     df["receiving_watercourse"] = df["receiving_watercourse"].fillna(df["receiving_water"])
     df["has_live"] = df["status"].notna()
     df["status"] = df["status"].fillna(-2).astype(int)   # -2 = no live feed
+    df = pd.concat([df.drop(columns=["data_state", "feed_updated_at"], errors="ignore"), data_states(df)], axis=1)
     df = df.dropna(subset=["lat", "lon"]).drop(columns=["ar_lat", "ar_lon", "ar_company", "receiving_water"])
     df = df[(df.lat.between(49, 61)) & (df.lon.between(-9, 3))].reset_index(drop=True)
 
@@ -118,9 +120,9 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     df.loc[snapped, "start_node"] = net.links.loc[df.loc[snapped, "link_id"], "start_node"].to_numpy()
     df.loc[snapped, "end_node"] = net.links.loc[df.loc[snapped, "link_id"], "end_node"].to_numpy()
     df.loc[snapped, "link_length"] = net.links.loc[df.loc[snapped, "link_id"], "length"].to_numpy()
-    log.info("overflows: %d total, %d with live feed, %d snapped to network (%.0f%%); confidence %s",
+    log.info("overflows: %d total, %d with live feed, %d snapped to network (%.0f%%); confidence %s; data states %s",
              len(df), int(df.has_live.sum()), int(snapped.sum()), 100 * snapped.mean(),
-             df["snap_confidence"].value_counts(dropna=False).to_dict())
+             df["snap_confidence"].value_counts(dropna=False).to_dict(), df["data_state"].value_counts().to_dict())
     df.to_parquet(config.state_write(NAME), index=False)
     return df
 
@@ -130,7 +132,8 @@ def load_overflows(net: RiverNetwork | None = None, rebuild: bool = False) -> pd
     if path.exists() and not rebuild:
         # A table cached before build_overflows dropped repeats can still list an id twice
         # (AWS00528 in the 3 Oct 2026 02:59 state); its weight would then count twice upstream of a spot.
-        return one_row_per_overflow(pd.read_parquet(path))
+        # One cached before 4 Oct 2026 has no data states: they are worked out from its live columns.
+        return with_data_states(one_row_per_overflow(pd.read_parquet(path)))
     assert net is not None
     return build_overflows(net)
 

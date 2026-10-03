@@ -120,17 +120,25 @@ const AnyPoint = (() => {
         data_status: !known ? 'rain unavailable' : miss[j] > 0 ? 'partial' : 'ok', rain_missing_share: r3(miss[j]),
         in_validated_season: [5, 6, 7, 8, 9].includes(Number(date.slice(5, 7))) });
     }
-    // Right now: transport.live_now_risk, and forecast.live_counts.
+    // Right now: transport.live_now_risk, and forecast.live_counts with ingest.live.data_states.
     const status = rows.map(r => od.status[r.i]), extra = rows.map(r => od.live[r.i] / od.scale);
+    const company = rows.map(r => od.companies[od.company[r.i]]), staleSince = od.feed_stale_since || {}, noFeed = new Set(od.no_feed || []);
+    const state = status.map((s, k) => s === 0 || s === 1 ? (company[k] in staleSince ? 'stale' : 'live')
+      : s === -2 && noFeed.has(company[k]) ? 'no_feed' : 'offline');
     const contrib = rows.map((_, k) => w[k] * extra[k]);
     const nowRisk = 1 - contrib.reduce((acc, c) => acc * (1 - Math.min(1, Math.max(0, c))), 1);
     const down = status.map(s => s === -3), hasLive = status.map(s => s !== -2);
-    const monitored = hasLive.filter((h, k) => h && !down[k]).length, fd = {};
-    rows.forEach((r, k) => { if (down[k]) { const c = od.companies[od.company[r.i]]; fd[c] = (fd[c] || 0) + 1; } });
+    const recent = contrib.map((c, k) => c > 0 && status[k] !== 1 && !down[k]);
+    const quiet = state.map((st, k) => st === 'live' && status[k] === 0 && !recent[k]);
+    const stale = state.map((st, k) => st === 'stale' && status[k] !== 1 && !recent[k]);
+    const monitored = status.filter((s, k) => s === 1 || recent[k] || quiet[k]).length, fd = {}, fs = {};
+    rows.forEach((r, k) => { if (down[k]) fd[company[k]] = (fd[company[k]] || 0) + 1; if (stale[k]) fs[company[k]] = (fs[company[k]] || 0) + 1; });
     const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: status.filter(s => s === 1).length,
-      recent_upstream: contrib.filter((c, k) => c > 0 && status[k] !== 1 && !down[k]).length, monitored_upstream: monitored,
+      recent_upstream: recent.filter(Boolean).length, monitored_upstream: monitored,
       feed_down_upstream: down.filter(Boolean).length,
-      feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })) };
+      feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
+      stale_upstream: stale.filter(Boolean).length,
+      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null })) };
     // The overflows that matter most: forecast_point's relevance, the build's ten.
     const ahead = Pc.map(row => row.slice(hist, hist + DAYS_AHEAD + 1));
     const order = rows.map((_, k) => k).sort((x, y) => relevance(y) - relevance(x)).slice(0, KEEP);
@@ -138,6 +146,7 @@ const AnyPoint = (() => {
     const contributors = order.map(k => { const r = rows[k], i = r.i, pd = ahead[k];
       return { site_id: names ? names.ids[i] : String(i), site_name: names ? names.name[i] : null, company: od.companies[od.company[i]],
         lat: names ? names.lat[i] : null, lon: names ? names.lon[i] : null, status: status[k], has_live: hasLive[k],
+        data_state: state[k], feed_updated_at: state[k] === 'stale' ? staleSince[company[k]] ?? null : null,
         snap_confidence: low.has(i) ? 'low' : null, distance_km: r1(r.dist / 1000), lake_distance_km: r1(r.dlake / 1000),
         travel_h: r1(travel[k]), weight: r3(w[k]), p_spill_today: r3(Number.isNaN(pd[0]) ? 0 : pd[0]),
         p_spill_tomorrow: r3(Number.isNaN(pd[1]) ? 0 : pd[1]), p_spill_days: pd.map(x => Number.isNaN(x) ? null : r3(x)),

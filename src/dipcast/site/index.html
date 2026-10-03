@@ -956,8 +956,19 @@ const SCROLL = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'a
 const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
   if (iso === t) return 'Today'; if (iso === addDays(t, 1)) return 'Tomorrow';
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}); };
-const statusText = s => ({1:'discharging', 0:'not discharging', '-1':'monitor offline', '-2':'no live feed', '-3':'company feed down'})[s] ?? '?';
+// An overflow's live status in words. With the build's data_state (ingest.live.data_states), a reading
+// from a feed that has not updated within six hours says when it last did, not "not discharging": a
+// frozen feed would go on saying that. One missing from its company's live feed says so.
+const feedTime = iso => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const statusText = (s, c = {}) => c.data_state === 'stale'
+  ? (s === 1 ? `discharging at its last update, ${c.feed_updated_at ? feedTime(c.feed_updated_at) : 'time not given'}`
+    : c.feed_updated_at ? `no update since ${feedTime(c.feed_updated_at)}` : 'no update time from the company')
+  : s === -2 && c.data_state === 'offline' ? 'not in the company’s live feed'
+  : ({1:'discharging', 0:'not discharging', '-1':'monitor offline', '-2':'no live feed', '-3':'company feed down'})[s] ?? '?';
 const colourFor = s => s === 1 ? '#a32d2d' : s === 0 ? '#5b6470' : '#b3bac2';
+// The status an overflow is drawn with: a "not discharging" that is not current is drawn as unknown, in
+// the grey of offline. A discharge stays a discharge.
+const drawnStatus = c => c.status === 0 && c.data_state && c.data_state !== 'live' ? -1 : c.status;
 const initial = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'narrow'});
 // The colour that goes with the headline: grey where there is no level.
 const headTone = s => tone(level(s));
@@ -1337,11 +1348,14 @@ const rangeBar = rs => { const lo = rs.typical_low_m, hi = rs.typical_high_m; if
     + `<p><span>${fmt(lo, 2)}</span><span>${fmt(hi, 2)} m</span></p></div>`; };
 // A company feed that did not answer the last poll: its overflows keep their last snapshot, marked down.
 const feedDown = now => (now.feed_down || []).map(f => ` ${esc(f.company)}'s live feed is down${f.since ? ` (last answered ${new Date(f.since).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
-// Which upstream overflows report live. Those on a feed that is down are named with the feed, not
-// counted again in the general clause.
-const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, other = total - mon - fd;
-  if (!fd) return `${mon} of ${total} report live${mon < total ? `; ${total - mon === 1 ? 'the one that does not' : `the ${total - mon} that do not`} could be spilling unseen` : ''}.`;
-  return `${mon} of ${total} report live.${other > 0 ? ` ${other === 1 ? 'One more has' : `${other} more have`} no live feed and could be spilling unseen.` : ''}${feedDown(now)}`; };
+// A company feed that answered but has not updated within six hours, or gives no time (forecast.live_counts):
+// its readings may be frozen, so its quiet overflows do not count as reporting live.
+const feedStale = now => (now.feed_stale || []).map(f => ` ${esc(f.company)}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
+// Which upstream overflows report live. Those on a feed that is down or stale are named with the feed,
+// not counted again in the general clause, which covers offline monitors and overflows with no feed.
+const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, st = now.stale_upstream || 0, other = total - mon - fd - st;
+  if (!fd && !st) return `${mon} of ${total} report live${mon < total ? `; ${total - mon === 1 ? 'the one that does not' : `the ${total - mon} that do not`} could be spilling unseen` : ''}.`;
+  return `${mon} of ${total} report live.${other > 0 ? ` ${other === 1 ? 'One more gives' : `${other} more give`} no live reading and could be spilling unseen.` : ''}${feedDown(now)}${feedStale(now)}`; };
 // Every overflow upstream as a dot: discharging, finished lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
   const quiet = Math.max(0, Math.min(total, n.monitored_upstream ?? total) - dis - rec), off = Math.max(0, total - dis - rec - quiet);
@@ -1669,8 +1683,8 @@ async function loadOverflows() {
   const b = map.getBounds(); ovLayer.clearLayers();
   const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
   L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties;
-    return L.circleMarker(ll, { radius: p.status === 1 ? 7 : 4, color: colourFor(p.status), fillColor: colourFor(p.status), fillOpacity: .85, weight: 1 })
-      .bindPopup(`<b>${esc(p.site_name ?? p.site_id)}</b><br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status)}<br>Last spill ended: ${p.latest_event_end ? new Date(p.latest_event_end).toLocaleString('en-GB') : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
+    return L.circleMarker(ll, { radius: p.status === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
+      .bindPopup(`<b>${esc(p.site_name ?? p.site_id)}</b><br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? new Date(p.latest_event_end).toLocaleString('en-GB') : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
 // Offline the layer is not stored (6 MB): the map then shows the spots without it.
@@ -2330,10 +2344,10 @@ function dayTable(d, total, isLake, scope) {
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100);
-    L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(c.status), fillColor: colourFor(c.status), fillOpacity: .5, weight: 2 })
+    L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
       .bindTooltip(`${esc(nameCase(c.site_name ?? c.site_id))}: ${far} km, reach ${reach}%`).addTo(contribLayer);
-    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${c.status}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nameCase(c.site_name ?? c.site_id))}</div>`
-      + `<div class="ov-meta">${esc(c.company)} · ${statusText(c.status)}${c.latest_event_end ? ' · last ended ' + new Date(c.latest_event_end).toLocaleDateString('en-GB') : ''}`
+    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nameCase(c.site_name ?? c.site_id))}</div>`
+      + `<div class="ov-meta">${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + new Date(c.latest_event_end).toLocaleDateString('en-GB') : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${far}&nbsp;km upstream, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>spill ${Math.round(c.p_spill_today * 100)}% today</small></div></li>`; }).join('');
   return `<div class="tile"><h2 class="t-lab">${ICON.spills}<span>Overflows that matter most</span></h2><ul class="ovs" id="contrib">${rows}</ul>`
