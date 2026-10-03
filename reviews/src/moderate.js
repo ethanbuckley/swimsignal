@@ -1,6 +1,8 @@
 // The moderation page, /moderate: every review waiting to be published, every reported one, and
 // the latest published, each with Publish, Keep or Delete; then the same for quick notes on a visit,
-// where a note of suspected pollution or algae can also be verified. It is served by the Worker, so the
+// where a note of suspected pollution or algae can also be verified; then, once the illness table exists,
+// reports of illness as batches (one spot, one day), which can be deleted whole, and the reports per spot
+// and day of swimming to download. It is served by the Worker, so the
 // queue it reads (/admin/queue) is on its own origin; it borrows the site's stylesheet and fonts
 // for its look. The admin token is pasted once and kept in this browser's local storage. Review
 // text is only ever set as text (textContent), never as markup, and the Content-Security-Policy
@@ -39,6 +41,13 @@ export function moderatePage(site) {
 <li>"Not like this any more" is a report: delete the note if you can tell it is out of date, otherwise keep it and let it end.</li>
 <li>Verify suspected pollution or algae only when an official source confirms it, an Environment Agency notice or a sign by the local council say, and name that source. Until then the page calls it what one swimmer saw.</li>
 </ul></details>
+<details class="fold" id="illness-rules" hidden><summary>Illness reports</summary>
+<ul>
+<li>No report is shown on its own, so none waits for you: the site shows only a spot's counts, from five, and a report counts from the day after it arrives. Today's are listed here before anyone else can see them.</li>
+<li>Delete a batch, every report for one spot on one day, when it looks like one person or a script: many for one spot in one day, most of them alike, with nothing in the forecast or the news to explain it.</li>
+<li>The CSV has the reports per spot and day of swimming, to test the forecast against. A row in it can be one person's health: keep it on this computer, and delete it when the test is done.</li>
+<li>Each report is deleted 400 days after it arrived. Reports hold no name, words, time of day or address, so you cannot tell who sent one; someone who asks to have theirs deleted can give the spot and the day they swam.</li>
+</ul></details>
 <form id="signin" class="panel" hidden>
 <label for="token">Admin token</label>
 <input id="token" type="password" autocomplete="current-password" required>
@@ -58,6 +67,12 @@ export function moderatePage(site) {
 <h2>Notes waiting <span class="muted" id="n-vpending"></span></h2><ol class="mq-list" id="vpending"></ol>
 <h2>Notes reported <span class="muted" id="n-vreported"></span></h2><ol class="mq-list" id="vreported"></ol>
 <h2>Notes published <span class="muted" id="n-vpublished"></span></h2><ol class="mq-list" id="vpublished"></ol>
+<section id="illness" hidden>
+<h2>Illness reports <span class="muted" id="n-illness"></span></h2>
+<p id="illness-state"></p>
+<ol class="mq-list" id="illness-batches"></ol>
+<div class="actions"><button type="button" class="btn" id="illness-csv">Download the reports per spot and day of swimming (CSV)</button></div>
+</section>
 <div class="actions"><button type="button" class="btn" id="reload">Check again</button><button type="button" class="btn" id="signout">Forget the token on this device</button></div>
 </div>
 </main>
@@ -81,6 +96,7 @@ ol.mq-list { list-style: none; padding: 0; margin: 0; }
 .mq-verify { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 12px 0 0; }
 .mq-verify label { flex-basis: 100%; }
 .mq-verify input { flex: 1 1 240px; }
+#illness-state { margin: 12px 0 0; }
 #msg:empty { display: none; }
 `;
 
@@ -96,6 +112,8 @@ const REASONS = { 'not-about-spot': 'not about this spot', rude: 'rude or hatefu
 const KINDS = { pollution: 'Suspected pollution', algae: 'Suspected algae', steps: 'Entry steps or path damaged', access: 'Way in closed or blocked',
   rough: 'Rough or fast water', sign: 'New warning sign', 'parking-closed': 'Car park closed', 'parking-full': 'Car park full', busy: 'Very busy',
   quiet: 'Quiet', clear: 'Water looked clear', good: 'Good swim, no problems' };
+// The kinds of symptom, short (src/dipcast/site/illness.js has the form's words).
+const SYMPTOMS = { gut: 'stomach or gut', ear: 'ear', eye: 'eye', skin: 'skin', other: 'other' };
 const names = {};
 let token = '';
 try { token = localStorage.getItem(KEY) || ''; } catch (e) { token = ''; }
@@ -202,6 +220,58 @@ function card(r, kind) {
   return li;
 }
 
+// Illness reports: one card a batch, the reports for one spot that arrived on one day, with the mix of
+// symptoms and how many of them differ, and a button to delete the batch whole.
+function illcard(b, today) {
+  const li = el('li', 'panel mq');
+  const head = el('p', 'mq-head'), a = el('a', null, names[b.spot] || b.spot);
+  a.href = SITE + 'spot/' + encodeURIComponent(b.spot) + '/'; a.target = '_blank'; a.rel = 'noopener';
+  head.append(a); li.append(head);
+  li.append(el('p', 'mq-v', b.n + (b.n === 1 ? ' report' : ' reports') + ', arrived ' + day(b.received_on)
+    + (b.received_on === today ? ': not counted on the site until tomorrow' : '')));
+  const mix = Object.keys(SYMPTOMS).filter((k) => b[k]).map((k) => SYMPTOMS[k] + ' ' + b[k]).join(', ');
+  li.append(el('p', 'mq-meta', 'Symptoms: ' + mix + (b.n === 1 ? '' : ' · swims on ' + b.days + (b.days === 1 ? ' day' : ' different days')
+    + ' · ' + (b.kinds === 1 ? 'all alike' : b.kinds + ' different reports'))));
+  const acts = el('div', 'actions'), btn = el('button', 'btn', b.n === 1 ? 'Delete it' : 'Delete these ' + b.n);
+  btn.type = 'button';
+  btn.addEventListener('click', async () => {
+    if (!confirm('Delete the ' + b.n + (b.n === 1 ? ' report' : ' reports') + ' for ' + (names[b.spot] || b.spot) + ' that arrived on ' + day(b.received_on) + ', for good?')) return;
+    btn.disabled = true;
+    try {
+      const r = await (await api('/admin/illness/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ spot: b.spot, received_on: b.received_on }) })).json();
+      li.replaceChildren(el('p', 'mq-meta', 'Deleted ' + r.deleted + (r.deleted === 1 ? ' report.' : ' reports.') + ' The counts change at the next build.'));
+    } catch (e) { btn.disabled = false; say('Not done: ' + e.message); }
+  });
+  acts.append(btn); li.append(acts);
+  return li;
+}
+
+// The state, what the site shows, and the batches of the last 30 days. Hidden before the migration.
+function fillIllness(ill) {
+  $('illness').hidden = !ill; $('illness-rules').hidden = !ill;
+  if (!ill) return;
+  const shown = Object.entries(ill.shown || {});
+  $('n-illness').textContent = '(' + ill.held + ' held)';
+  $('illness-state').textContent = (ill.on ? 'On. ' : 'Off: the site has no form. ') + ill.held + (ill.held === 1 ? ' report is' : ' reports are')
+    + ' held, ' + ill.arrived_today + ' of them from today. '
+    + (shown.length ? 'The site shows counts for ' + shown.map(([id, c]) => (names[id] || id) + ' ('
+      + (c.d30 === null ? 'fewer than ' + ill.min : c.d30) + ' in 30 days, ' + c.d365 + ' in 12 months)').join(', ') + '.'
+      : 'No spot has ' + ill.min + ' reports in 12 months, so the site shows no counts.');
+  $('illness-batches').replaceChildren(...(ill.batches.length ? ill.batches.map((b) => illcard(b, ill.day))
+    : [el('li', 'mq-meta', 'No reports in the last 30 days.')]));
+}
+
+// The CSV, fetched with the token and handed to the browser as a download: a plain link could not send it.
+$('illness-csv').addEventListener('click', async () => {
+  try {
+    const res = await api('/admin/illness.csv'), url = URL.createObjectURL(await res.blob());
+    const a = el('a');
+    a.href = url; a.download = (/filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '') || [])[1] || 'illness.csv';
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) { say('The CSV could not be downloaded: ' + e.message); }
+});
+
 function fill(id, list, kind, empty, make) {
   $('n-' + id).textContent = '(' + list.length + ')';
   $(id).replaceChildren(...(list.length ? list.map((r) => (make || card)(r, kind)) : [el('li', 'mq-meta', empty)]));
@@ -225,6 +295,7 @@ async function load() {
     fill('vpending', v.pending, 'pending', 'No notes waiting.', vcard);
     fill('vreported', v.reported, 'reported', 'No notes reported.', vcard);
     fill('vpublished', v.published, 'published', 'No notes showing.', vcard);
+    fillIllness(q.illness || null);
     $('find').value = '';
     $('queue').hidden = false; say('');
   } catch (e) { if (token) say('The queue could not be loaded: ' + e.message); }

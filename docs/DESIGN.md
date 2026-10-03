@@ -550,6 +550,26 @@ while reviews are on, and never on a point clicked on the map.
   as two chips; the ticks are chips two to a row. Ticking pollution or algae shows the Environment
   Agency's and Natural Resources Wales's incident phone numbers.
 
+### Illness after swimming (4 October 2026, off until Ethan switches it on)
+
+One more tile after the reviews (`illness.js`; the service is the reviews Worker, `reviews/README.md`,
+"Illness reports"), there only while reports are on. Its label is "Illness after swimming" with a
+thermometer from the stroke set. No report is ever shown, only counts, from five.
+
+- The figure is a count in ink, never a level colour: "6 reports in the last 30 days", or, when the
+  30 days have fewer than five, the 12 months' count. Then one sentence, "6 swimmers reported being ill
+  after swimming here in the last 30 days, and 11 in the last 12 months.", and "Unverified: what
+  swimmers told the site, not a test of the water or a diagnosis." A spot without a count says "No
+  count to show: fewer than 5 swimmers have reported being ill after swimming here in the last 12
+  months."
+- "I got ill after swimming here" is a plain button, not filled: the tile is not an invitation. The
+  line on getting help, "Unwell now? Call 111 or go to 111.nhs.uk ...", sits outside the part the form
+  replaces, so it stays in view while the form is open.
+- The form is the reviews' form: the day of the swim from a list of the last 15 days, the symptoms and
+  the onset as the notes' chips, two to a row, the doctor question as two chips, and the consent as its
+  own tick with the words "information about my health". An onset that would fall after today is
+  shown but cannot be chosen.
+
 ### A point off the list (3 October 2026)
 
 A click on the map away from the listed spots (`anypoint.js`) gives a forecast for that point, worked
