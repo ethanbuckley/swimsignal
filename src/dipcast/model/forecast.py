@@ -12,6 +12,7 @@ import pandas as pd
 
 from dipcast import config
 from dipcast.ingest.flows import nearest_level_station, reading_fields
+from dipcast.ingest.live import with_data_states
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
 from dipcast.model import ecoli
 from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features
@@ -256,7 +257,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     v = river_velocity(state.index if state is not None and not old_reading else None)
     out["river_state"] = None if state is None else reading_fields(state)   # a stale one has no level_m
     out["assumptions"]["river_velocity_ms"] = round(v, 2)
-    ov = upstream_overflows(net, pin, ov_all, velocity_ms=v, max_km=max_km)
+    ov = with_data_states(upstream_overflows(net, pin, ov_all, velocity_ms=v, max_km=max_km))
     now_risk, now_contrib = live_now_risk(ov, now)
     counts = live_counts(ov, now_contrib)
 
@@ -330,7 +331,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
 
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk),
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
-                                            "feed_down_upstream", "feed_down")}}
+                                            "feed_down_upstream", "feed_down", "stale_upstream", "feed_stale")}}
     out["days"] = day_rows
     out["upstream_summary"] = {
         "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
@@ -360,8 +361,8 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
         for _, r in top.iterrows():
             contrib.append({k: _clean(r.get(k)) for k in [
                 "site_id", "company", "site_name", "receiving_watercourse", "lat", "lon", "status",
-                "has_live", "latest_event_start", "latest_event_end", "lta_spills", "spill_hours",
-                "snap_confidence",
+                "has_live", "data_state", "feed_updated_at", "latest_event_start", "latest_event_end", "lta_spills",
+                "spill_hours", "snap_confidence",
             ]} | {
                 "distance_km": round(float(r["distance_m"]) / 1000, 1),
                 "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
@@ -392,20 +393,33 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     failed is carried with its last snapshot (ingest.live.carry_forward): it has a feed but
     no status in this update, so it is neither discharging, recently finished nor reporting;
     the page shows it as not reporting and names the feed. Its last-known finished event
-    still counts in the risk itself (live_now_risk): that event happened."""
-    from dipcast.ingest.live import FEED_DOWN
+    still counts in the risk itself (live_now_risk): that event happened.
+
+    `monitored_upstream`, those that report live, is the discharging, the recently finished
+    and the quiet: a "not discharging" from a current feed (data_state live). A "not
+    discharging" that is not current is unknown, not quiet: the monitor is offline (-1), or the
+    company's feed has not updated within ingest.live.FEED_CURRENT_H (stale). The stale ones
+    are counted in `stale_upstream` and named by company in `feed_stale`, as a feed that is
+    down is. Until 4 Oct 2026 every overflow in a live feed counted as reporting, so an
+    offline monitor read as quiet. A discharge counts whatever the state: it was the feed's
+    last word. live_now_risk is unchanged: an overflow it cannot see adds nothing, as before."""
+    from dipcast.ingest.live import FEED_DOWN, LIVE, STALE
     feed_down = feed_down_summary(ov)
     if ov.empty:
         return {"discharging_upstream": 0, "recent_upstream": 0, "monitored_upstream": 0,
-                "feed_down_upstream": 0, "feed_down": feed_down}
-    status = ov["status"]
+                "feed_down_upstream": 0, "feed_down": feed_down, "stale_upstream": 0, "feed_stale": []}
+    ov = with_data_states(ov)
+    status, state = ov["status"], ov["data_state"]
     down = status == FEED_DOWN
     contrib = pd.Series(np.asarray(now_contrib, dtype=float), index=ov.index)
-    n_down = int(down.sum())
-    return {"discharging_upstream": int((status == 1).sum()),
-            "recent_upstream": int((contrib.gt(0) & (status != 1) & ~down).sum()),
-            "monitored_upstream": int((ov["has_live"].astype(bool) & ~down).sum()),
-            "feed_down_upstream": n_down, "feed_down": feed_down}
+    dis = status == 1
+    recent = contrib.gt(0) & ~dis & ~down
+    quiet = (state == LIVE) & (status == 0) & ~recent
+    stale = (state == STALE) & ~dis & ~recent
+    return {"discharging_upstream": int(dis.sum()), "recent_upstream": int(recent.sum()),
+            "monitored_upstream": int((dis | recent | quiet).sum()),
+            "feed_down_upstream": int(down.sum()), "feed_down": feed_down,
+            "stale_upstream": int(stale.sum()), "feed_stale": feed_stale_summary(ov[stale])}
 
 
 def feed_down_summary(ov: pd.DataFrame) -> list[dict]:
@@ -425,6 +439,19 @@ def feed_down_summary(ov: pd.DataFrame) -> list[dict]:
     return out
 
 
+def feed_stale_summary(ov: pd.DataFrame) -> list[dict]:
+    """Per company, for overflows whose feed answered but is stale (ingest.live.data_states):
+    how many of them there are and when the feed last updated (None: it gives no time)."""
+    if ov.empty:
+        return []
+    t = pd.to_datetime(ov["feed_updated_at"], utc=True) if "feed_updated_at" in ov else pd.Series(pd.NaT, index=ov.index)
+    out = []
+    for c, g in ov.groupby(ov["company"].fillna("unknown")):
+        u = t.loc[g.index].max()
+        out.append({"company": str(c), "overflows": len(g), "since": None if pd.isna(u) else u.isoformat()})
+    return out
+
+
 def overflows_geojson(bbox: tuple[float, float, float, float] | None = None, limit: int = 5000) -> dict:
     """Overflow points for the map. bbox = (min_lon, min_lat, max_lon, max_lat)."""
     ov = _overflows()
@@ -433,11 +460,14 @@ def overflows_geojson(bbox: tuple[float, float, float, float] | None = None, lim
     ov = ov.head(limit)
     feats = []
     for _, r in ov.iterrows():
+        props = {k: _clean(r.get(k)) for k in [
+            "site_id", "company", "site_name", "receiving_watercourse", "status", "has_live", "data_state",
+            "latest_event_start", "latest_event_end", "lta_spills"]}
+        if props["data_state"] == "stale":   # its feed's last update, on these alone: the file is 6 MB
+            props["feed_updated_at"] = _clean(r.get("feed_updated_at"))
         feats.append({
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [float(r.lon), float(r.lat)]},
-            "properties": {k: _clean(r.get(k)) for k in [
-                "site_id", "company", "site_name", "receiving_watercourse", "status", "has_live",
-                "latest_event_start", "latest_event_end", "lta_spills"]},
+            "properties": props,
         })
     return {"type": "FeatureCollection", "features": feats}

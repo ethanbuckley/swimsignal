@@ -13,6 +13,9 @@ live_latest.parquet with status FEED_DOWN and the time of that snapshot in
 `feed_down_since`, so the map says the feed is down rather than that its
 overflows have no live feed. Only fresh rows reach the history, the coverage
 file and the poll log.
+
+Each overflow also gets a data state (data_states): whether its status can be
+taken as current, so that a frozen feed never reads as "not discharging".
 """
 
 from __future__ import annotations
@@ -23,7 +26,7 @@ import numpy as np
 import pandas as pd
 
 from dipcast import config
-from dipcast.arcgis import fetch_all
+from dipcast.arcgis import fetch_all, layer_edit_time
 from dipcast.ingest.common import to_utc, write_parquet
 
 log = logging.getLogger(__name__)
@@ -31,13 +34,32 @@ log = logging.getLogger(__name__)
 COLS = [
     "site_id", "company", "status", "status_start", "latest_event_start",
     "latest_event_end", "lat", "lon", "receiving_watercourse", "last_updated", "fetched_at",
+    "layer_edited_at",
 ]
+# What the nine live layers carry, from each layer's own description (`<layer>?f=json`, read once
+# each at 00:29 BST on 4 Oct 2026, no data query; the README's live-feed table has it company by
+# company). Every one is the National Storm Overflow Hub's schema and nothing else: the ten fields
+# below and an object id. Status is a coded value in all nine: 1 "Start" (discharging), 0 "Stop"
+# (not discharging), -1 "Offline" (the monitor is not reporting). South West Water's layer spells
+# every field but Id in camelCase (status, statusStart, lastUpdated, ...).
+# No layer has a field for a record's validation or verification, a dry-weather spill or a high
+# river: where a company shows such a flag, it is not in these feeds, so data_states cannot say it.
 RENAME = {
     "Id": "site_id", "Company": "company", "Status": "status", "StatusStart": "status_start",
     "LatestEventStart": "latest_event_start", "LatestEventEnd": "latest_event_end",
     "Latitude": "lat", "Longitude": "lon", "ReceivingWaterCourse": "receiving_watercourse",
     "LastUpdated": "last_updated",
 }
+
+
+def _layer_edited_at(company: str, url: str) -> pd.Timestamp:
+    """The layer's last data edit (arcgis.layer_edit_time), or NaT if it cannot be read."""
+    try:
+        ms = layer_edit_time(url)
+    except Exception as e:  # noqa: BLE001 - optional: without it the feed reads as stale, never as current
+        log.warning("%s: layer edit time unavailable: %s", company, e)
+        return pd.NaT
+    return pd.NaT if ms is None else pd.Timestamp(int(ms), unit="ms", tz="UTC")
 
 
 def fetch_live(companies: dict[str, str] | None = None) -> pd.DataFrame:
@@ -51,6 +73,11 @@ def fetch_live(companies: dict[str, str] | None = None) -> pd.DataFrame:
             continue
         df = pd.DataFrame(rows).rename(columns=RENAME)
         df["company"] = company
+        # A layer whose records carry no stamp at all: its own last edit is the only evidence the
+        # feed is current, read for data_states (one more small request). The coverage file and the
+        # scorer do not use it (coverage_rows says why).
+        if "last_updated" not in df or df["last_updated"].isna().all():
+            df["layer_edited_at"] = _layer_edited_at(company, url)
         # Some feeds (South West Water) carry location only as geometry.
         for col, geo in (("lat", "_y"), ("lon", "_x")):
             if col not in df:
@@ -66,6 +93,8 @@ def fetch_live(companies: dict[str, str] | None = None) -> pd.DataFrame:
         df[c] = to_utc(df[c]) if c in df else pd.NaT
     df["status"] = pd.to_numeric(df["status"], errors="coerce").fillna(-1).astype(int)
     df["fetched_at"] = pd.Timestamp.now(tz="UTC")
+    df["layer_edited_at"] = (pd.to_datetime(df["layer_edited_at"], utc=True) if "layer_edited_at" in df
+                             else pd.Series(pd.NaT, index=df.index, dtype="datetime64[ns, UTC]"))
     df = df.dropna(subset=["lat", "lon"])
     return one_row_per_site(df[COLS])
 
@@ -106,6 +135,69 @@ def feed_age_hours(df: pd.DataFrame) -> pd.Series:
     return age.groupby(df["company"]).min()
 
 
+# An overflow's data state (data_states). Kept beside `status`, which keeps its numbers.
+LIVE, STALE, OFFLINE, NO_FEED = "live", "stale", "offline", "no_feed"
+
+
+def feed_updated_at(df: pd.DataFrame) -> pd.Series:
+    """Per company, when its feed last updated as far as these rows (one poll that answered) show:
+    the freshest record stamp, or, for a company whose records carry none, the layer's own last
+    edit (`layer_edited_at`). NaT where neither is known."""
+    if df.empty:
+        return pd.Series(dtype="datetime64[ns, UTC]")
+    stamp = pd.to_datetime(df["last_updated"], utc=True).groupby(df["company"]).max()
+    if "layer_edited_at" in df:
+        stamp = stamp.fillna(pd.to_datetime(df["layer_edited_at"], utc=True).groupby(df["company"]).max())
+    return stamp
+
+
+def data_states(ov: pd.DataFrame) -> pd.DataFrame:
+    """`data_state` and `feed_updated_at` for each row of the overflow table (overflows.py):
+
+      live      a status (1 or 0) from a feed that updated within FEED_CURRENT_H of the poll
+      stale     a status from a feed that did not, or that gives no time at all: the reading may
+                be frozen, so its "not discharging" says nothing about now
+      offline   no status: the monitor is offline (-1), the company's feed did not answer the poll
+                (-3, carry_forward), or the overflow is missing from the live feed of a company
+                that has one (-2)
+      no_feed   its company publishes no live feed (-2; Dwr Cymru Welsh Water's overflows)
+
+    Current is the test coverage_rows applies, a company's freshest record stamp under
+    FEED_CURRENT_H old, so a poll the scorer counts as stale is stale here too. One addition: a
+    company whose records carry no stamp at all is current when its layer was last written within
+    FEED_CURRENT_H (`layer_edited_at`). That is enough to say what the feed shows now; it is not
+    enough to say a day had no spill, so the scorer does not take it. `feed_updated_at` is the
+    company's feed time (feed_updated_at) on every row with a status from this poll (1, 0, -1).
+    A table without the poll's times (a test's) gets its states from the status alone."""
+    out = pd.DataFrame(index=ov.index)
+    if ov.empty:
+        return out.assign(data_state=pd.Series(dtype=object), feed_updated_at=pd.Series(dtype="datetime64[ns, UTC]"))
+    status = ov["status"]
+    known, polled = status.isin([0, 1]), status.isin([0, 1, -1])
+    if {"fetched_at", "last_updated"} <= set(ov.columns):
+        p = ov[polled]
+        fetched = pd.to_datetime(p["fetched_at"], utc=True).groupby(p["company"]).max()
+        updated = feed_updated_at(p)
+        age_h = ((fetched - updated).dt.total_seconds() / 3600).reindex(fetched.index)
+        current = ov["company"].map(age_h <= FEED_CURRENT_H).eq(True)   # a NaN age (no time) is not current
+        when = pd.to_datetime(ov["company"].map(updated), utc=True)
+    else:
+        current = pd.Series(True, index=ov.index)
+        when = pd.Series(pd.NaT, index=ov.index, dtype="datetime64[ns, UTC]")
+    has_feed = ov["company"].isin(ov.loc[ov["has_live"].astype(bool), "company"]) if "has_live" in ov else status.ne(-2)
+    out["data_state"] = np.select([known & current, known, status.ne(-2) | has_feed], [LIVE, STALE, OFFLINE], NO_FEED)
+    out["feed_updated_at"] = when.where(polled)
+    return out
+
+
+def with_data_states(ov: pd.DataFrame) -> pd.DataFrame:
+    """The table with `data_state` and `feed_updated_at`, worked out if it has none (a table cached
+    before 4 Oct 2026, or a test's). One with no status at all is returned as it is."""
+    if "data_state" in ov or "status" not in ov:
+        return ov
+    return pd.concat([ov.drop(columns=["feed_updated_at"], errors="ignore"), data_states(ov)], axis=1)
+
+
 def coverage_rows(df: pd.DataFrame) -> pd.DataFrame:
     """One row per overflow for this poll: local day, whether the status was known
     (0 or 1) or unknown (offline, missing), whether the company's feed looked stale,
@@ -115,7 +207,9 @@ def coverage_rows(df: pd.DataFrame) -> pd.DataFrame:
     adds nothing. A company with no `last_updated` at all (age NaN) gives no evidence
     that its feed is current, so its polls count as stale: South West Water's feed
     carries neither a record stamp nor event times, so a poll sees only what is
-    discharging at that moment, and a day of such polls cannot support "no spill"."""
+    discharging at that moment, and a day of such polls cannot support "no spill".
+    The layer's own last edit (`layer_edited_at`) is not used here for the same reason:
+    it says the snapshot is current, not what happened between polls."""
     if df.empty:
         return pd.DataFrame(columns=COVERAGE_COLS)
     local = pd.to_datetime(df["fetched_at"], utc=True).dt.tz_convert(LOCAL_TZ)

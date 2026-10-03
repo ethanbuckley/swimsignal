@@ -47,7 +47,7 @@ checked on their own pages on 3 Oct 2026.
 
 | Source | What | Licence (all open, no key) |
 |---|---|---|
-| Water company live feeds (9 companies, ArcGIS, via the National Storm Overflow Hub) | Current status of ~14,200 overflows, latest event start/end | CC BY 4.0, per company |
+| Water company live feeds (9 companies, ArcGIS, via the National Storm Overflow Hub) | Current status of ~14,200 overflows, latest event start/end, record times (fields under "Live feed fields" below) | CC BY 4.0, per company |
 | United Utilities EDM event history 2023-2025 (via Stream) | 743,735 discharge events with start/end; training only | CC BY 4.0 |
 | Stream ID lookup | Company ids to EA permit ids (`id_lookup.parquet`) | CC BY 4.0 |
 | EA storm overflow annual returns 2021-2025 | Spill counts and hours per overflow per year, WFD waterbody, for all 10 companies | OGL v3 |
@@ -498,6 +498,58 @@ overflows as not reporting. The build warns when a company returns no rows. It
 still publishes when none does, with every overflow marked feed down: not
 publishing would also freeze the rain forecasts and leave the old statuses on
 the page with no note.
+
+**Data state of each overflow (4 Oct 2026).** A frozen feed must not read as
+"not discharging". Each overflow now carries `data_state` beside `status`
+(`ingest.live.data_states`), in the overflow table, the contributors in
+`spots.json` and the features of `overflows.geojson`. `status` keeps its numbers.
+
+| `data_state` | When | The spot page says |
+|---|---|---|
+| `live` | status 1 or 0 from a feed whose freshest record stamp is under 6 h old (`FEED_CURRENT_H`, the scorer's test) | "discharging", "not discharging" |
+| `stale` | status 1 or 0 from a feed whose freshest stamp is older, or that gives no time | "no update since 2 Oct, 14:00", "no update time from the company", "discharging at its last update, 2 Oct, 14:00" |
+| `offline` | status -1 (monitor offline), -3 (company feed down), or -2 at a company that has a live feed | "monitor offline", "company feed down", "not in the company's live feed" |
+| `no_feed` | status -2 at a company with no live feed (Dŵr Cymru Welsh Water) | "no live feed" |
+
+A company whose records carry no stamp at all counts as current when its layer
+was written within 6 h: `fetch_live` then reads the layer's own last data edit
+(`editingInfo.dataLastEditDate` from `<layer>?f=json`, one more small request
+a poll). The scorer does not use that time: a current snapshot says nothing
+of what happened between polls. In the "Right now" tile an overflow reports
+live only if it is discharging, finished within the recent hours, or quiet on
+a current feed (`monitored_upstream`). A stale feed is named with its last
+update, as a feed that is down is (`feed_stale`, `stale_upstream`), and its
+quiet overflows are drawn in the grey of offline. Before this, every overflow
+listed in a live feed counted as reporting, so a monitor its company marked
+offline read as quiet: at River Ribble, Stainforth Force, on the 4 Oct 00:16
+build, the one overflow upstream was offline and the tile said "1 of 1 report
+live". The risk figure is unchanged: an overflow whose reading is unknown adds
+nothing to it, as before.
+
+**Live feed fields.** From each layer's own description (`<layer>?f=json`,
+read once per layer at 23:29 UTC on 3 Oct 2026, no data query; trimmed into
+`tests/fixtures/live_layer_fields.json`). All nine are the National Storm
+Overflow Hub's schema and nothing more: `Id`, `Company`, `Status`,
+`StatusStart`, `LatestEventStart`, `LatestEventEnd`, `Latitude`, `Longitude`,
+`ReceivingWaterCourse`, `LastUpdated`, and an object id. `Status` is a coded
+value in all nine: 1 "Start" (discharging), 0 "Stop", -1 "Offline". No layer
+has a field for a record's validation or verification, a dry-weather spill or
+a high river. The competitor review of 3 Oct named such flags at United
+Utilities, Thames Water, Northumbrian Water and Severn Trent; they are not in
+the feeds SwimSignal reads, and where those companies publish them was not
+checked, so the page cannot show them.
+
+| Company | Field names | Record stamps (`feed_age_hours`, from the poll log) | Layer data last written, at the read |
+|---|---|---|---|
+| Anglian Water | the hub's | every record, each refresh | 23:26 UTC |
+| Northumbrian Water | the hub's | a record only when it changes | 23:19 |
+| Severn Trent Water | the hub's | every record, each refresh | 23:19 |
+| South West Water | the hub's in camelCase, all but `Id` (`status`, `statusStart`, `lastUpdated`, ...) | none read: `fetch_live` matches `LastUpdated` exactly | 23:20, schema rewritten at the same time |
+| Southern Water | the hub's | a record only when it changes | 20:58 |
+| Thames Water | the hub's | every record, each refresh | 23:23 |
+| United Utilities | the hub's | every record, each refresh | 23:03 |
+| Wessex Water | the hub's | every record, each refresh | 23:23 |
+| Yorkshire Water | the hub's | every record, each refresh | 23:18 |
 
 **Algae (an observation, not a forecast; 28 Sep 2026).** At every sampling visit to a
 bathing water the EA sampler records one of four levels of algae: none, a trace (1-2
