@@ -425,6 +425,44 @@ that arrive in capitals ("LITTLE SALKELD WwTW") are set in normal case (`nameCas
 coli figures left the five days for the water tile (today and tomorrow) and the day-by-day table.
 The prose pages keep the paper.
 
+### River high and flood alerts (3 October 2026)
+
+A high river and a flood are a different hazard from pollution, so they never set or colour the
+level. They get one line in the answer, after where the five days go and before the issue time, on
+every day's view (`flowLine` in `index.html`; the facts and their words are `flowFacts` and
+`flowSentence` in `experience.js`). The line is in ink, centred as the answer is, its lead in bold,
+and it always ends "A separate hazard, not part of the pollution level." The leads:
+
+- "**River high**: the gauge at Addingham is above its usual range."
+- "**River rising fast**: the gauge at Addingham rose 0.40 m between 08:45 and 14:30." (more than a
+  fifth of the gauge's usual range in six hours).
+- "**Flood alert in force nearby** (Environment Agency): River Wharfe at Ilkley.", the area linked to
+  its page, with "and 1 more" where there are others. "Flood warning" or "Severe flood warning" leads
+  instead when that is the most severe within 10 km.
+- "**Flood alerts not checked**: the Environment Agency did not answer when this forecast was made.
+  Check flood warnings." A failed check never reads as none in force.
+
+Nothing is said that may have stopped being true. A river word needs a gauge on the spot's own river
+and a reading under a day old, and a rise needs its last reading under six hours old; a build over a
+day old shows no line at all. Lakes get no river word, because the gauge matched to a lake can be on
+a beck or river that shares its name (`build_site.attach_flow_state`); flood alerts apply to lakes as
+to rivers. The same sentences go in a plan for today, and the flood ones in the Compare table's
+"Local warnings" row. The River level tile keeps its own words in ink too ("High water", "Usual
+level"): "High" in a level's colour read as a pollution level.
+
+### Water temperature (3 October 2026)
+
+The Water temperature tile (`waterTile` in `index.html`; the reading is
+`build_site.attach_water_temperature`'s) has the tiles' anatomy, after "Rain here" and before
+"Weather", with a thermometer from the stroke set. Its figure is the reading in whole degrees, "14°"
+with "C", in ink: a temperature is not a level. It has no drawing. Its sentence says where and how old,
+counted when the page is read, not when it was built: "Measured at Bures Mill on the Stour, 10.9 km
+downstream, 2 h ago." The fold says it is the nearest Environment Agency sensor on the spot's own river,
+within 15 km, that has reported in the last day; that the water where you swim can be warmer or
+colder; and that it is not part of the pollution level, with a link to the sensor's page. Rivers only:
+a river sensor is not a lake's water. Where there is no such sensor there is no tile, since the
+temperature is never estimated.
+
 ### Swimmers' reviews (3 October 2026)
 
 Reviews (`reviews.js`; the service is `reviews/`) are one more tile with the same anatomy, after the
@@ -459,6 +497,51 @@ radius, its labels as numbered round markers (ink, with a white ring, as a dot h
 numbers in a list under it, then the caption, the credit and the day. The tile ends with one line
 and a link to the feedback form set to a guide. A spot without a guide gets a short tile asking for
 one; a point clicked on the map gets none.
+
+### Notes on a visit (3 October 2026)
+
+A review describes the place; a note describes a day. The notes (`visits.js`; the service is the
+reviews Worker in `reviews/`) are one more tile, "Recent visits", with a flag from the stroke set.
+The order after the forecast's tiles is the guide, the notes, the reviews. The tile is there only
+while reviews are on, and never on a point clicked on the map.
+
+- A note is ticks from a fixed list ("Entry steps or path damaged", "Car park closed", "Very busy",
+  "Water looked clear"), a few words and one photo. The ticks, joined by " · ", are the row's headline
+  in bold, as a review's yes or no is. Then the meta line ("Seen yesterday · shown until 1 Nov unless
+  confirmed again"), the words, and the photo as a 72 px square.
+- Each tick ends by itself (`VISIT_KINDS`, which must match `reviews/src/rules.js`): a day for how
+  busy it was, a full car park and good news; two for rough water; three for pollution; seven for
+  algae; 14 for a closed car park or way in; 30 for damage and a new sign.
+- Worst first: suspected pollution or algae, then hazards, then the rest, then good news. Four show,
+  and "Show all 6" opens the rest. A good note never sits above a warning. Where the forecast or a
+  note warns, a muted line above the first good note says the good one changes nothing, such as "A
+  good visit does not change the forecast above."
+- Two words are kept apart. **Confirm**: another swimmer says damage, a closure or a sign is still
+  there, with "Still like this"; the meta line then says "confirmed by 1 more swimmer, the last today",
+  and the tick's days start again. **Verify**: the operator names an official source for a note of
+  pollution or algae. Until then the tick reads "Suspected pollution" or "Suspected algae" over "Not
+  verified: what one swimmer saw, not a water test."; once verified it reads "Pollution" or "Algae"
+  over "Verified: <the source>." Only those two can be verified, and only damage, closures and signs
+  confirmed.
+- No level colour and no badge on a note: a note is not a level.
+- The form opens in place of "Say what it's like today". "When were you here?" is Today or Yesterday
+  as two chips; the ticks are chips two to a row. Ticking pollution or algae shows the Environment
+  Agency's and Natural Resources Wales's incident phone numbers.
+
+### A point off the list (3 October 2026)
+
+A click on the map away from the listed spots (`anypoint.js`) gives a forecast for that point, worked
+out in the browser from the files in `data/anypoint/`. On a phone only the full map takes the click.
+The card is a listed spot's card (`render` in `index.html`) with these differences:
+
+- The line over the name begins "Unlisted point: not hand-checked".
+- No Save. The spot's four actions (the link, the picture, the swim log, the feedback link) give way
+  to one button, "Request this as a spot", which opens a request on GitHub with the point's position
+  filled in.
+- No E. coli estimate: the Water quality tile reads "not estimated" and says the estimate needs a rain
+  forecast for the spot itself, which only listed spots get.
+- No practical guide, no notes on a visit, no reviews and no river or flood line.
+- The map rings the point with the open spot's teal ring; the point has no marker of its own.
 
 ### What was kept on purpose
 
@@ -544,3 +627,26 @@ gives all four navigation links a single full-width row.
 - **The data page**, `data.html`, is a prose page. A file's fields are a ruled list (`dl.fields`), the
   name over what it holds: in a two-column table the long field names squeezed the words into a
   column a few words wide on a phone.
+
+## The coverage page (3 October 2026)
+
+- `coverage.html` is a prose page, linked from the app's foot as "Coasts, Wales, Scotland and algae".
+  It sends a reader to the official services for the English coast, Wales and Scotland, and to the
+  UK Centre for Ecology & Hydrology's algae map. SwimSignal forecasts none of these.
+- Each directory (the English coast, `coastal.py`; Wales, `wales.py`; Scotland, `scotland.py`) is
+  written into the page by `scripts/build_site.py` and folds under its own summary, "Search the
+  English coastal directory" and the like, so the page opens on the links and what they are for. The
+  lists are in the page, so they work without JavaScript.
+- Inside, a search field filters by name, with a count kept up to date ("<n> of <total> sites"). The
+  list is rows with a hairline under each, in a box at most 32rem tall that scrolls on its own
+  (`page.css`).
+- A row is the water's name, linked to its official page, over one small paragraph: its kind and its
+  rating with the year ("2025 rating: Excellent"), then, where the source has them, the advice and the
+  latest sample, each with its date. The advice names its agency ("At snapshot: EA: increased
+  pollution risk"). Advice past its expiry is replaced in the browser by "This EA advice has expired;
+  check the official profile". A Scottish row has the rating alone and sends the reader to the
+  Scottish Environment Protection Agency's page for the rest.
+- Opening the Welsh list asks Natural Resources Wales's data service for current samples and
+  forecasts, from the reader's browser, and the privacy notice names it. Rule 8 under Rules for
+  changes does not yet list this request.
+- Each list ends with its credit and licence, and says the agency does not endorse SwimSignal.
