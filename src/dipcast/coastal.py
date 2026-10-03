@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 from html import escape
 import json
+from pathlib import Path
 import re
 import time
 from zoneinfo import ZoneInfo
@@ -15,6 +16,7 @@ PREDICTIONS = "https://environment.data.gov.uk/doc/bathing-water-quality/stp-ris
 LICENCE = "https://environment.data.gov.uk/bwq/"
 CREDIT = "Environment Agency copyright and/or database right, Open Government Licence v3.0."
 TZ = ZoneInfo("Europe/London")
+FALLBACK = Path(__file__).resolve().parents[2] / "data" / "raw" / "coastal_catalogue.json"
 ID = re.compile(r"uk[a-z0-9]+-\d{5}\Z")
 KINDS = {"CoastalBathingWater": "coast", "TransitionalBathingWater": "estuary"}
 
@@ -92,7 +94,7 @@ def fetch(now=None, client=None):
     """At most six requests; a shared request budget; failures publish unavailability."""
     now = now or datetime.now(TZ)
     snapshot = {"fetched_at": now.isoformat(), "source": CATALOGUE, "licence": LICENCE,
-                "credit": CREDIT, "status": "unavailable", "sites": []}
+                "credit": CREDIT, "status": "unavailable", "catalogue_state": "unavailable", "sites": []}
     deadline = time.monotonic() + 40
     own = client is None
     client = client or httpx.Client(follow_redirects=False)
@@ -120,11 +122,26 @@ def fetch(now=None, client=None):
         raise ValueError("source exceeded bounded page count")
 
     try:
-        catalogue = items(CATALOGUE)
-        if not catalogue:
-            raise ValueError("empty catalogue")
+        blocked = False
+        try:
+            catalogue = items(CATALOGUE)
+            if not parse(catalogue, [], now):
+                raise ValueError("empty catalogue")
+            snapshot.update(catalogue_state="live", catalogue_fetched_at=now.isoformat())
+        except Exception as exc:
+            # Stable names and historical ratings can be kept; advice is never cached here.
+            blocked = isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in {401, 403, 429}
+            snapshot["catalogue_error"] = (f"HTTP {exc.response.status_code}" if isinstance(exc, httpx.HTTPStatusError)
+                                            else type(exc).__name__)
+            seed = json.loads(FALLBACK.read_text())
+            catalogue = seed["items"]
+            if seed["source"] != CATALOGUE or not parse(catalogue, [], now) or instant(seed["fetched_at"]) > now:
+                raise ValueError("invalid catalogue fallback")
+            snapshot.update(catalogue_state="cached", catalogue_fetched_at=seed["fetched_at"])
         predictions, available = [], True
         try:
+            if blocked:
+                raise ValueError("source refused this build; do not retry")
             # Yesterday can remain valid before this morning's issue; never show expired advice.
             for day in (now.astimezone(TZ).date(), now.astimezone(TZ).date() - timedelta(days=1)):
                 predictions.extend(items(PREDICTIONS, {"predictedOn": day.isoformat()}))
@@ -133,7 +150,7 @@ def fetch(now=None, client=None):
         snapshot["sites"] = parse(catalogue, predictions, now, available)
         if not snapshot["sites"]:
             raise ValueError("no coastal sites")
-        snapshot["status"] = "ok" if available else "advice_unavailable"
+        snapshot["status"] = ("ok" if snapshot["catalogue_state"] == "live" else "catalogue_cached") if available else "advice_unavailable"
     except Exception:
         snapshot["sites"] = []
     finally:
@@ -165,6 +182,9 @@ def render(snapshot):
     return (f'<p class="small">{len(cards)} designated coastal and estuary bathing waters. Snapshot '
             f'{escape(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
             'and check the signs before swimming. Missing advice does not mean clean water.</p>'
+            + (f'<p class="small">The live catalogue could not be retrieved; names and historical ratings use '
+               f'the official catalogue retrieved {escape(snapshot["catalogue_fetched_at"])}. '
+               'New designations or changed ratings may not be included.</p>' if snapshot.get("catalogue_state") == "cached" else '') +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
             f'<p id="coastal-count" class="small" aria-live="polite">{len(cards)} sites</p>'

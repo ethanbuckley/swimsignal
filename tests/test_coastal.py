@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 import httpx
 
@@ -108,3 +109,33 @@ def test_static_build_includes_directory_and_api_template_keeps_official_link(tm
     assert "Spittal &lt;script&gt;" in page and "<!-- COASTAL_DIRECTORY -->" not in page
     assert "data-advice-expires" in page
     assert "coastal-count" in page and "profile.html?site=" + KEY in page
+
+
+def test_refused_live_catalogue_uses_dated_names_and_never_cached_advice(tmp_path, monkeypatch):
+    seed = tmp_path / "catalogue.json"
+    seed.write_text(json.dumps({"source": coastal.CATALOGUE, "fetched_at": "2026-09-14T12:00:00+01:00",
+                               "items": [SITE], "advice": [PRED]}))
+    monkeypatch.setattr(coastal, "FALLBACK", seed)
+    calls = []
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(403)
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        snapshot = coastal.fetch(NOW, client)
+    assert len(calls) == 1
+    assert snapshot["status"] == "advice_unavailable"
+    assert snapshot["catalogue_state"] == "cached" and snapshot["catalogue_error"] == "HTTP 403"
+    assert snapshot["catalogue_fetched_at"] == "2026-09-14T12:00:00+01:00"
+    assert snapshot["sites"][0]["advice"] == {"state": "unavailable"}
+    assert "New designations or changed ratings may not be included" in coastal.render(snapshot)
+
+
+def test_invalid_or_future_catalogue_fallback_is_not_published(tmp_path, monkeypatch):
+    seed = tmp_path / "catalogue.json"
+    monkeypatch.setattr(coastal, "FALLBACK", seed)
+    for source, stamp in [("https://other.invalid/", "2026-09-14T12:00:00+01:00"),
+                          (coastal.CATALOGUE, "2026-09-16T12:00:00+01:00")]:
+        seed.write_text(json.dumps({"source": source, "fetched_at": stamp, "items": [SITE]}))
+        with httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(503))) as client:
+            snapshot = coastal.fetch(NOW, client)
+        assert snapshot["status"] == "unavailable" and snapshot["sites"] == []
