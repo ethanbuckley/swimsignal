@@ -2,9 +2,11 @@
 // changing, fees and opening times. The build reads guides/<spot id>.toml (src/dipcast/guides.py,
 // guides/README.md) into spots.json, and this draws it as one tile after the forecast's.
 //
-// Every fact says who says so. Confirmed: the landowner's, operator's or council's own page (linked),
-// or seen on site by SwimSignal. A swimmer's suggestion: who and when, and that it has not been
-// checked. The two are told apart in words, not colour: a colour on this page means a risk level.
+// Every fact says who says so. Verified: the landowner's, operator's or council's own page (linked),
+// or seen on site by SwimSignal (status "confirmed" in the files). A swimmer's suggestion: who and
+// when, and that it has not been checked. The two are told apart in words, not colour: a colour on
+// this page means a risk level. "Verified" is the word the notes on a visit (visits.js) use for a
+// fact checked against an official source; there "confirmed" means a swimmer saying it is still so.
 //
 // A plain script, like reviews.js: in the page its names are globals (each begins guide or GUIDE,
 // clear of the page's own), and in Node the last lines export them (tests/site_guide.test.cjs).
@@ -13,6 +15,7 @@
 const GUIDE_TOPICS = [['parking', 'Parking'], ['path', 'Path to the water'], ['entry', 'Getting in'], ['exit', 'Getting out'],
   ['toilets', 'Toilets'], ['changing', 'Changing'], ['fees', 'Fees and booking'], ['hours', 'Opening times'], ['rules', 'Who can swim']];
 const GUIDE_STALE_DAYS = 365;   // fees, hours and paths change: older than this, the guide says so
+const GUIDE_SHOW = 4;           // topics shown before "Show all", when at least two more would fold
 const guideEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const guideDay = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const guideIcon = () => (typeof ICON === 'object' && ICON.route) || '';
@@ -38,7 +41,7 @@ function guideChecked(g, today) {
   return line + old;
 }
 
-// Under a fact or a photo: who says so. A confirmed fact names the page it came from, linked (the
+// Under a fact or a photo: who says so. A verified fact names the page it came from, linked (the
 // guide's first line gives the day they were checked), or the day it was seen; a swimmer's
 // suggestion says who, when, and that it is not checked.
 function guideSource(x) {
@@ -48,7 +51,7 @@ function guideSource(x) {
   const parts = [];
   if (guideHttps(x.source)) parts.push(`<a href="${guideEsc(x.source)}">${guideEsc(x.source_name || 'Source')}</a>`);
   if (x.seen) parts.push(`seen on site ${guideDay(x.seen)}`);
-  return `<span class="g-who">Confirmed</span>: ${parts.join('; ')}.`;
+  return `<span class="g-who">Verified</span>: ${parts.join('; ')}.`;
 }
 
 const guideMap = f => {
@@ -57,14 +60,38 @@ const guideMap = f => {
     : ` <a href="https://www.openstreetmap.org/?mlat=${lat}&amp;mlon=${lon}#map=17/${lat}/${lon}">On a map</a>.`;
 };
 
-// The facts as a ruled list: each topic's heading, then its facts, confirmed first.
+// One topic's facts in runs: facts in a row whose line of who says so is the same share it, once,
+// after the last of them. The line compared is the one a reader sees, so a run never joins a
+// suggestion to a verified fact, two pages, or two days; and it never spans two topics.
+function guideRuns(facts) {
+  const runs = [];
+  for (const f of facts) {
+    const src = guideSource(f) + guideMap(f), last = runs[runs.length - 1];
+    if (last && last.src === src) last.texts.push(f.text); else runs.push({ src, texts: [f.text] });
+  }
+  return runs;
+}
+
+// The facts as a ruled list: each topic's heading, then its facts, verified first (src/dipcast/guides.py
+// sorts them). Past five topics the first four show and "Show all 7 topics" opens the rest, as the
+// reviews' and the notes' "Show all" do; at five or fewer all show, so the button never hides one.
 function guideFacts(g) {
   const by = new Map();
   for (const f of g.facts || []) { if (!by.has(f.topic)) by.set(f.topic, []); by.get(f.topic).push(f); }
-  return '<dl class="g-facts">' + GUIDE_TOPICS.filter(([k]) => by.has(k)).map(([k, label]) => `<div class="g-row"><dt>${label}</dt>`
-    + by.get(k).map(f => `<dd><p class="g-text">${guideEsc(f.text)}</p><p class="g-src">${guideSource(f)}${guideMap(f)}</p></dd>`).join('')
-    + '</div>').join('') + '</dl>';
+  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), fold = topics.length > GUIDE_SHOW + 1;
+  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && i >= GUIDE_SHOW ? ' hidden' : ''}><dt>${label}</dt>`
+    + guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
+    + '</div>').join('') + '</dl>'
+    + (fold ? `<button type="button" class="btn quiet" id="g-all" aria-expanded="false">Show all ${topics.length} topics</button>` : '');
 }
+
+// The page writes the tile as text (index.html), so one listener on the document opens the rest for
+// any spot. As in reviews.js and visits.js, the rows show and the button goes.
+function guideClick(e) {
+  const t = e.target && e.target.closest ? e.target.closest('#g-all') : null; if (!t) return;
+  t.closest('#guide').querySelectorAll('.g-row[hidden]').forEach(x => { x.hidden = false; }); t.remove();
+}
+if (typeof document === 'object' && document.addEventListener) document.addEventListener('click', guideClick);
 
 // "Not in this guide yet: toilets, changing." So a missing topic reads as unknown, not as none.
 function guideGaps(g) {
@@ -112,5 +139,5 @@ function guideTile(d, today) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, guideTile, guideChecked, guideSource, guideFacts, guideGaps, guidePhoto, guideDays };
+  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick };
 }

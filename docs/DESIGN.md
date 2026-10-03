@@ -488,7 +488,7 @@ Its first line says how far to trust the whole tile: "Checked 3 Oct 2026 from th
 linked below, not on site", or "Checked on site", and past a year that fees, opening times and paths
 may have changed. Then the facts as a ruled list, a topic's name over its facts, in the order a
 swimmer meets them: parking, the path, getting in, getting out, toilets, changing, fees, opening
-times, who can swim. Under each fact, in the meta size, who says so, in words: "**Confirmed**:
+times, who can swim. Under each fact, in the meta size, who says so, in words: "**Verified**:
 City of London Corporation" (the page linked) or "**A swimmer's suggestion**, from Sam, 12 Sept 2026.
 Not yet checked by SwimSignal." No colour tells them apart, since colour on the page means a level,
 and no badge or pill. Topics with no fact are named in one line, "Not in this guide yet: toilets,
@@ -497,6 +497,20 @@ radius, its labels as numbered round markers (ink, with a white ring, as a dot h
 numbers in a list under it, then the caption, the credit and the day. The tile ends with one line
 and a link to the feedback form set to a guide. A spot without a guide gets a short tile asking for
 one; a point clicked on the map gets none.
+
+Since 4 October 2026:
+
+- **One word.** "Verified" is the notes' word for checked against an official source, so the guide
+  uses it too. Before that the tile said "Confirmed". The notes keep "confirm" for a swimmer saying
+  something is still so. The files keep `status = "confirmed"`.
+- **One line for a run.** Facts next to each other under one topic, with the same line of who says
+  so, share it. It shows once, after the last of them. Facts in a run sit 4 px apart, closer than the
+  10 px between runs, so the line reads as theirs. A new topic, page, day or swimmer starts a new
+  line, and a suggestion never shares a verified fact's line.
+- **Fold after four topics.** Past five topics, the first four show and "Show all 7 topics" opens
+  the rest, as the reviews and the notes do. At five or fewer all show, so the button never hides a
+  single topic. "Not in this guide yet" and the photos stay below it. Farleigh Hungerford's tile was
+  2,136 px tall on a 320 px phone; folded it is 789 px.
 
 ### Notes on a visit (3 October 2026)
 
