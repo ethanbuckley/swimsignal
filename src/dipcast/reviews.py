@@ -13,6 +13,11 @@ build downloads only the new ones, and one whose review has gone is deleted from
 the Worker cannot be reached, the last list it gave (kept beside them) is published again, marked
 incomplete; without one, the page says the reviews could not be updated.
 
+The same Worker takes quick notes on a visit (what a spot was like today or yesterday), and the build
+publishes the ones still showing in the same file, under "visits", their photos beside the reviews'.
+Each note carries `until`, its last day; the build leaves out notes past it, and the page drops each
+tick on its own day (visits.js), so a site that is not rebuilt still stops showing them.
+
 Off until the repository variable DIPCAST_REVIEWS_URL is set (reviews/README.md). Then the page
 shows the tile, and the privacy notice and the terms gain their reviews sections (with_reviews).
 """
@@ -27,6 +32,7 @@ import shutil
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -39,6 +45,7 @@ CACHE = config.CACHE / "reviews"
 REVIEW_ID = re.compile(r"[0-9a-f]{20}")
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]{1,80}")   # the site's rule for a spot's id
 DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
+KIND = re.compile(r"[a-z-]{1,24}")   # a tick's id (reviews/src/rules.js, VISIT_KINDS); the page skips one it does not know
 MAX_PHOTO_BYTES = 2_000_000   # more than the Worker accepts (1.5 MB), so only a broken file is refused
 # A slow or failing Worker costs the build at most this long in photos, and photos stop after this many
 # failures in a row; the reviews still publish, without the photos not fetched, and the next build
@@ -97,12 +104,45 @@ def site_entries(published: dict, spot_ids: set[str] | None = None) -> dict[str,
     return dict(sorted(out.items()))
 
 
+def london_today() -> str:
+    return datetime.now(ZoneInfo("Europe/London")).date().isoformat()
+
+
+def site_visits(published: dict, spot_ids: set[str] | None = None, today: str | None = None) -> dict[str, list[dict]]:
+    """The notes on a visit still showing, by spot, newest visit first: what the page needs and no
+    more. A malformed note, one for a spot this build does not have, or one past its last day is left out."""
+    today = today or london_today()
+    out: dict[str, list[dict]] = {}
+    for v in published.get("visits") or []:
+        try:
+            vid, spot, seen, until = str(v["id"]), str(v["spot"]), str(v["seen_on"]), str(v["until"])
+            confirmed = v.get("confirmed_on")
+            if not (REVIEW_ID.fullmatch(vid) and SPOT_ID.fullmatch(spot) and DAY.fullmatch(seen) and DAY.fullmatch(until)
+                    and (confirmed is None or DAY.fullmatch(str(confirmed)))):
+                raise ValueError("bad id, spot or day")
+            kinds = [str(k) for k in v["kinds"] if KIND.fullmatch(str(k))]
+            if not kinds:
+                raise ValueError("no ticks")
+            photos = [{"n": n, "w": int(p["w"]), "h": int(p["h"]), "tw": int(p["tw"]), "th": int(p["th"])}
+                      for n, p in enumerate((v.get("photos") or [])[:1])]
+            item = {"id": vid, "kinds": kinds, "seen_on": seen, "confirmed_on": confirmed, "confirmations": int(v.get("confirmations") or 0),
+                    "until": until, "text": str(v.get("text") or ""), "verified": str(v.get("verified") or ""), "photos": photos}
+        except (KeyError, TypeError, ValueError) as e:
+            log.warning("a note on a visit was left out: %s", e)
+            continue
+        if until >= today and (spot_ids is None or spot in spot_ids):
+            out.setdefault(spot, []).append(item)
+    for items in out.values():
+        items.sort(key=lambda x: (x["seen_on"], x["id"]), reverse=True)
+    return dict(sorted(out.items()))
+
+
 def _is_jpeg(data: bytes) -> bool:
     return 3 < len(data) <= MAX_PHOTO_BYTES and data[:3] == b"\xff\xd8\xff"
 
 
 def write_reviews(site: Path, url: str | None = None, *, spot_ids=None, fetch: bool = True, get=_get,
-                  cache: Path | None = None, now=time.monotonic) -> dict:
+                  cache: Path | None = None, now=time.monotonic, today: str | None = None) -> dict:
     """site/reviews/: index.json and the photos, and the reviews sections of the privacy notice and the
     terms (written by write_pages before this). Returns what the build log reports. With reviews off,
     index.json says so, nothing else is written, and the cache is emptied: reviews switched off leave
@@ -141,10 +181,11 @@ def write_reviews(site: Path, url: str | None = None, *, spot_ids=None, fetch: b
         if fetch:
             report["warning"] += ("; publishing the last list it gave" if report["source"] == "cache"
                                   else "; no earlier list is kept, so the site shows none this time")
-    spots = site_entries(published, None if spot_ids is None else set(map(str, spot_ids)))
+    ids = None if spot_ids is None else set(map(str, spot_ids))
+    spots, visits = site_entries(published, ids), site_visits(published, ids, today)
 
     wanted, missing, failed, stop = set(), 0, 0, now() + PHOTO_BUDGET_S
-    for items in spots.values():
+    for items in [*spots.values(), *visits.values()]:
         for r in items:
             kept = []
             for p in r["photos"]:
@@ -176,12 +217,12 @@ def write_reviews(site: Path, url: str | None = None, *, spot_ids=None, fetch: b
         shutil.copyfile(photos_cache / name, out / "photos" / name)
     complete = report["source"] == "service" or not fetch
     (out / "index.json").write_text(json.dumps({"generated_at": generated, "on": True, "submit": url, "complete": complete,
-                                                "spots": spots}, ensure_ascii=False, separators=(",", ":")))
+                                                "spots": spots, "visits": visits}, ensure_ascii=False, separators=(",", ":")))
     for page in ("privacy.html", "terms.html"):
         p = site / page
         if p.exists():
             p.write_text(with_reviews(p.read_text(), page))
-    report.update(published=sum(len(v) for v in spots.values()), photos=len(wanted) // 2)
+    report.update(published=sum(len(v) for v in spots.values()), notes=sum(len(v) for v in visits.values()), photos=len(wanted) // 2)
     if missing:
         why = ("; the photo service kept failing, so the rest waited" if failed >= PHOTO_FAILURES
                else "; the photos ran out of time" if now() > stop else "")
@@ -200,7 +241,8 @@ PRIVACY_SECTION_BEFORE = "<h2>The server version</h2>"
 TERMS_SECTION_BEFORE = "<h2>Changes to these terms</h2>"
 SHORT_VERSION_BEFORE = "<li>Opening the site sends your IP address"
 SHORT_VERSION_LINE = ("<li>If you write a review, it is checked, then published on the spot's page with the name you chose. "
-                      "You can delete it from the browser you sent it from.</li>\n")
+                      "A quick note on a visit is published without a name, and is deleted a few days to a month later. "
+                      "You can delete either from the browser you sent it from.</li>\n")
 HOLDS_NONE = [   # (as the notice has it, with reviews on); with alerts on first, as the push swap leaves it
     ("SwimSignal holds none except, if you turn on alerts, the record described under Alerts, which turning them off deletes;",
      ("SwimSignal holds none except, if you turn on alerts, the record described under Alerts, which turning them off deletes, "
@@ -235,7 +277,18 @@ REVIEWS_PRIVACY = (
     "send, delete or report a review, and when the page asks after one you sent, as any web server would; "
     '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that. Published '
     "reviews and their photos are served by GitHub with the rest of the site, so reading them sends nothing to "
-    "Cloudflare.</p>\n\n")
+    "Cloudflare.</p>\n"
+    '<h3 id="visit-notes">Notes on a visit</h3>\n'
+    "<p>If you leave a quick note on what a spot was like, your browser sends the review service the spot, whether you "
+    "were there today or yesterday, the things you ticked, any words you added and any photo, prepared as a review's "
+    "photos are. A note has no name. A note of ticks alone is published on the spot's page at the site's next update "
+    "without being read first; one with words or a photo is read by the operator first. If another swimmer says a note "
+    "is still right, their browser sends only the note's identifier.</p>\n"
+    "<p>Each thing you tick is shown for a set time: a day or two for how busy it was or what the water looked like, a "
+    "week for algae, and up to a month for damage, closures and signs, which starts again if another swimmer confirms "
+    "it. When everything on a note has ended, the review service deletes the note and its photo within two days, and "
+    "the site drops it at its next update. Your browser keeps a copy and a key, so that you can delete the note sooner, "
+    "as with a review. The rest of this section applies to notes as it does to reviews.</p>\n\n")
 
 REVIEWS_TERMS = (
     '<h2 id="reviews">Reviews</h2>\n'
@@ -254,7 +307,17 @@ REVIEWS_TERMS = (
     "browser you sent it from, or by emailing us.</p>\n"
     "<p>Reviews are swimmers' own views, not ours. A review is one person's day at the water: it is not a water test, "
     "it does not change the forecast, and a good review does not mean the water is clean or safe when you go. If you "
-    "think a review breaks these rules, use Report beside it, or email us.</p>\n\n")
+    "think a review breaks these rules, use Report beside it, or email us.</p>\n"
+    '<h3 id="visit-notes">Notes on a visit</h3>\n'
+    "<p>You can also leave a quick note on a spot you were at today or yesterday: tick what you found, and add a few "
+    "words or one photo if you like. A note of ticks alone appears at the site's next update without being read first; "
+    "one with words or a photo is read before it appears. The rules for reviews apply to notes too, and we may remove "
+    "any note at any time.</p>\n"
+    "<p>A note says what one person found on one day, and it ends after a set time. A note of pollution or algae is what "
+    "one swimmer saw, not a test, and the site says so unless we have verified it from an official source, which we "
+    "name. Notes never change the forecast, and a good note does not mean a warning has ended. If you think the water is "
+    "polluted, report it to the Environment Agency on 0800 80 70 60 or, in Wales, to Natural Resources Wales on "
+    "0300 065 3000, both at any hour.</p>\n\n")
 
 
 def with_reviews(html: str, page: str) -> str:

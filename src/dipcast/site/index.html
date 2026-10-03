@@ -666,6 +666,19 @@
   .rv-close { position:fixed; top:calc(8px + env(safe-area-inset-top)); right:calc(8px + env(safe-area-inset-right)); display:flex; align-items:center; justify-content:center;
     width:44px; height:44px; padding:0; border:0; border-radius:50%; background:var(--float); color:var(--ink); cursor:pointer; }
   .rv-close .ic { width:20px; height:20px; vertical-align:0; }
+
+  /* Notes on a visit (visits.js): built as the reviews are, before them. The ticks are the yes or no's
+     chips, two to a row; a note of pollution or algae carries its own line saying it is not verified;
+     and a muted line keeps a good note from reading as the all-clear. No level colours: a note is not
+     a level. */
+  .vn-kinds { grid-template-columns:repeat(2, minmax(0, 1fr)); max-width:none; }
+  #vn-form fieldset + fieldset { margin-top:16px; }   /* a second question, spaced as the rest: a legend's own margin is ignored */
+  .vn-kinds span { padding:6px 10px; text-align:center; line-height:1.25; }
+  #visits:focus { outline:none; }
+  #visits { scroll-margin-top:calc(var(--header-h) + 8px); }
+  .vn-flag { margin:2px 0 0; font-size:var(--fs-meta); font-weight:600; line-height:1.35; }
+  .vn-caveat { padding:12px 0 10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.4; color:var(--muted); }
+  .vn-pol a { color:inherit; }
 </style>
 </head>
 <body class="view-list">
@@ -766,6 +779,7 @@
 </nav>
 <script src="vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
+<script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
@@ -2186,8 +2200,9 @@ function render(d) {
     more.setAttribute('aria-expanded', String(all)); more.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap();
 }
-// Swimmers' reviews (reviews.js), if that script arrived: without it the rest of the spot still draws.
-const reviewsFor = d => { if (typeof mountReviews === 'function') mountReviews(d); };
+// Swimmers' reviews (reviews.js) and notes on a visit (visits.js), if those scripts arrived: without them
+// the rest of the spot still draws.
+const reviewsFor = d => { if (typeof mountReviews === 'function') mountReviews(d); if (typeof mountVisits === 'function') mountVisits(d); };
 function bindBack() { const b = document.getElementById('back'); if (b) b.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
   if (history.state && history.state.from) history.back();   // came from the list, Saved or the map: back to it, where it was (popstate)
   else { keepPlace(); history.pushState(null, '', ROOT.pathname); renderList(); scrollTop(); } }); }   // a shared link: stay on the site

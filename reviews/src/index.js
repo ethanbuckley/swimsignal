@@ -1,6 +1,7 @@
 // SwimSignal reviews. A spot's page sends a review here: whether the swimmer would swim there again,
 // the day they swam, what they wrote, a name to show and up to three photos. Every review waits
-// until the operator publishes it on /moderate. The site's build fetches the published ones
+// until the operator publishes it on /moderate. It also takes quick notes on a visit, what a spot was
+// like today or yesterday (the end of this file), which expire. The site's build fetches the published ones
 // (GET /published) and their photos and serves them with the rest of the site, so a visitor who
 // only reads reviews never contacts this Worker. README.md has the setup and the reasons.
 //
@@ -9,12 +10,14 @@
 
 import { BadImage, cleanJpeg } from './jpeg.js';
 import { MODERATE_CSS, MODERATE_JS, moderatePage } from './moderate.js';
-import { LIMITS, MAX_NAME, MAX_PENDING, MAX_PHOTOS, MAX_TEXT, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT, PHOTO_STORAGE_WARN, PUBLISHED_LISTED, REASONS } from './rules.js';
+import { LIMITS, MAX_NAME, MAX_PENDING, MAX_PENDING_VISITS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT,
+  PHOTO_STORAGE_WARN, PUBLISHED_LISTED, PUBLISH_TICKS_AT_ONCE, REASONS, VISIT_KINDS, VISIT_REASONS } from './rules.js';
 
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;   // the site's own rule for a spot's id (index.html PAGE_ID)
 const REVIEW_ID = /^[0-9a-f]{20}$/;
 const PHOTO_PATH = /^\/photos\/([0-9a-f]{20})-([0-2])(-t)?\.jpg$/;
 const MAX_FORM = 6 * 1024 * 1024;      // a whole review, photos included
+const MAX_VISIT_FORM = 2 * 1024 * 1024; // a note, its one photo included
 const MAX_JSON = 8 * 1024;
 const MAX_PHOTO = 1536 * 1024;          // one photo, which the page shrinks to 1280 px on its long side
 const MAX_THUMB = 200 * 1024;           // its thumbnail, 240 px on its short side
@@ -23,7 +26,7 @@ const WEB_ADDRESS = /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|co\.uk|org|net|uk|io|l
 
 export default {
   fetch: (request, env) => handleRequest(request, env),
-  async scheduled(controller, env) { await forgetOldHits(env); await cleanAbandonedPhotos(env); },
+  async scheduled(controller, env) { await forgetOldHits(env); await forgetEndedVisits(env); await cleanAbandonedPhotos(env); },
 };
 
 // ---- replies ----
@@ -44,7 +47,8 @@ const nowISO = () => new Date().toISOString();
 // From the site's pages: browsers send Origin on these, and only the site's is accepted. With each,
 // the status of a successful answer that carries a body.
 const PUBLIC_POSTS = new Map([['/reviews', [submit, 201]], ['/reviews/status', [status, 200]], ['/reviews/delete', [removeOwn]],
-  ['/reviews/report', [report]]]);
+  ['/reviews/report', [report]], ['/visits', [submitVisit, 201]], ['/visits/status', [visitStatus, 200]],
+  ['/visits/delete', [removeOwnVisit]], ['/visits/confirm', [confirmVisit, 200]], ['/visits/report', [reportVisit]]]);
 
 export async function handleRequest(request, env) {
   const url = new URL(request.url), path = url.pathname;
@@ -172,12 +176,12 @@ export function connectionOf(ip) {
 
 // A connection's requests of one kind today. The key is a keyed hash of the connection, the kind and
 // the day, so the table never holds an address, and yesterday's counts cannot be matched to today's.
-async function overLimit(request, env, kind) {
+async function overLimit(request, env, kind, limit = LIMITS[kind]) {
   const day = nowISO().slice(0, 10), ip = connectionOf(request.headers.get('CF-Connecting-IP'));
   const key = (await hmac(env.ADMIN_TOKEN || 'no admin token', `${kind}|${day}|${ip}`)).slice(0, 32);
   const row = await env.DB.prepare('INSERT INTO hits (key, day, n) VALUES (?, ?, 1) ON CONFLICT (key, day) DO UPDATE SET n = n + 1 RETURNING n')
     .bind(key, day).first();
-  return row.n > LIMITS[kind];
+  return row.n > limit;
 }
 
 export async function forgetOldHits(env, now = Date.now()) {
@@ -187,14 +191,17 @@ export async function forgetOldHits(env, now = Date.now()) {
 
 const photoKeys = (id, n) => [`p:${id}:${n}`, `t:${id}:${n}`];
 
-async function deleteReview(env, id, photos) {
+// A review, or a note (table 'visits'), with its reports and photos.
+async function deleteReview(env, id, photos, table = 'reviews') {
   const count = (() => { try { return JSON.parse(photos).length; } catch { return MAX_PHOTOS; } })();
   await env.DB.batch([
     env.DB.prepare('UPDATE photo_storage SET deleting = 1 WHERE id = ?').bind(id),
     env.DB.prepare('DELETE FROM reports WHERE review = ?').bind(id),
-    env.DB.prepare('DELETE FROM reviews WHERE id = ?').bind(id),
+    env.DB.prepare(`DELETE FROM ${table === 'visits' ? 'visits' : 'reviews'} WHERE id = ?`).bind(id),
   ]);
-  if (!(await deletePhotos(env, id, count))) throw new Refused(503, 'The review is removed. Its photos will be cleaned up automatically; try again later');
+  if (!(await deletePhotos(env, id, count))) {
+    throw new Refused(503, `The ${table === 'visits' ? 'note' : 'review'} is removed. Its photos will be cleaned up automatically; try again later`);
+  }
 }
 
 async function deletePhotos(env, id, count) {
@@ -208,7 +215,8 @@ export async function cleanAbandonedPhotos(env, now = Date.now()) {
   const before = new Date(now - 3600_000).toISOString();
   // A bounded batch keeps the cron within its request budget. A live upload cannot be an hour old.
   const { results } = await env.DB.prepare(`SELECT id, photos FROM photo_storage WHERE deleting = 1
-    OR (created_at < ? AND NOT EXISTS (SELECT 1 FROM reviews WHERE reviews.id = photo_storage.id)) LIMIT 5`).bind(before).all();
+    OR (created_at < ? AND NOT EXISTS (SELECT 1 FROM reviews WHERE reviews.id = photo_storage.id)
+    AND NOT EXISTS (SELECT 1 FROM visits WHERE visits.id = photo_storage.id)) LIMIT 5`).bind(before).all();
   for (const row of results) await deletePhotos(env, row.id, row.photos);
 }
 
@@ -259,15 +267,28 @@ async function submit(request, env) {
   // The caps for everyone together (rules.js): the queue waiting for the operator, and the day's photos.
   const waiting = await env.DB.prepare("SELECT count(*) AS n FROM reviews WHERE status = 'pending'").first();
   if (waiting.n >= MAX_PENDING) throw new Refused(503, 'The queue of reviews to check is full just now. Try again in a few days');
+
+  const id = randomHex(10), token = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const sizes = photos.map((p) => ({ w: p.full.width, h: p.full.height, tw: p.thumb.width, th: p.thumb.height }));
+  await storeWithPhotos(env, id, photos, 'review', async () => {
+    // Check and insert in one SQL statement: simultaneous submissions cannot both take the
+    // last queue slot. If it filled while the photos were stored, the photos are removed again.
+    const stored = await env.DB.prepare("INSERT INTO reviews (id, spot, again, swam_on, body, name, photos, created_at, token_hash) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE (SELECT count(*) FROM reviews WHERE status = 'pending') < ? RETURNING id")
+      .bind(id, spot, again, swamOn, body, name, JSON.stringify(sizes), nowISO(), await sha256(token), MAX_PENDING).first();
+    if (!stored) throw new Refused(503, 'The queue of reviews to check is full just now. Try again in a few days');
+  });
+  return { id, token };
+}
+
+// The caps on photos for everyone together (rules.js), the day's count and room in the store, then the
+// photos into KV, then `store`, which writes the row. If anything fails, the photos are removed again.
+async function storeWithPhotos(env, id, photos, what, store) {
   if (photos.length) {
     const day = nowISO().slice(0, 10);
     const sent = await env.DB.prepare('INSERT INTO hits (key, day, n) VALUES (?, ?, ?) ON CONFLICT (key, day) DO UPDATE SET n = n + excluded.n WHERE n + excluded.n <= ? RETURNING n')
       .bind('photos', day, photos.length, PHOTOS_PER_DAY).first();
-    if (!sent) throw new Refused(503, 'No more photos can be taken today. Send the review without them, or try again tomorrow');
+    if (!sent) throw new Refused(503, `No more photos can be taken today. Send the ${what} without them, or try again tomorrow`);
   }
-
-  const id = randomHex(10), token = b64url(crypto.getRandomValues(new Uint8Array(32)));
-  const sizes = photos.map((p) => ({ w: p.full.width, h: p.full.height, tw: p.thumb.width, th: p.thumb.height }));
   const keys = [];
   try {
     if (photos.length) {
@@ -275,7 +296,7 @@ async function submit(request, env) {
       const reserved = await env.DB.prepare(`INSERT INTO photo_storage (id, photos, bytes, created_at)
         SELECT ?, ?, ?, ? WHERE COALESCE((SELECT sum(bytes) FROM photo_storage), 0) + ? <= ? RETURNING id`)
         .bind(id, photos.length, bytes, nowISO(), bytes, PHOTO_STORAGE_LIMIT).first();
-      if (!reserved) throw new Refused(503, 'There is no space for more photos just now. Send the review without them');
+      if (!reserved) throw new Refused(503, `There is no space for more photos just now. Send the ${what} without them`);
     }
     for (const [n, p] of photos.entries()) {
       const [fk, tk] = photoKeys(id, n);
@@ -283,11 +304,7 @@ async function submit(request, env) {
       await env.PHOTOS.put(fk, p.full.bytes);
       await env.PHOTOS.put(tk, p.thumb.bytes);
     }
-    // Check and insert in one SQL statement: simultaneous submissions cannot both take the
-    // last queue slot. If it filled while the photos were stored, the catch removes them.
-    const stored = await env.DB.prepare("INSERT INTO reviews (id, spot, again, swam_on, body, name, photos, created_at, token_hash) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE (SELECT count(*) FROM reviews WHERE status = 'pending') < ? RETURNING id")
-      .bind(id, spot, again, swamOn, body, name, JSON.stringify(sizes), nowISO(), await sha256(token), MAX_PENDING).first();
-    if (!stored) throw new Refused(503, 'The queue of reviews to check is full just now. Try again in a few days');
+    await store();
   } catch (err) {
     if (keys.length) {
       await env.DB.prepare('UPDATE photo_storage SET deleting = 1 WHERE id = ?').bind(id).run();
@@ -297,7 +314,6 @@ async function submit(request, env) {
     }
     throw err;
   }
-  return { id, token };
 }
 
 // The sender's browser keeps the review's id and key, and can delete it at any time.
@@ -314,15 +330,15 @@ async function removeOwn(request, env) {
   return undefined;
 }
 
-// The sender's browser asks after its own reviews that have not reached the site: still waiting,
+// The sender's browser asks after its own reviews (or notes, table 'visits') that have not reached the site: still waiting,
 // published (the site not rebuilt since), or gone (turned down, or deleted). An id alone is enough to
 // ask: a waiting review's id is known only to the browser that sent it, and a published one is public.
-async function status(request, env) {
+async function status(request, env, table = 'reviews') {
   const data = await readJson(request);
-  check(isObject(data) && Array.isArray(data.ids) && data.ids.length >= 1 && data.ids.length <= 20, 'ids must be a list of 1 to 20 review ids');
+  check(isObject(data) && Array.isArray(data.ids) && data.ids.length >= 1 && data.ids.length <= 20, 'ids must be a list of 1 to 20 ids');
   const ids = [...new Set(data.ids.map(checkId))];
   if (await overLimit(request, env, 'status')) throw new Refused(429, 'Too many requests from this connection today');
-  const { results } = await env.DB.prepare(`SELECT id, status FROM reviews WHERE id IN (${ids.map(() => '?').join(', ')})`).bind(...ids).all();
+  const { results } = await env.DB.prepare(`SELECT id, status FROM ${table === 'visits' ? 'visits' : 'reviews'} WHERE id IN (${ids.map(() => '?').join(', ')})`).bind(...ids).all();
   const found = new Map(results.map((r) => [r.id, r.status]));
   return Object.fromEntries(ids.map((id) => [id, found.get(id) || 'gone']));
 }
@@ -349,15 +365,19 @@ const fromRow = (r) => ({
 });
 
 // Public: what the site shows anyway. Not when a review was sent, which it does not show.
+// Notes are listed until their last day: the build and the page drop each tick as it ends.
 async function published(env) {
   const { results } = await env.DB.prepare("SELECT * FROM reviews WHERE status = 'published' ORDER BY published_at, id").all();
-  return { generated_at: nowISO(), reviews: results.map((r) => { const { created_at, ...out } = fromRow(r); return out; }) };
+  const visits = await env.DB.prepare("SELECT * FROM visits WHERE status = 'published' AND until >= ? ORDER BY seen_on, id")
+    .bind(addDays(londonDay(), -1)).all();
+  return { generated_at: nowISO(), reviews: results.map((r) => { const { created_at, ...out } = fromRow(r); return out; }),
+    visits: visits.results.map((v) => { const { created_at, ...out } = fromVisit(v); return out; }) };
 }
 
 async function servePhoto(request, env, id, n, thumb) {
   const admin = await isAdmin(request, env);
   if (!admin) {
-    const row = await env.DB.prepare('SELECT status FROM reviews WHERE id = ?').bind(id).first();
+    const row = await env.DB.prepare('SELECT status FROM reviews WHERE id = ? UNION ALL SELECT status FROM visits WHERE id = ?').bind(id, id).first();
     if (!row || row.status !== 'published') return reply(404, 'Not found');
   }
   const bytes = await env.PHOTOS.get(photoKeys(id, n)[thumb ? 1 : 0], 'arrayBuffer');
@@ -383,11 +403,17 @@ async function queue(env) {
   const reported = await all(`SELECT r.*, group_concat(p.reason) AS reasons, max(p.created_at) AS reported_at FROM reviews r
     JOIN reports p ON p.review = r.id GROUP BY r.id ORDER BY reported_at DESC LIMIT 200`);
   const recent = await all(`SELECT * FROM reviews WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PUBLISHED_LISTED}`);
+  const vPending = await all(`SELECT * FROM visits WHERE status = 'pending' ORDER BY created_at LIMIT ${MAX_PENDING_VISITS}`);
+  const vReported = await all(`SELECT v.*, group_concat(p.reason) AS reasons, max(p.created_at) AS reported_at FROM visits v
+    JOIN reports p ON p.review = v.id GROUP BY v.id ORDER BY reported_at DESC LIMIT 200`);
+  const vRecent = await all(`SELECT * FROM visits WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PUBLISHED_LISTED}`);
+  const reasons = (r) => ({ reasons: String(r.reasons || '').split(',').filter(Boolean), reported_at: r.reported_at });
   return {
     summary: await summary(env),
     pending: pending.map(fromRow),
-    reported: reported.map((r) => ({ ...fromRow(r), reasons: String(r.reasons || '').split(',').filter(Boolean), reported_at: r.reported_at })),
+    reported: reported.map((r) => ({ ...fromRow(r), ...reasons(r) })),
     published: recent.map(fromRow),
+    visits: { pending: vPending.map(fromVisit), reported: vReported.map((v) => ({ ...fromVisit(v), ...reasons(v) })), published: vRecent.map(fromVisit) },
   };
 }
 
@@ -397,7 +423,12 @@ async function summary(env) {
     (SELECT max(created_at) FROM reviews WHERE status = 'pending') AS latest_pending_at,
     (SELECT count(*) FROM reviews WHERE status = 'published') AS published,
     (SELECT count(DISTINCT review) FROM reports JOIN reviews ON reviews.id = reports.review WHERE reviews.status = 'published') AS reported,
-    (SELECT max(reports.created_at) FROM reports JOIN reviews ON reviews.id = reports.review WHERE reviews.status = 'published') AS latest_report_at`).first();
+    (SELECT max(reports.created_at) FROM reports JOIN reviews ON reviews.id = reports.review WHERE reviews.status = 'published') AS latest_report_at,
+    (SELECT count(*) FROM visits WHERE status = 'pending') AS visits_pending,
+    (SELECT max(created_at) FROM visits WHERE status = 'pending') AS latest_visit_pending_at,
+    (SELECT count(*) FROM visits WHERE status = 'published') AS visits_published,
+    (SELECT count(DISTINCT review) FROM reports JOIN visits ON visits.id = reports.review WHERE visits.status = 'published') AS visits_reported,
+    (SELECT max(reports.created_at) FROM reports JOIN visits ON visits.id = reports.review WHERE visits.status = 'published') AS latest_visit_report_at`).first();
   const store = await env.DB.prepare(`SELECT COALESCE(sum(bytes), 0) AS bytes, COALESCE(sum(photos), 0) AS photos,
     COALESCE(sum(deleting), 0) AS cleanup_pending, COALESCE(sum(estimated), 0) AS estimated_reviews FROM photo_storage`).first();
   return { ...counts, storage: { ...store, limit_bytes: PHOTO_STORAGE_LIMIT, warn_bytes: PHOTO_STORAGE_WARN,
@@ -408,9 +439,10 @@ async function summary(env) {
 async function decide(data, env) {
   check(isObject(data), 'body must be a JSON object');
   const id = checkId(data.id);
-  check(['publish', 'keep', 'delete'].includes(data.action), 'action must be publish, keep or delete');
+  check(['publish', 'keep', 'delete', 'verify'].includes(data.action), 'action must be publish, keep, delete or verify');
   const row = await env.DB.prepare('SELECT status, photos FROM reviews WHERE id = ?').bind(id).first();
-  if (!row) throw new Refused(404, 'No such review');
+  if (!row) return decideVisit(data, env, id);
+  check(data.action !== 'verify', 'only a note of pollution or algae can be verified');
   if (data.action === 'delete') return deleteReview(env, id, row.photos);
   if (data.action === 'keep') return env.DB.prepare('DELETE FROM reports WHERE review = ?').bind(id).run();
   await env.DB.prepare("UPDATE reviews SET status = 'published', published_at = ? WHERE id = ? AND status = 'pending'").bind(nowISO(), id).run();
@@ -422,4 +454,157 @@ function moderateShell(env) {
   const csp = [`default-src 'none'`, `script-src 'self'`, `style-src 'self' ${site.origin}`, `font-src ${site.origin}`,
     `img-src 'self' blob: ${site.origin}`, `connect-src 'self' ${site.origin}`, `base-uri 'none'`, `form-action 'none'`, `frame-ancestors 'none'`].join('; ');
   return new Response(moderatePage(site.href), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': csp, 'Cache-Control': 'no-cache', ...SAFE } });
+}
+
+// ---- quick notes on a visit ----
+// What a spot was like today or yesterday: ticks from a fixed list (rules.js, VISIT_KINDS), up to 280
+// characters and one photo. A review describes the place; a note describes a day, so each tick is shown
+// for its own number of days and then ends, and the daily cron deletes a note once all its ticks have.
+// Damage, closures and signs last longer, and another swimmer can say they are still so, which starts
+// their days again; nothing a swimmer sends can end one early: "not like this any more" is a report the
+// operator reads. Suspected pollution and algae stay what one swimmer saw until the operator verifies
+// them against a named source. Notes never touch the forecast.
+
+const VISIT_FIELDS = new Set(Object.keys(VISIT_KINDS));
+const VISIT_SHOWN = 6;   // most ticks on one note: a note of every tick says nothing
+
+// The day in London, where the site's days are: British Summer Time runs from 01:00 UTC on the last
+// Sunday of March to 01:00 UTC on the last Sunday of October.
+export function londonDay(now = Date.now()) {
+  const y = new Date(now).getUTCFullYear();
+  const lastSunday = (m) => { const t = new Date(Date.UTC(y, m + 1, 0, 1)); t.setUTCDate(t.getUTCDate() - t.getUTCDay()); return t.getTime(); };
+  return new Date(now + (now >= lastSunday(2) && now < lastSunday(9) ? 3600_000 : 0)).toISOString().slice(0, 10);
+}
+export const addDays = (iso, n) => new Date(Date.parse(iso + 'T12:00:00Z') + n * 86400_000).toISOString().slice(0, 10);
+
+// The last day a note is shown: its longest-lasting tick, counted from the visit, or for a tick others
+// can confirm, from the last confirmation.
+export function visitUntil(kinds, seenOn, confirmedOn = null) {
+  return kinds.map((k) => addDays(VISIT_KINDS[k].confirm && confirmedOn && confirmedOn > seenOn ? confirmedOn : seenOn, VISIT_KINDS[k].days))
+    .reduce((a, b) => (b > a ? b : a));
+}
+
+const parseList = (text) => { try { const v = JSON.parse(text); return Array.isArray(v) ? v : []; } catch { return []; } };
+const fromVisit = (v) => ({
+  id: v.id, spot: v.spot, seen_on: v.seen_on, kinds: parseList(v.kinds).filter((k) => VISIT_FIELDS.has(k)), text: v.body,
+  photos: parseList(v.photo), confirmed_on: v.confirmed_on, confirmations: v.confirmations, verified: v.verified, until: v.until,
+  created_at: v.created_at, published_at: v.published_at,
+});
+
+async function submitVisit(request, env) {
+  const length = Number(request.headers.get('Content-Length'));
+  check(length > 0, 'a note must say how long it is (Content-Length)');
+  if (length > MAX_VISIT_FORM) throw new Refused(413, 'The note and its photo are too large');
+  check((request.headers.get('Content-Type') || '').startsWith('multipart/form-data'), 'a note is sent as a form');
+  if (await overLimit(request, env, 'visit')) throw new Refused(429, 'Too many notes from this connection today');
+  let form;
+  try { form = await request.formData(); } catch { throw new Invalid('the form could not be read'); }
+  const field = (name) => { const v = form.get(name); return typeof v === 'string' ? v : v === null ? '' : undefined; };
+  if (field('website')) return { id: randomHex(10), token: b64url(crypto.getRandomValues(new Uint8Array(32))), published: false };
+
+  const spot = field('spot');
+  check(typeof spot === 'string' && SPOT_ID.test(spot), 'bad spot id');
+  const kinds = [...new Set(form.getAll('kind'))];
+  check(kinds.length >= 1, 'tick at least one thing you found');
+  check(kinds.every((k) => typeof k === 'string' && VISIT_FIELDS.has(k)), 'not a thing on the list');
+  check(kinds.length <= VISIT_SHOWN, `tick at most ${VISIT_SHOWN}`);
+  const seenOn = field('seen_on'), today = londonDay();
+  // Today or yesterday on the page; a day more allows for a note sent just after midnight.
+  check(typeof seenOn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(seenOn) && seenOn >= addDays(today, -2) && seenOn <= today,
+    'say whether you were there today or yesterday');
+  const body = cleanText(field('text'), MAX_VISIT_TEXT);
+  check(!WEB_ADDRESS.test(body), 'leave out web addresses');
+  const photos = [];
+  if (form.get('photo0') !== null || form.get('thumb0') !== null) {
+    photos.push({ full: await readPhoto(form.get('photo0'), MAX_PHOTO, MAX_SIDE, 'the photo'),
+      thumb: await readPhoto(form.get('thumb0'), MAX_THUMB, MAX_THUMB_SIDE, "the photo's thumbnail") });
+  }
+  check(form.get('photo1') === null && form.get('thumb1') === null, 'one photo at most');
+  check(!photos.length || field('consent') === 'yes', 'confirm that the photo is yours to share');
+
+  const atOnce = PUBLISH_TICKS_AT_ONCE && !body && !photos.length;
+  if (!atOnce) {
+    const waiting = await env.DB.prepare("SELECT count(*) AS n FROM visits WHERE status = 'pending'").first();
+    if (waiting.n >= MAX_PENDING_VISITS) throw new Refused(503, 'Too many notes are waiting to be checked just now. Send the ticks alone, without words or a photo');
+  }
+  const id = randomHex(10), token = b64url(crypto.getRandomValues(new Uint8Array(32))), now = nowISO();
+  const sizes = photos.map((p) => ({ w: p.full.width, h: p.full.height, tw: p.thumb.width, th: p.thumb.height }));
+  await storeWithPhotos(env, id, photos, 'note', async () => {
+    const stored = await env.DB.prepare(`INSERT INTO visits (id, spot, seen_on, kinds, body, photo, until, status, created_at, published_at, token_hash)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ? OR (SELECT count(*) FROM visits WHERE status = 'pending') < ? RETURNING id`)
+      .bind(id, spot, seenOn, JSON.stringify(kinds), body, JSON.stringify(sizes), visitUntil(kinds, seenOn), atOnce ? 'published' : 'pending',
+        now, atOnce ? now : null, await sha256(token), atOnce ? 1 : 0, MAX_PENDING_VISITS).first();
+    if (!stored) throw new Refused(503, 'Too many notes are waiting to be checked just now. Send the ticks alone, without words or a photo');
+  });
+  return { id, token, published: atOnce };
+}
+
+function visitStatus(request, env) { return status(request, env, 'visits'); }
+
+async function removeOwnVisit(request, env) {
+  const data = await readJson(request);
+  check(isObject(data), 'body must be a JSON object');
+  const id = checkId(data.id);
+  check(typeof data.token === 'string' && data.token.length <= 100, 'bad key');
+  if (await overLimit(request, env, 'remove')) throw new Refused(429, 'Too many requests from this connection today');
+  const row = await env.DB.prepare('SELECT token_hash, photo FROM visits WHERE id = ?').bind(id).first();
+  if (!row) return undefined;
+  if (!(await same(row.token_hash, await sha256(data.token)))) throw new Refused(403, 'That key does not open this note');
+  await deleteReview(env, id, row.photo, 'visits');
+  return undefined;
+}
+
+// "Still like this": another swimmer, today, for a tick that lasts (damage, a closure, a sign). Its days
+// start again from today. Once a day from one connection for one note; the page sends no more.
+async function confirmVisit(request, env) {
+  const data = await readJson(request);
+  check(isObject(data), 'body must be a JSON object');
+  const id = checkId(data.id);
+  if (await overLimit(request, env, 'confirm')) throw new Refused(429, 'Too many requests from this connection today');
+  const row = await env.DB.prepare('SELECT * FROM visits WHERE id = ?').bind(id).first();
+  const today = londonDay();
+  if (!row || row.status !== 'published' || row.until < today) throw new Refused(404, 'That note has ended');
+  const kinds = parseList(row.kinds).filter((k) => VISIT_FIELDS.has(k));
+  check(kinds.some((k) => VISIT_KINDS[k].confirm && addDays(row.confirmed_on && row.confirmed_on > row.seen_on ? row.confirmed_on : row.seen_on, VISIT_KINDS[k].days) >= today),
+    'nothing on that note can be confirmed');
+  if (await overLimit(request, env, `confirm|${id}`, 1)) return { confirmed_on: row.confirmed_on, confirmations: row.confirmations, until: row.until };
+  const until = visitUntil(kinds, row.seen_on, today);
+  await env.DB.prepare('UPDATE visits SET confirmed_on = ?, confirmations = confirmations + 1, until = ? WHERE id = ?').bind(today, until, id).run();
+  return { confirmed_on: today, confirmations: row.confirmations + 1, until };
+}
+
+async function reportVisit(request, env) {
+  const data = await readJson(request);
+  check(isObject(data), 'body must be a JSON object');
+  const id = checkId(data.id);
+  check(VISIT_REASONS.includes(data.reason), 'bad reason');
+  if (await overLimit(request, env, 'report')) throw new Refused(429, 'Too many reports from this connection today');
+  const row = await env.DB.prepare('SELECT status, (SELECT count(*) FROM reports WHERE review = ?) AS n FROM visits WHERE id = ?').bind(id, id).first();
+  if (!row || row.status !== 'published' || row.n >= 50) return undefined;
+  await env.DB.prepare('INSERT INTO reports (review, reason, created_at) VALUES (?, ?, ?)').bind(id, data.reason, nowISO()).run();
+  return undefined;
+}
+
+// The operator: publish, keep (clear its reports), delete, or verify a note of pollution or algae,
+// naming the source that confirms it ("Environment Agency incident, 3 Oct"). Empty unverifies.
+async function decideVisit(data, env, id) {
+  const row = await env.DB.prepare('SELECT status, kinds, photo FROM visits WHERE id = ?').bind(id).first();
+  if (!row) throw new Refused(404, 'No such review or note');
+  if (data.action === 'delete') return deleteReview(env, id, row.photo, 'visits');
+  if (data.action === 'keep') return env.DB.prepare('DELETE FROM reports WHERE review = ?').bind(id).run();
+  if (data.action === 'verify') {
+    check(parseList(row.kinds).some((k) => VISIT_KINDS[k]?.tone === 'observation'), 'only a note of pollution or algae can be verified');
+    const source = cleanText(data.source, MAX_VERIFIED, true);
+    return env.DB.prepare('UPDATE visits SET verified = ? WHERE id = ?').bind(source, id).run();
+  }
+  await env.DB.prepare("UPDATE visits SET status = 'published', published_at = ? WHERE id = ? AND status = 'pending'").bind(nowISO(), id).run();
+}
+
+// Daily: notes past their last day go, with their photos and reports. A few at a time, as the
+// photo cleanup does; any left over go the next day.
+export async function forgetEndedVisits(env, now = Date.now()) {
+  const { results } = await env.DB.prepare('SELECT id, photo FROM visits WHERE until < ? LIMIT 50').bind(addDays(londonDay(now), -1)).all();
+  for (const row of results) {
+    try { await deleteReview(env, row.id, row.photo, 'visits'); } catch (err) { if (!(err instanceof Refused)) throw err; }
+  }
 }

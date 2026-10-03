@@ -1,5 +1,6 @@
 // The moderation page, /moderate: every review waiting to be published, every reported one, and
-// the latest published, each with Publish, Keep or Delete. It is served by the Worker, so the
+// the latest published, each with Publish, Keep or Delete; then the same for quick notes on a visit,
+// where a note of suspected pollution or algae can also be verified. It is served by the Worker, so the
 // queue it reads (/admin/queue) is on its own origin; it borrows the site's stylesheet and fonts
 // for its look. The admin token is pasted once and kept in this browser's local storage. Review
 // text is only ever set as text (textContent), never as markup, and the Content-Security-Policy
@@ -31,6 +32,13 @@ export function moderatePage(site) {
 <li>Delete one with a photo in which someone can be recognised, unless it is plainly the sender, and any in which a child can be.</li>
 <li>A review is published or deleted whole: there is no editing.</li>
 </ul></details>
+<details class="fold"><summary>Notes on a visit</summary>
+<ul>
+<li>A note of ticks alone is published as it arrives. One with words or a photo waits here. Each ends by itself after a few days, or a month for damage, closures and signs unless someone confirms it.</li>
+<li>Publish words that say what the spot was like that day. Delete words that blame a named person or business: the tick says what was seen, and that is enough.</li>
+<li>"Not like this any more" is a report: delete the note if you can tell it is out of date, otherwise keep it and let it end.</li>
+<li>Verify suspected pollution or algae only when an official source confirms it, an Environment Agency notice or a sign by the local council say, and name that source. Until then the page calls it what one swimmer saw.</li>
+</ul></details>
 <form id="signin" class="panel" hidden>
 <label for="token">Admin token</label>
 <input id="token" type="password" autocomplete="current-password" required>
@@ -47,6 +55,9 @@ export function moderatePage(site) {
 <input type="search" id="find" placeholder="A spot, a name or words from it" autocomplete="off">
 <p class="hint">The newest 500 are listed. README.md says how to delete an older one by its id.</p>
 <ol class="mq-list" id="published"></ol>
+<h2>Notes waiting <span class="muted" id="n-vpending"></span></h2><ol class="mq-list" id="vpending"></ol>
+<h2>Notes reported <span class="muted" id="n-vreported"></span></h2><ol class="mq-list" id="vreported"></ol>
+<h2>Notes published <span class="muted" id="n-vpublished"></span></h2><ol class="mq-list" id="vpublished"></ol>
 <div class="actions"><button type="button" class="btn" id="reload">Check again</button><button type="button" class="btn" id="signout">Forget the token on this device</button></div>
 </div>
 </main>
@@ -67,6 +78,9 @@ ol.mq-list { list-style: none; padding: 0; margin: 0; }
 .mq-pic img { display: block; width: 120px; height: 120px; object-fit: cover; border-radius: var(--radius); }
 .mq-full { display: block; max-width: 100%; height: auto; border-radius: var(--radius); }
 .mq-reports { margin: 10px 0 0; font-size: var(--fs-note); font-weight: 600; }
+.mq-verify { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 12px 0 0; }
+.mq-verify label { flex-basis: 100%; }
+.mq-verify input { flex: 1 1 240px; }
 #msg:empty { display: none; }
 `;
 
@@ -76,7 +90,12 @@ export const MODERATE_JS = String.raw`'use strict';
 const KEY = 'swimsignal.reviews.admin';
 const SITE = document.body.dataset.site;
 const $ = (id) => document.getElementById(id);
-const REASONS = { 'not-about-spot': 'not about this spot', rude: 'rude or hateful', person: 'shows or names someone', spam: 'spam or advertising', other: 'something else' };
+const REASONS = { 'not-about-spot': 'not about this spot', rude: 'rude or hateful', person: 'shows or names someone', spam: 'spam or advertising', other: 'something else',
+  'not-now': 'not like this any more' };
+// The ticks, as the site words them (src/dipcast/site/visits.js).
+const KINDS = { pollution: 'Suspected pollution', algae: 'Suspected algae', steps: 'Entry steps or path damaged', access: 'Way in closed or blocked',
+  rough: 'Rough or fast water', sign: 'New warning sign', 'parking-closed': 'Car park closed', 'parking-full': 'Car park full', busy: 'Very busy',
+  quiet: 'Quiet', clear: 'Water looked clear', good: 'Good swim, no problems' };
 const names = {};
 let token = '';
 try { token = localStorage.getItem(KEY) || ''; } catch (e) { token = ''; }
@@ -114,14 +133,50 @@ async function photo(r, n, box) {
   } catch (e) { slot.replaceWith(el('span', 'mq-meta', 'Photo ' + (n + 1) + ' could not be loaded.')); }
 }
 
-async function act(r, action, li, b) {
-  if (action === 'delete' && !confirm('Delete this review and its photos for good?')) return;
+async function act(r, action, li, b, extra) {
+  if (action === 'delete' && !confirm('Delete this ' + (r.kinds ? 'note' : 'review') + ' and its photos for good?')) return;
   b.disabled = true;
   try {
-    await api('/admin/decide', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: r.id, action: action }) });
+    await api('/admin/decide', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ id: r.id, action: action }, extra || {})) });
     li.replaceChildren(el('p', 'mq-meta', action === 'publish' ? 'Published. It reaches the site at its next build.'
-      : action === 'keep' ? 'Kept, and its reports cleared.' : 'Deleted, with its photos.'));
+      : action === 'keep' ? 'Kept, and its reports cleared.' : action === 'verify' ? (extra.source ? 'Verified: ' + extra.source + '. The site says so at its next build.'
+      : 'No longer verified.') : 'Deleted, with its photos.'));
   } catch (e) { b.disabled = false; say('Not done: ' + e.message); }
+}
+
+// A note on a visit: its ticks, the day, its words and photo, and for pollution or algae a box to verify it.
+function vcard(v, kind) {
+  const li = el('li', 'panel mq');
+  const head = el('p', 'mq-head'), a = el('a', null, names[v.spot] || v.spot);
+  a.href = SITE + 'spot/' + encodeURIComponent(v.spot) + '/'; a.target = '_blank'; a.rel = 'noopener';
+  head.append(a); li.append(head);
+  li.append(el('p', 'mq-v', v.kinds.map((k) => KINDS[k] || k).join(' · ')));
+  li.append(el('p', 'mq-meta', 'Seen ' + day(v.seen_on) + ' · sent ' + day(v.created_at) + ' · shown until ' + day(v.until)
+    + (v.confirmations ? ' · confirmed ' + v.confirmations + (v.confirmations === 1 ? ' time' : ' times') + ', last ' + day(v.confirmed_on) : '')
+    + (v.verified ? ' · verified: ' + v.verified : '')));
+  if (v.text) li.append(el('p', 'mq-text', v.text));
+  if (v.photos.length) { const box = el('div', 'mq-pics'); li.append(box); photo(v, 0, box); }
+  if (kind === 'reported') li.append(el('p', 'mq-reports', 'Reported as ' + v.reasons.map((x) => REASONS[x] || x).join(', ')));
+  const acts = el('div', 'actions');
+  const button = (label, action, primary) => {
+    const b = el('button', 'btn' + (primary ? ' primary' : ''), label); b.type = 'button';
+    b.addEventListener('click', () => act(v, action, li, b)); acts.append(b);
+  };
+  if (kind === 'pending') { button('Publish', 'publish', true); button('Delete', 'delete'); }
+  else if (kind === 'reported') { button('Keep it', 'keep', true); button('Delete', 'delete'); }
+  else button('Delete', 'delete');
+  li.append(acts);
+  if (kind !== 'pending' && v.kinds.some((k) => k === 'pollution' || k === 'algae')) {
+    const f = el('form', 'mq-verify'), id = 'verify-' + v.id;
+    const lab = el('label', null, v.verified ? 'Verified by (empty it to unverify)' : 'Verify it: the official source that confirms it'); lab.htmlFor = id;
+    const input = el('input'); input.id = id; input.type = 'text'; input.maxLength = 120; input.value = v.verified || '';
+    input.placeholder = 'Environment Agency notice, 3 Oct';
+    const b = el('button', 'btn', v.verified ? 'Save' : 'Verify'); b.type = 'submit';
+    f.append(lab, input, b);
+    f.addEventListener('submit', (e) => { e.preventDefault(); act(v, 'verify', li, b, { source: input.value.trim() }); });
+    li.append(f);
+  }
+  return li;
 }
 
 function card(r, kind) {
@@ -147,9 +202,9 @@ function card(r, kind) {
   return li;
 }
 
-function fill(id, list, kind, empty) {
+function fill(id, list, kind, empty, make) {
   $('n-' + id).textContent = '(' + list.length + ')';
-  $(id).replaceChildren(...(list.length ? list.map((r) => card(r, kind)) : [el('li', 'mq-meta', empty)]));
+  $(id).replaceChildren(...(list.length ? list.map((r) => (make || card)(r, kind)) : [el('li', 'mq-meta', empty)]));
 }
 
 async function load() {
@@ -161,10 +216,15 @@ async function load() {
       + (s.level === 'normal' ? '' : ' Storage is getting full. Make room before accepting more photos.')
       + (s.cleanup_pending ? ' ' + s.cleanup_pending + ' photo batches are waiting for automatic cleanup.' : '')
       + (s.estimated_reviews ? ' Older photos are counted at their maximum size.' : '');
-    document.title = (q.summary.pending + q.summary.reported ? '(' + (q.summary.pending + q.summary.reported) + ') ' : '') + 'Reviews to check · SwimSignal';
+    const todo = q.summary.pending + q.summary.reported + (q.summary.visits_pending || 0) + (q.summary.visits_reported || 0);
+    document.title = (todo ? '(' + todo + ') ' : '') + 'Reviews to check · SwimSignal';
     fill('pending', q.pending, 'pending', 'Nothing waiting.');
     fill('reported', q.reported, 'reported', 'Nothing reported.');
     fill('published', q.published, 'published', 'Nothing published yet.');
+    const v = q.visits || { pending: [], reported: [], published: [] };
+    fill('vpending', v.pending, 'pending', 'No notes waiting.', vcard);
+    fill('vreported', v.reported, 'reported', 'No notes reported.', vcard);
+    fill('vpublished', v.published, 'published', 'No notes showing.', vcard);
     $('find').value = '';
     $('queue').hidden = false; say('');
   } catch (e) { if (token) say('The queue could not be loaded: ' + e.message); }

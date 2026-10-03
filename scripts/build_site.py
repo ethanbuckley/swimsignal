@@ -760,6 +760,8 @@ def with_build(template: str, stamp: str) -> str:
 # scripts above are.
 SHELL_SOURCES.append(TEMPLATE.parent / "reviews.js")
 VERSIONED_SCRIPTS += ('<script src="reviews.js"></script>',)
+SHELL_SOURCES.append(TEMPLATE.parent / "visits.js")   # and the notes on a visit, which use it
+VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -773,6 +775,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     (site / "sw.js").write_text(sw.replace(SW_BUILD, f"const BUILD = '{stamp}';"))   # the offline copy; see the file
     shutil.copy(TEMPLATE.parent / "experience.js", site / "experience.js")
     shutil.copy(TEMPLATE.parent / "reviews.js", site / "reviews.js")   # swimmers' reviews (src/dipcast/reviews.py)
+    shutil.copy(TEMPLATE.parent / "visits.js", site / "visits.js")   # quick notes on a visit, beside them
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
