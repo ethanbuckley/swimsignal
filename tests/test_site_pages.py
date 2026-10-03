@@ -3,6 +3,7 @@ name (never today's level, which a cached preview would show for days), every pa
 absolute preview links, a spot's page has a relative <base>, and the live scorer reports when the
 observation records its coverage rule needs begin."""
 
+import json
 import re
 import shutil
 import subprocess
@@ -61,7 +62,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 8 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
+    assert sm.count("<url>") == 9 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
     assert "<loc>https://example.org/swim/about.html</loc>" in sm and "<loc>https://example.org/swim/testing.html</loc>" in sm
@@ -76,6 +77,16 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert '<base href="../">' in head and '<meta name="robots" content="noindex">' in head
     assert '<link rel="canonical" href="https://example.org/swim/saved/">' in head and "<title>Saved spots · SwimSignal</title>" in head
     assert "saved/" not in sm and "noindex" not in home
+    # Plan a swim: one page for every plan (the plan is after the #), so it is in the sitemap; the
+    # places it starts from are this site's own file.
+    plan = (tmp_path / "plan" / "index.html").read_text()
+    head = plan.split("</head>")[0]
+    assert '<base href="../">' in head and "noindex" not in head and "<title>Plan a swim · SwimSignal</title>" in head
+    assert '<link rel="canonical" href="https://example.org/swim/plan/">' in head and "<loc>https://example.org/swim/plan/</loc>" in sm
+    assert '<h1 class="page-h">Plan a swim</h1>' in plan
+    places = json.loads((tmp_path / "data" / "places.json").read_text())
+    assert places["credit"].startswith("Contains OS data") and len(places["places"]) > 20000
+    assert ["Kendal", 54.33, -2.75] in places["places"]
 
 
 def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(tmp_path):
@@ -146,7 +157,7 @@ def test_the_page_and_the_build_use_one_id_rule():
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     assert "const PAGE_ID = /^[A-Za-z0-9_-]+$/;" in page and "/\\/spot\\/([A-Za-z0-9_-]+)\\/?$/" in page
     # The pages the build writes below the root, which the page strips to find the root without a <base>.
-    assert "replace(/(spot\\/[^/]+|saved)\\/?$/, '')" in page
+    assert "replace(/(spot\\/[^/]+|saved|plan)\\/?$/, '')" in page
 
 
 def test_the_ea_rating_reaches_bathing_water_spots_only(tmp_path):
@@ -290,6 +301,7 @@ def test_feedback_and_experience_are_built_for_nested_github_pages(tmp_path):
     assert re.fullmatch(r"[0-9a-f]{8}", stamp)
     # The page asks for its scripts at the build's stamp, as the offline copy stores them.
     assert f'<script src="experience.js?v={stamp}">' in home and f'<script src="levels.js?v={stamp}">' in home
+    assert f'<script src="plan.js?v={stamp}">' in home and (tmp_path / "plan.js").exists() and "`plan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert (tmp_path / "experience.js").exists()
     sw = (tmp_path / "sw.js").read_text()
     assert 'feedback.html' in sw and f"const BUILD = '{stamp}';" in sw and "const CACHE = `dipcast-${BUILD}`;" in sw
@@ -421,7 +433,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert row("links/") == '<td>links/</td><td>Not described here yet.</td><td class="num">3 kB</td>'   # a folder, whole
     assert bs.with_data_files((bs.STATIC / "data.html").read_text(), data)[1] == ["links/", "new.csv"]
     # The documented files each have a section of their own.
-    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv"):
+    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "places.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
     assert '<h2 id="anypoint">anypoint/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
@@ -431,7 +443,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 7
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 8
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):

@@ -505,6 +505,24 @@ in lightness (1.26:1; ink was 2.02:1), so the order, forecast above observed, an
 the grey is 4.45:1 on the empty track. On phones the prose header
 gives all four navigation links a single full-width row.
 
+## Plan a swim (3 October 2026)
+
+- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header: on a phone the
+  header's one link (the bar at the bottom keeps its three), hidden over the full map, where Back
+  needs the room. Its choices sit on the sky as the list's do: the day and the distance side by side,
+  the starting place as a field with the pin icon where the search has the glass, the kinds of water
+  as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
+  320 px phone; the count under the chips says "within".
+- The spots come in up to three tiles, each the list's rows between hairlines with one more line in
+  ink, why the spot is there: "Nothing flagged on Saturday" (low, or a plain level), "Moderate risk or
+  higher on Saturday", "No level". A low spot and one with no monitored overflow are in one group
+  because neither is flagged that day; each row's headline still says which it is.
+- A row's distance leads its meta line ("7.7 miles away · Lake · bathing water"). Miles, where the
+  rest of the site says km: travel is planned in miles, and Ethan's own example was "within 20
+  miles". A choice to revisit if the two units read as inconsistent.
+- Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
+  words sit on the picture below the band.
+
 ## The embed and the data page (3 October 2026)
 
 - **The embed**, `embed.html?spot=<id>` (`src/dipcast/site/embed.html` and `embed.js`), is one spot's

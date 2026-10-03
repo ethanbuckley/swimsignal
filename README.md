@@ -912,6 +912,25 @@ within 15 km of Ham and Kingston are all on tidal links and are passed over.
 A failed request leaves every spot without and does not stop the build; the
 build summary's `water_temperature` is the count.
 
+**Plan a swim (3 Oct 2026).** `plan/` asks for a day, where you start and how
+far you will go (5 to 50 miles, or any distance), and the kind of water, then
+lists the spots within reach in three groups: nothing flagged that day (low
+risk, or a plain level), moderate risk or higher, and no level. Each group is
+nearest first, the second by level first; each row gives its distance, its
+headline for the day and a line on why (`planWhy` in `index.html`: the spills
+expected that day, the E. coli estimate in season, the EA rating, access not
+confirmed, and the river high on a plan for today). Distances are in a
+straight line. The rules are `plan.js` (`tests/site_plan.test.cjs`). The plan
+is in the address after the #, so a link opens it; a place carries its own
+position (`from=Kendal&at=54.33,-2.75`), and your own location is written
+`from=here`, never as coordinates, and never moves the map. The places are
+`data/raw/places.json`, from OS Open Names (OGL): 26,211 cities, towns,
+districts, villages and other settlements in England and Wales, 771 kB (239 kB
+compressed), copied to `site/data/places.json` and fetched the first time a
+place is typed. `scripts/make_places.py` rebuilds it from OS's 103 MB download.
+Postcodes are not in it. If more of the spots in a plan are low on another of
+the five days (two more and a quarter more), the count line offers that day.
+
 **Alerts** (`push/`, set up by hand: `push/README.md`). A Cloudflare Worker
 keeps, for each browser that turns alerts on from the Saved page, its push
 address and the ids of its saved spots, and nothing else. Each build writes

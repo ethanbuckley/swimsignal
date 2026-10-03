@@ -70,6 +70,9 @@ DESCRIPTION = ("Five-day pollution risk forecasts for river and lake swim spots 
                "data, rainfall forecasts and the river network.")
 SAVED_TITLE = f"Saved spots · {BRAND}"
 SAVED_DESCRIPTION = "A list of river and lake swim spots, each with its five-day pollution risk forecast."
+PLAN_TITLE = f"Plan a swim · {BRAND}"
+PLAN_DESCRIPTION = ("Pick a day, where you are starting from and how far you will go: the river and lake swim spots "
+                    "within reach, with their pollution risk forecast for that day.")
 # Spot ids that get a page of their own at spot/<id>/; index.html uses the same rule. Any other
 # id keeps its ?spot= address: one odd row in spots.csv must not stop the build.
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]+")
@@ -766,6 +769,10 @@ VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
 # Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "guide.js")
 VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
+# Plan a swim (plan/): its rules, plan.js, likewise. The places it starts from are data, fetched the
+# first time one is typed (PLACES, below).
+SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
+VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -783,6 +790,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "guide.js", site / "guide.js")   # practical guides (src/dipcast/guides.py)
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
+    shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -865,6 +873,20 @@ def saved_page(template: str, root: str) -> str:
                                  '<p class="muted">Loading your saved spots…</p></div>', 1)
 
 
+# The places Plan a swim can start from: OS Open Names' cities, towns, districts and villages in England
+# and Wales (scripts/make_places.py writes it; it changes only when that is run again).
+PLACES = config.RAW / "places.json"
+
+
+def plan_page(template: str, root: str) -> str:
+    """Plan a swim, plan/: the map page, where the script asks for a day, a starting place and a
+    distance, and lists the spots within reach (plan.js). The plan itself is after the # in the
+    address, so every plan is this one page."""
+    page = PAGE_META.sub(lambda m: page_meta(PLAN_TITLE, PLAN_DESCRIPTION, f"{root}plan/", root, base="../"), template, count=1)
+    return page.replace(LOADING, '<div id="result"><h1 class="page-h">Plan a swim</h1>'
+                                 f'<p class="muted">{escape(PLAN_DESCRIPTION)} Loading the forecasts…</p></div>', 1)
+
+
 def with_counts(html: str, results: list[dict]) -> str:
     """The About page's spot counts, from this build's spots, and how far upstream the tracing
     goes, from the config, so they cannot go stale."""
@@ -901,7 +923,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str) -> str:
-    urls = [root, f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html"] + [f"{root}spot/{i}/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html"] + [f"{root}spot/{i}/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -933,6 +955,10 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
     (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))
+    (site / "plan").mkdir(exist_ok=True)
+    (site / "plan" / "index.html").write_text(with_counter(plan_page(template, root), token))
+    (site / "data").mkdir(exist_ok=True)
+    shutil.copy(PLACES, site / "data" / "places.json")   # before the data page, which lists data/
     shutil.rmtree(site / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
     ids = []
     for r in results:
