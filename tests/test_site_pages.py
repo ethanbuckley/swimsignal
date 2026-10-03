@@ -464,7 +464,8 @@ def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path
 def test_the_embed_fits_a_column_320_px_wide():
     # What the card lays out at a fixed size must leave the day's bar room at 320 px: the frame's
     # border and padding, and the rows' day and level columns and their gaps. The rest is fluid
-    # (checked in headless Chrome on 3 Oct 2026: no spot's card overflowed at 320, 375 or 480 px).
+    # (checked in Chrome on 3 Oct 2026, and on 4 Oct with the full credits: no spot's card overflowed
+    # at 320, 375 or 480 px).
     css = "\n".join(re.findall(r"<style>(.*?)</style>", (ROOT / "src" / "dipcast" / "site" / "embed.html").read_text(), re.DOTALL))
     card = re.search(r"\.card \{([^}]*)\}", css).group(1)
     pad = [int(x) for x in re.search(r"padding:(\d+)px (\d+)px", card).groups()]
@@ -485,6 +486,21 @@ def test_the_embed_card_rules():
     assert r.returncode == 0, r.stdout + r.stderr
 
 
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_embed_card_carries_the_data_files_notices_word_for_word():
+    # The card goes on other people's pages, so it carries what the data files carry (data_credits):
+    # the Stream ID lookup, and Ordnance Survey's and Copernicus's notices as their licences word them.
+    embed = ROOT / "src" / "dipcast" / "site" / "embed.js"
+    credit = subprocess.run(["node", "-p", "require(process.argv[1]).CREDIT", str(embed)],
+                            capture_output=True, text=True, timeout=60, check=True).stdout
+    attribution = _build_site().data_credits("https://example.org/")["attribution"]
+    notices = ["the Stream ID lookup, via Stream",
+               re.search(r"Contains OS data © Crown copyright and database right \d{4}\.", attribution).group(0),
+               re.search(r"contains modified Copernicus .*? it contains\.", attribution).group(0)]
+    for n in notices:
+        assert n in credit, n
+
+
 def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
@@ -492,6 +508,10 @@ def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_
     snippet = re.search(r'<h2 id="embed">.*?<pre><code>(.*?)</code></pre>', about, re.DOTALL).group(1)
     assert snippet.startswith("&lt;iframe src=\"https://swimsignal.co.uk/embed.html?spot=wharfe-burnsall\"") and 'title="' in snippet
     assert 'href="embed.html?spot=wharfe-burnsall"' in about and (tmp_path / "embed.html").exists()
+    # The frame is the tallest card measured, rounded up to 20 px, so that card fits without scrolling.
+    height = int(re.search(r'height="(\d+)"', snippet).group(1))
+    tallest = int(re.search(r"the tallest card was (\d+) pixels high", about).group(1))
+    assert tallest <= height < tallest + 20 and height % 20 == 0, (tallest, height)
     terms = (tmp_path / "terms.html").read_text()
     allow = re.search(r"<li>You may show a spot's forecast on your own website.*?</li>", terms).group(0)
     assert "embed.html" in allow and "credits intact" in allow and 'href="about.html#embed"' in allow

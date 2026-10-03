@@ -630,16 +630,20 @@ gives all four navigation links a single full-width row.
   name in the serif; the headline as a saved spot's card sets its level (20 px bold, in the level's
   text shade, "risk" in it as everywhere); where the week goes; the five days as the spot's page's
   rows under "Pollution risk, next five days"; the caveat; the issue time with the link back; the
-  data credits at the meta size. It uses page.css's tokens and typefaces, and
+  data credits at the meta size. The credits name each source and licence in short, and give the
+  Ordnance Survey and Copernicus notices word for word, as `data_credits` in `scripts/build_site.py`
+  does. It uses page.css's tokens and typefaces, and
   `tests/test_design_tokens.py` checks its styles as it checks the app's.
 - Its rows are 32 px, not 46, since nothing in them is a button. A day's bar fills the day's band (a
   quarter for low, all four for very high) rather than being placed within it: that rule is
   `levelPlace` in `index.html`, and the card does not keep a second copy of it.
 - Every link opens a new tab: inside a frame, a link that opened in place would leave the site
   squeezed into someone else's page. It has no map, no page-view counter, and stores nothing.
-- It fits a column from 320 px. Measured in headless Chrome on 3 October 2026 over all 89 spots, the
-  tallest card was 638 px at 320 px wide, 554 at 375 and 488 at 480, and none overflowed sideways.
-  The snippet on About asks for 640.
+- It fits a column from 320 px. Measured in Chrome on 4 October 2026 over all 105 spots, with the
+  full credits, the tallest card was 783 px at 320 px wide, 681 at 375 and 578 at 480, and none
+  overflowed sideways. The snippet on About asks for 800. With the shorter credits that came first, the
+  tallest was 637, 553 and 487 on the same data. A stale forecast's notice adds about 90 px, and that
+  card scrolls inside its frame.
 - **The data page**, `data.html`, is a prose page. A file's fields are a ruled list (`dl.fields`), the
   name over what it holds: in a two-column table the long field names squeezed the words into a
   column a few words wide on a phone.
