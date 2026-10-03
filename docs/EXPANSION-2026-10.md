@@ -94,4 +94,4 @@ or photos must be excluded. We would keep unverified records distinct and would 
 missing reports as absence of algae. We can provide a preview before publishing.
 
 Destination if authorised: the project's published bloomin-algae@ceh.ac.uk contact. No enquiry
-has been sent. An independent reviewer also needs to be identified and invited by the owner.
+has been sent. An independent-review invitation has been prepared for Professor Richard Quilliam at the University of Stirling (https://www.stir.ac.uk/people/257111). Availability and conflicts have not been established; the invitation is awaiting owner authorisation.
