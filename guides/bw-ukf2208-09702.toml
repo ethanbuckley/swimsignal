@@ -1,0 +1,53 @@
+# Rutland Water, Sykes Lane. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Sykes Lane car park, LE15 8QL. Free for 15 minutes, then £2 an hour for up to 6 hours. Opens 9am daily; closing time changes through the year."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/visitor-information"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "parking"
+text = "On busy days parking is charged per car on entry. When the Overflow A car park is in use it is a 15-minute walk from the beach."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/beach"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "entry"
+text = "A sandy beach on the north-east shore, between Whitwell and Empingham."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukf2208-09702"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "entry"
+text = "140 metres of sandy shoreline, with a 2,800 square metre area to paddle and swim in."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/beach"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "hours"
+text = "The 2026 beach season ran from 23 May and closed on 17 September. Stay out of the water outside the opening periods."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/beach"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "rules"
+text = "Swim only in the lifeguarded area."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/beach"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "rules"
+text = "Sykes Lane beach is the only place at Rutland Water where swimming is permitted."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/faqs"
+source_name = "Anglian Water"

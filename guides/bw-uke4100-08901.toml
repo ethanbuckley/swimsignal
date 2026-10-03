@@ -1,0 +1,39 @@
+# Wharfe at Cromwheel, Ilkley. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "path"
+text = "Reached from the Riverside Walk footpath beside the river. The bathing site is upstream of the suspension bridge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "entry"
+text = "When the river is low, a gently sloping shingle beach is exposed."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "On-street parking on New Brook Street near the start of the Riverside Gardens walk, or a pay and display car park in the town centre. This leaflet is for the riverside walk; it does not mention the Cromwheel bathing site."
+status = "confirmed"
+source = "https://www.bradford.gov.uk/media/2070/riversidegardensilkley.pdf"
+source_name = "Bradford Council"
+
+[[fact]]
+topic = "parking"
+text = "Denton Road car park, LS29 0BZ: 93 spaces, 4 for disabled drivers. £1 an hour, £4 over 3 hours, charged 8am to 6pm every day. The council's list does not link it to the Cromwheel bathing site."
+status = "confirmed"
+source = "https://www.bradford.gov.uk/transport-and-travel/parking/car-parks-in-ilkley-addingham-and-burley-in-wharfedale/"
+source_name = "Bradford Council"
+
+[[fact]]
+topic = "toilets"
+text = "Riverside Gardens public toilets: four unisex cubicles, one accessible by ramp (radar key, card or coins). 40p by contactless card or coins. Open 8am to 8pm in summer, 9am to 6pm in winter. The council's page does not say how far they are from the Cromwheel bathing site."
+status = "confirmed"
+source = "https://www.ilkleytowncouncil.gov.uk/services/toilets/"
+source_name = "Ilkley Town Council"

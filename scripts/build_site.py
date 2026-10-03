@@ -26,6 +26,7 @@ from dipcast import __version__, config
 from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, load_poll_log, load_verification, samples_status
+from dipcast.guides import attach_guides, copy_photos
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
 from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
@@ -762,6 +763,9 @@ SHELL_SOURCES.append(TEMPLATE.parent / "reviews.js")
 VERSIONED_SCRIPTS += ('<script src="reviews.js"></script>',)
 SHELL_SOURCES.append(TEMPLATE.parent / "visits.js")   # and the notes on a visit, which use it
 VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
+# Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide from spots.json.
+SHELL_SOURCES.append(TEMPLATE.parent / "guide.js")
+VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -776,6 +780,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "experience.js", site / "experience.js")
     shutil.copy(TEMPLATE.parent / "reviews.js", site / "reviews.js")   # swimmers' reviews (src/dipcast/reviews.py)
     shutil.copy(TEMPLATE.parent / "visits.js", site / "visits.js")   # quick notes on a visit, beside them
+    shutil.copy(TEMPLATE.parent / "guide.js", site / "guide.js")   # practical guides (src/dipcast/guides.py)
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
@@ -1073,6 +1078,7 @@ def build(refresh: bool = True) -> dict:
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
                         **({"osm_id": r.osm_id} if getattr(r, "osm_id", "") else {}), **f})
     attach_access(results)
+    guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
     n_classified = attach_classifications(results)
     # Network only, like the levels, and before their EA requests: one request for the national flood
@@ -1094,11 +1100,14 @@ def build(refresh: bool = True) -> dict:
         health["warnings"].append(f"flood alerts not checked for {n_flows['flood_alerts_unchecked']} of {len(results)} spots: "
                                   "the Environment Agency did not answer; their pages say so")
     health["water_temperature"] = n_water_temp
+    health["guides"] = guides["guides"]
+    health["warnings"] += guides["warnings"]
     for w in health["warnings"]:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)
     credits = data_credits(site_url())
     health["anypoint"] = write_any_point(SITE, credits)
+    health["guide_photos"] = copy_photos(SITE, results)
     from dipcast.coastal import attach_samples
     from dipcast.coastal import fetch as fetch_coastal
     # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
