@@ -2,21 +2,23 @@ import { createDecipheriv, createECDH, createHmac, randomBytes } from 'node:cryp
 
 // Workers KV, as far as this Worker uses it. A small page size exercises the list cursor.
 export class FakeKV {
-  constructor(pageSize = 2) { this.map = new Map(); this.meta = new Map(); this.pageSize = pageSize; this.writes = 0; this.gets = 0; }
+  constructor(pageSize = 2) { this.map = new Map(); this.meta = new Map(); this.ttl = new Map(); this.pageSize = pageSize; this.writes = 0; this.gets = 0; }
   async get(key, type) {
     this.gets++;
     const value = this.map.get(key);
     if (value === undefined) return null;
     return (type?.type ?? type) === 'json' ? JSON.parse(value) : value;
   }
-  async put(key, value, { metadata } = {}) {
+  async put(key, value, { metadata, expirationTtl } = {}) {
     if (typeof value !== 'string') throw new TypeError('FakeKV stores strings only');
     if (metadata !== undefined && JSON.stringify(metadata).length > 1024) throw new Error('metadata over 1024 bytes');
+    if (expirationTtl !== undefined && !(expirationTtl >= 60)) throw new Error('KV expirationTtl must be at least 60 seconds');
     this.writes++;
     this.map.set(key, value);
     if (metadata === undefined) this.meta.delete(key); else this.meta.set(key, metadata);
+    if (expirationTtl === undefined) this.ttl.delete(key); else this.ttl.set(key, expirationTtl);
   }
-  async delete(key) { this.writes++; this.map.delete(key); this.meta.delete(key); }
+  async delete(key) { this.writes++; this.map.delete(key); this.meta.delete(key); this.ttl.delete(key); }
   async list({ prefix = '', cursor } = {}) {
     const names = [...this.map.keys()].filter((k) => k.startsWith(prefix)).sort();
     const start = cursor ? Number(cursor) : 0;
