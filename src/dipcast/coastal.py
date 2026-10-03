@@ -273,7 +273,7 @@ def attach_samples(snapshot, now=None, points_file=None, cache=None, fetch=None)
 
 
 def _count(r):
-    return f'{"" if r["qualifier"] == "=" else r["qualifier"]}{r["value"]:,.0f}'
+    return escape(f'{"" if r["qualifier"] == "=" else r["qualifier"]}{r["value"]:,.0f}')
 
 
 def sample_line(sample, since):
