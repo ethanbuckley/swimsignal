@@ -43,7 +43,11 @@ test('a spot with a live flood alert in the fixture shows the sentence, and the 
   assert.equal(say(s), 'Flood alert in force nearby (Environment Agency): River Wharfe at Ilkley.');
   const two = {...s, flood_alerts: [{...ALERT, severity_level: 2, severity: 'Flood warning', area: 'River Wharfe at Burley'}, ALERT]};
   assert.equal(say(two), 'Flood warning in force nearby (Environment Agency): River Wharfe at Burley and 1 more.');
-  assert.equal(say({flood_alerts: []}) + say({flood_alerts: null}), '');
+  assert.equal(say({flood_alerts: []}) + say({}), '');
+  // The EA did not answer (null): said, never left to read as none in force.
+  assert.equal(say({flood_alerts: null}), 'Flood alerts not checked: the Environment Agency did not answer when this forecast was made. '
+    + 'Check flood warnings at https://check-for-flooding.service.gov.uk/.');
+  assert.equal(say({flood_alerts: null}, NOW + 26 * 36e5), '');   // nor from a build over a day old
   // The page's own line (index.html, flowLine), run on the same fixture.
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   const src = page.slice(page.indexOf('const flowLine = '), page.indexOf('\n', page.indexOf('A separate hazard, not part of the pollution level.')));
@@ -53,6 +57,8 @@ test('a spot with a live flood alert in the fixture shows the sentence, and the 
     + '<a href="https://check-for-flooding.service.gov.uk/target-area/123WAF456">River Wharfe at Ilkley</a>. A separate hazard, not part of the pollution level.</p>');
   assert.equal(ctx.flowLine({flow_state: 'high', river_state: gauge(), flood_alerts: [ALERT]}).match(/<b>/g).length, 2);   // both, river first
   assert.equal(ctx.flowLine({flow_state: null, flood_alerts: []}), '');
+  assert.equal(ctx.flowLine({flow_state: null, flood_alerts: null}), '<p class="flow"><b>Flood alerts not checked</b>: the Environment Agency '
+    + 'did not answer when this forecast was made. <a href="https://check-for-flooding.service.gov.uk/">Check flood warnings</a>. A separate hazard, not part of the pollution level.</p>');
   assert.ok(page.includes('flowLine(d) + `<p class="issued">'), 'the line sits in the answer, before the issue time');
 });
 

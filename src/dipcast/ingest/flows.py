@@ -132,20 +132,79 @@ _river_words = river_words
 
 
 def _nearest_level_station(lat: float, lon: float, dist_km: int = 15, river: str | None = None) -> RiverState | None:
+    """The spot's gauge (station_pick) with its latest reading asked of that station alone: three
+    requests at most. The site asks for every gauge's reading at once instead (level_lookup)."""
     try:
-        r = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/stations",
-                      params={"lat": lat, "long": lon, "dist": dist_km, "parameter": "level",
-                              "type": "SingleLevel"}, headers=config.EA_HEADERS, timeout=EA_TIMEOUT_S)
-        r.raise_for_status()
-        items = r.json().get("items", [])
+        pick = station_pick(lat, lon, dist_km, river)
     except httpx.HTTPError as e:
         log.warning("EA stations lookup failed: %s", e)
         return None
-    if not items:
+    if pick is None:
         return None
-    # The closest station with a stage scale on the spot's own river, if its name is known and any
-    # station carries it; else the closest with a scale. Without this, Burnsall on the Wharfe got
-    # Hebden Beck, a tributary 3 km away, over Netherside Hall on the Wharfe 6 km up (1 Oct 2026).
+    ref = pick["ref"]
+    readings = {}
+    try:
+        rr = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/stations/{ref}/readings",
+                       params={"latest": ""}, headers=config.EA_HEADERS, timeout=EA_TIMEOUT_S)
+        rr.raise_for_status()
+        readings = _readings_by_measure(rr.json().get("items", []))
+    except (httpx.HTTPError, ValueError) as e:
+        log.warning("EA readings failed for %s: %s", ref, e)
+    return river_state(pick, readings)
+
+
+def _num(x) -> float | None:
+    if isinstance(x, dict):
+        x = x.get("value")
+    if isinstance(x, bool):
+        return None
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def _measure_id(url) -> str | None:
+    m = str(url or "").rstrip("/").rsplit("/", 1)[-1]
+    return m if _MEASURE_ID.fullmatch(m) else None
+
+
+# The order a gauge's level measures are tried in. The stage scale's usual range is for the stage
+# (a downstream or tidal level has its own), above the stage datum: "m" and "mASD" are that, "mAOD"
+# is above sea level and equal to it only where the scale's datum is 0 (Trowlock Island, 3 Oct 2026),
+# and "---" has no unit. Kingston (3400TH) publishes its stage in both mASD and mAOD.
+_UNIT_ORDER = {"m": 0, "mASD": 0, "mAOD": 1}
+
+
+def _level_measures(station: dict) -> list[str]:
+    """A station's level measure ids from the stations list, in the order to try them: stage before
+    any other level, then by unit (_UNIT_ORDER), then as listed."""
+    ms = station.get("measures")
+    ms = ms if isinstance(ms, list) else [ms] if isinstance(ms, dict) else []
+    ranked = []
+    for i, m in enumerate(ms):
+        mid = _measure_id(m.get("@id")) if isinstance(m, dict) else None
+        if mid is None or m.get("parameter") != "level":
+            continue
+        ranked.append((0 if m.get("qualifier") == "Stage" else 1, _UNIT_ORDER.get(str(m.get("unitName")), 2), i, mid))
+    return [r[-1] for r in sorted(ranked)]
+
+
+def station_pick(lat: float, lon: float, dist_km: int = 15, river: str | None = None) -> dict | None:
+    """The gauge a spot's level comes from, without a reading: the closest station with a stage
+    scale on the spot's own river, if its name is known and any station carries it, else the
+    closest with a scale; its usual range, and its level measures in the order to try them
+    (_level_measures). One request for the stations near the point and, where the station links its
+    scale instead of embedding it, one for the scale. `complete` is False when that scale could not
+    be fetched, so that a pick without its range is not kept for later builds. None when no station
+    nearby has a scale; raises when the stations request fails."""
+    r = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/stations",
+                  params={"lat": lat, "long": lon, "dist": dist_km, "parameter": "level",
+                          "type": "SingleLevel"}, headers=config.EA_HEADERS, timeout=EA_TIMEOUT_S)
+    r.raise_for_status()
+    items = r.json().get("items", [])
+    # Without the river's name, Burnsall on the Wharfe got Hebden Beck, a tributary 3 km away, over
+    # Netherside Hall on the Wharfe 6 km up (1 Oct 2026).
     want = _river_words(river)
     best = None
     for s in items:
@@ -159,7 +218,7 @@ def _nearest_level_station(lat: float, lon: float, dist_km: int = 15, river: str
     if best is None:
         return None
     s = best[1]
-    scale = s.get("stageScale", {})
+    scale, complete = s.get("stageScale", {}), True
     if isinstance(scale, str):  # some stations link to the scale instead of embedding it
         url = _ea_link(scale)
         try:
@@ -172,39 +231,119 @@ def _nearest_level_station(lat: float, lon: float, dist_km: int = 15, river: str
                 scale = scale[0] if scale else {}
         except (httpx.HTTPError, ValueError) as e:
             log.warning("EA stage scale fetch failed: %s", e)
-            scale = {}
+            scale, complete = {}, url is None   # a link off the EA's host will not improve
     if not isinstance(scale, dict):
         scale = {}
-    ref = s.get("stationReference")
-    level, observed, measure = None, None, None
+    ref, rloi = s.get("stationReference"), s.get("RLOIid")
+    return {"ref": ref, "station": s.get("label", ref), "river": s.get("riverName"),
+            "lat": float(s["lat"]), "lon": float(s["long"]),
+            "typical_low": _num(scale.get("typicalRangeLow")), "typical_high": _num(scale.get("typicalRangeHigh")),
+            "rloi": str(rloi) if rloi not in (None, "") else None, "measures": _level_measures(s), "complete": complete}
+
+
+def _readings_by_measure(items: list) -> dict[str, tuple[str | None, float]]:
+    """Readings as {measure id: (time, value)}, the first of each measure kept. A reading whose value
+    is not one number is left out (one in the national list had a list on 3 Oct 2026)."""
+    out = {}
+    for rd in items:
+        if not isinstance(rd, dict):
+            continue
+        m, v = _measure_id(rd.get("measure")), rd.get("value")
+        if m and m not in out and "-level-" in m and isinstance(v, (int, float)) and not isinstance(v, bool):
+            out[m] = (rd.get("dateTime"), float(v))
+    return out
+
+
+def river_state(pick: dict, readings: dict[str, tuple[str | None, float]]) -> RiverState:
+    """A picked gauge with its latest reading: the first of its level measures (in pick order) that
+    has one. With no measure list (a stations list without them), any level reading of the station."""
+    order = pick.get("measures") or sorted((m for m in readings if m.startswith(f"{pick['ref']}-level-")),
+                                           key=lambda m: ("-level-stage-" not in m, _UNIT_ORDER.get(m.rsplit("-", 1)[-1], 2), m))
+    measure = next((m for m in order if m in readings), None)
+    observed, level = readings[measure] if measure else (None, None)
+    return RiverState(station=pick["station"], river=pick["river"], lat=pick["lat"], lon=pick["lon"],
+                      level_m=level, typical_low=pick["typical_low"], typical_high=pick["typical_high"],
+                      observed_at=observed, rloi=pick["rloi"], measure=measure)
+
+
+LATEST_TIMEOUT_S = 30.0   # one answer for every level gauge in England: 1.3 MB in about 3 s on 3 Oct 2026
+
+
+def latest_levels() -> dict[str, tuple[str | None, float]]:
+    """The latest reading of every level measure the EA publishes, in one request instead of one a
+    gauge: {measure id: (time, metres)}, about 4,100 measures on 3 Oct 2026. Raises on a failed
+    request, so that "no reading" and "could not ask" stay apart."""
+    r = httpx.get(f"{config.EA_FLOOD_MONITORING}/data/readings", params={"latest": "", "parameter": "level"},
+                  headers=config.EA_HEADERS, timeout=LATEST_TIMEOUT_S)
+    r.raise_for_status()
+    return _readings_by_measure(r.json().get("items", []))
+
+
+PICK_TTL_S = 7 * 86400        # a spot's gauge and its usual range are asked again after a week ...
+PICK_KEEP_S = 30 * 86400      # ... and an older pick is used, past its week, while that lookup fails
+
+
+def level_lookup(path, now: float | None = None, latest=None, pick=None):
+    """The site's gauge lookup: every reading in one request (latest_levels), and each spot's gauge
+    (station_pick) kept in the JSON file at `path` for PICK_TTL_S, so that a build asks the EA a
+    handful of times, not three times a spot. On 3 Oct 2026 those per-spot requests, about 300 a
+    build, met HTTP 403 or a timeout 8 to 79 times a build, and the national flood list asked after
+    them was refused in 6 of 8 builds. Returns (lookup, save): lookup(lat, lon, dist_km, river) gives a RiverState or None, as
+    nearest_level_station does, and save() writes the picks back. If the readings request fails,
+    every spot is left without a reading (logged once) rather than asking gauge by gauge."""
+    import json
+    import threading
+    import time
+    from pathlib import Path
+
+    path, now = Path(path), time.time() if now is None else now
+    latest, pick = latest or latest_levels, pick or station_pick
     try:
-        rr = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/stations/{ref}/readings",
-                       params={"latest": ""}, headers=config.EA_HEADERS, timeout=EA_TIMEOUT_S)
-        rr.raise_for_status()
-        for rd in rr.json().get("items", []):
-            if "level" in rd.get("measure", ""):
-                level, observed = float(rd["value"]), rd.get("dateTime")
-                measure = str(rd["measure"]).rstrip("/").rsplit("/", 1)[-1]
-                break
-    except (httpx.HTTPError, ValueError) as e:
-        log.warning("EA readings failed for %s: %s", ref, e)
+        kept = json.loads(path.read_text())
+        kept = kept if isinstance(kept, dict) else {}
+    except (OSError, ValueError):
+        kept = {}
+    try:
+        readings = latest()
+    except Exception as e:  # noqa: BLE001 - observations beside the forecast must not sink the build
+        log.warning("EA latest levels failed, so no spot gets a reading this time: %s", e)
+        readings = None
+    lock = threading.Lock()
 
-    def _num(x):
-        if isinstance(x, dict):
-            x = x.get("value")
-        try:
-            return float(x)
-        except (TypeError, ValueError):
-            return None
+    def lookup(lat: float, lon: float, dist_km: int = 15, river: str | None = None) -> RiverState | None:
+        if readings is None:
+            return None   # nothing to show, so no stations request either
+        key = f"{lat:.5f},{lon:.5f},{dist_km},{' '.join(sorted(_river_words(river)))}"
+        with lock:
+            old = kept.get(key)
+        age = now - old["at"] if isinstance(old, dict) and isinstance(old.get("at"), (int, float)) else None
+        p = old.get("pick") if age is not None else None
+        if p is not None and not (isinstance(p, dict) and {"ref", "station", "lat", "lon"} <= p.keys()):
+            p, age = None, None   # a damaged entry is asked again
+        if age is None or age > PICK_TTL_S:
+            try:
+                new = pick(lat, lon, dist_km, river)
+                if new is None or new.get("complete", True):
+                    with lock:
+                        kept[key] = {"at": now, "pick": new}
+                p = new if new is None or new.get("complete", True) or not p else p   # not a range-less pick over a whole one
+            except Exception as e:  # noqa: BLE001
+                if age is None or age > PICK_KEEP_S:
+                    log.warning("EA stations lookup failed: %s", e)
+                    return None
+                log.info("EA stations lookup failed; using the gauge picked %.0f days ago: %s", age / 86400, e)
+        return None if p is None else river_state(p, readings)
 
-    rloi = s.get("RLOIid")
-    return RiverState(
-        station=s.get("label", ref), river=s.get("riverName"), lat=float(s["lat"]),
-        lon=float(s["long"]), level_m=level,
-        typical_low=_num(scale.get("typicalRangeLow")), typical_high=_num(scale.get("typicalRangeHigh")),
-        observed_at=observed, rloi=str(rloi) if rloi not in (None, "") else None,
-        measure=measure if measure and _MEASURE_ID.fullmatch(measure) else None,
-    )
+    def save() -> None:
+        with lock:
+            fresh = {k: v for k, v in kept.items()
+                     if isinstance(v, dict) and isinstance(v.get("at"), (int, float)) and now - v["at"] <= PICK_KEEP_S}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(fresh, sort_keys=True))
+        tmp.replace(path)
+
+    return lookup, save
 
 
 # ------------------------------------------------------------------------------ too high to swim
