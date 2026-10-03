@@ -1,6 +1,22 @@
 # iPhone notification test
 
-Status: **not yet run on a physical iPhone**. The alert service and HTTPS site are deployed, and the checked-in public key matches the site's configured key (checked 3 October 2026). Local regression tests do not prove APNs delivery, permissions or Home Screen behaviour. Follow the isolated test steps below before claiming device verification.
+Status: **not yet run on a physical iPhone** (simulator results below). The alert service and HTTPS site are deployed, and the checked-in public key matches the site's configured key (checked 3 October 2026). Local regression tests do not prove APNs delivery, permissions or Home Screen behaviour. Follow the isolated test steps below before claiming device verification.
+
+## Simulator results, 3 October 2026
+
+Isolated QA copy (its own Worker, D1 database and KV namespace, one spot, QA-only keys), built from
+main `a639d47`, on an iPhone 17 simulator with iOS 27.0 (Xcode 27). The QA resources were deleted
+afterwards. A simulator cannot show whether Apple delivers a push, so these results do not replace the
+phone test below.
+
+| Check | Result |
+| --- | --- |
+| Add to Home Screen, open, save a spot | Passed. The new Home Screen app started with an empty list while Safari kept its own saved spot. |
+| Notification permission prompt | Shown; allowed. |
+| Registration (`pushManager.getSubscription()`) | Never answered in the simulator. No request reached the Worker's `/subscribe`. |
+| Timeout and retry message (#73) | Passed. After about 8 s: "Could not change alerts: the browser did not answer; try again." The button returned; a second try greyed it while waiting, then showed the same message. |
+| Photo review from the Home Screen app | Passed. A 24-megapixel HEIC from Photo Library previewed; the review was sent (`POST /reviews` 201) and showed "waiting to be checked, with 1 photo". The pending photo answered 404 publicly; after approval the stored JPEG was 1280 × 853 with only a JFIF header (no Exif, XMP or GPS). Cleanup left 0 bytes stored. |
+| Notification arrival and tap | **Not tested.** Needs the physical iPhone steps below. |
 
 ## Before the phone test
 
