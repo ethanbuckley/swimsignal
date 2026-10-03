@@ -263,13 +263,23 @@ const AnyPoint = (() => {
     return [...out];
   }
 
+  // Wales and Scotland, widened over their tidal rivers and estuaries (outside_england.json, from
+  // scripts/make_outside_england.py). The overflow data is the English water companies', so a click
+  // there has no forecast, though the squares near the border have files.
+  const outsideEngland = (lat, lon, shape) => !!shape && shape.geometry.coordinates.some(poly => inRing(lon, lat, poly[0]));
+  const ENGLAND_ONLY = 'SwimSignal has overflow data for England only, so it has no forecast here.';
+
   // Where a click goes and the overflows upstream of it, from the files: {mode, kind, name,
   // location, rows} or, where there is no forecast, {error}. files: {cfg: tiles.json, lakes:
-  // lakes.json, od: overflow_days.json, tiles: {square: {index, links}}} for the squares near it.
-  const ISOLATED = 'An isolated lake with no river connection in the network: storm overflows cannot reach it by water, '
-    + 'so the forecast has nothing to say about it. Risk from wildlife, runoff and bathers is not modelled.';
+  // lakes.json, od: overflow_days.json, tiles: {square: {index, links}}} for the squares near it,
+  // and outside: outside_england.json, or null from a build without it.
+  // A reservoir can be filled by pumping from a river, which the network does not show.
+  const ISOLATED = 'An isolated lake with no river connection in the network, so no storm overflow is traced to it '
+    + 'and the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
+    + 'Risk from wildlife, runoff and bathers is not modelled.';
   function place(lat, lon, files) {
-    const { cfg, lakes, od, tiles } = files, a = od.assumptions;
+    const { cfg, lakes, od, tiles, outside = null } = files, a = od.assumptions;
+    if (outsideEngland(lat, lon, outside)) return { mode: 'none', kind: '', name: 'This point', error: ENGLAND_ONLY };
     const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m);
     if (poly) {
       const p = poly.poly, name = p.name || 'Unnamed lake';
@@ -277,7 +287,10 @@ const AnyPoint = (() => {
       return { mode: 'lake', kind: 'lake', name, rows: p.lake === null ? [] : lakeRows(lakes.lakes[p.lake], [lat, lon], p.area_km2, a.lake_area_halving_km2),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
-    if (!Object.keys(tiles).length) return { mode: 'none', kind: '', name: 'This point', error: 'SwimSignal has overflow data for England only, so it has no forecast here.' };
+    // A square has files where an overflow is, or a link with one upstream. In England, then, no square
+    // near means no monitored overflow upstream of any water here; without the shape, the old answer.
+    if (!Object.keys(tiles).length) return { mode: 'none', kind: '', name: 'This point', error: !outside ? ENGLAND_ONLY
+      : `No river or lake near this point has a monitored storm overflow within ${a.max_upstream_km} km upstream, so SwimSignal has no sewage spills to forecast here.` };
     const at = locate(candidates(lat, lon, tiles), cfg);
     if (at.mode === 'none') return { mode: 'none', kind: '', name: 'This point', error: 'No river or lake within 1.5 km of this point.' };
     const entry = tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
@@ -291,10 +304,11 @@ const AnyPoint = (() => {
   // A point's forecast in the shape of a spot in spots.json, for the page's own card. The files of
   // one build name overflows by the same list; a deploy between two fetches is fetched again once.
   async function point(lat, lon, again = true) {
-    const [cfg, lakes, od] = await Promise.all([json('tiles.json'), json('lakes.json'), json('overflow_days.json')]);
-    const inLake = lakePolygon(lat, lon, lakes, cfg.lake_shore_m), keys = inLake ? [] : squares(lat, lon, cfg);
+    const [cfg, lakes, od, outside] = await Promise.all([json('tiles.json'), json('lakes.json'), json('overflow_days.json'),
+      json('outside_england.json').catch(() => null)]);
+    const skip = outsideEngland(lat, lon, outside) || lakePolygon(lat, lon, lakes, cfg.lake_shore_m), keys = skip ? [] : squares(lat, lon, cfg);
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    const at = place(lat, lon, { cfg, lakes, od, tiles });
+    const at = place(lat, lon, { cfg, lakes, od, tiles, outside });
     const rows = at.rows || [];
     const ids = rows.length ? await json('overflow_ids.json') : null;
     const versions = new Set([cfg.ids, od.ids, lakes.ids, ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
@@ -380,7 +394,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, forecast,
-    frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, locate, place, tileKey, squares, point, open, onMapClick };
+    frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, locate, place, tileKey, squares, point, open, onMapClick };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

@@ -96,6 +96,31 @@ test('a click outside every square with data says there is no data there', () =>
   assert.match(got.error, /England only/);
 });
 
+// Wales and Scotland as the build publishes them (data/raw/outside_england.json). The squares near
+// the border have files, so before this a click on the Taff in Cardiff found no overflow upstream and
+// said "No sewage risk from monitored overflows" (live site, 3 Oct 2026).
+const outside = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'raw', 'outside_england.json'), 'utf8'));
+test('a click in Wales or Scotland says England only, even where the squares have files', () => {
+  const away = { 'Taff in Cardiff': [51.48, -3.18], 'Usk at Abergavenny': [51.82, -3.02], 'Dee at Llangollen': [52.97, -3.17],
+    'Wye at Hay': [52.075, -3.125], 'Monnow at Monmouth': [51.81, -2.715], 'Tweed at Kelso': [55.60, -2.43], 'Esk at Langholm': [55.15, -2.99] };
+  const home = { 'Wharfe at Burnsall': [54.047, -1.953], 'Dee at Chester': [53.19, -2.89], 'Wye at Hereford': [52.05, -2.715],
+    'Tweed at Berwick': [55.77, -2.005], 'Eden at Carlisle': [54.90, -2.93], 'Severn off Lydney': [51.70, -2.50], 'Thames at Richmond': [51.46, -0.31] };
+  for (const [what, [lat, lon]] of Object.entries(away)) assert.equal(A.outsideEngland(lat, lon, outside), true, what);
+  for (const [what, [lat, lon]] of Object.entries(home)) assert.equal(A.outsideEngland(lat, lon, outside), false, what);
+  const c = syn.clicks.find(x => x.mode === 'river');
+  const shape = { geometry: { coordinates: [[[[c.lon - 0.1, c.lat - 0.1], [c.lon + 0.1, c.lat - 0.1], [c.lon + 0.1, c.lat + 0.1], [c.lon - 0.1, c.lat + 0.1]]]] } };
+  const got = A.place(c.lat, c.lon, { ...files, outside: shape });
+  assert.equal(got.mode, 'none');
+  assert.match(got.error, /England only/);
+  assert.equal(A.place(c.lat, c.lon, { ...files, outside }).mode, 'river');   // the synthetic river is not in Wales
+});
+
+test('a click in England with no square near says no overflow is upstream, not England only', () => {
+  const got = A.place(54.0, -2.0, { ...files, tiles: {}, outside });
+  assert.equal(got.mode, 'none');
+  assert.equal(got.error, 'No river or lake near this point has a monitored storm overflow within 60 km upstream, so SwimSignal has no sewage spills to forecast here.');
+});
+
 test('a point with no overflow upstream gets the API\'s answer: every day zero, nothing upstream', () => {
   const od = { today: 1, days: ['2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07'], scale: 1000,
     p: [], live: [], status: [], company: [], companies: [], low: [],

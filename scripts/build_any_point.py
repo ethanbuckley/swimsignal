@@ -24,6 +24,8 @@ Everything is written under site/data/anypoint/:
   lakes.json           the WFD lake polygons (England) and every lake an overflow reaches: its
                        inlets, each with the overflows whose water enters there (river distance
                        and dilution before the lake-area term)
+  outside_england.json Wales and Scotland, widened over their estuaries, where a click gets "England
+                       only" (a copy of data/raw/outside_england.json, scripts/make_outside_england.py)
 
 A click is placed as transport._locate places it: inside or within 150 m of a WFD lake polygon it
 is that lake; otherwise the nearest link within 1.5 km, or the nearest lake centreline when that
@@ -50,6 +52,7 @@ import logging
 import math
 import os
 import pickle
+import shutil
 import time
 from pathlib import Path
 
@@ -88,6 +91,7 @@ INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
 CACHE_VERSION = 5         # bump when the table's rules change
 OUT = "anypoint"
+OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
 RAIN_MAX_AGE_H = 24.0
 
@@ -751,8 +755,15 @@ def build(site: Path, net: RiverNetwork, ov: pd.DataFrame, probabilities, credit
         "tiles": meta["tiles"], "dilution_scale": DIL_SCALE, "p_scale": P_SCALE, "simplify_m": SIMPLIFY_M,
         "forms": FORMS, "snap_m": PIN_SNAP_M, "lake_snap_m": LAKE_SNAP_M, "lake_shore_m": LAKE_SHORE_M,
         "lake_bias": transport.LAKE_BIAS, **({"credits": credits} if credits else {})}, separators=(",", ":")))
+    # The overflow data is England's: without this file a click in Wales or Scotland near the border is
+    # traced as if in England, and finds no overflow upstream.
+    if OUTSIDE_ENGLAND.exists():
+        shutil.copyfile(OUTSIDE_ENGLAND, out / OUTSIDE_ENGLAND.name)
+    else:
+        log.warning("any-point data: %s is missing, so the page cannot tell a click outside England", OUTSIDE_ENGLAND)
     summary = {**stats, **meta["counts"], "tiles": len(meta["tiles"]), "overflows": days["n"], "days": days["days"],
-               "rain": days["rain"], "rain_unavailable_share": days["no_data_share"], "bytes": size_of(out),
+               "rain": days["rain"], "rain_unavailable_share": days["no_data_share"],
+               "outside_england": OUTSIDE_ENGLAND.exists(), "bytes": size_of(out),
                "table_s": round(t1 - t0, 1), "files_s": round(t2 - t1, 1), "days_s": round(t3 - t2, 1),
                "seconds": round(time.time() - t0, 1)}
     log.info("any-point data: %s", summary)

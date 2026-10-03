@@ -353,9 +353,28 @@ def test_a_spot_said_to_be_on_another_river_is_flagged(net, check):
 
 def test_a_lake_with_no_river_in_is_said_plainly(net, check):
     text, ok = ask(net, check, "Hidden Tarn", 349000, 461000, kind="lake")
-    assert ok and "A lake with no river flowing in on the map. Storm overflows cannot reach it by water" in text
+    assert ok and "A lake with no river flowing in on the map, so no storm overflow is traced to it" in text
     assert "Storm overflows upstream" not in text and "Lakes are not checked automatically" in text
     assert ",lake,,curated," in text
+
+
+@pytest.mark.parametrize("lat, lon, outside", [
+    (51.48, -3.18, True),     # the Taff in Cardiff
+    (55.60, -2.43, True),     # the Tweed at Kelso
+    (54.047, -1.953, False),  # the Wharfe at Burnsall
+    (55.77, -2.005, False),   # the Tweed at Berwick, which is in England
+])
+def test_outside_england_from_the_published_shape(lat, lon, outside):
+    assert sr.outside_england(lat, lon) is outside
+
+
+def test_a_spot_outside_england_says_its_overflows_are_not_known(net, check, monkeypatch):
+    """Before, a Welsh request read "None monitored within 60 km upstream" (the Wye at Hay, 3 Oct 2026):
+    true of SwimSignal's table, not of the river."""
+    monkeypatch.setattr(sr, "outside_england", lambda lat, lon: True)
+    text, ok = ask(net, check, "River Lune, Crook o' Lune", 351100, 460600)
+    assert ok and f"- **Storm overflows upstream:** {sr.OUTSIDE}" in text
+    assert "monitored within" not in text
 
 
 def test_no_water_within_reach_asks_for_coordinates(net, check):
