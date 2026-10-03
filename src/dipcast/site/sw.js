@@ -11,16 +11,16 @@
 // BUILD is a hash of the files this worker stores, which scripts/build_site.py (shell_stamp) writes
 // in on every build. A changed font, icon or script therefore changes this file, the browser
 // installs the new worker, and it fills a new cache, so nothing is served stale for a visit; the
-// old cache is deleted when it takes over. The page asks for levels.js, experience.js and anypoint.js
-// with ?v=BUILD too, so a page and its scripts come from one build: a page from the network never runs
-// with a stored older levels.js, and a stored page never with a newer one.
+// old cache is deleted when it takes over. The page asks for levels.js, experience.js, anypoint.js
+// and plan.js with ?v=BUILD too, so a page and its scripts come from one build: a page from the
+// network never runs with a stored older levels.js, and a stored page never with a newer one.
 //
 // To retire this worker, publish a sw.js that unregisters itself: a deleted file leaves the
 // installed worker running on visitors' devices.
 const BUILD = 'dev';
 const CACHE = `dipcast-${BUILD}`;
 const TIMEOUT_MS = 4000;
-const SHELL = ['./', `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots.json', 'manifest.webmanifest',
+const SHELL = ['./', `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots.json', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/fells.webp',
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', `reviews.js?v=${BUILD}`, `visits.js?v=${BUILD}`];

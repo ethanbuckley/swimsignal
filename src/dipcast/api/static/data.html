@@ -31,6 +31,7 @@
 <tr data-file="verification_live.csv"><td><a href="data/verification_live.csv">verification_live.csv</a></td><td>The individual forecast and observation pairs behind the live spill scores</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
 <tr data-file="coastal.json"><td><a href="data/coastal.json">coastal.json</a></td><td>Official English coastal and estuary directory, historical ratings and dated advice</td><td class="num">–</td></tr>
+<tr data-file="places.json"><td><a href="data/places.json">places.json</a></td><td>The towns, villages and districts Plan a swim can start from</td><td class="num">–</td></tr>
 <!-- more files --></tbody></table></div>
 <p class="small muted">Sizes are this build's, before compression. The site's host, GitHub Pages, sends the files compressed.</p>
 
@@ -110,6 +111,10 @@
 </dl>
 <p>Rain forecasts are refreshed in batches. <code>rain_h</code> gives the age of the forecast used for each overflow; cached forecasts are used for up to 24 hours. A clicked-point forecast has no local river gauge or bathing-water sample attached to it: it is a sewage-spill forecast, and cannot confirm that swimming is safe.</p>
 <p><b>Licence.</b> SwimSignal's forecasts and upstream calculations, with the source river network, lake outlines, overflow records and rainfall under the licences in the credits.</p>
+
+<h2 id="places-json">places.json</h2>
+<p>The places Plan a swim can start from: every city, town, suburban area, village and other settlement in England and Wales in Ordnance Survey's OS Open Names, about 26,000 names. <code>places</code> lists each as <code>[name, latitude, longitude]</code>, to two decimal places (about a kilometre), cities first and villages last. A name that several places share keeps it bare for the biggest, and the others carry their district or county after a comma. The page fetches the file the first time a place is typed, and looks the name up on the device. The file changes only when <a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/make_places.py">make_places.py</a> is run again.</p>
+<p><b>Licence.</b> Contains OS data © Crown copyright and database right 2026, Open Government Licence v3.0. The file's <code>credit</code> field carries the notice.</p>
 
 <h2 id="credits">The credits field</h2>
 <p>The JSON files carry <code>credits</code>: <code>attribution</code>, the notices each provider asks for; <code>modified</code>, which says that SwimSignal combined and modelled the data and that no provider endorses it; <code>licences</code>, each licence's name and address; and <code>full</code>, the address of the full credits on the <a href="/terms#data">terms page</a>. Individual river-link tiles carry the full credits' address; their binary index uses tiles.json's credits. The CSV's comment header gives the same notices. The MIT licence of the <a href="https://github.com/ethanbuckley/swimsignal">source code</a> covers the code, not the data.</p>

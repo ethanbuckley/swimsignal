@@ -199,9 +199,10 @@
   .search input { width:100%; font:inherit; font-size:var(--fs-body); color:var(--ink); padding:10px 12px 10px 38px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); -webkit-appearance:none; appearance:none; }
   .search input::placeholder { color:var(--faint); }
   .toolbar { display:flex; align-items:center; gap:8px; margin:8px 0 0; }
-  .toolbar select, .compare-fields select { display:block; width:100%; min-height:44px; padding:8px 36px 8px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field) var(--arrow) no-repeat right 12px center;
+  .toolbar select, .compare-fields select, .plan-row select { display:block; width:100%; min-height:44px; padding:8px 36px 8px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field) var(--arrow) no-repeat right 12px center;
                     border:1px solid var(--line); border-radius:var(--radius); -webkit-appearance:none; appearance:none; }
   .toolbar select { flex:1 1 0; min-width:0; font-weight:600; }
+  .plan-row select { font-weight:600; }
   .planner-note { margin:8px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .best-day b { color:var(--k-low); }
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
@@ -511,6 +512,14 @@
   /* A list someone shared, offered: the one box on the Saved page while it waits for an answer. */
   .offer { background:var(--card); border-radius:var(--radius); padding:16px 20px; margin:20px 0 0; }
   ul.inc-list { margin:6px 0 12px; padding-left:20px; }
+  /* Plan a swim (plan.js): the choices on the sky, as the list's are (the day and how far, where you
+     start, the kind of water), then a tile for each group of spots. A row is the list's with one more
+     line, in ink: why it is there. */
+  .plan-row { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; margin:16px 0 0; }
+  .plan-row label { min-width:0; }
+  .plan-from { margin-top:8px; }
+  .plan-from + .planner-note { margin-bottom:8px; }
+  a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
   .compare-fields { display:grid; gap:10px; margin:14px 0; }
   .compare-fields label { font-size:var(--fs-note); font-weight:600; }
   .compare-fields select { margin-top:4px; }
@@ -563,7 +572,7 @@
     body.map-mode #panel { display:none; }
     /* Saved and Map are in the bar at the bottom. The header keeps Map only as the full map's way
        back to the spot it was opened from, where it reads "Back". */
-    #savedbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn { display:none; }
+    #savedbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn, body.map-mode #planbtn { display:none; }
     #panel { padding:16px calc(16px + env(safe-area-inset-right)) calc(32px + var(--nav-h)) calc(16px + env(safe-area-inset-left)); }
     /* The thumb's reach: Explore, Map and Saved on every page. */
     .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;
@@ -704,8 +713,9 @@
 <a class="skip" href="#panel">Skip to forecasts</a>
 <header class="top" id="top">
   <a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-  <!-- A phone shows none of these: Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
+  <!-- A phone shows only Plan a swim: Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
   <nav aria-label="Site">
+    <a href="plan/" class="hbtn" id="planbtn">Plan a swim</a>
     <a href="saved/" class="hbtn" id="savedbtn" aria-label="Saved spots">Saved<span class="n" id="saved-n" hidden></span></a>
     <button type="button" class="hbtn phone-only" id="mapbtn">Map</button>
     <a href="verification.html" class="desk-only">Accuracy</a>
@@ -782,6 +792,7 @@
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
+<script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
 <script>
 const BRAND = 'SwimSignal';
@@ -791,7 +802,7 @@ const FEEDBACK = 'feedback.html?type=feedback';
 // "../../" in spot/<id>/), resolved once as the page loads, so pushState to spot/<id>/ does not
 // move relative links; relative, so the site works at any address.
 const ROOT = new URL('./', document.querySelector('base') ? document.baseURI
-  : new URL(location.pathname.replace(/(spot\/[^/]+|saved)\/?$/, ''), location.origin));
+  : new URL(location.pathname.replace(/(spot\/[^/]+|saved|plan)\/?$/, ''), location.origin));
 // Spot ids that get their own page; scripts/build_site.py uses the same rule. Others keep ?spot=.
 const PAGE_ID = /^[A-Za-z0-9_-]+$/;
 const spotPath = id => PAGE_ID.test(id) ? `${ROOT.pathname}spot/${id}/` : `${ROOT.pathname}?spot=${encodeURIComponent(id)}`;
@@ -850,7 +861,7 @@ function setMapMode(on, view = null) {
   document.getElementById('mapbtn').textContent = on ? (current ? 'Back' : 'List') : 'Map';
   syncNav(); setHeaderHeight(); placeMap();
   if (on && view) map.setView([view[0], view[1]], view[2], { animate: false });
-  else if (on && DATA) fitAll(); else if (!on) loadOverflows().catch(() => ovLayer.clearLayers());
+  else if (on && DATA) (shown === 'plan' && PLAN_BOUNDS ? fitPlan : fitAll)(); else if (!on) loadOverflows().catch(() => ovLayer.clearLayers());
   if (was && !on) {
     // Closed, so Back to this page no longer opens it. (A spot opened from the map closes it after
     // its own entry is pushed, so the page under the map keeps its view.)
@@ -863,7 +874,7 @@ document.getElementById('mapbtn').addEventListener('click', () => setMapMode(!ma
 // The phone's bar at the bottom. Explore and Saved add a history entry only when they change the
 // page, so Back is not pressed once for every tap on the tab already open.
 function syncNav() {
-  const on = mapMode(), view = ['list', 'saved', 'spot'].find(v => document.body.classList.contains('view-' + v));
+  const on = mapMode(), view = ['list', 'saved', 'spot', 'plan'].find(v => document.body.classList.contains('view-' + v));
   document.getElementById('nav-map').setAttribute('aria-pressed', String(on));
   for (const [id, v] of [['nav-list', 'list'], ['nav-saved', 'saved']]) {
     const el = document.getElementById(id);
@@ -1765,9 +1776,9 @@ function bindItems(ul) {
     e.preventDefault(); select(a.dataset.id, true, true, VIEW.day); }));
 }
 function setView(v) {
-  document.body.classList.remove('view-list', 'view-saved', 'view-spot', 'about-open'); document.body.classList.add('view-' + v);
-  const b = document.getElementById('savedbtn');
-  if (v === 'saved') b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  document.body.classList.remove('view-list', 'view-saved', 'view-spot', 'view-plan', 'about-open'); document.body.classList.add('view-' + v);
+  for (const [id, on] of [['savedbtn', v === 'saved'], ['planbtn', v === 'plan']]) {
+    const b = document.getElementById(id); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
   syncNav();
 }
 function renderList() {
@@ -1998,6 +2009,170 @@ function openSaved() {
 }
 document.getElementById('savedbtn').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openSaved(); });
 
+// ------------------------------------------------------------------------------ plan a swim
+// plan/: the day, where you start and how far you will go, then the spots within reach that day, the
+// ones nothing flags first, nearest first, each saying why it is there (plan.js has the rules). The
+// choices are in the address after the # (planHash), so Back, a reload and a copied link open the same
+// plan, and nothing reaches a server. Your own location is never put there. The places are this site's
+// own file (data/places.json, from OS Open Names), fetched the first time one is typed. Distances are
+// in a straight line: times by road would need a routing service, and so a third party.
+const planPath = () => `${ROOT.pathname}plan/`;
+const onPlanPage = () => /\/plan\/?$/.test(location.pathname);
+const PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+let PLAN = { ...PLAN_DEFAULT }, PLACES = null, planNote = '', planTyped = 0, PLAN_BOUNDS = null;
+// The plan's reach on the map: the ring, or the start and the nearest spots at any distance. The full
+// map on a phone opens on it too (setMapMode).
+const fitPlan = () => map.fitBounds(PLAN_BOUNDS, { padding: [30, 30], ...MOTION() });
+const planDates = () => [0, 1, 2, 3, 4].map(k => addDays(today(), k));
+// The places, once: a promise of the index, forgotten if it fails, so the next try asks again.
+const loadPlaces = () => PLACES || (PLACES = fetch('data/places.json').then(r => { if (!r.ok) throw new Error(`the list of places answered ${r.status}`); return r.json(); })
+  .then(placeIndex).catch(e => { PLACES = null; throw e; }));
+const planFrom = () => PLAN.from && PLAN.from.here ? VIEW.here : PLAN.from ? [PLAN.from.lat, PLAN.from.lon] : null;
+const planWhere = () => PLAN.from && PLAN.from.here ? 'your location' : esc(PLAN.from.name);
+const planNoun = n => ({ all: ['spot', 'spots'], river: ['river spot', 'river spots'], lake: ['lake', 'lakes'], designated: ['bathing water', 'bathing waters'] })[PLAN.kind][n === 1 ? 0 : 1];
+// Why a spot is in the plan, after the distance and the kind on the line above it: what the day's level
+// rests on, the Environment Agency's rating, and what a planner needs that the level leaves out (access
+// not confirmed; on a plan for today, the river high or a flood alert). Sentences, escaped here.
+function planWhy(s, day) {
+  const out = [], total = overflows(s), x = (s.days || []).slice(0, 5).find(y => y.date === day), head = dayHeadline(s, day), c = classOf(s);
+  // The group's heading names the day. A spill expected on a low day reads as a contradiction unless the
+  // row says why the level is low: what the exposure index measures is whether the sewage gets here.
+  if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && Math.round(x.expected_spilling_overflows || 0) >= 1;
+    if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
+    if (ecoliLevel(s, x)) out.push(`E.\u00a0coli estimate ${Math.round(x.p_ecoli_gt900 * 100)}%.`); }
+  else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
+  if (c && !head.startsWith('Rated')) out.push(`Rated ${c} by the Environment Agency${(s.classification || {}).year ? ` for ${s.classification.year}` : ''}.`);
+  if (algaeLevel(s) && !/algae/.test(head)) out.push('Algae seen at the last check.');
+  if (s.access) out.push(s.access.status === 'restricted_guidance' ? 'Swimming here is restricted: check the signs.' : 'Permission to swim at this point is not confirmed.');
+  if (day === today()) out.push(...flowFacts(s, Date.now(), DATA.generated_at).map(f => flowSentence(f)));
+  return esc(out.join(' '));
+}
+function planItem(o) {
+  const s = o.s, why = planWhy(s, PLAN.day);
+  const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
+  return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
+    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a></li>`;
+}
+function renderPlan() {
+  contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'plan';
+  setView('plan');
+  document.title = `Plan a swim · ${BRAND}`;
+  PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
+  if (!PLAN.from && VIEW.here) PLAN.from = { here: true };   // "Near me" on the list has already asked
+  const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
+  // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
+  const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
+    + `<p class="lede">The spots within reach on the day you pick, the ones the forecast does not flag first.</p>`
+    + `<div class="plan-row"><label><span class="sr">Day</span><select id="plan-day">${planDates().map(iso => `<option value="${iso}"${iso === PLAN.day ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></label>`
+    + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
+    + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from: a town or village" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
+    + `<p class="planner-note" id="plan-where" aria-live="polite"></p>`
+    + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
+    + `<p class="planner-note" id="plan-sum" role="status"></p>` + notices() + '</div>'
+    + `<div id="plan-results"></div>`;
+  setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
+  if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
+}
+// The status under the place, the count, the groups and the map. fit: move the map to the plan's reach
+// (a new start or distance), which typing the day or the kind does not.
+function drawPlan(fit = false) {
+  const box = document.getElementById('plan-results'); if (!box) return;   // left the page while a place or a position was on its way
+  history.replaceState(history.state, '', planPath() + planHash(PLAN));
+  if ((VIEW.day || null) !== PLAN.day) setMapDay(PLAN.day);   // the map shows the plan's day, and so does the list after it
+  const from = planFrom(), sum = document.getElementById('plan-sum');
+  const geo = 'geolocation' in navigator, here = `<button type="button" class="linkbtn small" data-plan-here>Use my location</button>`;
+  // Without a place yet the tile below asks for one, so the line under the field stays empty.
+  const say = planNote || (!PLAN.from ? '' : PLAN.from.here ? (VIEW.here ? 'Starting from your location.' : 'Starting from your location, once this device shares it.')
+    : `Starting from ${planWhere()}.`);
+  document.getElementById('plan-where').innerHTML = say + (say && geo && !(PLAN.from && PLAN.from.here && VIEW.here) ? ' ' + here : '');
+  selLayer.clearLayers(); PLAN_BOUNDS = null;
+  if (!from) { sum.textContent = '';
+    box.innerHTML = `<div class="empty-saved tile"><h2 class="sec-h">Where are you starting from?</h2><p class="sub">Type a town, a village or a district of a city in England or Wales${geo ? ', or use your location, which stays on this device' : ''}.</p>`
+      + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>';
+    return; }
+  const r = planSpots(DATA.spots, PLAN, s => km(from, [s.lat, s.lon]) / MILE_KM), on = dayWord(PLAN.day);
+  const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
+  const better = r.count ? betterDay(r.groups.flat().map(o => o.s), PLAN.day, planDates()) : null;
+  sum.innerHTML = !r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
+    + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '');
+  const head = [`Nothing flagged ${on}`, `Moderate risk or higher ${on}`, 'No level'];
+  const sub = ['Low risk, or no monitored overflow upstream to forecast.', '', 'No forecast for the day, or out of the forecast\'s reach.'];
+  const next = r.nearest ? reachFor(r.nearest.miles) : null;
+  box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
+      + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
+    : `<div class="empty-saved tile"><h2 class="sec-h">No ${planNoun(2)} ${reach}</h2>`
+      + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
+  if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
+  box.querySelectorAll('ul.spots').forEach(bindItems);
+  // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
+  // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
+  if (PLAN.from.here) return;
+  const ring = PLAN.within ? L.circle(from, { radius: PLAN.within * MILE_KM * 1000, color: RING(), weight: 1.5, opacity: .8, fill: false, interactive: false }).addTo(selLayer) : null;
+  L.circleMarker(from, { radius: 6, color: PAPER, weight: 2, fillColor: RING(), fillOpacity: 1, interactive: false }).addTo(selLayer);
+  PLAN_BOUNDS = ring ? ring.getBounds() : L.latLngBounds([from, ...r.groups.flat().slice(0, 8).map(o => [o.s.lat, o.s.lon])]);
+  if (fit && !PHONE.matches) fitPlan();
+}
+function bindPlan() {
+  const $ = id => document.getElementById(id), input = $('plan-from');
+  $('plan-day').addEventListener('change', e => { PLAN.day = e.target.value; drawPlan(); });
+  $('plan-within').addEventListener('change', e => { PLAN.within = Number(e.target.value); drawPlan(true); });
+  document.querySelectorAll('[data-plan-kind]').forEach(b => b.addEventListener('click', () => { PLAN.kind = b.dataset.planKind;
+    document.querySelectorAll('[data-plan-kind]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawPlan(); }));
+  // Typing offers places. One picked from them, Enter, or leaving the field starts the plan there.
+  input.addEventListener('focus', () => loadPlaces().catch(() => {}), { once: true });
+  input.addEventListener('input', e => planType(input.value, e.inputType === 'insertReplacementText'));
+  input.addEventListener('change', () => planType(input.value, true));
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });   // blur commits (change)
+  // The status, the count and the results are redrawn, so their buttons are found from the boxes that
+  // hold them, which are new with each visit to the page (#result itself is not).
+  document.querySelector('#result .lead').addEventListener('click', planClick);
+  $('plan-results').addEventListener('click', planClick);
+}
+function planClick(e) {
+  const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]');
+  if (e.target.closest('[data-plan-here]')) planLocate();
+  else if (d) { PLAN.day = d.dataset.planDay; $('plan-day').value = PLAN.day; drawPlan(); $('plan-day').focus(); }
+  else if (w) { PLAN.within = Number(w.dataset.planWithin); $('plan-within').value = String(PLAN.within); drawPlan(true); $('plan-within').focus(); }
+}
+// What has been typed (commit: picked, Enter or left): the places it could be, offered under the field,
+// and once committed the place, or the closest offer, or a sentence saying there is none.
+async function planType(text, commit) {
+  const call = ++planTyped, t = text.trim();
+  if (!t) { if (commit && PLAN.from && !PLAN.from.here) { PLAN.from = null; planNote = ''; drawPlan(); } return; }
+  if (looksLikePostcode(t)) { if (commit) { planNote = 'Postcodes do not work here yet: type a town, village or district.'; drawPlan(); } return; }
+  let index;
+  try { index = await loadPlaces(); } catch (e) { if (commit) { planNote = `Could not load the list of places: ${esc(e.message)}.`; drawPlan(); } return; }
+  if (call !== planTyped || !onPlanPage()) return;   // a later key, or another page, has taken over
+  const offers = placeMatches(index, t), list = document.getElementById('plan-places');
+  if (list) list.innerHTML = offers.map(p => `<option value="${esc(p.name)}"></option>`).join('');
+  if (!commit) return;
+  const p = placeNamed(index, t) || offers[0];
+  if (!p) { planNote = `No town, village or district called “${esc(t)}” in England or Wales.`; drawPlan(); return; }
+  const input = document.getElementById('plan-from'); if (input && input.value !== p.name) input.value = p.name;
+  const moved = !PLAN.from || PLAN.from.here || PLAN.from.name !== p.name;
+  PLAN.from = { name: p.name, lat: p.lat, lon: p.lon }; planNote = '';
+  drawPlan(moved);
+}
+// Your position, for this page only, as "Near me" takes it on the list (locate). quiet: opened with
+// "from=here" (Back, a reload, a link), so asked only if this site already may: no prompt unbidden.
+function planLocate(quiet = false) {
+  const go = () => { planNote = 'Finding your location…'; drawPlan();
+    navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; PLAN.from = { here: true }; planNote = '';
+      const input = document.getElementById('plan-from'); if (input) input.value = ''; drawPlan(true); },
+    e => { planNote = e.code === 1 ? 'Location permission was declined: type a town, village or district instead.' : 'Your location is not available right now: type a town, village or district instead.'; drawPlan(); },
+    { maximumAge: 10 * 60 * 1000, timeout: 10000 }); };
+  if (!quiet) return go();
+  if (navigator.permissions) navigator.permissions.query({ name: 'geolocation' }).then(s => { if (s.state === 'granted') go(); }).catch(() => {});
+}
+function openPlan() {
+  if (mapMode()) setMapMode(false);
+  const push = !onPlanPage();
+  if (push) { keepPlace(); history.pushState({ view: 'plan', from: shown }, '', planPath()); }
+  renderPlan(); scrollTop();
+  if (push) focusHeading();
+}
+document.getElementById('planbtn').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
+
 // ------------------------------------------------------------------------------ one spot
 // Opening a spot is a history entry, so a phone's back button returns to the list, not off the site.
 // day: a date to open in its strip (a Saved card's day), else the summary. From a marker on a phone's
@@ -2034,10 +2209,13 @@ window.addEventListener('popstate', () => { if (!DATA) return;
   keepPlace();
   const id = spotFromURL(), view = (history.state || {}).mapView;
   if (id && DATA.spots.some(s => s.id === id)) select(id, true, false, dayFromURL());
-  else { if (onSavedPage()) renderSaved(); else renderList(); restorePlace(); }
+  else { if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else renderList(); restorePlace(); }
   if (view && PHONE.matches) setMapMode(true, view); });
-// A list link opened on the Saved page itself changes only the part after the #.
-window.addEventListener('hashchange', () => { if (!DATA || !/^#spots=/.test(location.hash)) return; readIncoming(); renderSaved(); scrollTop(); });
+// A list link opened on the Saved page itself changes only the part after the #, as does a plan's
+// link opened on the plan page (the page's own changes to it replace the address, which is no change).
+window.addEventListener('hashchange', () => { if (!DATA) return;
+  if (onPlanPage()) { renderPlan(); return; }
+  if (!/^#spots=/.test(location.hash)) return; readIncoming(); renderSaved(); scrollTop(); });
 
 function saveButton(d) {
   const on = SAVED.has(d.id);
@@ -2166,10 +2344,10 @@ function render(d) {
   const tags = [cap(d.kind), d.source === 'designated' ? 'Environment Agency designated bathing water' : null,
     loc.watercourse ? esc(loc.watercourse) : null, loc.lake_area_km2 ? `${loc.lake_area_km2} km²` : null,
     d.notes && d.notes !== 'Environment Agency designated bathing water' ? esc(d.notes) : null].filter(Boolean);
-  // The back link names where it goes: Saved, the full map a marker was tapped on (bindBack goes
-  // back to either), or all the spots. Save sits opposite it.
+  // The back link names where it goes: Saved, a plan, the full map a marker was tapped on (bindBack
+  // goes back to any of them), or all the spots. Save sits opposite it.
   const from = (history.state || {}).from;
-  let h = `<div class="top-row"><a href="${esc(from === 'saved' ? savedPath() : ROOT.pathname)}" class="back" id="back">${from === 'saved' ? 'Saved spots' : from === 'map' ? 'Map' : 'All spots'}</a>${saveButton(d)}</div>`;
+  let h = `<div class="top-row"><a href="${esc(from === 'saved' ? savedPath() : from === 'plan' ? planPath() : ROOT.pathname)}" class="back" id="back">${from === 'saved' ? 'Saved spots' : from === 'plan' ? 'Plan a swim' : from === 'map' ? 'Map' : 'All spots'}</a>${saveButton(d)}</div>`;
   h += notices();
   // The answer, under the sky: the place, its name, then its words (answerWords).
   h += `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
@@ -2254,7 +2432,7 @@ async function main() {
     select(q, true, false, day);
   } else {
     if (!PHONE.matches) fitAll();   // a phone's map is hidden (0 x 0) until Map is pressed, and fits then
-    if (onSavedPage()) renderSaved(); else { renderList(); if (kept.y) scrollTop(kept.y); }
+    if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y); }
   }
 }
 // What reload() kept, once, into VIEW: only known values, and a day still in the new forecast.

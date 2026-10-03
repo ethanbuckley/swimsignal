@@ -325,3 +325,27 @@ test('the plain levels are not low risk: not in the low count, not offered as lo
   assert.equal(L.plainLevel(L.NO_OVERFLOWS) && L.plainLevel(L.NO_RIVER), true);
   assert.equal(L.plainLevel('low') || L.plainLevel(L.NO_FORECAST) || L.plainLevel(L.NOT_COVERED), false);
 });
+
+// ------------------------------------------------------------------------------ plan a swim
+// Each row of a plan says why the spot is there (index.html, planWhy): what the day's level rests on,
+// the rating, and what the level leaves out. Which spots, in which order, is plan.js (site_plan).
+test('a plan row says what the level rests on, and why a spill expected on a low day does not raise it', () => {
+  const now = new Date().toISOString();
+  const ctx = pageContext(['esc', 'spilling', 'planWhy'], {DATA: {generated_at: now}}), why = (s, day) => vm.runInContext('planWhy', ctx)(s, day);
+  const s = week(['low', 'high', 'low', 'low', 'low'], {upstream_summary: {overflows: 3}});
+  s.days[0].expected_spilling_overflows = 1.2;
+  s.days[1] = {...s.days[1], expected_spilling_overflows: 2.6, p_ecoli_gt900: 0.3, in_validated_season: true};
+  assert.equal(why(s, DATES[0]), 'About 1 of the 3 overflows upstream is expected to spill, but sewage from them is unlikely to reach here.');
+  assert.equal(why(s, DATES[1]), 'All 3 overflows upstream are expected to spill. E.\u00a0coli estimate 30%.');   // in season, so the estimate counts
+  s.days[2].expected_spilling_overflows = 0.3;
+  assert.equal(why(s, DATES[3]), '');   // no spill figure that day, and nothing else to say
+  // The rating, unless the headline already gives it; access not confirmed; nothing upstream.
+  assert.equal(why({...s, classification: {class: 'excellent', year: 2025}}, DATES[2]), 'Under one spill is expected from the 3 overflows upstream. Rated excellent by the Environment Agency for 2025.');
+  assert.doesNotMatch(why({...s, classification: {class: 'poor', year: 2025}}, DATES[2]), /Rated poor/);
+  assert.match(why({...s, access: {status: 'unconfirmed'}}, DATES[2]), /Permission to swim at this point is not confirmed\.$/);
+  assert.equal(why({...clearRiver}, DATES[2]), 'No monitored storm overflow within 60\u00a0km upstream.');
+  // On a plan for today, the river high at its gauge, with the gauge's name escaped.
+  const high = {...s, flow_state: 'high', river_state: {station: 'Mill <b>', observed_at: now}};
+  assert.match(why(high, DATES[0]), /River high: the gauge at Mill &lt;b&gt; is above its usual range\.$/);
+  assert.doesNotMatch(why(high, DATES[1]), /River high/);   // not a forecast: only on a plan for today
+});
