@@ -1,9 +1,9 @@
 // Quick notes on a visit, on a spot's page: what it was like today or yesterday. Ticks from a short
 // list ("entry steps damaged", "car park closed", "very busy", "new warning sign"), a few words and one
 // photo. Reviews describe the place; these describe a day, so every tick ends: how busy it was after a
-// day, algae after a week, damage, closures and signs after a month unless another swimmer says they are
-// still so. Suspected pollution and algae are labelled as what one swimmer saw until the operator has
-// confirmed them from a named source. Notes are ordered worst first, and a good one never sits above,
+// day, algae after a week, closures after two weeks, damage and signs after a month unless another swimmer
+// says they are still so. Suspected pollution and algae are labelled as what one swimmer saw until the
+// operator has verified them from a named source. Notes are ordered worst first, and a good one never sits above,
 // or reads as cancelling, a warning: theirs or the forecast's.
 //
 // The service is the reviews Worker (reviews/, its notes at the end of src/index.js), and the build
@@ -199,10 +199,10 @@ function drawVisits(sec, d, data, say = '') {
   }
   h += `<div class="rv-write" id="vn-write">${say ? `<p class="rv-said" id="vn-said" tabindex="-1">${say}</p>` : ''}`
     + '<button type="button" class="btn primary" id="vn-open">Say what it\'s like today</button>'
-    + '<p class="t-key">Each note ends after a few days, or a month for damage and closures.</p></div>'
+    + '<p class="t-key">Most notes end after a few days; closures after two weeks, damage and signs after a month.</p></div>'
     + '<details class="t-more"><summary><span class="sr">Recent visits: what this means</span></summary><p>Swimmers say what they found on the day: '
     + 'getting in, parking, how busy it was, what the water looked like. Each thing ends by itself: how busy it was after a day, algae after a week, '
-    + 'damage, closures and signs after a month unless another swimmer confirms it is still so. A note of pollution or algae is what one swimmer '
+    + 'closures after two weeks, damage and signs after a month, unless another swimmer confirms it is still so. A note of pollution or algae is what one swimmer '
     + 'saw, not a test, until the site verifies it from an official source, which it names. Notes do not change the forecast, and a good one does not cancel a warning. '
     + 'Notes of ticks alone appear without being read first; words and photos are checked.</p></details>';
   sec.innerHTML = h;

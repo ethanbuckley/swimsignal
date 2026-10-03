@@ -34,7 +34,7 @@ export function moderatePage(site) {
 </ul></details>
 <details class="fold"><summary>Notes on a visit</summary>
 <ul>
-<li>A note of ticks alone is published as it arrives. One with words or a photo waits here. Each ends by itself after a few days, or a month for damage, closures and signs unless someone confirms it.</li>
+<li>A note of ticks alone is published as it arrives. One with words or a photo waits here. Each ends by itself after a few days, or two weeks for closures and a month for damage and signs, unless someone confirms it.</li>
 <li>Publish words that say what the spot was like that day. Delete words that blame a named person or business: the tick says what was seen, and that is enough.</li>
 <li>"Not like this any more" is a report: delete the note if you can tell it is out of date, otherwise keep it and let it end.</li>
 <li>Verify suspected pollution or algae only when an official source confirms it, an Environment Agency notice or a sign by the local council say, and name that source. Until then the page calls it what one swimmer saw.</li>

@@ -306,7 +306,7 @@ def render(snapshot):
     if not snapshot or not snapshot.get("sites"):
         return '<p>The official directory could not be loaded for this build. Use the EA link above.</p>'
     messages = {"increased": "EA: increased pollution risk",
-                "no_increased_risk": "EA: no increased pollution risk forecast — not a water test",
+                "no_increased_risk": "EA: no increased pollution risk forecast. Not a water test",
                 "no_forecast": "No EA pollution risk forecast at this site",
                 "no_current_advice": "No current EA advice in this snapshot",
                 "unavailable": "Current EA advice unavailable"}
