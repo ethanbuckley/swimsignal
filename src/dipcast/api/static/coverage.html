@@ -23,6 +23,9 @@
 </details>
 <h2>Scotland</h2>
 <p><a href="https://bathingwaters.sepa.org.uk/">SEPA's bathing-water service</a> provides Scottish bathing-water information. Check the site profile and current advice. SwimSignal has not validated a Scottish pollution forecast.</p>
+<details id="scotland-directory"><summary>Search the Scottish bathing waters</summary>
+<!-- SCOTLAND_DIRECTORY --><p>Use SEPA's link above if the list is unavailable here.</p><!-- END_SCOTLAND_DIRECTORY -->
+</details>
 <h2 id="algae">Algae reports across the UK</h2>
 <p><a href="https://bloominalgae.ceh.ac.uk/">UKCEH's Bloomin' Algae map</a> shows submitted reports. Read each report's date and verification category: a submitted or unverifiable record is not a confirmed harmful bloom. An absence of reports does not establish an absence of algae.</p>
 <p>The algae observation shown on a SwimSignal spot page is the EA sampler's most recent visual check, where available. It does not identify toxic species. Broader Bloomin' Algae reports are available on the external map; they are not included in our risk level.</p>
@@ -50,6 +53,7 @@ function searchList(searchId, countId, selector) {
 }
 searchList('coastal-search', 'coastal-count', '.coastal-site');
 searchList('wales-search', 'wales-count', '.wales-site');
+searchList('scotland-search', 'scotland-count', '.scotland-site');
 function expireAdvice() {
   for (const advice of document.querySelectorAll('[data-advice-expires]')) {
     if (Date.now() >= Date.parse(advice.dataset.adviceExpires)) advice.textContent = `This ${advice.dataset.adviceSource || 'EA'} advice has expired; check the official profile`;
