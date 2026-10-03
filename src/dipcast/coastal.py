@@ -159,6 +159,137 @@ def fetch(now=None, client=None):
     return snapshot
 
 
+# ------------------------------------------------------------------------------ dated samples
+# The latest statutory sample at each site, from the EA Water Quality Archive: the bathing-water
+# service refuses GitHub's runners (ingest/wqa.py), the archive does not. It lags the official
+# profile by days, so each result keeps its own sampling time and the page says so.
+POINTS = Path(__file__).resolve().parents[2] / "data" / "raw" / "coastal_wqa_points.json"
+SAMPLES_SOURCE = "https://environment.data.gov.uk/water-quality"
+DETERMINANDS = {"2348": "ecoli", "3723": "enterococci"}   # E. coli and intestinal enterococci, confirmed, by membrane filtration
+SAMPLES_TTL_S = 6 * 3600     # the archive is asked at most every six hours ...
+SAMPLES_KEEP_S = 3 * 86400   # ... and an older answer is shown, dated, for three days while it does not answer
+
+
+def sample_window(now):
+    """Where to look for the latest sample: the last 35 days in May to October (weekly sampling),
+    otherwise from 1 August of the last season, so that a winter page shows September's sample."""
+    local = now.astimezone(TZ)
+    if 5 <= local.month <= 10:
+        return (local - timedelta(days=35)).date()
+    return local.date().replace(year=local.year if local.month >= 11 else local.year - 1, month=8, day=1)
+
+
+def _result(text):
+    """'45' -> {"value": 45.0, "qualifier": "="}; '<10' -> {"value": 10.0, "qualifier": "<"}; None if unreadable."""
+    t = str(text or "").strip()
+    q = t[0] if t[:1] in ("<", ">") else "="
+    try:
+        v = float(t.lstrip("<>= "))
+    except ValueError:
+        return None
+    return {"value": v, "qualifier": q} if v >= 0 else None
+
+
+def latest_samples(points, since, observations=None):
+    """{bathing water id: its latest statutory (MS) sample}: the sampling time, E. coli and, from the
+    same sample, intestinal enterococci (None if that sample has none). Only samples with an E. coli
+    result count. A site with no sample since `since` is left out. Raises if the archive fails."""
+    from dipcast.ingest import wqa
+    observations = observations or wqa._observations
+    site_of = {v["point"]: k for k, v in points.items()}
+    by = {}
+    for code, field in DETERMINANDS.items():
+        for o in observations(sorted(site_of), f"{since.isoformat()}T00:00:00", code, wqa.BATHING_PURPOSES, batch=25):
+            point = (o.get("hasSamplingPoint") or {}).get("notation")
+            r = _result(o.get("hasSimpleResult"))
+            if point not in site_of or r is None:
+                continue
+            try:
+                taken = instant(o.get("phenomenonTime"))
+            except (ValueError, TypeError):
+                continue
+            by.setdefault((site_of[point], taken), {})[field] = r
+    out = {}
+    for (site, taken), results in by.items():
+        if "ecoli" in results and (site not in out or taken > out[site][0]):
+            out[site] = (taken, results)
+    return {site: {"taken_at": t.isoformat(), "ecoli": r["ecoli"], "enterococci": r.get("enterococci"),
+                   "point": points[site]["point"]} for site, (t, r) in out.items()}
+
+
+def attach_samples(snapshot, now=None, points_file=None, cache=None, fetch=None):
+    """Each site's `sample`: {"state": "ok", ...latest_samples} or "none" (no sample in the window),
+    "unmapped" (no archive point matched, scripts/map_coastal_wqa.py) or "unavailable" (the archive
+    did not answer and nothing it said in the last SAMPLES_KEEP_S is kept). The snapshot's `samples`
+    says where they came from and when. Never raises: samples sit beside the directory."""
+    now = now or datetime.now(TZ)
+    fetch = fetch or latest_samples
+    info = {"source": SAMPLES_SOURCE, "state": "unavailable"}
+    try:
+        mapping = json.loads(Path(points_file or POINTS).read_text())
+        points = {k: v for k, v in mapping["points"].items() if ID.fullmatch(k) and isinstance(v, dict) and v.get("point")}
+        info["points_checked_at"] = mapping.get("checked_at")
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        points = {}
+    since = sample_window(now)
+    info["since"] = since.isoformat()
+    found = None
+    kept = None
+    if cache:
+        try:
+            kept = json.loads(Path(cache).read_text())
+            age = (now - instant(kept["fetched_at"])).total_seconds()
+            if not 0 <= age <= SAMPLES_KEEP_S or not isinstance(kept["samples"], dict):
+                kept = None
+            else:   # the window moves daily: a kept sample from before it is no longer the latest in it
+                kept["samples"] = {k: v for k, v in kept["samples"].items()
+                                   if instant(v["taken_at"]).astimezone(TZ).date() >= since}
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            kept = None
+    if kept and (now - instant(kept["fetched_at"])).total_seconds() <= SAMPLES_TTL_S:
+        found, info["fetched_at"], info["state"] = kept["samples"], kept["fetched_at"], "ok"
+    elif points:
+        try:
+            found = fetch(points, since)
+            info.update(state="ok", fetched_at=now.isoformat())
+            if cache:
+                Path(cache).parent.mkdir(parents=True, exist_ok=True)
+                Path(cache).write_text(json.dumps({"fetched_at": now.isoformat(), "since": since.isoformat(), "samples": found}))
+        except Exception as e:  # noqa: BLE001 - samples beside the directory must not stop it
+            info["error"] = f"HTTP {e.response.status_code}" if isinstance(e, httpx.HTTPStatusError) else type(e).__name__
+            if kept:
+                found, info["fetched_at"], info["state"] = kept["samples"], kept["fetched_at"], "cached"
+    for site in snapshot.get("sites", []):
+        if site["id"] not in points:
+            site["sample"] = {"state": "unmapped"}
+        elif found is None:
+            site["sample"] = {"state": "unavailable"}
+        elif site["id"] in found:
+            site["sample"] = {"state": "ok", **found[site["id"]]}
+        else:
+            site["sample"] = {"state": "none"}
+    snapshot["samples"] = info
+    return snapshot
+
+
+def _count(r):
+    return f'{"" if r["qualifier"] == "=" else r["qualifier"]}{r["value"]:,.0f}'
+
+
+def sample_line(sample, since):
+    """One line under a site: its latest sample with both results, or why there is none."""
+    state = (sample or {}).get("state")
+    if state == "ok":
+        ent = sample.get("enterococci")
+        both = f'E. coli {_count(sample["ecoli"])}' + (f', intestinal enterococci {_count(ent)}' if ent else '')
+        return f'Latest archived EA sample {when(sample["taken_at"])}: {both} per 100 ml'
+    if state == "none":
+        return f'No EA sample in the archive since {when(since + "T00:00") if since else "this season began"}'
+    if state == "unavailable":
+        return 'EA sample results unavailable in this update'
+    return 'Sample results: see the official profile'
+
+
 def when(iso):
     """A source time as people read it, in UK time ("3 Oct 2026, 21:45"), in a <time> element that
     keeps the exact value. Unreadable values are shown as they came."""
@@ -187,15 +318,20 @@ def render(snapshot):
         if advice.get("expires_at"):
             stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
+        sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
         cards.append(f'<li class="coastal-site"><a href="{escape(site["profile"], quote=True)}">{escape(site["name"])}</a>'
                      f'<p class="small">{escape(site["kind"].title())} · {escape(historical)}<br>'
-                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}</p></li>')
+                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}{sample}</p></li>')
     return (f'<p class="small">{len(cards)} designated coastal and estuary bathing waters. Snapshot '
             f'{when(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
             'and check the signs before swimming. Missing advice does not mean clean water.</p>'
             + (f'<p class="small">The live catalogue could not be retrieved; names and historical ratings use '
                f'the official catalogue retrieved {when(snapshot["catalogue_fetched_at"])}. '
-               'New designations or changed ratings may not be included.</p>' if snapshot.get("catalogue_state") == "cached" else '') +
+               'New designations or changed ratings may not be included.</p>' if snapshot.get("catalogue_state") == "cached" else '')
+            + (('<p class="small">Sample results are the latest statutory samples in the EA Water Quality Archive'
+                + (f', checked {when(snapshot["samples"]["fetched_at"])}' if snapshot["samples"].get("fetched_at") else '')
+                + '. The archive can lag the official profile by several days. A sample describes the water when '
+                'it was taken, not today. The rating uses four seasons of samples.</p>') if snapshot.get("samples") else '') +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
             f'<p id="coastal-count" class="small" aria-live="polite">{len(cards)} sites</p>'

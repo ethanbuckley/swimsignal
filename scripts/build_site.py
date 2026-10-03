@@ -1096,10 +1096,14 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data").mkdir(parents=True, exist_ok=True)
     credits = data_credits(site_url())
     health["anypoint"] = write_any_point(SITE, credits)
+    from dipcast.coastal import attach_samples
     from dipcast.coastal import fetch as fetch_coastal
-    coastal = fetch_coastal()
+    # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
+    coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
-    health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"])}
+    health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
+                         "samples": coastal.get("samples", {}).get("state"),
+                         "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"])}
     push = push_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
