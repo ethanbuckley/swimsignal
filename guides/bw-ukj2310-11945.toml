@@ -1,0 +1,32 @@
+# Frensham Great Pond. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Main car park: Bacon Lane, Churt, Surrey GU10 2QB, open 8am to 9pm and usually full by 10am. £1.80 for an hour, £3.60 for two, £4.80 for up to four, £7 all day; RingGo (location 16258) or card only. £60.90 to open the gate if you are locked in."
+status = "confirmed"
+source = "https://www.waverley.gov.uk/services/greenspaces-leisure-and-things-to-do/greenspaces-in-waverley/key-sites/frensham-great-pond"
+source_name = "Waverley Borough Council"
+
+[[fact]]
+topic = "entry"
+text = "Bathing is in a marked sandy beach area in front of the Ranger's Office and the main car park."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "toilets"
+text = "Toilets open from about 8am to 9pm, with the car park."
+status = "confirmed"
+source = "https://www.waverley.gov.uk/services/greenspaces-leisure-and-things-to-do/greenspaces-in-waverley/key-sites/frensham-great-pond"
+source_name = "Waverley Borough Council"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is allowed only at the Great Pond, within the marked areas."
+status = "confirmed"
+source = "https://www.waverley.gov.uk/services/greenspaces-leisure-and-things-to-do/greenspaces-in-waverley/key-sites/frensham-great-pond"
+source_name = "Waverley Borough Council"

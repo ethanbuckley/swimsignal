@@ -441,6 +441,25 @@ never in the answer. Writing one opens a form in place of the button: a question
 the order a swimmer answers them, the yes or no as two buttons that fill when chosen, as a chosen
 chip does.
 
+### Practical guides (3 October 2026)
+
+The practical guide (`guide.js`; the facts are hand-written in `guides/`, whose README has the
+format) is one more tile with the same anatomy, after the forecast's tiles and before the reviews:
+facts first, then opinion. Its label is "Practical guide" with a signpost icon from the stroke set.
+Its first line says how far to trust the whole tile: "Checked 3 Oct 2026 from the published pages
+linked below, not on site", or "Checked on site", and past a year that fees, opening times and paths
+may have changed. Then the facts as a ruled list, a topic's name over its facts, in the order a
+swimmer meets them: parking, the path, getting in, getting out, toilets, changing, fees, opening
+times, who can swim. Under each fact, in the meta size, who says so, in words: "**Confirmed**:
+City of London Corporation" (the page linked) or "**A swimmer's suggestion**, from Sam, 12 Sept 2026.
+Not yet checked by SwimSignal." No colour tells them apart, since colour on the page means a level,
+and no badge or pill. Topics with no fact are named in one line, "Not in this guide yet: toilets,
+changing", so a gap reads as unknown rather than as none. A photo runs the tile's width in the one
+radius, its labels as numbered round markers (ink, with a white ring, as a dot has) and the same
+numbers in a list under it, then the caption, the credit and the day. The tile ends with one line
+and a link to the feedback form set to a guide. A spot without a guide gets a short tile asking for
+one; a point clicked on the map gets none.
+
 ### What was kept on purpose
 
 The information architecture (list → spot → day), every word of the terms and privacy notice, the

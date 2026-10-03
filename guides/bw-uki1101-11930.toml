@@ -1,0 +1,95 @@
+# Hampstead Heath, Mixed Pond. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "East Heath Car Park: 110 spaces and a disabled parking area. £3.50 an hour for up to 4 hours, then £11.30 an hour; pay by RingGo (location 79453). Blue Badge parking is free once registered. Open 7am, locked from 9pm."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/east-heath-car-park"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "path"
+text = "Near East Heath Road, reached by road-like surfaces and an unmade track. Hampstead Heath (Overground) is a 10-minute walk, Hampstead (Northern line) 17 minutes."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "entry"
+text = "Ladders into the water, and a hoist for assisted access."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "entry"
+text = "A concrete diving platform leads into the swimming area. There is no beach; there is a grassy sunbathing area beside the platform."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uki1101-11930"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "toilets"
+text = "Toilets on site."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "changing"
+text = "Changing areas and showers on site."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "hours"
+text = "Open April to October only, and closed to public swimming at other times. The City's pages give no exact closing date for 2026."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/swimming-opening-times"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "rules"
+text = "Open to everyone."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/hampstead-heath-bathing-ponds-access-policy"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "fees"
+text = "Single swim £5 for adults, £3 concession and under 16s, all year; prices valid to 31 March 2027. Season tickets are sold too."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/swimming-tickets"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "fees"
+text = "Card only from 1 October 2026: no cash at the swimming facilities. Under-16s and over-60s swim free before 9.30am with proof of age."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "fees"
+text = "No booking outside summer: every session is drop-in, with tickets on arrival. Summer booking reopens in spring 2027."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/booking-for-swimming"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "changing"
+text = "No lockers at the bathing ponds. You may bring your own floating dry bag for valuables."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "rules"
+text = "Competent swimmers only, with lifeguards on duty. Children must be 8 or over; 8 to 15 year olds need an adult with them at all times (two children per adult at most) and take a swim test."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
+source_name = "City of London Corporation"

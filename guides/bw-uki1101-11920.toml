@@ -1,0 +1,109 @@
+# Hampstead Heath, Highgate Men's Pond. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "On-street parking on Millfield Lane. Check the parking signs and their restrictions."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "path"
+text = "Near Millfield Lane. The way from the road to the gate is an unmade track; from the gate to the water it is a smooth, road-like surface. Gospel Oak (Overground) is an 18-minute walk, Kentish Town (Northern line) 28 minutes; the 214 bus passes close by."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "entry"
+text = "Ladders into the water, and a hoist for assisted access."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "entry"
+text = "A 25-metre platform runs along the swimming area. There is no beach; there is a sunbathing area in the changing enclosure."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uki1101-11920"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "exit"
+text = "Tethered life rings in the pond for swimmers to rest on."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "toilets"
+text = "Toilets on site."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "changing"
+text = "Changing areas and showers on site."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "hours"
+text = "Open all year, including bank holidays, on seasonal hours. 11 to 24 October 2026: 7.30am, last entry 4.45pm. 25 October to 21 November: 7am, last entry 2pm. 22 November 2026 to 13 February 2027: 7.30am, last entry 2.30pm."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/swimming-opening-times"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "rules"
+text = "Open to men, including trans men."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/hampstead-heath-bathing-ponds-access-policy"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "rules"
+text = "No snorkels, swimming masks or swimming aids at the Men's Pond."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "fees"
+text = "Single swim £5 for adults, £3 concession and under 16s, all year; prices valid to 31 March 2027. Season tickets are sold too."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/swimming-tickets"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "fees"
+text = "Card only from 1 October 2026: no cash at the swimming facilities. Under-16s and over-60s swim free before 9.30am with proof of age."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "fees"
+text = "No booking outside summer: every session is drop-in, with tickets on arrival. Summer booking reopens in spring 2027."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath/booking-for-swimming"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "changing"
+text = "No lockers at the bathing ponds. You may bring your own floating dry bag for valuables."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"
+
+[[fact]]
+topic = "rules"
+text = "Competent swimmers only, with lifeguards on duty. Children must be 8 or over; 8 to 15 year olds need an adult with them at all times (two children per adult at most) and take a swim test."
+status = "confirmed"
+source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/highgate-mens-pond"
+source_name = "City of London Corporation"

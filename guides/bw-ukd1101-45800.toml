@@ -1,0 +1,32 @@
+# Derwent Water at Crow Park. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "A grassed area and a gravel beach."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1101-45800"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "Derwent Water is busy with boats: the National Park Authority asks swimmers to keep close to the shore and be visible with a tow float."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/places-to-go/explore-derwentwater-and-keswick/on-the-water-around-derwent-water/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "Lakeside long stay car park, Keswick, CA12 5DJ: 253 spaces, 6 for disabled drivers. £3.80 up to 2 hours, £6.50 up to 3, £9 up to 6, £11.40 up to 12; cash, contactless or phone (location 712223). The council's page does not mention Crow Park."
+status = "confirmed"
+source = "https://www.cumberland.gov.uk/parking-roads-and-transport/parking/find-car-park-near-you/lakeside-long-stay-car-park-keswick"
+source_name = "Cumberland Council"
+
+[[fact]]
+topic = "toilets"
+text = "Public toilets at Lakeside car park, Keswick: 50p, card payment only at present. The council's page does not mention Crow Park."
+status = "confirmed"
+source = "https://www.cumberland.gov.uk/your-environment/find-public-toilet/lakeside-car-park-keswick-public-toilets"
+source_name = "Cumberland Council"

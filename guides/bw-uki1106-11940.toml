@@ -1,0 +1,87 @@
+# The Serpentine Lido, Hyde Park. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Two public car parks in Hyde Park, both off West Carriage Drive, charged 8.30am to 6.30pm every day: £2.80 an hour Monday to Saturday (4 hours at most), £2 an hour on Sundays and bank holidays. Blue Badge holders park free for up to 4 hours."
+status = "confirmed"
+source = "https://www.royalparks.org.uk/visit/parks/hyde-park/faqs"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "path"
+text = "The only way in is the staffed entrance gate beside the pavilion. Address: The Serpentine Lido, Hyde Park, London W2 2UH."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/hyde-park/swimming"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "entry"
+text = "A fenced, hard man-made beach slopes gently into the water."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uki1106-11940"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "entry"
+text = "Depth markers on the pier show the shallower area, where swimmers using buoyancy aids must stay. Swim only inside the buoys."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/hyde-park/swimming"
+source_name = "The Royal Parks"
+[[fact]]
+topic = "toilets"
+text = "Toilets inside the Lido building; none on the beach."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/booking-terms/swimming-bookings-terms-conditions"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "changing"
+text = "Changing cubicles inside the Lido, including parent-and-child and accessible cubicles. Cold showers on the beach, no hot showers. Lockers £2, first come first served."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/booking-terms/swimming-bookings-terms-conditions"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "fees"
+text = "2026 season: full day £8.40 adult, £4.15 child (3 to 15), £4.70 concession; a session (10am to 1.30pm or 2.30pm to 6pm) £6.50 adult. Under-3s and carers free. Booking online is not essential: at quiet times you can pay on the day."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/hyde-park/swimming"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "hours"
+text = "Closed for winter: the last public swim of 2026 was on 24 September. In season it opens at weekends from mid-May and daily from June to mid-September."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/hyde-park/swimming"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "hours"
+text = "Open 10am to 6pm in season."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/faqs"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "rules"
+text = "No one may enter the water unless a lifeguard is on duty. Under-16s need an adult of 18 or over who is a competent swimmer, at set ratios: one adult to one child under 3, two aged 3 to 7, three aged 8 to 13, four aged 14 or 15."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/hyde-park/swimming"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "rules"
+text = "The Serpentine Swimming Club's members swim here every day between 5.30am and 9.30am. That is a members' swim, not public opening."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/hyde-park/swimming"
+source_name = "The Royal Parks"
+
+[[fact]]
+topic = "rules"
+text = "No diving or bombing."
+status = "confirmed"
+source = "https://sportsandleisure.royalparks.org.uk/booking-terms/swimming-bookings-terms-conditions"
+source_name = "The Royal Parks"
