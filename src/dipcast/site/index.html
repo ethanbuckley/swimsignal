@@ -1226,17 +1226,17 @@ const rainSaid = s => { const x = (s.days || [])[0], v = x ? x.rain_48h_mm : nul
 const weatherOn = (d, iso) => ((d.weather || {}).days || []).find(w => w.date === iso) || null;
 const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
   return factorRow('Weather', null, nil(w.tmax) ? '–' : `${w.tmax}°`, `${nil(w.tmax) ? '' : `Daytime high about ${w.tmax}°C. `}Sunrise ${esc(w.sunrise)}, sunset ${esc(w.sunset)}. <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>.`); };
-// The Water temperature tile, or null: the latest reading of the nearest Environment Agency sensor on the
-// spot's own river (build_site.attach_water_temperature), a measurement and never an estimate. It is
-// shown only with how far along the river the sensor is and how old the reading is, counted from now,
-// not from the build, so an old page says so.
+// The Water temperature tile, or null: the latest reading of the nearest Environment Agency sensor
+// upstream on the spot's own river, else the nearest downstream (build_site.attach_water_temperature),
+// a measurement and never an estimate. It is shown only with how far along the river the sensor is
+// and how old the reading is, counted from now, not from the build, so an old page says so.
 function waterTile(w) {
   const t = w ? Date.parse(w.observed_at) : NaN;
   if (!w || nil(w.temp_c) || isNaN(t) || nil(w.river_km) || !['upstream', 'downstream'].includes(w.direction)) return null;
   return { icon: glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>'), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.`,
-    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}` };
+    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}` };
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (seventh round, docs/DESIGN.md): the answer as one big word, what set it

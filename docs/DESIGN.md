@@ -458,7 +458,7 @@ The Water temperature tile (`waterTile` in `index.html`; the reading is
 with "C", in ink: a temperature is not a level. It has no drawing. Its sentence says where and how old,
 counted when the page is read, not when it was built: "Measured at Bures Mill on the Stour, 10.9 km
 downstream, 2 h ago." The fold says it is the nearest Environment Agency sensor on the spot's own river,
-within 15 km, that has reported in the last day; that the water where you swim can be warmer or
+within 15 km, that has reported in the last day, upstream if there is one; that the water where you swim can be warmer or
 colder; and that it is not part of the pollution level, with a link to the sensor's page. Rivers only:
 a river sensor is not a lake's water. Where there is no such sensor there is no tile, since the
 temperature is never estimated.

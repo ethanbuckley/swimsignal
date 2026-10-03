@@ -130,6 +130,23 @@ def test_a_spot_gets_the_nearest_sensor_on_its_own_river_and_none_40_km_away(cap
                                        now=NOW, max_km=50) == 1 and again[0]["water_temp"]["station_id"] == "WENS1"
 
 
+def test_a_sensor_upstream_is_taken_before_a_nearer_one_downstream():
+    """Dedham, 3 Oct 2026: the nearest sensor was Cattawade, 6 km downstream at the tidal barrage, 17.6 °C;
+    Boxted Mill, 7.4 km upstream, read 15.4 °C. The water at a spot comes from upstream."""
+    bs = _build_site()
+    spots = [dict(FRIARS)]
+    asked = []
+
+    def relate(spot, sensor):   # TIDE1 (3.9 km) is downstream here, Bures Mill (8.1 km) upstream
+        asked.append(sensor.station_id)
+        return {"TIDE1": ("downstream", 4.2), "E02254A": ("upstream", 11.0)}.get(sensor.station_id)
+
+    assert bs.attach_water_temperature(spots, fetch=lambda now: wt.fetch_sensors(NOW, get=_get([])), relate=relate, now=NOW) == 1
+    w = spots[0]["water_temp"]
+    assert (w["station_id"], w["direction"], w["river_km"]) == ("E02254A", "upstream", 11.0)
+    assert asked == ["TIDE1", "E02254A"]   # nearest first, and no further once one upstream is found
+
+
 def test_a_refusal_is_tried_once_more_and_then_given_up(monkeypatch):
     import httpx
     answers = []
