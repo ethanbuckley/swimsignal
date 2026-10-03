@@ -31,15 +31,17 @@ def review(i, spot="wharfe-burnsall", swam="2026-09-14", photos=0, again=True, *
 class Worker:
     """The review Worker's two public answers, and a count of what was asked."""
 
-    def __init__(self, reviews, down=False, bad_photo=None, visits=()):
+    def __init__(self, reviews, down=False, bad_photo=None, visits=(), illness=None):
         self.reviews, self.down, self.bad_photo, self.visits, self.asked = reviews, down, bad_photo, list(visits), []
+        self.illness = illness
 
     def __call__(self, url):
         self.asked.append(url)
         if self.down:
             raise httpx.ConnectError("no route to host")
         if url == URL + "published":
-            return json.dumps({"generated_at": "2026-10-03T12:00:00Z", "reviews": self.reviews, "visits": self.visits}).encode()
+            return json.dumps({"generated_at": "2026-10-03T12:00:00Z", "reviews": self.reviews, "visits": self.visits,
+                               **({"illness": self.illness} if self.illness is not None else {})}).encode()
         name = url.removeprefix(URL + "photos/")
         return b"<html>not a photo</html>" if name == self.bad_photo else JPEG + name.encode()
 
@@ -182,11 +184,11 @@ def test_the_page_loads_the_reviews_script_from_its_build(tmp_path):
     stamp = bs.shell_stamp()
     page = (tmp_path / "index.html").read_text()
     sw = (tmp_path / "sw.js").read_text()
-    for script in ("reviews.js", "visits.js"):   # the notes on a visit after the reviews, whose parts they use
+    for script in ("reviews.js", "visits.js", "illness.js"):   # the notes and the illness reports after the reviews, whose parts they use
         assert f'<script src="{script}?v={stamp}">' in page
         assert (tmp_path / script).read_bytes() == (bs.TEMPLATE.parent / script).read_bytes()
         assert f"`{script}?v=${{BUILD}}`" in sw
-    assert page.index('src="reviews.js') < page.index('src="visits.js')
+    assert page.index('src="reviews.js') < page.index('src="visits.js') < page.index('src="illness.js')
     assert "/reviews/photos/" in sw
 
 
@@ -204,3 +206,83 @@ def test_a_failing_photo_service_costs_the_build_little(tmp_path):
     out = rv.write_reviews(tmp_path, URL, get=worker, cache=tmp_path / "cache2", now=lambda: next(clock))
     asked = [u for u in worker.asked if "/photos/" in u]
     assert len(asked) == 1 and "ran out of time" in out["warning"]
+
+
+# ---- reports of illness after a swim: counts only, from five, and their sections only while they are on
+
+ILLNESS = {"on": True, "min": 5, "through": "2026-10-03",
+           "spots": {"wharfe-burnsall": {"d30": 6, "d365": 11}, "another": {"d30": None, "d365": 5}}}
+
+
+def test_the_build_and_the_service_hold_the_same_threshold():
+    import re
+    rules = (ROOT / "reviews" / "src" / "rules.js").read_text()
+    assert int(re.search(r"ILLNESS_MIN = (\d+)", rules).group(1)) == rv.ILLNESS_MIN
+
+
+def test_only_counts_of_five_or_more_reach_the_site_even_if_the_service_sent_less():
+    sent = {**ILLNESS, "spots": {**ILLNESS["spots"], "small": {"d30": 2, "d365": 3}, "odd": {"d30": 4, "d365": 7},
+                                 "bad": {"d365": "many"}, "../x": {"d30": None, "d365": 9}, "gone-spot": {"d30": None, "d365": 8}}}
+    out = rv.site_illness({"illness": sent}, {"wharfe-burnsall", "another", "small", "odd", "bad", "../x"})
+    assert out == {"on": True, "min": 5, "through": "2026-10-03",
+                   "spots": {"another": {"d30": None, "d365": 5}, "odd": {"d30": None, "d365": 7}, "wharfe-burnsall": {"d30": 6, "d365": 11}}}
+    # A Worker set to a higher threshold is followed; a lower one is not.
+    assert list(rv.site_illness({"illness": {**ILLNESS, "min": 10}})["spots"]) == ["wharfe-burnsall"]
+    assert rv.site_illness({"illness": {**ILLNESS, "min": 1}})["min"] == 5
+    assert rv.site_illness({"illness": {"on": False}}) == {"on": False}
+    assert rv.site_illness({}) is None
+
+
+def _pages(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, [{"id": "wharfe-burnsall", "name": "Burnsall", "kind": "river", "days": []}], root="https://example.org/")
+    return {p: (tmp_path / p).read_text() for p in ("privacy.html", "terms.html", "data.html")}
+
+
+def test_with_reports_on_the_counts_and_every_section_are_published(tmp_path):
+    before = _pages(tmp_path)
+    for anchor in (rv.DATA_ROW_BEFORE, rv.DATA_SECTION_BEFORE):   # a rewrite of the data page cannot drop the sections unnoticed
+        assert anchor in before["data.html"], anchor
+    assert rv.ILLNESS_HOLDS_BEFORE in rv.with_reviews(before["privacy.html"], "privacy.html")
+    out = rv.write_reviews(tmp_path, URL, spot_ids=["wharfe-burnsall"], get=Worker([], illness=ILLNESS), cache=tmp_path / "cache")
+    assert out["illness"] == {"on": True, "spots_shown": 1}
+    index = json.loads((tmp_path / "reviews" / "index.json").read_text())
+    assert index["illness"] == {"on": True, "min": 5, "through": "2026-10-03", "spots": {"wharfe-burnsall": {"d30": 6, "d365": 11}}}
+    data = json.loads((tmp_path / "data" / "illness.json").read_text())
+    assert data["spots"] == index["illness"]["spots"] and data["min"] == 5 and "Unverified" in data["note"]
+    privacy, terms, page = ((tmp_path / p).read_text() for p in ("privacy.html", "terms.html", "data.html"))
+    assert privacy.count('<h2 id="illness">') == 1 and privacy.index('id="reviews"') < privacy.index('id="illness"') < privacy.index(rv.PRIVACY_SECTION_BEFORE)
+    assert "Article" in privacy and "9(2)(a)" in privacy and "https://111.nhs.uk/" in privacy
+    assert rv.ILLNESS_HOLDS_AFTER in privacy and rv.ILLNESS_SHORT_LINE in privacy
+    assert terms.count('<h3 id="illness">') == 1 and terms.index('id="visit-notes"') < terms.index('id="illness"')
+    assert page.count('data-file="illness.json"') == 1 and page.count('id="illness-json"') == 1
+    assert page.index('data-file="illness.json"') < page.index("</tbody></table></div>") and page.index('id="illness-json"') < page.index('id="credits"')
+    assert 'privacy.html#illness' in page and '<td class="num">1 kB</td>' in page.split('data-file="illness.json"')[1].split("</tr>")[0]
+    # Once only.
+    for name, html in (("privacy.html", privacy), ("terms.html", terms), ("data.html", page)):
+        assert rv.with_illness(html, name, size=500) == html
+
+
+def test_with_reports_off_but_held_only_the_privacy_section_stays(tmp_path):
+    _pages(tmp_path)
+    (tmp_path / "data" / "illness.json").write_text("{}")   # from an earlier build, when reports were on
+    out = rv.write_reviews(tmp_path, URL, get=Worker([], illness={"on": False}), cache=tmp_path / "cache")
+    assert out["illness"] == {"on": False, "spots_shown": 0}
+    assert "illness" not in json.loads((tmp_path / "reviews" / "index.json").read_text())
+    assert not (tmp_path / "data" / "illness.json").exists()
+    assert 'id="illness"' in (tmp_path / "privacy.html").read_text()
+    assert 'id="illness"' not in (tmp_path / "terms.html").read_text() and "illness" not in (tmp_path / "data.html").read_text()
+
+
+def test_with_reports_never_on_there_is_no_trace_of_them(tmp_path):
+    _pages(tmp_path)
+    out = rv.write_reviews(tmp_path, URL, get=Worker([]), cache=tmp_path / "cache")
+    assert "illness" not in out
+    assert "illness" not in json.loads((tmp_path / "reviews" / "index.json").read_text())
+    assert not (tmp_path / "data" / "illness.json").exists()
+    for page in ("privacy.html", "terms.html", "data.html"):
+        assert "illness" not in (tmp_path / page).read_text().lower(), page
+    # Reviews switched off altogether: a data file left from before goes too.
+    (tmp_path / "data" / "illness.json").write_text("{}")
+    rv.write_reviews(tmp_path, "", cache=tmp_path / "cache")
+    assert not (tmp_path / "data" / "illness.json").exists()

@@ -18,6 +18,11 @@ publishes the ones still showing in the same file, under "visits", their photos 
 Each note carries `until`, its last day; the build leaves out notes past it, and the page drops each
 tick on its own day (visits.js), so a site that is not rebuilt still stops showing them.
 
+When the Worker has reports of illness after a swim switched on, it sends only counts per spot, each
+from five (site_illness): the build puts them in the same file, under "illness", and in data/illness.json,
+and the privacy notice, the terms and the data page gain their sections (with_illness). The privacy
+section stays while reports are held after they are switched off.
+
 Off until the repository variable DIPCAST_REVIEWS_URL is set (reviews/README.md). Then the page
 shows the tile, and the privacy notice and the terms gain their reviews sections (with_reviews).
 """
@@ -51,6 +56,9 @@ MAX_PHOTO_BYTES = 2_000_000   # more than the Worker accepts (1.5 MB), so only a
 # failures in a row; the reviews still publish, without the photos not fetched, and the next build
 # tries those again. The job's limit is 25 minutes, and the forecasts need most of it.
 PHOTO_BUDGET_S, PHOTO_FAILURES = 120, 3
+# The smallest count of illness reports published (reviews/src/rules.js, ILLNESS_MIN, says why). The
+# build holds to this or the Worker's own, whichever is higher.
+ILLNESS_MIN = 5
 
 
 def reviews_url() -> str | None:
@@ -137,6 +145,32 @@ def site_visits(published: dict, spot_ids: set[str] | None = None, today: str | 
     return dict(sorted(out.items()))
 
 
+def site_illness(published: dict, spot_ids: set[str] | None = None) -> dict | None:
+    """The counts of illness reports the site may show, per spot, or None when the Worker sends none (off,
+    or before its migration). {"on": False} when reports are off but some are still held, so the privacy
+    notice keeps its section. A count under the threshold is dropped here as well as in the Worker, so a
+    fault there cannot publish one."""
+    ill = published.get("illness")
+    if not isinstance(ill, dict):
+        return None
+    if ill.get("on") is not True:
+        return {"on": False}
+    try:
+        least = max(ILLNESS_MIN, int(ill.get("min") or 0))
+    except (TypeError, ValueError):
+        least = ILLNESS_MIN
+    through = str(ill.get("through") or "")
+    spots: dict[str, dict] = {}
+    for sid, c in (ill.get("spots") or {}).items() if DAY.fullmatch(through) else ():
+        try:
+            d365, d30 = int(c["d365"]), (None if c.get("d30") is None else int(c["d30"]))
+        except (KeyError, TypeError, ValueError, AttributeError):
+            continue
+        if SPOT_ID.fullmatch(str(sid)) and d365 >= least and (spot_ids is None or sid in spot_ids):
+            spots[sid] = {"d30": d30 if d30 is not None and least <= d30 <= d365 else None, "d365": d365}
+    return {"on": True, "min": least, "through": through if DAY.fullmatch(through) else None, "spots": dict(sorted(spots.items()))}
+
+
 def _is_jpeg(data: bytes) -> bool:
     return 3 < len(data) <= MAX_PHOTO_BYTES and data[:3] == b"\xff\xd8\xff"
 
@@ -154,6 +188,7 @@ def write_reviews(site: Path, url: str | None = None, *, spot_ids=None, fetch: b
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
     generated = datetime.now(UTC).isoformat(timespec="seconds")
+    (site / "data" / ILLNESS_FILE).unlink(missing_ok=True)   # written again below only while reports are on
     if not url:
         shutil.rmtree(cache, ignore_errors=True)
         (out / "index.json").write_text(json.dumps({"generated_at": generated, "on": False}))
@@ -183,6 +218,8 @@ def write_reviews(site: Path, url: str | None = None, *, spot_ids=None, fetch: b
                                   else "; no earlier list is kept, so the site shows none this time")
     ids = None if spot_ids is None else set(map(str, spot_ids))
     spots, visits = site_entries(published, ids), site_visits(published, ids, today)
+    illness = site_illness(published, ids)
+    shown = illness if illness and illness["on"] else None   # the counts, while reports are on
 
     wanted, missing, failed, stop = set(), 0, 0, now() + PHOTO_BUDGET_S
     for items in [*spots.values(), *visits.values()]:
@@ -217,12 +254,22 @@ def write_reviews(site: Path, url: str | None = None, *, spot_ids=None, fetch: b
         shutil.copyfile(photos_cache / name, out / "photos" / name)
     complete = report["source"] == "service" or not fetch
     (out / "index.json").write_text(json.dumps({"generated_at": generated, "on": True, "submit": url, "complete": complete,
-                                                "spots": spots, "visits": visits}, ensure_ascii=False, separators=(",", ":")))
-    for page in ("privacy.html", "terms.html"):
+                                                "spots": spots, "visits": visits, **({"illness": shown} if shown else {})},
+                                               ensure_ascii=False, separators=(",", ":")))
+    if shown:
+        (site / "data").mkdir(parents=True, exist_ok=True)
+        (site / "data" / ILLNESS_FILE).write_text(json.dumps({"generated_at": generated, **shown, "windows_days": [30, 365],
+                                                             "note": ILLNESS_NOTE}, ensure_ascii=False, separators=(",", ":")))
+    for page in ("privacy.html", "terms.html", "data.html"):
         p = site / page
         if p.exists():
-            p.write_text(with_reviews(p.read_text(), page))
+            html = with_reviews(p.read_text(), page)
+            if illness:   # the privacy section while any report is held; the rest only while reports are on
+                html = with_illness(html, page, on=bool(shown), size=(site / "data" / ILLNESS_FILE).stat().st_size if shown else 0)
+            p.write_text(html)
     report.update(published=sum(len(v) for v in spots.values()), notes=sum(len(v) for v in visits.values()), photos=len(wanted) // 2)
+    if illness:
+        report["illness"] = {"on": illness["on"], "spots_shown": len(shown["spots"]) if shown else 0}
     if missing:
         why = ("; the photo service kept failing, so the rest waited" if failed >= PHOTO_FAILURES
                else "; the photos ran out of time" if now() > stop else "")
@@ -337,3 +384,116 @@ def with_reviews(html: str, page: str) -> str:
     else:
         log.warning("privacy notice: no 'SwimSignal holds none' sentence to add the reviews to")
     return html.replace(PRIVACY_SECTION_BEFORE, REVIEWS_PRIVACY + PRIVACY_SECTION_BEFORE, 1)
+
+
+# ------------------------------------------------------------------------------ illness reports
+# With reports of illness on, the privacy notice gains a section after Reviews, a line in its short
+# version and the reports in "SwimSignal holds none"; the terms gain a paragraph after the notes on a
+# visit; the data page gains a row and a section for data/illness.json. While reports are off but some
+# are still held, the privacy notice keeps its section and the rest goes. Health and legal wording, for
+# Ethan to approve before reports are switched on. Its sources, read on 4 Oct 2026:
+# - Explicit consent, UK GDPR Article 9(2)(a), with consent under Article 6(1)(a): the ICO says special
+#   category data needs both an Article 6 basis and an Article 9 condition ("What are the rules on special
+#   category data?"), and that explicit consent "must be confirmed in a clear statement", which may be "a
+#   tick box next to it", and must name the kind of special category data ("What are the conditions for
+#   processing?", updated 18 Dec 2023; "What is valid consent?").
+# - "Data concerning health" includes information that reveals someone's health status (the ICO, "What is
+#   special category data?", updated 9 Apr 2024): a report that someone was ill after a swim does.
+# - Seek medical help and say you have been open water swimming: "Swim healthy", UK Health Security
+#   Agency and Environment Agency (updated 24 June 2019). NHS 111 online is https://111.nhs.uk/ (answered
+#   on 4 Oct 2026). No route was found for the public to report illness after bathing to the UKHSA or a
+#   council, so none is linked.
+# The 30 and 365 days, five, 400 days and 14 days are reviews/src/rules.js's.
+
+ILLNESS_FILE = "illness.json"
+ILLNESS_NOTE = ("Unverified reports from swimmers of illness after swimming at a spot, counted by the day each arrived, "
+                "from the next day. Not a measurement or a diagnosis, and not part of the forecast. A count under min is not published.")
+ILLNESS_HOLDS_BEFORE = "the reviews people send, described under Reviews;"
+ILLNESS_HOLDS_AFTER = "the reviews and the reports of illness people send, described under Reviews and Illness reports;"
+ILLNESS_SHORT_LINE = ("<li>If you report being ill after a swim, the report has no name, and only counts of five or more "
+                      "reports are published. It is deleted after about 13 months.</li>\n")
+DATA_ROW_BEFORE = "</tbody></table></div>"   # the end of the data page's table of files, its first table
+DATA_SECTION_BEFORE = '<h2 id="credits">'
+
+ILLNESS_PRIVACY = (
+    '<h2 id="illness">Illness reports</h2>\n'
+    "<p>If you tell SwimSignal that you were ill after swimming at a spot, your browser sends its review service the "
+    "spot, the day you swam, the kinds of symptom you ticked, how many days after the swim they started and, if you "
+    "answered, whether you saw a doctor or called 111 about it. That is information about your health: UK data "
+    "protection law calls it special category data and protects it more strictly. A report has no name, contact "
+    "details, words, photos or time of day. The service records the day it arrived, not the time, and does not store "
+    "your IP address with it: as for reviews, it counts reports from each connection under a scrambled form of the "
+    "address, kept apart from the reports and deleted within three days.</p>\n"
+    "<p>The basis is your explicit consent (UK GDPR, Articles 6(1)(a) and 9(2)(a)): the form sends nothing until you "
+    "tick a box agreeing that SwimSignal keeps this information about your health. You can withdraw your consent by "
+    "deleting the report from the browser you sent it from, which keeps the report's identifier, a key to it and the "
+    "day you sent it, and nothing about the illness. From another device, email the operator the spot and the day you "
+    "swam: a report holds nothing that names you, so that is the only way to find it.</p>\n"
+    "<p>SwimSignal uses the reports for two things: to show how many swimmers have reported being ill after swimming "
+    "at a spot, and to test its forecasts against them. Only counts are published: for each spot, how many reports "
+    "arrived in the last 30 days and in the last 12 months, each shown only once it reaches five, on the spot's page "
+    'and in the site\'s <a href="data.html#illness-json">data file</a>. A report counts from the day after it arrives. '
+    "No single report is published, nor anyone's symptoms or the day they swam. The operator can see the reports for "
+    "each spot and day, deletes batches that look like one person or a script, and downloads the reports for each "
+    "spot and day of swimming to test the forecast with. Nobody checks a report, and reports never change the "
+    "forecast.</p>\n"
+    "<p>The review service deletes each report 400 days, about 13 months, after it arrived, so that a whole summer can "
+    "be compared with the forecasts after it ends. Cloudflare holds the reports, as it holds reviews (above), in a "
+    "database kept in the European Union. They are not passed to the NHS, the UK Health Security Agency, your council, "
+    "the Environment Agency or anyone else. If you are unwell, call 111 or go to "
+    '<a href="https://111.nhs.uk/">111.nhs.uk</a>.</p>\n\n')
+
+ILLNESS_TERMS = (
+    '<h3 id="illness">Illness reports</h3>\n'
+    "<p>You can tell us that you were ill after swimming at a spot in the last 14 days. Report only your own illness, "
+    "and only once. We do not check reports, and we may delete any that we think are false or sent in bulk. A count of "
+    "reports is what swimmers told us, not a measurement: it does not show that the water made anyone ill, it does not "
+    "change the forecast, and no count does not mean the water is clean. Telling us does not tell the NHS or any health "
+    "authority. If you are unwell, call 111.</p>\n\n")
+
+ILLNESS_DATA_ROW = ('<tr data-file="illness.json"><td><a href="data/illness.json">illness.json</a></td><td>How many swimmers '
+                    'reported being ill after swimming at each spot, from five reports</td><td class="num">{size}</td></tr>\n')
+ILLNESS_DATA_SECTION = (
+    '<h2 id="illness-json">illness.json</h2>\n'
+    "<p>How many swimmers told SwimSignal they were ill after swimming at each spot. These are unverified reports, not "
+    "a measurement or a diagnosis: nobody checks them, illness has many causes, and they do not change the forecast. A "
+    "report is counted by the day it arrived, from the next day.</p>\n"
+    '<dl class="fields">\n'
+    "<dt><code>through</code></dt><dd>The last day counted, normally yesterday</dd>\n"
+    "<dt><code>min</code></dt><dd>The smallest count published, 5. A smaller count could point to one person, so it is "
+    "left out</dd>\n"
+    "<dt><code>spots</code></dt><dd>Keyed by spot id: <code>d30</code>, the reports that arrived in the 30 days to "
+    "<code>through</code>, null when under <code>min</code>, and <code>d365</code>, in the 365 days. A spot with fewer "
+    "than <code>min</code> reports in 365 days is left out</dd>\n"
+    "<dt><code>windows_days</code>, <code>note</code>, <code>generated_at</code></dt><dd>The two windows in days, a "
+    "sentence on what the counts are, and when the file was written</dd>\n"
+    "</dl>\n"
+    '<p>No single report, symptom or day of a swim is in the file (<a href="privacy.html#illness">privacy notice</a>).</p>\n'
+    "<p><b>Licence.</b> SwimSignal's counts of swimmers' reports, under the same terms as its other data: non-commercial "
+    "reuse with credit.</p>\n\n")
+
+
+def _size(n: int) -> str:   # as the data page writes sizes (scripts/build_site.py, file_size)
+    return f"{n / 1e6:.1f} MB" if n >= 1e6 else f"{max(1, round(n / 1e3))} kB"
+
+
+def with_illness(html: str, page: str, on: bool = True, size: int = 0) -> str:
+    """privacy.html, terms.html or data.html with its illness sections; with on=False (reports off, some
+    still held) the privacy notice only. Any other page, or one that has them, as it is."""
+    if page == "privacy.html" and 'id="illness"' not in html:
+        if ILLNESS_HOLDS_BEFORE in html:
+            html = html.replace(ILLNESS_HOLDS_BEFORE, ILLNESS_HOLDS_AFTER, 1)
+        else:
+            log.warning("privacy notice: no reviews in 'SwimSignal holds none' to add the reports of illness to")
+        html = html.replace(SHORT_VERSION_BEFORE, ILLNESS_SHORT_LINE + SHORT_VERSION_BEFORE, 1)
+        return html.replace(PRIVACY_SECTION_BEFORE, ILLNESS_PRIVACY + PRIVACY_SECTION_BEFORE, 1)
+    if not on:
+        return html
+    if page == "terms.html" and 'id="illness"' not in html:
+        return html.replace(TERMS_SECTION_BEFORE, ILLNESS_TERMS + TERMS_SECTION_BEFORE, 1)
+    if page == "data.html" and 'id="illness-json"' not in html:
+        # A copy left in data/ by an earlier local build is listed as undescribed: this row replaces it.
+        html = re.sub(r'<tr data-file="illness\.json">.*?</tr>\n?', "", html)
+        html = html.replace(DATA_ROW_BEFORE, ILLNESS_DATA_ROW.format(size=_size(size)) + DATA_ROW_BEFORE, 1)
+        return html.replace(DATA_SECTION_BEFORE, ILLNESS_DATA_SECTION + DATA_SECTION_BEFORE, 1)
+    return html
