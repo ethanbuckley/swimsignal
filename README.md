@@ -21,13 +21,27 @@ guarantee of clean water.
 
 ## What exists already, and what this adds
 
-Live sewage maps exist (the National Storm Overflow Hub, Surfers Against Sewage,
-WaterWatch, The Rivers Trust) and bathing-water risk forecasts exist for the ~950
-designated bathing waters (Islandswim, SAS). Inland river and lake spots, where
-most freshwater swimming happens, are mostly not designated bathing waters and
-had no forecast. SwimSignal covers any point on the network. Its distinguishing
-part is the transport step: an overflow 2 km upstream on the same river and one
-40 km up a tributary are not treated the same.
+Live sewage maps exist: the National Storm Overflow Hub, The Rivers Trust,
+WaterWatch, Surfers Against Sewage (SAS), and SewageMap, which shades the river
+stretches downstream of live and recent spills in England and Scotland. SAS
+alerts after a discharge and holds the alert for 48 hours; it does not forecast.
+Forecasts exist for designated bathing waters: the Environment Agency's same-day
+pollution risk forecast, which in 2026 covered no inland bathing water, and
+Islandswim's 24-hour score at 942 UK and Irish bathing waters, which also scores
+private spots. Wessex Water estimates bacteria hourly from sensors at three
+river sites.
+
+SwimSignal forecasts five days ahead for any point on England's inland river
+network. It adds up every monitored overflow upstream, each delayed by its
+travel time and reduced by die-off and dilution. Islandswim takes the single
+worst outlet, with no dilution, and SewageMap says it does not consider dilution
+or river flow. SwimSignal scores every forecast it issues, in public.
+
+What it has not shown yet: on past samples it ranks which sites are contaminated
+well, but on which days at a given site it does no better than recent rainfall,
+and its die-off and dilution weights are not yet calibrated against samples (see
+the E. coli validation under Method, and Known limits). The other tools were
+checked on their own pages on 3 Oct 2026.
 
 ## Data
 
