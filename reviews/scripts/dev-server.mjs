@@ -2,7 +2,8 @@
 // anything is deployed: SQLite in memory stands in for D1 and a Map for KV (the tests' own stand-ins),
 // so everything is gone when it stops. Not for production. README.md, "Try it on this computer".
 //
-//   node scripts/dev-server.mjs            (from reviews/; PORT, ALLOWED_ORIGIN, SITE_URL, ADMIN_TOKEN to change)
+//   node scripts/dev-server.mjs            (from reviews/; PORT, ALLOWED_ORIGIN, SITE_URL, ADMIN_TOKEN to change,
+//                                            ILLNESS_REPORTS=on to try reports of illness)
 import { createServer } from 'node:http';
 import worker from '../src/index.js';
 import { FakeD1, FakeKV } from '../test/helpers.js';
@@ -13,6 +14,7 @@ const env = {
   DB: new FakeD1(), PHOTOS: new FakeKV(),
   SITE_URL: site, ALLOWED_ORIGIN: process.env.ALLOWED_ORIGIN || new URL(site).origin,
   ADMIN_TOKEN: process.env.ADMIN_TOKEN || 'local-admin-token',
+  ILLNESS_REPORTS: process.env.ILLNESS_REPORTS || 'off',
 };
 
 createServer(async (req, res) => {

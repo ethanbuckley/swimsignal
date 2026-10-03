@@ -23,6 +23,10 @@ crons = ["17 3 * * *"]   # once a day: forget the rate-limit counts from before 
 [vars]
 SITE_URL = "https://swimsignal.co.uk/"
 ALLOWED_ORIGIN = "https://swimsignal.co.uk"
+# Reports of illness after a swim: health information, so off until you have done the short DPIA in
+# README.md ("Illness reports") and decided. "on" takes reports and gives the site their counts, which
+# turns on the form, the privacy section and the data file at the next build. Apply migration 0004 first.
+ILLNESS_REPORTS = "off"
 # ADMIN_TOKEN is a secret, not a var: it opens the moderation queue. Set it with
 #   npx wrangler secret put ADMIN_TOKEN
 # Never write it in this file. This file is committed, so anything here is public.

@@ -5,7 +5,7 @@
 export const MAX_PHOTOS = 3, MAX_TEXT = 1500, MAX_NAME = 40;
 // Requests a day from one connection. The page sends one request a review, so a swimmer never meets
 // these; a script that floods the queue does.
-export const LIMITS = { review: 10, report: 20, remove: 30, status: 60, visit: 10, confirm: 30 };
+export const LIMITS = { review: 10, report: 20, remove: 30, status: 60, visit: 10, confirm: 30, illness: 4 };
 // For everyone together. KV takes 1,000 writes a day on the free plan, two a photo, and holds 1 GB:
 // at most 300 photos a day and 300 reviews waiting for the operator. Published photos accumulate;
 // the operator must monitor storage and move to R2 before the store fills.
@@ -44,3 +44,23 @@ export const MAX_VISIT_TEXT = 280, MAX_VERIFIED = 120, MAX_PENDING_VISITS = 300;
 // worth little two days later. Words or a photo still wait for the operator. False makes every note wait.
 export const PUBLISH_TICKS_AT_ONCE = true;
 export const VISIT_REASONS = ['not-now', 'not-about-spot', 'rude', 'person', 'spam', 'other'];
+
+// ---- reports of illness after a swim (migrations/0004_illness.sql) ----
+// Health information, so: the fewest fields that can test a forecast, counts the only thing published,
+// and off until ILLNESS_REPORTS is "on" in wrangler.toml. README.md, "Illness reports", has the reasons.
+// The kinds of symptom, as ticks. The page's copy (src/dipcast/site/illness.js) has the words; a test
+// keeps the two the same.
+export const ILLNESS_SYMPTOMS = ['gut', 'ear', 'eye', 'skin', 'other'];
+// A swim at most this many days before the report: most illness from water starts within days, and an
+// older swim is remembered less well.
+export const ILLNESS_DAYS_BACK = 14;
+// The smallest count published, for a spot and a window. Five, the k of the NHS's standard for
+// publishing health data, which the ICO's anonymisation guidance cites: a count of one or two could
+// name someone to anyone who knows who swam there. README.md says more.
+export const ILLNESS_MIN = 5;
+// A report is deleted this many days after it arrived (about 13 months): long enough to compare a whole
+// summer with the forecasts after it ends, and no longer.
+export const ILLNESS_KEEP_DAYS = 400;
+// Reports in one day, for one spot and for everyone together: more than any real outbreak at an inland
+// spot would send, few enough that a script cannot bury the counts in one day.
+export const ILLNESS_SPOT_DAY = 25, ILLNESS_PER_DAY = 300;
