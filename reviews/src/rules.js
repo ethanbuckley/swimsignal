@@ -10,6 +10,9 @@ export const LIMITS = { review: 10, report: 20, remove: 30, status: 60 };
 // at most 300 photos a day and 300 reviews waiting for the operator. Published photos accumulate;
 // the operator must monitor storage and move to R2 before the store fills.
 export const PHOTOS_PER_DAY = 300, MAX_PENDING = 300;
+// A budget below KV's 1 GB limit, with an earlier warning. Includes space reserved by uploads
+// and deletions waiting to be retried, so a failing KV operation never makes the store look empty.
+export const PHOTO_STORAGE_LIMIT = 800_000_000, PHOTO_STORAGE_WARN = 640_000_000;
 // Published reviews the moderation page lists, newest first; older ones by id (README).
 export const PUBLISHED_LISTED = 500;
 export const REASONS = ['not-about-spot', 'rude', 'person', 'spam', 'other'];

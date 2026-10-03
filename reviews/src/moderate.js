@@ -39,6 +39,7 @@ export function moderatePage(site) {
 </form>
 <p id="msg" role="status"></p>
 <div id="queue" hidden>
+<p id="storage" role="status"></p>
 <h2>Waiting <span class="muted" id="n-pending"></span></h2><ol class="mq-list" id="pending"></ol>
 <h2>Reported <span class="muted" id="n-reported"></span></h2><ol class="mq-list" id="reported"></ol>
 <h2>Published <span class="muted" id="n-published"></span></h2>
@@ -155,6 +156,12 @@ async function load() {
   $('signin').hidden = true; say('Loading…');
   try {
     const q = await (await api('/admin/queue')).json();
+    const s = q.summary.storage;
+    $('storage').textContent = 'Photos: ' + (s.bytes / 1e6).toFixed(1) + ' MB of the ' + (s.limit_bytes / 1e6).toFixed(0) + ' MB budget.'
+      + (s.level === 'normal' ? '' : ' Storage is getting full. Make room before accepting more photos.')
+      + (s.cleanup_pending ? ' ' + s.cleanup_pending + ' photo batches are waiting for automatic cleanup.' : '')
+      + (s.estimated_reviews ? ' Older photos are counted at their maximum size.' : '');
+    document.title = (q.summary.pending + q.summary.reported ? '(' + (q.summary.pending + q.summary.reported) + ') ' : '') + 'Reviews to check · SwimSignal';
     fill('pending', q.pending, 'pending', 'Nothing waiting.');
     fill('reported', q.reported, 'reported', 'Nothing reported.');
     fill('published', q.published, 'published', 'Nothing published yet.');

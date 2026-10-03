@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import worker, { connectionOf, forgetOldHits, sha256 } from '../src/index.js';
-import { LIMITS, MAX_PENDING, PHOTOS_PER_DAY } from '../src/rules.js';
+import worker, { cleanAbandonedPhotos, connectionOf, forgetOldHits, sha256 } from '../src/index.js';
+import { LIMITS, MAX_PENDING, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT, PHOTO_STORAGE_WARN } from '../src/rules.js';
 import { FakeD1, FakeKV, hasBytes, jpeg } from './helpers.js';
 
 const ORIGIN = 'https://swimsignal.co.uk';
@@ -307,4 +307,72 @@ test('a refused batch of photos does not consume the remaining daily allowance',
   assert.equal((await send(env, { ...REVIEW, consent: 'yes' }, [PHOTO, PHOTO], { ip: '192.0.2.70' })).status, 503);
   assert.equal((await send(env, { ...REVIEW, consent: 'yes' }, [PHOTO], { ip: '192.0.2.71' })).status, 201);
   assert.equal(env.DB.rows("SELECT n FROM hits WHERE key = 'photos'")[0].n, PHOTOS_PER_DAY);
+});
+
+test('the private summary counts reviews and actual cleaned photo bytes without their contents', async () => {
+  const env = makeEnv();
+  assert.equal((await get(env, '/admin/summary')).status, 401);
+  assert.equal((await get(env, '/admin/summary', 'wrong')).status, 401);
+  const { id, token } = await (await send(env, { ...REVIEW, consent: 'yes' }, [PHOTO])).json();
+  let q = await (await get(env, '/admin/summary', ADMIN)).json();
+  assert.equal(q.pending, 1);
+  assert.equal(q.published, 0);
+  assert.equal(q.storage.photos, 1);
+  assert.equal(q.storage.bytes, [...env.PHOTOS.map.values()].reduce((n, b) => n + b.byteLength, 0));
+  assert.equal(q.storage.level, 'normal');
+  assert.ok(!JSON.stringify(q).includes(REVIEW.text) && !JSON.stringify(q).includes(id));
+  await publish(env, id);
+  await post(env, '/reviews/report', { id, reason: 'other' });
+  q = await (await get(env, '/admin/summary', ADMIN)).json();
+  assert.equal(q.pending, 0); assert.equal(q.published, 1); assert.equal(q.reported, 1);
+  await post(env, '/reviews/delete', { id, token });
+  q = await (await get(env, '/admin/summary', ADMIN)).json();
+  assert.equal(q.storage.bytes, 0); assert.equal(q.reported, 0);
+});
+
+test('photo storage warns early, cannot be overfilled by concurrent uploads, and text reviews still work', async () => {
+  const env = makeEnv();
+  const other = 'f'.repeat(20);
+  env.DB.db.prepare('INSERT INTO photo_storage (id, photos, bytes, created_at) VALUES (?, 1, ?, ?)').run(other, PHOTO_STORAGE_WARN, today);
+  assert.equal((await (await get(env, '/admin/summary', ADMIN)).json()).storage.level, 'warning');
+  // Leave room for exactly one cleaned fixture pair.
+  const empty = makeEnv();
+  await send(empty, { ...REVIEW, consent: 'yes' }, [PHOTO]);
+  const size = empty.DB.rows('SELECT bytes FROM photo_storage')[0].bytes;
+  env.DB.db.prepare('UPDATE photo_storage SET bytes = ?').run(PHOTO_STORAGE_LIMIT - size);
+  const responses = await Promise.all([1, 2].map(i => send(env, { ...REVIEW, consent: 'yes' }, [PHOTO], { ip: `192.0.2.${i}` })));
+  assert.deepEqual(responses.map(r => r.status).sort(), [201, 503]);
+  assert.equal(env.PHOTOS.map.size, 2);
+  assert.equal(env.DB.rows('SELECT sum(bytes) AS n FROM photo_storage')[0].n, PHOTO_STORAGE_LIMIT);
+  assert.equal((await send(env, REVIEW, [], { ip: '192.0.2.3' })).status, 201);
+});
+
+test('a failed deletion retains its reservation until the scheduled retry removes every photo', async () => {
+  const env = makeEnv();
+  const { id, token } = await (await send(env, { ...REVIEW, consent: 'yes' }, [PHOTO])).json();
+  const remove = env.PHOTOS.delete.bind(env.PHOTOS);
+  env.PHOTOS.delete = async () => { throw new Error('KV unavailable'); };
+  const res = await post(env, '/reviews/delete', { id, token });
+  assert.equal(res.status, 503);
+  assert.equal(env.DB.rows('SELECT * FROM reviews').length, 0);
+  assert.equal(env.DB.rows('SELECT deleting FROM photo_storage')[0].deleting, 1);
+  assert.equal(env.PHOTOS.map.size, 2);
+  env.PHOTOS.delete = remove;
+  await cleanAbandonedPhotos(env);
+  assert.equal(env.PHOTOS.map.size, 0);
+  assert.equal(env.DB.rows('SELECT * FROM photo_storage').length, 0);
+});
+
+test('abandoned uploads are cleaned after an hour, while active uploads and live reviews are retained', async () => {
+  const env = makeEnv();
+  const { id } = await (await send(env, { ...REVIEW, consent: 'yes' }, [PHOTO])).json();
+  const insert = env.DB.db.prepare('INSERT INTO photo_storage (id, photos, bytes, created_at) VALUES (?, 1, 20, ?)');
+  const abandoned = 'a'.repeat(20), active = 'b'.repeat(20);
+  insert.run(abandoned, new Date(Date.now() - 7200_000).toISOString());
+  insert.run(active, new Date().toISOString());
+  await env.PHOTOS.put(`p:${abandoned}:0`, new Uint8Array(10));
+  await env.PHOTOS.put(`t:${abandoned}:0`, new Uint8Array(10));
+  await cleanAbandonedPhotos(env);
+  assert.deepEqual(env.DB.rows('SELECT id FROM photo_storage ORDER BY id').map(r => r.id).sort(), [id, active].sort());
+  assert.equal(env.PHOTOS.map.size, 2);
 });
