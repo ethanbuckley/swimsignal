@@ -9,7 +9,7 @@
 
 import { BadImage, cleanJpeg } from './jpeg.js';
 import { MODERATE_CSS, MODERATE_JS, moderatePage } from './moderate.js';
-import { LIMITS, MAX_NAME, MAX_PENDING, MAX_PHOTOS, MAX_TEXT, PHOTOS_PER_DAY, PUBLISHED_LISTED, REASONS } from './rules.js';
+import { LIMITS, MAX_NAME, MAX_PENDING, MAX_PHOTOS, MAX_TEXT, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT, PHOTO_STORAGE_WARN, PUBLISHED_LISTED, REASONS } from './rules.js';
 
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;   // the site's own rule for a spot's id (index.html PAGE_ID)
 const REVIEW_ID = /^[0-9a-f]{20}$/;
@@ -23,7 +23,7 @@ const WEB_ADDRESS = /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|co\.uk|org|net|uk|io|l
 
 export default {
   fetch: (request, env) => handleRequest(request, env),
-  async scheduled(controller, env) { await forgetOldHits(env); },
+  async scheduled(controller, env) { await forgetOldHits(env); await cleanAbandonedPhotos(env); },
 };
 
 // ---- replies ----
@@ -59,6 +59,7 @@ export async function handleRequest(request, env) {
       if (path === '/moderate.js') return reply(200, MODERATE_JS, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache' });
       if (path === '/moderate.css') return reply(200, MODERATE_CSS, { 'Content-Type': 'text/css; charset=utf-8', 'Cache-Control': 'no-cache' });
       if (path === '/admin/queue') { await requireAdmin(request, env); return json(200, await queue(env)); }
+      if (path === '/admin/summary') { await requireAdmin(request, env); return json(200, await summary(env)); }
     }
     if (request.method === 'POST' && path === '/admin/decide') {
       await requireAdmin(request, env);
@@ -189,10 +190,26 @@ const photoKeys = (id, n) => [`p:${id}:${n}`, `t:${id}:${n}`];
 async function deleteReview(env, id, photos) {
   const count = (() => { try { return JSON.parse(photos).length; } catch { return MAX_PHOTOS; } })();
   await env.DB.batch([
+    env.DB.prepare('UPDATE photo_storage SET deleting = 1 WHERE id = ?').bind(id),
     env.DB.prepare('DELETE FROM reports WHERE review = ?').bind(id),
     env.DB.prepare('DELETE FROM reviews WHERE id = ?').bind(id),
   ]);
-  await Promise.all(Array.from({ length: count }, (_, n) => photoKeys(id, n)).flat().map((k) => env.PHOTOS.delete(k)));
+  if (!(await deletePhotos(env, id, count))) throw new Refused(503, 'The review is removed. Its photos will be cleaned up automatically; try again later');
+}
+
+async function deletePhotos(env, id, count) {
+  const removed = await Promise.allSettled(Array.from({ length: count }, (_, n) => photoKeys(id, n)).flat().map((k) => env.PHOTOS.delete(k)));
+  if (removed.some(r => r.status === 'rejected')) return false;
+  await env.DB.prepare('DELETE FROM photo_storage WHERE id = ?').bind(id).run();
+  return true;
+}
+
+export async function cleanAbandonedPhotos(env, now = Date.now()) {
+  const before = new Date(now - 3600_000).toISOString();
+  // A bounded batch keeps the cron within its request budget. A live upload cannot be an hour old.
+  const { results } = await env.DB.prepare(`SELECT id, photos FROM photo_storage WHERE deleting = 1
+    OR (created_at < ? AND NOT EXISTS (SELECT 1 FROM reviews WHERE reviews.id = photo_storage.id)) LIMIT 5`).bind(before).all();
+  for (const row of results) await deletePhotos(env, row.id, row.photos);
 }
 
 // ---- a review from the site ----
@@ -253,6 +270,13 @@ async function submit(request, env) {
   const sizes = photos.map((p) => ({ w: p.full.width, h: p.full.height, tw: p.thumb.width, th: p.thumb.height }));
   const keys = [];
   try {
+    if (photos.length) {
+      const bytes = photos.reduce((n, p) => n + p.full.bytes.byteLength + p.thumb.bytes.byteLength, 0);
+      const reserved = await env.DB.prepare(`INSERT INTO photo_storage (id, photos, bytes, created_at)
+        SELECT ?, ?, ?, ? WHERE COALESCE((SELECT sum(bytes) FROM photo_storage), 0) + ? <= ? RETURNING id`)
+        .bind(id, photos.length, bytes, nowISO(), bytes, PHOTO_STORAGE_LIMIT).first();
+      if (!reserved) throw new Refused(503, 'There is no space for more photos just now. Send the review without them');
+    }
     for (const [n, p] of photos.entries()) {
       const [fk, tk] = photoKeys(id, n);
       keys.push(fk, tk);
@@ -265,7 +289,12 @@ async function submit(request, env) {
       .bind(id, spot, again, swamOn, body, name, JSON.stringify(sizes), nowISO(), await sha256(token), MAX_PENDING).first();
     if (!stored) throw new Refused(503, 'The queue of reviews to check is full just now. Try again in a few days');
   } catch (err) {
-    await Promise.allSettled(keys.map((k) => env.PHOTOS.delete(k)));   // no photos without their review
+    if (keys.length) {
+      await env.DB.prepare('UPDATE photo_storage SET deleting = 1 WHERE id = ?').bind(id).run();
+      await deletePhotos(env, id, photos.length);   // failed cleanup keeps its reservation for the cron
+    } else {
+      await env.DB.prepare('DELETE FROM photo_storage WHERE id = ?').bind(id).run();
+    }
     throw err;
   }
   return { id, token };
@@ -350,15 +379,30 @@ async function requireAdmin(request, env) {
 
 async function queue(env) {
   const all = async (sql) => (await env.DB.prepare(sql).all()).results;
-  const pending = await all("SELECT * FROM reviews WHERE status = 'pending' ORDER BY created_at LIMIT 200");
+  const pending = await all(`SELECT * FROM reviews WHERE status = 'pending' ORDER BY created_at LIMIT ${MAX_PENDING}`);
   const reported = await all(`SELECT r.*, group_concat(p.reason) AS reasons, max(p.created_at) AS reported_at FROM reviews r
     JOIN reports p ON p.review = r.id GROUP BY r.id ORDER BY reported_at DESC LIMIT 200`);
   const recent = await all(`SELECT * FROM reviews WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PUBLISHED_LISTED}`);
   return {
+    summary: await summary(env),
     pending: pending.map(fromRow),
     reported: reported.map((r) => ({ ...fromRow(r), reasons: String(r.reasons || '').split(',').filter(Boolean), reported_at: r.reported_at })),
     published: recent.map(fromRow),
   };
+}
+
+async function summary(env) {
+  const counts = await env.DB.prepare(`SELECT
+    (SELECT count(*) FROM reviews WHERE status = 'pending') AS pending,
+    (SELECT max(created_at) FROM reviews WHERE status = 'pending') AS latest_pending_at,
+    (SELECT count(*) FROM reviews WHERE status = 'published') AS published,
+    (SELECT count(DISTINCT review) FROM reports JOIN reviews ON reviews.id = reports.review WHERE reviews.status = 'published') AS reported,
+    (SELECT max(reports.created_at) FROM reports JOIN reviews ON reviews.id = reports.review WHERE reviews.status = 'published') AS latest_report_at`).first();
+  const store = await env.DB.prepare(`SELECT COALESCE(sum(bytes), 0) AS bytes, COALESCE(sum(photos), 0) AS photos,
+    COALESCE(sum(deleting), 0) AS cleanup_pending, COALESCE(sum(estimated), 0) AS estimated_reviews FROM photo_storage`).first();
+  return { ...counts, storage: { ...store, limit_bytes: PHOTO_STORAGE_LIMIT, warn_bytes: PHOTO_STORAGE_WARN,
+    level: store.bytes >= PHOTO_STORAGE_LIMIT ? 'full' : store.bytes >= PHOTO_STORAGE_LIMIT * 0.95 ? 'critical'
+      : store.bytes >= PHOTO_STORAGE_WARN ? 'warning' : 'normal' } };
 }
 
 async function decide(data, env) {

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 
 // D1, as far as this Worker uses it, over a real SQLite database (D1 is SQLite), with the tables
@@ -6,7 +6,10 @@ import { DatabaseSync } from 'node:sqlite';
 export class FakeD1 {
   constructor() {
     this.db = new DatabaseSync(':memory:');
-    this.db.exec(readFileSync(new URL('../migrations/0001_reviews.sql', import.meta.url), 'utf8'));
+    const folder = new URL('../migrations/', import.meta.url);
+    for (const name of readdirSync(folder).filter(n => n.endsWith('.sql')).sort()) {
+      this.db.exec(readFileSync(new URL(name, folder), 'utf8'));
+    }
   }
   prepare(sql) { return new Statement(this.db, sql, []); }
   async batch(statements) {

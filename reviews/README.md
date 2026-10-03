@@ -144,3 +144,22 @@ Still untested: a photo from a physical iPhone (HEIC turned into JPEG by Safari)
 Photos from the page are converted to sRGB. The Worker drops ICC profiles from other clients because they can contain arbitrary identifying text; such uploads may have different colours. It retains only a plain JFIF header and a rebuilt Adobe colour transform, scans the whole JPEG, drops metadata between scans, and discards data after the image ends.
 
 The browser checks the status of its own unpublished reviews when the spot is opened, and forgets reviews the operator has declined or removed. The moderation page searches the newest 500 published reviews; use the deletion endpoint by id for older ones.
+# Storage and operator alerts
+
+Apply both migrations before deploying this version. `photo_storage` reserves the stripped
+JPEG and thumbnail bytes before upload, atomically across concurrent requests. The photo
+budget is 800 MB, with warnings at 640 MB and 760 MB; reviews without photos still work at
+the limit. Legacy photos reserve their maximum permitted size until deleted. This ledger
+counts photo payloads, not total account usage or provider overhead.
+
+Failed photo deletions retain their reservation and are retried by the daily cleanup job.
+At most five abandoned batches are cleaned per run; a growing cleanup count needs attention.
+The moderation page displays storage use. The authenticated `/admin/summary` route returns
+only aggregate queue/report counts, latest arrival times and storage accounting.
+
+`scripts/check_reviews.py` reads the existing operator credential from Mac Keychain and
+keeps an atomic, private checkpoint under ignored `state/`. The Codex hourly heartbeat
+announces new arrivals, worsening storage thresholds, cleanup failures and service recovery.
+Unchanged checks stay quiet. The credential is restricted to the configured review-service
+host, and is never saved in monitor output. The heartbeat needs this Mac awake and Codex
+available; it is not an always-on external monitoring service.
