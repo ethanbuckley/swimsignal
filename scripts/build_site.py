@@ -875,7 +875,7 @@ def sitemap(root: str, spot_ids: list[str], day: str) -> str:
 
 
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
-                day: str | None = None, push: bool = False) -> int:
+                day: str | None = None, push: bool = False, coastal: dict | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=."""
     root = root or site_url()
@@ -889,6 +889,10 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = s.replace(a, b)
         if name == "about.html":
             s = with_counts(s, results)
+        if name == "coverage.html":
+            from dipcast.coastal import render
+            s = re.sub(r'<!-- COASTAL_DIRECTORY -->.*?<!-- END_COASTAL_DIRECTORY -->',
+                       lambda _: render(coastal), s, flags=re.S)
         (site / name).write_text(with_counter(with_push(s, push) if name == "privacy.html" else s, token))
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
@@ -1062,6 +1066,10 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data").mkdir(parents=True, exist_ok=True)
     credits = data_credits(site_url())
     health["anypoint"] = write_any_point(SITE, credits)
+    from dipcast.coastal import fetch as fetch_coastal
+    coastal = fetch_coastal()
+    (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
+    health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"])}
     push = push_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
@@ -1072,7 +1080,8 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "verification.json").write_text(json.dumps({**load_verification(), "credits": credits}, default=str))
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
-    health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None)
+    health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
+                                       coastal=coastal)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:

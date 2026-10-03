@@ -30,9 +30,14 @@
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
 <tr data-file="verification_live.csv"><td><a href="data/verification_live.csv">verification_live.csv</a></td><td>The individual forecast and observation pairs behind the live spill scores</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
+<tr data-file="coastal.json"><td><a href="data/coastal.json">coastal.json</a></td><td>Official English coastal and estuary directory, historical ratings and dated advice</td><td class="num">–</td></tr>
 <!-- more files --></tbody></table></div>
 <p class="small muted">Sizes are this build's, before compression. The site's host, GitHub Pages, sends the files compressed.</p>
 
+<h2 id="coastal-json">coastal.json</h2>
+<p>An official-information snapshot, separate from SwimSignal’s inland forecasts. <code>fetched_at</code>, <code>status</code>, <code>source</code>, <code>licence</code> and <code>credit</code> describe the fetch. Each entry in <code>sites</code> has an EA <code>id</code>, <code>name</code>, <code>kind</code> (coast or estuary), official <code>profile</code>, historical <code>rating</code> with its year and source, and <code>advice</code>.</p>
+<p>Advice states distinguish increased risk, no increased risk forecast, no forecast, no current advice and unavailability. Valid advice retains its origin, prediction time, publication time, expiry time and source. Check expiry again when using the file: a snapshot can outlive its advice. Missing advice, a normal incident record and a historical rating do not establish clean water.</p>
+<p><b>Licence.</b> Environment Agency copyright and/or database right, Open Government Licence v3.0. Keep the credit and source links. The EA does not endorse SwimSignal.</p>
 <h2 id="spots-json">spots.json</h2>
 <p>Every spot's forecast, as the map and the spot pages show it. A spot's level (low, moderate, high or very high) is worked out from these fields by the page's own rules, <a href="https://github.com/ethanbuckley/swimsignal/blob/main/src/dipcast/site/levels.js">levels.js</a>: the worst of the spill forecast, the E. coli estimate from May to September, a "poor" rating and an algae check from the last 14 days. A day's <code>label</code> is the spill forecast's level alone.</p>
 <dl class="fields">
