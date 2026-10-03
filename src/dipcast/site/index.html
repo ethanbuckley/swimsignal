@@ -717,6 +717,17 @@
   .vn-flag { margin:2px 0 0; font-size:var(--fs-meta); font-weight:600; line-height:1.35; }
   .vn-caveat { padding:12px 0 10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.4; color:var(--muted); }
   .vn-pol a { color:inherit; }
+  /* Illness after swimming (illness.js): one more tile after the reviews, from their parts. The count is
+     in ink, as a count of reports is not a level; the form's chips are the notes'; the day of the swim is
+     picked from a list of the last 15. A chip for an onset that would fall after today cannot be chosen. */
+  #illness:focus { outline:none; }
+  #illness { scroll-margin-top:calc(var(--header-h) + 8px); }
+  #il-form fieldset { margin-top:16px; }
+  #il-form select { display:block; width:100%; max-width:320px; min-height:44px; margin:0; padding:9px 36px 9px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink);
+    background:var(--field) var(--arrow) no-repeat right 12px center; border:1px solid var(--line); border-radius:var(--radius); -webkit-appearance:none; appearance:none; }
+  #il-form .rv-choice input:disabled { cursor:default; }
+  #il-form .rv-choice input:disabled + span { opacity:.45; }
+  .il-mine { margin:0 0 10px; }
 </style>
 </head>
 <body class="view-list">
@@ -820,6 +831,7 @@
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
+<script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
@@ -2410,9 +2422,10 @@ function render(d) {
     more.setAttribute('aria-expanded', String(all)); more.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap();
 }
-// Swimmers' reviews (reviews.js) and notes on a visit (visits.js), if those scripts arrived: without them
-// the rest of the spot still draws.
-const reviewsFor = d => { if (typeof mountReviews === 'function') mountReviews(d); if (typeof mountVisits === 'function') mountVisits(d); };
+// Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those
+// scripts arrived: without them the rest of the spot still draws.
+const reviewsFor = d => { if (typeof mountReviews === 'function') mountReviews(d); if (typeof mountVisits === 'function') mountVisits(d);
+  if (typeof mountIllness === 'function') mountIllness(d); };
 function bindBack() { const b = document.getElementById('back'); if (b) b.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
   if (history.state && history.state.from) history.back();   // came from the list, Saved or the map: back to it, where it was (popstate)
   else { keepPlace(); history.pushState(null, '', ROOT.pathname); renderList(); scrollTop(); } }); }   // a shared link: stay on the site
