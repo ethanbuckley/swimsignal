@@ -1,0 +1,32 @@
+# River Avon at Queen Elizabeth Gardens. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "toilets"
+text = "Queen Elizabeth Gardens has free public toilets, including disabled toilets and baby changing."
+status = "confirmed"
+source = "https://salisburycitycouncil.gov.uk/our-city/open-spaces/queen-elizabeth-gardens/"
+source_name = "Salisbury City Council"
+
+[[fact]]
+topic = "parking"
+text = "Parking for the gardens is pay and display, in Lush House car park."
+status = "confirmed"
+source = "https://salisburycitycouncil.gov.uk/our-city/open-spaces/queen-elizabeth-gardens/"
+source_name = "Salisbury City Council"
+
+[[fact]]
+topic = "hours"
+text = "The gardens are open day and night throughout the year."
+status = "confirmed"
+source = "https://salisburycitycouncil.gov.uk/our-city/open-spaces/queen-elizabeth-gardens/"
+source_name = "Salisbury City Council"
+
+[[fact]]
+topic = "parking"
+text = "Wiltshire Council's Lush House car park (Cranebridge Road, SP2 7TD) has 77 spaces, a 2 m height limit and a 3-hour maximum stay with no return within 4 hours. Charges apply Monday to Saturday 7am to 7pm including bank holidays, and Sunday 10am to 4pm: £2.00 up to 1 hour, £3.60 up to 2 hours, £5.90 up to 3 hours. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.wiltshire.gov.uk/parking-salisbury"
+source_name = "Wiltshire Council"

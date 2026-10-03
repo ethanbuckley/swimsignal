@@ -1,0 +1,102 @@
+# Windermere, Fellfoot. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The Environment Agency says a gravel beach is left exposed when the lake level is low."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45700"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "The Environment Agency says a National Trust park leads down to the bathing water at the lake edge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45700"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "Paths from the North and South car parks run downhill to the Boathouse café and the lakeshore. There is no shuttle from the car parks, and some routes in the park have steps."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/access-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "The Stagecoach number 6 bus runs all year and stops right outside the park entrance at the 'Fell Foot Country Park' stop. The National Trust advises against the X6 to Newby Bridge because that stretch of the A592 has no pavement."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "A Windermere Lake Cruises ferry runs between Lakeside and Fell Foot from 23 May to 27 September 2026."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "Parking costs £7 for 2 hours, £8.50 for 4 hours or £10 all day, paid by cash at the machine or the JustPark app (location code 998931). National Trust members park free."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "There are North, South and Active Base car parks, with 10 disabled spaces between them. Parking is ticketless with number plate recognition, and Blue Badge holders park free after telling the Welcome Team."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/access-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "Toilets are in the North car park (reached by steps) and next to the Boathouse café, with baby changing. Accessible toilets are in the North car park and at the Active Base, where you ask café or office staff for a free key fob."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/access-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "A Changing Places facility is in the boatshed next to the Boathouse Café. It needs a Radar key, which you can borrow from the café."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "changing"
+text = "The Active Base is a changing building with showers, lockers and underfloor heating. Day passes cost from £2 at the café."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/activities-on-lake-windermere-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "fees"
+text = "Active Base annual passes cost £83 and are arranged by email. The Active Base is only staffed on Tuesdays."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/activities-on-lake-windermere-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust says people swim at Fell Foot and asks swimmers to be sensible, follow safety advice and know their limits. It points swimmers to the National Park's swimming guide."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/activities-on-lake-windermere-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "A boat channel runs along the Fell Foot foreshore, marked by red and yellow buoys; keep out of the way of boats using it. A seasonal ferry to Lakeside also crosses the lake slightly to the north."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/water-safety-at-fell-foot"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Windermere. Powered craft must be registered, and there is a 10 nautical mph speed limit, or 6 in some places. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

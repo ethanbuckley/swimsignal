@@ -1,0 +1,53 @@
+# River Ribble at Edisford Bridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "When the river level is low, a gently sloping shingle beach is exposed."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd4308-46501"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Public parking is at Edisford Road car park. Disabled spaces at the riverside car park are for blue badge holders only, behind a barrier that needs a security card (£20 refundable deposit from The Platform Gallery, Clitheroe)."
+status = "confirmed"
+source = "https://www.ribblevalley.gov.uk/parks-open-spaces/edisford-bridge"
+source_name = "Ribble Valley Borough Council"
+
+[[fact]]
+topic = "toilets"
+text = "There is a Changing Places toilet at Edisford Bridge, open 24 hours a day, 7 days a week; a Radar key is needed."
+status = "confirmed"
+source = "https://www.ribblevalley.gov.uk/parks-open-spaces/edisford-bridge"
+source_name = "Ribble Valley Borough Council"
+
+[[fact]]
+topic = "changing"
+text = "The Changing Places toilet has hoists, showers, grab rails, adult-sized changing benches, privacy screens and space for carers."
+status = "confirmed"
+source = "https://www.ribblevalley.gov.uk/parks-open-spaces/edisford-bridge"
+source_name = "Ribble Valley Borough Council"
+
+[[fact]]
+topic = "parking"
+text = "Edisford Road car park is a short-stay car park on Edisford Road, opposite Ribblesdale pool (sat nav BB7 3LA), with 233 pay and display spaces and 8 disabled spaces. The car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.ribblevalley.gov.uk/car-parks/car-parks-parking/6"
+source_name = "Ribble Valley Borough Council"
+
+[[fact]]
+topic = "fees"
+text = "Edisford Road car park charges Monday to Sunday 8am to 6pm: up to 30 minutes £1.00, up to 1 hour £1.40, 1 to 2 hours £2.20, 2 to 3 hours £3.30, 3 to 5 hours £4.10, over 5 hours £5.10. The car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.ribblevalley.gov.uk/car-parks/car-parks-parking/6"
+source_name = "Ribble Valley Borough Council"
+
+[[fact]]
+topic = "parking"
+text = "Riverside car park is disabled-only, next to the River Ribble at Edisford Bridge. Parking is free for up to 3 hours (operating Monday to Sunday 8am to 6pm). Entry needs a barrier card, issued on proof of disability at the Platform Gallery, Clitheroe, for a £20 returnable deposit."
+status = "confirmed"
+source = "https://www.ribblevalley.gov.uk/car-parks/car-parks-parking/15"
+source_name = "Ribble Valley Borough Council"

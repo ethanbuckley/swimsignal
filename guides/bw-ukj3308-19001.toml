@@ -1,0 +1,18 @@
+# River Avon at Fordingbridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "toilets"
+text = "Fordingbridge Town Council runs a refreshment kiosk and toilets in the Rose Gardens at Fordingbridge Recreation Ground, Ringwood Road, SP6 2EX, open to locals and visitors all year round. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://fordingbridge.gov.uk/areas-of-responsibility/"
+source_name = "Fordingbridge Town Council"
+
+[[fact]]
+topic = "parking"
+text = "New Forest District Council's Fordingbridge Car Park (SP6 1AQ) has 178 short-stay spaces (3-hour limit) and 99 long-stay spaces (20-hour limit). 2026 charges apply 8am to 6pm every day including bank holidays, from £1.55 for 1 hour up to £8.60 for 20 hours. It has toilets. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.newforest.gov.uk/article/1399/Fordingbridge-Car-Park-Fordingbridge"
+source_name = "New Forest District Council"

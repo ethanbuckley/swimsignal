@@ -1,0 +1,53 @@
+# Wallingford Beach, River Thames. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The bathing area is on the east bank, immediately south of Wallingford Bridge. You get into the water down a sloping bank next to an area of grassland."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "The swimming area is close to Riverside Car Park, on the northern side of the bridge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "From the Thames Path at Wallingford, cross the bridge to reach the site."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "The river around Wallingford Beach is popular for recreational boating and can be very busy in summer."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Riverside car park, OX10 0BU, is open 24 hours with 34 standard and 2 disabled spaces and a 2.2m height limit. Charging hours are 8am to 6pm Monday to Saturday and 10am to 5pm Sunday; maximum stay 23 hours. Blue Badge holders park free. The council's car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.southoxon.gov.uk/south-oxfordshire-district-council/parking-roads-and-streets/parking/car-parks/wallingford-car-parks/riverside-car-park-wallingford"
+source_name = "South Oxfordshire District Council"
+
+[[fact]]
+topic = "parking"
+text = "Riverside car park charges: no charge 1 November to end of February. Low season (1 March to 30 June, 1 September to 31 October): up to 1 hour free with ticket, 3 hours £2.30, 10 hours £6.30. High season (1 July to 31 August): 1 hour free with ticket, 2 hours £2.30, 5 hours £5.30, 10 hours £6.30. The council's car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.southoxon.gov.uk/south-oxfordshire-district-council/parking-roads-and-streets/parking/car-parks/wallingford-car-parks/riverside-car-park-wallingford"
+source_name = "South Oxfordshire District Council"
+
+[[fact]]
+topic = "toilets"
+text = "The council's Riverside toilets, off The Street, OX10 0BU, are open March to September, 8am to 6pm, and are unattended. The council's toilets page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.southoxon.gov.uk/south-oxfordshire-district-council/sports-and-activities/out-and-about/parks-open-spaces-and-play-areas/public-toilets/"
+source_name = "South Oxfordshire District Council"

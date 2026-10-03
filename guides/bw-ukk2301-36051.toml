@@ -1,0 +1,109 @@
+# River Frome at Farleigh Hungerford. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "rules"
+text = "The site is open from May to September to members of Farleigh & District Swimming Club only."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukk2301-36051"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "hours"
+text = "The club is open from 1 May to 30 September, and the season may be extended in warm weather."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "fees"
+text = "Membership is annual only. There is no day or junior membership."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "toilets"
+text = "The club has a toilet."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "changing"
+text = "The club has a changing hut."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "parking"
+text = "The club has a car park."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "fees"
+text = "You can join at Stowford Manor Farm, 800 yards up the A366 towards Trowbridge, between 2pm and 6pm, from Easter until the end of September."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/services"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "fees"
+text = "You can also join in person from a club membership collector on site; collectors are usually only on duty on warm sunny days."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/services"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "rules"
+text = "There are no lifeguards. Members are responsible for their own safety and the safety of others."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "rules"
+text = "Children must be supervised by a responsible adult at all times."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is allowed only above the weir, as far as the club field extends. Landing on the opposite bank or the island is not allowed."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "rules"
+text = "Dogs, paddle-boards, paddled craft, camping, BBQs, fires and fishing are not allowed."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "rules"
+text = "Diving is not allowed, and the club asks people not to jump off trees or go in the river below the weir, where there are rocks and debris."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "entry"
+text = "The river is about 2.4 m (8 ft) deep, but you can walk in from above the weir, which is slippery. There are two ladders."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"
+
+[[fact]]
+topic = "entry"
+text = "Before jumping in, the club says it is safest to enter first by the steps at the weir or either of the steps on the bank, to check the depth and look for obstructions."
+status = "confirmed"
+source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
+source_name = "Farleigh and District Swimming Club"

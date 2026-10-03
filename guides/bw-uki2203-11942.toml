@@ -1,0 +1,46 @@
+# Ham and Kingston, River Thames. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "There is a concrete river access ramp beside the towpath, where samples are taken. The banks along this stretch are steep and the water is deep; there is a narrow green bank and a narrow, sloped strip of grass between the towpath and the Thames Path."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uki2203-11942"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "The site is on the River Thames at Kingston, on the same side as the Hawker Family Leisure Centre. The Thames Path runs parallel to the towpath here, and the site can be reached by public transport."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uki2203-11942"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "There is a public car park nearby."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uki2203-11942"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "The designated bathing water runs between the Half Mile Tree and the YMCA Hawker Centre on Lower Ham Road."
+status = "confirmed"
+source = "https://www.kingston.gov.uk/safety-crime-and-emergencies/safety-in-kingston/stay-safe-near-water/kingstons-designated-bathing-water-site"
+source_name = "Royal Borough of Kingston upon Thames"
+
+[[fact]]
+topic = "rules"
+text = "The Thames here is used by boats, rowers and other river users. Swimmers should stay close to the bank on the Kingston side and not swim to the middle of the river or try to reach Trowlock Island."
+status = "confirmed"
+source = "https://www.kingston.gov.uk/safety-crime-and-emergencies/safety-in-kingston/stay-safe-near-water/kingstons-designated-bathing-water-site"
+source_name = "Royal Borough of Kingston upon Thames"
+
+[[fact]]
+topic = "rules"
+text = "The bathing site is unsupervised: there are no lifeguards on duty and people enter the water at their own risk. In an emergency call 999."
+status = "confirmed"
+source = "https://www.kingston.gov.uk/safety-crime-and-emergencies/safety-in-kingston/stay-safe-near-water/kingstons-designated-bathing-water-site"
+source_name = "Royal Borough of Kingston upon Thames"

@@ -1,0 +1,88 @@
+# River Dove, Dovedale stepping stones. Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Dovedale Car Park is reached via Thorpe and the A515 (postcode DE6 2AY, grid ref SK 1465 5095)."
+status = "confirmed"
+source = "https://www.peakdistrict.gov.uk/visiting/miles-without-stiles/dovedale"
+source_name = "Peak District National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "Dovedale car park uses number-plate recognition, and you can pay by bank card or coins. Minibuses and coaches are not allowed in Dovedale car park."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/peak-district-derbyshire/ilam-park-dovedale-and-the-white-peak"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "Parking is free for National Trust members. Non-members pay £6 for up to 4 hours or £8 for over 4 hours. Tickets cannot be moved between the Dovedale and Ilam Park car parks."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/peak-district-derbyshire/ilam-park-dovedale-and-the-white-peak"
+source_name = "National Trust"
+
+[[fact]]
+topic = "hours"
+text = "The trail page says Dovedale car park closes promptly at 7:30pm."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/peak-district-derbyshire/ilam-park-dovedale-and-the-white-peak/ilam-park-to-dovedale-stepping-stones-trail"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "An access-for-all route runs 640 m from Dovedale Car Park to the Stepping Stones: at the car park entrance take the road with the vehicle restriction sign, then follow the river."
+status = "confirmed"
+source = "https://www.peakdistrict.gov.uk/visiting/miles-without-stiles/dovedale"
+source_name = "Peak District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "You can walk across the fields from Ilam Park to Dovedale; it is 1½ miles to the stepping stones. Keep dogs on a short lead near farm animals."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/peak-district-derbyshire/ilam-park-dovedale-and-the-white-peak/things-to-do-at-ilam-park-dovedale-and-the-white-peak"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "After heavy rain the stepping stones can be impassable because of flooding."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/peak-district-derbyshire/ilam-park-dovedale-and-the-white-peak/ilam-park-to-dovedale-stepping-stones-trail"
+source_name = "National Trust"
+
+[[fact]]
+topic = "entry"
+text = "The National Trust says many visitors stop near the stepping stones for a picnic or a paddle. The page mentions paddling, not swimming."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/peak-district-derbyshire/ilam-park-dovedale-and-the-white-peak/ilam-park-to-dovedale-stepping-stones-trail"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "Dovedale toilets are near the concession stands at the car park. Hours: summer 8.30am to 7pm (1 Apr to 31 Oct), winter given as 8.30pm to 5pm (1 Nov to 31 Mar). The disabled toilet at the rear is open 24 hours. Cost 50p per user."
+status = "confirmed"
+source = "https://www.peakdistrict.gov.uk/visiting/planning-your-visit/toilets"
+source_name = "Peak District National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "The park authority charges 50p per entry at its refurbished Dovedale toilets. Payment is contactless only."
+status = "confirmed"
+source = "https://www.peakdistrict.gov.uk/visiting/planning-your-visit/toilets"
+source_name = "Peak District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The park authority says many rivers are privately owned, have fishing rights or are protected for wildlife. Swimming, canoeing, kayaking, inflatables and SUP are not permitted unless on-site signs show it, in designated areas. The page does not name Dovedale or the River Dove."
+status = "confirmed"
+source = "https://www.peakdistrict.gov.uk/visiting/planning-your-visit/swimming"
+source_name = "Peak District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The park authority advises entering open water only as part of a supervised, organised event, and says there are no lifeguards or water patrols in the open countryside. The page does not name Dovedale."
+status = "confirmed"
+source = "https://www.peakdistrict.gov.uk/visiting/planning-your-visit/swimming"
+source_name = "Peak District National Park Authority"

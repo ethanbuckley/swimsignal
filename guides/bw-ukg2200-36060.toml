@@ -1,0 +1,32 @@
+# River Teme in Ludlow. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "Access to the swimming area is via Ludlow Mill beach, just upstream of Dinham Bridge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36060"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "The bathing stretch runs from the Linney boating pontoon just over 200 m downstream to Ludlow Mill beach, and crosses Ludford Mill weir."
+status = "confirmed"
+source = "https://www.ludlow.gov.uk/visit-ludlow/river-teme-ludlow"
+source_name = "Ludlow Town Council"
+
+[[fact]]
+topic = "parking"
+text = "The Linney Riverside Park car park is open seven days a week and costs £2 for all-day parking. Entry to the park is free. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.ludlow.gov.uk/your-council/services-we-provide/amenity-areas"
+source_name = "Ludlow Town Council"
+
+[[fact]]
+topic = "toilets"
+text = "The Linney Riverside Park toilets (The Linney, SY8 1EG) have male, female and disabled toilets and are open 8am to 5pm. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.ludlow.gov.uk/your-council/services-we-provide"
+source_name = "Ludlow Town Council"

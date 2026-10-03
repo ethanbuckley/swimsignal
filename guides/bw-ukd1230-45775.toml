@@ -1,0 +1,46 @@
+# Coniston Water, Monk Coniston. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The Environment Agency says Monk Coniston, on the northern shore of Coniston Water, has a grassed area and a gravel beach."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1230-45775"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Monk Coniston car park on the northern lakeshore is pay and display, taking coins, cards or RingGo (car park ID 37307). It has seasonal toilets, including disabled."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "Monk Coniston car park (postcode LA21 8AH) is reached by turning off the A593 onto the B5285 before Coniston village, then after 1 km taking the minor road signed Coniston East Shore Road."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/monk-coniston/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "A step-free Miles without Stiles route (3.66 km, about 1.5 hours) links the lakeshore at Monk Coniston with Coniston village, served by the 505 and X12 buses. Leaving the car park you cross the road to a footpath behind the hedge."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/monk-coniston/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "There are toilets at Monk Coniston car park. They close in winter, and the disabled cubicle needs a Radar key."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/monk-coniston/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Coniston Water, and powered craft are allowed with a 10mph speed limit. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

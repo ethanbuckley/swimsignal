@@ -1,0 +1,67 @@
+# Sandy Lane, Chester. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The east bank is a shallow slope into the water, with a concrete slipway at the northern end for wheeled access."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd6300-40752"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Free parking is available, and there are good public transport links into Chester city centre."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd6300-40752"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "Sandy Lane is in east Chester, running south from Boughton, a short walk from the city centre. The bathing water is next to Sandy Lane Park."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd6300-40752"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "toilets"
+text = "Sandy Lane Park has managed toilets."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd6300-40752"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "A small ferry crosses the river at the north end of the bathing water to The Meadows. There are life buoys on each side of the river."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd6300-40752"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Sandy Lane Park (Sandy Lane, Chester CH3 5UL) has vehicle access off Sandy Lane into a surfaced car park for about 40 cars. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.cheshirewestandchester.gov.uk/residents/leisure-parks-and-events/parks-and-open-spaces/parks-and-open-spaces-chester/sandy-lane-park-and-aqua-park"
+source_name = "Cheshire West and Chester Council"
+
+[[fact]]
+topic = "toilets"
+text = "At Sandy Lane Park, the Aqua Park and toilets open only in the summer season (April to August), 11am to 5pm. An attendant keeps the toilets and park clean. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.cheshirewestandchester.gov.uk/residents/leisure-parks-and-events/parks-and-open-spaces/parks-and-open-spaces-chester/sandy-lane-park-and-aqua-park"
+source_name = "Cheshire West and Chester Council"
+
+[[fact]]
+topic = "toilets"
+text = "The council lists Sandy Lane Chester toilets (Sandy Lane, CH3 5UU) with Radar key access, changing facilities and separate men's and women's toilets. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.cheshirewestandchester.gov.uk/residents/streets-and-open-spaces/public-toilets"
+source_name = "Cheshire West and Chester Council"
+
+[[fact]]
+topic = "rules"
+text = "The Sandy Lane Ferry carries passengers across the Dee from Sandy Lane to the Meadows every weekend from 23 May 2026 to the last Sunday in September, 10.30am to 4.30pm. Fares each way: adults £1; children, dogs and bikes 50p. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.cheshirewestandchester.gov.uk/residents/leisure-parks-and-events/parks-and-open-spaces/parks-and-open-spaces-chester/sandy-lane-park-and-aqua-park"
+source_name = "Cheshire West and Chester Council"

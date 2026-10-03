@@ -1,0 +1,74 @@
+# River Wharfe, Bolton Abbey (Cavendish Pavilion). Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Riverside Car Park (sat nav BD23 6AN) is beside the River Wharfe, with half a mile of riverside frontage. The Cavendish Pavilion sits at the top of the car park, at the entrance to Strid Wood."
+status = "confirmed"
+source = "https://boltonabbey.com/bolton-abbey-parking/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "path"
+text = "From Riverside Car Park there is easy access along the riverside and through Strid Wood to the Strid."
+status = "confirmed"
+source = "https://boltonabbey.com/bolton-abbey-parking/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "path"
+text = "The estate map gives the walk from the Village Shop in Bolton Abbey village to the Cavendish Pavilion as 1.9 km (1.25 miles), about 30 to 40 minutes, and from the Priory as 1.5 km, about 30 minutes."
+status = "confirmed"
+source = "https://boltonabbey.com/your-visit/bolton-abbey-map/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "parking"
+text = "A car parking ticket costs £12.50 and covers Bolton Abbey Village, Riverside and Strid Wood car parks; you can move between all three during the day."
+status = "confirmed"
+source = "https://boltonabbey.com/ticketing-page/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "parking"
+text = "An annual season ticket costs £150, or £125 if renewed before it expires. It gives daily free admission to one estate car park during opening hours."
+status = "confirmed"
+source = "https://boltonabbey.com/bolton-abbey-season-tickets/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "parking"
+text = "The car park kiosks take card payment only. Pre-booking is advised but not essential, to guarantee your preferred arrival time."
+status = "confirmed"
+source = "https://boltonabbey.com/your-visit/faqs/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "hours"
+text = "The Bolton Abbey Estate is open all year. Visitors may stay until the car parks are locked."
+status = "confirmed"
+source = "https://boltonabbey.com/your-visit/faqs/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "toilets"
+text = "There are adapted toilets in each of the estate car parks. The page does not mention the river or swimming."
+status = "confirmed"
+source = "https://boltonabbey.com/your-visit/accessibility/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "rules"
+text = "Asked whether you can swim in the river, the estate says the Wharfe is fast flowing with strong undercurrents and levels that rise and fall very quickly, and that swimming is not recommended."
+status = "confirmed"
+source = "https://boltonabbey.com/your-visit/faqs/"
+source_name = "Bolton Abbey Estate"
+
+[[fact]]
+topic = "rules"
+text = "Rubber dinghies and canoes may only be put on the river between the Cavendish Pavilion Bridge and the Stepping Stones, at the owner's risk."
+status = "confirmed"
+source = "https://boltonabbey.com/your-visit/faqs/"
+source_name = "Bolton Abbey Estate"

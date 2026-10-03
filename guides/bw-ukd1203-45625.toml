@@ -1,0 +1,18 @@
+# Windermere, Lakeside YMCA. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The Environment Agency describes the bathing water as a shallow sloping beach of shingle and gravel on the western edge of the south basin, with broadleaved woodland reaching the water in places."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45625"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Windermere. Powered craft must be registered, and there is a 10 nautical mph speed limit, or 6 in some places. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

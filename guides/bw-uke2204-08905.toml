@@ -1,0 +1,25 @@
+# Swale above Richmond Falls. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "path"
+text = "The bathing site lies below the Fosse car park and above the series of waterfalls known as Richmond Falls, on the western side of Richmond."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke2204-08905"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "The Fosse car park, Riverside Road, Richmond DL10 4JR, is ticketless: pay on arrival by cash, RingGo or contactless card. Charges apply 8am to 6pm: 30 minutes £0.80, 1 hour £2.20, 2 hours £3.70, 4 hours £5.10. It has 39 spaces including 2 disabled; disabled badge holders park free for up to 4 hours. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.northyorks.gov.uk/roads-parking-and-travel/car-park-directory/car-park-directory/fosse-car-park-richmond"
+source_name = "North Yorkshire Council"
+
+[[fact]]
+topic = "toilets"
+text = "The Falls toilets on Riverside Road, Richmond, are open 8am to 8pm, Monday to Sunday. The fee is £0.20; there is an accessible toilet with Radar key. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.northyorks.gov.uk/leisure-tourism-and-culture/public-toilets/public-toilets/falls-toilets-richmond"
+source_name = "North Yorkshire Council"

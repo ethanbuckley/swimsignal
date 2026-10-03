@@ -1,0 +1,60 @@
+# Rydal Water. Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Pelter Bridge car park at Rydal is pay and display, coins and cards or RingGo (ID 37305). It is small and often very busy; the page suggests White Moss Common, Grasmere village or sometimes Ambleside Cricket Club instead. The page does not mention the lake or swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "White Moss Upper car park is pay in car park; its toilets are beside the lower car park, 100 m across the main road. White Moss Lower is also pay in car park and has toilets. The page does not mention the lake or swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "A route of 1.5 km each way, with some steep slopes, runs from the lower White Moss Common car park over the White Moss Bridge and through woodland, crossing small fords, to the shore of Rydal Water at Jobson's Close. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/white-moss-common-to-steps-end/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "Another start is Pelter Bridge car park: follow the minor road steeply uphill to a gate, then take the track down to Rydal Water. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/white-moss-common-to-steps-end/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "A well-maintained, low-level path runs along the shores of Rydal Water, with places for picnics and paddling. The page does not mention swimming."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/allan-bank-and-grasmere/walking-at-allan-bank-and-grasmere"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "There are toilets with baby changing 40 m from the White Moss Common car park. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/white-moss-common-to-steps-end/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is allowed on Rydal Water, for individual recreational swimming only. Canoes, kayaks, paddleboards, rowing boats, sailing boats and powered craft are not allowed. The contact is Rydal Estates."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The park authority describes Rydal Water as a quiet lake ideal for a stroll, a climb up Loughrigg Fell or a swim, and increasingly popular for wild swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/places-to-go/explore-grasmere-and-rydal/"
+source_name = "Lake District National Park Authority"

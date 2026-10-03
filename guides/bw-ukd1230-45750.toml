@@ -1,0 +1,60 @@
+# Coniston Water, Boating Centre. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The Environment Agency says the site is on the north-western shore of Coniston Water and has a gravel beach."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1230-45750"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "Buses serve Coniston village: the Stagecoach 505 from Kendal via Ambleside and Hawkshead, and the X12 from Ulverston via Torver. From the village it is about half a mile on foot to the lakeshore and the Boating Centre."
+status = "confirmed"
+source = "https://www.conistonboatingcentre.co.uk/visiting-information/location-and-travel/"
+source_name = "Coniston Boating Centre"
+
+[[fact]]
+topic = "parking"
+text = "Car park charges apply 9am to 6pm: up to 2 hours £5, 3 hours £5, 4 hours £6.50, 5 hours £7, all day (24 hours) £8.50. They apply to all vehicles, including blue badge holders. EV charging points are available."
+status = "confirmed"
+source = "https://www.conistonboatingcentre.co.uk/visiting-information/location-and-travel/"
+source_name = "Coniston Boating Centre"
+
+[[fact]]
+topic = "parking"
+text = "The National Park Authority lists the Boating Centre car park as pay and display with coins, cards or RingGo (car park ID 37314), plus toilets including disabled, coach parking and EV chargers."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "Toilets are next to the Boating Centre car park."
+status = "confirmed"
+source = "https://www.conistonboatingcentre.co.uk/visiting-information/location-and-travel/"
+source_name = "Coniston Boating Centre"
+
+[[fact]]
+topic = "toilets"
+text = "The National Park Authority lists toilets with baby changing at the Coniston Boating Centre car park."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/public-toilets/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The Boating Centre says you are welcome to swim from it. It warns that Coniston Water is busy with motorboats, sailing boats and other craft, and advises a route along the shoreline and making yourself visible."
+status = "confirmed"
+source = "https://www.conistonboatingcentre.co.uk/visiting-information/"
+source_name = "Coniston Boating Centre"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Coniston Water, and powered craft are allowed with a 10mph speed limit. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

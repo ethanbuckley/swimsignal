@@ -1,0 +1,74 @@
+# Rutland Water Whitwell Creek. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Whitwell car park (LE15 8BL) is on the north shore of Rutland Water, with watersports, cafes, Aqua Park Rutland and Rutland Cycling. Anglian Water's page does not mention Whitwell Creek bathing water."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/visitor-information"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "parking"
+text = "Rutland Water car park tariff from April 2025: up to 15 minutes free, £2.00 per hour up to 6 hours, over 6 hours £16.00. An annual permit is £80.00. Anglian Water's page does not mention Whitwell Creek bathing water."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/visitor-information"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "parking"
+text = "The Normanton, Sykes Lane, Whitwell and Barnsdale car parks open from 9am daily; closing time varies by season (2026: 8pm from 1 May, 7pm from 1 September, 6pm from 1 October, 4pm from 26 October). No overnight stays. Anglian Water's page does not mention Whitwell Creek bathing water."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/visitor-information"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "rules"
+text = "In the months marked May to August, use of the slipway and launching of boats and paddle craft in Whitwell Creek is not allowed until 10am on Sunday mornings because of the weekly open water swimming sessions."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/watersports"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "hours"
+text = "Inspire2tri runs open water swimming at Rutland Water, Whitwell in late spring, summer and early autumn, in partnership with Anglian Water's watersports team. Its listed sessions include a Sunday swim and a Thursday swim."
+status = "confirmed"
+source = "https://inspire2tri.com/venues/ow-whitwell"
+source_name = "Inspire2tri, which runs the swim sessions"
+
+[[fact]]
+topic = "rules"
+text = "The Sunday swim is a 300m to 600m marked course within the more sheltered creek area. Evening swims are also run within the creek, with the watersports safety team of kayakers and powerboats."
+status = "confirmed"
+source = "https://inspire2tri.com/venues/ow-whitwell"
+source_name = "Inspire2tri, which runs the swim sessions"
+
+[[fact]]
+topic = "rules"
+text = "Open water swimming at Rutland Water is open to anyone over 8 who can easily swim 250m. Under-16s new to the session must be accompanied by an adult who is also in the water. Anglian Water's page does not name Whitwell Creek."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "changing"
+text = "For the open water swimming sessions there is parking, showers, changing rooms, toilets, lockers and a staffed bag and bike drop. Wetsuit hire is £5 per suit, booked in advance. Anglian Water's page does not name Whitwell Creek."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "fees"
+text = "Swimmers pay £8.00 for a swim and £1.00 for parking, and booking is essential. Anglian Water's page does not name Whitwell Creek."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
+source_name = "Anglian Water"
+
+[[fact]]
+topic = "hours"
+text = "Open water swimming is only during advertised group times. The swim season runs from May to September, with coached small-group sessions on Thursday evenings. Anglian Water's page does not name Whitwell Creek."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
+source_name = "Anglian Water"

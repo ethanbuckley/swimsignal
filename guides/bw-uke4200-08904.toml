@@ -1,0 +1,18 @@
+# Wharfe at Wilderness Carpark. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "path"
+text = "The site is reached from the Wilderness car park. It runs either side of Wetherby Bridge, from below the weir to the bandstand and picnic area just west of the car park."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4200-08904"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Wilderness car park, Wetherby (PayByPhone zone 811527) charges Monday to Saturday, 8am to 6pm: up to 1 hour free, up to 2 hours £1.15, up to 3 hours £2.15, up to 5 hours £2.65, up to 6 hours £3.15, up to 10 hours £3.65, up to 7 days £12.15. Sunday is free all day. Maximum stay 23 hours. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.leeds.gov.uk/parking-roads-and-travel/parking/parking-prices"
+source_name = "Leeds City Council"
