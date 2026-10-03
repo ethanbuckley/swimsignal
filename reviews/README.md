@@ -15,11 +15,38 @@ The moderation password is in your Mac's Keychain, under **swimsignal-reviews-ad
 
 The build keeps the photos in its cache between runs, so each photo is downloaded once. If the Worker does not answer, the build publishes the last list it had and the page says the newest may be missing.
 
+## Quick notes on a visit
+
+Beside reviews, a swimmer can leave a short, dated note on what a spot was like today or yesterday: ticks from a fixed list (`src/rules.js`, `VISIT_KINDS`), up to 280 characters and one photo. A review describes the place; a note describes a day. The page's tile is "Recent visits", above the reviews (`src/dipcast/site/visits.js`).
+
+- **Every tick ends.** How busy it was, parking that day and what the water looked like show for the day of the visit and the next; rough water for two days; suspected pollution three; algae a week; a closed way in or car park two weeks; damaged steps and a new warning sign a month. The Worker stores each note's last day (`until`); the build leaves out notes past it, and the page drops each tick on its own day, so a page that is not rebuilt still stops showing them. The daily cron deletes a note, with its photo, once it has ended.
+- **Reconfirmation.** Damage, closures and signs can be confirmed by another swimmer ("Still like this", `POST /visits/confirm`), once a day from one connection, which starts their days again. Nothing a swimmer sends can end a warning early: "It is not like this any more" is a report reason, and you decide.
+- **Suspected pollution and algae** read "Suspected pollution" or "Suspected algae", with "Not verified: what one swimmer saw, not a water test", until you verify them on `/moderate` by naming an official source. The page then shows "Verified:" and that source. The form gives the Environment Agency's and Natural Resources Wales's incident lines when either is ticked.
+- **A good note never overrides a warning.** Notes are listed worst first (suspected pollution or algae, then hazards, then the rest, good news last), and a muted line above the first good note says it does not cancel the warnings above, or the forecast's, when the spot's level is above low or it is rated poor. Notes never change the forecast or the level.
+- **Moderation.** A note of ticks alone is published as it arrives, because its words are the site's own and it names no one, and a note about today is worth little two days later. A note with words or a photo waits for you, as a review does. To make every note wait, set `PUBLISH_TICKS_AT_ONCE` to `false` in `src/rules.js` and deploy.
+- **Limits.** Ten notes and 30 confirmations a day from one connection; 300 notes waiting; photos count towards the same daily cap and storage budget as reviews' photos.
+
+The build writes the notes still showing into `reviews/index.json`, under `visits`, and their photos beside the reviews'.
+
+### Deploying notes
+
+Notes need the third migration. From this folder, in this order:
+
+```
+npx wrangler d1 migrations apply swimsignal-reviews --remote
+```
+```
+npx wrangler deploy
+```
+
+You will know it worked when `curl https://swimsignal-reviews.swimsignal-push.workers.dev/published` ends with `"visits":[]` and, after the next site build, a spot's page shows "Recent visits" above the reviews. The likely mistake is deploying before applying the migration: the Worker then answers `/published`, every published photo and every note with an error ("no such table: visits"), and the site build keeps publishing its last list of reviews, with the photos it already has, until you apply it. Reviews still arrive meanwhile. It happens because `wrangler deploy` does not apply migrations.
+
 ## What it stores
 
 - A review: the spot's id, yes or no, the day they swam, the text (at most 1,500 characters), the name to show (at most 40, may be empty), each photo's size, when it arrived and when it was published, and a SHA-256 hash of its key.
 - The photos, in KV, under keys made from the review's id. A deleted review takes its photos with it.
-- A report: the review's id, the reason picked from a list, and the time. Cleared when you keep or delete the review.
+- A note on a visit: the spot's id, the day (today or yesterday), the ticks, the text (at most 280 characters), one photo's size, when it arrived and was published, the day it was last confirmed and how many times, your verification source if any, its last day, and a SHA-256 hash of its key. No name. Deleted, with its photo, by the daily cron after its last day.
+- A report: the review's or note's id, the reason picked from a list, and the time. Cleared when you keep or delete the review.
 - Rate-limit counts: requests a day from one connection, under an HMAC of the IP address, the kind of request and the day, keyed with `ADMIN_TOKEN`. Never the address itself. The daily cron deletes days before yesterday. Ten reviews, 20 reports, 30 deletions and 60 status checks a day from one connection (an IPv6 /64 or an IPv4 address). The service also caps photos at 300 a day and pending reviews at 300, including simultaneous submissions. Published photos accumulate, so monitor total storage.
 
 A review waiting for you is never public: `/published` lists only published ones, and a waiting review's photos answer only to the admin token.
@@ -100,6 +127,7 @@ To turn reviews off, delete the variable (`gh variable delete DIPCAST_REVIEWS_UR
 - Delete one that accuses a named person or business of something, a crime or a pollution incident say: once you publish a review you are its publisher.
 - Delete one with a photo in which someone can be recognised, unless it is plainly the sender, and any in which a child can be.
 - A reported review stays up until you look. Keep it clears the reports; Delete removes it and its photos.
+- Notes have their own three lists below the reviews: waiting, reported and published. The "Notes on a visit" fold on the page has the rules. Verify a note of pollution or algae only against an official source, and name it.
 
 A review is published or deleted whole: there is no editing.
 

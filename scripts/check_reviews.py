@@ -37,19 +37,24 @@ def credential() -> str:
 
 def changed(summary: dict, previous: dict) -> tuple[dict, list[str]]:
     storage = summary["storage"]
-    for value in (summary["pending"], summary["reported"], storage["cleanup_pending"],
-                  storage["bytes"], storage["limit_bytes"]):
+    # Notes on a visit came later: a service from before them reports none.
+    summary = {"visits_pending": 0, "visits_reported": 0, "latest_visit_pending_at": None, "latest_visit_report_at": None, **summary}
+    for value in (summary["pending"], summary["reported"], summary["visits_pending"], summary["visits_reported"],
+                  storage["cleanup_pending"], storage["bytes"], storage["limit_bytes"]):
         if type(value) is not int or value < 0:
             raise ValueError("invalid aggregate count")
-    for key in ("latest_pending_at", "latest_report_at"):
+    for key in ("latest_pending_at", "latest_report_at", "latest_visit_pending_at", "latest_visit_report_at"):
         if summary[key] is not None and not isinstance(summary[key], str):
             raise ValueError("invalid aggregate timestamp")
     if storage["level"] not in ("normal", "warning", "critical", "full"):
         raise ValueError("invalid storage level")
-    snapshot = {k: summary[k] for k in ("pending", "reported", "latest_pending_at", "latest_report_at")}
+    snapshot = {k: summary[k] for k in ("pending", "reported", "latest_pending_at", "latest_report_at",
+                                        "visits_pending", "visits_reported", "latest_visit_pending_at", "latest_visit_report_at")}
     snapshot.update(storage_level=storage["level"], cleanup_pending=storage["cleanup_pending"], healthy=True)
     notices = []
-    for key, when, label in (("pending", "latest_pending_at", "review"), ("reported", "latest_report_at", "report")):
+    for key, when, label in (("pending", "latest_pending_at", "review"), ("reported", "latest_report_at", "report"),
+                             ("visits_pending", "latest_visit_pending_at", "note on a visit"),
+                             ("visits_reported", "latest_visit_report_at", "report of a note")):
         if snapshot[key] and (snapshot[key] > previous.get(key, 0) or
                               (snapshot[when] or "") > (previous.get(when) or "")):
             notices.append(f"New {label} to check; {snapshot[key]} waiting.")

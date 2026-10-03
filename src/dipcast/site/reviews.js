@@ -135,7 +135,7 @@ async function mountReviews(d) {
   if (tidy.length < mine.length) reviewsKeep(tidy);
   const sec = document.createElement('section');
   sec.className = 'tile rv-tile'; sec.id = 'reviews'; sec.tabIndex = -1; sec.setAttribute('aria-labelledby', 'rv-h');
-  after.after(sec);
+  (document.getElementById('visits') || after).after(sec);   // after the notes on a visit (visits.js), if they are up
   drawReviews(sec, d, data);
   // A review of yours that is not on the site yet: ask the service whether it is still waiting. One
   // turned down or removed is forgotten here, once, with a line to say so.
