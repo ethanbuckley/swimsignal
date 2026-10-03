@@ -972,10 +972,15 @@ const b64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), 
 async function pushReg() {   // the service worker, or null if it is not running within 5 s
   return Promise.race([navigator.serviceWorker.ready, new Promise(r => setTimeout(() => r(null), 5000))]);
 }
-async function pushSub() { const reg = canPush() && await pushReg(); return reg ? reg.pushManager.getSubscription() : null; }
+function pushDeadline(work, message, ms = 20000) {
+  let timer;
+  return Promise.race([work, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); })])
+    .finally(() => clearTimeout(timer));
+}
+async function pushSub() { const reg = canPush() && await pushReg(); return reg ? pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000) : null; }
 async function sendSub(sub) {
   const spots = [...SAVED].filter(id => DATA.spots.some(s => s.id === id));
-  const res = await fetch(DATA.push.url + 'subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+  const res = await fetch(DATA.push.url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ subscription: sub.toJSON(), spots }) });
   if (!res.ok) throw new Error(`the alert service answered ${res.status}`);
   try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, at: Date.now() })); } catch (e) { /* only saves a re-send */ }
@@ -983,13 +988,16 @@ async function sendSub(sub) {
 async function alertsOn() {
   if (await Notification.requestPermission() !== 'granted') throw new Error('notifications are not allowed for this site');
   const reg = await pushReg(); if (!reg) throw new Error('the offline copy is not running, so notifications cannot be set up');
-  const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) });
+  const sub = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000)
+    || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
+      'the browser could not finish setting up notifications. Check your connection and try again. On iPhone, use the Home Screen app');
   await sendSub(sub);
 }
 async function alertsOff() {   // true if alerts were on
   const sub = await pushSub(); if (!sub) return false;
-  await fetch(DATA.push.url + 'unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) });
-  await sub.unsubscribe();
+  const res = await fetch(DATA.push.url + 'unsubscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) });
+  if (!res.ok) throw new Error(`the alert service answered ${res.status}; try again`);
+  await pushDeadline(sub.unsubscribe(), 'the browser could not turn notifications off; try again', 8000);
   try { localStorage.removeItem(PUSH_KEY); } catch (e) { /* nothing kept */ }
   return true;
 }
