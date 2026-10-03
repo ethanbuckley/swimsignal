@@ -678,9 +678,11 @@
 
   /* A spot's practical guide (guide.js; the facts are in guides/). A tile after the forecast's, built as
      they are: the label, one sentence on how it was checked, then the facts as a ruled list, a topic's
-     name over its facts. Who says so sits under each fact in the meta size, in words ("Confirmed",
-     "A swimmer's suggestion"), never in a colour: colour here means a level. A photo runs the tile's
-     width with its numbered labels on it, round as dots are, and the key beneath. */
+     name over its facts. Who says so sits under each fact in the meta size, in words ("Verified",
+     "A swimmer's suggestion"), never in a colour: colour here means a level. Facts in a row with the
+     same source share one line, so they sit closer to each other than to the next. Past five topics,
+     four show and "Show all" opens the rest. A photo runs the tile's width with its numbered labels
+     on it, round as dots are, and the key beneath. */
   #guide { scroll-margin-top:calc(var(--header-h) + 8px); }
   dl.g-facts { margin:10px 0 0; }
   .g-row { padding:10px 0; border-top:1px solid var(--hair); }
@@ -688,10 +690,12 @@
   .g-row dd { margin:4px 0 0; }
   .g-row dd + dd { margin-top:10px; }
   .g-text { margin:0; font-size:var(--fs-note); line-height:1.45; overflow-wrap:anywhere; }
+  .g-text + .g-text { margin-top:4px; }
   .g-src { margin:3px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); overflow-wrap:anywhere; }
   .g-src a { color:var(--muted); }
   .g-who { font-weight:600; color:var(--ink); }
   .g-gap { margin:0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  #g-all + .g-gap { margin-top:12px; }   /* the gaps' rule below "Show all", spaced as the reviews' is */
   .g-photo { margin:12px 0 0; }
   .g-pic { position:relative; overflow:hidden; border-radius:var(--radius); background:var(--line); }
   .g-pic img { display:block; width:100%; height:100%; object-fit:cover; }

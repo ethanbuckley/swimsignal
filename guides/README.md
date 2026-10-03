@@ -13,8 +13,16 @@ Every fact and every photo is one of two kinds, and the page shows which, in wor
 
 | `status` | Means | Needs | The page says |
 | --- | --- | --- | --- |
-| `confirmed` | The landowner's, operator's or council's own page says so, or someone from SwimSignal saw it on site | `source` (an https page) and `source_name` (who publishes it), or `seen` (the day), or both | "Confirmed: Example Council" with the page linked, under a first line giving the day it was checked, or "seen on site 20 Aug 2026" |
+| `confirmed` | The landowner's, operator's or council's own page says so, or someone from SwimSignal saw it on site | `source` (an https page) and `source_name` (who publishes it), or `seen` (the day), or both | "Verified: Example Council" with the page linked, under a first line giving the day it was checked, or "seen on site 20 Aug 2026" |
 | `suggested` | A swimmer told us. Not checked | `from` (the name or initials they agreed to) and `on` (the day they told us, or swam) | "A swimmer's suggestion, from Sam, 12 Sept 2026. Not yet checked by SwimSignal." |
+
+The file says `confirmed`, and the page says "Verified". "Verified" is the word the notes on a visit
+use for a fact checked against an official source. There, "confirmed" means a swimmer saying a note
+is still true.
+
+Facts next to each other under one topic, with the same line, share it: the page shows it once, after
+the last of them. A guide with more than five topics shows the first four, and "Show all" opens the
+rest.
 
 Things that are not a source: a wild-swimming directory, a blog, a review site, a map tag, a news
 story. A mapped footpath or a swim tag does not establish permission to swim (see `src/dipcast/access.py`).
