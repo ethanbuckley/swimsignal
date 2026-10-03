@@ -60,7 +60,7 @@ main.doc code { overflow-wrap:anywhere; }
 <li><b>The Environment Agency's rating</b> applies at designated bathing waters. A water rated poor is at least high risk on every day.</li>
 <li><b>The algae check</b> is the Environment Agency sampler's look at the water at a designated bathing water. It counts for 14 days.</li>
 </ul>
-<p>A spot with no monitored overflow upstream gets no exposure index. Its level comes from the rating (excellent or good: low; sufficient: moderate; poor: high) and the algae check, where it has them.</p>
+<p>A spot with no monitored overflow upstream gets no exposure index and no E. coli estimate. Its level comes from the rating and the algae check, where they raise it: sufficient makes it moderate, poor makes it high, and algae at the last check make it moderate or high. Otherwise the level is a plain one: "No sewage risk from monitored overflows", or "No river connection: overflows cannot reach this lake" at a lake that no river flows into. An excellent or good rating leaves the plain level.</p>
 <!-- What to do at each level: the same words as src/dipcast/site/levels.js (ACTION and the lines
      beside it), which tests/site_actions.test.cjs checks. Health wording: sources in levels.js. -->
 <h3 id="actions">What to do at each level</h3>
