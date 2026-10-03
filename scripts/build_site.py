@@ -1178,6 +1178,9 @@ def build(refresh: bool = True) -> dict:
     write_alerts(SITE, site_url(), push is not None)   # carries the credits from spots.json
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
     (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
+    if refresh:   # the run log, before verification.json reads it (forecast_log.service_record)
+        from dipcast.forecast_log import log_build
+        log_build(health, generated)
     (SITE / "data" / "verification.json").write_text(json.dumps({**load_verification(), "credits": credits}, default=str))
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
@@ -1202,4 +1205,7 @@ if __name__ == "__main__":
         print(build(refresh="--no-refresh" not in sys.argv))
     except BuildUnhealthy as e:
         log.error("%s", e)
+        if "--no-refresh" not in sys.argv:   # a run that did not publish is in the run log too
+            from dipcast.forecast_log import log_build
+            log_build(None, pd.Timestamp.now(tz="Europe/London"), failed=str(e))
         sys.exit(2)
