@@ -929,7 +929,8 @@ def sitemap(root: str, spot_ids: list[str], day: str) -> str:
 
 
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
-                day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None) -> int:
+                day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
+                scotland: dict | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=."""
     root = root or site_url()
@@ -950,6 +951,9 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.wales import render as render_wales
             s = re.sub(r'<!-- WALES_DIRECTORY -->.*?<!-- END_WALES_DIRECTORY -->',
                        lambda _: render_wales(wales), s, flags=re.S)
+            from dipcast.scotland import render as render_scotland
+            s = re.sub(r'<!-- SCOTLAND_DIRECTORY -->.*?<!-- END_SCOTLAND_DIRECTORY -->',
+                       lambda _: render_scotland(scotland), s, flags=re.S)
         (site / name).write_text(with_counter(with_push(s, push) if name == "privacy.html" else s, token))
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
@@ -1151,6 +1155,12 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "wales.json").write_text(json.dumps(wales))
     health["wales"] = {"state": wales["state"], "sites": len(wales["sites"]), "fetched_at": wales["fetched_at"],
                        **({"error": wales["error"]} if wales.get("error") else {})}
+    # Scottish bathing waters: SEPA's points layer, names, ratings and links (scotland.py).
+    from dipcast.scotland import fetch as fetch_scotland
+    scotland = fetch_scotland()
+    (SITE / "data" / "scotland.json").write_text(json.dumps(scotland))
+    health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]),
+                          **({"error": scotland["error"]} if scotland.get("error") else {})}
     push = push_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
@@ -1162,7 +1172,7 @@ def build(refresh: bool = True) -> dict:
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
-                                       coastal=coastal, wales=wales)
+                                       coastal=coastal, wales=wales, scotland=scotland)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
