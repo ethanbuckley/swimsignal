@@ -198,7 +198,7 @@ function reviewKind(score) {
 
 function reviewClick(e, sec, d, data) {
   const t = e.target.closest('button'); if (!t || !sec.contains(t)) return;
-  if (t.id === 'rv-all') { sec.querySelectorAll('.rv[hidden]').forEach(x => { x.hidden = false; }); t.remove(); return; }
+  if (t.id === 'rv-all') { showRest(sec.querySelectorAll('.rv[hidden]'), t); return; }
   if (t.id === 'rv-open') return reviewOpenForm(sec, d, data);
   if (t.classList.contains('rv-pic')) return reviewShow(t);
   if (t.dataset.report) return reviewReportForm(t, data);

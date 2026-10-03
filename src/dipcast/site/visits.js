@@ -211,7 +211,7 @@ function drawVisits(sec, d, data, say = '') {
 
 function visitClick(e, sec, d, data) {
   const t = e.target.closest('button'); if (!t || !sec.contains(t)) return;
-  if (t.id === 'vn-all') { sec.querySelectorAll('.rv-list > [hidden]').forEach(x => { x.hidden = false; }); t.remove(); return; }
+  if (t.id === 'vn-all') { showRest(sec.querySelectorAll('.rv-list > [hidden]'), t); return; }
   if (t.id === 'vn-open') return visitOpenForm(sec, d, data);
   if (t.classList.contains('rv-pic') && typeof reviewShow === 'function') return reviewShow(t);
   if (t.dataset.confirm) return visitConfirm(t, sec, d, data);

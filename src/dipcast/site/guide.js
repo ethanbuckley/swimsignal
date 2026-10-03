@@ -85,11 +85,20 @@ function guideFacts(g) {
     + (fold ? `<button type="button" class="btn quiet" id="g-all" aria-expanded="false">Show all ${topics.length} topics</button>` : '');
 }
 
+// "Show all" in the guide, the notes (visits.js) and the reviews (reviews.js): the rest show, the button
+// goes, and focus moves to the first one shown, so a keyboard or screen reader is not left on nothing.
+function showRest(rows, button) {
+  const first = rows[0];
+  rows.forEach(x => { x.hidden = false; });
+  button.remove();
+  if (first && first.focus) { first.tabIndex = -1; first.focus(); }
+}
+
 // The page writes the tile as text (index.html), so one listener on the document opens the rest for
 // any spot. As in reviews.js and visits.js, the rows show and the button goes.
 function guideClick(e) {
   const t = e.target && e.target.closest ? e.target.closest('#g-all') : null; if (!t) return;
-  t.closest('#guide').querySelectorAll('.g-row[hidden]').forEach(x => { x.hidden = false; }); t.remove();
+  showRest(t.closest('#guide').querySelectorAll('.g-row[hidden]'), t);
 }
 if (typeof document === 'object' && document.addEventListener) document.addEventListener('click', guideClick);
 
@@ -139,5 +148,5 @@ function guideTile(d, today) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick };
+  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick, showRest };
 }

@@ -105,6 +105,15 @@ test('"Show all" shows the folded topics and goes, as the reviews\' and the note
   g.guideClick({ target: null });
 });
 
+test('after "Show all", focus moves to the first row shown, as the button that had it is gone', () => {
+  let focused = null;
+  const rows = [0, 1].map(i => ({ hidden: true, focus() { focused = i; } }));
+  g.showRest(rows, { remove() {} });
+  assert.equal(focused, 0);
+  assert.equal(rows[0].tabIndex, -1);
+  assert.equal(rows[1].tabIndex, undefined);
+});
+
 test('facts in a row from the same source share one line, after the last of them', () => {
   const src = { status: 'confirmed', source: 'https://www.cityoflondon.gov.uk/ponds', source_name: 'City of London Corporation' };
   const html = g.guideFacts(guide({ facts: [
