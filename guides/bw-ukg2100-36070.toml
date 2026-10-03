@@ -1,6 +1,6 @@
-# River Severn at Ironbridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# River Severn at Ironbridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked 4 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-04
 how = "desk"
 
 [[fact]]
@@ -27,6 +27,13 @@ source_name = "Telford & Wrekin Council"
 [[fact]]
 topic = "parking"
 text = "There is a car park in Dale End Park, with several disabled bays, and another at the Wharfage car park, TF8 7NH. The council's page is about Dale End Park and does not mention the bathing site."
+status = "confirmed"
+source = "https://www.telford.gov.uk/sports-and-leisure/green-and-open-spaces/parks/dale-end-park/"
+source_name = "Telford & Wrekin Council"
+
+[[fact]]
+topic = "rules"
+text = "Telford & Wrekin Council's page for Dale End Park gives water safety tips for visitors. The first is to keep out of the water at all times. The page is about Dale End Park and does not mention the bathing site."
 status = "confirmed"
 source = "https://www.telford.gov.uk/sports-and-leisure/green-and-open-spaces/parks/dale-end-park/"
 source_name = "Telford & Wrekin Council"
