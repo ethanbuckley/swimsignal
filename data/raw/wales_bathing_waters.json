@@ -1,0 +1,4905 @@
+{
+ "fetched_at": "2026-10-03T22:33:27+01:00",
+ "source": "https://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water.json",
+ "samples_source": "https://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/latest.json",
+ "licence": "https://environment.data.gov.uk/wales/bathing-waters/",
+ "credit": "Contains Natural Resources Wales information © Natural Resources Wales and Database Right. All rights reserved. Open Government Licence v3.0.",
+ "site_items": [
+  {
+   "eubwidNotation": "ukl2201-36040",
+   "name": {
+    "_value": "Llanishen Reservoir",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/LakeBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36040/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36050",
+   "name": {
+    "_value": "Penarth Beach",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36050/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36100",
+   "name": {
+    "_value": "Jackson's Bay Barry Island",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36100/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36200",
+   "name": {
+    "_value": "Whitmore Bay Barry Island",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36200/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36300",
+   "name": {
+    "_value": "Cold Knap Barry",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36300/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36325",
+   "name": {
+    "_value": "Watch House Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36325/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Poor",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36330",
+   "name": {
+    "_value": "Fontygary Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": null,
+    "complianceClassification": {
+     "name": null
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36350",
+   "name": {
+    "_value": "Col-Huw Beach (Llantwit Major)",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36350/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36400",
+   "name": {
+    "_value": "Southerndown",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36400/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2202-36450",
+   "name": {
+    "_value": "Ogmore-By-Sea",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36450/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Poor",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1701-36500",
+   "name": {
+    "_value": "Trecco Bay Porthcawl",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36500/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1701-36600",
+   "name": {
+    "_value": "Sandy Bay Porthcawl",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36600/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1701-36700",
+   "name": {
+    "_value": "Rest Bay Porthcawl",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36700/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1702-36800",
+   "name": {
+    "_value": "Aberafan",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/TransitionalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36800/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-36900",
+   "name": {
+    "_value": "Swansea Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/TransitionalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/36900/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37000",
+   "name": {
+    "_value": "Bracelet Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37000/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37100",
+   "name": {
+    "_value": "Limeslade Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37100/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37200",
+   "name": {
+    "_value": "Langland Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37200/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37300",
+   "name": {
+    "_value": "Caswell Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37300/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37400",
+   "name": {
+    "_value": "Oxwich Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37400/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37500",
+   "name": {
+    "_value": "Port Eynon Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37500/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1800-37600",
+   "name": {
+    "_value": "Rhossili",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37600/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1401-37650",
+   "name": {
+    "_value": "Llandeilo Swing Bridge",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/RiverBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": null,
+    "complianceClassification": {
+     "name": null
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1401-37700",
+   "name": {
+    "_value": "Pembrey",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37700/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1401-37800",
+   "name": {
+    "_value": "Pendine",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37800/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-37900",
+   "name": {
+    "_value": "Amroth Central",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37900/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-37940",
+   "name": {
+    "_value": "Wiseman's Bridge",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37940/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Sufficient",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-37980",
+   "name": {
+    "_value": "Coppet Hall",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/37980/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38000",
+   "name": {
+    "_value": "Saundersfoot",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38000/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38100",
+   "name": {
+    "_value": "Tenby North",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38100/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38150",
+   "name": {
+    "_value": "Castle Beach, Tenby",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38150/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38200",
+   "name": {
+    "_value": "Tenby South",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38200/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38210",
+   "name": {
+    "_value": "Penally",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38210/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38220",
+   "name": {
+    "_value": "Lydstep",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38220/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38230",
+   "name": {
+    "_value": "Manorbier",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38230/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38235",
+   "name": {
+    "_value": "Freshwater East",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38235/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38238",
+   "name": {
+    "_value": "Barafundle",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38238/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38240",
+   "name": {
+    "_value": "Broad Haven (South)",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38240/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38248",
+   "name": {
+    "_value": "Freshwater West",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38248/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38250",
+   "name": {
+    "_value": "West Angle",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38250/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38255",
+   "name": {
+    "_value": "Sandy Haven",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38255/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38260",
+   "name": {
+    "_value": "Dale",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38260/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38280",
+   "name": {
+    "_value": "Marloes Sands",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38280/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38295",
+   "name": {
+    "_value": "Little Haven",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38295/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38300",
+   "name": {
+    "_value": "Broad Haven (Central)",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38300/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38340",
+   "name": {
+    "_value": "Druidston Haven",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38340/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38380",
+   "name": {
+    "_value": "Nolton Haven",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38380/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38400",
+   "name": {
+    "_value": "Newgale",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38400/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38460",
+   "name": {
+    "_value": "Caerfai",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38460/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38500",
+   "name": {
+    "_value": "Whitesands",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38500/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38520",
+   "name": {
+    "_value": "Abereiddy",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38520/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38540",
+   "name": {
+    "_value": "Abermawr",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38540/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1403-38600",
+   "name": {
+    "_value": "Newport North",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38600/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl2400-38620",
+   "name": {
+    "_value": "The Warren, Hay On Wye",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/RiverBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38620/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Sufficient",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38630",
+   "name": {
+    "_value": "Poppit West",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38630/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38640",
+   "name": {
+    "_value": "Mwnt",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38640/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38660",
+   "name": {
+    "_value": "Aberporth",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38660/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38670",
+   "name": {
+    "_value": "Tresaith",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38670/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38675",
+   "name": {
+    "_value": "Penbryn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38675/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38680",
+   "name": {
+    "_value": "Llangrannog",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38680/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38685",
+   "name": {
+    "_value": "Cilborth",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38685/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38688",
+   "name": {
+    "_value": "New Quay North",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38688/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38690",
+   "name": {
+    "_value": "New Quay Harbour",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38690/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38700",
+   "name": {
+    "_value": "Traeth Gwyn New Quay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38700/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Sufficient",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38750",
+   "name": {
+    "_value": "Llanrhystud",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38750/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38800",
+   "name": {
+    "_value": "Aberystwyth South",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38800/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38900",
+   "name": {
+    "_value": "Aberystwyth North",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38900/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-38920",
+   "name": {
+    "_value": "Clarach South",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/38920/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1402-39000",
+   "name": {
+    "_value": "Borth",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39000/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39050",
+   "name": {
+    "_value": "Aberdyfi",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/TransitionalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39050/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39070",
+   "name": {
+    "_value": "Aberdyfi Rural",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39070/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39100",
+   "name": {
+    "_value": "Tywyn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39100/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39200",
+   "name": {
+    "_value": "Fairbourne",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39200/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39300",
+   "name": {
+    "_value": "Barmouth",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39300/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39350",
+   "name": {
+    "_value": "Tal-y-Bont",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39350/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39360",
+   "name": {
+    "_value": "Dyffryn (Llanendwyn)",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39360/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39400",
+   "name": {
+    "_value": "Llandanwg",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39400/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39500",
+   "name": {
+    "_value": "Harlech",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39500/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39600",
+   "name": {
+    "_value": "Craig Du Beach Central",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39600/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39700",
+   "name": {
+    "_value": "Criccieth",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39700/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39790",
+   "name": {
+    "_value": "Glan Don Beach",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39790/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39800",
+   "name": {
+    "_value": "Pwllheli",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39800/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39900",
+   "name": {
+    "_value": "Abersoch",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39900/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39920",
+   "name": {
+    "_value": "Porth Neigwl",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39920/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39950",
+   "name": {
+    "_value": "Aberdaron",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39950/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39960",
+   "name": {
+    "_value": "Morfa Nefyn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39960/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39965",
+   "name": {
+    "_value": "Porth Nefyn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39965/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39970",
+   "name": {
+    "_value": "Morfa Dinlle",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39970/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1200-39975",
+   "name": {
+    "_value": "Llyn Padarn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/LakeBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39975/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-39980",
+   "name": {
+    "_value": "Llanddwyn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39980/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-39985",
+   "name": {
+    "_value": "Aberffraw",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39985/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-39990",
+   "name": {
+    "_value": "Rhosneigr",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39990/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-39993",
+   "name": {
+    "_value": "Silver Bay Rhoscolyn",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39993/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-39995",
+   "name": {
+    "_value": "Borth Wen",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/39995/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40000",
+   "name": {
+    "_value": "Trearddur Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40000/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40010",
+   "name": {
+    "_value": "Porth Dafarch",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40010/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40030",
+   "name": {
+    "_value": "Church Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40030/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40050",
+   "name": {
+    "_value": "Cemaes",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40050/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Sufficient",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40085",
+   "name": {
+    "_value": "Traeth Lligwy",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40085/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40100",
+   "name": {
+    "_value": "Benllech",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40100/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40105",
+   "name": {
+    "_value": "St Davids - Benllech",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40105/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1100-40140",
+   "name": {
+    "_value": "Llanddona",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40140/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40170",
+   "name": {
+    "_value": "Llanfairfechan",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40170/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40180",
+   "name": {
+    "_value": "Penmaenmawr",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40180/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40200",
+   "name": {
+    "_value": "Llandudno West Shore",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40200/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40300",
+   "name": {
+    "_value": "Llandudno North Shore",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40300/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40400",
+   "name": {
+    "_value": "Colwyn Bay",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40400/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40425",
+   "name": {
+    "_value": "Colwyn Bay Porth Eirias",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40425/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Excellent",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40450",
+   "name": {
+    "_value": "Abergele (Pensarn)",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40450/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1301-40500",
+   "name": {
+    "_value": "Kinmel Bay (Sandy Cove)",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40500/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1302-40550",
+   "name": {
+    "_value": "Marine Lake, Rhyl",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40550/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Sufficient",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1302-40600",
+   "name": {
+    "_value": "Rhyl Central",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40600/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Sufficient",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1302-40650",
+   "name": {
+    "_value": "Rhyl East",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40650/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  },
+  {
+   "eubwidNotation": "ukl1302-40700",
+   "name": {
+    "_value": "Prestatyn Central",
+    "_datatype": "langString",
+    "_lang": "en"
+   },
+   "type": [
+    "http://environment.data.gov.uk/def/bathing-water/BathingWater",
+    "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"
+   ],
+   "latestComplianceAssessment": {
+    "_about": "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/compliance-rBWD/point/40700/year/2025",
+    "complianceClassification": {
+     "name": {
+      "_value": "Good",
+      "_datatype": "langString",
+      "_lang": "en"
+     }
+    }
+   }
+  }
+ ],
+ "sample_items": [
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2201-36040"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T11:53:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36050"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T12:26:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 173,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 64,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36100"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T10:08:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 530,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36200"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T10:31:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 82,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 27,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36300"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T13:04:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 27,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36325"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T10:42:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36330"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T13:42:20",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 73,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36350"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T13:51:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36400"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T14:29:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 36,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2202-36450"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T14:38:01",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 390,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 168,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1701-36500"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T11:46:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1701-36600"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T12:17:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1701-36700"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T12:54:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1702-36800"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T13:44:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 64,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-36900"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T10:25:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 55,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37000"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T12:10:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37100"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T12:30:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37200"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T11:20:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37300"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T11:00:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37400"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T09:45:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37500"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T09:15:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1800-37600"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T08:40:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1401-37650"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T10:36:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 220,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 75,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1401-37700"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T10:28:23",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1401-37800"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T10:32:12",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 55,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 27,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-37900"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T10:52:48",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-37940"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T11:09:08",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-37980"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T11:28:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38000"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T11:50:46",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38100"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T12:22:32",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38150"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T13:24:06",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38200"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-14T13:36:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38210"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T09:59:05",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38220"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T14:27:17",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38230"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T10:30:16",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38235"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T11:12:55",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38238"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T13:04:01",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38240"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T12:13:35",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38248"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T12:52:43",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38250"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T12:10:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38255"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T10:45:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 45,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 55,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38260"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-03T10:03:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 36,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 46,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38280"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T12:18:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38295"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T11:20:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38300"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T11:00:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 27,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38340"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T10:36:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38380"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T10:04:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38400"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T14:02:51",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38460"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T13:21:10",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38500"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T12:16:25",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38520"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T11:41:22",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38540"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T11:06:42",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 27,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1403-38600"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T10:09:31",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 36,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl2400-38620"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T10:30:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 490,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 290,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38630"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T10:20:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 55,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38640"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T11:05:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 36,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38660"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T11:32:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 55,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38670"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T11:57:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 82,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 109,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38675"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T12:26:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38680"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T12:58:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38685"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-09T12:50:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38688"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T10:23:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 55,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38690"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T10:07:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 82,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38700"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T10:55:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38750"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T11:40:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38800"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T10:05:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38900"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T12:25:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-38920"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T12:50:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 864,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 340,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1402-39000"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T13:35:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39050"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T11:41:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 82,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39070"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T12:31:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39100"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T13:23:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39200"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-08T14:27:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39300"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-15T10:00:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 118,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39350"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-15T10:22:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 36,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39360"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-15T10:44:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 73,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 64,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39400"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-15T11:14:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39500"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-15T11:40:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39600"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T11:14:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39700"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T10:42:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 55,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39790"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T10:16:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39800"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T10:00:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39900"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T12:06:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39920"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T11:39:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39950"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T10:56:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39960"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T10:16:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39965"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T10:00:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39970"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T12:06:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1200-39975"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-18T12:41:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 36,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-39980"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T10:00:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-39985"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T10:48:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-39990"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T11:23:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-39993"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T12:10:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-39995"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T12:32:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40000"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T12:52:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40010"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-16T13:09:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40030"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T13:45:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40050"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T13:05:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 36,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40085"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T12:30:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 18,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40100"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T12:10:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 173,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 45,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40105"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T11:50:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1100-40140"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-10T11:10:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40170"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T14:53:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40180"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T14:14:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40200"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T13:18:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40300"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T12:46:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 27,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40400"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T12:02:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40425"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-07T11:32:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40450"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-11T16:36:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 27,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 18,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1301-40500"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-11T16:03:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 10,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1302-40550"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T13:40:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 27,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 64,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1302-40600"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-17T14:10:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 27,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 10,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/lessThan",
+    "countQualifierNotation": "<"
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1302-40650"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-11T14:44:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 109,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 37,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  },
+  {
+   "bwq_bathingWater": {
+    "eubwidNotation": "ukl1302-40700"
+   },
+   "sampleDateTime": {
+    "inXSDDateTime": {
+     "_value": "2026-09-11T12:45:00",
+     "_datatype": "dateTime"
+    }
+   },
+   "escherichiaColiCount": 430,
+   "escherichiaColiQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   },
+   "intestinalEnterococciCount": 127,
+   "intestinalEnterococciQualifier": {
+    "_about": "http://environment.data.gov.uk/def/bathing-water-quality/actual",
+    "countQualifierNotation": "="
+   }
+  }
+ ]
+}

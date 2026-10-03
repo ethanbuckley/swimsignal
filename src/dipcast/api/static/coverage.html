@@ -17,7 +17,10 @@
 <!-- COASTAL_DIRECTORY --><p>Use the EA link above if the directory is unavailable here.</p><!-- END_COASTAL_DIRECTORY -->
 </details>
 <h2>Wales</h2>
-<p><a href="https://environment.data.gov.uk/wales/bathing-waters/profiles/">Find a Welsh bathing water</a> for official site profiles and water-quality information. <a href="https://naturalresources.wales/days-out/bathing-water-quality/?lang=en">Natural Resources Wales explains its monitoring</a>. SwimSignal does not yet issue Welsh forecasts.</p>
+<p><a href="https://environment.data.gov.uk/wales/bathing-waters/profiles/">Find a Welsh bathing water</a> for official site profiles and water-quality information. <a href="https://naturalresources.wales/days-out/bathing-water-quality/?lang=en">Natural Resources Wales explains its monitoring</a>. SwimSignal does not yet issue Welsh forecasts. Opening the list below asks Natural Resources Wales's data service for its current samples and forecasts, from your browser (<a href="/privacy">privacy</a>).</p>
+<details id="wales-directory"><summary>Search the Welsh bathing waters</summary>
+<!-- WALES_DIRECTORY --><p>Use the NRW link above if the list is unavailable here.</p><!-- END_WALES_DIRECTORY -->
+</details>
 <h2>Scotland</h2>
 <p><a href="https://bathingwaters.sepa.org.uk/">SEPA's bathing-water service</a> provides Scottish bathing-water information. Check the site profile and current advice. SwimSignal has not validated a Scottish pollution forecast.</p>
 <h2 id="algae">Algae reports across the UK</h2>
@@ -32,23 +35,115 @@
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
 <p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
 <script>
-const search = document.getElementById('coastal-search'), count = document.getElementById('coastal-count');
-const sites = [...document.querySelectorAll('.coastal-site')];
-if (search) search.addEventListener('input', () => {
-  const term = search.value.trim().toLocaleLowerCase();
-  let found = 0;
-  for (const site of sites) {
-    site.hidden = !site.querySelector('a').textContent.toLocaleLowerCase().includes(term);
-    if (!site.hidden) found++;
-  }
-  count.textContent = `${found} of ${sites.length} sites`;
-});
+function searchList(searchId, countId, selector) {
+  const search = document.getElementById(searchId), count = document.getElementById(countId);
+  const sites = [...document.querySelectorAll(selector)];
+  if (search) search.addEventListener('input', () => {
+    const term = search.value.trim().toLocaleLowerCase();
+    let found = 0;
+    for (const site of sites) {
+      site.hidden = !site.querySelector('a').textContent.toLocaleLowerCase().includes(term);
+      if (!site.hidden) found++;
+    }
+    count.textContent = `${found} of ${sites.length} sites`;
+  });
+}
+searchList('coastal-search', 'coastal-count', '.coastal-site');
+searchList('wales-search', 'wales-count', '.wales-site');
 function expireAdvice() {
   for (const advice of document.querySelectorAll('[data-advice-expires]')) {
-    if (Date.now() >= Date.parse(advice.dataset.adviceExpires)) advice.textContent = 'This EA advice has expired; check the official profile';
+    if (Date.now() >= Date.parse(advice.dataset.adviceExpires)) advice.textContent = `This ${advice.dataset.adviceSource || 'EA'} advice has expired; check the official profile`;
   }
 }
 expireAdvice();
 setInterval(expireAdvice, 60000);
+
+// Wales (wales.py): the build cannot reach NRW's service, so when the list is opened the page asks
+// it for the current samples and forecasts, which NRW allows from any site. A failure leaves the
+// dated snapshot and says the forecasts are unavailable. NRW's times have no zone: they are UK time.
+const WALES_API = 'https://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/';
+const SITE_ID = /^uk[a-z0-9]+-\d{5}$/, MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function ukParts(t) {
+  const f = new Intl.DateTimeFormat('en-GB', {timeZone: 'Europe/London', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  return Object.fromEntries(f.formatToParts(new Date(t)).filter(x => x.type !== 'literal').map(x => [x.type, x.value]));
+}
+function ukTime(s) {   // "2026-09-30T08:30:00", UK time, as a timestamp; NaN if unreadable
+  if (typeof s !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?$/.test(s)) return NaN;
+  const t = Date.parse(s + 'Z'), p = ukParts(t);
+  return t - (Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - t);
+}
+function ukDay(t) { const p = ukParts(t); return `${p.year}-${p.month}-${p.day}`; }
+function ukWhen(t) { const p = ukParts(t); return `${+p.day} ${MONTHS[p.month - 1]} ${p.year}, ${p.hour}:${p.minute}`; }
+function walesCount(n, q) {
+  return typeof n === 'number' && Number.isFinite(n) && n >= 0 ? {v: n, q: ['<', '>'].includes(q && q.countQualifierNotation) ? q.countQualifierNotation : ''} : null;
+}
+function walesSamples(items) {   // site id -> its latest sample with an E. coli count
+  const out = new Map();
+  for (const s of items) {
+    const id = s && s.bwq_bathingWater && s.bwq_bathingWater.eubwidNotation;
+    const t = ukTime(s && s.sampleDateTime && s.sampleDateTime.inXSDDateTime && s.sampleDateTime.inXSDDateTime._value);
+    const ecoli = s && walesCount(s.escherichiaColiCount, s.escherichiaColiQualifier);
+    if (typeof id !== 'string' || !SITE_ID.test(id) || Number.isNaN(t) || !ecoli) continue;
+    if (!out.has(id) || t > out.get(id).t) out.set(id, {t, ecoli, ent: walesCount(s.intestinalEnterococciCount, s.intestinalEnterococciQualifier)});
+  }
+  return out;
+}
+function walesForecasts(items, now) {   // site id -> the forecast in force, or {conflict: true}
+  const out = new Map(), v = x => x && x._value;
+  for (const p of items) {
+    const id = String((p && p.stp_bathingWater) || '').split('/').pop(), level = String((p && p.riskLevel) || '').split('/').pop();
+    const predicted = ukTime(v(p && p.predictedAt)), published = ukTime(v(p && p.publishedAt)), expires = ukTime(v(p && p.expiresAt));
+    if (!SITE_ID.test(id) || !['normal', 'increased'].includes(level)) continue;
+    if (!(predicted <= published && published <= now && now < expires && expires - predicted <= 36 * 36e5)) continue;
+    if (v(p.predictedOn) !== ukDay(predicted)) continue;
+    const prev = out.get(id);
+    if (prev && (prev.conflict || prev.level !== level)) out.set(id, {conflict: true});
+    else if (!prev || published > prev.published) out.set(id, {level, expires, published});
+  }
+  return out;
+}
+function walesApply(rows, samples, forecasts) {   // fills each row; returns how many have a forecast in force
+  const n = c => `${c.q}${Math.round(c.v).toLocaleString('en-GB')}`;
+  let inForce = 0;
+  for (const row of rows) {
+    const id = row.dataset.site, s = samples.get(id), f = forecasts.get(id), advice = row.querySelector('.wales-advice');
+    if (s && !(row.dataset.sampleAt && s.t < Date.parse(row.dataset.sampleAt)))
+      row.querySelector('.wales-sample').textContent = `Latest NRW sample ${ukWhen(s.t)}: E. coli ${n(s.ecoli)}${s.ent ? `, intestinal enterococci ${n(s.ent)}` : ''} per 100 ml`;
+    delete advice.dataset.adviceExpires;
+    if (!f) advice.textContent = 'No current NRW forecast for this site';
+    else if (f.conflict) advice.textContent = 'Current NRW forecast unavailable (conflicting records): open the profile';
+    else {
+      inForce++;
+      advice.textContent = f.level === 'increased' ? `NRW: increased pollution risk, until ${ukWhen(f.expires)}`
+        : `NRW: no increased pollution risk forecast, until ${ukWhen(f.expires)}. Not a water test`;
+      advice.dataset.adviceExpires = new Date(f.expires).toISOString(); advice.dataset.adviceSource = 'NRW';
+    }
+  }
+  return inForce;
+}
+async function walesLive() {
+  const status = document.getElementById('wales-status'), rows = [...document.querySelectorAll('.wales-site')];
+  if (!status || !rows.length) return;
+  status.textContent = 'Asking Natural Resources Wales for current samples and forecasts…';
+  const get = async path => {
+    const r = await fetch(`${WALES_API}${path}?_pageSize=200`, {signal: AbortSignal.timeout(10000)});
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const items = ((await r.json()).result || {}).items;
+    if (!Array.isArray(items)) throw new Error('unexpected answer');
+    return items;
+  };
+  try {
+    const [samples, forecasts] = await Promise.all([get('in-season/latest.json'), get('stp-risk-prediction/latest.json')]);
+    const now = Date.now(), n = walesApply(rows, walesSamples(samples), walesForecasts(forecasts, now));
+    status.textContent = `Current samples and forecasts from Natural Resources Wales, checked ${ukWhen(now)}: ${n ? `${n} site${n === 1 ? ' has a forecast' : 's have forecasts'} in force` : 'no forecast in force'}.`;
+  } catch (e) {
+    for (const row of rows) row.querySelector('.wales-advice').textContent = 'Current NRW forecast unavailable: open the profile';
+    status.textContent = 'Natural Resources Wales did not answer, so the samples below are from the dated snapshot and current forecasts are unavailable.';
+  }
+}
+const walesList = document.getElementById('wales-directory');
+if (walesList) walesList.addEventListener('toggle', function once() {
+  if (walesList.open) { walesList.removeEventListener('toggle', once); walesLive(); }
+});
 </script>
 </body></html>
