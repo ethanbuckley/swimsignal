@@ -221,8 +221,12 @@ paper, as the site's first screen looked in the fifth round.
   away in the bar at the bottom, a spot's page with its own small map. Unchanged.
 - **Prose pages:** one 720 px column, serif headings, 17 px text, a summary box where a page has an
   answer in a few lines, and the shared foot: one line about what the site is, then the small links.
-- **Accuracy page:** the four numbers that matter in a ruled definition list at the top, a short "in short" list,
-  a contents list, then sections in the same order as before. Tables share one style; the three
+- **Accuracy page:** first the forecasts as warnings (4 October 2026): a plain sentence with the figures, the
+  share right always beside what saying "no" every time gets right, then a two-by-two table of hits, misses,
+  false alarms and correct quiet days, each count over its name so it fits a 320 px phone; the same for the
+  E. coli estimate. Then the four numbers that matter in a ruled definition list, a short "in short" list,
+  a contents list, then sections in the same order as before, with "Did the forecast run on time?" last of the
+  live ones. Tables share one style; the three
   reliability tables draw forecast against observed as bars. A table wider than the screen scrolls
   sideways in its own box, between two hairlines, and the bar column keeps at least 120 px. The
   scoring rules fold away under "How the live scoring works", so the page opens on results.

@@ -23,6 +23,14 @@ main.doc .toc h2 { font:600 var(--fs-note)/1.3 var(--font-text); color:var(--mut
 .toc li { margin:3px 0; break-inside:avoid; }
 @media (max-width: 480px) { .toc ol { columns:1; } }
 .mono { font:var(--fs-meta) var(--font-mono); }
+/* Warnings against what happened, two by two: each count over its name, so the table fits a 320 px
+   phone without scrolling sideways. Not in a scrolling box, so it closes on its own hairline; at most
+   520 px wide, so a count stays near its row's name on a desktop. */
+table.grid { table-layout:fixed; max-width:520px; border-bottom:1px solid var(--line); }
+table.grid tr:last-child th { border-bottom:0; }
+table.grid th:first-child { width:36%; }
+table.grid td.num { font-weight:600; }
+table.grid td span { display:block; font-weight:400; font-size:var(--fs-meta); color:var(--muted); white-space:normal; }
 /* Forecast against observed, as two bars in each reliability row. The bars hold the column's
    minimum width, 110 px plus the cell's 10 px padding, because CSS 2.1 leaves min-width on a table
    cell undefined: on a phone the table scrolls sideways instead of squeezing the bars. */
@@ -41,6 +49,7 @@ td.bars { width:38%; padding-top:10px; }
 <h1>How good is the forecast?</h1>
 <p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did. This page updates itself. It also shows the offline tests the model was built on. How the forecast is made is on the <a href="/methods">method page</a>.</p>
 
+<div id="answer"></div>
 <div id="short"><p class="muted">Loading the scores…</p></div>
 
 <details class="fold" id="reading"><summary>How to read the numbers</summary>
@@ -155,6 +164,7 @@ async function main() {
     h += section('ecoli-live', ECOLI_H, `${via}${partial}<p class="muted">E. coli estimates are logged from 15 September 2026 and scored against Environment Agency samples as they are published, usually within a week of sampling. Nothing to show yet.</p>`);
   }
   if (d.prf && d.prf.both) h += section('prf', "Beside the Environment Agency's daily risk prediction", prfSection(d.prf));
+  if (d.service) h += section('service', 'Did the forecast run on time?', serviceSection(d.service));
   document.getElementById('live').innerHTML = scrolling(h);
 
   let o = '';
@@ -210,6 +220,7 @@ async function main() {
     o += section('ecoli-model', 'E. coli exceedance model', t);
   }
   document.getElementById('offline').innerHTML = scrolling(o);
+  document.getElementById('answer').innerHTML = answer(d);
   document.getElementById('short').innerHTML = inShort(d) + contents();
   // The sections exist only now, so a link to one (#reliability, the In short list's #live-scoring) scrolls here.
   if (location.hash) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
@@ -238,6 +249,76 @@ function prfSection(P) {
   if (A.n_with_ea_prediction) t += `<p class="small muted">Over the whole season, ${A.n_with_ea_prediction} samples were taken while a prediction was in force. It was "increased" before ${Ae.n_increased} of them, ${Ae.hits} over 900, and "normal" before ${Ae.misses} of the ${Ae.hits + Ae.misses} samples over 900.</p>`;
   const fetched = F.days_fetched === F.days_requested ? `every day from ${day(F.first_day)} to ${day(F.last_day)}` : `${F.days_fetched} of ${F.days_requested} days, ${day(F.first_day)} to ${day(F.last_day)}; the Agency's server refused the rest`;
   t += `<p class="small muted">Predictions fetched for ${fetched}; compared on ${day(String(P.generated_at).slice(0, 10))}. Environment Agency data, Open Government Licence v3.0.</p>`;
+  return t;
+}
+// The forecasts as warnings, the page's plain answer: the share of spills warned of, the share of warnings
+// that came true, and the counts of hits, misses, false alarms and correct quiet days, from the scorer
+// (forecast_log.warning_table). The share right never appears without what saying "no" every time gets
+// right: spills are rare, so that alone is right on most days.
+const n0 = x => Number(x).toLocaleString('en-GB');
+const p0 = x => Math.round(100 * x) + '%';
+// Two shares side by side, to one decimal place, or two where one place would make different shares look equal.
+const pair = (a, b) => { const k = a !== b && (100 * a).toFixed(1) === (100 * b).toFixed(1) ? 2 : 1; return [(100 * a).toFixed(k) + '%', (100 * b).toFixed(k) + '%']; };
+const were = (k, one = 'was', many = 'were') => k === 1 ? one : many;
+function grid(T, label, yes, no, quiet) {
+  return `<table class="grid" aria-label="${label}"><tr><th></th><th class="num">${yes}</th><th class="num">${no}</th></tr>`
+    + `<tr><th scope="row">Warning (${Math.round(100 * T.warn_at)}% or more)</th><td class="num">${n0(T.hits)}<span>hits</span></td><td class="num">${n0(T.false_alarms)}<span>false alarms</span></td></tr>`
+    + `<tr><th scope="row">No warning</th><td class="num">${n0(T.misses)}<span>misses</span></td><td class="num">${n0(T.quiet_correct)}<span>${quiet}</span></td></tr></table>`;
+}
+function answer(d) {
+  const L = d.live || {}, W = L.warning_table, E = (L.ecoli_live || {}).warning_table;
+  let t = '';
+  if (W && W.n) {
+    const [right, no] = pair(W.share_correct, W.always_no_correct);
+    const warned = W.hit_rate === null ? 'had no spill to warn of' : `warned of ${p0(W.hit_rate)} of spills`;
+    const cameTrue = W.warnings_true === null ? 'gave no warnings' : `${p0(W.warnings_true)} of its warnings came true`;
+    t += `<p>Since ${day(W.first_day)}, the spill forecast ${warned}, and ${cameTrue}. It was right on ${right} of forecasts, against ${no} for saying "no spill" every time: spills are rare, so a share right says little on its own.${W.n_days < 14 ? ` That is ${W.n_days} day${W.n_days === 1 ? '' : 's'} so far, too few to judge across different weather.` : ''}</p>`;
+    t += grid(W, 'Spill forecasts against what the overflows did', 'Spilled', 'No spill', 'correct quiet days');
+    t += `<p class="small muted">Each count is one forecast: one overflow on one day, made from four days ahead to the morning itself. The ${n0(W.n_spill_overflow_days)} overflow-days with a spill make ${n0(W.hits + W.misses)} forecasts. A warning is a spill chance of ${Math.round(100 * W.warn_at)}% or more: where a spot beside the overflow reads High risk, the level at which alerts are sent. <a href="#live-scoring">The full scores</a>.</p>`;
+    // Wessex Water's figure, its label checked on https://www.waterqualitylive.info/ on 4 Oct 2026: "Accuracy of
+    // alerts", the percentage of alerts that correctly predicted a higher risk to bathers' health caused by poor
+    // water quality over the past 12 months, from sensors at its sites. The same kind of share as warnings_true,
+    // of a different thing, so the page says so and sets no other figure beside it.
+    t += `<p class="small muted">Wessex Water's "87.8% alert accuracy" is the same kind of figure as the share of warnings that came true, but of bacteria, measured by sensors at its bathing sites. This counts spills at overflows, so the two do not compare.</p>`;
+  }
+  if (E) {
+    const over = E.hits + E.misses, warnedE = E.hits + E.false_alarms;
+    const month = new Date(L.generated_at || Date.now()).getMonth() + 1;
+    let s = `On rivers, from ${day(E.first_day)} to ${day(E.last_day)}: ${n0(E.n)} Environment Agency sample${E.n === 1 ? '' : 's'} at ${E.n_sites} bathing water${E.n_sites === 1 ? '' : 's'}, ${over} of them over 900 E.&nbsp;coli per 100&nbsp;ml.`;
+    if (E.too_few_to_judge) {
+      s += ` The estimate warned before ${warnedE}${warnedE ? `: ${E.hits} ${were(E.hits)} over 900 and ${E.false_alarms} ${were(E.false_alarms)} not` : ''}.`;
+      if (over) s += ` It gave no warning before ${E.misses === over ? (over === 1 ? 'the one' : `any of the ${over}`) : `${E.misses} of the ${over}`} over 900.`;
+      s += ` Too few to judge. ${month >= 5 && month <= 9 ? 'More are scored as the Agency publishes them, usually within a week of sampling.' : 'The Agency samples from May to September, so no new samples come until May.'}`;
+    } else {
+      const [right, no] = pair(E.share_correct, E.always_no_correct);
+      s += ` The estimate warned before ${E.hit_rate === null ? 'none' : p0(E.hit_rate)} of those over 900, and ${E.warnings_true === null ? 'gave no warnings' : `${p0(E.warnings_true)} of its warnings came true`}. It was right on ${right} of samples, against ${no} for never warning.`;
+    }
+    t += `<h3>The E. coli estimate</h3><p>${s}</p>` + grid(E, 'E. coli estimates against lab samples', 'Over 900', '900 or under', 'correct, no warning');
+    t += `<p class="small muted">A warning is an estimate of ${Math.round(100 * E.warn_at)}% or more, its High risk level. Each sample is matched with the latest estimate issued before it was taken.${E.n_lake_samples_left_out ? ` ${E.n_lake_samples_left_out} lake sample${E.n_lake_samples_left_out === 1 ? ' is' : 's are'} left out: the site does not show the estimate on lakes.` : ''} <a href="#ecoli-live">The full scores</a>.</p>`;
+  }
+  return t ? `<section id="warnings" aria-labelledby="warnings-h"><h2 id="warnings-h">Warnings, misses and false alarms</h2>${t}</section>` : '';
+}
+// Whether the forecast was made: runs against the schedule, the longest wait, the morning forecast, the company
+// feeds and the spots, from the pipeline's own logs (forecast_log.service_record).
+function serviceSection(S) {
+  const R = S.runs, F = S.feeds, M = S.morning, B = S.builds, rows = [];
+  const at = t => new Date(t).toLocaleString('en-GB', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+  if (R) rows.push(['Runs', `${n0(R.n)} in ${R.n_days} days, a median of ${R.per_day_median} a day: ${p0(R.share_of_scheduled)} of the ${n0(R.scheduled)} the schedule asks for`]);
+  if (R && R.max_gap_h !== null) rows.push(['Longest wait between runs', `${R.max_gap_h.toFixed(1)} h, ending ${at(R.max_gap_ended)}`]);
+  if (M) rows.push([`Days with a forecast out by ${String(S.decision_hour_local).padStart(2, '0')}:00`, `${M.n_with_forecast} of ${M.n_days}${M.days_without.length ? ` (none on ${M.days_without.map(day).join(', ')})` : ''}`]);
+  if (F) { const down = F.companies.filter(c => c.down), up = F.companies.length - down.length;
+    rows.push(['Company feeds that returned nothing', down.length
+      ? `${down.map(c => `${c.company} in ${c.down} of ${n0(c.polls)} runs`).join('; ')}${up ? `; the other ${up === 1 ? 'one' : up} answered every run` : ''}`
+      : `none: all ${F.companies.length} answered in every run`]); }
+  if (B) {
+    rows.push(['Spots that got a forecast', `${n0(B.spots_forecast)} of ${n0(B.spots_attempted)}${B.share_forecast === null ? '' : ` (${p0(B.share_forecast)})`}, over ${B.n_published} run${B.n_published === 1 ? '' : 's'} since ${at(B.since)}`]);
+    if (B.n > B.n_published) { const w = B.not_published[B.not_published.length - 1];
+      rows.push(['Runs that stopped before publishing', `${B.n - B.n_published} of ${B.n} since ${at(B.since)}${w ? `; the last, ${at(w.at)}: ${w.why}` : ''}`]); }
+  }
+  const from = R || M;
+  let t = `<p class="small muted">From the pipeline's own logs${from ? `, for whole days from ${day(from.from_day)} to ${day(from.to_day)}` : ''}.</p>`;
+  t += `<table><tr><th>Measure</th><th>Record</th></tr>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>`;
+  t += `<p class="small muted">The schedule asks GitHub for a run every 30 minutes, ${S.scheduled_per_day} a day. GitHub starts scheduled runs when it has capacity, and a change to the site's code starts one too; both count here, as does a run that failed after polling the feeds. The live scores use the forecast out by 08:00 each day. A company feed that returns nothing leaves its overflows on their last status, shown as not reporting.</p>`;
   return t;
 }
 // The page's answer: the four figures that matter as tiles, then a few plain lines, from the same
