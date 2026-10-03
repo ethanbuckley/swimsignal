@@ -1,0 +1,60 @@
+# River Tone at French Weir Park. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "There is only limited on-street parking, at Clarence Street."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/french-weir-park/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "path"
+text = "The park can be reached from Clarence Street and French Weir Avenue, or by footbridges from Longrun Meadow and Marshelsea Walk."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/french-weir-park/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "toilets"
+text = "The park has a public toilet."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/french-weir-park/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "toilets"
+text = "Taunton Town Council lists French Weir Toilets as open 9am to 4pm. It says its toilet times are approximate and subject to change."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/taunton-services/town-council-services/public-toilets/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "rules"
+text = "The designated bathing stretch is the part of the river above the weir, mainly behind the COACH building."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/french-weir-park/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "entry"
+text = "Swimmers get into the river by the river steps."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/french-weir-park/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "hours"
+text = "COACH may shut its gates at set times, with notice given and the times clearly displayed. The council asks swimmers to speak with officials on site to keep using the river."
+status = "confirmed"
+source = "https://www.taunton-tc.gov.uk/french-weir-park/"
+source_name = "Taunton Town Council"
+
+[[fact]]
+topic = "hours"
+text = "French Weir Park is open all day, all year round."
+status = "confirmed"
+source = "https://www.somerset.gov.uk/locations/french-weir-park/"
+source_name = "Somerset Council"

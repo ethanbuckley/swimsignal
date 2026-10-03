@@ -1,0 +1,46 @@
+# Grasmere (lake). Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "White Moss Upper car park at Rydal is pay in car park; its toilets are beside the lower car park, 100 m across the main road. White Moss Lower is also pay in car park and has toilets. The page does not mention the lake or swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "From the lower White Moss Common car park a smooth path crosses a footbridge and runs by the River Rothay to Penny Rock Wood. Wheelchair and pushchair users take the right-hand route; others can take steps down to the Grasmere outflow bridge for a view of the lake. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/white-moss-common/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "There are toilets with baby changing 40 m from the lower White Moss Common car park. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/white-moss-common/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "entry"
+text = "The National Trust's Grasmere lakeshore walk passes Penny Rock Beach, which it suggests for stone-skimming. The page does not mention swimming."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/allan-bank-and-grasmere/walking-at-allan-bank-and-grasmere"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is allowed on Grasmere. Canoes, kayaks and paddleboards are allowed; rowing boats, sailing boats and powered craft are not. There is no access to the islands. The contact is Lowther Estates."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The park authority says Grasmere lake is great for swimming and rowing because motor boats are prohibited."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/places-to-go/explore-grasmere-and-rydal/"
+source_name = "Lake District National Park Authority"

@@ -1,0 +1,32 @@
+# Friars Meadow, River Stour. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "You can get into the water along the bank where the reeds have been cleared."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukh1401-11051"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "This stretch of the Stour is also popular with kayakers, paddleboarders and other recreational users."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukh1401-11051"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "The River Stour Trust owns the jetty at Friars Meadow and says its jetties are only for people in licensed craft navigating the river, not for other uses; it also asks people not to picnic or loiter on them. The trust's page does not mention the bathing site."
+status = "confirmed"
+source = "https://riverstourtrust.org/rst-facilities-code-of-practice"
+source_name = "River Stour Trust"
+
+[[fact]]
+topic = "parking"
+text = "Friars Meadow Car Park (Kingfisher Leisure Centre), Station Road, Sudbury CO10 2SS, is a long-stay car park with 297 spaces. Charges Monday to Saturday 8am to 6pm, excluding bank holidays: up to 2 hours £1.20, 3 hours £1.80, 4 hours £2.40, all day £3.00. The council's car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.babergh.gov.uk/w/friars-meadow-car-park-kingfisher-leisure-centre"
+source_name = "Babergh District Council"

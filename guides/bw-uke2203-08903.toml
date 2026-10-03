@@ -1,0 +1,11 @@
+# Nidd at the Lido, Knaresborough. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "path"
+text = "The bathing water is a large pool between two weirs. The EA says access to the river is from a private caravan park."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke2203-08903"
+source_name = "Environment Agency bathing water profile"

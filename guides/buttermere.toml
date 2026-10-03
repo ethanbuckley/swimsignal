@@ -1,0 +1,102 @@
+# Buttermere. Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "The National Trust car park for Buttermere lake and village is just outside the hamlet, 300 yards towards Cockermouth (sat nav CA13 9UZ)."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "There is also a park authority car park in Buttermere village: pay and display, coins and cards or RingGo (ID 37311), with toilets including disabled. The valley gets congested at peak times; park only in designated car parks."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "From the National Trust car park you can walk to Buttermere itself or to Crummock Water."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "A lakeshore path circles Buttermere for 4.5 miles (7 km), with one short stretch on the road and one rock step where you may need your hands."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/things-to-do-in-buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "Each year a short stretch of permissive footpath along the north edge of the lake is closed from the start of April to the end of June to protect nesting sandpipers; waymarked alternatives are offered."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/things-to-do-in-buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "National Trust car park charges are £7 up to 2 hours, £8 up to 4 hours and £9.50 all day. Charges apply at all times."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/car-parks-in-the-buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "National Trust members park free by scanning their card. Non-members should bring change, as poor mobile signal means card or phone payment is not possible at every car park; some take the JustPark app."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/car-parks-in-the-buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "The National Trust does not allow overnight parking in its Buttermere Valley car parks."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "There is a public toilet in Buttermere, with a small fee."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "The Buttermere car park toilet is run by the park authority, with baby changing if you have a RADAR key."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/public-toilets/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is allowed on Buttermere. The park authority lists canoes, kayaks, paddleboards and rowing boats as allowed with a permit; sailing boats and powered craft are not allowed."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The park authority lists Buttermere among the quieter lakes best for swimming, with few or no motorboats."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust says boating permits for Buttermere are suspended on Natural England's advice, and no permits will be issued until further guidance."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/boating-and-fishing-in-the-buttermere-valley"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust asks swimmers and paddlers to follow Check, Clean, Dry, cleaning wetsuits, costumes and kit, to stop invasive species spreading between lakes."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/boating-and-fishing-in-the-buttermere-valley"
+source_name = "National Trust"

@@ -1,0 +1,32 @@
+# River Severn at Ironbridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "Entry is by the beach behind the Museum of the Gorge and the Ironbridge Tourist Information Centre, about 450 m upstream of the Iron Bridge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2100-36070"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "The bathing site is easy to reach on foot or by bicycle from the main road."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2100-36070"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "toilets"
+text = "There are public toilets at the Wharfage car park, TF8 7NH, about 500 m from Dale End Park. The council's page is about Dale End Park and does not mention the bathing site."
+status = "confirmed"
+source = "https://www.telford.gov.uk/sports-and-leisure/green-and-open-spaces/parks/dale-end-park/"
+source_name = "Telford & Wrekin Council"
+
+[[fact]]
+topic = "parking"
+text = "There is a car park in Dale End Park, with several disabled bays, and another at the Wharfage car park, TF8 7NH. The council's page is about Dale End Park and does not mention the bathing site."
+status = "confirmed"
+source = "https://www.telford.gov.uk/sports-and-leisure/green-and-open-spaces/parks/dale-end-park/"
+source_name = "Telford & Wrekin Council"

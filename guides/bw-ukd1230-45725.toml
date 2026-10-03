@@ -1,0 +1,32 @@
+# Coniston Water, Brown Howe. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "The Environment Agency says Brown Howe is on the south-western shore of Coniston Water and has a gravel beach."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1230-45725"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Brown Howe car park on the south-west shore of Coniston Water is pay and display, taking coins, cards or RingGo (car park ID 37300). It has seasonal toilets, including disabled."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "Brown Howe car park (National Park Authority) has toilets with baby changing. They are closed in the winter months."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/public-toilets/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Coniston Water, and powered craft are allowed with a 10mph speed limit. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

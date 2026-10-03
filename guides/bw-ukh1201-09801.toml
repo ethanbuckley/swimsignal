@@ -1,0 +1,46 @@
+# Sheep's Green, River Cam. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "The council says you can park nearby at Lammas Land car park."
+status = "confirmed"
+source = "https://www.cambridge.gov.uk/sheeps-green-and-coe-fen-local-nature-reserve"
+source_name = "Cambridge City Council"
+
+[[fact]]
+topic = "path"
+text = "You can reach Sheep's Green and Coe Fen from Fen Causeway, Lammas Land, Mill Lane and Trumpington Road. A firm, level path runs around the sites, but it can be hard to use in wet weather."
+status = "confirmed"
+source = "https://www.cambridge.gov.uk/sheeps-green-and-coe-fen-local-nature-reserve"
+source_name = "Cambridge City Council"
+
+[[fact]]
+topic = "toilets"
+text = "There is a café and public toilets nearby at Lammas Land."
+status = "confirmed"
+source = "https://www.cambridge.gov.uk/sheeps-green-and-coe-fen-local-nature-reserve"
+source_name = "Cambridge City Council"
+
+[[fact]]
+topic = "parking"
+text = "Lammas Land car park, The Driftway, CB3 9JJ, has 75 spaces. Weekdays: 2 hours £2.90, 4 hours £6.70, 5 hours £13.30, 8 hours £25.50; weekends maximum 5 hours. Charges apply 8am to 6pm from 1 April to 31 October (barrier closes 10pm) and 8am to 4pm from 1 November to 31 March (barrier closes 9pm). The council's car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.cambridge.gov.uk/lammas-land-car-park"
+source_name = "Cambridge City Council"
+
+[[fact]]
+topic = "toilets"
+text = "The council's public toilets at Lammas Land are open from 8am to 7pm, with baby-changing facilities; the accessible toilet needs a Radar key. The council's toilets page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.cambridge.gov.uk/public-toilets"
+source_name = "Cambridge City Council"
+
+[[fact]]
+topic = "rules"
+text = "The Environment Agency says the River Cam through Cambridge is popular for punting, canoeing and rowing, and that cattle graze Sheep's Green and Coe Fen every year."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukh1201-09801"
+source_name = "Environment Agency bathing water profile"

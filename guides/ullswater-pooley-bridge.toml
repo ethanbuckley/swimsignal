@@ -1,0 +1,53 @@
+# Ullswater, Pooley Bridge. Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Eusemere car park at Pooley Bridge is pay and display, coins and cards, or RingGo (car park ID 37310)."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "Dunmallard Hill car park at Pooley Bridge is pay and display, coins and cards, or RingGo (car park ID 37309)."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "A Miles Without Stiles route (start postcode CA10 2NN) runs 0.9 km each way along the Ullswater shore from the car park entrance, south past Dunmere, through gates and over two short steep ramps. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/pooley-bridge-to-gale-bay/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "entry"
+text = "At the end of the route a rough path, unsuitable for pushchairs and wheelchairs, continues 150 m to a gate and a raised boardwalk onto the shingle shore of Gale Bay. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/route/pooley-bridge-to-gale-bay/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "Pooley Bridge has public toilets behind the Information Centre."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/public-toilets/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is allowed on Ullswater. Canoes, kayaks, paddleboards, rowing and sailing boats are allowed, and powered craft too, with a 10 mph speed limit."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The park authority lists Ullswater among the busier lakes, with motorboats, sailing boats and other craft. It recommends swimming along the shoreline and making yourself visible."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"

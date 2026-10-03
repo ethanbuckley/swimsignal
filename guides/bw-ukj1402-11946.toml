@@ -1,0 +1,46 @@
+# Wolvercote Mill Stream. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Access to the swimming area is via the Wolvercote car park."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1402-11946"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "The site is in the north-east corner of Port Meadow, just downstream of Wolvercote Bridge, about 1 mile north of Oxford city centre, and is easy to reach on foot or by bicycle."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1402-11946"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Access and the car park for the former bathing area next to Wolvercote Mill Stream are off Godstow Road, Wolvercote."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/2683/wolvercote-former-bathing-area"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "toilets"
+text = "There are public toilets in the car park for the former bathing area next to Wolvercote Mill Stream."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/2683/wolvercote-former-bathing-area"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "parking"
+text = "Godstow Road car park (Port Meadow North), OX2 8PU, is open 24 hours with 72 spaces and 2 disabled bays. It is cashless: up to 1 hour £1.10, 1 to 3 hours £2.00, 3 to 5 hours £3.00, 5 to 24 hours £11.10. It has toilets. The council's car park page does not mention the bathing site."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/83/godstow-road-car-park-port-meadow-north"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "rules"
+text = "The council says bathing water status does not mean the area is safe for swimming; anyone who swims does so at their own risk and should follow the Wild Water Code."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/waterways/bathing-water"
+source_name = "Oxford City Council"

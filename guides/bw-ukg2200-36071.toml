@@ -1,0 +1,32 @@
+# River Severn in Shrewsbury. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "Entry is on the northern bank by the canoe launch ramp, next to Frankwell Riverside car park, just upstream of Frankwell Footbridge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36071"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "path"
+text = "The bathing site is easy to reach on foot or by bicycle from the main road."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36071"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "The bathing site stretches from the north river bend to the boat entry/exit ramp, which is downstream of the entry point."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36071"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "Shropshire Council's Frankwell Riverside car park (Frankwell Quay, SY3 8HQ) has 79 spaces. It charges £1.20 an hour from 8am to 6pm, minimum one hour, maximum stay £3.60 for three hours; it is free on Sundays and bank holidays. No entry between midnight and 5am. The council's page does not mention the bathing site."
+status = "confirmed"
+source = "https://next.shropshire.gov.uk/parking/find-my-nearest-car-park/shrewsbury-frankwell-riverside/"
+source_name = "Shropshire Council"

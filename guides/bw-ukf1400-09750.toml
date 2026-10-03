@@ -1,0 +1,116 @@
+# Colwick Country Park (West Lake). Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "entry"
+text = "Swimmers get into West Lake from a floating pontoon or a concrete slipway next to the adventure centre. There is no beach, but there is a grassy area around the lake."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukf1400-09750"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "rules"
+text = "West Lake is also a coarse fishery and is used for canoeing and sailing by the adventure centre."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukf1400-09750"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "parking"
+text = "There is a free car park at the end of Racecourse Road (NG2 4BH) and off Daleside Road East (NG2 4DX). The River Road car park, off Mile End Road (NG4 2EW), charges £2 (cash only) between 09:00 and 16:00."
+status = "confirmed"
+source = "https://www.nottinghamcity.gov.uk/leisure-and-culture/parks-and-open-spaces/find-your-local-park/colwick-country-park/"
+source_name = "Nottingham City Council"
+
+[[fact]]
+topic = "toilets"
+text = "When open, the park's toilets are available from 9am to 3:30pm daily."
+status = "confirmed"
+source = "https://www.nottinghamcity.gov.uk/leisure-and-culture/parks-and-open-spaces/find-your-local-park/colwick-country-park/"
+source_name = "Nottingham City Council"
+
+[[fact]]
+topic = "hours"
+text = "The West Lake is home to the Nottingham City Open Water Swimming Centre from April to October each year. Sessions are run by WholeHealth."
+status = "confirmed"
+source = "https://www.nottinghamcity.gov.uk/leisure-and-culture/parks-and-open-spaces/find-your-local-park/colwick-country-park/"
+source_name = "Nottingham City Council"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is not allowed on any lake at Colwick Country Park except during the organised Nottingham City Open Water Swimming sessions. Boats and inflatables are not allowed."
+status = "confirmed"
+source = "https://www.nottinghamcity.gov.uk/leisure-and-culture/parks-and-open-spaces/find-your-local-park/colwick-country-park/"
+source_name = "Nottingham City Council"
+
+[[fact]]
+topic = "rules"
+text = "WholeHealth runs lifeguarded open water swim sessions for its members at the council-owned Colwick Lake."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/open-water-squad/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "fees"
+text = "WholeHealth membership is £50 a year and lets you book swims in its app. Swim sessions are £6 for members and £10 for guests. Non-members can pay £10 cash or card at the lake for any regular timetabled session, after signing a disclaimer."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/open-water-squad/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "hours"
+text = "Sessions run year-round: summer timetable 1 April to 31 October, winter 1 November to 31 March. Regular swims include Wednesday and Friday 7:30am to 9am (8am to 9am in winter), Thursday Loop Swim 5pm to 7pm (April to October only), and Saturday and Sunday 9:30am to 12 noon."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/open-water-squad/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "parking"
+text = "WholeHealth says to park at the Racecourse Road car park at the very end of Racecourse Road (postcode NG2 4BH), through a yellow barrier gate after passing Colwick Hall."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/find-us/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "path"
+text = "From the car park, go through the yellow gate at the top and follow signs to West Lake along a tarmac path for about 500m to another yellow gate, where the swim village is."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/find-us/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "path"
+text = "The 44 and 45 buses from town go to Colwick Park. It is a mile walk from the Racecourse Road bus stop."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/faqs/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "changing"
+text = "There are no showers at the lake. There is a very basic mixed-gender changing space with some covered areas and hooks for belongings in the swim compound."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/faqs/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "toilets"
+text = "There are no toilets in the swim changing area. City Council toilets are in the park about 500m away, open only during park opening times."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/faqs/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "rules"
+text = "Swimming is not allowed at Colwick Park outside WholeHealth's sessions, and park rangers will ask anyone swimming outside these times to leave."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/faqs/"
+source_name = "WholeHealth, which runs the swim sessions"
+
+[[fact]]
+topic = "rules"
+text = "Children may swim if supervised one-to-one by a parent or guardian. All swimmers must wear tow floats, and may be asked to use extra flotation aids or stay in a restricted area."
+status = "confirmed"
+source = "https://whollyhealthy.co.uk/faqs/"
+source_name = "WholeHealth, which runs the swim sessions"
