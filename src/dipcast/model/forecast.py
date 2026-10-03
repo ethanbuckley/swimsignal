@@ -17,13 +17,18 @@ from dipcast.model import ecoli
 from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features
 from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.transport import (
+    LOW_CUT,
+    clear_time,
     combine_daily,
+    daily_effects,
     history_days,
     live_now_risk,
     locate_pin,
     missing_share,
     risk_label,
+    risk_shares,
     river_velocity,
+    spread_count,
     upstream_overflows,
 )
 from dipcast.network.rivers import RiverNetwork, bng_to_lonlat
@@ -270,6 +275,13 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     p_raw, avail, rain_mm = spill_probabilities(ov, days, model, return_rain=True)
     p = calibrate_by_lead(p_raw, first_lead=-hist)   # column `hist` is today (lead 0)
     risk = combine_daily(p, weights, travel)
+    # Which overflows each day's risk comes from (the page's "where the risk comes from"), and the
+    # part of it from spills on the days after today alone: new spills, not ones under way or over,
+    # which the live status already counts. Computed here because both need every upstream overflow
+    # and the days before today; the page gets only the KEEP_CONTRIBUTORS with the most reach.
+    shares = risk_shares(daily_effects(p, weights, travel)) if len(weights) else np.zeros((0, len(days)))
+    later = np.where(np.arange(len(days)) > today_idx, p, 0.0) if len(weights) else p
+    risk_later = combine_daily(later, weights, travel)
     # Share of today's transport weight that comes from days with no rainfall data.
     missing = missing_share(avail, weights, travel)
     risk = np.where(missing > MAX_MISSING_SHARE, np.nan, risk)
@@ -292,6 +304,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             "expected_spilling_overflows": round(float(exp_spills[j]), 1) if known else None,
             "data_status": _status(j), "rain_missing_share": round(float(missing[j]), 3),
             "in_validated_season": d.month in ECOLI_SEASON_MONTHS,
+            **({"risk_from_later_spills": round(float(risk_later[j]), 3)} if known else {}),
+            # Only where the page says it, moderate or worse, to keep spots.json small.
+            **({"source": source_of(ov, shares[:, j])} if known and risk[j] >= LOW_CUT else {}),
         })
 
     # E. coli exceedance: rain at the spot itself (not at the overflows) plus the day's exposure.
@@ -328,9 +343,20 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
         except Exception as e:  # noqa: BLE001 - an optional layer must not fail the forecast
             log.warning("E. coli model skipped: %s", e)
 
+    # When right now's risk should be back to low if the spills stop now, erring late (transport.clear_time:
+    # never before the water from a counted spill has passed), and which overflows it comes from:
+    # written where the page says them, moderate or worse, or while an overflow upstream is discharging.
+    clears_at, clears_by, last_water = clear_time(ov, now)
+    spilling = bool(len(ov)) and bool((ov["status"] == 1).any())
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk),
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
-                                            "feed_down_upstream", "feed_down")}}
+                                            "feed_down_upstream", "feed_down")},
+                  "clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
+                  # The overflow whose water passing sets the time, when travel does ('travel').
+                  **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}}
+                     if clears_by == "travel" else {}),
+                  **({"source": source_of(ov, risk_shares(now_contrib.to_numpy(dtype=float)))}
+                     if now_risk >= LOW_CUT or (spilling and now_risk > 0) else {})}
     out["days"] = day_rows
     out["upstream_summary"] = {
         "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
@@ -385,6 +411,23 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
         except Exception as e:  # noqa: BLE001 - logging must never fail a forecast
             log.warning("forecast log failed: %s", e)
     return out
+
+
+def source_of(ov: pd.DataFrame, share: np.ndarray) -> dict | None:
+    """The overflow with the largest share of a risk (transport.risk_shares, one per row of `ov`):
+    which it is, where, its share, and how many overflows make up nine tenths of the risk
+    (spread_count). The page names it alone when its share is at least half, and otherwise says the
+    risk is spread over that many. None when the risk is 0."""
+    share = np.asarray(share, dtype=float)
+    if not len(share) or share.max() <= 0:
+        return None
+    r = ov.iloc[int(np.argmax(share))]
+    return {k: _clean(r.get(k)) for k in ["site_id", "site_name", "receiving_watercourse", "status"]} | {
+        "distance_km": round(float(r["distance_m"]) / 1000, 1),
+        "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
+        "travel_h": round(float(r["travel_h"]), 1),
+        "share": round(float(share.max()), 3), "spread_over": spread_count(share),
+    }
 
 
 def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
