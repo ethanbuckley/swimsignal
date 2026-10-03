@@ -1,6 +1,6 @@
-# Sandy Lane, Chester. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Sandy Lane, Chester. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked 4 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-04
 how = "desk"
 
 [[fact]]
@@ -64,4 +64,11 @@ topic = "rules"
 text = "The Sandy Lane Ferry carries passengers across the Dee from Sandy Lane to the Meadows every weekend from 23 May 2026 to the last Sunday in September, 10.30am to 4.30pm. Fares each way: adults £1; children, dogs and bikes 50p. The council's page does not mention the bathing site."
 status = "confirmed"
 source = "https://www.cheshirewestandchester.gov.uk/residents/leisure-parks-and-events/parks-and-open-spaces/parks-and-open-spaces-chester/sandy-lane-park-and-aqua-park"
+source_name = "Cheshire West and Chester Council"
+
+[[fact]]
+topic = "rules"
+text = "Cheshire West and Chester Council says swimming in the River Dee currently isn't encouraged, because the river can contain sewage, livestock contamination and pollution from farming or industry. It says this in its section on the Sandy Lane bathing water."
+status = "confirmed"
+source = "https://www.cheshirewestandchester.gov.uk/residents/leisure-parks-and-events/parks-and-open-spaces/river-dee"
 source_name = "Cheshire West and Chester Council"

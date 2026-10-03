@@ -1,6 +1,6 @@
-# Wolvercote Mill Stream. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Wolvercote Mill Stream. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked 4 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-04
 how = "desk"
 
 [[fact]]
@@ -43,4 +43,11 @@ topic = "rules"
 text = "The council says bathing water status does not mean the area is safe for swimming; anyone who swims does so at their own risk and should follow the Wild Water Code."
 status = "confirmed"
 source = "https://www.oxford.gov.uk/waterways/bathing-water"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "rules"
+text = "Oxford City Council says the Wolvercote Mill Stream is not suitable for bathing. It says water testing since 2022 has repeatedly classified the water quality as poor."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/2683/wolvercote-former-bathing-area"
 source_name = "Oxford City Council"
