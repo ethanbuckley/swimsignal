@@ -284,9 +284,10 @@ REVIEWS_PRIVACY = (
     "photos are. A note has no name. A note of ticks alone is published on the spot's page at the site's next update "
     "without being read first; one with words or a photo is read by the operator first. If another swimmer says a note "
     "is still right, their browser sends only the note's identifier.</p>\n"
-    "<p>Each thing you tick is shown for a set time: a day or two for how busy it was or what the water looked like, a "
-    "week for algae, and up to a month for damage, closures and signs, which starts again if another swimmer confirms "
-    "it. When everything on a note has ended, the review service deletes the note and its photo within two days, and "
+    "<p>Each thing you tick is shown for a set time: a day for most, such as how busy it was or a full car park, two "
+    "days for rough water, three for suspected pollution, a week for algae, two weeks for a closure, and a month for "
+    "damage or a sign. A closure, damage or a sign starts again if another swimmer confirms it. When everything on a "
+    "note has ended, the review service deletes the note and its photo within two days, and "
     "the site drops it at its next update. Your browser keeps a copy and a key, so that you can delete the note sooner, "
     "as with a review. The rest of this section applies to notes as it does to reviews.</p>\n\n")
 
