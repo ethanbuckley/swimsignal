@@ -518,16 +518,20 @@ def warning_counts(y, p, warn_at: float) -> dict:
     events warned of (hit_rate), the share of warnings that came true (warnings_true) and the
     share of all forecasts that were right (share_correct). Events are rare, so share_correct
     alone flatters any forecast: always_no_correct is what saying "no" every time gets right,
-    and the page never shows one without the other. A share with nothing to divide is None."""
+    and the page never shows one without the other. warning_lift is how many times likelier
+    the event was after a warning than across all forecasts (warnings_true / base_rate): whether
+    a warning tells a swimmer anything. A share with nothing to divide is None."""
     yy = np.asarray(y).astype(bool)
     w = np.asarray(p, dtype=float) >= warn_at
     hits, misses = int((w & yy).sum()), int((~w & yy).sum())
     false_alarms, quiet = int((w & ~yy).sum()), int((~w & ~yy).sum())
     n = len(yy)
     share = lambda a, b: a / b if b else None
+    base, true = share(hits + misses, n), share(hits, hits + false_alarms)
     return {"n": n, "hits": hits, "misses": misses, "false_alarms": false_alarms, "quiet_correct": quiet,
-            "hit_rate": share(hits, hits + misses), "warnings_true": share(hits, hits + false_alarms),
-            "share_correct": share(hits + quiet, n), "always_no_correct": share(false_alarms + quiet, n)}
+            "hit_rate": share(hits, hits + misses), "warnings_true": true,
+            "share_correct": share(hits + quiet, n), "always_no_correct": share(false_alarms + quiet, n),
+            "base_rate": base, "warning_lift": true / base if true is not None and base else None}
 
 
 def spill_warning_table(fc: pd.DataFrame) -> dict:

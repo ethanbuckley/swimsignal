@@ -11,9 +11,11 @@ const src = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 
 const SPILL = {warn_at: 0.4, level: 'high', unit: 'overflow-day forecast', n: 23395, hits: 152, misses: 573, false_alarms: 211,
   quiet_correct: 22459, hit_rate: 152 / 725, warnings_true: 152 / 363, share_correct: 22611 / 23395, always_no_correct: 22670 / 23395,
+  base_rate: 725 / 23395, warning_lift: (152 / 363) / (725 / 23395),
   n_overflow_days: 4695, n_spill_overflow_days: 145, n_days: 5, first_day: '2026-09-29', last_day: '2026-10-03', by_lead: []};
 const ECOLI = {warn_at: 0.25, level: 'high', unit: 'sample', kind: 'river', n: 15, hits: 0, misses: 1, false_alarms: 2, quiet_correct: 12,
   hit_rate: 0, warnings_true: 0, share_correct: 0.8, always_no_correct: 14 / 15, n_sites: 11, n_lake_samples_left_out: 9,
+  base_rate: 1 / 15, warning_lift: 0,
   leads: {0: 15}, first_day: '2026-09-16', last_day: '2026-09-22', too_few_to_judge: true};
 const SERVICE = {scheduled_per_day: 48, decision_hour_local: 8,
   runs: {from_day: '2026-09-17', to_day: '2026-10-03', n_days: 17, n: 148, scheduled_per_day: 48, scheduled: 816, share_of_scheduled: 148 / 816,
@@ -31,12 +33,14 @@ async function render(data) {
   for (let i = 0; i < 5; i++) await new Promise(r => setImmediate(r));
   return els;
 }
+const OVERALL = {calibrated: {brier: 0.027179383407959886}, climatology_brier: 0.03790110339176735};   // 4 Oct: 28% lower error
 const live = (extra = {}) => ({live: {generated_at: '2026-10-04T00:15:52+01:00', n_scored: 0, ...extra}});
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
 
 test('the spill figures lead, and the share right sits beside the always-no share in one sentence', async () => {
-  const a = text((await render({...live({warning_table: SPILL})})).answer.innerHTML);
-  assert.match(a, /warned of 21% of spills, and 42% of its warnings came true/);
+  const a = text((await render({...live({warning_table: SPILL, overall: OVERALL})})).answer.innerHTML);
+  assert.match(a, /warned of 21% of spills: as a yes-or-no warning at the High risk line it misses most, though read as a chance it beats each overflow's long-run rate \(the 28% lower error below\)\./);
+  assert.match(a, /When it warned, a spill followed 42% of the time, against 3% across all forecasts, so a warning made a spill about 14 times as likely\./);
   const sentence = a.split(/(?<=\.) /).find(s => s.includes('96.6%'));
   assert.ok(sentence.includes('96.9%') && sentence.includes('"no spill" every time'), sentence);
   assert.match(a, /5 days so far, too few to judge/);
@@ -47,6 +51,17 @@ test('the spill figures lead, and the share right sits beside the always-no shar
   const wessex = a.split(/(?<=\.) /).filter(s => s.includes('87.8%'));
   assert.equal(wessex.length, 1);
   assert.ok(!/96\.\d%/.test(wessex[0]) && /do not compare/.test(a));
+  assert.match(wessex[0], /came true \(42% here\)/);
+});
+
+test('a live error no better than the long-run rate is said so, and a rare base rate keeps a decimal', async () => {
+  const worse = {calibrated: {brier: 0.05}, climatology_brier: 0.04};
+  const rare = {...SPILL, base_rate: 0.004, warning_lift: 1.4};
+  const a = text((await render({...live({warning_table: rare, overall: worse})})).answer.innerHTML);
+  assert.match(a, /misses most, and read as a chance it does no better than each overflow's long-run rate\./);
+  assert.match(a, /against 0\.4% across all forecasts, so a warning made a spill 1\.4 times as likely/);
+  const none = text((await render({...live({warning_table: {...SPILL, hits: 0, false_alarms: 0, warnings_true: null, warning_lift: null}})})).answer.innerHTML);
+  assert.match(none, /It gave no warnings\./);
 });
 
 test('too few E. coli samples show counts and say so, with no percentages', async () => {
@@ -62,9 +77,9 @@ test('too few E. coli samples show counts and say so, with no percentages', asyn
 
 test('enough E. coli samples get the shares, the always-no share beside the share right', async () => {
   const many = {...ECOLI, n: 300, hits: 12, misses: 18, false_alarms: 30, quiet_correct: 240, hit_rate: 0.4, warnings_true: 12 / 42,
-                share_correct: 252 / 300, always_no_correct: 270 / 300, too_few_to_judge: false};
+                share_correct: 252 / 300, always_no_correct: 270 / 300, base_rate: 30 / 300, warning_lift: (12 / 42) / (30 / 300), too_few_to_judge: false};
   const a = text((await render({...live({ecoli_live: {warning_table: many}})})).answer.innerHTML);
-  assert.match(a, /warned before 40% of those over 900, and 29% of its warnings came true/);
+  assert.match(a, /warned before 40% of those over 900\. When it warned, the sample was over 900 29% of the time, against 10% of all samples, so a warning made a sample over 900 about 3 times as likely\./);
   assert.match(a, /right on 84\.0% of samples, against 90\.0% for never warning/);
   assert.ok(!/Too few/.test(a));
 });

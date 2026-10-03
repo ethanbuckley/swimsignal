@@ -53,8 +53,13 @@ def test_warning_counts_put_the_always_no_share_beside_the_share_correct():
     assert (t["hits"], t["misses"], t["false_alarms"], t["quiet_correct"]) == (1, 1, 1, 7)
     assert t["hit_rate"] == 0.5 and t["warnings_true"] == 0.5
     assert t["share_correct"] == 0.8 and t["always_no_correct"] == 0.8     # no better than never warning
+    # Yet a warning says something: an event followed half of them, against 2 in 10 overall.
+    assert t["base_rate"] == 0.2 and abs(t["warning_lift"] - 2.5) < 1e-12
     none = warning_counts([0, 0], [0.1, 0.2], 0.40)
     assert none["hit_rate"] is None and none["warnings_true"] is None and none["always_no_correct"] == 1.0
+    assert none["base_rate"] == 0.0 and none["warning_lift"] is None
+    quiet = warning_counts([1, 0], [0.1, 0.2], 0.40)     # no warnings at all
+    assert quiet["warnings_true"] is None and quiet["warning_lift"] is None
 
 
 def test_verify_live_writes_the_spill_warning_table(tmp_path, monkeypatch):
@@ -85,6 +90,7 @@ def test_verify_live_writes_the_spill_warning_table(tmp_path, monkeypatch):
     assert (w["hits"], w["misses"], w["false_alarms"], w["quiet_correct"]) == (1, 1, 1, 1)
     assert w["n_spill_overflow_days"] == 2 and w["n_overflow_days"] == 4 and w["n_days"] == 2
     assert w["share_correct"] == 0.5 and w["always_no_correct"] == 0.5
+    assert w["base_rate"] == 0.5 and w["warning_lift"] == 1.0     # a warning made a spill no likelier
     assert [r["lead"] for r in w["by_lead"]] == [0, 1] and w["by_lead"][0]["hits"] == 1 and w["by_lead"][1]["misses"] == 1
     assert json.loads((tmp_path / "verification_live.json").read_text())["warning_table"]["hits"] == 1
 

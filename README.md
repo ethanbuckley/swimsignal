@@ -501,11 +501,14 @@ E. coli estimate of 25% or more (`ECOLI_WARN_AT`), on rivers only, one row per
 sample with the latest estimate issued before it. Each forecast is a hit, a
 miss, a false alarm or a correct quiet day, and the table gives the share of
 events warned of, the share of warnings that came true and the share right,
-always beside the share that saying "no" every time gets right. On the live
+always beside the share that saying "no" every time gets right. `warning_lift`
+is how many times likelier the event was after a warning than across all
+forecasts (the share of warnings that came true over the base rate). On the live
 scores of 4 Oct 00:15 (23,395 overflow-day forecasts, 29 Sep to 3 Oct) the
 forecast warned in 152 of the 725 forecasts for an overflow-day that spilled
 (21%; 145 such days, each forecast at five leads), 152 of its 363 warnings came
-true (42%), and it was right on 96.6% against 96.9% for never warning.
+true (42%, against a 3.1% spill rate across all forecasts: 13.5 times as
+likely), and it was right on 96.6% against 96.9% for never warning.
 The E. coli counts were 15 river samples, 1 over 900, no hits, 1 miss and 2
 false alarms: too few to judge (under 100 samples or 10 exceedances).
 

@@ -260,6 +260,15 @@ const p0 = x => Math.round(100 * x) + '%';
 // Two shares side by side, to one decimal place, or two where one place would make different shares look equal.
 const pair = (a, b) => { const k = a !== b && (100 * a).toFixed(1) === (100 * b).toFixed(1) ? 2 : 1; return [(100 * a).toFixed(k) + '%', (100 * b).toFixed(k) + '%']; };
 const were = (k, one = 'was', many = 'were') => k === 1 ? one : many;
+// A share under 1% keeps a decimal place, so a rare event never reads as 0%.
+const pLow = x => x > 0 && x < 0.01 ? (100 * x).toFixed(1) + '%' : p0(x);
+// How much likelier the event was after a warning than across all forecasts (warning_lift), in words.
+const likelier = (lift, what) => lift >= 2 ? `so a warning made ${what} about ${Math.round(lift)} times as likely`
+  : lift > 1 ? `so a warning made ${what} ${lift.toFixed(1)} times as likely` : `so a warning made ${what} no likelier`;
+// After a warning against across all forecasts, with how much likelier: "When it warned, a spill followed
+// 42% of the time, against 3% across all forecasts, so ...". Null when nothing was warned or nothing happened.
+const afterWarning = (T, event, across, what) => T.warnings_true === null || !T.base_rate ? null
+  : `When it warned, ${event} ${p0(T.warnings_true)} of the time, against ${pLow(T.base_rate)} ${across}, ${likelier(T.warning_lift, what)}`;
 function grid(T, label, yes, no, quiet) {
   return `<table class="grid" aria-label="${label}"><tr><th></th><th class="num">${yes}</th><th class="num">${no}</th></tr>`
     + `<tr><th scope="row">Warning (${Math.round(100 * T.warn_at)}% or more)</th><td class="num">${n0(T.hits)}<span>hits</span></td><td class="num">${n0(T.false_alarms)}<span>false alarms</span></td></tr>`
@@ -270,16 +279,22 @@ function answer(d) {
   let t = '';
   if (W && W.n) {
     const [right, no] = pair(W.share_correct, W.always_no_correct);
-    const warned = W.hit_rate === null ? 'had no spill to warn of' : `warned of ${p0(W.hit_rate)} of spills`;
-    const cameTrue = W.warnings_true === null ? 'gave no warnings' : `${p0(W.warnings_true)} of its warnings came true`;
-    t += `<p>Since ${day(W.first_day)}, the spill forecast ${warned}, and ${cameTrue}. It was right on ${right} of forecasts, against ${no} for saying "no spill" every time: spills are rare, so a share right says little on its own.${W.n_days < 14 ? ` That is ${W.n_days} day${W.n_days === 1 ? '' : 's'} so far, too few to judge across different weather.` : ''}</p>`;
+    // The "Lower error, live" tile below, from the same scores: the forecast read as a chance. Said beside the
+    // hit rate, so a reader does not see a contradiction between a lower error and most spills missed.
+    const O = L.overall, skill = O && O.climatology_brier ? Math.round(100 * (1 - O.calibrated.brier / O.climatology_brier)) : null;
+    const asChance = skill === null ? '' : skill > 0 ? `, though read as a chance it beats each overflow's long-run rate (the ${skill}% lower error below)`
+      : `, and read as a chance it does no better than each overflow's long-run rate`;
+    const warned = W.hit_rate === null ? 'had no spill to warn of'
+      : `warned of ${p0(W.hit_rate)} of spills${W.hit_rate < 0.5 ? `: as a yes-or-no warning at the High risk line it misses most${asChance}` : ''}`;
+    const after = afterWarning(W, 'a spill followed', 'across all forecasts', 'a spill');
+    t += `<p>Since ${day(W.first_day)}, the spill forecast ${warned}. ${after ? after + '.' : 'It gave no warnings.'} It was right on ${right} of forecasts, against ${no} for saying "no spill" every time: spills are rare, so a share right says little on its own.${W.n_days < 14 ? ` That is ${W.n_days} day${W.n_days === 1 ? '' : 's'} so far, too few to judge across different weather.` : ''}</p>`;
     t += grid(W, 'Spill forecasts against what the overflows did', 'Spilled', 'No spill', 'correct quiet days');
     t += `<p class="small muted">Each count is one forecast: one overflow on one day, made from four days ahead to the morning itself. The ${n0(W.n_spill_overflow_days)} overflow-days with a spill make ${n0(W.hits + W.misses)} forecasts. A warning is a spill chance of ${Math.round(100 * W.warn_at)}% or more: where a spot beside the overflow reads High risk, the level at which alerts are sent. <a href="#live-scoring">The full scores</a>.</p>`;
     // Wessex Water's figure, its label checked on https://www.waterqualitylive.info/ on 4 Oct 2026: "Accuracy of
     // alerts", the percentage of alerts that correctly predicted a higher risk to bathers' health caused by poor
     // water quality over the past 12 months, from sensors at its sites. The same kind of share as warnings_true,
     // of a different thing, so the page says so and sets no other figure beside it.
-    t += `<p class="small muted">Wessex Water's "87.8% alert accuracy" is the same kind of figure as the share of warnings that came true, but of bacteria, measured by sensors at its bathing sites. This counts spills at overflows, so the two do not compare.</p>`;
+    t += `<p class="small muted">Wessex Water's "87.8% alert accuracy" is the same kind of figure as the share of warnings that came true${W.warnings_true === null ? '' : ` (${p0(W.warnings_true)} here)`}, but of bacteria, measured by sensors at its bathing sites. This counts spills at overflows, so the two do not compare.</p>`;
   }
   if (E) {
     const over = E.hits + E.misses, warnedE = E.hits + E.false_alarms;
@@ -291,7 +306,8 @@ function answer(d) {
       s += ` Too few to judge. ${month >= 5 && month <= 9 ? 'More are scored as the Agency publishes them, usually within a week of sampling.' : 'The Agency samples from May to September, so no new samples come until May.'}`;
     } else {
       const [right, no] = pair(E.share_correct, E.always_no_correct);
-      s += ` The estimate warned before ${E.hit_rate === null ? 'none' : p0(E.hit_rate)} of those over 900, and ${E.warnings_true === null ? 'gave no warnings' : `${p0(E.warnings_true)} of its warnings came true`}. It was right on ${right} of samples, against ${no} for never warning.`;
+      const afterE = afterWarning(E, 'the sample was over 900', 'of all samples', 'a sample over 900');
+      s += ` The estimate warned before ${E.hit_rate === null ? 'none' : p0(E.hit_rate)} of those over 900. ${afterE ? afterE + '.' : 'It gave no warnings.'} It was right on ${right} of samples, against ${no} for never warning.`;
     }
     t += `<h3>The E. coli estimate</h3><p>${s}</p>` + grid(E, 'E. coli estimates against lab samples', 'Over 900', '900 or under', 'correct, no warning');
     t += `<p class="small muted">A warning is an estimate of ${Math.round(100 * E.warn_at)}% or more, its High risk level. Each sample is matched with the latest estimate issued before it was taken.${E.n_lake_samples_left_out ? ` ${E.n_lake_samples_left_out} lake sample${E.n_lake_samples_left_out === 1 ? ' is' : 's are'} left out: the site does not show the estimate on lakes.` : ''} <a href="#ecoli-live">The full scores</a>.</p>`;
