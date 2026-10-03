@@ -1790,7 +1790,7 @@ function overview(spots) {
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
 const listPath = s => spotPath(s.id) + (VIEW.day && daily(s) ? '#day=' + VIEW.day : '');
 const dist = s => VIEW.here ? km(VIEW.here, [s.lat, s.lon]) : null;
-const away = k => `${k < 10 ? k.toFixed(1) : Math.round(k)} km away`;
+const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as in Plan a swim (DESIGN.md, Words)
 function spotItem(s) {
   const d = dist(s);
   const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, waterEst(s), rainMeta(s)].filter(Boolean).join(' · ');

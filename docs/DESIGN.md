@@ -130,7 +130,7 @@ those sizes; they were taken off to keep the rule simple.)
   day-by-day table's "Risk" column, the map's key.
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
   (3 October 2026), in the answer, on a saved card, in the list row, the map's tooltip and key,
-  and the alerts:
+  and the alerts (the key lists the teal one; an isolated lake sits under its grey "No level"):
   - **"No sewage risk from monitored overflows"**, in the clear teal, where the trace finds no
     monitored overflow within 60 km upstream.
   - **"No river connection: overflows cannot reach this lake"**, in the grey of no level, for an
@@ -147,11 +147,14 @@ those sizes; they were taken off to keep the rule simple.)
     such a spot "low": that was the same word as a forecast that had looked and found nothing.
   - Before this the page said "No monitored overflows upstream" or "Not covered by the
     forecast", which a swimmer read as "no information".
+- Units (4 October 2026): a distance a swimmer travels is in miles ("7.7 miles away", "under a mile
+  away"), in the list, "Nearby" and Plan a swim; a distance the water travels, or to a gauge or a
+  sensor, is in km ("2.1 km upstream", "Gauge at Addingham, 3.4 km away"), as the model counts it.
 - One caveat per view, in the place it is read: the intro says "Forecasts, not water tests" once;
   the hero's last line says to check the signs at the water. The rest of the explanation lives
   under "About these forecasts" and on the About and Accuracy pages.
 - A row says one sentence and folds the rest (fifth round): the hero's rows keep the sentence with
-  the figures in view and put the rest under a fold named for its tile, "What <label> means"
+  the figures in view and put the rest under a fold named for its tile, "<label>: what this means"
   (one name per fold, so a screen reader's list of them tells them apart; until 2 October every
   one was "What this means"), word for word. What the strip's
   cells show folds into the water row, or the spills row where there is no water estimate; under
@@ -300,7 +303,7 @@ nearby" card after its answer: up to three spots within 40 km that are lower tha
 first, each opening on the same day, with one line under them saying a lower level is not clean
 water. A spot without a level is never offered, and nor is a water rated poor, because advice
 against bathing applies there whatever the level of the spot beside it. In the hero's rows the
-sentence with the figures stays in view and the explanation folds under "What <label> means"; the
+sentence with the figures stays in view and the explanation folds under "<label>: what this means"; the
 EA advice and "A forecast, not a water test" stay visible. The list's counts begin with the issue
 time. On the Saved page the cards come first and Compare below them. A redrawn view rises 4 px
 into place over 0.22 s, as a picked day does, and not at all for anyone who asked for less motion.
@@ -524,6 +527,11 @@ while reviews are on, and never on a point clicked on the map.
   over "Verified: <the source>." Only those two can be verified, and only damage, closures and signs
   confirmed.
 - No level colour and no badge on a note: a note is not a level.
+- A note of ticks alone is published at the next build without being read first
+  (`PUBLISH_TICKS_AT_ONCE` in `reviews/src/rules.js`; kept on 4 October 2026). A note about today is
+  worth little two days later, the words are the site's own and it names no one. Words and photos
+  are read first. Against a false tick: ten notes a day per connection, "Not verified" on pollution
+  and algae, Report, and Delete on `/moderate`.
 - The form opens in place of "Say what it's like today". "When were you here?" is Today or Yesterday
   as two chips; the ticks are chips two to a row. Ticking pollution or algae shows the Environment
   Agency's and Natural Resources Wales's incident phone numbers.
@@ -575,8 +583,12 @@ how things look, not what the site says.
    Written as `main.doc p`, a default outranks a single class such as `.note`, and the
    component's spacing is silently lost.
 8. Nothing is fetched from another site but the map's tiles (and, when it is on, the page-view
-   counter). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned by
-   hash.
+   counter). The exceptions each start with something the reader does, and the privacy notice
+   names each: alerts, while they are on (the push Worker); sending, reporting, confirming or
+   deleting a review or a note on a visit, and asking about one of yours that is waiting (the
+   reviews Worker); and opening the Welsh list on the coverage page (Natural Resources Wales's
+   data service). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
+   by hash.
 
 ## Review refinements
 
@@ -603,9 +615,10 @@ gives all four navigation links a single full-width row.
   ink, why the spot is there: "Nothing flagged on Saturday" (low, or a plain level), "Moderate risk or
   higher on Saturday", "No level". A low spot and one with no monitored overflow are in one group
   because neither is flagged that day; each row's headline still says which it is.
-- A row's distance leads its meta line ("7.7 miles away · Lake · bathing water"). Miles, where the
-  rest of the site says km: travel is planned in miles, and Ethan's own example was "within 20
-  miles". A choice to revisit if the two units read as inconsistent.
+- A row's distance leads its meta line ("7.7 miles away · Lake · bathing water"). Miles: travel is
+  planned in miles, and Ethan's own example was "within 20 miles". Since 4 October 2026 every
+  distance a swimmer travels is in miles, the list's and "Nearby" too; distances the water travels,
+  and to a gauge or sensor, stay in km, as the model counts them.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
 
