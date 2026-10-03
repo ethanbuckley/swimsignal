@@ -1,0 +1,111 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The organisers' page: a prose page, with the shared head, header and foot, written by
+     scripts/build_site.py (write_organisers) beside the app, whose levels.js and spots.json it reads.
+     organisers.js fills #event; the checklist is here so that it works and prints without a script. -->
+<title>Event organisers · SwimSignal</title>
+<meta name="description" content="For open water events and club swims at a listed spot: the pollution risk forecast for the day, the storm overflows upstream as a table and a CSV file, a checklist and a sign to print.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's (docs/DESIGN.md, "Organisers, signs and the live sign"). */
+  .pick { display:grid; grid-template-columns:minmax(0, 3fr) minmax(0, 2fr); gap:16px; margin:24px 0 0; }
+  .pick label { margin-top:0; }
+  .pick .hint { grid-column:1 / -1; margin-top:-10px; }
+  @media (max-width: 540px) { .pick { grid-template-columns:minmax(0, 1fr); } }
+  #event { margin-top:32px; }
+  main.doc .ev-name { margin:0; }
+  .ev-meta, .ev-links { margin:4px 0 0; font-size:var(--fs-note); }
+  .ev-meta { color:var(--muted); }
+  /* A level's colour on its words and on a 4 px rule beside them, never on a surface. */
+  main.doc .ev-level { margin:8px 0 4px; padding-left:12px; border-left:4px solid var(--unknown); font:700 var(--fs-head)/1.3 var(--font-text); color:var(--k-na); }
+  main.doc .ev-level.low { color:var(--k-low); border-color:var(--low); } main.doc .ev-level.moderate { color:var(--k-moderate); border-color:var(--moderate); }
+  main.doc .ev-level.high { color:var(--k-high); border-color:var(--high); } main.doc .ev-level.veryhigh { color:var(--k-veryhigh); border-color:var(--veryhigh); }
+  main.doc .ev-level.clear { color:var(--k-clear); border-color:var(--clear); }
+  main.doc .ev-say { margin:8px 0 0; }
+  main.doc .check { margin:12px 0 0; font-size:var(--fs-note); }
+  /* The overflows: a table on a wide screen and on paper; on a phone each overflow is a block, its
+     name over its figures two to a line, each with its label, since nine columns do not fit. */
+  .ovt th.ov { color:var(--ink); border-bottom-color:var(--line); }   /* a row's name, not the header's ink rule */
+  .ovt td.num, .ovt th.num { white-space:nowrap; }
+  @media screen and (max-width: 540px) {
+    .tw:has(.ovt) { overflow:visible; border-bottom:0; }
+    .ovt thead { display:none; }
+    .ovt tr { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:2px 12px; padding:10px 0; border-bottom:1px solid var(--line); }
+    .ovt th.ov { grid-column:1 / -1; padding:0; border:0; }
+    .ovt td { padding:0; border:0; text-align:left; }
+    .ovt td.num { text-align:left; }
+    .ovt td::before { content:attr(data-l) " "; color:var(--muted); }
+  }
+  ol.checklist li { margin:10px 0; }
+  .print-only { display:none; }
+  /* Printed: the spot, the day and the overflows, then the checklist; no controls. */
+  @page { size:A4 portrait; margin:14mm; }
+  @media print {
+    body { background:var(--card); }
+    .top nav, .pick, .screen-only, .ev-links, .site-foot p + p, noscript { display:none; }
+    .top { padding:0 0 8px; background:var(--card); color:var(--ink); }
+    .top .brand { color:var(--ink); }
+    main.doc { max-width:none; padding:16px 0 0; }
+    .print-only { display:block; }
+    .tw { overflow:visible; }
+    .ovt tr { break-inside:avoid; }
+    #checklist { break-before:auto; }
+    a { color:var(--ink); text-decoration:none; }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="./">Explore</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>For event organisers</h1>
+<p class="lead">For triathlons, open water swims and club sessions at a listed spot: the forecast for the day, the storm overflows upstream of the venue, a checklist and a sign to print.</p>
+<p>British Triathlon's water quality guidance says that testing a river before an event is likely to be of limited value, and that organisers should understand the overflows upstream and be told when they discharge. SwimSignal forecasts each listed spot from those overflows and the rain, for the day it is issued and the four after it.</p>
+<form class="pick screen-only" id="pick">
+<div><label for="spot">Spot</label>
+<select id="spot" disabled><option value="">Loading the spots…</option></select></div>
+<div><label for="date">Day of the event</label>
+<input type="date" id="date"></div>
+<p class="hint">Listed spots only, not a point clicked on the map.</p>
+</form>
+<noscript><p class="notice">This page needs JavaScript to read the forecasts. The checklist below works without it.</p></noscript>
+<div id="event" aria-live="polite"></div>
+
+<!-- The checklist, in SwimSignal's words, from two published pages read on 4 October 2026:
+     British Triathlon, "Water quality guidance" (2025), events.britishtriathlon.org/uploads/content/Water%20Quality%20Guidance.pdf:
+       researching venues (tributaries, storm drains, sewage outlets, farmland, animals; ask the local
+       authority or the Environment Agency), p. 3; testing is a snapshot, results take 48 hours, river
+       testing before swimming "likely to have limited value", ask a UKAS-accredited lab, one-off events
+       tested a month, two weeks and a week before, p. 9; be told when sewage outflows discharge, live
+       maps and alerts, p. 10; algae checks weekly from a month before, p. 11; an on-the-day sample in
+       case swimmers report illness, and being advised when overflows discharge, p. 13; swimmers'
+       precautions and seeking medical advice for up to three weeks, saying where they swam, p. 15.
+     Swim England, "Affiliated Club Outdoor Swimming Guidance" (June 2025), linked from
+       swimming.org/swimengland/running-your-club/: rain, runoff, flow and levels at entry and exit
+       (Weather); EA sampling and warnings at designated bathing waters, live spill data (Water
+       quality); illness within three weeks, call 111 or a GP (Illness).
+     Health wording: for Ethan's approval (PR body). -->
+<h2 id="checklist">Before the event: a checklist</h2>
+<p>Drawn from <a href="https://events.britishtriathlon.org/uploads/content/Water%20Quality%20Guidance.pdf">British Triathlon's water quality guidance</a> (2025) and <a href="https://www.swimming.org/swimengland/running-your-club/">Swim England's outdoor swimming guidance for clubs</a> (June 2025). Read both: they cover much more than water quality.</p>
+<ol class="checklist">
+<li><b>Know what drains into the water.</b> Early in planning, find the streams, drains and sewage outlets that feed the venue, and the farmland, livestock and birds near it. A spot picked above lists the monitored storm overflows upstream; the landowner, the council or the Environment Agency may know of other outlets.</li>
+<li><b>Be told when the overflows discharge.</b> Ask the water company how to be notified when the overflows that matter to your venue spill, and watch its live map in the days before.</li>
+<li><b>At a bathing water, read the Environment Agency's page.</b> From May to September the Agency samples designated bathing waters and publishes the results and any warnings there.</li>
+<li><b>Plan any testing with a laboratory.</b> A sample shows the water when it was taken, and the result takes at least 48 hours. On a river, testing before the event tells you little, because the water changes with flow and rain; ask a UKAS-accredited laboratory what is worth doing. For a one-off event British Triathlon suggests tests a month, two weeks and a week before, the last in time to change plans.</li>
+<li><b>Take a sample on the day.</b> The result comes after the event, but it shows the conditions if swimmers fall ill.</li>
+<li><b>Watch the rain.</b> Heavy rain washes in runoff, makes overflows spill and changes the flow and the water level at the way in and out. The forecast on this page covers the event day from four days before.</li>
+<li><b>Decide the fallback early.</b> Agree who decides, by when, and what happens instead, such as a shorter or moved course or no swim, and tell swimmers how they will hear.</li>
+<li><b>Look for algae.</b> Check by eye every week from a month before, along sheltered shores especially.</li>
+<li><b>Tell swimmers the simple precautions.</b> Cover cuts, do not swim when unwell, wash hands before eating, and shower and rinse kit afterwards.</li>
+<li><b>After the event.</b> Anyone who is ill in the three weeks after should contact their GP or NHS 111 and say that they swam in open water, and where.</li>
+</ol>
+<p class="small muted">The <a href="terms.html">terms of use</a> say what reuse they allow, and <a href="terms.html#responsibility">what SwimSignal takes responsibility for</a> when it is used to run an event.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="levels.js"></script>
+<script src="organisers.js"></script>
+</body></html>

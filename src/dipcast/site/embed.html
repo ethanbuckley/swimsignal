@@ -44,6 +44,31 @@
   .foot .back { font-weight:600; }
   .card .credit { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
   .credit a { color:var(--muted); }
+  /* The live sign for a screen at the venue (embed.html?spot=<id>&screen; embed.js, screen): the same
+     card in two columns on the paper, the answer on the left and the five days on the right, laid out
+     at 960 by 540 and zoomed to fill the screen, so its type is the six sizes at the screen's scale
+     (a 1920 by 1080 screen shows it at twice). The QR code is the printed sign's. */
+  html.screen, html.screen body { background:var(--bg); }
+  html.screen body { display:flex; align-items:center; justify-content:center; min-height:100vh; overflow:hidden; }
+  .screen .card { width:960px; max-width:none; min-height:540px; padding:28px 40px 22px; border:0; border-radius:0;
+                  display:grid; grid-template-columns:minmax(0, 1fr) 330px; grid-template-rows:auto auto auto auto auto 1fr auto auto; column-gap:48px;
+                  grid-template-areas:"notice notice" "name lab" "hl days" "next days" "check days" "scan days" "foot status" "credit credit"; }
+  .screen .card .notice { grid-area:notice; margin:0 0 16px; font-size:var(--fs-head); }
+  .screen .card .name { grid-area:name; align-self:end; font-size:var(--fs-title); line-height:1.1; }
+  .screen .card .lab { grid-area:lab; align-self:end; margin:0 0 4px; font-size:var(--fs-note); }
+  .screen .card .hl { grid-area:hl; margin:16px 0 0; font-size:var(--fs-title); line-height:1.15; }
+  .screen .card .next { grid-area:next; margin:6px 0 0; font-size:var(--fs-head); }
+  .screen .card .drows { grid-area:days; align-self:start; }
+  .screen .card .drow { grid-template-columns:96px 136px minmax(0, 1fr); min-height:52px; font-size:var(--fs-head); }
+  .screen .card .dbar { height:10px; }
+  .screen .card .check { grid-area:check; margin:20px 0 0; padding-top:12px; font-size:var(--fs-body); }
+  .screen .card .scan { grid-area:scan; align-self:end; display:flex; align-items:center; gap:16px; margin:20px 0 0; }
+  .scan .qr { display:block; flex:none; width:120px; height:120px; }
+  .scan p { margin:0; font-size:var(--fs-body); line-height:1.35; }
+  .screen .card .foot { grid-area:foot; margin:16px 0 0; font-size:var(--fs-note); }
+  .screen .card .status { grid-area:status; margin:16px 0 0; font-size:var(--fs-note); color:var(--muted); text-align:right; }
+  .screen .card .credit { grid-area:credit; margin:8px 0 0; }
+  .screen .card .say { grid-area:hl; margin:16px 0 0; font-size:var(--fs-head); }   /* no spot, or no forecast yet */
 </style>
 </head><body>
 <main class="card" id="card" aria-live="polite"><p class="say">Loading the forecast…</p></main>
