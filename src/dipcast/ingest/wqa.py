@@ -44,19 +44,20 @@ def _count(s: str | None) -> tuple[float | None, str]:
         return None, q
 
 
-def _observations(points: list[str], since: str, determinand: str, purposes: str | None) -> list[dict]:
+def _observations(points: list[str], since: str, determinand: str, purposes: str | None,
+                  batch: int = MAX_POINTS) -> list[dict]:
     """Raw JSON-LD observations of one determinand at the given sampling points since
-    `since`, paged and batched. About one request per 250 results."""
+    `since`, paged and batched `batch` points a request. About one request per 250 results."""
     out = []
     params = {"determinand": determinand, "dateFrom": since[:10], "limit": PAGE}
     if purposes:
         params["samplingPurpose"] = purposes
     with httpx.Client(timeout=120, headers={**config.EA_HEADERS, "Accept": "application/ld+json"}) as c:
-        for i in range(0, len(points), MAX_POINTS):
+        for i in range(0, len(points), batch):
             skip = 0
             while True:
                 r = c.post(f"{API}/data/observation",
-                           params={**params, "pointNotation": ",".join(points[i:i + MAX_POINTS]), "skip": skip})
+                           params={**params, "pointNotation": ",".join(points[i:i + batch]), "skip": skip})
                 r.raise_for_status()
                 items = r.json().get("member") or []
                 out.extend(items)

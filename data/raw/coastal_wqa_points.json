@@ -1,0 +1,1637 @@
+{
+ "checked_at": "2026-10-03T22:26:37+01:00",
+ "season": 2026,
+ "source": "https://environment.data.gov.uk/water-quality/sampling-point",
+ "catalogue": "https://environment.data.gov.uk/doc/bathing-water.json",
+ "method": "one archive point within 1 km whose label ends with the bathing water's point number; evidence says whether its E. coli results include the catalogue's latest sample minute",
+ "points": {
+  "ukc1101-06000": {
+   "point": "NE-45400490",
+   "evidence": "label+latest sample"
+  },
+  "ukc1101-06100": {
+   "point": "NE-45400489",
+   "evidence": "label+latest sample"
+  },
+  "ukc1101-06200": {
+   "point": "NE-45400488",
+   "evidence": "label+latest sample"
+  },
+  "ukc1202-06300": {
+   "point": "NE-45600064",
+   "evidence": "label+latest sample"
+  },
+  "ukc1202-06400": {
+   "point": "NE-45600063",
+   "evidence": "label+latest sample"
+  },
+  "ukc1202-06500": {
+   "point": "NE-45600062",
+   "evidence": "label+latest sample"
+  },
+  "ukc1202-06600": {
+   "point": "NE-45600061",
+   "evidence": "label+latest sample"
+  },
+  "ukc1202-06650": {
+   "point": "NE-45600058",
+   "evidence": "label+latest sample"
+  },
+  "ukc1202-06700": {
+   "point": "NE-45600059",
+   "evidence": "label+latest sample"
+  },
+  "ukc1404-05700": {
+   "point": "NE-45500112",
+   "evidence": "label+latest sample"
+  },
+  "ukc1404-05800": {
+   "point": "NE-45500111",
+   "evidence": "label+latest sample"
+  },
+  "ukc1404-05900": {
+   "point": "NE-45500109",
+   "evidence": "label+latest sample"
+  },
+  "ukc2100-04220": {
+   "point": "NE-42300243",
+   "evidence": "label+latest sample"
+  },
+  "ukc2101-04000": {
+   "point": "NE-42100092",
+   "evidence": "label+latest sample"
+  },
+  "ukc2101-04200": {
+   "point": "NE-42300050",
+   "evidence": "label+latest sample"
+  },
+  "ukc2101-04250": {
+   "point": "NE-42400066",
+   "evidence": "label+latest sample"
+  },
+  "ukc2102-03600": {
+   "point": "NE-41000219",
+   "evidence": "label+latest sample"
+  },
+  "ukc2102-03700": {
+   "point": "NE-42100093",
+   "evidence": "label+latest sample"
+  },
+  "ukc2102-03800": {
+   "point": "NE-42100094",
+   "evidence": "label+latest sample"
+  },
+  "ukc2102-03900": {
+   "point": "NE-42100095",
+   "evidence": "label+latest sample"
+  },
+  "ukc2103-04600": {
+   "point": "NE-42600260",
+   "evidence": "label+latest sample"
+  },
+  "ukc2103-04700": {
+   "point": "NE-42600261",
+   "evidence": "label+latest sample"
+  },
+  "ukc2104-04280": {
+   "point": "NE-42400196",
+   "evidence": "label+latest sample"
+  },
+  "ukc2104-04300": {
+   "point": "NE-42400197",
+   "evidence": "label+latest sample"
+  },
+  "ukc2106-04400": {
+   "point": "NE-42400052",
+   "evidence": "label+latest sample"
+  },
+  "ukc2106-04500": {
+   "point": "NE-42400053",
+   "evidence": "label+latest sample"
+  },
+  "ukc2203-04800": {
+   "point": "NE-43500689",
+   "evidence": "label+latest sample"
+  },
+  "ukc2203-04900": {
+   "point": "NE-43500297",
+   "evidence": "label+latest sample"
+  },
+  "ukc2203-05000": {
+   "point": "NE-43500298",
+   "evidence": "label+latest sample"
+  },
+  "ukc2203-05100": {
+   "point": "NE-43500299",
+   "evidence": "label+latest sample"
+  },
+  "ukc2203-05200": {
+   "point": "NE-43500300",
+   "evidence": "label+latest sample"
+  },
+  "ukc2204-05300": {
+   "point": "NE-43500316",
+   "evidence": "label+latest sample"
+  },
+  "ukc2204-05400": {
+   "point": "NE-43500315",
+   "evidence": "label+latest sample"
+  },
+  "ukc2300-05500": {
+   "point": "NE-43500314",
+   "evidence": "label+latest sample"
+  },
+  "ukc2300-05600": {
+   "point": "NE-43500313",
+   "evidence": "label+latest sample"
+  },
+  "ukd1101-46100": {
+   "point": "NW-88009873",
+   "evidence": "label"
+  },
+  "ukd1102-44200": {
+   "point": "NW-88009869",
+   "evidence": "label+latest sample"
+  },
+  "ukd1102-44300": {
+   "point": "NW-88009870",
+   "evidence": "label+latest sample"
+  },
+  "ukd1102-44400": {
+   "point": "NW-88009871",
+   "evidence": "label+latest sample"
+  },
+  "ukd1103-44800": {
+   "point": "NW-88009866",
+   "evidence": "label+latest sample"
+  },
+  "ukd1103-45200": {
+   "point": "NW-88009863",
+   "evidence": "label+latest sample"
+  },
+  "ukd1103-45600": {
+   "point": "NW-88009864",
+   "evidence": "label+latest sample"
+  },
+  "ukd1103-45920": {
+   "point": "NW-88009865",
+   "evidence": "label+latest sample"
+  },
+  "ukd4200-42100": {
+   "point": "NW-88020957",
+   "evidence": "label+latest sample"
+  },
+  "ukd4200-42300": {
+   "point": "NW-88020958",
+   "evidence": "label+latest sample"
+  },
+  "ukd4200-42500": {
+   "point": "NW-88020959",
+   "evidence": "label+latest sample"
+  },
+  "ukd4200-42600": {
+   "point": "NW-88009854",
+   "evidence": "label"
+  },
+  "ukd4303-41800": {
+   "point": "NW-88009849",
+   "evidence": "label+latest sample"
+  },
+  "ukd4303-41900": {
+   "point": "NW-88023519",
+   "evidence": "label+latest sample"
+  },
+  "ukd4305-43260": {
+   "point": "NW-88022606",
+   "evidence": "label+latest sample"
+  },
+  "ukd4305-43550": {
+   "point": "NW-88009859",
+   "evidence": "label+latest sample"
+  },
+  "ukd4312-42800": {
+   "point": "NW-88009855",
+   "evidence": "label+latest sample"
+  },
+  "ukd4312-43000": {
+   "point": "NW-88009856",
+   "evidence": "label+latest sample"
+  },
+  "ukd5300-41200": {
+   "point": "NW-88009846",
+   "evidence": "label+latest sample"
+  },
+  "ukd5300-41300": {
+   "point": "NW-88009847",
+   "evidence": "label+latest sample"
+  },
+  "ukd5300-41500": {
+   "point": "NW-88009848",
+   "evidence": "label+latest sample"
+  },
+  "ukd5400-40750": {
+   "point": "NW-88010483",
+   "evidence": "label+latest sample"
+  },
+  "ukd5400-40800": {
+   "point": "NW-88009843",
+   "evidence": "label+latest sample"
+  },
+  "ukd5400-40900": {
+   "point": "NW-88009844",
+   "evidence": "label+latest sample"
+  },
+  "ukd5400-41000": {
+   "point": "NW-88009845",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-07900": {
+   "point": "NE-49000144",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-07950": {
+   "point": "NE-49000087",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08000": {
+   "point": "NE-49000030",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08100": {
+   "point": "NE-49000037",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08200": {
+   "point": "NE-49000277",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08300": {
+   "point": "NE-49000148",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08600": {
+   "point": "NE-49000392",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08700": {
+   "point": "NE-49000176",
+   "evidence": "label+latest sample"
+  },
+  "uke1200-08900": {
+   "point": "NE-49000278",
+   "evidence": "label+latest sample"
+  },
+  "uke1301-09000": {
+   "point": "AN-CLEEN001",
+   "evidence": "label+latest sample"
+  },
+  "uke1301-09020": {
+   "point": "AN-HUMBN003",
+   "evidence": "label+latest sample"
+  },
+  "uke2206-06900": {
+   "point": "NE-49000237",
+   "evidence": "label+latest sample"
+  },
+  "uke2206-07000": {
+   "point": "NE-49000240",
+   "evidence": "label"
+  },
+  "uke2206-07100": {
+   "point": "NE-49000275",
+   "evidence": "label+latest sample"
+  },
+  "uke2206-07200": {
+   "point": "NE-49000232",
+   "evidence": "label+latest sample"
+  },
+  "uke2206-07300": {
+   "point": "NE-49000252",
+   "evidence": "label"
+  },
+  "uke2206-07400": {
+   "point": "NE-49000253",
+   "evidence": "label"
+  },
+  "uke2206-07500": {
+   "point": "NE-49000064",
+   "evidence": "label+latest sample"
+  },
+  "uke2206-07600": {
+   "point": "NE-49000125",
+   "evidence": "label+latest sample"
+  },
+  "uke2206-07700": {
+   "point": "NE-49000230",
+   "evidence": "label+latest sample"
+  },
+  "ukf3102-09100": {
+   "point": "AN-MABLN001",
+   "evidence": "label+latest sample"
+  },
+  "ukf3102-09200": {
+   "point": "AN-SUTTN001",
+   "evidence": "label+latest sample"
+  },
+  "ukf3102-09300": {
+   "point": "AN-HUTTN001",
+   "evidence": "label+latest sample"
+  },
+  "ukf3102-09400": {
+   "point": "AN-ANDBN001",
+   "evidence": "label+latest sample"
+  },
+  "ukf3102-09500": {
+   "point": "AN-CSLEN001",
+   "evidence": "label+latest sample"
+  },
+  "ukf3102-09600": {
+   "point": "AN-INGSN001",
+   "evidence": "label"
+  },
+  "ukf3102-09700": {
+   "point": "AN-SKEGN001",
+   "evidence": "label+latest sample"
+  },
+  "ukh1303-10325": {
+   "point": "AN-GY509174",
+   "evidence": "label+latest sample"
+  },
+  "ukh1303-10350": {
+   "point": "AN-GY530120",
+   "evidence": "label+latest sample"
+  },
+  "ukh1303-10400": {
+   "point": "AN-GY535105",
+   "evidence": "label+latest sample"
+  },
+  "ukh1303-10500": {
+   "point": "AN-GY533074",
+   "evidence": "label+latest sample"
+  },
+  "ukh1303-10600": {
+   "point": "AN-GY533064",
+   "evidence": "label+latest sample"
+  },
+  "ukh1303-10650": {
+   "point": "AN-GY532031",
+   "evidence": "label+latest sample"
+  },
+  "ukh1304-09800": {
+   "point": "AN-66M11",
+   "evidence": "label"
+  },
+  "ukh1304-09850": {
+   "point": "AN-66M23",
+   "evidence": "label"
+  },
+  "ukh1304-09900": {
+   "point": "AN-66M07",
+   "evidence": "label"
+  },
+  "ukh1305-10000": {
+   "point": "AN-WL914456",
+   "evidence": "label+latest sample"
+  },
+  "ukh1305-10100": {
+   "point": "AN-SH155436",
+   "evidence": "label+latest sample"
+  },
+  "ukh1305-10125": {
+   "point": "AN-WR186432",
+   "evidence": "label+latest sample"
+  },
+  "ukh1305-10150": {
+   "point": "AN-ER202427",
+   "evidence": "label+latest sample"
+  },
+  "ukh1305-10200": {
+   "point": "AN-CR220423",
+   "evidence": "label+latest sample"
+  },
+  "ukh1305-10300": {
+   "point": "AN-MU317366",
+   "evidence": "label+latest sample"
+  },
+  "ukh1305-10310": {
+   "point": "AN-SP430275",
+   "evidence": "label+latest sample"
+  },
+  "ukh1406-10900": {
+   "point": "AN-FE305343",
+   "evidence": "label+latest sample"
+  },
+  "ukh1406-11000": {
+   "point": "AN-FE297337",
+   "evidence": "label+latest sample"
+  },
+  "ukh1407-10750": {
+   "point": "AN-LO546923",
+   "evidence": "label+latest sample"
+  },
+  "ukh1407-10800": {
+   "point": "AN-LO543910",
+   "evidence": "label+latest sample"
+  },
+  "ukh1407-10830": {
+   "point": "AN-SO513767",
+   "evidence": "label+latest sample"
+  },
+  "ukh1407-10850": {
+   "point": "AN-SO508754",
+   "evidence": "label+latest sample"
+  },
+  "ukh3100-11770": {
+   "point": "TH-PTTB0008",
+   "evidence": "label"
+  },
+  "ukh3100-11780": {
+   "point": "TH-PTTB0001",
+   "evidence": "label"
+  },
+  "ukh3100-11800": {
+   "point": "TH-PTTB0002",
+   "evidence": "label"
+  },
+  "ukh3100-11830": {
+   "point": "TH-PTTB0025",
+   "evidence": "label"
+  },
+  "ukh3100-11850": {
+   "point": "TH-PTTB0012",
+   "evidence": "label"
+  },
+  "ukh3100-11900": {
+   "point": "TH-PTTB0004",
+   "evidence": "label"
+  },
+  "ukh3100-11902": {
+   "point": "TH-PTTB0023",
+   "evidence": "label"
+  },
+  "ukh3100-11904": {
+   "point": "TH-PTTB0005",
+   "evidence": "label"
+  },
+  "ukh3306-11750": {
+   "point": "AN-BE0235",
+   "evidence": "label+latest sample"
+  },
+  "ukh3311-11100": {
+   "point": "AN-HW0010",
+   "evidence": "label"
+  },
+  "ukh3311-11250": {
+   "point": "AN-CW2200",
+   "evidence": "label+latest sample"
+  },
+  "ukh3311-11300": {
+   "point": "AN-CW1850",
+   "evidence": "label+latest sample"
+  },
+  "ukh3311-11350": {
+   "point": "AN-CW1765",
+   "evidence": "label+latest sample"
+  },
+  "ukh3311-11500": {
+   "point": "AN-CW1520",
+   "evidence": "label+latest sample"
+  },
+  "ukh3311-11600": {
+   "point": "AN-CW1280",
+   "evidence": "label+latest sample"
+  },
+  "ukh3311-11650": {
+   "point": "AN-CW616213",
+   "evidence": "label"
+  },
+  "ukh3311-11700": {
+   "point": "AN-NE0450",
+   "evidence": "label+latest sample"
+  },
+  "ukj2100-14800": {
+   "point": "SO-F0001870",
+   "evidence": "label+latest sample"
+  },
+  "ukj2100-14900": {
+   "point": "SO-F0001874",
+   "evidence": "label"
+  },
+  "ukj2100-14950": {
+   "point": "SO-F0002801",
+   "evidence": "label"
+  },
+  "ukj2100-15000": {
+   "point": "SO-F0002786",
+   "evidence": "label"
+  },
+  "ukj2201-14400": {
+   "point": "SO-F0001828",
+   "evidence": "label+latest sample"
+  },
+  "ukj2201-14550": {
+   "point": "SO-F0001843",
+   "evidence": "label+latest sample"
+  },
+  "ukj2202-14100": {
+   "point": "SO-F0017484",
+   "evidence": "label+latest sample"
+  },
+  "ukj2202-14150": {
+   "point": "SO-F0001813",
+   "evidence": "label+latest sample"
+  },
+  "ukj2203-14600": {
+   "point": "SO-F0001854",
+   "evidence": "label+latest sample"
+  },
+  "ukj2204-13900": {
+   "point": "SO-E0000109",
+   "evidence": "label+latest sample"
+  },
+  "ukj2204-14000": {
+   "point": "SO-E0000111",
+   "evidence": "label+latest sample"
+  },
+  "ukj2205-14200": {
+   "point": "SO-E0004787",
+   "evidence": "label+latest sample"
+  },
+  "ukj2205-14300": {
+   "point": "SO-F0001822",
+   "evidence": "label+latest sample"
+  },
+  "ukj2401-15100": {
+   "point": "SO-F0001885",
+   "evidence": "label+latest sample"
+  },
+  "ukj2401-15200": {
+   "point": "SO-F0017474",
+   "evidence": "label"
+  },
+  "ukj2401-15300": {
+   "point": "SO-F0001892",
+   "evidence": "label"
+  },
+  "ukj2402-15500": {
+   "point": "SO-F0017446",
+   "evidence": "label"
+  },
+  "ukj2402-15600": {
+   "point": "SO-F0001919",
+   "evidence": "label+latest sample"
+  },
+  "ukj2402-15650": {
+   "point": "SO-F0001920",
+   "evidence": "label+latest sample"
+  },
+  "ukj2402-15680": {
+   "point": "SO-F0017448",
+   "evidence": "label+latest sample"
+  },
+  "ukj2402-15700": {
+   "point": "SO-F0001925",
+   "evidence": "label+latest sample"
+  },
+  "ukj2402-15800": {
+   "point": "SO-F0001927",
+   "evidence": "label+latest sample"
+  },
+  "ukj2403-15900": {
+   "point": "SO-F0001928",
+   "evidence": "label+latest sample"
+  },
+  "ukj2403-16000": {
+   "point": "SO-F0001934",
+   "evidence": "label+latest sample"
+  },
+  "ukj2403-16100": {
+   "point": "SO-F0001936",
+   "evidence": "label+latest sample"
+  },
+  "ukj2407-15400": {
+   "point": "SO-F0001903",
+   "evidence": "label"
+  },
+  "ukj3100-16500": {
+   "point": "SO-G0003490",
+   "evidence": "label"
+  },
+  "ukj3100-16600": {
+   "point": "SO-G0017029",
+   "evidence": "label"
+  },
+  "ukj3304-16850": {
+   "point": "SO-G0003531",
+   "evidence": "label"
+  },
+  "ukj3305-16700": {
+   "point": "SO-G0003516",
+   "evidence": "label"
+  },
+  "ukj3305-16800": {
+   "point": "SO-G0003530",
+   "evidence": "label+latest sample"
+  },
+  "ukj3307-16300": {
+   "point": "SO-G0003460",
+   "evidence": "label+latest sample"
+  },
+  "ukj3307-16350": {
+   "point": "SO-G0017367",
+   "evidence": "label+latest sample"
+  },
+  "ukj3307-16400": {
+   "point": "SO-G0003461",
+   "evidence": "label+latest sample"
+  },
+  "ukj3308-16900": {
+   "point": "SO-G0003588",
+   "evidence": "label+latest sample"
+  },
+  "ukj3308-17000": {
+   "point": "SO-G0003591",
+   "evidence": "label+latest sample"
+  },
+  "ukj3308-17100": {
+   "point": "SO-G0006417",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17400": {
+   "point": "SO-Y0004255",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17500": {
+   "point": "SO-Y0004257",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17600": {
+   "point": "SO-Y0004259",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17700": {
+   "point": "SO-Y0004269",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17800": {
+   "point": "SO-Y0004270",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17850": {
+   "point": "SO-Y0004516",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-17900": {
+   "point": "SO-Y0004283",
+   "evidence": "label"
+  },
+  "ukj3400-18000": {
+   "point": "SO-Y0004286",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-18100": {
+   "point": "SO-Y0004288",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-18200": {
+   "point": "SO-Y0004456",
+   "evidence": "label"
+  },
+  "ukj3400-18300": {
+   "point": "SO-Y0004293",
+   "evidence": "label+latest sample"
+  },
+  "ukj3400-18350": {
+   "point": "SO-Y0004297",
+   "evidence": "label"
+  },
+  "ukj3400-18400": {
+   "point": "SO-Y0004298",
+   "evidence": "label"
+  },
+  "ukj3400-18500": {
+   "point": "SO-Y0004300",
+   "evidence": "label"
+  },
+  "ukj3400-18600": {
+   "point": "SO-Y0004304",
+   "evidence": "label+latest sample"
+  },
+  "ukj4202-12100": {
+   "point": "SO-E0000015",
+   "evidence": "label+latest sample"
+  },
+  "ukj4202-12120": {
+   "point": "SO-E0004744",
+   "evidence": "label+latest sample"
+  },
+  "ukj4202-12150": {
+   "point": "SO-E0017452",
+   "evidence": "label+latest sample"
+  },
+  "ukj4202-12200": {
+   "point": "SO-E0000021",
+   "evidence": "label+latest sample"
+  },
+  "ukj4204-13000": {
+   "point": "SO-E0000059",
+   "evidence": "label+latest sample"
+  },
+  "ukj4204-13100": {
+   "point": "SO-E0000063",
+   "evidence": "label+latest sample"
+  },
+  "ukj4204-13200": {
+   "point": "SO-E0000071",
+   "evidence": "label+latest sample"
+  },
+  "ukj4208-13300": {
+   "point": "SO-E0000086",
+   "evidence": "label+latest sample"
+  },
+  "ukj4208-13400": {
+   "point": "SO-E0000092",
+   "evidence": "label+latest sample"
+  },
+  "ukj4208-13500": {
+   "point": "SO-E0000093",
+   "evidence": "label+latest sample"
+  },
+  "ukj4208-13600": {
+   "point": "SO-E0004745",
+   "evidence": "label+latest sample"
+  },
+  "ukj4208-13700": {
+   "point": "SO-E0000101",
+   "evidence": "label+latest sample"
+  },
+  "ukj4208-13800": {
+   "point": "SO-E0000102",
+   "evidence": "label+latest sample"
+  },
+  "ukj4209-11950": {
+   "point": "SO-E0000007",
+   "evidence": "label+latest sample"
+  },
+  "ukj4209-11975": {
+   "point": "SO-E0004879",
+   "evidence": "label+latest sample"
+  },
+  "ukj4209-12000": {
+   "point": "SO-E0000011",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12300": {
+   "point": "SO-E0000024",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12350": {
+   "point": "SO-E0000025",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12400": {
+   "point": "SO-E0000026",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12450": {
+   "point": "SO-E0000028",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12500": {
+   "point": "SO-E0000029",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12600": {
+   "point": "SO-E0000030",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12630": {
+   "point": "SO-E0000031",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12660": {
+   "point": "SO-E0000037",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12700": {
+   "point": "SO-E0000038",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12750": {
+   "point": "SO-E0000042",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12800": {
+   "point": "SO-E0000051",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12850": {
+   "point": "SO-E0000053",
+   "evidence": "label+latest sample"
+  },
+  "ukj4210-12900": {
+   "point": "SO-E0000057",
+   "evidence": "label+latest sample"
+  },
+  "ukk1202-35700": {
+   "point": "SW-E8900900",
+   "evidence": "label"
+  },
+  "ukk1202-35800": {
+   "point": "SW-E8901210",
+   "evidence": "label"
+  },
+  "ukk1202-35900": {
+   "point": "SW-E8901600",
+   "evidence": "label"
+  },
+  "ukk1202-36000": {
+   "point": "SW-E8902100",
+   "evidence": "label"
+  },
+  "ukk2101-19000": {
+   "point": "SW-C2621000",
+   "evidence": "label"
+  },
+  "ukk2101-19020": {
+   "point": "SW-50374425",
+   "evidence": "label"
+  },
+  "ukk2101-19030": {
+   "point": "SW-50024410",
+   "evidence": "label"
+  },
+  "ukk2101-19050": {
+   "point": "SW-50024440",
+   "evidence": "label"
+  },
+  "ukk2101-19060": {
+   "point": "SW-50024445",
+   "evidence": "label"
+  },
+  "ukk2101-19100": {
+   "point": "SW-50024483",
+   "evidence": "label"
+  },
+  "ukk2101-19150": {
+   "point": "SW-50024507",
+   "evidence": "label"
+  },
+  "ukk2101-19160": {
+   "point": "SW-50024515",
+   "evidence": "label"
+  },
+  "ukk2102-19170": {
+   "point": "SW-50024527",
+   "evidence": "label"
+  },
+  "ukk2102-19190": {
+   "point": "SW-50024545",
+   "evidence": "label"
+  },
+  "ukk2102-19200": {
+   "point": "SW-50024558",
+   "evidence": "label"
+  },
+  "ukk2102-19350": {
+   "point": "SW-50024575",
+   "evidence": "label"
+  },
+  "ukk2102-19400": {
+   "point": "SW-50950270",
+   "evidence": "label+latest sample"
+  },
+  "ukk2102-19450": {
+   "point": "SW-50950300",
+   "evidence": "label"
+  },
+  "ukk2201-17200": {
+   "point": "SO-G0003607",
+   "evidence": "label+latest sample"
+  },
+  "ukk2201-17300": {
+   "point": "SO-G0003608",
+   "evidence": "label+latest sample"
+  },
+  "ukk2201-18700": {
+   "point": "SW-C2710000",
+   "evidence": "label"
+  },
+  "ukk2201-18750": {
+   "point": "SW-52804344",
+   "evidence": "label"
+  },
+  "ukk2201-18800": {
+   "point": "SW-52804350",
+   "evidence": "label"
+  },
+  "ukk2201-18900": {
+   "point": "SW-52800124",
+   "evidence": "label"
+  },
+  "ukk2204-19600": {
+   "point": "SW-50904420",
+   "evidence": "label"
+  },
+  "ukk2204-19700": {
+   "point": "SW-50034420",
+   "evidence": "label"
+  },
+  "ukk2204-19800": {
+   "point": "SW-50034485",
+   "evidence": "label"
+  },
+  "ukk2204-19900": {
+   "point": "SW-50034589",
+   "evidence": "label"
+  },
+  "ukk2204-20000": {
+   "point": "SW-50034611",
+   "evidence": "label"
+  },
+  "ukk2204-20100": {
+   "point": "SW-50034638",
+   "evidence": "label"
+  },
+  "ukk2204-20200": {
+   "point": "SW-50034643",
+   "evidence": "label"
+  },
+  "ukk2205-20970": {
+   "point": "SW-50704424",
+   "evidence": "label"
+  },
+  "ukk2205-21000": {
+   "point": "SW-50704479",
+   "evidence": "label"
+  },
+  "ukk2205-21100": {
+   "point": "SW-50704511",
+   "evidence": "label"
+  },
+  "ukk2205-21200": {
+   "point": "SW-50054425",
+   "evidence": "label"
+  },
+  "ukk2205-21300": {
+   "point": "SW-50054566",
+   "evidence": "label"
+  },
+  "ukk2205-21500": {
+   "point": "SW-70114448",
+   "evidence": "label"
+  },
+  "ukk2206-20300": {
+   "point": "SW-50034659",
+   "evidence": "label"
+  },
+  "ukk2206-20400": {
+   "point": "SW-50034689",
+   "evidence": "label"
+  },
+  "ukk2206-20500": {
+   "point": "SW-50044589",
+   "evidence": "label"
+  },
+  "ukk2206-20600": {
+   "point": "SW-50600151",
+   "evidence": "label"
+  },
+  "ukk2206-20700": {
+   "point": "SW-50604435",
+   "evidence": "label"
+  },
+  "ukk2206-20800": {
+   "point": "SW-50044442",
+   "evidence": "label"
+  },
+  "ukk2206-20900": {
+   "point": "SW-50044448",
+   "evidence": "label"
+  },
+  "ukk2302-35500": {
+   "point": "SW-E8900500",
+   "evidence": "label"
+  },
+  "ukk2302-35600": {
+   "point": "SW-E8900600",
+   "evidence": "label"
+  },
+  "ukk2305-34900": {
+   "point": "SW-E0900100",
+   "evidence": "label+latest sample"
+  },
+  "ukk2305-35000": {
+   "point": "SW-E0900400",
+   "evidence": "label"
+  },
+  "ukk2305-35100": {
+   "point": "SW-E0900560",
+   "evidence": "label"
+  },
+  "ukk2305-35200": {
+   "point": "SW-E0900700",
+   "evidence": "label"
+  },
+  "ukk3008-27080": {
+   "point": "SW-81510965",
+   "evidence": "label"
+  },
+  "ukk3101-26520": {
+   "point": "SW-81210102",
+   "evidence": "label"
+  },
+  "ukk3101-26530": {
+   "point": "SW-81210110",
+   "evidence": "label+latest sample"
+  },
+  "ukk3101-26560": {
+   "point": "SW-81214745",
+   "evidence": "label+latest sample"
+  },
+  "ukk3101-26570": {
+   "point": "SW-81214752",
+   "evidence": "label+latest sample"
+  },
+  "ukk3101-26600": {
+   "point": "SW-81214760",
+   "evidence": "label"
+  },
+  "ukk3101-26700": {
+   "point": "SW-81314810",
+   "evidence": "label+latest sample"
+  },
+  "ukk3101-26800": {
+   "point": "SW-H1314870",
+   "evidence": "label+latest sample"
+  },
+  "ukk3101-26900": {
+   "point": "SW-81414810",
+   "evidence": "label"
+  },
+  "ukk3101-27000": {
+   "point": "SW-81414820",
+   "evidence": "label"
+  },
+  "ukk3102-28500": {
+   "point": "SW-81814989",
+   "evidence": "label"
+  },
+  "ukk3102-28550": {
+   "point": "SW-81914802",
+   "evidence": "label+latest sample"
+  },
+  "ukk3102-28600": {
+   "point": "SW-81914840",
+   "evidence": "label"
+  },
+  "ukk3102-28700": {
+   "point": "SW-81914861",
+   "evidence": "label"
+  },
+  "ukk3102-28800": {
+   "point": "SW-81914873",
+   "evidence": "label"
+  },
+  "ukk3102-31600": {
+   "point": "SW-82315083",
+   "evidence": "label+latest sample"
+  },
+  "ukk3102-31650": {
+   "point": "SW-82315106",
+   "evidence": "label+latest sample"
+  },
+  "ukk3102-31700": {
+   "point": "SW-82315140",
+   "evidence": "label+latest sample"
+  },
+  "ukk3102-31800": {
+   "point": "SW-82315201",
+   "evidence": "label+latest sample"
+  },
+  "ukk3102-31900": {
+   "point": "SW-82315220",
+   "evidence": "label+latest sample"
+  },
+  "ukk3102-32000": {
+   "point": "SW-82514923",
+   "evidence": "label"
+  },
+  "ukk3103-28900": {
+   "point": "SW-81914914",
+   "evidence": "label+latest sample"
+  },
+  "ukk3103-29000": {
+   "point": "SW-81914925",
+   "evidence": "label"
+  },
+  "ukk3103-29100": {
+   "point": "SW-81914940",
+   "evidence": "label+latest sample"
+  },
+  "ukk3103-29200": {
+   "point": "SW-81914953",
+   "evidence": "label"
+  },
+  "ukk3103-29400": {
+   "point": "SW-81915022",
+   "evidence": "label"
+  },
+  "ukk3103-29500": {
+   "point": "SW-81915046",
+   "evidence": "label"
+  },
+  "ukk3103-29501": {
+   "point": "SW-81915062",
+   "evidence": "label+latest sample"
+  },
+  "ukk3103-29800": {
+   "point": "SW-82014856",
+   "evidence": "label"
+  },
+  "ukk3103-29900": {
+   "point": "SW-82114824",
+   "evidence": "label"
+  },
+  "ukk3103-30000": {
+   "point": "SW-82114828",
+   "evidence": "label+latest sample"
+  },
+  "ukk3103-31500": {
+   "point": "SW-82315032",
+   "evidence": "label+latest sample"
+  },
+  "ukk3104-32550": {
+   "point": "SW-82515105",
+   "evidence": "label"
+  },
+  "ukk3104-32600": {
+   "point": "SW-82515133",
+   "evidence": "label"
+  },
+  "ukk3104-32700": {
+   "point": "SW-82515145",
+   "evidence": "label+latest sample"
+  },
+  "ukk3104-32750": {
+   "point": "SW-82515155",
+   "evidence": "label+latest sample"
+  },
+  "ukk3104-32800": {
+   "point": "SW-82515179",
+   "evidence": "label"
+  },
+  "ukk3104-32900": {
+   "point": "SW-82515216",
+   "evidence": "label"
+  },
+  "ukk3104-33000": {
+   "point": "SW-82515237",
+   "evidence": "label"
+  },
+  "ukk3104-33200": {
+   "point": "SW-82518034",
+   "evidence": "label+latest sample"
+  },
+  "ukk3104-33300": {
+   "point": "SW-82515254",
+   "evidence": "label"
+  },
+  "ukk3104-33350": {
+   "point": "SW-82614940",
+   "evidence": "label"
+  },
+  "ukk3104-33360": {
+   "point": "SW-82615122",
+   "evidence": "label+latest sample"
+  },
+  "ukk3104-33400": {
+   "point": "SW-82615153",
+   "evidence": "label"
+  },
+  "ukk3104-33500": {
+   "point": "SW-82710102",
+   "evidence": "label"
+  },
+  "ukk3104-33600": {
+   "point": "SW-82615236",
+   "evidence": "label"
+  },
+  "ukk3104-33650": {
+   "point": "SW-82615247",
+   "evidence": "label+latest sample"
+  },
+  "ukk3104-33700": {
+   "point": "SW-82615254",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30100": {
+   "point": "SW-82114850",
+   "evidence": "label"
+  },
+  "ukk3105-30200": {
+   "point": "SW-82114893",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30400": {
+   "point": "SW-82114960",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30500": {
+   "point": "SW-82114972",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30600": {
+   "point": "SW-82214920",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30700": {
+   "point": "SW-82215005",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30750": {
+   "point": "SW-82215010",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30800": {
+   "point": "SW-82215270",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-30900": {
+   "point": "SW-82215281",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31000": {
+   "point": "SW-82215326",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31100": {
+   "point": "SW-82215340",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31200": {
+   "point": "SW-82215364",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31250": {
+   "point": "SW-82215385",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31300": {
+   "point": "SW-82215391",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31350": {
+   "point": "SW-82215395",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31400": {
+   "point": "SW-82215420",
+   "evidence": "label+latest sample"
+  },
+  "ukk3105-31450": {
+   "point": "SW-82215425",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-27100": {
+   "point": "SW-81510150",
+   "evidence": "label"
+  },
+  "ukk3106-27200": {
+   "point": "SW-81614829",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-27300": {
+   "point": "SW-81614842",
+   "evidence": "label"
+  },
+  "ukk3106-27400": {
+   "point": "SW-81714867",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-27500": {
+   "point": "SW-81714873",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-27600": {
+   "point": "SW-81714886",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-27700": {
+   "point": "SW-81714901",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-27800": {
+   "point": "SW-81714921",
+   "evidence": "label"
+  },
+  "ukk3106-27900": {
+   "point": "SW-81814815",
+   "evidence": "label"
+  },
+  "ukk3106-28000": {
+   "point": "SW-81814835",
+   "evidence": "label"
+  },
+  "ukk3106-28100": {
+   "point": "SW-81814866",
+   "evidence": "label"
+  },
+  "ukk3106-28200": {
+   "point": "SW-81814885",
+   "evidence": "label"
+  },
+  "ukk3106-28300": {
+   "point": "SW-81814904",
+   "evidence": "label"
+  },
+  "ukk3106-28400": {
+   "point": "SW-81814942",
+   "evidence": "label"
+  },
+  "ukk3106-32100": {
+   "point": "SW-82514949",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-32150": {
+   "point": "SW-82514991",
+   "evidence": "label"
+  },
+  "ukk3106-32200": {
+   "point": "SW-82514993",
+   "evidence": "label"
+  },
+  "ukk3106-32300": {
+   "point": "SW-82514969",
+   "evidence": "label"
+  },
+  "ukk3106-32310": {
+   "point": "SW-82514988",
+   "evidence": "label"
+  },
+  "ukk3106-32320": {
+   "point": "SW-82514997",
+   "evidence": "label"
+  },
+  "ukk3106-32330": {
+   "point": "SW-82515002",
+   "evidence": "label+latest sample"
+  },
+  "ukk3106-32340": {
+   "point": "SW-82515008",
+   "evidence": "label"
+  },
+  "ukk3106-32400": {
+   "point": "SW-82515037",
+   "evidence": "label"
+  },
+  "ukk3106-32500": {
+   "point": "SW-82515060",
+   "evidence": "label"
+  },
+  "ukk4100-26400": {
+   "point": "SW-81210340",
+   "evidence": "label"
+  },
+  "ukk4100-26500": {
+   "point": "SW-81210295",
+   "evidence": "label"
+  },
+  "ukk4200-23100": {
+   "point": "SW-70614683",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23200": {
+   "point": "SW-70614694",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23300": {
+   "point": "SW-70614710",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23400": {
+   "point": "SW-70614728",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23501": {
+   "point": "SW-70614740",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23600": {
+   "point": "SW-70614840",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23700": {
+   "point": "SW-70614847",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23800": {
+   "point": "SW-70614854",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-23900": {
+   "point": "SW-70614869",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-24000": {
+   "point": "SW-70614872",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-24100": {
+   "point": "SW-70614874",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-24200": {
+   "point": "SW-70614882",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-24300": {
+   "point": "SW-70614904",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-24500": {
+   "point": "SW-70614944",
+   "evidence": "label+latest sample"
+  },
+  "ukk4200-24600": {
+   "point": "SW-70614997",
+   "evidence": "label+latest sample"
+  },
+  "ukk4301-21600": {
+   "point": "SW-70214510",
+   "evidence": "label"
+  },
+  "ukk4301-21700": {
+   "point": "SW-70214515",
+   "evidence": "label"
+  },
+  "ukk4301-21800": {
+   "point": "SW-70314533",
+   "evidence": "label"
+  },
+  "ukk4301-21900": {
+   "point": "SW-70314532",
+   "evidence": "label"
+  },
+  "ukk4301-22000": {
+   "point": "SW-70414504",
+   "evidence": "label"
+  },
+  "ukk4301-22100": {
+   "point": "SW-70414533",
+   "evidence": "label"
+  },
+  "ukk4301-22200": {
+   "point": "SW-70514511",
+   "evidence": "label"
+  },
+  "ukk4301-22300": {
+   "point": "SW-70510107",
+   "evidence": "label"
+  },
+  "ukk4304-34100": {
+   "point": "SW-73015012",
+   "evidence": "label"
+  },
+  "ukk4304-34200": {
+   "point": "SW-73015017",
+   "evidence": "label"
+  },
+  "ukk4304-34300": {
+   "point": "SW-73015036",
+   "evidence": "label"
+  },
+  "ukk4304-34400": {
+   "point": "SW-73015038",
+   "evidence": "label"
+  },
+  "ukk4304-34410": {
+   "point": "SW-73015075",
+   "evidence": "label"
+  },
+  "ukk4304-34450": {
+   "point": "SW-73115115",
+   "evidence": "label"
+  },
+  "ukk4304-34600": {
+   "point": "SW-73115135",
+   "evidence": "label"
+  },
+  "ukk4304-34700": {
+   "point": "SW-73115166",
+   "evidence": "label"
+  },
+  "ukk4304-34800": {
+   "point": "SW-73215136",
+   "evidence": "label"
+  },
+  "ukk4305-24700": {
+   "point": "SW-70710124",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-24800": {
+   "point": "SW-70814625",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-24900": {
+   "point": "SW-70814659",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-25000": {
+   "point": "SW-70814679",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-25100": {
+   "point": "SW-70811731",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-25200": {
+   "point": "SW-70811724",
+   "evidence": "label"
+  },
+  "ukk4305-25300": {
+   "point": "SW-70811736",
+   "evidence": "label"
+  },
+  "ukk4305-25400": {
+   "point": "SW-70814894",
+   "evidence": "label"
+  },
+  "ukk4305-25500": {
+   "point": "SW-70814905",
+   "evidence": "label"
+  },
+  "ukk4305-25600": {
+   "point": "SW-70814915",
+   "evidence": "label"
+  },
+  "ukk4305-25700": {
+   "point": "SW-70816005",
+   "evidence": "label"
+  },
+  "ukk4305-25800": {
+   "point": "SW-70814963",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-25900": {
+   "point": "SW-70814974",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-26000": {
+   "point": "SW-70814980",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-26100": {
+   "point": "SW-70910108",
+   "evidence": "label+latest sample"
+  },
+  "ukk4305-26150": {
+   "point": "SW-81010216",
+   "evidence": "label"
+  },
+  "ukk4305-26200": {
+   "point": "SW-81014770",
+   "evidence": "label"
+  },
+  "ukk4305-26300": {
+   "point": "SW-81210130",
+   "evidence": "label"
+  },
+  "ukk4306-22400": {
+   "point": "SW-70510103",
+   "evidence": "label+latest sample"
+  },
+  "ukk4306-22500": {
+   "point": "SW-70514550",
+   "evidence": "label"
+  },
+  "ukk4306-22600": {
+   "point": "SW-70514559",
+   "evidence": "label+latest sample"
+  },
+  "ukk4306-22700": {
+   "point": "SW-70514578",
+   "evidence": "label+latest sample"
+  },
+  "ukk4306-22800": {
+   "point": "SW-70614633",
+   "evidence": "label"
+  },
+  "ukk4306-22900": {
+   "point": "SW-70610131",
+   "evidence": "label"
+  },
+  "ukk4306-23000": {
+   "point": "SW-70614644",
+   "evidence": "label+latest sample"
+  },
+  "ukk4307-33800": {
+   "point": "SW-72815051",
+   "evidence": "label+latest sample"
+  },
+  "ukk4307-33900": {
+   "point": "SW-72915015",
+   "evidence": "label"
+  }
+ }
+}
