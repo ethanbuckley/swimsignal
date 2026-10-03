@@ -686,10 +686,13 @@ def attach_weather(results: list[dict], request=None, batch: int = 50) -> int:
 
 
 def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=None, max_km: float = 15.0) -> int:
-    """Beside attach_river_levels: the latest reading of the nearest Environment Agency water-temperature
-    sensor within `max_km` (straight line) on a river spot's own river (`same_river` on spots.csv's
-    `river`, else the snapped watercourse), with the distance, whether it is upstream or downstream and
-    how far along the river, and when it was read. Two Hydrology API requests for the whole build
+    """Beside attach_river_levels: the latest reading of an Environment Agency water-temperature sensor
+    within `max_km` (straight line) on a river spot's own river (`same_river` on spots.csv's `river`,
+    else the snapped watercourse), with the distance, whether it is upstream or downstream and how far
+    along the river, and when it was read. The nearest upstream sensor is taken before any downstream
+    one: the water at the spot comes from upstream, while a downstream sensor reads water that has
+    passed it, perhaps at a tidal barrage (Cattawade, below Dedham, read 2 °C warmer than Boxted Mill
+    above it on 3 Oct 2026). With none upstream, the nearest downstream. Two Hydrology API requests for the whole build
     (water_temperature.fetch_sensors); only readings under flows.MAX_READING_AGE_H old count, so a spot
     whose nearest sensor has gone quiet gets the next one, or nothing. `relate(spot, sensor)` gives
     (direction, km along the river), or None where the network does not join the two or only one is
@@ -707,6 +710,7 @@ def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=N
     n = 0
     for r in rivers:
         river = r.get("river") or (r.get("location") or {}).get("watercourse")
+        chosen = None
         for s, km in sensors_on_river(sensors, r["lat"], r["lon"], river, max_km):
             try:
                 rel = relate(r, s)
@@ -715,12 +719,18 @@ def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=N
                 rel = None
             if rel is None:
                 continue
-            r["water_temp"] = {"temp_c": s.temp_c, "observed_at": s.observed_at, "age_hours": s.age_hours,
-                               "quality": s.quality, "station": s.place, "where": s.where, "river": s.river,
-                               "station_id": s.station_id, "url": s.url, "distance_km": round(km, 1),
-                               "direction": rel[0], "river_km": rel[1]}
-            n += 1
-            break
+            if chosen is None or rel[0] == "upstream":
+                chosen = (s, km, rel)
+            if rel[0] == "upstream":
+                break
+        if chosen is None:
+            continue
+        s, km, rel = chosen
+        r["water_temp"] = {"temp_c": s.temp_c, "observed_at": s.observed_at, "age_hours": s.age_hours,
+                           "quality": s.quality, "station": s.place, "where": s.where, "river": s.river,
+                           "station_id": s.station_id, "url": s.url, "distance_km": round(km, 1),
+                           "direction": rel[0], "river_km": rel[1]}
+        n += 1
     log.info("water temperature: %d of %d river spots have an EA sensor on their river within %.0f km "
              "(%d sensors read in the last day)", n, len(rivers), max_km, len(sensors))
     return n
