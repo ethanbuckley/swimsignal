@@ -143,6 +143,12 @@ PUSH_SWAPS = [
 ]
 
 
+# Email alerts (push/src/email.js, in the same Worker): on when DIPCAST_EMAIL_URL is set to the
+# Worker's address, which the Saved page then posts sign-ups to. The Worker refuses them until its own
+# secrets are set too (push/README.md, "Email alerts"), so set this variable last.
+EMAIL_URL_ENV = "DIPCAST_EMAIL_URL"
+
+
 def push_config() -> dict | None:
     url, key = (os.environ.get(PUSH_URL_ENV, "").strip(), os.environ.get(PUSH_KEY_ENV, "").strip())
     if not (url or key):
@@ -152,6 +158,16 @@ def push_config() -> dict | None:
         log.warning("%s must be https://host/ and %s a base64url P-256 public key: alerts left off", PUSH_URL_ENV, PUSH_KEY_ENV)
         return None
     return {"url": url, "key": key}
+
+
+def email_config() -> dict | None:
+    url = os.environ.get(EMAIL_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: email alerts left off", EMAIL_URL_ENV)
+        return None
+    return {"url": url}
 
 
 def with_push(html: str, on: bool, email: bool = False) -> str:
@@ -1217,18 +1233,19 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "scotland.json").write_text(json.dumps(scotland))
     health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]),
                           **({"error": scotland["error"]} if scotland.get("error") else {})}
-    push = push_config()
+    push, email = push_config(), email_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
-        "lead_skill": lead_skill(), **({"push": push} if push else {}), "credits": credits, "spots": results}, default=str))
-    write_alerts(SITE, site_url(), push is not None)   # carries the credits from spots.json
+        "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
+        "credits": credits, "spots": results}, default=str))
+    write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
     (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
     (SITE / "data" / "verification.json").write_text(json.dumps({**load_verification(), "credits": credits}, default=str))
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
-                                       coastal=coastal, wales=wales, scotland=scotland)
+                                       coastal=coastal, wales=wales, scotland=scotland, email=email is not None)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
