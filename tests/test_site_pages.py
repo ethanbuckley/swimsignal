@@ -513,9 +513,12 @@ def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_
     tallest = int(re.search(r"the tallest card was (\d+) pixels high", about).group(1))
     assert tallest <= height < tallest + 20 and height % 20 == 0, (tallest, height)
     terms = (tmp_path / "terms.html").read_text()
-    allow = re.search(r"<li>You may show a spot's forecast on your own website.*?</li>", terms).group(0)
+    allow = re.search(r"<li>You may show a spot's forecast on your own non-commercial website.*?</li>", terms).group(0)
     assert "embed.html" in allow and "credits intact" in allow and 'href="about.html#embed"' in allow
+    assert "Ask first about any other use." in allow   # as the reuse bullet above it: Open-Meteo's free rain is non-commercial
     assert 'href="data.html"' in terms
+    embed = about[about.index('<h2 id="embed">'):]
+    assert "non-commercial website" in embed and "Ask first about any other use" in embed and 'href="mailto:hello@swimsignal.co.uk"' in embed
 
 
 def test_the_api_server_serves_the_data_page():
