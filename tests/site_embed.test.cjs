@@ -30,10 +30,25 @@ test('the caveat, the issue time, the link back and the credits are always on th
   assert.ok(h.includes('A forecast, not a water test: check the signs at the water before you swim.'));
   assert.match(h, /Issued [^<]+, 2 h ago · <a class="back" href="spot\/wharfe-burnsall\/" target="_blank" rel="noopener">Full forecast on SwimSignal<\/a>/);
   assert.ok(h.includes('National Storm Overflow Hub (CC BY 4.0)') && h.includes('None of these bodies endorses SwimSignal.'));
+  // The full credits, as the data files carry them: the Stream ID lookup, and the OS and Copernicus
+  // notices word for word (test_site_pages.py checks these against build_site.data_credits).
+  assert.ok(h.includes('the Stream ID lookup, via Stream (CC BY 4.0)'));
+  assert.ok(h.includes('Contains OS data © Crown copyright and database right 2026.'));
+  assert.ok(h.includes('contains modified Copernicus Climate Change Service information 2026; neither the European Commission '
+    + 'nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.'));
+  assert.ok(h.includes(`<p class="credit">${Embed.CREDIT}</p>`));
   assert.ok(h.includes('<a href="terms.html#data" target="_blank" rel="noopener">All credits and licences</a>'));
   // Every link leaves the frame: one that opened inside it would squeeze the site into someone else's page.
   for (const a of h.match(/<a [^>]*>/g)) assert.match(a, /target="_blank" rel="noopener"/, a);
   assert.ok(!h.includes('Stale'));
+});
+
+test('a spot from OpenStreetMap carries its location notice, and only such a spot', () => {
+  const osm = {...river, id: 'osm-x', source: 'openstreetmap', notes: 'Location © OpenStreetMap contributors'};
+  const h = Embed.card(osm, DATA, NOW);
+  assert.ok(h.includes(`<p class="credit">${Embed.OSM}${Embed.CREDIT}</p>`));
+  assert.ok(h.includes('Location © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL 1.0).'));
+  assert.ok(!Embed.card(river, DATA, NOW).includes('OpenStreetMap'));
 });
 
 test('a forecast over eight hours old says so', () => {

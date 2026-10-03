@@ -21,11 +21,19 @@ const Embed = (() => {
   // reader with SwimSignal's page squeezed into a corner of someone else's.
   const out = (href, text, cls = '') => `<a${cls ? ` class="${cls}"` : ''} href="${esc(href)}" target="_blank" rel="noopener">${text}</a>`;
   const spotHref = id => PAGE_ID.test(id) ? `spot/${id}/` : `./?spot=${encodeURIComponent(id)}`;
-  // The credits travel with the card, as with every data file (build_site.data_credits); the full
-  // notices are on the terms page.
-  const CREDIT = 'Data: water companies via the National Storm Overflow Hub (CC BY 4.0); Environment Agency and '
-    + 'Ordnance Survey (OGL v3.0); Open-Meteo, from Met Office forecasts (CC BY 4.0, CC BY-SA 4.0). '
+  // The credits travel with the card, as with every data file (build_site.data_credits): the sources
+  // and licences in short, and the Ordnance Survey and Copernicus notices word for word
+  // (tests/test_site_pages.py checks them against data_credits). The terms page has every credit.
+  const CREDIT = 'Data: water companies via the National Storm Overflow Hub (CC BY 4.0); overflow identifiers '
+    + 'matched with the Stream ID lookup, via Stream (CC BY 4.0); Environment Agency and Ordnance Survey (OGL v3.0); '
+    + 'Open-Meteo, from Met Office forecasts (CC BY 4.0, CC BY-SA 4.0). Contains OS data © Crown copyright and '
+    + 'database right 2026. The models were trained on ERA5-Land reanalysis: contains modified Copernicus Climate '
+    + 'Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that '
+    + 'may be made of the Copernicus information or data it contains. '
     + `None of these bodies endorses SwimSignal. ${out('terms.html#data', 'All credits and licences')}.`;
+  // A spot from spots-osm.csv shows OpenStreetMap's name and position, so ODbL asks for its notice
+  // wherever it is shown; the spot's page has it in the line over the name (its notes).
+  const OSM = `Location © ${out('https://www.openstreetmap.org/copyright', 'OpenStreetMap contributors')} (ODbL 1.0). `;
 
   // The five days as the spot's page shows them, a row each: the day, its level and a bar. The bar
   // fills the day's band, one quarter for low to four for very high. The spot's page also places a
@@ -57,7 +65,7 @@ const Embed = (() => {
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
     return h + `<p class="check">${check(s)}</p>`
       + `<p class="foot">Issued ${esc(issued)}, ${ago(age)} ago · ${out(page, 'Full forecast on SwimSignal', 'back')}</p>`
-      + `<p class="credit">${CREDIT}</p>`;
+      + `<p class="credit">${s.source === 'openstreetmap' ? OSM : ''}${CREDIT}</p>`;
   }
 
   // No spot by that id (or none asked for): say how to find one, and keep the way to the site.
@@ -88,7 +96,7 @@ const Embed = (() => {
     el.innerHTML = card(s, data);
   }
 
-  return { card, missing, failed, start, STALE_MIN };
+  return { card, missing, failed, start, STALE_MIN, CREDIT, OSM };
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Embed;
