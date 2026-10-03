@@ -1,0 +1,32 @@
+# Cotswold Country Park and Beach. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Parking is inside the park only: there is none outside it. Postcode GL7 6DF."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
+source_name = "Cotswold Country Park and Beach"
+
+[[fact]]
+topic = "entry"
+text = "The beach shelves very gently, and the water is at most about 1.5 metres deep in the bathing season."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukk1302-11760"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "fees"
+text = "Entry needs an admission ticket, best booked online. Once the park is full there is no entry on the gate."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
+source_name = "Cotswold Country Park and Beach"
+
+[[fact]]
+topic = "hours"
+text = "Closed for winter: the last day of the 2026 season was Sunday 27 September."
+status = "confirmed"
+source = "https://www.cotswoldcountryparkandbeach.com/admission"
+source_name = "Cotswold Country Park and Beach"

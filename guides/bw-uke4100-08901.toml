@@ -1,0 +1,18 @@
+# Wharfe at Cromwheel, Ilkley. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-03
+how = "desk"
+
+[[fact]]
+topic = "path"
+text = "Reached from the Riverside Walk footpath beside the river. The bathing site is upstream of the suspension bridge."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901"
+source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "entry"
+text = "When the river is low, a gently sloping shingle beach is exposed."
+status = "confirmed"
+source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901"
+source_name = "Environment Agency bathing water profile"
