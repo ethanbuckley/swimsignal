@@ -271,12 +271,15 @@ def geocode(parsed: Parsed, env: dict | None = None, get=None) -> Parsed:
     if not key:
         return Parsed(problem="The location is a description, and SwimSignal has no place-name lookup to turn it "
                               "into a point.")
-    got = _lookup(get, OS_NAMES_URL, {"query": text[:100], "maxresults": 1, "key": key}, "OS Names")
+    got = _lookup(get, OS_NAMES_URL, {"query": text[:100], "maxresults": 5, "key": key}, "OS Names")
     if got is None or got[0] != 200:
         if got:
             log.warning("OS Names lookup: HTTP %s", got[0])
         return Parsed(problem="The place-name lookup did not answer.")
-    entry = ((got[1].get("results") or [{}])[0] or {}).get("GAZETTEER_ENTRY") or {}
+    results = got[1].get("results") or []
+    if len(results) > 1:
+        return Parsed(problem=f"OS Open Names found more than one match for {_code(text)}. Please give the exact swim entry's coordinates rather than choosing a place-name match automatically.")
+    entry = ((results or [{}])[0] or {}).get("GAZETTEER_ENTRY") or {}
     if "GEOMETRY_X" not in entry or "GEOMETRY_Y" not in entry:
         return Parsed(problem=f"No place called {_code(text)} was found in OS Open Names.")
     from dipcast.network.rivers import bng_to_lonlat

@@ -84,7 +84,7 @@ def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(t
     about = (tmp_path / "about.html").read_text()
     assert '<span id="n-spots">2</span> spots, <span id="n-bw">1</span> of them designated' in about
     # The server's absolute links become the static site's relative files, on every page.
-    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "testing.html", "feedback.html", "methods.html"]:
+    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "testing.html", "feedback.html", "methods.html", "coverage.html"]:
         page = (tmp_path / name).read_text()
         assert 'href="about.html">About</a>' in page, name
         assert 'href="/' not in page, name
