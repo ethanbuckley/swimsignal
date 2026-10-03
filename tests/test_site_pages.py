@@ -61,8 +61,9 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 7 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
+    assert sm.count("<url>") == 8 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
+    assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
     assert "<loc>https://example.org/swim/about.html</loc>" in sm and "<loc>https://example.org/swim/testing.html</loc>" in sm
     # The testers' briefing: linked from About and the feedback page, with flat links of its own.
     testing = (tmp_path / "testing.html").read_text()
@@ -430,7 +431,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 6
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 7
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):

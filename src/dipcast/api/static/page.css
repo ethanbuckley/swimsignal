@@ -171,3 +171,6 @@ main.doc .panel h2 { margin-top: 0; }
 .site-foot a { color: var(--muted); }
 .site-foot a:hover { color: var(--link); }
 .note { font-size: var(--fs-note); color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; margin-top: 40px; }
+#coastal-sites { list-style: none; padding: 0; max-height: 32rem; overflow-y: auto; }
+.coastal-site { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.coastal-site p { margin: 6px 0 0; }

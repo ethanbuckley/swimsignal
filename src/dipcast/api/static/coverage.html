@@ -13,6 +13,9 @@
 <p>SwimSignal forecasts listed rivers and lakes in England. For the coast, Wales and Scotland, use the official services below. Their observations and warnings answer different questions from our inland forecast.</p>
 <h2>Coasts and estuaries in England</h2>
 <p><a href="https://environment.data.gov.uk/bwq/profiles/">Find an Environment Agency bathing water</a> for its rating, sample results and any pollution warning. Check the date and the signs at the beach. A four-season rating is not today's water test. Our inland river model does not account for tides or coastal transport and is not a coastal forecast.</p>
+<details><summary>Search the English coastal directory</summary>
+<!-- COASTAL_DIRECTORY --><p>Use the EA link above if the directory is unavailable here.</p><!-- END_COASTAL_DIRECTORY -->
+</details>
 <h2>Wales</h2>
 <p><a href="https://environment.data.gov.uk/wales/bathing-waters/profiles/">Find a Welsh bathing water</a> for official site profiles and water-quality information. <a href="https://naturalresources.wales/days-out/bathing-water-quality/?lang=en">Natural Resources Wales explains its monitoring</a>. SwimSignal does not yet issue Welsh forecasts.</p>
 <h2>Scotland</h2>
@@ -28,4 +31,24 @@
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
 <p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script>
+const search = document.getElementById('coastal-search'), count = document.getElementById('coastal-count');
+const sites = [...document.querySelectorAll('.coastal-site')];
+if (search) search.addEventListener('input', () => {
+  const term = search.value.trim().toLocaleLowerCase();
+  let found = 0;
+  for (const site of sites) {
+    site.hidden = !site.querySelector('a').textContent.toLocaleLowerCase().includes(term);
+    if (!site.hidden) found++;
+  }
+  count.textContent = `${found} of ${sites.length} sites`;
+});
+function expireAdvice() {
+  for (const advice of document.querySelectorAll('[data-advice-expires]')) {
+    if (Date.now() >= Date.parse(advice.dataset.adviceExpires)) advice.textContent = 'This EA advice has expired; check the official profile';
+  }
+}
+expireAdvice();
+setInterval(expireAdvice, 60000);
+</script>
 </body></html>

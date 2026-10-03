@@ -1,14 +1,14 @@
 # Expansion and independent review, 3 October 2026
 
-The first public step is `coverage.html`: official bathing-water services for English coasts,
-Wales and Scotland, plus UKCEH's algae map. These links do not imply that SwimSignal issues
+The first public step is `coverage.html`: a searchable directory of 426 designated English coastal and estuary bathing waters, plus official bathing-water services for
+Wales and Scotland, plus UKCEH's algae map. The English directory publishes dated EA advice and historical ratings under OGL, with explicit missing/expired/unavailable states; it does not issue a coastal model forecast. These links do not imply that SwimSignal issues
 regional or coastal forecasts. The source pages were checked on 3 October 2026.
 
 ## Work remaining before importing observations
 
 | Layer | Source and next implementation | Acceptance condition |
 | --- | --- | --- |
-| English coasts and estuaries | [EA bathing-water profiles](https://environment.data.gov.uk/bwq/profiles/) and its documented bathing-water API. Start with official observations and pollution warnings, separately from the inland model. | Source/site identifiers, sampling time, issue/expiry time and missing-warning state survive ingestion. Missing or expired advice never means clear. Test against dated source fixtures before publishing. |
+| English coasts and estuaries | [EA bathing-water profiles](https://environment.data.gov.uk/bwq/profiles/) and its documented bathing-water API. The official directory, historical ratings and dated pollution advice are implemented in `coastal.py` and published as `data/coastal.json`, separately from the inland model. Individual lab-result ingestion remains future work. | Source/site identifiers, sampling time, issue/expiry time and missing-warning state survive ingestion. Missing or expired advice never means clear. Test against dated source fixtures before publishing. |
 | Wales | [NRW monitoring and approved widget](https://naturalresources.wales/days-out/bathing-water-quality/?lang=en), which links to [Welsh profiles](https://environment.data.gov.uk/wales/bathing-waters/profiles/). | Verify the exact dataset's reuse licence and API contract; preserve NRW provenance. Welsh observations first. No Welsh forecast until regional spill coverage and independent validation are available. |
 | Scotland | [SEPA bathing waters](https://bathingwaters.sepa.org.uk/) and [dataset licence catalogue](https://www.sepa.org.uk/environment/environmental-data). [Hydrometric API](https://timeseriesdoc.sepa.org.uk/) is OGL without registration. Bathing-water datasets have separate terms; the hydrometric licence cannot be assumed for them. | Verify the selected bathing-water licence and authoritative access method. Add gauge age/river matching tests, with no English calibration carried over as demonstrated Scottish skill. |
 | Wider algae reports | [Bloomin' Algae project and verification categories](https://www.ceh.ac.uk/our-science/projects/bloomin-algae), [map](https://bloominalgae.ceh.ac.uk/). | Obtain explicit permission/licence for the report export. Ingest confirmed, unverified, unable-to-verify and no-bloom records as distinct states; preserve observation date and water-body match. Never convert absent/old reports or a nearby unrelated pond into an all-clear or a confirmed local bloom. |
@@ -94,4 +94,4 @@ or photos must be excluded. We would keep unverified records distinct and would 
 missing reports as absence of algae. We can provide a preview before publishing.
 
 Destination if authorised: the project's published bloomin-algae@ceh.ac.uk contact. No enquiry
-has been sent. An independent reviewer also needs to be identified and invited by the owner.
+has been sent. An independent-review invitation has been prepared for Professor Richard Quilliam at the University of Stirling (https://www.stir.ac.uk/people/257111). Availability and conflicts have not been established; the invitation is awaiting owner authorisation.
