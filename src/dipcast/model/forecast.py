@@ -18,6 +18,7 @@ from dipcast.model import ecoli
 from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features
 from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.transport import (
+    ARRIVING_SAYS,
     LOW_CUT,
     clear_time,
     combine_daily,
@@ -30,6 +31,7 @@ from dipcast.model.transport import (
     risk_shares,
     river_velocity,
     spread_count,
+    still_coming,
     upstream_overflows,
 )
 from dipcast.network.rivers import RiverNetwork, bng_to_lonlat
@@ -349,12 +351,15 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # them, moderate or worse, or while an overflow upstream is discharging.
     clears_at, clears_by, last_water = clear_time(ov, now)
     spilling = bool(len(ov)) and bool((ov["status"] == 1).any())
+    said = now_risk >= LOW_CUT or (spilling and now_risk > 0)
+    arriving = arriving_of(ov, now, now_contrib) if said else None
     clearing = {"clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
                 # The overflow whose travel time holds the risk up most as it clears, when travel does ('travel').
                 **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}
                     | {"travel_h": round(float(ov.loc[last_water, "travel_h"]), 1)}} if clears_by == "travel" else {}),
-                **({"source": source_of(ov, risk_shares(now_contrib.to_numpy(dtype=float)))}
-                   if now_risk >= LOW_CUT or (spilling and now_risk > 0) else {})}
+                **({"source": source_of(ov, risk_shares(now_contrib.to_numpy(dtype=float)))} if said else {}),
+                # The spill whose water is still on its way, when such spills hold at least half the risk.
+                **({"arriving": arriving} if arriving else {})}
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk), **clearing,
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
                                             "feed_down_upstream", "feed_down", "stale_upstream", "feed_stale")}}
@@ -428,6 +433,28 @@ def source_of(ov: pd.DataFrame, share: np.ndarray) -> dict | None:
         "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
         "travel_h": round(float(r["travel_h"]), 1),
         "share": round(float(share.max()), 3), "spread_over": spread_count(share),
+    }
+
+
+def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> dict | None:
+    """The spill right now's risk counts whose water has not reached the spot yet (transport.still_coming),
+    when such spills hold at least ARRIVING_SAYS of the risk: the one with the largest share, where it
+    is, and when its water arrives. The level already counts it (live_now_risk); the page says when it
+    gets here. None otherwise."""
+    contrib = now_contrib.to_numpy(dtype=float)
+    left = still_coming(ov, now, contrib)
+    coming = ~np.isnan(left)
+    share = risk_shares(contrib)
+    if not coming.any() or share[coming].sum() < ARRIVING_SAYS:
+        return None
+    k = int(np.argmax(np.where(coming, share, -1.0)))
+    r = ov.iloc[k]
+    return {key: _clean(r.get(key)) for key in ["site_id", "site_name", "receiving_watercourse", "status"]} | {
+        "distance_km": round(float(r["distance_m"]) / 1000, 1),
+        "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
+        "travel_h": round(float(r["travel_h"]), 1),
+        "arrives_at": (now + pd.Timedelta(hours=float(left[k]))).round("min").isoformat(),
+        "share": round(float(share[coming].sum()), 3),
     }
 
 

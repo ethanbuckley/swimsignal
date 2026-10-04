@@ -1,6 +1,6 @@
 // "Where the risk comes from" on a spot's page (index.html, whereFrom and the functions before it):
-// one sentence naming the overflow a risk comes from, or how many it is spread over, and after a
-// spill when right now's risk should be back to low. The fields come from forecast.py
+// one sentence naming the overflow a risk comes from, or how many it is spread over, when water still
+// on its way arrives, and after a spill when right now's risk should be back to low. The fields come from forecast.py
 // (tests/test_clears_and_sources.py checks those); here, the words the page makes of them.
 // On its own: node --test tests/site_sources.test.cjs
 const {test} = require('node:test');
@@ -23,7 +23,7 @@ const pageDefs = names => names.map(n => { const i = pageSrc.findIndex(l => l.st
 const ctx = vm.createContext({Date: FixedDate});
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + '\nsetToday("2026-10-04"); let DAY = null;', ctx);
 vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'nameCase', 'onWater', 'sourcePlace', 'sourceSentence', 'DAY_PARTS',
-  'partOfDay', 'clearSentence', 'whereFrom']), ctx);
+  'partOfDay', 'arriveSentence', 'clearSentence', 'whereFrom']), ctx);
 const run = (expr, ...args) => vm.runInContext(expr, ctx)(...args);
 const plain = h => h.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
 
@@ -99,6 +99,32 @@ test('after a spill the page says when the model expects low risk, and why then'
   assert.equal(run('clearSentence', spot({clears_at: '2026-10-05T09:10:00+01:00'})), '');
   assert.equal(run('clearSentence', spot({risk: 0.62, label: 'high'})), '');
   assert.equal(run('clearSentence', spot({risk: 0.62, label: 'high', clears_at: '2026-10-04T01:00:00Z', clears_by: 'die-off'})), '');
+});
+
+test('water still on its way: when it reaches here, counted when the page is read', () => {
+  // Linton Falls at 19:30 on 2 Oct 2026, replayed: moderate right now, the spill's water 20 minutes off.
+  const at = min => new Date(NOW + min * 6e4).toISOString();
+  const coming = (min, extra = {}) => spot({risk: 0.2, label: 'moderate', discharging_upstream: 1,
+    arriving: {site_id: 'YW2', site_name: 'GRASSINGTON WwTW', status: 1, distance_km: 3.1, lake_distance_km: 0, travel_h: 1.7, arrives_at: at(min), share: 1}, ...extra});
+  assert.equal(plain(run('arriveSentence', coming(20))), 'Water from a spill 3.1 km upstream reaches here in about 20 minutes.');
+  assert.equal(plain(run('arriveSentence', coming(4))), 'Water from a spill 3.1 km upstream reaches here in a few minutes.');
+  assert.equal(plain(run('arriveSentence', coming(70))), 'Water from a spill 3.1 km upstream reaches here in about an hour.');
+  assert.equal(plain(run('arriveSentence', coming(5 * 60 + 10))), 'Water from a spill 3.1 km upstream reaches here in about 5 hours.');
+  // Twelve hours or more: the part of the day, as the clearing time says it.
+  assert.equal(plain(run('arriveSentence', coming(20 * 60))), 'Water from a spill 3.1 km upstream reaches here by about Sunday evening.');
+  // Across a lake: the river and the crossing together, as the sources say it.
+  assert.match(plain(run('arriveSentence', coming(30, {arriving: {distance_km: 1.2, lake_distance_km: 0.8, arrives_at: at(30)}}))), /a spill 2\.0 km upstream reaches here in about 30 minutes\.$/);
+  // Nothing to say: arrived already (an old page), right now low, or no field.
+  assert.equal(run('arriveSentence', coming(-5)), '');
+  assert.equal(run('arriveSentence', coming(20, {risk: 0.1, label: 'low'})), '');
+  assert.equal(run('arriveSentence', spot({risk: 0.2, label: 'moderate'})), '');
+  // In the tile, after right now's sources and before the clearing time; today only.
+  const d = coming(20, {source: {...ILKLEY, status: 1, share: 1}, clears_at: '2026-10-05T07:30:00+01:00', clears_by: 'die-off'});
+  assert.equal(tile(d), 'Where the risk comes fromNearly all of the risk from sewage spills right now comes from Ilkley WwTW on the River Wharfe, '
+    + 'discharging now, 6.0 km upstream, about 5 hours away.Water from a spill 3.1 km upstream reaches here in about 20 minutes.'
+    + 'If the overflow discharging upstream stops now, the model expects low risk from spills by about Monday morning.');
+  assert.equal(tile(d, '2026-10-05'), '');
+  vm.runInContext('DAY = null', ctx);
 });
 
 test('the tile follows the day shown, and is left out where there is nothing to say', () => {

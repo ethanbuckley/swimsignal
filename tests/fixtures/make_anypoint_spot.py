@@ -41,8 +41,8 @@ def main(spot_id: str = "bw-uke4100-08901") -> None:
     hist = history_days(ov["travel_h"].to_numpy(dtype=float))
     days = pd.date_range(now.floor("D") - pd.Timedelta(days=hist), periods=hist + 5, freq="D")
     p, ok = fc.spill_probabilities(ov, days, model)
-    _, live = live_now_risk(ov, now)
-    extra = np.where(ov["weight"].to_numpy() > 0, np.asarray(live) / ov["weight"].to_numpy(), 0.0)
+    _, live = live_now_risk(ov.assign(weight=1.0, travel_h=0.0), now)   # build_any_point's `live`
+    since_end = ((now - pd.to_datetime(ov["latest_event_end"], utc=True)).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
     companies = sorted(ov["company"].fillna("unknown").astype(str).unique())
     body = {
         "note": ("Made by tests/fixtures/make_anypoint_spot.py: forecast_point's result for a listed spot (expect) and its "
@@ -52,11 +52,14 @@ def main(spot_id: str = "bw-uke4100-08901") -> None:
                  for i, r in enumerate(ov.itertuples())],
         "od": {"today": int(hist), "days": [d.date().isoformat() for d in days], "scale": 1,
                "p": [[None if not k else float(v) for v, k in zip(row, okrow, strict=True)] for row, okrow in zip(p, ok, strict=True)],
-               "live": [float(x) for x in extra], "status": [int(x) for x in ov["status"]],
+               "live": [float(x) for x in np.asarray(live)], "status": [int(x) for x in ov["status"]],
+               "ended_h": [None if st == 1 or not 0 <= h <= 216 else round(float(h), 1)
+                           for st, h in zip(ov["status"], since_end, strict=True)],
                "company": [companies.index(str(c)) for c in ov["company"].fillna("unknown")], "companies": companies,
                "low": [int(i) for i in np.flatnonzero((ov["snap_confidence"] == "low").to_numpy())],
                "feed_down_since": {}, "rain_h": None,
                "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": 0.05, "t90_hours": 30.0,
+                               "recent_spill_hours": 48.0,
                                "low_confidence_factor": 0.7, "max_missing_share": fc.MAX_MISSING_SHARE}},
         "cal": {str(k): v for k, v in fc._lead_calibration().items()},
         "expect": {"now": want["now"], "days": want["days"], "upstream_summary": want["upstream_summary"]},

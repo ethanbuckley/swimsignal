@@ -94,7 +94,7 @@ main.doc code { overflow-wrap:anywhere; }
 <h3>How much of a spill arrives</h3>
 <p>Sewage from an overflow takes time to travel down the river: SwimSignal assumes 0.5 m a second on rivers and 0.05 m a second across a lake. On the way, bacteria die off: 90% in 30 hours. And the river dilutes it: an overflow on a small stream counts for less at a big river than one on the river itself. Dilution is measured by how much river lies upstream of each point, a stand-in for flow. On a lake it is cut further by the lake's area. The result is a weight for each overflow. The exposure index combines them: one minus the chance that no overflow's spill arrives.</p>
 <h3>Right now</h3>
-<p>An overflow discharging now, by its water company's live feed, counts in full. One that stopped within the last 48 hours counts for less as time passes.</p>
+<p>An overflow discharging now, by its water company's live feed, counts in full from the start of its spill. After it stops, it still counts in full until its water has passed the spot, which takes the travel time above, then for less as time passes, for 48 hours after its water has passed. A spill whose water has not reached the spot yet counts already, so the level does not drop while sewage is on its way; when most of the risk right now is still coming, the spot's page says when it should arrive.</p>
 <h3>The E. coli estimate</h3>
 <p>A statistical model fitted to 1,548 Environment Agency samples at 32 inland bathing waters from 2024 to 2026. It uses the rain at the spot in the 48 and 24 hours before midday, the day's exposure index, whether the spot is a lake or a river, and the time of year. Rain explains most of what it gets right. The exposure index adds a little on rivers, and nothing on lakes.</p>
 </section>

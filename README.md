@@ -147,8 +147,18 @@ the Great Ouse does not match Great Agill Beck. A spot moved
 from a mapped side channel to the main one (`adopted_main_channel`) is judged
 by name only, since its distance is the side channel's offset.
 
-**Right now.** Same weights applied to live status: discharging = 1, finished
-within 48 h decays with time since the event ended.
+**Right now.** Same weights applied to live status. A spill counts in full from
+its start until its water has passed the spot (its end plus its travel time; for
+one still discharging, its travel time from now), then decays with T90, and stops
+counting 48 h after its water passed. Until 4 Oct 2026 a finished spill decayed
+from its end, whatever its travel time, so a spill 20 h upstream was let go while
+its water was still arriving. Replayed over the 152 builds from 13 Sep to 4 Oct
+2026 (the replay matched the published level in 99.6% of 9,101 spot-builds), the
+change raised 55 spot headlines, at 15 spots, and lowered none. A spill whose
+water has not reached the spot yet counts from its start: also waiting for the
+water would have lowered 15 headlines while sewage was on its way, one to "Low
+risk for the next five days" with the water 20 minutes off. The page says instead
+when it arrives (`now.arriving`).
 
 **Skill with real forecasts.** The table above uses reanalysis rainfall, so it
 excludes weather-forecast error. `scripts/verify_leads.py` repeats the 2025
@@ -554,7 +564,7 @@ was written within 6 h: `fetch_live` then reads the layer's own last data edit
 (`editingInfo.dataLastEditDate` from `<layer>?f=json`, one more small request
 a poll). The scorer does not use that time: a current snapshot says nothing
 of what happened between polls. In the "Right now" tile an overflow reports
-live only if it is discharging, finished within the recent hours, or quiet on
+live only if it is discharging, stopped lately and still counted, or quiet on
 a current feed (`monitored_upstream`). A stale feed is named with its last
 update, as a feed that is down is (`feed_stale`, `stale_upstream`), and its
 quiet overflows are drawn in the grey of offline. Before this, every overflow
