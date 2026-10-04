@@ -1043,6 +1043,12 @@ const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
 // from a feed that has not updated within six hours says when it last did, not "not discharging": a
 // frozen feed would go on saying that. One missing from its company's live feed says so.
 const feedTime = iso => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+// When an overflow's last spill ended, in the page's own words for a date: "2 Oct", or "8 May 2025" from
+// another year; the map's pop-up adds the time. Until 4 Oct 2026 these read "02/10/2026", or
+// "02/10/2026, 14:33:00", where every other date on the page is written out.
+const endedOn = (iso, time = false) => { const d = new Date(iso);
+  return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', ...(d.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' }),
+    ...(time ? { hour: '2-digit', minute: '2-digit' } : {}) }); };
 const statusText = (s, c = {}) => c.data_state === 'stale'
   ? (s === 1 ? `discharging at its last update, ${c.feed_updated_at ? feedTime(c.feed_updated_at) : 'time not given'}`
     : c.feed_updated_at ? `no update since ${feedTime(c.feed_updated_at)}` : 'no update time from the company')
@@ -1329,7 +1335,10 @@ function standing(d, iso) {
 // tile's "Today's EA advice", which opens the EA's own panel, or without it to the EA's page.
 // Under a plain level the answer's own line already says to check the signs (OTHER_RISKS): said once.
 const check = d => { const url = (d.classification || {}).url;
-  return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source !== 'designated'
+  // A point off the list (anypoint.js, source 'unlisted') may well be a bathing water: a click on Brighton
+  // beach said "This is not a designated bathing water". Nothing checks a clicked point, so nothing is said.
+  return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source === 'unlisted' ? ''
+    : d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
     : typeof eaTodayFold === 'function' && eaTodayFold(d) ? ' <a href="#ea-today">Today\'s EA advice</a>, below, shows any advice against bathing there today, which this forecast does not include.'
     : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`
@@ -1430,7 +1439,8 @@ function answerParts(d, iso = null) {
   // headParts gives the level, "risk" and when ("High risk today") and what set it, or a rating, or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
   const sub = h === 'Rated poor' ? `Rated poor: ${w}` : h.startsWith('Rated ') ? h
-    : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when) : [w && cap(w), when].filter(Boolean).join(' ');
+    : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
+    : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
   return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
@@ -1796,7 +1806,7 @@ async function loadOverflows() {
   const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
   L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties;
     return L.circleMarker(ll, { radius: p.status === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
-      .bindPopup(`<b>${esc(p.site_name ?? p.site_id)}</b><br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? new Date(p.latest_event_end).toLocaleString('en-GB') : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
+      .bindPopup(`<b>${esc(nameCase(p.site_name ?? p.site_id))}</b><br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
 // Offline the layer is not stored (6 MB): the map then shows the spots without it.
@@ -2320,7 +2330,7 @@ function renderPlan() {
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
-    + `<p class="lede">The spots within reach on the day you pick, the ones the forecast does not flag first.</p>`
+    + `<p class="lede">Spots within reach on the day you pick. Those the forecast does not flag come first.</p>`
     + `<div class="plan-row"><label><span class="sr">Day</span><select id="plan-day">${planDates().map(iso => `<option value="${iso}"${iso === PLAN.day ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></label>`
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from: a town or village" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
@@ -2662,7 +2672,7 @@ function overflowTile(d, total) {
     L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
       .bindTooltip(`${esc(nameCase(c.site_name ?? c.site_id))}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nameCase(c.site_name ?? c.site_id))}</div>`
-      + `<div class="ov-meta">${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + new Date(c.latest_event_end).toLocaleDateString('en-GB') : ''}`
+      + `<div class="ov-meta">${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${far}&nbsp;km upstream, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>spill ${Math.round(c.p_spill_today * 100)}% today</small></div></li>`; }).join('');
   return `<div class="tile"><h2 class="t-lab">${ICON.spills}<span>Overflows that matter most</span></h2><ul class="ovs" id="contrib">${rows}</ul>`

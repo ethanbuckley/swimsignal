@@ -23,6 +23,9 @@ main.doc .toc h2 { font:600 var(--fs-note)/1.3 var(--font-text); color:var(--mut
 .toc li { margin:3px 0; break-inside:avoid; }
 @media (max-width: 480px) { .toc ol { columns:1; } }
 .mono { font:var(--fs-meta) var(--font-mono); }
+/* The version stamp breaks after each part, and a day is never split: unbroken, the stamp took the width and
+   the issue days wrapped to five lines while the table scrolled sideways at 1440 px. */
+.nw { white-space:nowrap; }
 /* Warnings against what happened, two by two: each count over its name, so the table fits a 320 px
    phone without scrolling sideways. Not in a scrolling box, so it closes on its own hairline; at most
    520 px wide, so a count stays near its row's name on a desktop. */
@@ -125,7 +128,8 @@ async function main() {
       for (const [lab, r] of [[`Longest gap ≤ ${cd.max_gap_h} h (default)`, cd], [`Longest gap ≤ ${st.max_gap_h} h`, st]]) t += `<tr><td>${lab}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(r.climatology_brier)}</td><td class="num">${f(1 - r.brier_cal/r.climatology_brier, 2)}</td></tr>`;
       h += section('coverage', 'Sensitivity to the coverage rule', t + '</table>'); }
     if (L.by_version) { let t = `<p class="small muted">Every forecast is stamped with the spill model, calibration map, E. coli model, code version and weather source that produced it, so a change starts a new row here rather than being averaged into the old one.</p><table><tr><th>Version</th><th>Issue days</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th><th class="num">Skill</th></tr>`;
-      for (const r of L.by_version) t += `<tr><td class="mono">${r.version}</td><td class="small">${r.first_day} – ${r.last_day}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(1 - r.brier_cal/r.climatology_brier, 2)}</td></tr>`;
+      // In the order the versions were issued, the unstamped days first: listed as the build wrote them, by hash, the days jumped about.
+      for (const r of [...L.by_version].sort((a, b) => String(a.first_day).localeCompare(String(b.first_day)))) t += `<tr><td class="mono">${String(r.version).replace(/;/g, ';<wbr>')}</td><td class="small nw">${r.first_day === r.last_day ? r.first_day : `${r.first_day} – ${r.last_day}`}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(1 - r.brier_cal/r.climatology_brier, 2)}</td></tr>`;
       h += section('by-version', 'By model version', t + '</table>'); }
     if (L.by_week) { let t = `<table><tr><th>Week starting</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th></tr>`;
       for (const r of L.by_week) t += `<tr><td>${r.week}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td></tr>`;
@@ -257,6 +261,8 @@ function prfSection(P) {
 // right: spills are rare, so that alone is right on most days.
 const n0 = x => Number(x).toLocaleString('en-GB');
 const p0 = x => Math.round(100 * x) + '%';
+// A share that rounds to 100% but is not all of them keeps a decimal: "1,467 of 1,470 (100%)" hid three failures.
+const share = x => x < 1 && Math.round(100 * x) === 100 ? (Math.floor(1000 * x) / 10).toFixed(1) + '%' : p0(x);
 // Two shares side by side, to one decimal place, or two where one place would make different shares look equal.
 const pair = (a, b) => { const k = a !== b && (100 * a).toFixed(1) === (100 * b).toFixed(1) ? 2 : 1; return [(100 * a).toFixed(k) + '%', (100 * b).toFixed(k) + '%']; };
 const were = (k, one = 'was', many = 'were') => k === 1 ? one : many;
@@ -303,7 +309,10 @@ function answer(d) {
     const month = new Date(L.generated_at || Date.now()).getMonth() + 1;
     let s = `On rivers, from ${day(E.first_day)} to ${day(E.last_day)}: ${n0(E.n)} Environment Agency sample${E.n === 1 ? '' : 's'} at ${E.n_sites} bathing water${E.n_sites === 1 ? '' : 's'}, ${over} of them over 900 E.&nbsp;coli per 100&nbsp;ml.`;
     if (E.too_few_to_judge) {
-      s += ` The estimate warned before ${warnedE}${warnedE ? `: ${E.hits} ${were(E.hits)} over 900 and ${E.false_alarms} ${were(E.false_alarms)} not` : ''}.`;
+      // In words (4 Oct 2026): "The estimate warned before 3: 0 were over 900 and 3 were not" named no noun and led with a zero.
+      s += !warnedE ? ' The estimate gave no warnings.'
+        : ` The estimate warned before ${warnedE} sample${warnedE === 1 ? '' : 's'}${!E.hits ? (warnedE === 1 ? ', which was not over 900' : ', none of them over 900')
+          : !E.false_alarms ? (warnedE === 1 ? ', which was over 900' : ', all of them over 900') : `: ${E.hits} over 900 and ${E.false_alarms} not`}.`;
       if (over) s += ` It gave no warning before ${E.misses === over ? (over === 1 ? 'the one' : `any of the ${over}`) : `${E.misses} of the ${over}`} over 900.`;
       s += ` Too few to judge. ${month >= 5 && month <= 9 ? 'More are scored as the Agency publishes them, usually within a week of sampling.' : 'The Agency samples from May to September, so no new samples come until May.'}`;
     } else {
@@ -329,7 +338,7 @@ function serviceSection(S) {
       ? `${down.map(c => `${c.company} in ${c.down} of ${n0(c.polls)} runs`).join('; ')}${up ? `; the other ${up === 1 ? 'one' : up} answered every run` : ''}`
       : `none: all ${F.companies.length} answered in every run`]); }
   if (B) {
-    rows.push(['Spots that got a forecast', `${n0(B.spots_forecast)} of ${n0(B.spots_attempted)}${B.share_forecast === null ? '' : ` (${p0(B.share_forecast)})`}, over ${B.n_published} run${B.n_published === 1 ? '' : 's'} since ${at(B.since)}`]);
+    rows.push(['Spots that got a forecast', `${n0(B.spots_forecast)} of ${n0(B.spots_attempted)}${B.share_forecast === null ? '' : ` (${share(B.share_forecast)})`}, over ${B.n_published} run${B.n_published === 1 ? '' : 's'} since ${at(B.since)}`]);
     if (B.n > B.n_published) { const w = B.not_published[B.not_published.length - 1];
       rows.push(['Runs that stopped before publishing', `${B.n - B.n_published} of ${B.n} since ${at(B.since)}${w ? `; the last, ${at(w.at)}: ${w.why}` : ''}`]); }
   }

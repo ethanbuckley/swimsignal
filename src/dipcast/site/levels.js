@@ -116,6 +116,11 @@ const laterDay = s => { const w = rank(worst(s));
 const because = r => r.by === 'spill' ? 'sewage spills'
   : r.by === 'water' ? (r.level === 'moderate' ? 'E.\u00a0coli may be raised' : r.level === 'very high' ? 'high E.\u00a0coli likely' : 'raised E.\u00a0coli likely')
   : r.by === 'algae' ? 'algae at the last check' : 'rated poor';
+// What set right now's level. A spill counts until 48 h after its water has passed the spot, so right now
+// can be raised with no overflow upstream discharging: then the spills are recent ones, not running now.
+// Before, Eden at Armathwaite (4 Oct 2026) read "Moderate risk right now: sewage spills" over a tile
+// saying "0 of 60 discharging". Where the count is not known, the words stay as they were.
+const nowBecause = (s, r) => r.by === 'spill' && (s.now || {}).discharging_upstream === 0 ? 'recent sewage spills' : because(r);
 // A water rated poor, on a day (iso). Advice against bathing applies in the bathing season, 15 May to
 // 30 September (Bathing Water Regulations 2013); the rating keeps the level at least high on every day
 // of the year all the same. So the advice is named only in season, and out of season the words say
@@ -147,7 +152,7 @@ function headParts(s) {
   if (!daily(s) || worstNear(s)[0].by === 'record')
     return advisedAgainst(s) ? ['Rated poor', poorReason(today())] : [`Rated ${classOf(s)} by the Environment Agency`, ''];
   const [r, when] = worstNear(s);
-  if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, because(r)];
+  if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, when === 'right now' ? nowBecause(s, r) : because(r)];
   const x = laterDay(s);
   if (x) return [`Low risk now · ${cap(x[0].level)} risk ${dayWord(x[1].date)}`, ''];
   return [s.days.slice(0, 5).every(hasData) ? 'Low risk for the next five days' : 'Low risk on every day with a forecast', ''];
@@ -284,6 +289,6 @@ function weekendWords(spots, dates, yours = false) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
-    level, dayLevel, headParts, headline, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords,
+    level, dayLevel, headParts, headline, nowBecause, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }

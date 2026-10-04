@@ -286,6 +286,8 @@ test('a spot with days but nothing upstream reads "No sewage risk from monitored
   assert.match(table, /E\. coli not shown here<\/b>: estimated only on rivers with monitored overflows upstream/);
   // "Check the signs" once in view: the answer's line has it, so the five days' caveat does not repeat it.
   assert.equal(text(run('check', clearRiver)), 'A forecast, not a water test. This is not a designated bathing water, so the Environment Agency does not test it for bathing.');
+  // A clicked point off the list is not checked against the bathing waters, so nothing is said about them.
+  assert.equal(text(run('check', {...clearRiver, source: 'unlisted'})), 'A forecast, not a water test.');
   assert.equal(text(run('daysSentence', clearRiver)), 'No storm overflow is monitored within 60 km upstream, so the days show rain instead: rain washes in runoff from farms, roads and wildlife. '
     + 'The wettest day ahead is Saturday, with about 18 mm of rain in the 48 hours to midday.');
   // Today's rain is in the answer already, so the wettest day named is a later one, or none.
@@ -377,4 +379,19 @@ test('a plan row says what the level rests on, and why a spill expected on a low
   const high = {...s, flow_state: 'high', river_state: {station: 'Mill <b>', observed_at: now}};
   assert.match(why(high, DATES[0]), /River high: the gauge at Mill &lt;b&gt; is above its usual range\.$/);
   assert.doesNotMatch(why(high, DATES[1]), /River high/);   // not a forecast: only on a plan for today
+});
+
+// ------------------------------------------------------------------------------ right now, after the spills stop
+// A spill counts until 48 h after its water has passed, so right now can be raised with nothing upstream
+// discharging. Eden at Armathwaite, 4 Oct 2026: "Moderate risk right now: sewage spills" over "0 of 60 discharging".
+test('right now raised with nothing discharging says the spills are recent', () => {
+  const recent = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'moderate', discharging_upstream: 0}});
+  assert.equal(L.headline(recent), 'Moderate risk right now: recent sewage spills');
+  assert.equal(L.headline(week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'moderate', discharging_upstream: 2}})),
+    'Moderate risk right now: sewage spills');
+  assert.equal(L.headline(week(['moderate', 'low', 'low', 'low', 'low'], {now: {label: 'low', discharging_upstream: 0}})),
+    'Moderate risk today: sewage spills');   // a day's forecast is about spills to come, not recent ones
+  const m = vm.runInContext('answerParts', plainCtx())(recent);
+  assert.equal(m.sub, 'Recent sewage spills');
+  assert.equal(m.next, 'Low risk later today');
 });

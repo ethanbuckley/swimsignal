@@ -131,6 +131,10 @@ those sizes; they were taken off to keep the rule simple.)
   tooltips, a picked day's rows. A bare "Very high" read as very high what. The word stands alone
   only under a heading that names it: the five days ("Pollution risk, next five days"), the
   day-by-day table's "Risk" column, the map's key.
+- Right now raised with no overflow upstream discharging (4 October 2026): a spill counts until 48 h
+  after its water has passed, so the reason is "recent sewage spills" ("Moderate risk right now: recent
+  sewage spills"; the answer's line under the level is "Recent sewage spills"). "Sewage spills right now"
+  over a Right now tile saying "0 of 60 discharging" read as a contradiction (`nowBecause` in `levels.js`).
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
   (3 October 2026), in the answer, on a saved card, in the list row, the map's tooltip and key,
   and the alerts (the key lists the teal one; an isolated lake sits under its grey "No level"):
