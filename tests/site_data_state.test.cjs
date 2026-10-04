@@ -82,3 +82,21 @@ test('click anywhere counts an offline monitor and a stale feed as forecast.live
   od.status[idx[k0]] = -2; od.no_feed = ['Yorkshire Water'];
   assert.equal(A.forecast(fx.rows, od, fx.cal).contributors.find(x => x.status === -2).data_state, 'no_feed');
 });
+
+test("a picked day's overflows are drawn and named as the overflows tile draws them", () => {
+  const day = vm.createContext({ esc: ctx.esc, statusText, drawnStatus, nil: v => v === null || v === undefined });
+  vm.runInContext(between('const nameCase = ', '\n') + '\n' + between('const share = p =>', '\n// How good a forecast this far ahead')
+    + '\nthis.dayOverflows = dayOverflows;', day);
+  const since = '2026-10-02T13:00:00+00:00';
+  const c = (id, status, state, extra = {}) => ({ site_id: id, site_name: id, status, data_state: state, weight: 0.5, p_spill_days: [0.4], ...extra });
+  const h = day.dayOverflows({ contributors: [c('Quiet', 0, 'live'), c('Frozen', 0, 'stale', { feed_updated_at: since }), c('Running', 1, 'stale', { feed_updated_at: since })] }, 0);
+  const rows = h.split('<li>').slice(1);
+  assert.match(rows[0], /class="sdot s0".*<span class="sr">not discharging: <\/span><b>Quiet<\/b>/);
+  assert.match(rows[1], /class="sdot s-1".*<span class="sr">no update since 2 Oct, 14:00: <\/span><b>Frozen<\/b>/);   // grey, not quiet
+  assert.match(rows[2], /class="sdot s1".*discharging at its last update/);
+});
+
+test('the map keys name the grey as no current reading: offline, no feed or a feed not updating', () => {
+  assert.equal((page.match(/>no current reading</g) || []).length, 2);
+  assert.ok(!page.includes('offline or no feed') && !page.includes('</span>offline</div>'));
+});

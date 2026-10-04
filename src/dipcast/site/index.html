@@ -1652,11 +1652,13 @@ const share = p => p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%';
 // An overflow's chance of a spill on day j of the forecast. Forecasts built before 30 Sep 2026
 // carry today and tomorrow only.
 const spillOn = (c, j) => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spill_today : j === 1 ? c.p_spill_tomorrow : undefined;
-// The overflows most likely to affect the spot that day: chance of a spill times its reach.
+// The overflows most likely to affect the spot that day: chance of a spill times its reach. Each dot is
+// its live status as the overflows tile draws it (drawnStatus: a stale "not discharging" in the grey of
+// no current reading), with the status in words for a screen reader.
 function dayOverflows(d, j) {
   const top = (d.contributors || []).map(c => [c, spillOn(c, j)]).filter(([c, p]) => !nil(p) && c.weight * p >= 0.001)
     .sort((a, b) => b[0].weight * b[1] - a[0].weight * a[1]).slice(0, 3);
-  return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${c.status}" aria-hidden="true"></span><span><b>${esc(nameCase(c.site_name ?? c.site_id))}</b>: `
+  return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><span><span class="sr">${esc(statusText(c.status, c))}: </span><b>${esc(nameCase(c.site_name ?? c.site_id))}</b>: `
     + `spill chance ${share(p)}, reach ${share(c.weight)}</span></li>`).join('')}</ul>` : '';
 }
 // How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json).
@@ -1765,7 +1767,7 @@ const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very hig
 const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
   el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}</div>`
-    + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>offline</div>`;
+    + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`;
   L.DomEvent.disableClickPropagation(el); return el; };
 legend.addTo(map);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
@@ -2563,7 +2565,7 @@ function render(d) {
     + `<div id="nearby-host">${nearby(d)}</div>${tiles}`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   if (total) h += `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
     + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
-    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>offline or no feed</p></div>`;
+    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p></div>`;
   h += `<div id="sources-host">${whereFrom(d)}</div>`;   // where the risk comes from, before the overflows; showDay keeps it to the day
   if (d.contributors.length) h += overflowTile(d, total);
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div>';

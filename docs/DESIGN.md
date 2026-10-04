@@ -88,7 +88,10 @@ those sizes; they were taken off to keep the rule simple.)
   the two sets. A spot with no monitored overflow upstream is teal `#4aa39a`, not grey: it is a
   calm answer, not a missing one. Grey `#98a2aa` means no level; an isolated lake, which no river
   reaches, is grey too ("No river connection"). An overflow discharging now is
-  the very-high brick.
+  the very-high brick. An overflow with no current reading is the light grey, and the map keys call it
+  that, "no current reading" (4 October 2026; they said "offline" and "offline or no feed"): a monitor
+  offline, no live feed, or a feed that has not updated within six hours, whose "not discharging" may
+  be out of date (`drawnStatus`). The same dot in a picked day's list of overflows.
 - The map: OpenStreetMap's tiles with the land in grey and the water (sea, lakes, rivers) in a
   muted blue, `#bccfd8`, about as light as the grey it replaced (L* 82 against 83; chroma 8). Its
   hue (235°) is 48° from the teal marker's, which keeps a paper ring, and the open spot's dark
