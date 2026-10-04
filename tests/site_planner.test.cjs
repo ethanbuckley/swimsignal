@@ -303,6 +303,15 @@ test('the rain in the last two days is a plain sentence, and absent without a fi
   assert.equal(said(null), '');
   assert.equal(vm.runInContext('rainSaid', ctx)({days: []}), '');
 });
+test('overflows discharging now: the sentence over the five days gives right now\'s level with "risk"', () => {
+  // "exposure right now is moderate" left the level word bare (docs/DESIGN.md, Words).
+  const ctx = plainCtx(), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
+  const two = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'moderate', discharging_upstream: 2}});
+  assert.equal(run('summary', two)[0], '2 upstream overflows are discharging now: moderate risk from them right now.');
+  assert.match(text(run('daysSentence', two)), /^2 upstream overflows are discharging now: moderate risk from them right now\. /);
+  const one = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', discharging_upstream: 1}});
+  assert.equal(run('summary', one)[0], '1 upstream overflow is discharging now: low risk from it right now.');
+});
 test('an isolated lake reads "No river connection" in the unknown grey, with the same line and no rain', () => {
   const words = 'No river connection: overflows cannot reach this lake';
   assert.equal(L.level(isolatedLake), L.NO_RIVER);   // its excellent rating made it "low" before
