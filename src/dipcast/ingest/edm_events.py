@@ -5,6 +5,12 @@ United Utilities' files (config.EDM_EVENT_FEEDS) train the spill model. Hafren D
 never enters training. Its credit: "Hafren Dyfrdwy Event Duration Monitoring 2025", Hafren
 Dyfrdwy, published on Stream, licensed under CC BY 4.0
 (https://creativecommons.org/licenses/by/4.0/).
+
+The Environment Agency's start/stop files for Dŵr Cymru Welsh Water's overflows in England
+(read_ea_dcww_events) are a second Welsh-company test set, kept apart in
+data/processed/dcww_ea_events.parquet. Their credit: "© Environment Agency copyright and/or
+database right", Open Government Licence v3.0, from the EA dataset "Event Duration
+Monitoring-Storm Overflow-Start/Stop Detailed Data".
 """
 
 from __future__ import annotations
@@ -107,6 +113,47 @@ def fetch_hd_events(refresh: bool = False) -> pd.DataFrame:
     # The layer has no ReceivingWatercourse field, and ArcGIS refuses a query that names one.
     return fetch_events({HD_SOURCE: HD_EVENTS_2025}, refresh=refresh,
                         out_fields=OUT_FIELDS.removesuffix(",ReceivingWatercourse"))
+
+
+# The EA's start/stop files for Dwr Cymru Welsh Water's overflows in England (checked 4 Oct 2026):
+# 2024 (sheet Start_Stop, times as Excel dates), 2025 (StartStop, ISO text ending in "Z") and 2026 to
+# date (one sheet per month or months, ISO text, sometimes an empty fifth column). Columns: Unique ID
+# (DCW00019, the annual returns' site_id), site name, discharge start and finish, both headed "(GMT)".
+# The files give no position; it comes from the annual returns.
+EA_DCWW_SOURCE = "EA Welsh Water"
+EA_DCWW_DATASET = "https://environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7"
+EA_DCWW_CREDIT = ("© Environment Agency copyright and/or database right. Licensed under the Open "
+                  "Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)")
+
+
+def read_ea_dcww_events(paths, positions: pd.DataFrame | None = None) -> pd.DataFrame:
+    """The EA's Welsh Water workbooks (`paths`), every sheet, in the fetch_events schema. Times are
+    read as UTC, as the headings say. `positions` (site_id, lat, lon) defaults to the newest
+    position of each id in annual_returns.parquet. For testing the model, never for training."""
+    from openpyxl import load_workbook  # dev dependency; only this off-CI path needs it
+    frames = []
+    for path in paths:
+        wb = load_workbook(path, read_only=True, data_only=True)
+        for ws in wb.worksheets:
+            rows = [r[:4] for r in ws.iter_rows(min_row=2, values_only=True) if r and r[0]]
+            df = pd.DataFrame(rows, columns=["site_id", "site_name", "event_start", "event_end"])
+            df["source"] = f"{EA_DCWW_SOURCE} ({path.name if hasattr(path, 'name') else path})"
+            frames.append(df)
+    df = pd.concat(frames, ignore_index=True)
+    df["site_id"] = df["site_id"].astype(str).str.strip()
+    # Cell by cell: the 2024 file holds Excel dates, the others ISO text. to_utc would read a column
+    # of dates as epoch numbers.
+    for c in ("event_start", "event_end"):
+        df[c] = pd.to_datetime(df[c].map(lambda v: v.isoformat() if hasattr(v, "isoformat") else v),
+                               utc=True, errors="coerce", format="ISO8601")
+    if positions is None:
+        ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet", columns=["site_id", "year", "lat", "lon"])
+        positions = ar.dropna(subset=["site_id", "lat"]).sort_values("year").drop_duplicates("site_id", keep="last")
+    df = df.merge(positions[["site_id", "lat", "lon"]], on="site_id", how="left")
+    df = df.dropna(subset=["event_start"])
+    df["duration_h"] = (df["event_end"] - df["event_start"]).dt.total_seconds() / 3600.0
+    df = df[(df["duration_h"].isna()) | ((df["duration_h"] >= 0) & (df["duration_h"] < 24 * 60))]
+    return df[COLS].sort_values(["site_id", "event_start"]).reset_index(drop=True)
 
 
 if __name__ == "__main__":
