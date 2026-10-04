@@ -693,13 +693,21 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
     _, live = live_now_risk(sub.assign(weight=1.0), now)
     companies = sorted(sub["company"].fillna("unknown").astype(str).unique())
     cpos = {c: i for i, c in enumerate(companies)}
-    from dipcast.ingest.live import FEED_DOWN
+    from dipcast.ingest.live import FEED_DOWN, NO_FEED, STALE, with_data_states
     down = sub[sub["status"] == FEED_DOWN]
     since = {}
     if len(down) and "feed_down_since" in down:
         for c, g in down.groupby(down["company"].fillna("unknown")):
             t = pd.to_datetime(g["feed_down_since"], utc=True).min()
             since[str(c)] = None if pd.isna(t) else t.isoformat()
+    # Data states go by company (ingest.live.data_states): a stale feed and its last update, and
+    # the companies with no live feed. The page works each overflow's state out from these.
+    st = with_data_states(sub)
+    stale_since = {}
+    for c, g in st[st["data_state"] == STALE].groupby(st["company"].fillna("unknown")):
+        t = pd.to_datetime(g["feed_updated_at"], utc=True).max()
+        stale_since[str(c)] = None if pd.isna(t) else t.isoformat()
+    no_feed = sorted(str(c) for c in st.loc[st["data_state"] == NO_FEED, "company"].fillna("unknown").unique())
     body = {
         "generated_at": now.isoformat(), "ids": idv, "days": [d.date().isoformat() for d in days], "today": int(past),
         "scale": P_SCALE,
@@ -707,7 +715,8 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "live": [round(float(v) * P_SCALE) for v in np.asarray(live, dtype=float)],
         "status": [int(s) for s in sub["status"]],
         "company": [cpos[str(c)] for c in sub["company"].fillna("unknown")],
-        "companies": companies, "feed_down_since": since, "rain_h": rain_h,
+        "companies": companies, "feed_down_since": since, "feed_stale_since": stale_since, "no_feed": no_feed,
+        "rain_h": rain_h,
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,
@@ -717,7 +726,9 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "note": ("p: per overflow, spill probability per day in thousandths, before the lead calibration; null where "
                  "the overflow's rain cell had no data that day (the ok mask). live: the weight a spill counts with "
                  "right now, in thousandths (1000 discharging, decaying with T90 for 48 h after a spill ends). status: "
-                 "1 discharging, 0 not, -1 monitor offline, -2 no live feed, -3 company feed down. rain_h: hours "
+                 "1 discharging, 0 not, -1 monitor offline, -2 no live feed, -3 company feed down. feed_stale_since: "
+                 "companies whose feed answered but had not updated within 6 h, with the last update (null: no time); "
+                 "their statuses are not current. no_feed: companies with no live feed. rain_h: hours "
                  "between the rain forecast the overflow's probabilities used and generated_at. low: overflows "
                  "snapped by proximity alone, whose weight is multiplied by low_confidence_factor."),
         **({"credits": credits} if credits else {}),

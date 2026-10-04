@@ -128,6 +128,15 @@ def fetch_all(layer_url: str, key: str | None = None, attempts: int = 3, **kw: A
     return best
 
 
+def layer_edit_time(layer_url: str) -> int | None:
+    """When the layer's data was last written, in epoch milliseconds, from its metadata
+    (`<layer>?f=json`, `editingInfo.dataLastEditDate`): one small request, no data query.
+    None where the layer does not say."""
+    with httpx.Client() as c:
+        body = _get(c, layer_url, {"f": "json"})
+    return (body.get("editingInfo") or {}).get("dataLastEditDate")
+
+
 def statistics(
     layer_url: str,
     stats: list[dict[str, str]],

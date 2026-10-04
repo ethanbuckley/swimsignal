@@ -1,0 +1,239 @@
+{
+ "note": "Each live layer's fields, its Status domain and editingInfo, from `<layer>?f=json` read once per layer at 2026-10-03 23:29 UTC (00:29 BST, 4 Oct 2026). Trimmed from the full responses; no data query was made.",
+ "layers": {
+  "Anglian Water": {
+   "name": "stream_service_outfall_locations",
+   "fields": [
+    "Status",
+    "Company",
+    "LatestEventStart",
+    "LastUpdated",
+    "Id",
+    "StatusStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "ObjectId"
+   ],
+   "status_domain": {
+    "-1": "Offline",
+    "1": "Start",
+    "0": "Stop"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069990134,
+    "schemaLastEditDate": 1763135867033,
+    "dataLastEditDate": 1791069990134
+   }
+  },
+  "Northumbrian Water": {
+   "name": "Northumbrian Water Storm Overflow Activity",
+   "fields": [
+    "OBJECTID",
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "LastUpdated"
+   ],
+   "status_domain": {
+    "-1": "Offline",
+    "0": "Stop",
+    "1": "Start"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069592684,
+    "schemaLastEditDate": 1729174004772,
+    "dataLastEditDate": 1791069592684
+   }
+  },
+  "Severn Trent Water": {
+   "name": "Severn Trent Water Storm Overflow Activity PROD (Master)",
+   "fields": [
+    "OBJECTID",
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "LastUpdated"
+   ],
+   "status_domain": {
+    "1": "Start",
+    "0": "Stop",
+    "-1": "Offline"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069542621,
+    "schemaLastEditDate": 1736506024356,
+    "dataLastEditDate": 1791069542621
+   }
+  },
+  "South West Water": {
+   "name": "South West Water - Storm Overflow Activity_points",
+   "fields": [
+    "ObjectId",
+    "statusStart",
+    "latestEventStart",
+    "latestEventEnd",
+    "receivingWaterCourse",
+    "lastUpdated",
+    "company",
+    "status",
+    "longitude",
+    "latitude",
+    "Id"
+   ],
+   "status_domain": {
+    "-1": "Offline",
+    "0": "Stop",
+    "1": "Start"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069611799,
+    "schemaLastEditDate": 1791069608825,
+    "dataLastEditDate": 1791069611799
+   }
+  },
+  "Southern Water": {
+   "name": "SouthernWater_StormOverflowActivity",
+   "fields": [
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LastUpdated",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "OBJECTID"
+   ],
+   "status_domain": {
+    "1": "Start",
+    "0": "Stop",
+    "-1": "Offline"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791061114577,
+    "schemaLastEditDate": 1777545732164,
+    "dataLastEditDate": 1791061114577
+   }
+  },
+  "Thames Water": {
+   "name": "Thames Water Storm Overflow Activity",
+   "fields": [
+    "OBJECTID",
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Longitude",
+    "Latitude",
+    "ReceivingWaterCourse",
+    "LastUpdated"
+   ],
+   "status_domain": {
+    "1": "Start",
+    "0": "Stop",
+    "-1": "Offline"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069831072,
+    "schemaLastEditDate": 1770043507889,
+    "dataLastEditDate": 1791069831072
+   }
+  },
+  "United Utilities": {
+   "name": "Sites",
+   "fields": [
+    "OBJECTID",
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "LastUpdated"
+   ],
+   "status_domain": {
+    "1": "Start",
+    "0": "Stop",
+    "-1": "Offline"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791068635696,
+    "schemaLastEditDate": 1741087960845,
+    "dataLastEditDate": 1791068596861
+   }
+  },
+  "Wessex Water": {
+   "name": "Wessex Water Storm Overflow Activity",
+   "fields": [
+    "OBJECTID",
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "LastUpdated"
+   ],
+   "status_domain": {
+    "1": "Start",
+    "0": "Stop",
+    "-1": "Offline"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069804914,
+    "schemaLastEditDate": 1762530877893,
+    "dataLastEditDate": 1791069804914
+   }
+  },
+  "Yorkshire Water": {
+   "name": "Yorkshire Water Storm Overflows - Event Duration Monitoring",
+   "fields": [
+    "Id",
+    "Company",
+    "Status",
+    "StatusStart",
+    "LatestEventStart",
+    "LatestEventEnd",
+    "Latitude",
+    "Longitude",
+    "ReceivingWaterCourse",
+    "LastUpdated",
+    "OBJECTID"
+   ],
+   "status_domain": {
+    "1": "Start",
+    "0": "Stop",
+    "-1": "Offline"
+   },
+   "editingInfo": {
+    "lastEditDate": 1791069501719,
+    "schemaLastEditDate": 1729612931935,
+    "dataLastEditDate": 1791069501719
+   }
+  }
+ }
+}
