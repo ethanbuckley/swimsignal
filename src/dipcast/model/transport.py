@@ -489,15 +489,21 @@ def missing_share(available: np.ndarray, weights: np.ndarray, travel_h: np.ndarr
 
 def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.RECENT_SPILL_HOURS,
                   t90_h: float = config.T90_HOURS) -> tuple[float, pd.Series]:
-    """Risk right now from live status: discharging, or finished within recent_h."""
+    """Risk right now from the live status. A spill counts at its full weight from its start until its
+    water has passed the spot: its end plus its travel time, or, while it runs, its travel time from
+    now. Then it dies off with T90, and it stops counting recent_h after its water passed.
+
+    Until 4 Oct 2026 a finished spill died off from its end and left the count recent_h after it,
+    whatever its travel time, so a spill 20 h upstream was let go while its water was still arriving,
+    and the headline eased before clear_time's "should clear by" did. A spill whose water has not
+    reached the spot yet still counts in full from its start: still_coming says when it arrives, and
+    the level does not wait for it. On 4 Oct 2026 Ethan chose this over also waiting for the water,
+    which in the 13 Sep to 4 Oct builds would have dropped 15 headlines while sewage was on its way,
+    one to "Low risk for the next five days" with the water 20 minutes off."""
     if ov.empty:
         return 0.0, pd.Series(dtype=float)
-    active = ov["status"] == 1
-    end = pd.to_datetime(ov["latest_event_end"], utc=True)
-    hrs_since = (now - end).dt.total_seconds() / 3600.0
-    recent = (~active) & hrs_since.between(0, recent_h)
-    extra = np.where(active, 1.0, np.where(recent, np.power(10.0, -hrs_since.fillna(1e9) / t90_h), 0.0))
-    contrib = ov["weight"].to_numpy() * extra
+    counted, w, to_end, travel = _counted(ov, now, recent_h)
+    contrib = np.where(counted, _contributions(0.0, w, to_end + travel, recent_h, t90_h), 0.0)
     risk = 1.0 - np.prod(1.0 - np.clip(contrib, 0, 1))
     return float(risk), pd.Series(contrib, index=ov.index)
 
@@ -505,26 +511,42 @@ def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.
 LOW_CUT = 0.15   # risk_label: a risk under this is low
 
 
-def _counted(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """The spills live_now_risk counts right now (running, or finished within recent_h, with any
-    weight): a mask over `ov`, and for every row its weight and the hours from now to its end,
-    taking a running spill to end now (so 0, or negative for one that ended in the past)."""
+def _counted(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """The spills live_now_risk counts right now, with any weight: running, or finished with its water
+    passed under recent_h ago or still passing. A mask over `ov`, and for every row its weight, the
+    hours from now to its end (taking a running spill to end now: 0, or negative for one that ended)
+    and its travel time (`travel_h`, 0 where unknown)."""
     active = (ov["status"] == 1).to_numpy()
     end = pd.to_datetime(ov["latest_event_end"], utc=True)
     hrs_since = ((now - end).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
     w = np.clip(ov["weight"].to_numpy(dtype=float), 0.0, None)
-    counted = (active | ((hrs_since >= 0) & (hrs_since <= recent_h))) & (w > 0)
-    return counted, w, np.where(active, 0.0, -hrs_since)
+    travel = np.nan_to_num(ov["travel_h"].to_numpy(dtype=float), nan=0.0)
+    counted = (active | ((hrs_since >= 0) & (hrs_since - travel <= recent_h))) & (w > 0)
+    return counted, w, np.where(active, 0.0, -hrs_since), travel
 
 
 def _contributions(t: float, w: np.ndarray, passed: np.ndarray, recent_h: float, t90_h: float) -> np.ndarray:
-    """Each spill's part of the live risk t hours from now, if its water had finished passing the
-    spot `passed` hours from now: its full weight until then, then dying off with T90, and nothing
-    once it passed more than recent_h ago. With `passed` its end, this is live_now_risk run forward
-    (a spill running now taken to end now); with its end plus its travel time, the same allowing
-    for the water still on its way."""
+    """Each spill's part of the live risk t hours from now, if its water finishes passing the spot
+    `passed` hours from now: its full weight until then, then dying off with T90, and nothing once it
+    passed more than recent_h ago. With `passed` its end plus its travel time, this is live_now_risk
+    run forward (a spill running now taken to end now); with its end alone, the same as if its water
+    had passed the moment it stopped (the rule before 4 Oct 2026, which clear_time compares against)."""
     age = t - passed
     return np.where(age <= 0, w, np.where(age <= recent_h, w * np.power(10.0, -np.maximum(age, 0.0) / t90_h), 0.0))
+
+
+ARRIVING_SAYS = 0.5   # the part of right now's risk whose water must still be on its way for the page to say when it arrives
+
+
+def still_coming(ov: pd.DataFrame, now: pd.Timestamp, contrib: np.ndarray | pd.Series) -> np.ndarray:
+    """Hours from now until each spill's water first reaches the spot (its start plus its travel time),
+    for the spills right now's risk counts (`contrib` > 0, live_now_risk's) whose water has not arrived
+    yet; NaN for the rest. A spill with no start time is taken to have arrived."""
+    if ov.empty or "latest_event_start" not in ov:
+        return np.full(len(ov), np.nan)
+    start = pd.to_datetime(ov["latest_event_start"], utc=True)
+    left = ov["travel_h"].to_numpy(dtype=float) - ((now - start).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
+    return np.where((np.asarray(contrib, dtype=float) > 0) & (left > 0), left, np.nan)
 
 
 def _first_under(w: np.ndarray, passed: np.ndarray, cut: float, recent_h: float, t90_h: float) -> tuple[float, bool]:
@@ -552,51 +574,31 @@ def _first_under(w: np.ndarray, passed: np.ndarray, cut: float, recent_h: float,
     return start, True   # not reached: after the last step nothing counts
 
 
-def live_clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
-                    recent_h: float = config.RECENT_SPILL_HOURS,
-                    t90_h: float = config.T90_HOURS) -> tuple[pd.Timestamp | None, str | None]:
-    """When live_now_risk, run forward from `now`, first falls below `cut`, if the overflows
-    discharging now stop now, the finished spills keep their end times, and no new spill starts.
-    The second element says what brought it under: 'die-off', or 'window' when a spill leaving the
-    count (recent_h after it ended) did. (None, None) when the risk is under the cut already.
-    The model's own time, which takes no account of travel time; clear_time is the one to say."""
-    if ov.empty:
-        return None, None
-    counted, w, end = _counted(ov, now, recent_h)
-    if 1.0 - np.prod(1.0 - np.clip(_contributions(0.0, w[counted], end[counted], recent_h, t90_h), 0, 1)) < cut:
-        return None, None
-    t, jumped = _first_under(w[counted], end[counted], cut, recent_h, t90_h)
-    return now + pd.Timedelta(hours=t), "window" if jumped else "die-off"
-
-
 TRAVEL_SAYS = 0.5   # the part of the risk, as it clears, that travel time must hold for 'travel'
 
 
 def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
                recent_h: float = config.RECENT_SPILL_HOURS,
                t90_h: float = config.T90_HOURS) -> tuple[pd.Timestamp | None, str | None, object]:
-    """The time to tell a swimmer right now's risk should be back to low, allowing for travel time.
-    live_now_risk counts a spill 20 h upstream in full the moment it starts and lets it die off from
-    the moment it ends, while its water is still reaching the spot for 20 h more. Here the same
-    computation runs forward with each spill it counts held at its full weight until its water has
-    passed (its end, or now for one running, plus its travel time), then dying off with T90, and
-    leaving the count recent_h after its water passed rather than after it ended. A small far spill
-    then barely moves the time; a big one holds it up. Always at or after live_clear_time, since each
-    spill's part is at least the model's at every moment. The live risk itself, and so the headline,
-    is unchanged. Spills live_now_risk no longer counts (ended over recent_h ago) stay out.
+    """The time to tell a swimmer right now's risk should be back to low: live_now_risk run forward
+    from `now`, if the overflows discharging now stop now, the finished spills keep their end times,
+    and no new spill starts. Each spill is held at its full weight until its water has passed the spot
+    (its end, or now for one running, plus its travel time), then dies off with T90, and leaves the
+    count recent_h after its water passed. A small far spill then barely moves the time; a big one
+    holds it up. Until 4 Oct 2026 this alone allowed for travel time and the headline's risk did not;
+    both now follow one rule (live_now_risk).
 
     Returns (time, what set it, the index label in `ov` of the overflow named with 'travel').
     'travel' when, as it clears, travel time holds at least half the risk: the risk over and above
-    what the model alone would give at that moment, split as risk_shares splits it; the overflow
-    named is the one with the most of that. Otherwise 'window' when a spill leaving the count took
-    it under, else 'die-off'. (None, None, None) when right now's risk is low."""
+    what it would be had each spill's water passed the moment the spill stopped, split as risk_shares
+    splits it; the overflow named is the one with the most of that. Otherwise 'window' when a spill
+    leaving the count took it under, else 'die-off'. (None, None, None) when right now's risk is low."""
     if ov.empty:
         return None, None, None
-    counted, w, end = _counted(ov, now, recent_h)
-    idx, w, end = ov.index[counted], w[counted], end[counted]
-    if 1.0 - np.prod(1.0 - np.clip(_contributions(0.0, w, end, recent_h, t90_h), 0, 1)) < cut:
+    counted, w, end, travel = _counted(ov, now, recent_h)
+    idx, w, end, passed = ov.index[counted], w[counted], end[counted], (end + travel)[counted]
+    if 1.0 - np.prod(1.0 - np.clip(_contributions(0.0, w, passed, recent_h, t90_h), 0, 1)) < cut:
         return None, None, None
-    passed = end + ov["travel_h"].to_numpy(dtype=float)[counted]
     t, jumped = _first_under(w, passed, cut, recent_h, t90_h)
 
     def hazard(c: np.ndarray) -> np.ndarray:   # risk_shares' split of 1 - prod(1 - c)

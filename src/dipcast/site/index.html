@@ -355,7 +355,7 @@
   .range > div { position:relative; height:6px; margin:0 7px; background:var(--track); }
   .range b { background:var(--ink); }
   .range p { display:flex; justify-content:space-between; margin:7px 0 0; font-size:var(--fs-meta); line-height:1; color:var(--muted); font-variant-numeric:tabular-nums; }
-  /* Every overflow upstream as a dot: discharging, finished in the last 48 h (a ring), quiet, silent. */
+  /* Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, silent. */
   .odots { display:flex; flex-wrap:wrap; gap:3px; margin:14px 0 0; }
   .odots i { width:var(--sz); height:var(--sz); border-radius:50%; background:var(--ov-quiet); }
   .odots i.dis { background:var(--veryhigh); } .odots i.rec { background:transparent; box-shadow:inset 0 0 0 1.5px var(--ov-quiet); } .odots i.off { background:var(--ov-off); }
@@ -804,7 +804,7 @@
       </details>
       <details class="more"><summary>What each part of a spot's page means</summary>
         <dl>
-          <dt>Right now</dt><dd>Which upstream storm overflows are discharging now or finished within 48 hours, from the water companies' live feeds.</dd>
+          <dt>Right now</dt><dd>Which upstream storm overflows are discharging now or stopped lately, from the water companies' live feeds. A spill counts in full from its start until its water has passed the spot, then for less over the next 48 hours.</dd>
           <dt id="about-exposure">Exposure index (0–100)</dt><dd>A 0–100 score of how likely sewage from upstream is to reach the spot. It is built from the chance that at least one overflow upstream spills and its discharge arrives, after travel time, die-off and dilution. The spill part is verified against what the overflows did; the die-off and dilution weights are physical estimates, not calibrated against water samples, so the score is not a probability. The colour levels (low to very high) come from it.</dd>
           <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the exposure index, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the exposure index is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: the figure is still shown, marked †, but it does not set the level, and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
@@ -1418,10 +1418,13 @@ const feedStale = now => (now.feed_stale || []).map(f => ` ${esc(f.company)}'s l
 const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, st = now.stale_upstream || 0, other = total - mon - fd - st;
   if (!fd && !st) return `${mon} of ${total} report live${mon < total ? `; ${total - mon === 1 ? 'the one that does not' : `the ${total - mon} that do not`} could be spilling unseen` : ''}.`;
   return `${mon} of ${total} report live.${other > 0 ? ` ${other === 1 ? 'One more gives' : `${other} more give`} no live reading and could be spilling unseen.` : ''}${feedDown(now)}${feedStale(now)}`; };
-// Every overflow upstream as a dot: discharging, finished lately (a ring), quiet, or not reporting.
+// The overflows that stopped lately and still count right now (transport.live_now_risk): a spill counts
+// until recent_spill_hours after its water has passed here, so one far upstream counts for longer after its end.
+const recentSay = (rec, dis, h) => `${rec ? rec + (dis ? ' more' : '') : 'None'} stopped lately: a spill counts until ${h}&nbsp;h after its water has passed here.`;
+// Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
   const quiet = Math.max(0, Math.min(total, n.monitored_upstream ?? total) - dis - rec), off = Math.max(0, total - dis - rec - quiet);
-  return `<div class="odots" style="--sz:${total <= 70 ? 7 : total <= 130 ? 5 : 4}px" role="img" aria-label="${dis} discharging, ${rec} finished in the last ${d.assumptions.recent_spill_hours} hours, ${quiet} quiet, ${off} not reporting">`
+  return `<div class="odots" style="--sz:${total <= 70 ? 7 : total <= 130 ? 5 : 4}px" role="img" aria-label="${dis} discharging, ${rec} stopped lately, ${quiet} quiet, ${off} not reporting">`
     + '<i class="dis"></i>'.repeat(dis) + '<i class="rec"></i>'.repeat(rec) + '<i></i>'.repeat(quiet) + '<i class="off"></i>'.repeat(off) + '</div>'; };
 // Rain in the 48 h to midday on each of the five days (40 mm fills a column, as the list's week).
 const rainCols = d => `<div class="rcols" aria-hidden="true">${d.days.slice(0, 5).map(x =>
@@ -1477,7 +1480,7 @@ function facts(d) {
       ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
   if (!d.error && total) { const n = now.discharging_upstream || 0, mon = now.monitored_upstream ?? total;
     out.push({ icon: ICON.now, label: 'Right now', fig: n, unit: `of ${total} discharging`, figTone: n ? 'hot' : '', vis: overflowDots(d),
-      say: `${now.recent_upstream} finished in the last ${d.assumptions.recent_spill_hours}&nbsp;h. ${liveSay(now, total, mon)}` }); }
+      say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}` }); }
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
     const when = new Date(a.date + 'T12:00:00').toLocaleDateString('en-GB', a.season === thisYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
@@ -2371,7 +2374,7 @@ function tech(d) {
     ['Lake crossing speed', a.lake_velocity_ms !== undefined ? `${a.lake_velocity_ms} m/s` : null],
     ['Bacteria die-off', a.t90_hours !== undefined ? `90% in ${a.t90_hours} h (T90)` : null],
     ['Searched upstream', a.max_upstream_km !== undefined ? `${a.max_upstream_km} km` : null],
-    ['Counts as a recent spill', a.recent_spill_hours !== undefined ? `ended within ${a.recent_spill_hours} h` : null],
+    ['Counts as a recent spill', a.recent_spill_hours !== undefined ? `until ${a.recent_spill_hours} h after its water has passed` : null],
     ['Spill model', a.model], ['Lead-time calibration', a.lead_calibration === undefined ? null : a.lead_calibration ? 'on' : 'off'],
     ['E. coli model', e.n_samples ? `${e.target}, fitted on ${e.n_samples.toLocaleString()} samples` : null],
     ['Version', a.version]].filter(r => r[1] !== null && r[1] !== undefined && r[1] !== '');
@@ -2440,9 +2443,9 @@ function partOfDay(iso) {
   return part === 'overnight' ? `overnight into ${day}` : `by about ${day} ${part}`;
 }
 // The time is transport.clear_time's: the live risk run forward, as if the spills running now stopped
-// now and none started, allowing for travel time (the live risk itself takes none): each spill is held
-// at its full weight until its water has passed the spot, then dies off with T90, and stops counting
-// 48 h after its water passed. When a spill leaving the count (clears_by 'window') or travel time
+// now and none started. As in the live risk itself (since 4 Oct 2026), each spill is held at its full
+// weight until its water has passed the spot, then dies off with T90, and stops counting 48 h after
+// its water passed. When a spill leaving the count (clears_by 'window') or travel time
 // ('travel': it holds at least half the risk as it clears; clears_after names the overflow it holds up
 // most) sets the time, the sentence says so. A time already past says nothing (an old page). Then the
 // first later day the forecast raises by spills after today alone.
@@ -2458,16 +2461,30 @@ function clearSentence(d) {
     + `the model expects low risk from spills ${partOfDay(n.clears_at)}${why}.`
     + (later ? ` Rain may bring new spills and ${later.label} risk ${dayWord(later.date)}.` : '');
 }
+// Water still on its way: forecast.py's now.arriving, written where spills whose water has not reached
+// the spot yet hold at least half of right now's risk. The level already counts it from the spill's
+// start (transport.live_now_risk), so it does not read low while sewage is coming; this says when it
+// arrives, counted when the page is read. Moderate or worse only, as the clearing time; a time already
+// past says nothing (an old page).
+function arriveSentence(d) {
+  const n = d.now || {}, a = n.arriving;
+  if (!a || !a.arrives_at || rank(n.label) < 1) return '';
+  const min = (Date.parse(a.arrives_at) - Date.now()) / 6e4;
+  if (!(min > 0)) return '';
+  const when = min < 10 ? 'in a few minutes' : min < 55 ? `in about ${Math.round(min / 10) * 10} minutes`
+    : min < 90 ? 'in about an hour' : min < 12 * 60 ? `in about ${Math.round(min / 60)} hours` : partOfDay(a.arrives_at);
+  return `Water from a spill ${fmt(a.distance_km + a.lake_distance_km, 1)}&nbsp;km upstream reaches here ${when}.`;
+}
 // The tile, for the day shown (DAY, or today). The day's sources when it is moderate or worse; on
 // today, right now's instead where right now is the higher risk, or where only right now has any to
 // give (forecast.py writes them while right now is moderate or worse, or an overflow upstream is
-// spilling). The clearing time on today only. showDay fills it again for a picked day.
+// spilling). When water still on its way arrives, and the clearing time, on today only. showDay fills it again for a picked day.
 function whereFrom(d) {
   if (!daily(d)) return '';
   const iso = DAY || today(), x = d.days.find(y => y.date === iso), n = d.now || {}, first = iso === today();
   const day = x && hasData(x) && x.source && rank(x.label) >= 1 ? sourceSentence(x.source, iso) : '';
   const now = first && n.source ? sourceSentence(n.source, 'now') : '';
-  const said = [now && (!day || n.risk >= x.risk) ? now : day, first ? clearSentence(d) : ''].filter(Boolean);
+  const said = [now && (!day || n.risk >= x.risk) ? now : day, first ? arriveSentence(d) : '', first ? clearSentence(d) : ''].filter(Boolean);
   return said.length ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>Where the risk comes from</span></h2>`
     + said.map(t => `<p class="t-say">${t}</p>`).join('') + '</section>' : '';
 }

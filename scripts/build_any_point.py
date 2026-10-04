@@ -85,6 +85,9 @@ DAYS_AHEAD = 4            # today and four more, as forecast_point
 DIL_SCALE = 10_000        # dilutions and dilution ratios in ten-thousandths
 BASE_UNIT_M = 10          # base distances in links/<t>.json, in tens of metres
 P_SCALE = 1_000           # probabilities and live weights in thousandths (three decimals)
+# How long after a spill's end its hours are published (ended_h): the 48 h window plus a week, longer
+# than any travel time to a click (60 km of river is 33 h; across Windermere, 17 km, another 94 h).
+ENDED_KEEP_H = config.RECENT_SPILL_HOURS + 7 * 24
 FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
@@ -690,7 +693,13 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
     for a, b in zip(cl, cn, strict=True):
         t = issued.get((float(a), float(b)))
         rain_h.append(None if t is None or pd.isna(t) else max(0, int((now - t).total_seconds() // 3600)))
-    _, live = live_now_risk(sub.assign(weight=1.0), now)
+    # The weight a spill counts with right now depends on its travel time to the click (live_now_risk
+    # holds it in full until its water has passed), so the page works it out from `ended_h`. `live` is
+    # the weight with no travel time, kept for a page from before 4 Oct 2026 that reads it.
+    _, live = live_now_risk(sub.assign(weight=1.0, travel_h=0.0), now)
+    since_end = ((now - pd.to_datetime(sub["latest_event_end"], utc=True)).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
+    ended_h = [None if s == 1 or not 0 <= h <= ENDED_KEEP_H else round(float(h), 1)
+               for s, h in zip(sub["status"], since_end, strict=True)]
     companies = sorted(sub["company"].fillna("unknown").astype(str).unique())
     cpos = {c: i for i, c in enumerate(companies)}
     from dipcast.ingest.live import FEED_DOWN, NO_FEED, STALE, with_data_states
@@ -713,6 +722,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "scale": P_SCALE,
         "p": [[None if np.isnan(v) else round(float(v) * P_SCALE) for v in row] for row in p],
         "live": [round(float(v) * P_SCALE) for v in np.asarray(live, dtype=float)],
+        "ended_h": ended_h,
         "status": [int(s) for s in sub["status"]],
         "company": [cpos[str(c)] for c in sub["company"].fillna("unknown")],
         "companies": companies, "feed_down_since": since, "feed_stale_since": stale_since, "no_feed": no_feed,
@@ -724,8 +734,11 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
                         "low_confidence_factor": LOW_CONFIDENCE_FACTOR, "max_missing_share": 0.1,
                         "rain_max_age_h": RAIN_MAX_AGE_H},
         "note": ("p: per overflow, spill probability per day in thousandths, before the lead calibration; null where "
-                 "the overflow's rain cell had no data that day (the ok mask). live: the weight a spill counts with "
-                 "right now, in thousandths (1000 discharging, decaying with T90 for 48 h after a spill ends). status: "
+                 "the overflow's rain cell had no data that day (the ok mask). ended_h: hours from the end of the "
+                 "overflow's latest spill to generated_at (null while it runs, with no end, or over 216 h): a spill "
+                 "counts in full until its water has passed the point, its end plus the travel time there, then "
+                 "decays with T90, for 48 h. live: the same weight with no travel time, in thousandths, for older "
+                 "pages. status: "
                  "1 discharging, 0 not, -1 monitor offline, -2 no live feed, -3 company feed down. feed_stale_since: "
                  "companies whose feed answered but had not updated within 6 h, with the last update (null: no time); "
                  "their statuses are not current. no_feed: companies with no live feed. rain_h: hours "

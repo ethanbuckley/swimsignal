@@ -470,6 +470,26 @@ line says a spot is safe. The embed card and `alerts.json` carry the same line; 
 the list leave it out, since they are for comparing spots. Each line and its sources are on the Method
 page (`methods.html#actions`), which `tests/site_actions.test.cjs` checks word for word.
 
+### Water on its way (4 October 2026)
+
+Right now's level holds each spill in full until its water has passed the spot, its end plus its travel
+time, and counts it for 48 hours after that (`transport.live_now_risk`). Before, a spill died off from
+its end, so the headline eased while water from far upstream was still arriving, and before "should
+clear by" did. A spill whose water has not reached the spot yet counts from its start: Ethan chose that
+over also waiting for the water, which would have dropped headlines to "Low risk" with sewage minutes
+away. So the level never waits; one line says when the water gets there.
+
+- In "Where the risk comes from", after right now's sources and before the clearing time, when spills
+  whose water has not arrived hold at least half of right now's risk (`now.arriving`): "Water from a
+  spill 3.1 km upstream reaches here in about 20 minutes." The tile's other sentences' ink, no bold.
+- The time is counted when the page is read: "in a few minutes" under ten, to the nearest ten minutes
+  under the hour, "in about an hour", whole hours under twelve, then the part of the day as the clearing
+  time says it ("by about Sunday evening"). Moderate or worse only, today only, and nothing once the time
+  has passed.
+- The Right now tile says "3 stopped lately: a spill counts until 48 h after its water has passed here."
+  It said "3 finished in the last 48 h", which a spill far upstream now outlasts. "None stopped lately"
+  where there are none.
+
 ### Water temperature (3 October 2026)
 
 The Water temperature tile (`waterTile` in `index.html`; the reading is

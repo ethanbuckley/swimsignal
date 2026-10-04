@@ -1,5 +1,5 @@
 {
- "note": "Made by tests/fixtures/make_anypoint_spot.py: forecast_point's result for a listed spot (expect) and its inputs in the shape of the any-point files (rows, od; p unscaled, before calibration).",
+ "note": "Made by tests/fixtures/make_anypoint_spot.py: forecast_point's result for a listed spot (expect) and its inputs in the shape of the any-point files (rows, od; p unscaled, before calibration). On 4 Oct 2026 od.ended_h (from live: -T90 log10 live, null where live was 0) and assumptions.recent_spill_hours were added, and expect.now recomputed with live_now_risk's travel-time rule from these inputs.",
  "spot": {
   "id": "bw-uke4100-08901",
   "name": "Wharfe at Cromwheel, Ilkley"
@@ -308,8 +308,26 @@
    "lake_velocity_ms": 0.05,
    "t90_hours": 30.0,
    "low_confidence_factor": 0.7,
-   "max_missing_share": 0.1
-  }
+   "max_missing_share": 0.1,
+   "recent_spill_hours": 48.0
+  },
+  "ended_h": [
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   25.0,
+   null,
+   null,
+   null,
+   null,
+   null
+  ]
  },
  "cal": {
   "0": {
@@ -905,7 +923,7 @@
  },
  "expect": {
   "now": {
-   "risk": 0.006,
+   "risk": 0.029,
    "label": "low",
    "discharging_upstream": 0,
    "recent_upstream": 1,

@@ -120,8 +120,17 @@ const AnyPoint = (() => {
         data_status: !known ? 'rain unavailable' : miss[j] > 0 ? 'partial' : 'ok', rain_missing_share: r3(miss[j]),
         in_validated_season: [5, 6, 7, 8, 9].includes(Number(date.slice(5, 7))) });
     }
-    // Right now: transport.live_now_risk, and forecast.live_counts with ingest.live.data_states.
-    const status = rows.map(r => od.status[r.i]), extra = rows.map(r => od.live[r.i] / od.scale);
+    // Right now: transport.live_now_risk, and forecast.live_counts with ingest.live.data_states. A spill
+    // counts in full until its water has passed this point (its end, from ended_h, plus the travel time
+    // here; a running one's water is still coming), then dies off with T90 for recent_spill_hours. A file
+    // from before 4 Oct 2026 has no ended_h: its `live` weights allow no travel time.
+    const status = rows.map(r => od.status[r.i]);
+    const extra = rows.map((r, k) => {
+      if (!od.ended_h) return od.live[r.i] / od.scale;
+      if (status[k] === 1) return 1;
+      const e = od.ended_h[r.i]; if (e === null || e === undefined) return 0;
+      const age = e - travel[k];
+      return age <= 0 ? 1 : age <= a.recent_spill_hours ? Math.pow(10, -age / a.t90_hours) : 0; });
     const company = rows.map(r => od.companies[od.company[r.i]]), staleSince = od.feed_stale_since || {}, noFeed = new Set(od.no_feed || []);
     const state = status.map((s, k) => s === 0 || s === 1 ? (company[k] in staleSince ? 'stale' : 'live')
       : s === -2 && noFeed.has(company[k]) ? 'no_feed' : 'offline');
