@@ -6,6 +6,8 @@ import logging
 import threading
 import time
 
+from dipcast import config
+
 log = logging.getLogger(__name__)
 
 
@@ -18,6 +20,9 @@ def refresh_all(net=None) -> dict:
     t0 = time.time()
     live = fetch_live()
     save_live(live)
+    if config.SCOTTISH_WATER:   # shadow poll, off by default: stores in state, shows and publishes nothing
+        from dipcast.ingest.scottish_water import poll
+        poll()   # logs its own summary and never raises
     net = net or RiverNetwork.load()
     ov = build_overflows(net)
     summary = {"live_rows": len(live), "discharging_now": int((live.status == 1).sum()),
