@@ -137,8 +137,8 @@ PUSH_URL_ENV, PUSH_KEY_ENV = "DIPCAST_PUSH_URL", "DIPCAST_VAPID_PUBLIC_KEY"
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
 PUSH_SWAPS = [
-    ("<li>Your saved spots and your location stay on your device.</li>",
-     "<li>Your location stays on your device. So do your saved spots, unless you turn on alerts.</li>"),
+    ("<li>Your saved spots, your swim journal and your location stay on your device.</li>",
+     "<li>Your location and your swim journal stay on your device. So do your saved spots, unless you turn on alerts.</li>"),
     ("It stays on your device: it is not sent to SwimSignal or to anyone else.",
      "It stays on your device: it is not sent to SwimSignal or to anyone else, unless you turn on alerts (below)."),
     ("SwimSignal holds none, as described above;",

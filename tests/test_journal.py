@@ -34,3 +34,17 @@ def test_the_privacy_notice_describes_the_journal():
     notice = (ROOT / "src" / "dipcast" / "api" / "static" / "privacy.html").read_text()
     assert '"Log a swim"' in notice and "IndexedDB" in notice and "Save a copy" in notice
     assert "I swam here today" not in notice
+
+
+def test_the_privacy_notices_short_version_names_the_journal_with_alerts_on_or_off(tmp_path):
+    # The alerts build swaps the short version's line (PUSH_SWAPS): the swap must still find it, and
+    # the journal must stay named, whichever alerts are on.
+    bs = _build_site()
+    line, swapped = bs.PUSH_SWAPS[0]
+    assert "swim journal" in line and "swim journal" in swapped
+    for alerts, email in [(False, False), (True, False), (False, True), (True, True)]:
+        bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/", push=alerts, email=email)
+        notice = (tmp_path / "privacy.html").read_text()
+        assert (swapped if (alerts or email) else line) in notice, (alerts, email)
+        assert (line not in notice) if (alerts or email) else (swapped not in notice)
+
