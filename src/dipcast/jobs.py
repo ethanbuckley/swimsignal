@@ -25,6 +25,9 @@ def refresh_all(net=None) -> dict:
         poll()   # logs its own summary and never raises
     net = net or RiverNetwork.load()
     ov = build_overflows(net)
+    if config.DWR_CYMRU:   # off by default: no licence yet; stores in state, shows and publishes nothing
+        from dipcast.ingest.dwr_cymru import poll
+        poll()   # logs its own summary and never raises
     summary = {"live_rows": len(live), "discharging_now": int((live.status == 1).sum()),
                "overflows": len(ov), "seconds": round(time.time() - t0, 1)}
     try:
