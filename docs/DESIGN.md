@@ -701,6 +701,26 @@ gives all four navigation links a single full-width row.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
 
+## Since you last looked (4 October 2026)
+
+- A saved spot's card says what changed since this browser last showed it, in one line under the
+  card's own (`since.js`): "Was low risk when you looked on Friday at 18:20; now moderate risk." In the
+  muted grey at the notes' size, since it is history, and never in a level's colour. The same cards on
+  the list's Saved spots tile carry it too, while no day is picked.
+- One change a card, the first of: the level ("risk" on both sides, as everywhere), a new Environment
+  Agency rating ("Was rated good for 2025 ...; now rated excellent for 2026."), and an overflow upstream
+  starting or stopping ("No overflow upstream was discharging when you looked on Friday at 18:20; now 2
+  are."). A stop is said only while every feed upstream is current, since a feed that is down drops its
+  overflows from the count. The day is `levels.js`'s `dayWord` within the week before the forecast's
+  day, and the date further back.
+- Nothing on a first look, when nothing changed, or when the forecast is the one already seen.
+- A spot counts as looked at when its level is on screen with no day picked: its card on the Saved page
+  or the list, or its own page. The lines compare with the notes as they were when the page opened, so
+  they stay for the visit and are gone on the next unless something changes again.
+- Not on a spot's own page: its answer already fills a 320 px phone's first screen (River Eden at
+  Armathwaite, 4 October 2026: the five days' heading at 590 px of 640), and one more line would sit
+  between what to do and the issue time.
+
 ## The embed and the data page (3 October 2026)
 
 - **The embed**, `embed.html?spot=<id>` (`src/dipcast/site/embed.html` and `embed.js`), is one spot's
