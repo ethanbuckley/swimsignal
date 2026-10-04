@@ -167,7 +167,7 @@ test("opening a site's fold loads the EA panel once, sandboxed, with no referrer
   assert.equal(frame.title, "Environment Agency: today's advice at Plymouth Hoe East");
   assert.equal(frame.attrs.sandbox, 'allow-popups allow-popups-to-escape-sandbox');   // no scripts, no same-origin
   assert.equal(frame.referrerPolicy, 'no-referrer');
-  assert.equal(note.textContent, "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It shows no issue time, and browsers may keep it for up to an hour.");
+  assert.equal(note.textContent, "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test.");
   assert.equal(fold.scrolled, 1);
   assert.equal(fold.block, 'nearest');
   e.close(fold); e.open(fold);

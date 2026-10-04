@@ -171,7 +171,7 @@ function eaToday(fold, now) {   // fills an opened fold with the EA's panel; fal
   frame.referrerPolicy = 'no-referrer';
   const note = document.createElement('p');
   note.className = 'small muted';
-  note.textContent = `The Environment Agency's own panel, loaded ${ukWhen(now)}. It shows no issue time, and browsers may keep it for up to an hour.`;
+  note.textContent = `The Environment Agency's own panel, loaded ${ukWhen(now)}. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test.`;
   fold.replaceChildren(fold.querySelector('summary'), frame, note);
   // The list scrolls in a box shorter than an opened row on a phone: bring the panel and its note into view.
   if (fold.scrollIntoView) fold.scrollIntoView({block: 'nearest'});
