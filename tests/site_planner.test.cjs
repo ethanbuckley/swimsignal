@@ -129,6 +129,23 @@ test('where the week goes starts at today when the level comes from right now', 
   assert.equal(L.weekNext(week(['low', 'low', 'low', 'low', 'low'], {classification:{class:'poor'}})),
     'At least high risk every day');
 });
+test('where the week goes starts after where the level came from, not the first day that shares it', () => {
+  // Greenholme on 4 Oct 2026: right now moderate, and Sunday's moderate came after it. The search began
+  // after Sunday, found nothing, and the line was blank.
+  const greenholme = week(['low', 'low', 'high', 'very high', 'moderate'], {now:{label:'moderate'}});
+  assert.equal(L.headline(greenholme), 'Moderate risk right now: sewage spills');
+  assert.equal(L.weekNext(greenholme), 'Low risk later today');
+  // Right now high and Thursday high: the search began after Thursday, missed today's low and said "Moderate risk by Friday".
+  assert.equal(L.weekNext(week(['low', 'high', 'moderate', 'high', 'high'], {now:{label:'high'}})), 'Low risk later today');
+  // No low day: the lowest from right now on is today's moderate. The search after Thursday found nothing lower: blank.
+  assert.equal(L.weekNext(week(['moderate', 'high', 'high', 'high', 'high'], {now:{label:'high'}})), 'Moderate risk later today');
+  assert.equal(L.weekNext(week(['moderate', 'moderate', 'moderate', 'moderate', 'moderate'], {now:{label:'moderate'}})),
+    'Moderate risk on all five days');
+  // From tomorrow: the search starts after tomorrow even when today has no forecast, and a later day sharing it does not move it.
+  assert.equal(L.weekNext(week(['low', 'high', 'moderate', 'high', 'low'])), 'Low risk by Sunday');
+  const gap = week(['low', 'high', 'moderate', 'high', 'low']); gap.days[0] = {date: DATES[0], label: 'low', risk: null};
+  assert.equal(L.weekNext(gap), 'Low risk by Sunday');
+});
 
 // ------------------------------------------------------------------------------ the page's own functions
 // Top-level definitions taken from index.html's script and run beside levels.js and experience.js, as

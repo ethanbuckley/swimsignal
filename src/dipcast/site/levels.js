@@ -227,15 +227,18 @@ function dayAction(s, iso) {
   return actionFor(x ? risk(s, x) : null, dayWord(iso));
 }
 // Where the five days go from the answer, as Apple's high and low: the day a raised level falls to low
-// (or to its lowest), or the later day a low one rises. A level set by right now (an overflow
-// discharging) is on none of the days, so the search then starts at today: "Low risk today".
+// (or to its lowest), or the later day a low one rises. The search starts after where the level came
+// from (worstNear's right now, today or tomorrow), not after the first day with the same level: a level
+// set by right now (an overflow discharging) is on none of the days, so the search then starts at
+// today, "Low risk later today", even when a later day happens to share it (Greenholme, 4 Oct 2026:
+// right now moderate, Thursday moderate, and the line was blank).
 function weekNext(s) {
   if (advisedAgainst(s)) return 'At least high risk every day';
   if (!daily(s)) return '';
-  const ds = s.days.slice(0, 5).filter(hasData).map(x => ({ x, l: risk(s, x).level })).filter(o => o.l), l0 = level(s);
+  const ds = s.days.slice(0, 5).map((x, i) => hasData(x) && { x, i, l: risk(s, x).level }).filter(o => o && o.l), l0 = level(s);
   if (!ds.length) return '';
   if (rank(l0) >= 1) {
-    const at = ds.findIndex(o => o.l === l0), after = ds.slice(at + 1);   // -1, from right now: every day
+    const at = ['right now', 'today', 'tomorrow'].indexOf(worstNear(s)[1]) - 1, after = ds.filter(o => o.i > at);   // -1, from right now: every day
     const to = after.find(o => o.l === 'low') || after.reduce((a, b) => rank(b.l) < rank(a ? a.l : l0) ? b : a, null);
     if (!to) return ds.every(o => o.l === l0) ? `${cap(l0)} risk on all five days` : '';
     const d = to.x.date;
