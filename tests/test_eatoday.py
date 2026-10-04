@@ -34,3 +34,10 @@ def test_the_build_never_asks_for_the_panel():
     # No request is added to the build: only the page's script knows the widget's address.
     for f in [ROOT / "scripts" / "build_site.py", *(ROOT / "src" / "dipcast").rglob("*.py")]:
         assert "bwq/widget" not in f.read_text(), f
+
+
+def test_the_privacy_notice_names_the_panel_on_a_bathing_waters_page():
+    notice = (ROOT / "src" / "dipcast" / "api" / "static" / "privacy.html").read_text()
+    para = next(p for p in notice.split("<p>") if "environment.data.gov.uk" in p)
+    assert "on a bathing water's page" in para and 'Opening "Today\'s EA advice"' in para
+    assert "scripts switched off" in para and "does not tell it which page you were on" in para
