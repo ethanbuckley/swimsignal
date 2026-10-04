@@ -1622,7 +1622,7 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
 function bestDayNote(spots, yours = false) {
   const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
-  return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
+  return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
 }
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.

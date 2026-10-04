@@ -270,6 +270,9 @@ function bestDay(spots, dates) {
   }
   return best;
 }
+// Saved spots with nothing upstream have no daily level, so a count of levelled spots can be lower
+// than the saved total the page states ("your 4 spots", then "2 of your 3 spots"). Say which three.
+const yoursLevelled = (d, spots) => d.known < spots.length ? ' with a daily level' : '';
 // How the weekend looks, beside the week's best day, while the five days reach a Saturday or a
 // Sunday: "Best this weekend: Saturday, 64 spots at low risk." On a Saturday the weekend is today
 // and tomorrow. On a Tuesday Saturday is the fifth day and alone, so no "best": "This weekend: 64
@@ -281,7 +284,7 @@ function weekendWords(spots, dates, yours = false) {
   const week = bestDay(spots, dates), weekend = iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay());
   const days = dates.filter(weekend).map(iso => bestDay(spots, [iso])).filter(Boolean);
   if (!week || !days.length || days.some(d => d.date === week.date) || new Date(today() + 'T12:00:00').getDay() === 0) return '';
-  const n = d => yours ? `${d.low || 'none'} of your ${d.known} spots` : `${d.low || 'no'} spot${d.low === 1 ? '' : 's'}`;
+  const n = d => yours ? `${d.low || 'none'} of your ${d.known} spots${yoursLevelled(d, spots)}` : `${d.low || 'no'} spot${d.low === 1 ? '' : 's'}`;
   const [a, b] = days;
   if (b && a.low !== b.low) { const w = b.low > a.low ? b : a; return `Best this weekend: ${dayName(w.date)}, ${n(w)} at low risk.`; }
   return `This weekend: ${n(a)} at low risk ${dayWord(a.date)}${b ? (a.low ? ' and ' : ' or ') + dayName(b.date) : ''}.`;
@@ -289,6 +292,6 @@ function weekendWords(spots, dates, yours = false) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
-    level, dayLevel, headParts, headline, nowBecause, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords,
+    level, dayLevel, headParts, headline, nowBecause, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }
