@@ -2,12 +2,14 @@
 // compares the site's alerts.json with the last run and pushes to people whose saved
 // spots have just become high.
 
-import { concat, importEcdhPublic, sendPush, unb64url, vapidSigner } from './webpush.js';
+import { importEcdhPublic, sendPush, unb64url, vapidSigner } from './webpush.js';
+import {
+  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, readJson, reply, retryAfter,
+} from './shared.js';
+import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 
-const MAX_BODY = 8 * 1024;
-const MAX_SPOTS = 100;
-const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;
-const HIGH = 2;
+export { forecastExpiry };
+
 // At most one alert a spot in 20 hours: the site is rebuilt several times a day, and a spot near
 // the line can cross it, drop back and cross again, which would alert people each time.
 const QUIET_MS = 20 * 3600 * 1000;
@@ -24,16 +26,12 @@ export default {
 
 // ---- HTTP ----
 
-class Invalid extends Error {}
-const check = (ok, reason) => { if (!ok) throw new Invalid(reason); };
-const isObject = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
-const reply = (status, text, headers = {}) =>
-  new Response(text, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...headers } });
-
 const ROUTES = new Map([['/subscribe', subscribe], ['/unsubscribe', unsubscribe]]);
 
 export async function handleRequest(request, env) {
-  const route = ROUTES.get(new URL(request.url).pathname);
+  const path = new URL(request.url).pathname;
+  if (path.startsWith('/email/')) return handleEmail(request, env);   // email.js: off until set up
+  const route = ROUTES.get(path);
   if (!route) return reply(404, 'Not found');
   if (request.method !== 'POST' && request.method !== 'OPTIONS') return reply(405, 'Method not allowed', { Allow: 'POST, OPTIONS' });
   // Browsers always send Origin on these requests, so a missing one is not the site either.
@@ -54,23 +52,6 @@ export async function handleRequest(request, env) {
     if (err instanceof Invalid) return reply(400, err.message, cors);
     throw err;
   }
-}
-
-// Reads at most MAX_BODY bytes, so an oversized body is refused without buffering it.
-async function readJson(request) {
-  check(!(Number(request.headers.get('Content-Length')) > MAX_BODY), 'Body too large');
-  const chunks = [];
-  let size = 0;
-  const reader = request.body?.getReader();
-  while (reader) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > MAX_BODY) { await reader.cancel(); throw new Invalid('Body too large'); }
-    chunks.push(value);
-  }
-  const text = new TextDecoder().decode(concat(...chunks));
-  try { return JSON.parse(text); } catch { throw new Invalid('Body is not JSON'); }
 }
 
 function checkEndpoint(endpoint) {
@@ -114,14 +95,6 @@ async function cleanSubscription(sub) {
   return { endpoint, expirationTime, keys: { p256dh: strip(keys.p256dh), auth: strip(keys.auth) } };
 }
 
-function cleanSpots(spots) {
-  check(Array.isArray(spots), 'spots must be an array');
-  check(spots.length <= MAX_SPOTS, `at most ${MAX_SPOTS} spots`);
-  check(spots.every((s) => typeof s === 'string' && SPOT_ID.test(s)), 'bad spot id');
-  check(new Set(spots).size === spots.length, 'duplicate spot id');
-  return spots;
-}
-
 export async function subKey(endpoint) {
   const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint)));
   return 'sub:' + Array.from(hash, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -152,23 +125,6 @@ async function unsubscribe(data, env) {
 // sends at most SENDS_PER_RUN (15, or the env's; raise it on the Paid plan): about 450 an hour. KV can take a minute to show a write everywhere, and a
 // repeat of a batch is silent (a notification with the same tag replaces the last one).
 const SENDS_PER_RUN = 15;
-const MAX_FORECAST_AGE = 8 * 3600e3; // same freshness limit as the site's warning
-const MAX_ATTEMPTS = 4;
-// A push service's Retry-After longer than this gives that alert up: while anything is queued, no
-// new rise is looked for, so one slow recipient must not hold everyone else's next alert.
-const MAX_RETRY_WAIT = 3600e3;
-const londonDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' });
-const londonOffset = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'shortOffset' });
-
-export function forecastExpiry(issued) {
-  const at = Date.parse(issued);
-  if (!Number.isFinite(at)) return NaN;
-  const parts = Object.fromEntries(londonDate.formatToParts(at).map(p => [p.type, p.value]));
-  const midnight = Date.UTC(+parts.year, +parts.month - 1, +parts.day + 1);
-  // At 00:00 UTC the offset still matches the approaching local midnight on both DST changes.
-  const offset = londonOffset.formatToParts(midnight).find(p => p.type === 'timeZoneName').value === 'GMT+1' ? 3600e3 : 0;
-  return Math.min(at + MAX_FORECAST_AGE, midnight - offset);
-}
 
 // Logs name a subscription by part of its key hash. Its endpoint is enough, with the VAPID key, to
 // push to that browser, so it is cut out of any message logged: a push service's reason for
@@ -181,14 +137,19 @@ export function redact(text, endpoint) {
   return out.replace(/\s+/g, ' ').trim().slice(0, 200);   // after cutting, so a cut cannot leave half an endpoint
 }
 
-function retryAfter(value, at) {
-  if (!value) return 0;
-  const seconds = Number(value);
-  const time = Number.isFinite(seconds) ? at + Math.max(0, seconds) * 1000 : Date.parse(value);
-  return Number.isFinite(time) ? time : 0;
+// Email alerts (email.js), when set up, ride on the same run: the spots that rose are found once,
+// below, and queued for push and email together; then email sends its own next batch, checked
+// against the same alerts.json. Its queue is separate because it drains more slowly (the email
+// service's daily allowance), and a slow email queue must not hold back the next push alerts.
+export async function runCron(env, { fetch = globalThis.fetch, log = console.log, now = Date.now } = {}) {
+  const seen = {};
+  const result = await runPush(env, { fetch, log, now }, seen);
+  // Not in the run that queued them: the queue was just written, and KV allows one write a second to a key.
+  if (seen.alerts && emailOn(env) && !seen.emailsQueued) Object.assign(result, await drainEmails(env, seen.alerts, seen.expires, { fetch, log, now }));
+  return result;
 }
 
-export async function runCron(env, { fetch = globalThis.fetch, log = console.log, now = Date.now } = {}) {
+async function runPush(env, { fetch, log, now }, seen) {
   const authorize = vapidSigner(env); // fails on bad config every run, not only when a spot rises
   const configured = Number(env.SENDS_PER_RUN);
   const perRun = Number.isSafeInteger(configured) && configured > 0 ? configured : SENDS_PER_RUN;
@@ -202,6 +163,7 @@ export async function runCron(env, { fetch = globalThis.fetch, log = console.log
   if (typeof alerts?.generated_at !== 'string' || !isObject(alerts.spots)) throw new Error('alerts.json: unexpected shape');
   const issued = Date.parse(alerts.generated_at), expires = forecastExpiry(alerts.generated_at);
   if (!Number.isFinite(issued) || issued > t + 5 * 60e3) throw new Error('alerts.json: invalid or future issue time');
+  Object.assign(seen, { alerts, expires });
   if (queued?.items?.length) {
     const state = await env.PUSH.get('state', 'json');
     const checkpointAt = Date.parse(queued.state?.generated_at);
@@ -241,7 +203,10 @@ export async function runCron(env, { fetch = globalThis.fetch, log = console.log
     risen = Object.keys(ranks).filter((id) => ranks[id] >= HIGH && (prev.ranks?.[id] ?? -1) < HIGH && !alerted[id]);
     for (const id of risen) alerted[id] = new Date(t).toISOString();
     if (risen.length) items = await queueFor(env, alerts, new Set(risen), tally, log);
-    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high, ${items.length} alerts to send`);
+    // Before the state below, like the push queue: if the state is not written, the rise is found
+    // again next run, and queueEmails merges it with what is already queued for each address.
+    if (risen.length && emailOn(env)) seen.emailsQueued = await queueEmails(env, alerts, new Set(risen));
+    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high, ${items.length} alerts to send${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
   }
   const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}) };
   // Persist the complete queue BEFORE advancing the comparison state. If this write fails,
@@ -251,17 +216,6 @@ export async function runCron(env, { fetch = globalThis.fetch, log = console.log
   await env.PUSH.put('state', JSON.stringify(state));
   if (!items.length) return { risen, ...tally, queued: 0 };
   return { risen, ...tally, queued: items.length };
-}
-
-async function listKeys(kv, prefix) {
-  const keys = [];
-  let cursor;
-  do {
-    const page = await kv.list({ prefix, cursor });
-    keys.push(...page.keys);
-    cursor = page.list_complete ? undefined : page.cursor;
-  } while (cursor);
-  return keys;
 }
 
 // One alert per subscriber of a risen spot: [{key, spots}]. The spots come from each key's
@@ -309,7 +263,7 @@ async function send(env, batch, authorize, tally, { fetch, log, now, alerts, exp
     const { key, spots } = item;
     const attempt = (item.attempts ?? 0) + 1;
     const retry = (after = 0) => {
-      const at = now(), next = Math.max(at + 120000 * 2 ** (attempt - 1), after);
+      const at = now(), next = nextAttempt(attempt, at, after);
       if (attempt >= MAX_ATTEMPTS) log(`push ${key.slice(4, 16)}: given up after ${attempt} attempts`);
       else if (next - at > MAX_RETRY_WAIT) log(`push ${key.slice(4, 16)}: given up, the push service asked for a wait of over an hour`);
       else kept.push({ ...item, attempts: attempt, next_attempt: next });

@@ -143,6 +143,12 @@ PUSH_SWAPS = [
 ]
 
 
+# Email alerts (push/src/email.js, in the same Worker): on when DIPCAST_EMAIL_URL is set to the
+# Worker's address, which the Saved page then posts sign-ups to. The Worker refuses them until its own
+# secrets are set too (push/README.md, "Email alerts"), so set this variable last.
+EMAIL_URL_ENV = "DIPCAST_EMAIL_URL"
+
+
 def push_config() -> dict | None:
     url, key = (os.environ.get(PUSH_URL_ENV, "").strip(), os.environ.get(PUSH_KEY_ENV, "").strip())
     if not (url or key):
@@ -154,13 +160,29 @@ def push_config() -> dict | None:
     return {"url": url, "key": key}
 
 
-def with_push(html: str, on: bool) -> str:
-    """The privacy page: the alerts section when alerts are on, else the planned-feature note."""
-    if not on:
+def email_config() -> dict | None:
+    url = os.environ.get(EMAIL_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: email alerts left off", EMAIL_URL_ENV)
+        return None
+    return {"url": url}
+
+
+def with_push(html: str, on: bool, email: bool = False) -> str:
+    """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
+    else the planned-feature note."""
+    if not (on or email):
         return html
-    for a, b in PUSH_SWAPS:
-        html = html.replace(a, b)
-    return re.sub(r"<h2>If alerts are added</h2>\s*<p>.*?</p>", lambda _: PUSH_PRIVACY, html, count=1, flags=re.DOTALL)
+    # An email sign-up sends the saved spots too, and its record is described under Alerts, so the
+    # first three swaps hold for it. The offline copy's sentence is about browser alerts only.
+    for a, b in PUSH_SWAPS if on else PUSH_SWAPS[:3]:
+        html = html.replace(a, EMAIL_OFFLINE_SWAP if (email and a == PUSH_SWAPS[3][0]) else b)
+    if email:
+        html = html.replace(PUSH_SWAPS[0][1], PUSH_SWAPS[0][1] + "\n" + EMAIL_SHORT_LINE, 1)
+    section = (PUSH_PRIVACY + "\n" if on else "<h2>Alerts</h2>\n") + (EMAIL_PRIVACY if email else "")
+    return re.sub(r"<h2>If alerts are added</h2>\s*<p>.*?</p>", lambda _: section.rstrip("\n"), html, count=1, flags=re.DOTALL)
 
 
 PUSH_PRIVACY = (
@@ -180,6 +202,56 @@ PUSH_PRIVACY = (
     "IP address when you turn alerts on or off or change your saved spots, and about once a week when you open the "
     "site, as any web server would; "
     '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that.</p>')
+
+
+# With email alerts on, the privacy notice gains this section under Alerts, a line in its short
+# version, and, with browser alerts on too, an offline-copy sentence that names browser alerts only.
+# What the law asks, and where this section answers it (checked 4 Oct 2026; flagged for the
+# operator's approval in the PR, not checked by a lawyer):
+# - UK GDPR Article 6(1)(a) and Article 7: consent as the basis, given by a clear act (the sign-up and
+#   the confirmation), shown by a record (the time of confirming), and as easy to withdraw as to give
+#   (one click in every email). ICO, "What is valid consent?":
+#   https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/consent/what-is-valid-consent/
+# - UK GDPR Articles 13 and 28: say who receives the data and why; the email service is a processor,
+#   so a contract with the Article 28(3) terms is needed (Resend's DPA, part of its terms of service).
+#   Articles 44-46: transfers outside the UK need safeguards (its DPA's section 6.4, the UK Addendum
+#   to the EU standard contractual clauses).
+# - PECR regulations 22 and 23 govern direct marketing by email. These alerts are service messages,
+#   with no promotion, which the ICO says are not direct marketing ("Identify direct marketing", last
+#   updated 20 August 2025:
+#   https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/direct-marketing-guidance/identify-direct-marketing/).
+#   They meet regulation 23 anyway: the sender is named and every email has a working way to stop them.
+EMAIL_SHORT_LINE = ("<li>If you sign up for email alerts, SwimSignal keeps your email address and your list of spots "
+                    "until you unsubscribe.</li>")
+EMAIL_OFFLINE_SWAP = ("at the bottom of the home page. Browser alerts need it, so turning it off turns them off too; email "
+                      "alerts do not. Clearing this site's data removes it too.")
+EMAIL_PRIVACY = (
+    '<h3 id="email-alerts">Email alerts</h3>\n'
+    "<p>If you sign up for email alerts on the Saved page, your browser sends SwimSignal's alert service your email "
+    "address and the identifiers of your saved spots. The service emails you a link to confirm, and sends nothing else "
+    "to that address until you open the link and press Confirm. A request that is not confirmed is deleted after two "
+    "days. When you confirm, the service keeps your address, the identifiers of those spots and the time you "
+    "confirmed, and nothing else. It uses them only to email you when one of those spots' forecast turns high or very "
+    "high, at most once a day for each spot. To change the spots, you sign up again; the new list replaces the old "
+    "one when you confirm it.</p>\n"
+    "<p>The emails contain the forecast and nothing to sell. They carry no tracking: no images, no pixels that report "
+    "when you open them, and links that go straight to this site. The basis is your consent: you sign up and confirm, "
+    "and you can withdraw it at any time with the unsubscribe link in every email, or the unsubscribe button your "
+    "email program may show. Either deletes your address and your list of spots at once. You can also reply to an "
+    "alert or email the operator to be removed. An alert can be late or not come at all, so no alert does not mean "
+    "the water is clean.</p>\n"
+    "<p>To limit sign-ups, the service counts them for an hour under a scrambled form of your IP address, made with a "
+    "secret key, and counts confirmation emails to each address for a day under a scrambled form of the address; the "
+    "counts delete themselves, and the IP address itself is not stored.</p>\n"
+    "<p>The emails are sent by Resend (Plus Five Five, Inc.), an email service in the United States, which acts only on "
+    "SwimSignal's instructions under a data processing agreement. That agreement covers transfers from the UK with "
+    "the UK's addendum to the EU standard contractual clauses. Resend keeps its record of each email it sends, "
+    "including your address, for 30 days. The alert service runs on Cloudflare Workers, which may handle your address "
+    "outside the UK under its own safeguards, and which sees your IP address when you sign up, confirm or "
+    "unsubscribe, as any web server would. "
+    '<a href="https://resend.com/legal/privacy-policy">Resend\'s privacy policy</a> and '
+    '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> apply to what each of them '
+    "does for its own purposes.</p>\n")
 
 
 def write_alerts(site: Path, root: str, push_on: bool) -> bool:
@@ -943,7 +1015,7 @@ def sitemap(root: str, spot_ids: list[str], day: str) -> str:
 
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
-                scotland: dict | None = None) -> int:
+                scotland: dict | None = None, email: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=."""
     root = root or site_url()
@@ -967,7 +1039,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.scotland import render as render_scotland
             s = re.sub(r'<!-- SCOTLAND_DIRECTORY -->.*?<!-- END_SCOTLAND_DIRECTORY -->',
                        lambda _: render_scotland(scotland), s, flags=re.S)
-        (site / name).write_text(with_counter(with_push(s, push) if name == "privacy.html" else s, token))
+        (site / name).write_text(with_counter(with_push(s, push, email) if name == "privacy.html" else s, token))
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
@@ -1213,11 +1285,12 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "scotland.json").write_text(json.dumps(scotland))
     health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]),
                           **({"error": scotland["error"]} if scotland.get("error") else {})}
-    push = push_config()
+    push, email = push_config(), email_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
-        "lead_skill": lead_skill(), **({"push": push} if push else {}), "credits": credits, "spots": results}, default=str))
-    write_alerts(SITE, site_url(), push is not None)   # carries the credits from spots.json
+        "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
+        "credits": credits, "spots": results}, default=str))
+    write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
     (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
     if refresh:   # the run log, before verification.json reads it (forecast_log.service_record)
@@ -1227,7 +1300,7 @@ def build(refresh: bool = True) -> dict:
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
-                                       coastal=coastal, wales=wales, scotland=scotland)
+                                       coastal=coastal, wales=wales, scotland=scotland, email=email is not None)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
