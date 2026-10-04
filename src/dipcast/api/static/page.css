@@ -175,11 +175,12 @@ main.doc .panel h2 { margin-top: 0; }
 .coastal-site, .wales-site, .scotland-site { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .coastal-site p, .wales-site p, .scotland-site p { margin: 6px 0 0; }
 /* "Today's EA advice" under an English bathing water: a fold, as details.fold without its hairlines,
-   that loads the EA's own panel as the EA draws it. Its height fits the panel's tallest state measured
-   on 4 Oct 2026 (256 px at 288 px wide, a long name and a warning); a taller one scrolls inside. */
+   that loads the EA's own panel as the EA draws it. Its height fits the tallest panel measured on
+   4 Oct 2026 at 288 px wide, a long name in two lines (256 px in Chrome, about 272 in iOS Safari,
+   whose Helvetica runs wider); a taller one scrolls inside. A shorter one leaves the EA's white below. */
 details.ea-today > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; font-size: var(--fs-note); font-weight: 600; }
 details.ea-today > summary::-webkit-details-marker { display: none; }
 details.ea-today > summary::after { content: ""; flex: none; width: 9px; height: 9px; margin-right: 4px; border-right: 1.75px solid var(--muted); border-bottom: 1.75px solid var(--muted); transform: rotate(45deg); transition: transform .15s; }
 details.ea-today[open] > summary::after { transform: rotate(-135deg); }
 details.ea-today > p:first-of-type { margin-top: 0; }
-details.ea-today iframe { display: block; width: 100%; max-width: 343px; height: 260px; border: 0; }
+details.ea-today iframe { display: block; width: 100%; max-width: 343px; height: 280px; border: 0; }
