@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coasts, Wales, Scotland and algae · SwimSignal</title>
-<meta name="description" content="Official bathing-water information for coasts, Wales and Scotland, and UK algae reports.">
+<title>Coasts, Wales, Scotland, Ireland and algae · SwimSignal</title>
+<meta name="description" content="Official bathing-water information for coasts, Wales, Scotland and Ireland, and UK algae reports.">
 <meta name="theme-color" content="#3d5b5d">
 <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
@@ -9,8 +9,8 @@
 <link rel="preload" href="/static/fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin></head><body>
 <header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
 <nav aria-label="Site"><a href="/">Explore</a><a href="/verification">Accuracy</a><a href="/about">About</a><a href="/feedback">Feedback</a></nav></header>
-<main class="doc"><h1>Coasts, Wales, Scotland and algae</h1>
-<p>SwimSignal forecasts listed rivers and lakes in England. For the coast, Wales and Scotland, use the official services below. Their observations and warnings answer different questions from our inland forecast.</p>
+<main class="doc"><h1>Coasts, Wales, Scotland, Ireland and algae</h1>
+<p>SwimSignal forecasts listed rivers and lakes in England. For the coast, Wales, Scotland and Ireland, use the official services below. Their observations and warnings answer different questions from our inland forecast.</p>
 <h2>Coasts and estuaries in England</h2>
 <p><a href="https://environment.data.gov.uk/bwq/profiles/">Find an Environment Agency bathing water</a> for its rating, sample results and any pollution warning. Check the date and the signs at the beach. A four-season rating is not today's water test. Our inland river model does not account for tides or coastal transport and is not a coastal forecast. Opening "Today's EA advice" under a site in the directory loads the Environment Agency's own panel for that site, from your browser (<a href="/privacy">privacy</a>).</p>
 <details><summary>Search the English coastal directory</summary>
@@ -26,6 +26,16 @@
 <details id="scotland-directory"><summary>Search the Scottish bathing waters</summary>
 <!-- SCOTLAND_DIRECTORY --><p>Use SEPA's link above if the list is unavailable here.</p><!-- END_SCOTLAND_DIRECTORY -->
 </details>
+<h2>Republic of Ireland</h2>
+<p>The Environmental Protection Agency (EPA) publishes each bathing water's results, and any restriction on swimming, at <a href="https://www.beaches.ie/">beaches.ie</a>. SwimSignal does not issue forecasts in Ireland. The list below is the EPA's information, each part with its date.</p>
+<details id="ireland-directory"><summary>Search the bathing waters in the Republic</summary>
+<!-- IRELAND_DIRECTORY --><p>Use beaches.ie if the list is unavailable here.</p><!-- END_IRELAND_DIRECTORY -->
+</details>
+<h2>Northern Ireland</h2>
+<p><a href="https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard">The Bathing Water Quality Dashboard</a> from the Department of Agriculture, Environment and Rural Affairs (DAERA) has results for Northern Ireland's bathing waters. DAERA advises against bathing during heavy rain and for up to 48 hours after it. SwimSignal does not issue forecasts in Northern Ireland.</p>
+<details id="ni-directory"><summary>Search the bathing waters in Northern Ireland</summary>
+<!-- NI_DIRECTORY --><p>Use DAERA's dashboard if the list is unavailable here.</p><!-- END_NI_DIRECTORY -->
+</details>
 <h2 id="algae">Algae reports across the UK</h2>
 <p><a href="https://bloominalgae.ceh.ac.uk/">The UK Centre for Ecology &amp; Hydrology (UKCEH) Bloomin' Algae map</a> shows submitted reports. Read each report's date and verification category: a submitted or unverifiable record is not a confirmed harmful bloom. An absence of reports does not establish an absence of algae.</p>
 <p>The algae observation shown on a SwimSignal spot page is the EA sampler's most recent visual check, where available. It does not identify toxic species. Broader Bloomin' Algae reports are available on the external map; they are not included in our risk level.</p>
@@ -33,19 +43,23 @@
 <h2>How coverage will grow</h2>
 <p>Regional observations will come first, labelled with their source, age and coverage. Forecasts require data we can reuse, a regional test on observations the model has never seen, and published evidence of useful performance. Coastal forecasts also require a model of tides and coastal transport.</p>
 <p>The method is <a href="/methods">published</a>, with <a href="/verification">live scores</a>. An independent scientific review is still pending. See the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/EXPANSION-2026-10.md">development and validation plan</a>.</p>
-<p class="small">Links checked 3 October 2026. External services may be seasonal or unavailable; check their own dates and notices.</p>
+<p class="small">Links checked 3 October 2026, and the Irish links 4 October 2026. External services may be seasonal or unavailable; check their own dates and notices.</p>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
 <p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
 <script>
+// Accents and punctuation do not count, as in the main page's search: "Tra Mor" finds "Trá Mór",
+// "Browns Bay" finds "Brown's Bay".
+const foldName = t => String(t ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  .replace(/['\u2019]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 function searchList(searchId, countId, selector) {
   const search = document.getElementById(searchId), count = document.getElementById(countId);
   const sites = [...document.querySelectorAll(selector)];
   if (search) search.addEventListener('input', () => {
-    const term = search.value.trim().toLocaleLowerCase();
+    const term = foldName(search.value);
     let found = 0;
     for (const site of sites) {
-      site.hidden = !site.querySelector('a').textContent.toLocaleLowerCase().includes(term);
+      site.hidden = !foldName(site.querySelector('a').textContent).includes(term);
       if (!site.hidden) found++;
     }
     count.textContent = `${found} of ${sites.length} sites`;
@@ -54,6 +68,8 @@ function searchList(searchId, countId, selector) {
 searchList('coastal-search', 'coastal-count', '.coastal-site');
 searchList('wales-search', 'wales-count', '.wales-site');
 searchList('scotland-search', 'scotland-count', '.scotland-site');
+searchList('ireland-search', 'ireland-count', '.ireland-site');
+searchList('ni-search', 'ni-count', '.ni-site');
 function expireAdvice() {
   for (const advice of document.querySelectorAll('[data-advice-expires]')) {
     if (Date.now() >= Date.parse(advice.dataset.adviceExpires)) advice.textContent = `This ${advice.dataset.adviceSource || 'EA'} advice has expired; check the official profile`;

@@ -171,9 +171,9 @@ main.doc .panel h2 { margin-top: 0; }
 .site-foot a { color: var(--muted); }
 .site-foot a:hover { color: var(--link); }
 .note { font-size: var(--fs-note); color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; margin-top: 40px; }
-#coastal-sites, #wales-sites, #scotland-sites { list-style: none; padding: 0; max-height: 32rem; overflow-y: auto; }
-.coastal-site, .wales-site, .scotland-site { padding: 12px 0; border-bottom: 1px solid var(--line); }
-.coastal-site p, .wales-site p, .scotland-site p { margin: 6px 0 0; }
+#coastal-sites, #wales-sites, #scotland-sites, #ireland-sites, #ni-sites { list-style: none; padding: 0; max-height: 32rem; overflow-y: auto; }
+.coastal-site, .wales-site, .scotland-site, .ireland-site, .ni-site { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.coastal-site p, .wales-site p, .scotland-site p, .ireland-site p, .ni-site p { margin: 6px 0 0; }
 /* "Today's EA advice" under an English bathing water: a fold, as details.fold without its hairlines,
    that loads the EA's own panel as the EA draws it. Its height fits the tallest panel measured on
    4 Oct 2026 at 288 px wide, a long name in two lines (256 px in Chrome, about 272 in iOS Safari,
