@@ -153,6 +153,15 @@ those sizes; they were taken off to keep the rule simple.)
 - Units (4 October 2026): a distance a swimmer travels is in miles ("7.7 miles away", "under a mile
   away"), in the list, "Nearby" and Plan a swim; a distance the water travels, or to a gauge or a
   sensor, is in km ("2.1 km upstream", "Gauge at Addingham, 3.4 km away"), as the model counts it.
+- The weekend (4 October 2026, Ethan's choices): while the five days reach a Saturday or a Sunday,
+  the best-day line on the list and the Saved page first says how the weekend looks, so Show stays
+  last, beside the week's best day: "Best this weekend: Saturday, 64 spots at low risk. Lowest
+  pollution risk this week: tomorrow". Both days are words, as in any sentence: a later day by its
+  full weekday, "today" and "tomorrow" in lower case (until then the best day took the day picker's
+  "Tomorrow" or "Fri 9 Oct"). Only the better weekend day is named. On a Tuesday Saturday is alone,
+  so there is no "best": "This weekend: 64 spots at low risk on Saturday." Equal days are said
+  together. Nothing is added on a Sunday, when the weekend is today and the list shows it, or when
+  the week's best day is itself a weekend day, which the line then names once.
 - One caveat per view, in the place it is read: the intro says "Forecasts, not water tests" once;
   the hero's last line says to check the signs at the water. The rest of the explanation lives
   under "About these forecasts" and on the About and Accuracy pages.
