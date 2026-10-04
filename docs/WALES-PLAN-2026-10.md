@@ -32,9 +32,11 @@ Five findings change the roadmap's picture of Wales.
    In Scotland about 44% have no live monitor (Scotland plan, section 1).
 3. **Welsh spill history is mostly annual.** Checked: Dŵr Cymru publishes each overflow's yearly
    spill count, hours and monitor uptime. Hafren Dyfrdwy publishes its 2025 discharges (start and
-   stop) under CC BY 4.0. I found no event history for Dŵr Cymru's overflows in Wales. The
-   Environment Agency (EA) lists 2024 and 2025 event files for Dŵr Cymru's overflows in England,
-   marked "No Licence Provided".
+   stop) under CC BY 4.0. Dŵr Cymru's own site offers start and stop files for its overflows in
+   Wales, 2020 to 2025, but its legal notice forbids reuse without written permission (corrected
+   4 October, section 2.2). The Environment Agency (EA) publishes 2024, 2025 and 2026 event files
+   for Dŵr Cymru's overflows in England under the Open Government Licence (corrected 4 October;
+   the first version said "No Licence Provided").
 4. **English spots gain too.** Checked, live build of 4 October: three English spots (the Wye at
    Hereford and at Symonds Yat, the Dee at Chester) have only Dŵr Cymru overflows upstream, and
    none of them has a live status. Checked on the network: the trace from Chester misses 65 Welsh
@@ -156,9 +158,22 @@ EDM, event duration monitoring, is the monitor on each overflow. Sources found:
   only: the EA dataset "Event Duration Monitoring-Storm Overflow-Start/Stop Detailed Data"
   (created 1 May 2026, updated 24 September 2026) lists "Welsh 2024 Detailed EDM Data.xlsx" and
   "Welsh Water 2025 Detailed EDM Data.xlsx" among the files for the ten companies that operate in
-  England. Licence: "No Licence Provided". Its summary says "All rights reserved". I did not open
-  the files. *Inferred:* they hold the events of Dŵr Cymru's overflows in England, which the EA
+  England. *Inferred:* they hold the events of Dŵr Cymru's overflows in England, which the EA
   regulates, not those in Wales.
+
+  **Correction, 4 October 2026, evening.** Checked: the dataset page on the EA's platform
+  (environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7) gives the licence as
+  "Open Government Licence" v3, with the attribution "© Environment Agency copyright and/or
+  database right". The catalogue's "No Licence Provided" was out of date. It now also lists
+  "Welsh Water Detailed Data 2026.xlsx". So the files can be used now, with credit. Task W3
+  imports the three Welsh Water files.
+- **Dŵr Cymru's own start and stop files** (added 4 October, evening). Checked, the page and file
+  names only: corporate.dwrcymru.com/en/community/environment/event-duration-monitoring offers
+  event files for 2020-21, 2022-23, "NRW Start Stop 2024 - Resubmission" and "EDM Start Stop Data
+  2025", some in folded sections. *Inferred* from the "NRW" name: they include the overflows in
+  Wales. The site's legal notice allows personal download only and forbids reuse "without the
+  Company's prior written permission". This is the event history a Welsh hindcast needs. The
+  permission email should name these files (8.1).
 
 What the model needs, against what Wales publishes. Checked in `ingest/annual_returns.py` and
 `model/features.py`:
@@ -517,8 +532,9 @@ Subject: Reusing your storm overflow map data on a free swimming site
 >    discharges. Does "Overflow Not Operating (Has in the last 24 hours)" count from the start or
 >    the end of the last discharge?
 > 5. Times. Are the start and stop times in UK local time? How often is the layer updated?
-> 6. History. Could you share the start and stop times of discharges at your Welsh overflows for
->    2021 to 2025? We would use them to test our forecasts before showing any in Wales. If it
+> 6. History. Your event duration monitoring page offers start and stop files for 2020 to 2025,
+>    including "NRW Start Stop 2024 - Resubmission" and "EDM Start Stop Data 2025". May we use
+>    them to test our forecasts before showing any in Wales? We would publish only the scores. If it
 >    helps, please treat this question as a request under the Environmental Information
 >    Regulations 2004.
 > 7. Annual returns. May we reuse your EDM layers (EDM_2025 and earlier) on the same terms? Does
@@ -590,7 +606,7 @@ Subject: River levels, bathing-water data and storm overflow returns for a free 
 > Thank you,
 > Ethan Buckley, SwimSignal (hello@swimsignal.co.uk)
 
-### 8.4 Environment Agency, the event files (not sent)
+### 8.4 Environment Agency, the event files (not needed: answered by the platform page, section 2.2)
 
 The route is the Data Services Platform's support form, environment.data.gov.uk/support, from
 SwimSignal's notes of 29 September 2026. This question matters for England as well: the files
@@ -701,10 +717,10 @@ being true. Screenshots at 320, 375 and 1440 px. Then a dated amendment to
    because the repository and its discussions are public. Regenerate it on the portal if that
    happens.
 3. **Approve the runner test** in W5 (a throwaway workflow, as before).
-4. **The EA's event files.** They say "No Licence Provided". The plainest choice is to wait for
-   the EA's answer (8.4) and test on Hafren Dyfrdwy alone. The alternative is to use them for
-   testing now and publish only scores. They also cover every English company for 2024 and 2025,
-   while SwimSignal trains on United Utilities only. That is worth its own task, outside this plan.
+4. **The EA's event files.** Settled on 4 October: the EA's platform gives them the Open
+   Government Licence (section 2.2), so W3 uses the Welsh Water files and email 8.4 is no longer
+   needed. They also cover every English company for 2024 to 2026, while SwimSignal trains on
+   United Utilities only. That is worth its own task, outside this plan.
 5. **"Under Investigation", if Dŵr Cymru does not explain it.** The plainest choice is to treat it
    as status unknown: show the last discharge with its time, never "not discharging". The
    alternative is to read the row's discharge times as if the status were normal.
