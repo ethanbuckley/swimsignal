@@ -863,6 +863,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
+SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
+VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -882,6 +885,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)

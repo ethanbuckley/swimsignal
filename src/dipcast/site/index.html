@@ -508,6 +508,8 @@
   .place .big-head { margin:0; max-width:none; font-size:var(--fs-body); text-align:left; }
   .place-sub { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; }
   .place-sub:empty { display:none; }
+  /* What changed since you last looked (since.js): history, so muted, and never a level's colour. */
+  .place-since { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; color:var(--muted); }
   .group.tile { margin-top:8px; padding:12px 16px 4px; }
   .lead + .group.tile, .lead + .save-hint.tile { margin-top:0; }
   .group.tile ul.places { gap:0; }
@@ -846,6 +848,7 @@
 <script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
+<script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
 <script>
@@ -1013,6 +1016,7 @@ const storeSaved = () => { try { localStorage.setItem(SAVED_KEY, JSON.stringify(
 // Replace the list, in order. Returns false when the browser would not keep it.
 function setSaved(ids) {
   SAVED.clear(); ids.forEach(id => SAVED.add(id));
+  if (typeof writeSeen === 'function') writeSeen(SAVED);   // since.js: an unsaved spot's note goes with it
   const kept = storeSaved(); savedBadge(); syncSoon(); return kept;
 }
 // Another tab saved or removed a spot: follow it, or this tab's next change would undo that one.
@@ -1972,6 +1976,7 @@ function drawSpots() {
     const savedList = document.getElementById('saved-list');
     savedList.innerHTML = DATA.spots.filter(s => SAVED.has(s.id)).map(s => savedCard(s, false, VIEW.day)).join('');
     bindItems(savedList);
+    if (!savedGroup.hidden && !VIEW.day && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
@@ -1989,14 +1994,15 @@ function drawSpots() {
 // saved/: a card for each saved spot, in the order saved, as Apple's places: the name, the level with
 // "risk", what set it and where the week goes, the week drawn small. A spot is
 // removed with its bookmark, and Undo puts it back in place. The list shows the same cards, without
-// the bookmark, on its day (iso).
+// the bookmark, on its day (iso). With no day picked, what changed since you last looked (since.js).
 function savedCard(s, unsave = true, iso = null) {
   const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li class="scard place${unsave ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from saved spots">${BOOKMARK}</button>` : '') + '</div>'
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${week(s)}</div>`
-    + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p></li>`;   // under a plain level, two sentences
+    + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
+    + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 const listOf = spots => `<ul class="inc-list">${spots.slice(0, 5).map(s => `<li>${esc(s.name)}</li>`).join('')}${spots.length > 5 ? `<li>and ${spots.length - 5} more</li>` : ''}</ul>`;
 const COMPARE = { ids: null, day: null, open: false };
@@ -2071,6 +2077,7 @@ function renderSaved() {
   h += swimsCard();
   setPanel(h);
   bindBack(); bindSavedPage(spots, offered); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
+  if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
   if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
   placeMap();
@@ -2535,6 +2542,7 @@ function render(d) {
   serverToday = DATA.generated_at.slice(0, 10);
   contribLayer.clearLayers();
   setView('spot');
+  if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
   document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
   const loc = d.location || {}, total = overflows(d);
   const tags = [cap(d.kind), d.source === 'designated' ? 'Environment Agency designated bathing water' : null,
