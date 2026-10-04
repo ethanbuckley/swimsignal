@@ -382,7 +382,7 @@ What makes Apple's page clean, and what was taken from it:
 
 - **One answer, first.** The level and "risk" at one size, the title's (36 px, 30 on phones), in
   semibold sans and the level's colour: "High risk", since a bare "High" read as high what. Under
-  it, what set it and when ("Sewage spills today"), where the five days go ("Low by Tuesday",
+  it, what set it and when ("Sewage spills today"), where the five days go ("Low risk by Tuesday",
   Apple's high and low) and the issue time. Centred, with no box. The first build set the level
   alone at 72 px Light with a small "risk" beside it, as Apple sets "19°"; Ethan found it goofy and
   too large, and picked this from three settings (Regular at 44, this, Bold at 30).
