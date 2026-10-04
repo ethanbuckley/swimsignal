@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import worker, { runCron, subKey } from '../src/index.js';
-import { addressId, cleanEmail, connectionOf, handleEmail, issuedWords, unsubscribeToken } from '../src/email.js';
+import { addressId, cleanEmail, connectionOf, handleEmail, issuedWords, signedByService, unsubscribeToken } from '../src/email.js';
 import { sendEmail } from '../src/mail.js';
 import { FakeKV, makeUserAgent, makeVapidEnv } from './helpers.js';
 
@@ -441,6 +441,90 @@ test('push and email agree on every alert over a sequence of builds', async () =
 });
 
 // ---- the provider module ----
+
+// ---- the email service's reports: bounces, complaints and suppressions ----
+
+// A webhook secret in Resend's form, and a report signed with it as Svix signs one.
+const SECRET_BYTES = new Uint8Array(24).map((_, i) => i * 7 + 1);
+const SECRET = 'whsec_' + btoa(String.fromCharCode(...SECRET_BYTES));
+async function sign(body, { id = 'msg_2Lh9', ts, secret = SECRET_BYTES } = {}) {
+  const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${id}.${ts}.${body}`)))));
+  return { 'svix-id': id, 'svix-timestamp': String(ts), 'svix-signature': `v1,${sig}` };
+}
+// A report as Resend sends one (https://resend.com/docs/webhooks/emails/bounced, read 4 Oct 2026).
+const report = (type, to, extra = {}) => ({ type, created_at: '2026-10-04T07:00:00.000Z',
+  data: { email_id: '56761188-7520-42d8-8898-ff6fc54ce618', from: 'SwimSignal <alerts@swimsignal.example>', to, subject: 'High risk', ...extra } });
+async function post(w, event, { headers, raw } = {}) {
+  const body = raw ?? JSON.stringify(event);
+  return w.call('/email/events', { origin: null, body, headers: headers ?? await sign(body, { ts: Math.floor(w.now() / 1000) }) });
+}
+
+test('a bounce for good, a complaint or a suppression deletes the address and stops its alerts at once', async () => {
+  for (const [type, extra] of [['email.bounced', { bounce: { type: 'Permanent', subType: 'General', message: 'mailbox does not exist' } }],
+    ['email.complained', {}], ['email.suppressed', { suppressed: { type: 'OnAccountSuppressionList' } }]]) {
+    const w = world({ extra: { MAIL_WEBHOOK_SECRET: SECRET } });
+    await w.subscribe('ann@example.org', ['a']);
+    await w.signUp('ann@example.org', ['b'], { ip: '198.51.100.99' });   // a second sign-up, waiting for its confirmation
+    const id = await addressId(w.env, 'ann@example.org');
+    assert.ok(await w.kv.get(`mail:${id}`) && await w.kv.get(`pend:${id}`));
+    const res = await post(w, report(type, ['Ann <ann@example.org>'], extra));
+    assert.equal(res.status, 200, type);
+    assert.equal(await w.kv.get(`mail:${id}`), null, type);
+    assert.equal(await w.kv.get(`pend:${id}`), null, type);
+    assert.ok(w.logs.some((l) => l === `email ${id.slice(0, 12)}: deleted after ${type.slice(6)}${type === 'email.bounced' ? ' (General)' : ''}`), w.logs.join('\n'));
+    assert.ok(!w.logs.some((l) => l.includes('ann@')), 'no address in the logs');
+    // Its alert, queued or not, no longer goes.
+    await w.kv.put('state', JSON.stringify({ generated_at: '2026-10-04T05:00:00.000Z', ranks: { a: 0 } }));
+    w.setAlerts(alertsJson('2026-10-04T06:00:00.000Z', [spot('a', 2)]));
+    const sent = w.emails.length;
+    await w.cron(); await w.cron();
+    assert.equal(w.emails.length, sent, type);
+  }
+});
+
+test('a bounce that is not for good, another event, or an address not signed up deletes nothing', async () => {
+  const w = world({ extra: { MAIL_WEBHOOK_SECRET: SECRET } });
+  await w.subscribe('ann@example.org', ['a']);
+  const id = await addressId(w.env, 'ann@example.org');
+  for (const event of [report('email.bounced', ['ann@example.org'], { bounce: { type: 'Transient', subType: 'MailboxFull' } }),
+    report('email.delivered', ['ann@example.org']), report('email.delivery_delayed', ['ann@example.org'])]) {
+    const res = await post(w, event);
+    assert.equal(res.status, 200);
+    assert.equal(await res.text(), 'Nothing to do');
+  }
+  assert.ok(await w.kv.get(`mail:${id}`));
+  // Someone else's bounce, and an address that is not one: answered, and Ann is kept.
+  assert.equal(await (await post(w, report('email.bounced', ['bob@example.org', 'not an address'], { bounce: { type: 'Permanent' } }))).text(), 'Deleted 1');
+  assert.ok(await w.kv.get(`mail:${id}`));
+});
+
+test('a report is believed only with a valid signature from the last five minutes', async () => {
+  const w = world({ extra: { MAIL_WEBHOOK_SECRET: SECRET } });
+  await w.subscribe('ann@example.org', ['a']);
+  const id = await addressId(w.env, 'ann@example.org');
+  const body = JSON.stringify(report('email.complained', ['ann@example.org'])), ts = Math.floor(w.now() / 1000);
+  const forged = await sign(body, { ts, secret: new Uint8Array(24) });
+  const replayed = await sign(body, { ts: ts - 301 });
+  const other = await sign(JSON.stringify(report('email.complained', ['bob@example.org'])), { ts });   // a real signature for another body
+  for (const headers of [{}, forged, replayed, { ...other }, { ...await sign(body, { ts }), 'svix-signature': 'v2,abc' }]) {
+    assert.equal((await post(w, null, { raw: body, headers })).status, 401);
+  }
+  assert.ok(await w.kv.get(`mail:${id}`), 'nothing deleted');
+  // Several signatures, as after the secret is rotated: any valid one will do.
+  const good = await sign(body, { ts });
+  assert.equal((await post(w, null, { raw: body, headers: { ...good, 'svix-signature': `v1,AAAA ${good['svix-signature']}` } })).status, 200);
+  assert.equal(await w.kv.get(`mail:${id}`), null);
+  assert.equal(await signedByService({ MAIL_WEBHOOK_SECRET: 'whsec_***' }, new Headers(good), body, w.now()), false);   // a secret that is not base64
+});
+
+test('without MAIL_WEBHOOK_SECRET the address is 404, and only POST is taken', async () => {
+  const w = world();
+  assert.equal((await post(w, report('email.complained', ['ann@example.org']))).status, 404);
+  const v = world({ extra: { MAIL_WEBHOOK_SECRET: SECRET } });
+  assert.equal((await v.call('/email/events', { method: 'GET', origin: null })).status, 405);
+  assert.equal((await post(v, null, { raw: 'x'.repeat(70 * 1024), headers: {} })).status, 400);   // too large, refused unread
+});
 
 test('sendEmail maps the service\'s answers to outcomes', async () => {
   const env = { MAIL_API_KEY: 'k', EMAIL_FROM: 'f@example.org' };

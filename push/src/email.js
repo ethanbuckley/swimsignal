@@ -24,9 +24,13 @@
 //   rl:to:<hash>  confirmation emails to one address in one day, deleted by KV after the day
 // <id> and the hashes are HMAC-SHA-256 under the secret MAIL_HASH_KEY, so the keys say nothing
 // without it, and the counts cannot be matched to an address or across hours and days.
+//
+// The email service reports, to /email/events, an email that bounced for good, one marked as spam,
+// and one it would not send to an address on its suppression list; each deletes that address's
+// mail:<id> and pend:<id> at once (gone). Off until MAIL_WEBHOOK_SECRET is set (README.md, step 11).
 
 import {
-  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, isObject, listKeys, nextAttempt, readJson, reply,
+  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, isObject, listKeys, nextAttempt, readJson, readText, reply,
 } from './shared.js';
 import { sendEmail } from './mail.js';
 
@@ -134,6 +138,7 @@ export async function handleEmail(request, env, { fetch = globalThis.fetch, now 
     if (url.pathname === '/email/subscribe') return await subscribe(request, env, { fetch, now, log });
     if (url.pathname === '/email/confirm') return await confirm(request, env, url, { now });
     if (url.pathname === '/email/unsubscribe') return await unsubscribe(request, env, url);
+    if (url.pathname === '/email/events') return await gone(request, env, { now, log });
     return reply(404, 'Not found');
   } catch (err) {
     if (err instanceof Invalid) return reply(400, err.message, corsFor(request, env));
@@ -241,6 +246,62 @@ async function unsubscribe(request, env, url) {
   return page(env, 200, 'Unsubscribed', 'You are unsubscribed',
     '<p class="lead">Your address and your list of spots are deleted. No more alerts will be sent to it.</p>'
     + `<p>You can still see the forecasts on <a href="${esc(env.SITE_URL)}">SwimSignal</a>.</p>`);
+}
+
+// ---- the email service's reports ----
+// Resend reports by webhook (https://resend.com/docs/webhooks/emails/bounced, /complained and
+// /suppressed, read 4 Oct 2026): email.bounced when the receiving server rejected an email for good
+// (data.bounce.type "Permanent"), email.complained when the recipient marked it as spam, and
+// email.suppressed when Resend would not send to an address on its suppression list. Each names the
+// address in data.to. Any of them deletes that address's record and any sign-up waiting, at once, so
+// nothing more goes to it: before this a dead address stayed until removed by hand, and Resend counts
+// bounces and complaints against the sender. A bounce that is not permanent is a server saying "later",
+// and deletes nothing. Every other event is acknowledged and ignored, so Resend does not send it again.
+const GONE = new Set(['email.bounced', 'email.complained', 'email.suppressed']);
+const MAX_EVENT = 64 * 1024;   // a report is under 1 kB; a long bounce message stays well within this
+// Resend signs reports as Svix does (https://docs.svix.com/receiving/verifying-payloads/how-manual,
+// read 4 Oct 2026): HMAC-SHA-256 of "<svix-id>.<svix-timestamp>.<body>" under the base64 secret after
+// "whsec_", in base64; svix-signature holds one or more "v1,<signature>", separated by spaces. A
+// timestamp more than 5 minutes from now is refused, as Svix's own libraries do, so a report cannot be
+// replayed later.
+const SIGNED_WITHIN = 300;
+export async function signedByService(env, headers, body, t) {
+  const id = headers.get('svix-id'), ts = headers.get('svix-timestamp'), sigs = headers.get('svix-signature');
+  if (!id || !sigs || !/^\d{1,12}$/.test(ts ?? '') || Math.abs(t / 1000 - Number(ts)) > SIGNED_WITHIN) return false;
+  let secret;
+  try { secret = Uint8Array.from(atob(String(env.MAIL_WEBHOOK_SECRET).replace(/^whsec_/, '')), (c) => c.charCodeAt(0)); } catch { return false; }
+  const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const want = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${id}.${ts}.${body}`)))));
+  for (const entry of sigs.split(' ')) {
+    const [version, sig] = entry.split(',');
+    if (version === 'v1' && sig && await same(sig, want)) return true;
+  }
+  return false;
+}
+// An address as the report gives it: plain, or "Name <address>".
+const reported = (value) => { const v = String(value ?? ''), m = /<([^<>]+)>\s*$/.exec(v); return m ? m[1] : v; };
+
+async function gone(request, env, { now, log }) {
+  if (!env.MAIL_WEBHOOK_SECRET) return reply(404, 'Not found');
+  if (request.method !== 'POST') return reply(405, 'Method not allowed', { Allow: 'POST' });
+  const body = await readText(request, MAX_EVENT);
+  if (!(await signedByService(env, request.headers, body, now()))) return reply(401, 'Signature not valid');
+  let event;
+  try { event = JSON.parse(body); } catch { throw new Invalid('Body is not JSON'); }
+  const type = event?.type, data = isObject(event?.data) ? event.data : {};
+  const bounce = isObject(data.bounce) ? data.bounce : {};
+  if (!GONE.has(type) || (type === 'email.bounced' && bounce.type !== undefined && bounce.type !== 'Permanent')) return reply(200, 'Nothing to do');
+  let removed = 0;
+  for (const value of Array.isArray(data.to) ? data.to : []) {
+    let email;
+    try { email = cleanEmail(reported(value)); } catch { continue; }
+    const id = await addressId(env, email);
+    await env.PUSH.delete(`mail:${id}`);
+    await env.PUSH.delete(`pend:${id}`);
+    log(`email ${id.slice(0, 12)}: deleted after ${type.slice('email.'.length)}${type === 'email.bounced' && bounce.subType ? ` (${String(bounce.subType).slice(0, 40)})` : ''}`);
+    removed++;
+  }
+  return reply(200, `Deleted ${removed}`);
 }
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

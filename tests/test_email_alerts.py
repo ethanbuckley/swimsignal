@@ -72,5 +72,6 @@ def test_the_email_section_says_what_the_worker_does():
     for words in ("deleted after two days", "your address, the identifiers of those spots and the time you confirmed",
                   "at most once a day for each spot", "no images, no pixels", "unsubscribe link in every email",
                   "deletes your address and your list of spots at once", "for an hour under a scrambled form of your IP address",
-                  "the IP address itself is not stored", "Resend (Plus Five Five, Inc.)", "UK's addendum"):
+                  "the IP address itself is not stored", "Resend (Plus Five Five, Inc.)", "UK's addendum",
+                  "cannot be delivered for good, or you mark one as spam"):
         assert words in text, words

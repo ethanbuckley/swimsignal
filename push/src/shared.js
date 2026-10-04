@@ -16,9 +16,9 @@ export const isObject = (v) => typeof v === 'object' && v !== null && !Array.isA
 export const reply = (status, text, headers = {}) =>
   new Response(text, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', ...headers } });
 
-// Reads at most MAX_BODY bytes, so an oversized body is refused without buffering it.
-export async function readJson(request) {
-  check(!(Number(request.headers.get('Content-Length')) > MAX_BODY), 'Body too large');
+// Reads at most max bytes, so an oversized body is refused without buffering it.
+export async function readText(request, max = MAX_BODY) {
+  check(!(Number(request.headers.get('Content-Length')) > max), 'Body too large');
   const chunks = [];
   let size = 0;
   const reader = request.body?.getReader();
@@ -26,10 +26,13 @@ export async function readJson(request) {
     const { done, value } = await reader.read();
     if (done) break;
     size += value.byteLength;
-    if (size > MAX_BODY) { await reader.cancel(); throw new Invalid('Body too large'); }
+    if (size > max) { await reader.cancel(); throw new Invalid('Body too large'); }
     chunks.push(value);
   }
-  const text = new TextDecoder().decode(concat(...chunks));
+  return new TextDecoder().decode(concat(...chunks));
+}
+export async function readJson(request) {
+  const text = await readText(request);
   try { return JSON.parse(text); } catch { throw new Invalid('Body is not JSON'); }
 }
 

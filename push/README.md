@@ -118,11 +118,11 @@ In the same KV namespace as push, under keys that never contain an address (`src
 5. Each alert is plain text with a short HTML version: the spot, its level with "risk", the day and why (the page's own headline), the issue time, a link to the spot, and an unsubscribe link. No images, no web fonts, no redirected links. It carries `List-Unsubscribe` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` (RFC 8058): a mail program's unsubscribe button POSTs to the link and the record is deleted at once. The link in the email body shows a page with an Unsubscribe button, for the same reason as Confirm.
 6. The email service's answers: a network error, timeout, 408, 429 rate limit or 5xx is retried on push's schedule (2, 4, 8 minutes; four attempts). A daily or monthly quota answer pauses the queue until midnight UTC. A 401 or 403 (a wrong key, or a sender domain not verified) pauses it for an hour and logs "check MAIL_API_KEY and EMAIL_FROM". Anything else is dropped and logged. Logs name an address by part of its id, and an address in the service's reason is cut out.
 
-Not built: bounce and complaint handling through Resend's webhooks. An address that bounces keeps its record until it unsubscribes or is removed by hand.
+7. Bounces and complaints: Resend reports to `/email/events` an email the receiving server rejected for good (`email.bounced`, with `bounce.type` "Permanent"), one the recipient marked as spam (`email.complained`), and one it would not send because the address is on its suppression list (`email.suppressed`). Each deletes the address's `mail:<id>` and any `pend:<id>` at once, so nothing more goes to it, and logs `email <id>: deleted after bounced (General)` with no address. A bounce that is not permanent (a full mailbox, say) deletes nothing. Every other event is answered 200 and ignored, so Resend does not send it again. A report is believed only with a valid signature from the last five minutes (Svix's scheme, which Resend uses: HMAC-SHA-256 under `MAIL_WEBHOOK_SECRET`); anything else is answered 401. Without `MAIL_WEBHOOK_SECRET` the address is 404, and a dead address keeps its record until it unsubscribes or is removed by hand.
 
 ### Free-tier budget
 
-KV writes are the tight one (1,000 a day, shared with push). A sign-up costs 4 writes (two counts, the pending request, the day's email count) and a confirmation 1 write and 1 delete. Each run that sends email writes the queue and the count. So a few hundred sign-ups in a day would reach the limit. The email service's 100 a day is the other: on a day when many spots rise, alerts wait for the next day, and the next build's wording decides what still goes out.
+KV writes are the tight one (1,000 a day, shared with push). A bounce or complaint report costs 2 deletes. A sign-up costs 4 writes (two counts, the pending request, the day's email count) and a confirmation 1 write and 1 delete. Each run that sends email writes the queue and the count. So a few hundred sign-ups in a day would reach the limit. The email service's 100 a day is the other: on a day when many spots rise, alerts wait for the next day, and the next build's wording decides what still goes out.
 
 ### Setup
 
@@ -146,13 +146,15 @@ Do these in order; the page stays unchanged until the last step. Run commands fr
     ```
 
     It answers `HTTP/2 202`, and the confirmation email arrives within a minute. Open its link and press Confirm; the page says "Email alerts are on". In Gmail, "Show original" on the email should say `DKIM: 'PASS' with domain swimsignal.co.uk`.
-11. Add the repository variable (Settings, Secrets and variables, Actions, Variables): `DIPCAST_EMAIL_URL` = `https://swimsignal-push.swimsignal-push.workers.dev/`.
-12. Pass it to the build: in `.github/workflows/site.yml`, in the "Build forecasts and site" step's `env:`, under the two `DIPCAST_PUSH_URL` lines, add:
+11. Bounces and complaints. In Resend, open Webhooks, then Add Webhook. Endpoint: `https://swimsignal-push.swimsignal-push.workers.dev/email/events`. Events: `email.bounced`, `email.complained` and `email.suppressed`, and no others. Save it, open it, and copy its signing secret (it starts `whsec_`). Then `npx wrangler secret put MAIL_WEBHOOK_SECRET` and paste it; wrangler puts the new secret live at once. To check it: run `npx wrangler tail` in one terminal, and in another sign up `bounced@resend.dev` as in step 10. Resend's test address bounces the confirmation email, and within a minute the tail shows `email <id>: deleted after bounced`. In Resend's webhook page the delivery shows 200. A 401 there means the secret was pasted wrong.
+12. Add the repository variable (Settings, Secrets and variables, Actions, Variables): `DIPCAST_EMAIL_URL` = `https://swimsignal-push.swimsignal-push.workers.dev/`.
+13. Pass it to the build: in `.github/workflows/site.yml`, in the "Build forecasts and site" step's `env:`, under the two `DIPCAST_PUSH_URL` lines, add:
 
     ```yaml
               # Email alerts (push/README.md, "Email alerts"): the Worker's address; unset = no email sign-up.
               DIPCAST_EMAIL_URL: ${{ vars.DIPCAST_EMAIL_URL }}
     ```
+
 
 ### How you will know it worked
 
@@ -161,7 +163,7 @@ Do these in order; the page stays unchanged until the last step. Run commands fr
 
 ### The mistake to avoid
 
-The most likely mistake is setting the repository variable and skipping step 12. Nothing changes, because the workflow hands the build only the variables named in `site.yml`, and a variable it does not name is invisible to it.
+The most likely mistake is setting the repository variable and skipping step 13. Nothing changes, because the workflow hands the build only the variables named in `site.yml`, and a variable it does not name is invisible to it.
 
 The most damaging one is changing `MAIL_HASH_KEY` later. Every record's key and every unsubscribe link already sent are derived from it, so a new key orphans every subscriber and breaks the links in their inboxes. If it must change, delete all email records first (below) and ask people to sign up again.
 
