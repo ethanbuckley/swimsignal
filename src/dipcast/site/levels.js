@@ -126,7 +126,7 @@ const inBathingSeason = iso => { const md = String(iso).slice(5, 10); return md 
 const poorReason = iso => inBathingSeason(iso) ? 'advice against bathing' : 'advice against bathing from 15 May';
 const poorAdvice = iso => inBathingSeason(iso)
   ? 'Advice against bathing applies here while the rating is poor, and should be shown on signs at the water.'
-  : 'The rating is poor, so the level stays at least high; advice against bathing applies 15 May to 30 September.';   // the council's, not the EA's (above)
+  : 'The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September.';   // the council's, not the EA's (above)
 // The words for a spot without a risk level, the same wherever it is described (the headline, so the
 // list row, the map's tooltip, the saved card and the alerts; the page's spills row; the comparison).
 const COVER = { [NO_FORECAST]: 'No forecast in this update', [NOT_COVERED]: 'Not covered by the forecast',

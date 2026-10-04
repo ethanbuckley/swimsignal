@@ -209,7 +209,7 @@ async function confirm(request, env, url, { now }) {
   // A GET only shows the button: mail scanners open links in emails on their own, and that must not confirm.
   if (request.method === 'GET') {
     return page(env, 200, 'Confirm email alerts', 'Confirm email alerts',
-      `<p class="lead">Email alerts to <b>${esc(pending.email)}</b> when ${which} turns high or very high, at most once a day for each.</p>`
+      `<p class="lead">Email alerts to <b>${esc(pending.email)}</b> when ${which} reaches high or very high risk, at most once a day for each.</p>`
       + '<form method="post"><p><button class="btn primary" type="submit">Confirm email alerts</button></p></form>'
       + '<p>Every alert has a link to unsubscribe, which deletes your address at once. '
       + `<a href="${esc(env.SITE_URL)}privacy.html#email-alerts">Privacy notice</a>.</p>`);
@@ -219,7 +219,7 @@ async function confirm(request, env, url, { now }) {
   await env.PUSH.put(`mail:${id}`, JSON.stringify(record), meta);
   await env.PUSH.delete(`pend:${id}`);
   return page(env, 200, 'Email alerts are on', 'Email alerts are on',
-    `<p class="lead">You will get an email when ${which} turns high or very high.</p>`
+    `<p class="lead">You will get an email when ${which} reaches high or very high risk.</p>`
     + '<p>An alert can be late or not come at all, so no alert does not mean the water is clean. '
     + 'To change the spots, sign up again on the Saved page: the new list replaces this one once you confirm it.</p>'
     + `<p><a href="${esc(await unsubscribeUrl(env, id))}">Unsubscribe</a> · <a href="${esc(env.SITE_URL)}saved/">Your saved spots</a></p>`);
@@ -368,13 +368,13 @@ export function confirmEmail(env, to, link, names) {
     ...list.map((n) => `- ${n}`), ...(more > 0 ? [`- and ${more} more`] : []), '',
     'To confirm, open this link and press Confirm:', link, '',
     'The link works for two days. If you did not ask, ignore this email: nothing more will be sent, and the request is deleted.', '',
-    'An alert comes when one of these spots turns high or very high, at most once a day for each. Every alert has a link to unsubscribe.',
+    'An alert comes when one of these spots reaches high or very high risk, at most once a day for each. Every alert has a link to unsubscribe.',
     '', `SwimSignal · ${env.SITE_URL}`].join('\n');
   const inner = `<h1 style="margin:0 0 8px;font:600 20px/1.25 ${SERIF};">Confirm your email alerts</h1>`
     + '<p style="margin:0 0 8px;">Someone, probably you, asked for SwimSignal email alerts at this address for these spots:</p>'
     + `<ul style="margin:0 0 16px;padding-left:20px;">${list.map((n) => `<li>${esc(n)}</li>`).join('')}${more > 0 ? `<li>and ${more} more</li>` : ''}</ul>`
     + `<p style="margin:0 0 16px;"><a href="${esc(link)}" style="display:inline-block;padding:10px 16px;border-radius:8px;background:#0f5a61;color:#fff;font-weight:600;text-decoration:none;">Confirm email alerts</a></p>`
-    + '<p style="margin:0;">An alert comes when one of these spots turns high or very high, at most once a day for each. Every alert has a link to unsubscribe.</p>';
+    + '<p style="margin:0;">An alert comes when one of these spots reaches high or very high risk, at most once a day for each. Every alert has a link to unsubscribe.</p>';
   const foot = 'The link works for two days. If you did not ask, ignore this email: nothing more will be sent, and the request is deleted.';
   return { to, subject, text, html: htmlShell(subject, inner, foot) };
 }

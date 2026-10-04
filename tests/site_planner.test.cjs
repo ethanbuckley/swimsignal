@@ -226,7 +226,7 @@ test('a water rated poor names the advice against bathing in its season only, by
   assert.equal(L.dayHeadline(poor, '2026-10-01'), 'Rated poor: advice against bathing from 15 May');
   assert.equal(L.dayLevel(poor, '2026-10-01'), 'high');
   assert.match(L.poorAdvice('2026-09-30'), /^Advice against bathing applies here while the rating is poor/);
-  assert.match(L.poorAdvice('2026-10-01'), /^The rating is poor, so the level stays at least high; advice against bathing applies 15 May to 30 September\.$/);
+  assert.match(L.poorAdvice('2026-10-01'), /^The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September\.$/);
   L.setToday('2026-10-02');
   try { assert.equal(L.headline({...poor, days: poor.days.map((x, i) => ({...x, date: ['2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06'][i]}))}),
     'Rated poor: advice against bathing from 15 May'); }   // what the alerts say, through headline()
@@ -302,6 +302,15 @@ test('the rain in the last two days is a plain sentence, and absent without a fi
   assert.equal(said(44.7), '45 mm of rain in the last two days');
   assert.equal(said(null), '');
   assert.equal(vm.runInContext('rainSaid', ctx)({days: []}), '');
+});
+test('overflows discharging now: the sentence over the five days gives right now\'s level with "risk"', () => {
+  // "exposure right now is moderate" left the level word bare (docs/DESIGN.md, Words).
+  const ctx = plainCtx(), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
+  const two = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'moderate', discharging_upstream: 2}});
+  assert.equal(run('summary', two)[0], '2 upstream overflows are discharging now: moderate risk from them right now.');
+  assert.match(text(run('daysSentence', two)), /^2 upstream overflows are discharging now: moderate risk from them right now\. /);
+  const one = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', discharging_upstream: 1}});
+  assert.equal(run('summary', one)[0], '1 upstream overflow is discharging now: low risk from it right now.');
 });
 test('an isolated lake reads "No river connection" in the unknown grey, with the same line and no rain', () => {
   const words = 'No river connection: overflows cannot reach this lake';

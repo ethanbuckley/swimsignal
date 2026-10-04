@@ -835,14 +835,14 @@
     <p class="about-line" id="about-line"><a href="#about">About these forecasts</a> · <a href="verification.html">How accurate is it?</a></p>
     <section class="about" id="about" tabindex="-1">
       <h2>About these forecasts</h2>
-      <p>For each spot, SwimSignal traces the river upstream, finds every monitored storm overflow whose water reaches it, and combines what those overflows are doing now with how likely each is to spill over the next five days, allowing for travel time, bacterial die-off and dilution. It is a forecast, not a water test: "low" is not a guarantee of clean water, and inclusion of a spot is not a statement that it is safe to swim there. <a href="verification.html">How accurate is it?</a></p>
+      <p>For each spot, SwimSignal traces the river upstream, finds every monitored storm overflow whose water reaches it, and combines what those overflows are doing now with how likely each is to spill over the next five days, allowing for travel time, bacterial die-off and dilution. It is a forecast, not a water test: "low risk" is not a guarantee of clean water, and inclusion of a spot is not a statement that it is safe to swim there. <a href="verification.html">How accurate is it?</a></p>
       <details class="more" id="levels"><summary>What the levels mean</summary>
         <p class="small muted">A day's level is the highest of these. A spot's page shows each one.</p>
         <dl>
           <dt>Sewage spills</dt><dd>The exposure index, a 0–100 score of how likely sewage from upstream is to reach the spot. Low under 15, moderate 15 to 40, high 40 to 70, very high 70 or more.</dd>
           <dt>Water quality</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. In the May to September season only: from October to April, when the EA takes no samples, the estimate is shown marked † but does not set the level.</dd>
-          <dt>Environment Agency rating</dt><dd>At a designated bathing water, the EA's yearly rating from up to four seasons of lab samples. When it is poor, advice against bathing applies through the bathing season, 15 May to 30 September, and the level is at least high on every day. Where there is no daily forecast, a rating of sufficient makes the level moderate and poor makes it high; excellent or good leave the plain level below.</dd>
-          <dt>Algae</dt><dd>At a designated bathing water, the EA sampler's last look, if under two weeks old: enough algae to be objectionable makes the level at least high, some at intervals at least moderate.</dd>
+          <dt>Environment Agency rating</dt><dd>At a designated bathing water, the EA's yearly rating from up to four seasons of lab samples. When it is poor, advice against bathing applies through the bathing season, 15 May to 30 September, and the level is at least high risk on every day. Where there is no daily forecast, a rating of sufficient makes the level moderate risk and poor makes it high risk; excellent or good leave the plain level below.</dd>
+          <dt>Algae</dt><dd>At a designated bathing water, the EA sampler's last look, if under two weeks old: enough algae to be objectionable makes the level at least high risk, some at intervals at least moderate risk.</dd>
           <dt>Not included</dt><dd>The EA's short-term advice against bathing after a pollution incident or an algal bloom. On a bathing water's page, opening "Today's EA advice" loads the EA's own panel, which has it.</dd>
         </dl>
         <dl class="levels">
@@ -1108,7 +1108,7 @@ const spilling = (x, total) => { const e = x.expected_spilling_overflows; if (ni
     : ORDER[x.label] ? 'a spill from a nearby overflow upstream is possible'
     : `under one spill is expected from the ${total === 1 ? 'overflow' : `${total} overflows`} upstream`; };
 // ------------------------------------------------------------------------------ alerts
-// A notification when a saved spot turns high (push/ sends them). Only where the build set up the
+// A notification when a saved spot reaches high or very high risk (push/ sends them). Only where the build set up the
 // alert service (DATA.push), and only if asked: turning alerts on sends the push address and the
 // saved spots' ids to the service, nothing else, and every change to the list is sent again.
 const PUSH_KEY = 'dipcast.push';   // what was last sent, so an unchanged list is not re-sent
@@ -1168,7 +1168,7 @@ function alertsCard() {
   // it stays, word for word, one tap away and before the button; the first sentence is in view.
   // Email (DATA.email) is offered beside push, for browsers that cannot take push: on an iPhone,
   // push needs the Home Screen app, so most visitors there could not have alerts at all.
-  const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots turns high or very high, at most once a day for each.`;
+  const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots reaches high or very high risk, at most once a day for each.`;
   let h = `<section class="sec tile" aria-labelledby="alerts-h"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
   if (DATA.push) {
     const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
@@ -1250,7 +1250,7 @@ function summary(d) {
     return [`No storm overflow is monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream, so the days show rain instead: rain washes in runoff from farms, roads and wildlife.`,
       ...(wet ? [`The wettest day ahead is ${dayWord(wet.date).replace(/^on /, '')}, with about ${Math.round(wet.rain_48h_mm)}&nbsp;mm of rain in the 48 hours to midday.`] : [])];
   }
-  if (n) out.push(`${n} upstream overflow${n === 1 ? ' is' : 's are'} discharging now; exposure right now is ${d.now.label}.`);
+  if (n) out.push(`${n} upstream overflow${n === 1 ? ' is' : 's are'} discharging now: ${d.now.label} risk from ${n === 1 ? 'it' : 'them'} right now.`);
   if (!known.length) return out.concat('No rainfall forecast has arrived, so there is no forecast for the days ahead.');
   const peak = known.reduce((a, b) => ORDER[b.label] > ORDER[a.label] ? b : a);
   // Why a day is raised: the overflows upstream. Rain at the spot can be light while the hills
@@ -1542,7 +1542,7 @@ function facts(d) {
     say: `None monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream.`, more: 'Risk from farms, wildlife and unmonitored sources is not modelled.' });
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
-      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Exposure index ${Math.round(i)} of 100: ${x0.label}`),
+      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Exposure index ${Math.round(i)} of 100: ${x0.label} risk`),
       say: `${cap(spilling(x0, total))} today.`,
       more: `The exposure index, a 0–100 score of how likely sewage from upstream is to reach the spot, after travel time, die-off and dilution. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   // Out of season the figure stays but its band does not (water): it does not set the level.

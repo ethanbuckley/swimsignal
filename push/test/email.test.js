@@ -181,6 +181,21 @@ test('double opt-in: the link shows a button, and only pressing it subscribes', 
   assert.equal(w.emails.length, 1, 'confirming sends nothing');
 });
 
+test('the sign-up\'s words carry "risk" after the level: the confirmation email and both pages', async () => {
+  const w = world();
+  await w.signUp('ann@example.org');
+  const { text, html } = w.emails[0].body;
+  const url = new URL(w.link(text, 'confirm'));
+  const shown = await (await w.call(url.pathname + url.search, { method: 'GET', origin: null })).text();
+  const done = await (await w.call(url.pathname + url.search, { origin: WORKER.slice(0, -1) })).text();
+  const rule = 'when one of these spots reaches high or very high risk, at most once a day for each.';
+  assert.ok(text.includes(`An alert comes ${rule}`) && html.includes(`An alert comes ${rule}`));
+  assert.match(shown, /when one of your 2 saved spots reaches high or very high risk, at most once a day for each\.<\/p>/);
+  assert.match(done, /You will get an email when one of your 2 saved spots reaches high or very high risk\.<\/p>/);
+  // "turns high", "turns high or very high": a level word without "risk" (docs/DESIGN.md, Words).
+  for (const words of [text, html, shown, done]) assert.doesNotMatch(words, /turns? (very )?high|very high(?! risk)/);
+});
+
 test('signing up again replaces the list only once the new one is confirmed', async () => {
   const w = world();
   await w.subscribe('ann@example.org', ['a']);
