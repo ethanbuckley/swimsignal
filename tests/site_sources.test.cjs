@@ -87,9 +87,9 @@ test('after a spill the page says when the model expects low risk, and why then'
   const far = spot({risk: 0.49, label: 'high', discharging_upstream: 1, clears_at: '2026-10-05T17:00:00+01:00', clears_by: 'travel',
     clears_after: {site_id: 'UU9', site_name: 'APPLEBY WwTW', travel_h: 30.2}});
   assert.equal(plain(run('clearSentence', far)), 'If the overflow discharging upstream stops now, the model expects low risk from spills '
-    + 'by about Monday afternoon, allowing for the 30 hours water from Appleby WwTW takes to get here.');
+    + 'by about Monday afternoon, allowing for travel time: water from Appleby WwTW takes about 30 hours to get here.');
   assert.match(run('clearSentence', {...far, now: {...far.now, clears_after: {site_id: 'X<1>', site_name: null, travel_h: 12}}}),
-    /12 hours water from X&lt;1&gt; takes to get here\.$/);
+    /water from X&lt;1&gt; takes about 12 hours to get here\.$/);
   assert.match(plain(run('clearSentence', {...far, now: {...far.now, clears_after: undefined}})), /by about Monday afternoon\.$/);   // no name: no clause
   // A later day raised by spills after today alone is named; one raised only by today's is not.
   const wet = spot({risk: 0.62, label: 'high', discharging_upstream: 1, clears_at: '2026-10-05T09:10:00+01:00', clears_by: 'die-off'},

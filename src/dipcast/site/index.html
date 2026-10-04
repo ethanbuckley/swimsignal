@@ -2375,7 +2375,7 @@ function clearSentence(d) {
   const later = d.days.slice(1, 5).find(x => hasData(x) && (x.risk_from_later_spills ?? 0) >= SPILL_CUTS[0]);
   const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after its water has passed`
     : n.clears_by === 'travel' && (last.site_name || last.site_id) && h >= 1
-      ? `, allowing for the ${h} hour${h === 1 ? '' : 's'} water from ${esc(nameCase(last.site_name ?? last.site_id))} takes to get here` : '';
+      ? `, allowing for travel time: water from ${esc(nameCase(last.site_name ?? last.site_id))} takes about ${h} hour${h === 1 ? '' : 's'} to get here` : '';
   return `If ${k === 1 ? 'the overflow discharging upstream stops now' : k ? `the ${k} overflows discharging upstream stop now` : 'no new spill starts'}, `
     + `the model expects low risk from spills ${partOfDay(n.clears_at)}${why}.`
     + (later ? ` Rain may bring new spills and ${later.label} risk ${dayWord(later.date)}.` : '');
