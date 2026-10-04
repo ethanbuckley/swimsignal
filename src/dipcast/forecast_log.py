@@ -779,6 +779,31 @@ def samples_status() -> dict | None:
         return None
 
 
+def latest_samples() -> dict[str, dict] | None:
+    """bw_id -> the latest E. coli lab sample held, for a spot's page: when it was taken (local time,
+    with its offset), the count per 100 ml, and the qualifier when the count is a limit ('<' or '>',
+    as '<10'). Read from the samples file refresh_ecoli_samples keeps, never fetched: refresh_all runs
+    that once a day before the forecasts, so the build makes no request of its own for this. None when
+    there is no readable file, which the page says differently from a site with no sample in it."""
+    p = config.state_read(ECOLI_SAMPLES)
+    if not p.exists():
+        return None
+    try:
+        df = pd.read_parquet(p)
+    except Exception as e:  # noqa: BLE001 - a record beside the forecast must not sink the build
+        log.warning("EA samples file unreadable: %s", e)
+        return None
+    if df.empty or not {"bw_id", "sample_time", "ecoli"} <= set(df.columns):
+        return {}
+    df = df.dropna(subset=["bw_id", "sample_time", "ecoli"]).sort_values("sample_time")
+    out = {}
+    for bw_id, r in df.groupby("bw_id").tail(1).set_index("bw_id").iterrows():
+        q = str(r.get("ecoli_qual") or "").strip()
+        out[str(bw_id)] = {"taken_at": pd.Timestamp(r["sample_time"]).isoformat(timespec="minutes"),
+                           "ecoli": int(round(float(r["ecoli"]))), **({"qualifier": q} if q in ("<", ">") else {})}
+    return out
+
+
 def match_points_to_sites(points: pd.DataFrame, sites: pd.DataFrame) -> pd.Series:
     """bw_id for each logged point whose coordinates round to a bathing water's (4 dp ~ 10 m)."""
     key = sites.assign(k=sites["lat"].round(4).astype(str) + "," + sites["lon"].round(4).astype(str)).set_index("k")["bw_id"]

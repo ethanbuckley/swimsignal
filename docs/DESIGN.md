@@ -615,6 +615,33 @@ thermometer from the stroke set. No report is ever shown, only counts, from five
   own tick with the words "information about my health". An onset that would fall after today is
   shown but cannot be chosen.
 
+### What the level rests on (4 October 2026)
+
+One tile (`evidence.js`) after the forecast's tiles and before the practical guide. It lists the
+evidence the level rests on, each item with how old it is and whose it is, and then says what there is
+none of here. Its figures are already on the tiles above it. This is the one place where their ages and
+sources sit together, and the only place with the latest lab sample.
+
+- The rows are a picked day's rows (`.factor`): the item on the left, its age on the right, what it says
+  in ink, then whose it is at the meta size. They sit 8 px apart, not 12. Measured at 375 px on the data of
+  4 October: five rows (Wharfe at Cromwheel) make a 554 px tile, two rows and a gap (the Eden at
+  Armathwaite) 306 px.
+- The items, in this order: the overflows upstream (discharging, stopped lately, and how many report
+  live, with why the others do not: offline, a feed that is down, a stale feed with its last update, or no
+  live feed); the rain; the Environment Agency rating and its year; the algae at the last check; the latest
+  lab sample. These are what the forecast takes in, not what it gives out: the exposure index and the
+  E. coli estimate stay in their tiles. The river level and the water temperature are left out: they are
+  not part of the level, and their tiles date them.
+- Ages are counted when the page is read, in UK time: "1 h 30 min ago" within a day, as the issue time
+  says it, then "Yesterday", "10 days ago", then whole months.
+- The gaps come last, under a hairline, a sentence each, in ink: "No lab samples, algae checks or rating:
+  this is not a designated bathing water.", "No monitored overflow within 60 km upstream, so no spills to go
+  on; farms, wildlife and unmonitored sources are not modelled.", "No rain forecast arrived for Thursday.",
+  "No lab sample here this season." A sample missing because the build had no samples file says that
+  instead, and links the Environment Agency's page.
+- No level colour anywhere in it: the rating's word is in ink here, since its tile already colours it.
+- Not on a point clicked on the map, nor on a spot without a forecast, whose answer says why.
+
 ### A point off the list (3 October 2026)
 
 A click on the map away from the listed spots (`anypoint.js`) gives a forecast for that point, worked

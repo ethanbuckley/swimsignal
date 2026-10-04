@@ -264,6 +264,12 @@
   .f-v { font-size:var(--fs-note); font-weight:700; text-align:right; color:var(--k-na); }
   .f-v.low { color:var(--k-low); } .f-v.moderate { color:var(--k-moderate); } .f-v.high { color:var(--k-high); } .f-v.veryhigh { color:var(--k-veryhigh); } .f-v.clear { color:var(--k-clear); }
   .f-d { grid-column:1 / -1; font-size:var(--fs-note); line-height:1.45; margin-top:2px; }
+  /* What the level rests on (evidence.js): the same rows, closer, each with whose it is under it, then the gaps. */
+  #evidence .factor { padding:8px 0; }
+  .f-src { grid-column:1 / -1; margin-top:2px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  .f-src a { color:var(--muted); }
+  .ev-gap { padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.45; }
+  .ev-gap p { margin:0; } .ev-gap p + p { margin-top:6px; }
   /* A row's explanation past its first sentence, folded (explain). Closed, the 44 px target reaches
      into the row's padding, so the fold costs the row a line rather than a target's height. A
      section's note (msg) folds the same way. */
@@ -842,6 +848,7 @@
 <script src="vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
+<script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
 <script src="experience.js"></script>
@@ -1334,6 +1341,7 @@ const ICON = {   // the one stroke set, as the search, map, bookmark and check
   pin: glyph('<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/>'),
   table: glyph('<path d="M4 5h16v14H4ZM4 10h16M4 14.5h16M10 5v14"/>'),
   route: glyph('<path d="M12 21V3"/><path d="M5.5 5.5h10l3 2.5-3 2.5h-10ZM18.5 13.5h-10l-3 2.5 3 2.5h10Z"/>'),   // a signpost: the practical guide
+  evidence: glyph('<path d="M6 3h8.5L19 7.5V21H6Z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/>'),   // a page of records: what the level rests on
 };
 // Overflow names come in capitals from some feeds ("LITTLE SALKELD WwTW"): a word of four or more
 // capitals is set in normal case; shorter ones (CSO, STW, PS) and mixed ones (WwTW) are kept.
@@ -2551,8 +2559,11 @@ function render(d) {
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:
   // above, on a small phone, it pushed the level below the fold.
   const where = `<div class="loc phone-only"><div id="loc-map" aria-hidden="true"></div><button type="button" class="loc-open" id="loc-open" aria-label="Open map at ${esc(d.name)}">Open map</button></div>`;
-  // The practical guide (guide.js) after the forecast's tiles: parking, paths, entry and exit, fees.
-  const tiles = `<div class="tiles">${facts(d).map(tile).join('')}</div>` + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
+  // After the forecast's tiles, what the level rests on (evidence.js): each item's age and source, and
+  // what there is none of here. Then the practical guide (guide.js): parking, paths, entry and exit, fees.
+  const tiles = `<div class="tiles">${facts(d).map(tile).join('')}</div>`
+    + (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
+    + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);

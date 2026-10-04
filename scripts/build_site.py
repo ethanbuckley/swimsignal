@@ -25,7 +25,7 @@ import pandas as pd
 from dipcast import __version__, config
 from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
-from dipcast.forecast_log import describe_fetch, load_poll_log, load_verification, samples_status
+from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
 from dipcast.jobs import refresh_all
@@ -473,6 +473,23 @@ def attach_algae(results: list[dict], fetch: bool = True) -> int:
     return n
 
 
+def attach_lab_samples(results: list[dict], samples: dict | None = None) -> int | None:
+    """The latest E. coli lab sample on each bathing-water spot (spot id 'bw-' + the EA id), for the
+    page's "What the level rests on": the samples the live scoring already holds
+    (forecast_log.latest_samples), so no request is made. A bathing water with none in the file gets
+    None ("no lab sample this season"); without a readable file no spot gets the field, and the page
+    says the sample is not in this forecast's data. Returns how many spots got one, None without a file."""
+    samples = latest_samples() if samples is None else samples
+    if samples is None:
+        return None
+    n = 0
+    for r in results:
+        if str(r["id"]).startswith("bw-"):
+            r["lab_sample"] = samples.get(str(r["id"]).removeprefix("bw-"))
+            n += r["lab_sample"] is not None
+    return n
+
+
 # The credits every published data file carries. A credit has to travel with republished data:
 # CC BY 4.0 s.3(a) and s.4 for the water companies' feeds, OGL v3 for the EA and OS. The full
 # notices are on the terms page ("Data sources and credits"), which the "full" link points to.
@@ -863,6 +880,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# What the level rests on: evidence.js draws a spot's evidence, with its ages and sources, from spots.json.
+SHELL_SOURCES.append(TEMPLATE.parent / "evidence.js")
+VERSIONED_SCRIPTS += ('<script src="evidence.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -882,6 +902,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -1266,6 +1287,7 @@ def build(refresh: bool = True) -> dict:
     attach_access(results)
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
+    n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_classified = attach_classifications(results)
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
@@ -1280,6 +1302,7 @@ def build(refresh: bool = True) -> dict:
     health = build_health(results, samples_status(), load_poll_log() if refresh else None,
                           duplicate_overflow_ids=snapshot_duplicates())
     health["algae_checks"], health["classifications"] = n_algae, n_classified
+    health["lab_samples"] = n_lab
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     if n_flows.get("flood_alerts_unchecked"):
