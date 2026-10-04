@@ -1,0 +1,162 @@
+[
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-09-16",
+"e_coli_result": "31",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-10-13",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "7",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-10-27",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-11-10",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-11-24",
+"e_coli_result": "41",
+"intestinal_enterococci_result": "42",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-12-08",
+"e_coli_result": "30",
+"intestinal_enterococci_result": "38",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-12-15",
+"e_coli_result": "30",
+"intestinal_enterococci_result": "15",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-01-05",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "55",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-01-19",
+"e_coli_result": "41",
+"intestinal_enterococci_result": "11",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-02-04",
+"e_coli_result": "211",
+"intestinal_enterococci_result": "58",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-02-16",
+"e_coli_result": "109",
+"intestinal_enterococci_result": "15",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-03-02",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "15",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-03-18",
+"e_coli_result": "1043",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-03-30",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "11",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-04-13",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "5",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-04-27",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-05-11",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-05-18",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-09-17",
+"e_coli_result": "1120",
+"intestinal_enterococci_result": "406",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-09-28",
+"e_coli_result": "63",
+"intestinal_enterococci_result": "29",
+"sample_water_quality_status": "Excellent"
+}
+]

@@ -1,0 +1,400 @@
+{
+"features": [
+{
+"attributes": {
+"Unique_Site_ID_Code": 30003,
+"Site_name": "Magilligan Benone",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20324916%20%20NEW%20DRAFT%20Benone%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789373898000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30010,
+"Site_name": "Magilligan  Downhill",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20353505%20%20NEW%20DRAFT%20Downhill%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789375432000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30015,
+"Site_name": "Castlerock",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20353395%20%20NEW%20DRAFT%20Castlerock%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789376394000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30039,
+"Site_name": "Portstewart",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20333411%20%20NEW%20DRAFT%20Portstewart%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789379346000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30045,
+"Site_name": "Portrush Mill (West Strand)",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20333233%20%20NEW%20DRAFT%20Portrush%20%28Mill%29%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789381153000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30047,
+"Site_name": "Portrush Curran (East Strand)",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20369935%20%20NEW%20DRAFT%20Portrush%20%28Curran%29%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789381853000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30052,
+"Site_name": "Portrush Whiterocks",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20370146%20%20NEW%20DRAFT%20Portrush%20%28Whiterocks%29%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789382798000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30061,
+"Site_name": "Ballycastle",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20379834%20%20NEW%20DRAFT%20Ballycastle%20bathing%20water%20profile%202025_0.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789461326000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30074,
+"Site_name": "Waterfoot",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20379978%20%20NEW%20DRAFT%20Waterfoot%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789465521000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30082,
+"Site_name": "Carnlough",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20370994%20%20NEW%20DRAFT%20Carnlough%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789467514000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30095,
+"Site_name": "Brown's Bay",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20370937%20%20NEW%20DRAFT%20Brown%20Bay%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789472586000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30099,
+"Site_name": "Helen's Bay",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20379442%20%20NEW%20DRAFT%20Helens%20Bay%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789382821000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30103,
+"Site_name": "Crawfordsburn",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20354327%20%20NEW%20DRAFT%20Crawfordsburn%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789381505000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30109,
+"Site_name": "Ballyholme",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20324857%20%20NEW%20DRAFT%20Ballyholme%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789379303000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30115,
+"Site_name": "Groomsport",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20379173%20%20NEW%20DRAFT%20Groomsport%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789378240000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30119,
+"Site_name": "Millisle",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20354491%20%20NEW%20DRAFT%20Millisle%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789376202000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30127,
+"Site_name": "Ballywalter",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20333748%20%20NEW%20DRAFT%20Ballywalter%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789374193000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30141,
+"Site_name": "Tyrella",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20357675%20%20NEW%20DRAFT%20Tyrella%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789460796000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30151,
+"Site_name": "Newcastle",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20359443%20%20NEW%20DRAFT%20Newcastle%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789551665000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30157,
+"Site_name": "Murlough",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20357897%20%20NEW%20DRAFT%20Murlough%20%28Co%20Down%29%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789463705000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30173,
+"Site_name": "Cranfield",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20359583%20%20NEW%20DRAFT%20Cranfield%20Bay%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789470044000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30182,
+"Site_name": "Ballygally",
+"Type": "Coastal",
+"Status": "Candidate",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20379537%20%20NEW%20DRAFT%20Ballygally%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Good",
+"Sampling_datetime": 1789469458000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30184,
+"Site_name": "Portballintrae Salmon Rock",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20370441%20%20NEW%20DRAFT%20Portballintrae%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789383911000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30185,
+"Site_name": "Ballyhornan",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20388512%20%20NEW%20DRAFT%20Ballyhornan%20bathing%20water%20profile%202025pdf.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789458048000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30186,
+"Site_name": "Cloughey",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20354693%20%20NEW%20DRAFT%20Cloughey%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789372578000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30187,
+"Site_name": "Kilclief",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20333158%20%20NEW%20DRAFT%20Kilclief%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789457068000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30195,
+"Site_name": "Cushendall",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20418151%20%20NEW%20DRAFT%20Cushendall%20bathing%20water%20profile%202025pdf.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789463426000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30197,
+"Site_name": "Drain's Bay",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20382694%20%20NEW%20DRAFT%20Drains%20Bay%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789469836000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30200,
+"Site_name": "Portmuck",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20387217%20%20NEW%20DRAFT%20Portmuck%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789473334000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30202,
+"Site_name": "Brompton Bay",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/NEW%20DRAFT%20Brompton%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789380098000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30205,
+"Site_name": "Donaghadee",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20364389%20%20NEW%20DRAFT%20Donaghadee%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Excellent",
+"Sampling_datetime": 1789377228000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30206,
+"Site_name": "Warrenpoint",
+"Type": "Coastal",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20382641%20%20NEW%20DRAFT%20Warrenpoint%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "Good",
+"Sampling_datetime": 1789471379000
+}
+},
+{
+"attributes": {
+"Unique_Site_ID_Code": 30203,
+"Site_name": "Rea's Wood",
+"Type": "Inland",
+"Status": "Confirmed",
+"Activity": "Active",
+"Profile__URL": "https://www.daera-ni.gov.uk/sites/default/files/2025-05/AE1%2025%20387399%20%20NEW%20DRAFT%20Reas%20Wood%20bathing%20water%20profile%202025.pdf",
+"water_quality_indicator": "NoBathing",
+"Sampling_datetime": 1787575851000
+}
+}
+]
+}

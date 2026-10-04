@@ -1,0 +1,1074 @@
+[
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2025-08-11",
+"e_coli_result": "13",
+"intestinal_enterococci_result": "29",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2025-08-11",
+"e_coli_result": "52",
+"intestinal_enterococci_result": "71",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-08-11",
+"e_coli_result": "41",
+"intestinal_enterococci_result": "29",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2025-08-12",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2025-08-12",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2025-08-18",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2025-08-18",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-08-21",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "9",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2025-08-25",
+"e_coli_result": "11",
+"intestinal_enterococci_result": "17",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-08-25",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "15",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2025-08-26",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2025-08-26",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0250",
+"beach_name": "Trá Inis Oírr (Main Beach)",
+"result_date": "2025-09-01",
+"e_coli_result": "41",
+"intestinal_enterococci_result": "11",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2025-09-01",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-09-02",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "15",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2025-09-02",
+"e_coli_result": "35",
+"intestinal_enterococci_result": "20",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2025-09-02",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2025-09-08",
+"e_coli_result": "22",
+"intestinal_enterococci_result": "24",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2025-09-08",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "5",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2025-09-08",
+"e_coli_result": "31",
+"intestinal_enterococci_result": "13",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2025-09-08",
+"e_coli_result": "52",
+"intestinal_enterococci_result": "24",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2025-09-08",
+"e_coli_result": "30",
+"intestinal_enterococci_result": "17",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-05-22",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "20",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-05-25",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-05-25",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-05-25",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-05-25",
+"e_coli_result": "<1",
+"intestinal_enterococci_result": "5",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2026-05-25",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "5",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-05-25",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-05-26",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-05-26",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0250",
+"beach_name": "Trá Inis Oírr (Main Beach)",
+"result_date": "2026-05-27",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-06-02",
+"e_coli_result": "77",
+"intestinal_enterococci_result": "302",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-06-02",
+"e_coli_result": "121",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-06-02",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "23",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-06-02",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-06-02",
+"e_coli_result": "31",
+"intestinal_enterococci_result": "19",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-06-02",
+"e_coli_result": "30",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-06-02",
+"e_coli_result": "74",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-06-04",
+"e_coli_result": "46",
+"intestinal_enterococci_result": "322",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-06-05",
+"e_coli_result": "80",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-06-08",
+"e_coli_result": "17",
+"intestinal_enterococci_result": "230",
+"sample_water_quality_status": "Sufficient"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-06-08",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-06-08",
+"e_coli_result": "40",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-06-09",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-06-09",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-06-09",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-06-12",
+"e_coli_result": "11",
+"intestinal_enterococci_result": "7",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-06-15",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2026-06-15",
+"e_coli_result": "30",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-06-15",
+"e_coli_result": "85",
+"intestinal_enterococci_result": "57",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0250",
+"beach_name": "Trá Inis Oírr (Main Beach)",
+"result_date": "2026-06-15",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-06-15",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "5",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-06-15",
+"e_coli_result": "4",
+"intestinal_enterococci_result": "17",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-06-22",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "20",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-06-22",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-06-22",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-06-23",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "7",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-06-23",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-06-23",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-06-23",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-06-29",
+"e_coli_result": "40",
+"intestinal_enterococci_result": "9",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-06-29",
+"e_coli_result": "23",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-06-29",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "4",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-06-29",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "4",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-07-01",
+"e_coli_result": "40",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-07-06",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-07-06",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "4",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-07-06",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-07-06",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-07-07",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-07-07",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-07-13",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-07-13",
+"e_coli_result": "25",
+"intestinal_enterococci_result": "7",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2026-07-13",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-07-13",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0250",
+"beach_name": "Trá Inis Oírr (Main Beach)",
+"result_date": "2026-07-13",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-07-14",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-07-14",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-07-20",
+"e_coli_result": "1198",
+"intestinal_enterococci_result": "30",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-07-20",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-07-20",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-07-21",
+"e_coli_result": "171",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-07-21",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-07-27",
+"e_coli_result": "31",
+"intestinal_enterococci_result": "6",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-07-27",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-07-27",
+"e_coli_result": "156",
+"intestinal_enterococci_result": "80",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-07-27",
+"e_coli_result": "246",
+"intestinal_enterococci_result": "260",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-07-27",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "6",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-07-29",
+"e_coli_result": "1180",
+"intestinal_enterococci_result": "580",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-07-29",
+"e_coli_result": "52",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-07-31",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "42",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-08-04",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "4",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-08-04",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-08-05",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "6",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-08-10",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-08-10",
+"e_coli_result": "58",
+"intestinal_enterococci_result": "11",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2026-08-10",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-08-10",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-08-10",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-08-10",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "4",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0250",
+"beach_name": "Trá Inis Oírr (Main Beach)",
+"result_date": "2026-08-10",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-08-11",
+"e_coli_result": "197",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-08-11",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-08-11",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-08-17",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-08-17",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-08-24",
+"e_coli_result": "3",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-08-24",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "5",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-08-24",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-08-24",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-08-24",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-08-25",
+"e_coli_result": "246",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-08-25",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-08-26",
+"e_coli_result": "906",
+"intestinal_enterococci_result": "590",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-08-27",
+"e_coli_result": "677",
+"intestinal_enterococci_result": "160",
+"sample_water_quality_status": "Sufficient"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-08-28",
+"e_coli_result": "120",
+"intestinal_enterococci_result": "80",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-08-31",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "8",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESEBWC050_0000_0235",
+"beach_name": "Baginbun",
+"result_date": "2026-09-01",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL27_72_0100",
+"beach_name": "Ballyallia Lake, Ennis",
+"result_date": "2026-09-01",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_191a_0300",
+"beach_name": "Ballycuggeran",
+"result_date": "2026-09-01",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "<10",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-09-02",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "20",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-09-07",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "3",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-09-07",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-09-07",
+"e_coli_result": ">2420",
+"intestinal_enterococci_result": ">250",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "BPNBF050000140001",
+"beach_name": "Ballyrisode",
+"result_date": "2026-09-07",
+"e_coli_result": "10",
+"intestinal_enterococci_result": "11",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0250",
+"beach_name": "Trá Inis Oírr (Main Beach)",
+"result_date": "2026-09-07",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "<2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-09-08",
+"e_coli_result": ">2420",
+"intestinal_enterococci_result": ">250",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-09-09",
+"e_coli_result": "7270",
+"intestinal_enterococci_result": "1580",
+"sample_water_quality_status": "Poor"
+},
+{
+"beach_id": "IEEABWC090_0000_0060",
+"beach_name": "Dun Laoghaire Baths",
+"result_date": "2026-09-14",
+"e_coli_result": "<10",
+"intestinal_enterococci_result": "2",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IESHBWL25_188_0100",
+"beach_name": "Lilliput, Lough Ennell",
+"result_date": "2026-09-14",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "<1",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWL29_194_0100",
+"beach_name": "Loughrea Lake",
+"result_date": "2026-09-14",
+"e_coli_result": "97",
+"intestinal_enterococci_result": "13",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC010_0000_0400",
+"beach_name": "Trá na mBan, An Spidéal",
+"result_date": "2026-09-14",
+"e_coli_result": "20",
+"intestinal_enterococci_result": "26",
+"sample_water_quality_status": "Excellent"
+},
+{
+"beach_id": "IEWEBWC360_0000_0500",
+"beach_name": "Belmullet Tidal Pool  & Shore Road Bathing Area",
+"result_date": "2026-09-14",
+"e_coli_result": "90",
+"intestinal_enterococci_result": "20",
+"sample_water_quality_status": "Excellent"
+}
+]

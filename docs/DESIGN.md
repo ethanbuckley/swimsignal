@@ -917,14 +917,17 @@ gives all four navigation links a single full-width row.
 
 ## The coverage page (3 October 2026)
 
-- `coverage.html` is a prose page, linked from the app's foot as "Coasts, Wales, Scotland and algae".
-  It sends a reader to the official services for the English coast, Wales and Scotland, and to the
-  UK Centre for Ecology & Hydrology's algae map. SwimSignal forecasts none of these.
-- Each directory (the English coast, `coastal.py`; Wales, `wales.py`; Scotland, `scotland.py`) is
+- `coverage.html` is a prose page, linked from the app's foot as "Coasts, Wales, Scotland, Ireland
+  and algae" (Ireland added 4 October 2026). It sends a reader to the official services for the
+  English coast, Wales, Scotland, the Republic of Ireland and Northern Ireland, and to the UK Centre
+  for Ecology & Hydrology's algae map. SwimSignal forecasts none of these.
+- Each directory (the English coast, `coastal.py`; Wales, `wales.py`; Scotland, `scotland.py`; the
+  Republic, `ireland.py`; Northern Ireland, `northern_ireland.py`) is
   written into the page by `scripts/build_site.py` and folds under its own summary, "Search the
   English coastal directory" and the like, so the page opens on the links and what they are for. The
   lists are in the page, so they work without JavaScript.
-- Inside, a search field filters by name, with a count kept up to date ("<n> of <total> sites"). The
+- Inside, a search field filters by name, with a count kept up to date ("<n> of <total> sites").
+  Accents and apostrophes do not count, so "Tra Mor" finds "Trá Mór". The
   list is rows with a hairline under each, in a box at most 32rem tall that scrolls on its own
   (`page.css`).
 - A row is the water's name, linked to its official page, over one small paragraph: its kind and its
@@ -932,7 +935,9 @@ gives all four navigation links a single full-width row.
   latest sample, each with its date. The advice names its agency ("At snapshot: EA: increased
   pollution risk"). Advice past its expiry is replaced in the browser by "This EA advice has expired;
   check the official profile". A Scottish row has the rating alone and sends the reader to the
-  Scottish Environment Protection Agency's page for the rest.
+  Scottish Environment Protection Agency's page for the rest. An Irish row shows a restriction in
+  force, or DAERA's advice against bathing, in semibold before the sample, in the source's own words
+  with its date; nothing on the page is coloured by a SwimSignal level. A sample more than 30 days old says so.
 - Opening the Welsh list asks Natural Resources Wales's data service for current samples and
   forecasts, from the reader's browser, and the privacy notice names it. Rule 8 under Rules for
   changes does not yet list this request.

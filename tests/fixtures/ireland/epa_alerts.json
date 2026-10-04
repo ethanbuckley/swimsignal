@@ -1,0 +1,44 @@
+{
+ "count": 2,
+ "length": 1000,
+ "page": 1,
+ "list": [
+  {
+   "incident_id": 3868,
+   "bathing_water_incident_id": "BWI002223",
+   "beach_id": "IESHBWL25_188_0100",
+   "beach_name": "Lilliput, Lough Ennell",
+   "county_name": "Westmeath",
+   "local_authority_name": "Westmeath County Council",
+   "has_bathing_restriction_in_place": "Yes",
+   "incident_start_date": "2026-09-08T00:00:00",
+   "incident_expected_duration": 3,
+   "bathing_restriction_type": "Bathing is temporarily prohibited",
+   "incident_description": "Water quality deteriorated due to suspected agricultural activities/runoff",
+   "bathing_notice_pdf": "https://www.beaches.ie/wp-content/files//notice/3308da41-f850-49f1-84af-4f2ef9641a4b.pdf",
+   "incident_end_date": null,
+   "last_updated": "2026-10-01T17:07:19"
+  },
+  {
+   "incident_id": 3871,
+   "bathing_water_incident_id": "BWI002226",
+   "beach_id": "IESHBWL27_72_0100",
+   "beach_name": "Ballyallia Lake, Ennis",
+   "county_name": "Clare",
+   "local_authority_name": "Clare County Council",
+   "has_bathing_restriction_in_place": "Yes",
+   "incident_start_date": "2026-09-11T00:00:00",
+   "incident_expected_duration": 7,
+   "bathing_restriction_type": "Bathing is temporarily prohibited",
+   "incident_description": "Water quality affected due to the presence of algal bloom",
+   "bathing_notice_pdf": "https://www.beaches.ie/wp-content/files//notice/9e821c78-0467-447b-9909-23c73f6c08e8.pdf",
+   "incident_end_date": null,
+   "last_updated": "2026-09-23T11:10:43"
+  }
+ ],
+ "_links": {
+  "self": {
+   "href": "alerts?page=1&per_page=1000"
+  }
+ }
+}

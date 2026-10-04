@@ -1062,7 +1062,8 @@ def sitemap(root: str, spot_ids: list[str], day: str) -> str:
 
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
-                scotland: dict | None = None, email: bool = False) -> int:
+                scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
+                northern_ireland: dict | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=."""
     root = root or site_url()
@@ -1086,6 +1087,12 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.scotland import render as render_scotland
             s = re.sub(r'<!-- SCOTLAND_DIRECTORY -->.*?<!-- END_SCOTLAND_DIRECTORY -->',
                        lambda _: render_scotland(scotland), s, flags=re.S)
+            from dipcast.ireland import render as render_ireland
+            s = re.sub(r'<!-- IRELAND_DIRECTORY -->.*?<!-- END_IRELAND_DIRECTORY -->',
+                       lambda _: render_ireland(ireland), s, flags=re.S)
+            from dipcast.northern_ireland import render as render_ni
+            s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
+                       lambda _: render_ni(northern_ireland), s, flags=re.S)
         (site / name).write_text(with_counter(with_push(s, push, email) if name == "privacy.html" else s, token))
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
@@ -1357,6 +1364,19 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "scotland.json").write_text(json.dumps(scotland))
     health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]),
                           **({"error": scotland["error"]} if scotland.get("error") else {})}
+    # The Republic of Ireland's bathing waters: the EPA's list, samples and restrictions (ireland.py).
+    from dipcast.ireland import fetch as fetch_ireland
+    ireland = fetch_ireland()
+    (SITE / "data" / "ireland.json").write_text(json.dumps(ireland))
+    health["ireland"] = {"state": ireland["state"], "sites": len(ireland["sites"]),
+                         "restrictions": sum(len(s["alerts"] or []) for s in ireland["sites"]),
+                         **({"error": ireland["error"]} if ireland.get("error") else {})}
+    # Northern Ireland's bathing waters: DAERA's monitoring points layer (northern_ireland.py).
+    from dipcast.northern_ireland import fetch as fetch_ni
+    northern_ireland = fetch_ni()
+    (SITE / "data" / "northern_ireland.json").write_text(json.dumps(northern_ireland))
+    health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
+                                  **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     push, email = push_config(), email_config()
     (SITE / "data" / "spots.json").write_text(json.dumps({
         "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
@@ -1373,7 +1393,8 @@ def build(refresh: bool = True) -> dict:
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
-                                       coastal=coastal, wales=wales, scotland=scotland, email=email is not None)
+                                       coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
+                                       ireland=ireland, northern_ireland=northern_ireland)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
