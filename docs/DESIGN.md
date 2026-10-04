@@ -472,8 +472,10 @@ before the river line and the issue time (`levelAction` and `dayAction` in `leve
 bold lead, so it reads as following from the level rather than as a second one. A picked day gets that
 day's line, and very high names its day: "Avoid swimming here tomorrow: choose a lower day or spot." A
 water rated poor, algae at the last check and the spots without a level have lines of their own. No
-line says a spot is safe. The embed card and `alerts.json` carry the same line; the saved cards and
-the list leave it out, since they are for comparing spots. Each line and its sources are on the Method
+line says a spot is safe. The embed card and `alerts.json` carry the same line, and so does a push
+notification for one spot, after its headline (4 October 2026: "Very high risk right now: sewage spills. Avoid
+swimming here right now: choose a lower day or spot."); the saved cards and the list leave it out, since they are
+for comparing spots. Each line and its sources are on the Method
 page (`methods.html#actions`), which `tests/site_actions.test.cjs` checks word for word.
 
 ### Water on its way (4 October 2026)
