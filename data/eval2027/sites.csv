@@ -1,0 +1,1141 @@
+# SwimSignal 2027 evaluation: the frozen eligible sites (docs/PREREGISTRATION-2027.md). Made by
+# scripts/make_eval2027.py on 4 October 2026. Do not edit: the protocol records this file's SHA-256.
+# unit: overflow (spill forecasts, scored against the water company's live feed) or bathing_water (the
+# E. coli estimate, scored against Environment Agency samples). id: the company's overflow id as in the live
+# feed and data/verification_live.csv, or the EA bathing-water id. company: the water company (for a bathing
+# water, the EA's named sewerage undertaker). water: the kind of spot it reaches: river, lake or both.
+# spots: the listed spots it reaches (overflows) or is (bathing waters), separated by ';'.
+# Inputs: spots.json generated_at 2026-10-04T15:29:52.301035+01:00, SHA-256 df9dd7a40a50d4bc3f4f4bd2fbf1af3db3e876053b05e6d27be7a455cc7e0181;
+# 81 upstream/<spot id>.json files from the same build, combined SHA-256 b3771e3576efa30a94c7e8cb08850341cdad01d06a92f0dd4f72fcd169a8c60a;
+# data/raw/bathing_waters_inland.json SHA-256 bbad4ae370fcb24b8664401c3bd57de0a97c20ecb68551816aaead5cb3472e64.
+# Counts: 1089 overflows, 38 bathing waters.
+# Lines that start with # are notes: skip them when reading. Some names hold a '#', so do not read the
+# file with pandas' comment='#', which would cut those lines short; evaluate_2027.read_published skips them.
+unit,id,name,company,water,spots
+overflow,AWS00007,ABBOTSLEY-HARBINS LANE SP,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00022,Arrington Water Recycling Centre,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00030,ASHWELL STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00040,Bacton Water Recycling Centre,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00050,BARLEY STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00056,BARRINGTON-SLID LA #2 OV,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00070,BEDFIELD-CROWN LA SP,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00073,BEDFORD STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00096,Bolnhurst WRC,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00109,BOXFORD STW,Anglian Water,river,stour-dedham
+overflow,AWS00124,BRAMPTON PS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00125,Brampton WRC,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00131,BRAUNSTON STW,Anglian Water,lake,bw-ukf2208-09701;bw-ukf2208-09702
+overflow,AWS00135,ROYDON-BREWERS GREEN SP (DISS),Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00164,BUCKDEN STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00173,BUNGAY-BOYSCOTT LA SP,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00178,BURES HAMLET-SP,Anglian Water,river,stour-dedham
+overflow,AWS00207,Castle Street/High Street Combined Sewer Overflow,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00209,OAKHAM-CATMOSE VALE ROAD SSO,Anglian Water,lake,bw-ukf2208-09701;bw-ukf2208-09702
+overflow,AWS00210,CATWORTH-HOSTEL STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00223,CHELSWORTH-CAKEBRIDGE LA SP,Anglian Water,river,stour-dedham
+overflow,AWS00275,CONINGTON-FEN DRAYTON RD SP,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS00285,RUSHDEN-COURT ESTATE SP,Anglian Water,river,great-ouse-houghton
+overflow,AWS00323,DEDHAM STW,Anglian Water,river,stour-dedham
+overflow,AWS00337,DICKLEBURGH-RECTORY RD STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00339,DISS STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00340,BUNGAY-DITCHINGHAM DAM SP,Anglian Water,river,bw-ukh1406-10712
+overflow,AWS00373,BUNGAY-EARSHAM STREET SSO,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00397,ELLINGTON-GRAFHAM ROAD SP,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00404,ELSWORTH-ROGERS CL SP,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS00419,EVERTON STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00421,EYE-KINGS BR LOWGATE ST TPS,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00423,EYE-HOXNE RD STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00469,GLEMSFORD STW,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS00489,GREAT CHESTERFORD STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00491,GREAT CORNARD STW,Anglian Water,river,stour-dedham
+overflow,AWS00498,GREAT GIDDING TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00500,GREAT GRANSDEN TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00509,GT WALDINGFIELD-FOLLEY RD SP,Anglian Water,river,stour-dedham
+overflow,AWS00514,GT WRATTING-THE STREET SP,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS00522,SWAVESEY-COW FEN SM,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS00538,GUILDEN MORDEN STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00544,HADLEIGH STW,Anglian Water,river,stour-dedham
+overflow,AWS00547,HADLEIGH STW,Anglian Water,river,stour-dedham
+overflow,AWS00560,HARLESTON STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00561,HARLESTON STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00564,Hartford Road Combined Sewer Overflow,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00569,HASLINGFIELD-STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00574,HAVERHILL STW,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS00615,Horham Terminal Pumping Station,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00628,HUNDON STW / HUNDON-LOWER CHURCH RD TPS,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS00631,HUNTINGDON (GODMANCHESTER) STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00634,Kempston-Ibbetts Close SP,Anglian Water,river,great-ouse-houghton
+overflow,AWS00635,ST IVES-ILEX ROAD TPS,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS00669,KEMPSTON-VILLAGE HALL PS,Anglian Water,river,great-ouse-houghton
+overflow,AWS00677,KIMBOLTON-GEORGE LANE SSO,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00678,KIMBOLTON STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00705,KNAPWELL-SP,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS00706,KNOSSINGTON STW,Anglian Water,lake,bw-ukf2208-09701;bw-ukf2208-09702
+overflow,AWS00712,LAVENHAM STW PS,Anglian Water,river,stour-dedham
+overflow,AWS00713,LAVENHAM STW,Anglian Water,river,stour-dedham
+overflow,AWS00738,LINTON-RECREATION GROUND TPS,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00739,LINTON STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00747,LT CHESTERFORD-TPS,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00753,LITTLE STAUGHTON STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00754,LITTLE WRATTING SPS,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS00823,MARSTON MORETAINE STW,Anglian Water,river,great-ouse-houghton
+overflow,AWS00824,MARSTON-STATION ROAD TPS,Anglian Water,river,great-ouse-houghton
+overflow,AWS00830,ORWELL-MEADOWCROFT WAY SP,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00833,MELBOURN STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS00835,MENDLESHAM-TPS,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00851,MOLESWORTH STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00852,Monks Eleigh WRC,Anglian Water,river,stour-dedham
+overflow,AWS00872,BUNGAY NETHERGATE ST CSO,Anglian Water,river,bw-ukh1406-10712
+overflow,AWS00947,OAKHAM STW,Anglian Water,lake,bw-ukf2208-09701;bw-ukf2208-09702
+overflow,AWS00948,OAKHAM STW,Anglian Water,lake,bw-ukf2208-09701;bw-ukf2208-09702
+overflow,AWS00949,OCCOLD-TPS,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS00951,OFFORD CLUNY-STATION LANE TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00971,PAPWORTH EVERARD STW,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS00979,PAXTON STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS00980,PERTENHALL STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01015,PULHAM ST MARY STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01052,RISELEY STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01069,ROXTON STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01072,ROYSTON STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01086,SAFFRON WALDEN STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01087,SAFFRON WALDEN STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01088,SAFFRON WALDEN-GEORGE ABBEY OV,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01095,DISS-SARACENS HD MOUNT ST OV,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01096,SAWSTON STW,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01116,BROMHAM-VILLAGE ROAD SSO,Anglian Water,river,great-ouse-houghton
+overflow,AWS01138,GLEMSFORD-SKATES HILL SP,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS01208,SPALDWICK TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01253,St Ives Priory Road Pumping Station,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01254,St Ives The Quay Pumping Station,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01255,St Ives The Waits Pumping Station,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01256,ST IVES STW,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01258,St. Neots - Market Square CSO,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01259,ST NEOTS STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01267,ST IVES-MEADOW LANE PS,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01288,STEEPLE BUMPSTEAD-BLOIS RD TPS,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS01289,STEEPLE BUMPSTEAD-LILLEY TPS,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS01290,STURMER-KEDINGTON RD TPS,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS01291,Steeple Bumpstead Sewage Treatment Works,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS01306,BOXFORD-STONE ST TPS,Anglian Water,river,stour-dedham
+overflow,AWS01307,STONELY OLD FORD LANE SSO 2,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01309,GT STAUGHTON-TOWN BRIDGE OV,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01310,HAIL WESTON-FORD END TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01316,WILSTEAD-BEDFORD RD DUCK END,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01322,STRADBROKE OLD STW SP,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01327,Stukeley - Low Road Terminal Pumping Station,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01330,SUDBURY-CORNARD RD SP,Anglian Water,river,stour-dedham
+overflow,AWS01331,Sudbury Great Eastern Road Terminal Pumping Station,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS01332,Sudbury Bailey and Coates Combined Sewer Overflow,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS01333,Sudbury The Croft CSO,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS01334,Sudbury Water Recycling Centre,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS01338,DISS-SHELFANGER RD OV,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01344,SWINESHEAD STW (BEDS),Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01352,TEMPSFORD STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01355,SAFFRON WALDEN-VICTORIA THX OV,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01359,GREAT STAUGHTON-CAUSEWAY TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01369,THORNDON-CATBRIDGE STW,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01370,THORNDON-STANDWELL GN TPS,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01378,THURLEIGH-CHURCH END SP,Anglian Water,river,great-ouse-houghton
+overflow,AWS01379,THURLEIGH STW,Anglian Water,river,great-ouse-houghton
+overflow,AWS01421,Uttons Drove Water Recycling Centre,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01423,DISS - VICTORIA ROAD CSO (MORRISONS),Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01424,"DISS, Victoria Road CSO",Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01438,WARESLEY STW,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01488,GODMANCHESTER-WHITE HART TPS,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,AWS01494,WICKEN BONHUNT-SP,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01499,WICKHAM SKEITH-TPS,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01500,WICKHAMBROOK-BROOK COTTS TPS,Anglian Water,river,bw-ukh1401-11051
+overflow,AWS01507,Wimpole Road Pumping Station,Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01548,Wyton (Ex-RAF) Water Recycling Centre,Anglian Water,river,osm-great-ouse-overcote
+overflow,AWS01556,Uplands Way CSO,Anglian Water,river,bw-ukh1406-10712;waveney-outney-common
+overflow,AWS01557,Foxton WRC (Cambs),Anglian Water,river,bw-ukh1201-09801;cam-grantchester
+overflow,AWS01573,BOXTED-COTTAGE (SUFFOLK) STW,Anglian Water,river,bw-ukh1401-11051;stour-dedham
+overflow,AWS01575,Huntingdon Sapley Rd CSO,Anglian Water,river,great-ouse-houghton;osm-great-ouse-overcote
+overflow,NWL00034,ALLENDALE STW,Northumbrian Water,river,allen-plankey-mill
+overflow,NWL00261,CATTON LEA CSO,Northumbrian Water,river,allen-plankey-mill
+overflow,NWL00285,CHURCH DENE CSO,Northumbrian Water,river,allen-plankey-mill
+overflow,NWL00645,HARBOTTLE SEWAGE TREATMENT WORKS,Northumbrian Water,river,coquet-rothbury
+overflow,NWL00667,HEPPLE STW,Northumbrian Water,river,coquet-rothbury
+overflow,NWL00883,MILL COTTAGE CSO,Northumbrian Water,river,allen-plankey-mill
+overflow,NWL00927,NETHERTON CSO,Northumbrian Water,river,coquet-rothbury
+overflow,NWL00929,NETHERTON STW,Northumbrian Water,river,coquet-rothbury
+overflow,NWL01031,PHILIPBURN DENE PS,Northumbrian Water,river,allen-plankey-mill
+overflow,NWL01373,THE PETH CSO,Northumbrian Water,river,allen-plankey-mill
+overflow,NWL01381,THROPTON AND SNITTER STW,Northumbrian Water,river,coquet-rothbury
+overflow,NWL01382,THROPTON SPS,Northumbrian Water,river,coquet-rothbury
+overflow,NWL01576,ALWINTON STW,Northumbrian Water,river,coquet-rothbury
+overflow,NWL01577,ALWINTON STW,Northumbrian Water,river,coquet-rothbury
+overflow,SBB00046,BROOMHILL SPS_PSCSOEO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB00119,BLACKBROOK NORTH_CSO_PRINCETOWN,South West Water,river,dart-sharrah-pool;dart-spitchwick;osm-dart-dartington
+overflow,SBB00178,KILBURY STW_SSO_BUCKFASTLEIGH,South West Water,river,osm-dart-dartington
+overflow,SBB00179,KILBURY STW_SO_BUCKFASTLEIGH,South West Water,river,osm-dart-dartington
+overflow,SBB00225,CHAGFORD FIRE 1_CSO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB00226,CHAGFORD FIRE 2_CSO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB00227,CHAGFORD MAIN STW_SSO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB00349,DARTINGTON SCH TWO_CSO_DARTINGTON,South West Water,river,osm-dart-dartington
+overflow,SBB00350,DARTINGTON C_CSO_DARTINGTON,South West Water,river,osm-dart-dartington
+overflow,SBB00376,DREWSTEIGNTON STW_SO_CHAGFORD,South West Water,river,teign-fingle-bridge
+overflow,SBB00517,GREENACRES_CSO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB00581,HOLNE STW_SO_HOLNE,South West Water,river,osm-dart-dartington
+overflow,SBB00759,MELDON RD_CSO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB00830,NEW PARK GARDEN_CSO_WIDECOMBE,South West Water,river,osm-dart-dartington
+overflow,SBB00885,OLD WOOLLEN MILL_CSO_BUCKFASTLEIGH,South West Water,river,osm-dart-dartington
+overflow,SBB00917,PEAR TREE CROSS_CSO_ASHBURTON,South West Water,river,osm-dart-dartington
+overflow,SBB00985,PRINCETOWN STW_SO_PRINCETOWN,South West Water,river,dart-sharrah-pool;dart-spitchwick;osm-dart-dartington
+overflow,SBB00986,PRINCETOWN STW_SSO_PRINCETOWN,South West Water,river,dart-sharrah-pool;dart-spitchwick;osm-dart-dartington
+overflow,SBB01016,RATTERY STW_SO_RATTERY,South West Water,river,osm-dart-dartington
+overflow,SBB01058,SCORRITON STW_SO_SCORRITON,South West Water,river,osm-dart-dartington
+overflow,SBB01082,SHINNERS BRIDGE_CSO_DARTINGTON,South West Water,river,osm-dart-dartington
+overflow,SBB01145,ST LUKES CHURCH_CSO_BUCKFASTLEIGH,South West Water,river,osm-dart-dartington
+overflow,SBB01166,STAVERTON STW_SSO_STAVERTON,South West Water,river,osm-dart-dartington
+overflow,SBB01186,STONEPARK CRESCENT_CSO_ASHBURTON,South West Water,river,osm-dart-dartington
+overflow,SBB01219,TEXTILE MILL_CSO_DARTINGTON,South West Water,river,osm-dart-dartington
+overflow,SBB01243,THROWLEIGH STW_SO_THROWLEIGH,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SBB01359,WIDECOMBE STW_SO_WIDECOMBE IN THE MOOR,South West Water,river,osm-dart-dartington
+overflow,SBB01408,OPP 26 MARKET STREET_CSO_BUCKFASTLEIGH,South West Water,river,osm-dart-dartington
+overflow,SBB01410,SEWER TRACK_CSO_CHAGFORD,South West Water,river,osm-teign-drogo-weir;teign-fingle-bridge
+overflow,SVT00001,SHREWSBURY - SUTTON ROAD 10 (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00006,SHREWSBURY - UNDERDALE ROAD 49 (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00007,SHREWSBURY - 5 SEVERN TERRACE (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT00016,SHREWSBURY - ABBEY FOREGATE 2 (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00031,SHREWSBURY - KINGSLAND ROAD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00304,BOMERE HEATH STW (SSTO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT00400,BUCKNELL (SSO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT00401,WELLINGTON - BUCKS HEAD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00402,WELLINGTON - URBAN GARDENS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00403,BUILDWAS - PARK VIEW STW (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00435,CASTLEFIELDS - BURTON STREET (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00444,BUXTON - THE SQUARE (SO),Severn Trent Water,river,osm-wye-chee-dale
+overflow,SVT00450,BICTON - CALCOTT LANE (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00475,HANWOOD - CARADOC VIEW (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00490,SHREWSBURY - CASTLE FOREGATE (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT00516,FRANKWELL - WATER LANE (BOATHOUSE) (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00558,CHURCH STRETTON STW (SSTO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT00583,SHREWSBURY - CLIVE ROAD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00629,CONDOVER - BROOK CLOSE SPS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00643,SHREWSBURY - COTON HILL (THE FLASH) (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT00674,CRESSAGE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00688,BROMPTON - CROSS HOUSES STW (SSTO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00692,CROWDECOTE (CSO),Severn Trent Water,river,dove-dovedale
+overflow,SVT00699,CRUCKTON-5 CHURCH CLOSE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00706,SHREWSBURY - LONGDEN COLEHAM PS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00719,IRONBRIDGE - DALE END (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00725,CASTLEFIELDS - DANA STEPS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00773,SHREWSBURY - DITHERINGTON RD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00783,DORRINGTON STW (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00844,EDGMOND (STW),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00856,ELLERDINE STW (SSTO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00916,FOREST GLEN (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT00990,GREAT BOLAS STW (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01014,SHREWSBURY - VICTORIA AV (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01071,HARTINGTON STW (SSTO),Severn Trent Water,river,dove-dovedale
+overflow,SVT01115,HIGH ERCALL - CHURCH ROAD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01116,HIGH ERCALL (STW),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01125,LEINTWARDINE - HIGH STREET (A) (CSO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT01175,HOOK-A-GATE (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01303,OSWESTRY - KNOCKIN STW IPS (CSO),Severn Trent Water,river,bw-ukg2200-36071
+overflow,SVT01440,LUDLOW - FISHMORE VIEW (CSO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT01442,LUDLOW - THE LINNEY (CSO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT01446,LYDBURY NORTH STW (CSO&EO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT01452,FRANKWELL - WATER LA (PLAYGROUND) (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01493,SHREWSBURY - SMITHFIELD RD/MARDOL (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01569,PREES - MILL STREET (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01592,MUCH WENLOCK STW (SSTO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01619,SHREWSBURY - MILLERS GREEN (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01621,FRANKWELL – QUARRY VIEW (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01712,SHREWSBURY - OLD COLEHAM (BRIDGE) (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01713,SHREWSBURY - OLD COLEHAM (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01737,MILE OAK STW (SSTO),Severn Trent Water,river,bw-ukg2200-36071
+overflow,SVT01754,PANT-PLAS CERRIG (STW),Severn Trent Water,river,bw-ukg2200-36071
+overflow,SVT01763,BAYSTON HILL - PARRS LANE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01767,BUXTON - PAVILION GARDENS (CSO),Severn Trent Water,river,osm-wye-chee-dale
+overflow,SVT01808,PONTESBURY - STATION ROAD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01809,PONTESBURY (STW),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01813,SHREWSBURY - EARLS VIEW HILL (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01837,SHREWSBURY - QUARRY PK (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01894,CASTLEFIELDS - VICTORIA ST (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01902,RODEN STW (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01929,RUSHBURY (STW),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT01930,RUSHMOOR STW  (SSTO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01931,RUSHMOOR STW  (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01955,SHREWSBURY - SCOTT STREET (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT01986,BAYSTON HILL - SHARPSTONES LANE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02031,SHREWSBURY - BRIDGE ST/HILLS LANE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02032,SHREWSBURY - COLEHAM HEAD (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02033,SHREWSBURY - HARLESCOTT CRES (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02035,SHREWSBURY - QUEEN STREET (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02037,SHREWSBURY - WATER LANE SPS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02038,MONKMOOR STW (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02039,MONKMOOR STW (SSTO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02073,SHREWSBURY -SMITHFIELD RD/ROUSHILL (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT02098,SOMERWOOD - SUNNINGDALE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02143,SHREWSBURY - CLAREMONT BANK (HIGH) (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02154,MUCH WENLOCK - PRIORY (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02206,CRAVEN ARMS - OLD SCHOOL (CSO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT02219,MINSTERLEY - THE GROVE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02282,SHREWSBURY - ABBEY FOREGATE 1 (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02289,WEM - THE GROVE 36 (REAR GARDEN) (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02299,BICTON - THE OVAL (SSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT02302,SHREWSBURY - THE ROCKS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02306,SHREWSBURY -THE MOUNT/THORNHILL RD (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT02314,TIBBERTON - GREENHOUSES (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02364,SHREWSBURY -UNDERDALE RD/ASHLEY ST (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02413,SHREWSBURY - VICTORIA AVE/CRES LA (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02414,SHREWSBURY - VICTORIA AVE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02424,BASCHURCH - WALFORD HEATH SPS (EO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT02473,LEINTWARDINE - WATLING STREET (B) (CSO),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT02481,HANWOOD - WEIR ROAD (SSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02488,WEM - WELLGATE (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02489,WELLINGTON - GAS WORKS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02490,WELLINGTON - MORRISONS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02496,WEM - DRAWWELL LANE SPS (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02498,WEM - ASTON ROAD STW (SSTO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02510,WEST FELTON STW (CSO & EO),Severn Trent Water,river,bw-ukg2200-36071
+overflow,SVT02521,MORDA - WESTON ROAD (CSO),Severn Trent Water,river,bw-ukg2200-36071
+overflow,SVT02540,FRANKWELL - WHITE HORSE PASSAGE (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SVT02677,SHREWSBURY - ST MARYS WATER LN (CSO),Severn Trent Water,river,bw-ukg2100-36070
+overflow,SVT02699,CHURCH STRETTON (STW),Severn Trent Water,river,bw-ukg2200-36060
+overflow,SVT02723,EARL STERNDALE STW (CSO),Severn Trent Water,river,dove-dovedale
+overflow,SVT02727,SHREWSBURY - COTON HILL 75 (CSO),Severn Trent Water,river,bw-ukg2100-36070;bw-ukg2200-36071
+overflow,SWS00002,HURSTWOOD TUNBRIDGE WELLS CEO - 108661,Southern Water,river,medway-tonbridge
+overflow,SWS00009,ALDERBROOK WAY CROWBOROUGH CSO - 103288,Southern Water,river,medway-tonbridge
+overflow,SWS00010,ALDERBROOK WAY CROWBOROUGH NO 2 CSO - 116052,Southern Water,river,medway-tonbridge
+overflow,SWS00021,ARDINGLY SSO - 115774,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00022,ARDINGLY CSO - 111045,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00034,BALCOMBE CEO - 115977,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00035,BALCOMBE SSO - 115796,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00036,FURZEFIELD ROAD BALDWINS HILL CEO - 108578,Southern Water,river,medway-tonbridge
+overflow,SWS00039,BARCOMBE NEW SSO - 115373,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00054,BELL LANE UCKFIELD CEO - 108349,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00063,BIDBOROUGH SSO - 115882,Southern Water,river,medway-tonbridge
+overflow,SWS00069,BLACKBOYS SSO - 115873,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00131,BUXTED SSO - 115400,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00153,CHAFFORD LANE FORDCOMBE CEO - 108599,Southern Water,river,medway-tonbridge
+overflow,SWS00161,CHARCOTT PLACE CEO - 108814,Southern Water,river,medway-tonbridge
+overflow,SWS00164,CHARLWOODS ROAD EAST GRINSTEAD CSO - 108203,Southern Water,river,medway-tonbridge
+overflow,SWS00176,CHIDDINGSTONE CAUSEWAY CEO - 108598,Southern Water,river,medway-tonbridge
+overflow,SWS00189,COLDHARBOUR LANE HILDENBOROUGH REAR 30 CSO - 108612,Southern Water,river,medway-tonbridge
+overflow,SWS00190,COLDHARBOUR LANE HILDENBOROUGH CEO - 108613,Southern Water,river,medway-tonbridge
+overflow,SWS00201,COOPERS GREEN CEO - 108210,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00213,COWDEN SSO - 115723,Southern Water,river,medway-tonbridge
+overflow,SWS00229,STATION ROAD FOREST ROW CSO - 108345,Southern Water,river,medway-tonbridge
+overflow,SWS00236,PELLINGS WOOD CROWBOROUGH CSO - 103289,Southern Water,river,medway-tonbridge
+overflow,SWS00238,FRAMFIELD ROAD UCKFIELD OUTSIDE 29 CSO - 108228,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00243,DALLAWAY GARDENS EAST GRINSTEAD CSO - 108319,Southern Water,river,medway-tonbridge
+overflow,SWS00245,DANEHILL SSO - 115720,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00251,DITCHLING SSO - 115798,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00258,COPTHORNE ROAD DOMEWOOD CEO - 107391,Southern Water,river,medway-tonbridge
+overflow,SWS00280,EDEN VALE EAST GRINSTEAD SSO - 115912,Southern Water,river,medway-tonbridge
+overflow,SWS00281,EDENBRIDGE SSO - 115738,Southern Water,river,medway-tonbridge
+overflow,SWS00282,EGGPIE LANE LEIGH CSO - 108633,Southern Water,river,medway-tonbridge
+overflow,SWS00299,FURNACE WOOD FAIRWARP CEO - 109335,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00304,FELBRIDGE CSO - 116038,Southern Water,river,medway-tonbridge
+overflow,SWS00307,FERNHILL CLOSE CRAWLEY DOWN OUTSIDE 10 CSO - 108289,Southern Water,river,medway-tonbridge
+overflow,SWS00322,FORDCOMBE CSO - 115982,Southern Water,river,medway-tonbridge
+overflow,SWS00324,FOREST ROW SSO - 115718,Southern Water,river,medway-tonbridge
+overflow,SWS00330,FRAMFIELD CEO - 111797,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00331,FRAMFIELD ROAD UCKFIELD CEO - 108227,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00344,GARNIER ROAD WINCHESTER CEO - 108433,Southern Water,river,osm-itchen-compton-lock
+overflow,SWS00348,GLEAVE CLOSE EAST GRINSTEAD CEO - 108237,Southern Water,river,medway-tonbridge
+overflow,SWS00357,GODSTONE SSO - 115799,Southern Water,river,medway-tonbridge
+overflow,SWS00370,FLORENCE FARM GROOMBRIDGE EMO - 108643,Southern Water,river,medway-tonbridge
+overflow,SWS00387,HALLAND SSO - 115932,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00396,HAMMERWOOD ROAD ASHURST WOOD SSO - 115955,Southern Water,river,medway-tonbridge
+overflow,SWS00399,HARESTOCK SSO - 115789,Southern Water,river,osm-itchen-compton-lock
+overflow,SWS00402,HARTFIELD ROAD FOREST ROW CSO - 103306,Southern Water,river,medway-tonbridge
+overflow,SWS00403,HARTFIELD SSO - 115775,Southern Water,river,medway-tonbridge
+overflow,SWS00407,HAWDEN ROAD TONBRIDGE CSO - 108736,Southern Water,river,medway-tonbridge
+overflow,SWS00412,HAZEL WAY CRAWLEY DOWN CEO - 108245,Southern Water,river,medway-tonbridge
+overflow,SWS00431,HIGH STREET UCKFIELD CSO - 108371,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00433,HILDEN BRIDGE CEO - 108812,Southern Water,river,medway-tonbridge
+overflow,SWS00434,HILDEN PARK ROAD HILDENBOROUGH CEO - 108655,Southern Water,river,medway-tonbridge
+overflow,SWS00440,HOLDEN CORNER TUNBRIDGE WELLS CSO - 108656,Southern Water,river,medway-tonbridge
+overflow,SWS00451,HORSTED KEYNES CEO - 115988,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00452,HORSTED KEYNES SSO - 115915,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00467,JACKIES LANE NEWICK CEO - 108263,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00468,JARVIS BROOK CROWBOROUGH CSO - 103293,Southern Water,river,medway-tonbridge
+overflow,SWS00487,LAKE ROAD TUNBRIDGE WELLS CSO - 111357,Southern Water,river,medway-tonbridge
+overflow,SWS00493,LANGHOLM ROAD LANGTON GREEN CSO - 109529,Southern Water,river,medway-tonbridge
+overflow,SWS00502,LEWES ROAD LINDFIELD CEO - 108273,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00504,LINGFIELD HOSPITAL SCHOOL CEO - 108670,Southern Water,river,medway-tonbridge
+overflow,SWS00505,LINGFIELD SSO - 115415,Southern Water,river,medway-tonbridge
+overflow,SWS00529,LUXFORDS LANE EAST GRINSTEAD SSO - 115786,Southern Water,river,medway-tonbridge
+overflow,SWS00548,MARESFIELD SSO - 115778,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00569,MILL GREEN ROAD HAYWARDS HEATH CSO - 108287,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00577,MAYNARDS MEAD CROWBOROUGH CSO - 103295,Southern Water,river,medway-tonbridge
+overflow,SWS00585,MORESTEAD ROAD WINCHESTER SSO - 115740,Southern Water,river,osm-itchen-compton-lock
+overflow,SWS00588,MOUNT NODDY CEMETERY EAST GRINSTEAD CSO - 108260,Southern Water,river,medway-tonbridge
+overflow,SWS00592,NEVILLE STREET TUNBRIDGE WELLS CSO - 107370,Southern Water,river,medway-tonbridge
+overflow,SWS00593,NEW ALRESFORD SSO - 115779,Southern Water,river,osm-itchen-compton-lock
+overflow,SWS00601,NEWICK CSO - 115996,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00602,NEWICK SSO - 115728,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00606,NOAHS ARK LANE LINDFIELD CEO - 108290,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00624,NURSERY LANE NUTLEY CEO - 108298,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00625,NUTLEY SSO - 115724,Southern Water,river,medway-tonbridge
+overflow,SWS00636,OXTED CSO - 115422,Southern Water,river,medway-tonbridge
+overflow,SWS00637,OXTED SSO - 115423,Southern Water,river,medway-tonbridge
+overflow,SWS00645,PARTRIDGE PLACE TURNERS HILL CEO - 108304,Southern Water,river,medway-tonbridge
+overflow,SWS00646,PASTURE HILL ROAD CSO - 111608,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00653,PENN CRESCENT HAYWARDS HEATH OUTSIDE 53 CSO - 108310,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00657,PENSHURST CSO - 115997,Southern Water,river,medway-tonbridge
+overflow,SWS00673,PORTSMOUTH LANE LINDFIELD CEO - 108316,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00698,PELHAM ROAD LINDFIELD CSO - 108308,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00700,REDGATE MILL CROWBOROUGH CSO - 115999,Southern Water,river,medway-tonbridge
+overflow,SWS00701,REDGATE MILL CROWBOROUGH SSO - 115803,Southern Water,river,medway-tonbridge
+overflow,SWS00708,RIDING LANE HILDENBOROUGH CSO - 108716,Southern Water,river,medway-tonbridge
+overflow,SWS00745,SCAYNES HILL CSO - 116199,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00746,SCAYNES HILL SSO - 115742,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00749,SCHOOL LANE DANEHILL CSO - 108311,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00766,MAYNARDS GATE CROWBOROUGH CSO - 103294,Southern Water,river,medway-tonbridge
+overflow,SWS00791,SOUTH STREET CHAILEY CEO - 108337,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00797,SOUTHBOROUGH CEMETERY TUNBRIDGE WELLS CSO - 108734,Southern Water,river,medway-tonbridge
+overflow,SWS00804,SPRING GARDENS ALRESFORD CEO - 108484,Southern Water,river,osm-itchen-compton-lock
+overflow,SWS00812,ST JAMES COTTAGE BALCOMBE CSO - 108896,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00821,ST JOHNS CROWBOROUGH SSO - 115785,Southern Water,river,medway-tonbridge
+overflow,SWS00823,STAPLEFIELD CSO - 116128,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00837,STRAWLANDS PLUMPTON GREEN CEO - 108350,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00849,TANYARD LANE SOUTHBOROUGH CSO - 115160,Southern Water,river,medway-tonbridge
+overflow,SWS00852,TAYLOR STREET SOUTHBOROUGH CSO - 108745,Southern Water,river,medway-tonbridge
+overflow,SWS00882,TOWN ROW ROTHERFIELD NO 1 CSO - 103296,Southern Water,river,medway-tonbridge
+overflow,SWS00883,TOWN ROW ROTHERFIELD NO 2 CSO - 108368,Southern Water,river,medway-tonbridge
+overflow,SWS00887,TUNBRIDGE WELLS SOUTH CSO - 115448,Southern Water,river,medway-tonbridge
+overflow,SWS00888,TUNBRIDGE WELLS SOUTH SSO - 115447,Southern Water,river,medway-tonbridge
+overflow,SWS00892,UCKFIELD SSO - 115857,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00913,WATERFRETS LANGTON GREEN CSO - 108753,Southern Water,river,medway-tonbridge
+overflow,SWS00920,PENN CRESCENT HAYWARDS HEATH OUTSIDE 31 CSO - 108309,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00922,WEST HOATHLY CEO - 108378,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00923,WEST HOATHLY SSO - 115792,Southern Water,river,medway-tonbridge
+overflow,SWS00931,WESTERN ROAD HAYWARDS HEATH CSO - 108811,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00948,HAYLIND ROAD HAYWARDS HEATH CSO - 111829,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00960,WITHYPITTS TURNERS HILL CEO - 108386,Southern Water,river,medway-tonbridge
+overflow,SWS00962,WIVELSFIELD CEO - 108387,Southern Water,river,ouse-barcombe-mills
+overflow,SWS00965,OCKLYE CROWBOROUGH CSO - 111367,Southern Water,river,medway-tonbridge
+overflow,SWS00983,MORESTEAD ROAD WINCHESTER PUMPED SSO - 116368,Southern Water,river,osm-itchen-compton-lock
+overflow,SWS90018,,Southern Water,river,ouse-barcombe-mills
+overflow,SWS90105,,Southern Water,river,ouse-barcombe-mills
+overflow,SWS90148,,Southern Water,river,medway-tonbridge
+overflow,TWL00004,Abingdon STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00006,Aldermaston STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00007,Aldershot STW,Thames Water,river,thames-henley
+overflow,TWL00010,Ampney St Peter STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00013,Appleton STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00014,Arborfield STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00017,Ash Vale STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00021,Avondale Road (Fleet) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00024,Bampton STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00025,Banbury STW,Thames Water,river,osm-thames-long-bridges
+overflow,TWL00028,Basingstoke STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00031,Beenham STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00034,Benson STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-henley;thames-hurley
+overflow,TWL00035,Bentley STW,Thames Water,river,osm-wey-waverley
+overflow,TWL00038,Bicester STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00041,Blacknest (Ascot) SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00042,Bledington STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00043,Bletchingdon STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00044,Blind Mans Gate (Highclere) SPS,Thames Water,river,thames-henley
+overflow,TWL00045,Bloxham STW,Thames Water,river,osm-thames-long-bridges
+overflow,TWL00046,Blunsdon STW,Thames Water,river,bw-ukj1402-11946;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00052,Bramley (Guildford) SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00058,Brockham Bridge XX SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00061,Briff Lane (Bucklebury) STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00064,Burghfield STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00070,Camberley STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00074,Carterton STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00075,Cassington STW,Thames Water,river,bw-ukj1402-11946;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00077,Castle Gardens (Dorking) SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00079,Chadlington STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00080,Chalgrove STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00081,Chapel Row STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00083,Charlbury STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00085,Charlton-on-Otmoor STW,Thames Water,river,bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00088,Chertsey STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00094,Chipping Norton STW,Thames Water,river,bw-ukj1402-11946;thames-port-meadow
+overflow,TWL00096,Chobham STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00097,Cholsey STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00098,Church Hanborough STW,Thames Water,river,bw-ukj1402-11946;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00101,Churt SPS,Thames Water,lake,bw-ukj2310-11945
+overflow,TWL00102,Cirencester STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00103,Clanfield STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00105,Clifton STW,Thames Water,river,osm-thames-long-bridges
+overflow,TWL00106,"Stonebridge sso, brockham",Thames Water,river,bw-uki2203-11942
+overflow,TWL00107,Cobham,Thames Water,river,bw-uki2203-11942
+overflow,TWL00110,Combe STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00111,Commonside (Leatherhead) SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00113,Beckley STW,Thames Water,river,bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00119,Cricklade STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00121,Crooked Billet (Hook) SPS & Storm SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00130,Hannington,Thames Water,river,bw-ukj1402-11946;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00135,"Markenfield road, guildford",Thames Water,river,bw-uki2203-11942
+overflow,TWL00140,"Portsmouth road, uxbridge road",Thames Water,river,bw-uki2203-11942
+overflow,TWL00142,St james's road,Thames Water,river,bw-uki2203-11942
+overflow,TWL00147,Culham STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden;thames-henley
+overflow,TWL00155,Didcot STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00157,Dorchester STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-henley;thames-hurley
+overflow,TWL00159,Dorking STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00160,Dorton STW,Thames Water,river,bw-ukj1403-11947
+overflow,TWL00162,Drayton STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00169,Easthampstead Park STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00171,Elvetham Road (Fleet) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00174,Esher STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00176,New Mill STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00178,Fairford STW,Thames Water,river,bw-ukj1402-11946;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00180,Faringdon STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00182,Farnham STW,Thames Water,river,osm-wey-waverley
+overflow,TWL00184,Finstock STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00186,Fleet STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00188,Forest Hill STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00191,Friday Street (Henley) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00196,Gerrards Cross STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00197,Godalming STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00199,Goring STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00204,Grendon Underwood STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00206,Guildford STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00207,Haddenham STW,Thames Water,river,bw-ukj1403-11947
+overflow,TWL00209,Hambleden STW,Thames Water,river,thames-hurley
+overflow,TWL00211,Hampstead Norreys STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00212,Hamstead Marshall STW,Thames Water,river,thames-henley
+overflow,TWL00216,Hartley Wintney STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00222,Henley STW,Thames Water,river,thames-hurley
+overflow,TWL00223,Upper Heyford STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00226,Highworth Eastrop CSO (GWA site),Thames Water,river,bw-ukj1402-11946;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00227,Highworth STW,Thames Water,river,bw-ukj1402-11946;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00229,Hogsmill STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00232,Holybourne (Alton) SPS,Thames Water,river,osm-wey-waverley
+overflow,TWL00238,Horton-Cum-Studley STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00242,Ironsbottom STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00244,Islip STW,Thames Water,river,bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00246,Kempsford STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00249,Kilda Road (Highworth) SPS,Thames Water,river,bw-ukj1402-11946;thames-buscot-weir;thames-lechlade;thames-port-meadow
+overflow,TWL00252,The Mill (Kingham) SPS,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00255,Kings Sutton STW,Thames Water,river,osm-thames-long-bridges
+overflow,TWL00256,Kingsclere STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00257,Kingston Bagpuize STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00258,Kingston Main SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00259,Kintbury STW,Thames Water,river,thames-henley
+overflow,TWL00260,Knights Lane (Ball Hill) SPS,Thames Water,river,thames-henley
+overflow,TWL00262,Leatherhead STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00263,Lechlade STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-buscot-weir;thames-port-meadow
+overflow,TWL00266,Lightwater STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00271,Little Milton STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00273,Heyford Hill Lane (Littlemore) SPS,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00276,Long Crendon STW,Thames Water,river,bw-ukj1403-11947
+overflow,TWL00281,Cherwell Street (Banbury) SPS & SSP,Thames Water,river,osm-thames-long-bridges
+overflow,TWL00283,Ludgershall STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00287,Maidenhead STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00288,Manor drive stormwater tanks,Thames Water,river,bw-uki2203-11942
+overflow,TWL00289,Manor Farm Road (Sydenham) SPS,Thames Water,river,bw-ukj1403-11947
+overflow,TWL00294,Marsh Gibbon STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00298,Middle Barton STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00299,Middleton Cheney STW,Thames Water,river,osm-thames-long-bridges
+overflow,TWL00300,Middleton Stoney STW,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00301,Midgham STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00303,Milton-Under-Wychwood STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00306,Mortimer STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00309,Newbury STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00310,Newman Lane (Alton) SPS,Thames Water,river,osm-wey-waverley
+overflow,TWL00319,St Stephens Hall (Little London) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00323,Oxford STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00324,Pangbourne STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00331,Hockford STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00337,Purton STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00343,Reading STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00345,Caversham (Reading) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00348,Ripley STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00349,River Lane (Leatherhead) SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00354,Wedmans Lane (Rotherwick) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00359,Sandhurst STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00362,Sevenhampton STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00363,Shabbington STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00365,Shamley Green STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00366,Sherfield-on-Loddon STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00368,Shrivenham STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00370,Silchester STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00377,South Leigh STW,Thames Water,river,bw-ukj1402-11946;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00378,South Moreton STW,Thames Water,river,bw-ukj1102-11941;thames-henley;thames-hurley
+overflow,TWL00381,"Spooks hill, north holmwood",Thames Water,river,bw-uki2203-11942
+overflow,TWL00385,Standlake STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00387,Stanford in the Vale STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00389,Stanton Harcourt STW,Thames Water,river,bw-ukj1402-11946;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00392,Stone STW,Thames Water,river,bw-ukj1403-11947
+overflow,TWL00397,Slough STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00401,Swains Road (Tadley) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00402,Swindon STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00403,Tackley SPS & Storm SPS,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00408,Tetsworth STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00409,Thame STW,Thames Water,river,bw-ukj1403-11947
+overflow,TWL00411,"The willows, north hinksey lane",Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00418,Trumps Green Road (Virginia Water) SPS,Thames Water,river,bw-uki2203-11942
+overflow,TWL00419,Uffington STW,Thames Water,river,bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00422,Wanborough STW,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00425,Wantage STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,TWL00428,Wargrave STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00430,Wash Water STW,Thames Water,river,thames-henley
+overflow,TWL00431,Water End (Newnham) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00433,Watlington STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00434,Waverley Lane (Farnham) SPS,Thames Water,river,osm-wey-waverley
+overflow,TWL00437,West Heath (Charter Alley) SPS,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00439,"West way, botley (syphon)",Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00442,Weston-on-the-Green SPS,Thames Water,river,bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00443,Weston-on-the-Green STW,Thames Water,river,bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00445,Weybridge STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00446,Wheatley STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00448,White Waltham STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00452,Windsor STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00457,Witney STW,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00458,Woking STW,Thames Water,river,bw-uki2203-11942
+overflow,TWL00459,Ash Ridge (Wokingham) STW,Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00462,Woodstock STW,Thames Water,river,bw-ukj1402-11946;bw-ukj1403-11947;osm-thames-long-bridges;thames-clifton-hampden;thames-port-meadow
+overflow,TWL00464,Worminghall STW,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947
+overflow,TWL00472,Aldershot CSO,Thames Water,river,thames-henley
+overflow,TWL00498,XX (Bucknell) SPS,Thames Water,river,osm-thames-long-bridges;thames-clifton-hampden
+overflow,TWL00566,Epsom storm tanks,Thames Water,river,bw-uki2203-11942
+overflow,TWL00575,XX CSO,Thames Water,river,bw-ukj1402-11946;osm-thames-long-bridges;thames-port-meadow
+overflow,TWL00600,Hatchetts (Cricklade) SPS,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00627,"Knightsbridge Road, Camberley",Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00723,Stanton Fitzwarren SPS,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00738,Bentsbrook road,Thames Water,river,bw-uki2203-11942
+overflow,TWL00743,"South lane, ash",Thames Water,river,thames-henley
+overflow,TWL00744,"Stoke road, cobham",Thames Water,river,bw-uki2203-11942
+overflow,TWL00756,"Waterloo crescent outfall, wokingham",Thames Water,river,thames-henley;thames-hurley
+overflow,TWL00790,Chisledon storm tanks,Thames Water,river,thames-buscot-weir;thames-lechlade
+overflow,TWL00806,Tubney SPS XX,Thames Water,river,bw-ukj1102-11941;bw-ukj1403-11947;thames-clifton-hampden
+overflow,UUP00114,AMBLESIDE WwTW,United Utilities,lake,bw-ukd1203-45625;bw-ukd1203-45650;bw-ukd1203-45675;bw-ukd1203-45700;osm-windermere-waterhead
+overflow,UUP00122,Appleby CSO Adj to Appleby WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00124,APPLEBY WwTW(APPLE) (017670001),United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00136,Arthur Street/Meeting House Lane CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00137,Artle Beck CSO,United Utilities,river,lune-crook-o-lune
+overflow,UUP00138,Artle Beck Road CSO,United Utilities,river,lune-crook-o-lune
+overflow,UUP00148,Askham Wastewater Treatment Works (ASKHM) (017670078),United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00160,Austwick SPS,United Utilities,river,lune-crook-o-lune
+overflow,UUP00190,BARNOLDSWICK WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00216,CSO behind Lager's Store,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00257,BLENCARN WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00268,BOLTON (PENRITH) WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00311,Bridge End CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00313,Hindburn Bridge PS,United Utilities,river,lune-crook-o-lune
+overflow,UUP00351,BROUGH WwTW,United Utilities,river,eden-lazonby
+overflow,UUP00352,BROUGH WwTW,United Utilities,river,eden-lazonby
+overflow,UUP00353,Brougham Pumping Station (17502) (EDE0085),United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00362,Bull Beck Brookhouse Combined Sewer Overflow (Site ID 251HH) (LAN0089),United Utilities,river,lune-crook-o-lune
+overflow,UUP00377,BURTON-IN-LONSDALE WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP00394,Calf Hall Road CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00403,Carleton Hall Templebank CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00418,CASTERTON WwTW,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP00421,Castle Hill Drive CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00427,CATON WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP00446,Chapel Street (Temple Sowerby) CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00454,Chatburn (Ribble Lane) PS,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00492,Clapham WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP00503,CLIFTON PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00507,Clifton (Penrith) PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00534,Coniston WwTW,United Utilities,lake,bw-ukd1230-45725;bw-ukd1230-45750;bw-ukd1230-45775
+overflow,UUP00543,Cornmill Cottages CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00565,The College CSO,United Utilities,river,eden-armathwaite
+overflow,UUP00570,Crosby Garret WwTW,United Utilities,river,eden-lazonby
+overflow,UUP00592,CULGAITH WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00602,Dam Head Bridge CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00630,DENT WwTW,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP00659,DUFTON WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00687,EDENHALL VILLAGE & HOTEL WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00696,Newbiggin-on-Lune Wastewater Network Pumping Station,United Utilities,river,lune-devils-bridge
+overflow,UUP00702,Elterwater pumping station (ELTER) (LAK0025),United Utilities,lake,bw-ukd1203-45625;bw-ukd1203-45650;bw-ukd1203-45675;bw-ukd1203-45700;elter-water;osm-windermere-waterhead
+overflow,UUP00759,Franks Bridge SSO,United Utilities,river,eden-lazonby
+overflow,UUP00769,Galloper Pool PS,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP00770,Gamblesby PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00789,Gildersleets Lane CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00795,GISBURN WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00796,GISBURN WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00799,GLASSONBY VILLAGE WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00804,Glebe Road PS,United Utilities,lake,bw-ukd1203-45625;bw-ukd1203-45650;bw-ukd1203-45675;bw-ukd1203-45700;osm-windermere-waterhead
+overflow,UUP00808,GLENRIDDING WwTW,United Utilities,both,eden-armathwaite;eden-lazonby;osm-ullswater-sandwick;ullswater-glenridding;ullswater-pooley-bridge
+overflow,UUP00823,Grange Bridge (200mtrs downstream),United Utilities,lake,bw-ukd1101-45800;derwent-water-calfclose
+overflow,UUP00829,Grasmere Waste Water Treatment Works,United Utilities,lake,bw-ukd1203-45625;bw-ukd1203-45650;bw-ukd1203-45675;bw-ukd1203-45700;grasmere;loughrigg-tarn;osm-windermere-waterhead;rydal-water
+overflow,UUP00834,GREAT ASBY WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00843,GREAT SALKELD WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00867,GRINDLETON WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00919,Hawkshead Pumping Station (Site ID HWKSH) (LAK0107),United Utilities,lake,bw-ukd1203-45625;bw-ukd1203-45700
+overflow,UUP00935,HELLIFIELD WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00936,HELLIFIELD WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP00954,HIGH BENTHAM WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP00955,HIGH BENTHAM WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP00979,Holme Street/Chapel Street CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP00989,HORNBY WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP00990,HORTON-IN-RIBBLESDALE WwTW,United Utilities,river,bw-ukd4308-46501;ribble-stainforth-force
+overflow,UUP01000,Hunsonby CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01022,INGLETON WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP01045,Junction of Wordsworth Street CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01047,KABER WwTW,United Utilities,river,eden-lazonby
+overflow,UUP01077,KIRKBY LONSDALE WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP01078,KIRKBY LONSDALE WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP01079,Kirkby Stephen WwTW,United Utilities,river,eden-lazonby
+overflow,UUP01080,Kirkby Stephen WwTW,United Utilities,river,eden-lazonby
+overflow,UUP01081,Kirkby Thore PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01087,KIRKOSWALD WwTW,United Utilities,river,eden-armathwaite
+overflow,UUP01088,Kirkoswald PS,United Utilities,river,eden-armathwaite
+overflow,UUP01096,Lady Beck CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01110,Langwathby CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01111,LANGWATHBY WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01123,Lazonby PS and CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01155,LITTLE SALKELD WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01175,Long Preston Wastewater Treatment Works (LNGPR) (017160041),United Utilities,river,bw-ukd4308-46501
+overflow,UUP01194,LOW BENTHAM WwTW,United Utilities,river,lune-crook-o-lune
+overflow,UUP01241,Manhole on Syphon (Warcop) CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01282,MELMERBY WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01342,MORLAND WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01345,Mortar Pits CSO,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP01362,Murton (Bridge House) PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01363,MURTON WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01369,Near Butts Beck Footpath CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP01370,NEAR SAWREY WwTW,United Utilities,lake,bw-ukd1203-45625;bw-ukd1203-45700
+overflow,UUP01478,ORTON WwTW,United Utilities,river,lune-devils-bridge
+overflow,UUP01479,ORTON WwTW,United Utilities,river,lune-devils-bridge
+overflow,UUP01532,Penny Bridge CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP01535,Penrith Outfall CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01537,Gillwilly PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01538,PENRITH WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01559,Pooley Bridge East wastewater treatment works (Site ID POOLE) (017670085),United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01560,Pooley Bridge SSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01590,Punch Bowl Hotel (Askham) CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01637,REAR OF No4 RIBBLE AVENUE CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP01646,Renwick CSO,United Utilities,river,eden-armathwaite
+overflow,UUP01690,ROSTHWAITE WwTW,United Utilities,lake,bw-ukd1101-45800;derwent-water-calfclose
+overflow,UUP01711,SANDFORD VILLAGE WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01712,Sandgate (Penrith) CSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01733,SEDBERGH WwTW,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP01737,SETTLE WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP01738,Settlebeck (Sedbergh) Combined Sewer Overflow,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP01741,Shap (Brackenber) WwNPS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01742,SHAP WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01766,Skirwith Hall Combined Sewer Overflow,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01767,Skirwith PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01778,SOCKBRIDGE & TIRRIL WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01804,Spring Gardens(Waddington)  CSO,United Utilities,river,bw-ukd4308-46501
+overflow,UUP01809,Adjacent Cross Keys Inn,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP01834,Stainton SSO,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01856,Stenkrith Bridge CSO,United Utilities,river,eden-lazonby
+overflow,UUP01858,Stirk House Hotel PS,United Utilities,river,bw-ukd4308-46501
+overflow,UUP01875,STONETHWAITE WwTW,United Utilities,lake,bw-ukd1101-45800;derwent-water-calfclose
+overflow,UUP01904,Tebay Sewage PS,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP01905,TEBAY WwTW,United Utilities,river,lune-crook-o-lune;lune-devils-bridge
+overflow,UUP01906,TEMPLE SOWERBY WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP01941,Thurtell Cottages CSO,United Utilities,river,lune-crook-o-lune
+overflow,UUP01954,TORVER WwTW,United Utilities,lake,bw-ukd1230-45725;bw-ukd1230-45750;bw-ukd1230-45775
+overflow,UUP01979,Unthank PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP02003,WADDINGTON WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP02075,West Bradford WwNPS,United Utilities,river,bw-ukd4308-46501
+overflow,UUP02148,Winskill PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP02152,Winton PS,United Utilities,river,eden-lazonby
+overflow,UUP02179,Wray Wastewater Treatment Works (WRAYZ) (017270020),United Utilities,river,lune-crook-o-lune
+overflow,UUP02193,CULGAITH WWTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP02199,Bolton by Bowland,United Utilities,river,bw-ukd4308-46501
+overflow,UUP02231,O/S Fawell House CSO (174LB),United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP02256,Warcop Village PS,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,UUP02265,Holden WwTW,United Utilities,river,bw-ukd4308-46501
+overflow,UUP02270,Long Marton WwTW,United Utilities,river,eden-armathwaite;eden-lazonby
+overflow,WSX0572,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10000,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10004,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10008,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10026,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10031,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10034,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10035,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10043,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10046,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10048,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10053,,Wessex Water,river,bw-ukj3308-19001
+overflow,WSX10063,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10070,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10083,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10086,,Wessex Water,river,bw-ukk1500-19002
+overflow,WSX10088,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10090,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10094,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10095,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10111,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10115,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10119,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10122,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10129,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10136,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10149,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10153,,Wessex Water,river,avon-warleigh-weir
+overflow,WSX10156,,Wessex Water,river,bw-ukk2304-35201
+overflow,WSX10174,,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW00014,BISHOPS HULL SHUTEMEAD,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00028,SALISBURY ENDLESS LANE/SCOTS LANE,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00046,TROWBRIDGE WICKER HILL O/S MANE EVENT HAIRDRESSERS,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00051,FROME SINGERS CATTLE MARKET,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00062,FROME ADDERWELL CLOSE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00075,ALLINGTON OLD INN,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00081,AMESBURY OFF CHURCH STREET STORM TANK,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00103,BARFORD ST MARTIN,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00104,BARFORD ST MARTIN BURCOMBE STORM TANK,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00105,SAINT ALDHELMS BARTON BRIDGE BARTON FARM (175M DS),Wessex Water,river,avon-warleigh-weir
+overflow,WXW00120,BECKINGTON STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00129,MIDSOMER NORTON BERKELEY AVENUE SO,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00137,BISHOPS LYDEARD STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00159,BOWERHILL SHAILS LANE INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00160,BOWERHILL SHAILS LANE STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00164,BRADFORD ON TONE INLET,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00174,CAMERTON BRIDGE PLACE ROAD MH D19,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00184,CHIPPENHAM BRISTOL ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00186,PAULTON WORKS OFF BRISTOL ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00195,BROADS GREEN,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00203,DUNKERTON BROOKLANDS,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00221,CALNE ROUGH LEAZE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00222,CALNE INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00223,CALNE STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00224,WARMINSTER CALVESWATER,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW00225,CAM VALLEY DUNKERTON INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00234,CALNE RIVER MARDEN (RIVER BANK) SOUTH MARDEN HOUSE NEW ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00238,MIDSOMER NORTON CAUTLETTS CLOSE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00246,SOUTHWICK CHANTRY GARDENS,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00258,CHIPPENHAM THE IVY,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00273,CHILMARK,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00277,CHIPPENHAM BLACKWELL HAMS INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00278,CHIPPENHAM BLACKWELL HAMS STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00282,WINGFIELD CHURCH LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00287,CHRISTIAN MALFORD CHURCH ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00288,BISHOPS LYDEARD CHURCH STREET,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00293,SALISBURY CHURCHILL GARDENS NEAR COLLEGE,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00304,CLUTTON GREENBROOK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00307,COLEFORD INLET,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00308,COLEFORD STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00310,SALISBURY COLLEGE STREET NO 28,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00313,COMBE FLOREY STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00317,COMPTON BASSETT STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00333,FROME COURT HOUSE KING STREET,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00340,CRANMORE INLET,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00355,CHIPPENHAM - HIGH STREET O/S 6 - Combined Sewer Overflow,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00359,BROUGHTON GIFFORD CURTIS ORCHARD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00360,CHIPPENHAM DALLAS ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00366,DILTON MARSH IN FIELD BEHIND 127 HIGH STREET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00367,DILTON MARSH INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00369,CHAPMANSLADE DIVERS BRIDGE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00379,DOWNTON MOOT LANE STORM TANK,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00401,EDFORD INLET,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00402,EDFORD STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00420,FROME FELTHAM DRIVE NEAR FOOTBRIDGE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00433,UPPER MINETY FLISTERIDGE,Wessex Water,river,thames-buscot-weir;thames-lechlade
+overflow,WXW00434,AMESBURY FLOWER LANE,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00437,FORDINGBRIDGE SALISBURY STREET,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00443,FOVANT STORM TANK,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00449,FRESHFORD STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00452,RADSTOCK FROME ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00453,FROME WELSHMILL LANE INLET,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00454,FROME WELSHMILL LANE STORM TANKS STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00458,CHIPPENHAM GASTONS ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00460,WARMINSTER GEORGE ST,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW00473,PAULTON GOOSARD BRIDGE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00480,GREAT SOMERFORD STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00481,WISHFORD WILTON ROAD STORM TANK,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00490,GURNEY SLADE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00492,HALLATROW,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00493,HALSE INLET,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00498,HANGING LANGFORD,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00500,HANKERTON HANKERTON BRIDGE,Wessex Water,river,thames-buscot-weir;thames-lechlade
+overflow,WXW00533,SALISBURY BRIDGE STREET/HIGH STREET,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00539,HILLCOMMON HILL COMMON,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00541,WIVELISCOMBE HILLSMOOR INLET,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00542,WIVELISCOMBE HILLSMOOR STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00544,HINDON THE DENE,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00545,HINDON INLET,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00546,HINTON BLEWETT INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00550,BRADFORD ON TONE HOCKHOLLER A38,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00559,STON EASTON HOME FARM SO,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00564,MILVERTON HOUNDSMOOR LANE,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00570,HURDCOTT,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00571,HURDCOTT STORM TANK,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00574,IDMISTON,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00592,KILMERSDON,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00593,RADSTOCK KILMERSDON ROAD SYPHON EO,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00596,COLEFORD KINGS HEAD,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00601,KINGTON LANGLEY,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00606,LACOCK STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00607,TROWBRIDGE CANAL ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00610,WARMINSTER WEYMOUTH STREET R/O 23 IN PLEASURE GARDENS NEAR SWIMMING POOL,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW00615,NORTON FITZWARREN LANGFORD LANE,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00627,LEIGH ON MENDIP STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00654,FROME LOWER KEYFORD,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00679,BIDDESTONE MANOR COTTAGES,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00685,CALNE MARKET HILL / STRAND,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00686,BRADFORD-ON-AVON MARKET STREET JUNCTION WITH CHURCH STREET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00693,FROME COURTS BARTON MARSTON LANE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00698,CHIPPENHAM COMMONS SLIP,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00699,CLUTTON MAYPOLE FARM,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00707,MELKSHAM INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00708,MELKSHAM STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00709,MELLS,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00710,MELLS STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00711,FROME MERCHANTS BARTON,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00719,MIDFORD ADJ ABANDONED RAILWAY,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00720,MIDFORD TUCKING MILL,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00722,MIDSOMER NORTON NORTHMEAD ROAD/ HAYES PARK ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00727,WELLOW MILL HILL,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00729,MONKTON COMBE MILL LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00742,MILVERTON STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00746,WELLINGTON MITCHELLS POOL,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00748,MONKTON DEVERILL HINDON ROAD STORM TANK,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW00749,CHIPPENHAM MONKTON PARK OFFICES,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00757,CALNE MOSSES MILL 1,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00758,CALNE MOSSES MILL 2,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00761,TAUNTON MOUNTWAY BISHOPS HULL,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00772,WESTBURY FROGMORE ROAD OPP 67,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00778,NAILSBOURNE,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00784,LACOCK NETHERCOTE HILL,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00785,PEASEDOWN ST JOHN NEW BUILDINGS / WHITEBROOK LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00788,FRESHFORD NEW INN,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00805,FROME NORTH OF CARPET FACTORY NEAR RAILWAY JUNCTION,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00812,NORTON ST PHILIP STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00814,NORTH BRADLEY CHURCHLANDS,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00816,NUNNEY STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00818,OAKHILL STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00846,CALNE MARDEN HOUSE CULVERT AT REAR,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00848,PAULTON STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00853,DILTON MARSH PEN KNAPP,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00860,RADSTOCK WATERLOO ROAD/PINE COURT,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00863,TROWBRIDGE ROSECROFT POLEBARN ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00880,FROME PORTWAY / LOCKS HILL,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00884,BRADFORD-ON-AVON CULVER STREET RECREATION PARK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00908,CALNE QUEMERFORD BRIDGE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00909,TIMSBURY RADFORD HILL,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00911,RADSTOCK MILL LANE INLET 1,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00912,RADSTOCK MILL LANE INLET 2,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00913,RADSTOCK MILL LANE STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00915,LYNEHAM B SITE (MAIN STW) RAF LYNEHAM STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00930,RADSTOCK WATERLOO ROAD BUILDERS YARD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00934,FROME RODDEN ROAD,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00935,RODE BARROW FARM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00936,RODE STORM TANK,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW00943,RUMWELL,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00949,SALISBURY PETERSFINGER SOUTHAMPTON ROAD STORM TANK,Wessex Water,river,bw-ukj3308-19001
+overflow,WXW00960,SANDHILL PARK STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW00964,MELKSHAM BATH ROAD OFF ROAD F/O SCOUT HALL,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00971,MELKSHAM SEMINGTON ROAD O/S POLICE STATION,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00972,MELKSHAM SEMINGTON ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00973,MELKSHAM SEMINGTON ROUNDABOUT,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00974,SEMLEY INLET,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW00979,FRESHFORD FIELDS OFF ROSEMARY LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00980,MELKSHAM SHAW C OF E SCHOOL PLAYING FIELD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00990,TROWBRIDGE THE SHIRES MULTI-STOREY CAR PARK/BASEMENT,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00992,SHOSCOMBE STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00993,SHREWTON STORM TANK,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW00996,BRADFORD-ON-AVON MARKET STREET/ SILVER STREET JUNCTION,Wessex Water,river,avon-warleigh-weir
+overflow,WXW00997,SHOSCOMBE SINGLE HILL,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01008,RADSTOCK SOMERVALE ROAD REAR KHANDALLA WELTON ROAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01017,SOUTH WRAXALL HOME FARM LOWER WRAXALL STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01029,CAM VALLEY SPLOT FARM NR PEASEDOWN ST JOHN,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01047,TROWBRIDGE STALLARD STREET O/S 58,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01054,WELLINGTON RELYON FACTORY ENTRANCE,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01061,MINETY STATION ROAD,Wessex Water,river,thames-buscot-weir;thames-lechlade
+overflow,WXW01068,STOKE ST MICHAEL STOKE HILL,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01073,CARLINGCOTT STONEAGE LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01079,STRATTON ON THE FOSSE STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01085,MONKTON COMBE SUMMER LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01089,CAMERTON SUNNYVALE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01090,SUTTON BENGER INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01093,CHRISTIAN MALFORD SWALLETTS GATE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01107,TEMPLE CLOUD BRIDGE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01110,STON EASTON WELLOW BROOK IN FIELD NEAR BY,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01115,WELLINGTON CORAMS LANE,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01120,DAUNTSEY THE GREEN,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01121,BROUGHTON GIFFORD THE GREEN,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01125,COMPTON BASSETT THE POND,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01127,HOLT THE STAR,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01128,CALNE STRAND / CHURCH STREET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01132,THINGLEY COPPERSHELL LANE INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01133,THINGLEY COPPERSHELL LANE STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01139,TISBURY NADDER CLOSE PLAYING FIELDS,Wessex Water,river,bw-ukj3308-19001;bw-ukk1500-19002
+overflow,WXW01141,TOCKENHAM INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01144,BRADFORD ON TONE TONE GREEN,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01155,TROWBRIDGE BRADFORD ROAD INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01156,TRUDOXHILL,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01162,RADSTOCK WATERLOO ROAD SO (DOWNSTREAM),Wessex Water,river,avon-warleigh-weir
+overflow,WXW01184,RADSTOCK WALEGRAVE TERRACE OPP 9,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01185,FROME WALLBRIDGE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01187,WANSTROW,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01192,WARMINSTER STORM TANK,Wessex Water,river,bw-ukk1500-19002
+overflow,WXW01197,RADSTOCK WATERSIDE SO,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01204,WELLINGTON TONE STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01205,PEASEDOWN ST JOHN WELLOW LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01206,WELLOW INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01212,MIDSOMER NORTON STORM RETENTION TANK (OLD STW),Wessex Water,river,avon-warleigh-weir
+overflow,WXW01213,MIDSOMER NORTON WELTON SO,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01215,WEST BAGBOROUGH INLET,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01220,WEST BUCKLAND,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01221,WESTBURY WEST END O/S 36,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01234,WESTBURY INLET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01235,WESTBURY STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01236,WELLINGTON WESTFORD,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01237,CHIPPENHAM WESTMEAD,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01242,FROME WESTWAY PRECINCT CAR PARK R/O,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01243,WESTWOOD STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01245,FROME WHATCOMBE ROAD NO 20,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01270,WINSLEY STORM TANK,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01272,WITHAM FRIARY,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,WXW01273,WIVELISCOMBE STYLES INLET,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01274,WIVELISCOMBE STYLES STORM TANK,Wessex Water,river,bw-ukk2304-35201
+overflow,WXW01275,CHIPPENHAM WOOD LANE,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01278,CALNE OXFORD ROAD / WOOD STREET,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01283,BRADFORD-ON-AVON SPRING FIELD AND WOOLLEY STREET JUNCTION,Wessex Water,river,avon-warleigh-weir
+overflow,WXW01297,FROME FARRANT ROAD NEAR YOUTH CENTRE,Wessex Water,river,avon-warleigh-weir;bw-ukk2301-36051;frome-tellisford-weir
+overflow,YWS00002,ROCHESTER ROAD/CSO,Yorkshire Water,river,osm-rivelin-plunge-pool
+overflow,YWS00021,BARDSEY/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00114,THE GRANARY/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00115,HOLLINS CLOSE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00144,ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/3XDWF OVERFLOW,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00145,ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/6XDWF OVERFLOW,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00171,WYVIL CRESCENT/CSO,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00172,LEEDS ROAD ILKLEY/2 CSO,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00173,BEN RHYDDING/STW,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00174,ILKLEY/STW/3XDWF OVERFLOW,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00176,ILKLEY MIDDLETON/CSO,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00177,BURNSALL CAR PK/CSO,Yorkshire Water,river,bw-uke4100-08901;osm-wharfe-greenholme;wharfe-appletreewick;wharfe-bolton-abbey
+overflow,YWS00178,ASKWITH/CSO,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00179,BRIDGE LANE/CSO,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00180,MENSTON CEMETERY/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00181,STATION ROAD/NO 1 CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00182,STATION ROAD/NO 2 CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00183,WESTBOURNE DRIVE/NO 1 CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00184,WESTBOURNE DRIVE/NO 2 CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00185,GRASSINGTON/STW,Yorkshire Water,river,bw-uke4100-08901;osm-wharfe-greenholme;wharfe-appletreewick;wharfe-bolton-abbey;wharfe-burnsall
+overflow,YWS00186,KETTLEWELL/STW,Yorkshire Water,river,bw-uke4100-08901;osm-wharfe-greenholme;wharfe-appletreewick;wharfe-bolton-abbey;wharfe-burnsall;wharfe-linton-falls
+overflow,YWS00187,KETTLEWELL/STW,Yorkshire Water,river,bw-uke4100-08901;osm-wharfe-greenholme;wharfe-appletreewick;wharfe-bolton-abbey;wharfe-burnsall;wharfe-linton-falls
+overflow,YWS00188,DRAUGHTON PRIORS LANE/CSO,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00189,DRAUGHTON/STW/6XDWF OVERFLOW,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00190,HEBDEN/STW,Yorkshire Water,river,bw-uke4100-08901;osm-wharfe-greenholme;wharfe-appletreewick;wharfe-bolton-abbey;wharfe-burnsall
+overflow,YWS00191,LOW MILL LANE 179/CSO,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00192,OTLEY/STW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00193,OTLEY/STW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00197,ALWOODLEY/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00199,POOL/STW/3XDWF OVERFLOW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00200,POOL/STW/6XDWF OVERFLOW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00202,WARREN LANE OTLEY/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00203,SHADWELL/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00204,LANGWITH VALLEY/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00205,BRIDGE HOUSE FARM/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00206,WEST BUSK LANE/NO 2 CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00210,BARDSEY THE DRIVE/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00211,HETCHELL VIEW/NO 2 CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00212,MEADOW CLOSE/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00213,KEARBY/STW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00214,WEETON/STW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00215,ARTHINGTON LANE/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00218,WATTLE SYKE/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00222,BILTON LANE BECK/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00223,HIRST LANE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00224,BIRSTWITH/NO 2 CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00225,PATELEY BRIDGE/STW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00226,PATELEY BRIDGE/STW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00227,SHAW MILLS/STW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00228,SHAW MILLS/STW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00231,ABBEY ROAD/NO 2 CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00247,RIPLEY/NO 2 CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00248,KILLINGHALL/NO 2 CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00249,DARLEY/STW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00250,DARLEY/STW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00251,SKIPTON ROAD 179/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00252,UNITY GROVE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00253,SKIPTON ROAD 33/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00254,SKIPTON ROAD 83/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00255,SKIPTON ROAD 109/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00256,JENNY PLAIN BRIDGE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00257,ST MARYS WALK 30/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00258,ST MARYS WALK 29/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00259,ST MARYS WALK 112/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00260,HOTEL MAJESTIC/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00261,ST MARYS WALK 7/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00262,COLD BATH ROAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00263,KINGS ROAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00264,MONTPELLIER RD27/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00265,CHUDLEIGH ROAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00266,CAMBRIDGE STREET/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00267,WEST PARK/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00268,ALBERT STREET/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00269,STRAWBERRY DALE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00270,HYDE PARK ROAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00273,WATERSIDE 47/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00274,WATERSIDE 48/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00275,WATERSIDE 49/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00276,BOROUGHBRIDGE ROAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00277,CRAGG TOP/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00279,SPITAL CROFT/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00286,ASKRIGG/STW,Yorkshire Water,river,ure-aysgarth
+overflow,YWS00300,HAWES/STW,Yorkshire Water,river,ure-aysgarth
+overflow,YWS00306,DARLEY HEAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00311,BAINBRIDGE/STW,Yorkshire Water,river,ure-aysgarth
+overflow,YWS00316,THE HOLME BRIDGE/CSO,Yorkshire Water,river,ure-aysgarth
+overflow,YWS00328,GUNNERSIDE/NO 2 STW,Yorkshire Water,river,bw-uke2204-08905
+overflow,YWS00349,MARSKE/STW,Yorkshire Water,river,bw-uke2204-08905
+overflow,YWS00352,RIVERSIDE ROAD/NO 2 CSO,Yorkshire Water,river,bw-uke2204-08905
+overflow,YWS00356,RICHMOND BRIDGE/NO 2 CSO,Yorkshire Water,river,bw-uke2204-08905
+overflow,YWS00357,REETH ROAD/NO 2 CSO,Yorkshire Water,river,bw-uke2204-08905
+overflow,YWS00674,RIVADALE VIEW/CSO,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00677,SUMMERBRIDGE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00715,SHOW GROUND/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00716,GLASSHOUSES BRIDGE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00728,SCARCROFT/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00828,BOLTON BRIDGE/CSO,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS00863,NIDD WALK/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS00893,BURLEY IN WHARFEDALE/STW,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS00979,OAKDALE HARROGATE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01032,WHEATLEY LANE/2 CSO,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS01033,WYVILL ROAD/CSO,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS01035,HAMBLETON ROAD/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01039,HARROGATE NORTH/STW/3XDWF OVERFLOW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01040,HARROGATE NORTH/STW/6XDWF OVERFLOW,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01067,VILLAGE GREEN/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01117,REETH/STW,Yorkshire Water,river,bw-uke2204-08905
+overflow,YWS01121,NETHERFIELD ROAD/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01155,DACRE BANKS/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01159,OAKDALE AVENUE/CSO,Yorkshire Water,river,bw-uke2203-08903
+overflow,YWS01160,COLLINGHAM LEEDS ROAD/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01175,SCOTT LANE/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01270,ILKLEY ROAD/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01280,BILLAMS HILL/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01289,OTLEY BRIDGE STREET/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01304,CROOK FARM/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01311,LINTON/CSO,Yorkshire Water,river,bw-uke4100-08901;osm-wharfe-greenholme;wharfe-appletreewick;wharfe-bolton-abbey;wharfe-burnsall
+overflow,YWS01333,MARTON HALL FARM/SPS,Yorkshire Water,river,bw-ukd4308-46501
+overflow,YWS01338,BURLEY LODGE/CSO,Yorkshire Water,river,bw-uke4200-08904
+overflow,YWS01340,BEAMSLEY/STW,Yorkshire Water,river,bw-uke4100-08901;bw-uke4200-08904;osm-wharfe-greenholme
+overflow,YWS02298,,Yorkshire Water,river,bw-uke4200-08904;osm-wharfe-greenholme
+bathing_water,ukd1101-45800,Derwent Water at Crow Park,United Utilities Water Limited,lake,bw-ukd1101-45800
+bathing_water,ukd1203-45625,"Windermere, Lakeside YMCA",United Utilities Water Limited,lake,bw-ukd1203-45625
+bathing_water,ukd1203-45650,"Windermere, Millerground Landing",United Utilities Water Limited,lake,bw-ukd1203-45650
+bathing_water,ukd1203-45675,"Windermere, Rayrigg Meadow",United Utilities Water Limited,lake,bw-ukd1203-45675
+bathing_water,ukd1203-45700,"Windermere, Fellfoot",United Utilities Water Limited,lake,bw-ukd1203-45700
+bathing_water,ukd1230-45725,"Coniston Water, Brown Howe",United Utilities Water Limited,lake,bw-ukd1230-45725
+bathing_water,ukd1230-45750,"Coniston Water, Boating Centre",United Utilities Water Limited,lake,bw-ukd1230-45750
+bathing_water,ukd1230-45775,"Coniston Water, Monk Coniston",United Utilities Water Limited,lake,bw-ukd1230-45775
+bathing_water,ukd4308-46501,River Ribble at Edisford Bridge,United Utilities Water Limited,river,bw-ukd4308-46501
+bathing_water,ukd6300-40752,"Sandy Lane, Chester",Dwr Cymru Cyfyngedig,river,bw-ukd6300-40752
+bathing_water,uke2203-08903,"Nidd at the Lido, Knaresborough",Yorkshire Water Services Limited,river,bw-uke2203-08903
+bathing_water,uke2204-08905,Swale above Richmond Falls,Yorkshire Water Services Limited,river,bw-uke2204-08905
+bathing_water,uke4100-08901,"Wharfe at Cromwheel, Ilkley",Yorkshire Water Services Limited,river,bw-uke4100-08901
+bathing_water,uke4200-08904,Wharfe at Wilderness Carpark,Yorkshire Water Services Limited,river,bw-uke4200-08904
+bathing_water,ukf1400-09750,Colwick Country Park (West Lake),Severn Trent Water Limited,lake,bw-ukf1400-09750
+bathing_water,ukf2208-09701,Rutland Water Whitwell Creek,Anglian Water Services Limited,lake,bw-ukf2208-09701
+bathing_water,ukf2208-09702,Rutland Water Sykes Lane,Anglian Water Services Limited,lake,bw-ukf2208-09702
+bathing_water,ukg2100-36070,River Severn at Ironbridge,Severn Trent Water Limited,river,bw-ukg2100-36070
+bathing_water,ukg2200-36060,River Teme in Ludlow,Severn Trent Water Limited,river,bw-ukg2200-36060
+bathing_water,ukg2200-36071,River Severn in Shrewsbury,Severn Trent Water Limited,river,bw-ukg2200-36071
+bathing_water,ukh1201-09801,"Sheep's Green, River Cam",Anglian Water Services Limited,river,bw-ukh1201-09801
+bathing_water,ukh1401-11051,"Friars Meadow, River Stour",Anglian Water Services Limited,river,bw-ukh1401-11051
+bathing_water,ukh1406-10712,"Falcon Meadow, River Waveney",Anglian Water Services Limited,river,bw-ukh1406-10712
+bathing_water,uki1101-11910,Hampstead Heath (Ladies Pond),Thames Water Utilities Limited,lake,bw-uki1101-11910
+bathing_water,uki1101-11920,Hampstead Heath (Mens Pond),Thames Water Utilities Limited,lake,bw-uki1101-11920
+bathing_water,uki1101-11930,Hampstead Heath (Mixed Pond),Thames Water Utilities Limited,lake,bw-uki1101-11930
+bathing_water,uki1106-11940,The Serpentine - Hyde Park,Thames Water Utilities Limited,lake,bw-uki1106-11940
+bathing_water,uki2203-11942,"Ham and Kingston, River Thames",Thames Water Utilities Limited,river,bw-uki2203-11942
+bathing_water,ukj1102-11941,"Pangbourne Meadow, River Thames",Thames Water Utilities Limited,river,bw-ukj1102-11941
+bathing_water,ukj1402-11946,Wolvercote Mill Stream,Thames Water Utilities Limited,river,bw-ukj1402-11946
+bathing_water,ukj1403-11947,"Wallingford Beach, River Thames",Thames Water Utilities Limited,river,bw-ukj1403-11947
+bathing_water,ukj2310-11945,Frensham Great Pond,Thames Water Utilities Limited,lake,bw-ukj2310-11945
+bathing_water,ukj3308-19001,River Avon at Fordingbridge,Wessex Water Services Limited,river,bw-ukj3308-19001
+bathing_water,ukk1100-36050,Henleaze Lake,Wessex Water Services Limited,lake,bw-ukk1100-36050
+bathing_water,ukk1302-11760,Cotswold Country Park and Beach,Thames Water Utilities Limited,lake,bw-ukk1302-11760
+bathing_water,ukk1500-19002,River Avon at Queen Elizabeth Gardens,Wessex Water Services Limited,river,bw-ukk1500-19002
+bathing_water,ukk2301-36051,River Frome at Farleigh Hungerford,Wessex Water Services Limited,river,bw-ukk2301-36051
+bathing_water,ukk2304-35201,River Tone at French Weir Park,Wessex Water Services Limited,river,bw-ukk2304-35201
