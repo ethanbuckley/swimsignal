@@ -35,7 +35,8 @@ def test_the_warning_lines_are_the_sites_own_high_risk_lines():
     cuts = lambda name: [float(x) for x in re.search(rf"{name} = \[([^\]]+)\]", levels).group(1).split(",")]
     assert cuts("SPILL_CUTS")[1] == fl.SPILL_WARN_AT     # moderate | high
     assert cuts("ECOLI_CUTS")[1] == fl.ECOLI_WARN_AT     # moderate | high
-    assert "const HIGH = 2;" in (ROOT / "push/src/index.js").read_text()   # alerts are sent at high
+    # Alerts are sent at high. Read every Worker module: the rule may live in a shared file.
+    assert any("const HIGH = 2;" in f.read_text() for f in (ROOT / "push/src").glob("*.js"))
 
 
 def test_the_schedule_matches_the_workflow():
