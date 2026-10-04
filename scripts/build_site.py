@@ -137,8 +137,8 @@ PUSH_URL_ENV, PUSH_KEY_ENV = "DIPCAST_PUSH_URL", "DIPCAST_VAPID_PUBLIC_KEY"
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
 PUSH_SWAPS = [
-    ("<li>Your saved spots and your location stay on your device.</li>",
-     "<li>Your location stays on your device. So do your saved spots, unless you turn on alerts.</li>"),
+    ("<li>Your saved spots, your swim journal and your location stay on your device.</li>",
+     "<li>Your location and your swim journal stay on your device. So do your saved spots, unless you turn on alerts.</li>"),
     ("It stays on your device: it is not sent to SwimSignal or to anyone else.",
      "It stays on your device: it is not sent to SwimSignal or to anyone else, unless you turn on alerts (below)."),
     ("SwimSignal holds none, as described above;",
@@ -891,6 +891,9 @@ VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
 # What the level rests on: evidence.js draws a spot's evidence, with its ages and sources, from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "evidence.js")
 VERSIONED_SCRIPTS += ('<script src="evidence.js"></script>',)
+# The swim journal (journal.js): kept on the device, so its script is stored and versioned as the rest.
+SHELL_SOURCES.append(TEMPLATE.parent / "journal.js")
+VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -913,6 +916,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
+    shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
