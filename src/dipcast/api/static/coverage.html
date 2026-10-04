@@ -12,7 +12,7 @@
 <main class="doc"><h1>Coasts, Wales, Scotland and algae</h1>
 <p>SwimSignal forecasts listed rivers and lakes in England. For the coast, Wales and Scotland, use the official services below. Their observations and warnings answer different questions from our inland forecast.</p>
 <h2>Coasts and estuaries in England</h2>
-<p><a href="https://environment.data.gov.uk/bwq/profiles/">Find an Environment Agency bathing water</a> for its rating, sample results and any pollution warning. Check the date and the signs at the beach. A four-season rating is not today's water test. Our inland river model does not account for tides or coastal transport and is not a coastal forecast.</p>
+<p><a href="https://environment.data.gov.uk/bwq/profiles/">Find an Environment Agency bathing water</a> for its rating, sample results and any pollution warning. Check the date and the signs at the beach. A four-season rating is not today's water test. Our inland river model does not account for tides or coastal transport and is not a coastal forecast. Opening "Today's EA advice" under a site in the directory loads the Environment Agency's own panel for that site, from your browser (<a href="/privacy">privacy</a>).</p>
 <details><summary>Search the English coastal directory</summary>
 <!-- COASTAL_DIRECTORY --><p>Use the EA link above if the directory is unavailable here.</p><!-- END_COASTAL_DIRECTORY -->
 </details>
@@ -149,5 +149,41 @@ const walesList = document.getElementById('wales-directory');
 if (walesList) walesList.addEventListener('toggle', function once() {
   if (walesList.open) { walesList.removeEventListener('toggle', once); walesLive(); }
 });
+
+// England (coastal.py): the build cannot reach the EA's bathing-water service, and its API does not
+// answer other sites' pages (no access-control-allow-origin, checked 4 Oct 2026). The EA does offer a
+// widget for other sites to embed (environment.data.gov.uk/bwq/widget): its own panel of today's
+// advice, pollution incidents included, in its own words, with its credit. Opening a site's "Today's
+// EA advice" loads that panel, once, from the reader's browser, with scripts off and no referrer.
+// Nothing is kept. The panel shows no issue time, and its cache-control lets browsers keep it an hour.
+const EA_WIDGET = 'https://environment.data.gov.uk/bwq/widget/widget/widget1';
+function eaWidgetUrl(id) {   // the EA's panel without photo, map or rating history (the row has the rating)
+  return typeof id === 'string' && SITE_ID.test(id) ? `${EA_WIDGET}?eu=${id}&history=false&m=false&p=false` : null;
+}
+function eaToday(fold, now) {   // fills an opened fold with the EA's panel; false if its site id is not one
+  const url = eaWidgetUrl(fold.dataset.site);
+  if (!url) return false;
+  const name = fold.closest('.coastal-site').querySelector('a').textContent;
+  const frame = document.createElement('iframe');
+  frame.src = url;
+  frame.title = `Environment Agency: today's advice at ${name}`;
+  frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');   // its links open a new tab; no scripts
+  frame.referrerPolicy = 'no-referrer';
+  const note = document.createElement('p');
+  note.className = 'small muted';
+  note.textContent = `The Environment Agency's own panel, loaded ${ukWhen(now)}. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test.`;
+  fold.replaceChildren(fold.querySelector('summary'), frame, note);
+  // The list scrolls in a box shorter than an opened row on a phone: bring the panel and its note into view.
+  if (fold.scrollIntoView) fold.scrollIntoView({block: 'nearest'});
+  return true;
+}
+const coastalList = document.getElementById('coastal-sites');
+if (coastalList) coastalList.addEventListener('toggle', e => {   // 'toggle' does not bubble: listen on the way down
+  const fold = e.target;
+  if (fold.classList && fold.classList.contains('ea-today') && fold.open && !fold.dataset.loaded) {
+    fold.dataset.loaded = 'yes';
+    eaToday(fold, Date.now());
+  }
+}, true);
 </script>
 </body></html>

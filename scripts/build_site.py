@@ -194,8 +194,10 @@ PUSH_PRIVACY = (
     "<h2>Alerts</h2>\n<p>If you turn on alerts on the Saved page, your browser gives SwimSignal a push address: a "
     "long random web address, run by your browser's maker (Google, Apple, Mozilla or Microsoft), that delivers "
     "notifications to this browser. SwimSignal's alert service stores that address, with the identifiers of your "
-    "saved spots, and nothing else: no name, email address or location. It uses them only to send a notification "
-    "when one of those spots' forecast turns high. Each notification passes through your browser maker's push "
+    "saved spots and, if you tick the weekly note, that you asked for it, and nothing else: no name, email address "
+    "or location. It uses them only to send a notification when one of those spots' forecast turns high and, if you "
+    "asked, a weekly note on Thursday evenings with the days of lowest pollution risk ahead at those spots. The weekly note is "
+    "off until you tick it, and unticking it stops it. Each notification passes through your browser maker's push "
     "service, encrypted so that the push service cannot read it; that company is responsible for its own service. "
     "Your browser also keeps a note of what it last sent, so that an unchanged list is sent again only about once a "
     "week. The basis is "
@@ -880,6 +882,12 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
+SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
+VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
+# Named lists of saved spots, and the links that share a list or a plan (saved/): lists.js, likewise.
+SHELL_SOURCES.append(TEMPLATE.parent / "lists.js")
+VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
 # What the level rests on: evidence.js draws a spot's evidence, with its ages and sources, from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "evidence.js")
 VERSIONED_SCRIPTS += ('<script src="evidence.js"></script>',)
@@ -902,6 +910,8 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
+    shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
@@ -976,9 +986,10 @@ def spot_page(template: str, spot: dict, root: str) -> str:
 
 
 def saved_page(template: str, root: str) -> str:
-    """The Saved page, saved/: the map page, where the script lists the spots this browser has
-    saved, or offers a list someone shared (saved/#spots=...). The list lives in the browser, not
-    in the page, so search engines are asked to leave it out and the sitemap does not list it."""
+    """The Saved page, saved/: the map page, where the script shows the lists of spots this browser
+    has saved, or a list someone shared (saved/#list=...&spots=..., lists.js). The lists live in the
+    browser, not in the page, so search engines are asked to leave it out and the sitemap does not
+    list it."""
     page = PAGE_META.sub(lambda m: page_meta(SAVED_TITLE, SAVED_DESCRIPTION, f"{root}saved/", root, base="../",
                                              noindex=True), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Saved spots</h1>'

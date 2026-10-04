@@ -31,7 +31,7 @@ Islandswim's 24-hour score at 942 UK and Irish bathing waters, which also scores
 private spots. Wessex Water estimates bacteria hourly from sensors at three
 river sites.
 
-SwimSignal forecasts five days ahead for any point on England's inland river
+SwimSignal forecasts today and the next four days for any point on England's inland river
 network. It adds up every monitored overflow upstream, each delayed by its
 travel time and reduced by die-off and dilution. Islandswim takes the single
 worst outlet, with no dilution, and SewageMap says it does not consider dilution

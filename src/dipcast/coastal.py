@@ -39,7 +39,12 @@ def instant(x):
 
 
 def parse(catalogue, predictions, now, advice_available=True):
-    """A normal NON_PRF_SITE record does not establish an official forecast or clean water."""
+    """A normal NON_PRF_SITE record does not establish an official forecast or clean water.
+
+    An "increased" record in force is the EA advising against bathing, whatever its origin: the
+    notice the EA posts after a pollution incident has no `prfOriginType` (Plymouth Hoe East and
+    West, 15:08 on 1 Oct 2026, beside that morning's "normal" forecast). It wins over a normal
+    record in force at the same time; other disagreements are unavailable, never an all-clear."""
     by_site = {}
     for p in predictions:
         key = uri(p.get("stp_bathingWater")).rsplit("/", 1)[-1]
@@ -71,7 +76,7 @@ def parse(catalogue, predictions, now, advice_available=True):
                 origin = p.get("prfOriginType")
                 if (predicted <= published <= now < expires and expires - predicted <= timedelta(hours=36)
                         and day == predicted.astimezone(TZ).date().isoformat()
-                        and level in {"normal", "increased"} and origin in {"PRF_PROVIDED", "NON_PRF_SITE"}):
+                        and (level == "increased" or level == "normal" and origin in {"PRF_PROVIDED", "NON_PRF_SITE"})):
                     current.append({"state": "increased" if level == "increased" else
                                     "no_increased_risk" if origin == "PRF_PROVIDED" else "no_forecast",
                                     "origin": origin, "predicted_at": predicted.isoformat(),
@@ -80,7 +85,11 @@ def parse(catalogue, predictions, now, advice_available=True):
             except (ValueError, TypeError, OverflowError):
                 continue
         if advice_available and current:
-            # Overlapping source records must agree; conflicting ones are not an all-clear.
+            # A warning in force stands; otherwise overlapping records must agree, and conflicting
+            # ones are not an all-clear.
+            warnings = [p for p in current if p["state"] == "increased"]
+            if warnings:
+                current = warnings
             if len({p["state"] for p in current}) > 1:
                 advice = {"state": "unavailable"}
             else:
@@ -319,9 +328,14 @@ def render(snapshot):
             stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
-        cards.append(f'<li class="coastal-site"><a href="{escape(site["profile"], quote=True)}">{escape(site["name"])}</a>'
+        profile = escape(site["profile"], quote=True)
+        # Today's advice, from the EA itself: coverage.html's script loads the EA's own panel for the
+        # site into this fold when it is first opened. Without the script, the fold points to the profile.
+        today = (f'<details class="ea-today" data-site="{escape(site["id"], quote=True)}"><summary>Today\'s EA advice</summary>'
+                 f'<p class="small">Open the <a href="{profile}">official profile</a> for today\'s advice.</p></details>')
+        cards.append(f'<li class="coastal-site"><a href="{profile}">{escape(site["name"])}</a>'
                      f'<p class="small">{escape(site["kind"].title())} · {escape(historical)}<br>'
-                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}{sample}</p></li>')
+                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}{sample}</p>{today}</li>')
     return (f'<p class="small">{len(cards)} designated coastal and estuary bathing waters. Snapshot '
             f'{when(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
             'and check the signs before swimming. Missing advice does not mean clean water.</p>'

@@ -153,6 +153,15 @@ those sizes; they were taken off to keep the rule simple.)
 - Units (4 October 2026): a distance a swimmer travels is in miles ("7.7 miles away", "under a mile
   away"), in the list, "Nearby" and Plan a swim; a distance the water travels, or to a gauge or a
   sensor, is in km ("2.1 km upstream", "Gauge at Addingham, 3.4 km away"), as the model counts it.
+- The weekend (4 October 2026, Ethan's choices): while the five days reach a Saturday or a Sunday,
+  the best-day line on the list and the Saved page first says how the weekend looks, so Show stays
+  last, beside the week's best day: "Best this weekend: Saturday, 64 spots at low risk. Lowest
+  pollution risk this week: tomorrow". Both days are words, as in any sentence: a later day by its
+  full weekday, "today" and "tomorrow" in lower case (until then the best day took the day picker's
+  "Tomorrow" or "Fri 9 Oct"). Only the better weekend day is named. On a Tuesday Saturday is alone,
+  so there is no "best": "This weekend: 64 spots at low risk on Saturday." Equal days are said
+  together. Nothing is added on a Sunday, when the weekend is today and the list shows it, or when
+  the week's best day is itself a weekend day, which the line then names once.
 - One caveat per view, in the place it is read: the intro says "Forecasts, not water tests" once;
   the hero's last line says to check the signs at the water. The rest of the explanation lives
   under "About these forecasts" and on the About and Accuracy pages.
@@ -735,6 +744,45 @@ gives all four navigation links a single full-width row.
   and to a gauge or sensor, stay in km, as the model counts them.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
+
+## Since you last looked (4 October 2026)
+
+- A saved spot's card says what changed since this browser last showed it, in one line under the
+  card's own (`since.js`): "Was low risk when you looked on Friday at 18:20; now moderate risk." In the
+  muted grey at the notes' size, since it is history, and never in a level's colour. The same cards on
+  the list's Saved spots tile carry it too, while no day is picked.
+- One change a card, the first of: the level ("risk" on both sides, as everywhere), a new Environment
+  Agency rating ("Was rated good for 2025 ...; now rated excellent for 2026."), and an overflow upstream
+  starting or stopping ("No overflow upstream was discharging when you looked on Friday at 18:20; now 2
+  are."). A stop is said only while every feed upstream is current, since a feed that is down drops its
+  overflows from the count. The day is `levels.js`'s `dayWord` within the week before the forecast's
+  day, and the date further back.
+- Nothing on a first look, when nothing changed, or when the forecast is the one already seen.
+- A spot counts as looked at when its level is on screen with no day picked: its card on the Saved page
+  or the list, or its own page. The lines compare with the notes as they were when the page opened, so
+  they stay for the visit and are gone on the next unless something changes again.
+- Not on a spot's own page: its answer already fills a 320 px phone's first screen (River Eden at
+  Armathwaite, 4 October 2026: the five days' heading at 590 px of 640), and one more line would sit
+  between what to do and the issue time.
+
+## Named lists and shared links (4 October 2026)
+
+- Saved spots can be kept in named lists (`lists.js`; "Weekend", "Club"). With one list the Saved page
+  looks as before. With more, the lists are chips under the heading, as the list's filters are, the one
+  shown filled, and the lede names it: "The next five days at the 3 spots in Weekend". The cards, Compare
+  and "Share this list" are the list shown; the alerts, the badge and the list's "Saved spots" group are
+  every list together.
+- "Your lists" folds under the cards, as Compare does: move or copy a spot (a spot, from any list, and a
+  list to put it in), rename the list shown, make a new list, and delete the list shown, which asks first
+  and says how many spots would no longer be saved. Forms between hairlines; no new colour or radius.
+- Save on a spot's page adds to the list shown. With more than one list it says which, "Save to Weekend"
+  and "Saved in Weekend"; a long name ends in an ellipsis, and the back link keeps to one line.
+- A shared list opens as a page of its own, read only: the list's name as the title, one sentence saying
+  someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
+  tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
+  added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- What a link holds is said beside its button, once: "It holds the list's name, Weekend, and which spots
+  are in it, nothing else." A plan's adds the day and "not where you start from".
 
 ## The embed and the data page (3 October 2026)
 

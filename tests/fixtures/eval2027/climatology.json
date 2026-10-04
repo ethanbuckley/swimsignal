@@ -1,0 +1,6 @@
+{
+ "about": "Made-up reference forecasts for tests/test_evaluate_2027.py, in the layout of data/eval2027/climatology.json.",
+ "spill_month": {"factor": {"1": 1.0, "2": 1.0, "3": 1.0, "4": 1.0, "5": 0.5, "6": 2.0, "7": 1.0, "8": 1.0, "9": 1.0, "10": 1.0, "11": 1.0, "12": 1.0}},
+ "ecoli_site": {"rate": {"R1": {"n": 10, "over_900": 3, "rate": 0.3}, "R2": {"n": 0, "over_900": 0, "rate": null}, "L1": {"n": 10, "over_900": 0, "rate": 0.02}}},
+ "ecoli_type": {"rate": {"river": 0.2, "lake": 0.025}}
+}

@@ -121,3 +121,70 @@ test('an expired NRW forecast is replaced while the page stays open, naming NRW'
   clock = T('2026-10-01T08:30:00+01:00'); tick();
   assert.equal(advice.textContent, 'This NRW advice has expired; check the official profile');
 });
+
+// England: "Today's EA advice" loads the EA's own widget for the site, once, when its fold is opened.
+// The EA's API sends no access-control-allow-origin (4 Oct 2026), so the page cannot read the advice;
+// the widget is what the EA offers other sites (environment.data.gov.uk/bwq/widget).
+function eaFold(site, name = 'Plymouth Hoe East') {
+  const summary = {tag: 'summary'};
+  return {dataset: {site}, open: false, children: [summary], scrolled: 0,
+    classList: {contains: c => c === 'ea-today'},
+    closest: q => q === '.coastal-site' ? {querySelector: () => ({textContent: name})} : null,
+    querySelector: q => q === 'summary' ? summary : null,
+    replaceChildren(...kids) { this.children = kids; },
+    scrollIntoView(o) { this.scrolled++; this.block = o && o.block; }};
+}
+function eaContext(clock = T('2026-10-04T16:45:00+01:00')) {
+  let toggle, capture;
+  const touched = [];
+  const list = {addEventListener: (event, fn, c) => { if (event === 'toggle') { toggle = fn; capture = c; } }};
+  const element = tag => ({tag, attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }});
+  const storage = new Proxy({}, {get: (_t, k) => { touched.push(k); return () => null; }});
+  const ctx = {document: {getElementById: id => id === 'coastal-sites' ? list : null, querySelectorAll: () => [], createElement: element},
+    Date: Object.assign(function (t) { return new Date(t); }, {now: () => clock, parse: Date.parse}),
+    Intl, setInterval() {}, localStorage: storage, sessionStorage: storage};
+  vm.runInNewContext(script, ctx);
+  return {ctx, capture: () => capture, touched,
+    open: fold => { fold.open = true; toggle({target: fold}); }, close: fold => { fold.open = false; toggle({target: fold}); }};
+}
+
+test('the EA widget address is built only from a bathing-water id', () => {
+  const {ctx} = eaContext();
+  assert.equal(ctx.eaWidgetUrl('ukk4100-26400'),
+    'https://environment.data.gov.uk/bwq/widget/widget/widget1?eu=ukk4100-26400&history=false&m=false&p=false');
+  for (const bad of ['ukk4100-26400&p=true', 'javascript:alert(1)', '"><script>', '', undefined, null, 42])
+    assert.equal(ctx.eaWidgetUrl(bad), null);
+});
+
+test("opening a site's fold loads the EA panel once, sandboxed, with no referrer, and says when", () => {
+  const e = eaContext(), fold = eaFold('ukk4100-26400');
+  assert.equal(e.capture(), true);   // toggle does not bubble: the list listens on the way down
+  e.open(fold);
+  const [summary, frame, note] = fold.children;
+  assert.equal(summary.tag, 'summary');
+  assert.equal(frame.tag, 'iframe');
+  assert.equal(frame.src, 'https://environment.data.gov.uk/bwq/widget/widget/widget1?eu=ukk4100-26400&history=false&m=false&p=false');
+  assert.equal(frame.title, "Environment Agency: today's advice at Plymouth Hoe East");
+  assert.equal(frame.attrs.sandbox, 'allow-popups allow-popups-to-escape-sandbox');   // no scripts, no same-origin
+  assert.equal(frame.referrerPolicy, 'no-referrer');
+  assert.equal(note.textContent, "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test.");
+  assert.equal(fold.scrolled, 1);
+  assert.equal(fold.block, 'nearest');
+  e.close(fold); e.open(fold);
+  assert.equal(fold.children[1], frame);   // reopened: the same panel, not a second request
+  assert.equal(fold.scrolled, 1);
+  assert.deepEqual(e.touched, []);          // nothing kept in the browser
+});
+
+test('a fold with a malformed id, a closed fold or another element loads nothing', () => {
+  const e = eaContext();
+  const bad = eaFold('ukk4100-26400"><img src=x>');
+  e.open(bad);
+  assert.equal(bad.children.length, 1);
+  const shut = eaFold('ukk4100-26400');
+  e.close(shut);
+  assert.equal(shut.children.length, 1);
+  const other = {...eaFold('ukk4100-26400'), classList: {contains: () => false}};
+  e.open(other);
+  assert.equal(other.children.length, 1);
+});
