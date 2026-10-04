@@ -348,15 +348,15 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # them, moderate or worse, or while an overflow upstream is discharging.
     clears_at, clears_by, last_water = clear_time(ov, now)
     spilling = bool(len(ov)) and bool((ov["status"] == 1).any())
-    out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk),
+    clearing = {"clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
+                # The overflow whose travel time holds the risk up most as it clears, when travel does ('travel').
+                **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}
+                    | {"travel_h": round(float(ov.loc[last_water, "travel_h"]), 1)}} if clears_by == "travel" else {}),
+                **({"source": source_of(ov, risk_shares(now_contrib.to_numpy(dtype=float)))}
+                   if now_risk >= LOW_CUT or (spilling and now_risk > 0) else {})}
+    out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk), **clearing,
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
-                                            "feed_down_upstream", "feed_down")},
-                  "clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
-                  # The overflow whose travel time holds the risk up most as it clears, when travel does ('travel').
-                  **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}
-                      | {"travel_h": round(float(ov.loc[last_water, "travel_h"]), 1)}} if clears_by == "travel" else {}),
-                  **({"source": source_of(ov, risk_shares(now_contrib.to_numpy(dtype=float)))}
-                     if now_risk >= LOW_CUT or (spilling and now_risk > 0) else {})}
+                                            "feed_down_upstream", "feed_down")}}
     out["days"] = day_rows
     out["upstream_summary"] = {
         "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
