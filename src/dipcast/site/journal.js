@@ -82,15 +82,28 @@ const jnOrder = e => `${e.date} ${e.time || '00:00'} ${e.at}`;
 const journalSort = list => list.slice().sort((a, b) => jnOrder(b).localeCompare(jnOrder(a)));
 const journalPhotoCount = list => list.reduce((n, e) => n + e.photos, 0);
 
-// What the spot's page shows for a swim on `date`, kept with it: only for a swim logged on its day
-// (`today`, the device's), since the page has no forecast for the days before. The level and what set
-// it, as a picked day's headline says them (dayHeadline); right now's spills instead, where they are
-// worse than the day's forecast, since that is what the answer showed. The rain in the 48 h to midday,
-// the overflows upstream discharging, and the river level and the water temperature where the page
-// shows a figure for them (index.html, riverTile and waterTile). `issued`: the forecast's time.
-function journalSeen(d, date, today, issued) {
-  const R = jnRules(), days = Array.isArray(d.days) ? d.days.slice(0, 5) : [], x = days.find(y => y && y.date === date);
-  if (date !== today || (R.daily(d) && !x)) return null;
+// Why a swim keeps no forecast, in the form's words, or '' when it keeps one. A forecast is kept only for
+// a swim on the device's `today` at or after the forecast was issued (`issued`), at `time`: the page has
+// no forecast for the days before, and one issued after the swim was not there when they swam. Without a
+// time that cannot be told, so none is kept either. Nor where the forecast does not cover the day.
+function journalSeenWhy(d, date, time, today, issued) {
+  if (date < today) return 'No forecast: the page has none for the days before today.';
+  if (date !== today) return 'No forecast: a swim is logged on its day or after.';
+  const at = Date.parse(issued), when = Number.isNaN(at) ? '' : jnLocal(new Date(at)) === date ? ` at ${jnClock(new Date(at))}` : ` ${jnIssued(issued)}`;
+  if (!JN_CLOCK.test(time || '')) return `No forecast: without the time of your swim, it may have been before this forecast was issued${when}.`;
+  if (!Number.isNaN(at) && Date.parse(`${date}T${time}:00`) < at) return `No forecast: this one was issued${when}, after your swim.`;
+  const x = (Array.isArray(d.days) ? d.days.slice(0, 5) : []).find(y => y && y.date === date);
+  if (jnRules().daily(d) && !x) return 'No forecast: the one on this device does not cover that day.';
+  return '';
+}
+// What the spot's page shows for a swim on `date` at `time`, kept with it, or null (journalSeenWhy says
+// why). The level and what set it, as a picked day's headline says them (dayHeadline); right now's spills
+// instead, where they are worse than the day's forecast, since that is what the answer showed. The rain
+// in the 48 h to midday, the overflows upstream discharging, and the river level and the water
+// temperature where the page shows a figure for them (index.html, riverTile and waterTile).
+function journalSeen(d, date, today, issued, time) {
+  if (journalSeenWhy(d, date, time, today, issued)) return null;
+  const R = jnRules(), x = (Array.isArray(d.days) ? d.days.slice(0, 5) : []).find(y => y && y.date === date);
   let level = R.dayLevel(d, date), head = R.dayHeadline(d, date);
   const total = (d.upstream_summary || {}).overflows || 0, now = d.now || {};
   if (R.daily(d) && R.rank(now.label) >= 1 && R.rank(now.label) > R.rank(level)) { level = now.label; head = `${jnCap(level)} risk: sewage spills`; }
@@ -190,7 +203,8 @@ const jnFeedback = () => typeof FEEDBACK === 'string' ? FEEDBACK : 'feedback.htm
 
 // One swim in the list, built as a review's row: the day and time as its headline, the spot (linked
 // while it is in the forecast) and the minutes, what the forecast showed, the note, the photos, and
-// Delete. o: { hidden, spot (the spot now, if listed), href (its page), now }.
+// Delete. No link that sends anything: the journal is private. o: { hidden, spot (the spot now, if
+// listed), href (its page), now }.
 function journalItem(e, o = {}) {
   const name = (o.spot && o.spot.name) || e.name || e.id, when = jnDay(e.date, o.now) + (e.time ? `, ${e.time}` : '');
   const where = o.spot ? `<a href="${jnEsc(o.href || `spot/${e.id}/`)}" data-jn-spot="${jnEsc(e.id)}">${jnEsc(name)}</a>` : jnEsc(name);
@@ -199,11 +213,10 @@ function journalItem(e, o = {}) {
     : e.at ? '<p class="rv-meta">No forecast was kept with this swim.</p>' : '';
   const pics = !e.photos ? '' : `<ul class="rv-pics">${Array.from({ length: e.photos }, (_, n) => `<li><button type="button" class="rv-pic" data-jn-photo="${jnEsc(e.key)}-${n}"`
     + ` aria-label="Photo ${n + 1} of ${e.photos}, ${jnEsc(when)}"><img data-jn-thumb="${jnEsc(e.key)}-${n}" width="72" height="72" alt=""></button></li>`).join('')}</ul>`;
-  const fb = `${jnFeedback()}&amp;spot=${encodeURIComponent(`${name}, ${jnDay(e.date, o.now)} ${e.date}`)}`;
   return `<li class="rv jn"${o.hidden ? ' hidden' : ''} data-key="${jnEsc(e.key)}"><p class="rv-v">${jnEsc(when)}</p>`
     + `<p class="jn-where">${where}${e.minutes ? ` · ${e.minutes} minute${e.minutes === 1 ? '' : 's'} in the water` : ''}</p>`
     + seen + (e.note ? `<p class="rv-text">${jnEsc(e.note)}</p>` : '') + pics
-    + `<div class="rv-acts"><button type="button" class="linkbtn small" data-jn-delete="${jnEsc(e.key)}">Delete</button> · <a href="${fb}">Tell Ethan how the water was</a></div></li>`;
+    + `<div class="rv-acts"><button type="button" class="linkbtn small" data-jn-delete="${jnEsc(e.key)}">Delete</button></div></li>`;
 }
 
 // The journal on the Saved page: one tile, "Only on this device" first, the swims newest first (five,
@@ -227,11 +240,11 @@ function journalSection(list, o = {}) {
   return h + '</section>';
 }
 
-// What will be kept with a swim on `date`, under the form's fields, in the journal's own words.
-function journalKeptHtml(seen, date, today) {
+// What will be kept with a swim, under the form's fields, in the journal's own words: what the page shows
+// (seen), or why no forecast is kept (why, from journalSeenWhy).
+function journalKeptHtml(seen, why = '') {
   return '<div class="jn-kept" id="jn-kept"><p class="rv-q">Kept with the swim</p>'
-    + (seen ? journalSeenHtml(seen) : `<p class="rv-meta">${date < today ? 'No forecast: the page has none for the days before today.'
-      : 'No forecast: the one on this device does not cover that day.'}</p>`) + '</div>';
+    + (seen ? journalSeenHtml(seen) : `<p class="rv-meta">${jnEsc(why)}</p>`) + '</div>';
 }
 // The form, in a tile after the spot's buttons: the day and time, the minutes, a note, photos (where the
 // browser can keep them) and what will be kept with it. Nothing in it is sent.
@@ -314,8 +327,10 @@ function journalOpenForm(d, issued, b) {
   const msg = $('#jn-msg'), send = f.querySelector('[type=submit]'), photos = [];
   let busy = 0;
   const say = (text, bad = false) => { msg.textContent = text; msg.classList.toggle('bad', bad); };
-  const kept = () => { $('#jn-kept-host').innerHTML = journalKeptHtml(journalSeen(d, $('#jn-date').value, jnLocal(), issued), $('#jn-date').value, jnLocal()); };
-  kept(); $('#jn-date').addEventListener('change', kept); $('#jn-date').addEventListener('input', kept);
+  const kept = () => { const date = $('#jn-date').value, time = $('#jn-time').value, today = jnLocal();
+    $('#jn-kept-host').innerHTML = journalKeptHtml(journalSeen(d, date, today, issued, time), journalSeenWhy(d, date, time, today, issued)); };
+  kept();
+  for (const el of [$('#jn-date'), $('#jn-time')]) { el.addEventListener('change', kept); el.addEventListener('input', kept); }
   const close = () => { photos.forEach(p => URL.revokeObjectURL(p.url)); box.remove(); b.setAttribute('aria-expanded', 'false'); b.removeAttribute('aria-controls'); };
   if (photosOn) {
     const list = $('#jn-previews'), pick = $('#jn-pick');
@@ -345,7 +360,7 @@ function journalOpenForm(d, issued, b) {
       || (journalPhotoCount(have) + photos.length > JOURNAL_LIMITS.allPhotos ? `The journal holds ${JOURNAL_LIMITS.allPhotos} photos, the most it keeps on this device. Delete older swims to add more.` : '');
     if (problem) { say(problem, true); return; }
     busy++; send.disabled = true;
-    const entry = journalNew(d, draft, journalSeen(d, draft.date, jnLocal(), issued));
+    const entry = journalNew(d, draft, journalSeen(d, draft.date, jnLocal(), issued, draft.time));
     let lost = false;
     if (photos.length) {
       try { await jnPhotoPut(entry.key, await Promise.all(photos.map(jnRecord))); entry.photos = photos.length; } catch (err) { lost = true; }
@@ -506,5 +521,5 @@ if (typeof window !== 'undefined' && window.addEventListener) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { JOURNAL_KEY, JOURNAL_LIMITS, JOURNAL_SHOW, journalEntry, journalEntries, journalSort, journalPhotoCount, journalSeen, journalSeenWords,
-    journalProblem, journalNew, jnPhotoOk, journalFile, journalRead, journalMerge, journalItem, journalSection, journalKeptHtml, journalFormHtml };
+    journalSeenWhy, journalProblem, journalNew, jnPhotoOk, journalFile, journalRead, journalMerge, journalItem, journalSection, journalKeptHtml, journalFormHtml };
 }

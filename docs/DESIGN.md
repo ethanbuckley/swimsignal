@@ -634,13 +634,15 @@ swam here today", and reads its entries.
 - **What is kept** is what the page showed when the swim was logged: the level and what set it, in a picked
   day's words ("Moderate risk: sewage spills"; right now's spills where they are worse), with the forecast's
   issue time; the rain in the last two days; how many overflows upstream were discharging; the river level
-  and the water temperature where the page showed a figure. Only for a swim logged on its day: the page has
-  no forecast for the days before, and the form says so.
+  and the water temperature where the page showed a figure. Only for a swim on the day it is logged, at or
+  after the forecast's issue time: the page has no forecast for the days before, and one issued after the
+  swim was not there when they swam (a swim with no time keeps none, since that cannot be told). The form
+  says which of these it is, under "Kept with the swim".
 - **A row** is a review's: the day and time in bold, the spot (linked while it is listed) and the minutes,
   the level in its text colour with "in the forecast issued Sun 4 Oct, 15:29", the figures in the meta
-  size, the note, the photos as 72 px squares that open full size, then Delete and "Tell Ethan how the
-  water was". Five show, newest first; "Show all" opens the rest. A one-tap log entry shows its level "in
-  the day's forecast".
+  size, the note, the photos as 72 px squares that open full size, then Delete. No link that sends anything,
+  since the journal is private (Ethan, 4 October 2026: the one-tap log's "How was it?" went). Five show,
+  newest first; "Show all" opens the rest. A one-tap log entry shows its level "in the day's forecast".
 - **A copy**: "Save a copy" makes a file of the swims, notes and photos (a phone offers its share sheet);
   "Add swims from a copy" reads one back, leaving out swims already there. It is how the journal moves to
   another phone, or between Safari and the Home Screen app on an iPhone, which keep separate storage.

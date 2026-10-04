@@ -8,7 +8,9 @@ const path = require('node:path');
 const L = require('../src/dipcast/site/levels.js');
 const j = require('../src/dipcast/site/journal.js');
 
-const TODAY = '2026-10-04', ISSUED = '2026-10-04T15:29:52+01:00';
+// The swim's day and time are the device's: London's here, as the site's swimmers'.
+process.env.TZ = 'Europe/London';
+const TODAY = '2026-10-04', ISSUED = '2026-10-04T15:29:52+01:00', LATER = '17:00';
 L.setToday(TODAY);
 const day = (date, label, risk, rain) => ({ date, label, risk, rain_48h_mm: rain, p_ecoli_gt900: null, in_validated_season: false });
 const spot = (extra = {}) => ({
@@ -27,7 +29,7 @@ test('reads the one-tap log\'s entries, and an older page still reads the new on
   assert.deepEqual(old, { id: 'wharfe-burnsall', date: '2026-09-30', level: 'low', key: 'wharfe-burnsall@2026-09-30', name: '', time: '', minutes: null,
     note: '', photos: 0, at: '', seen: null });
   // The old page kept a swim if it had a string id and date, and showed its level as "<level> risk".
-  const s = j.journalNew(spot(), { date: TODAY, time: '07:40', minutes: '25', note: 'Cold' }, j.journalSeen(spot(), TODAY, TODAY, ISSUED), new Date('2026-10-04T16:00:00Z'), () => 0.5);
+  const s = j.journalNew(spot(), { date: TODAY, time: LATER, minutes: '25', note: 'Cold' }, j.journalSeen(spot(), TODAY, TODAY, ISSUED, LATER), new Date('2026-10-04T16:00:00Z'), () => 0.5);
   const back = JSON.parse(JSON.stringify(s));
   assert.ok(typeof back.id === 'string' && typeof back.date === 'string' && back.level === 'low');
   assert.equal(j.journalEntries(JSON.stringify([back]))[0].key, s.key, 'a new swim keeps its own key');
@@ -60,38 +62,56 @@ test('newest first: the day, then the time, then when it was logged', () => {
 });
 
 test('keeps what the spot\'s page showed on the day of the swim', () => {
-  assert.deepEqual(j.journalSeen(spot(), TODAY, TODAY, ISSUED),
+  assert.deepEqual(j.journalSeen(spot(), TODAY, TODAY, ISSUED, LATER),
     { head: 'Low risk', level: 'low', issued: ISSUED, rain: 0, dis: 0, of: 21, river: { m: 0.197, word: 'low water' }, temp: { c: 14.9 } });
   const raised = spot({ days: [day(TODAY, 'high', 0.5, 14.26), ...spot().days.slice(1)], now: { label: 'moderate', discharging_upstream: 2 } });
-  const s = j.journalSeen(raised, TODAY, TODAY, ISSUED);
+  const s = j.journalSeen(raised, TODAY, TODAY, ISSUED, LATER);
   assert.equal(s.head, 'High risk: sewage spills'); assert.equal(s.level, 'high'); assert.equal(s.rain, 14.3); assert.equal(s.dis, 2);
 });
 
 test('right now\'s spills set the level kept where they are worse than the day\'s forecast', () => {
-  const s = j.journalSeen(spot({ now: { label: 'very high', discharging_upstream: 3 } }), TODAY, TODAY, ISSUED);
+  const s = j.journalSeen(spot({ now: { label: 'very high', discharging_upstream: 3 } }), TODAY, TODAY, ISSUED, LATER);
   assert.equal(s.head, 'Very high risk: sewage spills'); assert.equal(s.level, 'very high'); assert.equal(s.dis, 3);
-  assert.equal(j.journalSeen(spot({ days: [{ ...day(TODAY, null, null, null) }, ...spot().days.slice(1)], now: { label: 'low' } }), TODAY, TODAY, ISSUED).head,
+  assert.equal(j.journalSeen(spot({ days: [{ ...day(TODAY, null, null, null) }, ...spot().days.slice(1)], now: { label: 'low' } }), TODAY, TODAY, ISSUED, LATER).head,
     'No forecast for this day', 'a low right now does not make a day without a forecast low');
 });
 
 test('nothing is kept for another day, or a day the forecast does not cover', () => {
-  assert.equal(j.journalSeen(spot(), '2026-10-03', TODAY, ISSUED), null, 'logged after the day');
-  assert.equal(j.journalSeen(spot(), '2026-10-09', '2026-10-09', ISSUED), null, 'a forecast that has run out');
-  assert.equal(j.journalSeen(spot({ days: [] }), TODAY, TODAY, ISSUED), null);
+  assert.equal(j.journalSeen(spot(), '2026-10-03', TODAY, ISSUED, LATER), null, 'logged after the day');
+  assert.equal(j.journalSeenWhy(spot(), '2026-10-03', LATER, TODAY, ISSUED), 'No forecast: the page has none for the days before today.');
+  assert.equal(j.journalSeen(spot(), '2026-10-09', '2026-10-09', ISSUED, LATER), null, 'a forecast that has run out');
+  assert.equal(j.journalSeenWhy(spot(), '2026-10-09', LATER, '2026-10-09', ISSUED), 'No forecast: the one on this device does not cover that day.');
+  assert.equal(j.journalSeen(spot({ days: [] }), TODAY, TODAY, ISSUED, LATER), null);
+});
+
+test('a swim before the forecast was issued, or without a time, keeps no forecast, and the form says why', () => {
+  // The seeded screenshot's 07:40 swim had kept "the forecast issued Sun 4 Oct, 15:29", which did not exist then.
+  assert.equal(j.journalSeen(spot(), TODAY, TODAY, ISSUED, '07:40'), null);
+  assert.equal(j.journalSeenWhy(spot(), TODAY, '07:40', TODAY, ISSUED), 'No forecast: this one was issued at 15:29, after your swim.');
+  assert.equal(j.journalSeen(spot(), TODAY, TODAY, ISSUED, '15:29'), null, 'the minute it was issued, but before its second');
+  assert.equal(j.journalSeen(spot(), TODAY, TODAY, ISSUED, '15:30').head, 'Low risk');
+  assert.equal(j.journalSeen(spot(), TODAY, TODAY, ISSUED, ''), null);
+  assert.equal(j.journalSeenWhy(spot(), TODAY, '', TODAY, ISSUED), 'No forecast: without the time of your swim, it may have been before this forecast was issued at 15:29.');
+  assert.equal(j.journalSeen(spot(), TODAY, TODAY, ISSUED, '7.40'), null, 'a time that is not one is no time');
+  // A forecast issued the evening before covers a morning swim.
+  assert.equal(j.journalSeen(spot(), TODAY, TODAY, '2026-10-03T23:10:00+01:00', '07:40').issued, '2026-10-03T23:10:00+01:00');
+  const why = j.journalSeenWhy(spot(), TODAY, '07:40', TODAY, ISSUED);
+  assert.equal(j.journalKeptHtml(null, why).match(/<p class="rv-meta">(.*)<\/p>/)[1], why, 'the form says it in the same words');
+  assert.equal(j.journalSeenWhy(spot(), TODAY, LATER, TODAY, ISSUED), '');
 });
 
 test('a reading the page would not show is not kept', () => {
-  const s = j.journalSeen(spot({ river_state: { stale: true, level_m: 0.4, label: 'high' }, water_temp: { temp_c: 15, observed_at: 'later', direction: 'upstream', river_km: 1 } }), TODAY, TODAY, ISSUED);
+  const s = j.journalSeen(spot({ river_state: { stale: true, level_m: 0.4, label: 'high' }, water_temp: { temp_c: 15, observed_at: 'later', direction: 'upstream', river_km: 1 } }), TODAY, TODAY, ISSUED, LATER);
   assert.equal(s.river, null); assert.equal(s.temp, null);
-  assert.equal(j.journalSeen(spot({ river_state: null, water_temp: undefined }), TODAY, TODAY, ISSUED).river, null);
+  assert.equal(j.journalSeen(spot({ river_state: null, water_temp: undefined }), TODAY, TODAY, ISSUED, LATER).river, null);
 });
 
 test('a spot with nothing to forecast keeps its plain level, its rain and its readings', () => {
   const plain = spot({ upstream_summary: { overflows: 0 }, now: {}, river_state: undefined });
-  assert.deepEqual(j.journalSeen(plain, TODAY, TODAY, ISSUED),
+  assert.deepEqual(j.journalSeen(plain, TODAY, TODAY, ISSUED, LATER),
     { head: 'No sewage risk from monitored overflows', level: 'no overflows', issued: ISSUED, rain: 0, dis: null, of: null, river: null, temp: { c: 14.9 } });
   const lake = { id: 'x', name: 'X', error: 'An isolated lake: no river flows into it', days: [], upstream_summary: { overflows: 0 } };
-  assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED).level, 'no river connection');
+  assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED, LATER).level, 'no river connection');
 });
 
 test('what was kept, in words', () => {
@@ -189,7 +209,8 @@ test('the journal says it is only on this device, and shows what was typed as te
   const form = j.journalFormHtml(TODAY, '17:00');
   assert.ok(form.includes('<b>Only on this device.</b>') && form.includes(`max="${TODAY}"`) && form.includes('value="17:00"') && form.includes('Photos'));
   assert.ok(!j.journalFormHtml(TODAY, '17:00', false).includes('Photos'), 'no photos where the browser cannot keep them');
-  assert.ok(j.journalKeptHtml(null, '2026-10-01', TODAY).includes('none for the days before today'));
+  assert.ok(j.journalKeptHtml(null, j.journalSeenWhy(spot(), '2026-10-01', '07:00', TODAY, ISSUED)).includes('none for the days before today'));
+  assert.ok(!h.includes('Tell Ethan') && !h.includes('feedback.html') && !h.includes('mailto:'), 'a private journal holds no link that sends anything');
 });
 
 test('nothing in the journal is sent anywhere', () => {
