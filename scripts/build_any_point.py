@@ -24,8 +24,9 @@ Everything is written under site/data/anypoint/:
   lakes.json           the WFD lake polygons (England) and every lake an overflow reaches: its
                        inlets, each with the overflows whose water enters there (river distance
                        and dilution before the lake-area term)
-  outside_england.json Wales and Scotland, widened over their estuaries, where a click gets "England
-                       only" (a copy of data/raw/outside_england.json, scripts/make_outside_england.py)
+  outside_england.json Wales, Scotland and the island of Ireland, widened over their estuaries, where a
+                       click gets "England only", and which part of the island is Northern Ireland (a
+                       copy of data/raw/outside_england.json, scripts/make_outside_england.py)
 
 A click is placed as transport._locate places it: inside or within 150 m of a WFD lake polygon it
 is that lake; otherwise the nearest link within 1.5 km, or the nearest lake centreline when that

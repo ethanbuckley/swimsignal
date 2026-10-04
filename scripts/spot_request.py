@@ -42,7 +42,10 @@ MAX_FIELD = 1000           # characters kept of any one field (a Google Maps add
 MIN_DECIMALS = 3           # 0.001 degrees is about 110 m of latitude: the form asks for about 100 m
 MIN_GRID_DIGITS = 3        # per axis: 100 m squares
 NEARBY_M = 300.0           # an existing spot this close is probably the same place
-GB = {"lat": (49.8, 60.95), "lon": (-8.7, 1.8)}
+# Great Britain and the island of Ireland, as a rough check that two numbers are a point here at all and
+# which way round they are. outside_england.json says which country a point is in: until 4 Oct 2026 the box
+# alone stood for Great Britain, and it held Belfast and Dublin, so a request there was placed as if in England.
+BOX = {"lat": (49.8, 60.95), "lon": (-10.7, 1.8)}
 OUTSIDE_ENGLAND = ROOT / "data" / "raw" / "outside_england.json"   # scripts/make_outside_england.py
 W3W_URL = "https://api.what3words.com/v3/convert-to-coordinates"
 OS_NAMES_URL = "https://api.os.uk/search/names/v1/find"
@@ -128,8 +131,8 @@ class Parsed:
     problem: str | None = None   # why the location cannot be used as written, as a sentence
 
 
-def _in_gb(lat: float, lon: float) -> bool:
-    return GB["lat"][0] <= lat <= GB["lat"][1] and GB["lon"][0] <= lon <= GB["lon"][1]
+def _in_box(lat: float, lon: float) -> bool:
+    return BOX["lat"][0] <= lat <= BOX["lat"][1] and BOX["lon"][0] <= lon <= BOX["lon"][1]
 
 
 def _decimals(num: str) -> int:
@@ -141,12 +144,12 @@ def _code(text: str) -> str:
 
 
 def _pair(a: float, b: float, shown: str, coarse: bool, how: str = "coordinates") -> Parsed:
-    """A latitude and longitude in either order, checked against Great Britain."""
+    """A latitude and longitude in either order, checked against Great Britain and Ireland's box."""
     note = None
-    if not _in_gb(a, b) and _in_gb(b, a):
+    if not _in_box(a, b) and _in_box(b, a):
         a, b = b, a
         note = "The two numbers were the other way round (longitude first); they are read here as latitude, longitude."
-    if not _in_gb(a, b):
+    if not _in_box(a, b):
         return Parsed(problem=f"The point {_code(shown)} is outside Great Britain.")
     if coarse:
         return Parsed(problem=f"The coordinates {_code(shown)} are only precise to about a kilometre.")
@@ -219,7 +222,7 @@ def parse_location(text: str | None) -> Parsed:
                 return Parsed(text=t)
             from dipcast.network.rivers import bng_to_lonlat
             lon, lat = bng_to_lonlat(*grid_to_bng(letters, east, north))
-            if _in_gb(lat, lon):
+            if _in_box(lat, lon):
                 return Parsed(point=Point(round(lat, 6), round(lon, 6), "grid reference", shown=shown))
     if SHORT_LINK.search(t):
         return Parsed(problem="A Google Maps share link does not include the coordinates.")
@@ -344,20 +347,41 @@ def _metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 @functools.cache
 def _outside_shape():
+    """The outside shape's polygons, which part each is in, and Northern Ireland's shape (or None)."""
     import shapely
     from shapely.geometry import shape
-    g = shape(json.loads(OUTSIDE_ENGLAND.read_text())["geometry"])
-    shapely.prepare(g)
-    return g
+    doc = json.loads(OUTSIDE_ENGLAND.read_text())
+    polys = list(shape(doc["geometry"]).geoms)
+    parts = doc.get("parts") or ["wales_scotland"] * len(polys)   # a file from before Ireland was added
+    north = shape(doc["northern_ireland"]) if doc.get("northern_ireland") else None
+    for g in [*polys, north]:
+        if g is not None:
+            shapely.prepare(g)
+    return polys, parts, north
 
 
-def outside_england(lat: float, lon: float) -> bool | None:
-    """Whether the point is in Wales or Scotland, or their estuaries, where SwimSignal has no overflow
-    data; None when the file is missing."""
+def outside_where(lat: float, lon: float) -> str | None:
+    """Where the point is, if outside England: "" in England, else "wales_scotland",
+    "northern_ireland" or "republic_of_ireland", as the page's outsideWhere (anypoint.js) says.
+    SwimSignal has no overflow data in any of them. None when the file is missing."""
     if not OUTSIDE_ENGLAND.exists():
         return None
     import shapely
-    return bool(_outside_shape().contains(shapely.Point(lon, lat)))
+    polys, parts, north = _outside_shape()
+    p = shapely.Point(lon, lat)
+    i = next((i for i, g in enumerate(polys) if g.contains(p)), None)
+    if i is None:
+        return ""
+    if parts[i] != "ireland":
+        return "wales_scotland"
+    return "northern_ireland" if north is not None and north.contains(p) else "republic_of_ireland"
+
+
+def outside_england(lat: float, lon: float) -> bool | None:
+    """Whether the point is in Wales, Scotland or the island of Ireland, or their estuaries, where
+    SwimSignal has no overflow data; None when the file is missing."""
+    where = outside_where(lat, lon)
+    return None if where is None else bool(where)
 
 
 def nearest_listed(lat: float, lon: float, spots: list[dict], within_m: float = NEARBY_M) -> dict | None:
@@ -510,6 +534,38 @@ INTRO = ("This is an automatic check of where the spot sits on SwimSignal's rive
 FOOT = ("<sub>River map: OS Open Rivers, contains OS data © Crown copyright and database right {year}. Overflows: "
         "the water companies' live feeds and the Environment Agency's annual returns. Licences and full credits: "
         "https://swimsignal.co.uk/terms.html#data. This comment is updated when the issue is edited.</sub>")
+# A point on the island of Ireland: SwimSignal's river map is Great Britain's and its overflow data
+# England's, so there is nothing to place it on. The official source there instead; nothing about the water.
+# Each ends with its address and no full stop, so the stop is not read as part of the link.
+IRELAND = {
+    "northern_ireland": ("Northern Ireland",
+                         ("DAERA, the Department of Agriculture, Environment and Rural Affairs, publishes results for "
+                          "Northern Ireland's bathing waters on its Bathing Water Quality Dashboard: "
+                          "https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard")),
+    "republic_of_ireland": ("the Republic of Ireland",
+                            ("The Environmental Protection Agency publishes bathing water results and any swimming "
+                             "restrictions in the Republic at https://www.beaches.ie/")),
+}
+IRELAND_FOOT = ("<sub>Where the point is: the Office for National Statistics' country boundaries (Source: Office for "
+                "National Statistics licensed under the Open Government Licence v.3.0; contains OS data © Crown copyright "
+                "and database right {year}) and Tailte Éireann's provinces (© Tailte Éireann, CC BY 4.0). Licences and "
+                "full credits: https://swimsignal.co.uk/terms.html#data. This comment is updated when the issue is "
+                "edited.</sub>")
+
+
+def _read(point: Point) -> str:
+    return {"coordinates": "the coordinates given", "grid reference": f"the grid reference `{point.shown}`",
+            "what3words": f"the what3words address `{point.shown}`", "place name": "the place name given"}[point.how]
+
+
+def compose_ireland(point: Point, where: str) -> str:
+    """The comment for a point in Northern Ireland or the Republic: not covered, and where to look."""
+    name, see = IRELAND[where]
+    where_it_is = f"{THANKS} The point {point.lat:.5f}, {point.lon:.5f} (read from {_read(point)}) is in {name}."
+    none = f"SwimSignal has overflow data for England only, so it has no forecast in {name} and cannot add a spot there."
+    first = " ".join(filter(None, [where_it_is, point.note, none]))
+    again = f"If the point is not where you swim, edit the issue with its latitude and longitude, for example {EXAMPLE}."
+    return "\n".join([MARKER, "", first, "", see, "", again, "", IRELAND_FOOT.format(year=datetime.now(UTC).year)]) + "\n"
 
 
 def compose(req: Request, point: Point | None, problem: str | None, res: dict | None, error: bool = False) -> str:
@@ -521,8 +577,7 @@ def compose(req: Request, point: Point | None, problem: str | None, res: dict | 
         ask = f"{THANKS} The spot could not be placed on the map yet. {problem or ''}".rstrip()
         return "\n".join([*lines, ask, "", HOW_TO]) + "\n"
     loc = res["location"]
-    read = {"coordinates": "the coordinates given", "grid reference": f"the grid reference `{point.shown}`",
-            "what3words": f"the what3words address `{point.shown}`", "place name": "the place name given"}[point.how]
+    read = _read(point)
     if loc.get("mode") == "none":
         none = (f"{THANKS} There is no river or lake on SwimSignal's map within 1.5 km of {point.lat:.5f}, "
                 f"{point.lon:.5f} (read from {read}).")
@@ -562,6 +617,9 @@ def answer(req: Request, env: dict | None = None, get=None, net=None, overflows=
     parsed = geocode(parse_location(req.location), env=env, get=get)
     if parsed.problem or parsed.point is None:
         return compose(req, None, parsed.problem, None), True
+    where = outside_where(parsed.point.lat, parsed.point.lon)
+    if where in IRELAND:   # no river map there: nothing to place, and no network to load
+        return compose_ireland(parsed.point, where), True
     try:
         if net is None or overflows is None:
             from dipcast import config

@@ -281,11 +281,35 @@ const AnyPoint = (() => {
     return [...out];
   }
 
-  // Wales and Scotland, widened over their tidal rivers and estuaries (outside_england.json, from
-  // scripts/make_outside_england.py). The overflow data is the English water companies', so a click
-  // there has no forecast, though the squares near the border have files.
-  const outsideEngland = (lat, lon, shape) => !!shape && shape.geometry.coordinates.some(poly => inRing(lon, lat, poly[0]));
+  // Wales, Scotland and the island of Ireland, widened over their tidal rivers and estuaries
+  // (outside_england.json, from scripts/make_outside_england.py). The overflow data is the English
+  // water companies', so a click there has no forecast, though the squares near the Welsh and
+  // Scottish borders have files. Where: '' (England, or a build without the file), 'wales_scotland',
+  // 'northern_ireland' or 'republic_of_ireland'. A file from before Ireland was added has no parts:
+  // all of it is Wales and Scotland.
+  function outsideWhere(lat, lon, shape) {
+    if (!shape) return '';
+    const i = shape.geometry.coordinates.findIndex(poly => inRing(lon, lat, poly[0]));
+    if (i < 0) return '';
+    if ((shape.parts || [])[i] !== 'ireland') return 'wales_scotland';
+    const ni = shape.northern_ireland;
+    return ni && ni.coordinates.some(poly => inRing(lon, lat, poly[0])) ? 'northern_ireland' : 'republic_of_ireland';
+  }
+  const outsideEngland = (lat, lon, shape) => !!outsideWhere(lat, lon, shape);
   const ENGLAND_ONLY = 'SwimSignal has overflow data for England only, so it has no forecast here.';
+  // What a click outside England says, and the official source for bathing waters there, in place of
+  // the card's sentence about the Environment Agency, which tests England's (render's check). Nothing
+  // about the water itself: SwimSignal knows nothing about it.
+  const OUTSIDE = {
+    wales_scotland: { error: ENGLAND_ONLY },
+    northern_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.',
+      see: 'The Department of Agriculture, Environment and Rural Affairs (DAERA) publishes results for Northern Ireland\'s bathing waters on its '
+        + '<a href="https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard" rel="noopener">Bathing Water Quality Dashboard</a>.' },
+    republic_of_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in the Republic of Ireland.',
+      see: 'The Environmental Protection Agency publishes bathing water results and any swimming restrictions in the Republic at '
+        + '<a href="https://www.beaches.ie/" rel="noopener">beaches.ie</a>.' },
+  };
+  const CHECK_SIGNS = 'A forecast, not a water test: check the signs at the water before you swim.';
 
   // Where a click goes and the overflows upstream of it, from the files: {mode, kind, name,
   // location, rows} or, where there is no forecast, {error}. files: {cfg: tiles.json, lakes:
@@ -297,7 +321,8 @@ const AnyPoint = (() => {
     + 'Risk from wildlife, runoff and bathers is not modelled.';
   function place(lat, lon, files) {
     const { cfg, lakes, od, tiles, outside = null } = files, a = od.assumptions;
-    if (outsideEngland(lat, lon, outside)) return { mode: 'none', kind: '', name: 'This point', error: ENGLAND_ONLY };
+    const where = outsideWhere(lat, lon, outside);
+    if (where) return { mode: 'none', kind: '', name: 'This point', error: OUTSIDE[where].error, outside: where };
     const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m);
     if (poly) {
       const p = poly.poly, name = p.name || 'Unnamed lake';
@@ -336,7 +361,8 @@ const AnyPoint = (() => {
       return point(lat, lon, false);
     }
     const base = { id: `point-${lat.toFixed(5)},${lon.toFixed(5)}`, unlisted: true, lat, lon, source: 'unlisted', name: at.name, kind: at.kind };
-    if (at.error) return { ...base, error: at.error, location: { mode: at.mode }, days: [], contributors: [], now: { risk: 0, label: 'unknown' } };
+    if (at.error) return { ...base, error: at.error, ...(at.outside ? { outside: at.outside } : {}), location: { mode: at.mode },
+      days: [], contributors: [], now: { risk: 0, label: 'unknown' } };
     const verif = await fetch('data/verification.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const cal = ((verif || {}).lead_calibration || {}).leads || {};
     // No rows is the API's answer where no monitored overflow is upstream: every day 0.
@@ -365,7 +391,11 @@ const AnyPoint = (() => {
     const box = document.getElementById('result');
     const save = box.querySelector('#save'); if (save) save.remove();
     const kind = box.querySelector('.kind');
-    if (kind) kind.innerHTML = ['Unlisted point: not hand-checked', ...kind.innerHTML.split(' · ').filter(t => t !== 'Unlisted')].join(' · ');
+    // A point with no forecast has no other tags: without the empty one dropped, the line ended " · ".
+    if (kind) kind.innerHTML = ['Unlisted point: not hand-checked', ...kind.innerHTML.split(' · ').filter(t => t && t !== 'Unlisted')].join(' · ');
+    // Outside England, the official source there in place of the sentence about the Environment Agency.
+    const chk = d.outside && (OUTSIDE[d.outside] || {}).see && box.querySelector('.check');
+    if (chk) chk.innerHTML = `${CHECK_SIGNS} ${OUTSIDE[d.outside].see}`;
     const acts = box.querySelector('.actions');
     if (acts) {   // the spot's share, picture and swim-log buttons, and their notes
       let el = acts.nextElementSibling;
@@ -412,7 +442,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, forecast,
-    frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, locate, place, tileKey, squares, point, open, onMapClick };
+    frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

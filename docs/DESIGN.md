@@ -708,6 +708,15 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
 - A click in Wales or Scotland, or on their estuaries, reads "Not covered by the forecast" and "SwimSignal
   has overflow data for England only, so it has no forecast here.", with no request button. The overflow
   data covers England only, so "No sewage risk" there would be false (`outside_england.json`).
+- A click anywhere on the island of Ireland, or on its sea loughs, reads the same, ending "no forecast in
+  Northern Ireland." or "no forecast in the Republic of Ireland." (4 October 2026). Before, it read "No river
+  or lake near this point has a monitored storm overflow within 60 km upstream", which SwimSignal had no
+  basis for: its river map has no link there and it reads no Irish overflow data.
+- On the island of Ireland the card's sentence "This is not a designated bathing water, so the Environment
+  Agency does not test it for bathing" gives way to the official source there, after "A forecast, not a water
+  test: check the signs at the water before you swim.": DAERA's Bathing Water Quality Dashboard in Northern
+  Ireland, and the Environmental Protection Agency's beaches.ie in the Republic. The words say who
+  publishes what, and nothing about the water.
 
 ### What was kept on purpose
 

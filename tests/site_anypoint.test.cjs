@@ -115,6 +115,45 @@ test('a click in Wales or Scotland says England only, even where the squares hav
   assert.equal(A.place(c.lat, c.lon, { ...files, outside }).mode, 'river');   // the synthetic river is not in Wales
 });
 
+// The island of Ireland, in the same file. SwimSignal's river network has no link there and it reads
+// no Irish overflow data, so before this a click in Belfast or Dublin found no square and said "No river
+// or lake near this point has a monitored storm overflow within 60 km upstream" (live site, 4 Oct 2026).
+// Each place below was checked against the source boundaries themselves (ONS for Northern Ireland,
+// Tailte Éireann for the Republic), with how far it is from the border where that is close.
+const NI = { 'Lagan in Belfast': [54.5866, -5.9295], 'Erne at Enniskillen': [54.3448, -7.6385], 'Foyle at Derry': [54.9966, -7.3190],
+  'Strabane, east of the Foyle (1.1 km from the border)': [54.8265, -7.4610], 'Belleek, on the Erne (400 m from the border)': [54.4770, -8.0850],
+  'Belfast Lough': [54.69, -5.78], 'the middle of Lough Foyle (4.9 km from Northern Ireland, 6.3 km from the Republic)': [55.10, -7.10] };
+const ROI = { 'Liffey in Dublin': [53.3461, -6.2733], 'Shannon at Athlone': [53.4239, -7.9407], 'Lough Derg at Mountshannon': [52.9293, -8.42816],
+  'Lifford, west of the Foyle (450 m from the border)': [54.8340, -7.4870], 'Ballyshannon, on the Erne': [54.5025, -8.1880],
+  'Galway': [53.274, -9.049], 'Dingle': [52.1408, -10.2686], 'Dublin Bay': [53.33, -6.13] };
+test('a click in Northern Ireland or the Republic says England only and names the official source there', () => {
+  for (const [what, [lat, lon]] of Object.entries(NI)) assert.equal(A.outsideWhere(lat, lon, outside), 'northern_ireland', what);
+  for (const [what, [lat, lon]] of Object.entries(ROI)) assert.equal(A.outsideWhere(lat, lon, outside), 'republic_of_ireland', what);
+  const ni = A.place(54.5866, -5.9295, { ...files, tiles: {}, outside });
+  assert.equal(ni.mode, 'none');
+  assert.equal(ni.outside, 'northern_ireland');
+  assert.equal(ni.error, 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.');
+  const roi = A.place(53.3461, -6.2733, { ...files, tiles: {}, outside });
+  assert.equal(roi.error, 'SwimSignal has overflow data for England only, so it has no forecast in the Republic of Ireland.');
+  assert.match(A.OUTSIDE.northern_ireland.see, /href="https:\/\/www\.daera-ni\.gov\.uk\/articles\/bathing-water-quality-dashboard"/);
+  assert.match(A.OUTSIDE.republic_of_ireland.see, /href="https:\/\/www\.beaches\.ie\/"/);
+  // Nothing about the water itself: no level, no "no overflow", no "clean".
+  for (const w of Object.values(A.OUTSIDE)) assert.doesNotMatch(w.error + w.see, /no sewage|no overflow|clean|safe|low risk/i);
+});
+
+test('Wales, Scotland and England keep their answers beside the Irish part', () => {
+  const gb = { 'Taff in Cardiff': [51.48, -3.18], 'Tweed at Kelso': [55.60, -2.43], 'Kintyre, 23 km from the island of Ireland': [55.30, -5.75],
+    'Portpatrick': [54.84, -5.12] };
+  for (const [what, [lat, lon]] of Object.entries(gb)) assert.equal(A.outsideWhere(lat, lon, outside), 'wales_scotland', what);
+  assert.equal(A.place(51.48, -3.18, { ...files, tiles: {}, outside }).error, 'SwimSignal has overflow data for England only, so it has no forecast here.');
+  for (const [lat, lon] of [[54.047, -1.953], [55.77, -2.005], [51.70, -2.50], [51.46, -0.31], [54.0, -2.0]]) assert.equal(A.outsideWhere(lat, lon, outside), '');
+  // A file from before Ireland was added has no parts: all of it is Wales and Scotland.
+  const old = { geometry: { coordinates: [[[[-4, 52], [-3, 52], [-3, 53], [-4, 53]]]] } };
+  assert.equal(A.outsideWhere(52.5, -3.5, old), 'wales_scotland');
+  assert.equal(A.outsideWhere(52.5, -2.5, old), '');
+  assert.equal(A.outsideWhere(52.5, -3.5, null), '');
+});
+
 test('a click in England with no square near says no overflow is upstream, not England only', () => {
   const got = A.place(54.0, -2.0, { ...files, tiles: {}, outside });
   assert.equal(got.mode, 'none');
