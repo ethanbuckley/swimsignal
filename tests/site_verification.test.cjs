@@ -39,8 +39,10 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s
 
 test('the spill figures lead, and the share right sits beside the always-no share in one sentence', async () => {
   const a = text((await render({...live({warning_table: SPILL, overall: OVERALL})})).answer.innerHTML);
-  assert.match(a, /warned of 21% of spills: as a yes-or-no warning at the High risk line it misses most, though read as a chance it beats each overflow's long-run rate \(the 28% lower error below\)\./);
-  assert.match(a, /When it warned, a spill followed 42% of the time, against 3% across all forecasts, so a warning made a spill about 14 times as likely\./);
+  // Short sentences, one idea each.
+  assert.match(a, /the spill forecast warned of 21% of spills\. As a yes-or-no warning at the High risk line, it misses most\. Read as a chance, it beats each overflow's long-run rate, with 28% lower error\./);
+  assert.match(a, /When it warned, a spill followed 42% of the time, against 3% across all forecasts\. A warning made a spill about 14 times as likely\./);
+  assert.match(a, /against 96\.9% for saying "no spill" every time\. Spills are rare, so a share right says little on its own\./);
   const sentence = a.split(/(?<=\.) /).find(s => s.includes('96.6%'));
   assert.ok(sentence.includes('96.9%') && sentence.includes('"no spill" every time'), sentence);
   assert.match(a, /5 days so far, too few to judge/);
@@ -58,8 +60,8 @@ test('a live error no better than the long-run rate is said so, and a rare base 
   const worse = {calibrated: {brier: 0.05}, climatology_brier: 0.04};
   const rare = {...SPILL, base_rate: 0.004, warning_lift: 1.4};
   const a = text((await render({...live({warning_table: rare, overall: worse})})).answer.innerHTML);
-  assert.match(a, /misses most, and read as a chance it does no better than each overflow's long-run rate\./);
-  assert.match(a, /against 0\.4% across all forecasts, so a warning made a spill 1\.4 times as likely/);
+  assert.match(a, /misses most\. Read as a chance, it does no better than each overflow's long-run rate\./);
+  assert.match(a, /against 0\.4% across all forecasts\. A warning made a spill 1\.4 times as likely/);
   const none = text((await render({...live({warning_table: {...SPILL, hits: 0, false_alarms: 0, warnings_true: null, warning_lift: null}})})).answer.innerHTML);
   assert.match(none, /It gave no warnings\./);
 });
@@ -79,7 +81,7 @@ test('enough E. coli samples get the shares, the always-no share beside the shar
   const many = {...ECOLI, n: 300, hits: 12, misses: 18, false_alarms: 30, quiet_correct: 240, hit_rate: 0.4, warnings_true: 12 / 42,
                 share_correct: 252 / 300, always_no_correct: 270 / 300, base_rate: 30 / 300, warning_lift: (12 / 42) / (30 / 300), too_few_to_judge: false};
   const a = text((await render({...live({ecoli_live: {warning_table: many}})})).answer.innerHTML);
-  assert.match(a, /warned before 40% of those over 900\. When it warned, the sample was over 900 29% of the time, against 10% of all samples, so a warning made a sample over 900 about 3 times as likely\./);
+  assert.match(a, /warned before 40% of those over 900\. When it warned, the sample was over 900 29% of the time, against 10% of all samples\. A warning made a sample over 900 about 3 times as likely\./);
   assert.match(a, /right on 84\.0% of samples, against 90\.0% for never warning/);
   assert.ok(!/Too few/.test(a));
 });
@@ -88,6 +90,15 @@ test('shares that round alike get a second decimal place', async () => {
   const close = {...SPILL, share_correct: 0.9691, always_no_correct: 0.9694};
   const a = text((await render({...live({warning_table: close})})).answer.innerHTML);
   assert.match(a, /right on 96\.91% of forecasts, against 96\.94%/);
+});
+
+test('the held-out ranking is pairs, never a percentage that reads as a share of forecasts right', async () => {
+  // The 2025 test as verification.json carries it: AUC 0.93, 33% lower error.
+  const ho = {model: 'dipcast', n: 826725, brier: 0.0661, log_loss: 0.24, auc: 0.9312, brier_skill_vs_clim: 0.331};
+  const t = text((await render({...live({warning_table: SPILL, overall: OVERALL}), holdout: [ho]})).short.innerHTML);
+  assert.match(t, /Pairs ranked the right way round 93 in 100 Given one overflow-day that spilled and one that did not, the forecast gave the spill the higher chance 93 times in 100\. A ranking, not a share of forecasts right\./);
+  assert.match(t, /the error was 33% lower than always forecasting each overflow's long-run rate\. Given one day that spilled and one that did not, it gave the spill the higher chance 93 times in 100\./);
+  assert.ok(!/93%/.test(t) && !/ranked above/.test(t), t);
 });
 
 test('a data file from before these fields still renders, with no warnings section', async () => {

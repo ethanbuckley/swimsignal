@@ -263,12 +263,13 @@ const were = (k, one = 'was', many = 'were') => k === 1 ? one : many;
 // A share under 1% keeps a decimal place, so a rare event never reads as 0%.
 const pLow = x => x > 0 && x < 0.01 ? (100 * x).toFixed(1) + '%' : p0(x);
 // How much likelier the event was after a warning than across all forecasts (warning_lift), in words.
-const likelier = (lift, what) => lift >= 2 ? `so a warning made ${what} about ${Math.round(lift)} times as likely`
-  : lift > 1 ? `so a warning made ${what} ${lift.toFixed(1)} times as likely` : `so a warning made ${what} no likelier`;
-// After a warning against across all forecasts, with how much likelier: "When it warned, a spill followed
-// 42% of the time, against 3% across all forecasts, so ...". Null when nothing was warned or nothing happened.
+const likelier = (lift, what) => lift >= 2 ? `A warning made ${what} about ${Math.round(lift)} times as likely`
+  : lift > 1 ? `A warning made ${what} ${lift.toFixed(1)} times as likely` : `A warning made ${what} no likelier`;
+// After a warning against across all forecasts, then how much likelier, as two sentences: "When it warned, a
+// spill followed 42% of the time, against 3% across all forecasts. A warning made ...". Null when nothing was
+// warned or nothing happened.
 const afterWarning = (T, event, across, what) => T.warnings_true === null || !T.base_rate ? null
-  : `When it warned, ${event} ${p0(T.warnings_true)} of the time, against ${pLow(T.base_rate)} ${across}, ${likelier(T.warning_lift, what)}`;
+  : `When it warned, ${event} ${p0(T.warnings_true)} of the time, against ${pLow(T.base_rate)} ${across}. ${likelier(T.warning_lift, what)}`;
 function grid(T, label, yes, no, quiet) {
   return `<table class="grid" aria-label="${label}"><tr><th></th><th class="num">${yes}</th><th class="num">${no}</th></tr>`
     + `<tr><th scope="row">Warning (${Math.round(100 * T.warn_at)}% or more)</th><td class="num">${n0(T.hits)}<span>hits</span></td><td class="num">${n0(T.false_alarms)}<span>false alarms</span></td></tr>`
@@ -282,12 +283,13 @@ function answer(d) {
     // The "Lower error, live" tile below, from the same scores: the forecast read as a chance. Said beside the
     // hit rate, so a reader does not see a contradiction between a lower error and most spills missed.
     const O = L.overall, skill = O && O.climatology_brier ? Math.round(100 * (1 - O.calibrated.brier / O.climatology_brier)) : null;
-    const asChance = skill === null ? '' : skill > 0 ? `, though read as a chance it beats each overflow's long-run rate (the ${skill}% lower error below)`
-      : `, and read as a chance it does no better than each overflow's long-run rate`;
-    const warned = W.hit_rate === null ? 'had no spill to warn of'
-      : `warned of ${p0(W.hit_rate)} of spills${W.hit_rate < 0.5 ? `: as a yes-or-no warning at the High risk line it misses most${asChance}` : ''}`;
+    // Short sentences, one idea each (4 Oct 2026): the first was three clauses joined by a colon and "though".
+    const asChance = skill === null ? '' : skill > 0 ? ` Read as a chance, it beats each overflow's long-run rate, with ${skill}% lower error.`
+      : ` Read as a chance, it does no better than each overflow's long-run rate.`;
+    const warned = W.hit_rate === null ? 'had no spill to warn of.'
+      : `warned of ${p0(W.hit_rate)} of spills.${W.hit_rate < 0.5 ? ` As a yes-or-no warning at the High risk line, it misses most.${asChance}` : ''}`;
     const after = afterWarning(W, 'a spill followed', 'across all forecasts', 'a spill');
-    t += `<p>Since ${day(W.first_day)}, the spill forecast ${warned}. ${after ? after + '.' : 'It gave no warnings.'} It was right on ${right} of forecasts, against ${no} for saying "no spill" every time: spills are rare, so a share right says little on its own.${W.n_days < 14 ? ` That is ${W.n_days} day${W.n_days === 1 ? '' : 's'} so far, too few to judge across different weather.` : ''}</p>`;
+    t += `<p>Since ${day(W.first_day)}, the spill forecast ${warned} ${after ? after + '.' : 'It gave no warnings.'} It was right on ${right} of forecasts, against ${no} for saying "no spill" every time. Spills are rare, so a share right says little on its own.${W.n_days < 14 ? ` That is ${W.n_days} day${W.n_days === 1 ? '' : 's'} so far, too few to judge across different weather.` : ''}</p>`;
     t += grid(W, 'Spill forecasts against what the overflows did', 'Spilled', 'No spill', 'correct quiet days');
     t += `<p class="small muted">Each count is one forecast: one overflow on one day, made from four days ahead to the morning itself. The ${n0(W.n_spill_overflow_days)} overflow-days with a spill make ${n0(W.hits + W.misses)} forecasts. A warning is a spill chance of ${Math.round(100 * W.warn_at)}% or more: where a spot beside the overflow reads High risk, the level at which alerts are sent. <a href="#live-scoring">The full scores</a>.</p>`;
     // Wessex Water's figure, its label checked on https://www.waterqualitylive.info/ on 4 Oct 2026: "Accuracy of
@@ -356,13 +358,16 @@ function inShort(d) {
   const eo = E.overall, eSkill = eo && eo.climatology_brier > 0 ? 1 - eo.brier / eo.climatology_brier : null;
   const ecoliVerdict = eSkill === null ? 'scored' : eSkill <= 0 ? 'no better than the average rate' : eSkill < 0.05 ? 'about the same as the average rate' : `${Math.round(100 * eSkill)}% lower error than the average rate`;
   const tile = (v, l, dd) => `<div class="stat"><dt class="l">${l}</dt><dd class="v">${v}</dd><dd class="d">${dd}</dd></div>`;
+  // The AUC as pairs, not a percentage (4 Oct 2026): "93%" under "warned of 21% of spills" read as the share of
+  // forecasts right, and 93% is also NSW Beachwatch's headline accuracy, a different measure.
+  const pairs = ho ? `${Math.round(100 * ho.auc)} times in 100` : '';
   const tiles = [
-    ho ? tile(`${Math.round(100 * ho.auc)}%`, 'Spill days ranked above dry days', `On a year the model never saw: ${ho.n.toLocaleString()} overflow-days, United Utilities, 2025.`) : '',
+    ho ? tile(`${Math.round(100 * ho.auc)} in 100`, 'Pairs ranked the right way round', `Given one overflow-day that spilled and one that did not, the forecast gave the spill the higher chance ${pairs}. A ranking, not a share of forecasts right. On a year the model never saw: ${ho.n.toLocaleString()} overflow-days, United Utilities, 2025.`) : '',
     ho ? tile(`${Math.round(100 * ho.brier_skill_vs_clim)}%`, 'Lower error than the long-run rate', 'Same test. The long-run rate is each overflow\'s own average spill rate.') : '',
     tile(liveSkill === null ? '–' : `${liveSkill}%`, 'Lower error, live', liveSkill === null ? 'Nothing scored yet.' : `${L.n_scored.toLocaleString()} overflow-days scored${fromClause(L)}, against what the overflows then did.`),
     tile(E.n_samples ? E.n_samples.toLocaleString() : '0', 'Lab samples scored', E.n_samples ? `Environment Agency E. coli samples at ${E.n_sites} site${E.n_sites === 1 ? '' : 's'} so far.` : 'No Environment Agency E. coli samples scored yet.'),
   ].join('');
-  if (ho) pts.push(`<b>Spill forecasts, on a year the model never saw</b> (${ho.n.toLocaleString()} overflow-days at United Utilities in 2025): a spill day was ranked above a dry day ${Math.round(100 * ho.auc)}% of the time, and the error was ${Math.round(100 * ho.brier_skill_vs_clim)}% lower than always forecasting each overflow's long-run rate.`);
+  if (ho) pts.push(`<b>Spill forecasts, on a year the model never saw</b> (${ho.n.toLocaleString()} overflow-days at United Utilities in 2025): the error was ${Math.round(100 * ho.brier_skill_vs_clim)}% lower than always forecasting each overflow's long-run rate. Given one day that spilled and one that did not, it gave the spill the higher chance ${pairs}.`);
   if (hi) pts.push(`<b>Offline, over-confident at the top end:</b> days forecast at about ${Math.round(100 * hi.forecast)}% had a spill ${Math.round(100 * hi.observed)}% of the time.`);
   if (L.n_scored && L.overall) {
     pts.push(`<b>Live, against what the overflows then did:</b> ${L.n_scored.toLocaleString()} overflow-days scored${fromClause(L)}; the error is ${liveSkill}% lower than the long-run rate's.${short ? ` So far that is ${short} target day${short === 1 ? '' : 's'}, too few to judge across different weather.` : ''} <a href="#live-scoring">Details</a>`);
