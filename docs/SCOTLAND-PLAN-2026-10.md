@@ -123,6 +123,15 @@ Not checked: I did not open either file. Downloading files was outside what this
 without Ethan's approval, so I read only their size and type (HEAD requests). How many overflows
 and events each holds, and whether its ids match the API's `ASSET_ID`, is task S1's first job.
 
+**Added 4 October 2026, evening: SEPA's own event file.** Checked, the page and SEPA's data
+terms; the file was not opened. SEPA's improving urban waters page
+(sepa.org.uk/environment/water/improving-urban-waters/) offers "Overflow events reported to SEPA",
+January 2020 to December 2025, for Scottish Water and PFI permits in one spreadsheet (6,315,560
+bytes, modified 13 August 2026). PFI overflows are run by private contractors, so they are not in
+Scottish Water's files. The page states no licence. SEPA's default data terms allow
+non-commercial use of "Our Data", narrowly defined, and exclude third-party data. *Inferred:* it
+could fill the PFI gap. Email 8.2 should ask SEPA whether the Open Government Licence applies.
+
 *Inferred:* the 2025-only overflows have one year of history, too little for the calibration layer
 to move far from the pooled model (its prior is worth 15 spill-days), but enough to score it.
 
@@ -413,6 +422,10 @@ Subject: Reusing bathing water results and daily predictions on a free swimming 
 >    research, or do you need a request from us?
 > 4. Freshwater sites. Are Luss Bay, Dores and Loch Morlich the only freshwater designated bathing
 >    waters?
+>
+> 5. Overflow events. Your improving urban waters page offers "Overflow events reported to SEPA",
+>    2020 to 2025, including PFI permits. Is it under the Open Government Licence? May we use it
+>    to test our spill forecasts and publish the scores?
 >
 > Thank you,
 > Ethan Buckley, SwimSignal (hello@swimsignal.co.uk)
