@@ -120,6 +120,18 @@ test('two spots rising for one subscriber make one combined push', async () => {
   assert.deepEqual(t.pushes[0].payload, { title: '2 of your saved spots are at high or very high risk', body: 'Aston, Bray', url: `${SITE}saved/`, tag: 'dipspot-saved' });
 });
 
+test('one spot: the headline, then what to do, as the page says them under the level', async () => {
+  const t = await setup({ state: { generated_at: T1, ranks: { b: 1 } }, users: { ann: ['b'] } });
+  const [id, s] = spot('b', 3, 'Bray');
+  await t.run(alertsJson(T2, [[id, { ...s, headline: 'Very high risk right now: sewage spills',
+    action: 'Avoid swimming here right now: choose a lower day or spot.' }]]));
+  assert.equal(t.pushes[0].payload.body, 'Very high risk right now: sewage spills. Avoid swimming here right now: choose a lower day or spot.');
+  // An alerts.json from before the action: the headline alone, as before.
+  const u = await setup({ state: { generated_at: T1, ranks: { b: 1 } }, users: { ann: ['b'] } });
+  await u.run(alertsJson(T2, [spot('b', 3, 'Bray')]));
+  assert.equal(u.pushes[0].payload.body, 'Bray headline');
+});
+
 test('a combined body is cut to 200 characters', async () => {
   const ids = Array.from({ length: 12 }, (_, i) => `s${i}`);
   const t = await setup({ state: { generated_at: T1, ranks: {} }, users: { ann: ids } });
