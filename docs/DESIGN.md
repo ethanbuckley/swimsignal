@@ -679,6 +679,36 @@ gives all four navigation links a single full-width row.
   name over what it holds: in a two-column table the long field names squeezed the words into a
   column a few words wide on a phone.
 
+## Organisers, signs and the live sign (4 October 2026)
+
+- **The organisers' page**, `organisers.html` (`organisers.js`), is a prose page, linked from the app's
+  foot ("For event organisers"), from one line under every spot's actions and from About. A spot and a
+  day are chosen at the top and kept after the #. Within the five days the day's level is set as a saved
+  card sets it (20 px bold, the level's text shade), with a 4 px rule in the level's mark colour at its
+  left; the day detail's rows follow as a ruled list (`dl.fields`), in the spot page's words (`spilling`
+  and `howSure` are copies, and a test checks `index.html` still has them). Beyond the five days it says
+  when the day's forecast first appears (four days before, as the last of its five) and what is known
+  now. Always: the overflows upstream as a table, which on a phone becomes a block per overflow, the
+  name over its figures two to a line, each with its label; a CSV with the credits; and the checklist,
+  which is in the page so that it prints without a script. Printed: A4, no controls.
+- The overflows are the forecast's `contributors`, at most ten (`KEEP_CONTRIBUTORS`); where more are
+  upstream the page says how many it does not list. They are ordered by reach, which does not change
+  with the weather, since an event can be weeks away.
+- **The sign**, `spot/<id>/sign/`, is a white sheet, centred: the mark and wordmark, the name in the
+  serif, one line on what the forecast is, the QR code (black on white, made at build time by
+  `src/dipcast/signs.py`), the short address, the caveat in bold under a hairline, and one line of
+  credit. It gives no level: printed, a level is out of date within hours. It has no script, and asks
+  search engines to leave it out.
+- **The live sign**, `embed.html?spot=<id>&screen`, is the embed's card in two columns on the paper: the
+  answer and the caveat on the left, the five days on the right, the QR code and address at the bottom
+  left, when it last checked at the bottom right. It asks for the forecast every 20 minutes and redraws
+  every minute; the 8 h stale notice says whether the build or the screen's connection is behind.
+- Both signs are read from metres away, where 36 px is small. Each is laid out in the six sizes at a
+  fixed size and zoomed whole: the sign at A6, printed at twice that on A4; the live sign at 960 by 540,
+  zoomed to the screen (twice at 1920 by 1080). The steps between the sizes stay the system's.
+- None of the three is stored ahead in the offline copy: they are used with a connection, at a desk or
+  on a screen, and the live sign must show the newest forecast. A page once visited is kept, as any is.
+
 ## The coverage page (3 October 2026)
 
 - `coverage.html` is a prose page, linked from the app's foot as "Coasts, Wales, Scotland and algae".

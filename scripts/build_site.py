@@ -933,7 +933,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html"] + [f"{root}spot/{i}/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html"] + [f"{root}spot/{i}/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -984,6 +984,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root), token))
+        write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat()))
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
@@ -991,6 +992,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / ".nojekyll").write_text("")
     write_data_page(site, token)   # lists what is in data/, so build() writes the data files first
     write_embed(site)
+    write_organisers(site, token)
     return len(ids)
 
 
@@ -1099,6 +1101,43 @@ def write_embed(site: Path) -> str:
     shutil.copy(TEMPLATE.parent / "embed.js", site / "embed.js")
     (site / "embed.html").write_text(page)
     return v
+
+
+# The organisers' page, organisers.html: a prose page for event organisers (organisers.js says what is
+# on it), with its scripts versioned as the embed's are. And a sign to print for every spot with a page,
+# spot/<id>/sign/, with the QR code made here (src/dipcast/signs.py); the same code as a file,
+# spot/<id>/qr.svg, is what the live sign (embed.html?spot=<id>&screen) shows. None of them is in the
+# offline copy (sw.js): they are used at a desk or on a screen with a connection, ahead of the swim, and
+# the live sign must show the newest forecast, so storing them would only make every visitor's offline
+# copy larger. A sign asks search engines to leave it out, and the sitemap lists only the organisers' page.
+ORGANISERS = TEMPLATE.parent / "organisers.html"
+REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
+ORGANISERS_SCRIPTS = ('<script src="levels.js"></script>', '<script src="organisers.js"></script>')
+
+
+def write_organisers(site: Path, token: str | None = None) -> str:
+    """organisers.html and organisers.js beside the app (which has levels.js and spots.json). Returns
+    the scripts' version."""
+    h = hashlib.sha256()
+    for f in ("levels.js", "organisers.js"):
+        h.update((TEMPLATE.parent / f).read_bytes())
+    v = h.hexdigest()[:8]
+    page = ORGANISERS.read_text()
+    for tag in ORGANISERS_SCRIPTS:
+        if tag not in page:
+            raise ValueError(f"organisers.html has lost {tag}, which the build versions")
+        page = page.replace(tag, tag.replace('.js"', f'.js?v={v}"'), 1)
+    shutil.copy(TEMPLATE.parent / "organisers.js", site / "organisers.js")
+    (site / "organisers.html").write_text(with_counter(page, token))
+    return v
+
+
+def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> None:
+    """A spot's sign, spot/<id>/sign/index.html, and its QR code as a file, spot/<id>/qr.svg."""
+    from dipcast.signs import page_url, qr_file, sign_page
+    (site / "spot" / spot["id"] / "sign").mkdir(parents=True, exist_ok=True)
+    (site / "spot" / spot["id"] / "sign" / "index.html").write_text(with_counter(sign_page(spot, root, MARK), token))
+    (site / "spot" / spot["id"] / "qr.svg").write_text(qr_file(page_url(root, spot["id"])))
 
 
 def build(refresh: bool = True) -> dict:

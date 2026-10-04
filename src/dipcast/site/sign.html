@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- A printable sign for one listed spot, spot/<id>/sign/: src/dipcast/signs.py fills the slots in double braces
+     and writes one per spot (scripts/build_site.py, write_pages). It needs no script: the QR code is an
+     SVG made at build time. The page is for printing, not for search, so it asks to be left out. -->
+<base href="../../../">
+<title>Sign to print: {{name}} · SwimSignal</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The sheet is laid out at A6 in the six type sizes (page.css) and printed at twice that, on A4
+     portrait (zoom: 2): a sign is read from a few metres, where 36 px is too small, and doubling the
+     whole sheet keeps its proportions without a seventh size. On screen it is shown at A6, a white
+     sheet on the paper, larger on a wide screen. docs/DESIGN.md, "Organisers, signs and the live sign". */
+  .sheet { display:flex; flex-direction:column; align-items:center; gap:3mm; width:105mm; max-width:100%; min-height:148mm;
+           margin:0 auto 48px; padding:8mm 7mm 6mm; background:var(--card); border-radius:var(--radius); text-align:center; color:var(--ink); }
+  @media (min-width: 900px) { .sheet { zoom:1.5; } }
+  .s-brand { display:inline-flex; align-items:center; gap:2mm; margin:0; font:600 var(--fs-note)/1 var(--font-display); }
+  .s-brand svg { display:block; width:6mm; height:6mm; border-radius:var(--radius-mark); }
+  .s-name { margin:1mm 0 0; font:600 var(--fs-title)/1.1 var(--font-display); letter-spacing:-.01em; text-wrap:balance; overflow-wrap:anywhere; }
+  .s-what { margin:0; font-size:var(--fs-note); line-height:1.35; text-wrap:balance; }
+  .s-qr { flex:1 1 auto; display:flex; align-items:center; justify-content:center; width:100%; min-height:34mm; }
+  .s-qr svg { display:block; width:auto; height:100%; max-width:100%; max-height:56mm; aspect-ratio:1; }
+  .s-scan { margin:0; font-size:var(--fs-note); line-height:1.3; }
+  .s-url { display:block; font-weight:700; overflow-wrap:anywhere; }
+  .s-check { margin:0; padding-top:2.5mm; border-top:1px solid var(--line); font:700 var(--fs-note)/1.3 var(--font-text); text-wrap:balance; }
+  .s-credit { margin:0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); text-wrap:balance; }
+  /* Printed: the sheet alone, filling the A4 page. */
+  @page { size:A4 portrait; margin:0; }
+  @media print {
+    body { background:var(--card); }
+    .top, .doc, .site-foot { display:none; }
+    .sheet { zoom:2; width:105mm; height:148mm; min-height:0; max-width:none; margin:0; border-radius:0; overflow:hidden; break-inside:avoid; }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./">{{mark}}SwimSignal</a>
+<nav aria-label="Site"><a href="./">Explore</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>A sign for {{name}}</h1>
+<p class="lead">Print this page on A4, portrait, and put it up where swimmers will see it, with the landowner's or the venue's agreement.</p>
+<ul>
+<li>It gives no level: printed, a level would be out of date within hours. The QR code and the address open the spot's forecast, which is updated several times a day.</li>
+<li>It needs no colour printer. Print at actual size; a printer's "fit to page" makes it slightly smaller, which still scans.</li>
+<li>For a screen at the venue, the <a href="{{live}}">live sign</a> shows the forecast and updates itself. The <a href="{{organisers}}">organisers' page</a> lists the overflows upstream.</li>
+</ul>
+</main>
+<article class="sheet" aria-label="The sign">
+<p class="s-brand">{{mark}}SwimSignal</p>
+<h2 class="s-name">{{name}}</h2>
+<p class="s-what">A five-day pollution risk forecast for this spot, from the water companies' live sewage-overflow data and rainfall forecasts.</p>
+<div class="s-qr">{{qr}}</div>
+<p class="s-scan">Scan for the forecast, or go to<span class="s-url">{{short}}</span></p>
+<p class="s-check">Not a safety check: look at the signs at the water before you swim.</p>
+<p class="s-credit">{{credit}}</p>
+</article>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>

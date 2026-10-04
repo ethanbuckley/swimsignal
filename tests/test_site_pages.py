@@ -62,7 +62,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 10 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
+    assert sm.count("<url>") == 11 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
     assert "<loc>https://example.org/swim/data.html</loc>" in sm and (tmp_path / "data.html").exists()
@@ -469,6 +469,7 @@ def test_the_embed_fits_a_column_320_px_wide():
     # (checked in Chrome on 3 Oct 2026, and on 4 Oct with the full credits: no spot's card overflowed
     # at 320, 375 or 480 px).
     css = "\n".join(re.findall(r"<style>(.*?)</style>", (ROOT / "src" / "dipcast" / "site" / "embed.html").read_text(), re.DOTALL))
+    css = re.sub(r"[^{}]*\.screen[^{}]*\{[^}]*\}", "", css)   # the live sign's rules: a screen, not a frame (below)
     card = re.search(r"\.card \{([^}]*)\}", css).group(1)
     pad = [int(x) for x in re.search(r"padding:(\d+)px (\d+)px", card).groups()]
     border = int(re.search(r"border:(\d+)px", card).group(1))
@@ -529,3 +530,84 @@ def test_the_api_server_serves_the_data_page():
     from dipcast.api import app as api
     r = TestClient(api.app).get("/data")
     assert r.status_code == 200 and "<h1>Data files</h1>" in r.text
+
+
+def _modules(d: str, size: int, border: int = 4) -> list[list[int]]:
+    """A QR code's modules, 1 for dark, from segno's SVG path: a row of runs ("h7") and moves ("m2 0")
+    for each line of the symbol, drawn half a module down. The quiet zone round it is cut off."""
+    grid, x, y = [[0] * size for _ in range(size)], 0.0, 0.0
+    for cmd, a, b in re.findall(r"([Mmh])(-?[\d.]+)(?: (-?[\d.]+))?", d):
+        if cmd == "M":
+            x, y = float(a), float(b)
+        elif cmd == "m":
+            x, y = x + float(a), y + float(b)
+        else:
+            for i in range(round(x), round(x + float(a))):
+                grid[int(y)][i] = 1
+            x += float(a)
+    return [row[border:size - border] for row in grid[border:size - border]]
+
+
+def test_the_organisers_page_is_a_prose_page_with_its_scripts_versioned_and_linked(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-04")
+    page = (tmp_path / "organisers.html").read_text()
+    v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', page).group(1)
+    assert f'<script src="organisers.js?v={v}"></script>' in page and v == bs.write_organisers(tmp_path)
+    assert (tmp_path / "organisers.js").exists()
+    assert "<title>Event organisers · SwimSignal</title>" in page and '<header class="top">' in page and 'href="about.html">About</a>' in page
+    assert 'href="/' not in page and "cloudflareinsights" in page   # flat links, and the counter as on the other prose pages
+    assert "<loc>https://example.org/swim/organisers.html</loc>" in (tmp_path / "sitemap.xml").read_text()
+    # The checklist links the two pages it is drawn from, and is in the page, so it works and prints without a script.
+    assert "events.britishtriathlon.org/uploads/content/Water%20Quality%20Guidance.pdf" in page
+    assert "swimming.org/swimengland/running-your-club/" in page
+    assert '<ol class="checklist">' in page.split('<script src="levels')[0] and "@page { size:A4 portrait" in page
+    # Linked from the app's foot, from every spot's actions (one line in index.html) and from About.
+    template = bs.TEMPLATE.read_text()
+    assert '<a href="organisers.html">For event organisers</a>' in template
+    assert template.count('organisers.html#spot=${encodeURIComponent(d.id)}') == 1
+    assert 'href="organisers.html"' in (tmp_path / "about.html").read_text()
+
+
+def test_every_spot_with_a_page_gets_a_sign_to_print_that_shows_no_level(tmp_path):
+    import segno
+    bs = _build_site()
+    osm = {"id": "osm-x", "name": "River X, Pool", "kind": "river", "source": "openstreetmap", "upstream_summary": {"overflows": 1}, "days": []}
+    bs.write_pages(tmp_path, [*SPOTS, osm], root="https://example.org/swim/")
+    assert not (tmp_path / "spot" / "Bad Id").exists()   # no page, so no sign
+    sign = (tmp_path / "spot" / "wharfe-ilkley" / "sign" / "index.html").read_text()
+    head = sign.split("</head>")[0]
+    assert '<base href="../../../">' in head and '<meta name="robots" content="noindex">' in head
+    assert "<title>Sign to print: Wharfe at &quot;Cromwheel&quot; &amp; Ilkley · SwimSignal</title>" in head
+    assert "{{" not in sign and "<script" not in sign   # every slot filled, and nothing to run
+    sheet = sign.split('<article class="sheet"')[1].split("</article>")[0]
+    assert "Not a safety check: look at the signs at the water before you swim." in sheet   # the site's own words (index.html)
+    assert "example.org/swim/spot/<wbr>wharfe-ilkley" in sheet
+    assert sheet.split('class="s-credit">')[1].startswith("SwimSignal is independent") and "Data credits: example.org/swim/terms.html#data" in sheet
+    assert "OpenStreetMap" not in sheet and "Location © OpenStreetMap contributors" in (tmp_path / "spot" / "osm-x" / "sign" / "index.html").read_text()
+    assert not re.search(r"(?i)\b(low|moderate|high) risk\b|no sewage risk|no river connection", sheet)   # printed, a level goes out of date
+    assert "@page { size:A4 portrait; margin:0; }" in sign and "zoom:2" in sign   # laid out at A6, printed at twice that
+    assert "sign/" not in (tmp_path / "sitemap.xml").read_text()
+    # The QR code is the one for the spot's page, on the sign and in the file the live sign shows.
+    m = re.search(r'<svg role="img" aria-label="QR code for example\.org/swim/spot/wharfe-ilkley" viewBox="0 0 (\d+) \d+" class="qr"><path stroke="#000" d="([^"]+)"', sheet)
+    svg = (tmp_path / "spot" / "wharfe-ilkley" / "qr.svg").read_text()
+    assert svg.startswith("<?xml") and f'd="{m.group(2)}"' in svg
+    want = segno.make("https://example.org/swim/spot/wharfe-ilkley/", error="q", micro=False)
+    assert _modules(m.group(2), int(m.group(1))) == [list(r) for r in want.matrix]
+    assert want.error in "QH"   # at least a quarter of the code can be lost and it still reads
+
+
+def test_the_organisers_page_and_the_signs_stay_out_of_the_offline_copy():
+    # Used at a desk or on a screen with a connection, and the live sign must show the newest forecast,
+    # so the worker does not store them ahead (build_site.py says why); a visited page is kept as any is.
+    bs = _build_site()
+    shell = re.search(r"const SHELL = \[(.*?)\];", (bs.TEMPLATE.parent / "sw.js").read_text(), re.DOTALL).group(1)
+    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg"))
+    assert not {bs.ORGANISERS, bs.TEMPLATE.parent / "organisers.js", bs.TEMPLATE.parent / "sign.html"} & set(bs.SHELL_SOURCES)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_organisers_page_and_live_sign_rules():
+    # organisers.js and embed.js's screen mode run in a browser, so their tests are JavaScript.
+    r = subprocess.run(["node", "--test", str(ROOT / "tests" / "site_organisers.test.cjs")], capture_output=True, text=True, timeout=60, check=False)
+    assert r.returncode == 0, r.stdout + r.stderr
