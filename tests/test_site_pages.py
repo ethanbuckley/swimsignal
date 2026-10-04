@@ -286,10 +286,41 @@ def test_the_alerts_file_uses_the_page_rules(tmp_path):
     assert out["generated_at"] == "2026-09-29T08:00:00+01:00"
     assert out["spots"]["a"] == {"name": "A river", "rank": 2, "level": "high", "headline": "High risk today: sewage spills",
                                  "action": "Better to choose a lower day or spot. If you do swim, try not to swallow any water.",
-                                 "url": "https://example.org/swim/spot/a/"}
+                                 "url": "https://example.org/swim/spot/a/",
+                                 "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"}}
     assert out["spots"]["tarn"]["rank"] == -1 and out["spots"]["tarn"]["level"] == "no river connection"
     assert out["spots"]["tarn"]["headline"] == "No river connection: overflows cannot reach this lake"
     assert out["spots"]["tarn"]["action"] == "After heavy rain, wait a couple of days before swimming if you can."
+    assert "best" not in out["spots"]["tarn"]   # the same every day: nothing for the weekly note
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_alerts_file_names_the_lowest_days_ahead(tmp_path):
+    # The weekly note (push/src/weekly.js) says these words as they are: the four days after today,
+    # the lowest level and the days that have it, in levels.js's day words, with "risk".
+    import json
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    dates = ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03"]   # Tuesday to Saturday
+    risk = {"low": 0.05, "moderate": 0.3, "high": 0.5, "very high": 0.8}
+
+    def river(id, labels, **extra):
+        return {"id": id, "name": id, "kind": "river", "upstream_summary": {"overflows": 3}, "location": {"mode": "river"},
+                "now": {"label": "low", "discharging_upstream": 0}, **extra,
+                "days": [{"date": d, "risk": risk[lv], "label": lv} for d, lv in zip(dates, labels)]}
+    spots = [river("two", ["high", "moderate", "low", "moderate", "low"]),
+             river("dry", ["moderate", "low", "low", "low", "low"]),
+             river("wet", ["very high", "moderate", "high", "moderate", "moderate"]),
+             river("first", ["low", "very high", "high", "moderate", "high"]),
+             river("poor", ["low", "low", "low", "low", "low"], classification={"class": "Poor"})]
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": spots}))
+    assert bs.write_alerts(tmp_path, "https://example.org/swim/", push_on=False)
+    out = json.loads((tmp_path / "data" / "alerts.json").read_text())["spots"]
+    assert out["two"]["best"] == {"date": "2026-10-01", "level": "low", "words": "Thursday and Saturday, low risk"}
+    assert out["dry"]["best"]["words"] == "low risk every day from tomorrow to Saturday"
+    assert out["wet"]["best"] == {"date": "2026-09-30", "level": "moderate", "words": "tomorrow, Friday and Saturday, moderate risk"}
+    assert out["first"]["best"] == {"date": "2026-10-02", "level": "moderate", "words": "Friday, moderate risk"}   # today's low is not ahead
+    assert out["poor"]["best"] == {"date": "2026-09-30", "level": "high", "words": "at least high risk every day"}
 
 
 def test_feedback_and_experience_are_built_for_nested_github_pages(tmp_path):
