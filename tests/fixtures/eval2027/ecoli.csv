@@ -1,0 +1,12 @@
+# Made-up E. coli rows for tests/test_evaluate_2027.py, in the layout registered for data/verification_ecoli_live.csv:
+# one row per sample and lead, lead and forecast empty where no forecast came before the sample.
+# R1's 8 June lead 0 forecast was issued after the sample, so it is not a forecast of it. 900 is not over 900.
+bathing_water,kind,sample_time,day,ecoli,observed,lead,issued_at,forecast,version
+R1,river,2027-06-01T10:00+01:00,2027-06-01,1200,1,0,2027-06-01T07:00+01:00,0.3000,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+R1,river,2027-06-01T10:00+01:00,2027-06-01,1200,1,1,2027-05-31T07:00+01:00,0.2000,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+R1,river,2027-06-08T10:00+01:00,2027-06-08,100,0,0,2027-06-08T11:00+01:00,0.0100,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+R1,river,2027-06-08T10:00+01:00,2027-06-08,100,0,1,2027-06-07T07:00+01:00,0.0500,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+R2,river,2027-06-01T09:00+01:00,2027-06-01,900,0,0,2027-06-01T07:00+01:00,0.2500,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+R2,river,2027-06-02T09:00+01:00,2027-06-02,5000,1,,,,
+L1,lake,2027-06-01T12:00+01:00,2027-06-01,50,0,0,2027-06-01T07:00+01:00,0.0200,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+X9,river,2027-06-01T12:00+01:00,2027-06-01,50,0,0,2027-06-01T07:00+01:00,0.0200,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast

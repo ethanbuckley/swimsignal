@@ -508,6 +508,8 @@
   .place .big-head { margin:0; max-width:none; font-size:var(--fs-body); text-align:left; }
   .place-sub { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; }
   .place-sub:empty { display:none; }
+  /* What changed since you last looked (since.js): history, so muted, and never a level's colour. */
+  .place-since { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; color:var(--muted); }
   .group.tile { margin-top:8px; padding:12px 16px 4px; }
   .lead + .group.tile, .lead + .save-hint.tile { margin-top:0; }
   .group.tile ul.places { gap:0; }
@@ -862,6 +864,7 @@
 <script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
+<script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
@@ -1032,7 +1035,11 @@ const SAVED = new Set(allSaved(LISTS));
 const storeLists = () => { try { localStorage.setItem(LISTS_KEY, listsText(LISTS)); localStorage.setItem(SAVED_KEY, JSON.stringify(allSaved(LISTS))); return true; } catch (e) { return false; } };
 const followLists = next => { LISTS = next; SAVED.clear(); allSaved(LISTS).forEach(id => SAVED.add(id)); savedBadge(); };
 // Change the lists. Returns false when the browser would not keep them.
-function setLists(next) { followLists(next); const kept = storeLists(); syncSoon(); return kept; }
+function setLists(next) {
+  followLists(next);
+  if (typeof writeSeen === 'function') writeSeen(SAVED);   // since.js: an unsaved spot's note goes with it
+  const kept = storeLists(); syncSoon(); return kept;
+}
 const listNow = () => shownList(LISTS), manyLists = () => LISTS.lists.length > 1;
 // Another tab changed the lists (or, from a page older than lists, the old key): follow it, or this
 // tab's next change would undo that one. A value that is not lists is not followed.
@@ -1079,12 +1086,14 @@ function pushDeadline(work, message, ms = 20000) {
     .finally(() => clearTimeout(timer));
 }
 async function pushSub() { const reg = canPush() && await pushReg(); return reg ? pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000) : null; }
-async function sendSub(sub) {
+// The weekly note (push/src/weekly.js), as last sent: off unless ticked.
+const weeklyOn = () => { try { return (JSON.parse(localStorage.getItem(PUSH_KEY)) || {}).weekly === true; } catch (e) { return false; } };
+async function sendSub(sub, weekly = weeklyOn()) {
   const spots = [...SAVED].filter(id => DATA.spots.some(s => s.id === id));
   const res = await fetch(DATA.push.url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ subscription: sub.toJSON(), spots }) });
+    body: JSON.stringify({ subscription: sub.toJSON(), spots, weekly }) });
   if (!res.ok) throw new Error(`the alert service answered ${res.status}`);
-  try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, at: Date.now() })); } catch (e) { /* only saves a re-send */ }
+  try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, weekly, at: Date.now() })); } catch (e) { /* only saves a re-send */ }
 }
 async function alertsOn() {
   if (await Notification.requestPermission() !== 'granted') throw new Error('notifications are not allowed for this site');
@@ -1123,10 +1132,12 @@ function alertsCard() {
   const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots turns high or very high, at most once a day for each.`;
   let h = `<section class="sec tile" aria-labelledby="alerts-h"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
   if (DATA.push) {
-    const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
+    const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
       + 'You can turn them off here at any time, which deletes what the alert service holds. An alert can be late or not come at all, so no alert does not mean the water is clean. <a href="privacy.html">Privacy notice</a>.';
     const body = canPush() && offlineOff() ? `<p class="small tight">Alerts need the offline copy, which is turned off in this browser. <a href="#your-data">Turn it back on</a> to use them.</p>`
       : canPush() ? `<button type="button" class="btn" id="alerts-btn" disabled>Turn on alerts</button>`
+        // Shown once alerts are on, since it needs them.
+        + '<label class="rv-consent" id="alerts-week" hidden><input type="checkbox"><span>Also a weekly note on Thursday evenings: the days with the lowest pollution risk, Friday to Monday, at each saved spot.</span></label>'
       : IOS && !navigator.standalone ? `<p class="small tight">On iPhone and iPad, ${DATA.email ? 'notifications' : 'alerts'} work only in the Home Screen app: tap <b>Share</b>, then <b>Add to Home Screen</b>, open SwimSignal from there and save your spots in it.${DATA.email ? ' Or have them by email.' : ''}</p>`
       : `<p class="small tight">This browser cannot show notifications from websites.${DATA.email ? ' You can have alerts by email.' : ''}</p>`;
     h += `<details class="more consent"><summary>What turning alerts on sends</summary><p class="small">${sends}</p></details>${body}<p class="small muted msg" id="alerts-msg" aria-live="polite"></p>`;
@@ -1146,7 +1157,15 @@ function alertsCard() {
 async function bindAlerts() {
   bindEmailAlerts();
   const b = document.getElementById('alerts-btn'), m = document.getElementById('alerts-msg'); if (!b) return;
-  const show = on => { b.disabled = false; b.textContent = on ? 'Turn off alerts' : 'Turn on alerts'; b.dataset.on = on ? '1' : ''; };
+  const w = document.getElementById('alerts-week'), box = w.querySelector('input');
+  const show = on => { b.disabled = false; b.textContent = on ? 'Turn off alerts' : 'Turn on alerts'; b.dataset.on = on ? '1' : ''; w.hidden = !on; box.checked = on && weeklyOn(); };
+  box.addEventListener('change', async () => {
+    const want = box.checked; box.disabled = true; m.textContent = '';
+    try { const sub = await pushSub(); if (!sub) throw new Error('alerts are off in this browser'); await sendSub(sub, want);
+      m.textContent = want ? 'The weekly note is on: Thursday evenings.' : 'The weekly note is off.'; }
+    catch (e) { box.checked = !want; m.textContent = `Could not change the weekly note: ${e.message}.`; }
+    box.disabled = false;
+  });
   show(!!(Notification.permission === 'granted' && await pushSub().catch(() => null)));
   if (Notification.permission === 'denied') m.textContent = 'Notifications are blocked for this site in your browser settings.';
   b.addEventListener('click', async () => {
@@ -1985,6 +2004,7 @@ function drawSpots() {
     const savedList = document.getElementById('saved-list');
     savedList.innerHTML = DATA.spots.filter(s => SAVED.has(s.id)).map(s => savedCard(s, false, VIEW.day)).join('');
     bindItems(savedList);
+    if (!savedGroup.hidden && !VIEW.day && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
@@ -2003,14 +2023,15 @@ function drawSpots() {
 // level with "risk", what set it and where the week goes, the week drawn small. A spot is removed from
 // the list with its bookmark (aria-label: from, the list's name), and Undo puts it back in place. The
 // list shows the same cards, without the bookmark, on its day (iso), on one tile; a list someone shared
-// shows them without it, each a tile.
+// shows them without it, each a tile. With no day picked, what changed since you last looked (since.js).
 function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots') {
   const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${week(s)}</div>`
-    + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p></li>`;   // under a plain level, two sentences
+    + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
+    + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 // A list's spots that the forecast has, in the list's order.
 const listSpots = (l = listNow()) => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
@@ -2092,6 +2113,7 @@ function renderSaved() {
   h += (many || SAVED.size ? listsCard(l) : '') + swimsCard();   // lists, once there is something to put in one
   setPanel(h);
   bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
+  if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
   if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
   placeMap();
@@ -2666,6 +2688,7 @@ function render(d) {
   serverToday = DATA.generated_at.slice(0, 10);
   contribLayer.clearLayers();
   setView('spot');
+  if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
   document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
   const loc = d.location || {}, total = overflows(d);
   const tags = [cap(d.kind), d.source === 'designated' ? 'Environment Agency designated bathing water' : null,

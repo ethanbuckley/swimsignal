@@ -1,0 +1,10 @@
+# A made-up site list for tests/test_evaluate_2027.py, in the layout of data/eval2027/sites.csv.
+# Four overflows (D is never scored) and three bathing waters. A name may hold a '#'.
+unit,id,name,company,water,spots
+overflow,A,A #1 CSO,Co1,river,s1
+overflow,B,B,Co1,lake,s2
+overflow,C,C,Co2,river,s1;s3
+overflow,D,D,Co2,river,s3
+bathing_water,R1,River one,Undertaker X,river,bw-R1
+bathing_water,R2,River two,Undertaker Y,river,bw-R2
+bathing_water,L1,Lake one,Undertaker X,lake,bw-L1

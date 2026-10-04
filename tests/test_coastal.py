@@ -30,16 +30,56 @@ def test_only_current_complete_official_advice_is_shown():
     assert advice(PRED, now=datetime.fromisoformat("2026-09-16T08:29:00+01:00"))["state"] == "no_current_advice"
     for field, broken in [("publishedAt", "nonsense"), ("expiresAt", None),
                           ("predictedOn", "2026-09-14"), ("publishedAt", "2026-09-16T12:00:00"),
-                          ("prfOriginType", "UNKNOWN"), ("riskLevel", "unrecognised")]:
+                          ("riskLevel", "unrecognised")]:
         assert advice({**PRED, field: broken})["state"] == "no_current_advice"
+    # A "normal" record says what it is only through its origin; an unknown one is not advice.
+    normal = {**PRED, "riskLevel": "http://environment.data.gov.uk/def/bwq-stp/normal"}
+    for origin in ["UNKNOWN", None]:
+        assert advice({**normal, "prfOriginType": origin})["state"] == "no_current_advice"
 
 
 def test_normal_non_forecast_records_and_conflicts_are_not_an_all_clear():
     normal = {**PRED, "riskLevel": "http://environment.data.gov.uk/def/bwq-stp/normal"}
     assert advice(normal)["state"] == "no_increased_risk"
     assert advice({**normal, "prfOriginType": "NON_PRF_SITE"})["state"] == "no_forecast"
-    assert advice(PRED, normal)["state"] == "unavailable"
+    assert advice(normal, {**normal, "prfOriginType": "NON_PRF_SITE"})["state"] == "unavailable"
     assert advice()["state"] == "no_current_advice"
+
+
+# Plymouth Hoe East on 1 Oct 2026, as the EA published it: the season's last forecast, "normal", at
+# 09:06, then at 15:08 a notice after a sewage incident, "increased" with no prfOriginType. On 4 Oct
+# the incident was still open and the EA's own widget said "Bathing is not advised today due to
+# pollution from sewage".
+PLYMOUTH = "ukk4100-26400"
+LAST_FORECAST = {"stp_bathingWater": f"http://environment.data.gov.uk/id/bathing-water/{PLYMOUTH}",
+                 "predictedOn": {"_value": "2026-10-01"}, "predictedAt": {"_value": "2026-10-01T08:30:00"},
+                 "publishedAt": {"_value": "2026-10-01T09:06:51"}, "expiresAt": {"_value": "2026-10-02T08:29:00"},
+                 "prfOriginType": "PRF_PROVIDED", "riskLevel": "http://environment.data.gov.uk/def/bwq-stp/normal",
+                 "comment": {"_value": "Pollution risk forecasts are now finished for 2026"},
+                 "_about": "http://environment.data.gov.uk/data/bathing-water-quality/stp-risk-prediction/point/26400/date/20261001-090651"}
+INCIDENT = {"stp_bathingWater": f"http://environment.data.gov.uk/id/bathing-water/{PLYMOUTH}",
+            "predictedOn": {"_value": "2026-10-01"}, "predictedAt": {"_value": "2026-10-01T15:08:20"},
+            "publishedAt": {"_value": "2026-10-01T15:08:51"}, "expiresAt": {"_value": "2026-10-02T15:07:20"},
+            "riskLevel": "http://environment.data.gov.uk/def/bwq-stp/increased",
+            "comment": {"_value": "Risk of reduced water quality due to sewage"},
+            "_about": "http://environment.data.gov.uk/data/bathing-water-quality/stp-risk-prediction/point/26400/date/20261001-150851"}
+
+
+def test_an_incident_notice_without_an_origin_is_a_warning_and_outranks_a_normal_forecast():
+    site = {**SITE, "eubwidNotation": PLYMOUTH, "name": {"_value": "Plymouth Hoe East"}}
+
+    def at(iso, records=(LAST_FORECAST, INCIDENT)):
+        return coastal.parse([site], list(records), datetime.fromisoformat(iso))[0]["advice"]
+
+    assert at("2026-10-01T12:00:00+01:00")["state"] == "no_increased_risk"    # before the notice
+    after = at("2026-10-01T16:00:00+01:00")
+    assert after["state"] == "increased" and after["origin"] is None
+    assert after["expires_at"] == "2026-10-02T15:07:20+01:00" and after["source"] == INCIDENT["_about"]
+    assert at("2026-10-02T09:00:00+01:00")["state"] == "increased"            # the forecast has expired, the notice has not
+    assert at("2026-10-02T15:07:20+01:00")["state"] == "no_current_advice"
+    # Two warnings in force: the later one is shown, with its own times.
+    later = {**INCIDENT, "publishedAt": {"_value": "2026-10-01T18:00:00"}, "_about": "later"}
+    assert at("2026-10-01T19:00:00+01:00", (INCIDENT, later, LAST_FORECAST))["source"] == "later"
 
 
 def test_catalogue_scope_historical_rating_and_safe_rendering():
@@ -57,6 +97,11 @@ def test_catalogue_scope_historical_rating_and_safe_rendering():
     assert 'Snapshot <time datetime="2026-09-15T12:00:00+01:00">15 Sep 2026, 12:00</time>.' in rendered
     assert 'expires <time datetime="2026-09-16T08:29:00+01:00">16 Sep 2026, 08:29</time>' in rendered
     assert coastal.when("not a time <b>") == "not a time &lt;b&gt;"
+    # Every site has a fold for today's advice from the EA itself (coverage.html loads the EA's panel
+    # into it); without the page's script it points to the profile.
+    assert (f'<details class="ea-today" data-site="{KEY}"><summary>Today\'s EA advice</summary>'
+            f'<p class="small">Open the <a href="https://environment.data.gov.uk/bwq/profiles/profile.html?site={KEY}">'
+            "official profile</a> for today's advice.</p></details></li>") in rendered
 
 
 def test_source_failures_preserve_catalogue_but_never_advice():

@@ -1,12 +1,14 @@
 // SwimSignal push alerts. The site's pages subscribe here; every 2 minutes the cron
 // compares the site's alerts.json with the last run and pushes to people whose saved
-// spots have just become high.
+// spots have just become high. On Thursday evenings, runs with no alert to send also send the
+// weekly note to those who asked for it (weekly.js).
 
 import { importEcdhPublic, sendPush, unb64url, vapidSigner } from './webpush.js';
 import {
   HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, readJson, reply, retryAfter,
 } from './shared.js';
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
+import { runWeekly } from './weekly.js';
 
 export { forecastExpiry };
 
@@ -104,12 +106,15 @@ async function subscribe(data, env) {
   check(isObject(data), 'body must be a JSON object');
   const subscription = await cleanSubscription(data.subscription);
   const spots = cleanSpots(data.spots);
+  // The weekly note (weekly.js): off unless the page says true. Kept only when on.
+  check(data.weekly === undefined || typeof data.weekly === 'boolean', 'weekly must be true or false');
+  const weekly = data.weekly === true ? { weekly: true } : {};
   const key = await subKey(subscription.endpoint);
   if (spots.length === 0) { await env.PUSH.delete(key); return; }
   // The spots also go in the key's metadata (at most 1024 bytes), so the cron finds who to alert
-  // from a list of keys alone instead of reading every record.
-  const meta = JSON.stringify(spots).length <= 1000 ? { metadata: { s: spots } } : {};
-  await env.PUSH.put(key, JSON.stringify({ subscription, spots, updated: new Date().toISOString() }), meta);
+  // from a list of keys alone instead of reading every record; so does the note's w: 1.
+  const meta = JSON.stringify(spots).length <= 1000 ? { metadata: { s: spots, ...(weekly.weekly ? { w: 1 } : {}) } } : {};
+  await env.PUSH.put(key, JSON.stringify({ subscription, spots, ...weekly, updated: new Date().toISOString() }), meta);
 }
 
 async function unsubscribe(data, env) {
@@ -184,12 +189,18 @@ async function runPush(env, { fetch, log, now }, seen) {
     log('cron: forecast expired; nothing compared or sent');
     return { risen: [], ...tally, queued: 0 };
   }
+  // A run whose alerts send and queue nothing: on a Thursday evening its sends go to the weekly note.
+  const quiet = async (result) => {
+    const weekly = await runWeekly(env, alerts, { log, now, perRun,
+      deliver: (batch, messageFor, counts) => send(env, batch, authorize, counts, { fetch, log, now, alerts, expires, messageFor }) });
+    return weekly ? { ...result, weekly } : result;
+  };
 
   const prev = await env.PUSH.get('state', 'json');
   if (issued < Date.parse(prev?.generated_at)) throw new Error('alerts.json: issue time moved backwards');
   if (prev?.generated_at === alerts.generated_at) {
     log(`cron: alerts.json unchanged (${alerts.generated_at})`);
-    return { risen: [], ...tally, queued: 0 };
+    return quiet({ risen: [], ...tally, queued: 0 });
   }
   const ranks = {};
   for (const [id, spot] of Object.entries(alerts.spots)) ranks[id] = Number.isInteger(spot?.rank) ? spot.rank : -1;
@@ -214,7 +225,7 @@ async function runPush(env, { fetch, log, now }, seen) {
   // next run: putting and then checkpointing the same KV key within a second is rate-limited.
   if (items.length) await env.PUSH.put('queue', JSON.stringify({ items, state }));
   await env.PUSH.put('state', JSON.stringify(state));
-  if (!items.length) return { risen, ...tally, queued: 0 };
+  if (!items.length) return quiet({ risen, ...tally, queued: 0 });
   return { risen, ...tally, queued: items.length };
 }
 
@@ -247,7 +258,7 @@ async function drain(env, queued, perRun, authorize, tally, { fetch, log, now, a
     if ((item.next_attempt ?? 0) <= at && batch.length < perRun) batch.push(item);
     else rest.push(item);
   }
-  const kept = await send(env, batch, authorize, tally, { fetch, log, now, alerts, expires });
+  const kept = await send(env, batch, authorize, tally, { fetch, log, now, alerts, expires, messageFor: alertFor(alerts, env.SITE_URL) });
   rest.push(...kept); // retries do not block recipients who have not had an attempt yet
   if (rest.length) await env.PUSH.put('queue', JSON.stringify({ ...queued, items: rest }));
   else await env.PUSH.delete('queue');
@@ -255,12 +266,20 @@ async function drain(env, queued, perRun, authorize, tally, { fetch, log, now, a
   return { risen: [], ...tally, queued: rest.length };
 }
 
-// Returns the alerts to keep in the queue: retries, and any the forecast expired under.
-async function send(env, batch, authorize, tally, { fetch, log, now, alerts, expires }) {
+// An alert for a queued item, from this run's forecast: only the spots still saved and still high.
+const alertFor = (alerts, siteUrl) => (record, { spots }) => {
+  const ids = Object.keys(spots ?? {}).filter(id => record.spots?.includes(id) && alerts.spots[id]?.rank >= HIGH);
+  return ids.length ? alertPayload(ids, alerts.spots, siteUrl) : null;
+};
+
+// Returns the alerts to keep in the queue: retries, and any the forecast expired under. messageFor
+// makes each one's title, body, link and tag from the record, or null when there is nothing to say
+// any more: an alert (alertFor) or the weekly note (weekly.js).
+async function send(env, batch, authorize, tally, { fetch, log, now, alerts, expires, messageFor }) {
   const kept = [];
   const fail = (key, why) => { tally.failed++; log(`push ${key.slice(4, 16)}: ${why}`); };
   await eachLimit(batch, CONCURRENCY, async item => {
-    const { key, spots } = item;
+    const { key } = item;
     const attempt = (item.attempts ?? 0) + 1;
     const retry = (after = 0) => {
       const at = now(), next = nextAttempt(attempt, at, after);
@@ -275,14 +294,14 @@ async function send(env, batch, authorize, tally, { fetch, log, now, alerts, exp
       catch { fail(key, 'subscription read unavailable'); retry(); return; }
       if (!record) return;
       endpoint = record.subscription?.endpoint;
-      const ids = Object.keys(spots ?? {}).filter(id => record.spots?.includes(id) && alerts.spots[id]?.rank >= HIGH);
-      if (!ids.length) return;
+      const message = messageFor(record, item);
+      if (!message) return;
       if (!isPushService(endpoint)) {
         await env.PUSH.delete(key); tally.removed++; return;
       }
       const ttl = Math.floor((expires - now()) / 1000);
       if (ttl <= 0) { kept.push(item); return; }   // expired during this run: waits like the rest
-      const payload = { ...alertPayload(ids, alerts.spots, env.SITE_URL), issued_at: alerts.generated_at, expires_at: new Date(expires).toISOString() };
+      const payload = { ...message, issued_at: alerts.generated_at, expires_at: new Date(expires).toISOString() };
       // Retry only transient transport/service failures. A malformed subscription or encryption
       // error is permanent and must not keep consuming delivery attempts.
       let res;
