@@ -29,6 +29,7 @@
 <tr data-file="overflows.geojson"><td><a href="data/overflows.geojson">overflows.geojson</a></td><td>Every storm overflow on the map, and what it is doing now</td><td class="num">–</td></tr>
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
 <tr data-file="verification_live.csv"><td><a href="data/verification_live.csv">verification_live.csv</a></td><td>The individual forecast and observation pairs behind the live spill scores</td><td class="num">–</td></tr>
+<tr data-file="upstream/"><td>upstream/</td><td>Every monitored storm overflow upstream of each spot, one file a spot, for the organisers' page</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
 <tr data-file="coastal.json"><td><a href="data/coastal.json">coastal.json</a></td><td>Official English coastal and estuary directory, historical ratings and dated advice</td><td class="num">–</td></tr>
 <tr data-file="places.json"><td><a href="data/places.json">places.json</a></td><td>The towns, villages and districts Plan a swim can start from</td><td class="num">–</td></tr>
@@ -108,6 +109,17 @@
 <dt><code>observed</code></dt><dd>1 if a spill was observed that day, 0 if none was observed; days without sufficient observations are excluded</dd>
 </dl>
 <p><b>Licence.</b> SwimSignal's forecast and scoring rows, with the water companies' discharge records (CC BY 4.0).</p>
+
+<h2 id="upstream">upstream/</h2>
+<p>One file a spot, <code>upstream/&lt;id&gt;.json</code>, with every monitored storm overflow within 60 km upstream along the river network, most reach first. <code>spots.json</code> keeps only the ten that matter most in the current forecast; <a href="organisers.html">the organisers' page</a> loads a spot's file when it has more. A spot with nothing upstream has no file. Each file has the spot's <code>id</code>, <code>generated_at</code>, <code>credits</code> and <code>overflows</code>, one entry an overflow:</p>
+<dl class="fields">
+<dt><code>site_id</code>, <code>site_name</code>, <code>company</code>, <code>receiving_watercourse</code></dt><dd>The water company's id and name for the overflow, the company, and the water it discharges into, as the company names it</dd>
+<dt><code>distance_km</code>, <code>lake_distance_km</code>, <code>travel_h</code></dt><dd>How far upstream along the river network, the part of that across a lake, and how long sewage takes to arrive at the model's speeds</dd>
+<dt><code>weight</code></dt><dd>Reach, 0 to 1: the chance a spill there affects the spot, from die-off over the travel time and dilution</dd>
+<dt><code>lta_spills</code>, <code>spill_hours</code></dt><dd>Its long-term average spills a year, and the hours it spilled in its latest annual return (Environment Agency)</dd>
+<dt><code>has_live</code>, <code>lat</code>, <code>lon</code></dt><dd>Whether its water company reports its status live, and where it is</dd>
+</dl>
+<p><b>Licence.</b> SwimSignal's upstream calculations, with the overflow records and river network under the licences in the credits.</p>
 
 <h2 id="anypoint">anypoint/</h2>
 <p>The files the map uses to calculate a forecast at a point you click, on your device. The table links <code>tiles.json</code>, the index of available 0.25-degree squares, versions, distance units and probability scales; its size is the whole folder's. These files are intended to be read together by the site's <a href="https://github.com/ethanbuckley/swimsignal/blob/main/src/dipcast/site/anypoint.js">point-forecast script</a>.</p>

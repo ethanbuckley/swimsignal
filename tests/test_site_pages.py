@@ -438,7 +438,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # The documented files each have a section of their own.
     for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "places.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
-    assert '<h2 id="anypoint">anypoint/</h2>' in page
+    assert '<h2 id="anypoint">anypoint/</h2>' in page and '<h2 id="upstream">upstream/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
     assert "<title>Data files · SwimSignal</title>" in page and 'href="page.css"' in page and 'href="/' not in page
     assert 'href="terms.html#data"' in page and 'href="about.html#embed"' in page and "cloudflareinsights" in page
@@ -446,7 +446,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 10
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 11
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):

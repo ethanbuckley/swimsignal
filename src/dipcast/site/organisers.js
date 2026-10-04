@@ -2,8 +2,9 @@
 // event. Within the five days the page gives that day's level, why and how sure, by the site's own
 // rules (levels.js, so it never disagrees with the spot's page, the embed or an alert); further ahead
 // it says when the forecast for that day first appears and what is known now. Always: the storm
-// overflows upstream, from the spot's forecast (contributors and upstream_summary in spots.json), as a
-// table and as a CSV file that carries the credits. The checklist and the print layout are in the page.
+// overflows upstream, from the spot's forecast (contributors and upstream_summary in spots.json, and
+// every one of them from data/upstream/<id>.json where there are more), as a table and as a CSV file
+// that carries the credits. The checklist and the print layout are in the page.
 // Nothing is stored or sent: the spot and the day are after the # in the address.
 //
 // A plain script, as embed.js: organisers.html loads levels.js first, and this file finds its names
@@ -120,18 +121,24 @@ const Organisers = (() => {
   }
 
   // ------------------------------------------------------------------ the overflows upstream
-  // The spot's overflows, most reach first: the forecast file keeps the ten with the most reach and
-  // spill chance this week (build_site.KEEP_CONTRIBUTORS), and an event weeks away is better ordered by
-  // reach alone, which does not change with the weather.
-  function overflowRows(s) {
-    return (s.contributors || []).slice().sort((a, b) => b.weight - a.weight).map(c => ({
+  // The spot's overflows, most reach first. The forecast file keeps the ten with the most reach and
+  // spill chance this week (build_site.KEEP_CONTRIBUTORS); where there are more, the page loads every
+  // one from data/upstream/<id>.json (build_site.write_upstream) and passes them as `full`: an array,
+  // or 'loading' or 'failed' while it has not got them. An event weeks away is better ordered by reach
+  // alone, which does not change with the weather.
+  const listOf = (s, full) => Array.isArray(full) && full.length ? full : (s.contributors || []);
+  function overflowRows(s, full) {
+    return listOf(s, full).slice().sort((a, b) => b.weight - a.weight).map(c => ({
       site_id: c.site_id, site_name: c.site_name ?? c.site_id, name: nameCase(c.site_name ?? c.site_id), company: c.company || '', into: c.receiving_watercourse || '',
       km: Math.round(((c.distance_km || 0) + (c.lake_distance_km || 0)) * 10) / 10, travel_h: c.travel_h, reach: c.weight,
       spills: c.lta_spills, spill_hours: c.spill_hours, live: !!c.has_live, lat: c.lat, lon: c.lon }));
   }
   const num = (v, d = 0) => nil(v) || Number.isNaN(Number(v)) ? '–' : Number(v).toFixed(d);
-  function overflows(s) {
-    const u = s.upstream_summary || {}, total = u.overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60, list = overflowRows(s);
+  // A feed's name escaped, and free to break after its _, / or &, and nowhere else inside a word:
+  // "North_CSO_Princetown" and "WEIR BROOK&TRIB OF WEIR BROOK" widened the table past its column.
+  const brk = s => esc(s).replace(/(_|\/|&amp;)(?=\S)/g, '$1<wbr>');
+  function overflows(s, full) {
+    const u = s.upstream_summary || {}, total = u.overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60, list = overflowRows(s, full);
     let h = '<h3 id="ov-h">Storm overflows upstream</h3>';
     if (isolated(s)) return h + '<p>No river flows into this lake in the river network, so no storm overflow can reach it.</p>';
     if (s.error) return h + '<p>This spot has no forecast in this update, so its overflows are not listed.</p>';
@@ -140,14 +147,16 @@ const Organisers = (() => {
       + (u.without_live_feed ? `: ${u.with_live_feed} report their status live, and ${u.without_live_feed} ${u.without_live_feed === 1 ? 'has' : 'have'} no live feed, so SwimSignal forecasts ${u.without_live_feed === 1 ? 'it' : 'them'} from rain and their yearly record alone`
         : total === 1 ? ', with a live feed' : ', all with a live feed') + '.'
       + (u.max_travel_h ? ` Sewage from the farthest takes ${hoursAway(u.max_travel_h)} to arrive.` : '') + '</p>';
-    if (list.length < total) h += `<p>The table lists the ${list.length} that matter most in the current forecast. SwimSignal does not yet publish the other ${total - list.length}.</p>`;
+    if (list.length < total) h += full === 'loading' ? `<p>The table lists the ${list.length} that matter most in the current forecast while the other ${total - list.length} load.</p>`
+      : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${total} could not be loaded. Try again later.</p>`;
     const cell = (l, v, cls = '') => `<td${cls ? ` class="${cls}"` : ''} data-l="${l}">${v}</td>`;
     h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
       + '<th scope="col" class="num">Upstream</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
       + '<th scope="col" class="num">Spills a year</th><th scope="col" class="num">Hours spilling</th><th scope="col">Live feed</th></tr></thead><tbody>'
-      + list.map(o => `<tr><th scope="row" class="ov">${esc(o.name)}</th>${cell('Company', esc(o.company))}${cell('Into', esc(o.into))}`
+      + list.map(o => `<tr><th scope="row" class="ov">${brk(o.name)}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
         + cell('Upstream', `${num(o.km, 1)} km`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
-        + cell('Reach', pct(o.reach), 'num') + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
+        + cell('Reach', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
+        + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
         + cell('Live feed', o.live ? 'Yes' : 'No') + '</tr>').join('') + '</tbody></table></div>';
     return h + '<p class="small muted"><b>Upstream</b>: along the river network. <b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed. '
       + '<b>Reach</b>: the chance a spill there affects this spot, from die-off over the travel time and dilution by the size of the river network upstream. '
@@ -162,8 +171,8 @@ const Organisers = (() => {
   // A field a spreadsheet could read as a formula is prefixed with ' (a name from a feed is not trusted).
   const field = v => { let t = nil(v) ? '' : String(v); if (typeof v === 'string' && /^[=+\-@\t\r]/.test(t)) t = "'" + t;
     return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
-  function csv(s, data, base) {
-    const u = s.upstream_summary || {}, list = overflowRows(s), cr = data.credits || {}, km = (s.assumptions || {}).max_upstream_km || 60;
+  function csv(s, data, base, full) {
+    const u = s.upstream_summary || {}, list = overflowRows(s, full), cr = data.credits || {}, km = (s.assumptions || {}).max_upstream_km || 60;
     const lic = Object.entries(cr.licences || {}).map(([k, v]) => `${k} ${v}`).join('; ');
     const notes = [
       `SwimSignal: storm overflows upstream of ${s.name} (${s.id}), from the forecast issued ${data.generated_at}. ${base}${spotHref(s.id)}`,
@@ -183,7 +192,7 @@ const Organisers = (() => {
 
   // ------------------------------------------------------------------ the page
   // A spot and, if chosen, the event day (iso): the forecast for the day, then the overflows.
-  function view(s, iso, data, base, now = Date.now()) {
+  function view(s, iso, data, base, now = Date.now(), full) {
     R.setToday(String(data.generated_at).slice(0, 10));
     const loc = s.location || {}, page = spotHref(s.id), own = PAGE_ID.test(s.id);
     const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : null, loc.watercourse ? esc(loc.watercourse) : null].filter(Boolean);
@@ -192,7 +201,7 @@ const Organisers = (() => {
     const total = (s.upstream_summary || {}).overflows || 0, n = (s.contributors || []).length;
     return `<h2 class="ev-name" id="ev-name">${esc(s.name)}</h2><p class="ev-meta">${meta.join(' · ')}</p><p class="ev-links">${links.join(' · ')}</p>`
       + (iso ? forecast(s, iso, data, now) : '<p class="ev-say">Pick the day of your event for its forecast.</p>')
-      + overflows(s)
+      + overflows(s, full)
       + `<p class="actions screen-only">${n && !s.error && total ? '<button type="button" class="btn" id="csv">Download the overflows as CSV</button>' : ''}<button type="button" class="btn" id="print">Print this page</button></p>`
       + `<p class="print-only small muted">Printed from ${esc(base)}organisers.html. Look at ${esc(base)}${esc(page)} for the latest forecast.</p>`;
   }
@@ -219,15 +228,31 @@ const Organisers = (() => {
     const st = fromHash(location.hash);
     if (st.spot && spots.some(s => s.id === st.spot)) sel.value = st.spot;
     if (st.date) date.value = st.date;
+    // Every overflow upstream of a spot, by id: asked for once, when the spot has more than the forecast
+    // file lists, then the page is drawn again.
+    const FULL = {};
+    const fullOf = s => {
+      if (!s || s.error || !PAGE_ID.test(s.id) || ((s.upstream_summary || {}).overflows || 0) <= (s.contributors || []).length) return undefined;
+      if (FULL[s.id] === undefined) {
+        FULL[s.id] = 'loading';
+        fetch(`data/upstream/${encodeURIComponent(s.id)}.json`, { cache: 'no-cache' })
+          .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+          .then(j => { FULL[s.id] = Array.isArray(j.overflows) && j.overflows.length ? j.overflows : 'failed'; })
+          .catch(() => { FULL[s.id] = 'failed'; })
+          .then(() => { if (sel.value === s.id) draw(); });
+      }
+      return FULL[s.id];
+    };
     const draw = () => {
       const s = spots.find(x => x.id === sel.value), iso = ISO.test(date.value) ? date.value : null;
       const addr = location.pathname + location.search + toHash(s ? s.id : null, iso);
       if (addr !== location.pathname + location.search + location.hash) history.replaceState(null, '', addr);
-      out.innerHTML = s ? view(s, iso, data, base) : '';
+      const full = fullOf(s);
+      out.innerHTML = s ? view(s, iso, data, base, Date.now(), full) : '';
       const dl = document.getElementById('csv');
       if (dl) dl.addEventListener('click', () => {
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv(s, data, base)], { type: 'text/csv;charset=utf-8' }));
+        a.href = URL.createObjectURL(new Blob([csv(s, data, base, full)], { type: 'text/csv;charset=utf-8' }));
         a.download = `swimsignal-overflows-${s.id}.csv`; document.body.append(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       });

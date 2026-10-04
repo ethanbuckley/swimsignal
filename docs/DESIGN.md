@@ -739,9 +739,12 @@ gives all four navigation links a single full-width row.
   now. Always: the overflows upstream as a table, which on a phone becomes a block per overflow, the
   name over its figures two to a line, each with its label; a CSV with the credits; and the checklist,
   which is in the page so that it prints without a script. Printed: A4, no controls.
-- The overflows are the forecast's `contributors`, at most ten (`KEEP_CONTRIBUTORS`); where more are
-  upstream the page says how many it does not list. They are ordered by reach, which does not change
-  with the weather, since an event can be weeks away.
+- The overflows are every one upstream, ordered by reach, which does not change with the weather, since
+  an event can be weeks away. `spots.json` keeps ten (`KEEP_CONTRIBUTORS`); where a spot has more, the page
+  loads `data/upstream/<id>.json` (4 October 2026; before, 42 of 105 spots' tables were partial) and shows the
+  ten until it arrives, saying so, or if it cannot. A tiny reach is "<1%" in the table. The number headers wrap,
+  and a feed's name may break after its "_", "/" or "&", so the table fits the 720 px column: measured at 1440 px
+  over all 81 spots with overflows, none is wider than its column (14 were before, the widest by 93 px).
 - **The sign**, `spot/<id>/sign/`, is a white sheet, centred: the mark and wordmark, the name in the
   serif, one line on what the forecast is, the QR code (black on white, made at build time by
   `src/dipcast/signs.py`), the short address, the caveat in bold under a hairline, and one line of

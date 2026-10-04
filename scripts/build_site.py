@@ -48,6 +48,11 @@ SITE = ROOT / "site"
 STATIC = ROOT / "src" / "dipcast" / "api" / "static"
 TEMPLATE = ROOT / "src" / "dipcast" / "site" / "index.html"
 KEEP_CONTRIBUTORS = 10
+# Every overflow upstream, for data/upstream/<id>.json (write_upstream): the most within 60 km of a
+# listed spot was 185 on 4 Oct 2026, at Warleigh Weir.
+ALL_CONTRIBUTORS = 10_000
+UPSTREAM_FIELDS = ("site_id", "site_name", "company", "receiving_watercourse", "distance_km", "lake_distance_km",
+                   "travel_h", "weight", "lta_spills", "spill_hours", "has_live", "lat", "lon")
 MIN_OK_SHARE = 0.8        # fewer spots with a forecast than this and the build fails (no publish)
 MAX_NO_DATA_SHARE = 0.5   # more of today's forecasts without rainfall data than this: fail
 # The pages were written for the FastAPI routes; rewrite them for flat files. Their icons are
@@ -1140,6 +1145,28 @@ def with_data_files(html: str, data: Path) -> tuple[str, list[str]]:
     return html.replace(MORE_FILES, rows, 1), extra
 
 
+def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Timestamp, credits: dict) -> int:
+    """data/upstream/<id>.json: every monitored overflow upstream of a spot, most reach first, with the
+    fields the organisers' page lists. spots.json keeps the KEEP_CONTRIBUTORS that matter most this week,
+    which left the page's table partial at 42 of 105 spots on 4 Oct 2026; one file per spot, loaded on
+    demand, keeps spots.json the size it was (measured on 4 Oct 2026: 1,720 overflows at 81 spots, 506 kB
+    before each file's 2 kB of credits; the largest, Warleigh Weir's 185, 55 kB). Reach does not
+    change with the weather, so an event weeks away is best judged on it. A spot whose id cannot be a
+    file name, or with nothing upstream, gets no file. Returns the number written."""
+    out = site / "data" / "upstream"
+    shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
+    out.mkdir(parents=True)
+    n = 0
+    for sid, rows in upstream.items():
+        if not rows or not SPOT_ID.fullmatch(str(sid)):
+            continue
+        listed = sorted(({k: r.get(k) for k in UPSTREAM_FIELDS} for r in rows), key=lambda r: -(r["weight"] or 0.0))
+        (out / f"{sid}.json").write_text(json.dumps({"id": sid, "generated_at": generated.isoformat(), "overflows": listed,
+                                                     "credits": credits}, separators=(",", ":"), default=str))
+        n += 1
+    return n
+
+
 def write_data_page(site: Path, token: str | None = None) -> list[str]:
     """data.html, from the files in site/data. Returns the ones it does not describe."""
     page = (STATIC / "data.html").read_text()
@@ -1222,11 +1249,12 @@ def build(refresh: bool = True) -> dict:
         reload_caches()
     spots = load_spots()
     prefetch_rain(spots)
-    results = []
+    results, upstream = [], {}
     for r in spots.itertuples(index=False):
         try:
-            f = forecast_point(float(r.lat), float(r.lon), gauge=False,
+            f = forecast_point(float(r.lat), float(r.lon), gauge=False, include_contributors=ALL_CONTRIBUTORS,
                                kind_hint=(r.kind if r.kind in ("lake", "river") else None), river_hint=_river_of(r))
+            upstream[r.id] = f.get("contributors", [])   # all of them, for the organisers' page
             f["contributors"] = f.get("contributors", [])[:KEEP_CONTRIBUTORS]
         except Exception as e:  # noqa: BLE001 - one bad spot must not sink the site
             log.error("%s: %s", r.name, e)
@@ -1291,6 +1319,7 @@ def build(refresh: bool = True) -> dict:
         "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
         "credits": credits, "spots": results}, default=str))
     write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
+    health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
     (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
     if refresh:   # the run log, before verification.json reads it (forecast_log.service_record)
