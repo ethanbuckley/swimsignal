@@ -34,7 +34,7 @@ test('a bathing water: every item with its age and whose it is, in order, and no
   assert.equal(r[2].say, 'Poor.');
   assert.equal(r[2].src, `<a href="${URL_}">Environment Agency</a>, from its lab samples over up to four seasons`);
   assert.match(r[3].say, /^None seen, 24 Sept?\.$/);
-  assert.match(r[4].say, /^380 E\.&nbsp;coli per 100&nbsp;ml, taken 24 Sept?\.$/);
+  assert.match(r[4].say, /^380 E\.&nbsp;coli per 100&nbsp;ml, taken 24 Sept?: <a href="#about-ecoli">under 900<\/a>\.$/);
   assert.equal(gaps.length, 0);
   const html = ev.evidenceTile(cromwheel(), NOW, BUILT);
   assert.match(html, /<section class="tile" id="evidence" aria-labelledby="evidence-h"><h2 class="t-lab" id="evidence-h">/);
@@ -100,9 +100,49 @@ test('a lab count at a limit says so, and one from last season gives its year', 
   assert.match(row(cromwheel({ lab_sample: { taken_at: '2026-09-24T10:35+01:00', ecoli: 24196, qualifier: '>' } }), 'Latest lab sample').say, /^Over 24,196 E\./);
   const winter = Date.parse('2027-02-10T12:00:00Z');
   const r = row(cromwheel(), 'Latest lab sample', winter);
-  assert.match(r.say, /taken 24 Sept? 2026\.$/);
+  assert.match(r.say, /taken 24 Sept? 2026: <a href="#about-ecoli">under 900<\/a>\.$/);
   assert.equal(r.age, '4 months ago');
   assert.equal(ev.evidenceAge('2026-08-05', NOW), '1 month ago');   // 60 days: months from there
+});
+
+test('a lab count says whether it is over 900, the line the E. coli estimate is about, where the count settles it', () => {
+  const said = (ecoli, qualifier) => ev.evidenceSample({ taken_at: '2026-09-24T10:35+01:00', ecoli, ...(qualifier ? { qualifier } : {}) }, NOW)
+    .replace(/ /g, ' ').replace(/Sept?/, 'Sep');
+  assert.equal(said(380), '380 E. coli per 100 ml, taken 24 Sep: under 900.');
+  assert.equal(said(899), '899 E. coli per 100 ml, taken 24 Sep: under 900.');
+  assert.equal(said(900), '900 E. coli per 100 ml, taken 24 Sep: not over 900.', 'exactly 900 is not over it');
+  assert.equal(said(901), '901 E. coli per 100 ml, taken 24 Sep: over 900.');
+  assert.equal(said(3900), '3,900 E. coli per 100 ml, taken 24 Sep: over 900.');
+  assert.equal(said(10, '<'), 'Under 10 E. coli per 100 ml, taken 24 Sep: under 900.');
+  assert.equal(said(10000, '>'), 'Over 10,000 E. coli per 100 ml, taken 24 Sep: over 900.');
+  assert.equal(said(900, '>'), 'Over 900 E. coli per 100 ml, taken 24 Sep: over 900.');
+  // A limit that does not settle it is not compared: under 1,000 may be over 900, and over 500 may not.
+  assert.equal(said(1000, '<'), 'Under 1,000 E. coli per 100 ml, taken 24 Sep.');
+  assert.equal(said(500, '>'), 'Over 500 E. coli per 100 ml, taken 24 Sep.');
+  assert.equal(ev.evidenceSample(null, NOW), '');
+  assert.equal(ev.evidenceSample({ taken_at: '2026-09-24T10:35+01:00', ecoli: null }, NOW), '');
+  // The words never call the water safe or rated by one sample; on the page the comparison links to
+  // what 900 means (the About section: a 90th percentile over four seasons, not a test of one sample).
+  for (const n of [10, 900, 3900]) assert.doesNotMatch(said(n), /safe|pass|fail|rating|rated|excellent|good|sufficient|poor/i);
+  assert.match(ev.evidenceSample({ taken_at: '2026-09-24T10:35+01:00', ecoli: 3900 }, NOW, true), /: <a href="#about-ecoli">over 900<\/a>\.$/);
+  const html = fs.readFileSync(join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  assert.match(html, /<dt id="about-ecoli">[^]*?900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass\/fail test of one sample/);
+});
+
+test('the Compare table gives the latest sample in the same words, or says plainly there is none', () => {
+  const { evidenceRows } = require('../src/dipcast/site/experience.js');
+  const samples = s => Object.fromEntries(evidenceRows({ days: [], ...s }, '2026-10-04', '', BUILT, NOW))['Water samples'].replace(/ /g, ' ');
+  const cl = { class: 'poor', year: 2025, url: URL_ };
+  assert.match(samples({ source: 'designated', classification: cl, lab_sample: { taken_at: '2026-09-24T10:35+01:00', ecoli: 380 } }),
+    /^380 E\. coli per 100 ml, taken 24 Sept?: under 900\. Check the Environment Agency’s page for every result and current advice\.$/);
+  assert.equal(samples({ source: 'designated', classification: cl, lab_sample: null }), 'No lab sample this season. Check the Environment Agency’s page for every result and current advice.');
+  assert.equal(samples({ source: 'designated', classification: cl }), 'No lab sample in this update. Check the Environment Agency’s page for every result and current advice.');
+  assert.equal(samples({ source: 'designated' }), 'No lab sample in this update.');
+  assert.equal(samples({ source: 'curated' }), 'No lab samples here.');
+  // The panel and the table say the sample the same way.
+  const s = { taken_at: '2026-09-24T10:35+01:00', ecoli: 1500 };
+  assert.ok(samples({ source: 'designated', classification: cl, lab_sample: s }).startsWith(ev.evidenceSample(s, NOW).replace(/ /g, ' ')));
+  assert.doesNotMatch(samples({ source: 'designated', classification: cl }), /not included/);
 });
 
 test('a river spot that is not a bathing water: the overflows and the rain, and no EA records', () => {
@@ -113,7 +153,7 @@ test('a river spot that is not a bathing water: the overflows and the rain, and 
   assert.deepEqual(r.map(x => x.what), ['Overflows upstream', 'Rain here']);
   assert.equal(r[0].say, '0 of 60 discharging, 32 stopped lately. All 60 report live.');
   assert.equal(r[1].say, '11&nbsp;mm of rain in the 48&nbsp;h to midday today.', 'no wetter day ahead, none named');
-  assert.deepEqual(gaps, ['No lab samples, algae checks or rating: this is not a designated bathing water.']);
+  assert.deepEqual(gaps, ['No lab samples, algae checks or rating here.']);
 });
 
 test('no overflow upstream, and rain that did not arrive, are gaps; an old build names its day', () => {
@@ -125,7 +165,7 @@ test('no overflow upstream, and rain that did not arrive, are gaps; an old build
   assert.deepEqual(gaps, [
     'No monitored overflow within 60&nbsp;km upstream, so no spills to go on; farms, wildlife and unmonitored sources are not modelled.',
     'No rain forecast arrived for Monday, Wednesday or Thursday.',
-    'No lab samples, algae checks or rating: this is not a designated bathing water.']);
+    'No lab samples, algae checks or rating here.']);
   // Today's rain missing: no rain row, and today among the gaps.
   const dry = { ...tees, days: [day('2026-10-04', null), day('2026-10-05', 2)] };
   assert.deepEqual(rows(dry).rows, []);

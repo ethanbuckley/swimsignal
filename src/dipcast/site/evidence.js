@@ -81,6 +81,23 @@ function evidenceRain(d, nowMs, generatedAt) {
     src: `<a href="https://open-meteo.com/">Open-Meteo.com</a>'s forecast` };
 }
 
+// The latest lab sample in one sentence, the panel's and the Compare table's (experience.js): the count,
+// the day it was taken, and whether the count is over 900 E. coli per 100 ml, the line the site's E. coli
+// estimate is about ("a water sample would show E. coli over 900 per 100 ml"). A fact about the number,
+// not advice: 900 is the inland "sufficient" standard's (Bathing Water Regulations 2013, schedule 5, on a
+// 90-percentile evaluation of the samples over four seasons), so one sample sets no rating. On the page
+// the comparison links to the About section's E. coli entry, which says so. A count given as a limit
+// ("<10", ">10000") is compared only where the limit settles it. Empty without a usable sample.
+function evidenceSample(s, nowMs, html = false) {
+  if (!s || !s.taken_at || evidenceNil(s.ecoli) || s.ecoli === '' || !Number.isFinite(Number(s.ecoli))) return '';
+  const n = Math.round(Number(s.ecoli)), k = n.toLocaleString('en-GB'), q = s.qualifier, sp = html ? '&nbsp;' : ' ';
+  const count = q === '<' ? `Under ${k}` : q === '>' ? `Over ${k}` : k;
+  const cmp = q === '<' ? (n <= 900 ? 'under 900' : '') : q === '>' ? (n >= 900 ? 'over 900' : '')
+    : n > 900 ? 'over 900' : n === 900 ? 'not over 900' : 'under 900';
+  return `${count} E.${sp}coli per 100${sp}ml, taken ${evidenceDate(s.taken_at, nowMs)}`
+    + (cmp ? `: ${html ? `<a href="#about-ecoli">${cmp}</a>` : cmp}` : '') + '.';
+}
+
 // The rows and the gaps, for a spot of the list (not a point clicked on the map, nor one without a
 // forecast, whose answer says why). Each row: what, how old (age), what it says (say), whose (src).
 function evidenceItems(d, nowMs, generatedAt) {
@@ -101,12 +118,11 @@ function evidenceItems(d, nowMs, generatedAt) {
     src: "The Environment Agency sampler's look, not a lab test" });
   else if (designated) gaps.push('No algae check here this season.');
   const s = d.lab_sample;
-  if (s && s.taken_at && Number.isFinite(Number(s.ecoli))) {
-    const k = Math.round(Number(s.ecoli)).toLocaleString('en-GB'), count = s.qualifier === '<' ? `Under ${k}` : s.qualifier === '>' ? `Over ${k}` : k;
-    rows.push({ what: 'Latest lab sample', at: s.taken_at, say: `${count} E.&nbsp;coli per 100&nbsp;ml, taken ${evidenceDate(s.taken_at, nowMs)}.`, src: ea });
-  } else if (designated && s === null) gaps.push('No lab sample here this season.');
+  if (evidenceSample(s, nowMs)) rows.push({ what: 'Latest lab sample', at: s.taken_at, say: evidenceSample(s, nowMs, true), src: ea });
+  else if (designated && s === null) gaps.push('No lab sample here this season.');
   else if (designated) gaps.push(`The latest lab sample is not in this forecast's data${cl && /^https:\/\//.test(cl.url || '') ? `: <a href="${evidenceEsc(cl.url)}">the Environment Agency's page</a> has it` : ''}.`);
-  if (!designated) gaps.push('No lab samples, algae checks or rating: this is not a designated bathing water.');
+  // The facts only: the line under the five days (check, in index.html) already says why.
+  if (!designated) gaps.push('No lab samples, algae checks or rating here.');
   for (const r of rows) if (r.at) r.age = evidenceAge(r.at, nowMs);
   return { rows, gaps };
 }
@@ -124,5 +140,5 @@ function evidenceTile(d, nowMs, generatedAt) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain };
+  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample };
 }

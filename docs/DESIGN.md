@@ -634,11 +634,19 @@ sources sit together, and the only place with the latest lab sample.
   not part of the level, and their tiles date them.
 - Ages are counted when the page is read, in UK time: "1 h 30 min ago" within a day, as the issue time
   says it, then "Yesterday", "10 days ago", then whole months.
-- The gaps come last, under a hairline, a sentence each, in ink: "No lab samples, algae checks or rating:
-  this is not a designated bathing water.", "No monitored overflow within 60 km upstream, so no spills to go
-  on; farms, wildlife and unmonitored sources are not modelled.", "No rain forecast arrived for Thursday.",
-  "No lab sample here this season." A sample missing because the build had no samples file says that
-  instead, and links the Environment Agency's page.
+- The lab sample is one sentence: the count, the day, and whether the count is over 900, the line the
+  E. coli estimate is about: "380 E. coli per 100 ml, taken 24 Sept: under 900." A fact about the number,
+  not advice. 900 is the inland "sufficient" standard's (Bathing Water Regulations 2013, schedule 5), on a
+  90-percentile evaluation over four seasons, so one sample sets no rating; the comparison links to the
+  About section's E. coli entry, which says so. A count of exactly 900 is "not over 900". A count given as
+  a limit is compared only where the limit settles it ("Under 10 …: under 900"; "Under 1,000 …" is not
+  compared). The Compare table on the Saved page gives the sample in the same words (`evidenceSample`).
+- The gaps come last, under a hairline, a sentence each, in ink: "No lab samples, algae checks or rating
+  here." (the facts only: the line under the five days already says it is not a designated bathing
+  water), "No monitored overflow within 60 km upstream, so no spills to go on; farms, wildlife and
+  unmonitored sources are not modelled.", "No rain forecast arrived for Thursday.", "No lab sample here
+  this season." A sample missing because the build had no samples file says that instead, and links the
+  Environment Agency's page.
 - No level colour anywhere in it: the rating's word is in ink here, since its tile already colours it.
 - Not on a point clicked on the map, nor on a spot without a forecast, whose answer says why.
 

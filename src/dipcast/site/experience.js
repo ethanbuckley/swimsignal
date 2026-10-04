@@ -3,7 +3,18 @@
 // summary is made; Node requires them.
 const rules = () => typeof headParts === 'function' ? { coverage, COVER, NO_OVERFLOWS } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
-function evidenceRows(s, iso, issued, generatedAt = null) {
+// The latest lab sample in the words of a spot's "What the level rests on" (evidence.js, evidenceSample),
+// as plain text; the page loads that file before this one, and Node requires it. Where there is none, it
+// says so: none this season, none in this update (the build had no samples file), or none taken here.
+const sampleWords = () => typeof evidenceSample === 'function' ? evidenceSample : require('./evidence.js').evidenceSample;
+function waterSamples(s, now = Date.now()) {
+  const cl = s.classification, said = sampleWords()(s.lab_sample, now);
+  const page = cl?.url ? ' Check the Environment Agency’s page for every result and current advice.' : '';
+  if (said) return said + page;
+  if (s.source !== 'designated' && !cl) return 'No lab samples here.';   // the rating row says it is not a bathing water
+  return (s.lab_sample === null ? 'No lab sample this season.' : 'No lab sample in this update.') + page;
+}
+function evidenceRows(s, iso, issued, generatedAt = null, now = Date.now()) {
   const total = s.upstream_summary?.overflows || 0, monitored = s.now?.monitored_upstream;
   const day = (s.days || []).find(x => x.date === iso), cl = s.classification;
   // The build's mark on the day, as the page goes by (ecoliUntested); a day without one (no forecast
@@ -19,7 +30,7 @@ function evidenceRows(s, iso, issued, generatedAt = null) {
       : `${monitored} of ${total} upstream overflows report live in this update.${monitored < total ? ' Missing reports do not mean no spills.' : ''}`],
     ['Environment Agency rating', cl?.class ? `${cl.class.charAt(0).toUpperCase() + cl.class.slice(1)}${cl.year ? ' · ' + cl.year : ''}. Based on up to four seasons of samples; not today’s water quality.`
       : s.source === 'designated' ? 'Designated bathing water; no rating available in this update.' : 'Not an Environment Agency designated bathing water. No bathing-water rating shown.'],
-    ['Water samples', 'Individual bacterial sample results are not included here.' + (cl?.url ? ' Check the Environment Agency’s page for dated results and current advice.' : ' No current water test is shown.')],
+    ['Water samples', waterSamples(s, now)],
     ['Model limits', total && !s.error && s.location?.mode !== 'lake'
       ? (offSeason ? 'Outside May–September: the E. coli estimate is untested for this season.' : 'E. coli model tested on river bathing waters in May–September; it is not a test of this spot today.')
       : 'No validated daily E. coli estimate is shown here.'],
