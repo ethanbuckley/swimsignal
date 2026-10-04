@@ -368,6 +368,48 @@ def test_outside_england_from_the_published_shape(lat, lon, outside):
     assert sr.outside_england(lat, lon) is outside
 
 
+@pytest.mark.parametrize("lat, lon, where", [
+    (54.5866, -5.9295, "northern_ireland"),     # the Lagan in Belfast
+    (54.3448, -7.6385, "northern_ireland"),     # the Erne at Enniskillen
+    (54.9966, -7.3190, "northern_ireland"),     # the Foyle at Derry
+    (54.8265, -7.4610, "northern_ireland"),     # Strabane, east of the Foyle
+    (54.4770, -8.0850, "northern_ireland"),     # Belleek, on the Erne
+    (53.3461, -6.2733, "republic_of_ireland"),  # the Liffey in Dublin
+    (53.4239, -7.9407, "republic_of_ireland"),  # the Shannon at Athlone
+    (52.9293, -8.42816, "republic_of_ireland"),  # Lough Derg at Mountshannon
+    (54.8340, -7.4870, "republic_of_ireland"),  # Lifford, west of the Foyle
+    (54.5025, -8.1880, "republic_of_ireland"),  # Ballyshannon, on the Erne
+    (51.48, -3.18, "wales_scotland"),           # the Taff in Cardiff
+    (54.047, -1.953, ""),                       # the Wharfe at Burnsall
+])
+def test_where_outside_england_from_the_published_shape(lat, lon, where):
+    assert sr.outside_where(lat, lon) == where
+    assert sr.outside_england(lat, lon) is bool(where)
+
+
+@pytest.mark.parametrize("location, says, source", [
+    ("54.58660, -5.92950", ("is in Northern Ireland. SwimSignal has overflow data for England only, so it has no forecast "
+                            "in Northern Ireland and cannot add a spot there."),
+     "https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard"),
+    ("53.34610, -6.27330", ("is in the Republic of Ireland. SwimSignal has overflow data for England only, so it has no "
+                            "forecast in the Republic of Ireland and cannot add a spot there."), "https://www.beaches.ie/"),
+    # West of the old box (longitude -8.7), which called it "outside Great Britain" and asked for coordinates.
+    ("53.27400, -9.04900", "is in the Republic of Ireland.", "https://www.beaches.ie/"),
+    # The other way round, as the box turns any pair.
+    ("-6.27330, 53.34610", "is in the Republic of Ireland.", "https://www.beaches.ie/"),
+])
+def test_a_request_in_ireland_says_it_is_not_covered_and_names_the_official_source(location, says, source):
+    """Before, a Belfast or Dublin request passed the Great Britain box and was placed on the river map,
+    which has no link in Ireland: "There is no river or lake on SwimSignal's map within 1.5 km", and a
+    request to edit the coordinates. No network here: the answer must not need one."""
+    req = sr.request_from_event({"inputs": {"name": "Somewhere", "location": location, "kind": "river"}})
+    text, ok = sr.answer(req, env={}, net=None, overflows=None, spots=[])
+    assert ok and text.startswith(sr.MARKER + "\n")
+    assert says in text and source in text
+    assert "```csv" not in text and "within 1.5 km" not in text and sr.HOW_TO not in text
+    assert "Tailte Éireann" in text and "Office for National Statistics" in text
+
+
 def test_a_spot_outside_england_says_its_overflows_are_not_known(net, check, monkeypatch):
     """Before, a Welsh request read "None monitored within 60 km upstream" (the Wye at Hay, 3 Oct 2026):
     true of SwimSignal's table, not of the river."""

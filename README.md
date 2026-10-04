@@ -861,14 +861,19 @@ within 1.5 km, a side channel traced as the main river), the same transport,
 calibration and combination, and the same card, marked "Unlisted point: not
 hand-checked", without the E. coli estimate (it needs rain at the spot
 itself, which only listed spots get). The overflow data covers England only,
-so a click in Wales or Scotland, or on their estuaries, gets "SwimSignal has
-overflow data for England only" before any river is looked for
-(`data/raw/outside_england.json`, from the Office for National Statistics'
-country boundaries by `scripts/make_outside_england.py`, OGL v3). Until 4 Oct
-2026 a click on the Taff in Cardiff or the Tweed at Kelso, in a square with
-files, found no overflow upstream and read "No sewage risk from monitored
-overflows". A click in England with no square near has no monitored overflow
-upstream of any water there, and says so. The tracing runs once per
+so a click in Wales, Scotland or anywhere on the island of Ireland, or on
+their estuaries, gets "SwimSignal has overflow data for England only" before
+any river is looked for (`data/raw/outside_england.json`, made by
+`scripts/make_outside_england.py` from the Office for National Statistics'
+country boundaries, OGL v3, and Tailte Éireann's provinces of the Republic,
+CC BY 4.0). A click in Northern Ireland names DAERA's bathing water dashboard,
+and one in the Republic names the Environmental Protection Agency's
+beaches.ie. Until 4 Oct 2026 a click on the Taff in Cardiff or the Tweed at
+Kelso, in a square with files, found no overflow upstream and read "No sewage
+risk from monitored overflows", and a click in Belfast or Dublin, with no
+square near, read "No river or lake near this point has a monitored storm
+overflow within 60 km upstream". A click in England with no square near has no
+monitored overflow upstream of any water there, and says so. The tracing runs once per
 network release and is cached in the state directory (`anypoint_links.pkl`);
 only links downstream of an overflow that moved are traced again. Rain for
 all overflows is about 1,600 Open-Meteo cells against the spots' 300, and on
