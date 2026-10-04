@@ -1,6 +1,6 @@
 # SwimSignal push alerts
 
-This is a Cloudflare Worker that sends Web Push notifications for SwimSignal. A visitor turns on alerts on the Saved page, and their browser registers with the Worker along with the ids of their saved spots. Every 2 minutes the Worker reads the site's `data/alerts.json` and either revalidates a pending batch or identifies newly high spots. When a saved spot has just become high or very high, it queues one notification for each visitor who saved it, and at most one for each spot in 20 hours: the site is rebuilt several times a day, and a spot near the line can cross it more than once. It has no npm dependencies. The encryption (RFC 8291) and sender signature (RFC 8292) use the Web Crypto API built into Workers. The same Worker can send these alerts by email too; that part is off until it is set up ([Email alerts](#email-alerts)).
+This is a Cloudflare Worker that sends Web Push notifications for SwimSignal. A visitor turns on alerts on the Saved page, and their browser registers with the Worker along with the ids of their saved spots. Every 2 minutes the Worker reads the site's `data/alerts.json` and either revalidates a pending batch or identifies newly high spots. When a saved spot has just become high or very high, it queues one notification for each visitor who saved it, and at most one for each spot in 20 hours: the site is rebuilt several times a day, and a spot near the line can cross it more than once. Visitors who ask also get a weekly note on Thursday evenings with the lowest-risk days ahead ([The weekly note](#the-weekly-note)). It has no npm dependencies. The encryption (RFC 8291) and sender signature (RFC 8292) use the Web Crypto API built into Workers. The same Worker can send these alerts by email too; that part is off until it is set up ([Email alerts](#email-alerts)).
 
 ## What it stores
 
@@ -8,9 +8,10 @@ One Workers KV entry per browser, holding:
 
 - the push subscription: the push service endpoint URL, its expiry time if the browser gave one, and the two public keys the browser supplied (`p256dh` and `auth`);
 - the list of saved spot ids;
+- `weekly: true`, only if the visitor asked for the weekly note ([The weekly note](#the-weekly-note));
 - the time of the last change.
 
-No personal names, email addresses or IP addresses. (Email alerts, below, keep an address once its owner confirms it.) Cloudflare sees each request's IP address, as any host does, but the Worker does not store it. A second entry, `state`, holds the rank of every spot at the last run, so the next run can tell what has changed. While alerts are pending, `queue` holds subscription key hashes, the affected spots' public forecast details, the comparison state needed to recover an interrupted run, and bounded retry counters/times.
+No personal names, email addresses or IP addresses. (Email alerts, below, keep an address once its owner confirms it.) Cloudflare sees each request's IP address, as any host does, but the Worker does not store it. A second entry, `state`, holds the rank of every spot at the last run, so the next run can tell what has changed. While alerts are pending, `queue` holds subscription key hashes, the affected spots' public forecast details, the comparison state needed to recover an interrupted run, and bounded retry counters/times. `weekq` holds the weekly note's Thursday date and the key hashes still to send to.
 
 The endpoint and keys are enough to send that browser a notification, so treat the KV contents as private. Logs name a subscription by part of its hash, never by endpoint.
 
@@ -43,6 +44,54 @@ Each batch rechecks the latest forecast and uses its current wording. Spots that
 Push TTL is the forecast's remaining lifetime. Messages include an issue time and expiry; the device shows the UK issue time, or a neutral check-latest notice if delivery was delayed past expiry. It does not silently discard the push, because user-visible subscriptions require a visible result. Already-visible notifications cannot be withdrawn by this implementation. [Web Push TTL](https://www.rfc-editor.org/rfc/rfc8030#section-5.2), [visible push subscriptions](https://developer.mozilla.org/en-US/docs/Web/API/PushManager/subscribe).
 
 Newly rising spots are looked for once the current queue has drained. KV still does not serialize overlapping cron invocations, so duplicate processing remains possible. Real-device push delivery and runtime-limit tests remain necessary before promising dependable paid alerts. Follow [the iPhone test guide](DEVICE_TEST.md); no physical-device test has been claimed yet.
+
+## The weekly note
+
+A notification on Thursday evenings, for those who ask: at each saved spot, the lowest level of the four days after today and the days that have it. It is off unless the visitor ticks the box that appears under "Turn off alerts" on the Saved page once alerts are on. The page then sends `weekly: true` with the saved spots, and the record keeps it, with `w: 1` in its key's metadata. The code is `src/weekly.js`.
+
+### What it says
+
+The title is "Lowest pollution risk this week", the Saved page's own words. Then one line a spot, the lowest level first, at most five, then "And N more on your Saved page.":
+
+```
+Nidd at the Lido, Knaresborough: low risk every day from tomorrow to Monday.
+Wharfe at Burley: tomorrow and Sunday, moderate risk.
+Wharfe at Cromwheel, Ilkley: at least high risk every day.
+```
+
+The device adds the forecast's issue time, as it does for an alert. Tapping opens the spot, or the Saved page when there are several. The words are made in the build: `scripts/alerts.js` gives each spot in `alerts.json` a `best` (`date`, `level`, `words`) with levels.js's day words and level words, so the note says what the page says. A water rated poor says "at least high risk every day". A spot whose level is the same every day (no monitored overflow upstream, an isolated lake) has no `best`, so no line; a browser with no line to send gets no note.
+
+When no day is low, the note gives the lowest level in the same form, "Friday, high risk", rather than sending nothing. A note that came only in good weeks would be silent in bad ones, and that silence would look the same as a note that failed to arrive. The level always carries "risk", so a high day cannot read as a good one.
+
+### When
+
+The 2-minute cron does it; there is no new trigger. From 18:00 UK time on a Thursday, the first run in which the alerts have nothing to send or queue lists the subscriptions and queues those with `w: 1` in `weekq`. Each later such run sends `SENDS_PER_RUN` notes, each made from that run's `alerts.json`, as an alert is. Alerts come first: a run that sends or queues an alert sends no note. A forecast that expires before midnight pauses the notes until a newer build arrives. At midnight UK time the window closes: notes not sent by then are dropped, and the next Thursday's first run logs how many. Outside the window the cron reads nothing for the note.
+
+### Free-plan budget
+
+From Cloudflare's Workers limits page (updated 5 Sep 2026) and its KV limits and pricing pages (updated 21 Apr 2026), all read 4 Oct 2026. N is the number of browsers that asked.
+
+| Free-plan limit | One run that sends notes | One Thursday |
+|---|---|---|
+| 50 outgoing requests a run | 1 for `alerts.json` + up to 15 notes + up to 10 emails = 26 | |
+| 1,000 KV operations a run | 3 reads (`queue`, `state`, `weekq`) + 15 record reads + 1 write + up to 15 deletes = 34 | |
+| 10 ms CPU a run | 15 encryptions, about 4.2 ms, plus 0.19 ms per push service: the same as an alert batch, and never in the same run as one | |
+| 1,000 KV writes a day | 1 | 1 to queue + 1 for each sending run = 1 + N ÷ 15, rounded up; at most 180 |
+| 100,000 KV reads a day | 18 | 1 for each run in the window (180) + N |
+| 1,000 KV lists a day | | 1 for each 1,000 subscriptions, once |
+| 1,000 KV deletes a day | up to 15 | 1 for each 404 or 410 |
+
+The window is 6 hours, so 180 runs: one queues and up to 179 send, at most 179 × 15 = 2,685 notes. For N = 100 that is 7 sending runs (14 minutes) and 8 writes; for N = 1,000, 67 runs (2 hours 14 minutes) and 68 writes. Past about 2,685 the rest are dropped at midnight; on the Workers Paid plan, raise `SENDS_PER_RUN`. Each run that sends or queues an alert on a Thursday evening is one run fewer for the note.
+
+### Not by email
+
+The note is push only. Email alerts are off for now, and their free allowance is 100 emails a day, 80 of them for alerts: a weekly email to every address would use it on Thursdays, when an alert for a spot turning high may need it. Their sign-up also asks consent for alerts when a spot turns high, so a weekly email would need its own box and words in the confirmation. Both are open questions for the operator.
+
+### Deploying it
+
+Run `npx wrangler deploy` from `push/`. Deploy before the page change goes live: the new Worker takes both the old page and the new one (no `weekly` means off), but the old Worker drops `weekly`, so a box ticked before the deploy shows ticked while the Worker holds it off, until the page next sends the list (when the saved spots change, or after a week).
+
+On a Thursday after 18:00 UK time, `npx wrangler tail` shows `weekly: 2026-10-08: N weekly notes to send`, and two minutes later `weekly: sent N, removed 0, failed 0; 0 still queued`.
 
 ## Setup
 
