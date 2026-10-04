@@ -2361,19 +2361,21 @@ function partOfDay(iso) {
   const day = p.find(x => x.type === 'weekday').value, part = DAY_PARTS.find(([end]) => +p.find(x => x.type === 'hour').value < end)[1];
   return part === 'overnight' ? `overnight into ${day}` : `by about ${day} ${part}`;
 }
-// The time is transport.clear_time's, which errs late: the live risk run forward, as if the spills
-// running now stopped now and none started, but never before the water from every spill it counts has
-// passed the spot (the live risk takes no account of travel time). The live risk dies off with T90 and
-// drops a spill 48 h after it ends. When the drop (clears_by 'window') or the water still on its way
-// ('travel', clears_after naming the overflow) sets the time, the sentence says so. A time already
-// past says nothing (an old page). Then the first later day the forecast raises by spills after today alone.
+// The time is transport.clear_time's: the live risk run forward, as if the spills running now stopped
+// now and none started, allowing for travel time (the live risk itself takes none): each spill is held
+// at its full weight until its water has passed the spot, then dies off with T90, and stops counting
+// 48 h after its water passed. When a spill leaving the count (clears_by 'window') or travel time
+// ('travel': it holds at least half the risk as it clears; clears_after names the overflow it holds up
+// most) sets the time, the sentence says so. A time already past says nothing (an old page). Then the
+// first later day the forecast raises by spills after today alone.
 function clearSentence(d) {
   const n = d.now || {};
   if (!n.clears_at || rank(n.label) < 1 || Date.parse(n.clears_at) <= Date.now()) return '';
-  const k = n.discharging_upstream || 0, last = n.clears_after || {};
+  const k = n.discharging_upstream || 0, last = n.clears_after || {}, h = Math.round(last.travel_h);
   const later = d.days.slice(1, 5).find(x => hasData(x) && (x.risk_from_later_spills ?? 0) >= SPILL_CUTS[0]);
-  const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after it ends`
-    : n.clears_by === 'travel' && (last.site_name || last.site_id) ? `, once the water from ${esc(nameCase(last.site_name ?? last.site_id))} has passed` : '';
+  const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after its water has passed`
+    : n.clears_by === 'travel' && (last.site_name || last.site_id) && h >= 1
+      ? `, allowing for the ${h} hour${h === 1 ? '' : 's'} water from ${esc(nameCase(last.site_name ?? last.site_id))} takes to get here` : '';
   return `If ${k === 1 ? 'the overflow discharging upstream stops now' : k ? `the ${k} overflows discharging upstream stop now` : 'no new spill starts'}, `
     + `the model expects low risk from spills ${partOfDay(n.clears_at)}${why}.`
     + (later ? ` Rain may bring new spills and ${later.label} risk ${dayWord(later.date)}.` : '');
