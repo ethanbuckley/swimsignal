@@ -260,6 +260,9 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     assert "<h2>Alerts</h2>" in on and "push address" in on and "If alerts are added" not in on
     for before, after in bs.PUSH_SWAPS:
         assert after in on and before not in on
+    # The weekly note (push/src/weekly.js) is one more thing the record can hold, and one more use.
+    assert "if you tick the weekly note, that you asked for it" in on
+    assert "The weekly note is off until you tick it, and unticking it stops it." in on
     assert (tmp_path / "levels.js").exists()
 
 
