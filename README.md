@@ -491,6 +491,44 @@ counted apart (`n_before_window`) rather than in the window's candidates. On
 observations, 5,325 failed the gap rule (5,025 of them on 28 Sep, when the
 masks began in the afternoon) and 180 were South West Water's.
 
+**Warnings, misses and false alarms (4 Oct 2026).** Brier scores and AUC
+mean nothing to a swimmer, so the scorer also counts both forecasts as
+warnings (`warning_table` in `verification.json`, from
+`forecast_log.warning_counts`). The line is the site's own High risk, where
+alerts are sent: an overflow's calibrated spill chance of 40% or more
+(`SPILL_WARN_AT`; a spot beside that overflow would read High risk), and an
+E. coli estimate of 25% or more (`ECOLI_WARN_AT`), on rivers only, one row per
+sample with the latest estimate issued before it. Each forecast is a hit, a
+miss, a false alarm or a correct quiet day, and the table gives the share of
+events warned of, the share of warnings that came true and the share right,
+always beside the share that saying "no" every time gets right. `warning_lift`
+is how many times likelier the event was after a warning than across all
+forecasts (the share of warnings that came true over the base rate). On the live
+scores of 4 Oct 00:15 (23,395 overflow-day forecasts, 29 Sep to 3 Oct) the
+forecast warned in 152 of the 725 forecasts for an overflow-day that spilled
+(21%; 145 such days, each forecast at five leads), 152 of its 363 warnings came
+true (42%, against a 3.1% spill rate across all forecasts: 13.5 times as
+likely), and it was right on 96.6% against 96.9% for never warning.
+The E. coli counts were 15 river samples, 1 over 900, no hits, 1 miss and 2
+false alarms: too few to judge (under 100 samples or 10 exceedances).
+
+**Service record (4 Oct 2026).** `forecast_log.service_record` writes a
+`service` block into `verification.json` from the pipeline's own logs. Runs
+come from `poll_log.parquet`, which every run writes once (whole days from
+the day after its first poll, 16 Sep 2026, to yesterday), against the 48 a
+day that the cron in `site.yml` asks for; a test checks the two agree. Feed
+outages are the polls in which a company returned no rows, and the morning
+forecast is the days with a spot forecast issued by 08:00. A run log,
+`build_runs` in `dipcast.duckdb`, has one row per build from 4 Oct 2026
+(`log_build`, called by `scripts/build_site.py` before it writes
+`verification.json`, and on `BuildUnhealthy`): spots tried and forecast, the
+feeds that returned nothing, and what started the run. It lives in the same
+file as the forecast log, so it survives between runs the same way (the
+Actions cache, then the `state` release) with no change to the workflow. On
+the state release of 3 Oct 20:06 UTC: 148 runs on 17 whole days, a median of
+7 a day, 18% of the 816 asked for; the longest wait 7.7 h; a forecast out by
+08:00 on all 17 days; one empty poll, Yorkshire Water's at 00:18 on 2 Oct.
+
 A company feed that fails, or returns no rows, keeps its last snapshot in
 `live_latest.parquet` with status -3 (feed down) and the time it last answered;
 a spot's "Right now" tile names the company and that time, and counts its

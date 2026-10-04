@@ -1,6 +1,6 @@
 """Log every forecast and score it later against what the overflows actually did.
 
-Two DuckDB tables in the state directory:
+Three DuckDB tables in the state directory:
 
 * forecast_overflows: one row per (issue, overflow, target day, lead) with the
   raw and calibrated spill probability. These are verifiable: the live feeds
@@ -8,6 +8,9 @@ Two DuckDB tables in the state directory:
 * forecast_points: one row per (issue, target day) with the point risk shown to
   the user. Not directly verifiable without water-quality samples; kept for
   the record and for the E. coli study.
+* build_runs: one row per run of the site build (from 4 Oct 2026): how many spots
+  got a forecast and which company feeds returned nothing. In the same file as the
+  forecast log, so it survives between CI runs the same way (service_record).
 
 `verify_live()` scores overflow-day forecasts whose target day has passed,
 using the accumulated live history, and writes verification_live.json.
@@ -41,12 +44,17 @@ Scoring rules (16 Sep 2026):
 * E. coli. A point forecast is compared with a sample only if it was issued
   before the sample was taken; lead 0 ("same day") is reported separately from
   leads 1-4 ("in advance").
+* Warnings (4 Oct 2026). Both forecasts are also counted as a warning system at
+  the site's own high-risk line (SPILL_WARN_AT, ECOLI_WARN_AT): hits, misses, false
+  alarms and correct quiet days, with the share a forecast of "no" every time would
+  get right beside the share correct (warning_table).
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import os
 import threading
 from datetime import date, timedelta
 
@@ -76,6 +84,22 @@ COVERAGE_FILE = "live_coverage.parquet"
 SLOTS_PER_DAY = 48
 RAIN_BANDS = [0.0, 1.0, 5.0, 10.0, np.inf]   # target-day rain at the overflow's cell, mm
 RAIN_BAND_LABELS = ["under 1 mm", "1-5 mm", "5-10 mm", "10 mm or more"]
+# What counts as a warning, from what the site itself warns at. The site's warning is "High risk":
+# a saved spot that reaches it sends an alert (push/src/index.js, HIGH = 2), and its headline turns
+# high. For the spill forecast that is an exposure index of 0.40 (transport.risk_label; SPILL_CUTS
+# in site/levels.js). The scores here are per overflow, and a spot's exposure index is
+# 1 - prod(1 - p_i * reach_i) over its overflows (transport.combine_daily), so 0.40 is the spill chance
+# at which a spot right beside one overflow (reach 100%) would read High risk. A spot further down
+# reads high only at a higher chance, or from several overflows at once, so this counts the warnings
+# the forecast gave at the overflows themselves. Moderate (0.15) was not chosen: no alert is sent there.
+SPILL_WARN_AT = 0.40
+# The E. coli estimate's High risk line: a 25% chance a sample is over 900 per 100 ml (ECOLI_CUTS in
+# site/levels.js), on rivers only, where the site shows the estimate and lets it set the level.
+ECOLI_WARN_AT = 0.25
+# Below these the E. coli warning counts are shown but called too few to judge: the same rule as the
+# Accuracy page's comparison with the Environment Agency (100 samples, 10 of them over 900).
+ECOLI_MIN_SAMPLES = 100
+ECOLI_MIN_EXCEEDANCES = 10
 
 
 def _conn() -> duckdb.DuckDBPyConnection:
@@ -100,6 +124,12 @@ def _conn() -> duckdb.DuckDBPyConnection:
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS version VARCHAR")
     # Added 28 Sep 2026: the target day's rain (mm) at the overflow's cell that the forecast used.
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_mm DOUBLE")
+    # Added 4 Oct 2026: the run log (log_build). `failed` holds why a build did not publish, else NULL.
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS build_runs (
+            built_at TIMESTAMPTZ, event VARCHAR, run_id VARCHAR, spots INTEGER, forecast_ok INTEGER,
+            forecast_failed INTEGER, no_forecast_possible INTEGER, today_rain_unavailable INTEGER,
+            feeds INTEGER, feeds_down VARCHAR, failed VARCHAR, version VARCHAR)""")
     return con
 
 
@@ -422,6 +452,8 @@ def verify_live(as_of: date | None = None) -> dict:
     # forecast; a real forecast that loses to it is miscalibrated for the period.
     out["overall"]["period_base_rate_brier"] = float(np.mean((y.mean() - y) ** 2))
     out["overall"]["mean_forecast"] = float(fc["p_cal"].mean())
+    # The same forecasts as warnings, for the plain figures at the top of the Accuracy page.
+    out["warning_table"] = spill_warning_table(fc)
     by_lead = []
     for k, g in fc.groupby("lead"):
         yy = g["y"].to_numpy()
@@ -478,6 +510,59 @@ def verify_live(as_of: date | None = None) -> dict:
     if len(fc) >= 200:
         out["reliability"] = reliability_table(y, fc["p_cal"].to_numpy()).round(4).to_dict("records")
     return _finish(out, as_of, fc)
+
+
+def warning_counts(y, p, warn_at: float) -> dict:
+    """A forecast read as a warning when p >= warn_at, against what happened (y, 1 or 0): hits
+    (warned, and it happened), misses, false alarms and correct quiet days, then the share of
+    events warned of (hit_rate), the share of warnings that came true (warnings_true) and the
+    share of all forecasts that were right (share_correct). Events are rare, so share_correct
+    alone flatters any forecast: always_no_correct is what saying "no" every time gets right,
+    and the page never shows one without the other. warning_lift is how many times likelier
+    the event was after a warning than across all forecasts (warnings_true / base_rate): whether
+    a warning tells a swimmer anything. A share with nothing to divide is None."""
+    yy = np.asarray(y).astype(bool)
+    w = np.asarray(p, dtype=float) >= warn_at
+    hits, misses = int((w & yy).sum()), int((~w & yy).sum())
+    false_alarms, quiet = int((w & ~yy).sum()), int((~w & ~yy).sum())
+    n = len(yy)
+    share = lambda a, b: a / b if b else None
+    base, true = share(hits + misses, n), share(hits, hits + false_alarms)
+    return {"n": n, "hits": hits, "misses": misses, "false_alarms": false_alarms, "quiet_correct": quiet,
+            "hit_rate": share(hits, hits + misses), "warnings_true": true,
+            "share_correct": share(hits + quiet, n), "always_no_correct": share(false_alarms + quiet, n),
+            "base_rate": base, "warning_lift": true / base if true is not None and base else None}
+
+
+def spill_warning_table(fc: pd.DataFrame) -> dict:
+    """The scored overflow-day forecasts (verify_live's rows: y, p_cal, lead, site_id, target_day)
+    as warnings at SPILL_WARN_AT. Each overflow-day is scored once per lead, so the counts are of
+    forecasts; the distinct overflow-days and spill days are given too, and the counts by lead."""
+    days = fc[["site_id", "target_day"]].drop_duplicates()
+    spills = fc.loc[fc["y"] == 1, ["site_id", "target_day"]].drop_duplicates()
+    return {"warn_at": SPILL_WARN_AT, "level": "high", "unit": "overflow-day forecast",
+            **warning_counts(fc["y"], fc["p_cal"], SPILL_WARN_AT),
+            "n_overflow_days": len(days), "n_spill_overflow_days": len(spills),
+            "n_days": int(fc["target_day"].nunique()),
+            "first_day": str(fc["target_day"].min()), "last_day": str(fc["target_day"].max()),
+            "by_lead": [{"lead": int(k), **warning_counts(g["y"], g["p_cal"], SPILL_WARN_AT)} for k, g in fc.groupby("lead")]}
+
+
+def ecoli_warning_table(m: pd.DataFrame) -> dict:
+    """The scored E. coli pairs (verify_ecoli's rows: one per sample and lead) as warnings at
+    ECOLI_WARN_AT, one row per sample: the latest estimate issued before the sample was taken,
+    whatever its lead, as a swimmer would have seen it. Rivers only: on lakes the site neither
+    shows the estimate nor lets it set the level, so a lake sample tested no warning."""
+    latest = m.sort_values("issued_at").groupby(["bw_id", "sample_time"], as_index=False).last()
+    rivers = latest[latest["kind"] == "river"]
+    t = {"warn_at": ECOLI_WARN_AT, "level": "high", "unit": "sample", "kind": "river",
+         **warning_counts(rivers["y"], rivers["p_ecoli"], ECOLI_WARN_AT),
+         "n_sites": int(rivers["bw_id"].nunique()), "n_lake_samples_left_out": int((latest["kind"] == "lake").sum()),
+         "leads": {str(k): int(v) for k, v in rivers["lead"].value_counts().sort_index().items()},
+         "first_day": str(rivers["day"].min()) if len(rivers) else None,
+         "last_day": str(rivers["day"].max()) if len(rivers) else None}
+    t["too_few_to_judge"] = bool(t["n"] < ECOLI_MIN_SAMPLES or t["hits"] + t["misses"] < ECOLI_MIN_EXCEEDANCES)
+    return t
 
 
 def unstamped_label(first_stamped) -> str:
@@ -750,6 +835,7 @@ def verify_ecoli(as_of: date | None = None) -> dict:
     out["overall"] = {"brier": float(np.mean((p - y) ** 2)), "base_rate": float(y.mean()),
                       "climatology_brier": float(np.mean((m["p_clim"].to_numpy() - y) ** 2)),
                       "auc": float(roc_auc_score(y, p)) if 0 < y.mean() < 1 and len(m) >= 30 else None}
+    out["warning_table"] = ecoli_warning_table(m)
     out["by_lead"] = [{"lead": int(k), "n": len(g), "base_rate": float(g["y"].mean()), "same_day": bool(k == 0),
                        "brier": float(np.mean((g["p_ecoli"].to_numpy() - g["y"].to_numpy()) ** 2)),
                        "climatology_brier": float(np.mean((g["p_clim"].to_numpy() - g["y"].to_numpy()) ** 2))}
@@ -808,6 +894,138 @@ def _site_companies() -> pd.Series | None:
     return ov.set_index("site_id")["company"]
 
 
+# --- Service record: did the pipeline run, and did every spot get a forecast? ---------------
+
+# site.yml's schedule, cron "*/30 * * * *": a run every 30 minutes (tests/test_service_record.py
+# checks that the two agree).
+SCHEDULED_RUNS_PER_DAY = 48
+
+
+def log_build(health: dict | None, built_at: pd.Timestamp, failed: str | None = None) -> None:
+    """Append one row to the run log (build_runs): when, what started the run (GitHub's event
+    name: schedule, push or workflow_dispatch; "local" off GitHub), the spot counts from
+    build_site.build_health and the company feeds that returned no rows. A build that stopped
+    before publishing (BuildUnhealthy) is logged with `failed` and no counts, so the record never
+    holds only the runs that worked. Never raises: a run log must not stop a build."""
+    h = health or {}
+    feeds = h.get("live_feeds")
+
+    def num(k):
+        return int(h[k]) if h.get(k) is not None else None
+    try:
+        from dipcast import __version__
+        row = (built_at, os.environ.get("GITHUB_EVENT_NAME") or "local", os.environ.get("GITHUB_RUN_ID"),
+               num("spots"), num("forecast_ok"), num("forecast_failed"), num("no_forecast_possible"),
+               num("today_rain_unavailable"), len(feeds.get("rows") or {}) if feeds else None,
+               ",".join(feeds.get("down") or []) if feeds else None, failed, __version__)
+        with _LOCK:
+            con = _conn()
+            try:
+                con.execute("INSERT INTO build_runs VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", row)
+            finally:
+                con.close()
+    except Exception as e:  # noqa: BLE001 - the run log must never stop a build
+        log.warning("run log not written: %s", e)
+
+
+def _local_minute(ms) -> str:
+    return pd.Timestamp(int(ms), unit="ms", tz="UTC").tz_convert(LOCAL_TZ).isoformat(timespec="minutes")
+
+
+def _runs_and_feeds(pl: pd.DataFrame, first: date, last: date) -> tuple[dict, dict]:
+    """From the poll log, the runs and the feed outages on whole local days first..last."""
+    t = pd.to_datetime(pl["fetched_at"], utc=True)
+    polls = pd.DatetimeIndex(sorted(t.unique()))
+    pday = np.array(polls.tz_convert(LOCAL_TZ).date)
+    inw = (pday >= first) & (pday <= last)
+    days = pd.date_range(first, last, freq="D").date
+    per_day = pd.Series(pday[inw]).value_counts().reindex(days, fill_value=0)
+    # The wait before each run in the window, from the run before it (which may fall before the window).
+    idx = [i for i in np.flatnonzero(inw) if i > 0]
+    gaps = np.array([(polls[i] - polls[i - 1]).total_seconds() / 3600 for i in idx])
+    n = int(inw.sum())
+    runs = {"from_day": str(first), "to_day": str(last), "n_days": len(days), "n": n,
+            "scheduled_per_day": SCHEDULED_RUNS_PER_DAY, "scheduled": SCHEDULED_RUNS_PER_DAY * len(days),
+            "share_of_scheduled": n / (SCHEDULED_RUNS_PER_DAY * len(days)),
+            "per_day_median": float(per_day.median()), "per_day_min": int(per_day.min()), "per_day_max": int(per_day.max()),
+            "days_without_run": [str(d) for d in per_day.index[per_day == 0]],
+            "median_gap_h": round(float(np.median(gaps)), 2) if len(gaps) else None,
+            "max_gap_h": round(float(gaps.max()), 2) if len(gaps) else None,
+            "max_gap_ended": polls[idx[int(gaps.argmax())]].tz_convert(LOCAL_TZ).isoformat(timespec="minutes") if len(gaps) else None}
+    w = pl[(t.dt.tz_convert(LOCAL_TZ).dt.date >= first) & (t.dt.tz_convert(LOCAL_TZ).dt.date <= last)]
+    down = w[w["n_rows"] == 0]
+    feeds = {"from_day": str(first), "to_day": str(last), "n_polls": n, "n_down": len(down),
+             "companies": [{"company": str(c), "polls": len(g), "down": int((g["n_rows"] == 0).sum())}
+                           for c, g in w.groupby("company")],
+             "down_at": [{"company": str(r.company), "at": pd.Timestamp(r.fetched_at).tz_convert(LOCAL_TZ).isoformat(timespec="minutes")}
+                         for r in down.sort_values("fetched_at").tail(20).itertuples(index=False)]}
+    return runs, feeds
+
+
+def _builds(b: pd.DataFrame) -> dict:
+    """The run log summed: runs, how many published, what started them, and the spots forecast."""
+    ok = b[b["failed"].isna()]
+    share = (ok["forecast_ok"] / ok["spots"]).where(ok["spots"] > 0)
+    worst = ok.loc[share.idxmin()] if share.notna().any() else None
+    return {"since": _local_minute(b["ms"].min()), "n": len(b), "n_published": len(ok),
+            "by_event": {str(k): int(v) for k, v in b["event"].value_counts().items()},
+            "not_published": [{"at": _local_minute(r.ms), "why": str(r.failed)} for r in b[b["failed"].notna()].tail(10).itertuples(index=False)],
+            "spots_attempted": int(ok["spots"].sum()), "spots_forecast": int(ok["forecast_ok"].sum()),
+            "share_forecast": float(ok["forecast_ok"].sum() / ok["spots"].sum()) if ok["spots"].sum() else None,
+            "runs_every_spot": int((ok["forecast_failed"] == 0).sum()),
+            "worst": None if worst is None else {"at": _local_minute(worst["ms"]), "forecast_ok": int(worst["forecast_ok"]),
+                                                 "spots": int(worst["spots"])}}
+
+
+def service_record(as_of: date | None = None) -> dict | None:
+    """Whether the pipeline ran, from its own logs, for the Accuracy page. On whole local days from
+    the day after the poll log's first poll (16 Sep 2026) to yesterday:
+
+    * runs: the runs in the poll log, which every run writes once (ingest.live.log_poll), against
+      SCHEDULED_RUNS_PER_DAY, and the longest wait between runs. GitHub starts scheduled runs when
+      it has capacity, and a push to main starts one too, so this is how many runs there were, not
+      the share of schedule slots GitHub kept. A run that polled and then failed counts; the run
+      log tells those apart from 4 Oct 2026.
+    * feeds: per company, the runs in which its feed returned no rows (live_feed_health's "down").
+    * morning: the days with a spot forecast issued by DECISION_HOUR, the forecast the live scores use.
+
+    And from the run log (build_runs, since its first row): runs that published, those that did not
+    and why, and the share of spots that got a forecast. None when there is nothing to report."""
+    as_of = as_of or pd.Timestamp.now(tz=LOCAL_TZ).date()
+    last = as_of - timedelta(days=1)
+    out: dict = {"scheduled_per_day": SCHEDULED_RUNS_PER_DAY, "decision_hour_local": DECISION_HOUR}
+    pl = load_poll_log()
+    first = None
+    if pl is not None and len(pl):
+        first = pd.to_datetime(pl["fetched_at"], utc=True).min().tz_convert(LOCAL_TZ).date() + timedelta(days=1)
+        if first <= last:
+            out["runs"], out["feeds"] = _runs_and_feeds(pl, first, last)
+    if config.DUCKDB_PATH.exists():   # never create a forecast log just to read it
+        with _LOCK:
+            con = _conn()
+            try:
+                morning = {r[0] for r in con.execute(f"""
+                    SELECT DISTINCT strftime(issued_at AT TIME ZONE '{LOCAL_TZ}', '%Y-%m-%d') FROM forecast_points
+                    WHERE (issued_at AT TIME ZONE '{LOCAL_TZ}')
+                          <= CAST(issued_at AT TIME ZONE '{LOCAL_TZ}' AS DATE)::TIMESTAMP + INTERVAL {int(DECISION_HOUR)} HOUR
+                """).fetchall()}
+                logged = con.execute(f"SELECT min(strftime(issued_at AT TIME ZONE '{LOCAL_TZ}', '%Y-%m-%d')) FROM forecast_points").fetchone()[0]
+                builds = con.execute("""SELECT epoch_ms(built_at) AS ms, event, spots, forecast_ok, forecast_failed, failed
+                                        FROM build_runs ORDER BY built_at""").df()
+            finally:
+                con.close()
+        # Without a poll log, from the first whole day of the forecast log.
+        m_first = first or (date.fromisoformat(logged) + timedelta(days=1) if logged else None)
+        if m_first and m_first <= last:
+            days = [str(d) for d in pd.date_range(m_first, last, freq="D").date]
+            out["morning"] = {"from_day": days[0], "to_day": days[-1], "n_days": len(days),
+                              "n_with_forecast": sum(d in morning for d in days),
+                              "days_without": [d for d in days if d not in morning]}
+        if len(builds):
+            out["builds"] = _builds(builds)
+    return out if {"runs", "morning", "builds"} & out.keys() else None
+
+
 def _write(out: dict) -> None:
     config.state_write("verification_live.json").write_text(json.dumps(out, indent=1, default=str))
 
@@ -831,4 +1049,10 @@ def load_verification() -> dict:
                       ("prf", "prf_comparison.json")]:
         q = config.PROCESSED / name
         res[key] = json.loads(q.read_text()) if q.exists() else None
+    # Computed here rather than with the live scores, so a build's own run is in it (log_build runs first).
+    try:
+        res["service"] = service_record()
+    except Exception as e:  # noqa: BLE001 - the page must still get its scores
+        log.warning("service record failed: %s", e)
+        res["service"] = None
     return res
