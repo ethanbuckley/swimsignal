@@ -305,6 +305,9 @@ def test_feedback_and_experience_are_built_for_nested_github_pages(tmp_path):
     # The page asks for its scripts at the build's stamp, as the offline copy stores them.
     assert f'<script src="experience.js?v={stamp}">' in home and f'<script src="levels.js?v={stamp}">' in home
     assert f'<script src="plan.js?v={stamp}">' in home and (tmp_path / "plan.js").exists() and "`plan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    # Named lists of saved spots (lists.js) likewise; a change to it renames the offline copy's cache.
+    assert f'<script src="lists.js?v={stamp}">' in home and (tmp_path / "lists.js").exists() and "`lists.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert bs.TEMPLATE.parent / "lists.js" in bs.SHELL_SOURCES
     assert (tmp_path / "experience.js").exists()
     sw = (tmp_path / "sw.js").read_text()
     assert 'feedback.html' in sw and f"const BUILD = '{stamp}';" in sw and "const CACHE = `dipcast-${BUILD}`;" in sw

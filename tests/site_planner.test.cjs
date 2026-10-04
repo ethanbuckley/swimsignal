@@ -181,13 +181,15 @@ test('stored lists that are not lists, or hold odd entries, read as empty rather
   for (const text of [null, '', 'not json', '"abc"', '42', '{"id":"a"}', 'null']) assert.deepEqual(storedList(text), [], String(text));
   assert.deepEqual(storedList('["a", 3, "b"]', x => typeof x === 'string'), ['a', 'b']);
   let stored = '{"id":"a"}';
-  const ctx = pageContext(['savedIds', 'SWIM_KEY', 'swims', 'swamOn'], {localStorage: {getItem: () => stored}});
+  const ctx = pageContext(['SWIM_KEY', 'swims', 'swamOn'], {localStorage: {getItem: () => stored}});
   assert.equal(vm.runInContext('swims().length', ctx), 0);
   assert.equal(vm.runInContext('swamOn("a", "2026-09-30")', ctx), false);   // threw "swims(...).some is not a function"
   stored = '[null, 7, {"id":"a","date":"2026-09-30","level":"low"}]';
   assert.equal(vm.runInContext('swamOn("a", "2026-09-30")', ctx), true);
-  assert.equal(vm.runInContext(`savedIds('"abc"').length`, ctx), 0);   // a Set of a string was its letters
-  assert.equal(vm.runInContext(`savedIds('["x", {"y":1}]').join()`, ctx), 'x');
+  // The saved spots, read with the lists (lists.js; site_lists.test.cjs has the rest).
+  const {readLists} = require('../src/dipcast/site/lists.js');
+  assert.deepEqual(readLists(null, '"abc"').lists[0].spots, []);   // a Set of a string was its letters
+  assert.deepEqual(readLists(null, '["x", {"y":1}]').lists[0].spots, ['x']);
 });
 test('a river gauge reading over a day old is named, but not shown as the level now', () => {
   const ctx = pageContext(['esc', 'fmt', 'glyph', 'ICON', 'rangeBar', 'riverTile']);

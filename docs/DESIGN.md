@@ -701,6 +701,25 @@ gives all four navigation links a single full-width row.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
 
+## Named lists and shared links (4 October 2026)
+
+- Saved spots can be kept in named lists (`lists.js`; "Weekend", "Club"). With one list the Saved page
+  looks as before. With more, the lists are chips under the heading, as the list's filters are, the one
+  shown filled, and the lede names it: "The next five days at the 3 spots in Weekend". The cards, Compare
+  and "Share this list" are the list shown; the alerts, the badge and the list's "Saved spots" group are
+  every list together.
+- "Your lists" folds under the cards, as Compare does: move or copy a spot (a spot, from any list, and a
+  list to put it in), rename the list shown, make a new list, and delete the list shown, which asks first
+  and says how many spots would no longer be saved. Forms between hairlines; no new colour or radius.
+- Save on a spot's page adds to the list shown. With more than one list it says which, "Save to Weekend"
+  and "Saved in Weekend"; a long name ends in an ellipsis, and the back link keeps to one line.
+- A shared list opens as a page of its own, read only: the list's name as the title, one sentence saying
+  someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
+  tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
+  added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- What a link holds is said beside its button, once: "It holds the list's name, Weekend, and which spots
+  are in it, nothing else." A plan's adds the day and "not where you start from".
+
 ## The embed and the data page (3 October 2026)
 
 - **The embed**, `embed.html?spot=<id>` (`src/dipcast/site/embed.html` and `embed.js`), is one spot's

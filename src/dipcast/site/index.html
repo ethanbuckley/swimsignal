@@ -451,10 +451,10 @@
   .actions .btn { text-align:center; line-height:1.2; }   /* a label in two lines stays centred and compact */
   /* Folds: a chevron, not a text marker, and a 44 px target. A section that folds keeps its heading
      where an open section's sits: the target reaches up into the section's padding. */
-  details.fold > summary, details.more > summary, details.comparison > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
-  details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker { display:none; }
-  details.fold > summary::after, details.more > summary::after, details.comparison > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
-  details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after { transform:rotate(-135deg); }
+  details.fold > summary, details.more > summary, details.comparison > summary, details.lists > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
+  details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker { display:none; }
+  details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.lists > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
+  details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].lists > summary::after { transform:rotate(-135deg); }
   details.sec > summary { margin:-10px 0 0; }
   details.sec[open] > summary { margin-bottom:4px; }
   details.more > summary { justify-content:flex-start; gap:8px; color:var(--link); font-size:var(--fs-note); font-weight:600; }
@@ -520,9 +520,25 @@
   .linkbtn.small { font-size:inherit; padding:0; }   /* inside a sentence */
   .empty-saved { text-align:center; padding:32px 16px 24px; }
   .empty-saved.tile { padding:28px 16px 20px; }
-  /* A list someone shared, offered: the one box on the Saved page while it waits for an answer. */
-  .offer { background:var(--card); border-radius:var(--radius); padding:16px 20px; margin:20px 0 0; }
-  ul.inc-list { margin:6px 0 12px; padding-left:20px; }
+  /* Named lists (lists.js): the lists as chips under the Saved page's heading, the one shown filled, as
+     a chosen filter is; "Your lists" folds under the cards, its forms between hairlines. A list someone
+     shared opens as its own read-only page, its one action under the lede. */
+  .lists-row { margin:0 -4px 6px; }
+  .lists-form { min-width:0; margin:12px 0 0; padding:12px 0 0; border:0; border-top:1px solid var(--hair); }
+  .lists-form legend { float:left; width:100%; padding:0; }
+  .lists-form legend + * { clear:both; }
+  .lists-form legend, .lists-form > label { display:block; margin:0 0 6px; font-size:var(--fs-note); font-weight:600; }
+  .lists-form .compare-fields { margin:0 0 10px; }
+  .field-row { display:flex; gap:8px; }
+  .field-row input { flex:1 1 auto; min-width:0; min-height:44px; padding:9px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink);
+    background:var(--field); border:1px solid var(--line); border-radius:var(--radius); -webkit-appearance:none; appearance:none; }
+  .field-row input::placeholder { color:var(--faint); }
+  .field-row .btn { flex:none; }
+  .lists-del { margin:12px 0 0; padding:12px 0 0; border-top:1px solid var(--hair); }
+  .sh-act { margin:16px 0 0; }
+  .save .ln { min-width:0; max-width:10em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* a long list name */
+  .top-row .save:has(.ln) { flex:0 1 auto; min-width:0; }   /* gives way to the back link on a narrow phone, */
+  .top-row:has(.ln) .back { flex:none; white-space:nowrap; }   /* which keeps to one line */
   /* Plan a swim (plan.js): the choices on the sky, as the list's are (the day and how far, where you
      start, the kind of water), then a tile for each group of spots. A row is the list's with one more
      line, in ink: why it is there. */
@@ -542,7 +558,7 @@
   .compare-table th a { display:block; min-height:44px; padding:4px 0; }
   .compare-table td a { display:inline-block; padding:12px 0; margin:-12px 0; }   /* 44 px to tap, in the cell's padding */
   .compare-table th[scope=row] { min-width:100px; }
-  .comparison > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
+  .comparison > summary, .lists > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
 
   .about, .about-line { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-note); }
   /* "About these forecasts" in full on the list. A spot's page and the Saved page give it one line,
@@ -813,7 +829,7 @@
         </dl>
       </details>
       <details class="more" id="your-data"><summary>Saved spots, offline use and your data</summary>
-        <p class="small muted">Saved spots and your swim log are kept in this browser, and sent nowhere unless you turn on alerts on the Saved page (alerts send the list of saved spots, not the log). After a first visit the page and the latest forecast are stored on your device, so the site opens without signal at the water's edge; it then says how old the forecast is. <a href="privacy.html">Privacy notice</a>.</p>
+        <p class="small muted">Saved spots, the names of your lists and your swim log are kept in this browser, and sent nowhere unless you turn on alerts on the Saved page (alerts send which spots are saved, not the lists' names or the log). After a first visit the page and the latest forecast are stored on your device, so the site opens without signal at the water's edge; it then says how old the forecast is. <a href="privacy.html">Privacy notice</a>.</p>
         <p class="small"><button type="button" class="linkbtn" id="offline-btn" hidden>Turn off the offline copy</button> <span class="muted" id="offline-msg" aria-live="polite"></span></p>
         <p class="small" id="count-row" hidden><span class="muted">Page views are counted, without cookies.</span> <button type="button" class="linkbtn small" id="count-btn">Don't count my visits</button> <span class="muted" id="count-msg" aria-live="polite"></span></p>
       </details>
@@ -847,6 +863,7 @@
 <script src="experience.js"></script>
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
+<script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
 <script>
 const BRAND = 'SwimSignal';
@@ -1007,22 +1024,24 @@ const SAVED_KEY = 'dipcast.saved';
 // iOS gives a Home Screen app storage of its own and copies nothing from Safari's: in the iOS 27
 // simulator (29 Sep 2026) spots saved in Safari were missing from an app added just after, and so
 // was a list passed in the start address of a manifest the page rewrote. The Saved page says so.
-const savedIds = text => storedList(text, id => typeof id === 'string');
-const SAVED = (() => { try { return new Set(savedIds(localStorage.getItem(SAVED_KEY))); } catch (e) { return new Set(); } })();
-const storeSaved = () => { try { localStorage.setItem(SAVED_KEY, JSON.stringify([...SAVED])); return true; } catch (e) { return false; } };
-// Replace the list, in order. Returns false when the browser would not keep it.
-function setSaved(ids) {
-  SAVED.clear(); ids.forEach(id => SAVED.add(id));
-  const kept = storeSaved(); savedBadge(); syncSoon(); return kept;
-}
-// Another tab saved or removed a spot: follow it, or this tab's next change would undo that one.
+// Named lists (lists.js): LISTS is every list and the one shown; SAVED every spot in any of them, for
+// the alerts, the badge and the list's Saved group. The old key is written too, as SAVED (lists.js).
+const stored = key => { try { return localStorage.getItem(key); } catch (e) { return null; } };
+let LISTS = readLists(stored(LISTS_KEY), stored(SAVED_KEY));
+const SAVED = new Set(allSaved(LISTS));
+const storeLists = () => { try { localStorage.setItem(LISTS_KEY, listsText(LISTS)); localStorage.setItem(SAVED_KEY, JSON.stringify(allSaved(LISTS))); return true; } catch (e) { return false; } };
+const followLists = next => { LISTS = next; SAVED.clear(); allSaved(LISTS).forEach(id => SAVED.add(id)); savedBadge(); };
+// Change the lists. Returns false when the browser would not keep them.
+function setLists(next) { followLists(next); const kept = storeLists(); syncSoon(); return kept; }
+const listNow = () => shownList(LISTS), manyLists = () => LISTS.lists.length > 1;
+// Another tab changed the lists (or, from a page older than lists, the old key): follow it, or this
+// tab's next change would undo that one. A value that is not lists is not followed.
 window.addEventListener('storage', e => {
-  if (e.key !== SAVED_KEY) return;
-  let v; try { v = JSON.parse(e.newValue || '[]'); } catch (err) { return; }
-  if (!Array.isArray(v)) return;   // not a list: keep this tab's, rather than empty it
-  SAVED.clear(); savedIds(e.newValue).forEach(id => SAVED.add(id)); savedBadge();
+  if (e.key === LISTS_KEY) { if (!listsReadable(e.newValue)) return; followLists(readLists(e.newValue, null)); }
+  else if (e.key === SAVED_KEY) followLists(readLists(stored(LISTS_KEY) || listsText(LISTS), e.newValue));   // adds what it saved; removes nothing
+  else return;
   const b = document.getElementById('save');
-  if (b && current) { const on = SAVED.has(current.id); b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on); }
+  if (b && current) { const on = listNow().spots.includes(current.id); b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on); }
   if (DATA && document.body.classList.contains('view-saved')) renderSaved();
 });
 function savedBadge() {
@@ -1031,14 +1050,6 @@ function savedBadge() {
     const el = document.getElementById(badge); el.textContent = n; el.hidden = !n;
     document.getElementById(link).setAttribute('aria-label', n ? `Saved spots: ${n}` : 'Saved spots');
   }
-}
-// A shared list (saved/#spots=a,b): offered, and saved only if asked, since someone else chose it.
-// After a #, so which spots are in it never reaches a server.
-let INCOMING = null;
-function readIncoming() {
-  const m = onSavedPage() && location.hash.match(/^#spots=([^&]*)$/); if (!m) return;
-  history.replaceState(history.state, '', location.pathname + location.search);
-  try { INCOMING = m[1].split(',').map(decodeURIComponent).filter(Boolean); } catch (e) { INCOMING = null; }
 }
 
 // How many of the overflows upstream are expected to spill on a day, as a clause. Under one on a
@@ -1864,7 +1875,9 @@ const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathi
 const SORTS = { risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
 const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>';
 const CHECK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>';
-const saveLabel = on => BOOKMARK + (on ? 'Saved' : 'Save');
+// With more than one list, Save says which list it adds to: the one the Saved page shows.
+const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
+  return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
 // The counts over the list, after when the forecast was issued: freshness where the list begins.
 function overview(spots) {
@@ -1986,19 +1999,21 @@ function drawSpots() {
 }
 
 // ------------------------------------------------------------------------------ the Saved page
-// saved/: a card for each saved spot, in the order saved, as Apple's places: the name, the level with
-// "risk", what set it and where the week goes, the week drawn small. A spot is
-// removed with its bookmark, and Undo puts it back in place. The list shows the same cards, without
-// the bookmark, on its day (iso).
-function savedCard(s, unsave = true, iso = null) {
+// saved/: a card for each spot in the list shown, in the order saved, as Apple's places: the name, the
+// level with "risk", what set it and where the week goes, the week drawn small. A spot is removed from
+// the list with its bookmark (aria-label: from, the list's name), and Undo puts it back in place. The
+// list shows the same cards, without the bookmark, on its day (iso), on one tile; a list someone shared
+// shows them without it, each a tile.
+function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots') {
   const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
-  return `<li class="scard place${unsave ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
+  return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
-    + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from saved spots">${BOOKMARK}</button>` : '') + '</div>'
+    + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p></li>`;   // under a plain level, two sentences
 }
-const listOf = spots => `<ul class="inc-list">${spots.slice(0, 5).map(s => `<li>${esc(s.name)}</li>`).join('')}${spots.length > 5 ? `<li>and ${spots.length - 5} more</li>` : ''}</ul>`;
+// A list's spots that the forecast has, in the list's order.
+const listSpots = (l = listNow()) => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
 const COMPARE = { ids: null, day: null, open: false };
 function compareSection(spots) {
   if (spots.length < 2) return '';   // nothing to compare until two spots are saved
@@ -2014,7 +2029,7 @@ function compareSection(spots) {
 function drawComparison() {
   const box = document.getElementById('compare-result'); if (!box) return;
   const choices = [...document.querySelectorAll('[data-compare]')].map(el => el.value);
-  const available = DATA.spots.filter(s => SAVED.has(s.id));
+  const available = listSpots();   // the list shown
   COMPARE.ids = comparisonIds(choices, available);
   COMPARE.day = document.getElementById('compare-day').value;
   const spots = COMPARE.ids.map(id => available.find(s => s.id === id));
@@ -2030,7 +2045,7 @@ function drawComparison() {
 }
 function refreshComparison() {
   const host = document.getElementById('compare-host');
-  if (host) { const open = host.querySelector('details')?.open; host.innerHTML = compareSection(DATA.spots.filter(s => SAVED.has(s.id))); const details = host.querySelector('details'); if (details) details.open = Boolean(open); bindComparison(); }
+  if (host) { const open = host.querySelector('details')?.open; host.innerHTML = compareSection(listSpots()); const details = host.querySelector('details'); if (details) details.open = Boolean(open); bindComparison(); }
 }
 function bindComparison() {
   const details = document.querySelector('.comparison');
@@ -2038,86 +2053,181 @@ function bindComparison() {
   document.querySelectorAll('#compare-day, [data-compare]').forEach(el => el.addEventListener('change',drawComparison));
   drawComparison();
 }
+// Whether "Your lists" is open, and what the opening says once after a shared list is added (said).
+const LISTS_UI = { open: false, said: '' };
 function renderSaved() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'saved';
   setView('saved');
+  const sh = readShared(location.hash, planDates());
+  if (sh) { renderShared(sh); return; }
   document.title = `Saved spots · ${BRAND}`;
-  const spots = [...SAVED].map(id => DATA.spots.find(s => s.id === id)).filter(Boolean), gone = SAVED.size - spots.length;
-  const offered = (INCOMING || []).map(id => DATA.spots.find(s => s.id === id)).filter(s => s && !SAVED.has(s.id));
-  // The opening, under the sky (.lead), then the cards on the glass.
+  const l = listNow(), many = manyLists(), spots = listSpots(l), gone = l.spots.length - spots.length, named = esc(l.name);
+  const from = many ? l.name : 'saved spots';
+  // The opening, under the sky (.lead): with more than one list, the lists as chips, the one shown
+  // filled; then the cards on the glass.
   let h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Saved spots</h1>`
-    + `<p class="lede">${spots.length ? `The next five days at ${spots.length === 1 ? 'your spot' : `your ${spots.length} spots`}` : 'Spots you save show here'}, `
+    + (many ? `<div class="chips-row lists-row" role="group" aria-label="Your lists">${LISTS.lists.map(x => `<button type="button" class="chip-btn" data-list="${esc(x.id)}" aria-pressed="${x.id === l.id}">${esc(x.name)}</button>`).join('')}</div>` : '')
+    + `<p class="lede">${!spots.length ? (many ? `Spots you save to ${named} show here` : 'Spots you save show here')
+      : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`}`}, `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
-  if (offered.length) h += `<section class="offer" aria-labelledby="inc-h"><h2 class="sec-h" id="inc-h">A shared list</h2><p class="sub">Someone sent you ${offered.length === 1 ? 'a spot' : `${offered.length} spots`} to follow:</p>${listOf(offered)}`
-    + `<div class="actions tight"><button type="button" class="btn primary" id="inc-save">Save ${offered.length === 1 ? 'it' : `all ${offered.length}`}</button><button type="button" class="btn" id="inc-skip">Not now</button></div></section>`;
-  else if (INCOMING) h += `<p class="notice quiet" role="status">${INCOMING.length === 1 ? 'The spot in that link is' : 'The spots in that link are'} already saved here.</p>`;
-  INCOMING = offered.length ? INCOMING : null;
+  if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
   h += '</div>';
-  if (spots.length) h += `<ul class="places" id="scards">${spots.map(s => savedCard(s)).join('')}</ul>`
+  if (spots.length) h += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
     + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
-  else h += `<div class="empty-saved tile"><h2 class="sec-h">No saved spots yet</h2>`
-    + `<p class="sub">Open a spot and press <b>Save</b>. It then shows here with the days ahead.`
+  else h += `<div class="empty-saved tile"><h2 class="sec-h">${many ? `No spots in ${named} yet` : 'No saved spots yet'}</h2>`
+    + `<p class="sub">Open a spot and press <b>${many ? `Save to ${named}` : 'Save'}</b>. It then shows here with the days ahead.`
+    + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
     + `${navigator.standalone ? ' Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here.' : ''}</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
   if (gone) h += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
   h += `<div id="compare-host">${compareSection(spots)}</div>`;
-  if (spots.length) h += alertsCard();
-  if (spots.length) h += `<section class="sec tile"><h2 class="sec-h">Share this list</h2><p class="sub">A link that opens ${spots.length === 1 ? 'this spot' : `these ${spots.length} spots`} on another phone or browser, or for a friend. It holds which spots they are and nothing else.</p>`
+  if (DATA.spots.some(s => SAVED.has(s.id))) h += alertsCard();   // alerts cover every list
+  if (spots.length) h += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
+    + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`
     + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p></section>`;
-  h += swimsCard();
+  h += (many || SAVED.size ? listsCard(l) : '') + swimsCard();   // lists, once there is something to put in one
   setPanel(h);
-  bindBack(); bindSavedPage(spots, offered); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
+  bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
   if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
   placeMap();
 }
-function bindSavedPage(spots, offered) {
-  const ul = document.getElementById('scards'), $ = id => document.getElementById(id);
+function bindSavedPage(l, spots) {
+  const ul = document.getElementById('scards'), $ = id => document.getElementById(id), from = manyLists() ? l.name : 'saved spots';
   if (ul) ul.addEventListener('click', e => {
     const a = e.target.closest('a[data-id]'), un = e.target.closest('[data-unsave]'), undo = e.target.closest('[data-undo]'), day = e.target.closest('[data-day]');
     if (day) select(day.dataset.spot, true, true, day.dataset.day);
     else if (a && plainClick(e)) { e.preventDefault(); select(a.dataset.id, true); }
     else if (un) {
-      const id = un.dataset.unsave, li = un.closest('li'), at = [...SAVED].indexOf(id), s = DATA.spots.find(x => x.id === id);
-      setSaved([...SAVED].filter(x => x !== id));
+      const id = un.dataset.unsave, li = un.closest('li'), at = listById(LISTS, l.id).spots.indexOf(id), s = DATA.spots.find(x => x.id === id);
+      setLists(removeFromList(LISTS, l.id, id));
       li.className = 'scard removed';
-      li.innerHTML = `<span>Removed <b>${esc(s.name)}</b>.</span><button type="button" class="linkbtn" data-undo="${esc(id)}" data-at="${at}">Undo</button>`;
+      li.innerHTML = `<span>Removed <b>${esc(s.name)}</b>${manyLists() ? ` from ${esc(l.name)}` : ''}.</span><button type="button" class="linkbtn" data-undo="${esc(id)}" data-at="${at}">Undo</button>`;
       li.querySelector('[data-undo]').focus();
       refreshComparison();
     } else if (undo) {
-      const id = undo.dataset.undo, a2 = [...SAVED];
-      a2.splice(Math.min(+undo.dataset.at, a2.length), 0, id); setSaved(a2);
-      const li = undo.closest('li'); li.outerHTML = savedCard(DATA.spots.find(x => x.id === id));
+      const id = undo.dataset.undo;
+      setLists(addToList(LISTS, l.id, id, +undo.dataset.at));
+      const li = undo.closest('li'); li.outerHTML = savedCard(DATA.spots.find(x => x.id === id), true, null, true, from);
       const back = ul.querySelector(`[data-unsave="${CSS.escape(id)}"]`); if (back) back.focus();
       refreshComparison();
     }
   });
-  const find = $('find');
-  if (find) find.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
-    keepPlace(); history.pushState(null, '', ROOT.pathname); renderList(); scrollTop(); document.getElementById('q').focus(); });
+  bindFind();
   const forget = $('forget');
-  if (forget) forget.addEventListener('click', () => { setSaved([...SAVED].filter(id => DATA.spots.some(s => s.id === id))); renderSaved(); });
-  if ($('inc-save')) $('inc-save').addEventListener('click', () => {
-    const kept = setSaved([...SAVED, ...offered.map(s => s.id)]); INCOMING = null; renderSaved();
-    if (!kept) $('share-list-msg').textContent = 'This browser is not keeping site data, so these spots are saved only for this visit.'; });
-  if ($('inc-skip')) $('inc-skip').addEventListener('click', () => { INCOMING = null; renderSaved(); });
-  const b = $('share-list'); if (!b) return;
-  const url = new URL(savedPath(), location.origin).href + '#spots=' + spots.map(s => encodeURIComponent(s.id)).join(',');
+  if (forget) forget.addEventListener('click', () => { setLists(keepSpots(LISTS, id => DATA.spots.some(s => s.id === id))); renderSaved(); });
+  // The lists: the one chosen is shown, and kept as the one Save adds to.
+  document.querySelectorAll('[data-list]').forEach(b => b.addEventListener('click', () => {
+    setLists(pickList(LISTS, b.dataset.list)); renderSaved();
+    const again = document.querySelector(`.lists-row [data-list="${CSS.escape(b.dataset.list)}"]`); if (again) again.focus(); }));
+  const b = $('share-list');
+  if (b) bindShareLink(b, $('share-list-msg'), new URL(savedPath(), location.origin).href + shareHash(l.name, spots.map(s => s.id)), `${l.name} · ${BRAND}`, 'Copy link to this list');
+}
+const bindFind = () => { const find = document.getElementById('find');
+  if (find) find.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
+    keepPlace(); history.pushState(null, '', ROOT.pathname); renderList(); scrollTop(); document.getElementById('q').focus(); }); };
+// A link to share: the share sheet on a phone, the clipboard elsewhere, and the link itself written
+// out if neither works.
+function bindShareLink(b, m, url, title, copyLabel) {
   const touch = matchMedia('(pointer: coarse)').matches && navigator.share;
-  if (!touch) b.textContent = 'Copy link to this list';
-  b.addEventListener('click', async () => { const m = $('share-list-msg');
+  if (!touch) b.textContent = copyLabel;
+  b.addEventListener('click', async () => {
     try {
-      if (touch) await navigator.share({ title: `Swim spots · ${BRAND}`, url });
+      if (touch) await navigator.share({ title, url });
       else { await navigator.clipboard.writeText(url); m.textContent = 'Link copied.'; }
     } catch (e) { if (e.name !== 'AbortError') m.textContent = url; } });
 }
+// "Your lists", folded under the cards: move or copy a spot between lists, rename or delete the list
+// shown, and make a new one. Deleting asks first.
+function listsCard(l) {
+  const many = manyLists(), named = esc(l.name), filled = LISTS.lists.filter(x => listSpots(x).length);
+  // From the list shown to the next one; into the list shown when it is empty (a list just made).
+  const here = listSpots(l).length > 0, to = here ? LISTS.lists.find(x => x.id !== l.id) : l;
+  const field = (id, label, value, button, hint = '') => `<form class="lists-form" id="${id}"><label for="${id}-name">${label}</label><div class="field-row">`
+    + `<input type="text" id="${id}-name" value="${value}" maxlength="${LIST_NAME_MAX}" autocomplete="off" enterkeyhint="done"${hint ? ` placeholder="${hint}"` : ''}>`
+    + `<button type="submit" class="btn">${button}</button></div></form>`;
+  let h = `<details class="sec tile lists" id="lists"${LISTS_UI.open ? ' open' : ''}><summary>Your lists</summary>`
+    + `<p class="sub">${many ? `Save on a spot's page adds the spot to the list shown, ${named}.${DATA.push || DATA.email ? ' Alerts cover the spots in all your lists.' : ''}`
+      : 'Keep spots in lists of their own, such as one for weekends and one for your club.'}</p>`;
+  if (many && filled.length) h += `<fieldset class="lists-form"><legend>Move or copy a spot</legend><div class="compare-fields">`
+    + `<label>Spot<select id="mv-spot">${filled.map(x => `<optgroup label="${esc(x.name)}">${listSpots(x).map((s, i) => `<option value="${esc(x.id)} ${esc(s.id)}"${here && x.id === l.id && !i ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>`
+    + `<label>To<select id="mv-to">${LISTS.lists.map(x => `<option value="${esc(x.id)}"${x.id === to.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label></div>`
+    + `<div class="actions tight"><button type="button" class="btn" id="mv-move">Move</button><button type="button" class="btn" id="mv-copy">Copy</button></div></fieldset>`;
+  h += field('ls-rename', `Rename ${named}`, named, 'Rename') + field('ls-new', 'New list', '', 'Make list', 'A name');
+  if (many) h += `<p class="lists-del"><button type="button" class="btn" id="ls-delete">Delete ${named}</button></p>`;
+  return h + '<p class="small muted msg" id="lists-msg" role="status"></p></details>';
+}
+function bindLists(l) {
+  const box = document.getElementById('lists'); if (!box) return;
+  const $ = id => document.getElementById(id), say = t => { $('lists-msg').textContent = t; };
+  box.addEventListener('toggle', () => { LISTS_UI.open = box.open; });
+  // A change redraws the page, with the tile open and the focus put back; then the new tile says what changed.
+  const redraw = (note, focus) => { LISTS_UI.open = true; renderSaved(); const el = $(focus); if (el) el.focus(); say(note); };
+  const move = copy => {
+    const v = $('mv-spot').value, at = v.indexOf(' '), fromId = v.slice(0, at), id = v.slice(at + 1), to = listById(LISTS, $('mv-to').value);
+    const s = DATA.spots.find(x => x.id === id); if (!s) return;
+    if (to.spots.includes(id)) { say(`${s.name} is in ${to.name} already.`); return; }
+    const kept = setLists(copy ? copyToList(LISTS, id, to.id) : moveToList(LISTS, id, fromId, to.id));
+    redraw(!kept ? 'This browser is not keeping site data, so this change lasts only for this visit.'
+      : `${copy ? 'Copied' : 'Moved'} ${s.name} ${copy ? 'to' : `from ${listById(LISTS, fromId).name} to`} ${to.name}.`, copy ? 'mv-copy' : 'mv-move');
+  };
+  if ($('mv-move')) { $('mv-move').addEventListener('click', () => move(false)); $('mv-copy').addEventListener('click', () => move(true)); }
+  $('ls-rename').addEventListener('submit', e => { e.preventDefault();
+    if (!listName($('ls-rename-name').value)) { say('Give the list a name.'); $('ls-rename-name').focus(); return; }
+    setLists(renameList(LISTS, l.id, $('ls-rename-name').value));
+    redraw(`The list is called ${listById(LISTS, l.id).name} now.`, 'ls-rename-name'); });
+  $('ls-new').addEventListener('submit', e => { e.preventDefault();
+    if (!listName($('ls-new-name').value)) { say('Give the new list a name.'); $('ls-new-name').focus(); return; }
+    const kept = setLists(makeList(LISTS, $('ls-new-name').value));
+    redraw(kept ? `Made ${listNow().name}, the list shown now. Spots you save go to it.` : 'This browser is not keeping site data, so this list lasts only for this visit.', 'ls-new-name'); });
+  if ($('ls-delete')) $('ls-delete').addEventListener('click', () => {
+    // Say what is lost: the spots in no other list.
+    const x = listById(LISTS, l.id), n = x.spots.filter(id => !LISTS.lists.some(y => y.id !== x.id && y.spots.includes(id))).length;
+    if (!confirm(`Delete the list ${x.name}?${n ? ` ${n === 1 ? 'One spot in it is' : `${n} spots in it are`} in no other list, so ${n === 1 ? 'it' : 'they'} will no longer be saved.` : ''}`)) return;
+    setLists(deleteList(LISTS, x.id)); redraw(`Deleted ${x.name}.`, 'ls-new-name'); });
+}
+// A list someone shared (saved/#list=...&spots=..., lists.js readShared): read only, with one action,
+// to add it to my lists, since someone else chose it. It stays in the address while it is shown, so
+// a reload, or Back from one of its spots, shows it again; adding it, or leaving, takes it out.
+function renderShared(sh) {
+  document.title = `${sh.name} · ${BRAND}`;
+  const spots = sh.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean), gone = sh.spots.length - spots.length;
+  const have = spots.length ? sameList(LISTS, sh.name, spots.map(s => s.id)) : null;
+  let h = `<div class="lead"><a href="${esc(savedPath())}" class="back" id="back-lists">Saved spots</a><h1 class="page-h" tabindex="-1">${esc(sh.name)}</h1>`
+    + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}</p>`;
+  if (sh.day && spots.length) h += `<p class="planner-note">Levels for ${dayName(sh.day)}, the day of the plan.</p>`;
+  if (have) h += `<p class="planner-note" role="status">It is in your lists already, as ${esc(have.name)}. <button type="button" class="linkbtn small" id="sh-show">Show it</button></p>`;
+  else if (spots.length) h += `<p class="sh-act"><button type="button" class="btn primary" id="sh-add">Add to my lists</button></p>`;
+  h += notices() + '</div>';
+  if (spots.length) h += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
+    + `<p class="small muted msg">${gone ? `${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out. ` : ''}`
+    + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
+  else h += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
+    + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
+  setPanel(h);
+  const $ = id => document.getElementById(id), mine = () => { history.replaceState(history.state, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); };
+  $('back-lists').addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
+    keepPlace(); history.pushState({ view: 'saved', from: 'saved' }, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); });
+  if ($('sh-add')) $('sh-add').addEventListener('click', () => {
+    const kept = setLists(makeList(LISTS, sh.name, spots.map(s => s.id)));
+    LISTS_UI.said = kept ? `Added to your lists as ${esc(listNow().name)}.` : 'This browser is not keeping site data, so this list is kept only for this visit.';
+    mine(); });
+  if ($('sh-show')) $('sh-show').addEventListener('click', () => { setLists(pickList(LISTS, have.id)); mine(); });
+  const ul = $('scards');
+  if (ul) ul.addEventListener('click', e => { const a = e.target.closest('a[data-id]');
+    if (a && plainClick(e)) { e.preventDefault(); select(a.dataset.id, true, true, sh.day); } });
+  bindFind();
+  for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
+  if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
+  placeMap();
+}
 function openSaved() {
   if (mapMode()) setMapMode(false);
-  const push = !onSavedPage();
+  const push = !onSavedPage() || !!readShared(location.hash);   // from a shared list, to my own
   if (push) { keepPlace(); history.pushState({ view: 'saved', from: shown }, '', savedPath()); }
   renderSaved(); scrollTop();
   if (push) focusHeading();
@@ -2219,6 +2329,7 @@ function drawPlan(fit = false) {
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
+  planShare(r.groups[0], on);
   // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
   // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
   if (PLAN.from.here) return;
@@ -2226,6 +2337,20 @@ function drawPlan(fit = false) {
   L.circleMarker(from, { radius: 6, color: PAPER, weight: 2, fillColor: RING(), fillOpacity: 1, interactive: false }).addTo(selLayer);
   PLAN_BOUNDS = ring ? ring.getBounds() : L.latLngBounds([from, ...r.groups.flat().slice(0, 8).map(o => [o.s.lat, o.s.lon])]);
   if (fit && !PHONE.matches) fitPlan();
+}
+// The plan as a list someone else can open and add (lists.js): the spots nothing flags on its day,
+// nearest first, named for the day. The link holds that name, the day and the spots; never where the
+// plan starts from, which may be your own location.
+const PLAN_SHARE_MAX = 20;
+function planShare(open, on) {
+  const pick = open.slice(0, PLAN_SHARE_MAX).map(o => o.s); if (!pick.length) return;
+  const name = planListName(PLAN.day), n = pick.length, box = document.getElementById('plan-results');
+  box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>`
+    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`} nothing flags ${on}, as a list called “${esc(name)}”, which a friend can add to their own lists. `
+    + `It holds that name, the day and which spots are in it, nothing else: not where you start from.</p>`
+    + `<button type="button" class="btn" id="plan-share">Share this plan</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
+  bindShareLink(document.getElementById('plan-share'), document.getElementById('plan-share-msg'),
+    new URL(savedPath(), location.origin).href + shareHash(name, pick.map(s => s.id), PLAN.day), `${name} · ${BRAND}`, 'Copy link to this plan');
 }
 function bindPlan() {
   const $ = id => document.getElementById(id), input = $('plan-from');
@@ -2328,22 +2453,28 @@ window.addEventListener('popstate', () => { if (!DATA) return;
   if (view && PHONE.matches) setMapMode(true, view); });
 // A list link opened on the Saved page itself changes only the part after the #, as does a plan's
 // link opened on the plan page (the page's own changes to it replace the address, which is no change).
+// On the Saved page: a shared list arriving, or the one shown going.
 window.addEventListener('hashchange', () => { if (!DATA) return;
   if (onPlanPage()) { renderPlan(); return; }
-  if (!/^#spots=/.test(location.hash)) return; readIncoming(); renderSaved(); scrollTop(); });
+  if (onSavedPage() && (readShared(location.hash) || document.getElementById('back-lists'))) { renderSaved(); scrollTop(); } });
 
+// Save adds the spot to the list the Saved page shows (with one list, the only one), and says which
+// once there are more; pressed while the spot is in that list.
 function saveButton(d) {
-  const on = SAVED.has(d.id);
+  const on = listNow().spots.includes(d.id);
   return `<button type="button" class="save" id="save" aria-pressed="${on}">${saveLabel(on)}</button>`;
 }
 function bindSave(d) {
   const b = document.getElementById('save'); if (!b) return;
   b.addEventListener('click', () => {
-    const on = !SAVED.has(d.id), kept = setSaved(on ? [...SAVED, d.id] : [...SAVED].filter(x => x !== d.id));
+    const l = listNow(), on = !l.spots.includes(d.id), kept = setLists(on ? addToList(LISTS, l.id, d.id) : removeFromList(LISTS, l.id, d.id));
     b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on);
-    const m = document.getElementById('share-msg');
+    const m = document.getElementById('share-msg'), where = PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page';
+    const also = LISTS.lists.filter(x => x.id !== l.id && x.spots.includes(d.id)).map(x => x.name);
     if (m) m.textContent = !kept ? 'This browser is not keeping site data, so this spot stays saved only for this visit.'
-      : on ? `Saved on this device. Your saved spots are under Saved, ${PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page'}.` : 'Removed from your saved spots.';
+      : !manyLists() ? (on ? `Saved on this device. Your saved spots are under Saved, ${where}.` : 'Removed from your saved spots.')
+      : on ? `Saved to ${l.name} on this device. Your lists are under Saved, ${where}.`
+      : `Removed from ${l.name}.${also.length ? ` Still in ${also.join(' and ')}.` : ''}`;
   });
 }
 function actions(d) {
@@ -2623,7 +2754,7 @@ async function main() {
       .bindTooltip('').on('click', () => select(s.id, false, true, VIEW.day)).addTo(spotLayer));
   }
   const kept = keptView();
-  fillMapDays(); styleMarkers(); setHeaderHeight(); readIncoming(); savedBadge(); syncSoon();
+  fillMapDays(); styleMarkers(); setHeaderHeight(); savedBadge(); syncSoon();
   const q = spotFromURL(), day = dayFromURL();
   if (q && DATA.spots.some(s => s.id === q)) {
     // An old ?spot= link becomes the spot's own address, the one to share.
