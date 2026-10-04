@@ -50,10 +50,13 @@ rule for both); the English snapshot of 11:48 UTC that day had 6 discharging ove
 at 145.6 hours, so the same rule would have marked none.
 
 Events. Both events of every asset go to the history, keyed by discharge id, so an event that moves
-from `latest` to `previous` between two polls is kept once, with its end. A third event between polls
-is still lost: the feed keeps two. 242 assets at 14:37 and 243 at 18:19 had both starts within 3
-hours (checked). Whether a discharge id stays the same when its event ends was not checked (it
-needs two polls an hour apart that span an event's end); the history keys on it as if it does.
+from `latest` to `previous` between two polls is kept once, with its end. Checked on two answers an
+hour apart (feed times 18:01 and 19:03 UTC on 4 Oct 2026): of the 2,866 events in both, none changed
+its discharge id, including the 3 that ended between them, and 11 moved from latest to previous. A
+third event between polls is still lost: the feed keeps two. 242 assets at 14:37 and 243 at 18:19
+had both starts within 3 hours, and in that one hour 4 assets had two new events, so the latest of
+the first answer was in neither slot of the second (checked). If that event was open, the history
+keeps it open from its last sighting, which observed_spill_days ends at that poll.
 The column names `status`, `latest_event_start` and `latest_event_end` are those
 forecast_log.observed_spill_days reads, so task S5 can score from this file as it is.
 """
