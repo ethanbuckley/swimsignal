@@ -72,6 +72,9 @@ test('keeps what the spot\'s page showed on the day of the swim', () => {
 test('right now\'s spills set the level kept where they are worse than the day\'s forecast', () => {
   const s = j.journalSeen(spot({ now: { label: 'very high', discharging_upstream: 3 } }), TODAY, TODAY, ISSUED, LATER);
   assert.equal(s.head, 'Very high risk: sewage spills'); assert.equal(s.level, 'very high'); assert.equal(s.dis, 3);
+  // Raised by spills that have stopped, whose water is still counted: the words say so, as the page does.
+  const recent = j.journalSeen(spot({ now: { label: 'moderate', discharging_upstream: 0 } }), TODAY, TODAY, ISSUED, LATER);
+  assert.equal(recent.head, 'Moderate risk: recent sewage spills'); assert.equal(recent.dis, 0);
   assert.equal(j.journalSeen(spot({ days: [{ ...day(TODAY, null, null, null) }, ...spot().days.slice(1)], now: { label: 'low' } }), TODAY, TODAY, ISSUED, LATER).head,
     'No forecast for this day', 'a low right now does not make a day without a forecast low');
 });

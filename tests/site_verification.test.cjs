@@ -70,7 +70,11 @@ test('too few E. coli samples show counts and say so, with no percentages', asyn
   const a = text((await render({...live({warning_table: SPILL, ecoli_live: {warning_table: ECOLI}})})).answer.innerHTML);
   const ecoli = a.slice(a.indexOf('The E. coli estimate'));
   assert.match(ecoli, /15 Environment Agency samples at 11 bathing waters, 1 of them over 900/);
-  assert.match(ecoli, /warned before 2: 0 were over 900 and 2 were not/);
+  assert.match(ecoli, /warned before 2 samples, none of them over 900\./);
+  const one = text((await render({...live({ecoli_live: {warning_table: {...ECOLI, hits: 1, misses: 0, false_alarms: 2}}})})).answer.innerHTML);
+  assert.match(one, /warned before 3 samples: 1 over 900 and 2 not\./);
+  const quiet = text((await render({...live({ecoli_live: {warning_table: {...ECOLI, false_alarms: 0}}})})).answer.innerHTML);
+  assert.match(quiet, /The estimate gave no warnings\. It gave no warning before the one over 900\./);
   assert.match(ecoli, /no warning before the one over 900\. Too few to judge\./);
   assert.match(ecoli, /no new samples come until May/);   // October: out of season
   assert.ok(!/\d%(?! or more)/.test(ecoli.split('A warning is')[0]), ecoli);
@@ -116,5 +120,17 @@ test('the service record: runs against the schedule, the morning forecast, feeds
   assert.match(t, /Days with a forecast out by 08:00 17 of 17/);
   assert.match(t, /Yorkshire Water in 1 of 148 runs; the other one answered every run/);
   assert.match(t, /105 of 105 \(100%\), over 1 run since/);
+  // Nearly all is not all: three failures in 1,470 keep a decimal.
+  const most = {...SERVICE, builds: {...SERVICE.builds, spots_attempted: 1470, spots_forecast: 1467, share_forecast: 1467 / 1470}};
+  assert.match(text((await render({...live(), service: most})).live.innerHTML), /1,467 of 1,470 \(99\.7%\)/);
   assert.match(t, /Runs that stopped before publishing 1 of 2 since .*only 3\/105 spots got a forecast/);
+});
+
+test('model versions are listed in the order they were issued, the unstamped days first', async () => {
+  const v = (version, first_day) => ({version, first_day, last_day: first_day, n: 10, base_rate: 0.03, brier_cal: 0.02, climatology_brier: 0.03});
+  const overall = {calibrated: {brier: 0.027, auc: 0.84, base_rate: 0.031}, raw: {brier: 0.028, auc: 0.84}, climatology_brier: 0.038};
+  const t = text((await render({...live({n_scored: 40, overall, by_version: [v('code=0.1.0+1598635', '2026-09-29'), v('code=0.1.0+6168e76', '2026-10-02'),
+    v('code=0.1.0+9f02c3a', '2026-10-01'), v('unstamped (stamps begin 2026-09-28)', '2026-09-25')]})})).live.innerHTML);
+  const at = s => t.indexOf(s);
+  assert.ok(at('unstamped') < at('1598635') && at('1598635') < at('9f02c3a') && at('9f02c3a') < at('6168e76'), t);
 });

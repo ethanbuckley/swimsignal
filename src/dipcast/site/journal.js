@@ -21,7 +21,7 @@ const JOURNAL_KEY = 'dipcast.swims';
 const JOURNAL_LIMITS = { swims: 500, note: 280, minutes: 600, photos: 3, allPhotos: 200, full: 3 * 1024 * 1024, thumb: 512 * 1024, file: 150 * 1024 * 1024 };
 const JOURNAL_SHOW = 5;                  // swims listed before "Show all"
 const JOURNAL_FILE = 'swimsignal-journal';   // a copy's name, and its kind inside it
-const jnRules = () => typeof dayHeadline === 'function' ? { ORDER, rank, daily, dayLevel, dayHeadline } : require('./levels.js');
+const jnRules = () => typeof dayHeadline === 'function' ? { ORDER, rank, daily, dayLevel, dayHeadline, nowBecause } : require('./levels.js');
 
 const jnEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const jnPad = n => String(n).padStart(2, '0');
@@ -106,7 +106,7 @@ function journalSeen(d, date, today, issued, time) {
   const R = jnRules(), x = (Array.isArray(d.days) ? d.days.slice(0, 5) : []).find(y => y && y.date === date);
   let level = R.dayLevel(d, date), head = R.dayHeadline(d, date);
   const total = (d.upstream_summary || {}).overflows || 0, now = d.now || {};
-  if (R.daily(d) && R.rank(now.label) >= 1 && R.rank(now.label) > R.rank(level)) { level = now.label; head = `${jnCap(level)} risk: sewage spills`; }
+  if (R.daily(d) && R.rank(now.label) >= 1 && R.rank(now.label) > R.rank(level)) { level = now.label; head = `${jnCap(level)} risk: ${R.nowBecause(d, { level, by: 'spill' })}`; }   // "recent sewage spills" with none discharging
   const rs = d.river_state || {}, wt = d.water_temp || {};
   const temp = typeof wt.temp_c === 'number' && !Number.isNaN(Date.parse(wt.observed_at)) && typeof wt.river_km === 'number'
     && ['upstream', 'downstream'].includes(wt.direction) ? { c: wt.temp_c } : null;
