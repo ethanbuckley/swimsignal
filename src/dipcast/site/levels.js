@@ -46,7 +46,7 @@ const dayName = iso => dayWord(iso).replace(/^on /, '');
 //    bathing applies while the rating stands, so the spot is at least high on every day, whatever
 //    the forecast. The local authority that controls the water issues that advice, not the EA
 //    (Bathing Water Regulations 2013, reg 13(1)(b)), so the page names no one; the EA issues it
-//    for short-term pollution, which this page does not get. 13 of the 38 designated spots were
+//    for short-term pollution, which the level does not get (below). 13 of the 38 designated spots were
 //    rated poor for 2025; on 29 Sep 2026 all 13 read
 //    "low" for today, and 7 of them for today and tomorrow.
 //  - The EA sampler's latest look at a bathing water, if under 14 days old: algae "enough to be
@@ -61,7 +61,9 @@ const dayName = iso => dayWord(iso).replace(/^on /, '');
 // without a rating the page named only what the forecast lacked, which a swimmer read as no
 // information. Not included: the EA's short-term advice against bathing after
 // an incident (Frensham Great Pond's algae warning since 19 Jun 2026, say). Its service refuses
-// the build's machines and does not answer other sites' pages, so a spot's page links to it.
+// the build's machines and does not answer other sites' pages, so no code here can read it. A
+// spot's page links to the EA's page, and its "Today's EA advice" (eatoday.js) loads the EA's own
+// panel in a frame the page cannot read, so the panel never sets a level.
 // The cut-offs between the four levels, as fractions: the spill exposure's (transport.risk_label,
 // whose labels arrive in spots.json) and the E. coli estimate's. The page draws its scales from these.
 const SPILL_CUTS = [0.15, 0.40, 0.70], ECOLI_CUTS = [0.10, 0.25, 0.50];

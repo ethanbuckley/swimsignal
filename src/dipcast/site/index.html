@@ -350,6 +350,22 @@
   details.tile.fold > summary { margin:-12px 0; }
   details.tile.fold[open] > summary { margin-bottom:4px; }
   details.tile.fold > summary .t-lab { padding-right:0; }
+  /* Today's EA advice (eatoday.js): a fold at the foot of the rating tile, under a hairline, that loads the
+     EA's own panel as the EA draws it, at most 343 px wide as on the coverage page. A page cannot read the
+     panel's height, so the frame's is fixed to the tallest of the 38 measured in Chrome on 4 Oct 2026, with
+     about 16 px for iOS Safari, whose Helvetica runs wider (page.css): a rated site's 259 px at 315 px wide
+     (375 px phones and up), and 307 at 260 (a 320 px phone, Frensham Great Pond's incident); a site with no
+     rating yet, whose panel adds "This newly-designated site does not have ...", 314 and 378 (Ham and
+     Kingston's). A taller panel scrolls inside; a shorter one leaves the EA's white below it. */
+  details.ea-today { margin:12px 0 -4px; border-top:1px solid var(--hair); }
+  details.ea-today > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; font-size:var(--fs-note); font-weight:600; }
+  details.ea-today > summary::-webkit-details-marker { display:none; }
+  details.ea-today > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
+  details.ea-today[open] > summary::after { transform:rotate(-135deg); }
+  details.ea-today iframe { display:block; width:100%; max-width:343px; height:280px; border:0; }
+  details.ea-today iframe.unrated { height:340px; }
+  @media (max-width: 374px) { details.ea-today iframe { height:330px; } details.ea-today iframe.unrated { height:400px; } }
+  details.ea-today > p { margin:8px 0 4px; font-size:var(--fs-note); line-height:1.4; color:var(--muted); }
   /* The drawings. A scale: its bands as steps with gaps between, the value a dot in its level's colour.
      A range: the river's usual range, today's level a dot on it. */
   .scale { position:relative; margin:14px 7px 4px; }
@@ -827,7 +843,7 @@
           <dt>Water quality</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. In the May to September season only: from October to April, when the EA takes no samples, the estimate is shown marked † but does not set the level.</dd>
           <dt>Environment Agency rating</dt><dd>At a designated bathing water, the EA's yearly rating from up to four seasons of lab samples. When it is poor, advice against bathing applies through the bathing season, 15 May to 30 September, and the level is at least high on every day. Where there is no daily forecast, a rating of sufficient makes the level moderate and poor makes it high; excellent or good leave the plain level below.</dd>
           <dt>Algae</dt><dd>At a designated bathing water, the EA sampler's last look, if under two weeks old: enough algae to be objectionable makes the level at least high, some at intervals at least moderate.</dd>
-          <dt>Not included</dt><dd>The EA's short-term advice against bathing after a pollution incident or an algal bloom. A bathing water's page links to the EA's page, which has it.</dd>
+          <dt>Not included</dt><dd>The EA's short-term advice against bathing after a pollution incident or an algal bloom. On a bathing water's page, opening "Today's EA advice" loads the EA's own panel, which has it.</dd>
         </dl>
         <dl class="levels">
           <dt><span class="badge b-low">Low</span></dt><dd>Nothing in the forecasts or the EA's rating flags the day. That is not a guarantee of clean water, and it says nothing about currents, cold water or algae.</dd>
@@ -881,6 +897,7 @@
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
+<script src="eatoday.js"></script>   <!-- today's EA advice: the EA's own panel, loaded when its fold is opened -->
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
 <script src="experience.js"></script>
@@ -1294,9 +1311,10 @@ function standing(d, iso) {
   const rows = [], c = classOf(d), cl = d.classification || {};
   const al = algaeLevel(d);
   if (al) rows.push(factorRow('Algae at the last check', al, `${cap(al)} risk`, `The EA sampler saw ${esc(d.algae.phrase)} on ${new Date(d.algae.date + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'})}. Some algae are toxic; the check cannot tell which.`));
-  // Advice that changes within a season (a pollution incident, an algal bloom) is on the EA's page
-  // only: its service refuses the build's machines and does not answer other sites' pages.
-  const live = cl.url ? ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples and any short-term advice against bathing, after pollution or algae, which this page does not include.` : '';
+  // Advice that changes within a season (a pollution incident, an algal bloom) is the EA's alone: its
+  // service refuses the build's machines and does not answer other sites' pages. The rating tile's
+  // "Today's EA advice" loads the EA's own panel of it (eatoday.js); without that, this page has none.
+  const live = cl.url ? ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples and any short-term advice against bathing, after pollution or algae${typeof eaTodayFold === 'function' && eaTodayFold(d) ? '' : ', which this page does not include'}.` : '';
   // The advice stays in view; how the rating is made, and the years before it, fold.
   if (c) rows.push(factorRow(`Environment Agency rating, ${cl.year}`, CLASS_LEVEL[c], cap(c),
     ((c === 'poor' ? poorLine(iso) : '') + live).trim()
@@ -1306,12 +1324,14 @@ function standing(d, iso) {
 }
 // Beside every reading: a forecast is not a test, and the signs at the water come first. A website
 // that, read as a whole, tells people to check for themselves owes them less (Patchett v SPATA [2009]).
-// A bathing water's EA page is the one place with advice against bathing that starts mid-season
-// (after pollution, or algae), so it is linked here, beside the headline, as well as with the rating.
+// The EA is the one source of advice against bathing that starts mid-season (after pollution, or
+// algae), so it is pointed to here, beside the headline, as well as with the rating: to the rating
+// tile's "Today's EA advice", which opens the EA's own panel, or without it to the EA's page.
 // Under a plain level the answer's own line already says to check the signs (OTHER_RISKS): said once.
 const check = d => { const url = (d.classification || {}).url;
   return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
+    : typeof eaTodayFold === 'function' && eaTodayFold(d) ? ' <a href="#ea-today">Today\'s EA advice</a>, below, shows any advice against bathing there today, which this forecast does not include.'
     : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`
     + (d.access ? `<p class="check"><b>Access:</b> ${esc(d.access.text)}${/^https:\/\//.test(d.access.url || '') ? ` <a href="${esc(d.access.url)}">Authority guidance</a>.` : ''} Desk check ${esc(d.access.checked_at)}; current signs have not been inspected.</p>` : ''); };
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
@@ -1499,7 +1519,8 @@ const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">$
   + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
   + (o.vis || '') + (o.say ? `<p class="t-say">${o.say}</p>` : '')
   + (o.credit ? '<p class="t-credit"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>' : '')
-  + (o.more ? `<details class="t-more"><summary><span class="sr">${o.label}: what this means</span></summary><p>${o.more}</p></details>` : '') + '</div>';
+  + (o.more ? `<details class="t-more"><summary><span class="sr">${o.label}: what this means</span></summary><p>${o.more}</p></details>` : '')
+  + (o.fold || '') + '</div>';   // a fold of its own at the foot: the rating tile's "Today's EA advice"
 // "Low under 15, moderate 15 to 40, high 40 to 70, very high 70 or more", from the cut-offs (f writes one).
 const bandWords = (c, f) => `Low under ${f(c[0])}, moderate ${f(c[0])} to ${f(c[1])}, high ${f(c[1])} to ${f(c[2])}, very high ${f(c[2])} or more`;
 // What the level rests on, and what else a swimmer asks: the EA's rating first where there is one,
@@ -1508,13 +1529,15 @@ const bandWords = (c, f) => `Low under ${f(c[0])}, moderate ${f(c[0])} to ${f(c[
 function facts(d) {
   const out = [], total = overflows(d), x0 = (d.days || [])[0], x1 = (d.days || [])[1], now = d.now || {}, cl = d.classification || {}, c = classOf(d);
   const pct = p => Math.round(p * 100);
-  const ea = cl.url ? ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples and any short-term advice against bathing, after pollution or algae, which this page does not include.` : '';
+  // At its foot, "Today's EA advice" (eatoday.js): the EA's own panel of today's advice, loaded when opened.
+  const fold = typeof eaTodayFold === 'function' ? eaTodayFold(d) : '';
+  const ea = cl.url ? ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples and any short-term advice against bathing, after pollution or algae${fold ? '' : ', which this page does not include'}.` : '';
   if (c) out.push({ wide: true, icon: ICON.rating, label: `Environment Agency rating, ${cl.year}`, fig: cap(c), figTone: tone(CLASS_LEVEL[c]),
     vis: `<div class="seasons">${(cl.history && cl.history.length ? cl.history : [[cl.year, c]]).slice(0, 4).reverse()
       .map(([yr, k]) => `<span class="${tone(CLASS_LEVEL[k] || '')}"><i></i>${yr}<b>${cap(k)}</b></span>`).join('')}</div>`,
     say: ((c === 'poor' ? poorLine(today()) : '') + ea).trim(),
-    more: `From its lab samples over up to four seasons${ratingHistory(cl)}.` });
-  else if (d.classification) out.push({ wide: true, icon: ICON.rating, label: 'Environment Agency rating', fig: 'Not yet rated', say: `A designated bathing water too new to have a rating.${ea}` });
+    more: `From its lab samples over up to four seasons${ratingHistory(cl)}.`, fold });
+  else if (d.classification) out.push({ wide: true, icon: ICON.rating, label: 'Environment Agency rating', fig: 'Not yet rated', say: `A designated bathing water too new to have a rating.${ea}`, fold });
   if (!d.error && !total) out.push({ icon: ICON.spills, label: 'Sewage spills', fig: '0', unit: 'overflows upstream',
     say: `None monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream.`, more: 'Risk from farms, wildlife and unmonitored sources is not modelled.' });
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;

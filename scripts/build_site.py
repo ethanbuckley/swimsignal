@@ -891,6 +891,9 @@ VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
 # What the level rests on: evidence.js draws a spot's evidence, with its ages and sources, from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "evidence.js")
 VERSIONED_SCRIPTS += ('<script src="evidence.js"></script>',)
+# Today's EA advice: eatoday.js, the fold that loads the EA's own panel in the reader's browser (no build request).
+SHELL_SOURCES.append(TEMPLATE.parent / "eatoday.js")
+VERSIONED_SCRIPTS += ('<script src="eatoday.js"></script>',)
 # The swim journal (journal.js): kept on the device, so its script is stored and versioned as the rest.
 SHELL_SOURCES.append(TEMPLATE.parent / "journal.js")
 VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
@@ -916,6 +919,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
+    shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.

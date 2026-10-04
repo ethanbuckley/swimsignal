@@ -659,6 +659,31 @@ sources sit together, and the only place with the latest lab sample.
 - No level colour anywhere in it: the rating's word is in ink here, since its tile already colours it.
 - Not on a point clicked on the map, nor on a spot without a forecast, whose answer says why.
 
+### Today's EA advice (4 October 2026)
+
+The Environment Agency's short-term advice against bathing, after a pollution incident or an algal
+bloom, cannot reach the forecast: its service refuses the build's machines, and its API does not answer
+other sites' pages. On a designated bathing water's page the rating tile now ends in a fold, "Today's EA
+advice" (`eatoday.js`), as each English coastal site on the coverage page has (#116).
+
+- It sits under a hairline at the foot of the tile, after the rating's sentence and its "what this
+  means". The summary is in the notes' size at 600, with the folds' chevron. One per page: a picked
+  day's rating row has none.
+- Opening it loads the EA's embeddable panel for the site, once per page view, from the reader's
+  browser, in a frame sandboxed with scripts off that sends no referrer. Nothing is stored. The panel
+  keeps the EA's design, since a page cannot style another site's frame, at most 343 px wide as on the
+  coverage page. A page cannot read the frame's height either, so it is fixed: 280 px, as on the coverage
+  page, and 340 px for a site with no rating yet, whose panel adds two lines saying so; under 375 px wide,
+  330 and 400. Measured on the 38 panels on 4 October 2026 (`index.html` has the figures), 280 px alone
+  cut the EA's credit line off six panels at every width and seven on a 320 px phone.
+- Under it, muted, in the notes' size: "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It
+  shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test."
+- The line under the five days points to it, and its link opens the fold: "Today's EA advice, below,
+  shows any advice against bathing there today, which this forecast does not include." The rating's
+  sentence no longer says the page lacks the advice.
+- It never sets the level, since the page cannot read the frame. It is not in the embed, the organisers'
+  sign or the alerts.
+
 ### The swim journal (4 October 2026)
 
 A swimmer's own record of swims (`journal.js`), on the device only. It replaced the one-tap log, "I
@@ -741,8 +766,9 @@ how things look, not what the site says.
    counter). The exceptions each start with something the reader does, and the privacy notice
    names each: alerts, while they are on (the push Worker); sending, reporting, confirming or
    deleting a review or a note on a visit, and asking about one of yours that is waiting (the
-   reviews Worker); and opening the Welsh list on the coverage page (Natural Resources Wales's
-   data service). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
+   reviews Worker); opening the Welsh list on the coverage page (Natural Resources Wales's
+   data service); and opening "Today's EA advice" on the coverage page or a bathing water's page
+   (the Environment Agency's own panel, in a frame with scripts off). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
    by hash.
 
 ## Review refinements
