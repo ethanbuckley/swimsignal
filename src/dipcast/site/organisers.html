@@ -30,7 +30,11 @@
   /* The overflows: a table on a wide screen and on paper; on a phone each overflow is a block, its
      name over its figures two to a line, each with its label, since nine columns do not fit. */
   .ovt th.ov { color:var(--ink); border-bottom-color:var(--line); }   /* a row's name, not the header's ink rule */
-  .ovt td.num, .ovt th.num { white-space:nowrap; }
+  .ovt td.num { white-space:nowrap; }
+  /* With every overflow upstream listed (data/upstream/), more rows meant longer names and the far overflows'
+     reach, which pushed the last column out of a 720 px column: the number headers wrap (page.css keeps a
+     header on one line), and a feed's name may break after its _, / or & (organisers.js, brk). */
+  .ovt th.num { white-space:normal; }
   @media screen and (max-width: 540px) {
     .tw:has(.ovt) { overflow:visible; border-bottom:0; }
     .ovt thead { display:none; }

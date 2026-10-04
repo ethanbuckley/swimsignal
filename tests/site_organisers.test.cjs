@@ -86,7 +86,9 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
   const h = O.overflows(henley);
   assert.ok(h.includes('51 monitored storm overflows are within 60\u00a0km upstream along the river network, all with a live feed.'));
   assert.ok(h.includes('Sewage from the farthest takes about 33\u00a0h to arrive.'));
-  assert.ok(h.includes('The table lists the 3 that matter most in the current forecast. SwimSignal does not yet publish the other 48.'));
+  // Without the full list (it could not be loaded, or the build wrote none): the three, and why.
+  assert.ok(h.includes('The table lists the 3 that matter most in the current forecast: the full list of 51 could not be loaded. Try again later.'));
+  assert.ok(O.overflows(henley, 'loading').includes('The table lists the 3 that matter most in the current forecast while the other 48 load.'));
   const cells = [...h.matchAll(/<tr><th scope="row" class="ov">([^<]+)<\/th>(.*?)<\/tr>/g)].map(m => [m[1], [...m[2].matchAll(/data-l="([^"]+)">([^<]*)</g)].map(c => c.slice(1))]);
   assert.deepEqual(cells[1], ['Wargrave STW', [['Company', 'Thames Water'], ['Into', 'River Thames'], ['Upstream', '7.3\u00a0km'], ['Travel', '4\u00a0h'],
     ['Reach', '31%'], ['Spills a year', '18'], ['Hours spilling', '121'], ['Live feed', 'Yes']]]);
@@ -94,6 +96,27 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
   const mixed = {...henley, upstream_summary: {overflows: 3, with_live_feed: 2, without_live_feed: 1, max_travel_h: 0.4}};
   assert.ok(O.overflows(mixed).includes(': 2 report their status live, and 1 has no live feed, so SwimSignal forecasts it from rain and their yearly record alone.'));
   assert.ok(O.overflows(mixed).includes('takes under an hour to arrive') && !O.overflows(mixed).includes('does not yet publish'));
+});
+
+test('with every overflow upstream loaded (data/upstream/<id>.json), the table and the CSV list them all, most reach first', () => {
+  const all = Array.from({length: 51}, (_, k) => ov(`Overflow ${k}`, 0.01 * (k + 1), k + 1));
+  const h = O.overflows(henley, all);
+  const names = [...h.matchAll(/<th scope="row" class="ov">([^<]+)<\/th>/g)].map(m => m[1]);
+  assert.equal(names.length, 51);
+  assert.deepEqual(names.slice(0, 2), ['Overflow 50', 'Overflow 49']);
+  assert.ok(!h.includes('The table lists'));
+  const text = O.csv(henley, DATA, BASE, all), lines = text.trim().split('\n');
+  assert.equal(lines.filter(l => !l.startsWith('#')).length, 52);   // the header and 51 rows
+  assert.ok(lines.some(l => l === '# 51 monitored overflows within 60 km upstream along the river network.'));
+  // An empty or failed list falls back to the forecast's own.
+  assert.equal(O.overflowRows(henley, []).length, 3);
+  assert.equal(O.overflowRows(henley, 'failed').length, 3);
+  assert.ok(O.view(henley, '2026-10-06', DATA, BASE, NOW, all).includes('Overflow 0'));
+  // A long run in a feed's watercourse may break after its & or /, so it does not widen the table; a tiny reach is "<1%".
+  const odd = O.overflows(henley, [ov('North_CSO_Princetown', 0.004, 40, {receiving_watercourse: 'WEIR BROOK&TRIB OF WEIR BROOK/DITCH'})]);
+  assert.ok(odd.includes('data-l="Into">WEIR BROOK&amp;<wbr>TRIB OF WEIR BROOK/<wbr>DITCH</td>'), odd);
+  assert.ok(odd.includes('class="ov">North_<wbr>CSO_<wbr>Princetown</th>'), odd);
+  assert.ok(odd.includes('data-l="Reach">&lt;1%</td>'));
 });
 
 test('the CSV carries what it is, its columns and the credits, and is safe to open in a spreadsheet', () => {
