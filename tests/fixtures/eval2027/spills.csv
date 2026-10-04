@@ -1,0 +1,14 @@
+# Made-up scored overflow-days for tests/test_evaluate_2027.py, in the layout of data/verification_live.csv.
+# The season here is 1-2 June 2027. Z is not in the site list; the 31 May row and the lead 5 row fall outside.
+overflow_id,company,day,lead,issued_at,forecast_raw,forecast_calibrated,climatology,observed,version
+A,Co1,2027-06-01,0,2027-06-01T07:00+01:00,0.8500,0.8000,0.0500,1,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+A,Co1,2027-06-01,1,2027-05-31T07:00+01:00,0.4500,0.4000,0.0500,1,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+A,Co1,2027-06-02,0,2027-06-02T07:00+01:00,0.1000,0.1000,0.0500,0,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+B,Co1,2027-06-01,0,2027-06-01T07:00+01:00,0.1500,0.1500,0.6000,0,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+B,Co1,2027-06-02,0,2027-06-02T07:00+01:00,0.7000,0.7000,0.1000,0,spill=s2;cal=c1;ecoli=e1;code=0.1.0+bbbbbbb;rain=open-meteo-forecast
+C,Co2,2027-06-01,0,2027-06-01T07:00+01:00,0.1000,0.1000,0.0200,0,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+C,Co2,2027-06-02,0,2027-06-02T07:00+01:00,0.3900,0.3900,0.0200,1,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+C,Co2,2027-06-02,1,2027-06-01T07:00+01:00,0.0500,0.0500,0.0200,0,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+Z,Co9,2027-06-01,0,2027-06-01T07:00+01:00,0.5000,0.5000,0.0500,1,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+A,Co1,2027-05-31,0,2027-05-31T07:00+01:00,0.5000,0.5000,0.0500,1,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
+A,Co1,2027-06-02,5,2027-05-28T07:00+01:00,0.5000,0.5000,0.0500,0,spill=s1;cal=c1;ecoli=e1;code=0.1.0+aaaaaaa;rain=open-meteo-forecast
