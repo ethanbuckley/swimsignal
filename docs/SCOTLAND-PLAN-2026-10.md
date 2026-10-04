@@ -14,6 +14,10 @@ SwimSignal could forecast the daily spill chance of Scotland's monitored overflo
 model it already has, and the pollution risk on Scottish rivers below them. It should show none of
 it until the model has passed a test on Scottish spill records and an outside review.
 
+Ethan decided on 4 October 2026 that Scotland is in for 2027 (section 10). He also wants Wales and
+Ireland, including Northern Ireland, where possible. Their plans are being written separately, on
+the branches `claude/wales-plan` and `claude/ireland-plan`; this document covers Scotland only.
+
 Two findings change the roadmap's picture of Scotland.
 
 1. **Scottish spill history exists.** The roadmap and the handoff said there was none. Checked: Scottish Water
@@ -245,7 +249,8 @@ Scottish launch is a set of rivers below towns, not the whole map.
 3. **"Right now"** from the live status through the same transport. This needs no spill model:
    Overflowing maps to discharging, Recent Overflow to a finished event with its end time, No
    Overflows to quiet, No Data Available to offline. Unlike the English feeds, each asset carries
-   its own transmit time, so a stale monitor can be marked one by one.
+   its own transmit time, so a stale monitor can be marked one by one. Decided: it goes live with
+   the forecast, after the review, not before (section 10).
 4. **Rain in the last 48 hours at the spot**, as shown in England.
 
 ### 5.2 What it must abstain from
@@ -257,7 +262,7 @@ Each item says why. "Checked" items rest on section 2 to 4; the rest are *inferr
 | The E. coli figure, everywhere in Scotland | Fitted on 1,548 samples at 32 English inland bathing waters, 2024 to 2026 (checked, `data/processed/ecoli_model.json`). No Scottish sample has been matched to it. On English lakes it showed no ranking skill (checked, `ecoli_scope` in `forecast.py`) |
 | A level on lochs | No loch outline, so no area dilution (checked at Luss Bay and Dores). The lake path has no Scottish test. Show the upstream overflows' status instead, until task S6 |
 | Tidal rivers, firths, sea lochs and the coast | No tide in the model, as in England. "Loch" names both freshwater and sea lochs, so names cannot sort them (checked: 113 assets name a loch, kyle or voe). Sort by OS form and SEPA's water-body polygons |
-| "No sewage risk from monitored overflows" | 2,074 monitored locations against 3,674 storm and emergency overflows (checked; the counts are from different years). The English live feeds list 14,199 overflows (checked, 15:29 BST build); how close that is to every English storm overflow was not checked today. A Scottish trace that finds nothing has found only the monitored ones. The plain level must say so (For Ethan, section 10) |
+| "No sewage risk from monitored overflows" | 2,074 monitored locations against 3,674 storm and emergency overflows (checked; the counts are from different years). The English live feeds list 14,199 overflows (checked, 15:29 BST build); how close that is to every English storm overflow was not checked today. A Scottish trace that finds nothing has found only the monitored ones. The plain level must say so; the wording is decided in section 10 |
 | A spill forecast for emergency overflows | They "should only operate in the event of sewer system failure and should not operate in response to rainfall" (Scottish Water, checked). 102 are EO alone, 59 more mixed. Show their live status only |
 | Assets with no live data | 276 at 14:37 UTC, 203 of them under maintenance (checked). Same as England's offline state |
 | Events Scottish Water cannot see between polls | Builds run a median 2.9 hours apart, at most 8.1 (`site.yml` comment). The feed keeps two events per asset, and 242 assets had two starts within 3 hours (checked). A third event in a gap is lost to the live history; the annual files fill it later |
@@ -436,8 +441,8 @@ Subject: Registering a free website for the time series API
 
 ## 9. PR-sized tasks, in order
 
-Each is one PR against main. None starts before Ethan says Scotland is in for 2027 (roadmap open
-question 4). S1 to S3 publish nothing.
+Each is one PR against main. Scotland is in for 2027 (decided, section 10), so S1 can start once
+Ethan approves downloading the files. S1 to S9 publish nothing on the site.
 
 **S1. Import Scottish Water's event history (off CI).** A script that reads the two files of
 section 2.2, keeps one row per event in the `edm_events` schema (`site_id`, start and end in UTC,
@@ -483,26 +488,37 @@ assessment, published with their consent.
 
 **S10. Release.** Split `outside_england.json` so Wales stays blocked and Scotland opens; add Scottish
 overflows to the click-anywhere data; credits for Scottish Water and SEPA on the terms page and in
-the data files; the abstentions of section 5.2 in the page words; Scottish places in the search; a
+the data files; the abstentions of section 5.2 in the page words, with the decided no-level line
+of section 10; "right now" and the forecast together; Scottish places in the search; a
 first set of hand-checked Scottish river spots in `spots.csv`; "England" changed only where it
 stops being true. Screenshots at 320, 375 and 1440 px.
 
 **S11. 2027 pre-registration.** Add Scotland to handoff task G as a separately labelled region.
 
-## 10. For Ethan
+## 10. Decisions and open questions
 
-1. **Scotland in or out for 2027?** The roadmap's open question 4. This plan changes one premise:
-   spill history exists, so the model can be tested before release.
-2. **Send the three emails** in section 8, or say who should.
-3. **Approve the runner test** in S4 (a throwaway workflow, as before).
-4. **Approve downloading the two history files** for S1.
-5. **The plain level where a Scottish trace finds no monitored overflow.** England's "No sewage
-   risk from monitored overflows" overstates it in Scotland. The plainest choice is the grey of no
-   level, with the line "Many Scottish overflows have no monitor, so no level is given here". The
-   alternative is England's teal level with that sentence added beneath. Decide before S10.
-6. **"Right now" before the forecast?** The live status needs no spill model, so it could go live
-   after S4, with no days ahead. The plan's choice is to release both together after the review.
-7. **Reviewer.** The University of Stirling invitation in EXPANSION is still waiting on you.
+### Decided (4 October 2026)
+
+Ethan's answers to the first version of this plan.
+
+1. **Scotland is in for 2027.** In his words: "yes i want this app to work for people in scotland,
+   and wales and ireland/northen ireland if its possible too". This answers the roadmap's open
+   question 4. The Wales and Ireland plans are separate documents (branches `claude/wales-plan`
+   and `claude/ireland-plan`).
+2. **The plain level where a Scottish trace finds no monitored overflow** is the grey of no level,
+   with the line "Many Scottish overflows have no monitor, so no level is given here". England's
+   teal "No sewage risk from monitored overflows" is not used in Scotland.
+3. **"Right now" and the forecast go live together, after the outside review.** The live status
+   needs no spill model, but it is not released early on its own.
+
+### For Ethan
+
+Still open, and his to do or decide.
+
+1. **Send the three emails** in section 8, or say who should.
+2. **Approve the runner test** in S4: a throwaway workflow on a throwaway branch, deleted after.
+3. **Approve downloading the two history files** (13 MB) for S1.
+4. **Reviewer.** The University of Stirling invitation in EXPANSION is still waiting on him.
 
 ## 11. Sources and how each number was obtained
 
