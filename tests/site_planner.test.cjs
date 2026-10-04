@@ -226,7 +226,7 @@ test('a water rated poor names the advice against bathing in its season only, by
   assert.equal(L.dayHeadline(poor, '2026-10-01'), 'Rated poor: advice against bathing from 15 May');
   assert.equal(L.dayLevel(poor, '2026-10-01'), 'high');
   assert.match(L.poorAdvice('2026-09-30'), /^Advice against bathing applies here while the rating is poor/);
-  assert.match(L.poorAdvice('2026-10-01'), /^The rating is poor, so the level stays at least high; advice against bathing applies 15 May to 30 September\.$/);
+  assert.match(L.poorAdvice('2026-10-01'), /^The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September\.$/);
   L.setToday('2026-10-02');
   try { assert.equal(L.headline({...poor, days: poor.days.map((x, i) => ({...x, date: ['2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06'][i]}))}),
     'Rated poor: advice against bathing from 15 May'); }   // what the alerts say, through headline()
