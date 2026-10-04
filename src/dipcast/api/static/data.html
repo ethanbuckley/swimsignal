@@ -79,7 +79,7 @@
 <p>Each spot's level and headline, worked out by the same rules as the page, for the alert service. The smallest file, for anyone who wants only the answer.</p>
 <dl class="fields">
 <dt><code>generated_at</code>, <code>credits</code></dt><dd>As in spots.json</dd>
-<dt><code>spots</code></dt><dd>Keyed by spot id: <code>name</code>; <code>level</code>, one of low, moderate, high and very high, or "no overflows", "not covered" or "no forecast"; <code>rank</code>, 0 for low to 3 for very high and −1 without a level; <code>headline</code>, as the list shows it ("High risk today: sewage spills"); <code>action</code>, what to do at that level, the line under the answer on the spot's page; <code>url</code>, the spot's page</dd>
+<dt><code>spots</code></dt><dd>Keyed by spot id: <code>name</code>; <code>level</code>, one of low, moderate, high and very high, or "no overflows", "not covered" or "no forecast"; <code>rank</code>, 0 for low to 3 for very high and −1 without a level; <code>headline</code>, as the list shows it ("High risk today: sewage spills"); <code>action</code>, what to do at that level, the line under the answer on the spot's page; <code>url</code>, the spot's page; <code>best</code>, only where the level changes from day to day: the lowest <code>level</code> of the four days after today, the first <code>date</code> with it, and the <code>words</code> the weekly note uses ("Saturday, low risk")</dd>
 </dl>
 <p><b>Licence.</b> SwimSignal's levels and headlines, made from the same sources as spots.json.</p>
 
