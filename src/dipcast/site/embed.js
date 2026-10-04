@@ -1,8 +1,8 @@
 // One spot's forecast as a card for another site's page: embed.html?spot=<id>, which a club or a
 // council puts in an iframe (the About page says how, the terms allow it with the credits intact).
-// The card holds the spot's headline, what to do and the five days by the page's own rules (levels.js,
-// so it never disagrees with the spot's page or an alert), the caveat, when the forecast was issued,
-// a link back to the spot's page and the data credits. Nothing is stored in the browser.
+// The card holds the spot's headline and the five days by the page's own rules (levels.js, so it
+// never disagrees with the spot's page or an alert), the caveat, when the forecast was issued, a
+// link back to the spot's page and the data credits. Nothing is stored in the browser.
 //
 // A plain script, as levels.js: embed.html loads levels.js first, and this file finds its names
 // there; Node requires both for the tests (tests/site_embed.test.cjs). Everything sits inside
@@ -61,8 +61,8 @@ const Embed = (() => {
     const issued = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     let h = `<h1 class="name">${out(page, esc(s.name))}</h1>`;
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: the automatic update has not run since. Treat it as out of date.</p>`;
-    h += `<p class="hl ${tone(R.level(s))}">${esc(R.headline(s))}</p>` + (next ? `<p class="next">${esc(next)}</p>` : '')
-      + `<p class="act">${esc(R.levelAction(s))}</p>`;   // what to do, as under the spot page's answer
+    h += `<p class="hl ${tone(R.level(s))}">${esc(R.headline(s))}</p>` + (next ? `<p class="next">${esc(next)}</p>` : '');
+    h += `<p class="act">${esc(R.levelAction(s))}</p>`;   // what to do, as under the spot page's answer
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
     return h + `<p class="check">${check(s)}</p>`
       + `<p class="foot">Issued ${esc(issued)}, ${ago(age)} ago · ${out(page, 'Full forecast on SwimSignal', 'back')}</p>`
