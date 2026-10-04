@@ -263,9 +263,24 @@ function bestDay(spots, dates) {
   }
   return best;
 }
+// How the weekend looks, beside the week's best day, while the five days reach a Saturday or a
+// Sunday: "Best this weekend: Saturday, 64 spots at low risk." On a Saturday the weekend is today
+// and tomorrow; on a Sunday, and on a Tuesday (Saturday is the fifth day), one day alone, so no
+// "best": "This weekend: 66 spots at low risk today." Equal days are said together. Empty without a
+// weekend day that has a level, and when the week's best day is itself a weekend day: the best-day
+// sentence names it already, and the line names a day once. `yours` counts the saved spots.
+function weekendWords(spots, dates, yours = false) {
+  const week = bestDay(spots, dates);
+  const days = dates.filter(iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay())).map(iso => bestDay(spots, [iso])).filter(Boolean);
+  if (!week || !days.length || days.some(d => d.date === week.date)) return '';
+  const n = d => yours ? `${d.low || 'none'} of your ${d.known} spots` : `${d.low || 'no'} spot${d.low === 1 ? '' : 's'}`;
+  const [a, b] = days;
+  if (b && a.low !== b.low) { const w = b.low > a.low ? b : a; return `Best this weekend: ${dayName(w.date)}, ${n(w)} at low risk.`; }
+  return `This weekend: ${n(a)} at low risk ${dayWord(a.date)}${b ? (a.low ? ' and ' : ' or ') + dayName(b.date) : ''}.`;
+}
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
-    level, dayLevel, headParts, headline, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay,
+    level, dayLevel, headParts, headline, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }
