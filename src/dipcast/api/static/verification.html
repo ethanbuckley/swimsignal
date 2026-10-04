@@ -239,7 +239,7 @@ function prfSection(P) {
     t += row('Environment Agency', B.ea);
     t += row('SwimSignal', B.swimsignal);
     t += `<tr><td>Long-run rate (climatology)</td><td class="num">${f(B.climatology_brier, 3)}</td><td class="num">–</td><td class="num">–</td></tr></table>`;
-    t += `<p class="small muted">A warning is the Agency's "increased", or a SwimSignal estimate of ${warnAt}% or more (a high level). The Brier score reads the Agency's prediction as 100% when "increased" and 0% when "normal"; the long-run rate is the training-period rate for rivers and lakes.</p>`;
+    t += `<p class="small muted">A warning is the Agency's "increased", or a SwimSignal estimate of ${warnAt}% or more (high risk). The Brier score reads the Agency's prediction as 100% when "increased" and 0% when "normal"; the long-run rate is the training-period rate for rivers and lakes.</p>`;
     if (R.n_samples && R.ea && R.swimsignal) t += `<p class="small muted">Rivers only, where the site shows the E. coli estimate: ${R.n_samples} samples, ${R.n_over_threshold} over 900. Brier score ${f(R.swimsignal.brier, 3)} for SwimSignal, ${f(R.ea.brier, 3)} for the Environment Agency and ${f(R.climatology_brier, 3)} for the long-run rate.</p>`;
   }
   const prf = S.n_with_prf === 0

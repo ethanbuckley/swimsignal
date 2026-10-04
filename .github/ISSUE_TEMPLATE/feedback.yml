@@ -45,7 +45,7 @@ body:
     id: alerts
     attributes:
       label: Did you use alerts?
-      description: A notification on your phone or computer when a saved spot's forecast turns high or very high. You turn them on on the Saved page.
+      description: A notification on your phone or computer when a saved spot's forecast reaches high or very high risk. You turn them on on the Saved page.
       options:
         - "Yes, and they came when I expected"
         - "Yes, but one came late"

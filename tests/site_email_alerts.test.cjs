@@ -20,7 +20,7 @@ test('no alert service, no tile', () => {
 
 test('push alone keeps its words', () => {
   const h = card({push: PUSH});
-  assert.match(h, /<p class="sub">A notification when one of your saved spots turns high or very high, at most once a day for each\.<\/p>/);
+  assert.match(h, /<p class="sub">A notification when one of your saved spots reaches high or very high risk, at most once a day for each\.<\/p>/);
   assert.match(h, /id="alerts-btn"/);
   assert.doesNotMatch(h, /alert-mail|email/i);
   assert.match(card({push: PUSH}, {ios: true, push: false}), /On iPhone and iPad, alerts work only in the Home Screen app: .*save your spots in it\.<\/p>/);
