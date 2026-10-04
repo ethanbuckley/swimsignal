@@ -40,6 +40,7 @@ from dipcast import config
 from dipcast.arcgis import fetch_all
 from dipcast.ingest import edm_events, rainfall
 from dipcast.ingest.common import write_parquet
+from dipcast.model.features import spill_days
 
 log = logging.getLogger("fetch_wales_history")
 
@@ -139,8 +140,7 @@ def describe_events(ev: pd.DataFrame) -> None:
           f"{ev.event_start.min()} -> {ev.event_start.max()}; {ev.event_end.isna().sum()} with no end")
     print(f"  minutes: min {d.min():.1f}, median {d.median():.1f}; under 1 min {(d < 1).sum()}, "
           f"under 15 min {(d < 15).sum()}, under 1 h {(d < 60).sum()}")
-    days = ev.assign(day=ev.event_start.dt.floor("D")).groupby(["site_id", "day"]).size()
-    print(f"  spill-days (any discharge that day, by start): {len(days)}")
+    print(f"  spill-days (features.spill_days: every day a discharge touches): {len(spill_days(ev))}")
 
 
 def main() -> None:
