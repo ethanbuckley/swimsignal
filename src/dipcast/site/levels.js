@@ -169,6 +169,63 @@ function dayHeadline(s, iso) {
   if (r.by === 'record') return `Rated poor: ${poorReason(iso)}`;
   return `${cap(r.level)} risk${rank(r.level) > 0 ? ': ' + because(r) : ''}`;
 }
+// ------------------------------------------------------------------------------ what to do
+// One line under the level saying what to do, as NSW Beachwatch gives an action with each of its
+// forecasts. A level with no action left the swimmer to turn "Moderate risk" into a decision alone.
+// The words are SwimSignal's own; each line rests on these, all read on 4 Oct 2026:
+//  - NSW Beachwatch, "Is it safe to swim?" (https://www.beachwatch.nsw.gov.au/whatIsBeachwatch/safeToSwim):
+//    "Pollution possible": caution, young children, the elderly and people with some health
+//    conditions at more risk, consider waiting; "Pollution likely": "Avoid swimming today"; no
+//    forecast: look for signs of pollution; inland waters: avoid swimming up to three days after heavy rain.
+//  - Swim healthy, Environment Agency and UK Health Security Agency, updated 24 Jun 2019
+//    (https://www.gov.uk/government/publications/swim-healthy-leaflet/swim-healthy): children are more
+//    likely to swallow water, people with an impaired immune system catch infections more easily,
+//    heavy rain washes bacteria from farms, towns and sewage into rivers; avoid higher-risk days;
+//    try not to swallow water, cover cuts, wash hands before eating; keep out of algal blooms and
+//    scum, since you cannot tell by looking whether they are harmful, and children and pet owners
+//    take care with them.
+//  - The Environment Agency's Swimfo help (https://environment.data.gov.uk/bwq/profiles/help-understanding-data.html):
+//    a water rated poor has a sign advising against bathing, which is not a ban.
+//  - Surfers Against Sewage, FAQs on the Safer Seas and Rivers Service
+//    (https://www.sas.org.uk/water-quality/sewage-pollution-alerts/): a pollution risk forecast means
+//    bathing is not advised; a poor rating means bathing is not advised; a sewage alert stays for 48
+//    hours after a discharge stops, the period the water industry's own project proposes.
+//  - NHS, Leptospirosis (https://www.nhs.uk/conditions/leptospirosis/): cover cuts and grazes with
+//    waterproof plasters before river, canal or lake water.
+// The groups named are Beachwatch's and Swim healthy's. Low is not "enjoy your swim", as on Beachwatch:
+// nothing here says a spot is safe, and the page's caveat to check the signs stays beside it.
+// Very high names its day (a level set by right now, today, tomorrow, or a picked day), since the
+// headline's level may be tomorrow's while today is low; the others hold whichever day it is.
+const ACTION = {
+  low: 'Usual care: cover cuts, try not to swallow water and wash your hands before eating.',
+  moderate: 'Take more care: young children, older people and anyone with a weakened immune system may want a lower day or spot.',
+  high: 'Better to choose a lower day or spot. If you do swim, try not to swallow any water.',
+};
+const veryHighAction = when => `Avoid swimming here${when ? ' ' + when : ''}: choose a lower day or spot.`;
+// A water rated poor: advice against bathing in season, and still rated poor out of it.
+const POOR_ACTION = 'Choose a spot with a better rating if you can.';
+// Algae set the level: the bacteria advice would miss the point.
+const ALGAE_ACTION = 'Stay out of any scum or bloom, and keep children and dogs away: toxic algae look like harmless ones.';
+// No level (a plain level, or no forecast): rain is what there is to go by.
+const PLAIN_ACTION = 'After heavy rain, wait a couple of days before swimming if you can.';
+// The line for a risk ({level, by}, from risk()) on a day named by when ("today", "on Monday").
+const actionFor = (r, when = '') => !r || ORDER[r.level] === undefined ? PLAIN_ACTION
+  : r.by === 'record' ? POOR_ACTION : r.by === 'algae' ? ALGAE_ACTION
+  : r.level === 'very high' ? veryHighAction(when) : ACTION[r.level];
+// The line for the headline's level, by headParts' own steps.
+function levelAction(s) {
+  const l = level(s);
+  if (ORDER[l] === undefined) return PLAIN_ACTION;
+  if (!daily(s)) return actionFor({ level: l, by: rank(algaeLevel(s)) > rank(CLASS_LEVEL[classOf(s)] ?? null) ? 'algae' : advisedAgainst(s) ? 'record' : 'rating' });
+  const [r, when] = worstNear(s);
+  return actionFor(r, when);
+}
+// The line for a picked day (a date in s.days); where the forecast does not change from day to day, the spot's.
+function dayAction(s, iso) {
+  if (!daily(s)) return levelAction(s);
+  const x = s.days.slice(0, 5).find(d => d.date === iso);
+  return actionFor(x ? risk(s, x) : null, dayWord(iso));
+}
 // Where the five days go from the answer, as Apple's high and low: the day a raised level falls to low
 // (or to its lowest), or the later day a low one rises. A level set by right now (an overflow
 // discharging) is on none of the days, so the search then starts at today: "Low risk today".
@@ -206,5 +263,6 @@ function bestDay(spots, dates) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
-    level, dayLevel, headParts, headline, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay };
+    level, dayLevel, headParts, headline, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay,
+    ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }

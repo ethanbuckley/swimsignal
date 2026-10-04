@@ -9,7 +9,7 @@
 // `Embed`, so no name here can clash with one of levels.js's.
 const Embed = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
-    : { ORDER, NO_OVERFLOWS, setToday, today, rank, risk, level, headline, weekNext, daily };   // levels.js's globals
+    : { ORDER, NO_OVERFLOWS, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the page and build_site.py use the same rule
   const STALE_MIN = 8 * 60;   // the app's "Stale" notice waits as long (index.html, STALE_MIN)
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -62,6 +62,7 @@ const Embed = (() => {
     let h = `<h1 class="name">${out(page, esc(s.name))}</h1>`;
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: the automatic update has not run since. Treat it as out of date.</p>`;
     h += `<p class="hl ${tone(R.level(s))}">${esc(R.headline(s))}</p>` + (next ? `<p class="next">${esc(next)}</p>` : '');
+    h += `<p class="act">${esc(R.levelAction(s))}</p>`;   // what to do, as under the spot page's answer
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
     return h + `<p class="check">${check(s)}</p>`
       + `<p class="foot">Issued ${esc(issued)}, ${ago(age)} ago · ${out(page, 'Full forecast on SwimSignal', 'back')}</p>`

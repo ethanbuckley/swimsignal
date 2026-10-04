@@ -285,9 +285,11 @@ def test_the_alerts_file_uses_the_page_rules(tmp_path):
     out = json.loads((tmp_path / "data" / "alerts.json").read_text())
     assert out["generated_at"] == "2026-09-29T08:00:00+01:00"
     assert out["spots"]["a"] == {"name": "A river", "rank": 2, "level": "high", "headline": "High risk today: sewage spills",
+                                 "action": "Better to choose a lower day or spot. If you do swim, try not to swallow any water.",
                                  "url": "https://example.org/swim/spot/a/"}
     assert out["spots"]["tarn"]["rank"] == -1 and out["spots"]["tarn"]["level"] == "no river connection"
     assert out["spots"]["tarn"]["headline"] == "No river connection: overflows cannot reach this lake"
+    assert out["spots"]["tarn"]["action"] == "After heavy rain, wait a couple of days before swimming if you can."
 
 
 def test_feedback_and_experience_are_built_for_nested_github_pages(tmp_path):
