@@ -146,6 +146,8 @@ test('Wales, Scotland and England keep their answers beside the Irish part', () 
     'Portpatrick': [54.84, -5.12] };
   for (const [what, [lat, lon]] of Object.entries(gb)) assert.equal(A.outsideWhere(lat, lon, outside), 'wales_scotland', what);
   assert.equal(A.place(51.48, -3.18, { ...files, tiles: {}, outside }).error, 'SwimSignal has overflow data for England only, so it has no forecast here.');
+  // Not the Environment Agency's sentence, which is about England: the coverage page's links to NRW and SEPA.
+  assert.match(A.OUTSIDE.wales_scotland.see, /Natural Resources Wales and the Scottish Environment Protection Agency .*href="coverage\.html"/);
   for (const [lat, lon] of [[54.047, -1.953], [55.77, -2.005], [51.70, -2.50], [51.46, -0.31], [54.0, -2.0]]) assert.equal(A.outsideWhere(lat, lon, outside), '');
   // A file from before Ireland was added has no parts: all of it is Wales and Scotland.
   const old = { geometry: { coordinates: [[[[-4, 52], [-3, 52], [-3, 53], [-4, 53]]]] } };

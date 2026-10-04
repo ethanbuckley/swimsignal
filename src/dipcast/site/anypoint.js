@@ -301,7 +301,9 @@ const AnyPoint = (() => {
   // the card's sentence about the Environment Agency, which tests England's (render's check). Nothing
   // about the water itself: SwimSignal knows nothing about it.
   const OUTSIDE = {
-    wales_scotland: { error: ENGLAND_ONLY },
+    wales_scotland: { error: ENGLAND_ONLY,
+      see: 'In Wales and Scotland, Natural Resources Wales and the Scottish Environment Protection Agency publish bathing water results: '
+        + 'links to both are on <a href="coverage.html">Coasts, Wales, Scotland and algae</a>.' },
     northern_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.',
       see: 'The Department of Agriculture, Environment and Rural Affairs (DAERA) publishes results for Northern Ireland\'s bathing waters on its '
         + '<a href="https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard" rel="noopener">Bathing Water Quality Dashboard</a>.' },
