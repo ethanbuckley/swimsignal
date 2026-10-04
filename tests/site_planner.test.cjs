@@ -61,7 +61,7 @@ test('evidence distinguishes missing feeds, dated records, and out-of-season mod
   const facts = Object.fromEntries(evidenceRows(s,'2026-10-01','Wed 00:08'));
   assert.match(facts['Live spill feeds'], /1 of 2.*Missing reports/);
   assert.match(facts['Environment Agency rating'], /2025.*not today/);
-  assert.match(facts['Water samples'], /not included/);
+  assert.match(facts['Water samples'], /^No lab sample in this update\. Check the Environment Agency’s page/);   // tests/site_evidence.test.cjs has the rest
   assert.match(facts['Model limits'], /untested/);
   assert.match(facts['Algae observation'], /10 Sept? 2026.*not a current/);
   // The season is the build's mark on the day, as on the page, not the calendar month.

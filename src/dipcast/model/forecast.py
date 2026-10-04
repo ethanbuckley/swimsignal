@@ -362,7 +362,8 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 **({"arriving": arriving} if arriving else {})}
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk), **clearing,
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
-                                            "feed_down_upstream", "feed_down", "stale_upstream", "feed_stale")}}
+                                            "feed_down_upstream", "feed_down", "stale_upstream", "feed_stale",
+                                            "no_feed_upstream")}}
     out["days"] = day_rows
     out["upstream_summary"] = {
         "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
@@ -472,12 +473,18 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     are counted in `stale_upstream` and named by company in `feed_stale`, as a feed that is
     down is. Until 4 Oct 2026 every overflow in a live feed counted as reporting, so an
     offline monitor read as quiet. A discharge counts whatever the state: it was the feed's
-    last word. live_now_risk is unchanged: an overflow it cannot see adds nothing, as before."""
-    from dipcast.ingest.live import FEED_DOWN, LIVE, STALE
+    last word. live_now_risk is unchanged: an overflow it cannot see adds nothing, as before.
+
+    `no_feed_upstream` counts those not reporting because their company publishes no live feed
+    (data_state no_feed), so the page can tell them from monitors that are offline: what is not
+    reporting is then stale_upstream + no_feed_upstream + the rest, which are offline (feed_down_upstream
+    among them)."""
+    from dipcast.ingest.live import FEED_DOWN, LIVE, NO_FEED, STALE
     feed_down = feed_down_summary(ov)
     if ov.empty:
         return {"discharging_upstream": 0, "recent_upstream": 0, "monitored_upstream": 0,
-                "feed_down_upstream": 0, "feed_down": feed_down, "stale_upstream": 0, "feed_stale": []}
+                "feed_down_upstream": 0, "feed_down": feed_down, "stale_upstream": 0, "feed_stale": [],
+                "no_feed_upstream": 0}
     ov = with_data_states(ov)
     status, state = ov["status"], ov["data_state"]
     down = status == FEED_DOWN
@@ -489,7 +496,8 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     return {"discharging_upstream": int(dis.sum()), "recent_upstream": int(recent.sum()),
             "monitored_upstream": int((dis | recent | quiet).sum()),
             "feed_down_upstream": int(down.sum()), "feed_down": feed_down,
-            "stale_upstream": int(stale.sum()), "feed_stale": feed_stale_summary(ov[stale])}
+            "stale_upstream": int(stale.sum()), "feed_stale": feed_stale_summary(ov[stale]),
+            "no_feed_upstream": int(((state == NO_FEED) & ~(dis | recent | quiet)).sum())}
 
 
 def feed_down_summary(ov: pd.DataFrame) -> list[dict]:
