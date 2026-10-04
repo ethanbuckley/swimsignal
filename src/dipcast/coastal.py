@@ -39,7 +39,12 @@ def instant(x):
 
 
 def parse(catalogue, predictions, now, advice_available=True):
-    """A normal NON_PRF_SITE record does not establish an official forecast or clean water."""
+    """A normal NON_PRF_SITE record does not establish an official forecast or clean water.
+
+    An "increased" record in force is the EA advising against bathing, whatever its origin: the
+    notice the EA posts after a pollution incident has no `prfOriginType` (Plymouth Hoe East and
+    West, 15:08 on 1 Oct 2026, beside that morning's "normal" forecast). It wins over a normal
+    record in force at the same time; other disagreements are unavailable, never an all-clear."""
     by_site = {}
     for p in predictions:
         key = uri(p.get("stp_bathingWater")).rsplit("/", 1)[-1]
@@ -71,7 +76,7 @@ def parse(catalogue, predictions, now, advice_available=True):
                 origin = p.get("prfOriginType")
                 if (predicted <= published <= now < expires and expires - predicted <= timedelta(hours=36)
                         and day == predicted.astimezone(TZ).date().isoformat()
-                        and level in {"normal", "increased"} and origin in {"PRF_PROVIDED", "NON_PRF_SITE"}):
+                        and (level == "increased" or level == "normal" and origin in {"PRF_PROVIDED", "NON_PRF_SITE"})):
                     current.append({"state": "increased" if level == "increased" else
                                     "no_increased_risk" if origin == "PRF_PROVIDED" else "no_forecast",
                                     "origin": origin, "predicted_at": predicted.isoformat(),
@@ -80,7 +85,11 @@ def parse(catalogue, predictions, now, advice_available=True):
             except (ValueError, TypeError, OverflowError):
                 continue
         if advice_available and current:
-            # Overlapping source records must agree; conflicting ones are not an all-clear.
+            # A warning in force stands; otherwise overlapping records must agree, and conflicting
+            # ones are not an all-clear.
+            warnings = [p for p in current if p["state"] == "increased"]
+            if warnings:
+                current = warnings
             if len({p["state"] for p in current}) > 1:
                 advice = {"state": "unavailable"}
             else:
