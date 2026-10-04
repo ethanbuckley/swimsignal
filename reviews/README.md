@@ -41,13 +41,71 @@ npx wrangler deploy
 
 You will know it worked when `curl https://swimsignal-reviews.swimsignal-push.workers.dev/published` ends with `"visits":[]` and, after the next site build, a spot's page shows "Recent visits" above the reviews. The likely mistake is deploying before applying the migration: the Worker then answers `/published`, every published photo and every note with an error ("no such table: visits"), and the site build keeps publishing its last list of reviews, with the photos it already has, until you apply it. Reviews still arrive meanwhile. It happens because `wrangler deploy` does not apply migrations.
 
+## Illness reports
+
+Off. A swimmer can say "I got ill after swimming here": the day they swam (today or up to 14 days back), the kinds of symptom as ticks (stomach or gut, ear, eye, skin, something else), how many days after the swim it started (the same day, 1, 2, 3 or more), and, if they want, whether they saw a doctor or called 111. A report is information about health, special category data under UK GDPR Article 9, so it is built to hold as little as possible and is switched off until you decide (`ILLNESS_REPORTS` in `wrangler.toml`). The page's part is `src/dipcast/site/illness.js`, a tile after the reviews.
+
+### What is kept, and what is not
+
+- A report: the spot, the day of the swim, the ticks, the onset, the doctor answer or nothing, the day it arrived (London), and a SHA-256 hash of a random key. No name, contact, words, photo, time of day or IP address. Nothing links it to the rate-limit counts, which are counted under an HMAC of the connection and the day, as for reviews, and deleted within three days. So the service cannot tell who sent a report, or which reports came from one connection.
+- The sender's browser keeps the report's id, the key, the spot and the day sent, so they can delete it (withdraw consent). Nothing about the illness.
+- The daily cron deletes each report 400 days after it arrived (`ILLNESS_KEEP_DAYS`), long enough to compare one summer with the forecasts after it ends.
+
+It is still treated as special category data, for two reasons: it arrives with an IP address, and in a small group a report's spot and day can point to a person whoever holds it.
+
+### What is published
+
+Only counts, never a report. For each spot, the reports that arrived in the last 30 days and in the last 365, each shown only from five (`ILLNESS_MIN`); a spot with fewer than five in a year is left out. The build checks the threshold again (`src/dipcast/reviews.py`, `site_illness`). The counts go to the spot's page and to `data/illness.json`, which the data page lists only while reports are on.
+
+- **Why five, not three.** The ICO's anonymisation guidance ("How do we ensure anonymisation is effective?", read 4 Oct 2026) says that with public release "you should have a very robust approach", and cites the NHS's standard for publishing health and social care data, which sets k to five. A count of one or two can name a person to anyone who knows who swam there; three can still be one family. Five costs little: fewer than five reports is not a pattern anyone should act on.
+- **Why by the day it arrived, not the day of the swim.** A rolling window counted by the day of the swim would, as it moves on, give away how many people swam on the day that drops out. Counted by arrival, it gives away only how many reports arrived on a day, which says nothing about when anyone swam.
+- **Why a day late.** A report counts from the day after it arrives (`through` is yesterday). The figure then changes at most once a day, never just after someone sends a report, and you have a day to delete a flood before anyone sees it.
+- **Why 12 months rather than "the season".** The two windows nest, so the 30-day figure can never exceed the longer one; winter swimmers are counted; and nothing resets on 1 May.
+- **No public counts per day.** The brief asked for counts per spot per day for the model. Published, a day's count at a quiet spot can be the three people who swam there. So the counts per spot and day of swimming, with the mix of symptoms, onset and doctor answers, are for you only: `/moderate` has a button that downloads them (`/admin/illness.csv`). A later season joins that file with `forecast_points` (`src/dipcast/forecast_log.py`) by spot and day, and publishes the score, not the rows.
+
+### Spam and abuse
+
+- Four reports a day from one connection; 25 a day for one spot and 300 for everyone together; the hidden field that only a script fills in.
+- Reports are not read one by one, because none is shown on its own. `/moderate` shows them as batches, one spot and one day each, for the last 30 days: how many, the mix of symptoms, on how many days the swims were, and how many differ ("all alike" is a script). Delete a batch whole. Today's batch is not public until tomorrow.
+- Pre-moderating each report is possible (a status column, as for notes) but would show you individual health reports to judge with nothing to judge them by. Say if you want it.
+
+### Before you turn it on
+
+Do a short DPIA (data protection impact assessment) first. The ICO says you "must do a DPIA for any type of processing which is likely to be high risk", that its list of such processing includes special category data on a large scale and "innovative technology", and that "If in any doubt, we would always recommend that you do a DPIA" ("When do we need to do a DPIA?" and "What are the rules on special category data?", read 4 Oct 2026). SwimSignal's scale is small, but the data is health data, published as statistics, about places where small groups swim. Points for it: the threshold (five), the day's delay, what the private CSV allows, Cloudflare as processor in the EU, reports for a child (the form says "your own illness"; decide whether a parent may report for a child under 13), and whether to link Surfers Against Sewage's sickness form as well, which feeds its campaign evidence.
+
+The legal basis written into the privacy section is consent with explicit consent as the Article 9 condition (Articles 6(1)(a) and 9(2)(a)). The ICO says explicit consent "must be confirmed in a clear statement" that names the kind of special category data, and that a box ticked next to such a statement does it; explicit consent needs no appropriate policy document. Inferred, not legal advice.
+
+### Turning it on
+
+From this folder, after the DPIA:
+
+1. Apply the migration (it only adds a table; reviews and notes are untouched):
+   ```
+   npx wrangler d1 migrations apply swimsignal-reviews --remote
+   ```
+2. In `wrangler.toml`, change `ILLNESS_REPORTS = "off"` to `ILLNESS_REPORTS = "on"`, and commit it.
+3. Deploy:
+   ```
+   npx wrangler deploy
+   ```
+
+You will know it worked when `curl -s https://swimsignal-reviews.swimsignal-push.workers.dev/published | grep -o '"illness":{[^}]*'` prints `"illness":{"on":true,"min":5,...`, and after the next site build a spot's page has an "Illness after swimming" tile after the reviews, the privacy notice has an "Illness reports" section and the data page lists `illness.json`. The likely mistake is step 2 without step 1: every report then fails ("The review service had a problem") while the page shows the form, because the Worker cannot find its table; reviews and notes carry on. Deploying this version without the migration, with reports off, changes nothing.
+
+### Turning it off, and deleting everything
+
+Set `ILLNESS_REPORTS = "off"` and deploy. The form, the counts and the data file leave the site at the next build. The privacy section stays while any report is held, because they are still kept; the cron deletes them as they reach 400 days, and senders can still delete theirs. To delete them all at once:
+```
+npx wrangler d1 execute swimsignal-reviews --remote --command "DELETE FROM illness"
+```
+
 ## What it stores
 
 - A review: the spot's id, yes or no, the day they swam, the text (at most 1,500 characters), the name to show (at most 40, may be empty), each photo's size, when it arrived and when it was published, and a SHA-256 hash of its key.
 - The photos, in KV, under keys made from the review's id. A deleted review takes its photos with it.
 - A note on a visit: the spot's id, the day (today or yesterday), the ticks, the text (at most 280 characters), one photo's size, when it arrived and was published, the day it was last confirmed and how many times, your verification source if any, its last day, and a SHA-256 hash of its key. No name. Deleted, with its photo, by the daily cron after its last day.
 - A report: the review's or note's id, the reason picked from a list, and the time. Cleared when you keep or delete the review.
-- Rate-limit counts: requests a day from one connection, under an HMAC of the IP address, the kind of request and the day, keyed with `ADMIN_TOKEN`. Never the address itself. The daily cron deletes days before yesterday. Ten reviews, 20 reports, 30 deletions and 60 status checks a day from one connection (an IPv6 /64 or an IPv4 address). The service also caps photos at 300 a day and pending reviews at 300, including simultaneous submissions. Published photos accumulate, so monitor total storage.
+- A report of illness, when they are on: see "Illness reports" above.
+- Rate-limit counts: requests a day from one connection, under an HMAC of the IP address, the kind of request and the day, keyed with `ADMIN_TOKEN`. Never the address itself. The daily cron deletes days before yesterday. Ten reviews, 20 reports, 30 deletions, 60 status checks and four reports of illness a day from one connection (an IPv6 /64 or an IPv4 address). The service also caps photos at 300 a day and pending reviews at 300, including simultaneous submissions. Published photos accumulate, so monitor total storage.
 
 A review waiting for you is never public: `/published` lists only published ones, and a waiting review's photos answer only to the admin token.
 
@@ -147,7 +205,7 @@ No Cloudflare account needed: `scripts/dev-server.mjs` runs the Worker in Node w
    ```
    SITE_URL=http://localhost:8771/ node reviews/scripts/dev-server.mjs
    ```
-   It prints the moderation address and its token, `local-admin-token`.
+   It prints the moderation address and its token, `local-admin-token`. Put `ILLNESS_REPORTS=on` before `node` to try reports of illness; their counts show from the next day, so a quick local try sees the form and the "No count to show" line, not a figure.
 3. In a second terminal, write the pages with reviews on, then serve them:
    ```
    DIPCAST_REVIEWS_URL=http://localhost:8787/ uv run python -c "import json, sys; sys.path.insert(0, 'scripts'); import build_site as b; from pathlib import Path; from dipcast.reviews import write_reviews; s = json.load(open('site/data/spots.json'))['spots']; b.write_pages(Path('site'), s, root='http://localhost:8771/'); print(write_reviews(Path('site')))"
@@ -161,7 +219,7 @@ Locally the moderation page shows spot ids rather than names and falls back to o
 
 ## Tests
 
-`node --test test/*.test.js` (or `npm test`) runs the Worker against real SQLite (Node's `node:sqlite`, Node 24 or later) with the migration in `migrations/`. CI runs them on every change to this folder (`.github/workflows/reviews-tests.yml`). The page's parts are in `tests/site_reviews.test.cjs` and the build's in `tests/test_reviews.py`.
+`node --test test/*.test.js` (or `npm test`) runs the Worker against real SQLite (Node's `node:sqlite`, Node 24 or later) with the migrations in `migrations/`; reports of illness are in `test/illness.test.js`. CI runs them on every change to this folder (`.github/workflows/reviews-tests.yml`). The page's parts are in `tests/site_reviews.test.cjs`, `tests/site_visits.test.cjs` and `tests/site_illness.test.cjs`, and the build's in `tests/test_reviews.py`.
 
 Before deploying a change, run it once in Cloudflare's own runtime as well: `npx wrangler d1 migrations apply swimsignal-reviews --local`, then `npx wrangler dev --local --var ALLOWED_ORIGIN:http://localhost:8771 --var SITE_URL:http://localhost:8771/ --var ADMIN_TOKEN:local-admin-token`. Node does not catch everything: on 3 Oct 2026 workerd refused to start a version whose `src/index.js` exported a number, which every Node test had passed (`src/rules.js` explains; a test now guards it).
 

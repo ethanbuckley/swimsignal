@@ -1,7 +1,8 @@
 // SwimSignal reviews. A spot's page sends a review here: whether the swimmer would swim there again,
 // the day they swam, what they wrote, a name to show and up to three photos. Every review waits
 // until the operator publishes it on /moderate. It also takes quick notes on a visit, what a spot was
-// like today or yesterday (the end of this file), which expire. The site's build fetches the published ones
+// like today or yesterday, which expire, and, when switched on, reports of illness after a swim, which
+// are published only as counts (both at the end of this file). The site's build fetches the published ones
 // (GET /published) and their photos and serves them with the rest of the site, so a visitor who
 // only reads reviews never contacts this Worker. README.md has the setup and the reasons.
 //
@@ -10,7 +11,8 @@
 
 import { BadImage, cleanJpeg } from './jpeg.js';
 import { MODERATE_CSS, MODERATE_JS, moderatePage } from './moderate.js';
-import { LIMITS, MAX_NAME, MAX_PENDING, MAX_PENDING_VISITS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT,
+import { ILLNESS_DAYS_BACK, ILLNESS_KEEP_DAYS, ILLNESS_MIN, ILLNESS_PER_DAY, ILLNESS_SPOT_DAY, ILLNESS_SYMPTOMS, LIMITS, MAX_NAME, MAX_PENDING,
+  MAX_PENDING_VISITS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT,
   PHOTO_STORAGE_WARN, PUBLISHED_LISTED, PUBLISH_TICKS_AT_ONCE, REASONS, VISIT_KINDS, VISIT_REASONS } from './rules.js';
 
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;   // the site's own rule for a spot's id (index.html PAGE_ID)
@@ -26,7 +28,7 @@ const WEB_ADDRESS = /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|co\.uk|org|net|uk|io|l
 
 export default {
   fetch: (request, env) => handleRequest(request, env),
-  async scheduled(controller, env) { await forgetOldHits(env); await forgetEndedVisits(env); await cleanAbandonedPhotos(env); },
+  async scheduled(controller, env) { await forgetOldHits(env); await forgetEndedVisits(env); await cleanAbandonedPhotos(env); await forgetOldIllness(env); },
 };
 
 // ---- replies ----
@@ -48,7 +50,8 @@ const nowISO = () => new Date().toISOString();
 // the status of a successful answer that carries a body.
 const PUBLIC_POSTS = new Map([['/reviews', [submit, 201]], ['/reviews/status', [status, 200]], ['/reviews/delete', [removeOwn]],
   ['/reviews/report', [report]], ['/visits', [submitVisit, 201]], ['/visits/status', [visitStatus, 200]],
-  ['/visits/delete', [removeOwnVisit]], ['/visits/confirm', [confirmVisit, 200]], ['/visits/report', [reportVisit]]]);
+  ['/visits/delete', [removeOwnVisit]], ['/visits/confirm', [confirmVisit, 200]], ['/visits/report', [reportVisit]],
+  ['/illness', [submitIllness, 201]], ['/illness/delete', [removeOwnIllness]]]);
 
 export async function handleRequest(request, env) {
   const url = new URL(request.url), path = url.pathname;
@@ -64,11 +67,16 @@ export async function handleRequest(request, env) {
       if (path === '/moderate.css') return reply(200, MODERATE_CSS, { 'Content-Type': 'text/css; charset=utf-8', 'Cache-Control': 'no-cache' });
       if (path === '/admin/queue') { await requireAdmin(request, env); return json(200, await queue(env)); }
       if (path === '/admin/summary') { await requireAdmin(request, env); return json(200, await summary(env)); }
+      if (path === '/admin/illness.csv') { await requireAdmin(request, env); return await illnessCsv(env); }
     }
     if (request.method === 'POST' && path === '/admin/decide') {
       await requireAdmin(request, env);
       await decide(await readJson(request), env);
       return new Response(null, { status: 204, headers: SAFE });
+    }
+    if (request.method === 'POST' && path === '/admin/illness/delete') {
+      await requireAdmin(request, env);
+      return json(200, await deleteIllnessBatch(await readJson(request), env));
     }
     return reply(404, 'Not found');
   } catch (err) {
@@ -370,8 +378,9 @@ async function published(env) {
   const { results } = await env.DB.prepare("SELECT * FROM reviews WHERE status = 'published' ORDER BY published_at, id").all();
   const visits = await env.DB.prepare("SELECT * FROM visits WHERE status = 'published' AND until >= ? ORDER BY seen_on, id")
     .bind(addDays(londonDay(), -1)).all();
+  const illness = await illnessPublished(env);
   return { generated_at: nowISO(), reviews: results.map((r) => { const { created_at, ...out } = fromRow(r); return out; }),
-    visits: visits.results.map((v) => { const { created_at, ...out } = fromVisit(v); return out; }) };
+    visits: visits.results.map((v) => { const { created_at, ...out } = fromVisit(v); return out; }), ...(illness ? { illness } : {}) };
 }
 
 async function servePhoto(request, env, id, n, thumb) {
@@ -414,6 +423,7 @@ async function queue(env) {
     reported: reported.map((r) => ({ ...fromRow(r), ...reasons(r) })),
     published: recent.map(fromRow),
     visits: { pending: vPending.map(fromVisit), reported: vReported.map((v) => ({ ...fromVisit(v), ...reasons(v) })), published: vRecent.map(fromVisit) },
+    illness: await illnessQueue(env),
   };
 }
 
@@ -607,4 +617,151 @@ export async function forgetEndedVisits(env, now = Date.now()) {
   for (const row of results) {
     try { await deleteReview(env, row.id, row.photo, 'visits'); } catch (err) { if (!(err instanceof Refused)) throw err; }
   }
+}
+
+// ---- reports of illness after a swim ----
+// "I got ill after swimming here": the spot, the day of the swim (within ILLNESS_DAYS_BACK days), the kinds
+// of symptom as ticks, the days to the first one, and whether they saw a doctor or called 111. That is
+// information about health (UK GDPR Article 9), so a report holds nothing that names or finds the sender:
+// no words, no time of day (only the day it arrived), and nothing that links it to the rate limits' counts.
+// No one reads reports one by one, because no report is ever shown: /published gives only counts per
+// spot, each from ILLNESS_MIN, and a report counts from the day after it arrives, which leaves the operator
+// a day to delete a flood on /moderate before it shows. The operator also downloads counts per spot and
+// day of swimming (/admin/illness.csv) to test the forecast against. Off until ILLNESS_REPORTS is "on".
+// The sender's own delete, the operator's view and the daily deletion work either way, so switching
+// reports off never strands what is held.
+
+const illnessOn = (env) => env.ILLNESS_REPORTS === 'on';
+const realDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && addDays(v, 0) === v;
+const symptomCounts = () => ILLNESS_SYMPTOMS.map((s) => `sum(instr(symptoms, '"${s}"') > 0) AS ${s}`).join(', ');
+// A missing table means migration 0004 is not applied yet: reviews and notes carry on regardless.
+const noIllnessTable = (err) => /no such table: illness/.test(String(err && err.message));
+async function withIllnessTable(run) {
+  try { return await run(); } catch (err) {
+    if (noIllnessTable(err)) throw new Refused(503, 'The illness table is missing: npx wrangler d1 migrations apply swimsignal-reviews --remote');
+    throw err;
+  }
+}
+
+async function submitIllness(request, env) {
+  if (!illnessOn(env)) throw new Refused(404, 'Illness reports are not switched on');
+  const data = await readJson(request);
+  check(isObject(data), 'body must be a JSON object');
+  if (await overLimit(request, env, 'illness')) throw new Refused(429, 'Too many reports from this connection today');
+  if (data.website) return { id: randomHex(10), token: b64url(crypto.getRandomValues(new Uint8Array(32))) };   // the hidden field: a script
+  check(typeof data.spot === 'string' && SPOT_ID.test(data.spot), 'bad spot id');
+  check(data.consent === true, 'tick the box to agree that SwimSignal keeps this information about your health');
+  const today = londonDay();
+  // A day more than the page offers, for a report sent just after midnight.
+  check(realDay(data.swam_on) && data.swam_on >= addDays(today, -(ILLNESS_DAYS_BACK + 1)) && data.swam_on <= today,
+    `choose the day you swam, in the last ${ILLNESS_DAYS_BACK} days`);
+  const ticked = Array.isArray(data.symptoms) ? data.symptoms : [];
+  check(ticked.length >= 1 && ticked.length <= ILLNESS_SYMPTOMS.length && ticked.every((s) => ILLNESS_SYMPTOMS.includes(s)), 'tick at least one kind of symptom');
+  check(Number.isInteger(data.onset) && data.onset >= 0 && data.onset <= 3, 'say when it started');
+  check(addDays(data.swam_on, data.onset) <= today, 'it cannot have started after today');
+  check(data.doctor === undefined || data.doctor === null || typeof data.doctor === 'boolean', 'answer yes or no about the doctor, or leave it out');
+  const symptoms = ILLNESS_SYMPTOMS.filter((s) => ticked.includes(s));   // one order, so that equal reports look equal on /moderate
+  const id = randomHex(10), token = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  // The day's caps checked in the statement that inserts, so simultaneous reports cannot pass them together.
+  const stored = await env.DB.prepare(`INSERT INTO illness (id, spot, swam_on, symptoms, onset, doctor, received_on, token_hash)
+    SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE (SELECT count(*) FROM illness WHERE received_on = ? AND spot = ?) < ?
+    AND (SELECT count(*) FROM illness WHERE received_on = ?) < ? RETURNING id`)
+    .bind(id, data.spot, data.swam_on, JSON.stringify(symptoms), data.onset, typeof data.doctor === 'boolean' ? Number(data.doctor) : null,
+      today, await sha256(token), today, data.spot, ILLNESS_SPOT_DAY, today, ILLNESS_PER_DAY).first();
+  if (!stored) throw new Refused(503, 'No more reports can be taken today. Try again tomorrow');
+  return { id, token };
+}
+
+// The sender's browser keeps the report's id and key. Deleting the report withdraws their consent, so it
+// works whether or not reports are switched on.
+async function removeOwnIllness(request, env) {
+  const data = await readJson(request);
+  check(isObject(data), 'body must be a JSON object');
+  const id = checkId(data.id);
+  check(typeof data.token === 'string' && data.token.length <= 100, 'bad key');
+  if (await overLimit(request, env, 'remove')) throw new Refused(429, 'Too many requests from this connection today');
+  const row = await env.DB.prepare('SELECT token_hash FROM illness WHERE id = ?').bind(id).first();
+  if (!row) return undefined;   // already gone: what was asked for is true
+  if (!(await same(row.token_hash, await sha256(data.token)))) throw new Refused(403, 'That key does not open this report');
+  await env.DB.prepare('DELETE FROM illness WHERE id = ?').bind(id).run();
+  return undefined;
+}
+
+// The counts the site may show: per spot, the reports that arrived in the 30 and the 365 days to yesterday
+// (a report counts from the day after it arrives), each only when at least ILLNESS_MIN; a spot with fewer
+// in 365 days is left out. Counted by the day a report arrived, not the day of the swim, so a window's
+// edge moving on reveals no day that anyone swam.
+export async function illnessCounts(env, now = Date.now()) {
+  const today = londonDay(now), through = addDays(today, -1);
+  const { results } = await env.DB.prepare(`SELECT spot, sum(received_on >= ?) AS d30, count(*) AS d365 FROM illness
+    WHERE received_on >= ? AND received_on <= ? GROUP BY spot HAVING count(*) >= ? ORDER BY spot`)
+    .bind(addDays(today, -30), addDays(today, -365), through, ILLNESS_MIN).all();
+  return { on: true, min: ILLNESS_MIN, through,
+    spots: Object.fromEntries(results.map((r) => [r.spot, { d30: r.d30 >= ILLNESS_MIN ? r.d30 : null, d365: r.d365 }])) };
+}
+
+// In /published: the counts when on; { on: false } when off but reports are still held, so the build keeps
+// the privacy notice's section until the last one is deleted; nothing when off and none are held, or before
+// the migration is applied.
+async function illnessPublished(env) {
+  try {
+    if (illnessOn(env)) return await illnessCounts(env);
+    const held = await env.DB.prepare('SELECT count(*) AS n FROM illness').first();
+    return held.n ? { on: false } : null;
+  } catch (err) {
+    if (noIllnessTable(err)) return null;
+    throw err;
+  }
+}
+
+// For /moderate: the reports by spot and the day they arrived, over the last 30 days, with the mix of
+// symptoms and how many differ (`kinds`), so that a flood, many alike for one spot on one day, stands out;
+// the totals; and what the site shows. Null before the migration.
+async function illnessQueue(env) {
+  try {
+    const today = londonDay();
+    const { results } = await env.DB.prepare(`SELECT spot, received_on, count(*) AS n, count(DISTINCT swam_on) AS days,
+      count(DISTINCT swam_on || symptoms || onset || coalesce(doctor, '-')) AS kinds, ${symptomCounts()}
+      FROM illness WHERE received_on >= ? GROUP BY spot, received_on ORDER BY received_on DESC, n DESC LIMIT 300`).bind(addDays(today, -30)).all();
+    const totals = await env.DB.prepare('SELECT count(*) AS held, coalesce(sum(received_on = ?), 0) AS arrived_today FROM illness').bind(today).first();
+    return { on: illnessOn(env), min: ILLNESS_MIN, keep_days: ILLNESS_KEEP_DAYS, day: today, batches: results, ...totals, shown: (await illnessCounts(env)).spots };
+  } catch (err) {
+    if (noIllnessTable(err)) return null;
+    throw err;
+  }
+}
+
+// The operator deletes a batch: every report for one spot that arrived on one day.
+async function deleteIllnessBatch(data, env) {
+  check(isObject(data) && typeof data.spot === 'string' && SPOT_ID.test(data.spot) && realDay(data.received_on), 'say which spot and day');
+  return withIllnessTable(async () => {
+    const r = await env.DB.prepare('DELETE FROM illness WHERE spot = ? AND received_on = ?').bind(data.spot, data.received_on).run();
+    return { deleted: r.meta.changes };
+  });
+}
+
+// For testing the forecast: reports per spot and day of swimming, with the mix of symptoms, the days to
+// the first one and the doctor answers. For the operator only: unlike the published counts, a row here can
+// be one person. A later season joins it with the forecasts logged in forecast_points
+// (src/dipcast/forecast_log.py) by spot and day.
+async function illnessCsv(env) {
+  return withIllnessTable(async () => {
+    const { results } = await env.DB.prepare(`SELECT spot, swam_on, count(*) AS reports, ${symptomCounts()},
+      sum(onset = 0) AS onset_0, sum(onset = 1) AS onset_1, sum(onset = 2) AS onset_2, sum(onset = 3) AS onset_3_or_more,
+      sum(doctor = 1) AS doctor_yes, sum(doctor = 0) AS doctor_no
+      FROM illness GROUP BY spot, swam_on ORDER BY swam_on, spot`).all();
+    const cols = ['spot', 'swam_on', 'reports', ...ILLNESS_SYMPTOMS, 'onset_0', 'onset_1', 'onset_2', 'onset_3_or_more', 'doctor_yes', 'doctor_no'];
+    const day = londonDay();
+    const lines = [`# SwimSignal illness reports per spot and day of swimming, ${day}. Unverified reports. Private: a row can be one person's health.`,
+      cols.join(','), ...results.map((r) => cols.map((c) => r[c] ?? 0).join(','))];
+    return new Response(lines.join('\n') + '\n', { headers: { 'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="illness-${day}.csv"`, 'Cache-Control': 'private, no-store', ...SAFE } });
+  });
+}
+
+// Daily: reports older than ILLNESS_KEEP_DAYS go. Before the migration there is nothing to delete.
+export async function forgetOldIllness(env, now = Date.now()) {
+  try {
+    await env.DB.prepare('DELETE FROM illness WHERE received_on < ?').bind(addDays(londonDay(now), -ILLNESS_KEEP_DAYS)).run();
+  } catch (err) { if (!noIllnessTable(err)) throw err; }
 }

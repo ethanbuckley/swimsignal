@@ -776,6 +776,8 @@ SHELL_SOURCES.append(TEMPLATE.parent / "reviews.js")
 VERSIONED_SCRIPTS += ('<script src="reviews.js"></script>',)
 SHELL_SOURCES.append(TEMPLATE.parent / "visits.js")   # and the notes on a visit, which use it
 VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
+SHELL_SOURCES.append(TEMPLATE.parent / "illness.js")   # and the reports of illness, which use it too
+VERSIONED_SCRIPTS += ('<script src="illness.js"></script>',)
 # Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "guide.js")
 VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
@@ -797,6 +799,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "experience.js", site / "experience.js")
     shutil.copy(TEMPLATE.parent / "reviews.js", site / "reviews.js")   # swimmers' reviews (src/dipcast/reviews.py)
     shutil.copy(TEMPLATE.parent / "visits.js", site / "visits.js")   # quick notes on a visit, beside them
+    shutil.copy(TEMPLATE.parent / "illness.js", site / "illness.js")   # reports of illness after a swim, as counts
     shutil.copy(TEMPLATE.parent / "guide.js", site / "guide.js")   # practical guides (src/dipcast/guides.py)
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
