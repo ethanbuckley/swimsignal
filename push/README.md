@@ -89,7 +89,9 @@ The note is push only. Email alerts are off for now, and their free allowance is
 
 ### Deploying it
 
-Run `npx wrangler deploy` from `push/`. Deploy before the page change goes live: the new Worker takes both the old page and the new one (no `weekly` means off), but the old Worker drops `weekly`, so a box ticked before the deploy shows ticked while the Worker holds it off, until the page next sends the list (when the saved spots change, or after a week).
+Merge first, then deploy from an up-to-date main within about 3 minutes: `git switch main && git pull`, then `npx wrangler deploy` from `push/`. The box appears only when the site build after the merge goes live (the build jobs on 3 Oct 2026 took 196 to 333 seconds), so a Worker deployed by then loses no ticks. The new Worker takes both the old page and the new one (no `weekly` means off). The old Worker ignores `weekly`: a box ticked while it still runs shows ticked on the page while the Worker holds it off, until the page next sends the list (when the saved spots change, or after a week).
+
+The most likely mistake is deploying from a checkout that does not have the merge yet. It happens because the local main stays behind GitHub until it is pulled, and wrangler deploys whatever is on disk: the old Worker, with no error. Before deploying, `ls src/weekly.js` (from `push/`) should list the file.
 
 On a Thursday after 18:00 UK time, `npx wrangler tail` shows `weekly: 2026-10-08: N weekly notes to send`, and two minutes later `weekly: sent N, removed 0, failed 0; 0 still queued`.
 
