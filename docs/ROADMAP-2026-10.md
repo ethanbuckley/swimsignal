@@ -187,7 +187,7 @@ project. "API?" says whether it needs the FastAPI server deployed.
 | 9 | Blue-green algae reports | Whether to get in | Medium in summer | S once licensed | UKCEH Bloomin' Algae publishes a CSV (5,389 rows for 2026, lat/lon, date, verification status) with no licence stated. The EA hydrology `bga` sensors: 19 live | No | Blocked on a licence email to UKCEH (open question) |
 | 10 | Estuary and coastal designated sites, PRF only | Where to go, coastal | Medium | M | EA PRF, OGL | No | SwimSignal abstains; shows the EA's forecast and credits it |
 | 11 | Scotland | Where to go | Medium | L | Scottish Water near-real-time overflow API (2,074 assets, OGL, hourly); SEPA KiWIS river levels (394 stage stations, OGL); SEPA bathing waters 90, PRF at some, HTML only. OS Open Rivers already covers GB | No | No annual-return spill history, so the per-overflow calibration layer is missing; pooled model only. Worth a separate plan |
-| 12 | Wales | Where to go | Low until a feed exists | L | Dŵr Cymru has a public map since 2024 but its site refused our requests and no API or licence was confirmed; only annual EDM returns are OGL | No | Ask Dŵr Cymru (open question) |
+| 12 | Wales | Where to go | Low until Dŵr Cymru gives reuse terms | L | Dŵr Cymru's map (since 2024) reads a public ArcGIS layer, `Spill_Prod__view`, that answers plain requests. The layer carries no licence, and Dŵr Cymru's site asks for written permission before reuse. Its site refuses automated requests. SwimSignal emailed Dŵr Cymru on 1 October 2026 and waits for its terms. Hafren Dyfrdwy is not in Severn Trent's feed. Annual EDM returns are published per overflow | No | Wait for Dŵr Cymru's terms (open question 3); plan in `docs/WALES-PLAN-2026-10.md` |
 | 13 | Weekend planner | Whether to go | Low | S | Existing | No | The five-day strip already is one; add "Saturday / Sunday" words to the best-day sentence |
 | 14 | Accuracy badge per spot | Trust | Low to medium | M | Live verification log | No | Scores are per overflow, not per spot; a per-spot badge would be the mean skill of its contributors, which is honest only with a note |
 | 15 | Embeddable widget and public data files for clubs and councils | Reach | Medium | S | Our files, with the credits | No | `spots.json` is already public; a documented `data/` page and a 1-line iframe cost little |
@@ -464,8 +464,11 @@ the terms page says embedding is allowed with the credits intact.
 2. **Ask UKCEH about Bloomin' Algae?** The CSV is public with no licence line. Reports could
    feed a "blooms reported nearby" sentence in summer. Who sends the email and under what
    framing (research use, credit, link back).
-3. **Ask Dŵr Cymru for a live feed?** Wales stays history-only without one. Their site refused
-   automated requests, so this is a person-to-person ask.
+3. **Dŵr Cymru's reuse terms.** A public layer exists: Dŵr Cymru's map reads `Spill_Prod__view`,
+   which answers plain requests. It carries no licence, and Dŵr Cymru's site asks for written
+   permission before reuse. SwimSignal emailed Dŵr Cymru on 1 October 2026 and waits for its
+   terms. Wales stays history-only until they arrive. `docs/WALES-PLAN-2026-10.md` has the
+   follow-up questions (section 8.1).
 4. **Scotland: in or out for 2027?** The data exists under OGL (Scottish Water live feed,
    SEPA levels) and the network already covers Scotland, but there is no spill history for the
    calibration layer and no validation data. It is a season's work.

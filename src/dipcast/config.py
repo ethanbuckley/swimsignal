@@ -43,7 +43,11 @@ def state_read(name: str) -> Path:
 # All share the same schema: Id, Company, Status, StatusStart, LatestEventStart,
 # LatestEventEnd, Latitude, Longitude, ReceivingWaterCourse, LastUpdated.
 # Status: 1 = discharging, 0 = not discharging, -1 = monitor offline.
-# Dwr Cymru (Wales) publishes no live feed to ArcGIS and is not covered live.
+# Dwr Cymru (Wales) is not read live. Its map uses a public ArcGIS layer
+# (Spill_Prod__view) with another schema and no licence, and its site asks for
+# written permission before reuse. SwimSignal emailed it on 1 Oct 2026 and waits
+# for its terms (docs/WALES-PLAN-2026-10.md). Hafren Dyfrdwy is not in Severn
+# Trent's layer.
 # ---------------------------------------------------------------------------
 LIVE_FEEDS: dict[str, str] = {
     "United Utilities": "https://services5.arcgis.com/5eoLvR0f8HKb7HWP/arcgis/rest/services/United_Utilities_Storm_Overflow_Activity/FeatureServer/0",

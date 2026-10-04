@@ -170,7 +170,7 @@ def data_states(ov: pd.DataFrame) -> pd.DataFrame:
       offline   no status: the monitor is offline (-1), the company's feed did not answer the poll
                 (-3, carry_forward), or the overflow is missing from the live feed of a company
                 that has one (-2)
-      no_feed   its company publishes no live feed (-2; Dwr Cymru Welsh Water's overflows)
+      no_feed   its company has no live feed SwimSignal reads (-2; Dwr Cymru Welsh Water's overflows)
 
     Current is the test coverage_rows applies, a company's freshest record stamp under
     FEED_CURRENT_H old, so a poll the scorer counts as stale is stale here too. One addition: a

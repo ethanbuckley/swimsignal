@@ -475,7 +475,7 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     offline monitor read as quiet. A discharge counts whatever the state: it was the feed's
     last word. live_now_risk is unchanged: an overflow it cannot see adds nothing, as before.
 
-    `no_feed_upstream` counts those not reporting because their company publishes no live feed
+    `no_feed_upstream` counts those not reporting because their company has no live feed SwimSignal reads
     (data_state no_feed), so the page can tell them from monitors that are offline: what is not
     reporting is then stale_upstream + no_feed_upstream + the rest, which are offline (feed_down_upstream
     among them)."""
