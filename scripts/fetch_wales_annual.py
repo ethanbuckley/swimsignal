@@ -6,7 +6,7 @@ layers carry no licence, so the parquet and its report stay out of git (data/pro
 ignored) until Dŵr Cymru gives terms.
 
     uv run python scripts/fetch_wales_annual.py             # reads data/cache/wales_annual/ if there
-    uv run python scripts/fetch_wales_annual.py --refresh   # reads the layers again (about 20 requests)
+    uv run python scripts/fetch_wales_annual.py --refresh   # reads the layers again (19 requests)
 
 It reads one page at a time, never in parallel. It also writes
 data/processed/wales_annual_report.json: rows by year, the live match rates and the rule's error
