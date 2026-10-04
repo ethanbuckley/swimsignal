@@ -72,8 +72,14 @@ candidate list it came from) and why `spots.csv` must never take OpenStreetMap r
 The JSON files under `data/anypoint/` also carry the credits; each square's
 link list links to them.
 
-Dwr Cymru (Wales) publishes no live feed to ArcGIS; its 128 overflows appear with
-annual spill history only and no "right now" status. Every English company is live.
+Dŵr Cymru Welsh Water's storm overflow map reads a public ArcGIS layer
+(`Spill_Prod__view`). The layer carries no licence, and Dŵr Cymru's site asks
+for written permission before its content is reused. SwimSignal emailed Dŵr
+Cymru on 1 October 2026 and is waiting for its terms. Until then SwimSignal does
+not read the layer: Dŵr Cymru's 128 overflows in England appear with annual
+spill history only and no "right now" status. Hafren Dyfrdwy is not in Severn
+Trent's live feed, and none of its overflows is in SwimSignal's table. The nine
+English companies in the National Storm Overflow Hub are all live.
 
 ## Method
 
@@ -557,7 +563,7 @@ the page with no note.
 | `live` | status 1 or 0 from a feed whose freshest record stamp is under 6 h old (`FEED_CURRENT_H`, the scorer's test) | "discharging", "not discharging" |
 | `stale` | status 1 or 0 from a feed whose freshest stamp is older, or that gives no time | "no update since 2 Oct, 14:00", "no update time from the company", "discharging at its last update, 2 Oct, 14:00" |
 | `offline` | status -1 (monitor offline), -3 (company feed down), or -2 at a company that has a live feed | "monitor offline", "company feed down", "not in the company's live feed" |
-| `no_feed` | status -2 at a company with no live feed (Dŵr Cymru Welsh Water) | "no live feed" |
+| `no_feed` | status -2 at a company with no live feed SwimSignal reads (Dŵr Cymru Welsh Water, whose layer has no licence yet) | "no live feed" |
 
 A company whose records carry no stamp at all counts as current when its layer
 was written within 6 h: `fetch_live` then reads the layer's own last data edit
@@ -773,10 +779,12 @@ Not done yet, in the order I would do them:
 4. Let live history accumulate for the eight companies without event feeds,
    then fit their site calibration.
 5. Per-lake residence time (needs volume; WFD gives area only).
-6. Dwr Cymru live status. On 29 Sep 2026 their storm-overflow map reads a
+6. Dŵr Cymru live status. On 29 Sep 2026 their storm-overflow map reads a
    public ArcGIS layer (`services3.arcgis.com/KLNF7YxtENPLYVey/.../Spill_Prod__view/FeatureServer/0`,
    2,362 overflows, status as text, no token). It carries no licence text, so
-   ask Dwr Cymru for reuse terms before building on it. It matters for the
+   ask Dŵr Cymru for reuse terms before building on it. SwimSignal emailed
+   Dŵr Cymru on 1 October 2026 and is waiting for its terms
+   (`docs/WALES-PLAN-2026-10.md`, task W5 onwards). It matters for the
    English Wye spots, which have Welsh overflows upstream.
 
 ## Run
