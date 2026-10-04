@@ -72,13 +72,13 @@ test('on a Saturday the weekend is today and tomorrow', () => {
   const even = [spot(sat, ['low', 'low', 'low', 'low', 'high']), spot(sat, ['high', 'high', 'high', 'low', 'high'])];
   at(sat, dates => assert.equal(L.weekendWords(even, dates), 'This weekend: 1 spot at low risk today and tomorrow.'));
 });
-test('on a Sunday the weekend is today alone, so there is no best of it', () => {
+test('on a Sunday the weekend is today, which the list already shows, so nothing is added', () => {
   const sun = '2026-10-11';   //        Sun     Mon     Tue     Wed     Thu
   const spots = [spot(sun, ['low', 'low', 'high', 'high', 'high']), spot(sun, ['high', 'low', 'high', 'high', 'high'])];
   at(sun, dates => {
-    assert.equal(L.bestDay(spots, dates).date, '2026-10-12');
-    assert.equal(L.weekendWords(spots, dates), 'This weekend: 1 spot at low risk today.');
-    assert.equal(L.weekendWords(spots, dates, true), 'This weekend: 1 of your 2 spots at low risk today.');
+    assert.equal(L.bestDay(spots, dates).date, '2026-10-12');   // Monday is the week's best, and Sunday is in range
+    assert.equal(L.weekendWords(spots, dates), '');
+    assert.equal(L.weekendWords(spots, dates, true), '');
   });
   const now = [spot(sun, ['low', 'low', 'high', 'high', 'high']), spot(sun, ['low', 'high', 'high', 'high', 'high'])];
   at(sun, dates => assert.equal(L.weekendWords(now, dates), ''));   // today is the week's best
@@ -121,13 +121,24 @@ test('the list and the Saved page put the weekend first, so Show stays beside th
   const spots = [spot(thu, ['high', 'high', 'low', 'high', 'low']), spot(thu, ['high', 'high', 'low', 'low', 'low']),
                  spot(thu, ['high', 'high', 'high', 'high', 'low'])];
   const note = noteOn(thu);
-  assert.equal(text(note(spots)), 'Best this weekend: Saturday, 2 spots at low risk. Lowest pollution risk this week: Mon 12 Oct · Show');
+  assert.equal(text(note(spots)), 'Best this weekend: Saturday, 2 spots at low risk. Lowest pollution risk this week: Monday · Show');
   assert.equal(text(note(spots, true)), 'Best this weekend: Saturday, 2 of your 3 spots at low risk. '
-    + 'Lowest pollution risk this week: Mon 12 Oct, when 3 of your 3 spots are at low risk. Show');
-  assert.match(note(spots), /<button[^>]*data-pick-day="2026-10-12"[^>]*>Show<\/button><\/span>$/);
+    + 'Lowest pollution risk this week: Monday, when 3 of your 3 spots are at low risk. Show');
+  // The button still picks the day, and its label is the day picker's name for it, where the focus goes.
+  assert.match(note(spots), /<button[^>]*data-pick-day="2026-10-12" aria-label="Show Mon 12 Oct">Show<\/button><\/span>$/);
   // No low day anywhere: the list says nothing of the best day, so nothing of the weekend either.
   assert.equal(note([spot(thu, ['high', 'high', 'high', 'high', 'high'])]), '');
-  // A Monday's line is as it was.
-  const mon = '2026-10-12';
-  assert.equal(text(noteOn(mon)([spot(mon, ['high', 'low', 'high', 'high', 'high'])])), 'Lowest pollution risk this week: Tomorrow · Show');
+});
+test('the week’s best day is in words, lower case mid-sentence, on any day', () => {
+  const mon = '2026-10-12';   // no weekend in range: only the best day's words changed
+  assert.equal(text(noteOn(mon)([spot(mon, ['high', 'low', 'high', 'high', 'high'])])), 'Lowest pollution risk this week: tomorrow · Show');
+  assert.equal(text(noteOn(mon)([spot(mon, ['low', 'high', 'high', 'high', 'high'])])), 'Lowest pollution risk this week: today · Show');
+  const sun = '2026-10-11';   // a Sunday: nothing of the weekend
+  const spots = [spot(sun, ['low', 'low', 'high', 'high', 'high']), spot(sun, ['high', 'low', 'high', 'high', 'high'])];
+  assert.equal(text(noteOn(sun)(spots)), 'Lowest pollution risk this week: tomorrow · Show');
+  assert.equal(text(noteOn(sun)(spots, true)), 'Lowest pollution risk this week: tomorrow, when 2 of your 2 spots are at low risk. Show');
+  const sat = '2026-10-10';   // a Saturday: today and tomorrow, then a later day by its full name
+  const sats = [spot(sat, ['high', 'low', 'high', 'low', 'high']), spot(sat, ['low', 'low', 'high', 'low', 'high']),
+                spot(sat, ['high', 'high', 'high', 'low', 'high'])];
+  assert.equal(text(noteOn(sat)(sats)), 'Best this weekend: tomorrow, 2 spots at low risk. Lowest pollution risk this week: Tuesday · Show');
 });

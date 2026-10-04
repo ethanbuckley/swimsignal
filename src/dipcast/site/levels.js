@@ -265,14 +265,15 @@ function bestDay(spots, dates) {
 }
 // How the weekend looks, beside the week's best day, while the five days reach a Saturday or a
 // Sunday: "Best this weekend: Saturday, 64 spots at low risk." On a Saturday the weekend is today
-// and tomorrow; on a Sunday, and on a Tuesday (Saturday is the fifth day), one day alone, so no
-// "best": "This weekend: 66 spots at low risk today." Equal days are said together. Empty without a
-// weekend day that has a level, and when the week's best day is itself a weekend day: the best-day
-// sentence names it already, and the line names a day once. `yours` counts the saved spots.
+// and tomorrow. On a Tuesday Saturday is the fifth day and alone, so no "best": "This weekend: 64
+// spots at low risk on Saturday." Equal days are said together. Empty on a Sunday, when the weekend
+// is today and the list already shows it (Ethan, 4 Oct 2026); without a weekend day that has a
+// level; and when the week's best day is itself a weekend day: the best-day sentence names it
+// already, and the line names a day once. `yours` counts the saved spots.
 function weekendWords(spots, dates, yours = false) {
-  const week = bestDay(spots, dates);
-  const days = dates.filter(iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay())).map(iso => bestDay(spots, [iso])).filter(Boolean);
-  if (!week || !days.length || days.some(d => d.date === week.date)) return '';
+  const week = bestDay(spots, dates), weekend = iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay());
+  const days = dates.filter(weekend).map(iso => bestDay(spots, [iso])).filter(Boolean);
+  if (!week || !days.length || days.some(d => d.date === week.date) || new Date(today() + 'T12:00:00').getDay() === 0) return '';
   const n = d => yours ? `${d.low || 'none'} of your ${d.known} spots` : `${d.low || 'no'} spot${d.low === 1 ? '' : 's'}`;
   const [a, b] = days;
   if (b && a.low !== b.low) { const w = b.low > a.low ? b : a; return `Best this weekend: ${dayName(w.date)}, ${n(w)} at low risk.`; }
