@@ -101,7 +101,7 @@ those sizes; they were taken off to keep the rule simple.)
 - A level colours the answer's big word, a day's bar and the dot on a scale. The written level
   carries the meaning even when colour is hard to see; the marks are a supporting cue. It never fills
   a surface: the washed-tint card was the dashboard look, and five of them in a column were a wall
-  of pastel. A level word in a table or the swim log is the word in its text colour, not a filled
+  of pastel. A level word in a table or the swim journal is the word in its text colour, not a filled
   label.
 
 ### Shape and surface
@@ -202,7 +202,7 @@ those sizes; they were taken off to keep the rule simple.)
 ### Icons
 
 One stroke set, 1.75 px, round caps: search, map, bookmark (Save and Saved), chevron (back links
-and folds), check (swim log), and since the seventh round one for each tile's label (`ICON`: the
+and folds), and since the seventh round one for each tile's label (`ICON`: the
 days, spills, water, right now, river level, rain, sun, rating, algae, map, nearby, the table).
 The chevrons drawn in CSS (back links, folds, a tile's corner) and a select's arrow (`--arrow`) use
 the same 1.75 px. The search icon (`SEARCH_ICON`) was still 2.2 on 2 October.
@@ -615,6 +615,36 @@ thermometer from the stroke set. No report is ever shown, only counts, from five
   own tick with the words "information about my health". An onset that would fall after today is
   shown but cannot be chosen.
 
+### The swim journal (4 October 2026)
+
+A swimmer's own record of swims (`journal.js`), on the device only. It replaced the one-tap log, "I
+swam here today", and reads its entries.
+
+- **On the Saved page, not a page of its own.** A phone's bar at the bottom has three tabs and its header
+  one link; a `journal/` page would have needed a fourth tab, or been reachable only from Saved. Saved is
+  already the page about what this device keeps, and the one-tap log was there. The journal is its last
+  tile.
+- **"Log a swim"** takes the log's place in a spot's four actions and opens a form in a tile under them,
+  the reviews' form: the day and the time side by side (one above the other at 360 px and under), the
+  minutes in the water, a note of 280 characters, up to three photos, then "Kept with the swim", what will
+  be kept, in the journal's words. The day and the time are filled in, so logging is two taps where it
+  was one. No health questions: the illness reports are separate.
+- **"Only on this device."** in bold leads the form's line and the journal's: reviews and notes on a visit,
+  further up the same page, are public.
+- **What is kept** is what the page showed when the swim was logged: the level and what set it, in a picked
+  day's words ("Moderate risk: sewage spills"; right now's spills where they are worse), with the forecast's
+  issue time; the rain in the last two days; how many overflows upstream were discharging; the river level
+  and the water temperature where the page showed a figure. Only for a swim logged on its day: the page has
+  no forecast for the days before, and the form says so.
+- **A row** is a review's: the day and time in bold, the spot (linked while it is listed) and the minutes,
+  the level in its text colour with "in the forecast issued Sun 4 Oct, 15:29", the figures in the meta
+  size, the note, the photos as 72 px squares that open full size, then Delete and "Tell Ethan how the
+  water was". Five show, newest first; "Show all" opens the rest. A one-tap log entry shows its level "in
+  the day's forecast".
+- **A copy**: "Save a copy" makes a file of the swims, notes and photos (a phone offers its share sheet);
+  "Add swims from a copy" reads one back, leaving out swims already there. It is how the journal moves to
+  another phone, or between Safari and the Home Screen app on an iPhone, which keep separate storage.
+
 ### A point off the list (3 October 2026)
 
 A click on the map away from the listed spots (`anypoint.js`) gives a forecast for that point, worked
@@ -622,7 +652,7 @@ out in the browser from the files in `data/anypoint/`. On a phone only the full 
 The card is a listed spot's card (`render` in `index.html`) with these differences:
 
 - The line over the name begins "Unlisted point: not hand-checked".
-- No Save. The spot's four actions (the link, the picture, the swim log, the feedback link) give way
+- No Save. The spot's four actions (the link, the picture, Log a swim, the feedback link) give way
   to one button, "Request this as a spot", which opens a request on GitHub with the point's position
   filled in.
 - No E. coli estimate: the Water quality tile reads "not estimated" and says the estimate needs a rain
