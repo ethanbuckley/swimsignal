@@ -922,7 +922,10 @@ its sample endpoint; the ratings come from the same service). The EA's short-ter
 against bathing after an incident is not included, for the same reason and
 because the service sends no CORS header, so a browser page elsewhere cannot
 read it either: on 29 Sep 2026 it covered Ham and Kingston and Frensham Great
-Pond (algae). Each bathing water's page links to the EA's page instead.
+Pond (algae). Each bathing water's page links to the EA's page instead, and
+its "Today's EA advice" fold (`src/dipcast/site/eatoday.js`, 4 Oct 2026) loads the
+EA's own embeddable panel for the site in the reader's browser when opened: a
+sandboxed frame the page cannot read, so it never sets the level.
 
 **Where there is nothing to forecast (3 Oct 2026).** A spot with no monitored
 overflow within 60 km upstream gets a plain level of its own, "No sewage risk

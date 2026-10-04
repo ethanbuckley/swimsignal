@@ -25,7 +25,8 @@ const SHELL = ['./', `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoi
   `since.js?v=${BUILD}`,   // what changed at a saved spot since you last looked
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', `reviews.js?v=${BUILD}`, `visits.js?v=${BUILD}`, `illness.js?v=${BUILD}`, `guide.js?v=${BUILD}`, `evidence.js?v=${BUILD}`,
-  `journal.js?v=${BUILD}`];
+  `journal.js?v=${BUILD}`,
+  `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 
 self.addEventListener('install', e => {
   // One missing file must not stop the rest being stored. no-cache: a new build's cache is filled
