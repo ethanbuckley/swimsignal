@@ -61,6 +61,12 @@ LIVE_FEEDS: dict[str, str] = {
     "Southern Water": "https://services-eu1.arcgis.com/6qJmARkS2dt2IjVA/arcgis/rest/services/SouthernWater_StormOverflowActivity_PROD_view/FeatureServer/0",
 }
 
+# Dwr Cymru's own layer, with its own schema (Wales plan, task W5). Read only when
+# DIPCAST_DWR_CYMRU=1, which stays off until Dwr Cymru gives reuse terms; ingest/dwr_cymru.py
+# says what it keeps. Nothing from it is shown on the site or published.
+DWR_CYMRU_LIVE = "https://services3.arcgis.com/KLNF7YxtENPLYVey/arcgis/rest/services/Spill_Prod__view/FeatureServer/0"
+DWR_CYMRU = os.environ.get("DIPCAST_DWR_CYMRU", "") == "1"
+
 # Event-level spill history (start/end per event). Used for model training.
 STREAM_BASE = "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services"
 EDM_EVENT_FEEDS: dict[str, str] = {
