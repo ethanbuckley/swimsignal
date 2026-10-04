@@ -441,14 +441,39 @@ def shift_by_travel(p: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
     return eff
 
 
+def daily_effects(p: np.ndarray, weights: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
+    """(n_overflows, n_days): each overflow's chance of affecting the spot on each arrival day,
+    its spill probability moved later by its travel time, times its weight. These are the terms
+    combine_daily multiplies, kept apart so the page can say which overflows a day's risk comes from."""
+    return np.clip(shift_by_travel(np.nan_to_num(p, nan=0.0), travel_h), 0, 1) * weights[:, None]
+
+
 def combine_daily(p: np.ndarray, weights: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
     """p: (n_overflows, n_days) spill probabilities by overflow and spill day.
     Returns risk per day at the spot, shifting each overflow's effect by its travel time."""
     n, d = p.shape
     if n == 0:
         return np.zeros(d)
-    eff = np.clip(shift_by_travel(np.nan_to_num(p, nan=0.0), travel_h), 0, 1) * weights[:, None]
-    return 1.0 - np.prod(1.0 - eff, axis=0)
+    return 1.0 - np.prod(1.0 - daily_effects(p, weights, travel_h), axis=0)
+
+
+def risk_shares(eff: np.ndarray) -> np.ndarray:
+    """Each source's share of a combined risk, 1 - prod(1 - e_i) (combine_daily, live_now_risk).
+    The product splits exactly in logs: -ln(1 - risk) = sum of -ln(1 - e_i), so a source's share is
+    its term over that sum. For small terms this is its effect over the sum of effects. eff: (n,) or
+    (n, n_days); the shares in each column add to 1, or are all 0 where the risk is 0."""
+    h = -np.log1p(-np.clip(np.asarray(eff, dtype=float), 0.0, 1.0 - 1e-9))
+    tot = h.sum(axis=0)
+    return np.divide(h, tot, out=np.zeros_like(h), where=tot > 0)
+
+
+def spread_count(shares: np.ndarray, cover: float = 0.9) -> int:
+    """How many sources, largest share first, it takes to make up `cover` of a risk. A risk "spread
+    over 12 overflows" is one where 12 make up nine tenths of it; the rest are slivers."""
+    s = np.sort(np.asarray(shares, dtype=float))[::-1]
+    if s.sum() <= 0:
+        return 0
+    return int(min(len(s), np.searchsorted(np.cumsum(s), cover - 1e-9) + 1))
 
 
 def missing_share(available: np.ndarray, weights: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
@@ -477,8 +502,116 @@ def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.
     return float(risk), pd.Series(contrib, index=ov.index)
 
 
+LOW_CUT = 0.15   # risk_label: a risk under this is low
+
+
+def _counted(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """The spills live_now_risk counts right now (running, or finished within recent_h, with any
+    weight): a mask over `ov`, and for every row its weight and the hours from now to its end,
+    taking a running spill to end now (so 0, or negative for one that ended in the past)."""
+    active = (ov["status"] == 1).to_numpy()
+    end = pd.to_datetime(ov["latest_event_end"], utc=True)
+    hrs_since = ((now - end).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
+    w = np.clip(ov["weight"].to_numpy(dtype=float), 0.0, None)
+    counted = (active | ((hrs_since >= 0) & (hrs_since <= recent_h))) & (w > 0)
+    return counted, w, np.where(active, 0.0, -hrs_since)
+
+
+def _contributions(t: float, w: np.ndarray, passed: np.ndarray, recent_h: float, t90_h: float) -> np.ndarray:
+    """Each spill's part of the live risk t hours from now, if its water had finished passing the
+    spot `passed` hours from now: its full weight until then, then dying off with T90, and nothing
+    once it passed more than recent_h ago. With `passed` its end, this is live_now_risk run forward
+    (a spill running now taken to end now); with its end plus its travel time, the same allowing
+    for the water still on its way."""
+    age = t - passed
+    return np.where(age <= 0, w, np.where(age <= recent_h, w * np.power(10.0, -np.maximum(age, 0.0) / t90_h), 0.0))
+
+
+def _first_under(w: np.ndarray, passed: np.ndarray, cut: float, recent_h: float, t90_h: float) -> tuple[float, bool]:
+    """Hours from now until the combined risk first falls below `cut`, and whether a spill leaving
+    the count (recent_h after its water passed) took it under. The risk only falls as time goes on:
+    smoothly as spills die off, flat while one is held, in steps as each leaves. So a bisection
+    within the stretch between two steps finds the time, to well under a minute."""
+    def risk(t: float, keep: np.ndarray) -> float:
+        c = np.clip(_contributions(t, w[keep], passed[keep], recent_h, t90_h), 0.0, 1.0)
+        return float(1.0 - np.prod(1.0 - c))
+
+    leaves = passed + recent_h                               # hours from now until each stops counting
+    start = 0.0
+    for step in np.unique(leaves[leaves >= 0]):
+        keep = leaves >= step                                  # still counted up to and at `step`
+        if risk(step, keep) < cut:                             # dies off under the cut before this step
+            lo, hi = start, float(step)
+            for _ in range(40):
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if risk(mid, keep) >= cut else (lo, mid)
+            return hi, False
+        if risk(step, leaves > step) < cut:                    # this step takes it under
+            return float(step), True
+        start = float(step)
+    return start, True   # not reached: after the last step nothing counts
+
+
+def live_clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
+                    recent_h: float = config.RECENT_SPILL_HOURS,
+                    t90_h: float = config.T90_HOURS) -> tuple[pd.Timestamp | None, str | None]:
+    """When live_now_risk, run forward from `now`, first falls below `cut`, if the overflows
+    discharging now stop now, the finished spills keep their end times, and no new spill starts.
+    The second element says what brought it under: 'die-off', or 'window' when a spill leaving the
+    count (recent_h after it ended) did. (None, None) when the risk is under the cut already.
+    The model's own time, which takes no account of travel time; clear_time is the one to say."""
+    if ov.empty:
+        return None, None
+    counted, w, end = _counted(ov, now, recent_h)
+    if 1.0 - np.prod(1.0 - np.clip(_contributions(0.0, w[counted], end[counted], recent_h, t90_h), 0, 1)) < cut:
+        return None, None
+    t, jumped = _first_under(w[counted], end[counted], cut, recent_h, t90_h)
+    return now + pd.Timedelta(hours=t), "window" if jumped else "die-off"
+
+
+TRAVEL_SAYS = 0.5   # the part of the risk, as it clears, that travel time must hold for 'travel'
+
+
+def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
+               recent_h: float = config.RECENT_SPILL_HOURS,
+               t90_h: float = config.T90_HOURS) -> tuple[pd.Timestamp | None, str | None, object]:
+    """The time to tell a swimmer right now's risk should be back to low, allowing for travel time.
+    live_now_risk counts a spill 20 h upstream in full the moment it starts and lets it die off from
+    the moment it ends, while its water is still reaching the spot for 20 h more. Here the same
+    computation runs forward with each spill it counts held at its full weight until its water has
+    passed (its end, or now for one running, plus its travel time), then dying off with T90, and
+    leaving the count recent_h after its water passed rather than after it ended. A small far spill
+    then barely moves the time; a big one holds it up. Always at or after live_clear_time, since each
+    spill's part is at least the model's at every moment. The live risk itself, and so the headline,
+    is unchanged. Spills live_now_risk no longer counts (ended over recent_h ago) stay out.
+
+    Returns (time, what set it, the index label in `ov` of the overflow named with 'travel').
+    'travel' when, as it clears, travel time holds at least half the risk: the risk over and above
+    what the model alone would give at that moment, split as risk_shares splits it; the overflow
+    named is the one with the most of that. Otherwise 'window' when a spill leaving the count took
+    it under, else 'die-off'. (None, None, None) when right now's risk is low."""
+    if ov.empty:
+        return None, None, None
+    counted, w, end = _counted(ov, now, recent_h)
+    idx, w, end = ov.index[counted], w[counted], end[counted]
+    if 1.0 - np.prod(1.0 - np.clip(_contributions(0.0, w, end, recent_h, t90_h), 0, 1)) < cut:
+        return None, None, None
+    passed = end + ov["travel_h"].to_numpy(dtype=float)[counted]
+    t, jumped = _first_under(w, passed, cut, recent_h, t90_h)
+
+    def hazard(c: np.ndarray) -> np.ndarray:   # risk_shares' split of 1 - prod(1 - c)
+        return -np.log1p(-np.clip(c, 0.0, 1.0 - 1e-9))
+
+    held = hazard(_contributions(t, w, passed, recent_h, t90_h))
+    extra = held - hazard(_contributions(t, w, end, recent_h, t90_h))   # what travel time adds, per spill
+    at = now + pd.Timedelta(hours=t)
+    if held.sum() > 0 and extra.sum() >= TRAVEL_SAYS * held.sum():
+        return at, "travel", idx[int(np.argmax(extra))]
+    return at, "window" if jumped else "die-off", None
+
+
 def risk_label(r: float) -> str:
-    if r < 0.15:
+    if r < LOW_CUT:
         return "low"
     if r < 0.4:
         return "moderate"

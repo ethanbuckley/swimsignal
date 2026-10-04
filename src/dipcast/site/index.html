@@ -303,6 +303,7 @@
   .tiles { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; }
   .tiles > .wide { grid-column:1 / -1; }
   #nearby-host:empty { display:none; }
+  #sources-host:empty { display:none; }
   .stack > .loc { margin:0; }
   .tile #spot-map { margin:10px 0 0; }
   /* The answer, as Apple's opening lines: the place, its name, the level and "risk" at the title's size,
@@ -1634,6 +1635,7 @@ function showDay(d, iso) {
   if ((VIEW.day || null) !== DAY) setMapDay(DAY);
   document.getElementById('day-view').innerHTML = x ? dayDetail(d, x) : '';
   const alt = document.getElementById('nearby-host'); if (alt) alt.innerHTML = nearby(d);   // the spots nearby, on this day
+  const src = document.getElementById('sources-host'); if (src) src.innerHTML = whereFrom(d);   // where that day's risk comes from
   document.querySelectorAll('#day-strip [data-day]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.day === DAY)));
   const close = document.getElementById('day-close');
   if (close) close.addEventListener('click', () => { showDay(d, null); document.querySelector(`#day-strip [data-day="${iso}"]`).focus(); });
@@ -2339,6 +2341,72 @@ function dayTable(d, total, isLake, scope) {
   if (notes.length) h += `<div class="small muted msg">${notes.join(' ')}</div>`;
   return h + `<p class="small muted msg"><b>Exposure index</b>: a 0–100 score of how likely sewage from upstream is to reach the spot, from Open-Meteo rainfall through a spill model trained on 743,735 United Utilities discharge events (2023–25) and verified on a held-out year, then travel time, die-off and dilution. Not a probability. <b>E. coli estimate</b>: the estimated chance that a midday sample would show over 900 E. coli per 100 ml, from rain at the spot in the 48 h to midday, the exposure index, and season. Daily resolution. <a href="#levels">What the levels mean</a> · <a href="verification.html">How accurate is it?</a></p></details>`;
 }
+// Where the risk comes from, in words a swimmer reads before the list of overflows: the overflow it
+// comes from, or how many it is spread over; and, after a spill, when right now's risk should be
+// back to low. forecast.py writes the fields: a day's and right now's `source`, right now's
+// `clears_at`, `clears_by` and `clears_after`, a day's `risk_from_later_spills`. Not worked out here, because the
+// shares need every overflow upstream and the days before today, and the page has the ten with the
+// most reach and today onwards. So a clicked point (anypoint.js), and a forecast built before the
+// fields existed, says neither, and the tile is left out.
+// The feed's receiving watercourse where it reads as a name: "on the River Eden", "on Glenridding
+// Beck". Feeds also give "The River Eden", "RIVER FROME(S)", "TRIB OF THE RIVER TEIGN", "Groundwater",
+// "UCK" and names cut short ("Starston Beck River Waveney  N"); all but the first are left out.
+const onWater = w => { const n = nameCase(w).trim().replace(/^The /, '');
+  if (!/^[A-Z][a-z'-]+( [A-Z][a-z'-]+)*$/.test(n) || /\b(Trib|Tributary|Via|Groundwater|Unknown)\b/.test(n)) return '';
+  return /^(River|Afon) |^\S+$/.test(n) ? `on the ${n}` : `on ${n}`; };
+// One overflow and where it is, as the list below gives it: "Ilkley WwTW on the River Wharfe, 6.0 km
+// upstream, about 5 hours away".
+const sourcePlace = s => { const h = Math.round(s.travel_h), water = onWater(s.receiving_watercourse);
+  return `<b>${esc(nameCase(s.site_name ?? s.site_id))}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? ', discharging now' : ''}, `
+    + `${fmt(s.distance_km + s.lake_distance_km, 1)}&nbsp;km upstream, ${s.travel_h < 1 ? 'under an hour' : `about ${h} hour${h === 1 ? '' : 's'}`} away`; };
+// The sentence for one risk, right now's (when = 'now') or a day's (an ISO date). One overflow is named
+// alone only when it holds at least half the risk (transport.risk_shares, which splits 1 - prod(1 - e)
+// exactly); otherwise the risk is spread over the overflows that make up nine tenths of it.
+function sourceSentence(s, when) {
+  const whose = when === 'now' ? 'the risk from sewage spills right now' : `${dayName(when)}'s risk from sewage spills`;
+  if (s.share >= 0.5) return `${s.share >= 0.9 ? 'Nearly all' : s.share > 0.55 ? 'Most' : 'Half'} of ${whose} comes from ${sourcePlace(s)}.`;
+  return `${cap(whose)} is spread over ${s.spread_over} overflows. The largest part, ${Math.floor(s.share * 100)}%, comes from ${sourcePlace(s)}.`;
+}
+// When right now's risk should be back to low if the spills stop: forecast.py's clears_at, in UK time,
+// as the part of the day it falls in ("by about Thursday afternoon", "overnight into Friday").
+const DAY_PARTS = [[6, 'overnight'], [12, 'morning'], [18, 'afternoon'], [24, 'evening']];
+function partOfDay(iso) {
+  const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', weekday: 'long', hour: 'numeric', hourCycle: 'h23' }).formatToParts(new Date(iso));
+  const day = p.find(x => x.type === 'weekday').value, part = DAY_PARTS.find(([end]) => +p.find(x => x.type === 'hour').value < end)[1];
+  return part === 'overnight' ? `overnight into ${day}` : `by about ${day} ${part}`;
+}
+// The time is transport.clear_time's: the live risk run forward, as if the spills running now stopped
+// now and none started, allowing for travel time (the live risk itself takes none): each spill is held
+// at its full weight until its water has passed the spot, then dies off with T90, and stops counting
+// 48 h after its water passed. When a spill leaving the count (clears_by 'window') or travel time
+// ('travel': it holds at least half the risk as it clears; clears_after names the overflow it holds up
+// most) sets the time, the sentence says so. A time already past says nothing (an old page). Then the
+// first later day the forecast raises by spills after today alone.
+function clearSentence(d) {
+  const n = d.now || {};
+  if (!n.clears_at || rank(n.label) < 1 || Date.parse(n.clears_at) <= Date.now()) return '';
+  const k = n.discharging_upstream || 0, last = n.clears_after || {}, h = Math.round(last.travel_h);
+  const later = d.days.slice(1, 5).find(x => hasData(x) && (x.risk_from_later_spills ?? 0) >= SPILL_CUTS[0]);
+  const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after its water has passed`
+    : n.clears_by === 'travel' && (last.site_name || last.site_id) && h >= 1
+      ? `, allowing for travel time: water from ${esc(nameCase(last.site_name ?? last.site_id))} takes about ${h} hour${h === 1 ? '' : 's'} to get here` : '';
+  return `If ${k === 1 ? 'the overflow discharging upstream stops now' : k ? `the ${k} overflows discharging upstream stop now` : 'no new spill starts'}, `
+    + `the model expects low risk from spills ${partOfDay(n.clears_at)}${why}.`
+    + (later ? ` Rain may bring new spills and ${later.label} risk ${dayWord(later.date)}.` : '');
+}
+// The tile, for the day shown (DAY, or today). The day's sources when it is moderate or worse; on
+// today, right now's instead where right now is the higher risk, or where only right now has any to
+// give (forecast.py writes them while right now is moderate or worse, or an overflow upstream is
+// spilling). The clearing time on today only. showDay fills it again for a picked day.
+function whereFrom(d) {
+  if (!daily(d)) return '';
+  const iso = DAY || today(), x = d.days.find(y => y.date === iso), n = d.now || {}, first = iso === today();
+  const day = x && hasData(x) && x.source && rank(x.label) >= 1 ? sourceSentence(x.source, iso) : '';
+  const now = first && n.source ? sourceSentence(n.source, 'now') : '';
+  const said = [now && (!day || n.risk >= x.risk) ? now : day, first ? clearSentence(d) : ''].filter(Boolean);
+  return said.length ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>Where the risk comes from</span></h2>`
+    + said.map(t => `<p class="t-say">${t}</p>`).join('') + '</section>' : '';
+}
 // The overflows that matter most, as rows, each with its reach drawn: on a phone a five-column table
 // was too tight to read. Their circles go on the map, a bigger one for more reach.
 function overflowTile(d, total) {
@@ -2415,6 +2483,7 @@ function render(d) {
   if (total) h += `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
     + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>offline or no feed</p></div>`;
+  h += `<div id="sources-host">${whereFrom(d)}</div>`;   // where the risk comes from, before the overflows; showDay keeps it to the day
   if (d.contributors.length) h += overflowTile(d, total);
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div>';
   h += actions(d) + tech(d);
