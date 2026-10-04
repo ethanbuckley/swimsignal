@@ -328,9 +328,14 @@ def render(snapshot):
             stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
-        cards.append(f'<li class="coastal-site"><a href="{escape(site["profile"], quote=True)}">{escape(site["name"])}</a>'
+        profile = escape(site["profile"], quote=True)
+        # Today's advice, from the EA itself: coverage.html's script loads the EA's own panel for the
+        # site into this fold when it is first opened. Without the script, the fold points to the profile.
+        today = (f'<details class="ea-today" data-site="{escape(site["id"], quote=True)}"><summary>Today\'s EA advice</summary>'
+                 f'<p class="small">Open the <a href="{profile}">official profile</a> for today\'s advice.</p></details>')
+        cards.append(f'<li class="coastal-site"><a href="{profile}">{escape(site["name"])}</a>'
                      f'<p class="small">{escape(site["kind"].title())} · {escape(historical)}<br>'
-                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}{sample}</p></li>')
+                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}{sample}</p>{today}</li>')
     return (f'<p class="small">{len(cards)} designated coastal and estuary bathing waters. Snapshot '
             f'{when(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
             'and check the signs before swimming. Missing advice does not mean clean water.</p>'

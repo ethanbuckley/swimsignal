@@ -97,6 +97,11 @@ def test_catalogue_scope_historical_rating_and_safe_rendering():
     assert 'Snapshot <time datetime="2026-09-15T12:00:00+01:00">15 Sep 2026, 12:00</time>.' in rendered
     assert 'expires <time datetime="2026-09-16T08:29:00+01:00">16 Sep 2026, 08:29</time>' in rendered
     assert coastal.when("not a time <b>") == "not a time &lt;b&gt;"
+    # Every site has a fold for today's advice from the EA itself (coverage.html loads the EA's panel
+    # into it); without the page's script it points to the profile.
+    assert (f'<details class="ea-today" data-site="{KEY}"><summary>Today\'s EA advice</summary>'
+            f'<p class="small">Open the <a href="https://environment.data.gov.uk/bwq/profiles/profile.html?site={KEY}">'
+            "official profile</a> for today's advice.</p></details></li>") in rendered
 
 
 def test_source_failures_preserve_catalogue_but_never_advice():
