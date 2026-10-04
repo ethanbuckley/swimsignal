@@ -226,7 +226,10 @@ paper, as the site's first screen looked in the fifth round.
   false alarms and correct quiet days, each count over its name so it fits a 320 px phone; the same for the
   E. coli estimate. Then the four numbers that matter in a ruled definition list, a short "in short" list,
   a contents list, then sections in the same order as before, with "Did the forecast run on time?" last of the
-  live ones. Tables share one style; the three
+  live ones. The held-out ranking (an AUC) is said as pairs, "93 in 100", over "Pairs ranked the right way round"
+  and a line saying it is a ranking, not a share of forecasts right (4 October 2026): as "93%" under "warned of 21% of
+  spills" it read as accuracy, and 93% is also NSW Beachwatch's headline figure, a different measure. The opening
+  paragraph is short sentences, one idea each. Tables share one style; the three
   reliability tables draw forecast against observed as bars. A table wider than the screen scrolls
   sideways in its own box, between two hairlines, and the bar column keeps at least 120 px. The
   scoring rules fold away under "How the live scoring works", so the page opens on results.
