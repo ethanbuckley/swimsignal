@@ -868,6 +868,9 @@ VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
 # Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
 SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
 VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
+# Named lists of saved spots, and the links that share a list or a plan (saved/): lists.js, likewise.
+SHELL_SOURCES.append(TEMPLATE.parent / "lists.js")
+VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -888,6 +891,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
+    shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -961,9 +965,10 @@ def spot_page(template: str, spot: dict, root: str) -> str:
 
 
 def saved_page(template: str, root: str) -> str:
-    """The Saved page, saved/: the map page, where the script lists the spots this browser has
-    saved, or offers a list someone shared (saved/#spots=...). The list lives in the browser, not
-    in the page, so search engines are asked to leave it out and the sitemap does not list it."""
+    """The Saved page, saved/: the map page, where the script shows the lists of spots this browser
+    has saved, or a list someone shared (saved/#list=...&spots=..., lists.js). The lists live in the
+    browser, not in the page, so search engines are asked to leave it out and the sitemap does not
+    list it."""
     page = PAGE_META.sub(lambda m: page_meta(SAVED_TITLE, SAVED_DESCRIPTION, f"{root}saved/", root, base="../",
                                              noindex=True), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Saved spots</h1>'
