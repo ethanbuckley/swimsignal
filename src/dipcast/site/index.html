@@ -416,13 +416,27 @@
   ul.near:last-child { margin-bottom:0; }
   .tile ul.near { margin:6px 0 0; border:0; }
   .tile ul.near + .sub { margin:8px 0 0; }
-  /* The swim log on the Saved page: a row per swim, newest first. */
-  ul.swims { list-style:none; margin:0; padding:0; }
-  ul.swims li { display:flex; gap:10px; align-items:baseline; padding:10px 0; border-top:1px solid var(--line); }
-  ul.swims [data-unswim] { padding:10px 0; margin:-10px 0; }   /* a 44 px target within the row's own height */
-  ul.swims li:first-child { border-top:0; }
-  .swim-when { flex:none; width:96px; font-size:var(--fs-meta); color:var(--muted); } .swim-what { flex:1; min-width:0; overflow-wrap:anywhere; }
-  ul.swims .badge { margin-left:4px; }
+  /* The swim journal (journal.js), on this device only: on the Saved page, rows built as the reviews'
+     (.rv), the day and time as the headline, then the spot, what the forecast showed (the level in its
+     text colour, never a filled label), the note and the photos; on a spot's page, the reviews' form
+     in a tile under the buttons. */
+  #journal { scroll-margin-top:calc(var(--header-h) + 8px); } #journal:focus, #jn-box-h:focus { outline:none; }
+  .jn-where { margin:2px 0 0; font-size:var(--fs-note); line-height:1.4; overflow-wrap:anywhere; }
+  .jn-where a { font-weight:600; }
+  .jn-seen { margin:6px 0 0; font-size:var(--fs-note); line-height:1.4; }
+  .jn-seen .badge { white-space:normal; }   /* the plain levels are phrases, wider than a phone */
+  .jn-k { color:var(--muted); }
+  .jn-file { display:flex; flex-wrap:wrap; align-items:center; gap:0 16px; margin:8px 0 0; padding-top:4px; border-top:1px solid var(--hair); }
+  .jn-said:empty { display:none; }
+  .jn-when { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 8px; max-width:440px; }
+  .rv-form .jn-when input[type=date] { max-width:none; }
+  .rv-form input[type=time], .rv-form input[type=number] { display:block; width:100%; min-height:44px; margin:0; padding:9px 12px;
+    font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field); border:1px solid var(--line); border-radius:var(--radius); }
+  .rv-form #jn-min { max-width:140px; }
+  .actions .btn[aria-expanded=true] { background:var(--active); }   /* "Log a swim" while its form is open */
+  @media (max-width: 360px) { .jn-when { grid-template-columns:minmax(0, 1fr); } }   /* the day did not fit beside the time at 320 px */
+  .jn-kept { margin:16px 0 0; padding-top:4px; border-top:1px solid var(--hair); }
+  .jn-kept .rv-q { margin-top:8px; }
   /* A phone's spot page: where the spot is, at a glance, under the answer. */
   .loc { position:relative; height:140px; margin:12px 0 0; border-radius:var(--radius); overflow:hidden; background:var(--map-bg); }
   #loc-map { position:absolute; inset:0; z-index:0; background:var(--map-bg); cursor:pointer; }
@@ -837,7 +851,7 @@
         </dl>
       </details>
       <details class="more" id="your-data"><summary>Saved spots, offline use and your data</summary>
-        <p class="small muted">Saved spots, the names of your lists and your swim log are kept in this browser, and sent nowhere unless you turn on alerts on the Saved page (alerts send which spots are saved, not the lists' names or the log). After a first visit the page and the latest forecast are stored on your device, so the site opens without signal at the water's edge; it then says how old the forecast is. <a href="privacy.html">Privacy notice</a>.</p>
+        <p class="small muted">Saved spots, the names of your lists and your swim journal are kept in this browser, and sent nowhere unless you turn on alerts on the Saved page (alerts send which spots are saved, not the lists' names or the journal). After a first visit the page and the latest forecast are stored on your device, so the site opens without signal at the water's edge; it then says how old the forecast is. <a href="privacy.html">Privacy notice</a>.</p>
         <p class="small"><button type="button" class="linkbtn" id="offline-btn" hidden>Turn off the offline copy</button> <span class="muted" id="offline-msg" aria-live="polite"></span></p>
         <p class="small" id="count-row" hidden><span class="muted">Page views are counted, without cookies.</span> <button type="button" class="linkbtn small" id="count-btn">Don't count my visits</button> <span class="muted" id="count-msg" aria-live="polite"></span></p>
       </details>
@@ -874,6 +888,7 @@
 <script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
+<script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
 <script>
 const BRAND = 'SwimSignal';
@@ -1583,48 +1598,12 @@ const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b
 const bindBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => b.addEventListener('click', () => {
   setMapDay(b.dataset.pickDay); const sel = document.getElementById('listday'); if (sel) sel.focus(); }));
 
-// ------------------------------------------------------------------------------ swim log
-// "I swam here today": the spot, the date and the day's level, kept in this browser only. A diary
-// for the swimmer, and the way to say later how the water really was (the feedback link carries
-// the spot and the day).
-const SWIM_KEY = 'dipcast.swims';
-const swims = () => { try { return storedList(localStorage.getItem(SWIM_KEY), x => !!x && typeof x.id === 'string' && typeof x.date === 'string'); }
-  catch (e) { return []; } };
-const storeSwims = list => { try { localStorage.setItem(SWIM_KEY, JSON.stringify(list.slice(-200))); return true; } catch (e) { return false; } };
-const swamOn = (id, iso) => swims().some(x => x.id === id && x.date === iso);
-function logSwim(d) { const l = dayLevel(d, today()), list = swims().filter(x => !(x.id === d.id && x.date === today()));
-  list.push({ id: d.id, date: today(), level: ORDER[l] !== undefined ? l : null }); return storeSwims(list); }
-const unlogSwim = (id, iso) => storeSwims(swims().filter(x => !(x.id === id && x.date === iso)));
-const swimLabel = on => on ? CHECK + 'Swam here today' : 'I swam here today';
-const swimFeedback = (name, iso) => `${esc(FEEDBACK)}&amp;spot=${encodeURIComponent(`${name}, ${dateLabel(iso)} ${iso}`)}`;
-function bindSwim(d) {
-  const b = document.getElementById('swam'), m = document.getElementById('swam-msg'); if (!b) return;
-  b.addEventListener('click', () => {
-    const on = !swamOn(d.id, today()), kept = on ? logSwim(d) : unlogSwim(d.id, today());
-    b.setAttribute('aria-pressed', String(on)); b.innerHTML = swimLabel(on);
-    m.innerHTML = !kept ? 'This browser is not keeping site data, so this lasts only for this visit.'
-      : on ? `Logged on this device, with today's level; your swims are on the Saved page. <a href="${swimFeedback(d.name, today())}">Tell us how the water was</a>.` : 'Removed from your swim log.';
-  });
-}
-function swimsCard() {
-  const list = swims().slice().reverse().slice(0, 12); if (!list.length) return '';
-  const rows = list.map(x => { const s = DATA.spots.find(y => y.id === x.id), name = s ? s.name : x.id;
-    return `<li><span class="swim-when">${new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>`
-      + `<span class="swim-what">${s ? `<a href="${esc(spotPath(x.id))}" data-swim-spot="${esc(x.id)}">${esc(name)}</a>` : esc(name)}${x.level ? ` <span class="badge ${cls(x.level)}">${cap(x.level)} risk</span>` : ''}`
-      + ` <a class="small" href="${swimFeedback(name, x.date)}">How was it?</a></span>`
-      + `<button type="button" class="linkbtn small" data-unswim="${esc(x.id)}" data-date="${x.date}" aria-label="Remove ${esc(name)} on ${x.date} from your swim log">Remove</button></li>`; }).join('');
-  return `<section class="sec tile" aria-labelledby="swims-h"><h2 class="sec-h" id="swims-h">Your swims</h2><p class="sub">Logged from a spot's page with "I swam here today", with the forecast level that day. Kept on this device only.</p><ul class="swims" id="swims">${rows}</ul>`
-    + `<p class="small muted msg"><button type="button" class="linkbtn" id="clear-swims">Clear the log</button></p></section>`;
-}
-function bindSwims() {
-  const ul = document.getElementById('swims'); if (!ul) return;
-  ul.addEventListener('click', e => {
-    const a = e.target.closest('[data-swim-spot]'), un = e.target.closest('[data-unswim]');
-    if (a && plainClick(e)) { e.preventDefault(); select(a.dataset.swimSpot, true); }
-    else if (un) { unlogSwim(un.dataset.unswim, un.dataset.date); renderSaved(); }
-  });
-  document.getElementById('clear-swims').addEventListener('click', () => { if (confirm('Clear your whole swim log on this device?')) { storeSwims([]); renderSaved(); } });
-}
+// ------------------------------------------------------------------------------ swim journal
+// "Log a swim" on a spot's page, and the journal on the Saved page: journal.js, which keeps both on this
+// device only and sends nothing. These are the page's hooks into it; without that script they do nothing.
+const bindSwim = d => { if (typeof journalLogBind === 'function') journalLogBind(d, DATA.generated_at); };
+const swimsCard = () => typeof journalCard === 'function' ? journalCard() : '';
+const bindSwims = () => { if (typeof journalBindSection === 'function') journalBindSection(); };
 
 // ------------------------------------------------------------------------------ a picture to share
 // The forecast drawn into an image on the device, for a swim group's chat: the spot, the headline,
@@ -1903,7 +1882,6 @@ function setPanel(h) { parkMap(); if (MINI) { MINI.remove(); MINI = null; }
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };
 const SORTS = { risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
 const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>';
-const CHECK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>';
 // With more than one list, Save says which list it adds to: the one the Saved page shows.
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
@@ -2510,10 +2488,10 @@ function bindSave(d) {
   });
 }
 function actions(d) {
-  const swam = swamOn(d.id, today()), fb = `${esc(FEEDBACK)}&amp;spot=${encodeURIComponent(d.name)}`;
+  const fb = `${esc(FEEDBACK)}&amp;spot=${encodeURIComponent(d.name)}`;
   return `<div class="actions"><button type="button" class="btn primary" id="share">Copy link to this spot</button>`
     + `<button type="button" class="btn" id="share-img">Share as a picture</button>`
-    + `<button type="button" class="btn" id="swam" aria-pressed="${swam}">${swimLabel(swam)}</button>`
+    + `<button type="button" class="btn" id="swam" aria-expanded="false">Log a swim</button>`   // the swim journal's form (journal.js)
     + `<a class="btn" href="${fb}">Tell us how you used this</a></div>`
     + `<p class="small muted below" id="share-msg" aria-live="polite"></p><p class="small muted below" id="swam-msg" aria-live="polite"></p>`
     + `<p class="small muted below">Running an event or a club swim here? <a href="organisers.html#spot=${encodeURIComponent(d.id)}">The overflows upstream, a checklist and signs</a>.</p>`

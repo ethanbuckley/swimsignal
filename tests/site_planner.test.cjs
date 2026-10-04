@@ -181,11 +181,12 @@ test('stored lists that are not lists, or hold odd entries, read as empty rather
   for (const text of [null, '', 'not json', '"abc"', '42', '{"id":"a"}', 'null']) assert.deepEqual(storedList(text), [], String(text));
   assert.deepEqual(storedList('["a", 3, "b"]', x => typeof x === 'string'), ['a', 'b']);
   let stored = '{"id":"a"}';
-  const ctx = pageContext(['SWIM_KEY', 'swims', 'swamOn'], {localStorage: {getItem: () => stored}});
-  assert.equal(vm.runInContext('swims().length', ctx), 0);
-  assert.equal(vm.runInContext('swamOn("a", "2026-09-30")', ctx), false);   // threw "swims(...).some is not a function"
+  const ctx = pageContext([], {localStorage: {getItem: () => stored}});
+  // The swim journal (journal.js), which reads the one-tap log's key; that log threw "swims(...).some is not a function" here.
+  vm.runInContext(fs.readFileSync(require('node:path').join(__dirname, '../src/dipcast/site/journal.js'), 'utf8'), ctx);
+  assert.equal(vm.runInContext('journalNow().length', ctx), 0);
   stored = '[null, 7, {"id":"a","date":"2026-09-30","level":"low"}]';
-  assert.equal(vm.runInContext('swamOn("a", "2026-09-30")', ctx), true);
+  assert.equal(vm.runInContext('journalNow().map(e => e.key + " " + e.level).join()', ctx), 'a@2026-09-30 low');
   // The saved spots, read with the lists (lists.js; site_lists.test.cjs has the rest).
   const {readLists} = require('../src/dipcast/site/lists.js');
   assert.deepEqual(readLists(null, '"abc"').lists[0].spots, []);   // a Set of a string was its letters
