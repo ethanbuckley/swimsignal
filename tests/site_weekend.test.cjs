@@ -24,7 +24,9 @@ test('on a Thursday the weekend is Saturday and Sunday, and the better one is na
   at(thu, dates => {
     assert.equal(L.bestDay(spots, dates).date, '2026-10-12');   // Monday is the week's best
     assert.equal(L.weekendWords(spots, dates), 'Best this weekend: Saturday, 2 spots at low risk.');
-    assert.equal(L.weekendWords(spots, dates, true), 'Best this weekend: Saturday, 2 of your 3 spots at low risk.');
+    // Four saved, one with nothing upstream: the count says which three it is out of.
+    assert.equal(L.weekendWords(spots, dates, true), 'Best this weekend: Saturday, 2 of your 3 spots with a daily level at low risk.');
+    assert.equal(L.weekendWords(spots.slice(0, 3), dates, true), 'Best this weekend: Saturday, 2 of your 3 spots at low risk.');
   });
 });
 test('when the week’s best day is a weekend day, the weekend is not said again', () => {
