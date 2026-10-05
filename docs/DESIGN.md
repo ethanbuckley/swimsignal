@@ -945,3 +945,20 @@ gives all four navigation links a single full-width row.
   forecasts, from the reader's browser, and the privacy notice names it. Rule 8 under Rules for
   changes does not yet list this request.
 - Each list ends with its credit and licence, and says the agency does not endorse SwimSignal.
+
+## Overflow history and the page for groups (6 October 2026)
+
+- **Overflow history**, `spot/<id>/profile/` (`src/dipcast/profile.py`, template `src/dipcast/site/profile.html`,
+  written by `write_profiles` in `scripts/build_site.py`), is a prose page with no script, one per spot with a
+  page. In order: the title, links back to the spot and the organisers' page, the caveat in a plain paragraph,
+  "In short" as a summary box, each year 2021 to 2025 as a table, then every overflow upstream by reach, then
+  the sources. Tables are the Accuracy page's (`.tw`, numbers right in tabular figures); the number headers
+  wrap. On a phone (540 px or less) the overflows' ten columns become a block per overflow, the name over its
+  figures two to a line, each with its label, as on the organisers' page. A spot with nothing upstream, an
+  isolated lake or no forecast gets the caveat and one paragraph saying so. Linked from the spot's
+  "Overflows that matter most" tile and under the organisers' table as "Overflow history, 2021 to 2025".
+  In the sitemap; not on the data page (it is HTML, not data) and not in the offline copy. Printed: A4, no nav.
+- **For clubs, centres and leaders**, `clubs.html`, is a prose page like About, linked from About and the
+  app's foot beside "For event organisers". Its limits come first, in a summary box. Its action lines are
+  `levels.js`'s word for word (a test checks), each quote is word for word from a page opened on the date
+  given in the page's comment, and level words carry "risk".

@@ -26,26 +26,24 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from dipcast import config
+from dipcast.profile import (
+    CAVEAT,
+    CREDITS,
+    NEAR_KM,
+    REACH_NOTE,
+    fmt,
+    hours_away,
+    in_short,
+    load_returns,
+    name_case,
+    reach,
+    summary,
+    uptime,
+    with_returns,
+)
 
 log = logging.getLogger("site_profile")
-YEARS = [2021, 2022, 2023, 2024, 2025]
 TOP = 25   # rows in the table; the CSV-like Markdown keeps them all
-CAVEAT = ("This profile lists the monitored storm overflows upstream of the point and how often each "
-          "spilled in each year. It is not a water test, and it does not say whether the water is fit to "
-          "swim in. It does not include farm runoff, misconnected drains, treated sewage effluent, "
-          "wildlife or overflows without a monitor. A year's count depends on how long the monitor "
-          "worked (shown as monitor uptime).")
-CREDITS = ("Storm overflow annual returns: © Environment Agency copyright and/or database right 2025, "
-           "Open Government Licence v3.0. Overflow positions: the water companies via the National Storm "
-           "Overflow Hub, CC BY 4.0. River network: contains OS data © Crown copyright and database right "
-           "2026 (OS Open Rivers). Traced and weighted by SwimSignal (swimsignal.co.uk), whose method is at "
-           "swimsignal.co.uk/methods.html.")
-
-
-def name_case(s: str) -> str:
-    """Overflow names that arrive in capitals ("GRASSINGTON/STW") in normal case, as the site shows them."""
-    return re.sub(r"[A-Za-z']+", lambda m: m[0][0] + m[0][1:].lower() if re.fullmatch(r"[A-Z']{4,}", m[0]) else m[0],
-                  str(s or ""))
 
 
 def slug(s: str) -> str:
@@ -66,38 +64,10 @@ def trace(lat: float, lon: float, kind: str | None, river: str | None) -> tuple[
     return up, where
 
 
-def with_returns(up: pd.DataFrame, returns: pd.DataFrame) -> pd.DataFrame:
-    """Each overflow's spills, spill hours and monitor uptime for each year, by its id."""
-    ar = returns[returns["site_id"].isin(up["site_id"])]
-    wide = ar.pivot_table(index="site_id", columns="year", values=["spills", "spill_hours", "edm_operational_pct"],
-                          aggfunc="max")
-    wide.columns = [f"{a}_{b}" for a, b in wide.columns]
-    return up.merge(wide, left_on="site_id", right_index=True, how="left")
-
-
-def summary(t: pd.DataFrame) -> list[dict]:
-    """Per year: overflows with a return, spills and hours in all, and hours weighted by reach."""
-    rows = []
-    for y in YEARS:
-        s, h = t.get(f"spills_{y}"), t.get(f"spill_hours_{y}")
-        if s is None:
-            rows.append({"year": y, "with_return": 0, "spills": 0, "hours": 0.0, "reach_hours": 0.0})
-            continue
-        rows.append({"year": y, "with_return": int(s.notna().sum()), "spills": int(s.fillna(0).sum()),
-                     "hours": float(h.fillna(0).sum()), "reach_hours": float((h.fillna(0) * t["weight"]).sum())})
-    return rows
-
-
-def fmt(v, digits: int = 0) -> str:
-    if v is None or pd.isna(v):
-        return "–"
-    return f"{v:,.{digits}f}"
-
-
 def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows: list[dict]) -> tuple[str, str]:
     today = pd.Timestamp.now(tz="Europe/London").date().isoformat()
-    n, live = len(t), int(t["has_live"].fillna(False).sum()) if len(t) else 0
-    near = t[t["distance_m"] <= 10_000] if len(t) else t
+    s = in_short(t) if len(t) else {"n": 0}
+    n = s["n"]
     head = [f"# Storm overflows upstream of {name}", "",
             f"Point {lat:.5f}, {lon:.5f} · traced along {where.get('watercourse') or 'the river network'} · made {today}", "",
             f"> {CAVEAT}", ""]
@@ -109,27 +79,22 @@ def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows
         return md, to_html(name, md)
     lines = head + [
         "## In short", "",
-        f"- **{n}** monitored storm overflows drain into the water upstream, within 60 km; **{len(near)}** of them within 10 km.",
-        f"- {live} of them report live to the water companies' public feeds.",
-        f"- The nearest is {fmt(t['distance_m'].min() / 1000, 1)} km upstream.",
+        f"- **{n}** monitored storm overflows drain into the water upstream, within 60 km; **{s['near']}** of them within {NEAR_KM} km.",
+        f"- {s['live']} of them report live to the water companies' public feeds.",
+        f"- The nearest is {fmt(s['nearest_km'], 1)} km upstream.",
         "", "## Each year, all overflows upstream", "",
         "| Year | Overflows with a return | Spills | Spill hours | Spill hours, weighted by reach |",
         "|---|---|---|---|---|"]
     lines += [f"| {r['year']} | {r['with_return']} | {r['spills']:,} | {fmt(r['hours'])} | {fmt(r['reach_hours'])} |" for r in rows]
-    lines += ["", ("Reach is the share of a spill's bacteria SwimSignal's model expects to arrive here, after die-off "
-              "on the way and dilution by the river (swimsignal.co.uk/methods.html). Weighting by it counts an "
-              "hour of spilling just upstream for far more than one 40 km away. Spills are counted by the EA's "
-              "12/24 method: any discharge in the first 12 hours counts as one spill, then one more for each "
-              "24 hours with any discharge."), "",
+    lines += ["", f"{REACH_NOTE} The method: swimsignal.co.uk/methods.html.", "",
               f"## The overflows, by reach (top {min(TOP, n)} of {n})", "",
               "| Overflow (id) | Company | km upstream | Hours away | Reach | Spills 2023 | 2024 | 2025 | Hours 2025 | Monitor uptime 2025 |",
               "|---|---|---|---|---|---|---|---|---|---|"]
     for _, r in t.head(TOP).iterrows():
-        hours = "under 1" if pd.notna(r["travel_h"]) and r["travel_h"] < 1 else fmt(r["travel_h"], 0)
-        lines.append(f"| {name_case(r['site_name'])} ({r['site_id']}) | {r['company']} | {fmt(r['distance_m'] / 1000, 1)} | "
-                     f"{hours} | {fmt(100 * r['weight'], 0)}% | {fmt(r.get('spills_2023'))} | "
+        lines.append(f"| {name_case(r['site_name'])} ({r['site_id']}) | {r['company']} | {fmt(r['km'], 1)} | "
+                     f"{hours_away(r['travel_h'])} | {reach(r['weight'])} | {fmt(r.get('spills_2023'))} | "
                      f"{fmt(r.get('spills_2024'))} | {fmt(r.get('spills_2025'))} | {fmt(r.get('spill_hours_2025'))} | "
-                     f"{fmt(r.get('edm_operational_pct_2025'), 0)}{'%' if pd.notna(r.get('edm_operational_pct_2025')) else ''} |")
+                     f"{uptime(r.get('edm_operational_pct_2025'))} |")
     lines += ["", "## Sources", "", CREDITS, ""]
     md = "\n".join(lines)
     return md, to_html(name, md)
@@ -197,8 +162,7 @@ def main(argv: list[str] | None = None) -> int:
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     up, where = trace(a.lat, a.lon, "lake" if a.lake else None, a.river)
-    returns = pd.read_parquet(config.PROCESSED / "annual_returns.parquet")
-    t = with_returns(up, returns) if len(up) else up
+    t = with_returns(up, load_returns()) if len(up) else up
     md, page = render(a.name, a.lat, a.lon, where, t, summary(t) if len(t) else [])
     a.out.mkdir(parents=True, exist_ok=True)
     base = a.out / slug(a.name)
