@@ -84,7 +84,7 @@ const Record = (() => {
     const likely = all.filter(x => !nil(x.p) && x.c.weight * x.p >= 0.001).sort((a, b) => b.c.weight * b.p - a.c.weight * a.p).slice(0, 3);
     const list = likely.length ? likely : all.slice().sort((a, b) => b.c.weight - a.c.weight).slice(0, 3);
     if (!list.length) return '';
-    const one = ({ c, p, o }) => `<li><b>${esc(o.name)}</b>: ${o.km} km upstream, sewage arrives in ${away(o.travel_h)}. `
+    const one = ({ c, p, o }) => `<li><b>${esc(o.plain)}</b>${o.own ? ` (${esc(o.own)})` : ''}: ${o.km} km upstream, sewage arrives in ${away(o.travel_h)}. `
       + `${nil(p) ? '' : `Spill chance ${pct(p)}, `}reach ${pct(o.reach)}.${c.status === 1 ? ' Discharging when the forecast was issued.' : ''}</li>`;
     return (likely.length ? '' : 'None is likely to reach the spot that day. The ones with the most reach: ') + `<ul class="r-ovs">${list.map(one).join('')}</ul>`;
   }
