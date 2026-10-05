@@ -1187,8 +1187,12 @@ no substitute for a solicitor before any of these happens.
   professional indemnity insurance, and trade through a company or LLP.
 - **Data protection.** The privacy notice names the controller and a private
   contact, and says complaints are acknowledged within 30 days (UK GDPR Art 13;
-  DPA 2018 s.164A, from 19 June 2026). The site probably owes the ICO no fee now
-  (personal and household processing is exempt); payments or ads would end that.
+  DPA 2018 s.164A, from 19 June 2026). The site owes the ICO the data protection
+  fee: the ICO's self-assessment, taken on 5 Oct 2026, put it in tier one (£52 a
+  year, £47 by direct debit). The household exemption does not cover a public
+  site, and feedback emails, push addresses and published reviews fit none of
+  the other exemptions. The ICO publishes "all the information you provide" on
+  its register of fee payers, address included unless the form says otherwise.
 - **Email alerts.** The privacy notice promises an update before they exist:
   collect addresses only with clear consent, put an unsubscribe link in every
   email, and have a processor agreement with the email service. Built that way
@@ -1213,8 +1217,8 @@ no substitute for a solicitor before any of these happens.
   3. Turn off memberships and monthly tips. Open-Meteo's free plan excludes
      sites "that have subscriptions"; its terms say nothing about donations, so
      ask info@open-meteo.com in writing.
-  4. Run the ICO's fee self-assessment: tippers' details are personal data the
-     operator then holds, which this README's data-protection line assumed away.
+  4. Pay the ICO's data protection fee (see Data protection above): owed
+     already, tips or not.
   5. The terms' closing note says they should be reviewed by a lawyer "before
      SwimSignal takes money". Decide whether tips count.
 - **Map tiles (checked 5 Oct 2026).** OpenStreetMap's own servers unless
