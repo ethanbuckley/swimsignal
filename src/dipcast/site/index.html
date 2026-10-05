@@ -477,6 +477,7 @@
   .ov-main { flex:1; min-width:0; }
   .ov-name { font-weight:600; font-size:var(--fs-note); line-height:1.3; overflow-wrap:anywhere; }
   .ov-meta { margin-top:2px; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
+  .own-name { font-size:var(--fs-meta); font-weight:400; color:var(--muted); }   /* the company's name for an overflow, beside the plain one */
   .ov-reach { flex:none; width:96px; text-align:right; }
   .ov-reach b { display:block; font:300 var(--fs-head)/1 var(--font-text); font-variant-numeric:tabular-nums; }
   .ov-reach > span { display:block; height:4px; margin:6px 0 4px; background:var(--track); }
@@ -1426,9 +1427,11 @@ const ICON = {   // the one stroke set, as the search, map, bookmark and check
   route: glyph('<path d="M12 21V3"/><path d="M5.5 5.5h10l3 2.5-3 2.5h-10ZM18.5 13.5h-10l-3 2.5 3 2.5h10Z"/>'),   // a signpost: the practical guide
   evidence: glyph('<path d="M6 3h8.5L19 7.5V21H6Z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/>'),   // a page of records: what the level rests on
 };
-// Overflow names come in capitals from some feeds ("LITTLE SALKELD WwTW"): a word of four or more
-// capitals is set in normal case; shorter ones (CSO, STW, PS) and mixed ones (WwTW) are kept.
-const nameCase = s => String(s ?? '').replace(/[A-Za-z']+/g, w => /^[A-Z']{4,}$/.test(w) ? w[0] + w.slice(1).toLowerCase() : w);
+// Overflow names: levels.js's nameCase (capitals in normal case) and plainName ("Addingham sewage works
+// overflow" for "Addingham/NO 1 SPS/Preliminary Treatment-STW/6Xdwf Overflow"). A list or a popup gives
+// the company's name beside the plain one (overflowNames), smaller and muted, since that is the name
+// to look it up by; a sentence or a tooltip gives the plain name alone.
+const ownName = c => { const n = overflowNames(c); return n.own ? ` <span class="own-name">(${esc(n.own)})</span>` : ''; };
 // The answer in Apple's three lines ("19°", "Partly Cloudy", "H:21° L:11°"): the level, which the page
 // follows with "risk" at the same size (a bare "High" read as high what); what set it and when; and
 // where the five days go. A day picked in the five days (iso) gives that day's, and its date.
@@ -1719,7 +1722,7 @@ const spillOn = (c, j) => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spi
 function dayOverflows(d, j) {
   const top = (d.contributors || []).map(c => [c, spillOn(c, j)]).filter(([c, p]) => !nil(p) && c.weight * p >= 0.001)
     .sort((a, b) => b[0].weight * b[1] - a[0].weight * a[1]).slice(0, 3);
-  return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><span><span class="sr">${esc(statusText(c.status, c))}: </span><b>${esc(nameCase(c.site_name ?? c.site_id))}</b>: `
+  return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><span><span class="sr">${esc(statusText(c.status, c))}: </span><b>${esc(overflowNames(c).plain)}</b>${ownName(c)}: `
     + `spill chance ${share(p)}, reach ${share(c.weight)}</span></li>`).join('')}</ul>` : '';
 }
 // How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json).
@@ -1813,9 +1816,9 @@ async function loadOverflows() {
   if (call !== ovCall) return;
   const b = map.getBounds(); ovLayer.clearLayers();
   const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
-  L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties;
+  L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties, nm = overflowNames(p);
     return L.circleMarker(ll, { radius: p.status === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
-      .bindPopup(`<b>${esc(nameCase(p.site_name ?? p.site_id))}</b><br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
+      .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
 // Offline the layer is not stored (6 MB): the map then shows the spots without it.
@@ -2606,10 +2609,10 @@ function dayTable(d, total, isLake, scope) {
 const onWater = w => { const n = nameCase(w).trim().replace(/^The /, '');
   if (!/^[A-Z][a-z'-]+( [A-Z][a-z'-]+)*$/.test(n) || /\b(Trib|Tributary|Via|Groundwater|Unknown)\b/.test(n)) return '';
   return /^(River|Afon) |^\S+$/.test(n) ? `on the ${n}` : `on ${n}`; };
-// One overflow and where it is, as the list below gives it: "Ilkley WwTW on the River Wharfe, 6.0 km
-// upstream, about 5 hours away".
+// One overflow and where it is, as the list below gives it: "Ilkley sewage works overflow on the River
+// Wharfe, 6.0 km upstream, about 5 hours away". The plain name alone: the list gives the company's.
 const sourcePlace = s => { const h = Math.round(s.travel_h), water = onWater(s.receiving_watercourse);
-  return `<b>${esc(nameCase(s.site_name ?? s.site_id))}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? ', discharging now' : ''}, `
+  return `<b>${esc(overflowNames(s).plain)}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? ', discharging now' : ''}, `
     + `${fmt(s.distance_km + s.lake_distance_km, 1)}&nbsp;km upstream, ${s.travel_h < 1 ? 'under an hour' : `about ${h} hour${h === 1 ? '' : 's'}`} away`; };
 // The sentence for one risk, right now's (when = 'now') or a day's (an ISO date). One overflow is named
 // alone only when it holds at least half the risk (transport.risk_shares, which splits 1 - prod(1 - e)
@@ -2641,7 +2644,7 @@ function clearSentence(d) {
   const later = d.days.slice(1, 5).find(x => hasData(x) && (x.risk_from_later_spills ?? 0) >= SPILL_CUTS[0]);
   const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after its water has passed`
     : n.clears_by === 'travel' && (last.site_name || last.site_id) && h >= 1
-      ? `, allowing for travel time: water from ${esc(nameCase(last.site_name ?? last.site_id))} takes about ${h} hour${h === 1 ? '' : 's'} to get here` : '';
+      ? `, allowing for travel time: water from ${esc(overflowNames(last).plain)} takes about ${h} hour${h === 1 ? '' : 's'} to get here` : '';
   return `If ${k === 1 ? 'the overflow discharging upstream stops now' : k ? `the ${k} overflows discharging upstream stop now` : 'no new spill starts'}, `
     + `the model expects low risk from spills ${partOfDay(n.clears_at)}${why}.`
     + (later ? ` Rain may bring new spills and ${later.label} risk ${dayWord(later.date)}.` : '');
@@ -2677,11 +2680,11 @@ function whereFrom(d) {
 // was too tight to read. Their circles go on the map, a bigger one for more reach.
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
-  const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100);
+  const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
     L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
-      .bindTooltip(`${esc(nameCase(c.site_name ?? c.site_id))}: ${far} km, reach ${reach}%`).addTo(contribLayer);
-    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nameCase(c.site_name ?? c.site_id))}</div>`
-      + `<div class="ov-meta">${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
+      .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
+    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
+      + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${far}&nbsp;km upstream, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>spill ${Math.round(c.p_spill_today * 100)}% today</small></div></li>`; }).join('');
   return `<div class="tile"><h2 class="t-lab">${ICON.spills}<span>Overflows that matter most</span></h2><ul class="ovs" id="contrib">${rows}</ul>`

@@ -10,6 +10,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const A = require('../src/dipcast/site/anypoint.js');
+const { overflowNames } = require('../src/dipcast/site/levels.js');
 
 const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
 const between = (from, to) => { const a = page.indexOf(from), b = page.indexOf(to, a); assert.ok(a >= 0 && b > a, from); return page.slice(a, b); };
@@ -84,8 +85,8 @@ test('click anywhere counts an offline monitor and a stale feed as forecast.live
 });
 
 test("a picked day's overflows are drawn and named as the overflows tile draws them", () => {
-  const day = vm.createContext({ esc: ctx.esc, statusText, drawnStatus, nil: v => v === null || v === undefined });
-  vm.runInContext(between('const nameCase = ', '\n') + '\n' + between('const share = p =>', '\n// How good a forecast this far ahead')
+  const day = vm.createContext({ esc: ctx.esc, statusText, drawnStatus, overflowNames, nil: v => v === null || v === undefined });
+  vm.runInContext(between('const ownName = ', '\n') + '\n' + between('const share = p =>', '\n// How good a forecast this far ahead')
     + '\nthis.dayOverflows = dayOverflows;', day);
   const since = '2026-10-02T13:00:00+00:00';
   const c = (id, status, state, extra = {}) => ({ site_id: id, site_name: id, status, data_state: state, weight: 0.5, p_spill_days: [0.4], ...extra });
@@ -94,6 +95,9 @@ test("a picked day's overflows are drawn and named as the overflows tile draws t
   assert.match(rows[0], /class="sdot s0".*<span class="sr">not discharging: <\/span><b>Quiet<\/b>/);
   assert.match(rows[1], /class="sdot s-1".*<span class="sr">no update since 2 Oct, 14:00: <\/span><b>Frozen<\/b>/);   // grey, not quiet
   assert.match(rows[2], /class="sdot s1".*discharging at its last update/);
+  // The plain name first, the company's beside it, smaller and muted (levels.js, overflowNames).
+  const named = day.dayOverflows({ contributors: [c('YW1', 0, 'live', { site_name: 'KIRKOSWALD WwTW' })] }, 0);
+  assert.match(named, /<b>Kirkoswald sewage works overflow<\/b> <span class="own-name">\(Kirkoswald WwTW\)<\/span>: spill chance 40%/);
 });
 
 test('the map keys name the grey as no current reading: offline, no feed or a feed not updating', () => {

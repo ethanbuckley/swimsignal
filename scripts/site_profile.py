@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from dipcast import config
+from dipcast.overflow_names import overflow_names
 
 log = logging.getLogger("site_profile")
 YEARS = [2021, 2022, 2023, 2024, 2025]
@@ -42,10 +43,11 @@ CREDITS = ("Storm overflow annual returns: © Environment Agency copyright and/o
            "swimsignal.co.uk/methods.html.")
 
 
-def name_case(s: str) -> str:
-    """Overflow names that arrive in capitals ("GRASSINGTON/STW") in normal case, as the site shows them."""
-    return re.sub(r"[A-Za-z']+", lambda m: m[0][0] + m[0][1:].lower() if re.fullmatch(r"[A-Z']{4,}", m[0]) else m[0],
-                  str(s or ""))
+def overflow_cell(name, site_id) -> str:
+    """The plain name first, then the company's and the id, which are what to look it up by, as the site's
+    pages give them: "Grassington sewage works overflow · Grassington/STW (A1)"."""
+    plain, own = overflow_names(name, site_id)
+    return f"{plain} · {own} ({site_id})" if own else f"{plain} ({site_id})"
 
 
 def slug(s: str) -> str:
@@ -126,7 +128,7 @@ def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows
               "|---|---|---|---|---|---|---|---|---|---|"]
     for _, r in t.head(TOP).iterrows():
         hours = "under 1" if pd.notna(r["travel_h"]) and r["travel_h"] < 1 else fmt(r["travel_h"], 0)
-        lines.append(f"| {name_case(r['site_name'])} ({r['site_id']}) | {r['company']} | {fmt(r['distance_m'] / 1000, 1)} | "
+        lines.append(f"| {overflow_cell(r['site_name'], r['site_id'])} | {r['company']} | {fmt(r['distance_m'] / 1000, 1)} | "
                      f"{hours} | {fmt(100 * r['weight'], 0)}% | {fmt(r.get('spills_2023'))} | "
                      f"{fmt(r.get('spills_2024'))} | {fmt(r.get('spills_2025'))} | {fmt(r.get('spill_hours_2025'))} | "
                      f"{fmt(r.get('edm_operational_pct_2025'), 0)}{'%' if pd.notna(r.get('edm_operational_pct_2025')) else ''} |")
