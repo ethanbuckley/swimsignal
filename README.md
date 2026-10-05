@@ -1,47 +1,73 @@
 # SwimSignal
 
-Probabilistic sewage-pollution risk for river and lake swim spots in England.
-The code and the Python package (`dipcast`) keep the working name dipcast.
+SwimSignal forecasts the risk of sewage pollution at river and lake swim spots
+in England, for today and the next four days. It is free, with no adverts and
+no accounts.
 
-Live site: https://swimsignal.co.uk/ (forecasts for 105 named
-spots, rebuilt several times a day by a scheduled GitHub Actions job; free to
-run, never sleeps). Source: https://github.com/ethanbuckley/swimsignal (MIT).
-Every forecast issued is scored later and published on the site's
-verification page.
+- Site: https://swimsignal.co.uk/. It covers 105 named spots, and you can click
+  any other point on a river.
+- Code: this repository, under the MIT licence. The code and the Python package
+  keep the working name `dipcast`.
 
-Click a point on a river or lake. SwimSignal traces the river network upstream,
-finds every monitored storm overflow whose water reaches that point, and combines
-(a) what those overflows are doing right now, from the water companies' live
-feeds, with (b) how likely each is to spill over the coming days, from a model
-of rainfall and each overflow's history, then attenuates every spill for travel
-time, bacterial die-off and dilution before it reaches the swimmer.
+It is a forecast, not a water test. A low risk does not mean the water is clean.
 
-It is a forecast, not a water-quality measurement. A low reading is not a
-guarantee of clean water.
+## How it works
+
+For each spot, SwimSignal:
+
+1. traces the river network upstream and finds every monitored storm overflow
+   whose water reaches the spot;
+2. reads what each overflow is doing now, from the water companies' live feeds;
+3. forecasts how likely each one is to spill on each day, from the rain forecast
+   and the overflow's own spill record;
+4. reduces each spill for the time its water takes to arrive, for bacteria dying
+   on the way, and for the river diluting it.
+
+The result is one level for each day: low, moderate, high or very high risk. A
+scheduled GitHub Actions job rebuilds the site several times a day. Method,
+below, has the detail.
+
+Outside England, the site lists the official bathing-water advice for Wales,
+Scotland and Ireland. Forecasts there wait for the data (see the plans in
+`docs/`).
+
+## How good it is
+
+- Tested on a year it never saw, the spill model gave a day that spilled a
+  higher chance than a dry day 93 times in 100.
+- Against the Environment Agency's samples, it ranks well which sites are most
+  contaminated. At a single site, it does no better than recent rainfall at
+  saying which days are bad.
+- Its die-off and dilution settings are not yet calibrated against samples.
+- Every forecast it issues is scored afterwards, in public:
+  https://swimsignal.co.uk/verification.html. How the 2027 season will be judged
+  is fixed in advance in `docs/PREREGISTRATION-2027.md`.
+
+The figures and their limits are under Method and Known limits.
 
 ## What exists already, and what this adds
 
-Live sewage maps exist: the National Storm Overflow Hub, The Rivers Trust,
-WaterWatch, Surfers Against Sewage (SAS), and SewageMap, which shades the river
-stretches downstream of live and recent spills in England and Scotland. SAS
-alerts after a discharge and holds the alert for 48 hours; it does not forecast.
-Forecasts exist for designated bathing waters: the Environment Agency's same-day
-pollution risk forecast, which in 2026 covered no inland bathing water, and
-Islandswim's 24-hour score at 942 UK and Irish bathing waters, which also scores
+Live maps of sewage spills already exist: the National Storm Overflow Hub, The
+Rivers Trust, WaterWatch, Surfers Against Sewage (SAS) and SewageMap. SewageMap
+shades the river downstream of live and recent spills in England and Scotland.
+SAS sends an alert after a discharge and keeps it for 48 hours. These show
+spills that are happening or have happened.
+
+Forecasts exist for designated bathing waters. The Environment Agency's
+same-day pollution risk forecast covered no inland bathing water in 2026.
+Islandswim gives a 24-hour score at 942 UK and Irish bathing waters, and at
 private spots. Wessex Water estimates bacteria hourly from sensors at three
 river sites.
 
-SwimSignal forecasts today and the next four days for any point on England's inland river
-network. It adds up every monitored overflow upstream, each delayed by its
-travel time and reduced by die-off and dilution. Islandswim takes the single
-worst outlet, with no dilution, and SewageMap says it does not consider dilution
-or river flow. SwimSignal scores every forecast it issues, in public.
+SwimSignal differs in three ways:
 
-What it has not shown yet: on past samples it ranks which sites are contaminated
-well, but on which days at a given site it does no better than recent rainfall,
-and its die-off and dilution weights are not yet calibrated against samples (see
-the E. coli validation under Method, and Known limits). The other tools were
-checked on their own pages on 3 Oct 2026.
+- It looks five days ahead.
+- It adds up every monitored overflow upstream, each delayed and diluted.
+  Islandswim takes the single worst outlet, with no dilution. SewageMap says it
+  does not consider dilution or river flow.
+- It scores every forecast it issues, in public.
+
+The other tools were checked on their own pages on 3 Oct 2026.
 
 ## Data
 
