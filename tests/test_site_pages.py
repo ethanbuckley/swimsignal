@@ -62,7 +62,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 11 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
+    assert sm.count("<url>") == 13 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html and record.html
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
     assert "<loc>https://example.org/swim/data.html</loc>" in sm and (tmp_path / "data.html").exists()
@@ -606,6 +606,35 @@ def test_the_organisers_page_is_a_prose_page_with_its_scripts_versioned_and_link
     assert 'href="organisers.html"' in (tmp_path / "about.html").read_text()
 
 
+def test_write_pages_writes_the_sites_view_and_the_decision_record(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-04")
+    sitemap = (tmp_path / "sitemap.xml").read_text()
+    for name, scripts, title in [("sites.html", bs.SITES_SCRIPTS, "Sites view · SwimSignal"), ("record.html", bs.RECORD_SCRIPTS, "Decision record · SwimSignal")]:
+        page = (tmp_path / name).read_text()
+        v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', page).group(1)
+        for f in scripts:   # every script at one version, a hash of the scripts, and beside the page
+            assert f'<script src="{f}?v={v}"></script>' in page, (name, f)
+            assert (tmp_path / f).exists(), (name, f)
+        assert f"<title>{title}</title>" in page and '<header class="top">' in page and 'class="site-foot"' in page
+        assert 'href="/' not in page and "cloudflareinsights" in page   # flat links, and the counter as on the other prose pages
+        assert "@page { size:A4 portrait" in page
+        assert f"<loc>https://example.org/swim/{name}</loc>" in sitemap   # as the organisers' page is
+    assert bs.write_sites(tmp_path) != bs.write_record(tmp_path)   # each page's own scripts
+    # The organisers' page loads the sites link's maker, versioned with its other scripts.
+    org = (tmp_path / "organisers.html").read_text()
+    v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', org).group(1)
+    assert f'<script src="lists.js?v={v}"></script>' in org and f'<script src="sites.js?v={v}"></script>' in org and 'id="sites-maker"' in org
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_sites_view_and_decision_record_rules():
+    # sites.js and record.js run in a browser, so their tests are JavaScript.
+    for f in ("site_sites.test.cjs", "site_record.test.cjs"):
+        r = subprocess.run(["node", "--test", str(ROOT / "tests" / f)], capture_output=True, text=True, timeout=60, check=False)
+        assert r.returncode == 0, r.stdout + r.stderr
+
+
 def test_every_spot_with_a_page_gets_a_sign_to_print_that_shows_no_level(tmp_path):
     import segno
     bs = _build_site()
@@ -639,8 +668,9 @@ def test_the_organisers_page_and_the_signs_stay_out_of_the_offline_copy():
     # so the worker does not store them ahead (build_site.py says why); a visited page is kept as any is.
     bs = _build_site()
     shell = re.search(r"const SHELL = \[(.*?)\];", (bs.TEMPLATE.parent / "sw.js").read_text(), re.DOTALL).group(1)
-    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg"))
+    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg", "sites", "record"))
     assert not {bs.ORGANISERS, bs.TEMPLATE.parent / "organisers.js", bs.TEMPLATE.parent / "sign.html"} & set(bs.SHELL_SOURCES)
+    assert not {bs.TEMPLATE.parent / f for f in ("sites.html", "sites.js", "record.html", "record.js")} & set(bs.SHELL_SOURCES)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")

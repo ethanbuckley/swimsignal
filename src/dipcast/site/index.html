@@ -440,6 +440,8 @@
   ul.near:last-child { margin-bottom:0; }
   .tile ul.near { margin:6px 0 0; border:0; }
   .tile ul.near + .sub { margin:8px 0 0; }
+  .sub.sites-sub, .sub.dd-rec { margin:16px 0 0; }   /* the sites view under Share this list; the decision record under a day */
+  .sub.sites-sub { margin-bottom:12px; }
   /* The swim journal (journal.js), on this device only: on the Saved page, rows built as the reviews'
      (.rv), the day and time as the headline, then the spot, what the forecast showed (the level in its
      text colour, never a filled label), the note and the photos; on a spot's page, the reviews' form
@@ -930,6 +932,7 @@ const spotPath = id => PAGE_ID.test(id) ? `${ROOT.pathname}spot/${id}/` : `${ROO
 const spotFromURL = () => { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
   return m ? m[1] : new URLSearchParams(location.search).get('spot'); };
 const savedPath = () => `${ROOT.pathname}saved/`;
+const sitesURL = (l, spots) => new URL('sites.html', ROOT).href + sitesHash(l.name, spots.map(s => s.id));   // a list as one printable page (sites.js)
 const onSavedPage = () => /\/saved\/?$/.test(location.pathname);
 const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);   // not a new tab or window
 
@@ -1746,7 +1749,8 @@ function dayDetail(d, x) {
   rows.push(weatherRow(d, x.date));
   rows.push(howSure(d, j));
   return `<div class="dd-head"><h2 class="dd-t">${when}</h2><button type="button" class="linkbtn" id="day-close">Close</button></div>`
-    + `<div class="factors">${rows.join('')}${standing(d, x.date)}</div>`;
+    + `<div class="factors">${rows.join('')}${standing(d, x.date)}</div>`
+    + (d.unlisted ? '' : `<p class="sub dd-rec"><a href="${esc(ROOT.pathname)}record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a></p>`);   // record.js
 }
 // The open day is in the address (spot/<id>/#day=2026-10-01), so a link can open it. After the #,
 // so it never reaches a server; a day that has left the forecast opens the summary.
@@ -2139,7 +2143,9 @@ function renderSaved() {
   if (DATA.spots.some(s => SAVED.has(s.id))) h += alertsCard();   // alerts cover every list
   if (spots.length) h += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
     + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`
-    + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p></section>`;
+    + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p>`
+    + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
+    + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
   h += (many || SAVED.size ? listsCard(l) : '') + swimsCard();   // lists, once there is something to put in one
   setPanel(h);
   bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
@@ -2178,6 +2184,8 @@ function bindSavedPage(l, spots) {
     const again = document.querySelector(`.lists-row [data-list="${CSS.escape(b.dataset.list)}"]`); if (again) again.focus(); }));
   const b = $('share-list');
   if (b) bindShareLink(b, $('share-list-msg'), new URL(savedPath(), location.origin).href + shareHash(l.name, spots.map(s => s.id)), `${l.name} · ${BRAND}`, 'Copy link to this list');
+  const sl = $('sites-link');
+  if (sl) bindShareLink(sl, $('sites-link-msg'), sitesURL(l, spots), `${l.name} · ${BRAND}`, 'Make a sites link');
 }
 const bindFind = () => { const find = document.getElementById('find');
   if (find) find.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();

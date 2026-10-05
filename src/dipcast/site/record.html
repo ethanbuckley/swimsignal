@@ -1,0 +1,97 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The decision record: a prose page, with the shared head, header and foot, written by scripts/build_site.py
+     (write_record) beside the app, whose levels.js, evidence.js, organisers.js, spots.json and
+     verification.json it reads. record.js fills #record from the spot and the day after the #.
+     Wording: for Ethan's approval, and a solicitor's read before any paid use (docs/MARKETS-2026-10.md, question 4). -->
+<title>Decision record · SwimSignal</title>
+<meta name="description" content="A printable record of the pollution risk forecast for one swim spot and one day, with each input's age and source, to attach to a written go or no-go decision.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's. */
+  .pick { display:grid; grid-template-columns:minmax(0, 3fr) minmax(0, 2fr); gap:16px; margin:0 0 24px; }
+  .pick label { margin-top:0; }
+  @media (max-width: 540px) { .pick { grid-template-columns:minmax(0, 1fr); } }
+  main.doc .r-first { margin:0 0 10px; }
+  main.doc .r-note, .r-foot { font-size:var(--fs-note); color:var(--muted); }
+  main.doc .r-spot { margin:28px 0 2px; }
+  main.doc .r-meta { font-size:var(--fs-note); color:var(--muted); margin:0; overflow-wrap:anywhere; }
+  main.doc .r-day { font-weight:600; margin:4px 0 0; }
+  /* A level's colour on its words and on a 4 px rule beside them, never on a surface (as organisers.html). */
+  main.doc .r-level { margin:12px 0 2px; padding-left:12px; border-left:4px solid var(--unknown); font:700 var(--fs-head)/1.3 var(--font-text); color:var(--k-na); }
+  main.doc .r-level.low { color:var(--k-low); border-color:var(--low); } main.doc .r-level.moderate { color:var(--k-moderate); border-color:var(--moderate); }
+  main.doc .r-level.high { color:var(--k-high); border-color:var(--high); } main.doc .r-level.veryhigh { color:var(--k-veryhigh); border-color:var(--veryhigh); }
+  main.doc .r-level.clear { color:var(--k-clear); border-color:var(--clear); }
+  main.doc .r-why { margin:0 0 0 16px; }
+  main.doc ul.r-ovs { margin:4px 0 0; }
+  main.doc ul.r-ovs li { margin:2px 0; }
+  .r-age { color:var(--muted); }
+  .r-src { display:block; font-size:var(--fs-meta); color:var(--muted); }
+  main.doc ul.r-cannot { font-size:var(--fs-note); }
+  /* The decision: labelled lines to write on, two to a row where they fit. */
+  .r-lines { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 24px; }
+  main.doc .r-line { margin:0; min-height:44px; display:flex; align-items:flex-end; padding-bottom:2px; border-bottom:1px solid var(--ink); font-size:var(--fs-meta); color:var(--muted); }
+  .r-line.wide { grid-column:1 / -1; }
+  @media (max-width: 540px) { .r-lines { grid-template-columns:minmax(0, 1fr); } }
+  .print-only { display:none; }
+  /* Printed: one A4 page, no controls, the text a step smaller. */
+  @page { size:A4 portrait; margin:9mm 12mm; }
+  @media print {
+    body { background:var(--card); font-size:var(--fs-meta); line-height:1.3; }
+    .top nav, .pick, .screen-only, .site-foot, noscript { display:none; }   /* the opening says what the foot's line says */
+    .top { padding:0 0 4px; background:var(--card); color:var(--ink); }
+    .top .brand { color:var(--ink); }
+    /* Zoomed a little, as the signs are (docs/DESIGN.md), so the whole record fits one A4 page. */
+    main.doc { max-width:none; padding:4px 0 0; zoom:.8; }
+    main.doc h1 { font-size:var(--fs-head); margin:0 0 4px; }
+    main.doc h2 { font-size:var(--fs-body); margin:10px 0 2px; }
+    main.doc h3 { font-size:var(--fs-note); margin:10px 0 2px; }
+    main.doc .r-note, .r-foot, main.doc ul.r-cannot, main.doc .r-meta { font-size:var(--fs-meta); }
+    main.doc .r-level { font-size:var(--fs-body); margin-top:6px; }
+    main.doc .r-first { margin-bottom:4px; }
+    :where(main.doc) p, :where(main.doc) ul { margin-bottom:4px; }
+    :where(main.doc) li { margin:1px 0; }
+    dl.fields { margin:4px 0; }
+    dl.fields dt { padding-top:2px; }
+    dl.fields dd { font-size:var(--fs-meta); padding-bottom:2px; }
+    /* The rows: what on the left, the rest beside it. */
+    dl.fields { display:grid; grid-template-columns:150px minmax(0, 1fr); border-top:1px solid var(--line); }
+    dl.fields dt, dl.fields dd { border-bottom:1px solid var(--line); padding:2px 0; margin:0; }
+    dl.fields dt { padding-right:8px; }
+    main.doc ul.r-ovs { margin:0; padding-left:16px; }
+    main.doc ul.r-ovs li { margin:0; }
+    .r-src { display:inline; }
+    code { font-size:var(--fs-meta); overflow-wrap:anywhere; }
+    main.doc ul.r-cannot { columns:2; column-gap:24px; margin-top:2px; }
+    main.doc ul.r-cannot li { break-inside:avoid; margin:0 0 2px; }
+    main.doc .r-spot { margin-top:8px; }
+    main.doc .r-line { min-height:26px; }
+    .print-only { display:block; }
+    a { color:var(--ink); text-decoration:none; }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="./">Explore</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>Decision record</h1>
+<form class="pick" id="pick">
+<div><label for="spot">Spot</label>
+<select id="spot" disabled><option value="">Loading the spots…</option></select></div>
+<div><label for="day">Day</label>
+<input type="date" id="day"></div>
+</form>
+<noscript><p class="notice">This page needs JavaScript to read the forecast.</p></noscript>
+<div id="record" aria-live="polite"></div>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="levels.js"></script>
+<script src="evidence.js"></script>
+<script src="organisers.js"></script>
+<script src="record.js"></script>
+</body></html>

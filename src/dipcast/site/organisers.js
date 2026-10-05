@@ -117,7 +117,8 @@ const Organisers = (() => {
     if (w.state === 'later') return h + later(s, iso, w.from);
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: the automatic update has not run since. Treat it as out of date.</p>`;
     return h + within(s, iso, w, data)
-      + `<p class="check">A forecast, not a water test: check the signs at the water before you swim. Issued ${esc(issued)}; it is updated several times a day, so look again the evening before and on the morning of the event.</p>`;
+      + `<p class="check">A forecast, not a water test: check the signs at the water before you swim. Issued ${esc(issued)}; it is updated several times a day, so look again the evening before and on the morning of the event.</p>`
+      + `<p class="ev-links"><a href="record.html#spot=${esc(encodeURIComponent(s.id))}&amp;day=${iso}">Print a decision record for this day</a></p>`;   // record.js
   }
 
   // ------------------------------------------------------------------ the overflows upstream
@@ -267,4 +268,4 @@ const Organisers = (() => {
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Organisers;
-else Organisers.start();
+else if (document.getElementById('event')) Organisers.start();   // the sites view and the decision record load it for its words
