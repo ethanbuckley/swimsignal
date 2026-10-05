@@ -648,3 +648,99 @@ def test_the_organisers_page_and_live_sign_rules():
     # organisers.js and embed.js's screen mode run in a browser, so their tests are JavaScript.
     r = subprocess.run(["node", "--test", str(ROOT / "tests" / "site_organisers.test.cjs")], capture_output=True, text=True, timeout=60, check=False)
     assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_tips_are_off_unless_the_variable_is_a_ko_fi_page(monkeypatch):
+    bs = _build_site()
+    monkeypatch.delenv(bs.SUPPORT_URL_ENV, raising=False)
+    assert bs.support_url() is None
+    monkeypatch.setenv(bs.SUPPORT_URL_ENV, " https://ko-fi.com/swimsignal ")
+    assert bs.support_url() == "https://ko-fi.com/swimsignal"
+    for bad in ["http://ko-fi.com/swimsignal", "https://ko-fi.com.evil.example/x", "https://ko-fi.com/a\"b",
+                "https://ko-fi.com/swimsignal/shop", "https://example.org/"]:
+        monkeypatch.setenv(bs.SUPPORT_URL_ENV, bad)
+        assert bs.support_url() is None, bad
+
+
+def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/swim/")
+    privacy_off = (tmp_path / "privacy.html").read_text()
+    for anchor in ["<h2>The server version</h2>", bs.SUPPORT_RIGHTS[0]]:   # what with_support hangs on
+        assert anchor in privacy_off, anchor
+    assert "<h2>Help test it this winter</h2>" in (tmp_path / "about.html").read_text()
+    assert not (tmp_path / "support.html").exists()
+    assert not any("Support SwimSignal" in p.read_text() for p in tmp_path.rglob("*.html"))
+
+    bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/swim/",
+                   support="https://ko-fi.com/swimsignal")
+    page = (tmp_path / "support.html").read_text()
+    assert 'href="https://ko-fi.com/swimsignal"' in page and "__KOFI_URL__" not in page
+    assert 'href="privacy.html#tips"' in page and 'href="/' not in page   # works under a sub-path
+    assert "ko-fi.com/widgets" not in page and "<script src" not in page   # a plain link, nothing loaded from Ko-fi
+    # Every page with the site's foot links it once, at its own depth.
+    feet = {p.relative_to(tmp_path).as_posix(): p.read_text() for p in tmp_path.rglob("*.html") if "Feedback</a>" in p.read_text()}
+    for name, html in feet.items():
+        if "<footer" in html:
+            assert html.count(">Support SwimSignal</a>") == 1, name
+    assert 'href="support.html">Support SwimSignal' in feet["about.html"]
+    spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
+    assert ">Support SwimSignal</a>" in spot
+    privacy = (tmp_path / "privacy.html").read_text()
+    assert '<h2 id="tips">If you leave a tip</h2>' in privacy and bs.SUPPORT_RIGHTS[1] in privacy
+    assert "Last updated 4 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
+    assert "(tips)" not in (tmp_path / "terms.html").read_text()
+    assert 'href="support.html">How to tip' in (tmp_path / "about.html").read_text()
+    assert "support.html" in (tmp_path / "sitemap.xml").read_text()
+
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/swim/")   # turned off again
+    assert not (tmp_path / "support.html").exists()
+    assert not any("Support SwimSignal" in p.read_text() for p in tmp_path.rglob("*.html"))
+    assert "Last updated 4 October 2026." in (tmp_path / "privacy.html").read_text()
+
+
+def test_map_tiles_stay_on_openstreetmap_unless_a_known_provider_has_a_key(monkeypatch):
+    bs = _build_site()
+    monkeypatch.delenv(bs.TILES_ENV, raising=False)
+    monkeypatch.delenv(bs.TILE_KEY_ENV, raising=False)
+    assert bs.tile_config() is None
+    monkeypatch.setenv(bs.TILES_ENV, "carto-voyager")
+    assert bs.tile_config() is None   # no key: every tile would say "API key required"
+    monkeypatch.setenv(bs.TILE_KEY_ENV, "abc123DEF456_-x")
+    t = bs.tile_config()
+    assert t["url"] == "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=abc123DEF456_-x"
+    assert t["name"] == "CARTO" and "carto.com/attribution" in t["credit"] and "openstreetmap.org/copyright" in t["credit"]
+    monkeypatch.setenv(bs.TILE_KEY_ENV, "abc123DEF456'+alert(1)+'")   # would break out of the page's string
+    assert bs.tile_config() is None
+    monkeypatch.setenv(bs.TILE_KEY_ENV, "abc123DEF456")
+    monkeypatch.setenv(bs.TILES_ENV, "mapbox")
+    assert bs.tile_config() is None
+    for name, p in bs.TILE_PROVIDERS.items():   # every provider: https, the key in its place, a privacy policy
+        assert p["url"].startswith("https://") and ("__KEY__" in p["url"]) == (name != "osm"), name
+        assert p["privacy"].startswith("https://") and "'" not in p["credit"], name
+
+
+def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(tmp_path):
+    bs = _build_site()
+    template = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
+    assert bs.TILE_LINE.format(**bs.TILE_PROVIDERS["osm"]) in template   # what with_tiles swaps
+    bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
+    off = {n: (tmp_path / n).read_text() for n in ["index.html", "privacy.html", "terms.html"]}
+    assert "tile.openstreetmap.org" in off["index.html"] and bs.OSM_PRIVACY_LI in off["privacy.html"]
+    assert off["privacy.html"].count("map images fetched from OpenStreetMap") == 2 and bs.OSM_TERMS in off["terms.html"]
+
+    monkey = {**bs.TILE_PROVIDERS["carto-positron"], "id": "carto-positron"}
+    tiles = {**monkey, "url": monkey["url"].replace("__KEY__", "testkey123")}
+    bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/", tiles=tiles,
+                   support="https://ko-fi.com/swimsignal")
+    for page in ["index.html", "saved/index.html", "plan/index.html", "spot/wharfe-ilkley/index.html"]:
+        html = (tmp_path / page).read_text()
+        assert "tile.openstreetmap.org" not in html, page
+        assert "basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=testkey123" in html, page
+        assert 'href="https://carto.com/attribution/">CARTO</a>' in html, page
+    privacy = (tmp_path / "privacy.html").read_text()
+    assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
+    assert '<li><b>CARTO</b>, for the map images. Its <a href="https://carto.com/privacy/">privacy policy</a>' in privacy
+    assert "Last updated 4 October 2026 (page-view counter, map images, tips)." in privacy
+    terms = (tmp_path / "terms.html").read_text()
+    assert bs.OSM_TERMS not in terms and "map tiles from CARTO:" in terms

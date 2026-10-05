@@ -106,6 +106,58 @@ WITH_COUNTER = ("and what it does not. Last updated 4 October 2026 (page-view co
                  "offline use and your data\" at the bottom of the home page; the choice is kept in your browser. "
                  "Nor are they if your browser sends Global Privacy Control or Do Not Track. "
                  "There is no other analytics or tracking."))
+# Tips through Ko-fi. Off unless the repository variable is a Ko-fi page's address. When on, the
+# build writes support.html, links it from every page's foot and from About, and adds to the
+# privacy notice what Ko-fi passes on (its privacy policy, read 5 Oct 2026: a tip shares the
+# supporter's name or username and email address with the creator, who is then a controller).
+# A plain link, never Ko-fi's widget, so no page loads anything from Ko-fi. One-off tips only:
+# Open-Meteo's free plan excludes sites "that have subscriptions", so no Ko-fi memberships.
+SUPPORT_URL_ENV = "DIPCAST_KOFI_URL"
+SUPPORT_URL = re.compile(r"https://ko-fi\.com/[A-Za-z0-9_]{1,50}/?")
+SUPPORT_LINK = re.compile(r'(<footer\b(?:(?!</footer>).)*?<a href="([^"]*?)feedback\.html">Feedback</a>)', re.DOTALL)
+SUPPORT_ABOUT = ('<h2>Support SwimSignal</h2>\n<p>SwimSignal is free, with no adverts. If it has helped you, you can '
+                 'leave a one-off tip towards what it costs to run. A tip changes no forecast and buys nothing extra. '
+                 '<a href="support.html">How to tip, and other ways to help</a>.</p>\n\n')
+SUPPORT_PRIVACY = (
+    '<h2 id="tips">If you leave a tip</h2>\n<p>Tips are made on Ko-fi, a separate website run by Ko-fi Labs Limited, '
+    "and paid through Stripe or PayPal. What you give them is covered by Ko-fi's "
+    '<a href="https://more.ko-fi.com/privacy">privacy policy</a> and the payment service\'s own. SwimSignal\'s pages '
+    "send Ko-fi nothing: the support page has a plain link to Ko-fi, and loads no Ko-fi script or button.</p>\n"
+    "<p>Ko-fi passes the operator your name or username, your email address and any message you write, and Stripe "
+    "or PayPal show the payment's details, as they do for any payment. The operator uses these only to thank you or "
+    "answer you, and to keep the records of money received that tax law requires. The basis is legitimate interests "
+    "and, for the records, a legal obligation. They are never shared or sold, and never added to a mailing list. They "
+    "are kept as long as tax law requires, then deleted.</p>\n\n")
+# Map tiles. The OpenStreetMap Foundation's servers unless DIPCAST_TILES names another provider
+# below and DIPCAST_TILE_KEY holds its key. OSM's tile policy says services "that seek donations
+# should be especially aware that access may be withdrawn at any point", so move before tips go
+# on. The key sits in the page, so it is a variable; lock it to the site's domain at the provider.
+# Each provider's address, credit and privacy policy were read from its own pages on 5 Oct 2026:
+# CARTO (carto.com/basemaps, /legal/basemap-terms: free to 5M tile requests a month for
+# non-commercial use, 1M for commercial; without a key every tile says "API key required") and
+# Thunderforest (/docs/map-tiles-api, /terms: Hobby plan 150,000 tiles a month). CARTO documents
+# rastertiles/voyager; light_all is from its list of raster variants.
+TILES_ENV, TILE_KEY_ENV = "DIPCAST_TILES", "DIPCAST_TILE_KEY"
+OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+_CARTO = {"name": "CARTO", "privacy": "https://carto.com/privacy/",
+          "credit": OSM_ATTRIBUTION + ' contributors, &copy; <a href="https://carto.com/attribution/">CARTO</a>'}
+_THUNDERFOREST = {"name": "Thunderforest", "privacy": "https://www.thunderforest.com/privacy/",
+                  "credit": ('Maps &copy; <a href="https://www.thunderforest.com">Thunderforest</a>, Data &copy; '
+                             '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>')}
+TILE_PROVIDERS = {
+    "osm": {"url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png", "credit": OSM_ATTRIBUTION,
+            "name": "The OpenStreetMap Foundation", "privacy": "https://osmfoundation.org/wiki/Privacy_Policy"},
+    "carto-voyager": {**_CARTO, "url": "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=__KEY__"},
+    "carto-positron": {**_CARTO, "url": "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=__KEY__"},
+    "thunderforest-atlas": {**_THUNDERFOREST, "url": "https://api.thunderforest.com/atlas/{z}/{x}/{y}{r}.png?apikey=__KEY__"},
+    "thunderforest-outdoors": {**_THUNDERFOREST, "url": "https://api.thunderforest.com/outdoors/{z}/{x}/{y}{r}.png?apikey=__KEY__"},
+}
+TILE_LINE = "L.tileLayer('{url}', {{ maxZoom: 19,\n  attribution: '{credit}' }})"
+OSM_PRIVACY_LI = ('<li><b>The OpenStreetMap Foundation</b>, for the map images. Its '
+                  '<a href="https://osmfoundation.org/wiki/Privacy_Policy">privacy policy</a> applies.</li>')
+OSM_TERMS = "map tiles from the OpenStreetMap Foundation."
+SUPPORT_RIGHTS = ("SwimSignal holds none, as described above;",
+                  "SwimSignal holds none, as described above, apart from the details Ko-fi passes on when you leave a tip;")
 
 
 def lead_skill(processed: Path = config.PROCESSED) -> dict | None:
@@ -294,6 +346,90 @@ def with_counter(html: str, token: str | None) -> str:
     for a, b in zip(NO_COUNTER, WITH_COUNTER):
         html = html.replace(a, b)
     return html
+
+
+def tile_config() -> dict | None:
+    """The map tile provider, or None for OpenStreetMap's own servers. A provider not in
+    TILE_PROVIDERS, or one with no plausible key, is refused with a warning and the map stays on
+    OpenStreetMap: a wrong key would draw "API key required" on every tile."""
+    name = os.environ.get(TILES_ENV, "").strip().lower()
+    if not name or name == "osm":
+        return None
+    key = os.environ.get(TILE_KEY_ENV, "").strip()
+    if name not in TILE_PROVIDERS:
+        log.warning("%s=%r is not one of %s: map tiles left on OpenStreetMap", TILES_ENV, name, ", ".join(TILE_PROVIDERS))
+        return None
+    if not re.fullmatch(r"[A-Za-z0-9_-]{8,128}", key):
+        log.warning("%s is unset or not 8-128 letters, digits, _ and -: map tiles left on OpenStreetMap", TILE_KEY_ENV)
+        return None
+    p = TILE_PROVIDERS[name]
+    return {**p, "id": name, "url": p["url"].replace("__KEY__", key)}
+
+
+def with_tiles(html: str, name: str, tiles: dict | None) -> str:
+    """Another tile provider in the app (the map's tile layer and its credit), the privacy notice
+    (who gets your IP address for the map images, with "(map images)" after its date) and the
+    terms' map credit. Unchanged with tiles None."""
+    if not tiles:
+        return html
+    osm = TILE_PROVIDERS["osm"]
+    if name == "index.html":
+        before = TILE_LINE.format(**osm)
+        if before not in html:
+            raise ValueError("index.html has lost its tile layer line: build_site.TILE_LINE no longer matches it")
+        html = html.replace(before, TILE_LINE.format(**tiles))
+    if name == "privacy.html":
+        html = html.replace(OSM_PRIVACY_LI, f'<li><b>{tiles["name"]}</b>, for the map images. Its '
+                                            f'<a href="{tiles["privacy"]}">privacy policy</a> applies.</li>')
+        html = html.replace("map images fetched from OpenStreetMap", f'map images fetched from {tiles["name"]}')
+        html = privacy_updated(html, "map images")
+    if name == "terms.html":
+        html = html.replace(OSM_TERMS, f'map tiles from {tiles["name"]}: {tiles["credit"]}.')
+    return html
+
+
+def privacy_updated(html: str, what: str) -> str:
+    """Say after the privacy notice's date what a setting added: "Last updated 4 October 2026
+    (page-view counter, tips)"."""
+    return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
+                  html, count=1)
+
+
+def support_url() -> str | None:
+    """The Ko-fi page tips go to, or None (tips off). Anything but a Ko-fi page's address is
+    refused with a warning, so the variable cannot put an arbitrary link on every page."""
+    url = os.environ.get(SUPPORT_URL_ENV, "").strip()
+    if url and not SUPPORT_URL.fullmatch(url):
+        log.warning("%s=%r is not a Ko-fi page (https://ko-fi.com/<name>): tips left off", SUPPORT_URL_ENV, url)
+        return None
+    return url or None
+
+
+def with_support(html: str, name: str) -> str:
+    """With tips on: About gains its short section and the privacy notice says what Ko-fi passes
+    on, with "(tips)" after its date. Every page's foot is done separately (add_support_links)."""
+    if name == "about.html":
+        html = html.replace("<h2>Help test it this winter</h2>", SUPPORT_ABOUT + "<h2>Help test it this winter</h2>", 1)
+    if name == "privacy.html":
+        html = html.replace("<h2>The server version</h2>", SUPPORT_PRIVACY + "<h2>The server version</h2>", 1)
+        html = html.replace(*SUPPORT_RIGHTS)
+        html = privacy_updated(html, "tips")   # after the counter's own note, if any
+    return html
+
+
+def add_support_links(site: Path) -> int:
+    """Put "Support SwimSignal" after Feedback in the foot of every page under site/ that has
+    one, at that page's own path to the site's root. Returns the number of pages changed."""
+    n = 0
+    for p in site.rglob("*.html"):
+        html = p.read_text()
+        if "support.html\">Support SwimSignal" in html:
+            continue
+        new = SUPPORT_LINK.sub(lambda m: f'{m[1]} · <a href="{m[2]}support.html">Support SwimSignal</a>', html, count=1)
+        if new != html:
+            p.write_text(new)
+            n += 1
+    return n
 
 
 # The spots: SwimSignal's own list, and the swim places chosen from OpenStreetMap, in a file of their
@@ -1054,8 +1190,8 @@ def robots(root: str) -> str:
     return f"User-agent: *\nAllow: /\nSitemap: {root}sitemap.xml\n"
 
 
-def sitemap(root: str, spot_ids: list[str], day: str) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html"] + [f"{root}spot/{i}/" for i in spot_ids]
+def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -1063,12 +1199,14 @@ def sitemap(root: str, spot_ids: list[str], day: str) -> str:
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
-                northern_ireland: dict | None = None) -> int:
+                northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
-    whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=."""
+    whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
+    support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
+    provider (tile_config), or None for OpenStreetMap's."""
     root = root or site_url()
     stamp = shell_stamp()
-    template = with_build(TEMPLATE.read_text(), stamp)
+    template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html"]:
@@ -1093,7 +1231,16 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.northern_ireland import render as render_ni
             s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
-        (site / name).write_text(with_counter(with_push(s, push, email) if name == "privacy.html" else s, token))
+        s = with_counter(with_push(s, push, email) if name == "privacy.html" else s, token)
+        s = with_tiles(s, name, tiles)
+        (site / name).write_text(with_support(s, name) if support else s)
+    if support:
+        s = (STATIC / "support.html").read_text().replace("__KOFI_URL__", escape(support))
+        for a, b in REWRITES:
+            s = s.replace(a, b)
+        (site / "support.html").write_text(with_counter(s, token))
+    else:
+        (site / "support.html").unlink(missing_ok=True)   # tips turned off: no page, no links
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
@@ -1115,13 +1262,16 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
-    (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat()))
+    (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
+                                              extra=["support.html"] if support else []))
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_data_page(site, token)   # lists what is in data/, so build() writes the data files first
     write_embed(site)
     write_organisers(site, token)
+    if support:
+        add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
 
 
@@ -1263,6 +1413,7 @@ def write_embed(site: Path) -> str:
 # copy larger. A sign asks search engines to leave it out, and the sitemap lists only the organisers' page.
 ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
+REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
 ORGANISERS_SCRIPTS = ('<script src="levels.js"></script>', '<script src="organisers.js"></script>')
 
 
@@ -1394,7 +1545,7 @@ def build(refresh: bool = True) -> dict:
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
-                                       ireland=ireland, northern_ireland=northern_ireland)
+                                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config())
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
