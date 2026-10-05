@@ -270,6 +270,15 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     # The weekly note (push/src/weekly.js) is one more thing the record can hold, and one more use.
     assert "if you tick the weekly note, that you asked for it" in on
     assert "The weekly note is off until you tick it, and unticking it stops it." in on
+    # Alerts for a date: said only once DIPCAST_PUSH_DATES turns them on.
+    for before, after in bs.PUSH_DATES_SWAPS:
+        assert before in bs.PUSH_PRIVACY, before
+        assert before in on and after not in on
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", push=True, push_dates=True)
+    dated = (tmp_path / "privacy.html").read_text()
+    for before, after in bs.PUSH_DATES_SWAPS:
+        assert after in dated and before not in dated, after
+    assert "up to 10 pairs of a spot and a date" in dated
     assert (tmp_path / "levels.js").exists()
 
 

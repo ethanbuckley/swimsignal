@@ -157,7 +157,9 @@ How you will know it worked:
 
 The most likely mistake is setting the variable before step 3. It happens because the variable takes effect at the next build, which can come before you have deployed, and an old Worker cannot read a request with dates alone. The page then says "Could not change alerts for this date: spots must be an array." Deploy, and the same button works.
 
-To turn it off, delete the variable: the next build hides the button. Pairs already asked for still get their notices until their dates pass, unless the Worker is rolled back too.
+With the variable set, the privacy notice's Alerts section also says that the record may hold up to 10 pairs of a spot and a date, what they are for, and that each is deleted after its date (`PUSH_DATES_SWAPS` in `scripts/build_site.py`).
+
+To turn it off, delete the variable: the next build hides the button and those sentences. Pairs already asked for still get their notices until their dates pass, unless the Worker is rolled back too.
 
 ## Setup
 
