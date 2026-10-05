@@ -128,9 +128,12 @@ test('the day the date enters the forecast, one notice with its level and what t
   // Back down the next day.
   t.at(at('2027-06-09'));
   await t.deliver(build('2027-06-09', { a: ['low', 'low', 'low', 'low', 'low'] }));
-  assert.equal(t.pushes.at(-1).to, 'cat');   // 13 June enters the forecast
-  assert.equal(t.pushes.at(-2).payload.body, `Low risk. Was high risk. ${WORDS[1]}`);
-  assert.deepEqual(t.pushes.map((p) => p.to), ['ann', 'ann', 'ann', 'cat']);
+  // Ann's change and Cat's first notice (13 June enters the forecast) go out in the same run, in
+  // either order: each person gets one notice, and which is sent first does not matter.
+  const last = t.pushes.slice(2);
+  assert.deepEqual(last.map((p) => p.to).sort(), ['ann', 'cat']);
+  assert.equal(last.find((p) => p.to === 'ann').payload.body, `Low risk. Was high risk. ${WORDS[1]}`);
+  assert.deepEqual(t.pushes.slice(0, 2).map((p) => p.to), ['ann', 'ann']);
 });
 
 test('no notice when the day\'s level is unchanged, nor when its rain forecast is late for one build', async () => {
