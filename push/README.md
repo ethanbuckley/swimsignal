@@ -9,9 +9,10 @@ One Workers KV entry per browser, holding:
 - the push subscription: the push service endpoint URL, its expiry time if the browser gave one, and the two public keys the browser supplied (`p256dh` and `auth`);
 - the list of saved spot ids;
 - `weekly: true`, only if the visitor asked for the weekly note ([The weekly note](#the-weekly-note));
+- `dates`, only if the visitor asked on the organisers' page about a date: up to 10 pairs of a spot id and a date, each forgotten after its date ([Alerts for a date](#alerts-for-a-date));
 - the time of the last change.
 
-No personal names, email addresses or IP addresses. (Email alerts, below, keep an address once its owner confirms it.) Cloudflare sees each request's IP address, as any host does, but the Worker does not store it. A second entry, `state`, holds the rank of every spot at the last run, so the next run can tell what has changed. While alerts are pending, `queue` holds subscription key hashes, the affected spots' public forecast details, the comparison state needed to recover an interrupted run, and bounded retry counters/times. `weekq` holds the weekly note's Thursday date and the key hashes still to send to.
+No personal names, email addresses or IP addresses. (Email alerts, below, keep an address once its owner confirms it.) Cloudflare sees each request's IP address, as any host does, but the Worker does not store it. A second entry, `state`, holds the rank of every spot at the last run, and each spot's level on each of the forecast's five days, so the next run can tell what has changed. While alerts are pending, `queue` holds subscription key hashes, the affected spots' public forecast details, the comparison state needed to recover an interrupted run, and bounded retry counters/times. `weekq` holds the weekly note's Thursday date and the key hashes still to send to.
 
 The endpoint and keys are enough to send that browser a notification, so treat the KV contents as private. Logs name a subscription by part of its hash, never by endpoint.
 
@@ -94,6 +95,71 @@ Merge first, then deploy from an up-to-date main within about 3 minutes: `git sw
 The most likely mistake is deploying from a checkout that does not have the merge yet. It happens because the local main stays behind GitHub until it is pulled, and wrangler deploys whatever is on disk: the old Worker, with no error. Before deploying, `ls src/weekly.js` (from `push/`) should list the file.
 
 On a Thursday after 18:00 UK time, `npx wrangler tail` shows `weekly: 2026-10-08: N weekly notes to send`, and two minutes later `weekly: sent N, removed 0, failed 0; 0 still queued`.
+
+## Alerts for a date
+
+"Tell me when 12 June enters the forecast, and again if its level changes." An event organiser picks a spot and a day on the organisers' page. A browser that already has alerts on can then ask for a notification when that day first enters the forecast, four days before it, and one more each time that day's level changes. It may ask about up to 10 pairs of a spot and a date. Each pair is forgotten once its date has passed. The code is `src/dates.js`; the page's side is in `src/dipcast/site/organisers.js`.
+
+### What it says
+
+The title is the spot and the day; the body is that day's headline and what to do, in the page's words (`scripts/alerts.js` writes them from levels.js). The device adds the issue time, as it does for an alert.
+
+```
+Wharfe at Cromwheel, Ilkley · Saturday 12 June
+Moderate risk: sewage spills. Take more care: young children, older people and anyone with a
+weakened immune system may want a lower day or spot. This is the first forecast for this day, and it can change.
+```
+
+A change says what it was: `High risk: sewage spills. Was moderate risk. Better to choose a lower day or spot. …`. Several pairs with news in one build make one notification, a line each. Tapping opens the organisers' page at that spot and day. A spot with nothing upstream (or an isolated lake) has the same level every day, so it is told once, when the day enters the forecast.
+
+### How it decides
+
+Once a build, for everyone at once, as the high-risk alerts are. `alerts.json` now carries the forecast's five `dates`, and at each spot whose level changes from day to day each day's `[level, headline, action]` (the sentences as places in `words`, to keep the file small: 45 KB against 38 KB on 6 Oct 2026's data). `state` keeps each spot's level on each day. When a new build arrives and the queue is empty, a day whose level is new or different is news, and each browser that asked about that pair gets one notice in the alerts' own queue. Sending checks the latest `alerts.json` again, as an alert does: a pair no longer asked for, or a day back at the level it was, sends nothing.
+
+A day with no level in one build (its rain forecast late) keeps its last level in `state`, so it is not "new" again in the next. A pair asked for while its day is already in the forecast hears only of changes after that: the page already shows the day.
+
+### The API
+
+`POST /subscribe` takes `dates: [{"spot": "<id>", "date": "yyyy-mm-dd"}]` beside or instead of `spots`. What a request leaves out is kept: the Saved page sends `spots` (and `weekly`) and never `dates`, so the dates stay; the organisers' page sends `dates` alone, so the saved spots and the weekly note stay. `dates: []` removes them all. A record with no spots and no dates is deleted, and `/unsubscribe` deletes everything. Refused with 400: a date before today in the UK, one more than 400 days ahead, more than 10 pairs, the same pair twice, a date that is not a real `yyyy-mm-dd`, or a spot id that is not letters, digits, `-` and `_`. Old pages and old records work as before: a record without `dates` is one that asked about none.
+
+### Free-plan budget
+
+From the same Cloudflare limits pages as [the weekly note](#free-plan-budget).
+
+| Free-plan limit | What dates add |
+|---|---|
+| 50 outgoing requests a run | Nothing: notices go through the alerts' queue, `SENDS_PER_RUN` (15) a run |
+| 10 ms CPU a run | Reading the larger `alerts.json`, every run: 0.08 ms in Node on a Mac, against 0.05 ms before. Comparing its days with `state`, in a run with a new build: 0.09 ms |
+| 1,000 KV operations a run | 1 list per 1,000 subscriptions in a run with news, a read for each record whose spots and dates do not fit its metadata, and up to 40 for forgetting past dates (20 records) |
+| 1,000 KV writes a day | No write for telling anyone: the decision lives in `state`, written once a build already, and the queue is written as for alerts. Asking or stopping is one write, as any change of saved spots. Forgetting a passed date is one write for that record, at most 20 a run |
+| 100,000 KV reads a day | 1 more for each `/subscribe`, to keep what the request leaves out |
+| 1,000 KV lists a day | 1 per 1,000 subscriptions for each build with news. The site builds every 30 minutes, so at most 48 a day per 1,000 |
+
+### Not by email
+
+Date alerts are push only. Email sign-up has its own confirmation, records and wording, and its free allowance is 100 emails a day. Adding dates would need a second sign-up path and its own consent words. That is left for when email alerts are on.
+
+### Deploying it
+
+Deploy the Worker first, then turn the page's button on. The button appears only when the build puts `"dates": true` in `spots.json`, which it does only when the repository variable `DIPCAST_PUSH_DATES` is `1`. So the button cannot appear before the Worker that takes dates is live.
+
+1. Merge the pull request. Then, in a terminal: `git switch main && git pull`.
+2. `cd push`, then `ls src/dates.js`. It lists the file. If it says "No such file", the pull did not bring the merge: stop and pull again.
+3. `npx wrangler deploy`. It prints the Worker's address, as in [Setup](#setup) step 6.
+4. In GitHub: Settings, Secrets and variables, Actions, Variables, New repository variable. Name `DIPCAST_PUSH_DATES`, value `1`. (`site.yml` already passes it to the build.)
+5. Wait for the next site build (every 30 minutes), or run the workflow by hand.
+
+How you will know it worked:
+
+- `curl -s https://swimsignal.co.uk/data/spots.json | python3 -c "import json,sys; print(json.load(sys.stdin)['push'])"` prints a dictionary with `'dates': True`.
+- On the organisers' page, in a browser with alerts on, pick a spot and a day more than five days ahead: "Alert me about this date" appears under the dates to plan for. Press it: the page says "Alerts are on for this date."
+- When that day enters the forecast, `npx wrangler tail` shows `cron: ...: 0 spots rose to high, 0 alerts to send, 1 date notices`, and two minutes later `cron: sent 1, removed 0, failed 0; 0 still queued`.
+
+The most likely mistake is setting the variable before step 3. It happens because the variable takes effect at the next build, which can come before you have deployed, and an old Worker cannot read a request with dates alone. The page then says "Could not change alerts for this date: spots must be an array." Deploy, and the same button works.
+
+With the variable set, the privacy notice's Alerts section also says that the record may hold up to 10 pairs of a spot and a date, what they are for, and that each is deleted after its date (`PUSH_DATES_SWAPS` in `scripts/build_site.py`).
+
+To turn it off, delete the variable: the next build hides the button and those sentences. Pairs already asked for still get their notices until their dates pass, unless the Worker is rolled back too.
 
 ## Setup
 
