@@ -22,7 +22,7 @@ const pageDefs = names => names.map(n => { const i = pageSrc.findIndex(l => l.st
   return pageSrc.slice(i, j).join('\n'); }).join('\n');
 const ctx = vm.createContext({Date: FixedDate});
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + '\nsetToday("2026-10-04"); let DAY = null;', ctx);
-vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'nameCase', 'onWater', 'sourcePlace', 'sourceSentence', 'DAY_PARTS',
+vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'onWater', 'sourcePlace', 'sourceSentence', 'DAY_PARTS',
   'partOfDay', 'arriveSentence', 'clearSentence', 'whereFrom']), ctx);
 const run = (expr, ...args) => vm.runInContext(expr, ctx)(...args);
 const plain = h => h.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
@@ -37,17 +37,17 @@ const tile = (d, day = null) => { vm.runInContext(`DAY = ${JSON.stringify(day)}`
 
 test('one overflow is named alone only when it holds at least half the risk', () => {
   assert.equal(plain(run('sourceSentence', ILKLEY, '2026-10-04')),
-    "Most of today's risk from sewage spills comes from Ilkley WwTW on the River Wharfe, 6.0 km upstream, about 5 hours away.");
+    "Most of today's risk from sewage spills comes from Ilkley sewage works overflow on the River Wharfe, 6.0 km upstream, about 5 hours away.");
   assert.match(plain(run('sourceSentence', {...ILKLEY, share: 0.5}, '2026-10-05')), /^Half of tomorrow's risk/);
   assert.match(plain(run('sourceSentence', {...ILKLEY, share: 0.93}, '2026-10-06')), /^Nearly all of Tuesday's risk/);
   // Under half: spread over the overflows that make up nine tenths, the largest named, its share rounded down.
   assert.equal(plain(run('sourceSentence', {...ILKLEY, share: 0.497, spread_over: 6}, '2026-10-06')),
-    "Tuesday's risk from sewage spills is spread over 6 overflows. The largest part, 49%, comes from Ilkley WwTW on the River Wharfe, "
+    "Tuesday's risk from sewage spills is spread over 6 overflows. The largest part, 49%, comes from Ilkley sewage works overflow on the River Wharfe, "
     + '6.0 km upstream, about 5 hours away.');
   // Right now, with a spill running, close by, across a lake, an hour away.
   const kirk = {...ILKLEY, site_name: 'KIRKOSWALD WwTW', receiving_watercourse: 'River Eden', status: 1, distance_km: 0.4, travel_h: 0.4, share: 0.74};
   assert.equal(plain(run('sourceSentence', kirk, 'now')),
-    'Most of the risk from sewage spills right now comes from Kirkoswald WwTW on the River Eden, discharging now, 0.4 km upstream, under an hour away.');
+    'Most of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, discharging now, 0.4 km upstream, under an hour away.');
   assert.match(plain(run('sourceSentence', {...ILKLEY, distance_km: 1.2, lake_distance_km: 0.8, travel_h: 1.4}, 'now')), /2\.0 km upstream, about 1 hour away\.$/);
   // A feed's id where it has no name; a name that could break the page is escaped.
   assert.match(plain(run('sourceSentence', {...ILKLEY, site_name: null}, 'now')), /comes from YW1 on the River Wharfe/);
@@ -87,7 +87,7 @@ test('after a spill the page says when the model expects low risk, and why then'
   const far = spot({risk: 0.49, label: 'high', discharging_upstream: 1, clears_at: '2026-10-05T17:00:00+01:00', clears_by: 'travel',
     clears_after: {site_id: 'UU9', site_name: 'APPLEBY WwTW', travel_h: 30.2}});
   assert.equal(plain(run('clearSentence', far)), 'If the overflow discharging upstream stops now, the model expects low risk from spills '
-    + 'by about Monday afternoon, allowing for travel time: water from Appleby WwTW takes about 30 hours to get here.');
+    + 'by about Monday afternoon, allowing for travel time: water from Appleby sewage works overflow takes about 30 hours to get here.');
   assert.match(run('clearSentence', {...far, now: {...far.now, clears_after: {site_id: 'X<1>', site_name: null, travel_h: 12}}}),
     /water from X&lt;1&gt; takes about 12 hours to get here\.$/);
   assert.match(plain(run('clearSentence', {...far, now: {...far.now, clears_after: undefined}})), /by about Monday afternoon\.$/);   // no name: no clause
@@ -120,7 +120,7 @@ test('water still on its way: when it reaches here, counted when the page is rea
   assert.equal(run('arriveSentence', spot({risk: 0.2, label: 'moderate'})), '');
   // In the tile, after right now's sources and before the clearing time; today only.
   const d = coming(20, {source: {...ILKLEY, status: 1, share: 1}, clears_at: '2026-10-05T07:30:00+01:00', clears_by: 'die-off'});
-  assert.equal(tile(d), 'Where the risk comes fromNearly all of the risk from sewage spills right now comes from Ilkley WwTW on the River Wharfe, '
+  assert.equal(tile(d), 'Where the risk comes fromNearly all of the risk from sewage spills right now comes from Ilkley sewage works overflow on the River Wharfe, '
     + 'discharging now, 6.0 km upstream, about 5 hours away.Water from a spill 3.1 km upstream reaches here in about 20 minutes.'
     + 'If the overflow discharging upstream stops now, the model expects low risk from spills by about Monday morning.');
   assert.equal(tile(d, '2026-10-05'), '');
@@ -134,19 +134,19 @@ test('the tile follows the day shown, and is left out where there is nothing to 
      '2026-10-06': {risk: 0.42, label: 'high', risk_from_later_spills: 0.4, source: {...ILKLEY, share: 0.27, spread_over: 6}}});
   // Today: right now is the higher risk, so its sources; then when it clears, and the later day.
   assert.equal(tile(d), 'Where the risk comes from'
-    + 'Most of the risk from sewage spills right now comes from Kirkoswald WwTW on the River Eden, discharging now, 6.0 km upstream, about 5 hours away.'
+    + 'Most of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, discharging now, 6.0 km upstream, about 5 hours away.'
     + 'If the overflow discharging upstream stops now, the model expects low risk from spills by about Sunday evening. Rain may bring new spills and high risk on Tuesday.');
   assert.equal(tile(d, '2026-10-04'), tile(d));   // today picked is today
   // A later day: its own sources, and no clearing time.
   assert.equal(tile(d, '2026-10-06'), "Where the risk comes fromTuesday's risk from sewage spills is spread over 6 overflows. "
-    + 'The largest part, 27%, comes from Ilkley WwTW on the River Wharfe, 6.0 km upstream, about 5 hours away.');
+    + 'The largest part, 27%, comes from Ilkley sewage works overflow on the River Wharfe, 6.0 km upstream, about 5 hours away.');
   assert.equal(tile(d, '2026-10-05'), '');   // a low day
   // Today higher than right now: today's sources.
   const calm = spot({risk: 0.16, label: 'moderate', source: kirk}, {'2026-10-04': {risk: 0.28, label: 'moderate', source: ILKLEY}});
   assert.match(tile(calm), /^Where the risk comes fromMost of today's risk/);
   // A spill running far upstream, with today low: right now's sources still, as it is spilling.
   const far = spot({risk: 0.04, label: 'low', discharging_upstream: 1, source: {...kirk, distance_km: 40, travel_h: 22.2, share: 1}});
-  assert.equal(tile(far), 'Where the risk comes fromNearly all of the risk from sewage spills right now comes from Kirkoswald WwTW on the River Eden, '
+  assert.equal(tile(far), 'Where the risk comes fromNearly all of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, '
     + 'discharging now, 40.0 km upstream, about 22 hours away.');
   // No fields (a forecast built before them, or a clicked point), nothing upstream, or a failed forecast: no tile.
   assert.equal(tile(spot({risk: 0.62, label: 'high'}, {'2026-10-04': {risk: 0.5, label: 'high'}})), '');

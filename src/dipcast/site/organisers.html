@@ -30,6 +30,7 @@
   /* The overflows: a table on a wide screen and on paper; on a phone each overflow is a block, its
      name over its figures two to a line, each with its label, since nine columns do not fit. */
   .ovt th.ov { color:var(--ink); border-bottom-color:var(--line); }   /* a row's name, not the header's ink rule */
+  .ovt th.ov .own { display:block; font-size:var(--fs-meta); font-weight:400; color:var(--muted); }   /* the company's name, under the plain one */
   .ovt td.num { white-space:nowrap; }
   /* With every overflow upstream listed (data/upstream/), more rows meant longer names and the far overflows'
      reach, which pushed the last column out of a 720 px column: the number headers wrap (page.css keeps a

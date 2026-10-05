@@ -38,7 +38,7 @@ def test_the_page_puts_the_caveat_first_and_never_calls_the_water_safe():
     t = sp.with_returns(up(), returns())
     md, page = sp.render("Test spot", 53.9, -1.8, {"mode": "river", "watercourse": "River Wharfe"}, t, sp.summary(t))
     assert md.index(sp.CAVEAT) < md.index("## In short") and sp.CREDITS in md
-    assert "Grassington/STW (A1)" in md and "| under 1 |" in md and "| 67% |" in md
+    assert "Grassington sewage works overflow · Grassington/STW (A1)" in md and "Bridge Lane storm overflow · " in md and "| under 1 |" in md and "| 67% |" in md
     assert "safe" not in md.lower().replace("not say whether the water is fit", "")
     assert page.startswith("<!doctype html>") and "<table>" in page and "<p class='caveat'>" in page
 

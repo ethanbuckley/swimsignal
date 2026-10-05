@@ -12,7 +12,8 @@
 // `Organisers`, so no name here can clash with one of levels.js's.
 const Organisers = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
-    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, poorAdvice };   // levels.js's globals
+    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, poorAdvice,
+      overflowNames };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
   const STALE_MIN = 8 * 60;              // the app's "Stale" notice waits as long (index.html, STALE_MIN)
@@ -26,8 +27,6 @@ const Organisers = (() => {
   const pct = p => p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%';
   const hoursAway = h => h < 1 ? 'under an hour' : `about ${Math.round(h)} h`;
   const ago = m => { const t = Math.max(0, Math.round(m)); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };
-  // Overflow names that arrive in capitals ("GRASSINGTON/STW") in normal case: index.html's nameCase.
-  const nameCase = s => String(s ?? '').replace(/[A-Za-z']+/g, w => /^[A-Z']{4,}$/.test(w) ? w[0] + w.slice(1).toLowerCase() : w);
   const tone = l => l === R.NO_OVERFLOWS ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');
   const isolated = s => R.level(s) === R.NO_RIVER;
   const spotHref = id => PAGE_ID.test(id) ? `spot/${id}/` : `./?spot=${encodeURIComponent(id)}`;
@@ -84,7 +83,7 @@ const Organisers = (() => {
       if (nil(x.risk)) rows.push(row('Sewage spills upstream', 'The rainfall forecast for this day has not arrived, so there is no figure.'));
       else { const i = x.risk * 100, top = topOn(s, w.j);
         rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Exposure index <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
-          + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(nameCase(c.site_name ?? c.site_id))} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
+          + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
       const band = R.ecoliBand(s, x);
       if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>.`
         + (R.ecoliUntested(x) ? ' Untested from October to April, when the Environment Agency takes no samples, so it does not set the level.' : ` ${cap(band)} risk.`)));
@@ -220,9 +219,11 @@ const Organisers = (() => {
   // or 'loading' or 'failed' while it has not got them. An event weeks away is better ordered by reach
   // alone, which does not change with the weather.
   const listOf = (s, full) => Array.isArray(full) && full.length ? full : (s.contributors || []);
+  // Each overflow's plain name first (levels.js, plainName: "Grassington sewage works overflow"), then the
+  // company's, which is the one to look it up by: under it in the table, beside it in the CSV.
   function overflowRows(s, full) {
-    return listOf(s, full).slice().sort((a, b) => b.weight - a.weight).map(c => ({
-      site_id: c.site_id, site_name: c.site_name ?? c.site_id, name: nameCase(c.site_name ?? c.site_id), company: c.company || '', into: c.receiving_watercourse || '',
+    return listOf(s, full).slice().sort((a, b) => b.weight - a.weight).map(c => ({ ...R.overflowNames(c),
+      site_id: c.site_id, site_name: c.site_name ?? c.site_id, company: c.company || '', into: c.receiving_watercourse || '',
       km: Math.round(((c.distance_km || 0) + (c.lake_distance_km || 0)) * 10) / 10, travel_h: c.travel_h, reach: c.weight,
       spills: c.lta_spills, spill_hours: c.spill_hours, live: !!c.has_live, lat: c.lat, lon: c.lon }));
   }
@@ -246,7 +247,7 @@ const Organisers = (() => {
     h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
       + '<th scope="col" class="num">Upstream</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
       + '<th scope="col" class="num">Spills a year</th><th scope="col" class="num">Hours spilling</th><th scope="col">Live feed</th></tr></thead><tbody>'
-      + list.map(o => `<tr><th scope="row" class="ov">${brk(o.name)}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
+      + list.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
         + cell('Upstream', `${num(o.km, 1)} km`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
         + cell('Reach', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
         + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
@@ -260,7 +261,7 @@ const Organisers = (() => {
   // The table as a CSV file: one row an overflow, under comment lines that say what it is and carry
   // the credits, as data/verification_live.csv does (the water companies' data is CC BY 4.0, the
   // Environment Agency's OGL v3.0; build_site.data_credits). base is the site's address.
-  const COLS = ['site_id', 'site_name', 'company', 'receiving_watercourse', 'km_upstream', 'travel_hours', 'reach', 'spills_a_year', 'spill_hours_latest_return', 'live_feed', 'lat', 'lon'];
+  const COLS = ['site_id', 'site_name', 'plain_name', 'company', 'receiving_watercourse', 'km_upstream', 'travel_hours', 'reach', 'spills_a_year', 'spill_hours_latest_return', 'live_feed', 'lat', 'lon'];
   // A field a spreadsheet could read as a formula is prefixed with ' (a name from a feed is not trusted).
   const field = v => { let t = nil(v) ? '' : String(v); if (typeof v === 'string' && /^[=+\-@\t\r]/.test(t)) t = "'" + t;
     return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
@@ -270,7 +271,8 @@ const Organisers = (() => {
     const notes = [
       `SwimSignal: storm overflows upstream of ${s.name} (${s.id}), from the forecast issued ${data.generated_at}. ${base}${spotHref(s.id)}`,
       `${u.overflows || 0} monitored overflows within ${km} km upstream along the river network` + (list.length < (u.overflows || 0) ? `; these are the ${list.length} that matter most in that forecast.` : '.'),
-      'Columns: site_id and site_name, the water company\'s id and name for the overflow; company; receiving_watercourse, as the company names it;',
+      'Columns: site_id and site_name, the water company\'s id and name for the overflow; plain_name, SwimSignal\'s plain words for that name;',
+      'company; receiving_watercourse, as the company names it;',
       'km_upstream, along the river network; travel_hours, at the model\'s river speed; reach, 0 to 1, the chance a spill there affects the spot;',
       'spills_a_year, its long-term average from the Environment Agency\'s annual returns; spill_hours_latest_return, the hours it spilled in its',
       'latest annual return; live_feed, 1 if its water company reports its status live; lat, lon.',
@@ -279,7 +281,7 @@ const Organisers = (() => {
       ...(s.source === 'openstreetmap' && cr.spot_locations ? [cr.spot_locations] : []),
       `${lic ? `Licences: ${lic}. ` : ''}Full credits: ${cr.full || base + 'terms.html#data'}`,
     ];
-    const rows = list.map(o => [o.site_id, o.site_name, o.company, o.into, o.km, o.travel_h, o.reach, o.spills, o.spill_hours, o.live ? 1 : 0, o.lat, o.lon].map(field).join(','));
+    const rows = list.map(o => [o.site_id, o.site_name, o.plain, o.company, o.into, o.km, o.travel_h, o.reach, o.spills, o.spill_hours, o.live ? 1 : 0, o.lat, o.lon].map(field).join(','));
     return notes.map(n => `# ${n.replace(/[\r\n]+/g, ' ')}\n`).join('') + COLS.join(',') + '\n' + rows.map(r => r + '\n').join('');
   }
 

@@ -42,8 +42,8 @@ test('a day inside the forecast gives its level by the page rules, why, and how 
   assert.equal(L.dayHeadline(henley, '2026-10-06'), 'Moderate risk: sewage spills');
   assert.ok(h.includes('Moderate risk: about 2 of the 51 overflows upstream are expected to spill.'));
   assert.ok(h.includes('Exposure index <b>20</b> of 100'));
-  // The three most likely to reach the spot that day, chance times reach, names in normal case.
-  assert.match(h, /Most likely to reach the spot: Friday Street \(Henley\) SPS \(spill chance 3%, reach 100%\); Wargrave STW/);
+  // The three most likely to reach the spot that day, chance times reach, by their plain names (levels.js, plainName).
+  assert.match(h, /Most likely to reach the spot: Friday Street \(Henley\) pumping station overflow \(spill chance 3%, reach 100%\); Wargrave sewage works overflow \(/);
   assert.ok(h.includes('<b>41%</b>. Untested from October to April'));   // out of season: shown, not counted
   assert.ok(h.includes('2 days. In tests on past years, spill forecasts this far ahead were about 80% as good as same-day ones, and water-quality ones about 70%.'));
   assert.ok(h.includes('6\u00a0mm in the 48 hours to midday.'));
@@ -82,17 +82,19 @@ test('spots with nothing to forecast get their plain words, here as everywhere',
 
 test('the overflows are the forecast\'s, most reach first, and say when the list is not all of them', () => {
   const rows = O.overflowRows(henley);
-  assert.deepEqual(rows.map(r => r.name), ['Friday Street (Henley) SPS', 'Wargrave STW', 'Goring STW']);
+  assert.deepEqual(rows.map(r => r.plain), ['Friday Street (Henley) pumping station overflow', 'Wargrave sewage works overflow', 'Goring sewage works overflow']);
+  assert.deepEqual(rows.map(r => r.own), ['Friday Street (Henley) SPS', 'Wargrave STW', 'Goring STW']);   // the company's, in normal case
   const h = O.overflows(henley);
   assert.ok(h.includes('51 monitored storm overflows are within 60\u00a0km upstream along the river network, all with a live feed.'));
   assert.ok(h.includes('Sewage from the farthest takes about 33\u00a0h to arrive.'));
   // Without the full list (it could not be loaded, or the build wrote none): the three, and why.
   assert.ok(h.includes('The table lists the 3 that matter most in the current forecast: the full list of 51 could not be loaded. Try again later.'));
   assert.ok(O.overflows(henley, 'loading').includes('The table lists the 3 that matter most in the current forecast while the other 48 load.'));
-  const cells = [...h.matchAll(/<tr><th scope="row" class="ov">([^<]+)<\/th>(.*?)<\/tr>/g)].map(m => [m[1], [...m[2].matchAll(/data-l="([^"]+)">([^<]*)</g)].map(c => c.slice(1))]);
-  assert.deepEqual(cells[1], ['Wargrave STW', [['Company', 'Thames Water'], ['Into', 'River Thames'], ['Upstream', '7.3\u00a0km'], ['Travel', '4\u00a0h'],
+  const cells = [...h.matchAll(/<tr><th scope="row" class="ov">([^<]+) <span class="own">([^<]+)<\/span><\/th>(.*?)<\/tr>/g)]
+    .map(m => [m[1], m[2], [...m[3].matchAll(/data-l="([^"]+)">([^<]*)</g)].map(c => c.slice(1))]);
+  assert.deepEqual(cells[1], ['Wargrave sewage works overflow', 'Wargrave STW', [['Company', 'Thames Water'], ['Into', 'River Thames'], ['Upstream', '7.3\u00a0km'], ['Travel', '4\u00a0h'],
     ['Reach', '31%'], ['Spills a year', '18'], ['Hours spilling', '121'], ['Live feed', 'Yes']]]);
-  assert.equal(cells[2][1][7][1], 'No');
+  assert.equal(cells[2][2][7][1], 'No');
   const mixed = {...henley, upstream_summary: {overflows: 3, with_live_feed: 2, without_live_feed: 1, max_travel_h: 0.4}};
   assert.ok(O.overflows(mixed).includes(': 2 report their status live, and 1 has no live feed, so SwimSignal forecasts it from rain and their yearly record alone.'));
   assert.ok(O.overflows(mixed).includes('takes under an hour to arrive') && !O.overflows(mixed).includes('does not yet publish'));
@@ -115,7 +117,7 @@ test('with every overflow upstream loaded (data/upstream/<id>.json), the table a
   // A long run in a feed's watercourse may break after its & or /, so it does not widen the table; a tiny reach is "<1%".
   const odd = O.overflows(henley, [ov('North_CSO_Princetown', 0.004, 40, {receiving_watercourse: 'WEIR BROOK&TRIB OF WEIR BROOK/DITCH'})]);
   assert.ok(odd.includes('data-l="Into">WEIR BROOK&amp;<wbr>TRIB OF WEIR BROOK/<wbr>DITCH</td>'), odd);
-  assert.ok(odd.includes('class="ov">North_<wbr>CSO_<wbr>Princetown</th>'), odd);
+  assert.ok(odd.includes('class="ov">North, Princetown storm overflow <span class="own">North_<wbr>CSO_<wbr>Princetown</span></th>'), odd);
   assert.ok(odd.includes('data-l="Reach">&lt;1%</td>'));
 });
 
@@ -127,8 +129,10 @@ test('the CSV carries what it is, its columns and the credits, and is safe to op
   assert.ok(notes.some(n => n.includes('these are the 2 that matter most')));
   assert.ok(notes.some(n => n === `# Credits: ${CREDITS.attribution}`) && notes.some(n => n.includes('Full credits: https://swimsignal.co.uk/terms.html#data')));
   assert.ok(!notes.some(n => n.includes('OpenStreetMap')));   // not an OpenStreetMap spot
-  assert.equal(body[0], 'site_id,site_name,company,receiving_watercourse,km_upstream,travel_hours,reach,spills_a_year,spill_hours_latest_return,live_feed,lat,lon');
-  assert.ok(body[1].startsWith(`"'=HYPERLINK(""X"")","'=HYPERLINK(""x"")",Thames Water,River Thames,1,`));   // a formula is defused
+  assert.equal(body[0], 'site_id,site_name,plain_name,company,receiving_watercourse,km_upstream,travel_hours,reach,spills_a_year,spill_hours_latest_return,live_feed,lat,lon');
+  assert.ok(body[1].startsWith(`"'=HYPERLINK(""X"")","'=HYPERLINK(""x"")","'=Hyperlink(""x"")",Thames Water,River Thames,1,`));   // a formula is defused
+  // The company's name as it came, then the plain one.
+  assert.ok(O.csv(henley, DATA, BASE).includes('\nFRIDAY STREET (HENLEY) SPS,Friday Street (Henley) SPS,Friday Street (Henley) pumping station overflow,Thames Water,'));
   assert.ok(body[2].includes('"Name, with comma ""quoted"""'));
   assert.equal(body.length, 3);
   assert.ok(O.csv({...henley, source: 'openstreetmap'}, DATA, BASE).includes(`# ${CREDITS.spot_locations}`));
