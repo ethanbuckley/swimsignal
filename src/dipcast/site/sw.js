@@ -4,8 +4,8 @@
 // Pages, data and the site's own scripts: the network first, the stored copy if the network fails
 // or takes over 4 s (a slow answer still refreshes the stored copy when it arrives). Icons, the
 // picture behind the pages, the fonts and the map library (vendor/): the stored copy first,
-// refreshed in the background. Everything is this site's own: map tiles are OpenStreetMap's and
-// the page-view counter Cloudflare's, so neither is stored, nor is the 6 MB overflow layer, nor
+// refreshed in the background. Everything is this site's own: map tiles are their provider's
+// (OpenStreetMap's, or DIPCAST_TILES') and the page-view counter Cloudflare's, so neither is stored, nor is the 6 MB overflow layer, nor
 // swimmers' photos (reviews/photos/), which would pile up on the device a spot at a time.
 //
 // BUILD is a hash of the files this worker stores, which scripts/build_site.py (shell_stamp) writes

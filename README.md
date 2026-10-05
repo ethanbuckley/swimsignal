@@ -1198,6 +1198,40 @@ no substitute for a solicitor before any of these happens.
   cancellation rights (Consumer Contracts Regulations 2013), and whatever
   subscription rules of the Digital Markets, Competition and Consumers Act 2024
   are in force by then.
+- **Tips (checked 5 Oct 2026).** Off until the repository variable
+  `DIPCAST_KOFI_URL` is a Ko-fi page (`https://ko-fi.com/<name>`). Then the build
+  writes `support.html`, puts "Support SwimSignal" in every page's foot and a short
+  section on About, and adds "If you leave a tip" to the privacy notice (Ko-fi's
+  privacy policy: a tip passes the supporter's name or username and email address
+  to the creator, who is then a controller). It is a plain link: no Ko-fi script
+  or widget loads. Before setting it:
+  1. Move the map tiles (below). OpenStreetMap's tile policy: "Commercial
+     services, or those that seek donations, should be especially aware that
+     access may be withdrawn at any point".
+  2. On Ko-fi, choose "Ko-fi free" (0% on one-off tips). New accounts start on
+     "Standard", which takes 5% of everything. Card fees apply on both.
+  3. Turn off memberships and monthly tips. Open-Meteo's free plan excludes
+     sites "that have subscriptions"; its terms say nothing about donations, so
+     ask info@open-meteo.com in writing.
+  4. Run the ICO's fee self-assessment: tippers' details are personal data the
+     operator then holds, which this README's data-protection line assumed away.
+  5. The terms' closing note says they should be reviewed by a lawyer "before
+     SwimSignal takes money". Decide whether tips count.
+- **Map tiles (checked 5 Oct 2026).** OpenStreetMap's own servers unless
+  `DIPCAST_TILES` names a provider in `TILE_PROVIDERS` (`scripts/build_site.py`)
+  and `DIPCAST_TILE_KEY` holds its key; a bad name or key leaves OpenStreetMap on
+  with a warning. The swap changes the app's tile layer and credit, the privacy
+  notice's list of who sees your IP address, and the terms' map credit. Lock the
+  key to swimsignal.co.uk at the provider: it is public in the page.
+  - `carto-voyager`, `carto-positron`: CARTO, free to 5 million tile requests a
+    month for non-commercial use and 1 million for commercial, where commercial
+    includes a site "that generates revenue". Without a key every tile shows
+    "API key required". CARTO may suspend free access "at any time".
+  - `thunderforest-atlas`, `thunderforest-outdoors`: Thunderforest's Hobby
+    plan, 150,000 tiles a month; commercial use "permitted and encouraged".
+  - The grey-and-blue look is an SVG filter tuned on OpenStreetMap's colours
+    (`--tile-filter` in `index.html`). Check it on the new tiles at 320, 375 and
+    1440 px before switching.
 - **The page-view counter.** PECR (Schedule A1, in force 5 Feb 2026) lets it run
   without consent only with a free, simple way to object, which the site does
   not have yet (`COUNTER_TOKEN_ENV` in `scripts/build_site.py`).

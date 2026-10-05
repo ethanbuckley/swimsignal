@@ -941,7 +941,8 @@ const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MOTION = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? { animate: false } : {};
 const map = L.map('map', { zoomControl: true, dragging: !TOUCH, zoomAnimation: !STILL, fadeAnimation: !STILL, markerZoomAnimation: !STILL,
   inertia: !STILL }).setView([53.6, -2.0], 6);
-map.attributionControl.setPrefix(false);   // the map's credit is OpenStreetMap's, as on the small map; the terms credit Leaflet
+map.attributionControl.setPrefix(false);   // the map's credit is the tiles', as on the small map; the terms credit Leaflet
+// The build swaps this line for another provider's (build_site.TILE_LINE, DIPCAST_TILES): keep its shape.
 const tiles = () => L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
 tiles().addTo(map);
