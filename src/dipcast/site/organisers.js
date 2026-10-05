@@ -97,10 +97,102 @@ const Organisers = (() => {
       : `${w.j} day${w.j === 1 ? '' : 's'}. ${data.lead_skill ? howSure(data.lead_skill, w.j, x && !nil(R.ecoliBand(s, x))) + ' ' : ''}The rain forecast behind it can still change.`));
     return h + `<dl class="fields">${rows.join('')}</dl>`;
   }
+  // ------------------------------------------------------------------ the event week
+  // For a day beyond the forecast (docs/MARKETS-2026-10.md, T4): the three laboratory tests British
+  // Triathlon's water quality guidance (2025, p. 9) suggests for a one-off event, a month, two weeks
+  // and a week before; the day the forecast first covers the event; and the event. The checklist in
+  // organisers.html words the same guidance. A month before is the same day of the month before,
+  // or its last day where that month is shorter (31 March: 28 February).
+  const realDate = iso => { if (!ISO.test(String(iso))) return false; const d = new Date(iso + 'T00:00:00Z'); return !isNaN(d) && d.toISOString().slice(0, 10) === iso; };
+  function monthBefore(iso) {
+    const [y, m, d] = iso.split('-').map(Number), py = m === 1 ? y - 1 : y, pm = m === 1 ? 12 : m - 1;
+    const last = new Date(Date.UTC(py, pm, 0)).getUTCDate();
+    return `${py}-${String(pm).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`;
+  }
+  // [{date, kind, what, summary}] in date order, or null for a date that is not one.
+  function eventDates(iso) {
+    if (!realDate(iso)) return null;
+    const test = (date, n, when) => ({ date, kind: `test${n}`, what: `Laboratory test, ${when}`, summary: `Laboratory water test, ${when.replace(/^about /, '')} the event` });
+    return [test(monthBefore(iso), 1, 'about a month before'), test(addDays(iso, -14), 2, 'two weeks before'),
+      { ...test(addDays(iso, -7), 3, 'a week before'), what: 'Laboratory test, a week before: the last in time to change plans' },
+      { date: addDays(iso, -AHEAD), kind: 'forecast', what: 'The forecast first covers the event day', summary: 'The forecast first covers the event' },
+      { date: iso, kind: 'event', what: 'The event', summary: 'Event day' }];
+  }
+  // A date in words, with its year when that is not this one: an event can be booked a year ahead.
+  const dateWords = iso => longDate(iso) + (iso.slice(0, 4) === R.today().slice(0, 4) ? '' : ' ' + iso.slice(0, 4));
+  const TESTS_SAY = 'For a one-off event, British Triathlon\'s water quality guidance suggests laboratory tests a month, two weeks and a week before. '
+    + 'A sample shows the water when it was taken, and the result takes at least 48 hours.';
+  function eventWeek(s, iso) {
+    const t = R.today();
+    const rows = eventDates(iso).map(d => row(esc(dateWords(d.date)), d.what + (d.date < t ? '. This date has passed.' : '')));
+    return `<h3 id="dates-h">Dates to plan for</h3><p>${TESTS_SAY}</p><dl class="fields">${rows.join('')}</dl>`
+      + '<p class="actions screen-only"><button type="button" class="btn" id="ics">Add these dates to your calendar</button></p>'
+      + '<p class="small muted screen-only">A calendar file for Apple Calendar, Google Calendar or Outlook, made in this browser: nothing is sent.</p>';
+  }
+
+  // The dates as an iCalendar file (RFC 5545): all-day events, the tests that have not passed, the day
+  // the forecast first covers the event, and the event. Lines end in CRLF and fold at 75 octets; text
+  // escapes \ ; , and new lines. A UID per event and spot, so importing the file again updates the
+  // calendar's copies rather than adding more.
+  const icsEsc = v => String(v).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  const octets = ch => { const c = ch.codePointAt(0); return c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4; };
+  function icsFold(line) {
+    const out = []; let cur = '', n = 0;
+    for (const ch of line) { const b = octets(ch); if (n + b > 75) { out.push(cur); cur = ' '; n = 1; } cur += ch; n += b; }
+    return [...out, cur].join('\r\n');
+  }
+  const icsDay = iso => iso.replace(/-/g, '');
+  const stamp = ms => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  function ics(s, iso, base, now = Date.now()) {
+    const t = R.today(), link = `${base}organisers.html${toHash(s.id, iso)}`, host = new URL(base).hostname;
+    const say = {
+      test: `${TESTS_SAY} Ask a UKAS-accredited laboratory what is worth doing. The event is on ${dateWords(iso)}.`,
+      forecast: `SwimSignal's pollution risk forecast for ${dateWords(iso)} first appears today, as the last of its five days, and is updated several times a day. A forecast, not a water test.`,
+      event: 'A forecast, not a water test: check the signs at the water before you swim.' };
+    const events = eventDates(iso).filter(d => d.date >= t).map(d => ['BEGIN:VEVENT', `UID:${iso}-${d.kind}-${s.id}@${host}`, `DTSTAMP:${stamp(now)}`,
+      `DTSTART;VALUE=DATE:${icsDay(d.date)}`, `DTEND;VALUE=DATE:${icsDay(addDays(d.date, 1))}`, `SUMMARY:${icsEsc(`${d.summary}: ${s.name}`)}`,
+      `DESCRIPTION:${icsEsc(`${say[d.kind.replace(/\d$/, '')]} ${link}`)}`, `URL:${link}`, 'TRANSP:TRANSPARENT', 'END:VEVENT']);
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SwimSignal//Event dates//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', ...events.flat(), 'END:VCALENDAR']
+      .map(icsFold).join('\r\n') + '\r\n';
+  }
+
+  // ------------------------------------------------------------------ alerts for the date
+  // "Alert me about this date" (push/README.md, "Alerts for a date"): the push Worker tells this
+  // browser when the day's forecast first appears and again each time its level changes. Shown only
+  // where the site's alerts are on and the build says the Worker takes dates (spots.json's
+  // push.dates, set by the repository variable DIPCAST_PUSH_DATES once the new Worker is deployed),
+  // and only in a browser that has alerts on already: turning them on, and its consent, is the Saved
+  // page's. The page sends the whole list each time, as the app sends its saved spots, and keeps it
+  // here to know what is on; the Worker keeps the saved spots and the weekly note as they were.
+  const DATES_KEY = 'dipcast.pushdates', MAX_DATES = 10;   // the Worker's cap (push/src/shared.js)
+  const dateAlertsOn = data => !!(data.push && data.push.url && data.push.dates === true);
+  // The list kept for this push address, without dates that have passed.
+  const keptDates = (raw, endpoint, t) => { let v = null; try { v = JSON.parse(raw || 'null'); } catch (e) { /* none */ }
+    return v && v.endpoint === endpoint && Array.isArray(v.dates) ? v.dates.filter(d => d && typeof d.spot === 'string' && realDate(d.date) && d.date >= t) : []; };
+  const hasDate = (list, spot, date) => list.some(d => d.spot === spot && d.date === date);
+  const withDate = (list, spot, date, on) => on ? (hasDate(list, spot, date) ? list : [...list, { spot, date }]) : list.filter(d => !(d.spot === spot && d.date === date));
+  // What the control says: sub, whether this browser has alerts on; list, the dates it has asked for.
+  function dateAlert(sub, list, spot, iso, from) { return '<h3 id="alert-h">Alerts for this date</h3>' + dateAlertBody(sub, list, spot, iso, from); }
+  function dateAlertBody(sub, list, spot, iso, from) {
+    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level changes.`
+      : 'A notification each time this day\'s level changes.';
+    if (!sub) return '<p class="small">First turn on alerts in this browser, from the <a href="saved/">Saved page</a>.</p>';
+    if (hasDate(list, spot, iso)) return `<p class="ev-say"><b>Alerts are on for this date.</b> ${what}</p>`
+      + '<p class="actions"><button type="button" class="btn" id="date-alert-btn" data-on="1">Stop alerts for this date</button></p>';
+    if (list.length >= MAX_DATES) return `<p class="small">You have alerts for ${MAX_DATES} dates, the most there can be. Stop one of them to add this one.</p>`;
+    return `<p class="ev-say">${what}</p><details class="fold"><summary>What asking sends</summary><p class="small">Asking sends this spot and this date, with your browser's push address, `
+      + `to SwimSignal's alert service, and nothing else about you. It keeps up to ${MAX_DATES} dates and forgets each one after it has passed. `
+      + 'Turning alerts off on the Saved page deletes them all. An alert can be late or not come at all, so no alert does not mean the water is clean. '
+      + '<a href="privacy.html">Privacy notice</a>.</p></details>'
+      + '<p class="actions"><button type="button" class="btn" id="date-alert-btn">Alert me about this date</button></p>';
+  }
+  const alertSlot = (data, w) => dateAlertsOn(data) && w.state !== 'past'
+    ? `<div class="screen-only" id="date-alert" data-from="${w.state === 'later' ? esc(w.from) : ''}"></div><p class="small muted screen-only" id="date-alert-msg" aria-live="polite"></p>` : '';
+
   // A day beyond the forecast: when its forecast first appears, and what is known now.
   function later(s, iso, from) {
     const total = (s.upstream_summary || {}).overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60;
-    let h = `<p>The forecast for ${longDate(iso)} first appears on <b>${longDate(from)}</b>, as the last of its five days, and is updated several times a day after that.</p>`;
+    let h = `<p>The forecast for ${dateWords(iso)} first appears on <b>${dateWords(from)}</b>, as the last of its five days, and is updated several times a day after that.</p>`;
     const rows = [];
     if (isolated(s)) rows.push(row('Storm overflows', `No river flows into this lake in the river network, so no overflow can reach it. ${esc(R.OTHER_RISKS)}`));
     else if (s.error) rows.push(row('Forecast', esc(R.COVER[R.level(s)] || 'No forecast in this update')));
@@ -112,12 +204,13 @@ const Organisers = (() => {
   function forecast(s, iso, data, now) {
     const w = when(s, iso), age = (now - Date.parse(data.generated_at)) / 60000;
     const issued = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    let h = `<h3 id="day-h">${longDate(iso)}</h3>`;
+    let h = `<h3 id="day-h">${w.state === 'later' ? dateWords(iso) : longDate(iso)}</h3>`;
     if (w.state === 'past') return h + '<p>That day has passed. Pick the day of your event.</p>';
-    if (w.state === 'later') return h + later(s, iso, w.from);
+    if (w.state === 'later') return h + later(s, iso, w.from) + eventWeek(s, iso) + alertSlot(data, w);
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: the automatic update has not run since. Treat it as out of date.</p>`;
     return h + within(s, iso, w, data)
-      + `<p class="check">A forecast, not a water test: check the signs at the water before you swim. Issued ${esc(issued)}; it is updated several times a day, so look again the evening before and on the morning of the event.</p>`;
+      + `<p class="check">A forecast, not a water test: check the signs at the water before you swim. Issued ${esc(issued)}; it is updated several times a day, so look again the evening before and on the morning of the event.</p>`
+      + alertSlot(data, w);
   }
 
   // ------------------------------------------------------------------ the overflows upstream
@@ -210,6 +303,41 @@ const Organisers = (() => {
     const date = p.get('date'); return { spot: p.get('spot') || null, date: date && ISO.test(date) ? date : null }; };
   const toHash = (id, iso) => { const p = new URLSearchParams(); if (id) p.set('spot', id); if (iso) p.set('date', iso); const q = p.toString(); return q ? '#' + q : ''; };
 
+  // The control for alerts about the date, once this browser's push address is known. Nothing is
+  // sent until the button is pressed.
+  const canPush = () => typeof navigator === 'object' && 'serviceWorker' in navigator && typeof PushManager !== 'undefined' && typeof Notification !== 'undefined';
+  async function pushSubNow() {
+    if (Notification.permission !== 'granted') return null;
+    const reg = await navigator.serviceWorker.getRegistration();
+    return reg && reg.pushManager ? reg.pushManager.getSubscription() : null;
+  }
+  async function bindDateAlert(el, s, iso, data) {
+    const msg = document.getElementById('date-alert-msg');
+    if (!canPush()) { el.remove(); if (msg) msg.remove(); return; }   // no notifications in this browser: nothing to offer
+    const t = R.today(), from = el.dataset.from || '';
+    let sub = null, mem = null;
+    try { sub = await pushSubNow(); } catch (e) { sub = null; }
+    if (!el.isConnected) return;   // the page was drawn again meanwhile
+    const read = () => { if (mem) return mem; try { return keptDates(localStorage.getItem(DATES_KEY), sub && sub.endpoint, t); } catch (e) { return []; } };
+    const paint = () => {
+      el.innerHTML = dateAlert(sub, read(), s.id, iso, from);
+      const b = document.getElementById('date-alert-btn'); if (!b) return;
+      b.addEventListener('click', async () => {
+        const on = !b.dataset.on, dates = withDate(read(), s.id, iso, on);
+        b.disabled = true; msg.textContent = '';
+        try {
+          const res = await fetch(data.push.url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription: sub.toJSON(), dates }) }).catch(() => { throw new Error('the alert service could not be reached. Check your connection and try again'); });
+          if (!res.ok) { const why = (await res.text().catch(() => '')).slice(0, 120); throw new Error(res.status === 400 && why ? why : `the alert service answered ${res.status}`); }
+          mem = dates;
+          try { localStorage.setItem(DATES_KEY, JSON.stringify({ endpoint: sub.endpoint, dates })); } catch (e) { /* kept in memory for this page */ }
+          paint(); msg.textContent = on ? 'Alerts are on for this date.' : 'Alerts for this date are off.';
+        } catch (e) { b.disabled = false; msg.textContent = `Could not change alerts for this date: ${e.message}.`; }
+      });
+    };
+    paint();
+  }
+
   // In the page: fill the spot list, read the spot and the day from the address, and redraw when
   // either changes. The forecast is fetched once (no-cache: the server is asked, as the app does).
   async function start() {
@@ -257,13 +385,22 @@ const Organisers = (() => {
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
       });
       const pr = document.getElementById('print'); if (pr) pr.addEventListener('click', () => window.print());
+      const ic = document.getElementById('ics');
+      if (ic) ic.addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([ics(s, iso, base)], { type: 'text/calendar;charset=utf-8' }));
+        a.download = `swimsignal-${s.id}-${iso}.ics`; document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+      const da = document.getElementById('date-alert'); if (da) bindDateAlert(da, s, iso, data);
     };
     sel.addEventListener('change', draw); date.addEventListener('change', draw);
     document.getElementById('pick').addEventListener('submit', e => { e.preventDefault(); draw(); });
     draw();
   }
 
-  return { when, view, forecast, overflows, overflowRows, csv, fromHash, toHash, spilling, howSure, start, STALE_MIN };
+  return { when, view, forecast, overflows, overflowRows, csv, fromHash, toHash, spilling, howSure, start, STALE_MIN,
+    realDate, monthBefore, eventDates, dateWords, ics, icsFold, dateAlert, keptDates, withDate, MAX_DATES };
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Organisers;

@@ -218,6 +218,10 @@ def lead_skill(processed: Path = config.PROCESSED) -> dict | None:
 # Alerts (push/): on when both repository variables are set. The Worker's address and its public
 # key sit in spots.json for the page; the private key never leaves the Worker.
 PUSH_URL_ENV, PUSH_KEY_ENV = "DIPCAST_PUSH_URL", "DIPCAST_VAPID_PUBLIC_KEY"
+# Alerts for a date (push/README.md, "Alerts for a date"): "1" once the Worker that takes dates is
+# deployed. It adds "dates": true to the push settings in spots.json, which is what shows "Alert me
+# about this date" on the organisers' page; an older Worker would refuse the request.
+PUSH_DATES_ENV = "DIPCAST_PUSH_DATES"
 # With alerts on, the privacy notice's sentences that say nothing leaves the device, and that
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
@@ -247,7 +251,10 @@ def push_config() -> dict | None:
     if not (re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url) and re.fullmatch(r"[A-Za-z0-9_-]{87}", key)):
         log.warning("%s must be https://host/ and %s a base64url P-256 public key: alerts left off", PUSH_URL_ENV, PUSH_KEY_ENV)
         return None
-    return {"url": url, "key": key}
+    dates = os.environ.get(PUSH_DATES_ENV, "").strip().lower()
+    if dates not in ("", "0", "1", "true"):
+        log.warning("%s must be 1 or unset: alerts for a date left off", PUSH_DATES_ENV)
+    return {"url": url, "key": key, **({"dates": True} if dates in ("1", "true") else {})}
 
 
 def email_config() -> dict | None:

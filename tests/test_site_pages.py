@@ -236,11 +236,18 @@ def test_alerts_are_off_unless_both_settings_are_sound(monkeypatch):
     bs = _build_site()
     monkeypatch.delenv(bs.PUSH_URL_ENV, raising=False)
     monkeypatch.delenv(bs.PUSH_KEY_ENV, raising=False)
+    monkeypatch.delenv(bs.PUSH_DATES_ENV, raising=False)
     assert bs.push_config() is None
     key = "B" + "A" * 86
     monkeypatch.setenv(bs.PUSH_URL_ENV, "https://dipspot-push.example.workers.dev/")
     monkeypatch.setenv(bs.PUSH_KEY_ENV, key)
     assert bs.push_config() == {"url": "https://dipspot-push.example.workers.dev/", "key": key}
+    # Alerts for a date: only once the variable says the Worker that takes them is deployed.
+    monkeypatch.setenv(bs.PUSH_DATES_ENV, "1")
+    assert bs.push_config() == {"url": "https://dipspot-push.example.workers.dev/", "key": key, "dates": True}
+    monkeypatch.setenv(bs.PUSH_DATES_ENV, "yes please")
+    assert "dates" not in bs.push_config()
+    monkeypatch.delenv(bs.PUSH_DATES_ENV)
     monkeypatch.setenv(bs.PUSH_URL_ENV, "http://dipspot-push.example.workers.dev/")   # not https
     assert bs.push_config() is None
     monkeypatch.setenv(bs.PUSH_URL_ENV, "https://dipspot-push.example.workers.dev/")
@@ -287,14 +294,23 @@ def test_the_alerts_file_uses_the_page_rules(tmp_path):
     assert bs.write_alerts(tmp_path, "https://example.org/swim/", push_on=False)
     out = json.loads((tmp_path / "data" / "alerts.json").read_text())
     assert out["generated_at"] == "2026-09-29T08:00:00+01:00"
+    # Alerts for a date (push/src/dates.js): the five days, and each day's level, headline and
+    # action, the sentences as places in `words`; a day with no forecast is null.
+    assert out["dates"] == ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03"]
+    words = out["words"]
+    assert [[d[0], words[d[1]], words[d[2]]] if d else None for d in out["spots"]["a"]["days"]] == [
+        ["high", "High risk: sewage spills", "Better to choose a lower day or spot. If you do swim, try not to swallow any water."],
+        ["low", "Low risk", "Usual care: cover cuts, try not to swallow water and wash your hands before eating."], None, None, None]
     assert out["spots"]["a"] == {"name": "A river", "rank": 2, "level": "high", "headline": "High risk today: sewage spills",
                                  "action": "Better to choose a lower day or spot. If you do swim, try not to swallow any water.",
                                  "url": "https://example.org/swim/spot/a/",
-                                 "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"}}
+                                 "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"},
+                                 "days": out["spots"]["a"]["days"]}
     assert out["spots"]["tarn"]["rank"] == -1 and out["spots"]["tarn"]["level"] == "no river connection"
     assert out["spots"]["tarn"]["headline"] == "No river connection: overflows cannot reach this lake"
     assert out["spots"]["tarn"]["action"] == "After heavy rain, wait a couple of days before swimming if you can."
     assert "best" not in out["spots"]["tarn"]   # the same every day: nothing for the weekly note
+    assert "days" not in out["spots"]["tarn"]   # nor for a date: the alerts use its own level
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")

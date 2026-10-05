@@ -897,6 +897,15 @@ gives all four navigation links a single full-width row.
   now. Always: the overflows upstream as a table, which on a phone becomes a block per overflow, the
   name over its figures two to a line, each with its label; a CSV with the credits; and the checklist,
   which is in the page so that it prints without a script. Printed: A4, no controls.
+- **The event week** (6 October 2026). Beyond the five days the page adds "Dates to plan for", a ruled list
+  (`dl.fields`): the three laboratory tests British Triathlon's guidance suggests (about a month, two weeks
+  and a week before; a month before is the same day of the month before, or its last day), the day the
+  forecast first covers the event, and the event. A test date that has passed says so. Dates in another
+  year carry the year. Under it, "Add these dates to your calendar" makes an .ics file in the browser, with
+  the dates still to come as all-day events. Inside the five days the day view is as it was. Where the build
+  says the alert service takes dates (`push.dates` in `spots.json`), "Alert me about this date" follows, in
+  either view, only in a browser that has alerts on: its consent folds under "What asking sends", before the
+  button, as the Saved page's does.
 - The overflows are every one upstream, ordered by reach, which does not change with the weather, since
   an event can be weeks away. `spots.json` keeps ten (`KEEP_CONTRIBUTORS`); where a spot has more, the page
   loads `data/upstream/<id>.json` (4 October 2026; before, 42 of 105 spots' tables were partial) and shows the
