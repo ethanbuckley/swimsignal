@@ -1230,8 +1230,13 @@ no substitute for a solicitor before any of these happens.
   - `thunderforest-atlas`, `thunderforest-outdoors`: Thunderforest's Hobby
     plan, 150,000 tiles a month; commercial use "permitted and encouraged".
   - The grey-and-blue look is an SVG filter tuned on OpenStreetMap's colours
-    (`--tile-filter` in `index.html`). Check it on the new tiles at 320, 375 and
-    1440 px before switching.
+    (`--tile-filter` in `index.html`). Under CARTO's colours it left the sea near
+    white, so each CARTO preset carries its own filter (`CARTO_FILTERS`, measured
+    on CARTO's tiles on 5 Oct 2026), which the build puts in its place: grey land,
+    water #bccfd8, as on OpenStreetMap. Thunderforest keeps OpenStreetMap's filter,
+    unchecked; check it at 320, 375 and 1440 px before switching to it.
+  - Chosen 5 Oct 2026: `carto-voyager` (Ethan, over Positron, whose labels are
+    faint once grey).
 - **The page-view counter.** PECR (Schedule A1, in force 5 Feb 2026) lets it run
   without consent only with a free, simple way to object, which the site does
   not have yet (`COUNTER_TOKEN_ENV` in `scripts/build_site.py`).

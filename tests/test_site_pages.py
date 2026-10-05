@@ -744,3 +744,45 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     assert "Last updated 4 October 2026 (page-view counter, map images, tips)." in privacy
     terms = (tmp_path / "terms.html").read_text()
     assert bs.OSM_TERMS not in terms and "map tiles from CARTO:" in terms
+
+
+def test_carto_tiles_bring_their_own_colour_filter_and_others_keep_openstreetmaps(tmp_path):
+    bs = _build_site()
+    template = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
+    osm_filter = bs.TILE_FILTER.search(template)[0]   # what with_tiles swaps for CARTO's
+    assert "-6.6667 0 6.6667 0 -.13333" in osm_filter
+    for name, key in [("carto-voyager", "voyager"), ("carto-positron", "positron")]:
+        p = bs.TILE_PROVIDERS[name]
+        html = bs.with_tiles(template, "index.html", {**p, "url": p["url"].replace("__KEY__", "testkey123")})
+        assert bs.CARTO_FILTERS[key] in html and osm_filter not in html, name
+        assert html.count('<filter id="tiles"') == 1, name
+        assert "--tile-filter:url(#tiles)" in html, name   # the tiles still use it
+    p = bs.TILE_PROVIDERS["thunderforest-atlas"]
+    html = bs.with_tiles(template, "index.html", {**p, "url": p["url"].replace("__KEY__", "testkey123")})
+    assert osm_filter in html
+    assert osm_filter in bs.with_tiles(template, "index.html", None)
+
+
+def test_the_carto_filters_turn_carto_water_blue_and_its_land_grey():
+    """The two alpha rows and the land and tint offsets, applied by hand to the colours measured on
+    CARTO's tiles on 5 Oct 2026, as the browser applies an feColorMatrix (clamped to 0..1)."""
+    bs = _build_site()
+    def apply(filt, rgb):
+        rows = re.findall(r'values="([^"]+)"', filt)
+        R, G, B = (c / 255 for c in rgb)
+        cl = lambda x: max(0.0, min(1.0, x))
+        def alpha(row):
+            a = [float(x) for x in row.split()][15:]
+            return cl(a[0] * R + a[1] * G + a[2] * B + a[4])
+        water = alpha(rows[0]) * alpha(rows[1])
+        lum = .21 * R + .7066 * G + .0713 * B
+        land_off = float(rows[2].split()[4])
+        tint = [float(x) for x in rows[3].split()[4::5][:3]]
+        return tuple(round(255 * ((1 - water) * cl(lum + land_off) + water * cl(lum + t))) for t in tint)
+    v, pz = bs.CARTO_FILTERS["voyager"], bs.CARTO_FILTERS["positron"]
+    assert apply(v, (213, 232, 235)) == (188, 207, 216) and apply(pz, (212, 218, 220)) == (188, 207, 216)
+    for land in [(251, 248, 243), (226, 237, 215), (251, 219, 152)]:   # land, a park, a main road
+        r, g, b = apply(v, land)
+        assert r == g == b, land
+    r, g, b = apply(pz, (250, 250, 248))
+    assert r == g == b == 235
