@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import shutil
@@ -1202,6 +1203,45 @@ def with_counts(html: str, results: list[dict]) -> str:
     return re.sub(r'(<span id="n-bw">)\d+(</span>)', rf"\g<1>{n_bw}\g<2>", html, count=1)
 
 
+# The warning figures on clubs.html, in words, from the live warning table (verification.json's
+# live.warning_table): the share of spills warned of (hit_rate) and the share of warnings followed by a
+# spill (warnings_true), each as the nearest simple fraction. The page's own words stay when the table
+# or a field is missing.
+WARN_FIGURES = re.compile(r'(<span id="warn-figures">).*?(</span>)', re.DOTALL)
+NUMBERS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 7: "seven", 9: "nine", 10: "ten"}
+FRACTIONS = sorted({(n, d) for d in (2, 3, 4, 5, 10) for n in range(1, d) if math.gcd(n, d) == 1}, key=lambda f: f[1])
+
+
+def share_words(p: float) -> str:
+    """A share as words a reader can picture: "about one in five". The nearest of the fractions with 2, 3, 4,
+    5 or 10 below the line (the smaller denominator on a tie); below 1 in 20 and above 19 in 20 it says so."""
+    if p < 0.05:
+        return "fewer than one in twenty"
+    if p > 0.95:
+        return "nearly all"
+    n, d = min(FRACTIONS, key=lambda f: (abs(p - f[0] / f[1]), f[1]))
+    return f"about {NUMBERS[n]} in {NUMBERS[d]}"
+
+
+def day_words(a: pd.Timestamp, b: pd.Timestamp) -> str:
+    """"29 September to 4 October 2026", with the first year only when the years differ."""
+    first = f"{a.day} {a:%B}" + (f" {a.year}" if a.year != b.year else "")
+    return f"{first} to {b.day} {b:%B %Y}"
+
+
+def with_warning_words(html: str, verification: Path) -> str:
+    try:
+        w = json.loads(verification.read_text())["live"]["warning_table"]
+        hit, true = float(w["hit_rate"]), float(w["warnings_true"])
+        a, b = pd.Timestamp(w["first_day"]), pd.Timestamp(w["last_day"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return html   # the hand-written figures stay
+    lead = "It misses most spills." if hit < 0.45 else "It misses about half of all spills." if hit <= 0.55 else "It misses some spills."
+    said = (f"{lead} Its live scores ran from {day_words(a, b)}. At the {escape(str(w.get('level') or 'high'))} risk line, "
+            f"it warned of {share_words(hit)} spills. {share_words(true).capitalize()} of its warnings were followed by a spill.")
+    return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
+
+
 def not_found_page(root: str) -> str:
     """404.html: GitHub Pages serves it for any missing address, at any depth, so every link in it
     is absolute. Before this, a mistyped or outdated link got GitHub's own page, with no way back."""
@@ -1253,6 +1293,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = s.replace(a, b)
         if name == "about.html":
             s = with_counts(s, results)
+        if name == "clubs.html":
+            s = with_warning_words(s, site / "data" / "verification.json")   # build() writes it before the pages
         if name == "coverage.html":
             from dipcast.coastal import render
             s = re.sub(r'<!-- COASTAL_DIRECTORY -->.*?<!-- END_COASTAL_DIRECTORY -->',

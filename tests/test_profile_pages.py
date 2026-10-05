@@ -145,3 +145,31 @@ def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_p
     assert 'href="clubs.html">For clubs, centres and leaders</a>' in (tmp_path / "about.html").read_text()
     assert ('<a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a>'
             in (tmp_path / "index.html").read_text())
+
+
+def test_a_share_is_said_as_the_nearest_simple_fraction():
+    said = {p: bs.share_words(p) for p in (0.208, 0.409, 0.5, 0.26, 0.31, 0.34, 0.66, 0.74, 0.12, 0.875, 0.049, 0.951)}
+    assert said == {0.208: "about one in five", 0.409: "about two in five", 0.5: "about one in two",
+                    0.26: "about one in four", 0.31: "about three in ten", 0.34: "about one in three",
+                    0.66: "about two in three", 0.74: "about three in four", 0.12: "about one in ten",
+                    0.875: "about nine in ten", 0.049: "fewer than one in twenty", 0.951: "nearly all"}
+
+
+def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path):
+    (tmp_path / "data").mkdir()
+    table = {"level": "high", "hit_rate": 0.31, "warnings_true": 0.52, "first_day": "2026-12-29", "last_day": "2027-01-04"}
+    (tmp_path / "data" / "verification.json").write_text(json.dumps({"live": {"warning_table": table}}))
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", day="2027-01-05")
+    words = text((tmp_path / "clubs.html").read_text())
+    assert ("It misses most spills. Its live scores ran from 29 December 2026 to 4 January 2027. At the high risk line, "
+            "it warned of about three in ten spills. About one in two of its warnings were followed by a spill.") in words
+    # Without the table, or with a field missing, the page's own words stay.
+    fallback = "it warned of about one in five spills. About two in five of its warnings were followed by a spill."
+    for v in ({}, {"live": {"warning_table": {**table, "hit_rate": None}}}, None):
+        f = tmp_path / "data" / "verification.json"
+        if v is None:
+            f.unlink()
+        else:
+            f.write_text(json.dumps(v))
+        bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
+        assert fallback in text((tmp_path / "clubs.html").read_text()), v

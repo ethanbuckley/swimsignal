@@ -19,8 +19,9 @@
        The Scouts, "Water safety (waterborne diseases and immersion)" (published January 2022),
          https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/general-water-activities/water-safety-waterborne-diseases-and-immersion/
        The RYA, "Water quality: our position", https://www.rya.org.uk/making-a-difference/water-quality-our-position/
-     The warning figures are data/verification.json's live warning_table (29 Sep to 4 Oct 2026): hit_rate 0.21,
-     warnings_true 0.41. Searched and not quoted: AALA (HSE's licensable activities page says nothing on water quality). -->
+     The warning figures in #warn-figures are filled at build time from data/verification.json's live warning_table
+     (build_site.with_warning_words); the words here are the fallback, from the table of 29 Sep to 4 Oct 2026:
+     hit_rate 0.21, warnings_true 0.41. Searched and not quoted: AALA (HSE's licensable activities page says nothing on water quality). -->
 <h1>For clubs, centres and leaders</h1>
 <p class="lead">This page is for clubs, activity centres, Scouts and Guides leaders, schools and event organisers. It covers swimming, ghyll scrambling, gorge walking, paddling, sailing, windsurfing and rowing on rivers and lakes in England. SwimSignal forecasts the risk of sewage pollution at a spot for the next five days.</p>
 
@@ -28,7 +29,7 @@
 <h2 id="limits-h">What it cannot do</h2>
 <ul>
 <li>It is a forecast, not a water test. Nothing on the site says the water is safe.</li>
-<li>It misses most spills. Its first live scores ran from 29 September to 4 October 2026. At the high risk line, it warned of about one in five spills. About two in five of its warnings were followed by a spill. The <a href="/verification">accuracy page</a> has the latest figures.</li>
+<li><span id="warn-figures">It misses most spills. Its first live scores ran from 29 September to 4 October 2026. At the high risk line, it warned of about one in five spills. About two in five of its warnings were followed by a spill.</span> The <a href="/verification">accuracy page</a> has the latest figures.</li>
 <li>It sees monitored storm overflows only. It does not see farm runoff, livestock, wildlife, misconnected drains or a pollution incident.</li>
 <li>The level is about pollution only. Cold water, currents and high water stay in your own risk assessment.</li>
 <li>It covers rivers and lakes in England. Coasts are not forecast.</li>
