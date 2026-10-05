@@ -24,6 +24,14 @@
      crossorigin, or the browser would fetch each twice. -->
 <link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- The forecast and the picture, asked for here too. Every view's opening words wait for
+     data/spots.json, and the picture behind them (.lead, .answer) is only found once they are drawn.
+     Asked for by main() alone, the forecast waited for the scripts at the foot of the page, and the
+     picture for the forecast: the largest paint came at 4.6 s on a slow phone connection (5 Oct
+     2026). main() takes the answer from FORECAST; the catch only stops an early failure being
+     reported before main() gets to it, and main() still gets the error. -->
+<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high">
+<script>window.FORECAST = fetch('data/spots.json', { cache: 'no-cache' }); FORECAST.catch(() => {});</script>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -2792,8 +2800,8 @@ async function main() {
   const box = document.getElementById('result');
   if (box.textContent.trim() === 'Loading forecasts…') box.innerHTML = SKELETON;
   // no-cache: ask the server, not the browser's own copy, which GitHub Pages lets it use for 10
-  // minutes. With the offline copy on, sw.js asks the same way.
-  const res = await fetch('data/spots.json', { cache: 'no-cache' });
+  // minutes. With the offline copy on, sw.js asks the same way. The head asked already (FORECAST).
+  const res = await (window.FORECAST || fetch('data/spots.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
   DATA = await res.json();
   serverToday = DATA.generated_at.slice(0, 10);

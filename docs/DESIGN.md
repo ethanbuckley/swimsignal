@@ -268,7 +268,10 @@ rewrites each one for the static site (`REWRITES`). The API server has its own c
 icons in `src/dipcast/api/static/icons/`, taken from the site's `src/dipcast/site/icons/`, and a
 test checks that they still match. The 404 page, which the build writes, has the same head with
 absolute links, `noindex` and no description. The app page's head is its own, in `index.html`: it
-adds the manifest and the Home Screen tags. The Home Screen app's status bar is
+adds the manifest and the Home Screen tags, and asks for `data/spots.json` (`FORECAST`, which
+`main()` awaits) and preloads the picture, `icons/fells.webp`. Every view's largest paint is the
+picture behind its opening words, and those wait for the forecast: asked for later, the forecast
+waited for the scripts at the foot of the page and the picture for the forecast (5 October 2026). The Home Screen app's status bar is
 `black-translucent`: the page draws under it, its white text sits on the slate, and the header's
 top padding takes in the safe area. (From the fifth round to the seventh it was `default`, dark
 text, over the paper header.) Nothing in any head is fetched from another site: the app's map
