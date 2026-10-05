@@ -138,6 +138,37 @@ SUPPORT_PRIVACY = (
 # Thunderforest (/docs/map-tiles-api, /terms: Hobby plan 150,000 tiles a month). CARTO documents
 # rastertiles/voyager; light_all is from its list of raster variants.
 TILES_ENV, TILE_KEY_ENV = "DIPCAST_TILES", "DIPCAST_TILE_KEY"
+
+
+def tile_filter(r1: str, r2: str, land: str, tint: tuple[str, str, str]) -> str:
+    """The map's SVG filter (#tiles in index.html) for tiles drawn in other colours than
+    OpenStreetMap's: grey land (luminance plus `land`), and water, where both alpha rows r1 and r2
+    are 1, as the grey plus `tint`. Each row is the 4th row of a colour matrix (R G B A offset)."""
+    lum = ".21 .7066 .0713 0"
+    land_row = f"{lum} {land}"
+    return ('<filter id="tiles" color-interpolation-filters="sRGB" x="0" y="0" width="1" height="1">\n'
+            f'    <feColorMatrix in="SourceGraphic" type="matrix" result="r1" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  {r1}"/>\n'
+            f'    <feColorMatrix in="SourceGraphic" type="matrix" result="r2" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  {r2}"/>\n'
+            '    <feComposite in="r1" in2="r2" operator="arithmetic" k1="1" result="water"/>\n'
+            f'    <feColorMatrix in="SourceGraphic" type="matrix" result="land" values="{land_row}  {land_row}  {land_row}  0 0 0 1 0"/>\n'
+            f'    <feColorMatrix in="SourceGraphic" type="matrix" result="tint" values="{lum} {tint[0]}  {lum} {tint[1]}  {lum} {tint[2]}  0 0 0 1 0"/>\n'
+            '    <feComposite in="tint" in2="water" operator="in" result="blue"/>\n'
+            '    <feMerge><feMergeNode in="land"/><feMergeNode in="blue"/></feMerge>\n'
+            '  </filter>')
+
+
+# CARTO's colours, measured on its own tiles on 5 Oct 2026 (most common pixels, zooms 6, 7 and 10):
+# Voyager land (251,248,243), water (213,232,235), parks (226,237,215); Positron land (250,250,248),
+# water (212,218,220). OpenStreetMap's filter tinted Voyager's sea a third of the way and Positron's
+# not at all, and left both lands white. These take each land to grey 235 and each water to the
+# muted blue OpenStreetMap's water becomes, #bccfd8 (188,207,216): Ethan's grey land and blue water
+# (2 Oct 2026). Water is where blue and green are both above red by about 10/255 (Voyager) or
+# 5/255 (Positron); land, parks, roads and labels are not.
+CARTO_FILTERS = {
+    "voyager": tile_filter("-25 0 25 0 -1", "-30 30 0 0 -1", "-.04", ("-.147", "-.072", "-.037")),
+    "positron": tile_filter("-60 0 60 0 -.8", "-80 80 0 0 -.8", "-.045", ("-.103", "-.028", ".007")),
+}
+TILE_FILTER = re.compile(r'<filter id="tiles".*?</filter>', re.DOTALL)
 OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 _CARTO = {"name": "CARTO", "privacy": "https://carto.com/privacy/",
           "credit": OSM_ATTRIBUTION + ' contributors, &copy; <a href="https://carto.com/attribution/">CARTO</a>'}
@@ -147,8 +178,10 @@ _THUNDERFOREST = {"name": "Thunderforest", "privacy": "https://www.thunderforest
 TILE_PROVIDERS = {
     "osm": {"url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png", "credit": OSM_ATTRIBUTION,
             "name": "The OpenStreetMap Foundation", "privacy": "https://osmfoundation.org/wiki/Privacy_Policy"},
-    "carto-voyager": {**_CARTO, "url": "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=__KEY__"},
-    "carto-positron": {**_CARTO, "url": "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=__KEY__"},
+    "carto-voyager": {**_CARTO, "url": "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=__KEY__",
+                      "filter": CARTO_FILTERS["voyager"]},
+    "carto-positron": {**_CARTO, "url": "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=__KEY__",
+                       "filter": CARTO_FILTERS["positron"]},
     "thunderforest-atlas": {**_THUNDERFOREST, "url": "https://api.thunderforest.com/atlas/{z}/{x}/{y}{r}.png?apikey=__KEY__"},
     "thunderforest-outdoors": {**_THUNDERFOREST, "url": "https://api.thunderforest.com/outdoors/{z}/{x}/{y}{r}.png?apikey=__KEY__"},
 }
@@ -367,7 +400,8 @@ def tile_config() -> dict | None:
 
 
 def with_tiles(html: str, name: str, tiles: dict | None) -> str:
-    """Another tile provider in the app (the map's tile layer and its credit), the privacy notice
+    """Another tile provider in the app (the map's tile layer, its credit and, where the provider
+    has one, its colour filter), the privacy notice
     (who gets your IP address for the map images, with "(map images)" after its date) and the
     terms' map credit. Unchanged with tiles None."""
     if not tiles:
@@ -378,6 +412,10 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
         if before not in html:
             raise ValueError("index.html has lost its tile layer line: build_site.TILE_LINE no longer matches it")
         html = html.replace(before, TILE_LINE.format(**tiles))
+        if tiles.get("filter"):   # tuned to the provider's own colours; Thunderforest keeps OpenStreetMap's
+            if not TILE_FILTER.search(html):
+                raise ValueError('index.html has lost its <filter id="tiles">: build_site.TILE_FILTER no longer finds it')
+            html = TILE_FILTER.sub(lambda _: tiles["filter"], html, count=1)
     if name == "privacy.html":
         html = html.replace(OSM_PRIVACY_LI, f'<li><b>{tiles["name"]}</b>, for the map images. Its '
                                             f'<a href="{tiles["privacy"]}">privacy policy</a> applies.</li>')
