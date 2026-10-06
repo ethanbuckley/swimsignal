@@ -56,6 +56,68 @@ def test_a_single_page_is_not_read_again(monkeypatch):
     assert len(got) == 6 and calls == [0]
 
 
+def _layer_listing_one_id_twice(monkeypatch, tear_first_read: bool = False):
+    """A fake layer like Anglian Water's: A2 is listed twice on the first page, two records with
+    different ObjectIds and every other field the same, in every read. With `tear_first_read`,
+    the layer is also rewritten in a new order after the first page request (as _torn_layer)."""
+    from dipcast import arcgis
+    ids = ["A1", "A2", "A2", "A3", "A4", "A5"]
+    rewritten = ["A2", "A3", "A2", "A5", "A1", "A4"]   # A2 still twice; A1 now on the second page
+    calls = []
+
+    def get(client, url, params):
+        order = rewritten if tear_first_read and len(calls) >= 1 else ids
+        calls.append(params["resultOffset"])
+        off, n = params["resultOffset"], params["resultRecordCount"]
+        feats = []
+        for j, s in enumerate(order[off:off + n]):
+            f = _feature(s, int(s[1:]))
+            f["attributes"]["ObjectId"] = 900 + off + j
+            feats.append(f)
+        return {"features": feats, "exceededTransferLimit": off + n < len(order)}
+
+    monkeypatch.setattr(arcgis, "_get", get)
+    sleeps = []
+    monkeypatch.setattr(arcgis.time, "sleep", sleeps.append)
+    return calls, sleeps
+
+
+def test_an_id_the_layer_lists_twice_on_one_page_is_not_read_again(monkeypatch):
+    """Anglian Water's layer lists AWS00528 twice on its first page in every poll. Until 7 Oct 2026
+    that read as a torn read: every build read Anglian three times and slept 6 s."""
+    from dipcast import arcgis
+    from dipcast.ingest import live
+    calls, sleeps = _layer_listing_one_id_twice(monkeypatch)
+    got = [r["Id"] for r in arcgis.fetch_all("https://x/0", page=PAGE, key="Id")]
+    assert sorted(got) == ["A1", "A2", "A2", "A3", "A4", "A5"]   # what the layer holds, repeat included
+    assert calls == [0, PAGE] and sleeps == []                   # one read, two pages, no pause
+
+    # Downstream the repeat is one overflow.
+    calls, sleeps = _layer_listing_one_id_twice(monkeypatch)
+    real = arcgis.fetch_all
+    monkeypatch.setattr(live, "fetch_all", lambda url, **kw: real(url, page=PAGE, key=kw["key"]))
+    snap = live.fetch_live({"Anglian Water": "https://x/0"}, expected={"Anglian Water": 5.0})
+    assert sorted(snap["site_id"]) == ["A1", "A2", "A3", "A4", "A5"]
+    assert calls == [0, PAGE] and sleeps == []
+
+
+def test_a_torn_read_of_a_layer_that_lists_an_id_twice_is_still_read_again(monkeypatch):
+    """The same layer, rewritten between the two pages of the first read: A1 comes back on both
+    pages and A5 on neither. That read is torn and is read again; the second read is clean."""
+    from dipcast import arcgis
+    calls, sleeps = _layer_listing_one_id_twice(monkeypatch, tear_first_read=True)
+    got = [r["Id"] for r in arcgis.fetch_all("https://x/0", page=PAGE, key="Id")]
+    assert calls == [0, PAGE, 0, PAGE] and len(sleeps) == 1
+    assert sorted(got) == ["A1", "A2", "A2", "A3", "A4", "A5"]
+
+
+def test_keys_on_two_pages():
+    from dipcast.arcgis import _keys_on_two_pages
+    page = lambda *ids: [{"Id": i} for i in ids]  # noqa: E731
+    assert _keys_on_two_pages([page("a", "b", "b"), page("c")], "Id") == 0
+    assert _keys_on_two_pages([page("a", "b"), page("b", "c"), page("a")], "Id") == 2
+
+
 def test_live_snapshot_has_one_row_per_overflow(monkeypatch):
     """A feed that lists an overflow twice (Anglian Water's AWS00528 does) keeps the newest row."""
     from dipcast.ingest import live
