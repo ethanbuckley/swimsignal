@@ -17,7 +17,7 @@ test('a missing day never becomes low', () => {
 });
 test('standing poor advice survives a low daily prediction', () => {
   const poor = {...spot,classification:{class:'poor'}};
-  assert.equal(dayHeadline(poor,'2026-09-30'),'Rated poor: advice against bathing');
+  assert.equal(dayHeadline(poor,'2026-09-30'),'High risk: rated poor, advice against bathing');
   assert.equal(dayLevel(poor,'2026-09-30'),'high');
 });
 test('out of season the water-quality estimate is shown but does not set the level', () => {
@@ -48,7 +48,7 @@ test('the lowest-risk day counts low days among spots with a daily forecast, tie
   assert.equal(bestDay(spots, ['2026-10-09']), null);   // no spot has a level that day
 });
 test('standing ratings and missing coverage are not called daily forecasts', () => {
-  assert.equal(dayHeadline({days:[],classification:{class:'sufficient'}},'2026-10-01'),'Rated sufficient by the Environment Agency');
+  assert.equal(dayHeadline({days:[],classification:{class:'sufficient'}},'2026-10-01'),'Moderate risk: rated sufficient by the Environment Agency');
   // An excellent or good rating no longer makes such a spot "low": the plain level says what is true there.
   assert.equal(dayHeadline({days:[],classification:{class:'excellent'}},'2026-10-01'),'No sewage risk from monitored overflows');
   assert.equal(dayHeadline({days:[]},'2026-10-01'),'No sewage risk from monitored overflows');
@@ -221,15 +221,18 @@ test('a water rated poor names the advice against bathing in its season only, by
   assert.equal(L.inBathingSeason('2026-10-01'), false);
   assert.equal(L.inBathingSeason('2026-05-14'), false);
   // Today is 30 September, the season's last day; tomorrow is out of it. The level is high on both.
-  assert.equal(L.headline(poor), 'Rated poor: advice against bathing');
-  assert.equal(L.dayHeadline(poor, '2026-09-30'), 'Rated poor: advice against bathing');
-  assert.equal(L.dayHeadline(poor, '2026-10-01'), 'Rated poor: advice against bathing from 15 May');
+  // The level and its noun come first, then the reason (6 Oct 2026): "Rated poor" alone left 13 rows
+  // with no level, and "from 15 May" read in October as though the advice began on that date.
+  assert.equal(L.headline(poor), 'High risk: rated poor, advice against bathing');
+  assert.equal(L.dayHeadline(poor, '2026-09-30'), 'High risk: rated poor, advice against bathing');
+  assert.equal(L.dayHeadline(poor, '2026-10-01'), 'High risk: rated poor');
+  assert.deepEqual(L.headParts(poor), ['High risk', 'rated poor, advice against bathing']);
   assert.equal(L.dayLevel(poor, '2026-10-01'), 'high');
   assert.match(L.poorAdvice('2026-09-30'), /^Advice against bathing applies here while the rating is poor/);
   assert.match(L.poorAdvice('2026-10-01'), /^The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September\.$/);
   L.setToday('2026-10-02');
   try { assert.equal(L.headline({...poor, days: poor.days.map((x, i) => ({...x, date: ['2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06'][i]}))}),
-    'Rated poor: advice against bathing from 15 May'); }   // what the alerts say, through headline()
+    'High risk: rated poor'); }   // what the alerts say, through headline()
   finally { L.setToday('2026-09-30'); }
 });
 test('the day table’s † note shows only while a cell carries a †', () => {
@@ -247,7 +250,7 @@ test('the day table’s † note shows only while a cell carries a †', () => {
 // Where the model has nothing to forecast: no monitored overflow within reach upstream, or a lake no
 // river flows into. The level says so in words of its own, with one line under it and the rain.
 const PAGE = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'initial', 'VIEW', 'km', 'dist', 'away',
-  'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'waterEst', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
+  'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
   'listHeadline', 'listPath', 'spotItem', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'dayTable'];
 const plainCtx = () => pageContext(PAGE, {ROOT: {pathname: '/'}});
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
@@ -280,7 +283,6 @@ test('a spot with days but nothing upstream reads "No sewage risk from monitored
   assert.equal(run('markerTip', clearRiver), 'River Duddon, Birks Bridge: No sewage risk from monitored overflows');
   // No E. coli estimate anywhere: the model was fitted on sites with overflows upstream.
   assert.equal(L.ecoliBand(clearRiver, clearRiver.days[0]), null);
-  assert.equal(run('waterEst', clearRiver), '');
   const table = run('dayTable', clearRiver, 0, false, {});
   assert.doesNotMatch(table, /35%/);
   assert.match(table, /E\. coli not shown here<\/b>: estimated only on rivers with monitored overflows upstream/);
@@ -335,10 +337,10 @@ test('a rating or an algae check that raises the level still sets it; excellent 
   assert.equal(L.level({...base, classification: {class: 'good', year: 2025}}), L.NO_OVERFLOWS);
   const sufficient = {...base, classification: {class: 'sufficient', year: 2025}};
   assert.equal(L.level(sufficient), 'moderate');
-  assert.equal(L.headline(sufficient), 'Rated sufficient by the Environment Agency');
+  assert.equal(L.headline(sufficient), 'Moderate risk: rated sufficient by the Environment Agency');
   const poor = {...base, classification: {class: 'poor', year: 2025}};
   assert.equal(L.level(poor), 'high');
-  assert.equal(L.headline(poor), 'Rated poor: advice against bathing');
+  assert.equal(L.headline(poor), 'High risk: rated poor, advice against bathing');
   const algae = {...base, classification: {class: 'excellent', year: 2025}, algae: {date: '2026-09-20', level: 3, phrase: 'enough to be objectionable'}};
   assert.equal(L.level(algae), 'high');
   assert.equal(L.headline(algae), 'High risk: algae at the last check');
@@ -367,7 +369,7 @@ test('a plan row says what the level rests on, and why a spill expected on a low
   s.days[0].expected_spilling_overflows = 1.2;
   s.days[1] = {...s.days[1], expected_spilling_overflows: 2.6, p_ecoli_gt900: 0.3, in_validated_season: true};
   assert.equal(why(s, DATES[0]), 'About 1 of the 3 overflows upstream is expected to spill, but sewage from them is unlikely to reach here.');
-  assert.equal(why(s, DATES[1]), 'All 3 overflows upstream are expected to spill. E.\u00a0coli estimate 30%.');   // in season, so the estimate counts
+  assert.equal(why(s, DATES[1]), 'All 3 overflows upstream are expected to spill. 30% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.');   // in season, so the estimate counts
   s.days[2].expected_spilling_overflows = 0.3;
   assert.equal(why(s, DATES[3]), '');   // no spill figure that day, and nothing else to say
   // The rating, unless the headline already gives it; access not confirmed; nothing upstream.

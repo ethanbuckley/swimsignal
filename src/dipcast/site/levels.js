@@ -127,8 +127,11 @@ const nowBecause = (s, r) => r.by === 'spill' && (s.now || {}).discharging_upstr
 // why the level is high and when the advice applies: "advice against bathing" beside a sentence
 // saying it applies only in summer read as a contradiction in October. One wording for the
 // headline's reason, the rating's sentence, the days' sentence and the alerts.
+// The reason follows the level and its noun ("High risk: rated poor"). Until 6 Oct 2026 it replaced
+// them ("Rated poor: advice against bathing from 15 May"), so 13 rows on the list never said "High
+// risk", and in October "from 15 May" read as though the advice started on that date.
 const inBathingSeason = iso => { const md = String(iso).slice(5, 10); return md >= '05-15' && md <= '09-30'; };
-const poorReason = iso => inBathingSeason(iso) ? 'advice against bathing' : 'advice against bathing from 15 May';
+const poorReason = iso => inBathingSeason(iso) ? 'rated poor, advice against bathing' : 'rated poor';
 const poorAdvice = iso => inBathingSeason(iso)
   ? 'Advice against bathing applies here while the rating is poor, and should be shown on signs at the water.'
   : 'The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September.';   // the council's, not the EA's (above)
@@ -150,7 +153,7 @@ function headParts(s) {
   if (COVER[l]) return [COVER[l], ''];
   if (!daily(s) && rank(algaeLevel(s)) > rank(CLASS_LEVEL[classOf(s)] ?? null)) return [`${cap(l)} risk`, 'algae at the last check'];
   if (!daily(s) || worstNear(s)[0].by === 'record')
-    return advisedAgainst(s) ? ['Rated poor', poorReason(today())] : [`Rated ${classOf(s)} by the Environment Agency`, ''];
+    return [`${cap(l)} risk`, advisedAgainst(s) ? poorReason(today()) : `rated ${classOf(s)} by the Environment Agency`];
   const [r, when] = worstNear(s);
   if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, when === 'right now' ? nowBecause(s, r) : because(r)];
   const x = laterDay(s);
@@ -173,8 +176,56 @@ function dayHeadline(s, iso) {
   if (!daily(s)) return headline(s);
   const x = s.days.slice(0, 5).find(d => d.date === iso), r = x ? risk(s, x) : {level:null};
   if (!r.level) return 'No forecast for this day';
-  if (r.by === 'record') return `Rated poor: ${poorReason(iso)}`;
+  if (r.by === 'record') return `${cap(r.level)} risk: ${poorReason(iso)}`;
   return `${cap(r.level)} risk${rank(r.level) > 0 ? ': ' + because(r) : ''}`;
+}
+// One line on a tile of what the level rests on, saying how the tile's own figure stands to the level
+// above. On 6 Oct 2026 Wharfe at Cromwheel read "High risk" over a spills tile at "Moderate risk", a
+// water tile marked out of season and five days at "High", with nothing to join them up. kind is
+// 'spill', 'water', 'rating', 'algae' or 'now'. iso is a picked day, whose rows show that day's
+// figures; without it the line is for the answer (right now, today and tomorrow) and the tiles,
+// which show today's. Empty where there is nothing to say: no level above (a plain level, a failed
+// forecast), no figure, or a water figure out of season, whose † note already says it is not counted.
+function tileLine(s, kind, iso = null) {
+  const x = iso ? (s.days || []).slice(0, 5).find(d => d.date === iso) : (s.days || [])[0];
+  const c = classOf(s);
+  if (level(s) === NO_FORECAST && !daily(s)) return '';   // a failed forecast: nothing is counted
+  let L, by, when = 'today';
+  if (!daily(s)) { L = ORDER[level(s)] === undefined ? null : level(s);
+    by = rank(algaeLevel(s)) > rank(CLASS_LEVEL[c] ?? null) ? 'algae' : 'record'; }
+  else if (iso) { const r = x ? risk(s, x) : { level: null }; L = r.level; by = r.by; }
+  else { const [r, w] = worstNear(s); L = r.level; by = r.by; when = w; }
+  let t = null;
+  if (kind === 'rating') {
+    if (!c) return '';
+    if (daily(s) ? c !== 'poor' : rank(CLASS_LEVEL[c]) < 1)
+      return daily(s) ? 'Not counted in the level: only a poor rating is.' : 'Not counted in the level: only a rating of sufficient or poor is.';
+    t = CLASS_LEVEL[c];
+  } else if (kind === 'algae') {
+    const a = s.algae; if (!a || nil(a.level)) return '';
+    t = algaeLevel(s);
+    if (!t) return algaeAge(a) > 14 ? 'Over two weeks old, so not counted in the level.' : 'Does not raise the level.';
+  } else if (kind === 'spill') { t = daily(s) && x && hasData(x) ? x.label : null;
+  } else if (kind === 'water') { t = x && !ecoliUntested(x) ? ecoliBand(s, x) : null;
+  } else if (kind === 'now') { if (iso || !daily(s)) return ''; t = risk(s, s.now, true).level; }
+  if (!L || !t) return '';
+  // Right now is named only when it raises the level: at low, the spills tile says it for both.
+  const sets = kind === 'now' ? when === 'right now' && by === 'spill' && rank(L) > 0
+    : t === L && by === { spill: 'spill', water: 'water', rating: 'record', algae: 'algae' }[kind]
+      && !(kind === 'spill' && when === 'right now' && rank(L) > 0);   // set by right now, whose tile says so
+  if (sets) return 'This sets the level above.';
+  if (kind === 'now') return '';
+  if (t === L) return `On its own: ${t} risk too.`;
+  if (rank(t) > rank(L)) return '';
+  // What raises the level above the tile's own.
+  const day = when === 'today' ? 'The' : `${cap(when)}'s`;
+  const raiser = by === 'record' ? `The ${c} rating raises the level to ${L} risk.`
+    : by === 'algae' ? `Algae at the last check raise the level to ${L} risk.`
+    : by === 'water' ? `${day} E. coli estimate raises the level to ${L} risk.`
+    : when !== 'right now' ? `${day} spill forecast raises the level to ${L} risk.`
+    : nowBecause(s, { by }).startsWith('recent') ? `Recent spills raise the level to ${L} risk right now.` : `Spills right now raise the level to ${L} risk.`;
+  // A spills tile under a level set by spills on another day: the raiser says it all.
+  return (kind === 'spill' && by === 'spill' ? '' : `On its own: ${t} risk. `) + raiser;
 }
 // ------------------------------------------------------------------------------ what to do
 // One line under the level saying what to do, as NSW Beachwatch gives an action with each of its
@@ -410,6 +461,6 @@ const overflowNames = c => {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
-    level, dayLevel, headParts, headline, nowBecause, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
+    level, dayLevel, headParts, headline, nowBecause, dayHeadline, tileLine, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }

@@ -135,6 +135,17 @@ those sizes; they were taken off to keep the rule simple.)
   after its water has passed, so the reason is "recent sewage spills" ("Moderate risk right now: recent
   sewage spills"; the answer's line under the level is "Recent sewage spills"). "Sewage spills right now"
   over a Right now tile saying "0 of 60 discharging" read as a contradiction (`nowBecause` in `levels.js`).
+- A level set by the Environment Agency's rating leads with the level, then the reason (6 October
+  2026): "High risk: rated poor", and in the bathing season "High risk: rated poor, advice against
+  bathing". "Rated poor" alone left 13 rows on the list with no level, and in October "advice against
+  bathing from 15 May" read as though the advice began on that date. The rating's tile gives the dates.
+- Every tile the level rests on says in one line, under its figure, how it stands to the level above
+  (6 October 2026, `tileLine` in `levels.js`): "This sets the level above.", "On its own: moderate
+  risk. The poor rating raises the level to high risk.", "Tomorrow's spill forecast raises the level to
+  high risk.", "Not counted in the level: only a poor rating is.", "Does not raise the level." A picked
+  day's rows do the same for that day. A water figure out of season keeps its † note instead. Wharfe at
+  Cromwheel read "High risk" over a spills tile at "Moderate risk" and five days at "High", with
+  nothing to join them up.
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
   (3 October 2026), in the answer, on a saved card, in the list row, the map's tooltip and key,
   and the alerts (the key lists the teal one; an isolated lake sits under its grey "No level"):
@@ -150,7 +161,7 @@ those sizes; they were taken off to keep the rule simple.)
     on sites with overflows upstream. The EA rating, the algae check and the river level stay as
     tiles.
   - A rating of sufficient or poor, or algae at the last check, still sets the level where it
-    raises it ("Rated poor: advice against bathing"). An excellent or good rating no longer makes
+    raises it ("High risk: rated poor"). An excellent or good rating no longer makes
     such a spot "low": that was the same word as a forecast that had looked and found nothing.
   - Before this the page said "No monitored overflows upstream" or "Not covered by the
     forecast", which a swimmer read as "no information".
@@ -942,7 +953,7 @@ gives all four navigation links a single full-width row.
 - **The sites view**, `sites.html#spots=a,b,c&name=…` (`sites.js`), is a prose page for a centre, a club or a
   council: the name as the title, the issue time once with the app's stale notice, then one row a spot
   between hairlines. A row is the name in the serif with its kind under it, the headline in the level's
-  text shade (`headParts`, so "Rated poor", "High risk tomorrow", the plain levels), the reason in one line,
+  text shade (`headParts`, so "High risk", "High risk tomorrow", the plain levels), the reason in one line,
   links to a decision record for today and tomorrow, and the five days as the list's bars (`.week`, read
   out in words). Where the headline already names the later day, the reason is today's spills in the spot
   page's words. On a phone the name goes above, the bars stay beside the headline. An id not in the

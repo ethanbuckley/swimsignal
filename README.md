@@ -515,8 +515,9 @@ snapshot, 18 of them with event times), so the history grows by about 300 more
 rows a day, and an event the old key would have overwritten is now kept: their
 spill-day counts can only rise from now on. On the 2 Oct history, which the old
 key had already de-duplicated, no other company's count changed; and a feed with no
-`LastUpdated` is never current, so South West Water's overflows are not scored
-at all (`unstamped_feed_days` applies this to the days polled before the
+`LastUpdated` is never current, so South West Water's overflows were not scored
+at all until the site read its camelCase `lastUpdated` on 4 Oct; they are scored
+from 5 Oct (`unstamped_feed_days` applies this to the days polled before the
 change, from `poll_log.parquet`, ignoring rows from before the log recorded feed
 ages on 28 Sep 16:51 UTC, when every company's age reads as missing). The feed sees only what is discharging at the
 moment of a poll, a few times a day, so a day of "not discharging" polls cannot
