@@ -79,7 +79,8 @@ test('opening the fold loads the EA panel once, sandboxed, with no referrer, and
   assert.equal(frame.attrs.sandbox, 'allow-popups allow-popups-to-escape-sandbox');   // no scripts, no same-origin
   assert.equal(frame.referrerPolicy, 'no-referrer');
   assert.equal(note.tag, 'p');
-  assert.equal(note.textContent, "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test.");
+  assert.equal(note.innerHTML, "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test. "
+    + `If the panel does not show, open <a href="${PROFILE}">the EA's page</a>.`);   // the closed fold's link, kept for a panel that does not load
   assert.equal(f.scrolled, 1);
   assert.equal(f.block, 'nearest');
   p.close(f); p.open(f);
@@ -100,6 +101,14 @@ test('a site with no rating yet gets the taller frame its panel needs, and so do
   assert.match(css, /details\.ea-today iframe \{[^}]*max-width:343px; height:280px;/);
   assert.match(css, /details\.ea-today iframe\.unrated \{ height:340px; \}/);
   assert.match(css, /@media \(max-width: 374px\) \{ details\.ea-today iframe \{ height:330px; \} details\.ea-today iframe\.unrated \{ height:400px; \} \}/);
+});
+
+test("the line under the panel links the fold's own EA page, escaped", () => {
+  const p = page(), f = fold();
+  const own = 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945&x="1"';
+  f.querySelector = q => q === 'summary' ? f.children[0] : q === 'p a' ? { getAttribute: k => k === 'href' ? own : null } : null;
+  p.open(f);
+  assert.match(f.children[2].innerHTML, /open <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945&amp;x=&quot;1&quot;">the EA's page<\/a>\.$/);
 });
 
 test('the time under the panel is UK time, in winter too', () => {
@@ -141,9 +150,9 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 const spot = frensham({ days: [{ date: '2026-10-04', risk: 0, label: 'low', rain_48h_mm: 0 }], upstream_summary: { overflows: 0 }, contributors: [],
   location: { mode: 'lake' }, assumptions: { max_upstream_km: 60 } });
 
-test('under the five days, the line points to the fold, whose link opens it; without the script, to the EA page', () => {
+test('under the five days, the line says to open the fold, whose link opens it; without the script, to the EA page', () => {
   const line = vm.runInContext('check', pageWith(true))(spot);
-  assert.match(line, /<a href="#ea-today">Today's EA advice<\/a>, below, shows any advice against bathing there today, which this forecast does not include\.<\/p>$/);
+  assert.match(line, / Open <a href="#ea-today">Today's EA advice<\/a>, below, for the Environment Agency's own panel\. It shows any advice against bathing there today, which this forecast does not include\.<\/p>$/);
   assert.doesNotMatch(line, /widget/);
   const without = vm.runInContext('check', pageWith(false))(spot);
   assert.match(text(without), /The EA's page has any advice against bathing there today, which this forecast does not include\.$/);

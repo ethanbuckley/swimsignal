@@ -37,7 +37,9 @@ test('a bathing water: every item with its age and whose it is, in order, and no
   assert.match(r[4].say, /^380 E\.&nbsp;coli per 100&nbsp;ml, taken 24 Sept?: <a href="#about-ecoli">under 900<\/a>\.$/);
   assert.equal(gaps.length, 0);
   const html = ev.evidenceTile(cromwheel(), NOW, BUILT);
-  assert.match(html, /<section class="tile" id="evidence" aria-labelledby="evidence-h"><h2 class="t-lab" id="evidence-h">/);
+  // Folded whole, as the day-by-day numbers are: its figures are on the tiles above it.
+  assert.match(html, /^<details class="tile fold" id="evidence"><summary><span class="t-lab" id="evidence-h">/);
+  assert.ok(html.endsWith('</details>'));
   assert.match(html, /What the level rests on/);
   assert.match(html, /<div class="f-l">Latest lab sample<\/div><div class="f-v">10 days ago<\/div>/);
   assert.doesNotMatch(html, /ev-gap/, 'no gaps, no empty rule');
