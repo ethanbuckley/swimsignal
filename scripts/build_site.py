@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import shutil
@@ -1233,6 +1234,45 @@ def with_counts(html: str, results: list[dict]) -> str:
     return re.sub(r'(<span id="n-bw">)\d+(</span>)', rf"\g<1>{n_bw}\g<2>", html, count=1)
 
 
+# The warning figures on clubs.html, in words, from the live warning table (verification.json's
+# live.warning_table): the share of spills warned of (hit_rate) and the share of warnings followed by a
+# spill (warnings_true), each as the nearest simple fraction. The page's own words stay when the table
+# or a field is missing.
+WARN_FIGURES = re.compile(r'(<span id="warn-figures">).*?(</span>)', re.DOTALL)
+NUMBERS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 7: "seven", 9: "nine", 10: "ten"}
+FRACTIONS = sorted({(n, d) for d in (2, 3, 4, 5, 10) for n in range(1, d) if math.gcd(n, d) == 1}, key=lambda f: f[1])
+
+
+def share_words(p: float) -> str:
+    """A share as words a reader can picture: "about one in five". The nearest of the fractions with 2, 3, 4,
+    5 or 10 below the line (the smaller denominator on a tie); below 1 in 20 and above 19 in 20 it says so."""
+    if p < 0.05:
+        return "fewer than one in twenty"
+    if p > 0.95:
+        return "nearly all"
+    n, d = min(FRACTIONS, key=lambda f: (abs(p - f[0] / f[1]), f[1]))
+    return f"about {NUMBERS[n]} in {NUMBERS[d]}"
+
+
+def day_words(a: pd.Timestamp, b: pd.Timestamp) -> str:
+    """"29 September to 4 October 2026", with the first year only when the years differ."""
+    first = f"{a.day} {a:%B}" + (f" {a.year}" if a.year != b.year else "")
+    return f"{first} to {b.day} {b:%B %Y}"
+
+
+def with_warning_words(html: str, verification: Path) -> str:
+    try:
+        w = json.loads(verification.read_text())["live"]["warning_table"]
+        hit, true = float(w["hit_rate"]), float(w["warnings_true"])
+        a, b = pd.Timestamp(w["first_day"]), pd.Timestamp(w["last_day"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return html   # the hand-written figures stay
+    lead = "It misses most spills." if hit < 0.45 else "It misses about half of all spills." if hit <= 0.55 else "It misses some spills."
+    said = (f"{lead} Its live scores ran from {day_words(a, b)}. At the {escape(str(w.get('level') or 'high'))} risk line, "
+            f"it warned of {share_words(hit)} spills. {share_words(true).capitalize()} of its warnings were followed by a spill.")
+    return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
+
+
 def not_found_page(root: str) -> str:
     """404.html: GitHub Pages serves it for any missing address, at any depth, so every link in it
     is absolute. Before this, a mistyped or outdated link got GitHub's own page, with no way back."""
@@ -1260,7 +1300,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -1279,12 +1319,14 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
-    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html"]:
+    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
         s = (STATIC / name).read_text()
         for a, b in REWRITES:
             s = s.replace(a, b)
         if name == "about.html":
             s = with_counts(s, results)
+        if name == "clubs.html":
+            s = with_warning_words(s, site / "data" / "verification.json")   # build() writes it before the pages
         if name == "coverage.html":
             from dipcast.coastal import render
             s = re.sub(r'<!-- COASTAL_DIRECTORY -->.*?<!-- END_COASTAL_DIRECTORY -->',
@@ -1332,6 +1374,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
+    write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
                                               extra=["support.html"] if support else []))
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
@@ -1533,6 +1576,44 @@ def write_sites(site: Path, token: str | None = None) -> str:
 
 def write_record(site: Path, token: str | None = None) -> str:
     return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "record.js"), token)
+
+
+# A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md, T6): every monitored overflow
+# upstream with its spills and spill hours each year 2021-2025, from the Environment Agency's annual returns
+# (data/processed/annual_returns.parquet, OGL v3, credited in the terms). The list is the spot's
+# data/upstream/<id>.json, which build() writes (write_upstream) before the pages, so the pages can be
+# written again from a downloaded data/ alone. A prose page with no script, in the sitemap beside the
+# spot's page; not in the offline copy, and not on the data page, which lists data files.
+REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, centres and leaders (About links it)
+
+
+def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None) -> int:
+    """spot/<id>/profile/index.html for each spot (each with a page), joining its data/upstream/<id>.json
+    to the annual returns. A spot with no file gets a short page saying why. Returns the number of pages
+    with overflows listed."""
+    from dipcast import profile
+    lists = {}
+    for r in spots:
+        f = site / "data" / "upstream" / f"{r['id']}.json"
+        if f.exists():
+            lists[r["id"]] = pd.DataFrame(json.loads(f.read_text()).get("overflows") or [])
+    wide = None
+    if any(len(t) for t in lists.values()):
+        path = returns or profile.RETURNS
+        try:   # read once, pivot once, for every spot's overflows
+            ids = set().union(*(set(t["site_id"]) for t in lists.values() if len(t)))
+            wide = profile.yearly(profile.load_returns(path), ids)
+        except Exception as e:  # noqa: BLE001 - the history beside the forecast must not stop the site
+            announce(f"overflow history pages without the annual returns ({path}): {e}")
+            wide = profile.yearly(pd.DataFrame(columns=profile.RETURN_FIELDS))
+    n = 0
+    for r in spots:
+        t = lists.get(r["id"])
+        t = profile.with_returns(t, wide=wide) if t is not None and len(t) else None
+        n += t is not None
+        (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
+        (site / "spot" / r["id"] / "profile" / "index.html").write_text(with_counter(profile.site_page(r, t, MARK), token))
+    return n
 
 
 def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> None:

@@ -145,4 +145,9 @@ def coverage_page():
     return FileResponse(STATIC / "coverage.html", headers=NO_CACHE)
 
 
+@app.get("/clubs")
+def clubs_page():
+    return FileResponse(STATIC / "clubs.html", headers=NO_CACHE)
+
+
 app.mount("/static", StaticFiles(directory=STATIC), name="static")

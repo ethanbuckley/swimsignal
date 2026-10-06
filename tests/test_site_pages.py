@@ -62,7 +62,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 13 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html and record.html
+    assert sm.count("<url>") == 16 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html and two profiles
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
     assert "<loc>https://example.org/swim/data.html</loc>" in sm and (tmp_path / "data.html").exists()
@@ -97,7 +97,7 @@ def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(t
     about = (tmp_path / "about.html").read_text()
     assert '<span id="n-spots">2</span> spots, <span id="n-bw">1</span> of them designated' in about
     # The server's absolute links become the static site's relative files, on every page.
-    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "testing.html", "feedback.html", "methods.html", "coverage.html"]:
+    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "testing.html", "feedback.html", "methods.html", "coverage.html", "clubs.html"]:
         page = (tmp_path / name).read_text()
         assert 'href="about.html">About</a>' in page, name
         assert 'href="/' not in page, name
@@ -463,7 +463,7 @@ def test_the_api_server_sends_its_home_page_to_the_site_and_keeps_the_prose_page
             assert r.status_code == 307 and r.headers["location"] == want, env
         c = TestClient(api.app)
         assert not (api.STATIC / "index.html").exists()
-        for path in ("/about", "/verification", "/terms", "/privacy", "/feedback", "/testing", "/methods", "/static/page.css", "/static/fonts/SourceSans3-latin.woff2"):
+        for path in ("/about", "/clubs", "/verification", "/terms", "/privacy", "/feedback", "/testing", "/methods", "/static/page.css", "/static/fonts/SourceSans3-latin.woff2"):
             assert c.get(path).status_code == 200, path
     finally:
         monkeypatch.undo()

@@ -102,7 +102,8 @@ def test_rules_use_the_tokens():
     sheets = {"index.html": app_css(), "page.css": CSS.read_text(), "verification.html": styles(STATIC / "verification.html"),
               "embed.html": styles(APP.parent / "embed.html"), "organisers.html": styles(APP.parent / "organisers.html"),
               "sign.html": styles(APP.parent / "sign.html"), "sites.html": styles(APP.parent / "sites.html"),
-              "record.html": styles(APP.parent / "record.html")}
+              "record.html": styles(APP.parent / "record.html"),
+              "profile.html": styles(APP.parent / "profile.html")}
     for name, css in sheets.items():
         body = rules(css)
         # One radius (and the mark's and a link's focus ring, as tokens); circles and round badges.

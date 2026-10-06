@@ -1,0 +1,99 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clubs, centres and leaders · SwimSignal</title>
+<meta name="description" content="For clubs, activity centres, Scouts and Guides leaders, schools and event organisers who take groups into rivers and lakes in England: what SwimSignal's pollution risk levels mean for a group, and the tools to plan a session.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="/static/page.css">
+<link rel="preload" href="/static/fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin></head><body>
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="/">Explore</a><a href="/verification">Accuracy</a><a href="/about">About</a><a href="/feedback">Feedback</a></nav></header>
+<main class="doc">
+<!-- The page for groups (docs/MARKETS-2026-10.md, T7). The action lines quoted here are levels.js's ACTION,
+     veryHighAction and PLAIN_ACTION word for word, and OTHER_RISKS; tests/test_clubs_page.py checks them.
+     Quotes, each opened and read on 6 October 2026:
+       Paddle UK, "Water Quality - Don't get sick doing what you love",
+         https://paddleuk.org.uk/water-quality-dont-get-sick-doing-what-you-love/ : the two questions, and
+         "Some paddlers will be more immersed in the water such as freestyle paddlers or those carrying out capsize drills."
+       The Scouts, "Water safety (waterborne diseases and immersion)" (published January 2022),
+         https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/general-water-activities/water-safety-waterborne-diseases-and-immersion/
+       The RYA, "Water quality: our position", https://www.rya.org.uk/making-a-difference/water-quality-our-position/
+     The warning figures in #warn-figures are filled at build time from data/verification.json's live warning_table
+     (build_site.with_warning_words); the words here are the fallback, from the table of 29 Sep to 4 Oct 2026:
+     hit_rate 0.21, warnings_true 0.41. Searched and not quoted: AALA (HSE's licensable activities page says nothing on water quality). -->
+<h1>For clubs, centres and leaders</h1>
+<p class="lead">This page is for clubs, activity centres, Scouts and Guides leaders, schools and event organisers. It covers swimming, ghyll scrambling, gorge walking, paddling, sailing, windsurfing and rowing on rivers and lakes in England. SwimSignal forecasts the risk of sewage pollution at a spot for the next five days.</p>
+
+<aside class="summary" aria-labelledby="limits-h">
+<h2 id="limits-h">What it cannot do</h2>
+<ul>
+<li>It is a forecast, not a water test. Nothing on the site says the water is safe.</li>
+<li><span id="warn-figures">It misses most spills. Its first live scores ran from 29 September to 4 October 2026. At the high risk line, it warned of about one in five spills. About two in five of its warnings were followed by a spill.</span> The <a href="/verification">accuracy page</a> has the latest figures.</li>
+<li>It sees monitored storm overflows only. It does not see farm runoff, livestock, wildlife, misconnected drains or a pollution incident.</li>
+<li>The level is about pollution only. Cold water, currents and high water stay in your own risk assessment.</li>
+<li>It covers rivers and lakes in England. Coasts are not forecast.</li>
+</ul>
+</aside>
+
+<h2>The same level, different exposure</h2>
+<p>A spot's level is the same for every activity. What differs is how wet people get. Sewage bacteria and viruses get in through the mouth and through cuts. A group that goes under is more exposed than one that stays dry.</p>
+<dl class="fields">
+<dt>Swimming</dt><dd>Full immersion. Swimmers swallow some water, and children swallow more.</dd>
+<dt>Ghyll scrambling and gorge walking</dt><dd>Full immersion, in jumps, pools and slides. The groups are often children with an activity centre.</dd>
+<dt>Kayaking, canoeing and paddleboarding</dt><dd>Mostly on the water. Falls, capsize drills and rolling put heads under.</dd>
+<dt>Dinghy sailing and windsurfing</dt><dd>On lakes and reservoirs mostly. A capsize or a fall puts people in the water.</dd>
+<dt>Rowing</dt><dd>Splashes from the oars. A fall in is rare.</dd>
+</dl>
+<p>Paddle UK's guidance makes the same point: "Some paddlers will be more immersed in the water such as freestyle paddlers or those carrying out capsize drills." SwimSignal does not set a different level for each activity. That judgement stays with you.</p>
+
+<h2>What the levels mean for a group in the water</h2>
+<p>There are four levels: low, moderate, high and very high risk. The <a href="/methods#level">table on the method page</a> shows what sets each one. Each spot's page puts one line under its level, saying what to do. The lines are written for swimmers. For a group, read "swimming" as any activity that puts people in the water.</p>
+<dl class="fields">
+<dt>Moderate risk</dt><dd>Take more care: young children, older people and anyone with a weakened immune system may want a lower day or spot.</dd>
+<dt>High risk</dt><dd>Better to choose a lower day or spot. If you do swim, try not to swallow any water.</dd>
+<dt>Very high risk</dt><dd>Avoid swimming here: choose a lower day or spot. The page names the day, as in "Avoid swimming here tomorrow".</dd>
+</dl>
+<p>All the lines, and the health advice they rest on, are under <a href="/methods#actions">what to do at each level</a>.</p>
+
+<h2>Ghylls and upland becks</h2>
+<p>Many ghylls and upland becks have no monitored storm overflow upstream. Their level then reads "No sewage risk from monitored overflows". That does not mean the water is clean. Livestock, wildlife and runoff after rain still carry bacteria into becks. So the page keeps one line in view: "Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water." Its advice there is "After heavy rain, wait a couple of days before swimming if you can."</p>
+
+<h2>A launch point or a ghyll that is not listed</h2>
+<p>Tap the river or lake on <a href="/">the map</a>. SwimSignal traces the overflows upstream of that point and gives its five days. It works for any river or lake in England on Ordnance Survey's river network. A tapped point has no E. coli estimate, since that needs the rain at a listed spot.</p>
+
+<h2>Paddle UK's two questions</h2>
+<p>Paddle UK's <a href="https://paddleuk.org.uk/water-quality-dont-get-sick-doing-what-you-love/">water quality guidance</a> asks paddlers a few questions before they go out. A spot's page answers two of them.</p>
+<dl class="fields">
+<dt>"Has there been heavy rainfall or extended dry periods in recent days?"</dt><dd>The page gives the rain at the spot in the 48 hours to midday today. It names the wettest day ahead when rain is coming. The five days are forecast from the rain on the overflows upstream. Where nothing upstream is monitored, the five days show the rain itself. SwimSignal does not judge dry spells.</dd>
+<dt>"Are there CSOs upstream of your paddling location?"</dt><dd>A CSO is a combined sewer overflow. The spot's page lists the monitored storm overflows upstream, and says how many are discharging now. The <a href="/organisers.html">organisers' page</a> lists every one as a table and a CSV file. The overflow history page gives each one's spills from 2021 to 2025.</dd>
+</dl>
+
+<h2>The Scouts' rule</h2>
+<p>The Scouts' <a href="https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/general-water-activities/water-safety-waterborne-diseases-and-immersion/">water safety guidance</a> says: "No water based activity should proceed if there are any concerns around water contamination in the planned location." It asks leaders to consider where sewage discharges and overflows are, and recent rain.</p>
+<p>SwimSignal can give you a reason for concern: a high or very high risk day, or an overflow upstream discharging now. It cannot clear one. A low risk day means only that nothing the site looks at flags it.</p>
+
+<h2>Tools for planning a session</h2>
+<dl class="fields">
+<dt><a href="/organisers.html">The organisers' page</a></dt><dd>Pick a spot and a day. It gives that day's level within the five days, every overflow upstream as a table and a CSV file, and a checklist.</dd>
+<dt>A sign to print</dt><dd>Each spot has one, with a QR code to its page. It shows no level, since a printed level goes out of date. The organisers' page links it.</dd>
+<dt>A live sign for a screen</dt><dd>The forecast card, large, updating itself. For a clubhouse or a centre's reception. The organisers' page links it.</dd>
+<dt><a href="/about#embed">The embed card</a></dt><dd>One spot's forecast on your own web page. The <a href="/terms">terms</a> allow it on a non-commercial website only, with the card shown whole. Ask first about any other use: email <a href="mailto:hello@swimsignal.co.uk">hello@swimsignal.co.uk</a>.</dd>
+<dt><a href="sites.html">A sites view</a></dt><dd>Your launch points in one table, each with its five days, on one printable page.</dd>
+<dt><a href="record.html">A decision record</a></dt><dd>One printable page for a site and a day, with the inputs, their ages and blank lines for your decision.</dd>
+<dt><a href="spot/bw-uke4100-08901/profile/">Overflow history</a></dt><dd>Each spot's overflows upstream, with their spills and spill hours each year from 2021 to 2025. Its spot page links it. The link here is the Wharfe at Ilkley's.</dd>
+</dl>
+
+<h2>If you see pollution</h2>
+<p>Report it to the Environment Agency on <a href="tel:0800807060">0800 80 70 60</a>, at any hour. In Wales, call Natural Resources Wales on <a href="tel:03000653000">0300 065 3000</a>.</p>
+
+<h2>On the coast</h2>
+<p>Coasteering, sea kayaking and surfing are outside the forecast. The <a href="/coverage">coverage page</a> links the official results for each English beach.</p>
+
+<h2>Governing bodies</h2>
+<p>The RYA, the body for sailing and windsurfing, calls for "real-time informed choices about where and when to participate" in its <a href="https://www.rya.org.uk/making-a-difference/water-quality-our-position/">water quality position</a>. None of the bodies named on this page endorses SwimSignal.</p>
+<p>Tell us what your group needs: <a href="/feedback">feedback</a> or <a href="mailto:hello@swimsignal.co.uk">hello@swimsignal.co.uk</a>.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>
