@@ -28,6 +28,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast.ingest.live import expected_rows, is_short
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
 from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
@@ -551,16 +552,19 @@ class BuildUnhealthy(RuntimeError):
 
 
 def live_feed_health(poll_log: pd.DataFrame | None) -> dict | None:
-    """Rows per company in the last poll and the one before, from poll_log.parquet, and
-    the companies whose feed returned none in the last poll. None without a poll log."""
+    """Rows per company in the last poll and the one before, from poll_log.parquet, the
+    companies whose feed returned none in the last poll, and those whose read was short
+    against their usual size before it (ingest.live.is_short). None without a poll log."""
     if poll_log is None or poll_log.empty:
         return None
     times = sorted(poll_log["fetched_at"].unique())
     rows = lambda t: {str(k): int(v) for k, v in poll_log.loc[poll_log["fetched_at"] == t].groupby("company")["n_rows"].sum().items()}
     last = rows(times[-1])
     prev = rows(times[-2]) if len(times) > 1 else {}
+    usual = expected_rows(poll_log[poll_log["fetched_at"] < times[-1]])
     return {"polled_at": str(pd.Timestamp(times[-1])), "rows": last, "previous_rows": prev,
-            "down": sorted(c for c, n in last.items() if n == 0)}
+            "down": sorted(c for c, n in last.items() if n == 0),
+            "short": {c: {"rows": n, "usual": usual[c]} for c, n in sorted(last.items()) if is_short(n, c, usual)}}
 
 
 def snapshot_duplicates() -> list[str]:
@@ -621,6 +625,10 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
             health["warnings"].append(f"{c}'s live overflow feed returned no rows at {feeds['polled_at']} "
                                       f"(previous poll: {'no record' if before is None else before} rows); "
                                       "its overflows show their last snapshot, marked feed down")
+        for c, n in feeds["short"].items():
+            health["warnings"].append(f"{c}'s live overflow feed returned {n['rows']} rows at {feeds['polled_at']}, where it "
+                                      f"usually has {n['usual']:.0f}, after reading again; the missing overflows show their "
+                                      "last snapshot, marked feed down")
     if ecoli_samples:
         s = ecoli_samples
         health["ecoli_samples"] = {k: s.get(k) for k in ("checked_at", "n_sites", "n_failed", "last_ok_at", "sources")}
