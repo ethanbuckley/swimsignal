@@ -550,8 +550,8 @@ temperature is never estimated.
 
 ### Swimmers' reviews (3 October 2026)
 
-Reviews (`reviews.js`; the service is `reviews/`) are one more tile with the same anatomy, after the
-others and before the Upstream map and the overflows, so the forecast still comes first. Its figure
+Reviews (`reviews.js`; the service is `reviews/`) are one more tile with the same anatomy, the last of
+the part about the water, after the guide and the notes (see "A swimmer's order"). Its figure
 is the share who would swim there again, "75% would swim here again", shown from three reviews
 (fewer would make a percentage of one or two people), drawn as a bar in ink: a score is not a level,
 so it never takes a level's colour, and no tomato, star or thumb stands in for the words. Under the
@@ -567,8 +567,8 @@ chip does.
 ### Practical guides (3 October 2026)
 
 The practical guide (`guide.js`; the facts are hand-written in `guides/`, whose README has the
-format) is one more tile with the same anatomy, after the forecast's tiles and before the reviews:
-facts first, then opinion. Its label is "Practical guide" with a signpost icon from the stroke set.
+format) is one more tile with the same anatomy, in the part about the water, after the EA's rating and
+before the notes and the reviews: facts first, then opinion. Its label is "Practical guide" with a signpost icon from the stroke set.
 Its first line says how far to trust the whole tile: "Checked 3 Oct 2026 from the published pages
 linked below, not on site", or "Checked on site", and past a year that fees, opening times and paths
 may have changed. Then the facts as a ruled list, a topic's name over its facts, in the order a
@@ -601,7 +601,7 @@ Since 4 October 2026:
 
 A review describes the place; a note describes a day. The notes (`visits.js`; the service is the
 reviews Worker in `reviews/`) are one more tile, "Recent visits", with a flag from the stroke set.
-The order after the forecast's tiles is the guide, the notes, the reviews. The tile is there only
+The order in the part about the water is the guide, the notes, the reviews. The tile is there only
 while reviews are on, and never on a point clicked on the map.
 
 - A note is ticks from a fixed list ("Entry steps or path damaged", "Car park closed", "Very busy",
@@ -654,7 +654,8 @@ thermometer from the stroke set. No report is ever shown, only counts, from five
 
 ### What the level rests on (4 October 2026)
 
-One tile (`evidence.js`) after the forecast's tiles and before the practical guide. It lists the
+One tile (`evidence.js`) after the forecast's tiles, folded whole as the day-by-day numbers are (6 October
+2026: its figures are on the tiles above it). It lists the
 evidence the level rests on, each item with how old it is and whose it is, and then says what there is
 none of here. Its figures are already on the tiles above it. This is the one place where their ages and
 sources sit together, and the only place with the latest lab sample.
@@ -706,9 +707,18 @@ advice" (`eatoday.js`), as each English coastal site on the coverage page has (#
   cut the EA's credit line off six panels at every width and seven on a 320 px phone.
 - Under it, muted, in the notes' size: "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It
   shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test."
-- The line under the five days points to it, and its link opens the fold: "Today's EA advice, below,
-  shows any advice against bathing there today, which this forecast does not include." The rating's
-  sentence no longer says the page lacks the advice.
+- The line under the five days points to it, and its link opens the fold: "Open Today's EA advice, below,
+  for the Environment Agency's own panel. It shows any advice against bathing there today, which this
+  forecast does not include." (6 October 2026: it said the fold "shows" the advice, but the fold shows
+  nothing until it is opened, and the page may not open it for the reader, since the privacy notice says
+  the EA is asked only when you choose to.) The rating's sentence no longer says the page lacks the advice.
+- The line under the panel ends "If the panel does not show, open the EA's page.", linked (6 October 2026).
+  The closed fold's link to the EA's page was replaced by the frame, so a panel that did not load (offline,
+  or a frame the browser blocks) left no way to the advice.
+- Out of season the panel still shows an open incident: on 6 October 2026 Frensham Great Pond's read
+  "Bathing is not advised today due to pollution from harmful algae", Hampstead Heath (Mixed Pond)'s
+  "Pollution forecasts will resume when the season starts", and Wharfe at Cromwheel's, rated poor,
+  "Bathing is not advised".
 - It never sets the level, since the page cannot read the frame. It is not in the embed, the organisers'
   sign or the alerts.
 
@@ -771,6 +781,39 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
   Ireland, the Environmental Protection Agency's beaches.ie in the Republic, and in Wales and Scotland the
   coverage page, which links to Natural Resources Wales and the Scottish Environment Protection Agency.
   The words say who publishes what, and nothing about the water.
+
+### A swimmer's order (6 October 2026)
+
+A spot's page had grown to 7,087 px at 375 px wide (Wharfe at Cromwheel, about nine screens), and its
+order followed when each part was built: ten tiles of readings came before the practical guide, the notes
+and the reviews, and the Upstream map was near the bottom. The page now follows a swimmer's questions, in
+three parts, with no heading of their own (each tile keeps its label, and no eyebrow is added):
+
+- **Should I go**: the answer, the five days, the phone's small map, Nearby or Lower risk nearby.
+- **At the water**: the Environment Agency rating, with Today's EA advice at its foot, then the practical
+  guide, the notes on a visit and the reviews (and the illness counts, when on). The rating leads because
+  it carries the Agency's advice, which stays in view, and because Today's EA advice is the box the line
+  under the five days sends the reader to.
+- **Why**: "Where the risk comes from" in words, the Upstream map (phones), the tiles of readings, What the
+  level rests on, the overflows that matter most and the day-by-day numbers. The last three fold whole,
+  with the tile's label as the summary, since their figures are on the tiles above or on the map. The
+  overflows' explanation, in a tile's corner fold elsewhere, sits under the rows once the tile is open,
+  because the corner would sit on the fold's own chevron.
+
+The order is the DOM's, not CSS `order`, so the keyboard and a screen reader meet the parts in the same
+order: after a spot opens the focus is on its name, and the next Tab stops are the five days, the EA
+advice link, the map button, Nearby, the rating, the guide, the notes and the reviews. The notes and the
+reviews still mount after `#guide`, which stays a child of `.stack`. A tile added after What the level rests
+on falls inside Why without any change here. Nothing was removed.
+
+Measured at 375 px on the data of 6 October 2026 (Wharfe at Cromwheel; y is from the top of the page): the
+page is 6,079 px, from 7,087; the part about the water starts at 1,642 px, where the practical guide was
+at 3,685 and the reviews at 4,839; Why starts at 3,289. At 1,440 px the panel is 5,030 px, from 5,929. A
+spot with no overflows (Semerwater) is 3,644 px, from 3,866; a point off the list, 3,755 from 4,177.
+
+Two other orders were shown to Ethan with this one: the same order with nothing folded (7,087 px, the
+same as before), and the whole of Why under one fold (4,193 px), which hides the readings' tiles and the
+map he chose in the seventh round.
 
 ### What was kept on purpose
 

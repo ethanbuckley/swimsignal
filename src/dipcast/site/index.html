@@ -366,6 +366,7 @@
      rating yet, whose panel adds "This newly-designated site does not have ...", 314 and 378 (Ham and
      Kingston's). A taller panel scrolls inside; a shorter one leaves the EA's white below it. */
   details.ea-today { margin:12px 0 -4px; border-top:1px solid var(--hair); }
+  #ea-today { scroll-margin-top:calc(var(--header-h) + 8px); }   /* the line under the five days lands on it clear of a phone's sticky header */
   details.ea-today > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; font-size:var(--fs-note); font-weight:600; }
   details.ea-today > summary::-webkit-details-marker { display:none; }
   details.ea-today > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
@@ -474,6 +475,7 @@
   ul.ovs li { display:flex; gap:10px; align-items:flex-start; padding:12px 0; border-top:1px solid var(--hair); }
   ul.ovs li:first-child { border-top:0; padding-top:6px; }
   #contrib:not(.all) li.extra { display:none; }
+  #overflows > .sub { margin:10px 0 0; }
   .sdot { flex:none; width:12px; height:12px; border-radius:50%; margin-top:5px; background:var(--unknown); }
   .sdot.s1 { background:var(--veryhigh); } .sdot.s0 { background:var(--ov-quiet); }
   .ov-main { flex:1; min-width:0; }
@@ -1357,7 +1359,7 @@ const check = d => { const url = (d.classification || {}).url;
   return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source === 'unlisted' ? ''
     : d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
-    : typeof eaTodayFold === 'function' && eaTodayFold(d) ? ' <a href="#ea-today">Today\'s EA advice</a>, below, shows any advice against bathing there today, which this forecast does not include.'
+    : typeof eaTodayFold === 'function' && eaTodayFold(d) ? ' Open <a href="#ea-today">Today\'s EA advice</a>, below, for the Environment Agency\'s own panel. It shows any advice against bathing there today, which this forecast does not include.'
     : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`
     + (d.access ? `<p class="check"><b>Access:</b> ${esc(d.access.text)}${/^https:\/\//.test(d.access.url || '') ? ` <a href="${esc(d.access.url)}">Authority guidance</a>.` : ''} Desk check ${esc(d.access.checked_at)}; current signs have not been inspected.</p>` : ''); };
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
@@ -2717,11 +2719,13 @@ function overflowTile(d, total) {
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${far}&nbsp;km upstream, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>spill ${Math.round(c.p_spill_today * 100)}% today</small></div></li>`; }).join('');
-  return `<div class="tile"><h2 class="t-lab">${ICON.spills}<span>Overflows that matter most</span></h2><ul class="ovs" id="contrib">${rows}</ul>`
+  // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
+  // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
+  return `<details class="tile fold" id="overflows"><summary><span class="t-lab">${ICON.spills}<span>Overflows that matter most</span></span></summary><ul class="ovs" id="contrib">${rows}</ul>`
     + (n > SHOW ? `<button type="button" class="btn quiet" id="more-contrib" aria-controls="contrib" aria-expanded="false">Show all ${n}</button>` : '')
     + (PAGE_ID.test(d.id) ? `<p class="t-say"><a href="spot/${d.id}/profile/">Overflow history, 2021 to 2025</a></p>` : '')   // spot/<id>/profile/ (build_site.write_profiles)
-    + `<details class="t-more"><summary><span class="sr">Overflows that matter most: what this means</span></summary><p>Live status, and today's modelled chance of a spill${total > n ? `: the ${n} with the most reach of ${total} upstream` : ''}. `
-    + 'Reach: the chance a spill there affects this spot, from die-off over the travel time and dilution by the size of the river network upstream.</p></details></div>';
+    + `<p class="sub">Live status, and today's modelled chance of a spill${total > n ? `: the ${n} with the most reach of ${total} upstream` : ''}. `
+    + 'Reach: the chance a spill there affects this spot, from die-off over the travel time and dilution by the size of the river network upstream.</p></details>';
 }
 // "Nearby": up to three other spots within 40 km, nearest first, each opening on the day shown (DAY,
 // or else the headline). At a spot that is moderate or worse that day, or rated poor, it becomes
@@ -2769,25 +2773,30 @@ function render(d) {
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:
   // above, on a small phone, it pushed the level below the fold.
   const where = `<div class="loc phone-only"><div id="loc-map" aria-hidden="true"></div><button type="button" class="loc-open" id="loc-open" aria-label="Open map at ${esc(d.name)}">Open map</button></div>`;
-  // After the forecast's tiles, what the level rests on (evidence.js): each item's age and source, and
-  // what there is none of here. Then the practical guide (guide.js): parking, paths, entry and exit, fees.
-  const tiles = `<div class="tiles">${facts(d).map(tile).join('')}</div>`
-    + (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
+  // The page follows a swimmer's questions: should I go (the answer, the five days, nearby), what is it
+  // like at the water, and why. At the water: the EA's rating with today's advice at its foot, since an
+  // advice sentence stays in view, then the practical guide (guide.js), after which the notes on a visit
+  // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
+  const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
+  const tiles = `<div class="tiles">${fx.filter(o => o.icon !== ICON.rating).map(tile).join('')}</div>`
+    + (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '');
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="tile">${factors(d)}${check(d)}</div>${where}${tiles}`
+    h += `<div class="stack"><div class="tile">${factors(d)}${check(d)}</div>${where}${atWater}${tiles}`
       + `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div>` + actions(d);
     setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
   }
   h += `<div class="stack"><section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
     + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div id="day-view"></div>${check(d)}</section>${where}`
-    + `<div id="nearby-host">${nearby(d)}</div>${tiles}`;   // Nearby after the answer, before the detail; showDay keeps it to the day
+    + `<div id="nearby-host">${nearby(d)}</div>${atWater}`;   // Nearby after the answer, before the detail; showDay keeps it to the day
+  // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
+  h += `<div id="sources-host">${whereFrom(d)}</div>`;
   if (total) h += `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
     + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p></div>`;
-  h += `<div id="sources-host">${whereFrom(d)}</div>`;   // where the risk comes from, before the overflows; showDay keeps it to the day
+  h += tiles;
   if (d.contributors.length) h += overflowTile(d, total);
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div>';
   h += actions(d) + tech(d);

@@ -128,15 +128,16 @@ function evidenceItems(d, nowMs, generatedAt) {
 }
 
 // The tile: a row for each item, its age on the right, as a picked day's rows (factorRow in index.html),
-// then the gaps under a hairline, a line each.
+// then the gaps under a hairline, a line each. Folded whole, as the day-by-day numbers are: its figures
+// are on the tiles above it, so the page's "why" part stays short until a reader asks for the sources.
 function evidenceTile(d, nowMs, generatedAt) {
   if (!d || d.unlisted || d.error) return '';
   const { rows, gaps } = evidenceItems(d, nowMs, generatedAt);
   if (!rows.length && !gaps.length) return '';
-  return `<section class="tile" id="evidence" aria-labelledby="evidence-h"><h2 class="t-lab" id="evidence-h">${evidenceIcon()}<span>What the level rests on</span></h2>`
+  return `<details class="tile fold" id="evidence"><summary><span class="t-lab" id="evidence-h">${evidenceIcon()}<span>What the level rests on</span></span></summary>`
     + (rows.length ? `<div class="factors">${rows.map(r => `<div class="factor"><div class="f-l">${r.what}</div><div class="f-v">${r.age}</div>`
       + `<div class="f-d">${r.say}</div><div class="f-src">${r.src}.</div></div>`).join('')}</div>` : '')
-    + (gaps.length ? `<div class="ev-gap">${gaps.map(g => `<p>${g}</p>`).join('')}</div>` : '') + '</section>';
+    + (gaps.length ? `<div class="ev-gap">${gaps.map(g => `<p>${g}</p>`).join('')}</div>` : '') + '</details>';
 }
 
 if (typeof module === 'object' && module.exports) {
