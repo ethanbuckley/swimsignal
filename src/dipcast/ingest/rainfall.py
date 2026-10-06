@@ -28,13 +28,18 @@ FORECAST_BATCH = 50  # forecast: short series, so many cells per request; fewer 
 
 
 def grid_cell(lat: float | np.ndarray, lon: float | np.ndarray) -> tuple:
-    """Snap to the centre of a RAIN_GRID_DEG cell. Returns (cell_lat, cell_lon)."""
+    """Snap to the centre of a RAIN_GRID_DEG cell. Returns (cell_lat, cell_lon). Adding 0.0 turns
+    -0.0 (a point just west of the Greenwich meridian) into 0.0, so each cell has one value."""
     d = config.RAIN_GRID_DEG
-    return (np.round(np.round(np.asarray(lat) / d) * d, 3), np.round(np.round(np.asarray(lon) / d) * d, 3))
+    return (np.round(np.round(np.asarray(lat) / d) * d, 3) + 0.0, np.round(np.round(np.asarray(lon) / d) * d, 3) + 0.0)
 
 
 def cell_key(cell_lat: float, cell_lon: float) -> str:
-    return f"{cell_lat:.3f}_{cell_lon:.3f}"
+    """The cache name of a cell. -0.0 and 0.0 are the same cell and get the same name: "-0.000"
+    and "0.000" were two names for one file, so a cell the prefetch had saved under one was
+    fetched again under the other. That second request failed River Great Ouse, Overcote
+    (lon -0.004) in most scheduled builds from 3 to 6 Oct 2026."""
+    return f"{cell_lat + 0.0:.3f}_{cell_lon + 0.0:.3f}"
 
 
 def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5) -> list[dict] | dict:

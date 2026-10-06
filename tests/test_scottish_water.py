@@ -170,8 +170,8 @@ def test_refresh_all_polls_scotland_only_when_the_setting_is_on(monkeypatch):
     from dipcast import config, forecast_log, jobs, overflows
     from dipcast.ingest import live, scottish_water
     polled = []
-    monkeypatch.setattr(live, "fetch_live", lambda: pd.DataFrame({"status": [0]}))
-    monkeypatch.setattr(live, "save_live", lambda df: None)
+    monkeypatch.setattr(live, "fetch_live", lambda **kw: pd.DataFrame({"status": [0]}))
+    monkeypatch.setattr(live, "save_live", lambda df, *a: None)
     monkeypatch.setattr(overflows, "build_overflows", lambda net: pd.DataFrame({"site_id": ["A"]}))
     monkeypatch.setattr(forecast_log, "verify_live", lambda: {"n_scored": 0})
     monkeypatch.setattr(scottish_water, "poll", lambda: polled.append(1) or {"ok": True})

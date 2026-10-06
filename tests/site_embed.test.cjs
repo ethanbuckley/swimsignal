@@ -61,7 +61,7 @@ test('a bathing water links the Environment Agency page, and a poor one says so 
   const bw = {...river, id: 'bw-x', source: 'designated', classification: {class: 'poor', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/x'}};
   const h = Embed.card(bw, DATA, NOW);
   assert.ok(h.includes('<a href="https://environment.data.gov.uk/bwq/profiles/x" target="_blank" rel="noopener">The Environment Agency’s page</a> has any advice against bathing there today'));
-  assert.ok(h.includes('Rated poor: advice against bathing from 15 May') && h.includes('At least high risk every day'));
+  assert.ok(h.includes('High risk: rated poor') && !h.includes('from 15 May') && h.includes('At least high risk every day'));
   assert.equal((h.match(/<span class="l">High<\/span>/g) || []).length, 5);   // the rating holds every day at high, even one without rain data
   assert.ok(!Embed.card(river, DATA, NOW).includes('Environment Agency’s page'));   // not a bathing water
 });

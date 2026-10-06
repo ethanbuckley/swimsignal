@@ -219,3 +219,32 @@ def test_a_cached_overflow_table_with_a_repeated_id_loads_one_row_each(tmp_path,
                   "fetched_at": [t, t, t]}).to_parquet(tmp_path / overflows.NAME, index=False)
     monkeypatch.setattr(config, "state_read", lambda name: tmp_path / name)
     assert sorted(overflows.load_overflows()["site_id"]) == ["AWS00528", "X1"]
+
+
+def test_a_cell_on_the_meridian_is_read_from_the_cache_whichever_sign_its_zero_has(tmp_path, monkeypatch):
+    """River Great Ouse, Overcote (lon -0.004) failed in most scheduled builds from 3 to 6 Oct 2026. Its
+    cells snap to lon -0.0; overflows of other spots just east of the meridian snap to the same cell as
+    +0.0. The prefetch saved that cell under one name ("0.000"), the spot's forecast looked for the other
+    ("-0.000"), missed, and made a request of its own, which timed out. One cell must have one name."""
+    from dipcast.ingest import rainfall
+
+    calls = []
+
+    def answer(url, params, **k):
+        calls.append(params["longitude"])
+        t = pd.date_range("2026-10-06", periods=3, freq="h").strftime("%Y-%m-%dT%H:%M").tolist()
+        return [{"hourly": {"time": t, "precipitation": [0.0, 0.1, 0.2]}} for _ in params["latitude"].split(",")]
+
+    monkeypatch.setattr(rainfall, "CACHE", tmp_path)
+    monkeypatch.setattr(rainfall, "_request", answer)
+    # The prefetch: an overflow east of the meridian (lon 0.02) comes before the spot (lon -0.004).
+    pre = rainfall.cells_for_sites(pd.Series([52.31, 52.32303]), pd.Series([0.02, -0.0039]))
+    assert len(pre) == 1
+    rainfall.fetch_forecast(pre)
+    assert len(calls) == 1
+    # The spot's own forecast: its cell, from its own longitude, is now a cache hit.
+    spot = rainfall.cells_for_sites(pd.Series([52.32303]), pd.Series([-0.0039]))
+    got = rainfall.fetch_forecast(spot)
+    assert len(calls) == 1 and len(got) == 3
+    assert rainfall.cell_key(52.3, -0.0) == rainfall.cell_key(52.3, 0.0) == "52.300_0.000"
+    assert str(spot[0][1]) == "0.0"   # no "-0.0" left in the cell itself

@@ -515,8 +515,9 @@ snapshot, 18 of them with event times), so the history grows by about 300 more
 rows a day, and an event the old key would have overwritten is now kept: their
 spill-day counts can only rise from now on. On the 2 Oct history, which the old
 key had already de-duplicated, no other company's count changed; and a feed with no
-`LastUpdated` is never current, so South West Water's overflows are not scored
-at all (`unstamped_feed_days` applies this to the days polled before the
+`LastUpdated` is never current, so South West Water's overflows were not scored
+at all until the site read its camelCase `lastUpdated` on 4 Oct; they are scored
+from 5 Oct (`unstamped_feed_days` applies this to the days polled before the
 change, from `poll_log.parquet`, ignoring rows from before the log recorded feed
 ages on 28 Sep 16:51 UTC, when every company's age reads as missing). The feed sees only what is discharging at the
 moment of a poll, a few times a day, so a day of "not discharging" polls cannot
@@ -578,6 +579,16 @@ overflows as not reporting. The build warns when a company returns no rows. It
 still publishes when none does, with every overflow marked feed down: not
 publishing would also freeze the rain forecasts and leave the old statuses on
 the page with no note.
+
+A short read is treated the same way (6 Oct 2026). Yorkshire Water's layer is
+rewritten whole on each refresh, and a read during a rewrite can return part
+of it: 1,000 of 2,179 rows on 16 Sep, 1,179 on 6 Oct at 13:48 UTC. That build
+listed 1,000 overflows as "not in the company's live feed", though all were in
+it. Now a read with under 90% of a company's usual rows (the median of its
+last 10 polls that returned any) is read again, up to three reads. Overflows
+still missing keep their last snapshot as feed down, and the build warns. The
+scorer was never affected: a missing overflow gets no observation that poll,
+so its day cannot pass the coverage rule as dry.
 
 **Data state of each overflow (4 Oct 2026).** A frozen feed must not read as
 "not discharging". Each overflow now carries `data_state` beside `status`

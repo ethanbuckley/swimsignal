@@ -28,6 +28,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast.ingest.live import expected_rows, is_short
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
 from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
@@ -551,16 +552,19 @@ class BuildUnhealthy(RuntimeError):
 
 
 def live_feed_health(poll_log: pd.DataFrame | None) -> dict | None:
-    """Rows per company in the last poll and the one before, from poll_log.parquet, and
-    the companies whose feed returned none in the last poll. None without a poll log."""
+    """Rows per company in the last poll and the one before, from poll_log.parquet, the
+    companies whose feed returned none in the last poll, and those whose read was short
+    against their usual size before it (ingest.live.is_short). None without a poll log."""
     if poll_log is None or poll_log.empty:
         return None
     times = sorted(poll_log["fetched_at"].unique())
     rows = lambda t: {str(k): int(v) for k, v in poll_log.loc[poll_log["fetched_at"] == t].groupby("company")["n_rows"].sum().items()}
     last = rows(times[-1])
     prev = rows(times[-2]) if len(times) > 1 else {}
+    usual = expected_rows(poll_log[poll_log["fetched_at"] < times[-1]])
     return {"polled_at": str(pd.Timestamp(times[-1])), "rows": last, "previous_rows": prev,
-            "down": sorted(c for c, n in last.items() if n == 0)}
+            "down": sorted(c for c, n in last.items() if n == 0),
+            "short": {c: {"rows": n, "usual": usual[c]} for c, n in sorted(last.items()) if is_short(n, c, usual)}}
 
 
 def snapshot_duplicates() -> list[str]:
@@ -621,6 +625,10 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
             health["warnings"].append(f"{c}'s live overflow feed returned no rows at {feeds['polled_at']} "
                                       f"(previous poll: {'no record' if before is None else before} rows); "
                                       "its overflows show their last snapshot, marked feed down")
+        for c, n in feeds["short"].items():
+            health["warnings"].append(f"{c}'s live overflow feed returned {n['rows']} rows at {feeds['polled_at']}, where it "
+                                      f"usually has {n['usual']:.0f}, after reading again; the missing overflows show their "
+                                      "last snapshot, marked feed down")
     if ecoli_samples:
         s = ecoli_samples
         health["ecoli_samples"] = {k: s.get(k) for k in ("checked_at", "n_sites", "n_failed", "last_ok_at", "sources")}
@@ -1082,7 +1090,7 @@ SHELL_SOURCES.append(TEMPLATE.parent / "visits.js")   # and the notes on a visit
 VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
 SHELL_SOURCES.append(TEMPLATE.parent / "illness.js")   # and the reports of illness, which use it too
 VERSIONED_SCRIPTS += ('<script src="illness.js"></script>',)
-# Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide from spots.json.
+# Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide, which the app reads from data/spot/<id>.json (write_app_data).
 SHELL_SOURCES.append(TEMPLATE.parent / "guide.js")
 VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # Plan a swim (plan/): its rules, plan.js, likewise. The places it starts from are data, fetched the
@@ -1193,15 +1201,47 @@ def spot_blurb(spot: dict) -> str:
             f"and the river network. Updated several times a day.")
 
 
+# The opening of each view, written into the built page so that its words and the picture behind them
+# (the ::before of .lead and .answer, index.html) paint before data/spots.json arrives. That picture is
+# the largest thing on a phone's first screen, so page-speed scores time the first load by it: drawn
+# only by the script, it came 4.3 s into a slow 4G load (5 Oct 2026). The stand-in must be no taller
+# than what the script draws, or the picture would sit lower and paint larger when it arrives, and that
+# later paint would count instead; so it holds only what does not depend on the forecast.
+SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
+               'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
+LEAD_NOTE = ('<p class="planner-note groups">Forecasts, not water tests, for swimming, paddling and ghyll scrambling. '
+             '<a href="clubs.html">Tools for clubs, centres and events</a>.</p>')
+# Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
+# sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
+SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="skel-r"></span>' * 4 + '</div>'
+
+
+def home_lead(n: int) -> str:
+    """The list's opening as index.html's renderList draws it, down to the caveat's line, for n spots,
+    then the list's shape in hairline grey until the forecast comes. The search works at once: what is
+    typed carries over. The day picker has only its first choice until the forecast's dates are known."""
+    return ('<div id="result"><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
+            f'<p class="lede">Five-day pollution risk forecasts for {n} spots in England, or <span class="w-touch">tap</span>'
+            '<span class="w-click">click</span> any river or lake on the map. <a href="#about">How it works</a></p>'
+            f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
+            'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div></section>'
+            '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
+            '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
+            '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
+            f'{LEAD_NOTE}</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
+
+
 def spot_page(template: str, spot: dict, root: str) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
-    <head>, and its name in the body for crawlers and for the moment before the script runs."""
+    <head>, and in the body its name under the sky, as the answer will be (see home_lead), for
+    crawlers and for the moment before the script runs."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
                                              base="../../"), template, count=1)
-    return page.replace(LOADING, f'<div id="result"><h2 class="spot-name">{escape(spot["name"])}</h2>'
-                                 f'<p class="muted">{escape(blurb)} Loading the forecast…</p></div>', 1)
+    return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
+                                 f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
+                                 f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
 
 
 def saved_page(template: str, root: str) -> str:
@@ -1309,6 +1349,97 @@ def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
 
+# The app's page carries its reasons as comments, kept in the source. The built pages leave out the
+# CSS comments and the script lines that are only a comment: 22 kB of the page's 86 kB compressed on
+# 6 Oct 2026. A comment after code on the same line stays, and so does every HTML comment (the
+# page-meta block is found by its comments). js_without_comment_lines follows the strings, templates,
+# regular expressions and comments, so that a line inside a template that starts with "//" stays; a
+# script it cannot follow to the end is left whole.
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.S)
+INLINE_SCRIPT = re.compile(r"(<script>)(.*?)(</script>)", re.S)
+STYLE_BLOCK = re.compile(r"(<style>)(.*?)(</style>)", re.S)
+REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
+REGEX_AFTER_WORDS = {"return", "typeof", "case", "do", "else", "in", "of", "new", "delete", "void", "throw", "yield", "await", "instanceof"}
+
+
+def js_without_comment_lines(js: str) -> str:
+    """js less each line that is only a // comment, or js itself if its strings, templates, regular
+    expressions or comments do not all close."""
+    out, stack, mode, last, word = [], ["code"], None, None, ""   # stack: code / template frames; mode: in a token
+    for line in js.split("\n"):
+        if mode is None and stack[-1] == "code" and line.lstrip().startswith("//"):
+            continue
+        i, n = 0, len(line)
+        while i < n:
+            c = line[i]
+            if mode == "block":
+                if line.startswith("*/", i):
+                    mode, i = None, i + 2
+                    continue
+            elif mode in ("'", '"'):
+                if c == "\\":
+                    i += 1
+                elif c == mode:
+                    mode, last = None, c
+            elif mode == "regex" or mode == "class":
+                if c == "\\":
+                    i += 1
+                elif mode == "regex" and c == "[":
+                    mode = "class"
+                elif mode == "class" and c == "]":
+                    mode = "regex"
+                elif mode == "regex" and c == "/":
+                    mode, last = None, ")"   # a division may follow, as after a value
+            elif stack[-1] == "template":
+                if c == "\\":
+                    i += 1
+                elif c == "`":
+                    stack.pop()
+                    last = "`"
+                elif line.startswith("${", i):
+                    stack.append("code")
+                    i += 1
+            else:   # code
+                if line.startswith("//", i):
+                    break
+                if line.startswith("/*", i):
+                    mode, i = "block", i + 2
+                    continue
+                if c in "'\"":
+                    mode = c
+                elif c == "`":
+                    stack.append("template")
+                elif c == "/":
+                    if last is None or last in REGEX_AFTER or word in REGEX_AFTER_WORDS:
+                        mode = "regex"
+                    else:
+                        last = c
+                elif c == "{":
+                    stack.append("code")
+                    last = c
+                elif c == "}":
+                    if len(stack) > 1:
+                        stack.pop()   # a block, or the end of ${...} back into its template
+                    last = c
+                elif not c.isspace():
+                    last = c
+                if c.isalnum() or c in "_$":
+                    word = (word + c) if (i and (line[i - 1].isalnum() or line[i - 1] in "_$")) else c
+                elif not c.isspace():
+                    word = ""
+            i += 1
+        if mode in ("'", '"', "regex", "class"):   # these never run over a line
+            return js
+        out.append(line)
+    return "\n".join(out) if mode is None and stack == ["code"] else js
+
+
+def lean_page(html: str) -> str:
+    """The page without CSS comments and comment-only script lines (js_without_comment_lines)."""
+    html = STYLE_BLOCK.sub(lambda m: m.group(1) + CSS_COMMENT.sub("", m.group(2)) + m.group(3), html)
+    return INLINE_SCRIPT.sub(lambda m: m.group(1) + js_without_comment_lines(m.group(2)) + m.group(3), html)
+
+
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
@@ -1323,6 +1454,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
+    template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
         s = (STATIC / name).read_text()
         for a, b in REWRITES:
@@ -1361,6 +1493,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./"), template, count=1)
+    home = home.replace(LOADING, home_lead(len(results)), 1)
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
     (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))
@@ -1483,6 +1616,34 @@ def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Ti
                                                      "credits": credits}, separators=(",", ":"), default=str))
         n += 1
     return n
+
+
+# What every view of the app loads first is spots.json without the fields only a spot's own page
+# shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
+# spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
+# spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
+# reads it, for the organisers' page and the decision record, and for scripts/alerts.js.
+DETAIL_FIELDS = ("contributors", "guide")
+
+
+def write_app_data(site: Path, doc: dict) -> int:
+    """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
+    one file a spot. A lite spot names its file in `detail_file`, relative to data/. A spot whose id
+    cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
+    out = site / "data" / "spot"
+    shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
+    out.mkdir(parents=True)
+    lite = []
+    for s in doc["spots"]:
+        if not SPOT_ID.fullmatch(str(s["id"])):
+            lite.append(s)
+            continue
+        detail = {k: s[k] for k in DETAIL_FIELDS if k in s}
+        (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
+                                                         "credits": doc.get("credits")}, separators=(",", ":"), default=str))
+        lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json"})
+    (site / "data" / "spots-lite.json").write_text(json.dumps({**doc, "spots": lite}, separators=(",", ":"), default=str))
+    return len(doc["spots"]) - sum(1 for s in lite if "detail_file" not in s)
 
 
 def write_data_page(site: Path, token: str | None = None) -> list[str]:
@@ -1715,10 +1876,11 @@ def build(refresh: bool = True) -> dict:
     health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     push, email = push_config(), email_config()
-    (SITE / "data" / "spots.json").write_text(json.dumps({
-        "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
-        "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
-        "credits": credits, "spots": results}, default=str))
+    doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
+           "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
+           "credits": credits, "spots": results}
+    (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
+    write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.

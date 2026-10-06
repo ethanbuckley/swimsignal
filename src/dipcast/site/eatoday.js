@@ -46,12 +46,15 @@ function eaTodayWhen(t) {
   return `${+p.day} ${EA_TODAY_MONTHS[p.month - 1]} ${p.year}, ${p.hour}:${p.minute}`;
 }
 
+// The EA's page for a site: its own address where the spot has one, or else the profile for the id.
+const eaTodayPage = (url, id) => /^https:\/\//.test(url || '') ? url : `https://environment.data.gov.uk/bwq/profiles/profile.html?site=${id}`;
 // The fold, closed, for the rating tile (facts in index.html); '' without an EA id. Until it is opened it
-// holds a link to the EA's page, which is what shows if the panel cannot be loaded.
+// holds a link to the EA's page; once opened, the line under the panel keeps that link, for a panel that
+// does not load (offline, or a frame the browser blocks).
 function eaTodayFold(d) {
   const id = eaTodayId(d);
   if (!id) return '';
-  const page = /^https:\/\//.test(d.classification.url || '') ? d.classification.url : `https://environment.data.gov.uk/bwq/profiles/profile.html?site=${id}`;
+  const page = eaTodayPage(d.classification.url, id);
   return `<details class="ea-today" id="ea-today" data-site="${id}" data-name="${eaTodayEsc(d.name)}" data-rated="${d.classification.class ? 'yes' : 'no'}"><summary>Today's EA advice</summary>`
     + `<p>Open <a href="${eaTodayEsc(page)}">the EA's page</a> for today's advice.</p></details>`;
 }
@@ -66,8 +69,10 @@ function eaTodayOpen(fold, nowMs) {
   frame.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');   // its links open a new tab; no scripts
   frame.referrerPolicy = 'no-referrer';
   if (fold.dataset.rated === 'no') frame.className = 'unrated';   // "This newly-designated site does not have ...": a taller panel
-  const note = document.createElement('p');
-  note.textContent = `The Environment Agency's own panel, loaded ${eaTodayWhen(nowMs)}. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test.`;
+  const note = document.createElement('p'), link = fold.querySelector('p a');
+  const page = eaTodayPage(link && link.getAttribute('href'), fold.dataset.site);
+  note.innerHTML = `The Environment Agency's own panel, loaded ${eaTodayWhen(nowMs)}. It shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test. `
+    + `If the panel does not show, open <a href="${eaTodayEsc(page)}">the EA's page</a>.`;
   fold.replaceChildren(fold.querySelector('summary'), frame, note);
   // Opened near the foot of a phone's screen, the panel would land below it: bring it into view.
   if (fold.scrollIntoView) fold.scrollIntoView({ block: 'nearest' });

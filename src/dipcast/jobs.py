@@ -13,13 +13,14 @@ log = logging.getLogger(__name__)
 
 def refresh_all(net=None) -> dict:
     """Poll every live feed, rebuild the overflow table, re-score logged forecasts."""
-    from dipcast.ingest.live import fetch_live, save_live
+    from dipcast.ingest.live import expected_rows, fetch_live, save_live
     from dipcast.network.rivers import RiverNetwork
     from dipcast.overflows import build_overflows
 
     t0 = time.time()
-    live = fetch_live()
-    save_live(live)
+    expected = expected_rows()   # each feed's usual size, from the poll log: a short read is read again
+    live = fetch_live(expected=expected)
+    save_live(live, expected)
     if config.SCOTTISH_WATER:   # shadow poll, off by default: stores in state, shows and publishes nothing
         from dipcast.ingest.scottish_water import poll
         poll()   # logs its own summary and never raises

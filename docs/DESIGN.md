@@ -39,8 +39,11 @@ Two typefaces, both by Adobe under the SIL Open Font License, served from this s
 the licence beside them) so that no third party receives a request:
 
 - **Source Serif 4** for the wordmark, page headings and spot names. A serif at
-  600 weight, never heavier. Variable weight and optical size, so it is sturdy at 18 px and fine at
-  34 px.
+  600 weight, never heavier. Variable optical size, so it is sturdy at 18 px and fine at
+  34 px. The file is Google Fonts' own for weight 600 alone (52 kB, against 122 kB for weights 200
+  to 900, 6 October 2026), and both stylesheets declare 600 only: a serif at another weight would
+  be drawn from the 600 file, or thickened by the browser. A trimmed file of our own would be a
+  Modified Version under the OFL and could not keep the Reserved Font Name "Source".
 - **Source Sans 3** for everything else: body, labels, controls, tables. Weights 400 and 600, and
   700 for headlines and level words; 300 (Light) for a tile's figure (seventh round). The file
   carries weights 200 to 900, and both stylesheets declare all of them.
@@ -135,6 +138,17 @@ those sizes; they were taken off to keep the rule simple.)
   after its water has passed, so the reason is "recent sewage spills" ("Moderate risk right now: recent
   sewage spills"; the answer's line under the level is "Recent sewage spills"). "Sewage spills right now"
   over a Right now tile saying "0 of 60 discharging" read as a contradiction (`nowBecause` in `levels.js`).
+- A level set by the Environment Agency's rating leads with the level, then the reason (6 October
+  2026): "High risk: rated poor", and in the bathing season "High risk: rated poor, advice against
+  bathing". "Rated poor" alone left 13 rows on the list with no level, and in October "advice against
+  bathing from 15 May" read as though the advice began on that date. The rating's tile gives the dates.
+- Every tile the level rests on says in one line, under its figure, how it stands to the level above
+  (6 October 2026, `tileLine` in `levels.js`): "This sets the level above.", "On its own: moderate
+  risk. The poor rating raises the level to high risk.", "Tomorrow's spill forecast raises the level to
+  high risk.", "Not counted in the level: only a poor rating is.", "Does not raise the level." A picked
+  day's rows do the same for that day. A water figure out of season keeps its † note instead. Wharfe at
+  Cromwheel read "High risk" over a spills tile at "Moderate risk" and five days at "High", with
+  nothing to join them up.
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
   (3 October 2026), in the answer, on a saved card, in the list row, the map's tooltip and key,
   and the alerts (the key lists the teal one; an isolated lake sits under its grey "No level"):
@@ -150,7 +164,7 @@ those sizes; they were taken off to keep the rule simple.)
     on sites with overflows upstream. The EA rating, the algae check and the river level stay as
     tiles.
   - A rating of sufficient or poor, or algae at the last check, still sets the level where it
-    raises it ("Rated poor: advice against bathing"). An excellent or good rating no longer makes
+    raises it ("High risk: rated poor"). An excellent or good rating no longer makes
     such a spot "low": that was the same word as a forecast that had looked and found nothing.
   - Before this the page said "No monitored overflows upstream" or "Not covered by the
     forecast", which a swimmer read as "no information".
@@ -278,10 +292,10 @@ rewrites each one for the static site (`REWRITES`). The API server has its own c
 icons in `src/dipcast/api/static/icons/`, taken from the site's `src/dipcast/site/icons/`, and a
 test checks that they still match. The 404 page, which the build writes, has the same head with
 absolute links, `noindex` and no description. The app page's head is its own, in `index.html`: it
-adds the manifest and the Home Screen tags, and asks for `data/spots.json` (`FORECAST`, which
+adds the manifest and the Home Screen tags, and asks for `data/spots-lite.json` (`FORECAST`, which
 `main()` awaits) and preloads the picture, `icons/fells.webp`. Every view's largest paint is the
 picture behind its opening words, and those wait for the forecast: asked for later, the forecast
-waited for the scripts at the foot of the page and the picture for the forecast (5 October 2026). The Home Screen app's status bar is
+waited for the scripts at the foot of the page and the picture for the forecast (5 October 2026). A spot's page asks for the spot's own file there too, `data/spot/<id>.json` (`DETAIL`): its overflows and guide, which `spots-lite.json` leaves out (6 October 2026). The Home Screen app's status bar is
 `black-translucent`: the page draws under it, its white text sits on the slate, and the header's
 top padding takes in the safe area. (From the fifth round to the seventh it was `default`, dark
 text, over the paper header.) Nothing in any head is fetched from another site: the app's map
@@ -433,7 +447,8 @@ What makes Apple's page clean, and what was taken from it:
 - **A background that is the place.** A picture of fells over a lake (`icons/fells.webp`, 8 KB,
   drawn by `scripts/make_sky_image.py`, so it needs no licence and no request to anyone else) hangs
   behind the opening of each view: its sky ends at the bottom of the answer's words, its fells fill a
-  128 px band below them, and it is the paper about 300 px further down. Its top rows are the
+  128 px band below them (48 px on a phone since 6 October 2026: see "The first screen"), and it is
+  the paper about 300 px further down. Its top rows are the
   `--sky` colour that runs on up to the header, so it has no edge. The weather data has only the
   day's high, sunrise and sunset, so the picture cannot follow the weather, as Apple's does. A
   photograph would be a separate job, with sourcing and licences. The picture is 500 CSS px wide; from
@@ -539,8 +554,8 @@ temperature is never estimated.
 
 ### Swimmers' reviews (3 October 2026)
 
-Reviews (`reviews.js`; the service is `reviews/`) are one more tile with the same anatomy, after the
-others and before the Upstream map and the overflows, so the forecast still comes first. Its figure
+Reviews (`reviews.js`; the service is `reviews/`) are one more tile with the same anatomy, the last of
+the part about the water, after the guide and the notes (see "A swimmer's order"). Its figure
 is the share who would swim there again, "75% would swim here again", shown from three reviews
 (fewer would make a percentage of one or two people), drawn as a bar in ink: a score is not a level,
 so it never takes a level's colour, and no tomato, star or thumb stands in for the words. Under the
@@ -556,8 +571,8 @@ chip does.
 ### Practical guides (3 October 2026)
 
 The practical guide (`guide.js`; the facts are hand-written in `guides/`, whose README has the
-format) is one more tile with the same anatomy, after the forecast's tiles and before the reviews:
-facts first, then opinion. Its label is "Practical guide" with a signpost icon from the stroke set.
+format) is one more tile with the same anatomy, in the part about the water, after the EA's rating and
+before the notes and the reviews: facts first, then opinion. Its label is "Practical guide" with a signpost icon from the stroke set.
 Its first line says how far to trust the whole tile: "Checked 3 Oct 2026 from the published pages
 linked below, not on site", or "Checked on site", and past a year that fees, opening times and paths
 may have changed. Then the facts as a ruled list, a topic's name over its facts, in the order a
@@ -590,7 +605,7 @@ Since 4 October 2026:
 
 A review describes the place; a note describes a day. The notes (`visits.js`; the service is the
 reviews Worker in `reviews/`) are one more tile, "Recent visits", with a flag from the stroke set.
-The order after the forecast's tiles is the guide, the notes, the reviews. The tile is there only
+The order in the part about the water is the guide, the notes, the reviews. The tile is there only
 while reviews are on, and never on a point clicked on the map.
 
 - A note is ticks from a fixed list ("Entry steps or path damaged", "Car park closed", "Very busy",
@@ -643,7 +658,8 @@ thermometer from the stroke set. No report is ever shown, only counts, from five
 
 ### What the level rests on (4 October 2026)
 
-One tile (`evidence.js`) after the forecast's tiles and before the practical guide. It lists the
+One tile (`evidence.js`) after the forecast's tiles, folded whole as the day-by-day numbers are (6 October
+2026: its figures are on the tiles above it). It lists the
 evidence the level rests on, each item with how old it is and whose it is, and then says what there is
 none of here. Its figures are already on the tiles above it. This is the one place where their ages and
 sources sit together, and the only place with the latest lab sample.
@@ -715,9 +731,18 @@ advice" (`eatoday.js`), as each English coastal site on the coverage page has (#
   cut the EA's credit line off six panels at every width and seven on a 320 px phone.
 - Under it, muted, in the notes' size: "The Environment Agency's own panel, loaded 4 Oct 2026, 16:45. It
   shows no issue time, and browsers may keep it for up to an hour. No warning is not a water test."
-- The line under the five days points to it, and its link opens the fold: "Today's EA advice, below,
-  shows any advice against bathing there today, which this forecast does not include." The rating's
-  sentence no longer says the page lacks the advice.
+- The line under the five days points to it, and its link opens the fold: "Open Today's EA advice, below,
+  for the Environment Agency's own panel. It shows any advice against bathing there today, which this
+  forecast does not include." (6 October 2026: it said the fold "shows" the advice, but the fold shows
+  nothing until it is opened, and the page may not open it for the reader, since the privacy notice says
+  the EA is asked only when you choose to.) The rating's sentence no longer says the page lacks the advice.
+- The line under the panel ends "If the panel does not show, open the EA's page.", linked (6 October 2026).
+  The closed fold's link to the EA's page was replaced by the frame, so a panel that did not load (offline,
+  or a frame the browser blocks) left no way to the advice.
+- Out of season the panel still shows an open incident: on 6 October 2026 Frensham Great Pond's read
+  "Bathing is not advised today due to pollution from harmful algae", Hampstead Heath (Mixed Pond)'s
+  "Pollution forecasts will resume when the season starts", and Wharfe at Cromwheel's, rated poor,
+  "Bathing is not advised".
 - It never sets the level, since the page cannot read the frame. It is not in the embed, the organisers'
   sign or the alerts.
 
@@ -780,6 +805,39 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
   Ireland, the Environmental Protection Agency's beaches.ie in the Republic, and in Wales and Scotland the
   coverage page, which links to Natural Resources Wales and the Scottish Environment Protection Agency.
   The words say who publishes what, and nothing about the water.
+
+### A swimmer's order (6 October 2026)
+
+A spot's page had grown to 7,087 px at 375 px wide (Wharfe at Cromwheel, about nine screens), and its
+order followed when each part was built: ten tiles of readings came before the practical guide, the notes
+and the reviews, and the Upstream map was near the bottom. The page now follows a swimmer's questions, in
+three parts, with no heading of their own (each tile keeps its label, and no eyebrow is added):
+
+- **Should I go**: the answer, the five days, the phone's small map, Nearby or Lower risk nearby.
+- **At the water**: the Environment Agency rating, with Today's EA advice at its foot, then the practical
+  guide, the notes on a visit and the reviews (and the illness counts, when on). The rating leads because
+  it carries the Agency's advice, which stays in view, and because Today's EA advice is the box the line
+  under the five days sends the reader to.
+- **Why**: "Where the risk comes from" in words, the Upstream map (phones), the tiles of readings, What the
+  level rests on, the overflows that matter most and the day-by-day numbers. The last three fold whole,
+  with the tile's label as the summary, since their figures are on the tiles above or on the map. The
+  overflows' explanation, in a tile's corner fold elsewhere, sits under the rows once the tile is open,
+  because the corner would sit on the fold's own chevron.
+
+The order is the DOM's, not CSS `order`, so the keyboard and a screen reader meet the parts in the same
+order: after a spot opens the focus is on its name, and the next Tab stops are the five days, the EA
+advice link, the map button, Nearby, the rating, the guide, the notes and the reviews. The notes and the
+reviews still mount after `#guide`, which stays a child of `.stack`. A tile added after What the level rests
+on falls inside Why without any change here. Nothing was removed.
+
+Measured at 375 px on the data of 6 October 2026 (Wharfe at Cromwheel; y is from the top of the page): the
+page is 6,079 px, from 7,087; the part about the water starts at 1,642 px, where the practical guide was
+at 3,685 and the reviews at 4,839; Why starts at 3,289. At 1,440 px the panel is 5,030 px, from 5,929. A
+spot with no overflows (Semerwater) is 3,644 px, from 3,866; a point off the list, 3,755 from 4,177.
+
+Two other orders were shown to Ethan with this one: the same order with nothing folded (7,087 px, the
+same as before), and the whole of Why under one fold (4,193 px), which hides the readings' tiles and the
+map he chose in the seventh round.
 
 ### What was kept on purpose
 
@@ -962,7 +1020,7 @@ gives all four navigation links a single full-width row.
 - **The sites view**, `sites.html#spots=a,b,c&name=…` (`sites.js`), is a prose page for a centre, a club or a
   council: the name as the title, the issue time once with the app's stale notice, then one row a spot
   between hairlines. A row is the name in the serif with its kind under it, the headline in the level's
-  text shade (`headParts`, so "Rated poor", "High risk tomorrow", the plain levels), the reason in one line,
+  text shade (`headParts`, so "High risk", "High risk tomorrow", the plain levels), the reason in one line,
   links to a decision record for today and tomorrow, and the five days as the list's bars (`.week`, read
   out in words). Where the headline already names the later day, the reason is today's spills in the spot
   page's words. On a phone the name goes above, the bars stay beside the headline. An id not in the
@@ -1025,3 +1083,24 @@ gives all four navigation links a single full-width row.
   app's foot beside "For event organisers". Its limits come first, in a summary box. Its action lines are
   `levels.js`'s word for word (a test checks), each quote is word for word from a page opened on the date
   given in the page's comment, and level words carry "risk".
+
+## The first screen (6 October 2026)
+
+- **The first saved spot fits on a 375 x 812 phone.** Before, the Saved tile began behind the bar at
+  the bottom. Three changes, from three options shown to Ethan (the PR lists them): the caveat and the
+  line for groups are one line ("Forecasts, not water tests, for swimming, paddling and ghyll
+  scrambling", then the link to the clubs page); the week's best day follows it on its own line; and on
+  a phone the fells' band under the opening is 48 px, not 128, so the first tile starts on the fells,
+  which show through its glass. Wider screens keep 128.
+- **"Low risk only"**, not "Low risk", on the list's switch: it hides every spot that is not low risk,
+  as the map's switch of the same name does. Under 375 px it takes two lines ("Low risk", "only") so
+  that "Today and tomorrow" still fits beside it.
+- **The opening is in the built page.** The home page carries the list's opening down to the caveat's
+  line (`home_lead` in `scripts/build_site.py`, word for word the script's, which a test checks), and a
+  spot's page its name and description under the sky, each with the first tile's shape in grey below.
+  So the picture, the largest thing on the first screen, paints without waiting for the forecast:
+  measured on 6 October 2026 at 375 px on slow 4G, the largest paint moved from 4.4 to 2.4 s on the
+  home page and from 4.3 to 2.4 s on a spot's page. What depends on the forecast (the best day, the
+  build's notices) comes after the caveat's line, so the opening never grows above it and the
+  picture never paints again, larger, when the script draws the real one. Words typed into the search
+  before then carry over.

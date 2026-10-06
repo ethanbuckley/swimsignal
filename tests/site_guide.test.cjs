@@ -38,6 +38,11 @@ test('a spot without a guide asks for one; a point clicked on the map shows noth
   assert.equal(g.guideTile(spot({ unlisted: true }), '2026-10-04'), '');
 });
 
+test('a spot whose own file did not arrive says nothing about a guide, rather than "no guide yet"', () => {
+  // The guide is in data/spot/<id>.json, not spots-lite.json; offline without a stored copy it is unknown.
+  assert.equal(g.guideTile(spot({ guide: undefined, detail_missing: true }), '2026-10-04'), '');
+});
+
 test('a photo carries numbered labels on it, the same numbers in its key, and its credit', () => {
   const photo = { file: 'steps.jpg', w: 1600, h: 1200, caption: 'The steps from the path.', credit: 'Ethan Buckley', taken: '2026-08-20',
     status: 'confirmed', seen: '2026-08-20', labels: [{ x: 30, y: 72.2, text: 'Steps in' }, { x: 64, y: 40, text: 'Way out' }] };

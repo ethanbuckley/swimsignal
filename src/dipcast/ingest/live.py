@@ -14,6 +14,11 @@ live_latest.parquet with status FEED_DOWN and the time of that snapshot in
 overflows have no live feed. Only fresh rows reach the history, the coverage
 file and the poll log.
 
+A company whose read returns far fewer rows than its feed usually holds (a short
+read: a layer read while it is being rewritten) is read again. Any overflows still
+missing keep their last snapshot as FEED_DOWN in the same way, rather than reading
+as "not in the company's live feed".
+
 Each overflow also gets a data state (data_states): whether its status can be
 taken as current, so that a frozen feed never reads as "not discharging".
 """
@@ -21,6 +26,7 @@ taken as current, so that a frozen feed never reads as "not discharging".
 from __future__ import annotations
 
 import logging
+import time
 
 import numpy as np
 import pandas as pd
@@ -72,12 +78,74 @@ def _layer_edited_at(company: str, url: str) -> pd.Timestamp:
     return pd.NaT if ms is None else pd.Timestamp(int(ms), unit="ms", tz="UTC")
 
 
-def fetch_live(companies: dict[str, str] | None = None) -> pd.DataFrame:
+# A short read: a read with fewer than SHORT_READ_SHARE of the rows the company's feed usually
+# holds (expected_rows). Yorkshire Water's layer is rewritten whole on each refresh, and a read
+# during a rewrite can come back as one consistent but partial page: 1,000 of its 2,179 rows at
+# 20:18 UTC on 16 Sep 2026, and 1,179 at 13:48 UTC on 6 Oct. That build marked 1,000 overflows as
+# "not in the company's live feed", although every one was in the feed before and after. fetch_all's
+# torn-read check cannot see this: there is no repeated id, and often only one page.
+SHORT_READ_SHARE = 0.9
+SHORT_READ_ATTEMPTS = 3      # reads in all, the first one included
+SHORT_READ_WAIT_S = 10.0     # pause before the second read; twice as long before the third
+EXPECTED_FROM_POLLS = 10     # expected_rows: the median over this many recent polls that returned rows
+
+
+def expected_rows(poll_log: pd.DataFrame | None = None) -> dict[str, float]:
+    """Per company, how many rows its feed usually returns: the median over its last
+    EXPECTED_FROM_POLLS polls that returned any (poll_log.parquet, read from the state when not
+    given). It is a median, so one short read does not lower it, and a feed that really shrinks
+    moves it within a few polls. Empty without a poll log."""
+    if poll_log is None:
+        p = config.state_read(POLL_LOG_FILE)
+        if not p.exists():
+            return {}
+        poll_log = pd.read_parquet(p)
+    pl = poll_log[poll_log["n_rows"] > 0].sort_values("fetched_at", kind="stable")
+    return {str(c): float(g["n_rows"].tail(EXPECTED_FROM_POLLS).median()) for c, g in pl.groupby("company")}
+
+
+def is_short(n_rows: int, company: str, expected: dict[str, float] | None) -> bool:
+    """Whether `n_rows` (more than none) is a short read for `company` (SHORT_READ_SHARE)."""
+    want = (expected or {}).get(company)
+    return bool(want) and 0 < n_rows < SHORT_READ_SHARE * want
+
+
+def _n_ids(rows: list[dict]) -> int:
+    return len({r.get("Id") for r in rows})
+
+
+def _read_feed(company: str, url: str, expected: dict[str, float] | None) -> list[dict]:
+    """One company's rows (fetch_all, which re-reads a torn multi-page read). A short read is
+    read again after a pause, up to SHORT_READ_ATTEMPTS reads in all, and the read with the most
+    overflows is kept. Overflows still missing are carried as feed down (carry_forward)."""
+    rows = fetch_all(url, geometry=True, key="Id")
+    for attempt in range(2, SHORT_READ_ATTEMPTS + 1):
+        if not is_short(_n_ids(rows), company, expected):
+            return rows
+        log.warning("%s: %d overflows where its feed usually has %d; a short read, reading again (read %d of %d)",
+                    company, _n_ids(rows), expected[company], attempt, SHORT_READ_ATTEMPTS)
+        time.sleep(SHORT_READ_WAIT_S * (attempt - 1))
+        try:
+            again = fetch_all(url, geometry=True, key="Id")
+        except Exception as e:  # noqa: BLE001 - the short read is still better than none
+            log.warning("%s: read %d failed: %s", company, attempt, e)
+            continue
+        if _n_ids(again) > _n_ids(rows):
+            rows = again
+    if is_short(_n_ids(rows), company, expected):
+        log.warning("%s: still short after %d reads (%d of about %d); the missing overflows keep their last "
+                    "snapshot, marked feed down", company, SHORT_READ_ATTEMPTS, _n_ids(rows), expected[company])
+    return rows
+
+
+def fetch_live(companies: dict[str, str] | None = None, expected: dict[str, float] | None = None) -> pd.DataFrame:
+    """This poll's rows from every company feed. `expected` (expected_rows) turns on the
+    short-read check; without it each feed is read once, as before 6 Oct 2026."""
     feeds = companies or config.LIVE_FEEDS
     frames = []
     for company, url in feeds.items():
         try:
-            rows = fetch_all(url, geometry=True, key="Id")   # key: re-read a torn multi-page read
+            rows = _read_feed(company, url, expected)
         except Exception as e:  # noqa: BLE001 - one dead feed must not kill the poll
             log.error("live feed failed for %s: %s", company, e)
             continue
@@ -276,18 +344,26 @@ def log_poll(df: pd.DataFrame, feeds: dict[str, str] | None = None) -> None:
 
 
 def carry_forward(df: pd.DataFrame, previous: pd.DataFrame | None,
-                  feeds: dict[str, str] | None = None) -> pd.DataFrame:
+                  feeds: dict[str, str] | None = None, expected: dict[str, float] | None = None) -> pd.DataFrame:
     """This poll's rows plus, for each company that returned none, its rows from the
     previous snapshot with status FEED_DOWN and `feed_down_since` the time of the last
-    poll that answered. Event times are kept: they were true at that poll."""
+    poll that answered. Event times are kept: they were true at that poll. A company whose
+    read was short (is_short against `expected`, expected_rows) gets the same for the rows of
+    the previous snapshot that this poll is missing: those were not read, not dropped from
+    the feed. Without `expected` only a company that returned nothing is carried."""
     out = df.copy()
     out["feed_down_since"] = pd.Series(pd.NaT, index=out.index, dtype="datetime64[ns, UTC]")
     if previous is None or previous.empty:
         return out
     companies = list((feeds or config.LIVE_FEEDS).keys())
-    present = set(df["company"].unique()) if len(df) else set()
-    down = [c for c in companies if c not in present]
-    old = one_row_per_site(previous[previous["company"].isin(down)]).copy()
+    counts = df.groupby("company")["site_id"].nunique() if len(df) else pd.Series(dtype=int)
+    down = [c for c in companies if c not in counts.index]
+    short = [c for c in companies if c in counts.index and is_short(int(counts[c]), c, expected)]
+    missing = previous["company"].isin(short) & ~previous["site_id"].isin(set(df["site_id"]) if len(df) else set())
+    for c in short:
+        log.warning("%s: short read (%d of about %d rows); keeping the last snapshot of the %d missing as feed down",
+                    c, int(counts[c]), expected[c], int((missing & (previous["company"] == c)).sum()))
+    old = one_row_per_site(previous[previous["company"].isin(down) | missing]).copy()
     if old.empty:
         return out
     since = pd.to_datetime(old["fetched_at"], utc=True)
@@ -295,7 +371,7 @@ def carry_forward(df: pd.DataFrame, previous: pd.DataFrame | None,
         since = pd.to_datetime(old["feed_down_since"], utc=True).fillna(since)
     old["feed_down_since"] = since
     old["status"] = FEED_DOWN
-    for c in sorted(set(old["company"])):
+    for c in sorted(set(old["company"]) & set(down)):
         log.warning("%s: no rows this poll; keeping its last snapshot (%s) as feed down", c,
                     old.loc[old["company"] == c, "feed_down_since"].min())
     cols = list(out.columns)
@@ -311,10 +387,13 @@ def history_key(h: pd.DataFrame) -> pd.Series:
     return day.where(pd.to_datetime(h["status_start"], utc=True).isna())
 
 
-def save_live(df: pd.DataFrame) -> None:
+def save_live(df: pd.DataFrame, expected: dict[str, float] | None = None) -> None:
+    """Store a poll (fetch_live). `expected` is expected_rows, worked out from the poll log
+    before this poll is added to it when not given."""
     prev_path = config.state_read("live_latest.parquet")
     previous = pd.read_parquet(prev_path) if prev_path.exists() else None
-    write_parquet(carry_forward(df, previous), config.state_write("live_latest.parquet"))
+    expected = expected_rows() if expected is None else expected
+    write_parquet(carry_forward(df, previous, expected=expected), config.state_write("live_latest.parquet"))
     hist_read = config.state_read("live_history.parquet")
     keep = df[["site_id", "company", "status", "status_start", "latest_event_start",
                "latest_event_end", "fetched_at"]]
@@ -333,4 +412,5 @@ def save_live(df: pd.DataFrame) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    save_live(fetch_live())
+    expected = expected_rows()
+    save_live(fetch_live(expected=expected), expected)
