@@ -951,12 +951,12 @@ gives all four navigation links a single full-width row.
 - The link comes from "Make a sites link": under "Share this list" on the Saved page, for the list shown
   (`lists.js`, `sitesHash`), and in a fold on the organisers' page, where several spots are ticked in a box
   that scrolls on its own, in the order they were picked.
-- **The decision record**, `record.html#spot=<id>&day=YYYY-MM-DD` (`record.js`), is one A4 page: first what
+- **The decision record**, `record.html#spot=<id>&day=YYYY-MM-DD` (`record.js`), is up to two A4 pages: first what
   it is and is not, with the live warning-table figures; the spot, the day, the level with the 4 px rule
   the organisers' page uses, and why; every input with its time, its age and its source as a ruled list;
   the About page's "What it cannot see", word for word; then labelled lines to write on. Printed, the
-  rows are two columns, the limits two columns, and the page is zoomed to 0.8, as the signs are zoomed,
-  so that the richest record (a bathing water with flood alerts) fits one page. Outside the five days it
+  rows are two columns and the limits two columns, at reading size: Ethan chose two pages over one page
+  zoomed to 0.8, about 8 pt (6 Oct 2026). The decision lines are kept together on one page. Outside the five days it
   says when the day's forecast first appears and gives no record. Linked from the organisers' page for
   the picked day, from each row of the sites view, and as "Print a decision record" under a spot's day.
 - Neither is in the offline copy; both are in the sitemap, as the organisers' page is.

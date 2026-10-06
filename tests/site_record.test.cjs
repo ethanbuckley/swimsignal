@@ -1,4 +1,4 @@
-// The decision record (record.html, src/dipcast/site/record.js): one spot and one day on one A4 page,
+// The decision record (record.html, src/dipcast/site/record.js): one spot and one day on up to two A4 pages,
 // opening with what it is not and the live accuracy figures, then the level and why by levels.js's rules,
 // every input with its age and source, the About page's limits word for word, and blank decision lines.
 const {test} = require('node:test');
