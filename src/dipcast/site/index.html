@@ -25,13 +25,17 @@
 <link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
 <!-- The forecast and the picture, asked for here too. Every view's opening words wait for
-     data/spots.json, and the picture behind them (.lead, .answer) is only found once they are drawn.
+     data/spots-lite.json, and the picture behind them (.lead, .answer) is only found once they are drawn.
      Asked for by main() alone, the forecast waited for the scripts at the foot of the page, and the
      picture for the forecast: the largest paint came at 4.6 s on a slow phone connection (5 Oct
      2026). main() takes the answer from FORECAST; the catch only stops an early failure being
-     reported before main() gets to it, and main() still gets the error. -->
+     reported before main() gets to it, and main() still gets the error. The forecast is
+     spots-lite.json, without each spot's overflows and guide; a spot's page asks for its own here
+     too (DETAIL, data/spot/<id>.json), so the two arrive together. -->
 <link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high">
-<script>window.FORECAST = fetch('data/spots.json', { cache: 'no-cache' }); FORECAST.catch(() => {});</script>
+<script>window.FORECAST = fetch('data/spots-lite.json', { cache: 'no-cache' }); FORECAST.catch(() => {});
+  { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
+    if (m) { window.DETAIL = { id: m[1], res: fetch(`data/spot/${m[1]}.json`, { cache: 'no-cache' }) }; DETAIL.res.catch(() => {}); } }</script>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -60,7 +64,7 @@
      text uses the "k" shades, which pass WCAG AA (4.5:1) on the paper, on white and on the glass. */
   @font-face { font-family:"Source Sans 3"; font-style:normal; font-weight:200 900; font-display:swap; src:url(fonts/SourceSans3-latin.woff2) format("woff2"); }
   @font-face { font-family:"Source Sans 3"; font-style:italic; font-weight:400 700; font-display:swap; src:url(fonts/SourceSans3-italic-latin.woff2) format("woff2"); }
-  @font-face { font-family:"Source Serif 4"; font-style:normal; font-weight:400 700; font-display:swap; src:url(fonts/SourceSerif4-latin.woff2) format("woff2"); }
+  @font-face { font-family:"Source Serif 4"; font-style:normal; font-weight:600; font-display:swap; src:url(fonts/SourceSerif4-latin.woff2) format("woff2"); }
   :root { color-scheme:light;
           --font-text:"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           --font-display:"Source Serif 4", Georgia, "Times New Roman", serif;
@@ -2484,8 +2488,40 @@ document.getElementById('planbtn').addEventListener('click', e => { if (!DATA ||
 // day: a date to open in its strip (a Saved card's day), else the summary. From a marker on a phone's
 // full map, the entry under the map keeps the map's view (mapView) and the spot's says from 'map', so
 // Back, or the spot's back link, returns to the map as it was rather than to the list.
+// A spot's overflows and practical guide are in its own file (detail_file, spotDetail), asked for
+// first; it opens when the file comes, unless the reader has moved on meanwhile (another spot, Back).
+let OPENING = 0;
 function select(id, fly=false, push=true, day=null) {
-  const s = DATA.spots.find(x => x.id === id); if (!s) return; current = s; DAY = day;
+  const s = DATA.spots.find(x => x.id === id); if (!s) return;
+  const n = ++OPENING, at = location.href;
+  if (s.detail_file && !s.detail_loaded) {
+    spotDetail(s).then(() => { if (n === OPENING && location.href === at) openSpot(s, fly, push, day); });
+    return;
+  }
+  openSpot(s, fly, push, day);
+}
+// spots-lite.json leaves out each spot's overflows (contributors) and guide, which only its own page
+// shows; data/spot/<id>.json has them (build_site.write_app_data). The head asked for the spot page's
+// own already (DETAIL). Without the file (no connection and no stored copy) the spot opens with what
+// it has: no overflows, and detail_missing, so the guide's tile does not say there is no guide. The
+// next opening asks again.
+const DETAILS = new Map();
+function spotDetail(s) {
+  if (!s.detail_file || s.detail_loaded) return Promise.resolve(s);
+  if (!DETAILS.has(s.id)) {
+    const early = window.DETAIL && window.DETAIL.id === s.id ? window.DETAIL.res : null;
+    if (early) window.DETAIL = null;
+    DETAILS.set(s.id, (early || fetch(`data/${s.detail_file}`, { cache: 'no-cache' }))
+      .then(r => { if (!r.ok) throw new Error(`the spot's file answered ${r.status}`); return r.json(); })
+      .then(j => { if (!j || j.id !== s.id) throw new Error('another spot\'s file');
+        const { id, generated_at, credits, ...fields } = j; Object.assign(s, fields); s.detail_loaded = true; delete s.detail_missing; })
+      .catch(() => { s.detail_missing = true; if (!s.contributors) s.contributors = []; })
+      .then(() => { DETAILS.delete(s.id); return s; }));
+  }
+  return DETAILS.get(s.id);
+}
+function openSpot(s, fly, push, day) {
+  const id = s.id; current = s; DAY = day;
   const fromMap = mapMode();
   if (push) {
     keepPlace();
@@ -2817,7 +2853,7 @@ async function main() {
   if (box.textContent.trim() === 'Loading forecasts…') box.innerHTML = SKELETON;
   // no-cache: ask the server, not the browser's own copy, which GitHub Pages lets it use for 10
   // minutes. With the offline copy on, sw.js asks the same way. The head asked already (FORECAST).
-  const res = await (window.FORECAST || fetch('data/spots.json', { cache: 'no-cache' }));
+  const res = await (window.FORECAST || fetch('data/spots-lite.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
   DATA = await res.json();
   serverToday = DATA.generated_at.slice(0, 10);
@@ -2836,6 +2872,9 @@ async function main() {
     if (!PHONE.matches) fitAll();   // a phone's map is hidden (0 x 0) until Map is pressed, and fits then
     if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y); }
   }
+  // With the offline copy on (sw.js), the saved spots' own files too, once the page has drawn, so
+  // that their overflows and guides are stored for the water's edge as the forecast is.
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) setTimeout(() => DATA.spots.filter(s => SAVED.has(s.id)).forEach(spotDetail), 4000);
 }
 // What reload() kept, once, into VIEW: only known values, and a day still in the new forecast.
 function keptView() {

@@ -119,7 +119,7 @@ const Sites = (() => {
     const out = document.getElementById('sites'), h1 = document.getElementById('sites-h'), base = new URL('./', location.href).href;
     let data;
     try {
-      const res = await fetch('data/spots.json', { cache: 'no-cache' });
+      const res = await fetch('data/spots-lite.json', { cache: 'no-cache' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       data = await res.json();
     } catch (e) { out.innerHTML = '<p class="notice">The forecasts could not be loaded. Try again later.</p>'; return; }

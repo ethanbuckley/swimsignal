@@ -1082,7 +1082,7 @@ SHELL_SOURCES.append(TEMPLATE.parent / "visits.js")   # and the notes on a visit
 VERSIONED_SCRIPTS += ('<script src="visits.js"></script>',)
 SHELL_SOURCES.append(TEMPLATE.parent / "illness.js")   # and the reports of illness, which use it too
 VERSIONED_SCRIPTS += ('<script src="illness.js"></script>',)
-# Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide from spots.json.
+# Practical guides (src/dipcast/guides.py): guide.js draws a spot's guide, which the app reads from data/spot/<id>.json (write_app_data).
 SHELL_SOURCES.append(TEMPLATE.parent / "guide.js")
 VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # Plan a swim (plan/): its rules, plan.js, likewise. The places it starts from are data, fetched the
@@ -1305,6 +1305,97 @@ def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
 
+# The app's page carries its reasons as comments, kept in the source. The built pages leave out the
+# CSS comments and the script lines that are only a comment: 22 kB of the page's 86 kB compressed on
+# 6 Oct 2026. A comment after code on the same line stays, and so does every HTML comment (the
+# page-meta block is found by its comments). js_without_comment_lines follows the strings, templates,
+# regular expressions and comments, so that a line inside a template that starts with "//" stays; a
+# script it cannot follow to the end is left whole.
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.S)
+INLINE_SCRIPT = re.compile(r"(<script>)(.*?)(</script>)", re.S)
+STYLE_BLOCK = re.compile(r"(<style>)(.*?)(</style>)", re.S)
+REGEX_AFTER = set("(,=:[!&|?{};+-*%<>~^")
+REGEX_AFTER_WORDS = {"return", "typeof", "case", "do", "else", "in", "of", "new", "delete", "void", "throw", "yield", "await", "instanceof"}
+
+
+def js_without_comment_lines(js: str) -> str:
+    """js less each line that is only a // comment, or js itself if its strings, templates, regular
+    expressions or comments do not all close."""
+    out, stack, mode, last, word = [], ["code"], None, None, ""   # stack: code / template frames; mode: in a token
+    for line in js.split("\n"):
+        if mode is None and stack[-1] == "code" and line.lstrip().startswith("//"):
+            continue
+        i, n = 0, len(line)
+        while i < n:
+            c = line[i]
+            if mode == "block":
+                if line.startswith("*/", i):
+                    mode, i = None, i + 2
+                    continue
+            elif mode in ("'", '"'):
+                if c == "\\":
+                    i += 1
+                elif c == mode:
+                    mode, last = None, c
+            elif mode == "regex" or mode == "class":
+                if c == "\\":
+                    i += 1
+                elif mode == "regex" and c == "[":
+                    mode = "class"
+                elif mode == "class" and c == "]":
+                    mode = "regex"
+                elif mode == "regex" and c == "/":
+                    mode, last = None, ")"   # a division may follow, as after a value
+            elif stack[-1] == "template":
+                if c == "\\":
+                    i += 1
+                elif c == "`":
+                    stack.pop()
+                    last = "`"
+                elif line.startswith("${", i):
+                    stack.append("code")
+                    i += 1
+            else:   # code
+                if line.startswith("//", i):
+                    break
+                if line.startswith("/*", i):
+                    mode, i = "block", i + 2
+                    continue
+                if c in "'\"":
+                    mode = c
+                elif c == "`":
+                    stack.append("template")
+                elif c == "/":
+                    if last is None or last in REGEX_AFTER or word in REGEX_AFTER_WORDS:
+                        mode = "regex"
+                    else:
+                        last = c
+                elif c == "{":
+                    stack.append("code")
+                    last = c
+                elif c == "}":
+                    if len(stack) > 1:
+                        stack.pop()   # a block, or the end of ${...} back into its template
+                    last = c
+                elif not c.isspace():
+                    last = c
+                if c.isalnum() or c in "_$":
+                    word = (word + c) if (i and (line[i - 1].isalnum() or line[i - 1] in "_$")) else c
+                elif not c.isspace():
+                    word = ""
+            i += 1
+        if mode in ("'", '"', "regex", "class"):   # these never run over a line
+            return js
+        out.append(line)
+    return "\n".join(out) if mode is None and stack == ["code"] else js
+
+
+def lean_page(html: str) -> str:
+    """The page without CSS comments and comment-only script lines (js_without_comment_lines)."""
+    html = STYLE_BLOCK.sub(lambda m: m.group(1) + CSS_COMMENT.sub("", m.group(2)) + m.group(3), html)
+    return INLINE_SCRIPT.sub(lambda m: m.group(1) + js_without_comment_lines(m.group(2)) + m.group(3), html)
+
+
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
@@ -1319,6 +1410,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
+    template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
         s = (STATIC / name).read_text()
         for a, b in REWRITES:
@@ -1479,6 +1571,34 @@ def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Ti
                                                      "credits": credits}, separators=(",", ":"), default=str))
         n += 1
     return n
+
+
+# What every view of the app loads first is spots.json without the fields only a spot's own page
+# shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
+# spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
+# spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
+# reads it, for the organisers' page and the decision record, and for scripts/alerts.js.
+DETAIL_FIELDS = ("contributors", "guide")
+
+
+def write_app_data(site: Path, doc: dict) -> int:
+    """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
+    one file a spot. A lite spot names its file in `detail_file`, relative to data/. A spot whose id
+    cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
+    out = site / "data" / "spot"
+    shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
+    out.mkdir(parents=True)
+    lite = []
+    for s in doc["spots"]:
+        if not SPOT_ID.fullmatch(str(s["id"])):
+            lite.append(s)
+            continue
+        detail = {k: s[k] for k in DETAIL_FIELDS if k in s}
+        (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
+                                                         "credits": doc.get("credits")}, separators=(",", ":"), default=str))
+        lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json"})
+    (site / "data" / "spots-lite.json").write_text(json.dumps({**doc, "spots": lite}, separators=(",", ":"), default=str))
+    return len(doc["spots"]) - sum(1 for s in lite if "detail_file" not in s)
 
 
 def write_data_page(site: Path, token: str | None = None) -> list[str]:
@@ -1711,10 +1831,11 @@ def build(refresh: bool = True) -> dict:
     health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     push, email = push_config(), email_config()
-    (SITE / "data" / "spots.json").write_text(json.dumps({
-        "generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
-        "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
-        "credits": credits, "spots": results}, default=str))
+    doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
+           "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
+           "credits": credits, "spots": results}
+    (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
+    write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.

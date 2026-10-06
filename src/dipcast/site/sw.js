@@ -20,7 +20,7 @@
 const BUILD = 'dev';
 const CACHE = `dipcast-${BUILD}`;
 const TIMEOUT_MS = 4000;
-const SHELL = ['./', `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, `lists.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots.json', 'manifest.webmanifest',
+const SHELL = ['./', `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, `lists.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots-lite.json', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/fells.webp',
   `since.js?v=${BUILD}`,   // what changed at a saved spot since you last looked
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
