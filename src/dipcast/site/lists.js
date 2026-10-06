@@ -125,11 +125,18 @@ function readShared(hash, dates = []) {
   const day = raw('day');
   return { name: name || SHARED_LIST, spots, day: dates.includes(day) ? day : null };
 }
+// A list as a sites view (sites.html, sites.js): one printable page with each spot's five days, for a
+// centre, a club or a council. sites.html#spots=wharfe-burnsall,grasmere&name=Club%20launches: the spots
+// and the name, nothing else, after the # as a shared list's link. Without a name, no name part.
+function sitesHash(name, spots) {
+  const n = listName(name);
+  return `#spots=${listIds(spots).map(encodeURIComponent).join(',')}${n ? `&name=${encodeURIComponent(n)}` : ''}`;
+}
 // A plan, shared as a list, is named for its day: "Plan for Saturday 10 Oct".
 const planListName = iso => 'Plan for ' + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, planListName };
+    keepSpots, sameList, shareHash, readShared, planListName, sitesHash };
 }

@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The sites view: a prose page, with the shared head, header and foot, written by scripts/build_site.py
+     (write_sites) beside the app, whose levels.js, lists.js, organisers.js and spots.json it reads.
+     sites.js fills #sites from the spots after the # (docs/DESIGN.md, "The sites view and the decision record"). -->
+<title>Sites view · SwimSignal</title>
+<meta name="description" content="Several swim spots on one page: each spot's pollution risk forecast for the next five days, to bookmark and print before a session.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's. A row: the place, the headline and why, the five days. */
+  .s-issued { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
+  ol.sites { list-style:none; padding:0; margin:8px 0 0; border-top:1px solid var(--line); }
+  .site { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; gap:4px 20px; align-items:start; padding:12px 0; border-bottom:1px solid var(--line); margin:0; }
+  .s-place { min-width:0; }
+  .s-name { display:block; font:600 var(--fs-body)/1.3 var(--font-display); }
+  .s-meta { display:block; font-size:var(--fs-meta); color:var(--muted); margin-top:2px; }
+  main.doc .s-say p { margin:0; }
+  /* The level's colour on its words, never on a surface (as a saved card sets it). */
+  main.doc .s-head { font:700 var(--fs-note)/1.35 var(--font-text); color:var(--k-na); }
+  main.doc .s-head.low { color:var(--k-low); } main.doc .s-head.moderate { color:var(--k-moderate); } main.doc .s-head.high { color:var(--k-high); }
+  main.doc .s-head.veryhigh { color:var(--k-veryhigh); } main.doc .s-head.clear { color:var(--k-clear); }
+  main.doc .s-why { font-size:var(--fs-note); margin-top:2px; }
+  main.doc .s-rec { font-size:var(--fs-meta); color:var(--muted); margin-top:4px; }
+  .s-rec a { color:var(--link); }
+  /* The five days as the list draws them (index.html, .week): a square bar a day, its letter under it. */
+  .week { display:flex; gap:4px; }
+  .wk { display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .wk i { display:block; width:10px; height:22px; background:var(--unknown); }
+  .wk i.low { background:var(--low); } .wk i.moderate { background:var(--moderate); } .wk i.high { background:var(--high); } .wk i.veryhigh { background:var(--veryhigh); }
+  .wk b { font-size:var(--fs-meta); font-weight:600; line-height:1; color:var(--faint); }
+  .wk.first b { color:var(--ink); }
+  .week.rain .wk { justify-content:flex-end; height:40px; }
+  .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
+  .s-missing { font-size:var(--fs-note); margin:12px 0 0; }
+  /* A phone: the place over the headline, the five days beside the headline. */
+  @media (max-width: 600px) {
+    .site { grid-template-columns:minmax(0, 1fr) 66px; }
+    .s-place { grid-column:1 / -1; }
+  }
+  .print-only { display:none; }
+  /* Printed: ten rows to an A4 page, no controls. Each row on one line of three columns, the meta sizes. */
+  @page { size:A4 portrait; margin:12mm; }
+  @media print {
+    body { background:var(--card); }
+    .top nav, .screen-only, .site-foot p + p, noscript, p.lead { display:none; }
+    .top { padding:0 0 6px; background:var(--card); color:var(--ink); }
+    .top .brand { color:var(--ink); }
+    main.doc { max-width:none; padding:8px 0 0; }
+    main.doc h1 { font-size:var(--fs-head); margin:0 0 4px; }
+    .print-only { display:block; }
+    .s-issued, .s-foot { font-size:var(--fs-meta); }
+    .site { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; padding:6px 0; break-inside:avoid; }
+    .s-place { grid-column:auto; }
+    .s-name { font-size:var(--fs-note); }
+    main.doc .s-why { font-size:var(--fs-meta); }
+    .wk i { height:16px; } .week.rain .wk { height:32px; }
+    a { color:var(--ink); text-decoration:none; }
+    .site-foot { padding-bottom:0; }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="./">Explore</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1 id="sites-h">Sites view</h1>
+<p class="lead">Each spot's pollution risk forecast for the next five days, on one page to print before a session. The spots and the name are in the address, after the #, so they never reach a server.</p>
+<noscript><p class="notice">This page needs JavaScript to read the forecasts.</p></noscript>
+<div id="sites" aria-live="polite"></div>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="levels.js"></script>
+<script src="lists.js"></script>
+<script src="organisers.js"></script>
+<script src="sites.js"></script>
+</body></html>

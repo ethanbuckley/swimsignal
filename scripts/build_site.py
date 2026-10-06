@@ -1260,7 +1260,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -1340,6 +1340,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_data_page(site, token)   # lists what is in data/, so build() writes the data files first
     write_embed(site)
     write_organisers(site, token)
+    write_sites(site, token)
+    write_record(site, token)
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
@@ -1484,24 +1486,53 @@ def write_embed(site: Path) -> str:
 ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
 REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
-ORGANISERS_SCRIPTS = ('<script src="levels.js"></script>', '<script src="organisers.js"></script>')
+# The organisers' page loads lists.js and sites.js too, for "Make a sites link" (sites.js, maker).
+ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+
+
+def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],
+                        token: str | None = None) -> str:
+    """A prose page from src/dipcast/site/<name> that reads spots.json with its own scripts, written
+    beside the app with its scripts at ?v=<hash of the scripts>, as the embed's are, so the page and its
+    level rules always come from one build. own: the scripts this page brings (the app's, levels.js,
+    lists.js and evidence.js, are copied with it). Returns the scripts' version."""
+    h = hashlib.sha256()
+    for f in scripts:
+        h.update((TEMPLATE.parent / f).read_bytes())
+    v = h.hexdigest()[:8]
+    page = (TEMPLATE.parent / name).read_text()
+    for f in scripts:
+        tag = f'<script src="{f}"></script>'
+        if tag not in page:
+            raise ValueError(f"{name} has lost {tag}, which the build versions")
+        page = page.replace(tag, f'<script src="{f}?v={v}"></script>', 1)
+    for f in own:
+        shutil.copy(TEMPLATE.parent / f, site / f)
+    (site / name).write_text(with_counter(page, token))
+    return v
 
 
 def write_organisers(site: Path, token: str | None = None) -> str:
-    """organisers.html and organisers.js beside the app (which has levels.js and spots.json). Returns
-    the scripts' version."""
-    h = hashlib.sha256()
-    for f in ("levels.js", "organisers.js"):
-        h.update((TEMPLATE.parent / f).read_bytes())
-    v = h.hexdigest()[:8]
-    page = ORGANISERS.read_text()
-    for tag in ORGANISERS_SCRIPTS:
-        if tag not in page:
-            raise ValueError(f"organisers.html has lost {tag}, which the build versions")
-        page = page.replace(tag, tag.replace('.js"', f'.js?v={v}"'), 1)
-    shutil.copy(TEMPLATE.parent / "organisers.js", site / "organisers.js")
-    (site / "organisers.html").write_text(with_counter(page, token))
-    return v
+    """organisers.html and organisers.js beside the app (which has levels.js, lists.js and spots.json).
+    Returns the scripts' version."""
+    return write_scripted_page(site, "organisers.html", ORGANISERS_SCRIPTS, ("organisers.js", "sites.js"), token)
+
+
+# The sites view, sites.html#spots=a,b&name=...: several spots on one page, each with its five days, for a
+# centre, a club or a council to print before a session (sites.js). And the decision record,
+# record.html#spot=<id>&day=YYYY-MM-DD: one A4 page for one spot and one day, to attach to a written
+# go/no-go decision (record.js). Both reuse organisers.js's words, so they load it; neither is in the
+# offline copy, for the organisers' page's reasons, and the sitemap lists both, as it lists that page.
+SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "record.js")
+
+
+def write_sites(site: Path, token: str | None = None) -> str:
+    return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "sites.js"), token)
+
+
+def write_record(site: Path, token: str | None = None) -> str:
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "record.js"), token)
 
 
 def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> None:
