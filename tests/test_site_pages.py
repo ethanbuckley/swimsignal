@@ -90,6 +90,32 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert ["Kendal", 54.33, -2.75] in places["places"]
 
 
+def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_path):
+    """The home page and a spot's page carry their opening under the sky (.lead, .answer) before the
+    script runs, so the picture paints without waiting for the forecast; the home page's words are
+    the list's own, word for word, and stop before anything that depends on the forecast."""
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
+    home = (tmp_path / "index.html").read_text()
+    body = home.split('<div id="result">', 1)[1].split('<p class="about-line"', 1)[0]
+    assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
+    assert "Five-day pollution risk forecasts for 3 spots in England, or " in body and 'aria-busy="true"' in body
+    assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
+    page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
+    lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
+    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} spots in England, or ",
+                 " any river or lake on the map. <a href=\"#about\">How it works</a></p>", bs.LEAD_NOTE,
+                 'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
+                 '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>',
+                 '<button type="button" class="chip-btn low" data-low aria-pressed="']:
+        assert part in lead and part.split("${")[0] in body, part
+    assert lead.index(bs.LEAD_NOTE) < lead.index("best-day")   # the caveat's line is the last thing built in
+    assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
+    assert "<span data-low-t>Low\u00a0risk only</span>" in body
+    spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
+    assert '<section class="answer"><h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in spot
+
+
 def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(tmp_path):
     bs = _build_site()
     spots = [{**SPOTS[0], "source": "designated"}, {**SPOTS[1], "source": "curated"}]

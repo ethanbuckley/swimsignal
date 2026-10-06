@@ -302,7 +302,9 @@
      and it is the paper 300 px further down, so nothing below that sits on it. Above it, its own sky
      colour runs up to the header. Every view puts a tile first after the band. The picture is 500 by
      600 CSS px; a view wider than that (a phone on its side, a small tablet) stretches it sideways to
-     the edges and keeps its height, so the sky still ends at the words and nothing moves up or down. */
+     the edges and keeps its height, so the sky still ends at the words and nothing moves up or down.
+     On a phone the band is 48 px, not 128 (6 Oct 2026): the first tile then starts on the fells, which show
+     through its glass, and the first saved spot fits on a 375 x 812 screen. */
   #panel { isolation:isolate; }
   .answer, .lead { position:relative; margin-bottom:128px; }
   .answer::before, .lead::before { content:""; position:absolute; z-index:-1; top:-600px; bottom:-310px; left:-24px; right:-24px; pointer-events:none;
@@ -644,6 +646,7 @@
   @media (max-width: 800px) {
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
+    .answer, .lead { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
@@ -686,6 +689,13 @@
   @media (max-width: 340px) {
     .toolbar .chip-btn .dot { display:none; }   /* room for "Today and tomorrow" at 17 px; iOS zooms a select under 16 */
   }
+  /* "Low risk only" on two lines under 375 px ("Low risk", then "only": the label's first space does not
+     break), so the chip is no wider than "Low risk" was and "Today and tomorrow" still fits beside it. */
+  @media (max-width: 374px) { .toolbar [data-low-t] { width:min-content; line-height:1.15; text-align:left; } }
+  /* The home page as built (scripts/build_site.py, home_lead) says tap or click before the script runs,
+     by the same test as the script's TOUCH. */
+  @media (pointer: coarse) { .w-click { display:none; } }
+  @media not all and (pointer: coarse) { .w-touch { display:none; } }
 
   /* Swimmers' reviews (reviews.js; the service that takes them in is reviews/). A tile after the others,
      built as they are: the share who would swim there again as its figure, drawn as a bar in ink (it is
@@ -1842,13 +1852,13 @@ legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
 legend.addTo(map);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
 // "Low risk only": every other spot shrinks to a faint dot, so the green ones stand out while you
-// pan and the rest still show where there are spots. The list's "Low risk" chip is the same switch.
+// pan and the rest still show where there are spots. The list's "Low risk only" chip is the same switch.
 // The day picker above it colours the map by one day instead of today and tomorrow (VIEW.day), and
 // the switch and the chip then go by that day too.
 const MARKERS = new Map();
 const mapLevel = s => VIEW.day ? dayLevel(s, VIEW.day) : level(s);
 const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
-const lowLabel = () => 'Low risk';
+const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
 const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings. Not a safety check: look at the signs at the water before you swim.`;
 // A marker's tooltip: the name and the list row's headline, so the map and the list say the same.
 const markerTip = s => `${esc(s.name)}: ${listHeadline(s)}`;
@@ -1992,17 +2002,20 @@ function renderList() {
   document.title = `${BRAND} · pollution risk forecasts for swim spots`;
   const saved = DATA.spots.filter(s => SAVED.has(s.id)), best = bestDayNote(DATA.spots);
   const sorts = Object.entries(SORTS).filter(([k]) => k !== 'near' || 'geolocation' in navigator);
-  // The answer first: the intro and one row of controls, with one line under it (the caveat and the
-  // week's best day), under the sky (.lead); then the saved spots, as cards on one tile, and all the
-  // spots on another. The colour key went: each row says its level in words.
+  // The answer first: the intro and one row of controls, with a line under it (the caveat, who it is
+  // for and the tools for groups) and then the week's best day, under the sky (.lead); then the saved
+  // spots, as cards on one tile, and all the spots on another. The colour key went: each row says its
+  // level in words. Everything down to the caveat's line is also in the built home page, so it and the
+  // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
+  // forecast comes after it, so that nothing above it moves when the script draws this.
   let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} spots in England, or ${TOUCH ? 'tap' : 'click'} any river or lake on the map. <a href="#about">How it works</a></p>`
     + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div></section>`
     + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${[0,1,2,3,4].map(k => addDays(today(), k)).map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
-    + `<p class="planner-note best-day">Forecasts, not water tests.${best ? ' ' + best : ''}</p>`
     // Who it is for: the same forecast serves anyone who gets in the water (clubs.html says how wet each
     // activity gets), and groups and events have their own tools.
-    + `<p class="planner-note groups">For swimming, paddling, ghyll scrambling and anything else that puts you in the water. Taking a group or running an event? <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
+    + `<p class="planner-note groups">Forecasts, not water tests, for swimming, paddling and ghyll scrambling. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
+    + (best ? `<p class="planner-note best-day">${best}</p>` : '')
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
@@ -2835,8 +2848,9 @@ document.addEventListener('keydown', e => {
 PHONE.addEventListener('change', () => { if (!PHONE.matches && mapMode()) setMapMode(false); setHeaderHeight(); placeMap(); });
 
 // While the forecast loads, the shape of the list in its place, so the page does not jump when it
-// comes; the words are for screen readers. Only over the home page's placeholder: a spot's built
-// page already shows its name there, and the Saved page its heading.
+// comes; the words are for screen readers. Only over the bare placeholder: the built home page
+// already shows its opening and the list's shape there (home_lead), a spot's page its name, and the
+// Saved page its heading.
 const SKELETON = '<div class="skel" aria-busy="true"><p class="sr">Loading forecasts…</p><div aria-hidden="true"><span class="skel-h"></span>'
   + '<span class="skel-r"></span>'.repeat(5) + '</div></div>';
 async function main() {
@@ -2853,6 +2867,9 @@ async function main() {
       .bindTooltip('').on('click', () => select(s.id, false, true, VIEW.day)).addTo(spotLayer));
   }
   const kept = keptView();
+  // Words typed into the built home page's search while the forecast came (home_lead) carry over.
+  const early = document.getElementById('q'), typing = Boolean(early) && document.activeElement === early;
+  if (early && early.value) VIEW.q = early.value;
   fillMapDays(); styleMarkers(); setHeaderHeight(); savedBadge(); syncSoon();
   const q = spotFromURL(), day = dayFromURL();
   if (q && DATA.spots.some(s => s.id === q)) {
@@ -2861,7 +2878,8 @@ async function main() {
     select(q, true, false, day);
   } else {
     if (!PHONE.matches) fitAll();   // a phone's map is hidden (0 x 0) until Map is pressed, and fits then
-    if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y); }
+    if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y);
+      if (typing) { const box = document.getElementById('q'); box.focus(); box.setSelectionRange(box.value.length, box.value.length); } }
   }
 }
 // What reload() kept, once, into VIEW: only known values, and a day still in the new forecast.
