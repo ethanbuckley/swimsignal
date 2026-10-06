@@ -31,6 +31,7 @@
 <tr data-file="overflows.geojson"><td><a href="data/overflows.geojson">overflows.geojson</a></td><td>Every storm overflow on the map, and what it is doing now</td><td class="num">–</td></tr>
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
 <tr data-file="verification_live.csv"><td><a href="data/verification_live.csv">verification_live.csv</a></td><td>The individual forecast and observation pairs behind the live spill scores</td><td class="num">–</td></tr>
+<tr data-file="spot_scores.json"><td><a href="data/spot_scores.json">spot_scores.json</a></td><td>Those live spill scores summed over each spot's upstream overflows, for its page</td><td class="num">–</td></tr>
 <tr data-file="upstream/"><td>upstream/</td><td>Every monitored storm overflow upstream of each spot, one file a spot, for the organisers' page</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
 <tr data-file="coastal.json"><td><a href="data/coastal.json">coastal.json</a></td><td>Official English coastal and estuary directory, historical ratings and dated advice</td><td class="num">–</td></tr>
@@ -125,6 +126,15 @@
 <dt><code>observed</code></dt><dd>1 if a spill was observed that day, 0 if none was observed; days without sufficient observations are excluded</dd>
 </dl>
 <p><b>Licence.</b> SwimSignal's forecast and scoring rows, with the water companies' discharge records (CC BY 4.0).</p>
+
+<h2 id="spot-scores-json">spot_scores.json</h2>
+<p>The rows of <code>verification_live.csv</code> for each spot's upstream overflows, counted, for the "How the forecast has done here" tile on its page. Nothing is weighted, so each count can be found by filtering the CSV to the overflows in the spot's <code>upstream/</code> file. A spot with no monitored overflow upstream is left out. The file has <code>warn_at</code>, the spill chance counted as a warning (the Accuracy page's); <code>min_spills</code>, the spill days a spot needs before its page gives a share; <code>first_day</code> and <code>last_day</code>; <code>all</code>, the same counts over every row; <code>generated_at</code>, <code>credits</code> and <code>spots</code>, by spot id:</p>
+<dl class="fields">
+<dt><code>overflows</code>, <code>scored_overflows</code></dt><dd>How many monitored overflows are upstream, and at how many any day has been scored</dd>
+<dt><code>overflow_days</code>, <code>spill_days</code>, <code>days</code></dt><dd>The scored overflow-days (one overflow on one day), those with a spill, and the calendar days they span (<code>first_day</code> to <code>last_day</code>)</dd>
+<dt><code>forecasts</code>, <code>hits</code>, <code>misses</code>, <code>false_alarms</code></dt><dd>The scored forecasts, up to five for each overflow-day (one a lead), and of them: warnings before a spill, spills without a warning, and warnings with no spill</dd>
+</dl>
+<p><b>Licence.</b> SwimSignal's scores, made against the water companies' discharge records (CC BY 4.0).</p>
 
 <h2 id="upstream">upstream/</h2>
 <p>One file a spot, <code>upstream/&lt;id&gt;.json</code>, with every monitored storm overflow within 60 km upstream along the river network, most reach first. <code>spots.json</code> keeps only the ten that matter most in the current forecast; <a href="organisers.html">the organisers' page</a> loads a spot's file when it has more. A spot with nothing upstream has no file. Each file has the spot's <code>id</code>, <code>generated_at</code>, <code>credits</code> and <code>overflows</code>, one entry an overflow:</p>

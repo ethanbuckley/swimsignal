@@ -924,6 +924,7 @@
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
+<script src="spotscores.js"></script>   <!-- how the forecast has done here: the live scores of the spot's upstream overflows -->
 <script src="eatoday.js"></script>   <!-- today's EA advice: the EA's own panel, loaded when its fold is opened -->
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
@@ -2829,7 +2830,8 @@ function render(d) {
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
   const tiles = `<div class="tiles">${fx.filter(o => o.icon !== ICON.rating).map(tile).join('')}</div>`
-    + (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '');
+    + (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
+    + (typeof scoresHost === 'function' ? scoresHost(d) : '');   // how the forecast has done here (spotscores.js), filled when its file arrives
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);

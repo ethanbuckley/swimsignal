@@ -692,6 +692,26 @@ sources sit together, and the only place with the latest lab sample.
 - No level colour anywhere in it: the rating's word is in ink here, since its tile already colours it.
 - Not on a point clicked on the map, nor on a spot without a forecast, whose answer says why.
 
+### How the forecast has done here (6 October 2026, draft)
+
+One tile (`spotscores.js`) right after "What the level rests on", from `data/spot_scores.json`
+(`src/dipcast/spot_scores.py`). The live scores are per overflow, so the tile gives the plain sums of the
+spot's upstream overflows' rows in `data/verification_live.csv`, under the Accuracy page's rules and its
+High risk line (a 40% spill chance at the overflow). Nothing is weighted by reach, so each count can be
+found in the CSV.
+
+- Two short paragraphs, then a link to the Accuracy page, then the tile's fold for the definitions.
+- First: since when, at how many of the overflows upstream, how many overflow-days, how many with a spill.
+- Then one of three: no spill ("nothing yet to judge its warnings by"); under 10 spill days (the counts
+  and "Too few spills to give a share: that takes 10"); or 10 or more (the share, worded as the Accuracy
+  page words it, "It warned of 26% of those spills", with its counts, and the Accuracy page's "too few to
+  judge across different weather" while under 14 days). False alarms are counted as forecasts, as hits are.
+- None scored: says so, and why an overflow cannot be scored (no live feed, or no day that passed the
+  scoring rules).
+- Never "accurate" or "safe". No level colour.
+- Not on a point clicked on the map, a failed forecast, an isolated lake, a spot with no monitored overflow
+  upstream (What the level rests on already says so), or when the file is missing.
+
 ### Today's EA advice (4 October 2026)
 
 The Environment Agency's short-term advice against bathing, after a pollution incident or an algal

@@ -524,7 +524,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert row("links/") == '<td>links/</td><td>Not described here yet.</td><td class="num">3 kB</td>'   # a folder, whole
     assert bs.with_data_files((bs.STATIC / "data.html").read_text(), data)[1] == ["links/", "new.csv"]
     # The documented files each have a section of their own.
-    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "places.json"):
+    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "spot_scores.json", "places.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
     assert '<h2 id="anypoint">anypoint/</h2>' in page and '<h2 id="upstream">upstream/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
@@ -534,7 +534,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 15
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 16   # spot_scores.json makes 16
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
