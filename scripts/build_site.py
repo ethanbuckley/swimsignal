@@ -1098,6 +1098,9 @@ VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
 # What the level rests on: evidence.js draws a spot's evidence, with its ages and sources, from spots.json.
 SHELL_SOURCES.append(TEMPLATE.parent / "evidence.js")
 VERSIONED_SCRIPTS += ('<script src="evidence.js"></script>',)
+# How the forecast has done here: spotscores.js draws it from data/spot_scores.json (src/dipcast/spot_scores.py).
+SHELL_SOURCES.append(TEMPLATE.parent / "spotscores.js")
+VERSIONED_SCRIPTS += ('<script src="spotscores.js"></script>',)
 # Today's EA advice: eatoday.js, the fold that loads the EA's own panel in the reader's browser (no build request).
 SHELL_SOURCES.append(TEMPLATE.parent / "eatoday.js")
 VERSIONED_SCRIPTS += ('<script src="eatoday.js"></script>',)
@@ -1126,6 +1129,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
+    shutil.copy(TEMPLATE.parent / "spotscores.js", site / "spotscores.js")   # how the forecast has done here
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
@@ -1724,6 +1728,9 @@ def build(refresh: bool = True) -> dict:
         log_build(health, generated)
     (SITE / "data" / "verification.json").write_text(json.dumps({**load_verification(), "credits": credits}, default=str))
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
+    # How the forecast has done at each spot's upstream overflows, from that CSV: before the pages, for data.html.
+    from dipcast import spot_scores
+    health["spot_scores"] = spot_scores.write(SITE, upstream, generated, credits)
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
