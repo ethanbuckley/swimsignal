@@ -579,6 +579,16 @@ still publishes when none does, with every overflow marked feed down: not
 publishing would also freeze the rain forecasts and leave the old statuses on
 the page with no note.
 
+A short read is treated the same way (6 Oct 2026). Yorkshire Water's layer is
+rewritten whole on each refresh, and a read during a rewrite can return part
+of it: 1,000 of 2,179 rows on 16 Sep, 1,179 on 6 Oct at 13:48 UTC. That build
+listed 1,000 overflows as "not in the company's live feed", though all were in
+it. Now a read with under 90% of a company's usual rows (the median of its
+last 10 polls that returned any) is read again, up to three reads. Overflows
+still missing keep their last snapshot as feed down, and the build warns. The
+scorer was never affected: a missing overflow gets no observation that poll,
+so its day cannot pass the coverage rule as dry.
+
 **Data state of each overflow (4 Oct 2026).** A frozen feed must not read as
 "not discharging". Each overflow now carries `data_state` beside `status`
 (`ingest.live.data_states`), in the overflow table, the contributors in

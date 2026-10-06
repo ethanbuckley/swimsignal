@@ -136,8 +136,8 @@ def test_off_by_default_nothing_is_fetched_or_written(tmp_path, monkeypatch):
     asked = []
     monkeypatch.setattr(dwr_cymru, "fetch_all", lambda *a, **k: asked.append(a) or FIXTURE["rows"])
     monkeypatch.setattr(dwr_cymru, "layer_edit_time", lambda url: asked.append(url) or FIXTURE["dataLastEditDate"])
-    monkeypatch.setattr(live, "fetch_live", lambda: pd.DataFrame({"status": [0]}))
-    monkeypatch.setattr(live, "save_live", lambda df: None)
+    monkeypatch.setattr(live, "fetch_live", lambda **kw: pd.DataFrame({"status": [0]}))
+    monkeypatch.setattr(live, "save_live", lambda df, *a: None)
     monkeypatch.setattr(overflows, "build_overflows", lambda net: pd.DataFrame({"site_id": ["A"]}))
     monkeypatch.setattr(forecast_log, "verify_live", lambda: {"n_scored": 0})
     jobs.refresh_all(net=object())
