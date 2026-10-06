@@ -1088,8 +1088,9 @@ gives all four navigation links a single full-width row.
 
 - **The first saved spot fits on a 375 x 812 phone.** Before, the Saved tile began behind the bar at
   the bottom. Three changes, from three options shown to Ethan (the PR lists them): the caveat and the
-  line for groups are one line ("Forecasts, not water tests, for swimming, paddling and ghyll
-  scrambling", then the link to the clubs page); the week's best day follows it on its own line; and on
+  line for groups are one line ("For swimming and water sports. Forecasts, not water tests.", then the
+  link to the clubs page; two short sentences, since one sentence joining the caveat to the list of
+  activities read oddly); the week's best day follows it on its own line; and on
   a phone the fells' band under the opening is 48 px, not 128, so the first tile starts on the fells,
   which show through its glass. Wider screens keep 128.
 - **"Low risk only"**, not "Low risk", on the list's switch: it hides every spot that is not low risk,
