@@ -1979,6 +1979,9 @@ function renderList() {
     + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${[0,1,2,3,4].map(k => addDays(today(), k)).map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
     + `<p class="planner-note best-day">Forecasts, not water tests.${best ? ' ' + best : ''}</p>`
+    // Who it is for: the same forecast serves anyone who gets in the water (clubs.html says how wet each
+    // activity gets), and groups and events have their own tools.
+    + `<p class="planner-note groups">For swimming, paddling, ghyll scrambling and anything else that puts you in the water. Taking a group or running an event? <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices() + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
@@ -2547,7 +2550,8 @@ function actions(d) {
     + `<button type="button" class="btn" id="swam" aria-expanded="false">Log a swim</button>`   // the swim journal's form (journal.js)
     + `<a class="btn" href="${fb}">Tell us how you used this</a></div>`
     + `<p class="small muted below" id="share-msg" aria-live="polite"></p><p class="small muted below" id="swam-msg" aria-live="polite"></p>`
-    + `<p class="small muted below">Running an event or a club swim here? <a href="organisers.html#spot=${encodeURIComponent(d.id)}">The overflows upstream, a checklist and signs</a>.</p>`
+    + `<p class="small muted below">Taking a group in the water here, or running an event? <a href="organisers.html#spot=${encodeURIComponent(d.id)}">The event page</a>, with the overflows upstream, a checklist and signs; `
+    + `<a href="clubs.html">tools for clubs and centres</a>; and a decision record under each day.</p>`
     + `<p class="small muted below">Did the forecast change where or when you swam? <a href="${fb}">Tell&nbsp;Ethan</a>.</p>`;
 }
 function bindShare(d) {
