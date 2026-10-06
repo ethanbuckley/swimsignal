@@ -180,6 +180,10 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
         return (*empty, np.zeros((0, len(days)))) if return_rain else empty
     cells = cells_for_sites(ov["lat"], ov["lon"])
     rain = fetch_forecast(cells) if rain is None else rain.copy()
+    if rain.empty:   # Open-Meteo sent nothing and nothing cached is under a day old: every day unknown
+        shape = (len(ov), len(days))
+        none = (np.full(shape, np.nan), np.zeros(shape, dtype=bool))
+        return (*none, np.full(shape, np.nan)) if return_rain else none
     rain["time"] = rain["time"].dt.tz_convert(LOCAL_TZ)   # local-midnight day boundaries
     daily = daily_rain_features(rain)
     sites = ov[["site_id", "lat", "lon", "company", "lta_spills", "spill_hours", "edm_operational_pct"]]

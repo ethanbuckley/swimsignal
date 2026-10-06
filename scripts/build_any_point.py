@@ -658,11 +658,16 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
     take = due[:max(0, budget)]
     error = None
     if take:
+        seen = len(rainfall.fetch_errors())
         try:
-            rainfall.fetch_forecast(take, attempts=2)   # one retry for a bad handshake; a refusal is not waited out
+            # One retry, after 1-2 s or a Retry-After of up to a minute. A failed request no longer
+            # raises or stops the later ones; its cells keep their cached forecast, read below.
+            rainfall.fetch_forecast(take, attempts=2)
         except Exception as e:  # noqa: BLE001 - what was fetched before the failure is kept
             error = str(e)
-            log.warning("any-point rain: %s", e)
+        error = error or next(iter(rainfall.fetch_errors()[seen:]), None)
+        if error:
+            log.warning("any-point rain: %s", error)
     frames = [pd.read_parquet(path[c]) for c in cells if age(c) <= max_age_h * 3600]
     cols = ["cell_lat", "cell_lon", "time", "precip_mm", "issued_at"]
     rain = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=cols)
