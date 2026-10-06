@@ -433,7 +433,8 @@ What makes Apple's page clean, and what was taken from it:
 - **A background that is the place.** A picture of fells over a lake (`icons/fells.webp`, 8 KB,
   drawn by `scripts/make_sky_image.py`, so it needs no licence and no request to anyone else) hangs
   behind the opening of each view: its sky ends at the bottom of the answer's words, its fells fill a
-  128 px band below them, and it is the paper about 300 px further down. Its top rows are the
+  128 px band below them (48 px on a phone since 6 October 2026: see "The first screen"), and it is
+  the paper about 300 px further down. Its top rows are the
   `--sky` colour that runs on up to the header, so it has no edge. The weather data has only the
   day's high, sunrise and sunset, so the picture cannot follow the weather, as Apple's does. A
   photograph would be a separate job, with sourcing and licences. The picture is 500 CSS px wide; from
@@ -1005,3 +1006,24 @@ gives all four navigation links a single full-width row.
   app's foot beside "For event organisers". Its limits come first, in a summary box. Its action lines are
   `levels.js`'s word for word (a test checks), each quote is word for word from a page opened on the date
   given in the page's comment, and level words carry "risk".
+
+## The first screen (6 October 2026)
+
+- **The first saved spot fits on a 375 x 812 phone.** Before, the Saved tile began behind the bar at
+  the bottom. Three changes, from three options shown to Ethan (the PR lists them): the caveat and the
+  line for groups are one line ("Forecasts, not water tests, for swimming, paddling and ghyll
+  scrambling", then the link to the clubs page); the week's best day follows it on its own line; and on
+  a phone the fells' band under the opening is 48 px, not 128, so the first tile starts on the fells,
+  which show through its glass. Wider screens keep 128.
+- **"Low risk only"**, not "Low risk", on the list's switch: it hides every spot that is not low risk,
+  as the map's switch of the same name does. Under 375 px it takes two lines ("Low risk", "only") so
+  that "Today and tomorrow" still fits beside it.
+- **The opening is in the built page.** The home page carries the list's opening down to the caveat's
+  line (`home_lead` in `scripts/build_site.py`, word for word the script's, which a test checks), and a
+  spot's page its name and description under the sky, each with the first tile's shape in grey below.
+  So the picture, the largest thing on the first screen, paints without waiting for the forecast:
+  measured on 6 October 2026 at 375 px on slow 4G, the largest paint moved from 4.4 to 2.4 s on the
+  home page and from 4.3 to 2.4 s on a spot's page. What depends on the forecast (the best day, the
+  build's notices) comes after the caveat's line, so the opening never grows above it and the
+  picture never paints again, larger, when the script draws the real one. Words typed into the search
+  before then carry over.

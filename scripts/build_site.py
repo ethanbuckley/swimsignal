@@ -1189,15 +1189,47 @@ def spot_blurb(spot: dict) -> str:
             f"and the river network. Updated several times a day.")
 
 
+# The opening of each view, written into the built page so that its words and the picture behind them
+# (the ::before of .lead and .answer, index.html) paint before data/spots.json arrives. That picture is
+# the largest thing on a phone's first screen, so page-speed scores time the first load by it: drawn
+# only by the script, it came 4.3 s into a slow 4G load (5 Oct 2026). The stand-in must be no taller
+# than what the script draws, or the picture would sit lower and paint larger when it arrives, and that
+# later paint would count instead; so it holds only what does not depend on the forecast.
+SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
+               'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
+LEAD_NOTE = ('<p class="planner-note groups">Forecasts, not water tests, for swimming, paddling and ghyll scrambling. '
+             '<a href="clubs.html">Tools for clubs, centres and events</a>.</p>')
+# Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
+# sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
+SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="skel-r"></span>' * 4 + '</div>'
+
+
+def home_lead(n: int) -> str:
+    """The list's opening as index.html's renderList draws it, down to the caveat's line, for n spots,
+    then the list's shape in hairline grey until the forecast comes. The search works at once: what is
+    typed carries over. The day picker has only its first choice until the forecast's dates are known."""
+    return ('<div id="result"><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
+            f'<p class="lede">Five-day pollution risk forecasts for {n} spots in England, or <span class="w-touch">tap</span>'
+            '<span class="w-click">click</span> any river or lake on the map. <a href="#about">How it works</a></p>'
+            f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
+            'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div></section>'
+            '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
+            '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
+            '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
+            f'{LEAD_NOTE}</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
+
+
 def spot_page(template: str, spot: dict, root: str) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
-    <head>, and its name in the body for crawlers and for the moment before the script runs."""
+    <head>, and in the body its name under the sky, as the answer will be (see home_lead), for
+    crawlers and for the moment before the script runs."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
                                              base="../../"), template, count=1)
-    return page.replace(LOADING, f'<div id="result"><h2 class="spot-name">{escape(spot["name"])}</h2>'
-                                 f'<p class="muted">{escape(blurb)} Loading the forecast…</p></div>', 1)
+    return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
+                                 f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
+                                 f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
 
 
 def saved_page(template: str, root: str) -> str:
@@ -1357,6 +1389,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./"), template, count=1)
+    home = home.replace(LOADING, home_lead(len(results)), 1)
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
     (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))
