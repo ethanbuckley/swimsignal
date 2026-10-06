@@ -85,7 +85,7 @@ const Embed = (() => {
   // The forecast, from the server each time (no-cache, as the app asks): GitHub Pages answers an
   // unchanged file with a 304, so a screen asking every few minutes downloads it only when it changes.
   async function load() {
-    const res = await fetch('data/spots.json', { cache: 'no-cache' });
+    const res = await fetch('data/spots-lite.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   }

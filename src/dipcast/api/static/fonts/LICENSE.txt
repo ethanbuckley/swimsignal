@@ -1,9 +1,9 @@
 The typefaces in this directory are subsets (Latin) of two open-source families by Adobe, served from this site so that no third party receives visitors' requests:
 
-  SourceSans3-latin.woff2, SourceSans3-italic-latin.woff2   Source Sans 3, variable weight 400-700
-  SourceSerif4-latin.woff2                                   Source Serif 4, variable weight 400-700, optical size 8-60
+  SourceSans3-latin.woff2, SourceSans3-italic-latin.woff2   Source Sans 3, variable weight 200-900
+  SourceSerif4-latin.woff2                                   Source Serif 4, weight 600, variable optical size 8-60
 
-Both are licensed under the SIL Open Font License 1.1, reproduced below. Sources: https://github.com/adobe-fonts/source-sans and https://github.com/adobe-fonts/source-serif (the subsets are the ones Google Fonts serves).
+Both are licensed under the SIL Open Font License 1.1, reproduced below. Sources: https://github.com/adobe-fonts/source-sans and https://github.com/adobe-fonts/source-serif (the subsets are the ones Google Fonts serves, unchanged; the serif is its file for weight 600 alone).
 
 =============================== Source Sans 3 ===============================
 

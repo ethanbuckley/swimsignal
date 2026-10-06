@@ -133,6 +133,7 @@ const guideAsk = (d, has) => `<p class="g-ask">${has ? 'Something here wrong or 
 // The tile. Without a guide, a short one asking for what a swimmer knows: that is how a guide starts.
 function guideTile(d, today) {
   if (!d || d.unlisted) return '';   // a point clicked on the map (anypoint.js) is not a spot anyone has guided
+  if (d.detail_missing) return '';   // its guide is in data/spot/<id>.json, which did not arrive: not "no guide yet"
   const g = d.guide;
   const head = `<h2 class="t-lab" id="guide-h">${guideIcon()}<span>Practical guide</span></h2>`;
   if (!g || !Array.isArray(g.facts) || !g.facts.length) {
