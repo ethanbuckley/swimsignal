@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from dipcast import config
+from dipcast.overflow_names import overflow_names
 from dipcast.profile import (
     CAVEAT,
     CREDITS,
@@ -35,7 +36,6 @@ from dipcast.profile import (
     hours_away,
     in_short,
     load_returns,
-    name_case,
     reach,
     summary,
     uptime,
@@ -44,6 +44,13 @@ from dipcast.profile import (
 
 log = logging.getLogger("site_profile")
 TOP = 25   # rows in the table; the CSV-like Markdown keeps them all
+
+
+def overflow_cell(name, site_id) -> str:
+    """The plain name first, then the company's and the id, which are what to look it up by, as the site's
+    pages give them: "Grassington sewage works overflow · Grassington/STW (A1)"."""
+    plain, own = overflow_names(name, site_id)
+    return f"{plain} · {own} ({site_id})" if own else f"{plain} ({site_id})"
 
 
 def slug(s: str) -> str:
@@ -91,7 +98,7 @@ def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows
               "| Overflow (id) | Company | km upstream | Hours away | Reach | Spills 2023 | 2024 | 2025 | Hours 2025 | Monitor uptime 2025 |",
               "|---|---|---|---|---|---|---|---|---|---|"]
     for _, r in t.head(TOP).iterrows():
-        lines.append(f"| {name_case(r['site_name'])} ({r['site_id']}) | {r['company']} | {fmt(r['km'], 1)} | "
+        lines.append(f"| {overflow_cell(r['site_name'], r['site_id'])} | {r['company']} | {fmt(r['km'], 1)} | "
                      f"{hours_away(r['travel_h'])} | {reach(r['weight'])} | {fmt(r.get('spills_2023'))} | "
                      f"{fmt(r.get('spills_2024'))} | {fmt(r.get('spills_2025'))} | {fmt(r.get('spill_hours_2025'))} | "
                      f"{uptime(r.get('edm_operational_pct_2025'))} |")

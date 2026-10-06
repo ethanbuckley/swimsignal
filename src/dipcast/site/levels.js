@@ -290,8 +290,126 @@ function weekendWords(spots, dates, yours = false) {
   return `This weekend: ${n(a)} at low risk ${dayWord(a.date)}${b ? (a.low ? ' and ' : ' or ') + dayName(b.date) : ''}.`;
 }
 
+// ------------------------------------------------------------------------------ overflow names
+// Overflow names that arrive in capitals ("LITTLE SALKELD WwTW") in normal case: words of four or
+// more capitals only, so codes such as STW and CSO stay as written.
+const nameCase = s => String(s ?? '').replace(/[A-Za-z']+/g, w => /^[A-Z']{4,}$/.test(w) ? w[0] + w.slice(1).toLowerCase() : w);
+// An overflow's name in plain words, from the company's own (markets plan B1, 5 Oct 2026): the place,
+// then what the overflow is at. "Addingham/NO 1 SPS/Preliminary Treatment-STW/6Xdwf Overflow" is
+// "Addingham sewage works overflow", "RIVADALE VIEW/CSO" "Rivadale View storm overflow". Pages show
+// the company's name beside it (overflowNames), since that is the name to look it up by.
+//  - The place is the first part, before "/", "_" or " - ", with the codes taken out; later parts are
+//    added when they say something new: South West Water's town ("59 Barton Drive, Newton Abbot"),
+//    Severn Trent's street ("Birmingham, Lionel Street"). Nothing is added that is not in the name.
+//  - Codes, best first, because an overflow at a works or a pumping station is named for it:
+//    STW, WwTW, WTW, WRC, WRW, "treatment works" => sewage works; SPS, PS, TPS, IPS, SP (Anglian),
+//    CEO (Southern), PSCSOEO (South West) and "pumping station" => pumping station; SSO, SSTO =>
+//    storm sewage overflow; CSO, SO, OV (Anglian) => storm overflow; EO => emergency overflow. What
+//    each code stands for was checked against the asset types in the EA's 2025 annual returns
+//    (data/processed/annual_returns.parquet): 331 of 356 CEOs and 234 of 239 SPs are at pumping stations.
+//  - Technical tails go: "Preliminary Treatment", "6Xdwf Overflow", "Inlet", reference numbers. A storm
+//    tank stays as words, because a works often has a tank overflow and another one, which would
+//    otherwise read the same: "storm tank" for "Storm Tank", SSTO or SSO at a works, and Yorkshire's
+//    3Xdwf (36 of its 40 are storm tanks; 26 of 29 6Xdwf are inlets). A number beside the code stays
+//    at the end: "BOROUGHBRIDGE/NO 2 STW" is "Boroughbridge sewage works overflow 2".
+//  - A name with no code, or no place left once the codes are out, is nameCase's: never a guess.
+// src/dipcast/overflow_names.py is the same rules in Python, and tests/test_overflow_names.py checks the two
+// agree on every name in tests/fixtures/overflow_names.txt.
+const plainName = (() => {
+  // [words, codes as written, phrases in any case], best first.
+  const KINDS = [
+    ['sewage works overflow', 'STW|STWs|WwTW|WWTW|Wwtw|WTW|WRC|WRW',
+      'stw|(?:sewage |waste ?water |water )?treatment works|sewage (?:disposal )?works|water recycling centre'],
+    ['pumping station overflow', 'SPS|SPST|TPS|IPS|SWPS|PS|SP|P\\.STN|PSCSOEO|PSCSO|CEO',
+      '(?:sewage |terminal |storm water |surface water )?pumping station'],
+    ['storm sewage overflow', 'SSO|SSTO', 'storm sew(?:age|er) overflow'],
+    ['storm overflow', 'CSO|CSOs|CSOEO|SO|OV', 'combined sew(?:er|age) overflow|storm overflow'],
+    ['emergency overflow', 'EO|FEEO', 'emergency overflow'],
+    ['overflow', 'OVERFLOW', 'overflow'],
+  ];
+  const WORKS = 0, PUMP = 1, SSO = 2, NONE = KINDS.length;
+  // A code, with a number just before it ("NO 2 STW", "#2") or after it ("CSO 4", "CSO#2").
+  const NUM = '(?:[Nn][Oo]\\.? ?|#)?(\\d+)';
+  const coded = (alts, flags) => new RegExp(`(?:(?<!\\S)${NUM} )?\\b(${alts})\\b(?: ?(?:#|[Nn][Oo]\\.? ?)?(\\d+)\\b)?`, flags);
+  const CODES = coded(KINDS.map(k => k[1]).join('|'), 'g'), PHRASES = coded(KINDS.map(k => k[2]).join('|'), 'gi');
+  const kindOf = code => KINDS.findIndex(k => new RegExp(`^(?:${k[1]})$`).test(code) || new RegExp(`^(?:${k[2]})$`, 'i').test(code));
+  const TECH = /\b[4-9] ?x? ?dwf\b(?: overflow)?|\bpreliminary treatment\b|\bsettled storm\b|\bstorm treatment\b|\binlet(?: works)?\b|\bwaste ?water network\b|\bFFT\b/gi;
+  const TANK = /\bstorm tanks?\b|\b3 ?x? ?dwf\b(?: overflow)?/gi;
+  // The companies' reference numbers: "- 115858", "(Site ID 272GZ)", "(MAC0122)", "DER096", "- NWL name".
+  const IDS = /\s*\((?:site id[^)]*|[A-Z]{3} ?\d{2,4}|\d{3,}[A-Z0-9]*|OOS)\)|\s+[-–] \d{4,}$|\s+[-–] NWL name$|\b(?:DER|NTY|LAK) ?\d{2,4}\b/gi;
+  const SMALL = new Set(['of', 'the', 'on', 'in', 'and', 'at', 'upon', 'under', 'by', 'for', 'le', 'de', 'to', 'with', 'next']);
+  // A part in capitals, in normal case: "STOKE ON TRENT" is "Stoke on Trent"; "A509" stays.
+  const titleCase = s => s.split(' ').map((w, i) => /\d/.test(w) ? w : w.toLowerCase().split('-')
+    .map((p, j) => (i || j) && SMALL.has(p) ? p : p.replace(/[a-z]/, c => c.toUpperCase())).join('-')).join(' ');
+  const EDGE = /^(?:(?:and|at|for|of|to)\b|[&,.)\-–])\s*|\s*(?:\b(?:and|at|for|of|to|sewage)|[&,(\-–])$/i;
+  const trimEdges = s => { let t = s.replace(/\(\s*\)/g, ' ').replace(/\s+/g, ' ').replace(/ ,/g, ',').trim(), u;
+    while ((u = t.replace(EDGE, '').trim()) !== t) t = u;
+    return t; };
+  const stem = w => w.toLowerCase().slice(0, 4);
+  return raw => {
+    const s = String(raw ?? '').replace(/\s+/g, ' ').trim();
+    if (!s) return '';
+    // A "/" in "O/S" (outside) or "95/97" is not a separator: it is held as "∕" until the end.
+    const t = s.replace(IDS, '').replace(/\b([A-Za-z])\/(?=[A-Za-z]\b)|(\d)\/(?=\d)/g, '$1$2∕').trim();
+    const shouty = !/[a-z]/.test(t.replace(/\b(?:WwTW|Wwtw|STWs|CSOs)\b/g, ''));
+    // The parts, each with the separator before it: "/" stays "/", the others become ", ". A bracket
+    // of codes alone, "(CSO)", is a part; one of words and codes, "(Bardsley PS)", is about something
+    // else and goes; one of words alone, "(Blackley)", stays in its part.
+    const parts = [], sep = /\s*[-–]\s+|\s+[-–]\s*|_|\//g;
+    let from = 0, joint = '', m;
+    const add = (p, j) => {
+      const asides = [];
+      const body = p.replace(/\(([^)]*)\)/g, (all, inner) => {
+        const codes = new RegExp(CODES.source, 'g'), phrases = new RegExp(PHRASES.source, 'gi');
+        if (!codes.test(inner) && !phrases.test(inner)) return all;
+        if (!inner.replace(codes, '').replace(phrases, '').replace(/[&,\s]|\band\b/gi, '')) asides.push(inner);
+        return ' '; });
+      parts.push([body, j], ...asides.map(a => [a, ', ']));
+    };
+    while ((m = sep.exec(t))) { add(t.slice(from, m.index), joint); joint = m[0].trim() === '/' ? '/' : ', '; from = m.index + m[0].length; }
+    add(t.slice(from), joint);
+    let best = NONE, tag = null, tank = false, sso = false;
+    const places = [];
+    for (const [part, j] of parts) {
+      const found = [];
+      const take = (all, before, code, after) => { found.push([kindOf(code), before || after]); return ' '; };
+      const rest = trimEdges(part.replace(TECH, ' ').replace(TANK, () => { tank = true; return ' '; })
+        .replace(CODES, take).replace(PHRASES, take));
+      for (const [k, n] of found) {
+        if (k === SSO) sso = true;
+        if (k < best) { best = k; tag = n || null; } else if (k === best && n && !tag) tag = n;
+      }
+      if (rest && !/^(?:[Nn][Oo]\.? ?|#)?\d+[A-Za-z]?$/.test(rest)) places.push([rest, j]);
+    }
+    if (best === WORKS && sso) tank = true;
+    if ((best === NONE && !tank) || !places.length || /^x+$/i.test(places[0][0])) return nameCase(s);
+    const cased = p => shouty ? titleCase(p) : nameCase(p);
+    let place = cased(places[0][0]);
+    for (const [p, j] of places.slice(1)) {
+      const mine = place.split(/[^A-Za-z]+/).filter(Boolean), stems = new Set(mine.filter(w => w.length >= 4).map(stem));
+      const had = w => w.length >= 4 ? stems.has(stem(w)) : mine.some(x => x.toLowerCase().startsWith(w.toLowerCase()));
+      const words = p.split(/[^A-Za-z0-9]+/).filter(Boolean), extra = words.filter(w => !/^\d+$/.test(w) && !had(w));
+      // A part that only repeats the place ("IVYBRIDGE STW_SSO_IVYBRIDGE 1") may still number it.
+      if (!extra.length) { const n = words.find(w => /^\d+$/.test(w)); if (n && !tag) tag = n; continue; }
+      place += j + cased(p);
+    }
+    if ((place.match(/\(/g) || []).length !== (place.match(/\)/g) || []).length) place = place.replace(/[()]/g, '').replace(/\s+/g, ' ').trim();
+    place = place.charAt(0).toUpperCase() + place.slice(1);
+    const words = best === NONE ? 'storm tank overflow' : !tank ? KINDS[best][0]
+      : best <= PUMP ? KINDS[best][0].replace(/ overflow$/, ' storm tank overflow') : 'storm tank overflow';
+    return `${place.replace(/∕/g, '/')} ${words}${tag ? ' ' + tag : ''}`;
+  };
+})();
+// An overflow's two names for a page: the plain one, and the company's (in normal case) where it says
+// something more. An overflow with no name is its id, alone.
+const overflowNames = c => {
+  if (!c.site_name) return { plain: String(c.site_id ?? ''), own: '' };
+  const plain = plainName(c.site_name), own = nameCase(String(c.site_name).replace(/\s+/g, ' ').trim());
+  return { plain, own: plain === own ? '' : own };
+};
+
 if (typeof module === 'object' && module.exports) {
-  module.exports = { ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
     level, dayLevel, headParts, headline, nowBecause, dayHeadline, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }

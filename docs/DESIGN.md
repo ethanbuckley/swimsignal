@@ -208,6 +208,16 @@ those sizes; they were taken off to keep the rule simple.)
   "EA" on any page; "WwTW", "STW", "CSO" and "SPS" in overflow names are explained on the About
   page; "lead calibration" is defined under the live table on Accuracy. "cfu" is not used: the
   threshold is "900 E. coli per 100 ml".
+- Overflow names (6 October 2026, markets plan B1): a plain name first, made from the company's
+  (`plainName` in `levels.js`): "Addingham sewage works overflow" for "Addingham/NO 1 SPS/Preliminary
+  Treatment-STW/6Xdwf Overflow", "Rivadale View storm overflow" for "RIVADALE VIEW/CSO". The company's
+  name, in normal case, sits beside it, smaller and muted, because it is the name to look the overflow
+  up by: first in the overflows tile's meta line, under the name in the organisers' table, in brackets
+  in a picked day's rows, on its own line in the map's popup. The organisers' CSV keeps `site_name`
+  and adds `plain_name`. A sentence ("Where the risk comes from", the clearing time) and a map tooltip
+  give the plain name alone. A name with no code, or with nothing left once the codes are out, is
+  shown as `nameCase` sets it, never with a guessed place: on 6 October 2026 that was 1,686 of the
+  14,374 named overflows, 1,078 of them Wessex Water's, whose names carry no code.
 - A part that cannot be used yet is not shown: Compare appears on the Saved page once two spots
   are saved. A picked day's details begin with its rows, because the hero's headline already
   gives that day's level and why.
@@ -897,6 +907,15 @@ gives all four navigation links a single full-width row.
   now. Always: the overflows upstream as a table, which on a phone becomes a block per overflow, the
   name over its figures two to a line, each with its label; a CSV with the credits; and the checklist,
   which is in the page so that it prints without a script. Printed: A4, no controls.
+- **The event week** (6 October 2026). Beyond the five days the page adds "Dates to plan for", a ruled list
+  (`dl.fields`): the three laboratory tests British Triathlon's guidance suggests (about a month, two weeks
+  and a week before; a month before is the same day of the month before, or its last day), the day the
+  forecast first covers the event, and the event. A test date that has passed says so. Dates in another
+  year carry the year. Under it, "Add these dates to your calendar" makes an .ics file in the browser, with
+  the dates still to come as all-day events. Inside the five days the day view is as it was. Where the build
+  says the alert service takes dates (`push.dates` in `spots.json`), "Alert me about this date" follows, in
+  either view, only in a browser that has alerts on: its consent folds under "What asking sends", before the
+  button, as the Saved page's does.
 - The overflows are every one upstream, ordered by reach, which does not change with the weather, since
   an event can be weeks away. `spots.json` keeps ten (`KEEP_CONTRIBUTORS`); where a spot has more, the page
   loads `data/upstream/<id>.json` (4 October 2026; before, 42 of 105 spots' tables were partial) and shows the
@@ -917,6 +936,30 @@ gives all four navigation links a single full-width row.
   zoomed to the screen (twice at 1920 by 1080). The steps between the sizes stay the system's.
 - None of the three is stored ahead in the offline copy: they are used with a connection, at a desk or
   on a screen, and the live sign must show the newest forecast. A page once visited is kept, as any is.
+
+## The sites view and the decision record (6 October 2026)
+
+- **The sites view**, `sites.html#spots=a,b,c&name=…` (`sites.js`), is a prose page for a centre, a club or a
+  council: the name as the title, the issue time once with the app's stale notice, then one row a spot
+  between hairlines. A row is the name in the serif with its kind under it, the headline in the level's
+  text shade (`headParts`, so "Rated poor", "High risk tomorrow", the plain levels), the reason in one line,
+  links to a decision record for today and tomorrow, and the five days as the list's bars (`.week`, read
+  out in words). Where the headline already names the later day, the reason is today's spills in the spot
+  page's words. On a phone the name goes above, the bars stay beside the headline. An id not in the
+  forecast is named under the rows as not found. Printed: A4, the meta and notes sizes, ten rows on one
+  page (measured on the live data of 5 October 2026).
+- The link comes from "Make a sites link": under "Share this list" on the Saved page, for the list shown
+  (`lists.js`, `sitesHash`), and in a fold on the organisers' page, where several spots are ticked in a box
+  that scrolls on its own, in the order they were picked.
+- **The decision record**, `record.html#spot=<id>&day=YYYY-MM-DD` (`record.js`), is one A4 page: first what
+  it is and is not, with the live warning-table figures; the spot, the day, the level with the 4 px rule
+  the organisers' page uses, and why; every input with its time, its age and its source as a ruled list;
+  the About page's "What it cannot see", word for word; then labelled lines to write on. Printed, the
+  rows are two columns, the limits two columns, and the page is zoomed to 0.8, as the signs are zoomed,
+  so that the richest record (a bathing water with flood alerts) fits one page. Outside the five days it
+  says when the day's forecast first appears and gives no record. Linked from the organisers' page for
+  the picked day, from each row of the sites view, and as "Print a decision record" under a spot's day.
+- Neither is in the offline copy; both are in the sitemap, as the organisers' page is.
 
 ## The coverage page (3 October 2026)
 

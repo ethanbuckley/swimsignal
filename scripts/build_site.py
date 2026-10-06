@@ -219,6 +219,10 @@ def lead_skill(processed: Path = config.PROCESSED) -> dict | None:
 # Alerts (push/): on when both repository variables are set. The Worker's address and its public
 # key sit in spots.json for the page; the private key never leaves the Worker.
 PUSH_URL_ENV, PUSH_KEY_ENV = "DIPCAST_PUSH_URL", "DIPCAST_VAPID_PUBLIC_KEY"
+# Alerts for a date (push/README.md, "Alerts for a date"): "1" once the Worker that takes dates is
+# deployed. It adds "dates": true to the push settings in spots.json, which is what shows "Alert me
+# about this date" on the organisers' page; an older Worker would refuse the request.
+PUSH_DATES_ENV = "DIPCAST_PUSH_DATES"
 # With alerts on, the privacy notice's sentences that say nothing leaves the device, and that
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
@@ -248,7 +252,10 @@ def push_config() -> dict | None:
     if not (re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url) and re.fullmatch(r"[A-Za-z0-9_-]{87}", key)):
         log.warning("%s must be https://host/ and %s a base64url P-256 public key: alerts left off", PUSH_URL_ENV, PUSH_KEY_ENV)
         return None
-    return {"url": url, "key": key}
+    dates = os.environ.get(PUSH_DATES_ENV, "").strip().lower()
+    if dates not in ("", "0", "1", "true"):
+        log.warning("%s must be 1 or unset: alerts for a date left off", PUSH_DATES_ENV)
+    return {"url": url, "key": key, **({"dates": True} if dates in ("1", "true") else {})}
 
 
 def email_config() -> dict | None:
@@ -261,9 +268,9 @@ def email_config() -> dict | None:
     return {"url": url}
 
 
-def with_push(html: str, on: bool, email: bool = False) -> str:
+def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> str:
     """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
-    else the planned-feature note."""
+    else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES)."""
     if not (on or email):
         return html
     # An email sign-up sends the saved spots too, and its record is described under Alerts, so the
@@ -272,7 +279,10 @@ def with_push(html: str, on: bool, email: bool = False) -> str:
         html = html.replace(a, EMAIL_OFFLINE_SWAP if (email and a == PUSH_SWAPS[3][0]) else b)
     if email:
         html = html.replace(PUSH_SWAPS[0][1], PUSH_SWAPS[0][1] + "\n" + EMAIL_SHORT_LINE, 1)
-    section = (PUSH_PRIVACY + "\n" if on else "<h2>Alerts</h2>\n") + (EMAIL_PRIVACY if email else "")
+    push_section = PUSH_PRIVACY
+    for a, b in PUSH_DATES_SWAPS if on and dates else []:
+        push_section = push_section.replace(a, b)
+    section = (push_section + "\n" if on else "<h2>Alerts</h2>\n") + (EMAIL_PRIVACY if email else "")
     return re.sub(r"<h2>If alerts are added</h2>\s*<p>.*?</p>", lambda _: section.rstrip("\n"), html, count=1, flags=re.DOTALL)
 
 
@@ -296,6 +306,27 @@ PUSH_PRIVACY = (
     "IP address when you turn alerts on or off or change your saved spots, and about once a week when you open the "
     "site, as any web server would; "
     '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that.</p>')
+
+# Alerts for a date (push/README.md, "Alerts for a date"), once DIPCAST_PUSH_DATES is set: the record
+# can also hold up to 10 pairs of a spot and a date, for one more use, and is kept while it has any.
+# Each "before" is in PUSH_PRIVACY (a test checks), so a rewrite cannot leave one unswapped.
+# Wording for the operator's approval (PR body).
+PUSH_DATES_SWAPS = [
+    ("saved spots and, if you tick the weekly note, that you asked for it, and nothing else",
+     "saved spots, if you tick the weekly note, that you asked for it, and, if you ask on the organisers' page "
+     "for alerts about a date, up to 10 pairs of a spot and a date, and nothing else"),
+    ("with the days of lowest pollution risk ahead at those spots. ",
+     "with the days of lowest pollution risk ahead at those spots, and, for each spot and date you asked about, a "
+     "notification when that day's forecast first appears and again each time its level changes. Each spot and date "
+     "is deleted once the date has passed. "),
+    ("you can turn them off on the Saved page at any time, which withdraws it.",
+     "you can turn them off on the Saved page at any time, which withdraws it; the alerts for a date can also be "
+     "stopped on the organisers' page."),
+    ("until you turn alerts off, remove all your saved spots or turn off the offline copy",
+     "until you turn alerts off, remove all your saved spots and dates, or turn off the offline copy"),
+    ("turn alerts on or off or change your saved spots",
+     "turn alerts on or off, change your saved spots or change the dates you asked about"),
+]
 
 
 # With email alerts on, the privacy notice gains this section under Alerts, a line in its short
@@ -1269,7 +1300,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}clubs.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -1277,7 +1308,8 @@ def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = 
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
-                northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None) -> int:
+                northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
+                push_dates: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
@@ -1311,7 +1343,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.northern_ireland import render as render_ni
             s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
-        s = with_counter(with_push(s, push, email) if name == "privacy.html" else s, token)
+        s = with_counter(with_push(s, push, email, push_dates) if name == "privacy.html" else s, token)
         s = with_tiles(s, name, tiles)
         (site / name).write_text(with_support(s, name) if support else s)
     if support:
@@ -1351,6 +1383,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_data_page(site, token)   # lists what is in data/, so build() writes the data files first
     write_embed(site)
     write_organisers(site, token)
+    write_sites(site, token)
+    write_record(site, token)
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
@@ -1495,24 +1529,53 @@ def write_embed(site: Path) -> str:
 ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
 REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
-ORGANISERS_SCRIPTS = ('<script src="levels.js"></script>', '<script src="organisers.js"></script>')
+# The organisers' page loads lists.js and sites.js too, for "Make a sites link" (sites.js, maker).
+ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+
+
+def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],
+                        token: str | None = None) -> str:
+    """A prose page from src/dipcast/site/<name> that reads spots.json with its own scripts, written
+    beside the app with its scripts at ?v=<hash of the scripts>, as the embed's are, so the page and its
+    level rules always come from one build. own: the scripts this page brings (the app's, levels.js,
+    lists.js and evidence.js, are copied with it). Returns the scripts' version."""
+    h = hashlib.sha256()
+    for f in scripts:
+        h.update((TEMPLATE.parent / f).read_bytes())
+    v = h.hexdigest()[:8]
+    page = (TEMPLATE.parent / name).read_text()
+    for f in scripts:
+        tag = f'<script src="{f}"></script>'
+        if tag not in page:
+            raise ValueError(f"{name} has lost {tag}, which the build versions")
+        page = page.replace(tag, f'<script src="{f}?v={v}"></script>', 1)
+    for f in own:
+        shutil.copy(TEMPLATE.parent / f, site / f)
+    (site / name).write_text(with_counter(page, token))
+    return v
 
 
 def write_organisers(site: Path, token: str | None = None) -> str:
-    """organisers.html and organisers.js beside the app (which has levels.js and spots.json). Returns
-    the scripts' version."""
-    h = hashlib.sha256()
-    for f in ("levels.js", "organisers.js"):
-        h.update((TEMPLATE.parent / f).read_bytes())
-    v = h.hexdigest()[:8]
-    page = ORGANISERS.read_text()
-    for tag in ORGANISERS_SCRIPTS:
-        if tag not in page:
-            raise ValueError(f"organisers.html has lost {tag}, which the build versions")
-        page = page.replace(tag, tag.replace('.js"', f'.js?v={v}"'), 1)
-    shutil.copy(TEMPLATE.parent / "organisers.js", site / "organisers.js")
-    (site / "organisers.html").write_text(with_counter(page, token))
-    return v
+    """organisers.html and organisers.js beside the app (which has levels.js, lists.js and spots.json).
+    Returns the scripts' version."""
+    return write_scripted_page(site, "organisers.html", ORGANISERS_SCRIPTS, ("organisers.js", "sites.js"), token)
+
+
+# The sites view, sites.html#spots=a,b&name=...: several spots on one page, each with its five days, for a
+# centre, a club or a council to print before a session (sites.js). And the decision record,
+# record.html#spot=<id>&day=YYYY-MM-DD: one A4 page for one spot and one day, to attach to a written
+# go/no-go decision (record.js). Both reuse organisers.js's words, so they load it; neither is in the
+# offline copy, for the organisers' page's reasons, and the sitemap lists both, as it lists that page.
+SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "record.js")
+
+
+def write_sites(site: Path, token: str | None = None) -> str:
+    return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "sites.js"), token)
+
+
+def write_record(site: Path, token: str | None = None) -> str:
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "record.js"), token)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md, T6): every monitored overflow
@@ -1664,7 +1727,8 @@ def build(refresh: bool = True) -> dict:
     token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
-                                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config())
+                                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
+                                       push_dates=bool(push and push.get("dates")))
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:

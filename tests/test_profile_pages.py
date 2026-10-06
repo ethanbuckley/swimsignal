@@ -66,9 +66,10 @@ def test_a_profile_page_joins_the_spots_overflows_to_their_returns(tmp_path):
     # Each year: 2021 has A1 alone; 2025 both, with hours weighted by reach.
     assert re.search(r"<tr><td>2021</td><td class=\"num\">1</td><td class=\"num\">10</td><td class=\"num\">20</td>", page)
     assert re.search(r"<tr><td>2025</td><td class=\"num\">2</td><td class=\"num\">12</td><td class=\"num\">25</td><td class=\"num\">20</td>", page)
-    # The overflows, most reach first, each with its id, its name in normal case and the phone layout's labels.
-    a1, b2 = page.index("Grassington/STW"), page.index("Bridge Lane/CSO")
-    assert a1 < b2 and "YWS" not in page and '<span class="muted">A1</span>' in page
+    # The overflows, most reach first: the plain name, then the company's own and the id (levels.js's
+    # overflowNames), with the phone layout's labels.
+    a1, b2 = page.index("Grassington sewage works overflow"), page.index("Bridge Lane storm overflow")
+    assert a1 < b2 and '<span class="muted">Grassington/STW · A1</span>' in page
     assert '<td class="num" data-l="Reach">&lt;1%</td>' in page and '<td class="num" data-l="Monitor uptime 2025">67%</td>' in page
     assert '<td class="num" data-l="Hours away">under 1</td>' in page and '<td class="num" data-l="Spills 2023">2</td>' in page
     # The short pages say why there is no list.

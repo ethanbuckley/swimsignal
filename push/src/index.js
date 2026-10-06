@@ -9,6 +9,7 @@ import {
 } from './shared.js';
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 import { runWeekly } from './weekly.js';
+import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, pairKey } from './dates.js';
 
 export { forecastExpiry };
 
@@ -20,6 +21,9 @@ const CONCURRENCY = 6; // Workers allow six open connections per invocation.
 // POST to a host of their choosing.
 const PUSH_HOSTS = ['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'web.push.apple.com'];
 const PUSH_SUFFIXES = ['.push.apple.com', '.notify.windows.com'];
+// Records whose dates have passed, rewritten without them in one run (dates.js): two KV operations
+// each, and at most one write a record a day, since a run that finds news looks at every record.
+const TIDY_PER_RUN = 20;
 
 export default {
   fetch: (request, env) => handleRequest(request, env),
@@ -30,7 +34,7 @@ export default {
 
 const ROUTES = new Map([['/subscribe', subscribe], ['/unsubscribe', unsubscribe]]);
 
-export async function handleRequest(request, env) {
+export async function handleRequest(request, env, { now = Date.now } = {}) {
   const path = new URL(request.url).pathname;
   if (path.startsWith('/email/')) return handleEmail(request, env);   // email.js: off until set up
   const route = ROUTES.get(path);
@@ -48,7 +52,7 @@ export async function handleRequest(request, env) {
     } });
   }
   try {
-    await route(await readJson(request), env);
+    await route(await readJson(request), env, { now });
     return new Response(null, { status: 204, headers: cors });
   } catch (err) {
     if (err instanceof Invalid) return reply(400, err.message, cors);
@@ -102,19 +106,40 @@ export async function subKey(endpoint) {
   return 'sub:' + Array.from(hash, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function subscribe(data, env) {
+// The app (the Saved page) sends the saved spots and the weekly note, and never dates; the
+// organisers' page sends dates alone ("Alerts for a date", dates.js). What a request leaves out is
+// kept from the record: the app does not know the dates, and the organisers' page does not know the
+// saved spots. A request with spots and no weekly turns the note off, as it always has.
+async function subscribe(data, env, { now }) {
   check(isObject(data), 'body must be a JSON object');
   const subscription = await cleanSubscription(data.subscription);
-  const spots = cleanSpots(data.spots);
+  check(data.spots !== undefined || data.dates !== undefined, 'spots must be an array');
+  const spots = data.spots === undefined ? undefined : cleanSpots(data.spots);
   // The weekly note (weekly.js): off unless the page says true. Kept only when on.
   check(data.weekly === undefined || typeof data.weekly === 'boolean', 'weekly must be true or false');
-  const weekly = data.weekly === true ? { weekly: true } : {};
+  const today = londonToday(now());
+  const dates = data.dates === undefined ? undefined : cleanDates(data.dates, today);
   const key = await subKey(subscription.endpoint);
-  if (spots.length === 0) { await env.PUSH.delete(key); return; }
-  // The spots also go in the key's metadata (at most 1024 bytes), so the cron finds who to alert
-  // from a list of keys alone instead of reading every record; so does the note's w: 1.
-  const meta = JSON.stringify(spots).length <= 1000 ? { metadata: { s: spots, ...(weekly.weekly ? { w: 1 } : {}) } } : {};
-  await env.PUSH.put(key, JSON.stringify({ subscription, spots, ...weekly, updated: new Date().toISOString() }), meta);
+  const old = spots === undefined || dates === undefined ? await env.PUSH.get(key, 'json') : null;
+  const record = {
+    subscription,
+    spots: spots ?? (Array.isArray(old?.spots) ? old.spots : []),
+    weekly: data.weekly !== undefined ? data.weekly : spots === undefined && old?.weekly === true,
+    dates: (dates ?? datesOf(old)).filter((d) => d.date >= today),
+  };
+  if (record.spots.length === 0 && record.dates.length === 0) { await env.PUSH.delete(key); return; }
+  await putRecord(env, key, record, now);
+}
+
+// A record, with its spots, the note's w: 1 and its dates also in the key's metadata (at most 1024
+// bytes), so the cron finds who to alert from a list of keys alone instead of reading every
+// record. Too many for the metadata, and the cron reads the record. Fields that are off are left
+// out, so a record that never asked for the note or a date is as it was before them.
+async function putRecord(env, key, { subscription, spots, weekly, dates }, now) {
+  const metadata = { s: spots, ...(weekly ? { w: 1 } : {}), ...(dates.length ? { d: dates.map((d) => pairKey(d.spot, d.date)) } : {}) };
+  const meta = JSON.stringify(metadata).length <= 1024 ? { metadata } : {};
+  await env.PUSH.put(key, JSON.stringify({ subscription, spots, ...(weekly ? { weekly: true } : {}), ...(dates.length ? { dates } : {}),
+    updated: new Date(now()).toISOString() }), meta);
 }
 
 async function unsubscribe(data, env) {
@@ -206,35 +231,42 @@ async function runPush(env, { fetch, log, now }, seen) {
   for (const [id, spot] of Object.entries(alerts.spots)) ranks[id] = Number.isInteger(spot?.rank) ? spot.rank : -1;
 
   const alerted = Object.fromEntries(Object.entries(prev?.alerted ?? {}).filter(([, at]) => t - Date.parse(at) < QUIET_MS));
-  let risen = [], items = [];
+  // Each spot's level on each day (dates.js): what the next build's days are compared with.
+  const days = dayLevels(alerts, prev?.days);
+  let risen = [], items = [], tidy = [];
   if (!prev) {
     // A first run has nothing to compare with; alerting now would alert everyone.
     log(`cron: first run, saved ranks for ${Object.keys(ranks).length} spots, sent nothing`);
   } else {
     risen = Object.keys(ranks).filter((id) => ranks[id] >= HIGH && (prev.ranks?.[id] ?? -1) < HIGH && !alerted[id]);
     for (const id of risen) alerted[id] = new Date(t).toISOString();
-    if (risen.length) items = await queueFor(env, alerts, new Set(risen), tally, log);
+    const news = dateNews(alerts, prev.days);
+    if (risen.length || news.size) ({ items, tidy } = await queueFor(env, alerts, new Set(risen), news, londonToday(t), tally, log));
     // Before the state below, like the push queue: if the state is not written, the rise is found
     // again next run, and queueEmails merges it with what is already queued for each address.
     if (risen.length && emailOn(env)) seen.emailsQueued = await queueEmails(env, alerts, new Set(risen));
-    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high, ${items.length} alerts to send${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
+    const dated = items.filter((x) => x.dates).length;
+    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high, ${items.length - dated} alerts to send${dated ? `, ${dated} date notices` : ''}${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
   }
-  const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}) };
+  const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}), ...(Object.keys(days).length ? { days } : {}) };
   // Persist the complete queue BEFORE advancing the comparison state. If this write fails,
   // the previous ranks remain and the next run can discover the rise again. Sending begins
   // next run: putting and then checkpointing the same KV key within a second is rate-limited.
   if (items.length) await env.PUSH.put('queue', JSON.stringify({ items, state }));
   await env.PUSH.put('state', JSON.stringify(state));
+  if (tidy.length) await forgetPast(env, tidy, t, log);
   if (!items.length) return quiet({ risen, ...tally, queued: 0 });
   return { risen, ...tally, queued: items.length };
 }
 
-// One alert per subscriber of a risen spot: [{key, spots}]. The spots come from each key's
-// metadata; a record without them (too many spots to fit) is read.
-async function queueFor(env, alerts, risen, tally, log) {
-  const items = [];
+// One alert per subscriber of a risen spot, [{key, spots}], and one notice per subscriber with a
+// date that is news (dates.js), [{key, dates: [{spot, date, from}]}]. The spots and dates come
+// from each key's metadata; a record without them (too many to fit) is read. Also the records that
+// still hold a date before today, to forget it (tidy), at most TIDY_PER_RUN a run.
+async function queueFor(env, alerts, risen, news, today, tally, log) {
+  const items = [], tidy = [];
   for (const { name: key, metadata } of await listKeys(env.PUSH, 'sub:')) {
-    let spots = metadata?.s;
+    let spots = metadata?.s, dates = (Array.isArray(metadata?.d) ? metadata.d : []).map((p) => { const [spot, date] = String(p).split(' '); return { spot, date }; });
     if (!Array.isArray(spots)) {
       const record = await env.PUSH.get(key, 'json').catch(() => null);
       if (record && !isPushService(record.subscription?.endpoint)) {
@@ -244,11 +276,31 @@ async function queueFor(env, alerts, risen, tally, log) {
         continue;
       }
       spots = record?.spots ?? [];
+      dates = datesOf(record);
     }
     const hits = spots.filter((id) => risen.has(id));
     if (hits.length) items.push({ key, spots: Object.fromEntries(hits.map(id => [id, alerts.spots[id]])) });
+    const told = dates.filter((d) => news.has(pairKey(d.spot, d.date))).map((d) => ({ ...d, from: news.get(pairKey(d.spot, d.date)) }));
+    if (told.length) items.push({ key, dates: told });
+    if (tidy.length < TIDY_PER_RUN && dates.some((d) => d.date < today)) tidy.push(key);
   }
-  return items;
+  return { items, tidy };
+}
+
+// Rewrites each record without its dates before today, or deletes it if nothing is left. After
+// `state`, and on its own: a failure here is logged and tried again at the next build with news.
+async function forgetPast(env, keys, t, log) {
+  const today = londonToday(t);
+  for (const key of keys) {
+    try {
+      const record = await env.PUSH.get(key, 'json');
+      if (!record) continue;
+      const dates = datesOf(record).filter((d) => d.date >= today), spots = Array.isArray(record.spots) ? record.spots : [];
+      if (!spots.length && !dates.length) await env.PUSH.delete(key);
+      else await putRecord(env, key, { subscription: record.subscription, spots, weekly: record.weekly === true, dates }, () => t);
+    } catch (err) { log(`push ${key.slice(4, 16)}: dates not tidied: ${err?.message}`); }
+  }
+  log(`dates: forgot past dates in ${keys.length} records`);
 }
 
 // Sends the first perRun alerts and keeps the rest in 'queue' for the next runs.
@@ -258,7 +310,9 @@ async function drain(env, queued, perRun, authorize, tally, { fetch, log, now, a
     if ((item.next_attempt ?? 0) <= at && batch.length < perRun) batch.push(item);
     else rest.push(item);
   }
-  const kept = await send(env, batch, authorize, tally, { fetch, log, now, alerts, expires, messageFor: alertFor(alerts, env.SITE_URL) });
+  const alert = alertFor(alerts, env.SITE_URL), date = dateFor(alerts, env.SITE_URL);
+  const messageFor = (record, item) => (item.dates ? date(record, item) : alert(record, item));
+  const kept = await send(env, batch, authorize, tally, { fetch, log, now, alerts, expires, messageFor });
   rest.push(...kept); // retries do not block recipients who have not had an attempt yet
   if (rest.length) await env.PUSH.put('queue', JSON.stringify({ ...queued, items: rest }));
   else await env.PUSH.delete('queue');

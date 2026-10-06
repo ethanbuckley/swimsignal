@@ -17,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from dipcast import config
+from dipcast.overflow_names import overflow_names
 
 YEARS = [2021, 2022, 2023, 2024, 2025]
 NEAR_KM = 10
@@ -175,8 +176,11 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
         out.append(f'<p class="small muted">{escape(REACH_NOTE)} <a href="methods.html#how">How reach is worked out</a>.</p>')
         out.append(f"<h2>The overflows, by reach</h2><p>All {s['n']}, the one whose spills matter most here first. "
                    "Hours away is how long sewage takes to arrive at the model's river speed.</p>")
-        named = lambda r: name_case(r["site_name"] if pd.notna(r.get("site_name")) else r["site_id"])
-        rows = [[f'{escape(named(r))}<br><span class="muted">{escape(str(r["site_id"]))}</span>',
+        def named(r) -> str:   # the plain name, then the company's own and the id, as the site's other pages give them
+            plain, own = overflow_names(r["site_name"] if pd.notna(r.get("site_name")) else None, r["site_id"])
+            return (f'{escape(plain)}<br><span class="muted">{escape(own) + " · " if own else ""}'
+                    f'{escape(str(r["site_id"]))}</span>')
+        rows = [[named(r),
                  escape(str(r.get("company") or "")), fmt(r["km"], 1), hours_away(r.get("travel_h")), escape(reach(r.get("weight"))),
                  fmt(r.get("spills_2023")), fmt(r.get("spills_2024")), fmt(r.get("spills_2025")),
                  fmt(r.get("spill_hours_2025")), uptime(r.get("edm_operational_pct_2025"))] for _, r in t.iterrows()]

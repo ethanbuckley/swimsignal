@@ -62,7 +62,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 14 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm
+    assert sm.count("<url>") == 16 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html and two profiles
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
     assert "<loc>https://example.org/swim/data.html</loc>" in sm and (tmp_path / "data.html").exists()
@@ -236,11 +236,18 @@ def test_alerts_are_off_unless_both_settings_are_sound(monkeypatch):
     bs = _build_site()
     monkeypatch.delenv(bs.PUSH_URL_ENV, raising=False)
     monkeypatch.delenv(bs.PUSH_KEY_ENV, raising=False)
+    monkeypatch.delenv(bs.PUSH_DATES_ENV, raising=False)
     assert bs.push_config() is None
     key = "B" + "A" * 86
     monkeypatch.setenv(bs.PUSH_URL_ENV, "https://dipspot-push.example.workers.dev/")
     monkeypatch.setenv(bs.PUSH_KEY_ENV, key)
     assert bs.push_config() == {"url": "https://dipspot-push.example.workers.dev/", "key": key}
+    # Alerts for a date: only once the variable says the Worker that takes them is deployed.
+    monkeypatch.setenv(bs.PUSH_DATES_ENV, "1")
+    assert bs.push_config() == {"url": "https://dipspot-push.example.workers.dev/", "key": key, "dates": True}
+    monkeypatch.setenv(bs.PUSH_DATES_ENV, "yes please")
+    assert "dates" not in bs.push_config()
+    monkeypatch.delenv(bs.PUSH_DATES_ENV)
     monkeypatch.setenv(bs.PUSH_URL_ENV, "http://dipspot-push.example.workers.dev/")   # not https
     assert bs.push_config() is None
     monkeypatch.setenv(bs.PUSH_URL_ENV, "https://dipspot-push.example.workers.dev/")
@@ -263,6 +270,15 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     # The weekly note (push/src/weekly.js) is one more thing the record can hold, and one more use.
     assert "if you tick the weekly note, that you asked for it" in on
     assert "The weekly note is off until you tick it, and unticking it stops it." in on
+    # Alerts for a date: said only once DIPCAST_PUSH_DATES turns them on.
+    for before, after in bs.PUSH_DATES_SWAPS:
+        assert before in bs.PUSH_PRIVACY, before
+        assert before in on and after not in on
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", push=True, push_dates=True)
+    dated = (tmp_path / "privacy.html").read_text()
+    for before, after in bs.PUSH_DATES_SWAPS:
+        assert after in dated and before not in dated, after
+    assert "up to 10 pairs of a spot and a date" in dated
     assert (tmp_path / "levels.js").exists()
 
 
@@ -287,14 +303,23 @@ def test_the_alerts_file_uses_the_page_rules(tmp_path):
     assert bs.write_alerts(tmp_path, "https://example.org/swim/", push_on=False)
     out = json.loads((tmp_path / "data" / "alerts.json").read_text())
     assert out["generated_at"] == "2026-09-29T08:00:00+01:00"
+    # Alerts for a date (push/src/dates.js): the five days, and each day's level, headline and
+    # action, the sentences as places in `words`; a day with no forecast is null.
+    assert out["dates"] == ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03"]
+    words = out["words"]
+    assert [[d[0], words[d[1]], words[d[2]]] if d else None for d in out["spots"]["a"]["days"]] == [
+        ["high", "High risk: sewage spills", "Better to choose a lower day or spot. If you do swim, try not to swallow any water."],
+        ["low", "Low risk", "Usual care: cover cuts, try not to swallow water and wash your hands before eating."], None, None, None]
     assert out["spots"]["a"] == {"name": "A river", "rank": 2, "level": "high", "headline": "High risk today: sewage spills",
                                  "action": "Better to choose a lower day or spot. If you do swim, try not to swallow any water.",
                                  "url": "https://example.org/swim/spot/a/",
-                                 "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"}}
+                                 "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"},
+                                 "days": out["spots"]["a"]["days"]}
     assert out["spots"]["tarn"]["rank"] == -1 and out["spots"]["tarn"]["level"] == "no river connection"
     assert out["spots"]["tarn"]["headline"] == "No river connection: overflows cannot reach this lake"
     assert out["spots"]["tarn"]["action"] == "After heavy rain, wait a couple of days before swimming if you can."
     assert "best" not in out["spots"]["tarn"]   # the same every day: nothing for the weekly note
+    assert "days" not in out["spots"]["tarn"]   # nor for a date: the alerts use its own level
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -606,6 +631,35 @@ def test_the_organisers_page_is_a_prose_page_with_its_scripts_versioned_and_link
     assert 'href="organisers.html"' in (tmp_path / "about.html").read_text()
 
 
+def test_write_pages_writes_the_sites_view_and_the_decision_record(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-04")
+    sitemap = (tmp_path / "sitemap.xml").read_text()
+    for name, scripts, title in [("sites.html", bs.SITES_SCRIPTS, "Sites view · SwimSignal"), ("record.html", bs.RECORD_SCRIPTS, "Decision record · SwimSignal")]:
+        page = (tmp_path / name).read_text()
+        v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', page).group(1)
+        for f in scripts:   # every script at one version, a hash of the scripts, and beside the page
+            assert f'<script src="{f}?v={v}"></script>' in page, (name, f)
+            assert (tmp_path / f).exists(), (name, f)
+        assert f"<title>{title}</title>" in page and '<header class="top">' in page and 'class="site-foot"' in page
+        assert 'href="/' not in page and "cloudflareinsights" in page   # flat links, and the counter as on the other prose pages
+        assert "@page { size:A4 portrait" in page
+        assert f"<loc>https://example.org/swim/{name}</loc>" in sitemap   # as the organisers' page is
+    assert bs.write_sites(tmp_path) != bs.write_record(tmp_path)   # each page's own scripts
+    # The organisers' page loads the sites link's maker, versioned with its other scripts.
+    org = (tmp_path / "organisers.html").read_text()
+    v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', org).group(1)
+    assert f'<script src="lists.js?v={v}"></script>' in org and f'<script src="sites.js?v={v}"></script>' in org and 'id="sites-maker"' in org
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_sites_view_and_decision_record_rules():
+    # sites.js and record.js run in a browser, so their tests are JavaScript.
+    for f in ("site_sites.test.cjs", "site_record.test.cjs"):
+        r = subprocess.run(["node", "--test", str(ROOT / "tests" / f)], capture_output=True, text=True, timeout=60, check=False)
+        assert r.returncode == 0, r.stdout + r.stderr
+
+
 def test_every_spot_with_a_page_gets_a_sign_to_print_that_shows_no_level(tmp_path):
     import segno
     bs = _build_site()
@@ -639,8 +693,9 @@ def test_the_organisers_page_and_the_signs_stay_out_of_the_offline_copy():
     # so the worker does not store them ahead (build_site.py says why); a visited page is kept as any is.
     bs = _build_site()
     shell = re.search(r"const SHELL = \[(.*?)\];", (bs.TEMPLATE.parent / "sw.js").read_text(), re.DOTALL).group(1)
-    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg"))
+    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg", "sites", "record"))
     assert not {bs.ORGANISERS, bs.TEMPLATE.parent / "organisers.js", bs.TEMPLATE.parent / "sign.html"} & set(bs.SHELL_SOURCES)
+    assert not {bs.TEMPLATE.parent / f for f in ("sites.html", "sites.js", "record.html", "record.js")} & set(bs.SHELL_SOURCES)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
