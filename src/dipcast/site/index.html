@@ -1293,9 +1293,10 @@ function summary(d) {
   return out;
 }
 // A row in a picked day's details (dayDetail) or a spot without a forecast (factors): a label, the
-// row's own value, and its sentence. Without the split, "low" for spills read as clean water.
-const factorRow = (label, lv, value, detail) => `<div class="factor"><div class="f-l">${label}</div>`
-  + `<div class="f-v ${lv ? tone(lv) : 'na'}">${value}</div>${detail ? `<div class="f-d">${detail}</div>` : ''}</div>`;
+// row's own value, and its sentence. Without the split, "low" for spills read as clean water. rel,
+// under the value, says how the row stands to the level above (levels.js, tileLine).
+const factorRow = (label, lv, value, detail, rel = '') => `<div class="factor"><div class="f-l">${label}</div>`
+  + `<div class="f-v ${lv ? tone(lv) : 'na'}">${value}</div>${rel ? `<div class="f-d">${rel}</div>` : ''}${detail ? `<div class="f-d">${detail}</div>` : ''}</div>`;
 // The rest of a row's explanation, after the sentence with its figures: one tap away, word for word,
 // under a name of its own (what), since a page can hold several.
 const explain = (what, body) => `<details class="more"><summary>${what}</summary><p>${body}</p></details>`;
@@ -1316,7 +1317,8 @@ function water(d, days) {
     // The value is a risk, said so: beside "Water quality", a bare "Very high" read as very good water.
     return factorRow('Water quality', wq, !ds.length ? 'No data' : off ? 'Out of season†' : `${cap(wq)} risk`, !ds.length ? 'No rainfall forecast has arrived, so there is no estimate.'
       : `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: ${ds.map(x => `<b>${Math.round(x.p_ecoli_gt900 * 100)}%</b> ${dayWord(x.date)}`).join(', ')}.`
-      + explain('About this estimate', `The minimum bathing-water standard lets about one sample in ten be over 900.${off ? ' † The Environment Agency takes no samples from October to April, so nothing tests this estimate now: it is shown, but it does not set the level above.' : ''} <a href="#about-ecoli">What this counts</a>`));
+      + explain('About this estimate', `The minimum bathing-water standard lets about one sample in ten be over 900.${off ? ' † The Environment Agency takes no samples from October to April, so nothing tests this estimate now: it is shown, but it does not set the level above.' : ''} <a href="#about-ecoli">What this counts</a>`),
+      days.length === 1 ? tileLine(d, 'water', days[0].date) : '');
   }
   if (d.error) return '';
   return factorRow('Water quality', null, 'Not estimated', (d.location || {}).mode === 'lake'
@@ -1329,7 +1331,7 @@ const poorLine = iso => poorAdvice(iso).replace(/^Advice against bathing applies
 function standing(d, iso) {
   const rows = [], c = classOf(d), cl = d.classification || {};
   const al = algaeLevel(d);
-  if (al) rows.push(factorRow('Algae at the last check', al, `${cap(al)} risk`, `The EA sampler saw ${esc(d.algae.phrase)} on ${new Date(d.algae.date + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'})}. Some algae are toxic; the check cannot tell which.`));
+  if (al) rows.push(factorRow('Algae at the last check', al, `${cap(al)} risk`, `The EA sampler saw ${esc(d.algae.phrase)} on ${new Date(d.algae.date + 'T12:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'})}. Some algae are toxic; the check cannot tell which.`, tileLine(d, 'algae', iso)));
   // Advice that changes within a season (a pollution incident, an algal bloom) is the EA's alone: its
   // service refuses the build's machines and does not answer other sites' pages. The rating tile's
   // "Today's EA advice" loads the EA's own panel of it (eatoday.js); without that, this page has none.
@@ -1337,7 +1339,7 @@ function standing(d, iso) {
   // The advice stays in view; how the rating is made, and the years before it, fold.
   if (c) rows.push(factorRow(`Environment Agency rating, ${cl.year}`, CLASS_LEVEL[c], cap(c),
     ((c === 'poor' ? poorLine(iso) : '') + live).trim()
-    + explain('How it is rated', `From its lab samples over up to four seasons${ratingHistory(cl)}.`)));
+    + explain('How it is rated', `From its lab samples over up to four seasons${ratingHistory(cl)}.`), tileLine(d, 'rating', iso)));
   else if (d.classification) rows.push(factorRow('Environment Agency rating', null, 'Not yet rated', `A designated bathing water too new to have a rating.${live}`));
   return rows.join('');
 }
@@ -1368,9 +1370,6 @@ const anyUntested = d => ecoliTested(d) && d.days.slice(0, 5).some(untested);
 const UNTESTED_NOTE = '† Untested outside May to September, when the Environment Agency takes no samples, so it does not set the level.';
 // A point clicked on the map (anypoint.js) has no E. coli estimate: the model needs the spot's own rain.
 const UNLISTED_ECOLI = 'Not estimated for a point off the list: the estimate needs a rain forecast for the spot itself, which only listed spots get.';
-// Out of season the water-quality figure is not in the level, so a list row names it, marked †.
-const waterEst = s => { if (!ecoliTested(s)) return ''; const x = VIEW.day ? s.days.find(y => y.date === VIEW.day) : s.days[0];
-  return x && untested(x) ? `E.&nbsp;coli estimate ${Math.round(x.p_ecoli_gt900 * 100)}%†` : ''; };
 // The week at a glance in a list row: one bar per day, coloured by level. Where no overflow can
 // reach the spot there is no level to colour, so the bars show the rain instead (40 mm fills one).
 const week = s => {
@@ -1446,15 +1445,14 @@ function answerParts(d, iso = null) {
     const when = (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     return { word: r.level ? cap(r.level) : null, tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub: !r.level ? '' : r.by === 'record' ? `Rated poor: ${poorReason(iso)}` : rank(r.level) > 0 ? cap(because(r)) : '', next: when, act: dayAction(d, iso) };
+      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(because(r)) : '', next: when, act: dayAction(d, iso) };
   }
   const l = level(d), [h, w] = headParts(d);
   if (ORDER[l] === undefined) return { word: null, tone: headTone(d), head: h,
     sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
-  // headParts gives the level, "risk" and when ("High risk today") and what set it, or a rating, or the week.
+  // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
-  const sub = h === 'Rated poor' ? `Rated poor: ${w}` : h.startsWith('Rated ') ? h
-    : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
+  const sub = h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
   return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d) };
 }
@@ -1539,10 +1537,10 @@ const sunPath = w => { const m = s => { const [h, mm] = String(s).split(':').map
     + `<path class="dark" d="${path}"/><path class="lit" d="${path}" clip-path="url(#sun-up)"/><line x1="0" x2="${W}" y1="${base}" y2="${base}"/>`
     + `<circle${tn > rise && tn < set ? '' : ' class="down"'} cx="${x(tn)}" cy="${y(tn)}" r="4.5"/></svg>`; };
 // A tile: the label with its icon, the figure (with its unit, and a level word under it), the drawing,
-// the sentence, the weather's credit where its figures are, and the rest folded in the corner.
+// how the figure stands to the level above (rel: levels.js, tileLine), the sentence, the weather's credit where its figures are, and the rest folded in the corner.
 const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
   + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
-  + (o.vis || '') + (o.say ? `<p class="t-say">${o.say}</p>` : '')
+  + (o.vis || '') + (o.rel ? `<p class="t-say">${o.rel}</p>` : '') + (o.say ? `<p class="t-say">${o.say}</p>` : '')
   + (o.credit ? '<p class="t-credit"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>' : '')
   + (o.more ? `<details class="t-more"><summary><span class="sr">${o.label}: what this means</span></summary><p>${o.more}</p></details>` : '')
   + (o.fold || '') + '</div>';   // a fold of its own at the foot: the rating tile's "Today's EA advice"
@@ -1560,32 +1558,32 @@ function facts(d) {
   if (c) out.push({ wide: true, icon: ICON.rating, label: `Environment Agency rating, ${cl.year}`, fig: cap(c), figTone: tone(CLASS_LEVEL[c]),
     vis: `<div class="seasons">${(cl.history && cl.history.length ? cl.history : [[cl.year, c]]).slice(0, 4).reverse()
       .map(([yr, k]) => `<span class="${tone(CLASS_LEVEL[k] || '')}"><i></i>${yr}<b>${cap(k)}</b></span>`).join('')}</div>`,
-    say: ((c === 'poor' ? poorLine(today()) : '') + ea).trim(),
+    rel: tileLine(d, 'rating'), say: ((c === 'poor' ? poorLine(today()) : '') + ea).trim(),
     more: `From its lab samples over up to four seasons${ratingHistory(cl)}.`, fold });
   else if (d.classification) out.push({ wide: true, icon: ICON.rating, label: 'Environment Agency rating', fig: 'Not yet rated', say: `A designated bathing water too new to have a rating.${ea}`, fold });
   if (!d.error && !total) out.push({ icon: ICON.spills, label: 'Sewage spills', fig: '0', unit: 'overflows upstream',
     say: `None monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream.`, more: 'Risk from farms, wildlife and unmonitored sources is not modelled.' });
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
-      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Exposure index ${Math.round(i)} of 100: ${x0.label} risk`),
+      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Exposure index ${Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill'),
       say: `${cap(spilling(x0, total))} today.`,
       more: `The exposure index, a 0–100 score of how likely sewage from upstream is to reach the spot, after travel time, die-off and dilution. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   // Out of season the figure stays but its band does not (water): it does not set the level.
   if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
     out.push({ icon: ICON.water, label: 'Water quality', fig: pct(x0.p_ecoli_gt900) + '%', word: off ? 'Out of season†' : `${cap(b)} risk`, wordTone: off ? '' : tone(b),
-      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${off ? 'out of season, untested' : b + ' risk'}`),
+      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${off ? 'out of season, untested' : b + ' risk'}`), rel: tileLine(d, 'water'),
       say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml today${x1 && !nil(x1.p_ecoli_gt900) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}.${off ? ' ' + UNTESTED_NOTE : ''}`,
       more: 'The minimum bathing-water standard lets about one sample in ten be over 900. <a href="#about-ecoli">What this counts</a>' }); }
   else if (!d.error) out.push({ icon: ICON.water, label: 'Water quality', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
     say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
       ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
   if (!d.error && total) { const n = now.discharging_upstream || 0, mon = now.monitored_upstream ?? total;
-    out.push({ icon: ICON.now, label: 'Right now', fig: n, unit: `of ${total} discharging`, figTone: n ? 'hot' : '', vis: overflowDots(d),
+    out.push({ icon: ICON.now, label: 'Right now', fig: n, unit: `of ${total} discharging`, figTone: n ? 'hot' : '', vis: overflowDots(d), rel: tileLine(d, 'now'),
       say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}` }); }
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
     const when = new Date(a.date + 'T12:00:00').toLocaleDateString('en-GB', a.season === thisYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
-    out.push({ icon: ICON.algae, label: 'Algae at the last check', fig: cap(a.phrase), figTone: algaeLevel(d) ? tone(algaeLevel(d)) : '',
+    out.push({ icon: ICON.algae, label: 'Algae at the last check', fig: cap(a.phrase), figTone: algaeLevel(d) ? tone(algaeLevel(d)) : '', rel: tileLine(d, 'algae'),
       say: `The EA sampler's look, ${when}. ${a.n_seen ? `Seen at ${a.n_seen} of ${a.n_checks} checks ${season}${a.n_objectionable ? `, ${a.n_objectionable} of them enough to be objectionable` : ''}.`
         : `None seen at any of ${a.n_checks} check${a.n_checks === 1 ? '' : 's'} ${season}.`} It cannot tell blue-green algae, which can be toxic, from harmless kinds.`,
       more: `${age > 14 ? 'No check since: the EA checks bathing waters from May to September, and results take about a week to be published. ' : ''}A look at the water, not a lab test.` }); }
@@ -1746,7 +1744,7 @@ function dayDetail(d, x) {
     rows.push(factorRow('Sewage spills upstream', x.label, `${cap(x.label)} risk`, `${cap(spilling(x, total))}.`
       + (n ? ` ${n} of them ${n === 1 ? 'is' : 'are'} discharging now.` : '')
       + ` Exposure index <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution. <a href="#about-exposure">What this counts</a>`
-      + dayOverflows(d, j))); }
+      + dayOverflows(d, j), tileLine(d, 'spill', x.date))); }
   rows.push(water(d, [x]));
   if (!nil(x.rain_48h_mm)) rows.push(factorRow('Rain here', null, `${Math.round(x.rain_48h_mm)} mm`, 'In the 48 hours to midday.'));
   rows.push(weatherRow(d, x.date));
@@ -1903,16 +1901,25 @@ function freshness() {
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${new Date(DATA.generated_at).toLocaleString('en-GB')}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
-  if (b.forecast_failed) h += `<p class="small muted">${b.forecast_failed} of ${b.spots} spots have no forecast in this build${b.today_rain_unavailable ? `; ${b.today_rain_unavailable} more have no rainfall data for today` : ''}.</p>`;
-  else if (b.today_rain_unavailable) h += `<p class="small muted">${b.today_rain_unavailable === 1 ? '1 spot has' : `${b.today_rain_unavailable} spots have`} no rainfall data for today in this build.</p>`;
   return h;
+}
+// What this update lacks, said once where it matters (6 Oct 2026). On the list (list), the spots with no
+// rainfall data for today; the ones whose forecast failed are in the overview's count of spots without
+// a level, by their rows' words. On a spot's page (d), only that spot's own gap. Before, "1 of 105 spots
+// have no forecast in this build" sat on the list beside "3 without a level", and above every spot's name.
+function gaps(d, list) {
+  const note = t => `<p class="small muted">${t}</p>`;
+  if (d) return String(d.error || '').startsWith('forecast failed') ? note("This spot's forecast failed in this update, so it has no level.")
+    : ((d.days || [])[0] || {}).data_status === 'rain unavailable' ? note('This spot has no rainfall data for today in this update.') : '';
+  const n = list ? (DATA.build || {}).today_rain_unavailable : 0;
+  return n ? note(`${n === 1 ? '1 spot has' : `${n} spots have`} no rainfall data for today in this update.`) : '';
 }
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
 // while the page stays open. Only then: the stale notice is an alert, and a screen reader reads an
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
 let NOTICE = '';
 const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN}`;
-const notices = () => { NOTICE = noticeState(); return `<div data-notices>${freshness()}</div>`; };
+const notices = (d = null, list = false) => { NOTICE = noticeState(); return `<div data-notices>${freshness()}</div>${gaps(d, list)}`; };
 function refreshNotices() {
   if (!DATA || noticeState() === NOTICE) return;
   NOTICE = noticeState(); document.querySelectorAll('[data-notices]').forEach(el => { el.innerHTML = freshness(); });
@@ -1936,21 +1943,31 @@ const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNo
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
 // The counts over the list, after when the forecast was issued: freshness where the list begins.
+// The spots without a level are counted by why, in their rows' own words up to the colon: "3 without a
+// level: 2 no river connection, 1 no forecast in this update".
 function overview(spots) {
   const rated = spots.filter(s => ORDER[mapLevel(s)] !== undefined);
   const low = rated.filter(s => mapLevel(s) === 'low').length;
   const high = rated.filter(s => rank(mapLevel(s)) >= 2).length, clear = spots.filter(s => mapLevel(s) === NO_OVERFLOWS).length;
+  const why = {};
+  spots.filter(s => ORDER[mapLevel(s)] === undefined && mapLevel(s) !== NO_OVERFLOWS)
+    .forEach(s => { const w = listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
+  const none = Object.values(why).reduce((a, b) => a + b, 0);
   return `Updated ${issued()} · Pollution risk: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
-    + `${clear ? ` · ${clear} no sewage risk from monitored overflows` : ''} · ${spots.length - rated.length - clear} without a level. ${cap(mapWhen())}.`;
+    + `${clear ? ` · ${clear} no sewage risk from monitored overflows` : ''} · ${none} without a level`
+    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`;
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
 const listPath = s => spotPath(s.id) + (VIEW.day && daily(s) ? '#day=' + VIEW.day : '');
 const dist = s => VIEW.here ? km(VIEW.here, [s.lat, s.lon]) : null;
 const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as in Plan a swim (DESIGN.md, Words)
+// No water-quality figure in a row (6 Oct 2026). Rows named it only out of season, as "E. coli estimate
+// 43%†", when it is untested and does not set the level: a percentage with no unit, beside a level it
+// does not count in. The spot's page keeps it, marked †, with its unit.
 function spotItem(s) {
   const d = dist(s);
-  const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, waterEst(s), rainMeta(s)].filter(Boolean).join(' · ');
+  const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, rainMeta(s)].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(listPath(s))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
     + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span><span class="k">${meta}</span></span>${week(s)}</a></li>`;
 }
@@ -1983,7 +2000,7 @@ function renderList() {
     // activity gets), and groups and events have their own tools.
     + `<p class="planner-note groups">For swimming, paddling, ghyll scrambling and anything else that puts you in the water. Taking a group or running an event? <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
-  h += notices() + '</div>';
+  h += notices(null, true) + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
     : `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here${'geolocation' in navigator
       ? ', or sort the list by distance: <button type="button" class="linkbtn small" data-near>Near me</button>' : '.'}</span></p>`;
@@ -1991,7 +2008,7 @@ function renderList() {
   h += `<section class="group tile" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
     + `<div class="sortseg" role="group" aria-label="Sort">${sorts.map(([k, t]) => `<button type="button" data-sort="${k}" aria-pressed="${VIEW.sort === k}">${t}</button>`).join('')}</div></div>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
-    + `<p class="overview" id="overview"></p><p class="small muted" id="untested-note" hidden>${UNTESTED_NOTE}</p><p class="small muted" id="geo" aria-live="polite">${esc(VIEW.geoMsg)}</p><ul class="spots" id="spots"></ul><p class="count" id="count" role="status"></p></section>`;
+    + `<p class="overview" id="overview"></p><p class="small muted" id="geo" aria-live="polite">${esc(VIEW.geoMsg)}</p><ul class="spots" id="spots"></ul><p class="count" id="count" role="status"></p></section>`;
   h += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`;
   setPanel(h);
   if (saved.length) bindItems(document.getElementById('saved-list'));
@@ -2048,7 +2065,6 @@ function drawSpots() {
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
-  document.getElementById('untested-note').hidden = !items.some(waterEst);
   ul.innerHTML = items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
@@ -2330,9 +2346,9 @@ function planWhy(s, day) {
   // row says why the level is low: what the exposure index measures is whether the sewage gets here.
   if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && Math.round(x.expected_spilling_overflows || 0) >= 1;
     if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
-    if (ecoliLevel(s, x)) out.push(`E.\u00a0coli estimate ${Math.round(x.p_ecoli_gt900 * 100)}%.`); }
+    if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
   else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
-  if (c && !head.startsWith('Rated')) out.push(`Rated ${c} by the Environment Agency${(s.classification || {}).year ? ` for ${s.classification.year}` : ''}.`);
+  if (c && !/\brated /i.test(head)) out.push(`Rated ${c} by the Environment Agency${(s.classification || {}).year ? ` for ${s.classification.year}` : ''}.`);
   if (algaeLevel(s) && !/algae/.test(head)) out.push('Algae seen at the last check.');
   if (s.access) out.push(s.access.status === 'restricted_guidance' ? 'Swimming here is restricted: check the signs.' : 'Permission to swim at this point is not confirmed.');
   if (day === today()) out.push(...flowFacts(s, Date.now(), DATA.generated_at).map(f => flowSentence(f)));
@@ -2744,7 +2760,7 @@ function render(d) {
   // goes back to any of them), or all the spots. Save sits opposite it.
   const from = (history.state || {}).from;
   let h = `<div class="top-row"><a href="${esc(from === 'saved' ? savedPath() : from === 'plan' ? planPath() : ROOT.pathname)}" class="back" id="back">${from === 'saved' ? 'Saved spots' : from === 'plan' ? 'Plan a swim' : from === 'map' ? 'Map' : 'All spots'}</a>${saveButton(d)}</div>`;
-  h += notices();
+  h += notices(d);
   // The answer, under the sky: the place, its name, then its words (answerWords).
   h += `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
     + `<div id="answer-words">${answerWords(d)}</div></section>`;

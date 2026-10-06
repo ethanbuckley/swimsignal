@@ -63,8 +63,8 @@ test('the first paragraph says what it is not, and quotes the live accuracy figu
 test('the level and why follow levels.js, with the overflows that matter most, how far and how long away', () => {
   L.setToday(DAYS[0]);
   const h = Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW);
-  assert.equal(L.dayHeadline(ilkley, DAYS[1]), 'Rated poor: advice against bathing from 15 May');
-  assert.ok(h.includes('<p class="r-level high">High risk</p><p class="r-why">Rated poor: advice against bathing from 15 May</p>'));
+  assert.equal(L.dayHeadline(ilkley, DAYS[1]), 'High risk: rated poor');
+  assert.ok(h.includes('<p class="r-level high">High risk</p><p class="r-why">Rated poor</p>'));
   assert.ok(h.includes('Low risk: about 1 of the 15 overflows upstream is expected to spill. Exposure index <b>8</b> of 100'));
   assert.match(h, /<b>Rivadale View storm overflow<\/b> \(Rivadale View\/CSO\): 0\.5 km upstream, sewage arrives in under an hour\. Spill chance 2%, reach 98%\./);
   assert.match(h, /<b>Burnsall CAR PK storm overflow<\/b> \(Burnsall CAR PK\/CSO\): 21\.8 km upstream, sewage arrives in about 12 h\. Spill chance 7%, reach 21%\./);

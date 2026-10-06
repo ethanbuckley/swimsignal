@@ -27,9 +27,10 @@ Scoring rules (16 Sep 2026):
   or the last and midnight) longer than MAX_GAP_H, from a feed that looked current,
   and at least once the next day (live_coverage.parquet, written by
   ingest.live.save_live). A poll gap, an offline monitor, a stale or dead company
-  feed is a missing observation, not a dry day. A feed that stamps no record
-  (South West Water's: no LastUpdated, no event times) is never current, so its
-  overflows are not scored. Days from before the observation masks existed
+  feed is a missing observation, not a dry day. A feed that stamps no record is
+  never current, so its overflows are not scored that day. South West Water's
+  records carry a lastUpdated stamp, which the site read only from 4 Oct 2026
+  (ingest.live.hub_names), so its overflows are scored from 5 Oct. Days from before the observation masks existed
   (observations_from) are not scored and are left out of the scoring window.
   Scores under a stricter gap rule are reported alongside.
 * Spills. An overflow-day is a spill if a poll saw an event that touched that day
@@ -176,8 +177,9 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
 def observed_spill_days(history: pd.DataFrame) -> pd.DataFrame:
     """(site_id, day) pairs with a recorded discharge, from accumulated live polls.
     An overflow still discharging at poll time is open-ended, so its end is the poll time.
-    An overflow discharging at poll time with no event start (South West Water's feed
-    publishes none) discharged at least at that moment: a spill on the poll's local day."""
+    An overflow discharging at poll time with no event start (all of South West Water's
+    before 4 Oct 2026, when its camelCase event times were first read) discharged at least
+    at that moment: a spill on the poll's local day."""
     h = history.copy()
     start = pd.to_datetime(h["latest_event_start"], utc=True)
     end = pd.to_datetime(h["latest_event_end"], utc=True)
@@ -322,9 +324,10 @@ UNCOVERED_REASONS = ["before_observations", "feed_not_current", "max_gap", "min_
 def unstamped_feed_days(poll_log: pd.DataFrame | None) -> pd.DataFrame:
     """(company, day) pairs, local days, on which a company's feed returned rows but no
     poll carried a record stamp (feed_age_h NaN): nothing showed the feed was current.
-    South West Water's feed has no LastUpdated and no event times, so its polls see only
-    what is discharging at that moment. The coverage file marks such polls stale from
-    2 Oct 2026; this applies the same rule to the days polled before then.
+    Until 4 Oct 2026 the site did not read South West Water's lastUpdated or its event
+    times (its fields are camelCase), so its polls saw only what was discharging at that
+    moment. The coverage file marks such polls stale from 2 Oct 2026; this applies the
+    same rule to the days polled before then.
 
     Poll-log rows written before the log recorded feed ages (before 28 Sep 2026 16:51 UTC)
     have a NaN age for every company, which says nothing about the feed. Rows from before
@@ -391,7 +394,7 @@ def verify_live(as_of: date | None = None) -> dict:
            "n_point_forecasts": int(n_points), "n_scored": 0,
            "rules": {"decision_hour_local": DECISION_HOUR, "min_known_polls": MIN_KNOWN_POLLS, "max_gap_h": MAX_GAP_H,
                      "strict_gap_h": STRICT_GAP_H, "feed_current_h": 6.0,
-                     "unstamped_feed": "a feed with no record stamp (South West Water's) is never current: its overflows are not scored",
+                     "unstamped_feed": "a feed with no record stamp is never current: its overflows are not scored that day. South West Water's lastUpdated stamp was read only from 4 Oct 2026, so its overflows are scored from 5 Oct",
                      "discharging_without_event_times": "a spill on the local day of the poll that saw it",
                      "baseline": "annual spill count / 365, an approximation (spill-days per counted spill = "
                                  f"{_spill_days_per_spill():.2f} pooled over United Utilities 2023-25; not checked per overflow or company)"},
