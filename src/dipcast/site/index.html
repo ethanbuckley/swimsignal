@@ -1035,14 +1035,29 @@ document.getElementById('nav-saved').addEventListener('click', e => { if (!DATA 
 // A phone's spot page opens with a small map of where the spot is, under its name: the page's own
 // map is further down, fitted to the overflows upstream. A second map, still (one finger scrolls
 // the page past it), and a tap on it opens the full map at the spot.
-let MINI = null;
+// The small map is aria-hidden: Open map beside it is the way in for a keyboard or a screen reader.
+// Its credit stays on show, since OpenStreetMap's licence and the tile provider's terms ask for it
+// on the map, but its links leave the Tab order (tabindex -1), or a Tab stop would land on a link a
+// screen reader cannot see (axe's aria-hidden-focus). A tap still opens them, and the page foot and
+// the terms give the same credits as links. Leaflet redraws the credit whenever a layer's
+// attribution changes, so a watcher takes each new link out of the order too.
+const UNFOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+function keepOutOfTabOrder(el) {
+  const off = () => el.querySelectorAll(UNFOCUSABLE).forEach(n => n.setAttribute('tabindex', '-1'));
+  off();
+  const watch = new MutationObserver(off); watch.observe(el, { childList: true, subtree: true });
+  return watch;
+}
+let MINI = null, MINI_WATCH = null;
 function miniMap(s) {
+  if (MINI_WATCH) { MINI_WATCH.disconnect(); MINI_WATCH = null; }
   if (MINI) { MINI.remove(); MINI = null; }
   const el = document.getElementById('loc-map'); if (!el || !PHONE.matches) return;
   MINI = L.map(el, { zoomControl: false, dragging: false, touchZoom: false, scrollWheelZoom: false, doubleClickZoom: false,
     boxZoom: false, keyboard: false, fadeAnimation: !STILL }).setView([s.lat, s.lon], 12);
   MINI.attributionControl.setPrefix(false);
   tiles().addTo(MINI);
+  MINI_WATCH = keepOutOfTabOrder(el);   // after the tiles, whose credit is the links
   L.circleMarker([s.lat, s.lon], { radius: 15, color: RING(), weight: 3, fill: false, interactive: false }).addTo(MINI);
   L.circleMarker([s.lat, s.lon], { radius: 9, color: PAPER, weight: 2, fillColor: colour(level(s)), fillOpacity: 1, interactive: false }).addTo(MINI);
   const open = () => { setMapMode(true); map.setView([s.lat, s.lon], 13, MOTION()); };
