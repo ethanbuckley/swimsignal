@@ -1302,7 +1302,9 @@ const explain = (what, body) => `<details class="more"><summary>${what}</summary
 // A spot without a forecast (an isolated lake, a failed run): why, in the headline's words, up to its
 // colon ("No river connection"): the whole phrase pushed over the row's label on a phone, and the
 // answer above gives it in full. Its rating and algae are tiles, as on any spot's page (facts).
-const factors = d => `<div class="factors">${factorRow('Sewage spills', null, coverage(d).split(':')[0], esc(d.error))}</div>`;
+// A failed run's error is the build's own ("forecast failed: open-meteo request failed"): plain words instead.
+const factors = d => `<div class="factors">${factorRow('Sewage spills', null, coverage(d).split(':')[0], String(d.error).startsWith('forecast failed')
+  ? 'This update could not work out the forecast for this spot. The next update tries again. Until then there is nothing to go by, which is not the same as clean water.' : esc(d.error))}</div>`;
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can
 // raise it when the spills are low. Rivers with overflows upstream only, the case it was tested on.
 function water(d, days) {
