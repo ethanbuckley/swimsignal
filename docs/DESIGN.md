@@ -344,7 +344,10 @@ no longer carries a second visual language. A control keeps its own corner when 
 summaries and stand-alone text buttons are 44 px targets. (Since 2 October.) Every map's credit is
 OpenStreetMap's alone; the terms credit Leaflet. On a map too narrow for the legend and the credit
 side by side, the legend sits above the credit's line. A phone's Upstream map shows neither the
-legend nor the list's controls, which covered the ringed spot.
+legend nor the list's controls, which covered the ringed spot. The phone's small map under a spot's
+name is hidden from screen readers (`aria-hidden`), so its credit's links leave the Tab order
+(`tabindex="-1"`): the credit stays on the map, a tap still opens its links, and "Open map" beside it
+is the way in for a keyboard or a screen reader. (Since 7 October.)
 
 ### Where instead (third round, 1 October 2026)
 
