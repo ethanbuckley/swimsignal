@@ -29,7 +29,7 @@ from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
 from dipcast.ingest.live import expected_rows, is_short
-from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
+from dipcast.ingest.rainfall import cells_for_sites, fallback_summary, fetch_forecast
 from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
     _net,
@@ -528,7 +528,10 @@ def _river_of(row) -> str | None:
 def prefetch_rain(spots: pd.DataFrame) -> None:
     """One pass over every spot's upstream overflows to collect the rainfall cells,
     then a handful of 50-cell requests. Per-spot fetching meant up to one request
-    per spot, and each one risked a slow TLS handshake on shared CI runners."""
+    per spot, and each one risked a slow TLS handshake on shared CI runners. A request
+    that fails its retries no longer stops the build (a 503 did at 00:29 UTC on 6 Oct
+    2026): fetch_forecast serves those cells' cached forecast up to a day old, or leaves
+    them without rain data, and build_health reports it (fallback_summary)."""
     net, ov = _net(), _overflows()
     lat, lon = list(spots["lat"]), list(spots["lon"])
     for r in spots.itertuples(index=False):
@@ -542,7 +545,9 @@ def prefetch_rain(spots: pd.DataFrame) -> None:
     cells = cells_for_sites(pd.Series(lat, dtype=float), pd.Series(lon, dtype=float))
     t0 = time.time()
     df = fetch_forecast(cells)
-    log.info("rainfall prefetched: %d cells, %d rows, %.0fs", len(cells), len(df), time.time() - t0)
+    fb = fallback_summary()
+    log.info("rainfall prefetched: %d cells, %d rows, %.0fs%s", len(cells), len(df), time.time() - t0,
+             f"; not fetched: {fb['stale']} from the cache, {fb['missing']} with no rain data" if fb else "")
 
 
 class BuildUnhealthy(RuntimeError):
@@ -574,7 +579,7 @@ def snapshot_duplicates() -> list[str]:
 
 
 def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_log: pd.DataFrame | None = None,
-                 duplicate_overflow_ids: list[str] | None = None) -> dict:
+                 duplicate_overflow_ids: list[str] | None = None, rain_fallback: dict | None = None) -> dict:
     """Counts the workflow and the page use to judge a build; raises BuildUnhealthy
     when the site should not be published. `ecoli_samples` is the last EA sample fetch
     (forecast_log.samples_status); if no source answered it goes in `warnings`. That
@@ -584,7 +589,10 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
     marked feed down). If every company returned none the build still publishes, with every
     overflow marked feed down and one more warning: refusing would also freeze the rain
     forecasts and leave the previous statuses on the page with no note that they are old.
-    `duplicate_overflow_ids` (snapshot_duplicates) is counted, and any goes in `warnings`."""
+    `duplicate_overflow_ids` (snapshot_duplicates) is counted, and any goes in `warnings`.
+    `rain_fallback` (rainfall.fallback_summary) is the rain cells Open-Meteo did not send after its
+    retries: kept as `rain_fallback` and said in `warnings`. Spots whose rain it left out show
+    "rain unavailable" and count in today_rain_unavailable, under the same limit as before."""
     n = len(results)
     # A spot the model cannot say anything about (an isolated lake, no river within
     # reach) returns an explanation with an empty day list; that is an answer, not a
@@ -614,6 +622,14 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
         more = f" and {len(dups) - 10} more" if len(dups) > 10 else ""
         health["warnings"].append(f"the live snapshot lists {len(dups)} overflow id{'' if len(dups) == 1 else 's'} more than once "
                                   f"({', '.join(dups[:10])}{more}); build_overflows keeps the most recent row of each")
+    if rain_fallback:
+        fb = rain_fallback
+        health["rain_fallback"] = fb
+        why = f" ({'; '.join(fb['errors'])})" if fb.get("errors") else ""
+        health["warnings"].append(
+            f"Open-Meteo did not send the rain forecast for {fb['cells']} cell{'' if fb['cells'] == 1 else 's'} after retrying{why}: "
+            f"{fb['stale']} used a cached forecast up to {fb['oldest_stale_h']:g} h old, and {fb['missing']} had none under a day old, "
+            "so the overflows there show no data")
     feeds = live_feed_health(poll_log)
     if feeds:
         health["live_feeds"] = feeds
@@ -1825,7 +1841,7 @@ def build(refresh: bool = True) -> dict:
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
     health = build_health(results, samples_status(), load_poll_log() if refresh else None,
-                          duplicate_overflow_ids=snapshot_duplicates())
+                          duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["lab_samples"] = n_lab
     health["river_levels"], health["weather"] = n_levels, n_weather
