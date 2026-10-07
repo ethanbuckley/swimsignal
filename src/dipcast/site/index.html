@@ -2019,7 +2019,7 @@ function renderList() {
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
     // Who it is for: the same forecast serves anyone who gets in the water (clubs.html says how wet each
     // activity gets), and groups and events have their own tools.
-    + `<p class="planner-note groups">Forecasts, not water tests, for swimming, paddling and ghyll scrambling. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
+    + `<p class="planner-note groups">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
     + (best ? `<p class="planner-note best-day">${best}</p>` : '')
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';

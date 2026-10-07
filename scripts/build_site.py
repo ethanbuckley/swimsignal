@@ -1225,7 +1225,7 @@ def spot_blurb(spot: dict) -> str:
 # later paint would count instead; so it holds only what does not depend on the forecast.
 SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
                'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
-LEAD_NOTE = ('<p class="planner-note groups">Forecasts, not water tests, for swimming, paddling and ghyll scrambling. '
+LEAD_NOTE = ('<p class="planner-note groups">For swimming and water sports. Forecasts, not water tests. '
              '<a href="clubs.html">Tools for clubs, centres and events</a>.</p>')
 # Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
 # sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
