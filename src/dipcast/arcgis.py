@@ -96,10 +96,19 @@ def iter_features(layer_url: str, **kw: Any) -> Iterator[dict[str, Any]]:
         yield from rows
 
 
+def _keys_on_two_pages(pages: list[list[dict[str, Any]]], key: str) -> int:
+    """How many distinct values of `key` turn up on more than one page."""
+    pages_with: dict[Any, int] = {}
+    for p in pages:
+        for k in {r.get(key) for r in p}:
+            pages_with[k] = pages_with.get(k, 0) + 1
+    return sum(n > 1 for n in pages_with.values())
+
+
 def fetch_all(layer_url: str, key: str | None = None, attempts: int = 3, **kw: Any) -> list[dict[str, Any]]:
     """Every feature of the layer. With `key`, a field that names one feature, a read
-    that spans more than one page and repeats a key is read again, up to `attempts`
-    times, and the read with the most distinct keys is returned.
+    that spans more than one page and has a key on two pages is read again, up to
+    `attempts` times, and the read with the most distinct keys is returned.
 
     Each page is a separate request, so a layer rewritten between two of them gives a
     torn read: the second page comes from the new copy, in another order, and repeats
@@ -108,7 +117,14 @@ def fetch_all(layer_url: str, key: str | None = None, attempts: int = 3, **kw: A
     OBJECTIDs ran in one unbroken block starting near 143.7 million and 88.9 million),
     and the 3 Oct 13:05 BST poll got 410 repeated Severn Trent rows and 29 Yorkshire ones.
     `orderByFields` does not help: these layers ignore it when outFields is "*".
-    A single page is one request, so one consistent read, and is not checked."""
+    A single page is one request, so one consistent read, and is not checked.
+
+    For the same reason only a key seen on two pages marks a torn read. A key repeated
+    within one page is in the layer itself, and re-reading cannot remove it: Anglian
+    Water's layer lists AWS00528 twice (ObjectId 966 and 967, every other field the same)
+    on its first page, in every build from 3 to 6 Oct 2026, and each one re-read Anglian
+    twice and slept 6 s for nothing. The caller deduplicates such a key
+    (live.one_row_per_site, dwr_cymru.parse)."""
     if key is None:
         return list(iter_features(layer_url, **kw))
     best: list[dict[str, Any]] = []
@@ -116,11 +132,15 @@ def fetch_all(layer_url: str, key: str | None = None, attempts: int = 3, **kw: A
     for attempt in range(1, attempts + 1):
         pages = list(_pages(layer_url, **kw))
         rows = [r for p in pages for r in p]
-        n_keys = len({r.get(key) for r in rows})
-        if len(pages) < 2 or n_keys == len(rows):
+        if len(pages) < 2:
             return rows
-        log.warning("%s: %d rows over %d pages but %d distinct %s; the layer changed between pages (read %d of %d)",
-                    layer_url, len(rows), len(pages), n_keys, key, attempt, attempts)
+        torn = _keys_on_two_pages(pages, key)
+        if not torn:
+            return rows
+        n_keys = len({r.get(key) for r in rows})
+        log.warning("%s: %d rows over %d pages, %d distinct %s, %d of them on two pages; the layer changed "
+                    "between pages (read %d of %d)", layer_url, len(rows), len(pages), n_keys, key, torn,
+                    attempt, attempts)
         if n_keys > best_n:
             best, best_n = rows, n_keys
         if attempt < attempts:
