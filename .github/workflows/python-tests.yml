@@ -1,0 +1,35 @@
+name: Test Python
+
+# No path filter. The tests read src/, scripts/, data/, docs/, guides/, push/, reviews/, .github/
+# and the spot lists, so a filter would be long and would miss things. The repository is public,
+# so runs cost no minutes, and the suite takes about a minute. The site build's heartbeat commit
+# pushes with GITHUB_TOKEN, and GitHub does not start workflows from those pushes.
+# The tests make no network calls (checked with sockets blocked, 7 Oct 2026) and need no
+# git-ignored data: they use files in the repository and tests/fixtures.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # the tests run code from the pull request; they need no token
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4    # a few tests check the page's JavaScript against the Python
+        with:
+          node-version: "22"
+      - name: Install
+        run: uv sync --frozen
+      - name: Tests
+        run: uv run pytest -q
