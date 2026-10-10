@@ -419,8 +419,8 @@ def trace_stations(net, ov: pd.DataFrame, stations: pd.DataFrame) -> tuple[pd.Da
 
 
 def rain_needs(samples: pd.DataFrame, ups: dict) -> pd.DataFrame:
-    """(cell, start, end) hour ranges the scores need: each sample year's span with warm-up, for the
-    sample cell and every upstream overflow's cell."""
+    """(cell, sample year, start, end) ranges the scores need: each sample year's span with warm-up,
+    for the sample cell and every upstream overflow's cell."""
     from dipcast.ingest.rainfall import grid_cell
     from dipcast.model.transport import history_days
     need = []
@@ -433,9 +433,9 @@ def rain_needs(samples: pd.DataFrame, ups: dict) -> pd.DataFrame:
         lons = [float(g["lon"].iloc[0]), *(up["lon"].tolist() if len(up) else [])]
         cl, cn = grid_cell(np.array(lats), np.array(lons))
         for a, b in {(round(float(a), 3), round(float(b), 3)) for a, b in zip(cl, cn, strict=True)}:
-            need.append((a, b, start, end))
-    n = pd.DataFrame(need, columns=["cell_lat", "cell_lon", "start", "end"])
-    return n.groupby(["cell_lat", "cell_lon"], as_index=False).agg(start=("start", "min"), end=("end", "max"))
+            need.append((a, b, yr, start, end))
+    n = pd.DataFrame(need, columns=["cell_lat", "cell_lon", "year", "start", "end"])
+    return n.groupby(["cell_lat", "cell_lon", "year"], as_index=False).agg(start=("start", "min"), end=("end", "max"))
 
 
 def load_rain(cells: pd.DataFrame) -> pd.DataFrame:
@@ -590,6 +590,10 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--fetch", action="store_true")
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--n-boot", type=int, default=N_BOOT)
+    ap.add_argument("--dry-run", action="store_true",
+                    help="stop after the station screen, the trace and the rain check; score nothing")
+    ap.add_argument("--trace-cache", type=Path, default=None,
+                    help="a pickle of the trace to reuse (written if missing), so a rerun skips the network")
     args = ap.parse_args(argv)
 
     from dipcast.model.spill_model import SpillModel
@@ -601,10 +605,16 @@ def main(argv: list[str] | None = None) -> dict:
              samples["station_number"].nunique())
     stations = samples.groupby("station_number", as_index=False).agg(
         station_name=("station_name", "first"), lat=("lat", "first"), lon=("lon", "first"))
-    net = RiverNetwork.load()
     wa = pd.read_parquet(args.wales_annual)
-    ov, ov_info = welsh_overflows(net, wa)
-    st, ups = trace_stations(net, ov, stations)
+    if args.trace_cache is not None and args.trace_cache.exists():
+        st, ups, ov_info = pd.read_pickle(args.trace_cache)
+    else:
+        net = RiverNetwork.load()
+        ov, ov_info = welsh_overflows(net, wa)
+        st, ups = trace_stations(net, ov, stations)
+        del net
+        if args.trace_cache is not None:
+            pd.to_pickle((st, ups, ov_info), args.trace_cache)
     samples = samples.merge(st, on="station_number", how="left")
     dropped["off_network"] = int((~samples["on_network"]).sum())
     samples = samples[samples["on_network"]].reset_index(drop=True)
@@ -619,6 +629,15 @@ def main(argv: list[str] | None = None) -> dict:
         gaps = rain_gaps(need, rain)
     fetch["gaps_left"] = len(gaps)
     log.info("rain: %d cells needed, %d short; fetch %s", len(need), len(gaps), fetch)
+    if args.dry_run:
+        pd.set_option("display.width", 250)
+        print(st.merge(stations, on="station_number").to_string())
+        print("dropped:", dropped, "overflows:", ov_info)
+        print("rain gaps (cells, weighted calls):", len(gaps),
+              int(sum(weighted_calls(g.start.tz_localize(None), g.end.tz_localize(None)) for g in gaps.itertuples()))
+              if len(gaps) else 0)
+        print(gaps.to_string() if len(gaps) else "no gaps")
+        return {}
 
     models = {"gate_a": SpillModel.load(config.PROCESSED / "spill_model_holdout_2025.pkl"),
               "production": SpillModel.load(config.PROCESSED / "spill_model.pkl")}
