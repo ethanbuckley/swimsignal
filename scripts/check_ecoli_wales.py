@@ -284,7 +284,7 @@ def score(df: pd.DataFrame, n_boot: int = N_BOOT) -> dict:
         if k not in df:
             continue
         p = known[k].to_numpy(dtype=float)
-        r: dict = {"auc": _auc(y, p), "auc_ci": _ci([_auc(y[i], p[i]) for i in draws_k]),
+        r: dict = {"mean": float(np.mean(p)) if len(p) else None, "auc": _auc(y, p), "auc_ci": _ci([_auc(y[i], p[i]) for i in draws_k]),
                    "spearman": _rho(df[k], df["log_ecoli"]),
                    "spearman_ci": _ci([_rho(df[k].to_numpy()[i], df["log_ecoli"].to_numpy()[i]) for i in draws_a]),
                    "spearman_within_station": _rho(_within(df, k), _within(df, "log_ecoli")),
@@ -304,6 +304,20 @@ def score(df: pd.DataFrame, n_boot: int = N_BOOT) -> dict:
     est, rain = known["ecoli_estimate"].to_numpy(float), known["rain_only_model"].to_numpy(float)
     out["auc_gain_estimate_over_rain_only"] = _auc(y, est) - _auc(y, rain)
     out["auc_gain_estimate_over_rain_only_ci"] = _ci([_auc(y[i], est[i]) - _auc(y[i], rain[i]) for i in draws_k])
+    # Added 10 Oct 2026 after the first scored run, for the write-up only (not part of the test): does
+    # the exposure index rank log E. coli better than rain does, pooled and within station?
+    lg = df["log_ecoli"].to_numpy(float)
+    ex, r48 = df["exposure"].to_numpy(float), df["rain_48h"].to_numpy(float)
+    out["post_hoc"] = {
+        "spearman_gain_exposure_over_rain_48h": _rho(ex, lg) - _rho(r48, lg),
+        "spearman_gain_exposure_over_rain_48h_ci": _ci([_rho(ex[i], lg[i]) - _rho(r48[i], lg[i]) for i in draws_a]),
+        "within_station_gain_exposure_over_rain_48h":
+            _rho(_within(df, "exposure"), _within(df, "log_ecoli")) - _rho(_within(df, "rain_48h"), _within(df, "log_ecoli")),
+        "within_station_gain_exposure_over_rain_48h_ci": _ci([
+            _rho(_within(df.iloc[i], "exposure"), _within(df.iloc[i], "log_ecoli"))
+            - _rho(_within(df.iloc[i], "rain_48h"), _within(df.iloc[i], "log_ecoli")) for i in draws_a]),
+        "exceedance_days": int(known.loc[known["y"] == 1, "day"].nunique()),
+    }
     return out
 
 

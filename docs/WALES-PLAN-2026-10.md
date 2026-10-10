@@ -701,6 +701,58 @@ and NRW's flood warnings. The key is read from a secret, never logged.
 E. coli in the Water Quality Archive, to the model's same-day estimate. Report skill with
 intervals. Keep the figure hidden unless it shows skill.
 
+*Result, 10 October 2026: NO SKILL SHOWN.* The E. coli figure stays hidden in Wales. Checked:
+`scripts/check_ecoli_wales.py`, its test written and committed before the first scored run, on NRW's
+Water Quality Archive (Wye 2020s; Carmarthen Bay and the Gower 2000s, 2010s and 2020s), written to
+`data/processed/wales_ecoli_check.json` in the main checkout (summary only, not in git).
+
+- Samples. 1,597 E. coli rows, all from 2011 on. Left out: 1,350 from 2011 to 2019 (no Welsh return
+  the year before; the Carmarthen Bay river rows among them, mostly 2011 to 2013, would pair a
+  decade-old sample with today's overflow table, and need about 40 cells of rain for three years),
+  1 flagged by the lab, 30 that are discharges, canals or estuary water, and
+  3 not on an inland river link within 250 m. Headline set: 185 samples at 11 stations on the Wye
+  (the Warren at Hay-on-Wye, 37; ten 2025 survey points, 14 each) and the Tywi (Llandeilo, 22), on
+  51 sampling days. By year: 2023 15, 2024 6, 2025 142, 2026 22. Two headline results were '<10'
+  (not over 900). The only '>' results since 2023, two of '>100000', were at a pipe discharge and a
+  storm overflow outfall, left out as discharges.
+- Exceedances. 11 of 185 over 900 per 100 ml (5.9%), on only 9 days. England's river rate on the
+  fitting rows is 21.3%.
+- Rain. 32 ERA5-Land requests to Open-Meteo, one cell each, in turn: 318 weighted calls of the 500
+  allowed, no refusal. Saved to `data/cache/rain_w10/` in the main checkout.
+
+Headline scores, 95% intervals from 2,000 resamples of sampling days (n = 185, 11 exceedances):
+
+| Predictor | Mean | Brier | BSS vs England's river rate | AUC | Spearman with log E. coli | Within station |
+|---|---|---|---|---|---|---|
+| England's river rate (climatology) | 0.213 | 0.080 (0.059 to 0.105) | 0 | 0.50 | | |
+| Rain-only model (fitted on England's rivers) | 0.228 | 0.087 (0.062 to 0.113) | -0.09 (-0.36 to 0.15) | 0.72 (0.48 to 0.91) | 0.34 (0.10 to 0.55) | 0.33 (0.08 to 0.55) |
+| Rain 48 h, raw | | | | 0.73 (0.49 to 0.92) | 0.34 (0.10 to 0.55) | 0.34 (0.07 to 0.55) |
+| Exposure index | | | | 0.76 (0.51 to 0.93) | 0.46 (0.20 to 0.65) | 0.47 (0.22 to 0.67) |
+| E. coli estimate | 0.324 | 0.140 (0.103 to 0.181) | -0.76 (-1.45 to -0.28) | 0.73 (0.49 to 0.91) | 0.45 (0.20 to 0.63) | 0.46 (0.21 to 0.67) |
+| Welsh set's own rate (uses the answer) | 0.059 | 0.056 | 0.30 | 0.50 | | |
+
+What can be said (checked from the run, except where marked):
+
+1. The estimate is far too high in Wales. It averaged 32% where 5.9% exceeded, and its Brier score is
+   worse than England's flat rate, with the whole interval below zero. That decides the verdict.
+2. It does not add to rain. Brier gain over the rain-only model: -0.053 (-0.077 to -0.033). AUC gain:
+   +0.02 (-0.06 to +0.08).
+3. The exposure index ranks samples. Its AUC interval sits just above 0.5, the pre-stated "exposure
+   ranks" test. Within each station its rank correlation with E. coli is 0.47, against 0.34 for rain.
+   Post hoc, not part of the test: that gain, 0.13, has an interval of -0.01 to 0.28, so it is not
+   shown to beat rain.
+4. Eleven exceedances on nine days is very little. The AUC intervals run from about 0.5 to 0.9. The
+   result says the calibration is wrong; it cannot say how well a recalibrated estimate would rank.
+5. Swansea's urban streams (28 samples at 5 points, 23 over 900) show the other side. Rain still
+   ranks them (AUC 0.70 over all 213 inland samples); the exposure index does not (AUC 0.28), since
+   most of those points have no overflow upstream. *Inferred:* pollution there comes from
+   misconnections or other sources the overflow table does not hold. They were outside the headline
+   set by the pre-stated 20 km rule.
+
+What would change this: more Welsh river samples with exceedances (NRW's bathing-water samples from
+earlier years, or further survey years), then a separately pre-stated test of a Welsh recalibration.
+Refitting on these 185 samples and scoring on the same ones would not count.
+
 **W11. Welsh words.** Only if Ethan chooses it (section 10, item 7): the spot card's fixed words,
 the level words and the main warnings in Welsh, behind a language switch, translated by a person
 and checked. Level words keep their noun, as DESIGN.md requires in English.
