@@ -152,6 +152,15 @@ does not change it; the click-anywhere API (`gauge=True`) scales the velocity by
 the nearest EA gauge's level index, 0.3 m/s at typical low to 1.0 m/s at typical
 high (`river_velocity`).
 
+Two options from Dr James Shucksmith's review (9 Oct 2026) are in the code, off
+by default: `DIPCAST_VELOCITY_MODE=catchment` gives each reach its own speed from
+its catchment area (Jobson 1996, eq. 14, at the median flow: about 0.13 m/s at
+10 km², 0.29 m/s at 1,000 km²), and `DIPCAST_DILUTION_MODE=flow` replaces the
+length ratio by a fixed spill flow over the spot's estimated median flow. Area
+and flows come from the upstream network length through three medians fitted on
+NRFA gauging stations (`scripts/fit_reach_velocity.py`; data from the UK
+National River Flow Archive). `model/transport.py` says how each one works.
+
 **Lakes.** A click inside or within 150 m of a WFD lake polygon is treated as
 that lake. The lake's centreline links (OS Open Rivers `form = lake`) inside the
 polygon define its outlet; every overflow upstream of the outlet contributes,
