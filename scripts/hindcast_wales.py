@@ -91,6 +91,13 @@ wrong for Dŵr Cymru, and Stage B must show otherwise before any release. Expect
 overflow are the mean daily probability over its 2025 days with rain, times 365; an overflow with
 rain on fewer than 360 days is left out. Spearman's rank correlation between expected spill-days
 and counted spills is reported beside R, for the model and for the year-before count.
+
+Fix, 10 October 2026, before the first run (it does not change the gate's rule or thresholds).
+Every test year was scored from 1 January to 31 December. Hafren Dyfrdwy's 2025 file ends on 23
+December (its last discharge starts at 20:56 UTC that day), so 24 to 31 December would have been
+scored as dry days with no record behind them. An event set is now scored only up to the day before
+its file's last discharge start (last_full_day), and only where that falls inside a test year: A1
+runs from 1 January to 22 December 2025. A2's file runs into 2026, so A2 is unchanged.
 """
 
 from __future__ import annotations
@@ -244,10 +251,20 @@ def year_before_rate(prev_spills: pd.Series, ratio: float) -> pd.Series:
     return r.clip(*BASE_CLIP)
 
 
-def site_days(sites: pd.DataFrame, daily: pd.DataFrame, year: int, labels: pd.DataFrame) -> pd.DataFrame:
-    """train.py's site-day table for one year, rain-less days dropped, other gaps filled with 0
-    as forecast.py and verify_leads.py fill them."""
-    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D", tz="UTC")
+def last_full_day(events: pd.DataFrame) -> pd.Timestamp:
+    """The last day an event file is taken to cover in full: the day before its last discharge
+    starts, since the file may stop part-way through that day."""
+    return events["event_start"].max().floor("D") - pd.Timedelta(days=1)
+
+
+def site_days(sites: pd.DataFrame, daily: pd.DataFrame, year: int, labels: pd.DataFrame,
+              last_day: pd.Timestamp | None = None) -> pd.DataFrame:
+    """train.py's site-day table for one year (up to last_day, if that is earlier), rain-less days
+    dropped, other gaps filled with 0 as forecast.py and verify_leads.py fill them."""
+    end = pd.Timestamp(f"{year}-12-31", tz="UTC")
+    if last_day is not None:
+        end = min(end, last_day)
+    days = pd.date_range(pd.Timestamp(f"{year}-01-01", tz="UTC"), end, freq="D")
     sd = build_site_days(sites, daily, days, labels[labels["day"].dt.year == year])
     sd = sd[sd["rain_d"].notna()].copy()
     sd["year"] = year
@@ -265,7 +282,8 @@ def default_arm(sites: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_event_set(sites: pd.DataFrame, events: pd.DataFrame, same_year: pd.DataFrame, years: list[int],
-                    daily: pd.DataFrame, ratio: float, models: dict[str, SpillModel]) -> tuple[pd.DataFrame, dict]:
+                    daily: pd.DataFrame, ratio: float, models: dict[str, SpillModel],
+                    last_day: pd.Timestamp | None = None) -> tuple[pd.DataFrame, dict]:
     """The scored rows of an event-level set (A1 or A2), one per overflow-day, with y, the forecasts
     of each arm and model, and the baselines.
 
@@ -289,10 +307,10 @@ def build_event_set(sites: pd.DataFrame, events: pd.DataFrame, same_year: pd.Dat
         s = s[keep & ~low]
         if s.empty:
             continue
-        sd = site_days(s, daily, y, labels)
+        sd = site_days(s, daily, y, labels, last_day)
         X = features(sd)
         sd[OWN] = models["holdout"].predict_pooled(X)
-        dd = features(site_days(default_arm(s), daily, y, labels))
+        dd = features(site_days(default_arm(s), daily, y, labels, last_day))
         assert (dd["site_id"].to_numpy() == sd["site_id"].to_numpy()).all() and (dd["day"].to_numpy() == sd["day"].to_numpy()).all()
         sd[DEFAULT] = models["holdout"].predict_pooled(dd)
         if "production" in models:
@@ -602,13 +620,15 @@ def _daily_leads(cells: set, years: list[int]) -> tuple[dict[int, pd.DataFrame],
 
 
 def run_event_set(name: str, sites: pd.DataFrame, events: pd.DataFrame, years: list[int], ratio: float,
-                  models: dict[str, SpillModel], n_boot: int) -> dict:
+                  models: dict[str, SpillModel], n_boot: int, last_day: pd.Timestamp | None = None) -> dict:
     cells = cells_of(sites)
     daily, rinfo = _daily(cells, sorted({*years, *(y - 1 for y in years)}))
     if daily.empty:
         return {"info": {"rain": rinfo, "overflows": 0}, "untested": "no rain cached"}
-    df, info = build_event_set(sites, events, _same_year(sites), years, daily, ratio, models)
+    df, info = build_event_set(sites, events, _same_year(sites), years, daily, ratio, models, last_day)
     info["rain"] = rinfo
+    year_end = pd.Timestamp(f"{max(years)}-12-31", tz="UTC")
+    info["last_day_scored"] = (year_end if last_day is None else min(year_end, last_day)).date().isoformat()
     res = {"info": info}
     if df.empty or df["y"].nunique() < 2:
         res["untested"] = "no scored rows with both outcomes"
@@ -669,16 +689,17 @@ def main(argv: list[str] | None = None) -> dict:
         results["A1"] = {"untested": f"missing {args.hd_events.name}"}
     else:
         results["A1"] = run_event_set("A1", wales_sites(wa, HAFREN_DYFRDWY, 2025), hd, [2025], ratio, models,
-                                      args.n_boot)
+                                      args.n_boot, last_full_day(hd))
 
     # A2: Dŵr Cymru's English overflows, 2024 and 2025, from the EA's event files
     dc = pd.read_parquet(args.dcww_events) if args.dcww_events.exists() else None
     if dc is None:
         results["A2"] = {"untested": f"missing {args.dcww_events.name}"}
     else:
+        dc_last = last_full_day(dc)
         dc = dc[dc["event_start"].dt.year.isin([2024, 2025]) | dc["event_end"].dt.year.isin([2024, 2025])]
         sites = pd.concat([ea_sites(ar, DWR_CYMRU, y) for y in (2024, 2025)], ignore_index=True)
-        results["A2"] = run_event_set("A2", sites, dc, [2024, 2025], ratio, models, args.n_boot)
+        results["A2"] = run_event_set("A2", sites, dc, [2024, 2025], ratio, models, args.n_boot, dc_last)
 
     # A3: Dŵr Cymru's overflows in Wales, 2025, yearly totals
     s3 = wales_sites(wa, DWR_CYMRU, 2025, country="Wales")

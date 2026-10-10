@@ -656,6 +656,21 @@ before the first run. Writes `data/processed/wales_hindcast.json`. The PR shows 
 section 6 and says pass or fail. If it fails, the next PR is a short write-up, and the Welsh
 forecast stops. The live status (W5, W6) can still go ahead, since it needs no spill model.
 
+*Result, first run, 10 October 2026: NOT COMPLETE.* Every tested part passed: A1 lead 0, Brier
+skill against the year before 0.31 (95% interval 0.21 to 0.42); A2 lead 0, 0.26 (0.21 to 0.30);
+A2 leads 1 to 3, 0.18, 0.17 and 0.13, each interval above zero. A1 leads 1 to 3 were untested:
+only 1 of Hafren Dyfrdwy's 17 rain cells has archived forecasts in the cache. A3: R = 0.94 (0.91
+to 0.97), inside the band. Not a pass, so no Welsh spill forecast yet. To finish: fetch 2025
+archived forecasts for the 16 cells (off CI, never beside a build) and run the script again.
+Tables in the W4 result PR.
+
+*Result, second run, 10 October 2026: PASS.* The 16 cells' 2025 archived forecasts were fetched
+(4 requests, with no build or other Open-Meteo job running) and the script was run again
+unchanged. A1 leads 1 to 3: 0.27 (0.16 to 0.39), 0.26 (0.16 to 0.37) and 0.26 (0.16 to 0.38).
+Every other part is as in the first run. All eight gated parts are tested and pass. No Welsh
+forecast is shown yet: Stage B (W5, W7 shadow scores) waits for Dŵr Cymru's answer, then W12's
+outside review.
+
 **W5. Runner test and live adapter, off by default.** First test the layer from a runner, on a
 throwaway branch with a throwaway workflow, deleted after (needs Ethan's yes). Then
 `src/dipcast/ingest/dwr_cymru.py`: the status mapping of 5.1, times from UK local to UTC, the
