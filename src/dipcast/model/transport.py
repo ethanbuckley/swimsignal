@@ -335,7 +335,7 @@ def river_velocity(state_index: float | None) -> float:
 
 
 # Catchment area, flows and reach speed from the upstream network length (velocity "catchment",
-# dilution "flow"). The three ratios are medians over 1,018 NRFA gauging stations in England and
+# dilution "flow"). The three ratios are medians over 1,010 NRFA gauging stations in England and
 # Wales snapped to the network (scripts/fit_reach_velocity.py prints them; checked 10 Oct 2026).
 # One ratio per quantity: within each eighth of the stations by area the median network length per
 # km² stays between 0.52 and 0.68, so a straight proportion fits; half the stations are within a
