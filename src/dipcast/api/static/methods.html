@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Method · SwimSignal</title>
-<meta name="description" content="How SwimSignal's pollution risk forecast is made, in plain words: what a level means, how it was tested, where it fails, and every correction made to it.">
+<meta name="description" content="How SwimSignal's pollution risk forecast is made, in plain words: what a risk level means, how it was tested, where it fails, and every correction made to it.">
 <meta name="theme-color" content="#3d5b5d">
 <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
@@ -21,12 +21,12 @@ main.doc code { overflow-wrap:anywhere; }
 <nav aria-label="Site"><a href="/">Explore</a><a href="/verification">Accuracy</a><a href="/about">About</a><a href="/feedback">Feedback</a></nav></header>
 <main class="doc">
 <h1>How the forecast is made</h1>
-<p class="lead">The method in plain words: what a level means, what goes into it, how it was tested, where it fails, and every correction made since September 2026. The live scores are on the <a href="/verification">Accuracy page</a>; the full technical account is in the project's <a href="https://github.com/ethanbuckley/swimsignal#method">README</a>.</p>
+<p class="lead">The method in plain words: what a risk level means, what goes into it, how it was tested, where it fails, and every correction made since September 2026. The live scores are on the <a href="/verification">Accuracy page</a>; the full technical account is in the project's <a href="https://github.com/ethanbuckley/swimsignal#method">README</a>.</p>
 
 <aside class="summary" aria-labelledby="short-h">
 <h2 id="short-h">In short</h2>
 <ul>
-<li>A day's level is the worst of four things: the exposure index, the E. coli estimate, the Environment Agency's rating and its sampler's algae check.</li>
+<li>A day's risk level is the highest of four things: the exposure index, the E. coli estimate, the Environment Agency's rating and its sampler's algae check. The E. coli estimate uses the exposure index as one of its inputs.</li>
 <li>The spill model was tested on a year it never saw. Given one day that spilled and one that did not, it gave the spill the higher chance 93 times in 100. That is a ranking, not a share of forecasts right.</li>
 <li>It sees monitored storm overflows only. Runoff from farms, roads and drains enters only through the rain, on average. On lakes the E. coli estimate has no skill, so it is not shown there.</li>
 <li>Every forecast is logged and scored later. Mistakes found in the method are listed below, with what changed.</li>
@@ -34,7 +34,7 @@ main.doc code { overflow-wrap:anywhere; }
 </aside>
 
 <nav class="toc" aria-labelledby="toc-h"><h2 id="toc-h">On this page</h2><ol>
-<li><a href="#level">What a level means</a></li>
+<li><a href="#level">What a risk level means</a></li>
 <li><a href="#how">How the forecast is made</a></li>
 <li><a href="#holdout">Test 1: a year the model never saw</a></li>
 <li><a href="#leads">Test 2: with real weather forecasts</a></li>
@@ -45,9 +45,9 @@ main.doc code { overflow-wrap:anywhere; }
 </ol></nav>
 
 <section id="level">
-<h2>What a level means</h2>
-<p>Each day at each spot gets one of four levels: low, moderate, high or very high risk. The level is the worst of these four things:</p>
-<div class="tw" tabindex="0" role="region" aria-label="What sets each level, scrolls sideways"><table>
+<h2>What a risk level means</h2>
+<p>Each day at each spot gets one of four risk levels: low, moderate, high or very high risk. The risk level is the highest of these four things, each put in a band by the table below:</p>
+<div class="tw" tabindex="0" role="region" aria-label="What sets each risk level, scrolls sideways"><table>
 <tr><th>Risk level</th><th class="num">Exposure index</th><th class="num">E. coli estimate</th><th>Rating and algae</th></tr>
 <tr><td>Low</td><td class="num">under 15</td><td class="num">under 10%</td><td></td></tr>
 <tr><td>Moderate</td><td class="num">15 to 40</td><td class="num">10% to 25%</td><td>Algae seen at intervals at the last check</td></tr>
@@ -55,23 +55,27 @@ main.doc code { overflow-wrap:anywhere; }
 <tr><td>Very high</td><td class="num">70 or more</td><td class="num">50% or more</td><td></td></tr>
 </table></div>
 <ul>
-<li><b>The exposure index</b> is a 0–100 score of how likely sewage from upstream is to reach the spot. It comes from the monitored storm overflows upstream: what they are doing now, how likely each is to spill, and how much of a spill would arrive.</li>
-<li><b>The E. coli estimate</b> is the chance that a water sample taken that day would have more than 900 E. coli per 100 ml, the limit for an inland bathing water rated "sufficient". It counts on rivers with overflows upstream, from May to September only. From October to April nothing tests it, so it is shown with a dagger (†) and does not set the level.</li>
+<li><b>The exposure index</b> is a 0–100 score for sewage from the monitored storm overflows upstream reaching the spot. Each overflow has a chance of spilling that day, from the spill model, and a weight from 0 to 1, for how far it is and how much the river dilutes it (see <a href="#how">below</a>). The index is 100 × (1 − the product, over the overflows, of 1 − chance × weight). If each chance × weight were the true chance of that spill arriving, this would be the chance that at least one arrives. The weights are physical estimates, not measured, so the index is a score built the way a chance is. It is not the chance of falling ill, or of a water sample failing.</li>
+<li><b>The E. coli estimate</b> is the chance that a water sample taken that day would have more than 900 E. coli per 100 ml, the limit for an inland bathing water rated "sufficient". It counts on rivers with overflows upstream, from May to September only. From October to April nothing tests it, so it is shown with a dagger (†) and does not set the risk level. It is not shown on lakes.</li>
 <li><b>The Environment Agency's rating</b> applies at designated bathing waters. A water rated poor is at least high risk on every day.</li>
 <li><b>The algae check</b> is the Environment Agency sampler's look at the water at a designated bathing water. It counts for 14 days.</li>
 </ul>
-<p>A spot with no monitored overflow upstream gets no exposure index and no E. coli estimate. Its level comes from the rating and the algae check, where they raise it: sufficient makes it moderate risk, poor makes it high risk, and algae at the last check make it moderate or high risk. Otherwise the level is a plain one: "No sewage risk from monitored overflows", or "No river connection: overflows cannot reach this lake" at a lake that no river flows into. An excellent or good rating leaves the plain level.</p>
+<h3 id="both">How the exposure index and the E. coli estimate fit together</h3>
+<p>The two are not separate. The exposure index looks only at the monitored overflows upstream. The E. coli estimate is a second, statistical model, and the day's exposure index is one of its inputs. Its other inputs are the rain at the spot in the 48 hours and the 24 hours before midday, whether the spot is a lake or a river, and the time of year. So the E. coli estimate already takes in the overflows, and adds the rain at the spot.</p>
+<p>The risk level does not mix the two. It takes whichever is in the higher band. They fail in different ways. The exposure index cannot see runoff from farms, roads and drains, which rain washes in whatever the overflows do. The E. coli estimate was tested only on rivers from May to September. Taking the higher keeps a warning from either one. The cost is that a day can be raised by one of them while the other reads low.</p>
+<p>Where the E. coli estimate does not count, on lakes and from October to April, the exposure index, the rating and the algae check set the risk level. The risk level for right now uses the live overflow status, the rating and the algae check. The E. coli estimate is made for whole days, so it does not count right now.</p>
+<p>A spot with no monitored overflow upstream gets no exposure index and no E. coli estimate. Its risk level comes from the rating and the algae check, where they raise it: sufficient makes it moderate risk, poor makes it high risk, and algae at the last check make it moderate or high risk. Otherwise the risk level is a plain one: "No sewage risk from monitored overflows", or "No river connection: overflows cannot reach this lake" at a lake that no river flows into. An excellent or good rating leaves the plain risk level.</p>
 <!-- What to do at each level: the same words as src/dipcast/site/levels.js (ACTION and the lines
      beside it), which tests/site_actions.test.cjs checks. Health wording: sources in levels.js. -->
-<h3 id="actions">What to do at each level</h3>
-<p>Under its level, a spot's page says in one line what to do. NSW Beachwatch, which forecasts pollution at beaches in New South Wales, gives an action with each of its levels in the same way. The lines are SwimSignal's own words, drawn from the sources below. They are general advice for swimmers, not medical advice. None of them says the water is safe: check the signs at the water before you swim.</p>
+<h3 id="actions">What to do at each risk level</h3>
+<p>Under its risk level, a spot's page says in one line what to do. NSW Beachwatch, which forecasts pollution at beaches in New South Wales, gives an action with each of its levels in the same way. The lines are SwimSignal's own words, drawn from the sources below. They are general advice for swimmers, not medical advice. None of them says the water is safe: check the signs at the water before you swim.</p>
 <dl class="fields">
 <dt>Low risk</dt><dd>Usual care: cover cuts, try not to swallow water and wash your hands before eating.</dd>
 <dt>Moderate risk</dt><dd>Take more care: young children, older people and anyone with a weakened immune system may want a lower day or spot.</dd>
 <dt>High risk</dt><dd>Better to choose a lower day or spot. If you do swim, try not to swallow any water.</dd>
 <dt>Very high risk</dt><dd>Avoid swimming here: choose a lower day or spot. The page names the day, as in "Avoid swimming here tomorrow".</dd>
-<dt>Rated poor, where the rating sets the level</dt><dd>Choose a spot with a better rating if you can.</dd>
-<dt>Algae at the last check, where they set the level</dt><dd>Stay out of any scum or bloom, and keep children and dogs away: toxic algae look like harmless ones.</dd>
+<dt>Rated poor, where the rating sets the risk level</dt><dd>Choose a spot with a better rating if you can.</dd>
+<dt>Algae at the last check, where they set the risk level</dt><dd>Stay out of any scum or bloom, and keep children and dogs away: toxic algae look like harmless ones.</dd>
 <dt>No level: no sewage risk from monitored overflows, no river connection, or no forecast</dt><dd>After heavy rain, wait a couple of days before swimming if you can.</dd>
 </dl>
 <p>The sources, read on 4 October 2026:</p>
@@ -88,15 +92,30 @@ main.doc code { overflow-wrap:anywhere; }
 <h2>How the forecast is made</h2>
 <h3>Which overflows reach the spot</h3>
 <p>SwimSignal follows the river network upstream from the spot, up to 60 km along the rivers. The network is Ordnance Survey's OS Open Rivers: 193,040 stretches of river, each with a direction of flow, including the lines that run through lakes. A listed spot sits on the nearest stretch that carries its river's name. Each storm overflow is placed on the stretch nearest its outfall, within 1.5 km. An overflow whose water reaches the spot counts; one on another branch does not.</p>
+<p>The 60 km is a fixed limit set in the code, not fitted to data. At the 0.5 m a second assumed below, water takes about 33 hours to travel 60 km. In that time over 90% of the bacteria die, since 90% die in 30 hours. So an overflow further up would count for less than a tenth of its chance of spilling, before any dilution.</p>
 <h3>How likely each overflow is to spill</h3>
 <p>For each overflow and day, a model gives the chance of a discharge. It uses the rain at the overflow that day and the two days before, the totals over 3, 7 and 30 days, how wet the ground already is, the heaviest rain in 1, 3 and 6 hours, the time of year, and how often that overflow spilled the year before (from the Environment Agency's annual returns). More rain can never lower the chance. The model was trained on United Utilities' overflows in 2023 and 2024, because only United Utilities publishes its past spills one by one, with their start and end. For those overflows the forecast is also moved towards each one's own record.</p>
 <p>The rain is Open-Meteo's forecast, which for England is the Met Office's. Forecast rain has errors that grow with each day ahead, so each day ahead gets its own correction, fitted on 2025.</p>
-<h3>How much of a spill arrives</h3>
-<p>Sewage from an overflow takes time to travel down the river: SwimSignal assumes 0.5 m a second on rivers and 0.05 m a second across a lake. On the way, bacteria die off: 90% in 30 hours. And the river dilutes it: an overflow on a small stream counts for less at a big river than one on the river itself. Dilution is measured by how much river lies upstream of each point, a stand-in for flow. On a lake it is cut further by the lake's area. The result is a weight for each overflow. The exposure index combines them: one minus the chance that no overflow's spill arrives.</p>
+<h3>Each overflow's weight</h3>
+<p>Each overflow gets a weight from 0 to 1. It is two shares, each from 0 to 1, multiplied together.</p>
+<ul>
+<li><b>Die-off.</b> Sewage takes time to travel down the river: SwimSignal assumes 0.5 m a second on rivers and 0.05 m a second across a lake. On the way, bacteria die off: 90% in 30 hours. The first share is the part still alive when the water reaches the spot.</li>
+<li><b>Dilution.</b> An overflow on a small stream counts for less at a big river than one on the river itself. Dilution is measured by how much river lies upstream of each point, a stand-in for flow. The second share is the length of river upstream of the overflow over the length upstream of the spot, with 5 km added to each, and at most 1. On a lake it is cut further by the lake's area: halved for a lake of 5 km², and more for a bigger one.</li>
+</ul>
+<p>The exposure index then combines each overflow's weight with its chance of spilling, as set out <a href="#level">above</a>. For a day ahead, each overflow's chance of spilling is moved later by its travel time, so a spill counts on the day its water should arrive.</p>
 <h3>Right now</h3>
-<p>An overflow discharging now, by its water company's live feed, counts in full from the start of its spill. After it stops, it still counts in full until its water has passed the spot, which takes the travel time above, then for less as time passes, for 48 hours after its water has passed. A spill whose water has not reached the spot yet counts already, so the level does not drop while sewage is on its way; when most of the risk right now is still coming, the spot's page says when it should arrive.</p>
+<p>Right now comes from the water companies' live feeds, not the rain. A spill counts at its full weight from the moment it starts, even before its water reaches the spot. It keeps its full weight until its water has passed the spot: the end of the spill plus the travel time. After that it counts for less as the bacteria die off, and for 48 hours after its water has passed.</p>
+<p>An example. An overflow 20 km upstream starts to spill at 06:00 and stops at 09:00. At 0.5 m a second its water takes about 11 hours to reach the spot. So:</p>
+<ul>
+<li>At 06:00 the risk level for right now rises, though the water will not arrive until about 17:00. It does not wait for the water to arrive.</li>
+<li>While at least half of the risk right now is water still on its way, the spot's page says when it should arrive: here, about 17:00.</li>
+<li>The last of the spill's water passes the spot at about 20:00. Until then it counts at its full weight.</li>
+<li>After 20:00 it counts for less, a tenth as much after 30 hours, and not at all from 20:00 two days later.</li>
+</ul>
+<p>The live feed shows any discharge its monitor records, whatever the cause. So a spill in dry weather, from a blockage or a failed pump, counts right now. The forecast for the days ahead cannot see such a spill coming: it works from rain and each overflow's past record.</p>
 <h3>The E. coli estimate</h3>
 <p>A statistical model fitted to 1,548 Environment Agency samples at 32 inland bathing waters from 2024 to 2026. It uses the rain at the spot in the 48 and 24 hours before midday, the day's exposure index, whether the spot is a lake or a river, and the time of year. Rain explains most of what it gets right. The exposure index adds a little on rivers, and nothing on lakes.</p>
+<p>The samples are used both to fit the model and to test it. The model the site uses is fitted on all of them. To test it, the model is fitted again with a year, a site, or the later years left out, and scored on the samples it did not see. That is <a href="#ecoli">Test 3</a>.</p>
 </section>
 
 <section id="holdout">
@@ -159,7 +178,7 @@ main.doc code { overflow-wrap:anywhere; }
 <li><b>Too sure at the top end.</b> In the 2025 test, days forecast at 85% had a spill 79% of the time, and days at 93% had one 85% of the time.</li>
 <li><b>Too high in a dry spell.</b> Over 17–27 September 2026, a dry spell, live forecasts averaged 2.7% against 1.3% observed, on 49,380 overflow-days, and forecasts between 10% and 70% happened a third to a half as often as they said. Those scores were later withdrawn for another reason (see the corrections of 28 September); the problem they showed is still checked on the Accuracy page.</li>
 <li><b>Trained on one company.</b> The spill model learned from United Utilities only. Other companies' overflows get the same model without a record of their own. The Accuracy page scores each company separately; that is the check.</li>
-<li><b>Rough physics.</b> Travel speed is fixed, dilution uses the length of river upstream instead of flow, lake volume is not modelled, and the day is the smallest unit. On 3 October 2026, 334 inland overflows (2%) sat more than 1.5 km from any mapped river and were left out.</li>
+<li><b>Rough physics.</b> Travel speed is one figure, 0.5 m a second, on every river and every day. Real speed differs from river to river, and rises with the flow. An outside reviewer judged one speed too crude. Dilution uses the length of river upstream instead of flow. It leaves out how much water the river carries that day and how much the overflow discharges. The same reviewer found no sound basis for it without those. Lake volume is not modelled, and the day is the smallest unit. On 3 October 2026, 334 inland overflows (2%) sat more than 1.5 km from any mapped river and were left out.</li>
 <li><b>Wales.</b> Dŵr Cymru Welsh Water's live overflow status is not shown. Its map has a public data layer, but with no licence to reuse it, and SwimSignal is waiting for Dŵr Cymru's terms. Its overflows are forecast from rain and their yearly spill record, with no "right now".</li>
 </ul>
 </section>
@@ -172,7 +191,7 @@ main.doc code { overflow-wrap:anywhere; }
 <li><b>2 October 2026.</b> South West Water's feed carries no event times and no record times. None of its overflows ever counted as spilling, and its feed always looked current. Its 135 scored overflow-days, all read as "no spill", were withdrawn, and its overflows are no longer scored.</li>
 <li><b>2 October 2026.</b> Six river spots had been placed on a side stream or a lake and showed no overflows upstream: Crook o' Lune, for one, sat 262 m from Escow Beck and 672 m from the Lune. A listed spot now sits on the nearest stretch of river carrying its own river's name, and every build checks each one.</li>
 <li><b>1 October 2026.</b> The live scoring rule allowed no gap over 6 hours between observations, but the scheduled runs were further apart, so nothing could be scored. The limit is now 8 hours, and the scores under 6 hours are shown beside them.</li>
-<li><b>1 October 2026.</b> Out of season the E. coli estimate had put 35 of 89 spots on high or very high risk, with nothing to test it. From October to April it no longer counts towards the level.</li>
+<li><b>1 October 2026.</b> Out of season the E. coli estimate had put 35 of 89 spots on high or very high risk, with nothing to test it. From October to April it no longer counts towards the risk level.</li>
 <li><b>29 September 2026.</b> The live scoring rules written on 16–17 September reached the live site only on 28 September, so the live table was empty until days observed under them had passed.</li>
 <li><b>28 September 2026.</b> Live scores from 17–27 September were withdrawn. Under the old rule any polling on a day counted as watching every overflow, which the records could not support. They are kept in <code>data/processed/verification_live_oldrule_2026-09-28.json</code>.</li>
 <li><b>28 September 2026.</b> The test of choosing sampling days from the rain forecast read missing rain as no rain. Rerun with the production rule, its river figures moved by one or two points; the conclusions did not.</li>
