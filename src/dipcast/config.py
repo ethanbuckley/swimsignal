@@ -117,3 +117,12 @@ LAKE_VELOCITY_MS = 0.05       # effective advection across a lake: ~1% of a 5 m/
 T90_HOURS = 30.0              # time for 90% die-off of faecal indicator bacteria
 RECENT_SPILL_HOURS = 48.0     # how long a finished spill keeps contributing
 MAX_UPSTREAM_KM = 60.0        # do not trace further than this upstream
+
+# Two options from Dr James Shucksmith's review of the method (9 Oct 2026). Both default to the
+# rule in use before it; model/transport.py says what each one does. Not switched on in production.
+# VELOCITY_MODE  "fixed"      RIVER_VELOCITY_MS on every reach
+#                "catchment"  each reach's own speed from its catchment area (reach_velocity)
+# DILUTION_MODE  "length"     upstream network length at the overflow over that at the spot
+#                "flow"       a fixed spill flow over the spot's estimated median flow (Q50)
+VELOCITY_MODE = os.environ.get("DIPCAST_VELOCITY_MODE", "fixed")
+DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")

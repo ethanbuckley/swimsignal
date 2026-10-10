@@ -14,6 +14,18 @@ Their product is treated as the probability that a spill at that overflow, if
 it happens, meaningfully affects water quality at the spot. Risk is then
 1 - prod(1 - p_i * w_i) over upstream overflows: the chance at least one spill
 reaches the swimmer.
+
+Two options, off by default (config.VELOCITY_MODE, config.DILUTION_MODE), follow
+Dr James Shucksmith's review of 9 Oct 2026:
+
+* velocity "catchment"  each reach moves at its own speed, a power law in its
+                        catchment area (reach_velocity). The catchment area is
+                        estimated from the upstream network length (catchment_km2).
+                        Travel time is the sum of length / speed along the path.
+* dilution "flow"       Q_SPILL / (Q_SPILL + Q50 at the spot): a spill of fixed
+                        size mixed into the spot's median flow, estimated from its
+                        catchment area (q50_m3s). Every overflow upstream of a spot
+                        gets the same dilution; where it joins no longer matters.
 """
 
 from __future__ import annotations
@@ -322,36 +334,140 @@ def river_velocity(state_index: float | None) -> float:
     return float(0.3 + 0.7 * min(max(state_index, 0.0), 1.5))
 
 
+# Catchment area, flows and reach speed from the upstream network length (velocity "catchment",
+# dilution "flow"). The three ratios are medians over 1,018 NRFA gauging stations in England and
+# Wales snapped to the network (scripts/fit_reach_velocity.py prints them; checked 10 Oct 2026).
+# One ratio per quantity: within each eighth of the stations by area the median network length per
+# km² stays between 0.52 and 0.68, so a straight proportion fits; half the stations are within a
+# factor of 1.9 of it. No rainfall or geology term, so a wet upland river's flow is underestimated.
+DRAINAGE_KM_PER_KM2 = 0.60    # OS Open Rivers length (km) per km² of catchment
+QMEAN_PER_KM2 = 0.0138        # mean flow, m³/s per km²
+Q50_PER_KM2 = 0.0082          # median daily flow (Q50), m³/s per km²
+# Jobson (1996), USGS WRIR 96-4013, eq. 14, peak velocity without slope (R² 0.62 on 986 US tracer
+# measurements): Vp = 0.020 + 0.051 Da'^0.821 Qa'^-0.465 Q/Da, Da' = Da^1.25 g^0.5 / Qa, Qa' = Q/Qa,
+# SI units (Da in m²). Taken at Q = Q50, so a speed per place and not per day. Smalley et al. (2025,
+# Sci. Total Environ. 991, 179794, supplement) used the same family (eq. 12, with slope) for the
+# Thames. It gives 0.13 m/s at 10 km², 0.19 at 100 km², 0.29 at 1,000 km².
+JOBSON = (0.020, 0.051, 0.821, -0.465)
+VEL_MIN, VEL_MAX = 0.05, 1.5  # floor for headwater links (tiny areas tend to 0.02 m/s); cap
+
+
+def catchment_km2(upstream_m: float | np.ndarray) -> float | np.ndarray:
+    """Catchment area (km²) estimated from the total network length upstream (m)."""
+    return np.asarray(upstream_m, dtype=float) / 1000.0 / DRAINAGE_KM_PER_KM2
+
+
+def q50_m3s(area_km2: float | np.ndarray) -> float | np.ndarray:
+    """Median daily flow (m³/s) estimated from catchment area alone."""
+    return Q50_PER_KM2 * np.maximum(np.asarray(area_km2, dtype=float), 0.0)
+
+
+def reach_velocity(upstream_m: float | np.ndarray) -> float | np.ndarray:
+    """Characteristic speed (m/s) of a reach with this much network upstream: Jobson's eq. 14 at
+    the median flow. One value per place, not varying with the day's flow."""
+    a, b, c, d = JOBSON
+    da = np.maximum(catchment_km2(upstream_m), 1e-3) * 1e6           # m²
+    qa, q = QMEAN_PER_KM2 * da / 1e6, Q50_PER_KM2 * da / 1e6
+    v = a + b * np.power(da ** 1.25 * math.sqrt(9.81) / qa, c) * (q / qa) ** d * q / da
+    return np.clip(v, VEL_MIN, VEL_MAX)
+
+
+def flow_dilution(spot_upstream_m: float | np.ndarray) -> float | np.ndarray:
+    """config.DILUTION_MODE 'flow': Q_spill / (Q_spill + Q50 at the spot). The spill's size is not
+    known, so Q_spill is the median flow of a catchment with L0_M of network: a spot that small
+    halves a spill, as the 'length' rule does for an overflow at the head of its network. Fixed
+    before any evaluation, not tuned on samples."""
+    q_spill = float(q50_m3s(catchment_km2(L0_M)))
+    return q_spill / (q_spill + q50_m3s(catchment_km2(spot_upstream_m)))
+
+
+def upstream_times(net: RiverNetwork, root: str, cap_m: float, scale: float = 1.0) -> dict[str, float]:
+    """Link -> seconds for water to go from the link's downstream end to `root`, each link run at
+    reach_velocity of the network upstream of its downstream end, times `scale`. The walk is
+    upstream_edges', on path distance, so each link's time is along the same path as its distance."""
+    dist = {root: 0.0}
+    time = {root: 0.0}
+    out: dict[str, float] = {}
+    best: dict[str, float] = {}
+    stack = [root]
+    g = net.graph
+    up = net.upstream_m
+    while stack:
+        n = stack.pop()
+        dn, tn = dist[n], time[n]
+        v = float(reach_velocity(up.get(n, 0.0))) * scale
+        for pred in g.predecessors(n):
+            ed = g.edges[pred, n]
+            lid = ed["link"]
+            if lid not in best or dn < best[lid]:
+                best[lid], out[lid] = dn, tn
+            d_pred = dn + ed["length"]
+            if d_pred <= cap_m and d_pred < dist.get(pred, np.inf):
+                dist[pred], time[pred] = d_pred, tn + ed["length"] / v
+                stack.append(pred)
+    return out
+
+
+def _link_velocity(net: RiverNetwork, link_ids: pd.Series, scale: float) -> np.ndarray:
+    """reach_velocity at each link's downstream end, times `scale`."""
+    ends = net.links.loc[link_ids, "end_node"].map(net.upstream_m).fillna(0.0).to_numpy(dtype=float)
+    return np.asarray(reach_velocity(ends), dtype=float) * scale
+
+
 def _path_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str],
                   on_path: set[str], max_steps: int = 5000) -> tuple[float, tuple[float, float]] | None:
     """Walk downstream from an overflow until the water enters the lake.
     Returns (river distance m, entry point xy) or None if the lake is never reached."""
+    res = _walk_to_lake(net, link_id, frac, comp, on_path, max_steps)
+    return None if res is None else res[:2]
+
+
+def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], on_path: set[str],
+                  max_steps: int = 5000) -> tuple[float, tuple[float, float], float] | None:
+    """_path_to_lake, also giving the seconds the river part takes at reach_velocity (scale 1)."""
     links = net.links
     if link_id in comp:
         pt = links.loc[link_id, "geometry"].interpolate(frac, normalized=True)
-        return 0.0, (pt.x, pt.y)
-    d = (1.0 - frac) * links.loc[link_id, "length"]
+        return 0.0, (pt.x, pt.y), 0.0
+
+    def speed(node: str) -> float:
+        return float(reach_velocity(net.upstream_m.get(node, 0.0)))
+
     node = links.loc[link_id, "end_node"]
+    d = (1.0 - frac) * links.loc[link_id, "length"]
+    t = d / speed(node)
     for _ in range(max_steps):
         nxt = None
         for m in net.graph.successors(node):
             lid = net.graph.edges[node, m]["link"]
             if lid in comp:
                 pt = links.loc[lid, "geometry"].coords[0]
-                return d, (pt[0], pt[1])
+                return d, (pt[0], pt[1]), t
             if lid in on_path:
                 nxt = (m, lid)
         if nxt is None:
             return None
         node, lid = nxt
-        d += net.repairs.get(lid, 0.0) if lid.startswith("repair:") else links.loc[lid, "length"]
+        step = net.repairs.get(lid, 0.0) if lid.startswith("repair:") else links.loc[lid, "length"]
+        d += step
+        t += step / speed(node)
     return None
 
 
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
-                       t90_h: float = config.T90_HOURS) -> pd.DataFrame:
-    """Overflows upstream of the pin with distance, travel time and transport weight."""
+                       t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
+                       dilution_mode: str | None = None) -> pd.DataFrame:
+    """Overflows upstream of the pin with distance, travel time and transport weight.
+    `velocity_mode` and `dilution_mode` default to config.VELOCITY_MODE and config.DILUTION_MODE.
+    With velocity 'catchment', `velocity_ms` only scales each reach's speed by
+    velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it."""
+    velocity_mode = velocity_mode or config.VELOCITY_MODE
+    dilution_mode = dilution_mode or config.DILUTION_MODE
+    if velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow"):
+        raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}")
+    by_reach = velocity_mode == "catchment"
+    scale = velocity_ms / config.RIVER_VELOCITY_MS
     cols = list(overflows.columns) + ["distance_m", "lake_distance_m", "travel_h", "decay", "dilution", "weight"]
     if pin.mode == "none" or pin.trace_node is None:
         return pd.DataFrame(columns=cols)
@@ -373,34 +489,50 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
                             + ov["link_id"].map(link_dist) + pin.trace_offset_m)
         ov["lake_distance_m"] = 0.0
         same["lake_distance_m"] = 0.0
+        if by_reach:
+            # seconds on the river: the overflow's own link, the links between, then the pin's link
+            v_pin = float(_link_velocity(net, pd.Series([pin.snap.link_id]), scale)[0])
+            link_s = upstream_times(net, pin.trace_node, cap, scale)
+            ov["river_s"] = ((1.0 - ov["frac"]) * ov["link_length"] / _link_velocity(net, ov["link_id"], scale)
+                             + ov["link_id"].map(link_s) + pin.trace_offset_m / v_pin)
+            same["river_s"] = same["distance_m"] / v_pin
         ov = pd.concat([ov, same], ignore_index=True)
         spot_lup = lup.get(pin.trace_node, 0.0) + pin.trace_offset_m
+        spot_up_full = net.upstream_m.get(pin.trace_node, 0.0) + pin.trace_offset_m
     else:
         rows = []
         for _, r in ov.iterrows():
-            res = _path_to_lake(net, r["link_id"], r["frac"], pin.lake_links, on_path)
+            res = _walk_to_lake(net, r["link_id"], r["frac"], pin.lake_links, on_path)
             if res is None:
                 continue
-            d_river, (ex, ey) = res
+            d_river, (ex, ey), t_river = res
             d_lake = math.hypot(ex - pin.x, ey - pin.y)
-            rows.append((r.name, d_river, d_lake))
+            rows.append((r.name, d_river, d_lake, t_river / scale))
         if rows:
-            idx, dr, dl = zip(*rows, strict=True)
+            idx, dr, dl, tr = zip(*rows, strict=True)
             ov = ov.loc[list(idx)].copy()
             ov["distance_m"] = list(dr)
             ov["lake_distance_m"] = list(dl)
+            ov["river_s"] = list(tr)
         else:
             ov = ov.iloc[0:0].copy()
             ov["distance_m"] = []
             ov["lake_distance_m"] = []
         spot_lup = lup.get(pin.trace_node, 0.0)
+        spot_up_full = net.upstream_m.get(pin.trace_node, 0.0)
 
     if ov.empty:
         return pd.DataFrame(columns=cols)
-    ov["travel_h"] = (ov["distance_m"] / velocity_ms + ov["lake_distance_m"] / config.LAKE_VELOCITY_MS) / 3600.0
+    river_s = ov["river_s"] if by_reach else ov["distance_m"] / velocity_ms
+    ov["travel_h"] = (river_s + ov["lake_distance_m"] / config.LAKE_VELOCITY_MS) / 3600.0
+    ov = ov.drop(columns="river_s", errors="ignore")
     ov["decay"] = np.power(10.0, -ov["travel_h"] / t90_h)
-    ov_lup = ov["start_node"].map(lup).fillna(0.0) + (1.0 - ov["frac"]) * ov["link_length"] * 0  # at the outfall
-    ov["dilution"] = np.minimum(1.0, (ov_lup + L0_M) / (spot_lup + L0_M))
+    if dilution_mode == "flow":
+        # The whole catchment's network, not the traced 60 km: flow comes from all of it.
+        ov["dilution"] = float(flow_dilution(spot_up_full))
+    else:
+        ov_lup = ov["start_node"].map(lup).fillna(0.0) + (1.0 - ov["frac"]) * ov["link_length"] * 0  # at the outfall
+        ov["dilution"] = np.minimum(1.0, (ov_lup + L0_M) / (spot_lup + L0_M))
     if pin.mode == "lake" and pin.lake_area_km2:
         # A big lake dilutes an inflow far more than a river reach of similar
         # upstream network would; halve the weight at LAKE_A0_KM2 and shrink from there.
