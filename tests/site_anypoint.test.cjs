@@ -46,41 +46,64 @@ test('the calibration follows numpy.interp, flat beyond the knots, and keeps an 
   assert.equal(A.historyDays([33.3]), 3);
 });
 
-// The synthetic network's files, as the page would fetch them.
-const syn = fixture('anypoint_synthetic.json');
-const files = (() => {
+// The synthetic network's files, as the page would fetch them, once per lake path mode (config.
+// LAKE_PATH_MODE): "lake", the default, where water crossing Test Water on the way to a click below
+// it counts that lake as lake, and "river", the rule before 11 Oct 2026.
+const SYN = fixture('anypoint_synthetic.json');
+const filesOf = s => {
   const tiles = {};
-  for (const [k, t] of Object.entries(syn.files.tiles)) {
+  for (const [k, t] of Object.entries(s.files.tiles)) {
     const b = Buffer.from(t.index, 'base64');
     tiles[k] = { index: A.decodeIndex(b.buffer.slice(b.byteOffset, b.byteOffset + b.length)), links: t.links };
   }
-  return { cfg: syn.files.cfg, lakes: syn.files.lakes, od: syn.files.od, tiles };
-})();
-const placeAt = c => {
+  return { cfg: s.files.cfg, lakes: s.files.lakes, od: s.files.od, tiles };
+};
+const placeIn = files => c => {
   const keys = A.lakePolygon(c.lat, c.lon, files.lakes, files.cfg.lake_shore_m) ? [] : A.squares(c.lat, c.lon, files.cfg);
   return A.place(c.lat, c.lon, { ...files, tiles: Object.fromEntries(keys.map(k => [k, files.tiles[k]])) });
 };
+const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
 
-test('a click goes where the API puts it, and gets the API\'s overflows, distances and dilutions', () => {
-  let rows = 0;
-  for (const c of syn.clicks.filter(x => x.what !== 'the lonely pool')) {
-    const got = placeAt(c);
-    assert.equal(got.mode, c.mode, c.what);
-    if (c.mode === 'none') { assert.match(got.error, /No river or lake within 1\.5 km/, c.what); continue; }
-    assert.equal(got.location.watercourse, c.watercourse, c.what);
-    assert.equal(!!got.location.adopted_main_channel, c.adopted, `${c.what}: moved to the main channel`);
-    const mine = got.rows.map(r => ({ ...r, site_id: syn.files.ids[r.i] })).sort((a, b) => a.site_id.localeCompare(b.site_id));
-    const want = [...c.rows].sort((a, b) => a.site_id.localeCompare(b.site_id));
-    assert.deepEqual(mine.map(r => r.site_id), want.map(r => r.site_id), c.what);
-    mine.forEach((r, k) => {
-      // Distances in tens of metres, the click's place along a line simplified to 30 m.
-      near(r.dist, want[k].distance_m, 6, `${c.what} ${r.site_id} distance`);
-      near(r.dlake, want[k].lake_distance_m, 3, `${c.what} ${r.site_id} across the lake`);
-      near(r.dil, want[k].dilution, 1e-3, `${c.what} ${r.site_id} dilution`);
-      rows++;
-    });
-  }
-  assert.ok(rows > 50, `${rows} rows compared`);
+for (const [mode, s] of Object.entries(SYN.modes)) {
+  test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (lake path "${mode}")`, () => {
+    const at = placeIn(filesOf(s));
+    let rows = 0, crossed = 0;
+    for (const c of s.clicks.filter(x => x.what !== 'the lonely pool')) {
+      const got = at(c);
+      assert.equal(got.mode, c.mode, c.what);
+      if (c.mode === 'none') { assert.match(got.error, /No river or lake within 1\.5 km/, c.what); continue; }
+      assert.equal(got.location.watercourse, c.watercourse, c.what);
+      assert.equal(!!got.location.adopted_main_channel, c.adopted, `${c.what}: moved to the main channel`);
+      const mine = got.rows.map(r => ({ ...r, site_id: s.files.ids[r.i] })).sort((a, b) => a.site_id.localeCompare(b.site_id));
+      const want = [...c.rows].sort((a, b) => a.site_id.localeCompare(b.site_id));
+      assert.deepEqual(mine.map(r => r.site_id), want.map(r => r.site_id), c.what);
+      mine.forEach((r, k) => {
+        // Distances in tens of metres, the click's place along a line simplified to 30 m.
+        near(r.dist, want[k].distance_m, 6, `${c.what} ${r.site_id} distance`);
+        near(r.dlake, want[k].lake_distance_m, 3, `${c.what} ${r.site_id} across the lake`);
+        near(r.dil, want[k].dilution, 1e-3, `${c.what} ${r.site_id} dilution`);
+        rows++;
+        if (c.mode === 'river' && r.dlake > 0) crossed++;
+      });
+    }
+    assert.ok(rows > 50, `${rows} rows compared`);
+    // Below Test Water a river click's rows cross it in mode "lake" only.
+    if (mode === 'lake') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
+  });
+}
+
+test('a lake on the way slows the water and thins it, as the API does', () => {
+  // Outflow Beck, below Test Water: A5's water enters Test Water above the click. Same click, both modes.
+  const pick = s => s.clicks.find(x => x.what === 'O1 at 0.5');
+  const [lake, river] = [SYN.modes.lake, SYN.modes.river].map(s =>
+    placeIn(filesOf(s))(pick(s)).rows.find(x => s.files.ids[x.i] === 'A5'));
+  near(lake.dist + lake.dlake, river.dist + river.dlake, 1, 'the same distance along the network');
+  near(lake.dlake, 4000, 3, 'Test Water is 4 km of lake');
+  assert.equal(river.dlake, 0);
+  const area = SYN.modes.lake.files.lakes.polygons.find(p => p.name === 'Test Water').area_km2;
+  near(lake.dil, river.dil / (1 + area / 5), 1e-4, 'divided by 1 + area / 5 km2');
+  const hours = r => (r.dist / 0.5 + r.dlake / 0.05) / 3600;   // forecast()'s travel at the default speeds
+  near(hours(lake) - hours(river), 4000 / 0.05 / 3600 - 4000 / 0.5 / 3600, 0.01, '4 km at 0.05 m/s, not 0.5');
 });
 
 test('a click in a lake the river network links to no overflow says so', () => {

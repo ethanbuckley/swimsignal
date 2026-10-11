@@ -30,6 +30,19 @@ Dr James Shucksmith's review of 9 Oct 2026:
                         Q_i in proportion to the urban area apportioned to it
                         (urban_spill_m3s). Pre-stated in
                         docs/URBAN-DILUTION-TEST-2026-10.md.
+
+Lakes on the way (config.LAKE_PATH_MODE) follow a note on lakes from a Lake District water-quality
+group (11 Oct 2026). "lake" is the default since 11 Oct 2026, after the test pre-stated in
+docs/LAKE-PATH-TEST-2026-10.md:
+
+* lake path "lake"      a WFD lake crossed between an overflow and the spot is treated as the
+                        spot's own lake is: its centreline length at LAKE_VELOCITY_MS, and the
+                        dilution times 1 / (1 + A / LAKE_A0_KM2) for its area A. Lake-form links
+                        outside every WFD polygon (mill ponds, weir pools) stay river.
+* lake path "river"     the rule before: such a lake is walked at river speed, with no lake
+                        dilution.
+
+scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
 """
 
 from __future__ import annotations
@@ -42,6 +55,7 @@ from functools import lru_cache
 
 import numpy as np
 import pandas as pd
+import shapely
 from shapely.geometry import Point
 
 from dipcast import config
@@ -562,13 +576,94 @@ def _path_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str],
     return None if res is None else res[:2]
 
 
+# Lakes on the way (lake path "lake"): (metres of WFD lake, their seconds at reach_velocity, the lakes
+# by row in _lakes()) along a path. NO_LAKES for a path that crosses none.
+PathLakes = tuple[float, float, frozenset]
+NO_LAKES: PathLakes = (0.0, 0.0, frozenset())
+
+
+def _with_lake(part: PathLakes, lake: tuple[int, float] | None, length: float, speed: float) -> PathLakes:
+    """`part` and one more link of `length` m, if that link is in a WFD lake (`lake` from _wfd_lake_of)."""
+    if lake is None:
+        return part
+    m, s, lakes = part
+    return m + length, s + length / speed, lakes | {lake[0]}
+
+
+def _wfd_lake_of(net: RiverNetwork, link_ids, exclude=frozenset()) -> dict[str, tuple[int, float]]:
+    """The lake-form links among `link_ids` (less `exclude`) that lie in a WFD lake polygon:
+    link -> (the polygon's row in _lakes(), its area km²). A link in two polygons (Windermere's two
+    basins meet on one) goes to the one that holds more of its length; one that only touches a
+    polygon is not in it. Lake-form links outside every polygon (mill ponds, weir pools, tarns under
+    the WFD size) are left out, so they stay river."""
+    lakes = _lakes()
+    if lakes is None or lakes.empty:
+        return {}
+    ids = [lid for lid in link_ids if lid not in exclude and not lid.startswith("repair:")]
+    if not ids:
+        return {}
+    sub = net.links.loc[ids]
+    sub = sub[sub["form"] == "lake"]
+    if sub.empty:
+        return {}
+    li, pi = lakes.sindex.query(sub.geometry.values, predicate="intersects")
+    if len(li) == 0:
+        return {}
+    poly = np.asarray(lakes.geometry.values[pi], dtype=object)
+    bad = ~shapely.is_valid(poly)   # 14 of the 564 have nested shells; GEOS refuses to intersect those
+    poly[bad] = shapely.make_valid(poly[bad])
+    inside = shapely.length(shapely.intersection(np.asarray(sub.geometry.values[li], dtype=object), poly))
+    pairs = pd.DataFrame({"link": sub.index.values[li], "lake": pi, "m": inside})
+    pairs = pairs[pairs["m"] > 0].sort_values(["m", "lake"], ascending=[False, True]).drop_duplicates("link")
+    area = lakes["area_km2"].to_numpy(dtype=float)
+    return {lid: (int(p), float(area[p])) for lid, p in zip(pairs["link"], pairs["lake"], strict=True)}
+
+
+def _lake_divisor(lakes: frozenset, lake_area: dict[int, float]) -> float:
+    """The product of 1 + A / LAKE_A0_KM2 over the lakes crossed: the spot's own-lake factor, once per lake."""
+    return float(np.prod([1.0 + lake_area[k] / LAKE_A0_KM2 for k in sorted(lakes)])) if lakes else 1.0
+
+
+def _path_lakes(net: RiverNetwork, root: str, cap_m: float, lake_of: dict[str, tuple[int, float]],
+                scale: float = 1.0) -> dict[str, PathLakes]:
+    """Link -> the WFD lakes on the path from the link's downstream end to `root`, their metres and
+    their seconds at reach_velocity times `scale` (what upstream_times gives those metres). The walk
+    is upstream_edges', on path distance, so each link's lakes are on the same path as its distance."""
+    dist = {root: 0.0}
+    part = {root: NO_LAKES}
+    out: dict[str, PathLakes] = {}
+    best: dict[str, float] = {}
+    stack = [root]
+    g = net.graph
+    up = net.upstream_m
+    while stack:
+        n = stack.pop()
+        dn, pn = dist[n], part[n]
+        for pred in g.predecessors(n):
+            ed = g.edges[pred, n]
+            lid = ed["link"]
+            if lid not in best or dn < best[lid]:
+                best[lid], out[lid] = dn, pn
+            d_pred = dn + ed["length"]
+            if d_pred <= cap_m and d_pred < dist.get(pred, np.inf):
+                lake = lake_of.get(lid)
+                speed = float(reach_velocity(up.get(n, 0.0))) * scale if lake is not None else 1.0
+                dist[pred], part[pred] = d_pred, _with_lake(pn, lake, ed["length"], speed)
+                stack.append(pred)
+    return out
+
+
 def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], on_path: set[str],
-                  max_steps: int = 5000) -> tuple[float, tuple[float, float], float] | None:
-    """_path_to_lake, also giving the seconds the river part takes at reach_velocity (scale 1)."""
+                  max_steps: int = 5000, lake_of: dict[str, tuple[int, float]] | None = None,
+                  ) -> tuple[float, tuple[float, float], float, PathLakes] | None:
+    """_path_to_lake, also giving the seconds the river part takes at reach_velocity (scale 1) and,
+    with `lake_of` (_wfd_lake_of), the WFD lakes crossed before the spot's lake. The distance and
+    seconds still include those lakes' links."""
     links = net.links
+    lake_of = lake_of or {}
     if link_id in comp:
         pt = links.loc[link_id, "geometry"].interpolate(frac, normalized=True)
-        return 0.0, (pt.x, pt.y), 0.0
+        return 0.0, (pt.x, pt.y), 0.0, NO_LAKES
 
     def speed(node: str) -> float:
         return float(reach_velocity(net.upstream_m.get(node, 0.0)))
@@ -576,13 +671,14 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
     node = links.loc[link_id, "end_node"]
     d = (1.0 - frac) * links.loc[link_id, "length"]
     t = d / speed(node)
+    crossed = _with_lake(NO_LAKES, lake_of.get(link_id), d, speed(node)) if lake_of else NO_LAKES
     for _ in range(max_steps):
         nxt = None
         for m in net.graph.successors(node):
             lid = net.graph.edges[node, m]["link"]
             if lid in comp:
                 pt = links.loc[lid, "geometry"].coords[0]
-                return d, (pt[0], pt[1]), t
+                return d, (pt[0], pt[1]), t, crossed
             if lid in on_path:
                 nxt = (m, lid)
         if nxt is None:
@@ -591,22 +687,32 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
         step = net.repairs.get(lid, 0.0) if lid.startswith("repair:") else links.loc[lid, "length"]
         d += step
         t += step / speed(node)
+        if lake_of and lid in lake_of:
+            crossed = _with_lake(crossed, lake_of[lid], step, speed(node))
     return None
 
 
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
-                       dilution_mode: str | None = None) -> pd.DataFrame:
+                       dilution_mode: str | None = None, lake_path_mode: str | None = None) -> pd.DataFrame:
     """Overflows upstream of the pin with distance, travel time and transport weight.
-    `velocity_mode` and `dilution_mode` default to config.VELOCITY_MODE and config.DILUTION_MODE.
+    `velocity_mode`, `dilution_mode` and `lake_path_mode` default to config.VELOCITY_MODE,
+    config.DILUTION_MODE and config.LAKE_PATH_MODE.
     With velocity 'catchment', `velocity_ms` only scales each reach's speed by
-    velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it."""
+    velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it.
+    With lake path 'lake', the length of each WFD lake crossed on the way moves from distance_m to
+    lake_distance_m (their sum, the distance along the network, is unchanged, and the 60 km cap
+    still applies to it), and the dilution is divided by 1 + A / LAKE_A0_KM2 for each such lake."""
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
-    if velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban"):
-        raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}")
+    lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
+    if (velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban")
+            or lake_path_mode not in ("river", "lake")):
+        raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}, "
+                         f"lake path {lake_path_mode!r}")
     by_reach = velocity_mode == "catchment"
+    on_lakes = lake_path_mode == "lake"
     scale = velocity_ms / config.RIVER_VELOCITY_MS
     cols = list(overflows.columns) + ["distance_m", "lake_distance_m", "travel_h", "decay", "dilution", "weight"]
     if pin.mode == "none" or pin.trace_node is None:
@@ -615,6 +721,9 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     link_dist, lup = upstream_lengths(net, pin.trace_node, cap)
     on_path = set(link_dist)
     ov = overflows[overflows["link_id"].isin(on_path)].copy()
+    # The WFD lakes on the way, other than the spot's own (lake path 'lake' only).
+    lake_of = _wfd_lake_of(net, on_path, exclude=pin.lake_links) if on_lakes else {}
+    lake_area = {k: a for k, a in lake_of.values()}
 
     # Overflows on the pin's own link, upstream of the pin (river mode only).
     if pin.mode == "river" and pin.snap is not None:
@@ -636,24 +745,37 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
             ov["river_s"] = ((1.0 - ov["frac"]) * ov["link_length"] / _link_velocity(net, ov["link_id"], scale)
                              + ov["link_id"].map(link_s) + pin.trace_offset_m / v_pin)
             same["river_s"] = same["distance_m"] / v_pin
+        if on_lakes:
+            # Lakes below the overflow's link, then the part of its own link below it if that is
+            # a lake. The pin's own link is a river link (_locate puts a pin on a lake link in lake mode).
+            below = _path_lakes(net, pin.trace_node, cap, lake_of, scale)
+            parts = []
+            for lid, frac, length in zip(ov["link_id"], ov["frac"], ov["link_length"], strict=True):
+                own = lake_of.get(lid)
+                v = float(_link_velocity(net, pd.Series([lid]), scale)[0]) if own is not None else 1.0
+                parts.append(_with_lake(below.get(lid, NO_LAKES), own, (1.0 - frac) * length, v))
+            _put_lakes(ov, parts, lake_area)
+            _put_lakes(same, [NO_LAKES] * len(same), lake_area)
         ov = pd.concat([ov, same], ignore_index=True)
         spot_lup = lup.get(pin.trace_node, 0.0) + pin.trace_offset_m
         spot_up_full = net.upstream_m.get(pin.trace_node, 0.0) + pin.trace_offset_m
     else:
         rows = []
         for _, r in ov.iterrows():
-            res = _walk_to_lake(net, r["link_id"], r["frac"], pin.lake_links, on_path)
+            res = _walk_to_lake(net, r["link_id"], r["frac"], pin.lake_links, on_path, lake_of=lake_of)
             if res is None:
                 continue
-            d_river, (ex, ey), t_river = res
+            d_river, (ex, ey), t_river, (lm, ls, lk) = res
             d_lake = math.hypot(ex - pin.x, ey - pin.y)
-            rows.append((r.name, d_river, d_lake, t_river / scale))
+            rows.append((r.name, d_river, d_lake, t_river / scale, (lm, ls / scale, lk)))
         if rows:
-            idx, dr, dl, tr = zip(*rows, strict=True)
+            idx, dr, dl, tr, crossed = zip(*rows, strict=True)
             ov = ov.loc[list(idx)].copy()
             ov["distance_m"] = list(dr)
             ov["lake_distance_m"] = list(dl)
             ov["river_s"] = list(tr)
+            if on_lakes:
+                _put_lakes(ov, list(crossed), lake_area)
         else:
             ov = ov.iloc[0:0].copy()
             ov["distance_m"] = []
@@ -663,6 +785,15 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
 
     if ov.empty:
         return pd.DataFrame(columns=cols)
+    if on_lakes:
+        # A lake on the way is crossed as the spot's own lake is: its metres leave the river distance
+        # (and their seconds at river speed leave the reach-by-reach time) for the lake distance.
+        # The cap is kept on the distance as it was, so the same overflows are traced in both modes.
+        ov["_cap_m"] = ov["distance_m"]
+        ov["distance_m"] = ov["distance_m"] - ov["_lake_m"]
+        ov["lake_distance_m"] = ov["lake_distance_m"] + ov["_lake_m"]
+        if by_reach:
+            ov["river_s"] = ov["river_s"] - ov["_lake_s"]
     river_s = ov["river_s"] if by_reach else ov["distance_m"] / velocity_ms
     ov["travel_h"] = (river_s + ov["lake_distance_m"] / config.LAKE_VELOCITY_MS) / 3600.0
     ov = ov.drop(columns="river_s", errors="ignore")
@@ -679,11 +810,24 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         # A big lake dilutes an inflow far more than a river reach of similar
         # upstream network would; halve the weight at LAKE_A0_KM2 and shrink from there.
         ov["dilution"] = ov["dilution"] / (1.0 + pin.lake_area_km2 / LAKE_A0_KM2)
+    if on_lakes:
+        ov["dilution"] = ov["dilution"] / ov["_lake_div"]   # the same factor for each lake on the way
     ov["weight"] = ov["decay"] * ov["dilution"]
     if "snap_confidence" in ov:
         ov.loc[ov["snap_confidence"] == "low", "weight"] *= LOW_CONFIDENCE_FACTOR
-    ov = ov[ov["distance_m"] <= cap]
+    if on_lakes:
+        ov = ov[ov["_cap_m"] <= cap].drop(columns=["_cap_m", "_lake_m", "_lake_s", "_lake_div"])
+    else:
+        ov = ov[ov["distance_m"] <= cap]
     return ov.sort_values("weight", ascending=False).reset_index(drop=True)
+
+
+def _put_lakes(ov: pd.DataFrame, parts: list[PathLakes], lake_area: dict[int, float]) -> None:
+    """Each row's lakes on the way as the working columns upstream_overflows reads in lake path 'lake':
+    their metres, their seconds at reach speed, and the divisor of the dilution."""
+    ov["_lake_m"] = [p[0] for p in parts]
+    ov["_lake_s"] = [p[1] for p in parts]
+    ov["_lake_div"] = [_lake_divisor(p[2], lake_area) for p in parts]
 
 
 def history_days(travel_h: np.ndarray | pd.Series | None) -> int:

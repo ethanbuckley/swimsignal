@@ -172,6 +172,12 @@ National River Flow Archive). `model/transport.py` says how each one works.
 proportion to the ONS built-up area apportioned to it
 (`scripts/make_overflow_urban_area.py`; OGL). It scored worse than the default on
 the held-out E. coli tests (docs/URBAN-DILUTION-TEST-2026-10.md).
+`DIPCAST_LAKE_PATH_MODE` (default `lake` since 11 Oct 2026) treats each WFD lake
+between an overflow and the spot as the spot's own lake is treated: its length at the
+lake speed, and its area in the lake dilution. `river` is the rule before, which
+walked such a lake as river. It passed a pre-stated no-harm test, but the E. coli
+data barely touch it (docs/LAKE-PATH-TEST-2026-10.md). Click-anywhere follows the
+same mode.
 
 **Lakes.** A click inside or within 150 m of a WFD lake polygon is treated as
 that lake. The lake's centreline links (OS Open Rivers `form = lake`) inside the
@@ -180,6 +186,13 @@ its water routed along the network to where it enters the lake and then
 straight-line to the click. Lake dilution divides the weight by
 1 + area / 5 km², so Windermere's north basin (8.7 km²) cuts a shoreline spill's
 weight to about a third. Windermere is two WFD basins and is treated as such.
+A WFD lake that an overflow's water crosses on the way to a spot, river or lake, is
+treated the same way: its centreline length at 0.05 m/s and its own area term. So
+Grasmere WwTW counts at Rydal Water at 0.040, not 0.068, and the north basin thins
+Ambleside's water before it reaches the south basin. A lake-form link outside every
+WFD polygon (a mill pond, a weir pool) stays river. The lake term is a fixed drift
+and an area: no wind, depth or residence time, so a small lake still passes most
+of a spill.
 A click on the map that is not near a WFD lake falls back to the centreline
 heuristic: a lake centreline within 1.5 km, if it is nearer than the nearest
 river after a bias towards rivers.

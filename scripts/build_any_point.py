@@ -20,10 +20,11 @@ Everything is written under site/data/anypoint/:
   links/<t>.json       per traced link: its length, the network length upstream of it, and its
                        upstream overflows as transport.upstream_overflows finds them, in a form
                        that gives the distance and dilution for a click anywhere along it
-                       (`rows_at`); a lake link points at its lake in lakes.json
+                       (`rows_at`), and for those whose water crosses a WFD lake on the way, the
+                       metres of lake and the lake factor; a lake link points at its lake in lakes.json
   lakes.json           the WFD lake polygons (England) and every lake an overflow reaches: its
                        inlets, each with the overflows whose water enters there (river distance
-                       and dilution before the lake-area term)
+                       and dilution before the lake-area term, and any WFD lake crossed before it)
   outside_england.json Wales, Scotland and the island of Ireland, widened over their estuaries, where a
                        click gets "England only", and which part of the island is Northern Ireland (a
                        copy of data/raw/outside_england.json, scripts/make_outside_england.py)
@@ -33,11 +34,14 @@ is that lake; otherwise the nearest link within 1.5 km, or the nearest lake cent
 is less than twice as far; a click on a side channel near a much bigger river is traced as that
 river (_adopt_main_channel, which the page applies with each link's upstream network length from
 the index). River distances and dilutions then follow upstream_overflows exactly for the click's
-position along the link.
+position along the link. A WFD lake between an overflow and the click is crossed as
+upstream_overflows crosses it in config.LAKE_PATH_MODE "lake" (the default): its metres at the lake
+velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings).
 
-The upstream lists depend on the network and on where each overflow sits on it. They are cached
-in the state directory keyed by the network file's hash; when overflows are added, removed or
-moved, only the links downstream of them (within config.MAX_UPSTREAM_KM) are traced again.
+The upstream lists depend on the network, on where each overflow sits on it and on the transport
+rule. They are cached in the state directory keyed by the network and lakes files' hashes, the lake
+path mode and CACHE_VERSION; when overflows are added, removed or moved, only the links downstream
+of them (within config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
 
 Rain: every overflow's cell (about 1,650) against the spots' 300. Open-Meteo stopped answering
 this build after 600 locations in a minute (3 Oct 2026), so each build fetches at most
@@ -84,6 +88,7 @@ SIMPLIFY_M = 30.0         # line simplification for snapping; the snap radius is
 LAKE_SIMPLIFY_M = 15.0    # lake outlines; the shore rule is 150 m
 DAYS_AHEAD = 4            # today and four more, as forecast_point
 DIL_SCALE = 10_000        # dilutions and dilution ratios in ten-thousandths
+PATH_SCALE = 1_000_000    # the lake factor of lakes crossed on the way, in millionths
 BASE_UNIT_M = 10          # base distances in links/<t>.json, in tens of metres
 P_SCALE = 1_000           # probabilities and live weights in thousandths (three decimals)
 # How long after a spill's end its hours are published (ended_h): the 48 h window plus a week, longer
@@ -93,7 +98,7 @@ FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
-CACHE_VERSION = 5         # bump when the table's rules change
+CACHE_VERSION = 6         # bump when the table's rules change (6: lakes crossed on the way, 11 Oct 2026)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
@@ -163,6 +168,23 @@ def link_names(net: RiverNetwork, lids) -> dict[str, str | None]:
     return out
 
 
+def lake_crossings(net: RiverNetwork) -> dict[str, tuple[int, float]] | None:
+    """Every lake-form link in a WFD lake polygon: link -> (the lake's row, its area km2), as
+    transport._wfd_lake_of gives it, for config.LAKE_PATH_MODE "lake"; None in mode "river". Which
+    polygon a link is in does not depend on the trace, so one map serves every root."""
+    if config.LAKE_PATH_MODE != "lake":
+        return None
+    links = net.links
+    return transport._wfd_lake_of(net, list(links.index[links["form"] == "lake"]))
+
+
+def _crossing(part: transport.PathLakes, area: dict[int, float]) -> tuple[float, float] | None:
+    """(metres of WFD lake, the factor 1 / prod(1 + A / LAKE_A0_KM2)) for a path that crosses one, else None."""
+    if not part[2]:
+        return None
+    return part[0], 1.0 / transport._lake_divisor(part[2], area)
+
+
 class Tracer:
     """The river branch of transport.upstream_overflows, kept open in the click's position. For a
     link T traced from its start node (the root) and a click at fraction f along it,
@@ -180,10 +202,17 @@ class Tracer:
     at most 1. A link's record is its length, L_up(root), and per overflow either (base distance,
     r) or its position along T; `rows_at` turns that into the API's rows for any f. One search per
     root, and L_up only for the nodes a dilution needs: calling upstream_overflows per link would
-    take over 12 minutes (measured on 3 Oct 2026)."""
+    take over 12 minutes (measured on 3 Oct 2026).
 
-    def __init__(self, net: RiverNetwork, ov: pd.DataFrame, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0):
+    With `crossings` (lake_crossings), an overflow whose water crosses a WFD lake on the way to the
+    root also gets (metres of lake, lake factor) in the record's "path": the page moves those metres
+    from the river distance to the lake distance and multiplies the dilution by the factor, as
+    upstream_overflows does. Only roots with such a lake upstream walk the network a second time."""
+
+    def __init__(self, net: RiverNetwork, ov: pd.DataFrame, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0,
+                 crossings: dict[str, tuple[int, float]] | None = None):
         self.net, self.g, self.cap = net, net.graph, cap_m
+        self.crossings = crossings or {}
         self.length = dict(zip(net.links.index, net.links["length"].astype(float), strict=True))
         self.length.update(net.repairs)
         self.by_link: dict[str, list] = {}
@@ -191,9 +220,11 @@ class Tracer:
             self.by_link.setdefault(r.link_id, []).append((r.site_id, float(r.frac), float(r.link_length), r.start_node))
 
     def records(self, root: str, targets: list[str]) -> dict[str, dict]:
-        """{link: {"lup", "len", "other": [(site_id, base_m, r)], "same": [(site_id, pos_m)]}} for links
+        """{link: {"lup", "len", "other": [(site_id, base_m, r)], "same": [(site_id, pos_m)]}, and
+        "path": {site_id: (lake_m, factor)} where an overflow's water crosses a WFD lake} for links
         whose trace starts at `root`."""
         link_dist = self.net.upstream_edges(root, self.cap)
+        lake_of = {lid: self.crossings[lid] for lid in link_dist if lid in self.crossings}
         length_of = {lid: self.length[lid] for lid in link_dist}
         graph, memo = self.g, {}
 
@@ -212,6 +243,16 @@ class Tracer:
             return memo[n]
 
         upstream = [(lid, d0, self.by_link[lid]) for lid, d0 in link_dist.items() if lid in self.by_link]
+        path: dict[str, tuple[float, float]] = {}
+        if lake_of:   # transport.upstream_overflows' river branch in lake path "lake"
+            below = transport._path_lakes(self.net, root, self.cap, lake_of)
+            area = {k: a for k, a in lake_of.values()}
+            for lid, _, ovs in upstream:
+                for sid, f, ll, _ in ovs:
+                    part = transport._with_lake(below.get(lid, transport.NO_LAKES), lake_of.get(lid), (1.0 - f) * ll, 1.0)
+                    c = _crossing(part, area)
+                    if c is not None:
+                        path[sid] = c
         out = {}
         for t in targets:
             spot = total(root) + L0_M
@@ -220,17 +261,27 @@ class Tracer:
             out[t] = {"lup": total(root), "len": self.length[t],
                       "other": [r for r in other if r[1] <= self.cap],
                       "same": [(sid, f * ll) for sid, f, ll, _ in self.by_link.get(t, ())]}
+            crossed = {r[0]: path[r[0]] for r in out[t]["other"] if r[0] in path}
+            if crossed:
+                out[t]["path"] = crossed
         return out
 
 
 def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0) -> pd.DataFrame:
-    """A link record's rows for a click at `frac` along the link: site_id, distance_m, dilution, as
-    upstream_overflows computes them (the page's anypoint.js does the same)."""
+    """A link record's rows for a click at `frac` along the link: site_id, distance_m, lake_distance_m,
+    dilution, as upstream_overflows computes them (the page's anypoint.js does the same). The cap
+    applies to the whole distance along the network; a WFD lake crossed on the way then moves its
+    metres to the lake distance and multiplies the dilution by its factor."""
     offset = frac * rec["len"]
     shrink = (rec["lup"] + L0_M) / (rec["lup"] + L0_M + offset)   # the click's own extra upstream length
-    rows = [(sid, base + offset, min(1.0, r * shrink)) for sid, base, r in rec["other"] if base + offset <= cap_m]
-    rows += [(sid, offset - pos, min(1.0, shrink)) for sid, pos in rec["same"] if pos < offset]
-    return pd.DataFrame(rows, columns=["site_id", "distance_m", "dilution"])
+    path = rec.get("path", {})
+    rows = []
+    for sid, base, r in rec["other"]:
+        if base + offset <= cap_m:
+            lake_m, factor = path.get(sid, (0.0, 1.0))
+            rows.append((sid, base + offset - lake_m, lake_m, min(1.0, r * shrink) * factor))
+    rows += [(sid, offset - pos, 0.0, min(1.0, shrink)) for sid, pos in rec["same"] if pos < offset]
+    return pd.DataFrame(rows, columns=["site_id", "distance_m", "lake_distance_m", "dilution"])
 
 
 # ------------------------------------------------------------------ lakes
@@ -277,33 +328,42 @@ def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, froz
 
 
 def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
-              cap_m: float = config.MAX_UPSTREAM_KM * 1000.0) -> pd.DataFrame:
-    """Overflows upstream of a lake's outlet that reach the lake: site_id, river distance (m),
-    where the water enters the lake (BNG x, y) and the dilution before the lake-area term, as
-    the lake branch of transport.upstream_overflows computes them. The page adds the straight
-    line from the entry to the click at the lake velocity and divides by 1 + area / 5 km2."""
-    cols = ["site_id", "distance_m", "entry_x", "entry_y", "dilution"]
+              cap_m: float = config.MAX_UPSTREAM_KM * 1000.0,
+              crossings: dict[str, tuple[int, float]] | None = None) -> pd.DataFrame:
+    """Overflows upstream of a lake's outlet that reach the lake: site_id, distance along the
+    network to the lake (m), where the water enters the lake (BNG x, y), the dilution before the
+    lake-area term, and the metres and factor of any other WFD lake crossed on the way (lake_m 0,
+    factor 1 where none, or with no `crossings`), as the lake branch of transport.upstream_overflows
+    computes them. The page takes lake_m off the river distance, adds it and the straight line from
+    the entry to the click at the lake velocity, and multiplies by the factor and 1 / (1 + area / 5 km2)."""
+    cols = ["site_id", "distance_m", "entry_x", "entry_y", "dilution", "lake_m", "factor"]
     link_dist, lup = upstream_lengths(net, outlet, cap_m)
     on_path = set(link_dist)
+    lake_of = {lid: v for lid, v in (crossings or {}).items() if lid in link_dist and lid not in comp}
+    area = {k: a for k, a in lake_of.values()}
     sub = ov[ov["link_id"].isin(on_path)]
     spot_lup = lup.get(outlet, 0.0)
     rows = []
     for r in sub.itertuples(index=False):
-        res = transport._path_to_lake(net, r.link_id, r.frac, set(comp), on_path)
+        res = transport._walk_to_lake(net, r.link_id, r.frac, set(comp), on_path, lake_of=lake_of)
         if res is None:
             continue
-        d_river, (ex, ey) = res
+        d_river, (ex, ey), _, part = res
         if d_river > cap_m:
             continue
         ov_lup = lup.get(r.start_node, 0.0)
-        rows.append((r.site_id, d_river, ex, ey, min(1.0, (ov_lup + L0_M) / (spot_lup + L0_M))))
+        lake_m, factor = _crossing(part, area) or (0.0, 1.0)
+        rows.append((r.site_id, d_river, ex, ey, min(1.0, (ov_lup + L0_M) / (spot_lup + L0_M)), lake_m, factor))
     return pd.DataFrame(rows, columns=cols)
 
 
 # ------------------------------------------------------------------ the cached table
 def _net_key(net_hash: str, lakes_hash: str) -> dict:
+    """What the cached upstream lists depend on besides the overflows: a change to any of it traces
+    everything again. The lake path mode changes the rows' lake metres and factors; CACHE_VERSION
+    changes with the code's rules."""
     return {"version": CACHE_VERSION, "network": net_hash, "lakes": lakes_hash, "cap_km": config.MAX_UPSTREAM_KM,
-            "l0_m": L0_M}
+            "l0_m": L0_M, "lake_path": config.LAKE_PATH_MODE, "lake_a0_km2": LAKE_A0_KM2}
 
 
 def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, lakes_hash: str = "",
@@ -319,7 +379,9 @@ def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, la
         try:
             cached = pickle.loads(cache_path.read_bytes())
             if cached.get("key") != key:
-                stats["cache"] = "stale network"
+                old = cached.get("key") or {}
+                stats["cache"] = ("stale network" if (old.get("network"), old.get("lakes")) != (key["network"], key["lakes"])
+                                  else "stale rules")
                 cached = None
         except Exception as e:  # noqa: BLE001 - a broken cache is rebuilt, never fatal
             log.warning("any-point cache unreadable, rebuilding: %s", e)
@@ -328,6 +390,7 @@ def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, la
     ovp = place.reset_index()   # what upstream_overflows reads: site_id, link_id, frac, link_length, start_node
     links = net.links
 
+    crossings = lake_crossings(net)
     if cached is None:
         t = time.time()
         wfd, comp_sets, link_comp = lake_link_sets(net, lakes)
@@ -370,7 +433,7 @@ def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, la
         s = start.at[l]
         if s in reach or l in ov_links:
             groups.setdefault(s, []).append(l)
-    tracer = Tracer(net, ovp, cap)
+    tracer = Tracer(net, ovp, cap, crossings)
     for i, (root, ts) in enumerate(groups.items()):
         for l, rec in tracer.records(root, ts).items():
             if rec["other"] or rec["same"]:
@@ -392,7 +455,7 @@ def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, la
             continue
         if lake_id not in table["outlets"]:
             table["outlets"][lake_id] = transport._lake_outlet(net, set(comp))
-        rows = lake_rows(net, ovp, comp, table["outlets"][lake_id], cap)
+        rows = lake_rows(net, ovp, comp, table["outlets"][lake_id], cap, crossings)
         if len(rows):
             lake_out[lake_id] = rows
     table["lake_rows"] = lake_out
@@ -449,7 +512,9 @@ def encode_record(rec: dict, pos: dict[str, int]) -> dict:
     """A link record for links/<t>.json: n its length (m), u the network length upstream of its start
     (m), o flat triples (overflow index as the difference from the previous one, the indices
     ascending; base distance in tens of metres; r in ten-thousandths), s flat pairs (overflow index,
-    position along the link in m) for the overflows on the link itself."""
+    position along the link in m) for the overflows on the link itself, and k flat triples (overflow
+    index, metres of WFD lake crossed on the way, lake factor in millionths) for the overflows in o
+    whose water crosses one (lake path "lake" only)."""
     o, last = [], 0
     for i, base, r in sorted((pos[sid], base, r) for sid, base, r in rec["other"]):
         o += [i - last, round(float(base) / BASE_UNIT_M), round(float(r) * DIL_SCALE)]
@@ -457,17 +522,23 @@ def encode_record(rec: dict, pos: dict[str, int]) -> dict:
     s = []
     for i, p in sorted((pos[sid], p) for sid, p in rec["same"]):
         s += [i, round(float(p))]
-    return {"n": round(float(rec["len"])), "u": round(float(rec["lup"])), "o": o, **({"s": s} if s else {})}
+    k = []
+    for i, (m, f) in sorted((pos[sid], c) for sid, c in rec.get("path", {}).items()):
+        k += [i, round(float(m)), round(float(f) * PATH_SCALE)]
+    return {"n": round(float(rec["len"])), "u": round(float(rec["lup"])), "o": o, **({"s": s} if s else {}),
+            **({"k": k} if k else {})}
 
 
 def decode_record(entry: dict, ids: list[str]) -> dict:
     """A links/<t>.json record back into the form rows_at takes (for tests and checks)."""
     o = np.asarray(entry.get("o", []), dtype=float).reshape(-1, 3)
     s = np.asarray(entry.get("s", []), dtype=float).reshape(-1, 2)
+    k = np.asarray(entry.get("k", []), dtype=float).reshape(-1, 3)
     idx = np.cumsum(o[:, 0]).astype(int) if len(o) else []
     return {"len": entry["n"], "lup": entry["u"],
             "other": [(ids[i], b * BASE_UNIT_M, r / DIL_SCALE) for i, (_, b, r) in zip(idx, o, strict=True)],
-            "same": [(ids[int(i)], p) for i, p in s]}
+            "same": [(ids[int(i)], p) for i, p in s],
+            **({"path": {ids[int(i)]: (m, f / PATH_SCALE) for i, m, f in k}} if len(k) else {})}
 
 
 def _to_lonlat(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -575,20 +646,29 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         (out / "links" / f"{t}.json").write_text(json.dumps(
             {"ids": idv, "network": net_hash, **({"credits": credits["full"]} if credits and "full" in credits else {}), "links": entries}, separators=(",", ":")))
 
-    # Lakes.
-    past = history_days(np.array([config.MAX_UPSTREAM_KM * 1000.0 / river_velocity(None) / 3600.0]))
+    # Lakes. The longest travel a click can have sets how many past days of spill probabilities the
+    # page may need (transport.history_days): 60 km of river, or, where an overflow's water crosses a
+    # WFD lake on the way, up to 60 km with that lake's metres at the lake velocity.
+    cap = config.MAX_UPSTREAM_KM * 1000.0
+    v, v_lake = river_velocity(None), config.LAKE_VELOCITY_MS
+    crossed = max((m for rec in records.values() for m, _ in rec.get("path", {}).values()), default=0.0)
+    past = history_days(np.array([((cap - crossed) / v + crossed / v_lake) / 3600.0]))
     lakes_json = []
     for k in lake_ids:
         r = table["lake_rows"][k]
         r = r[[sid in pos for sid in r["site_id"]]].copy()
         elon, elat = _to_lonlat(r["entry_x"].to_numpy(), r["entry_y"].to_numpy())
         r["lon"], r["lat"] = np.round(elon, 5), np.round(elat, 5)
+        if "lake_m" not in r:   # rows from before lakes crossed on the way
+            r["lake_m"], r["factor"] = 0.0, 1.0
         inlets = []
         for (a, b), g in r.groupby(["lon", "lat"], sort=True):
-            flat = []
-            for s, d, w in zip(g["site_id"], g["distance_m"], g["dilution"], strict=True):
+            flat, cross = [], []
+            for s, d, w, m, f in zip(g["site_id"], g["distance_m"], g["dilution"], g["lake_m"], g["factor"], strict=True):
                 flat += [pos[s], round(float(d)), round(float(w) * DIL_SCALE)]
-            inlets.append({"at": [float(a), float(b)], "o": flat})
+                if m > 0:
+                    cross += [pos[s], round(float(m)), round(float(f) * PATH_SCALE)]
+            inlets.append({"at": [float(a), float(b)], "o": flat, **({"k": cross} if cross else {})})
         comp = table["wfd"][int(k[1:])]["links"] if k.startswith("w") else table["comp_sets"][k]
         # The furthest a click in this lake can be from an inlet: across the lake's box, plus the
         # shore rule (WFD lakes) or the snap radius (centreline lakes). It sets how many past days
@@ -602,7 +682,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         if len(r):
             far = max(math.hypot(max(abs(ex - x0), abs(ex - x1)) + pad, max(abs(ey - y0), abs(ey - y1)) + pad)
                       for ex, ey in zip(r["entry_x"], r["entry_y"], strict=True))
-            travel = (r["distance_m"].max() / river_velocity(None) + far / config.LAKE_VELOCITY_MS) / 3600.0
+            travel = float(((r["distance_m"] - r["lake_m"]) / v + (far + r["lake_m"]) / v_lake).max()) / 3600.0
             past = max(past, history_days(np.array([travel])))
         name = None
         if k.startswith("c"):
@@ -626,8 +706,10 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         "ids": idv, "network": net_hash,
         "note": ("polygons: the Environment Agency's WFD lakes. lake: index into lakes; null when no monitored overflow "
                  "upstream reaches it; -1 when the lake has no river connection in the network (isolated). lakes[].inlets: "
-                 "where water enters the lake, and o = flat triples (overflow index, river distance m, dilution x 10000 "
-                 "before dividing by 1 + area / 5 km2)."),
+                 "where water enters the lake, and o = flat triples (overflow index, distance along the network m, "
+                 "dilution x 10000 before dividing by 1 + area / 5 km2); k = flat triples (overflow index, metres of "
+                 "another WFD lake crossed on the way, which travel at the lake velocity, lake factor x 1000000 to "
+                 "multiply the dilution by) for the overflows in o whose water crosses one."),
         "polygons": polys, "lakes": lakes_json, **({"credits": credits} if credits else {})}, separators=(",", ":")))
 
     names = ovl["site_name"].where(ovl["site_name"].notna(), None) if "site_name" in ovl else pd.Series(None, index=ovl.index)
