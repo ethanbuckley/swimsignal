@@ -1,0 +1,6 @@
+# Outfalls on a stream that OS Open Rivers does not draw, placed where that stream meets a river it does.
+# Read by overflows.apply_joins. One row per overflow; say how the join was checked.
+# Join positions are read from OS OpenMap Local (Open Government Licence v3.0; contains OS data
+# © Crown copyright and database right 2026), never from OpenStreetMap (see LICENSE-DATA.md).
+site_id,join_lat,join_lon,stream,checked,how
+YWS00002,53.38178,-1.55639,Black Brook (River Rivelin),2026-10-11,"Consent: unnamed trib of Black Brook. OS OpenMap Local SurfaceWater_Line: the stream from Rochester Road runs north and meets the Rivelin here, 241 m below the plunge pool; the only streams meeting it above come from the south-west and pass no closer than 839 m to the outfall. The nearest drawn link was the Rivelin 709 m away, above the pool."

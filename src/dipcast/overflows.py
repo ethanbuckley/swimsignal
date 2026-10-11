@@ -71,11 +71,125 @@ def _tokens(name) -> set[str]:
     return {t for t in re.findall(r"[a-z]{3,}", name) if t not in GENERIC}
 
 
+# Outfalls to the ground: an infiltration system, a soakaway, land. Their water does not run in a river,
+# so they stay off the network. Morestead Road, Winchester ("SEWAGE FARM" live, "GROUNDWATERS VIA 2
+# INFILT SYST" in the return) was snapped 1.2 km to the Itchen Navigation and counted for Compton Lock
+# until 11 Oct 2026. Only when every name given says so: "RIVER WEY AND GROUNDWATER" reaches the Wey,
+# and the Land Yeo is a river.
+GROUND = re.compile(r"ground ?waters?|underground|strata|soak ?away|infiltrat|borehole|aquifer|percolat|"
+                    r"sewage farm|\b(?:onto|into|to|via)\s+land\b|^\s*land\s*$|land treatment", re.IGNORECASE)
+NO_NAME = re.compile(r"^\s*(?:not applicable|n/?a|no details|unknown|none|-)?\s*$", re.IGNORECASE)
+
+
+def to_ground(*names: pd.Series) -> pd.Series:
+    """True where every receiving-water name given reads as the ground, and at least one is given."""
+    said, other = None, None
+    for n in names:
+        n = n.fillna("").astype(str)
+        g = n.str.contains(GROUND)
+        blank = n.str.match(NO_NAME)
+        said = g if said is None else (said | g)
+        other = (~g & ~blank) if other is None else (other | (~g & ~blank))
+    return said & ~other
+
+
+POSITION_GAP_M = 300.0    # live position and annual-return outlet further apart than this: pick one
+NAMED_NEAR_M = 750.0      # ...by which has a link carrying the receiving water's name this close
+POSITION_EXTRA = {"lake", "tarn", "reservoir", "pond", "mere", "via", "sws", "culverted", "pumped", "outlet",
+                  "and", "tribs", "various", "sites"}
+
+
+def _named_within(net: RiverNetwork, x: float, y: float, want: set[str]) -> bool:
+    if not want:
+        return False
+    cand = net.candidates_xy(x, y, NAMED_NEAR_M)
+    alt = cand.get("watercourse_name_alternative", pd.Series(None, index=cand.index, dtype=object))
+    return any(want & (_tokens(n) | _tokens(a)) for n, a in zip(cand["watercourse_name"], alt))
+
+
+def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
+    """Where an overflow's live position and its annual-return outlet (the EA consent's grid
+    reference) are over POSITION_GAP_M apart, use the outlet when it alone has a link carrying the
+    receiving water's name within NAMED_NEAR_M. The live position is kept otherwise, as before.
+
+    Until 11 Oct 2026 the live position always won. Of the 420 overflows whose two positions
+    disagree and whose receiving water has a name, the outlet alone matched it at 40: Buxton STW,
+    on the Derbyshire Wye, was live 45 km away; Earl Sterndale STW sits by Hartington in the live
+    feed, 6.7 km from the village. The live position alone matched at 55, both at 159, neither at
+    166 (11 Oct 2026). Adds `position_source`: 'live', 'annual return' or 'join' (overflow_joins)."""
+    df = df.copy()
+    df["position_source"] = np.where(df["lat"].notna(), "live", "annual return")
+    both = df["lat"].notna() & df["ar_lat"].notna()
+    if not both.any():
+        return df
+    lx, ly = _TO_BNG.transform(df.loc[both, "lon"].to_numpy(), df.loc[both, "lat"].to_numpy())
+    ax, ay = _TO_BNG.transform(df.loc[both, "ar_lon"].to_numpy(), df.loc[both, "ar_lat"].to_numpy())
+    gap = np.hypot(lx - ax, ly - ay)
+    moved = []
+    for i, lxi, lyi, axi, ayi, g in zip(df.index[both], lx, ly, ax, ay, gap, strict=True):
+        if g <= POSITION_GAP_M:
+            continue
+        want = (_tokens(df.at[i, "receiving_watercourse"]) | _tokens(df.at[i, "receiving_water"])) - POSITION_EXTRA
+        if _named_within(net, axi, ayi, want) and not _named_within(net, lxi, lyi, want):
+            moved.append(i)
+    df.loc[moved, "lat"] = df.loc[moved, "ar_lat"]
+    df.loc[moved, "lon"] = df.loc[moved, "ar_lon"]
+    df.loc[moved, "position_source"] = "annual return"
+    log.info("positions: %d overflows moved to their annual-return outlet, which alone is by the named water",
+             len(moved))
+    return df
+
+
+JOINS = config.RAW / "overflow_joins.csv"
+
+
+def apply_joins(df: pd.DataFrame, path=None) -> pd.DataFrame:
+    """Checked joins (data/raw/overflow_joins.csv): an outfall on a stream OS Open Rivers does not
+    draw, placed where that stream meets a river it does draw. Each row says how it was checked."""
+    path = JOINS if path is None else path
+    if not path.exists():
+        return df
+    j = pd.read_csv(path, comment="#").set_index("site_id")
+    hit = df["site_id"].isin(j.index)
+    df.loc[hit, "lat"] = df.loc[hit, "site_id"].map(j["join_lat"]).to_numpy()
+    df.loc[hit, "lon"] = df.loc[hit, "site_id"].map(j["join_lon"]).to_numpy()
+    df.loc[hit, "position_source"] = "join"
+    return df
+
+
+TRIBUTARY = re.compile(r"\btrib(?:utary|s)?\b", re.IGNORECASE)
+
+
+def own_water(name) -> set[str]:
+    """The distinctive words of the water an outfall discharges into, not of the river that water
+    joins: "Harrow Beck, a Tributary of the River Eden" -> {"harrow"}, "TRIB OF CAM BROOK" -> set()."""
+    if not isinstance(name, str):
+        return set()
+    return _tokens(TRIBUTARY.split(name, maxsplit=1)[0])
+
+
+def on_named(net: RiverNetwork, df: pd.DataFrame) -> pd.Series:
+    """Whether each overflow's snapped link carries a distinctive word of its own receiving water
+    (own_water). An outfall into "a tributary of the River Eden" snapped onto the Eden is not: the
+    tributary meets the Eden somewhere, and that is not known from the name."""
+    names = net.links["watercourse_name"]
+    alt = net.links.get("watercourse_name_alternative", pd.Series(None, index=net.links.index, dtype=object))
+
+    def one(lid, rw) -> bool:
+        if not isinstance(lid, str) or lid not in names.index:
+            return False
+        return bool(own_water(rw) & (_tokens(names.get(lid)) | _tokens(alt.get(lid))))
+
+    return pd.Series([one(l, r) for l, r in zip(df["link_id"], df["receiving_watercourse"], strict=True)],
+                     index=df.index, dtype=bool)
+
+
 def _second_pass(net: RiverNetwork, df: pd.DataFrame, is_marine=None) -> pd.DataFrame:
     """Try a wider radius for inland outfalls that missed the first pass, preferring
     a link whose name shares a distinctive word with the recorded receiving water.
-    `is_marine(rows) -> bool Series` replaces the MARINE name test (Scotland: scottish_shadow)."""
-    todo = df[df["link_id"].isna()]
+    `is_marine(rows) -> bool Series` replaces the MARINE name test (Scotland: scottish_shadow).
+    Outfalls to the ground (snap_confidence 'ground') stay off the network."""
+    todo = df[df["link_id"].isna() & df["snap_confidence"].ne("ground")]
     marine = (todo["receiving_watercourse"].fillna("").str.contains(MARINE) if is_marine is None
               else is_marine(todo).astype(bool))
     df.loc[todo.index[marine], "snap_confidence"] = "marine"
@@ -138,13 +252,16 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     ar = latest_annual_returns(pd.read_parquet(config.PROCESSED / "annual_returns.parquet"))
     df = live.merge(ar, on="site_id", how="outer")
     df["company"] = df["company"].fillna(df["ar_company"])
+    df = choose_positions(net, df)
     df["lat"] = df["lat"].fillna(df["ar_lat"])
     df["lon"] = df["lon"].fillna(df["ar_lon"])
+    df = apply_joins(df)
+    ground = to_ground(df["receiving_watercourse"], df["receiving_water"])
     df["receiving_watercourse"] = df["receiving_watercourse"].fillna(df["receiving_water"])
     df["has_live"] = df["status"].notna()
     df["status"] = df["status"].fillna(-2).astype(int)   # -2 = no live feed
     df = pd.concat([df.drop(columns=["data_state", "feed_updated_at"], errors="ignore"), data_states(df)], axis=1)
-    df = df.dropna(subset=["lat", "lon"]).drop(columns=["ar_lat", "ar_lon", "ar_company", "receiving_water"])
+    df = df.assign(_ground=ground).dropna(subset=["lat", "lon"]).drop(columns=["ar_lat", "ar_lon", "ar_company", "receiving_water"])
     df = df[(df.lat.between(49, 61)) & (df.lon.between(-9, 3))].reset_index(drop=True)
 
     snap = net.snap_many(df["lon"].to_numpy(), df["lat"].to_numpy(), max_m=config.SNAP_MAX_M)
@@ -153,11 +270,15 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     df["snap_dist_m"] = snap["dist_m"].to_numpy()
     df["form"] = snap["form"].to_numpy()
     df["snap_confidence"] = np.where(df["link_id"].notna(), "high", None)
+    g = df.pop("_ground").astype(bool).to_numpy()
+    df.loc[g, ["link_id", "frac", "snap_dist_m", "form"]] = np.nan
+    df.loc[g, "snap_confidence"] = "ground"
     df = _second_pass(net, df)
     snapped = df["link_id"].notna()
     df.loc[snapped, "start_node"] = net.links.loc[df.loc[snapped, "link_id"], "start_node"].to_numpy()
     df.loc[snapped, "end_node"] = net.links.loc[df.loc[snapped, "link_id"], "end_node"].to_numpy()
     df.loc[snapped, "link_length"] = net.links.loc[df.loc[snapped, "link_id"], "length"].to_numpy()
+    df["on_named"] = on_named(net, df)
     log.info("overflows: %d total, %d with live feed, %d snapped to network (%.0f%%); confidence %s; data states %s",
              len(df), int(df.has_live.sum()), int(snapped.sum()), 100 * snapped.mean(),
              df["snap_confidence"].value_counts(dropna=False).to_dict(), df["data_state"].value_counts().to_dict())
