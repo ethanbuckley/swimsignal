@@ -40,8 +40,11 @@ velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake
 
 The upstream lists depend on the network, on where each overflow sits on it and on the transport
 rule. They are cached in the state directory keyed by the network and lakes files' hashes, the lake
-path mode and CACHE_VERSION; when overflows are added, removed or moved, only the links downstream
-of them (within config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
+path and outfall channel modes and CACHE_VERSION; when overflows are added, removed or moved, only
+the links downstream of them (within config.MAX_UPSTREAM_KM) are traced again. A new key traces
+everything again. Under outfall channel "junction" an outfall on a small channel takes, for its
+dilution, the upstream length of the junction its water reaches (transport._outfall_junction): the
+records' dilution ratios carry it, so the page does nothing different.
 
 Rain: every overflow's cell (about 1,650) against the spots' 300. Open-Meteo stopped answering
 this build after 600 locations in a minute (3 Oct 2026), so each build fetches at most
@@ -98,7 +101,7 @@ FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
-CACHE_VERSION = 6         # bump when the table's rules change (6: lakes crossed on the way, 11 Oct 2026)
+CACHE_VERSION = 7         # bump when the table's rules change (6: lakes on the way; 7: outfall channel mode, 11 Oct 2026)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
@@ -213,6 +216,7 @@ class Tracer:
                  crossings: dict[str, tuple[int, float]] | None = None):
         self.net, self.g, self.cap = net, net.graph, cap_m
         self.crossings = crossings or {}
+        self.junction = config.OUTFALL_CHANNEL_MODE == "junction"
         self.length = dict(zip(net.links.index, net.links["length"].astype(float), strict=True))
         self.length.update(net.repairs)
         self.by_link: dict[str, list] = {}
@@ -253,11 +257,22 @@ class Tracer:
                     c = _crossing(part, area)
                     if c is not None:
                         path[sid] = c
+        # Outfall channel "junction": an outfall on a small channel takes the upstream length of the
+        # junction its water reaches (transport._outfall_junction, on this root's traced path).
+        at: dict[str, str] = {}
+        if self.junction:
+            up = self.net.upstream_m
+            for lid, _, ovs in upstream:
+                for sid, f, _, sn in ovs:
+                    if up.get(sn, 0.0) < transport.ADOPT_MIN_M:
+                        j = transport._outfall_junction(self.net, lid, f, link_dist)
+                        if j is not None:
+                            at[sid] = j
         out = {}
         for t in targets:
             spot = total(root) + L0_M
-            other = [(sid, (1.0 - f) * ll + d0, (total(sn) + L0_M) / spot) for lid, d0, ovs in upstream if lid != t
-                     for sid, f, ll, sn in ovs]
+            other = [(sid, (1.0 - f) * ll + d0, (total(at.get(sid, sn)) + L0_M) / spot) for lid, d0, ovs in upstream
+                     if lid != t for sid, f, ll, sn in ovs]
             out[t] = {"lup": total(root), "len": self.length[t],
                       "other": [r for r in other if r[1] <= self.cap],
                       "same": [(sid, f * ll) for sid, f, ll, _ in self.by_link.get(t, ())]}
@@ -340,6 +355,7 @@ def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
     link_dist, lup = upstream_lengths(net, outlet, cap_m)
     on_path = set(link_dist)
     lake_of = {lid: v for lid, v in (crossings or {}).items() if lid in link_dist and lid not in comp}
+    junction = config.OUTFALL_CHANNEL_MODE == "junction"   # transport._outfall_junction, as for a river click
     area = {k: a for k, a in lake_of.values()}
     sub = ov[ov["link_id"].isin(on_path)]
     spot_lup = lup.get(outlet, 0.0)
@@ -351,7 +367,8 @@ def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
         d_river, (ex, ey), _, part = res
         if d_river > cap_m:
             continue
-        ov_lup = lup.get(r.start_node, 0.0)
+        node = transport._outfall_junction(net, r.link_id, r.frac, link_dist) if junction else None
+        ov_lup = lup.get(node or r.start_node, 0.0)
         lake_m, factor = _crossing(part, area) or (0.0, 1.0)
         rows.append((r.site_id, d_river, ex, ey, min(1.0, (ov_lup + L0_M) / (spot_lup + L0_M)), lake_m, factor))
     return pd.DataFrame(rows, columns=cols)
@@ -363,7 +380,8 @@ def _net_key(net_hash: str, lakes_hash: str) -> dict:
     everything again. The lake path mode changes the rows' lake metres and factors; CACHE_VERSION
     changes with the code's rules."""
     return {"version": CACHE_VERSION, "network": net_hash, "lakes": lakes_hash, "cap_km": config.MAX_UPSTREAM_KM,
-            "l0_m": L0_M, "lake_path": config.LAKE_PATH_MODE, "lake_a0_km2": LAKE_A0_KM2}
+            "l0_m": L0_M, "lake_path": config.LAKE_PATH_MODE, "lake_a0_km2": LAKE_A0_KM2,
+            "outfall_channel": config.OUTFALL_CHANNEL_MODE}
 
 
 def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, lakes_hash: str = "",

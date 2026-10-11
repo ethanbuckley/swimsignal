@@ -40,7 +40,9 @@ def _net(links: list[tuple]) -> RiverNetwork:
 # A river running east along y = 450000 with a beck from the north at x = 404000, an unnamed drain
 # joining at x = 406000, and a mill leat beside its third reach that is not joined upstream. To the
 # east, a beck flows south into a two-link lake, which drains south into a second, smaller lake:
-# water from above the first lake crosses it on the way to a click below it or in the second.
+# water from above the first lake crosses it on the way to a click below it or in the second. Two short
+# unnamed ditches, with nothing upstream, join the river (at n2) and the first lake (at k1) within 1 km
+# of an outfall on them (outfall channel "junction").
 LINKS = [
     ("M1", "River Test", "inlandRiver", "n0", "n1", [(400000, 450000), (402000, 450000)]),
     ("M2", "River Test", "inlandRiver", "n1", "n2", [(402000, 450000), (404000, 450000)]),
@@ -55,6 +57,8 @@ LINKS = [
     ("O1", "Outflow Beck", "inlandRiver", "k2", "o1", [(420000, 452000), (420000, 448000)]),
     ("L3", "Lower Water", "lake", "o1", "l3", [(420000, 448000), (420000, 446000)]),
     ("O2", "Lower Beck", "inlandRiver", "l3", "o2", [(420000, 446000), (420000, 443000)]),
+    ("X1", None, "inlandRiver", "x0", "n2", [(403700, 449700), (404000, 450000)]),
+    ("X2", None, "inlandRiver", "x2", "k1", [(420600, 454300), (420000, 454000)]),
 ]
 LAKE_POLY = box(419000, 451800, 421000, 456200)          # 8.8 km2
 LOWER_POLY = box(419400, 445900, 420600, 447900)         # 2.4 km2, 100 m below Outflow Beck's end
@@ -76,7 +80,8 @@ def _overflows(net: RiverNetwork, spec: list[tuple]) -> pd.DataFrame:
 
 OVERFLOWS = [("A1", "M1", 0.3, "high"), ("A2", "T1", 0.45, "high"), ("A3", "M3", 0.2, "low"),
              ("A4", "M3", 0.8, "high"), ("A5", "R1", 0.4, "high"), ("A6", "K1", 0.5, "high"),
-             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high")]
+             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high"), ("A9", "X1", 0.5, "high"),
+             ("A10", "X2", 0.5, "high")]
 RIVER_LINKS = ["M1", "M2", "M3", "M4", "T1", "D1", "S1", "R1", "O1", "O2"]
 
 
@@ -90,7 +95,16 @@ def world(monkeypatch):
     return net, lakes, _overflows(net, OVERFLOWS)
 
 
-MODES = ["lake", "river"]   # config.LAKE_PATH_MODE: the default, and the rule before 11 Oct 2026
+# The transport rules click-anywhere must follow: the defaults; lake path "river", the rule before
+# 11 Oct 2026; and outfall channel "junction" (docs/OUTFALL-CHANNEL-TEST-2026-10.md).
+MODES = {"lake": {"LAKE_PATH_MODE": "lake", "OUTFALL_CHANNEL_MODE": "own"},
+         "river": {"LAKE_PATH_MODE": "river", "OUTFALL_CHANNEL_MODE": "own"},
+         "junction": {"LAKE_PATH_MODE": "lake", "OUTFALL_CHANNEL_MODE": "junction"}}
+
+
+def _set_mode(monkeypatch, mode: str) -> None:
+    for k, v in MODES[mode].items():
+        monkeypatch.setattr(config, k, v)
 
 
 def _tile_files(out: Path, lid: str, net: RiverNetwork, bap) -> tuple[dict, dict, int]:
@@ -118,9 +132,9 @@ def _record(out: Path, lid: str, net: RiverNetwork, ids: list[str], bap) -> dict
     return None if entry is None else bap.decode_record(entry, ids)
 
 
-@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("mode", list(MODES))
 def test_every_click_on_a_river_matches_the_api_trace(world, tmp_path, monkeypatch, mode):
-    monkeypatch.setattr(config, "LAKE_PATH_MODE", mode)
+    _set_mode(monkeypatch, mode)
     bap = _bap()
     net, lakes, ov = world
     table, stats = bap.upstream_table(net, ov, lakes, "net0", "lakes0", tmp_path / "cache.pkl")
@@ -160,7 +174,7 @@ def test_every_click_on_a_river_matches_the_api_trace(world, tmp_path, monkeypat
     assert checked > 20
     # Below the first lake, water from above it or on it crosses it in mode "lake"; below the second,
     # it crosses both. A8, on Outflow Beck, crosses only the second. In mode "river" nothing does.
-    if mode == "lake":
+    if MODES[mode]["LAKE_PATH_MODE"] == "lake":
         assert {("O1", "A5"), ("O1", "A6"), ("O2", "A5"), ("O2", "A6"), ("O2", "A8")} <= crossed
         o2 = _record(out, "O2", net, ids, bap)
         lower = 1 + LOWER_POLY.area / 1e6 / transport.LAKE_A0_KM2
@@ -173,15 +187,18 @@ def test_every_click_on_a_river_matches_the_api_trace(world, tmp_path, monkeypat
     # An overflow on the clicked link counts only above the click; the unnamed drain is named after
     # the river it joins.
     m3 = _record(out, "M3", net, ids, bap)
-    assert set(bap.rows_at(m3, 0.5)["site_id"]) == {"A1", "A2", "A3"}
-    assert set(bap.rows_at(m3, 0.9)["site_id"]) == {"A1", "A2", "A3", "A4"}
+    assert set(bap.rows_at(m3, 0.5)["site_id"]) == {"A1", "A2", "A3", "A9"}
+    assert set(bap.rows_at(m3, 0.9)["site_id"]) == {"A1", "A2", "A3", "A4", "A9"}
+    # The ditch at n2 counts with the river's upstream length (7.7 km) in mode "junction" only.
+    a9 = bap.rows_at(m3, 0.5).set_index("site_id")["dilution"]
+    assert (a9["A9"] > 0.5) == (MODES[mode]["OUTFALL_CHANNEL_MODE"] == "junction")
     idx, _, lno = _tile_files(out, "D1", net, bap)
     assert idx["names"][idx["name"][int(np.flatnonzero(idx["lno"] == lno)[0])]] == "River Test"
 
 
-@pytest.mark.parametrize("mode", MODES)
+@pytest.mark.parametrize("mode", list(MODES))
 def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path, monkeypatch, mode):
-    monkeypatch.setattr(config, "LAKE_PATH_MODE", mode)
+    _set_mode(monkeypatch, mode)
     bap = _bap()
     net, lakes, ov = world
     table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
@@ -195,7 +212,8 @@ def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path,
     # A click in each lake. What the page does: from each inlet, the distance along the network less any
     # lake crossed on the way at the river velocity; that lake and the straight line to the click at the
     # lake velocity; the area term, times the factor of the lake crossed.
-    for poly, click, sites in ((water, (419500, 455000), ["A5", "A6"]), (lower, (420300, 447000), ["A5", "A6", "A8"])):
+    for poly, click, sites in ((water, (419500, 455000), ["A10", "A5", "A6"]),
+                               (lower, (420300, 447000), ["A10", "A5", "A6", "A8"])):
         pin, want = _api(net, ov, *bng_to_lonlat(*click))
         assert pin.mode == "lake" and pin.lake_source == "polygon"
         rows = []
@@ -217,7 +235,7 @@ def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path,
         # In the lower lake, water from above Test Water has crossed it in mode "lake" only.
         if poly is lower:
             a5 = want.set_index("site_id").loc["A5"]
-            assert (a5["lake_distance_m"] > 4_000) == (mode == "lake")
+            assert (a5["lake_distance_m"] > 4_000) == (MODES[mode]["LAKE_PATH_MODE"] == "lake")
 
 
 def test_moving_an_overflow_retraces_only_whats_downstream(world, tmp_path):
@@ -234,7 +252,7 @@ def test_moving_an_overflow_retraces_only_whats_downstream(world, tmp_path):
     assert stats["cache"] == "2 overflows changed" and 0 < stats["traced_links"] < len(net.links)
     full, _ = bap.upstream_table(net, moved, lakes, "net0", "lakes0", None)
     assert inc["records"] == full["records"]
-    assert set(bap.rows_at(inc["records"]["M3"], 0.5)["site_id"]) == {"A1", "A2", "A3", "A4"}
+    assert set(bap.rows_at(inc["records"]["M3"], 0.5)["site_id"]) == {"A1", "A2", "A3", "A4", "A9"}
     assert not any(r[0] == "A7" for rec in inc["records"].values() for r in rec["other"] + rec["same"])
     # A different network file starts again.
     _, stats = bap.upstream_table(net, moved, lakes, "net1", "lakes0", cache)
@@ -250,7 +268,7 @@ def test_a_change_of_lake_path_rule_traces_everything_again(world, tmp_path, mon
     monkeypatch.setattr(config, "LAKE_PATH_MODE", "lake")
     new, stats = bap.upstream_table(net, ov, lakes, "net0", "lakes0", cache)
     assert stats["cache"] == "stale rules" and stats["traced_links"] > 0
-    assert "path" not in old["records"]["O1"] and set(new["records"]["O1"]["path"]) == {"A5", "A6"}
+    assert "path" not in old["records"]["O1"] and set(new["records"]["O1"]["path"]) == {"A5", "A6", "A10"}
     full, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
     assert new["records"] == full["records"]
     # So does a new version of the rules, with the same mode and files.
@@ -293,12 +311,12 @@ CLICKS_BNG = ([(lid, f) for lid in RIVER_LINKS for f in (0.15, 0.5, 0.85)]
 
 def _page_fixture(world, tmp_path, monkeypatch) -> dict:
     return {"note": "Made by tests/test_anypoint.py (_page_fixture); UPDATE_FIXTURES=1 writes it again.",
-            "modes": {m: _page_fixture_in(world, tmp_path / m, monkeypatch, m) for m in MODES}}
+            "modes": {m: _page_fixture_in(world, tmp_path / m, monkeypatch, m) for m in MODES}}   # every rule
 
 
 def _page_fixture_in(world, tmp_path, monkeypatch, mode: str) -> dict:
     import base64
-    monkeypatch.setattr(config, "LAKE_PATH_MODE", mode)
+    _set_mode(monkeypatch, mode)
     bap = _bap()
     net, lakes, ov = world
     table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
@@ -354,4 +372,4 @@ def test_the_page_fixture_still_says_what_the_api_says(world, tmp_path, monkeypa
     # Below Test Water, mode "lake" puts lake metres on rows where mode "river" has none.
     def crossed(mode):
         return sum(r["lake_distance_m"] > 0 for c in kept_all["modes"][mode]["clicks"] if c["mode"] == "river" for r in c["rows"])
-    assert crossed("lake") > 10 and crossed("river") == 0
+    assert crossed("lake") > 10 and crossed("junction") > 10 and crossed("river") == 0

@@ -46,9 +46,11 @@ test('the calibration follows numpy.interp, flat beyond the knots, and keeps an 
   assert.equal(A.historyDays([33.3]), 3);
 });
 
-// The synthetic network's files, as the page would fetch them, once per lake path mode (config.
-// LAKE_PATH_MODE): "lake", the default, where water crossing Test Water on the way to a click below
-// it counts that lake as lake, and "river", the rule before 11 Oct 2026.
+// The synthetic network's files, as the page would fetch them, once per transport rule
+// (tests/test_anypoint.py, MODES): "lake", the defaults, where water crossing Test Water on the way to
+// a click below it counts that lake as lake; "river", lake path "river", the rule before 11 Oct 2026;
+// and "junction", outfall channel "junction", where an outfall on a short ditch takes the upstream
+// length of the river or lake it joins (docs/OUTFALL-CHANNEL-TEST-2026-10.md).
 const SYN = fixture('anypoint_synthetic.json');
 const filesOf = s => {
   const tiles = {};
@@ -65,7 +67,7 @@ const placeIn = files => c => {
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
 
 for (const [mode, s] of Object.entries(SYN.modes)) {
-  test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (lake path "${mode}")`, () => {
+  test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (rule "${mode}")`, () => {
     const at = placeIn(filesOf(s));
     let rows = 0, crossed = 0;
     for (const c of s.clicks.filter(x => x.what !== 'the lonely pool')) {
@@ -87,8 +89,8 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
       });
     }
     assert.ok(rows > 50, `${rows} rows compared`);
-    // Below Test Water a river click's rows cross it in mode "lake" only.
-    if (mode === 'lake') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
+    // Below Test Water a river click's rows cross it, except under lake path "river".
+    if (mode !== 'river') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
   });
 }
 
