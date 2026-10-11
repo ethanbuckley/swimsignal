@@ -176,6 +176,12 @@ The pre-statement above was committed in 01234e8 (12 October 2026, 00:07:18 BST)
 first run started (00:07:34). The branch was rebased onto main 7d1924a before the pre-statement, so
 the runs used the rebased code. Neither the option nor its constant was changed after the results.
 
+After the runs, main moved to 0f3500f. #184 mends the river network when it loads: 59 links reversed
+and 29 joins added. The branch was rebased onto it, and the same commit is now 157f2ab, with the same
+content and author time. Because that changes what the evaluation runs on, both runs were repeated on
+the rebased code, with the overflow table rebuilt on the mended network. The verdict is the same; the
+numbers are under "Replication on main 0f3500f" below.
+
 **Verdict: `blend` fails condition 3, the cross-site ranking. By the rule above it stays off.**
 Conditions 1, 2, 4, 5 and 6 hold.
 
@@ -243,3 +249,23 @@ What this shows:
   - samples rarely fall on spill days.
 
   A plume or dye survey at the Church Beck mouth would settle it. The samples here cannot.
+
+### Replication on main 0f3500f (the mended network, #184)
+
+Both runs repeated after the rebase, on the same inputs except the network's load-time fixes. 1,546
+samples, 0 network attempts in 10 script runs.
+
+| measure | base | `blend` | change [95% CI] |
+|---|---|---|---|
+| LOYO Brier | 0.09112 | 0.09112 | +0.00001 [-0.00022, +0.00021] |
+| LOSO Brier | 0.09061 | 0.09045 | -0.00016 [-0.00035, +0.00000] |
+| Forward Brier | 0.08300 | 0.08274 | -0.00026 [-0.00051, -0.00003] |
+| LOYO AUC | 0.8144 | 0.8146 | +0.0001 [-0.0020, +0.0026] |
+| LOYO AUC, rivers | 0.7475 | 0.7472 | -0.0002 [-0.0015, +0.0011] |
+| LOYO Brier, lakes | 0.02486 | 0.02473 | [-0.00039, +0.00009] |
+| Cross-site rho | 0.684 | 0.603 | -0.081 [-0.223, +0.004] |
+| Within-site rho, exposure | | | +0.012 |
+
+Conditions 1, 2, 4, 5 and 6 hold. Condition 3 fails. **Same verdict: it stays off.**
+
+The lake ceilings on the mended network are the same as in the table above, to three decimals.
