@@ -91,7 +91,8 @@ def main() -> None:
     calib: dict[str, dict[str, float]] = {}
     print(f"\n=== Spill model on {YEAR} by rainfall source ===")
     p_era = model.predict(base.astype({f: np.float32 for f in ALL_FEATURES}).fillna({f: 0.0 for f in ALL_FEATURES}))
-    s = scores(y, p_era); rows.append({"source": "reanalysis (upper bound)", **s})
+    # Not an upper bound (11 Oct 2026, the label until then): the same-day forecast scores better than it.
+    s = scores(y, p_era); rows.append({"source": "reanalysis (the weather as it was)", **s})
     for k in LEADS:
         dfk = with_lead(k)
         ok = dfk["rain_d"].notna().to_numpy()

@@ -96,6 +96,9 @@ RAIN_BAND_LABELS = ["under 1 mm", "1-5 mm", "5-10 mm", "10 mm or more"]
 # reads high only at a higher chance, or from several overflows at once, so this counts the warnings
 # the forecast gave at the overflows themselves. Moderate (0.15) was not chosen: no alert is sent there.
 SPILL_WARN_AT = 0.40
+# The one company whose overflows the spill model learned from (scripts/train.py, COMPANY): the pages set
+# the warnings there apart from the rest.
+TRAINED_ON = "United Utilities"
 # The E. coli estimate's High risk line: a 25% chance a sample is over 900 per 100 ml (ECOLI_CUTS in
 # site/levels.js), on rivers only, where the site shows the estimate and lets it set the level.
 ECOLI_WARN_AT = 0.25
@@ -421,9 +424,12 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
                      "discharging_without_event_times": "a spill on the local day of the poll that saw it",
                      "baseline": "annual spill count / 365, an approximation (spill-days per counted spill = "
                                  f"{_spill_days_per_spill():.2f} pooled over United Utilities 2023-25; not checked per overflow or company)"},
+           # A scored row is one forecast: one overflow, one target day, one lead (issue day). An overflow-day
+           # is scored once per lead, up to five times, so the forecasts outnumber the overflow-days about five
+           # to one: warning_table.n_overflow_days counts those. Until 11 Oct 2026 these said "overflow-days".
            "units": {"n_point_forecasts": "rows in the spot forecast log: one per spot, issue and target day (not overflow-days)",
-                     "n_candidates": "overflow-days: one monitored overflow on one past target day, with a forecast and rainfall data",
-                     "n_scored": "overflow-days"}}
+                     "n_candidates": "forecasts: one monitored overflow, one past target day and one lead, with rainfall data",
+                     "n_scored": "forecasts (one per overflow, target day and lead); warning_table.n_overflow_days is the overflow-days"}}
     hist_path = config.state_read("live_history.parquet") if store is None else store.history
     ov_path = None if store is None else store.overflows
     if fc.empty or not hist_path.exists():
@@ -476,6 +482,11 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
     fc["p_clim"] = _site_climatology(fc["site_id"], ov_path)
     out["overall"] = {"raw": scores(y, fc["p_raw"].to_numpy()), "calibrated": scores(y, fc["p_cal"].to_numpy())}
     out["overall"]["climatology_brier"] = float(np.mean((fc["p_clim"].to_numpy() - y) ** 2))
+    # Climatology ranks too: an overflow that spills more often in a year gets a higher rate, so its AUC
+    # is not 0.5 (the page printed 0.500 until 11 Oct 2026). Its mean against the spill rate says how
+    # high the long-run rates sit for the period, which the skill against it depends on.
+    out["overall"]["climatology_auc"] = float(roc_auc_score(y, fc["p_clim"])) if 0 < y.mean() < 1 else None
+    out["overall"]["climatology_mean"] = float(fc["p_clim"].mean())
     # A flat forecast at the period's own spill rate uses hindsight, so it is not a rival
     # forecast; a real forecast that loses to it is miscalibrated for the period.
     out["overall"]["period_base_rate_brier"] = float(np.mean((y.mean() - y) ** 2))
@@ -521,6 +532,12 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
                                "skill": float(1 - np.mean((pc - yy) ** 2) / cb) if cb > 0 else None,
                                "auc": float(roc_auc_score(yy, pc)) if 0 < yy.mean() < 1 and len(g) >= 30 else None})
         out["by_company"] = sorted(by_company, key=lambda r: -r["n"])
+        # The warnings by company: the spill model was trained on one company's overflows, and the
+        # warnings that came true were mostly there (11 Oct 2026: 208 of 223 at United Utilities).
+        out["warning_table"]["trained_on"] = TRAINED_ON
+        out["warning_table"]["by_company"] = sorted(
+            ({"company": c, **warning_counts(g["y"], g["p_cal"], SPILL_WARN_AT)} for c, g in fc.groupby("company")),
+            key=lambda r: (-(r["hits"] + r["misses"]), r["company"]))
     fc["week"] = pd.to_datetime(fc["target_day"]).dt.to_period("W").dt.start_time.dt.date.astype(str)
     out["by_week"] = [{"week": w, "n": len(g), "base_rate": float(g["y"].mean()),
                        "brier_cal": float(np.mean((g["p_cal"].to_numpy() - g["y"].to_numpy()) ** 2))}
@@ -609,12 +626,27 @@ def _scoring_window(obs_from: str | None, cutoff: date, missed: pd.DataFrame, un
     m_in = int(sum(first is not None and d >= first for d in missed["target_day"]))
     u_in = uncovered[uncovered["reason"] != "before_observations"]
     n_before = int(len(missed) - m_in + (uncovered["reason"] == "before_observations").sum())
-    return {"unit": "overflow-day", "from_day": obs_from, "to_day": str(cutoff),
+    # Target days from the first scored one to yesterday on which nothing could be scored, each with the
+    # rule most of its forecasts broke: 8 and 9 Oct 2026 had four runs each, under the six polls a day
+    # the rule needs, so a span of days is not a count of them.
+    not_scored = []
+    if len(scored):
+        have = set(scored["target_day"])
+        for d in pd.date_range(scored["target_day"].min(), cutoff, freq="D").date:
+            if d in have:
+                continue
+            why = u_in.loc[u_in["target_day"] == d, "reason"]
+            n_missed = int((missed["target_day"] == d).sum())
+            not_scored.append({"day": str(d), "n_candidates": int(len(why)) + n_missed,
+                               "reason": str(why.value_counts().idxmax()) if len(why) else "missed_deadline" if n_missed else "no_forecast"})
+    return {"unit": "forecast", "from_day": obs_from, "to_day": str(cutoff),
             "n_candidates": m_in + len(u_in) + len(scored), "n_missed_deadline": m_in, "n_uncovered": len(u_in),
             "uncovered_by_reason": {r: int((u_in["reason"] == r).sum()) for r in UNCOVERED_REASONS[1:]},
             "n_scored": len(scored), "n_before_window": n_before,
             "first_scored_day": str(scored["target_day"].min()) if len(scored) else None,
-            "last_scored_day": str(scored["target_day"].max()) if len(scored) else None}
+            "last_scored_day": str(scored["target_day"].max()) if len(scored) else None,
+            "n_scored_days": int(scored["target_day"].nunique()) if len(scored) else 0,
+            "days_not_scored": not_scored}
 
 
 def _finish(out: dict, as_of: date, scored: pd.DataFrame | None = None, store: LiveStore | None = None) -> dict:
@@ -639,7 +671,7 @@ def _finish(out: dict, as_of: date, scored: pd.DataFrame | None = None, store: L
     return out
 
 
-# One row per scored overflow-day, so anyone can recompute the live scores. The build publishes it
+# One row per scored forecast (overflow, day and lead), so anyone can recompute the live scores. The build publishes it
 # as data/verification_live.csv with the credits in a header comment (build_site.publish_scored_csv).
 SCORED_CSV = "verification_live.csv"
 SCORED_COLUMNS = ["overflow_id", "company", "day", "lead", "issued_at", "forecast_raw", "forecast_calibrated",

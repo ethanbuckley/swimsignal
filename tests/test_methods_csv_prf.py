@@ -93,7 +93,7 @@ def test_the_method_page_tables_are_the_committed_test_results():
     assert _rows(page, "holdout") == [[f"{r.brier:.4f}", f"{r.auc:.3f}", f"{r.brier_skill_vs_clim:.2f}"] for r in want]
     assert f"{int(want[0].n):,} overflow-days, {100 * want[0].base_rate:.2f}% of them" in page
     leads = pd.read_csv(PROCESSED / "verification_leads_2025.csv").set_index("source")
-    want = [leads.loc["reanalysis (upper bound)"]] + [leads.loc[f"forecast lead {k}, isotonic cross-fitted (odd/even months)"] for k in range(5)]
+    want = [leads.loc["reanalysis (the weather as it was)"]] + [leads.loc[f"forecast lead {k}, isotonic cross-fitted (odd/even months)"] for k in range(5)]
     assert _rows(page, "leads") == [[f"{r.brier:.4f}", f"{r.auc:.3f}", f"{r.brier_skill_vs_clim:.2f}"] for r in want]
     m = json.loads((PROCESSED / "ecoli_model_eval.json").read_text())
     by = lambda rows, name: next(r for r in rows if r["model"] == name)
