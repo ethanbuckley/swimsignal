@@ -159,7 +159,8 @@ If the option is changed after the results are seen, both results are kept and t
 ## Results (added 11 October 2026, after the runs; everything above is unchanged)
 
 The pre-statement above was committed in 5fbd5ac (11 October 2026, 19:24 BST) and pushed before the
-first run started (19:25 BST). The option was not changed after the results.
+first run started (19:25 BST). The option was not changed after the results. (The branch was later
+rebased onto main; there the same commit is e8c4d41, with the same content and author time.)
 
 **Verdict: all five conditions hold. By the rule above, `lake` is a candidate to switch on.** The
 switch is Ethan's decision. The data show it does no harm; they cannot show it helps (see below).
@@ -225,3 +226,10 @@ What this shows, and what it does not:
   (0.60 km²) divides the weight by only 1.12. Most of Rydal Water's 41.5% drop comes from the slower
   crossing (5.5 more hours of die-off). Whether that matches the observation that a Grasmere spill has
   dissipated below Rydal Water is not known.
+
+## Decision (added 11 October 2026)
+
+Ethan chose to switch it on. From PR #176 the default is `lake`; `DIPCAST_LAKE_PATH_MODE=river` gives
+the rule before. Click-anywhere (`scripts/build_any_point.py`, `site/anypoint.js`) follows the same mode,
+and its cached upstream lists are keyed by it, so the first build after the change traces them again.
+Nothing above this section was changed.
