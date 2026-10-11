@@ -104,12 +104,14 @@ def _backoff_s(attempt: int) -> float:
     return d / 2 + _random() * d / 2
 
 
-def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5) -> list[dict] | dict:
+def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5,
+             retry_429: bool = True) -> list[dict] | dict:
     """GET `url` and return its JSON, retrying a 429, a 5xx and a connect, TLS-handshake, read or
     network failure up to `attempts` times in all (waits: WAIT_BASE_S and the comments by it). Raises
     OpenMeteoError when they run out, at once for any other 4xx. A Retry-After over
     MAX_RETRY_AFTER_S ends the retries. Each request is one API call to Open-Meteo, so retries
-    are the only calls added, and only after a failure."""
+    are the only calls added, and only after a failure. `retry_429=False` raises at the first 429:
+    the off-CI archive fetchers stop at a refusal rather than ask again."""
     waited, why = 0.0, "no attempt made"
     for attempt in range(attempts):
         hint = None
@@ -125,6 +127,9 @@ def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5) ->
                 except ValueError as e:
                     raise OpenMeteoError(f"open-meteo sent a body that is not JSON: {e}") from e
             why = f"HTTP {r.status_code}"
+            if r.status_code == 429 and not retry_429:
+                log.warning("open-meteo %s; not retried (retry_429=False)", why)
+                raise OpenMeteoError(f"open-meteo request refused: {why}")
             if r.status_code != 429 and r.status_code < 500:
                 log.warning("open-meteo %s; not retried", why)
                 raise OpenMeteoError(f"open-meteo request failed: {why}")
@@ -153,8 +158,10 @@ def _to_frame(res: dict, cell_lat: float, cell_lon: float) -> pd.DataFrame:
 
 
 # ------------------------------------------------------------------ archive
-def fetch_archive(cells: list[tuple[float, float]], year: int) -> pd.DataFrame:
-    """Hourly precipitation for each cell for one calendar year (cached)."""
+def fetch_archive(cells: list[tuple[float, float]], year: int, strict: bool = False) -> pd.DataFrame:
+    """Hourly precipitation for each cell for one calendar year (cached). A request that fails
+    after its retries is skipped, unless `strict`: then a 429 is not retried and any failure
+    raises OpenMeteoError, so a paced off-CI fetch can stop at the first refusal."""
     CACHE.mkdir(parents=True, exist_ok=True)
     frames, todo = [], []
     for cl, cn in cells:
@@ -175,8 +182,10 @@ def fetch_archive(cells: list[tuple[float, float]], year: int) -> pd.DataFrame:
             "timezone": "UTC",
         }
         try:
-            res = _request(config.OPEN_METEO_ARCHIVE, params)
+            res = _request(config.OPEN_METEO_ARCHIVE, params, retry_429=not strict)
         except RuntimeError as e:
+            if strict:
+                raise
             log.error("archive %d: skipping %d cells after repeated failures (%s)", year, len(chunk), e)
             continue
         results = res if isinstance(res, list) else [res]

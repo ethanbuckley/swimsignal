@@ -107,6 +107,14 @@ spill history only and no "right now" status. Hafren Dyfrdwy is not in Severn
 Trent's live feed, and none of its overflows is in SwimSignal's table. The nine
 English companies in the National Storm Overflow Hub are all live.
 
+Off-site tests only, not shown on the site: `scripts/check_ecoli_wales.py` (Wales
+plan, task W10) reads E. coli results from Natural Resources Wales' Water Quality
+Archive (NRW_DS124903), under the Open Government Licence v3. The archive is
+downloaded by hand into the git-ignored cache; no NRW rows are committed. Credit:
+"Contains Natural Resources Wales information © Natural Resources Wales and
+Database Right. All rights Reserved. Contains Ordnance Survey Data. Ordnance
+Survey Licence number AC0000849444. Crown Copyright and Database Right."
+
 ## Method
 
 **Spill model.** One row per overflow per day. Target: any discharge that day.

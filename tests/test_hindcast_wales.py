@@ -156,6 +156,22 @@ def test_event_set_low_uptime_site_year_is_dropped():
     assert "B" not in set(df.site_id) and info["low_uptime_site_years"] == 1
 
 
+def test_event_set_stops_the_day_before_the_file_ends():
+    # Hafren Dyfrdwy's 2025 file ends on 23 December: later days have no record and must not be
+    # scored as dry days.
+    sites = _sites()
+    daily = hw.daily_rain_features(_hourly(hw.cells_of(sites)))
+    model = StubModel()
+    ev = _events(daily, sites, model)
+    ev = ev[ev["event_start"] < pd.Timestamp("2025-12-24", tz="UTC")]
+    last = hw.last_full_day(ev)
+    assert last == ev["event_start"].max().floor("D") - pd.Timedelta(days=1)
+    df, _ = hw.build_event_set(sites, ev, hw._same_year(sites), [2025], daily, 1.004, {"holdout": model}, last)
+    assert df["day"].max() <= last
+    full, _ = hw.build_event_set(sites, ev, hw._same_year(sites), [2025], daily, 1.004, {"holdout": model})
+    assert full["day"].max() == pd.Timestamp("2025-12-31", tz="UTC")
+
+
 def test_event_set_arms_and_baselines(event_set):
     _, _, _, df, _ = event_set
     a = df[df.site_id == "A"]
