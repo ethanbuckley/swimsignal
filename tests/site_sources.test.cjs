@@ -49,6 +49,10 @@ test('one overflow is named alone only when it holds at least half the risk', ()
   assert.equal(plain(run('sourceSentence', kirk, 'now')),
     'Most of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, discharging now, 0.4 km upstream, under an hour away.');
   assert.match(plain(run('sourceSentence', {...ILKLEY, distance_km: 1.2, lake_distance_km: 0.8, travel_h: 1.4}, 'now')), /2\.0 km upstream, about 1 hour away\.$/);
+  // A spill running when its company's feed last answered (11 Oct 2026): the feed is down now.
+  assert.match(plain(run('sourceSentence', {...kirk, status: -3, last_status: 1}, 'now')),
+    /Kirkoswald sewage works overflow on the River Eden, discharging when its company’s feed last answered, 0\.4 km upstream/);
+  assert.doesNotMatch(plain(run('sourceSentence', {...kirk, status: -3, last_status: 0}, 'now')), /discharging/);
   // A feed's id where it has no name; a name that could break the page is escaped.
   assert.match(plain(run('sourceSentence', {...ILKLEY, site_name: null}, 'now')), /comes from YW1 on the River Wharfe/);
   assert.match(run('sourceSentence', {...ILKLEY, site_name: '<img src=x>'}, 'now'), /&lt;img src=x&gt;/);

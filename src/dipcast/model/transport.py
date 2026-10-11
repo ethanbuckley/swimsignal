@@ -984,12 +984,25 @@ def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.
 LOW_CUT = 0.15   # risk_label: a risk under this is low
 
 
+def running(ov: pd.DataFrame) -> np.ndarray:
+    """Whether each overflow's spill is running, as far as the live feeds last said: status 1, or a row
+    carried through its company's feed outage (ingest.live.carry_forward, status FEED_DOWN) whose
+    last status read was 1. Until 11 Oct 2026 only status 1 counted, and as every discharging row has
+    an empty event end, a spill running when its company's feed failed (or a short read missed it)
+    left the right-now risk and the count of what is discharging until the feed answered again."""
+    from dipcast.ingest.live import FEED_DOWN
+    status = pd.to_numeric(ov["status"], errors="coerce")
+    last = pd.to_numeric(ov["last_status"], errors="coerce") if "last_status" in ov else pd.Series(np.nan, index=ov.index)
+    return (status.eq(1) | (status.eq(FEED_DOWN) & last.eq(1))).to_numpy(dtype=bool)
+
+
 def _counted(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """The spills live_now_risk counts right now, with any weight: running, or finished with its water
+    """The spills live_now_risk counts right now, with any weight: running (`running`, which keeps a
+    spill running at the last poll before its company's feed failed), or finished with its water
     passed under recent_h ago or still passing. A mask over `ov`, and for every row its weight, the
     hours from now to its end (taking a running spill to end now: 0, or negative for one that ended)
     and its travel time (`travel_h`, 0 where unknown)."""
-    active = (ov["status"] == 1).to_numpy()
+    active = running(ov)
     end = pd.to_datetime(ov["latest_event_end"], utc=True)
     hrs_since = ((now - end).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
     w = np.clip(ov["weight"].to_numpy(dtype=float), 0.0, None)

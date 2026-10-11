@@ -59,7 +59,10 @@ function evidenceOverflows(d, generatedAt) {
   if (rest) not.push(nf === null ? `${rest} offline or with no live feed` : `${rest} offline`);
   if (nf) not.push(`${nf} with no live feed`);
   for (const f of n.feed_down || []) not.push(`${f.overflows} on ${evidenceEsc(f.company)}'s feed, which is down`);
-  for (const f of n.feed_stale || []) not.push(`${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
+  // `records`: overflows whose own records have stopped updating while the rest of the feed has not.
+  for (const f of n.feed_stale || []) not.push(f.records
+    ? `${f.overflows} whose records on ${evidenceEsc(f.company)}'s feed ${f.since ? `have not updated since ${evidenceSince(f.since)}` : 'give no update time'}`
+    : `${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
   const live = mon >= total ? (total === 1 ? 'It reports live.' : `All ${total} report live.`)
     : `${mon || 'None'} of ${total} report live.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`;
   return { what: 'Overflows upstream', at: generatedAt,

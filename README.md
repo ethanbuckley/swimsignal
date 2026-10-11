@@ -665,6 +665,45 @@ build, the one overflow upstream was offline and the tile said "1 of 1 report
 live". The risk figure is unchanged: an overflow whose reading is unknown adds
 nothing to it, as before.
 
+**Freshness of each record and each reading (11 Oct 2026).** An audit of the
+state of 11 Oct 18:16 UTC found three gaps; each is closed here.
+
+- *A record that stops updating in a feed that does.* The test above is a
+  company's freshest stamp, so a single record could stop updating and still
+  read "not discharging": Wessex Water's WSX10153 (last stamped 22 Jul 2025)
+  and WXW00014 (31 Mar 2026) were counted as reporting live at Warleigh Weir
+  and French Weir Park, and scored as dry days. A company stamps every record
+  when at least 95% of its records in a poll were stamped within the day before
+  it (`ingest.live.stamps_every_record`; on 11 Oct: Anglian, Severn Trent,
+  South West, Thames, United Utilities, Wessex and Yorkshire at 97.9-100%,
+  Northumbrian 1.4%, Southern 0.3%). There, a record whose own stamp is missing
+  or over 6 h old is `stale` with `record_stale` true and its own stamp as
+  `feed_updated_at`, and the scorer counts its polls stale too (`frozen_records`,
+  in `data_states` and `coverage_rows`). The tile names it apart from a stale
+  feed: "Wessex Water has not updated 2 of its overflows here since 31 Mar,
+  15:23". Northumbrian and Southern stamp a record only when it changes, so for
+  them an old stamp says nothing and the company test alone applies. A company
+  between half and 95% is logged and read as stamp-on-change.
+- *A spill running when its company's feed fails.* Every discharging row has an
+  empty event end, so a row carried as feed down (-3) lost its running spill
+  from the right-now risk. `carry_forward` now keeps `last_status`, and
+  `transport.running` counts a carried row whose last status was 1 as running:
+  in the risk, in "discharging", and on the page as "discharging when the feed
+  last answered".
+- *A reading read hours after the build.* `data_state` is decided when the
+  build polls. `now.quiet_by_feed` gives each company's quiet overflows and
+  their feed time, and the page stops counting them as reporting live once that
+  time is over 6 h old where it is read (`ageReadings` in `index.html`), well
+  before the 8 h "Stale" notice.
+
+The spill model's covariates (`lta_spills`, `spill_hours`,
+`edm_operational_pct`) were filled, where an overflow has none, over the
+overflows upstream of one spot at a time, so the same overflow took a different
+value at each spot. `overflows.build_overflows` now fills them once, from
+company-wide medians over the whole table, into `<covariate>_filled`
+(`features.fill_covariates`); the raw columns, which the pages show, are left
+empty. The accuracy baseline reads the same filled count.
+
 **Live feed fields.** From each layer's own description (`<layer>?f=json`,
 read once per layer at 23:29 UTC on 3 Oct 2026, no data query; trimmed into
 `tests/fixtures/live_layer_fields.json`). All nine are the National Storm
