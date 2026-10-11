@@ -26,6 +26,10 @@ Dr James Shucksmith's review of 9 Oct 2026:
                         size mixed into the spot's median flow, estimated from its
                         catchment area (q50_m3s). Every overflow upstream of a spot
                         gets the same dilution; where it joins no longer matters.
+* dilution "urban"      Q_i / (Q_i + Q50 at the spot), with each overflow's spill
+                        Q_i in proportion to the urban area apportioned to it
+                        (urban_spill_m3s). Pre-stated in
+                        docs/URBAN-DILUTION-TEST-2026-10.md.
 """
 
 from __future__ import annotations
@@ -372,13 +376,62 @@ def reach_velocity(upstream_m: float | np.ndarray) -> float | np.ndarray:
     return np.clip(v, VEL_MIN, VEL_MAX)
 
 
+# Spill flow of modes "flow" and "urban" (the median overflow): the Q50 of a catchment with L0_M of network.
+Q_SPILL_M3S = float(q50_m3s(catchment_km2(L0_M)))
+
+
 def flow_dilution(spot_upstream_m: float | np.ndarray) -> float | np.ndarray:
     """config.DILUTION_MODE 'flow': Q_spill / (Q_spill + Q50 at the spot). The spill's size is not
     known, so Q_spill is the median flow of a catchment with L0_M of network: a spot that small
     halves a spill, as the 'length' rule does for an overflow at the head of its network. Fixed
     before any evaluation, not tuned on samples."""
-    q_spill = float(q50_m3s(catchment_km2(L0_M)))
-    return q_spill / (q_spill + q50_m3s(catchment_km2(spot_upstream_m)))
+    return Q_SPILL_M3S / (Q_SPILL_M3S + q50_m3s(catchment_km2(spot_upstream_m)))
+
+
+# Dilution "urban": a spill per overflow from the urban area apportioned to it. Quaranta et al.
+# (2022, J. Hydrol. Reg. Stud. 41, 101080) model spill volume as linear in impervious urban area.
+# The areas come from ONS Built Up Areas (December 2022) Boundaries GB BGG, Open Government Licence
+# v3.0 (https://www.arcgis.com/home/item.html?id=ad30b234308f4b02b4bb9b0f4766f7bb; "Source: Office
+# for National Statistics licensed under the Open Government Licence v.3.0. Contains OS data © Crown
+# copyright and database right 2022"), split equally between the overflows nearest each area
+# (scripts/make_overflow_urban_area.py). URBAN_MEDIAN_KM2 is the median share over all 14,630
+# overflows, so the median overflow spills Q_SPILL_M3S, as in mode "flow". Fixed before any
+# evaluation (docs/URBAN-DILUTION-TEST-2026-10.md), not tuned on samples.
+URBAN_AREA_FILE = "overflow_urban_area.parquet"
+URBAN_MEDIAN_KM2 = 0.512
+URBAN_MIN_KM2, URBAN_MAX_KM2 = 0.1, 6.0
+
+
+def urban_spill_m3s(urban_km2: float | np.ndarray) -> float | np.ndarray:
+    """An overflow's spill flow (m³/s): Q_SPILL_M3S scaled by its urban area over the median one's."""
+    a = np.clip(np.asarray(urban_km2, dtype=float), URBAN_MIN_KM2, URBAN_MAX_KM2)
+    return Q_SPILL_M3S * a / URBAN_MEDIAN_KM2
+
+
+def urban_dilution(urban_km2: float | np.ndarray, spot_upstream_m: float) -> float | np.ndarray:
+    """config.DILUTION_MODE 'urban': Q_i / (Q_i + Q50 at the spot), Q_i from the overflow's urban area."""
+    q = urban_spill_m3s(urban_km2)
+    return q / (q + q50_m3s(catchment_km2(spot_upstream_m)))
+
+
+@lru_cache(maxsize=1)
+def _urban_km2_by_site() -> pd.Series:
+    """site_id -> apportioned urban area (km²), from scripts/make_overflow_urban_area.py."""
+    path = config.PROCESSED / URBAN_AREA_FILE
+    if not path.exists():
+        raise FileNotFoundError(f"{path} is missing: run scripts/make_overflow_urban_area.py for dilution 'urban'")
+    t = pd.read_parquet(path, columns=["site_id", "urban_km2"])
+    return t.drop_duplicates("site_id").set_index("site_id")["urban_km2"]
+
+
+def overflow_urban_km2(ov: pd.DataFrame) -> pd.Series:
+    """The overflows' urban areas: their own `urban_km2` column if present, else the lookup by
+    site_id. An overflow missing from both gets URBAN_MEDIAN_KM2, the spill of mode 'flow'."""
+    if "urban_km2" in ov:
+        a = ov["urban_km2"]
+    else:
+        a = ov["site_id"].map(_urban_km2_by_site())
+    return a.astype(float).fillna(URBAN_MEDIAN_KM2)
 
 
 def upstream_times(net: RiverNetwork, root: str, cap_m: float, scale: float = 1.0) -> dict[str, float]:
@@ -464,7 +517,7 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it."""
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
-    if velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow"):
+    if velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban"):
         raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}")
     by_reach = velocity_mode == "catchment"
     scale = velocity_ms / config.RIVER_VELOCITY_MS
@@ -530,6 +583,8 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     if dilution_mode == "flow":
         # The whole catchment's network, not the traced 60 km: flow comes from all of it.
         ov["dilution"] = float(flow_dilution(spot_up_full))
+    elif dilution_mode == "urban":
+        ov["dilution"] = np.asarray(urban_dilution(overflow_urban_km2(ov).to_numpy(), spot_up_full), dtype=float)
     else:
         ov_lup = ov["start_node"].map(lup).fillna(0.0) + (1.0 - ov["frac"]) * ov["link_length"] * 0  # at the outfall
         ov["dilution"] = np.minimum(1.0, (ov_lup + L0_M) / (spot_lup + L0_M))

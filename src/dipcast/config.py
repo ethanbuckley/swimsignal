@@ -124,5 +124,6 @@ MAX_UPSTREAM_KM = 60.0        # do not trace further than this upstream
 #                "catchment"  each reach's own speed from its catchment area (reach_velocity)
 # DILUTION_MODE  "length"     upstream network length at the overflow over that at the spot
 #                "flow"       a fixed spill flow over the spot's estimated median flow (Q50)
+#                "urban"      each overflow's spill flow, from its share of urban area, over the spot's Q50
 VELOCITY_MODE = os.environ.get("DIPCAST_VELOCITY_MODE", "fixed")
 DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")

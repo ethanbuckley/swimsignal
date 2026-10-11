@@ -104,3 +104,68 @@ def test_flow_dilution_is_the_same_for_every_overflow_at_a_spot(net):
 def test_an_unknown_option_is_refused(net):
     with pytest.raises(ValueError):
         _trace(net, velocity_mode="gauge")
+
+
+# ---- dilution 'urban' (docs/URBAN-DILUTION-TEST-2026-10.md): each overflow's spill from its urban area
+
+
+def _urban_overflows(net: RiverNetwork, areas: dict[str, float]) -> pd.DataFrame:
+    ov = _overflows(net)
+    ov["urban_km2"] = ov["site_id"].map(areas)
+    return ov
+
+
+def test_urban_dilution_scales_each_overflows_spill_by_its_urban_area(net):
+    areas = {"on_m1": transport.URBAN_MEDIAN_KM2, "on_t1": 2.0, "on_m3": 0.2}
+    up = transport.upstream_overflows(net, _pin(), _urban_overflows(net, areas), velocity_ms=0.5,
+                                      dilution_mode="urban").set_index("site_id")
+    q50 = float(transport.q50_m3s(transport.catchment_km2(net.upstream_m["c"] + 5_000.0)))
+    for site, a in areas.items():
+        q = transport.Q_SPILL_M3S * a / transport.URBAN_MEDIAN_KM2
+        assert up.loc[site, "dilution"] == pytest.approx(q / (q + q50))
+    # the median overflow gets the spill of mode 'flow'; a bigger town dilutes less
+    flow = _trace(net, dilution_mode="flow")
+    assert up.loc["on_m1", "dilution"] == pytest.approx(flow.loc["on_m1", "dilution"])
+    assert up.loc["on_t1", "dilution"] > up.loc["on_m1", "dilution"] > up.loc["on_m3", "dilution"]
+    # distance, travel time and decay do not change with the dilution rule
+    flow = flow.loc[up.index]
+    assert up["travel_h"].equals(flow["travel_h"]) and up["decay"].equals(flow["decay"])
+
+
+def test_urban_area_is_clipped_and_a_missing_one_gets_the_median():
+    lo, hi = transport.URBAN_MIN_KM2, transport.URBAN_MAX_KM2
+    q = transport.urban_spill_m3s(np.array([0.0, lo, hi, 80.0]))
+    assert q[0] == q[1] and q[2] == q[3]
+    assert transport.urban_spill_m3s(transport.URBAN_MEDIAN_KM2) == pytest.approx(transport.Q_SPILL_M3S)
+    a = transport.overflow_urban_km2(pd.DataFrame({"site_id": ["x", "y"], "urban_km2": [1.5, np.nan]}))
+    assert a.tolist() == [1.5, transport.URBAN_MEDIAN_KM2]
+
+
+def test_urban_area_comes_from_the_lookup_by_site_id(monkeypatch):
+    monkeypatch.setattr(transport, "_urban_km2_by_site", lambda: pd.Series({"a": 3.0, "b": 0.4}))
+    a = transport.overflow_urban_km2(pd.DataFrame({"site_id": ["b", "a", "new"]}))
+    assert a.tolist() == [0.4, 3.0, transport.URBAN_MEDIAN_KM2]
+
+
+def test_built_up_area_is_split_equally_between_its_overflows():
+    import sys
+    from pathlib import Path
+
+    from pyproj import Transformer
+    from shapely.geometry import box
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    import make_overflow_urban_area as mk
+
+    # Two built-up areas in British National Grid: a 2 km x 2 km town and a 1 km x 1 km village 10 km east.
+    bua = gpd.GeoDataFrame({"BUA22CD": ["town", "village"]},
+                           geometry=[box(400_000, 300_000, 402_000, 302_000), box(412_000, 300_000, 413_000, 301_000)],
+                           crs=27700)
+    to_ll = Transformer.from_crs(27700, 4326, always_xy=True).transform
+    xy = {"t1": (401_000, 301_000), "t2": (401_500, 300_500), "t3": (402_500, 301_000),   # t3 is 500 m outside the town
+          "v1": (412_500, 300_500), "far": (406_500, 306_000)}                            # far: 4 km from both
+    ov = pd.DataFrame([{"site_id": s, "lon": to_ll(*p)[0], "lat": to_ll(*p)[1]} for s, p in xy.items()])
+    out = mk.apportion(ov, bua).set_index("site_id")
+    assert out.loc[["t1", "t2", "t3"], "urban_km2"].tolist() == pytest.approx([4 / 3] * 3)
+    assert out.loc["v1", "urban_km2"] == pytest.approx(1.0) and out.loc["v1", "n_in_bua"] == 1
+    assert pd.isna(out.loc["far", "bua22cd"]) and out.loc["far", "urban_km2"] == mk.FLOOR_KM2
