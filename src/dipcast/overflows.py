@@ -21,6 +21,42 @@ NAME = "overflows.parquet"
 # Outfalls to the sea or an estuary are outside the inland network by design.
 MARINE = re.compile(r"\b(?:sea|channel|solent|estuary|estuarine|harbour|harbor|firth|bay|the wash|coast|coastal|"
                     r"marine|ocean|sound|beach|foreshore|mudflat|saltmarsh|creek|haven|offshore)\b", re.IGNORECASE)
+
+# Scotland (plan section 5.2 and task S5, written 11 Oct 2026). "Loch" names freshwater lochs (Lomond,
+# Ness, Leven at Kinross) and sea lochs (Fyne, Long, Ryan) alike, so MARINE leaves it out, and OS Open
+# Rivers has no sea: an outfall on a sea loch snaps to the nearest burn, tidal reach or lochan as if it
+# discharged inland. SEPA's water-body polygons would settle each one; their licence is not yet
+# checked (plan, task S6). Until then marine_scotland reads a receiving water as marine when
+#   1. it matches MARINE, or names a kyle, voe, the Minch or a sea loch in so many words, or
+#   2. it is one of SEA_LOCHS, or Loch Leven (both a sea loch and a freshwater loch) and the outfall's
+#      first snap is a tidal river,
+# unless the name says the discharge reaches a burn, drain, ditch or tributary first ("Un-named
+# tributary of Firth of Forth", "Findhorn Bay - via tidal reaches of the Mosset Burn"): that is an
+# inland watercourse, as the name says. SEA_LOCHS is every loch named as a receiving water in Scottish
+# Water's API answer of 4 Oct 2026 that opens to the sea. *Inferred* from where each is (knowledge of
+# the map; for most of them the outfall's nearest OS link is a tidal reach, checked 11 Oct 2026), not
+# from SEPA's polygons. A loch not on the list stays inland, as England's rule would leave it.
+SCOTTISH_MARINE = re.compile(r"\b(?:kyles?|voe|minch|sea loch)\b", re.IGNORECASE)
+SEA_LOCHS = frozenset({
+    "campbeltown loch", "east loch tarbert", "holy loch", "loch alsh", "loch broom", "loch carron",
+    "loch etive", "loch ewe", "loch fyne", "loch gairloch", "loch gilp", "loch indaal", "loch kishorn",
+    "loch leodamais", "loch leodamis", "loch leurbost", "loch linnhe", "loch long", "loch nan ceall",
+    "loch portree", "loch ryan", "loch sunart", "loch torridon", "loch a'chumhainn"})
+BOTH_KINDS = frozenset({"loch leven"})
+INLAND_FIRST = re.compile(r"\b(?:tributary|trib|drain|ditch|burn|via)\b", re.IGNORECASE)
+
+
+def marine_scotland(names: pd.Series, first_form: pd.Series | None = None) -> pd.Series:
+    """True where a Scottish receiving water reads as marine (rule above). `first_form` is the form of
+    each outfall's first-pass snap (None where it did not snap); without it Loch Leven stays inland."""
+    n = names.fillna("").astype(str)
+    key = n.str.lower().str.replace(r"\s+", " ", regex=True).str.strip()
+    form = pd.Series(None, index=n.index, dtype=object) if first_form is None else pd.Series(first_form, index=n.index)
+    marine = n.str.contains(MARINE) | n.str.contains(SCOTTISH_MARINE) | key.isin(SEA_LOCHS)
+    marine |= key.isin(BOTH_KINDS) & form.eq("tidalRiver")
+    return marine & ~n.str.contains(INLAND_FIRST)
+
+
 WIDE_SNAP_M = 1_500.0
 GENERIC = {"river", "brook", "beck", "stream", "dyke", "dike", "drain", "water", "burn", "canal", "trib",
            "tributary", "the", "ditch", "cut", "sewer", "main", "new", "unnamed", "culverted", "via",
@@ -35,11 +71,13 @@ def _tokens(name) -> set[str]:
     return {t for t in re.findall(r"[a-z]{3,}", name) if t not in GENERIC}
 
 
-def _second_pass(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
+def _second_pass(net: RiverNetwork, df: pd.DataFrame, is_marine=None) -> pd.DataFrame:
     """Try a wider radius for inland outfalls that missed the first pass, preferring
-    a link whose name shares a distinctive word with the recorded receiving water."""
+    a link whose name shares a distinctive word with the recorded receiving water.
+    `is_marine(rows) -> bool Series` replaces the MARINE name test (Scotland: scottish_shadow)."""
     todo = df[df["link_id"].isna()]
-    marine = todo["receiving_watercourse"].fillna("").str.contains(MARINE)
+    marine = (todo["receiving_watercourse"].fillna("").str.contains(MARINE) if is_marine is None
+              else is_marine(todo).astype(bool))
     df.loc[todo.index[marine], "snap_confidence"] = "marine"
     xs, ys = _TO_BNG.transform(todo.loc[~marine, "lon"].to_numpy(), todo.loc[~marine, "lat"].to_numpy())
     hits = {"medium": 0, "low": 0}
