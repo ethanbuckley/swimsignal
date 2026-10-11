@@ -31,14 +31,18 @@ Dr James Shucksmith's review of 9 Oct 2026:
                         (urban_spill_m3s). Pre-stated in
                         docs/URBAN-DILUTION-TEST-2026-10.md.
 
-A third, also off by default (config.LAKE_PATH_MODE), follows a note on lakes from a Lake District
-water-quality group (11 Oct 2026):
+Lakes on the way (config.LAKE_PATH_MODE) follow a note on lakes from a Lake District water-quality
+group (11 Oct 2026). "lake" is the default since 11 Oct 2026, after the test pre-stated in
+docs/LAKE-PATH-TEST-2026-10.md:
 
 * lake path "lake"      a WFD lake crossed between an overflow and the spot is treated as the
                         spot's own lake is: its centreline length at LAKE_VELOCITY_MS, and the
                         dilution times 1 / (1 + A / LAKE_A0_KM2) for its area A. Lake-form links
-                        outside every WFD polygon (mill ponds, weir pools) stay river. Pre-stated
-                        in docs/LAKE-PATH-TEST-2026-10.md.
+                        outside every WFD polygon (mill ponds, weir pools) stay river.
+* lake path "river"     the rule before: such a lake is walked at river speed, with no lake
+                        dilution.
+
+scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
 """
 
 from __future__ import annotations

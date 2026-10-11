@@ -6,7 +6,8 @@
 //    twice as far; a click on a small side channel near a much bigger river is traced as that
 //    river (_adopt_main_channel);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
-//    for the click's place along it, or from the lake's inlets and the straight line across;
+//    for the click's place along it, or from the lake's inlets and the straight line across; a WFD
+//    lake crossed on the way counts as lake, with its lake factor (lake path "lake", crossings);
 //  - travel at the river speed (the lake speed across a lake), die-off 10^(-t / T90), weight =
 //    die-off x dilution, less for an overflow placed by proximity alone;
 //  - each day's spill probability through the lead calibration (forecast.calibrate_by_lead),
@@ -20,7 +21,7 @@ const AnyPoint = (() => {
   const BASE = 'data/anypoint/';
   const FORMS = ['inlandRiver', 'tidalRiver', 'lake', 'canal'], LAKE = 2, RIVER_FORMS = [0, 1];
   const ADOPT = { radius: 500, min: 5000, ratio: 5 };   // transport.ADOPT_RADIUS_M, ADOPT_MIN_M, ADOPT_RATIO
-  const BASE_UNIT = 10, SCALE = 10000;                  // build_any_point.BASE_UNIT_M, DIL_SCALE
+  const BASE_UNIT = 10, SCALE = 10000, PATH_SCALE = 1e6;   // build_any_point.BASE_UNIT_M, DIL_SCALE, PATH_SCALE
   const DAYS_AHEAD = 4, KEEP = 10;                       // forecast_point's days, build_site.KEEP_CONTRIBUTORS
   const RAD = Math.PI / 180, A_ELL = 6378137, E2 = 0.00669438;   // WGS84
 
@@ -72,27 +73,41 @@ const AnyPoint = (() => {
   const riskLabel = r => r < 0.15 ? 'low' : r < 0.4 ? 'moderate' : r < 0.7 ? 'high' : 'very high';   // transport.risk_label
   const r3 = x => Math.round(x * 1000) / 1000, r1 = x => Math.round(x * 10) / 10;
 
-  // A link record (links/<t>.json) at a click `frac` along the link: [{i, dist, dil}], as
-  // upstream_overflows gives them (build_any_point.rows_at and Tracer say how).
+  // WFD lakes crossed on the way (transport.upstream_overflows, lake path "lake"): k = flat triples
+  // (overflow index, metres of lake, lake factor in millionths), as build_any_point.encode_record and
+  // the lake inlets write them. overflow index -> [metres, factor]; empty from a build without them.
+  function crossings(k) {
+    const out = new Map();
+    for (let j = 0; j + 2 < (k || []).length; j += 3) out.set(k[j], [k[j + 1], k[j + 2] / PATH_SCALE]);
+    return out;
+  }
+  // A link record (links/<t>.json) at a click `frac` along the link: [{i, dist, dlake, dil}], as
+  // upstream_overflows gives them (build_any_point.rows_at and Tracer say how). The cap is on the
+  // whole distance along the network; a lake crossed on the way then moves its metres from dist to
+  // dlake and multiplies the dilution by its factor.
   function rowsAt(rec, frac, cap, l0) {
-    const offset = frac * rec.n, shrink = (rec.u + l0) / (rec.u + l0 + offset), out = [];
+    const offset = frac * rec.n, shrink = (rec.u + l0) / (rec.u + l0 + offset), out = [], path = crossings(rec.k);
     let i = 0;
     for (let k = 0; k < (rec.o || []).length; k += 3) {
       i += rec.o[k];
-      const dist = rec.o[k + 1] * BASE_UNIT + offset;
-      if (dist <= cap) out.push({ i, dist, dlake: 0, dil: Math.min(1, rec.o[k + 2] / SCALE * shrink) });
+      const dist = rec.o[k + 1] * BASE_UNIT + offset, [lake, factor] = path.get(i) || [0, 1];
+      if (dist <= cap) out.push({ i, dist: dist - lake, dlake: lake, dil: Math.min(1, rec.o[k + 2] / SCALE * shrink) * factor });
     }
     for (let k = 0; k < (rec.s || []).length; k += 2)
       if (rec.s[k + 1] < offset) out.push({ i: rec.s[k], dist: offset - rec.s[k + 1], dlake: 0, dil: Math.min(1, shrink) });
     return out;
   }
-  // A lake's inlets (lakes.json) for a click: the river distance to the inlet, then the straight
-  // line across; a WFD lake's area divides the dilution by 1 + area / 5 km2.
+  // A lake's inlets (lakes.json) for a click: the distance to the inlet, then the straight line
+  // across; a WFD lake's area divides the dilution by 1 + area / 5 km2. Another WFD lake crossed
+  // before the inlet moves its metres to the lake distance and multiplies the dilution by its factor.
   function lakeRows(lake, at, area, a0) {
     const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1;
     for (const inlet of lake.inlets) {
-      const [x, y] = xy(inlet.at[1], inlet.at[0]), dlake = Math.hypot(x, y);
-      for (let k = 0; k < inlet.o.length; k += 3) out.push({ i: inlet.o[k], dist: inlet.o[k + 1], dlake, dil: inlet.o[k + 2] / SCALE / div });
+      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k);
+      for (let k = 0; k < inlet.o.length; k += 3) {
+        const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
+        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor });
+      }
     }
     return out;
   }

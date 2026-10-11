@@ -129,9 +129,9 @@ VELOCITY_MODE = os.environ.get("DIPCAST_VELOCITY_MODE", "fixed")
 DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 
 # A lake on the way from an overflow to a spot (a Lake District water-quality group, 11 Oct 2026: a
-# spill into Grasmere has dissipated by the time the water leaves Rydal Water). Default is the rule in use.
-# LAKE_PATH_MODE "river"  the lake's length is walked at river speed, with no lake dilution
-#                "lake"   each WFD lake crossed is treated as the spot's own lake is: its length at
+# spill into Grasmere has dissipated by the time the water leaves Rydal Water). "lake" is the default
+# since 11 Oct 2026, after the test in docs/LAKE-PATH-TEST-2026-10.md; "river" is the rule before it.
+# LAKE_PATH_MODE "lake"   each WFD lake crossed is treated as the spot's own lake is: its length at
 #                         LAKE_VELOCITY_MS, and its area in the lake dilution factor
-#                         (docs/LAKE-PATH-TEST-2026-10.md)
-LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "river")
+#                "river"  the lake's length is walked at river speed, with no lake dilution
+LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "lake")

@@ -4,7 +4,7 @@
     curl -sS -o spots-lite.json https://swimsignal.co.uk/data/spots-lite.json
     uv run python scripts/lake_path_report.py spots-lite.json [--bathing] [--top 10] [--ids a,b,...]
 
-Each spot is placed as the site build places it (build_site.prefetch_rain): its `kind` as kind_hint and,
+Each spot is placed as the site build places it (build_site.prefetch_rain): its `kind` as kind_hint, its name and,
 for a river spot, its `river` as river_hint. With --bathing the inland bathing waters of the E. coli
 evaluation are added, placed as validate_ecoli.py places them (no hints). Prints, for the spots named
 with --ids and the --top spots whose weight sum changes most (relative), the sum of weights before and
@@ -71,7 +71,10 @@ def main() -> None:
     v = T.river_velocity(None)
     res, detail = [], {}
     for sid, name, lon, lat, kind, river in places:
-        pin = T.locate_pin(net, lon, lat, kind_hint=kind, river_hint=river)
+        # The site build passes the spot's name (a lake spot named after a WFD lake off its shore); the E. coli
+        # evaluation places bathing waters with no hints.
+        hinted = not sid.startswith("eval:")
+        pin = T.locate_pin(net, lon, lat, kind_hint=kind, river_hint=river, name=name if hinted else None)
         old = T.upstream_overflows(net, pin, ov, velocity_ms=v, lake_path_mode="river")
         new = T.upstream_overflows(net, pin, ov, velocity_ms=v, lake_path_mode="lake")
         s0, s1 = float(old["weight"].sum()), float(new["weight"].sum())

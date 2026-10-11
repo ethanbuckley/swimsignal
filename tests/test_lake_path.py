@@ -1,5 +1,5 @@
 """Lake path 'lake' (config.LAKE_PATH_MODE, docs/LAKE-PATH-TEST-2026-10.md): a WFD lake crossed between
-an overflow and the spot is treated as the spot's own lake is. Off by default. Network-free: a few links
+an overflow and the spot is treated as the spot's own lake is; the default since 11 Oct 2026. Network-free: a few links
 built in memory, in British National Grid metres, and lake polygons in place of data/processed/lakes.parquet."""
 
 from __future__ import annotations
@@ -69,10 +69,13 @@ def _trace(net, pin=None, **kw) -> pd.DataFrame:
     return up.set_index("site_id")
 
 
-def test_default_walks_a_lake_on_the_way_as_river(net):
-    assert config.LAKE_PATH_MODE == "river"
-    up = _trace(net)
-    assert up.equals(_trace(net, lake_path_mode="river"))
+def test_the_default_crosses_a_lake_on_the_way_as_a_lake(net):
+    assert config.LAKE_PATH_MODE == "lake"
+    assert _trace(net).equals(_trace(net, lake_path_mode="lake"))
+
+
+def test_river_mode_walks_a_lake_on_the_way_as_river(net):
+    up = _trace(net, lake_path_mode="river")
     assert list(up.columns) == list(_trace(net, lake_path_mode="lake").columns)
     # 5 km of r1, the 4 km lake, 10 km of r2, the 1 km pond and 5 km of r3, all at 0.5 m/s
     assert up.loc["above", "distance_m"] == pytest.approx(25_000)
@@ -81,7 +84,7 @@ def test_default_walks_a_lake_on_the_way_as_river(net):
 
 
 def test_a_wfd_lake_on_the_way_is_crossed_as_a_lake(net):
-    old, new = _trace(net), _trace(net, lake_path_mode="lake")
+    old, new = _trace(net, lake_path_mode="river"), _trace(net, lake_path_mode="lake")
     # its 4 km leave the river distance for the lake distance; the distance along the network is the same
     assert new.loc["above", "distance_m"] == pytest.approx(21_000)
     assert new.loc["above", "lake_distance_m"] == pytest.approx(4_000)
@@ -94,14 +97,14 @@ def test_a_wfd_lake_on_the_way_is_crossed_as_a_lake(net):
 
 
 def test_an_overflow_on_the_lake_crosses_the_part_below_it(net):
-    old, new = _trace(net), _trace(net, lake_path_mode="lake")
+    old, new = _trace(net, lake_path_mode="river"), _trace(net, lake_path_mode="lake")
     assert new.loc["in_lake", "lake_distance_m"] == pytest.approx(1_000)   # half of L2
     assert new.loc["in_lake", "distance_m"] == pytest.approx(old.loc["in_lake", "distance_m"] - 1_000)
     assert new.loc["in_lake", "dilution"] == pytest.approx(old.loc["in_lake", "dilution"] / (1 + LAKE_KM2 / transport.LAKE_A0_KM2))
 
 
 def test_a_lake_pin_gets_its_own_lake_and_the_one_on_the_way(net):
-    old, new = _trace(net, _lake_pin()), _trace(net, _lake_pin(), lake_path_mode="lake")
+    old, new = _trace(net, _lake_pin(), lake_path_mode="river"), _trace(net, _lake_pin(), lake_path_mode="lake")
     entry = math.hypot(35_000 - 36_000, 0 - 300)   # straight across the spot's lake from where the water enters
     assert old.loc["above", "distance_m"] == pytest.approx(30_000)
     assert old.loc["above", "lake_distance_m"] == pytest.approx(entry)
@@ -140,7 +143,7 @@ def test_each_lake_on_the_way_counts_once(net, monkeypatch):
     monkeypatch.setattr(transport, "_lakes", lambda: two)
     # L1 has 1.5 km in West and 0.5 km in East: it goes to West; L2 is all East
     assert transport._wfd_lake_of(net, {"L1", "L2", "p1", "r1"}) == {"L1": (0, 1.5), "L2": (1, 2.5)}
-    old, new = _trace(net), _trace(net, lake_path_mode="lake")
+    old, new = _trace(net, lake_path_mode="river"), _trace(net, lake_path_mode="lake")
     div = (1 + 1.5 / transport.LAKE_A0_KM2) * (1 + 2.5 / transport.LAKE_A0_KM2)
     assert new.loc["above", "dilution"] == pytest.approx(old.loc["above", "dilution"] / div)
     assert new.loc["in_lake", "dilution"] == pytest.approx(old.loc["in_lake", "dilution"] / (1 + 2.5 / transport.LAKE_A0_KM2))
@@ -148,7 +151,7 @@ def test_each_lake_on_the_way_counts_once(net, monkeypatch):
 
 def test_without_lake_polygons_nothing_changes(net, monkeypatch):
     monkeypatch.setattr(transport, "_lakes", lambda: None)
-    assert _trace(net, lake_path_mode="lake").equals(_trace(net))
+    assert _trace(net, lake_path_mode="lake").equals(_trace(net, lake_path_mode="river"))
 
 
 def test_an_unknown_lake_path_option_is_refused(net):
