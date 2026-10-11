@@ -200,7 +200,7 @@ class WeekendCard:
 def weekend_card(area: Area, levels: dict[str, dict], days: list[str]) -> WeekendCard | None:
     """An area's card for two days, or None when none of its spots is in the forecast. A spot whose
     level is one of the four goes in a row; one with a plain level ("No sewage risk from monitored
-    overflows", "No river connection: ...") goes in a line under the table, in the page's words."""
+    overflows", "No monitored overflow drains into this lake") goes in a line under the table, in the page's words."""
     card = WeekendCard(area, days, [])
     plain: dict[str, tuple[str, list[str]]] = {}
     for sid, label in area.spots:

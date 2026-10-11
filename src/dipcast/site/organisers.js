@@ -193,7 +193,7 @@ const Organisers = (() => {
     const total = (s.upstream_summary || {}).overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60;
     let h = `<p>The forecast for ${dateWords(iso)} first appears on <b>${dateWords(from)}</b>, as the last of its five days, and is updated several times a day after that.</p>`;
     const rows = [];
-    if (isolated(s)) rows.push(row('Storm overflows', `No river flows into this lake in the river network, so no overflow can reach it. ${esc(R.OTHER_RISKS)}`));
+    if (isolated(s)) rows.push(row('Storm overflows', `The river network links no monitored storm overflow to this lake, so there will be no spill forecast here. ${esc(R.OTHER_RISKS)}`));
     else if (s.error) rows.push(row('Forecast', esc(R.COVER[R.level(s)] || 'No forecast in this update')));
     else if (!total) rows.push(row('Storm overflows', `None monitored within ${km} km upstream, so there will be no spill forecast here. ${esc(R.OTHER_RISKS)}`));
     else rows.push(row('Storm overflows', `${total} monitored upstream, listed below with how often each spills in a year.`));
@@ -235,7 +235,7 @@ const Organisers = (() => {
   function overflows(s, full) {
     const u = s.upstream_summary || {}, total = u.overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60, list = overflowRows(s, full);
     let h = '<h3 id="ov-h">Storm overflows upstream</h3>';
-    if (isolated(s)) return h + '<p>No river flows into this lake in the river network, so no storm overflow can reach it.</p>';
+    if (isolated(s)) return h + '<p>The river network links no monitored storm overflow to this lake.</p>';
     if (s.error) return h + '<p>This spot has no forecast in this update, so its overflows are not listed.</p>';
     if (!total) return h + `<p>No monitored storm overflow is within ${km} km upstream along the river network.</p>`;
     h += `<p>${total === 1 ? 'One monitored storm overflow is' : `${total} monitored storm overflows are`} within ${km} km upstream along the river network`

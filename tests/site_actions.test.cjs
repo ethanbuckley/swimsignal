@@ -124,8 +124,54 @@ test('the answer puts the line under where the week goes, for today and for a pi
   const clear = {...week(['low', 'low', 'low', 'low', 'low']), upstream_summary: {overflows: 0}};
   clear.days[0].rain_48h_mm = 12;
   assert.match(words(clear), /<p class="why">Other risks apply: [^<]+<\/p><p class="next">12&nbsp;mm of rain in the last two days<\/p><p class="act">After heavy rain, wait a couple of days before swimming if you can\.<\/p>/);
-  // The issue time stays the answer's last line.
-  assert.match(h, /<p class="act">[^<]+<\/p><p class="issued">Issued /);
+  // Then what the level counts, once; the issue time stays the answer's last line.
+  assert.match(h, /<p class="act">[^<]+<\/p><p class="scope">This forecast counts [^<]+<\/p><p class="issued">Issued /);
+  assert.equal((h.match(/class="scope"/g) || []).length, 1);
+  assert.doesNotMatch(words(clear), /class="scope"/);   // a plain level says it in its own line
+});
+
+// What the level counts and what it does not (levels.js, levelScope), under the answer on a spot's page.
+// Added 11 Oct 2026: nothing near "Low risk" said that runoff, wildlife, bathers and a lake's wind are not counted.
+const COUNTS = 'This forecast counts sewage from the monitored storm overflows upstream, and the rain that makes them spill.';
+const NOT_COUNTED = 'It does not count runoff from farmland and roads, wildlife or other bathers.';
+const AVERAGE = 'It counts runoff from farmland and roads, wildlife and other bathers only as an average, from the rain here and the time of year.';
+const WIND = 'In a lake, the wind decides where river water goes. The forecast does not use wind.';
+test('the answer says what the level counts: the overflows and their rain, not runoff, wildlife, bathers or a lake\'s wind', () => {
+  const river = week(['low', 'low', 'low', 'low', 'low']);
+  // In season the E. coli estimate counts the other sources as an average; out of season it does not count.
+  assert.equal(L.levelScope(river), `${COUNTS} ${AVERAGE}`);
+  const winter = week(['low', 'low', 'low', 'low', 'low']); winter.days.forEach(d => { d.in_validated_season = false; });
+  assert.equal(L.levelScope(winter), `${COUNTS} ${NOT_COUNTED}`);
+  // A lake has no E. coli estimate in the level, in any month, and adds the wind.
+  const lake = week(['low', 'low', 'low', 'low', 'low'], {kind: 'lake', location: {mode: 'lake'}});
+  assert.equal(L.levelScope(lake), `${COUNTS} ${NOT_COUNTED} ${WIND}`);
+  // A picked day goes by that day's estimate.
+  const turn = week(['low', 'low', 'low', 'low', 'low']); turn.days[2].in_validated_season = false;
+  assert.equal(L.levelScope(turn, DATES[2]), `${COUNTS} ${NOT_COUNTED}`);
+  assert.equal(L.levelScope(turn, DATES[1]), `${COUNTS} ${AVERAGE}`);
+  // No overflow upstream, an isolated lake or a failed forecast: the plain level's own line says it instead.
+  assert.equal(L.levelScope({...river, upstream_summary: {overflows: 0}}), '');
+  // forecast.py's isolated-lake message (11 Oct 2026) keeps the prefix the pages detect, so it reads as before.
+  const tarn = {id: 't', days: [], error: 'An isolated lake: the river network links no monitored storm overflow to it, so the forecast has nothing to say about it.'};
+  assert.equal(L.level(tarn), L.NO_RIVER);
+  assert.equal(L.headline(tarn), 'No monitored overflow drains into this lake');
+  assert.equal(L.levelScope(tarn), '');
+  assert.equal(L.levelScope({...river, error: 'forecast failed: open-meteo request failed'}), '');
+  // Plain words: no level word without its noun, no "safe", short sentences.
+  for (const t of [COUNTS, NOT_COUNTED, AVERAGE, WIND]) {
+    assert.doesNotMatch(t, /\bsafe|\u2014/i, t);
+    for (const s of t.split(/(?<=\.) /)) assert.ok(s.split(' ').length <= 25, s);
+  }
+});
+test('the scope line follows a picked day, and sits once in the answer', () => {
+  const ctx = pageContext(PAGE, {DATA: {generated_at: '2026-09-30T08:00:00+01:00'}});
+  const words = (d, iso = null) => vm.runInContext('answerWords', ctx)(d, iso);
+  const lake = week(['low', 'moderate', 'low', 'low', 'low'], {kind: 'lake', location: {mode: 'lake'}});
+  for (const iso of [null, DATES[1], DATES[3]]) {
+    const h = words(lake, iso);
+    assert.equal((h.match(/<p class="scope">/g) || []).length, 1, String(iso));
+    assert.ok(h.includes(`<p class="scope">${COUNTS} ${NOT_COUNTED} ${WIND}</p>`), String(iso));
+  }
 });
 
 test('the embed card and the alerts file carry the line', () => {

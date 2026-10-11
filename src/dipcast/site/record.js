@@ -44,6 +44,7 @@ const Record = (() => {
   // tests/site_record.test.cjs fails when the two differ.
   const CANNOT_SEE = [
     'The spill forecast covers monitored storm overflows only. The E. coli estimate allows for rain washing in pollution from other sources on average, but knows nothing about a particular farm, road, boat, misconnected drain or incident.',
+    'It does not count wildlife or other bathers. On a lake it does not use the wind, which decides where river water goes. The method page says what you can do instead.',
     'Dŵr Cymru Welsh Water\'s live overflow status is not shown. Its map has a public data layer, but with no licence to reuse it, and SwimSignal is waiting for Dŵr Cymru\'s terms. Its overflows, which matter at the spots on the Dee and the Wye, are forecast from rain and their yearly spill record, with no "right now".',
     'Its level does not include the Environment Agency\'s short-notice advice against bathing after pollution or an algal bloom. On a bathing water\'s page, opening "Today\'s EA advice" loads the Agency\'s own panel, which has it.',
     'It says nothing about currents, cold water or other dangers.',

@@ -154,7 +154,7 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
     out = [f"<h1>Overflow history upstream of {name}</h1>", links, f"<p>{escape(SITE_CAVEAT)}</p>"]
     err = str(spot.get("error") or "")
     if err.startswith("An isolated lake"):
-        out.append("<p>No river flows into this lake in the river network, so no storm overflow can reach it by water. "
+        out.append("<p>The river network links no monitored storm overflow to this lake. "
                    f"There is no overflow history to show. {OTHER_RISKS}</p>")
     elif t is None or not len(t):
         out.append("<p>This spot has no forecast in this update, so its overflows are not listed here. Try again later.</p>" if err

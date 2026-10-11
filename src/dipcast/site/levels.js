@@ -12,7 +12,10 @@ const setToday = iso => { serverToday = iso; };
 
 const ORDER = {low:0, moderate:1, high:2, 'very high':3};
 const NOT_COVERED = 'not covered', NO_FORECAST = 'no forecast', NO_OVERFLOWS = 'no overflows';
-const NO_RIVER = 'no river connection';   // an isolated lake: no river flows into it in the network
+// An isolated lake: the river network links no monitored overflow to it. A flooded quarry or gravel pit
+// with no river in, or a tarn whose becks the network does not draw. The key stays as it was: the
+// alerts, the journal and the push Worker store it; the words are COVER's.
+const NO_RIVER = 'no river connection';
 const localISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return localISO(d); };
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -52,11 +55,13 @@ const dayName = iso => dayWord(iso).replace(/^on /, '');
 //  - The EA sampler's latest look at a bathing water, if under 14 days old: algae "enough to be
 //    objectionable" makes the day at least high, "some at intervals" at least moderate. It cannot
 //    tell blue-green algae from harmless kinds, so it is a reason to look before going in.
-// Where there is no daily forecast (nothing monitored upstream, or no river connection) a rating or an
+// Where there is no daily forecast (nothing monitored upstream, or an isolated lake) a rating or an
 // algae check sets the level only where it raises it: sufficient moderate, poor high, algae moderate
 // or high. Otherwise the level is a plain one of its own, which says what is true there: "No sewage
 // risk from monitored overflows" (the trace found none within its 60 km), or, for an isolated lake,
-// "No river connection: overflows cannot reach this lake". Before 3 Oct 2026 an excellent or good
+// "No monitored overflow drains into this lake". Until 11 Oct 2026 that was "No river connection:
+// overflows cannot reach this lake", true at a flooded quarry but false at a fell tarn with becks in
+// and out that the river network does not draw (Loughrigg Tarn). Before 3 Oct 2026 an excellent or good
 // rating made such a spot "low", the same word as a forecast that had looked and found nothing, and
 // without a rating the page named only what the forecast lacked, which a swimmer read as no
 // information. Not included: the EA's short-term advice against bathing after
@@ -138,10 +143,28 @@ const poorAdvice = iso => inBathingSeason(iso)
 // The words for a spot without a risk level, the same wherever it is described (the headline, so the
 // list row, the map's tooltip, the saved card and the alerts; the page's spills row; the comparison).
 const COVER = { [NO_FORECAST]: 'No forecast in this update', [NOT_COVERED]: 'Not covered by the forecast',
-  [NO_OVERFLOWS]: 'No sewage risk from monitored overflows', [NO_RIVER]: 'No river connection: overflows cannot reach this lake' };
+  [NO_OVERFLOWS]: 'No sewage risk from monitored overflows', [NO_RIVER]: 'No monitored overflow drains into this lake' };
 // The two plain levels, where the model has nothing to forecast: under the level, one line kept in view.
 const plainLevel = l => l === NO_OVERFLOWS || l === NO_RIVER;
 const OTHER_RISKS = 'Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water.';
+// What a daily level counts and what it does not, said once on a spot's page, under the answer; a plain
+// level says it in its own line, OTHER_RISKS. Until 11 Oct 2026 nothing near the headline said it, so
+// "Low risk" read as "the water is fine". A Lake District water-quality group (11 Oct 2026) pointed out
+// that rain washes in runoff from grazing land and roads whatever the overflows do, and that at a lake
+// the wind decides whether an overflow's water reaches the shore. The forecast takes in neither: lake
+// water drifts at one fixed speed (config.LAKE_VELOCITY_MS). On rivers from May to September the E. coli
+// estimate does count the other sources, as an average from the rain at the spot and the time of year,
+// so that day says so. iso is a picked day; without it, today. methods.html#limits has each limit and
+// what a swimmer can do instead.
+function levelScope(s, iso = null) {
+  if (!daily(s)) return '';
+  const x = (s.days || []).slice(0, 5).find(d => d.date === (iso || today()));
+  const out = ['This forecast counts sewage from the monitored storm overflows upstream, and the rain that makes them spill.',
+    ecoliLevel(s, x) ? 'It counts runoff from farmland and roads, wildlife and other bathers only as an average, from the rain here and the time of year.'
+      : 'It does not count runoff from farmland and roads, wildlife or other bathers.'];
+  if ((s.location || {}).mode === 'lake') out.push('In a lake, the wind decides where river water goes. The forecast does not use wind.');
+  return out.join(' ');
+}
 // A spot whose forecast could not be made (s.error): failed in this update, an isolated lake, or out of the model's reach.
 const coverage = s => COVER[String(s.error).startsWith('forecast failed') ? NO_FORECAST : isolated(s) ? NO_RIVER : NOT_COVERED];
 // The gist in a few words, for the list and the top of a spot's page: the worst of now, today and
@@ -461,6 +484,6 @@ const overflowNames = c => {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
-    level, dayLevel, headParts, headline, nowBecause, dayHeadline, tileLine, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
+    level, dayLevel, headParts, headline, levelScope, nowBecause, dayHeadline, tileLine, weekNext, coverage, COVER, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction };
 }

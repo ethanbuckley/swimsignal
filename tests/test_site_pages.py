@@ -342,7 +342,7 @@ def test_the_alerts_file_uses_the_page_rules(tmp_path):
                                  "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"},
                                  "days": out["spots"]["a"]["days"]}
     assert out["spots"]["tarn"]["rank"] == -1 and out["spots"]["tarn"]["level"] == "no river connection"
-    assert out["spots"]["tarn"]["headline"] == "No river connection: overflows cannot reach this lake"
+    assert out["spots"]["tarn"]["headline"] == "No monitored overflow drains into this lake"
     assert out["spots"]["tarn"]["action"] == "After heavy rain, wait a couple of days before swimming if you can."
     assert "best" not in out["spots"]["tarn"]   # the same every day: nothing for the weekly note
     assert "days" not in out["spots"]["tarn"]   # nor for a date: the alerts use its own level

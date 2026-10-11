@@ -342,6 +342,8 @@
   /* What to do at the level: in ink, as a sentence, never a level's colour or a box (levels.js, levelAction). */
   .answer .act { margin:10px auto 0; max-width:24em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   .answer .issued { margin:10px 0 0; }
+  /* What the level counts and what it does not (levels.js, levelScope): ink, the notes' size, once a page. */
+  .answer .scope { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   .answer .flow { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   /* Every tile is built the same way: a label with its icon, one figure, one drawing, one sentence, and
      the rest of the explanation one tap away in its corner. */
@@ -878,7 +880,7 @@
           <dt><span class="badge b-high">High</span></dt><dd>Sewage reaching the spot, or a failing sample, is a real prospect; or the EA rates the water poor.</dd>
           <dt><span class="badge b-veryhigh">Very high</span></dt><dd>Sewage reaching the spot, or a failing sample, is likely.</dd>
           <dt><span class="badge b-clear">No sewage risk from monitored overflows</span></dt><dd>The trace found no monitored storm overflow upstream, so there is no spill forecast and no E. coli estimate. Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water. Where a rating of sufficient or poor, or algae at the last check, raises the level, that sets it instead.</dd>
-          <dt><span class="badge b-na">No river connection: overflows cannot reach this lake</span></dt><dd>A lake with no river flowing into it in the network, so sewage from an overflow cannot reach it by water. The same other risks apply.</dd>
+          <dt><span class="badge b-na">No monitored overflow drains into this lake</span></dt><dd>A lake that the river network links to no monitored storm overflow: a flooded quarry or gravel pit with no river flowing in, or a tarn whose becks are not on the network and carry no monitored overflow. The same other risks apply.</dd>
           <dt><span class="badge b-na">No level</span></dt><dd>No forecast in this update, or no river or lake on the network near the spot. There is nothing to go by, which is not the same as clean water.</dd>
         </dl>
         <p class="small muted">Under its level, a spot's page says in one line what to do, from published health advice for swimmers. <a href="methods.html#actions">Each line and its sources</a>.</p>
@@ -890,7 +892,7 @@
           <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the exposure index, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the exposure index is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: the figure is still shown, marked †, but it does not set the level, and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
           <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor nothing is shown; the temperature is never estimated. It is not part of the level.</dd>
-          <dt>What it does not know</dt><dd>Anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled.</dd>
+          <dt>What it does not know</dt><dd>Anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled. Nor does it use the wind, which decides where river water goes in a lake. <a href="methods.html#limits">What the forecast does not count, and what you can do</a>.</dd>
         </dl>
       </details>
       <details class="more" id="your-data"><summary>Saved spots, offline use and your data</summary>
@@ -1075,7 +1077,7 @@ const fmt = (x, d=0) => (x === null || x === undefined) ? '–' : Number(x).toFi
 const cls = l => ORDER[l] === undefined ? 'b-na' : 'b-' + l.replace(' ', '');
 // 'clear': no monitored overflow upstream ("No sewage risk from monitored overflows"). Its own calm
 // teal, not the grey of "no level", which is for a spot the forecast cannot trace at all: an isolated
-// lake ("No river connection"), a run that failed.
+// lake ("No monitored overflow drains into this lake"), a run that failed.
 const tone = l => l === NO_OVERFLOWS ? 'clear' : ORDER[l] === undefined ? 'na' : l.replace(' ', '');
 const colour = l => ({low:'#3b7d4f', moderate:'#b7791f', high:'#c2552a', 'very high':'#a32d2d', [NO_OVERFLOWS]:'#4aa39a'})[l] || '#98a2aa';   // --low, --moderate, --high, --veryhigh, --clear, --unknown
 const PAPER = '#f6f4ee';   // --bg: the ring round each marker, which parts it from the grey tiles
@@ -1332,11 +1334,12 @@ const factorRow = (label, lv, value, detail, rel = '') => `<div class="factor"><
 // The rest of a row's explanation, after the sentence with its figures: one tap away, word for word,
 // under a name of its own (what), since a page can hold several.
 const explain = (what, body) => `<details class="more"><summary>${what}</summary><p>${body}</p></details>`;
-// A spot without a forecast (an isolated lake, a failed run): why, in the headline's words, up to its
-// colon ("No river connection"): the whole phrase pushed over the row's label on a phone, and the
-// answer above gives it in full. Its rating and algae are tiles, as on any spot's page (facts).
+// A spot without a forecast (an isolated lake, a failed run): why, short, since the answer above gives it in
+// full and a whole phrase pushed over the row's label on a phone. The headline's words up to any colon ("No
+// forecast in this update"); an isolated lake's are a sentence with none, so it has a short form of its own.
+// Its rating and algae are tiles, as on any spot's page (facts).
 // A failed run's error is the build's own ("forecast failed: open-meteo request failed"): plain words instead.
-const factors = d => `<div class="factors">${factorRow('Sewage spills', null, coverage(d).split(':')[0], String(d.error).startsWith('forecast failed')
+const factors = d => `<div class="factors">${factorRow('Sewage spills', null, coverage(d) === COVER[NO_RIVER] ? 'No overflow drains in' : coverage(d).split(':')[0], String(d.error).startsWith('forecast failed')
   ? 'This update could not work out the forecast for this spot. The next update tries again. Until then there is nothing to go by, which is not the same as clean water.' : esc(d.error))}</div>`;
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can
 // raise it when the spills are low. Rivers with overflows upstream only, the case it was tested on.
@@ -1472,14 +1475,16 @@ const ownName = c => { const n = overflowNames(c); return n.own ? ` <span class=
 // follows with "risk" at the same size (a bare "High" read as high what); what set it and when; and
 // where the five days go. A day picked in the five days (iso) gives that day's, and its date.
 // Without a level, the headline in place of the word; under a plain level, the other risks and the rain.
-// Then what to do at that level, that day (act: levels.js, levelAction and dayAction).
+// Then what to do at that level, that day (act: levels.js, levelAction and dayAction), and what the
+// level counts and what it does not (scope: levelScope), which a plain level's own line says instead.
 function answerParts(d, iso = null) {
   if (iso && daily(d)) {
     const x = d.days.slice(0, 5).find(y => y.date === iso), r = x ? risk(d, x) : { level: null };
     const when = (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     return { word: r.level ? cap(r.level) : null, tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(because(r)) : '', next: when, act: dayAction(d, iso) };
+      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(because(r)) : '', next: when, act: dayAction(d, iso),
+      scope: r.level ? levelScope(d, iso) : '' };
   }
   const l = level(d), [h, w] = headParts(d);
   if (ORDER[l] === undefined) return { word: null, tone: headTone(d), head: h,
@@ -1488,7 +1493,7 @@ function answerParts(d, iso = null) {
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
   const sub = h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
-  return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d) };
+  return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
@@ -1649,11 +1654,11 @@ function riverTile(rs) {
     say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more };
 }
 // The answer's words, which a picked day fills again (showDay). What to do comes after the facts it
-// follows from, before the river's separate hazard.
+// follows from, then what the level counts, before the river's separate hazard.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso);
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
-    + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
+    + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
 // Under the headline, on every day's view, kept in view: the river high or rising fast at a gauge on
 // the spot's own river, and any Environment Agency flood alert in force nearby (experience.js,
 // flowFacts). A different hazard, said in ink and never in a level's colour, and not part of the level.
@@ -1978,18 +1983,20 @@ const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNo
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
 // The counts over the list, after when the forecast was issued: freshness where the list begins.
 // The spots without a level are counted by why, in their rows' own words up to the colon: "3 without a
-// level: 2 no river connection, 1 no forecast in this update".
+// level: 2 lakes with no monitored overflow draining in, 1 no forecast in this update". An isolated lake's
+// words are a sentence with no colon ("No monitored overflow drains into this lake"), so it has a count's own.
 function overview(spots) {
   const rated = spots.filter(s => ORDER[mapLevel(s)] !== undefined);
   const low = rated.filter(s => mapLevel(s) === 'low').length;
   const high = rated.filter(s => rank(mapLevel(s)) >= 2).length, clear = spots.filter(s => mapLevel(s) === NO_OVERFLOWS).length;
   const why = {};
   spots.filter(s => ORDER[mapLevel(s)] === undefined && mapLevel(s) !== NO_OVERFLOWS)
-    .forEach(s => { const w = listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
+    .forEach(s => { const w = mapLevel(s) === NO_RIVER ? NO_RIVER : listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
   const none = Object.values(why).reduce((a, b) => a + b, 0);
   return `Updated ${issued()} · Pollution risk: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} no sewage risk from monitored overflows` : ''} · ${none} without a level`
-    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`;
+    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1])
+      .map(([w, n]) => `${n} ${w === NO_RIVER ? `lake${n === 1 ? '' : 's'} with no monitored overflow draining in` : w}`).join(', ') : ''}. ${cap(mapWhen())}.`;
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -2795,7 +2802,7 @@ function overflowTile(d, total) {
 // "Nearby": up to three other spots within 40 km, nearest first, each opening on the day shown (DAY,
 // or else the headline). At a spot that is moderate or worse that day, or rated poor, it becomes
 // "Lower risk nearby" and offers only spots lower that day. Never offered then: a spot without a risk
-// level (a plain level, "No sewage risk from monitored overflows" or "No river connection", or none),
+// level (a plain level, "No sewage risk from monitored overflows" or "No monitored overflow drains into this lake", or none),
 // since it is not on the same scale and says nothing of algae or runoff; and a water rated poor, where
 // advice against bathing applies. Its "high" is lower than a very high one: on 1 Oct 2026, without
 // this, the Eden at Armathwaite would have offered Derwent Water at Crow Park. Anywhere else the

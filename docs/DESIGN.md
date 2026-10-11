@@ -89,8 +89,9 @@ those sizes; they were taken off to keep the rule simple.)
   `#855817`, `#a04623`, `#992a2a`, which pass 4.5:1 on the paper and on white (5.6:1 or more on the
   paper). The ochre and rust marks are too light for text (3.3:1 and 4.1:1 on the paper), hence
   the two sets. A spot with no monitored overflow upstream is teal `#4aa39a`, not grey: it is a
-  calm answer, not a missing one. Grey `#98a2aa` means no level; an isolated lake, which no river
-  reaches, is grey too ("No river connection"). An overflow discharging now is
+  calm answer, not a missing one. Grey `#98a2aa` means no level; an isolated lake, which the river
+  network links to no monitored overflow, is grey too ("No monitored overflow drains into this lake").
+  An overflow discharging now is
   the very-high brick. An overflow with no current reading is the light grey, and the map keys call it
   that, "no current reading" (4 October 2026; they said "offline" and "offline or no feed"): a monitor
   offline, no live feed, or a feed that has not updated within six hours, whose "not discharging" may
@@ -154,8 +155,11 @@ those sizes; they were taken off to keep the rule simple.)
   and the alerts (the key lists the teal one; an isolated lake sits under its grey "No level"):
   - **"No sewage risk from monitored overflows"**, in the clear teal, where the trace finds no
     monitored overflow within 60 km upstream.
-  - **"No river connection: overflows cannot reach this lake"**, in the grey of no level, for an
-    isolated lake (the forecast's `error` begins "An isolated lake").
+  - **"No monitored overflow drains into this lake"**, in the grey of no level, for an
+    isolated lake (the forecast's `error` begins "An isolated lake"). Until 11 October 2026 it was "No
+    river connection: overflows cannot reach this lake", true at a flooded quarry (Henleaze Lake) but
+    false at a fell tarn with becks in and out that the river network does not draw (Loughrigg Tarn).
+    The level's key, `no river connection`, stays: the alerts, the journal and the push Worker store it.
   - Under either, one line kept in view: "Other risks apply: algae, wildlife, runoff and bathers.
     Check the signs at the water." That line is the view's one "check the signs", so the caveat
     in the tile under the answer drops its own. Then, where the forecast has it, the rain in the 48 hours
@@ -481,6 +485,32 @@ and gradients stay out: a tile's label is normal case, and a bar's bands are ste
 that arrive in capitals ("LITTLE SALKELD WwTW") are set in normal case (`nameCase`). The daily E.
 coli figures left the five days for the water tile (today and tomorrow) and the day-by-day table.
 The prose pages keep the paper.
+
+### What the level counts (11 October 2026)
+
+A Lake District water-quality group wrote that a "Low risk" at Waterhead on Windermere read as "the water
+is fine", while rain washes in runoff from grazing land and roads whatever the overflows do, and the wind
+decides whether an overflow's water reaches the shore. Nothing near the headline said what the level
+counts. So a spot with a daily level has one more line in the answer, after what to do and before the
+river line and the issue time (`levelScope` in `levels.js`, `.scope` in `index.html`): ink, the notes' size,
+centred as the answer is, no box, no bold lead. Once a page, never in a tile.
+
+- Every spot with a daily level: "This forecast counts sewage from the monitored storm overflows upstream,
+  and the rain that makes them spill. It does not count runoff from farmland and roads, wildlife or other
+  bathers."
+- On a river from May to September, where the E. coli estimate counts that day, the second sentence is
+  "It counts runoff from farmland and roads, wildlife and other bathers only as an average, from the rain
+  here and the time of year."
+- A lake adds "In a lake, the wind decides where river water goes. The forecast does not use wind."
+- A plain level keeps its own line, "Other risks apply: ...", which says the same in its place.
+- "This forecast", not "the level": at a bathing water the level also takes in the Environment Agency's
+  rating and the algae check, which are not forecasts. The words do not rename the level: whether to call
+  it a sewage risk is Ethan's decision.
+
+The Method page's "What the forecast does not count" (`methods.html#limits`) is the one place for each
+limit and what a swimmer can do instead: runoff, wildlife and bathers, wind and mixing on a lake, spills
+in dry weather. The page for groups says the same under its levels, and About's "What it cannot see"
+(which the decision record copies word for word) adds wildlife, bathers and the wind.
 
 ### River high and flood alerts (3 October 2026)
 

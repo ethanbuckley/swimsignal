@@ -74,7 +74,7 @@ def test_a_profile_page_joins_the_spots_overflows_to_their_returns(tmp_path):
     assert '<td class="num" data-l="Hours away">under 1</td>' in page and '<td class="num" data-l="Spills 2023">2</td>' in page
     # The short pages say why there is no list.
     short = {s["id"]: text((tmp_path / "spot" / s["id"] / "profile" / "index.html").read_text()) for s in SPOTS[1:]}
-    assert "No river flows into this lake" in short["tarn"] and pf.OTHER_RISKS in short["tarn"]
+    assert "The river network links no monitored storm overflow to this lake" in short["tarn"] and pf.OTHER_RISKS in short["tarn"]
     assert "No monitored storm overflow was found within 60 km upstream" in short["beck"] and pf.OTHER_RISKS in short["beck"]
     assert "not in this update" in short["gone"] and "has no forecast in this update" in short["failed"]
     assert all("It is not a water test" in t and "In short" not in t for t in short.values())

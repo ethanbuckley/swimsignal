@@ -318,8 +318,8 @@ const AnyPoint = (() => {
   // lakes.json, od: overflow_days.json, tiles: {square: {index, links}}} for the squares near it,
   // and outside: outside_england.json, or null from a build without it.
   // A reservoir can be filled by pumping from a river, which the network does not show.
-  const ISOLATED = 'An isolated lake with no river connection in the network, so no storm overflow is traced to it '
-    + 'and the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
+  const ISOLATED = 'An isolated lake: the river network links no monitored storm overflow to it, '
+    + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
     + 'Risk from wildlife, runoff and bathers is not modelled.';
   function place(lat, lon, files) {
     const { cfg, lakes, od, tiles, outside = null } = files, a = od.assumptions;

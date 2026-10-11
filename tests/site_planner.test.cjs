@@ -73,7 +73,7 @@ test('evidence distinguishes missing feeds, dated records, and out-of-season mod
 });
 test('a spot without a forecast is described in the headline’s words', () => {
   const lake = {days:[], error:'An isolated lake with no river connection', classification:{class:'excellent', year:2025}};
-  assert.equal(Object.fromEntries(evidenceRows(lake,'2026-09-30','')).Forecast, 'No river connection: overflows cannot reach this lake.');
+  assert.equal(Object.fromEntries(evidenceRows(lake,'2026-09-30','')).Forecast, 'No monitored overflow drains into this lake.');
   const away = {days:[], error:'No river or lake within 1.5 km of this point.'};
   assert.equal(Object.fromEntries(evidenceRows(away,'2026-09-30','')).Forecast, 'Not covered by the forecast.');
   const failed = {days:[], error:'forecast failed: timeout'};
@@ -316,8 +316,8 @@ test('overflows discharging now: the sentence over the five days gives right now
   const one = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', discharging_upstream: 1}});
   assert.equal(run('summary', one)[0], '1 upstream overflow is discharging now: low risk from it right now.');
 });
-test('an isolated lake reads "No river connection" in the unknown grey, with the same line and no rain', () => {
-  const words = 'No river connection: overflows cannot reach this lake';
+test('an isolated lake reads "No monitored overflow drains into this lake" in the unknown grey, with the same line and no rain', () => {
+  const words = 'No monitored overflow drains into this lake';
   assert.equal(L.level(isolatedLake), L.NO_RIVER);   // its excellent rating made it "low" before
   assert.equal(L.headline(isolatedLake), words);
   assert.equal(L.dayHeadline(isolatedLake, DATES[2]), words);
@@ -327,8 +327,8 @@ test('an isolated lake reads "No river connection" in the unknown grey, with the
   assert.deepEqual([m.word, m.tone, m.head, m.sub, m.next],
     [null, 'na', words, 'Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water.', '']);
   assert.equal(run('colour', L.NO_RIVER), '#98a2aa');
-  assert.match(run('savedCard', isolatedLake), /<p class="big-head na">No river connection: overflows cannot reach this lake<\/p>/);
-  assert.match(run('spotItem', isolatedLake), /<span class="hl na">No river connection: overflows cannot reach this lake<\/span>/);
+  assert.match(run('savedCard', isolatedLake), /<p class="big-head na">No monitored overflow drains into this lake<\/p>/);
+  assert.match(run('spotItem', isolatedLake), /<span class="hl na">No monitored overflow drains into this lake<\/span>/);
   assert.equal(run('markerTip', isolatedLake), `Henleaze Lake: ${words}`);
   assert.match(text(run('check', isolatedLake)), /^A forecast, not a water test\. The EA's page has any advice/);
 });

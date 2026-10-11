@@ -83,11 +83,11 @@ test('a click goes where the API puts it, and gets the API\'s overflows, distanc
   assert.ok(rows > 50, `${rows} rows compared`);
 });
 
-test('a click in a lake with no river connection says so', () => {
+test('a click in a lake the river network links to no overflow says so', () => {
   const got = placeAt(syn.clicks.find(x => x.what === 'the lonely pool'));
   assert.equal(got.mode, 'isolated');
   assert.equal(got.name, 'Lonely Pool');
-  assert.match(got.error, /^An isolated lake with no river connection/);
+  assert.match(got.error, /^An isolated lake: the river network links no monitored storm overflow to it/);
 });
 
 test('a click outside every square with data says there is no data there', () => {

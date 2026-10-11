@@ -76,7 +76,7 @@ test('spots with nothing to forecast get their plain words, here as everywhere',
   assert.ok(h.includes('No monitored storm overflow is within 60\u00a0km upstream') && !h.includes('id="csv"'));
   const tarn = {id: 'tarn', name: 'A Tarn', kind: 'lake', source: 'curated', days: [], contributors: [], error: 'An isolated lake with no river connection.'};
   const t = O.view(tarn, '2026-10-17', DATA, BASE, NOW);
-  assert.ok(t.includes('No river flows into this lake') && !t.includes('<table'));
+  assert.ok(t.includes('The river network links no monitored storm overflow to this lake') && !t.includes('<table'));
   assert.ok(O.view(tarn, '2026-10-05', DATA, BASE, NOW).includes(`<p class="ev-level na">${L.COVER[L.NO_RIVER]}</p>`));
 });
 
