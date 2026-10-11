@@ -42,6 +42,8 @@ data/raw/*
 !data/raw/coastal_wqa_points.json
 !data/raw/places.json
 !data/raw/outside_england.json
+# Checked joins of outfalls on streams OS Open Rivers does not draw (overflows.apply_joins).
+!data/raw/overflow_joins.csv
 /site/
 .claude/
 /state/

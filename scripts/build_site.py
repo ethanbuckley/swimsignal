@@ -656,6 +656,28 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
 
 
 MAX_SNAP_M = 250.0   # a river spot further than this from its snapped link is probably misplaced
+UNSURE_JOIN_M = 200.0     # an outfall this far from the line it was snapped to joins its river somewhere unknown
+UNSURE_MARGIN_M = 300.0   # ...and could join below a spot this much nearer than that distance
+
+
+def unsure_joins(upstream: dict[str, list[dict]]) -> list[dict]:
+    """Counted overflows whose join with the river could be on the other side of the spot: snapped from
+    UNSURE_JOIN_M or more, onto a link that does not carry its receiving water's name, and nearer the spot
+    along the river than that snap distance plus UNSURE_MARGIN_M. Such an outfall is on a stream OS Open
+    Rivers does not draw, and where that stream meets the river is not known. Rochester Road CSO was
+    709 m from the Rivelin and counted 0.7 km above its plunge pool; its stream, Black Brook, joins
+    241 m below it (11 Oct 2026). Settle each one in data/raw/overflow_joins.csv."""
+    out = []
+    for sid, contrib in upstream.items():
+        for c in contrib:
+            snap = c.get("snap_m")
+            if snap is None or snap < UNSURE_JOIN_M or c.get("position_source") == "join" or c.get("on_named"):
+                continue
+            if c.get("distance_km") is None or c["distance_km"] * 1000 > snap + UNSURE_MARGIN_M:
+                continue
+            out.append({"spot": sid, "site_id": c.get("site_id"), "snap_m": snap,
+                        "km": c["distance_km"], "receiving": c.get("receiving_watercourse")})
+    return out
 
 
 def placement_check(results: list[dict], max_snap_m: float = MAX_SNAP_M) -> list[dict]:
@@ -1862,6 +1884,14 @@ def build(refresh: bool = True) -> dict:
                           duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["lab_samples"] = n_lab
+    unsure = unsure_joins(upstream)
+    if unsure:
+        health["unsure_joins"] = unsure
+        health["warnings"].append(
+            f"{len(unsure)} counted overflow{'' if len(unsure) == 1 else 's'} may join the river below the spot "
+            "(check where each one's stream meets the river and add it to data/raw/overflow_joins.csv): "
+            + "; ".join(f"{u['site_id']} for {u['spot']}, {u['snap_m']} m off the river, {u['km']} km above, "
+                        f"into {u['receiving']}" for u in unsure))
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     if n_flows.get("flood_alerts_unchecked"):

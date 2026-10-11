@@ -790,6 +790,23 @@ time contributes to today (it started at yesterday before, and did not).
   scaled by 0.7). 475 outfalls to the sea or estuaries are excluded by design and
   335 inland ones (2%) remain more than 1.5 km from any link. Confidence is
   reported per contributor.
+- Which position, and which water (11 Oct 2026). The first pass takes the
+  nearest link without reading names, so three checks come before it. (1) An
+  outfall whose every recorded receiving water is the ground (groundwater, an
+  infiltration system, a soakaway, land) stays off the network: 30 of them, three
+  of which were counted for Compton Lock on the Itchen. (2) Where the live
+  position and the annual return's outlet (the EA consent's grid reference) are
+  over 300 m apart, the outlet is used when it alone has a link carrying the
+  receiving water's name within 750 m: 40 overflows. Buxton STW's live position
+  was in Staffordshire, so Chee Dale on the Wye missed it. (3) An outfall on a
+  stream OS Open Rivers does not draw, whose join with a drawn river has been
+  checked on OS OpenMap Local, is placed at that join
+  (`data/raw/overflow_joins.csv`); Rochester Road CSO now joins the Rivelin
+  241 m below its plunge pool, not 0.7 km above it. Each build lists, in
+  `build.warnings`, any counted outfall snapped 200 m or more onto a link not
+  named like its receiving water and nearer the spot along the river than that
+  distance plus 300 m: where its stream meets the river is not known, so it may
+  be below the spot.
 - The overflow-exposure percentage combines verified spill probabilities with
   die-off and dilution weights that are physical estimates, not calibrated
   against water samples, and it treats upstream spills as independent when they

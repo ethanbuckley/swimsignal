@@ -398,8 +398,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             contrib.append({k: _clean(r.get(k)) for k in [
                 "site_id", "company", "site_name", "receiving_watercourse", "lat", "lon", "status",
                 "has_live", "data_state", "feed_updated_at", "latest_event_start", "latest_event_end", "lta_spills",
-                "spill_hours", "snap_confidence",
+                "spill_hours", "snap_confidence", "position_source", "on_named",
             ]} | {
+                "snap_m": None if pd.isna(r.get("snap_dist_m")) else round(float(r["snap_dist_m"])),
                 "distance_km": round(float(r["distance_m"]) / 1000, 1),
                 "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
                 "travel_h": round(float(r["travel_h"]), 1),
