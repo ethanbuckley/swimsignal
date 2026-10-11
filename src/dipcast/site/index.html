@@ -1520,7 +1520,8 @@ function answerParts(d, iso = null) {
     sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
   // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
-  const sub = h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
+  const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${NOW_UNKNOWN}`   // right now not known (levels.js)
+    : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
   return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
 }
@@ -2510,7 +2511,9 @@ function planWhy(s, day) {
   const out = [], total = overflows(s), x = (s.days || []).slice(0, 5).find(y => y.date === day), head = dayHeadline(s, day), c = classOf(s);
   // The group's heading names the day. A spill expected on a low day reads as a contradiction unless the
   // row says why the level is low: what the exposure index measures is whether the sewage gets here.
-  if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && Math.round(x.expected_spilling_overflows || 0) >= 1;
+  // Not where spills right now raised today (levels.js, risk): the row's headline then says "sewage spills
+  // right now", and "unlikely to reach here" under it said the opposite (12 Oct 2026).
+  if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && !risk(s, x).now && Math.round(x.expected_spilling_overflows || 0) >= 1;
     if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
     if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
   else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
@@ -2954,16 +2957,23 @@ function overflowTile(d, total) {
 // Burnsall and Appletreewick, low until then but very high on Thursday. And what the suggestion claims:
 // at a water rated poor, whose line says "Choose a spot with a better rating", only waters the EA rates
 // better than poor. Crow Park offered Calfclose Bay, which the EA does not rate.
+// A day counts where this spot (d) has a level; the alternative (s) must have one that day too, no
+// higher (12 Oct 2026: a day with no forecast at the alternative passed, so a spot with two days missing
+// was offered as "no higher on any of the five days"). And "lower now" needs a known now: not a spot
+// whose right now is not known (levels.js, nowUnknown).
 const NEAR_KM = 40;
-const notHigherAnyDay = (s, d) => (d.days || []).slice(0, 5).every(x => { const a = rank(dayLevel(s, x.date)), b = rank(dayLevel(d, x.date)); return a < 0 || b < 0 || a <= b; });
+const notHigherAnyDay = (s, d) => (d.days || []).slice(0, 5).every(x => { const a = rank(dayLevel(s, x.date)), b = rank(dayLevel(d, x.date));
+  return b < 0 || (a >= 0 && a <= b); });
+const allFiveDays = d => (d.days || []).slice(0, 5).length === 5 && d.days.slice(0, 5).every(x => rank(dayLevel(d, x.date)) >= 0);
 const ratedBetter = s => ['excellent', 'good', 'sufficient'].includes(classOf(s));
 function nearby(d) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
   const alts = DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
-      && (DAY || notHigherAnyDay(s, d)) && (!poor || ratedBetter(s)))))
+      && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
     .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]).slice(0, 3);
   if (!alts.length) return '';
-  const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day' : 'now, and no higher on any of the five days'}.`;
+  const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day'
+    : `now, and no higher on ${allFiveDays(d) ? 'any of the five days' : 'any day with a forecast here'}`}.`;
   return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
     + alts.map(([s, k]) => `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
       + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`

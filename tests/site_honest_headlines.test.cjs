@@ -202,6 +202,75 @@ test('where none of the overflows reports, Right now is unknown, never "0 of 14 
   assert.match(ev.evidenceOverflows(hereford, GEN).say, /^Whether any is discharging is not known\. None of 14 report live\./);
 });
 
+// The review of this work (12 Oct 2026) found the headline still took a right now with no reading behind
+// it as a real low: five live spots read "Low risk on every day with a forecast" beside an Unknown tile.
+test('where no overflow upstream reports live, the headline does not claim a low right now', () => {
+  const quiet = { ...hereford, days: week(['low', 'low', 'low', 'low', 'low']).days };
+  assert.equal(L.nowUnknown(quiet), true);
+  assert.equal(L.risk(quiet, quiet.now, true).level, null);
+  assert.equal(L.level(quiet), 'low');   // the forecast's level, from the days
+  assert.equal(L.headline(quiet), 'Low risk forecast: no overflow upstream reports live');
+  const later = { ...hereford, days: week(['low', 'low', 'moderate', 'low', 'low']).days };
+  assert.equal(L.headline(later), 'Low risk forecast: no overflow upstream reports live · Moderate risk on Tuesday');
+  assert.doesNotMatch(L.headline(later), /now ·/);
+  // A forecast day above low says its own day, as before; it claims nothing about now.
+  assert.equal(L.headline({ ...hereford, days: week(['low', 'moderate', 'low', 'low', 'low']).days }), 'Moderate risk tomorrow: sewage spills');
+  // Right now raised from spills that stopped lately still counts, reporting or not.
+  const recent = { ...quiet, now: { ...quiet.now, label: 'moderate', risk: 0.2 } };
+  assert.equal(L.nowUnknown(recent), false);
+  assert.equal(L.headline(recent), 'Moderate risk right now: recent sewage spills');
+  // Some report: right now is known for those, and the headline is as before.
+  const some = { ...quiet, now: { ...quiet.now, monitored_upstream: 3 } };
+  assert.equal(L.nowUnknown(some), false);
+  assert.equal(L.headline(some), 'Low risk for the next five days');
+  // A Northumbrian spot whose feed went stale: the same rule (no no_feed count needed).
+  const stale = { ...quiet, now: { label: 'low', risk: 0, discharging_upstream: 0, monitored_upstream: 0, stale_upstream: 8 }, upstream_summary: { overflows: 8 } };
+  assert.equal(L.headline(stale), 'Low risk forecast: no overflow upstream reports live');
+  // The spot's page: the level, then that it is the forecast alone.
+  const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
+  const h = text(vm.runInContext('answerWords', ctx)(quiet));
+  assert.match(h, /Low risk Forecast only: no overflow upstream reports live/);
+  // The embed and the sites page give the same headline.
+  assert.match(text(Embed.card(quiet, { generated_at: GEN }, NOW)), /Low risk forecast: no overflow upstream reports live/);
+  assert.match(Sites.words(quiet).head, /^Low risk forecast$/);
+  assert.match(Sites.words(quiet).why, /^No overflow upstream reports live\./);
+});
+
+test('"Lower risk nearby" does not count a day with no forecast as no higher, nor offer a spot whose right now is not known', () => {
+  const near = (id, labels, extra = {}) => week(labels, { id, name: id, lat: 53.93, lon: -1.83, ...extra });
+  const here = near('here', ['high', 'high', 'high', 'high', 'high']);
+  const gaps = near('gaps', ['low', 'low', 'low', 'low', 'low']); gaps.days[3] = { date: DATES[3], label: 'unknown', risk: null }; gaps.days[4] = { date: DATES[4], label: 'unknown', risk: null };
+  const unknownNow = near('dark', ['low', 'low', 'low', 'low', 'low'], { now: { label: 'low', risk: 0, discharging_upstream: 0, monitored_upstream: 0 } });
+  const fine = near('fine', ['low', 'low', 'low', 'low', 'low']);
+  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter', 'nearby'],
+    { DATA: { spots: [here, gaps, unknownNow, fine] } });
+  vm.runInContext('var DAY = null;', ctx);
+  const h = vm.runInContext('nearby', ctx)(here);
+  assert.ok(h.includes('data-id="fine"'));
+  assert.ok(!h.includes('data-id="gaps"'), 'two days with no forecast are not "no higher"');
+  assert.ok(!h.includes('data-id="dark"'), 'right now not known is not "lower now"');
+  assert.match(text(h), /Lower now, and no higher on any of the five days\./);
+  // This spot without a fifth day: the claim says which days it compared.
+  const short = near('short', ['high', 'high', 'high', 'high', 'high']); short.days[4] = { date: DATES[4], label: 'unknown', risk: null };
+  vm.runInContext('DATA.spots.push', ctx).call(vm.runInContext('DATA.spots', ctx), short);
+  assert.match(text(vm.runInContext('nearby', ctx)(short)), /Lower now, and no higher on any day with a forecast here\./);
+});
+
+test('a plan row does not say spills are unlikely to reach a spot where spills right now raised today', () => {
+  const ctx = page(['esc', 'spilling', 'planWhy'], { DATA: { generated_at: GEN } });
+  const why = (s, day) => vm.runInContext('planWhy', ctx)(s, day);
+  const g = { ...greenholme, days: week(['low', 'low', 'low', 'low', 'low']).days, classification: undefined };
+  g.days[0].expected_spilling_overflows = 1.4;
+  assert.equal(L.dayHeadline(g, DATES[0]), 'Very high risk: sewage spills right now');
+  assert.doesNotMatch(why(g, DATES[1]), /unlikely to reach/);   // tomorrow's forecast, with nothing expected
+  const today = why(g, DATES[0]);
+  assert.match(today, /About 1 of the 25 overflows upstream is expected to spill\./);
+  assert.doesNotMatch(today, /unlikely to reach here/);
+  // With no spill right now, the low day still says why.
+  const calm = { ...g, now: { ...g.now, label: 'low', risk: 0, discharging_upstream: 0 } };
+  assert.match(why(calm, DATES[0]), /but sewage from them is unlikely to reach here\./);
+});
+
 test('Dŵr Cymru is spelt with its circumflex wherever a page names it', () => {
   assert.equal(L.companyName('Dwr Cymru Welsh Water'), 'Dŵr Cymru Welsh Water');
   assert.equal(L.companyName('Yorkshire Water'), 'Yorkshire Water');
@@ -250,7 +319,7 @@ test('"Lower risk nearby" compares the same days, and at a water rated poor offe
   const burnsall = near('burnsall', ['low', 'low', 'moderate', 'low', 'very high']);   // low until then, very high on Thursday
   const rated = near('rated', ['low', 'low', 'low', 'low', 'low'], { source: 'designated', classification: { class: 'good', year: 2025 } });
   const unrated = near('calfclose', ['low', 'low', 'low', 'low', 'low']);
-  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'ratedBetter', 'nearby'],
+  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter', 'nearby'],
     { DATA: { spots: [ilkley, burnsall, rated, unrated] } });
   vm.runInContext('var DAY = null;', ctx);
   const h = vm.runInContext('nearby', ctx)(ilkley);

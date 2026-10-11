@@ -123,15 +123,26 @@ const sampleLevel = s => sampleOver(s.lab_sample) && sampleAge(s.lab_sample) <= 
 // and which set it ('rating', 'sample' or 'algae'). A tie goes to the rating, then the sample.
 const standingLevel = s => { const c = CLASS_LEVEL[classOf(s)] ?? null, a = algaeLevel(s), m = sampleLevel(s), l = [c, a, m].reduce(higher, null);
   return { level: l, by: !l ? null : rank(c) >= rank(l) ? 'rating' : rank(m) >= rank(l) ? 'sample' : 'algae' }; };
+// Right now not known (12 Oct 2026): overflows upstream, none of them reporting live and none
+// discharging, the Right now tile's "Unknown" (index.html, nowTile). forecast.py still sends right now
+// as low, risk 0, from no readings at all, and the headline took that as a real low: Sandy Lane,
+// Hereford and Symonds Yat (Dŵr Cymru's overflows, with no live feed SwimSignal reads) and the Coquet
+// at Rothbury and the Allen at Plankey Mill (Northumbrian's feed over six hours old) read "Low risk on
+// every day with a forecast" beside a tile saying no overflow there reported. So a low right now with
+// no reading behind it is no level at all: it sets nothing, and the headline does not claim it.
+// A raised right now (spills that stopped lately, from the records the feeds last gave) still counts.
+const nowUnknown = s => { if (!daily(s) || !s.now || rank(s.now.label) >= 1) return false;
+  const n = s.now, total = overflows(s);
+  return !Math.min(total, n.monitored_upstream ?? total) && !(n.discharging_upstream || 0); };
 // Right now's level from the live status, where it has one.
-const nowSpill = s => daily(s) && s.now && ORDER[s.now.label] !== undefined ? s.now.label : null;
+const nowSpill = s => daily(s) && s.now && !nowUnknown(s) && ORDER[s.now.label] !== undefined ? s.now.label : null;
 // One day, or right now (isNow, from the live overflow status): the level and what set it, 'spill',
 // 'water', 'record', 'sample' or 'algae'. The rating is named unless a forecast is worse; then a tie
 // goes to the spills, whose reasons the page can give, then the water, the sample and the algae.
 // Today is at least right now (see the list above): where right now raises it, `now` is true, and the
 // reason says "right now".
 function risk(s, x, isNow = false) {
-  let sp = !daily(s) || !x ? null : isNow ? (ORDER[x.label] !== undefined ? x.label : null) : hasData(x) ? x.label : null;
+  let sp = !daily(s) || !x ? null : isNow ? (ORDER[x.label] !== undefined && !nowUnknown(s) ? x.label : null) : hasData(x) ? x.label : null;
   const lift = !isNow && !!x && x.date === today() && rank(nowSpill(s)) >= 1 && rank(nowSpill(s)) > rank(sp);   // a low right now raises nothing
   if (lift) sp = nowSpill(s);
   const wq = isNow ? null : ecoliLevel(s, x), rec = advisedAgainst(s) ? 'high' : null, alg = algaeLevel(s), smp = sampleLevel(s);
@@ -278,9 +289,12 @@ function headParts(s) {
   const [r, when] = worstNear(s);
   if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, when === 'right now' ? nowBecause(s, r) : because(r), laterWords(s)];
   const later = laterWords(s);
+  // Right now not known: the forecast's low, and why it is not more (nowUnknown).
+  if (nowUnknown(s)) return ['Low risk forecast', NOW_UNKNOWN, later];
   if (later) return [`Low risk now · ${later}`, '', ''];
   return [s.days.slice(0, 5).every(hasData) ? 'Low risk for the next five days' : 'Low risk on every day with a forecast', '', ''];
 }
+const NOW_UNKNOWN = 'no overflow upstream reports live';
 // "Moderate risk today: sewage spills · Very high risk on Tuesday".
 const headline = s => { const [h, w, later] = headParts(s); return [h, w].filter(Boolean).join(': ') + (later ? ` · ${later}` : ''); };
 // The level on one day (a date in s.days), for the map's day picker and the alerts: where the
@@ -630,7 +644,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk, nowUnknown, NOW_UNKNOWN,
     level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
