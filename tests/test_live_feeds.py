@@ -152,9 +152,26 @@ def test_uncovered_overflow_days_are_split_by_reason(tmp_path, monkeypatch):
     assert w["n_candidates"] == w["n_missed_deadline"] + w["n_uncovered"] + w["n_scored"] == 5
     assert w["first_scored_day"] == w["last_scored_day"] == "2026-09-15"
     assert out["coverage_from"] == "2026-09-15"     # E's day is covered by the masks but not by a current feed
-    assert "overflow-days" in out["units"]["n_candidates"]
+    # A candidate is a forecast: one overflow, day and lead (until 11 Oct 2026 the unit said "overflow-days").
+    assert out["units"]["n_candidates"].startswith("forecasts") and w["unit"] == "forecast"
+    assert w["n_scored_days"] == 1 and w["days_not_scored"] == []
     # The 07:30 forecast was unstamped: the label comes from the log's first stamped issue day.
     assert [r["version"] for r in out["by_version"]] == ["unstamped (stamps begin 2026-09-14)"]
+
+
+def test_a_day_inside_the_window_with_nothing_scored_is_named_with_its_reason():
+    # 8 and 9 Oct 2026 had four runs each, under the rule's six polls: a span of days is not a count of them.
+    from dipcast.forecast_log import _scoring_window
+    d = date.fromisoformat
+    scored = pd.DataFrame({"target_day": [d("2026-10-07"), d("2026-10-07"), d("2026-10-10")]})
+    uncovered = pd.DataFrame({"target_day": [d("2026-10-08")] * 3 + [d("2026-10-09")] * 2,
+                              "reason": ["min_known_polls", "min_known_polls", "max_gap", "min_known_polls", "min_known_polls"]})
+    missed = pd.DataFrame({"target_day": [d("2026-10-09")]})
+    w = _scoring_window("2026-09-28", d("2026-10-11"), missed, uncovered, scored)
+    assert w["n_scored_days"] == 2 and w["first_scored_day"] == "2026-10-07"
+    assert w["days_not_scored"] == [{"day": "2026-10-08", "n_candidates": 3, "reason": "min_known_polls"},
+                                    {"day": "2026-10-09", "n_candidates": 3, "reason": "min_known_polls"},
+                                    {"day": "2026-10-11", "n_candidates": 0, "reason": "no_forecast"}]
 
 
 def test_poll_log_rows_from_before_feed_ages_were_logged_flag_nothing():

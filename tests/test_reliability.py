@@ -176,6 +176,12 @@ def test_verify_live_reports_level_by_company_and_rain(tmp_path, monkeypatch):
     comp = {r["company"]: r for r in out["by_company"]}
     assert comp["X"]["n_spill_days"] == 1 and abs(comp["X"]["flat_brier"] - 0.25) < 1e-9
     assert comp["Y"]["n_spill_days"] == 0 and comp["Y"]["flat_brier"] == 0.0 and abs(comp["Y"]["mean_forecast"] - 0.4) < 1e-9
+    # The warnings at the High risk line (0.4: every forecast here) by company, the spilling ones first.
+    wc = out["warning_table"]["by_company"]
+    assert [(r["company"], r["hits"], r["misses"], r["false_alarms"]) for r in wc] == [("X", 1, 0, 1), ("Y", 0, 0, 2)]
+    assert out["warning_table"]["trained_on"] == "United Utilities"
+    # Climatology ranks nothing here (one rate for every overflow), and its mean is the annual rate / 365.
+    assert out["overall"]["climatology_auc"] == 0.5 and abs(out["overall"]["climatology_mean"] - 0.1) < 1e-9
     bands = {r["band"]: r for r in out["by_rain"]}
     assert set(bands) == {"under 1 mm", "1-5 mm", "10 mm or more"} and out["n_rain_unlogged"] == 1
     assert bands["under 1 mm"]["base_rate"] == 1.0 and bands["1-5 mm"]["base_rate"] == 0.0 and bands["10 mm or more"]["n"] == 1

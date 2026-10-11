@@ -46,10 +46,26 @@ SEP = re.compile(r"\s*[-–]\s+|\s+[-–]\s*|_|/", A)
 HELD = "∕"   # a "/" that is not a separator ("O/S", "95/97"), until the end
 
 
+# Codes that stay in capitals in a name in normal case: the kinds' codes in capitals, and the technical ones.
+KEEP = frozenset("STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO CSO CSOEO SO OV EO FEEO "
+                 "DWF XDWF FFT OOS NWL ESO EMO SWO HLR SCC SDC ICI RAF IOW".split())
+SHOUTY = re.compile(r"\b(?:WwTW|Wwtw|STWs|CSOs)\b", A)
+
+
 def name_case(s) -> str:
-    """Overflow names that arrive in capitals ("GRASSINGTON/STW") in normal case, as the site shows them."""
-    return re.sub(r"[A-Za-z']+", lambda m: m[0][0] + m[0][1:].lower() if re.fullmatch(r"[A-Z']{4,}", m[0]) else m[0],
-                  "" if s is None else str(s))
+    """Overflow names that arrive in capitals ("GRASSINGTON/STW") in normal case, as the site shows them:
+    a word of four or more capitals, and of three in a name all in capitals ("BEN RHYDDING/STW" is
+    "Ben Rhydding/STW"; until 11 Oct 2026 it was "BEN Rhydding/STW"), unless it is a code (KEEP) or a
+    reference that runs into a number ("DER096")."""
+    t = "" if s is None else str(s)
+    shouty = not re.search(r"[a-z]", SHOUTY.sub("", t))
+
+    def case(m: re.Match) -> str:
+        w = m[0]
+        if not re.fullmatch(r"[A-Z']+", w) or w in KEEP or re.match(r"[0-9]", m.string[m.end():m.end() + 1]):
+            return w
+        return w[0] + w[1:].lower() if len(w) >= 4 or (shouty and len(w) == 3) else w
+    return re.sub(r"[A-Za-z']+", case, t)
 
 
 def _kind_of(code: str) -> int:
@@ -115,7 +131,8 @@ def plain_name(raw) -> str:
             nonlocal tank
             tank = True
             return " "
-        rest = _trim_edges(PHRASES.sub(take, CODES.sub(take, TANK.sub(tanked, TECH.sub(" ", part)))))
+        # Phrases before codes: "STORM OVERFLOW" in capitals is one phrase, not "STORM" and the code OVERFLOW.
+        rest = _trim_edges(CODES.sub(take, PHRASES.sub(take, TANK.sub(tanked, TECH.sub(" ", part)))))
         for k, n in found:
             if k == SSO:
                 sso = True

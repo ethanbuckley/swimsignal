@@ -156,7 +156,9 @@ test('the day detail\'s words are index.html\'s, so a day reads the same on both
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   for (const words of ['are expected to spill', 'a spill from a nearby overflow upstream is possible', 'under one spill is expected from the',
     'In tests on past years, spill forecasts this far ahead were about', 'as good as same-day ones', 'The rainfall forecast for this day has not arrived, so there is no figure.',
-    'after travel time, die-off and dilution', 'from die-off over the travel time and dilution by the size of the river network upstream']) {
+    'after travel time, die-off and dilution', 'after die-off over the travel time and dilution by the size of the river network upstream',
+    // Reach is a weight, not a chance (11 Oct 2026: both said "the chance a spill there affects this spot").
+    "the share of a spill\\'s bacteria the model expects to arrive here", 'An estimate, not a measured chance.']) {
     assert.ok(page.includes(words), words);
   }
   assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'low'}, 5), 'under one spill is expected from the 5 overflows upstream');

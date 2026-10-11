@@ -133,8 +133,9 @@ test('the answer puts the line under where the week goes, for today and for a pi
 // What the level counts and what it does not (levels.js, levelScope), under the answer on a spot's page.
 // Added 11 Oct 2026: nothing near "Low risk" said that runoff, wildlife, bathers and a lake's wind are not counted.
 const COUNTS = 'This forecast counts sewage from the monitored storm overflows upstream, and the rain that makes them spill.';
-const NOT_COUNTED = 'It does not count runoff from farmland and roads, wildlife or other bathers.';
-const AVERAGE = 'It counts runoff from farmland and roads, wildlife and other bathers only as an average, from the rain here and the time of year.';
+// 11 Oct 2026: treated sewage from sewage works added, a source of its own that neither counted.
+const NOT_COUNTED = 'It does not count treated sewage from sewage works, runoff from farmland and roads, wildlife or other bathers.';
+const AVERAGE = 'It counts treated sewage from sewage works, runoff, wildlife and other bathers only as an average. That average comes from the rain here and the time of year.';
 const WIND = 'In a lake, the wind decides where river water goes. The forecast does not use wind.';
 test('the answer says what the level counts: the overflows and their rain, not runoff, wildlife, bathers or a lake\'s wind', () => {
   const river = week(['low', 'low', 'low', 'low', 'low']);

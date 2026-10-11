@@ -66,7 +66,10 @@ test("the feed's watercourse is given only where it reads as a name", () => {
   assert.equal(on('The River Eden'), 'on the River Eden');
   assert.equal(on('Glenridding Beck'), 'on Glenridding Beck');
   assert.equal(on('Lake Windermere'), 'on Lake Windermere');
-  for (const w of ['RIVER FROME(S)', 'TRIB OF THE RIVER TEIGN', 'Tributary of Torver Beck', 'Groundwater', 'UCK',
+  // The River Uck at Uckfield and Buxted (overflows.geojson, 11 Oct 2026); and the Exe, once "River EXE".
+  assert.equal(on('UCK'), 'on the Uck');
+  assert.equal(on('RIVER EXE'), 'on the River Exe');
+  for (const w of ['RIVER FROME(S)', 'TRIB OF THE RIVER TEIGN', 'Tributary of Torver Beck', 'Groundwater',
     'Starston Beck River Waveney  N', 'RUTLAND WATER/BARLEYTHORPE BRO', 'RIVER AVON (VIA SWS)', '', null]) assert.equal(on(w), '', String(w));
 });
 

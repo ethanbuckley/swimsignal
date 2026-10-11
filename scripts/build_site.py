@@ -816,7 +816,7 @@ def scored_csv_header(credits: dict, root: str) -> str:
     rules are, and the credits, since the observed column is the water companies' data (CC BY 4.0)."""
     lic = "; ".join(f"{k} {v}" for k, v in credits["licences"].items())
     lines = [
-        "SwimSignal live verification: one row per scored overflow-day, the rows behind the live scores on the",
+        "SwimSignal live verification: one row per scored forecast (overflow, day and lead), the rows behind the live scores on the",
         f"Accuracy page ({root}verification.html#live-scoring). The row count is n_scored in data/verification.json.",
         "Columns: overflow_id, the water company's id for the overflow, as in its live feed; company; day, the target",
         "day (Europe/London); lead, days from the issue day to the target day (0 is the same day); issued_at, when",
@@ -1350,13 +1350,14 @@ def with_counts(html: str, results: list[dict]) -> str:
 # spill (warnings_true), each as the nearest simple fraction. The page's own words stay when the table
 # or a field is missing.
 WARN_FIGURES = re.compile(r'(<span id="warn-figures">).*?(</span>)', re.DOTALL)
-NUMBERS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 7: "seven", 9: "nine", 10: "ten"}
-FRACTIONS = sorted({(n, d) for d in (2, 3, 4, 5, 10) for n in range(1, d) if math.gcd(n, d) == 1}, key=lambda f: f[1])
+NUMBERS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 9: "nine", 10: "ten"}
+FRACTIONS = sorted({(n, d) for d in (2, 3, 4, 5, 6, 10) for n in range(1, d) if math.gcd(n, d) == 1}, key=lambda f: f[1])
 
 
 def share_words(p: float) -> str:
     """A share as words a reader can picture: "about one in five". The nearest of the fractions with 2, 3, 4,
-    5 or 10 below the line (the smaller denominator on a tie); below 1 in 20 and above 19 in 20 it says so."""
+    5, 6 or 10 below the line (the smaller denominator on a tie); below 1 in 20 and above 19 in 20 it says so.
+    Sixths since 11 Oct 2026: 16.7% of spills warned of read "about one in five", the nearest of the others."""
     if p < 0.05:
         return "fewer than one in twenty"
     if p > 0.95:
@@ -1379,8 +1380,23 @@ def with_warning_words(html: str, verification: Path) -> str:
     except (OSError, ValueError, KeyError, TypeError):
         return html   # the hand-written figures stay
     lead = "It misses most spills." if hit < 0.45 else "It misses about half of all spills." if hit <= 0.55 else "It misses some spills."
-    said = (f"{lead} Its live scores ran from {day_words(a, b)}. At the {escape(str(w.get('level') or 'high'))} risk line, "
+    # A count of days where the scorer gives one (11 Oct 2026): "ran from 29 September to 10 October" read as an
+    # unbroken run, and 8 and 9 October had nothing scored.
+    n = w.get("n_days")
+    when = (f"cover {n} day{'' if n == 1 else 's'} between {day_words(a, b).replace(' to ', ' and ', 1)}"
+            if isinstance(n, int) and n > 0 else f"ran from {day_words(a, b)}")
+    said = (f"{lead} Its live scores {when}. At the {escape(str(w.get('level') or 'high'))} risk line, "
             f"it warned of {share_words(hit)} spills. {share_words(true).capitalize()} of its warnings were followed by a spill.")
+    # Whose spills (11 Oct 2026): 208 of the 223 hits were at United Utilities, the one company the spill model
+    # learned from; elsewhere it warned of 15 of 638 (forecast_log: warning_table.by_company).
+    rows = w.get("by_company") or []
+    own = next((r for r in rows if r.get("company") == w.get("trained_on")), None)
+    rest = [r for r in rows if r is not own]
+    spills = sum(r["hits"] + r["misses"] for r in rest)
+    if own and own.get("hits") and w.get("hits") and spills:
+        said += (f" {own['hits']} of the {w['hits']} warnings that came true were at {escape(own['company'])}, the one company "
+                 f"the spill model learned from. At the other companies, so far, it warned of "
+                 f"{share_words(sum(r['hits'] for r in rest) / spills)} spills.")
     return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
 
 

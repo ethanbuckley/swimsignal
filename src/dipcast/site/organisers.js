@@ -255,7 +255,7 @@ const Organisers = (() => {
         + cell('Live feed', o.live ? 'Yes' : 'No') + '</tr>').join('') + '</tbody></table></div>';
     if (PAGE_ID.test(s.id)) h += `<p><a href="spot/${esc(s.id)}/profile/">Overflow history, 2021 to 2025</a>: each overflow's spills and spill hours a year.</p>`;   // build_site.write_profiles
     return h + '<p class="small muted"><b>Upstream</b>: along the river network. <b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed. '
-      + '<b>Reach</b>: the chance a spill there affects this spot, from die-off over the travel time and dilution by the size of the river network upstream. '
+      + '<b>Reach</b>: the share of a spill\'s bacteria the model expects to arrive here, after die-off over the travel time and dilution by the size of the river network upstream. An estimate, not a measured chance. '
       + '<b>Spills a year</b>: its long-term average, from the Environment Agency\'s annual returns. <b>Hours spilling</b>: the total in its latest annual return. '
       + '<b>Live feed</b>: whether its water company reports its status as it happens.</p>';
   }
