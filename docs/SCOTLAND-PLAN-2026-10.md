@@ -485,6 +485,14 @@ and score it with `verify_live` as its own company. Keep the scores in state or 
 `verification.json` that the page does not show. Extend `overflows.MARINE` (or better, use OS form
 and SEPA's water bodies) so sea lochs are not inland.
 
+*Built 11 Oct 2026, off by default* (`src/dipcast/scottish_shadow.py`; the module docstring has the
+rules and Gate B's computation). With `DIPCAST_SCOTTISH_WATER=1` the build asks Scottish Water's API
+at most once an hour (Ethan told Scottish Water on 4 Oct: about once every three hours, never more
+than once an hour), forecasts the 1,485 snapped, non-emergency assets of the 4 Oct answer, logs and
+scores them in state files that no page or release reads. Sea lochs: `overflows.marine_scotland`, a
+named list until SEPA's polygons are licensed. The shadow uses Scottish covariates only where
+`data/processed/sw_covariates.parquet` is present, which on CI needs it committed.
+
 **S6. Loch outlines.** Add SEPA's loch water bodies (catalogue: Open Government Licence; check the
 geometry and attribution first) beside the EA's WFD lakes, so a Scottish loch gets the area term.
 Tests at Luss Bay, Dores and a sea loch.

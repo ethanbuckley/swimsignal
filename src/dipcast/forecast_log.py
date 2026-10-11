@@ -57,7 +57,9 @@ import json
 import logging
 import os
 import threading
+from dataclasses import dataclass
 from datetime import date, timedelta
+from pathlib import Path
 
 import duckdb
 import numpy as np
@@ -103,9 +105,29 @@ ECOLI_MIN_SAMPLES = 100
 ECOLI_MIN_EXCEEDANCES = 10
 
 
-def _conn() -> duckdb.DuckDBPyConnection:
-    config.STATE.mkdir(parents=True, exist_ok=True)
-    con = duckdb.connect(str(config.DUCKDB_PATH))
+@dataclass(frozen=True)
+class LiveStore:
+    """Another set of files for verify_live to score, beside England's: Scottish Water's shadow scores
+    (scottish_shadow, Scotland plan task S5). `db` holds a forecast_overflows table; `history`,
+    `coverage` and `overflows` have the columns of live_history.parquet, live_coverage.parquet and
+    overflows.parquet that verify_live reads; the scores go to `out_json` and `out_csv`. A store has
+    no poll log unless given one and no E. coli scores. verify_live(store=None) is England's, as before."""
+    db: Path
+    history: Path
+    coverage: Path
+    overflows: Path
+    out_json: Path
+    out_csv: Path
+    poll_log: Path | None = None
+
+
+def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
+    if path is None:
+        config.STATE.mkdir(parents=True, exist_ok=True)
+        path = config.DUCKDB_PATH
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    con = duckdb.connect(str(path))
     con.execute("""
         CREATE TABLE IF NOT EXISTS forecast_overflows (
             issued_at TIMESTAMPTZ, issue_day DATE, lat DOUBLE, lon DOUBLE,
@@ -231,9 +253,9 @@ def select_decision_forecasts(con: duckdb.DuckDBPyConnection, cutoff: date,
     return fc.drop(columns=["issued_ms"])
 
 
-def load_coverage() -> pd.DataFrame:
+def load_coverage(path: Path | None = None) -> pd.DataFrame:
     """(site_id, day, n_known, n_unknown, n_stale, slots) from the live poller; empty if none yet."""
-    p = config.state_read(COVERAGE_FILE)
+    p = config.state_read(COVERAGE_FILE) if path is None else path
     if not p.exists():
         return pd.DataFrame(columns=["site_id", "day", "n_known", "n_unknown", "n_stale", "slots"])
     cov = pd.read_parquet(p)
@@ -348,8 +370,8 @@ def unstamped_feed_days(poll_log: pd.DataFrame | None) -> pd.DataFrame:
     return stamped.loc[~stamped["stamped"], ["company", "day"]].reset_index(drop=True)
 
 
-def load_poll_log() -> pd.DataFrame | None:
-    p = config.state_read(POLL_LOG_FILE)
+def load_poll_log(path: Path | None = None) -> pd.DataFrame | None:
+    p = config.state_read(POLL_LOG_FILE) if path is None else path
     return pd.read_parquet(p) if p.exists() else None
 
 
@@ -377,12 +399,13 @@ def _brier_block(g: pd.DataFrame) -> dict:
             "climatology_brier": float(np.mean((g["p_clim"].to_numpy() - yy) ** 2))}
 
 
-def verify_live(as_of: date | None = None) -> dict:
-    """Score logged overflow-day forecasts whose target day is complete."""
+def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> dict:
+    """Score logged overflow-day forecasts whose target day is complete. With `store`, the forecasts,
+    polls and overflows are that store's and so are the files written (LiveStore)."""
     as_of = as_of or pd.Timestamp.now(tz=LOCAL_TZ).date()
     cutoff = as_of - timedelta(days=1)
     with _LOCK:
-        con = _conn()
+        con = _conn(None if store is None else store.db)
         try:
             fc = select_decision_forecasts(con, cutoff)
             first_issue = con.execute("SELECT min(issue_day) FROM forecast_overflows").fetchone()[0]
@@ -401,9 +424,10 @@ def verify_live(as_of: date | None = None) -> dict:
            "units": {"n_point_forecasts": "rows in the spot forecast log: one per spot, issue and target day (not overflow-days)",
                      "n_candidates": "overflow-days: one monitored overflow on one past target day, with a forecast and rainfall data",
                      "n_scored": "overflow-days"}}
-    hist_path = config.state_read("live_history.parquet")
+    hist_path = config.state_read("live_history.parquet") if store is None else store.history
+    ov_path = None if store is None else store.overflows
     if fc.empty or not hist_path.exists():
-        return _finish(out, as_of)
+        return _finish(out, as_of, store=store)
     hist = pd.read_parquet(hist_path)
     out["n_candidates"] = len(fc)
     # Missed deadlines: issue days with no forecast by the decision hour. Reported,
@@ -413,13 +437,14 @@ def verify_live(as_of: date | None = None) -> dict:
                               "share_of_candidates": float(len(missed) / len(fc))}
     fc = fc[fc["before_cutoff"]]
     # Score only overflow-days whose observation supports a verdict either way.
-    cov_all = load_coverage()
+    cov_all = load_coverage(None if store is None else store.coverage)
     obs_from = observations_from(cov_all)
     out["observations_from"] = obs_from
     # Feeds that stamp no record are never current (see unstamped_feed_days).
     site_company = hist.drop_duplicates("site_id", keep="last").set_index("site_id")["company"]
     sites = pd.DataFrame({"site_id": site_company.index.astype(str), "company": site_company.to_numpy()})
-    not_current = sites.merge(unstamped_feed_days(load_poll_log()), on="company")[["site_id", "day"]]
+    poll_log = load_poll_log() if store is None else (load_poll_log(store.poll_log) if store.poll_log else None)
+    not_current = sites.merge(unstamped_feed_days(poll_log), on="company")[["site_id", "day"]]
     keys = fc[["site_id", "target_day"]].rename(columns={"target_day": "day"})
     fc["reason"] = uncovered_reasons(keys, coverage_checks(cov_all), not_current, obs_from).to_numpy()
     cov = covered_site_days(cov_all).merge(not_current.assign(nc=True), on=["site_id", "day"], how="left")
@@ -438,7 +463,7 @@ def verify_live(as_of: date | None = None) -> dict:
     out["uncovered_by_reason"] = {r: int((uncovered["reason"] == r).sum()) for r in UNCOVERED_REASONS}
     out["scoring_window"] = _scoring_window(obs_from, cutoff, missed, uncovered, fc)
     if fc.empty:
-        return _finish(out, as_of)
+        return _finish(out, as_of, store=store)
     obs = observed_spill_days(hist)
     obs["y"] = 1
     fc = fc.merge(obs, left_on=["site_id", "target_day"], right_on=["site_id", "day"], how="left")
@@ -448,7 +473,7 @@ def verify_live(as_of: date | None = None) -> dict:
     # Baseline: each overflow's long-run daily spill rate from the annual returns, as in
     # the offline tests. The in-period mean would be an in-sample, hindsight baseline
     # and over a few dry days it makes any forecast look bad.
-    fc["p_clim"] = _site_climatology(fc["site_id"])
+    fc["p_clim"] = _site_climatology(fc["site_id"], ov_path)
     out["overall"] = {"raw": scores(y, fc["p_raw"].to_numpy()), "calibrated": scores(y, fc["p_cal"].to_numpy())}
     out["overall"]["climatology_brier"] = float(np.mean((fc["p_clim"].to_numpy() - y) ** 2))
     # A flat forecast at the period's own spill rate uses hindsight, so it is not a rival
@@ -482,7 +507,7 @@ def verify_live(as_of: date | None = None) -> dict:
                          for v, g in fc.groupby("version")]
     # By water company: the spill model was trained on United Utilities only, so this is
     # the geographic-transfer check. Companies with too few scored days are pooled as "other".
-    comp = _site_companies()
+    comp = _site_companies(ov_path)
     if comp is not None:
         fc["company"] = fc["site_id"].map(comp).fillna("unknown")
         by_company = []
@@ -512,7 +537,7 @@ def verify_live(as_of: date | None = None) -> dict:
                           for b, g in r.groupby(band, observed=True)]
     if len(fc) >= 200:
         out["reliability"] = reliability_table(y, fc["p_cal"].to_numpy()).round(4).to_dict("records")
-    return _finish(out, as_of, fc)
+    return _finish(out, as_of, fc, store=store)
 
 
 def warning_counts(y, p, warn_at: float) -> dict:
@@ -592,18 +617,25 @@ def _scoring_window(obs_from: str | None, cutoff: date, missed: pd.DataFrame, un
             "last_scored_day": str(scored["target_day"].max()) if len(scored) else None}
 
 
-def _finish(out: dict, as_of: date, scored: pd.DataFrame | None = None) -> dict:
+def _finish(out: dict, as_of: date, scored: pd.DataFrame | None = None, store: LiveStore | None = None) -> dict:
     """Attach the E. coli scores (independent of the spill scores) and write the file, after the
     scored rows (SCORED_CSV), so the two always come from the same run: a failed CSV write leaves
-    the previous pair in place."""
-    try:
-        out["ecoli_live"] = verify_ecoli(as_of)
-    except Exception as e:  # noqa: BLE001 - an optional layer must not block the spill scores
-        log.warning("E. coli live scoring failed: %s", e)
-    rows = scored_rows(scored)
-    rows.to_csv(config.state_write(SCORED_CSV), index=False, float_format="%.4f")
-    out["scored_csv"] = {"file": SCORED_CSV, "rows": len(rows), "columns": SCORED_COLUMNS}
-    _write(out)
+    the previous pair in place. A LiveStore has no E. coli scores and its own two files."""
+    if store is None:
+        try:
+            out["ecoli_live"] = verify_ecoli(as_of)
+        except Exception as e:  # noqa: BLE001 - an optional layer must not block the spill scores
+            log.warning("E. coli live scoring failed: %s", e)
+    rows = scored_rows(scored, None if store is None else store.overflows)
+    if store is None:
+        rows.to_csv(config.state_write(SCORED_CSV), index=False, float_format="%.4f")
+        out["scored_csv"] = {"file": SCORED_CSV, "rows": len(rows), "columns": SCORED_COLUMNS}
+        _write(out)
+    else:
+        store.out_csv.parent.mkdir(parents=True, exist_ok=True)
+        rows.to_csv(store.out_csv, index=False, float_format="%.4f")
+        out["scored_csv"] = {"file": store.out_csv.name, "rows": len(rows), "columns": SCORED_COLUMNS}
+        store.out_json.write_text(json.dumps(out, indent=1, default=str))
     return out
 
 
@@ -614,14 +646,14 @@ SCORED_COLUMNS = ["overflow_id", "company", "day", "lead", "issued_at", "forecas
                   "climatology", "observed"]
 
 
-def scored_rows(fc: pd.DataFrame | None) -> pd.DataFrame:
+def scored_rows(fc: pd.DataFrame | None, overflows_path: Path | None = None) -> pd.DataFrame:
     """The scored overflow-days as published: overflow id, its company, the target day, the lead,
     when the scored forecast was issued, the spill probability before and after lead calibration,
     the climatology baseline and what happened (1 a spill, 0 none). Sorted, so a rerun on the same
     log writes the same file. Empty (header only) when nothing was scored."""
     if fc is None or fc.empty:
         return pd.DataFrame(columns=SCORED_COLUMNS)
-    comp = _site_companies()
+    comp = _site_companies(overflows_path)
     out = pd.DataFrame({
         "overflow_id": fc["site_id"].astype(str).to_numpy(),
         "company": fc["site_id"].map(comp).to_numpy() if comp is not None else None,
@@ -900,11 +932,11 @@ def _spill_days_per_spill() -> float:
     return 1.0
 
 
-def _site_climatology(site_ids: pd.Series) -> np.ndarray:
+def _site_climatology(site_ids: pd.Series, path: Path | None = None) -> np.ndarray:
     """Long-run daily spill-day probability per overflow: the annual-return spill
     count times the measured spill-days-per-spill ratio, over 365. The same baseline
-    as the offline tests."""
-    p = config.state_read("overflows.parquet")
+    as the offline tests. `path`: another overflow table with site_id and lta_spills."""
+    p = config.state_read("overflows.parquet") if path is None else path
     default = 20.0 / 365.0
     ratio = _spill_days_per_spill()
     if not p.exists():
@@ -914,8 +946,8 @@ def _site_climatology(site_ids: pd.Series) -> np.ndarray:
     return np.clip(clim, 0.001, 0.95)
 
 
-def _site_companies() -> pd.Series | None:
-    p = config.state_read("overflows.parquet")
+def _site_companies(path: Path | None = None) -> pd.Series | None:
+    p = config.state_read("overflows.parquet") if path is None else path
     if not p.exists():
         return None
     ov = pd.read_parquet(p, columns=["site_id", "company"]).drop_duplicates("site_id")

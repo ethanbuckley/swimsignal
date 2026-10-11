@@ -59,6 +59,19 @@ the first answer was in neither slot of the second (checked). If that event was 
 keeps it open from its last sighting, which observed_spill_days ends at that poll.
 The column names `status`, `latest_event_start` and `latest_event_end` are those
 forecast_log.observed_spill_days reads, so task S5 can score from this file as it is.
+
+Coverage (task S5, 11 Oct 2026). Each saved poll also adds a row per asset to COVERAGE_FILE, in the
+schema of England's live_coverage.parquet (ingest.live.merge_coverage): known when the status is 1
+or 0, stale when known but the asset's own data state is not live (a stale transmit time or a stuck
+monitor), and the half-hour slot as a bit. The shadow scorer (scottish_shadow) applies England's
+coverage rules to it, so a day scores as "no spill" only on the same evidence as in England.
+
+How often it asks (task S5, 11 Oct 2026). On 4 Oct 2026 Ethan told Scottish Water
+(opendata@scottishwater.co.uk) that SwimSignal would make about one request every three hours and
+never more than one an hour. site.yml asks for a build every 30 minutes (in practice a median 2.9
+hours apart), so poll() makes no request when the last saved answer was fetched under
+MIN_POLL_GAP_MIN minutes ago, by the `fetched_at` stored in LATEST_FILE. The shadow forecasts then
+use that stored answer. A failed poll saves nothing, so the next build may ask again.
 """
 
 from __future__ import annotations
@@ -72,7 +85,15 @@ import pandas as pd
 
 from dipcast import config
 from dipcast.ingest.common import write_parquet
-from dipcast.ingest.live import FEED_CURRENT_H, LIVE, OFFLINE, STALE
+from dipcast.ingest.live import (
+    COVERAGE_COLS,
+    FEED_CURRENT_H,
+    LIVE,
+    LOCAL_TZ,
+    OFFLINE,
+    STALE,
+    merge_coverage,
+)
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +101,8 @@ COMPANY = "Scottish Water"
 CREDIT = "Contains data from Scottish Water (overflow event monitoring, near-real-time API)."
 LATEST_FILE = "scottish_water_latest.parquet"
 HISTORY_FILE = "scottish_water_history.parquet"
+COVERAGE_FILE = "scottish_water_coverage.parquet"
+MIN_POLL_GAP_MIN = 60.0   # never more than one request an hour (module docstring)
 TIMEOUT_S = 120.0
 RETRIES = 3
 STUCK_H = 168.0    # an asset Overflowing for longer than this is flagged stuck (module docstring)
@@ -238,22 +261,61 @@ def merge_history(old: pd.DataFrame | None, new: pd.DataFrame) -> pd.DataFrame:
     return h.sort_values(["site_id", "latest_event_start"]).reset_index(drop=True)
 
 
+def coverage_rows(snap: pd.DataFrame) -> pd.DataFrame:
+    """One row per asset for this poll, in ingest.live's COVERAGE_COLS (module docstring): the local
+    day, known (status 1 or 0) or not, stale (known, but the asset's data state is not live), and
+    the half-hour slot as a bit, set only when known and not stale."""
+    if snap.empty:
+        return pd.DataFrame(columns=COVERAGE_COLS)
+    local = pd.to_datetime(snap["fetched_at"], utc=True).dt.tz_convert(LOCAL_TZ)
+    known = snap["status"].isin([0, 1])
+    stale = known & snap["data_state"].ne(LIVE)
+    slot = (local.dt.hour * 2 + local.dt.minute // 30).astype(int)
+    slots = np.where(known & ~stale, np.left_shift(np.int64(1), slot.to_numpy()), np.int64(0))
+    return pd.DataFrame({"site_id": snap["site_id"].astype(str).to_numpy(), "day": local.dt.date.to_numpy(),
+                         "n_known": known.astype(int).to_numpy(), "n_unknown": (~known).astype(int).to_numpy(),
+                         "n_stale": stale.astype(int).to_numpy(), "slots": slots})
+
+
 def save(snap: pd.DataFrame) -> pd.DataFrame:
-    """Write this poll's snapshot and add its events to the history. Returns the history. An empty
-    snapshot (a failed poll) writes nothing, so the last good one stays."""
+    """Write this poll's snapshot, add its events to the history and its observations to the
+    coverage file. Returns the history. An empty snapshot (a failed poll) writes nothing, so the
+    last good one stays."""
     if snap.empty:
         return pd.DataFrame(columns=HISTORY_COLS)
     write_parquet(snap, config.state_write(LATEST_FILE))
     p = config.state_read(HISTORY_FILE)
     hist = merge_history(pd.read_parquet(p) if p.exists() else None, events(snap))
     write_parquet(hist, config.state_write(HISTORY_FILE))
+    merge_coverage(coverage_rows(snap), COVERAGE_FILE)
     return hist
 
 
-def poll() -> dict:
-    """Fetch, parse and save once. Never raises: a shadow feed must not stop the English refresh."""
+def last_poll_at() -> pd.Timestamp | None:
+    """When the stored answer (LATEST_FILE) was fetched, or None without one."""
+    p = config.state_read(LATEST_FILE)
+    if not p.exists():
+        return None
     try:
-        snap = parse(fetch(), pd.Timestamp.now(tz="UTC"))
+        t = pd.to_datetime(pd.read_parquet(p, columns=["fetched_at"])["fetched_at"], utc=True).max()
+    except Exception as e:  # noqa: BLE001 - an unreadable file is no evidence of a recent poll
+        log.warning("%s: stored answer unreadable (%s); polling", COMPANY, e)
+        return None
+    return None if pd.isna(t) else t
+
+
+def poll(now: pd.Timestamp | None = None) -> dict:
+    """Fetch, parse and save once, unless the stored answer is under MIN_POLL_GAP_MIN minutes old
+    (module docstring): then no request is made. Never raises: a shadow feed must not stop the
+    English refresh."""
+    now = pd.Timestamp.now(tz="UTC") if now is None else pd.Timestamp(now).tz_convert("UTC")
+    last = last_poll_at()
+    if last is not None and now - last < pd.Timedelta(minutes=MIN_POLL_GAP_MIN):
+        age = round((now - last).total_seconds() / 60, 1)
+        log.info("%s (shadow): last answer %.1f min old, under %.0f; not asking again", COMPANY, age, MIN_POLL_GAP_MIN)
+        return {"ok": True, "skipped": True, "last_poll_age_min": age}
+    try:
+        snap = parse(fetch(), now)
         hist = save(snap)
     except Exception as e:  # noqa: BLE001 - shadow only; the English poll has already been saved
         log.error("%s shadow poll failed: %s", COMPANY, e)

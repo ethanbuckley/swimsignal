@@ -1924,6 +1924,12 @@ def build(refresh: bool = True) -> dict:
         announce(health["reviews"]["warning"])
     summary = {**health, "seconds": round(time.time() - t0, 1), "generated_at": generated.isoformat()}
     summary.pop("failed_spots", None)
+    if refresh and config.SCOTTISH_WATER:
+        # Shadow only (Scotland plan, task S5): after everything the site publishes is written, so it can
+        # change none of it, and last, away from the spots' and click-anywhere's rain requests. It writes
+        # to the state directory alone; the build log gets counts and costs, no scores.
+        from dipcast.scottish_shadow import run as scottish_shadow
+        summary["scottish_water_shadow"] = scottish_shadow(_net())
     log.info("site built: %s", summary)
     return summary
 
