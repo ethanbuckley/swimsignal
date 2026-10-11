@@ -168,6 +168,10 @@ length ratio by a fixed spill flow over the spot's estimated median flow. Area
 and flows come from the upstream network length through three medians fitted on
 NRFA gauging stations (`scripts/fit_reach_velocity.py`; data from the UK
 National River Flow Archive). `model/transport.py` says how each one works.
+`DIPCAST_DILUTION_MODE=urban` gives each overflow its own spill flow, in
+proportion to the ONS built-up area apportioned to it
+(`scripts/make_overflow_urban_area.py`; OGL). It scored worse than the default on
+the held-out E. coli tests (docs/URBAN-DILUTION-TEST-2026-10.md).
 
 **Lakes.** A click inside or within 150 m of a WFD lake polygon is treated as
 that lake. The lake's centreline links (OS Open Rivers `form = lake`) inside the

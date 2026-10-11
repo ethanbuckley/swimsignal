@@ -80,3 +80,67 @@ Added on top, reading those outputs only, with 2,000 resamples and seed 1:
 If it passes, it is recommended as a candidate to switch on, and the switch is Ethan's decision. If it
 fails, the default stays `length`. If the formula is changed after results are seen, both results are
 kept and the change is stated.
+
+## Results (added 11 October 2026, after the runs; everything above is unchanged)
+
+**Verdict: `urban` fails all three conditions. The default stays `length`.** The formula was not
+changed after the results.
+
+The runs:
+- Three fresh runs on the same inputs, with 1,546 samples each.
+- No network connection was attempted in any of the 12 script runs or in the prediction rebuilds.
+- The fresh default and `flow` runs reproduce #166's figures to four decimal places.
+- Per-sample predictions were rebuilt from each run's outputs. They match `train_ecoli`'s Brier scores
+  exactly.
+- The samples are the same and in the same order in every variant, so the pairs are formed by position.
+  (Site and sample time are not a unique key: 11 samples repeat.)
+
+Paired intervals are 95%, from 2,000 resamples. The Brier and AUC intervals resample site-weeks
+(1,369 clusters). The cross-site interval resamples sites (32 sites have upstream overflows in these rows).
+
+| measure | default (`length`) | `flow` (#166) | `urban` |
+|---|---|---|---|
+| LOYO Brier, full model | 0.0909 | 0.0891 | 0.0925 |
+| change vs default [95% CI] | | -0.0018 [-0.0040, +0.0001] | +0.0016 [-0.0003, +0.0034] |
+| LOSO Brier, full model | 0.0904 | 0.0880 | 0.0913 |
+| change vs default [95% CI] | | -0.0024 [-0.0048, -0.0003] | +0.0009 [-0.0009, +0.0027] |
+| Forward (2025-26) Brier | 0.0828 | 0.0798 | 0.0838 |
+| change vs default [95% CI] | | -0.0030 [-0.0064, +0.0003] | +0.0010 [-0.0019, +0.0038] |
+| LOYO AUC, full model | 0.8151 | 0.8118 | 0.8022 |
+| change vs default [95% CI] | | -0.0033 [-0.0105, +0.0041] | -0.0129 [-0.0211, -0.0054] |
+| LOYO AUC, rivers | 0.7492 | 0.7376 | 0.7264 |
+| change vs default [95% CI] | | -0.0116 [-0.0257, +0.0017] | -0.0227 [-0.0358, -0.0101] |
+| LOSO AUC, full model | 0.8077 | 0.8106 | 0.8028 |
+| LOSO AUC, rivers | 0.7609 | 0.7533 | 0.7418 |
+| Forward AUC | 0.8097 | 0.8106 | 0.7938 |
+| LOYO Brier gain over rain only [95% CI] | 0.0026 [0.0001, 0.0053] | 0.0044 [0.0012, 0.0076] | 0.0010 [-0.0010, 0.0030] |
+| Cross-site rho (site-mean exposure vs log E. coli) [95% CI] | 0.685 [0.387, 0.853] | 0.554 [0.252, 0.771] | 0.394 [0.025, 0.663] |
+| change vs default [95% CI] | | -0.130 [-0.408, +0.154] | -0.290 [-0.568, -0.040] |
+| Pooled rho, exposure vs log E. coli (not held out) | 0.552 | 0.425 | 0.370 |
+| Within-site rho, exposure vs log E. coli (not held out) | 0.289 | 0.321 | 0.294 |
+| UU observed spills, within-site rho | 0.227 | 0.246 | 0.248 |
+| LOYO within-site rho, rain + risk + season | 0.387 | 0.394 | 0.379 |
+
+Against the three conditions:
+1. Held-out Brier: `urban` is higher than default in LOYO, LOSO and forward. **Fails.**
+2. LOYO AUC: the change is -0.013 [-0.021, -0.005] over all sites and -0.023 [-0.036, -0.010] on rivers.
+   Both intervals are below 0. **Fails.**
+3. Cross-site rho: the change is -0.29 [-0.57, -0.04]. The interval is below 0. **Fails.**
+
+Also measured: with `urban`, the full model's gain over rain alone is no longer distinguishable from 0
+(LOYO +0.0010, interval -0.0010 to +0.0030).
+
+`flow` was run for context only. The rule above was written for `urban`. Applied to `flow`, it is met:
+- all three Brier scores are lower;
+- both AUC intervals reach 0;
+- the cross-site interval reaches 0.
+
+That is not a pre-stated result for `flow`. #166 had already shown its numbers, and #166 judged it
+by a stricter rule. Its cross-site interval is wide (32 sites) and its river AUC point estimate is lower.
+
+*Inferred, not tested:* a built-up area is a poor stand-in for the combined-sewer area behind an
+overflow. The equal split gives the overflows of a large town with few overflows a large spill.
+Outer London is the clearest case: most of it has separate sewers. That raises exposure at some spots
+and lowers the ranking. A sewer-catchment or population-equivalent source per overflow (for example
+the UWWTD treatment works table) would be needed to test the idea fairly. This test does not show
+that spill size does not matter.
