@@ -1797,6 +1797,23 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
     return n
 
 
+def write_cards(site: Path, results: list[dict], generated_at: str, root: str, alerts_ok: bool = True) -> dict:
+    """site/cards/: the weekend and storm cards, their captions and the unlisted page that shows them
+    (src/dipcast/cards.py). The weekend levels are this run's alerts.json, the page's own rules; a
+    copy left from an earlier run is not used. Nothing here stops the build: a failure is a warning
+    in the build log, and the site publishes without the cards."""
+    try:
+        from dipcast import cards
+        path = site / "data" / "alerts.json"
+        alerts = json.loads(path.read_text()) if alerts_ok and path.exists() else None
+        if alerts is not None and alerts.get("generated_at") != generated_at:
+            alerts = None
+        return cards.write_cards(site / "cards", results, alerts, generated_at, root)
+    except Exception as e:  # noqa: BLE001 - cards to post must never stop the site publishing
+        log.warning("cards not written: %s", e)
+        return {"warning": f"cards not written: {e}"}
+
+
 def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> None:
     """A spot's sign, spot/<id>/sign/index.html, and its QR code as a file, spot/<id>/qr.svg."""
     from dipcast.signs import page_url, qr_file, sign_page
@@ -1897,7 +1914,7 @@ def build(refresh: bool = True) -> dict:
            "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
-    write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
+    alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
     (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
@@ -1922,6 +1939,8 @@ def build(refresh: bool = True) -> dict:
         health["reviews"] = {"warning": f"reviews not written, so the site shows none this time: {e}"}
     if health["reviews"].get("warning"):
         announce(health["reviews"]["warning"])
+    # Cards to post to Instagram and Facebook, at site/cards/: last, from what is written above.
+    health["cards"] = write_cards(SITE, results, generated.isoformat(), site_url(), alerts_ok)
     summary = {**health, "seconds": round(time.time() - t0, 1), "generated_at": generated.isoformat()}
     summary.pop("failed_spots", None)
     if refresh and config.SCOTTISH_WATER:
