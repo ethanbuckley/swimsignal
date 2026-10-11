@@ -21,6 +21,7 @@ import time
 from html import escape
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from dipcast import __version__, config
@@ -658,6 +659,34 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
 MAX_SNAP_M = 250.0   # a river spot further than this from its snapped link is probably misplaced
 UNSURE_JOIN_M = 200.0     # an outfall this far from the line it was snapped to joins its river somewhere unknown
 UNSURE_MARGIN_M = 300.0   # ...and could join below a spot this much nearer than that distance
+
+
+NEAR_SPOT_M = 50.0   # an overflow this close to a spot's pin is at the spot: it should be counted
+
+
+def near_uncounted(results: list[dict], upstream: dict[str, list[dict]], ov: pd.DataFrame) -> list[dict]:
+    """Overflows within NEAR_SPOT_M of a spot's pin that the trace did not count. Positions are good to
+    tens of metres, and a swim spot is a stretch of water, so an outfall at the spot should count
+    whichever side of the pin its snap fell. Wetherby High Street CSO was 5 m from the Wharfe at
+    Wilderness Carpark bathing water, snapped onto a stub joining 43 m below it (11 Oct 2026).
+    Settle each one in data/raw/overflow_joins.csv."""
+    from dipcast.network.rivers import lonlat_to_bng
+    if ov is None or ov.empty:
+        return []
+    snapped = ov[ov["link_id"].notna() & ov["lat"].notna()]
+    ox, oy = lonlat_to_bng(snapped["lon"].to_numpy(), snapped["lat"].to_numpy())
+    out = []
+    for r in results:
+        if r.get("lat") is None or r.get("lon") is None:
+            continue
+        x, y = lonlat_to_bng(r["lon"], r["lat"])
+        d = np.hypot(np.asarray(ox) - x, np.asarray(oy) - y)
+        counted = {c.get("site_id") for c in upstream.get(r["id"], [])}
+        for i in np.flatnonzero(d <= NEAR_SPOT_M):
+            sid = snapped["site_id"].iloc[i]
+            if sid not in counted:
+                out.append({"spot": r["id"], "site_id": sid, "metres": round(float(d[i]))})
+    return out
 
 
 def unsure_joins(upstream: dict[str, list[dict]]) -> list[dict]:
@@ -1884,6 +1913,13 @@ def build(refresh: bool = True) -> dict:
                           duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["lab_samples"] = n_lab
+    near = near_uncounted(results, upstream, _overflows())
+    if near:
+        health["near_uncounted"] = near
+        health["warnings"].append(
+            f"{len(near)} overflow{'' if len(near) == 1 else 's'} within {NEAR_SPOT_M:.0f} m of a spot not counted there "
+            "(an outfall at the spot should count; place it in data/raw/overflow_joins.csv): "
+            + "; ".join(f"{n['site_id']} {n['metres']} m from {n['spot']}" for n in near))
     unsure = unsure_joins(upstream)
     if unsure:
         health["unsure_joins"] = unsure

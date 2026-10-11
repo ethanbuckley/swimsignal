@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import re
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -97,6 +99,43 @@ POSITION_GAP_M = 300.0    # live position and annual-return outlet further apart
 NAMED_NEAR_M = 750.0      # ...by which has a link carrying the receiving water's name this close
 POSITION_EXTRA = {"lake", "tarn", "reservoir", "pond", "mere", "via", "sws", "culverted", "pumped", "outlet",
                   "and", "tribs", "various", "sites"}
+PLACE_GAP_M = 1000.0      # names decide nothing and the two are this far apart: the one by the overflow's place
+PLACE_NEAR_M = 3000.0     # ...within this of a place its name gives, while the other is not
+PLACES = config.RAW / "places.json"
+
+
+@lru_cache(maxsize=1)
+def _places() -> dict[str, np.ndarray]:
+    """OS Open Names places (data/raw/places.json, to 0.01 degree): lower-case name before any
+    comma -> BNG points of every place so called."""
+    if not PLACES.exists():
+        return {}
+    rows = json.loads(PLACES.read_text())["places"]
+    xs, ys = _TO_BNG.transform([float(r[2]) for r in rows], [float(r[1]) for r in rows])
+    out: dict[str, list] = {}
+    for r, x, y in zip(rows, xs, ys, strict=True):
+        out.setdefault(re.sub(r",.*$", "", str(r[0])).strip().lower(), []).append((x, y))
+    return {k: np.array(v) for k, v in out.items()}
+
+
+def _named_place(site_name) -> np.ndarray | None:
+    """Points of the longest place name (up to four words) found in an overflow's site name."""
+    if not isinstance(site_name, str):
+        return None
+    words = re.sub(r"[^a-z ]", " ", site_name.lower()).split()
+    places = _places()
+    for n in range(4, 0, -1):
+        hits = [places[k] for j in range(len(words) - n + 1)
+                if len(k := " ".join(words[j:j + n])) > 3 and k in places]
+        if hits:
+            return np.vstack(hits)
+    return None
+
+
+def _same_water(a, b) -> bool:
+    """The live and annual-return receiving waters agree, or one gives no distinctive word."""
+    ta, tb = _tokens(a), _tokens(b)
+    return not ta or not tb or bool(ta & tb)
 
 
 def _named_within(net: RiverNetwork, x: float, y: float, want: set[str]) -> bool:
@@ -116,7 +155,15 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     disagree and whose receiving water has a name, the outlet alone matched it at 40: Buxton STW,
     on the Derbyshire Wye, was live 45 km away; Earl Sterndale STW sits by Hartington in the live
     feed, 6.7 km from the village. The live position alone matched at 55, both at 159, neither at
-    166 (11 Oct 2026). Adds `position_source`: 'live', 'annual return' or 'join' (overflow_joins)."""
+    166 (11 Oct 2026).
+
+    When names decide nothing and the two are over PLACE_GAP_M apart, the outlet is used when it is
+    within PLACE_NEAR_M of a place the overflow's name gives (OS Open Names) and the live position is
+    not, provided the two receiving waters agree (or one is generic), so both rows describe the same
+    asset. Earl Sterndale STW (Glutton Brook, 35% of Dovedale's weight) and Hazeldene Lane, Newick
+    (above Barcombe Mills, live 61 km away) move; Holy Island STW does not ("Birkley Burn" live,
+    "NORTH SEA" in the return: two assets under one id). Adds `position_source`: 'live',
+    'annual return' or 'join' (overflow_joins)."""
     df = df.copy()
     df["position_source"] = np.where(df["lat"].notna(), "live", "annual return")
     both = df["lat"].notna() & df["ar_lat"].notna()
@@ -125,18 +172,28 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     lx, ly = _TO_BNG.transform(df.loc[both, "lon"].to_numpy(), df.loc[both, "lat"].to_numpy())
     ax, ay = _TO_BNG.transform(df.loc[both, "ar_lon"].to_numpy(), df.loc[both, "ar_lat"].to_numpy())
     gap = np.hypot(lx - ax, ly - ay)
-    moved = []
+    moved, by_place = [], 0
     for i, lxi, lyi, axi, ayi, g in zip(df.index[both], lx, ly, ax, ay, gap, strict=True):
         if g <= POSITION_GAP_M:
             continue
-        want = (_tokens(df.at[i, "receiving_watercourse"]) | _tokens(df.at[i, "receiving_water"])) - POSITION_EXTRA
-        if _named_within(net, axi, ayi, want) and not _named_within(net, lxi, lyi, want):
+        rw, rw_ar = df.at[i, "receiving_watercourse"], df.at[i, "receiving_water"]
+        want = (_tokens(rw) | _tokens(rw_ar)) - POSITION_EXTRA
+        at_outlet, at_live = _named_within(net, axi, ayi, want), _named_within(net, lxi, lyi, want)
+        if at_outlet and not at_live:
             moved.append(i)
+        elif not at_outlet and not at_live and g > PLACE_GAP_M and _same_water(rw, rw_ar):
+            pts = _named_place(df.at[i, "site_name"] if "site_name" in df else None)
+            if pts is not None:
+                d_out = float(np.hypot(pts[:, 0] - axi, pts[:, 1] - ayi).min())
+                d_live = float(np.hypot(pts[:, 0] - lxi, pts[:, 1] - lyi).min())
+                if d_out <= PLACE_NEAR_M < d_live:
+                    moved.append(i)
+                    by_place += 1
     df.loc[moved, "lat"] = df.loc[moved, "ar_lat"]
     df.loc[moved, "lon"] = df.loc[moved, "ar_lon"]
     df.loc[moved, "position_source"] = "annual return"
-    log.info("positions: %d overflows moved to their annual-return outlet, which alone is by the named water",
-             len(moved))
+    log.info("positions: %d overflows moved to their annual-return outlet: %d by the named water, %d by the "
+             "named place", len(moved), len(moved) - by_place, by_place)
     return df
 
 

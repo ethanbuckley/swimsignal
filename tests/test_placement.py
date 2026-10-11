@@ -313,3 +313,30 @@ def test_a_small_unmapped_lake_keeps_its_own_centreline(monkeypatch):
     # Without a kind hint (a click on the map) nothing changes: the nearest centreline within LAKE_SNAP_M.
     click = transport.locate_pin(net, *bng_to_lonlat(330500, 504900))
     assert click.mode == "lake" and click.lake_links == {"G1"}
+
+
+def test_a_spot_on_a_side_arm_takes_the_river_the_arm_leaves_not_the_one_below_a_confluence():
+    """Queen Elizabeth Gardens, Salisbury (11 Oct 2026): the sampling point is on an arm of the Avon
+    that OS draws with nothing above it, joining the Nadder just above the Nadder meets the Avon. The
+    nearby Avon link with the most network was the one below that confluence, so the Nadder's overflows
+    were counted. A spot that names its river now takes the Avon where the arm leaves it."""
+    net = _net([
+        ("A0", "River Avon", None, "a0", "a1", [(400000, 530000), (400000, 520000)]),
+        ("A1", "River Avon", None, "a1", "a2", [(400000, 520000), (400000, 510200)]),
+        ("A2", "River Avon", None, "a2", "j", [(400000, 510200), (400000, 510000)]),
+        ("N1", "River Nadder", None, "n0", "n1", [(390000, 510000), (399800, 510000)]),
+        ("N2", "River Nadder", None, "n1", "j", [(399800, 510000), (400000, 510000)]),
+        ("S", None, None, "s0", "n1", [(399900, 511000), (399800, 510000)]),
+        ("B", "River Avon", None, "j", "b1", [(400000, 510000), (400000, 505000)]),
+    ])
+    ov = pd.DataFrame({"site_id": ["avon", "nadder"], "link_id": ["A0", "N1"], "frac": [0.5, 0.5],
+                       "link_length": [10000.0, 9800.0], "start_node": ["a0", "n0"], "has_live": [True, True],
+                       "status": [0, 0]})
+    lon, lat = bng_to_lonlat(399820, 510200)   # on the arm, 200 m above the Nadder
+    spot = transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon")
+    assert spot.placement == "side arm head" and spot.snap.link_id == "A1" and spot.adopted_main_channel
+    assert set(transport.upstream_overflows(net, spot, ov, velocity_ms=0.5)["site_id"]) == {"avon"}
+    # A click on the map (no river named) keeps the old rule: the link below the confluence.
+    click = transport.locate_pin(net, lon, lat)
+    assert click.snap.link_id == "B"
+    assert set(transport.upstream_overflows(net, click, ov, velocity_ms=0.5)["site_id"]) == {"avon", "nadder"}

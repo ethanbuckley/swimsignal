@@ -238,11 +238,66 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
     return pin
 
 
+def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
+    """Where a side arm with little network above it begins: up its links while there is exactly one
+    link in and the network above stays under ADOPT_MIN_M. Returns that point (BNG)."""
+    lid = link_id
+    for _ in range(50):
+        s, _e = net.link_nodes(lid)
+        preds = list(net.graph.predecessors(s))
+        if len(preds) != 1:
+            break
+        up = net.graph.edges[preds[0], s]["link"]
+        if up.startswith("repair:") or net.link_upstream_m(up) >= ADOPT_MIN_M:
+            break
+        lid = up
+    x, y = net.links.loc[lid, "geometry"].coords[0][:2]
+    return x, y
+
+
+def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) -> Snap | None:
+    """A spot on a side arm takes the water of the river the arm leaves: the main channel named like
+    the spot's river nearest the arm's head, with at least ADOPT_RATIO times its network, snapped
+    where the head is. None when the pin's link is not a side arm or no such channel is near its head.
+
+    _adopt_main_channel takes the candidate near the pin with the most network, which is right for a
+    mill stream beside its river but not where the arm passes a confluence: at Queen Elizabeth Gardens,
+    Salisbury, the sampling point is 1 m from an arm of the Avon that OS draws with nothing above it,
+    and the Avon link with the most network was the one below the Nadder, so the Nadder and the Wylye
+    were counted, which the EA's zone of influence leaves out (11 Oct 2026)."""
+    river = net.snap_xy(x, y, max_m=PIN_SNAP_M)
+    if river is None or river.form not in RIVER_FORMS:
+        return None
+    own = net.link_upstream_m(river.link_id)
+    if own >= ADOPT_MIN_M:
+        return None
+    hx, hy = _side_arm_head(net, river.link_id)
+    cand = net.candidates_xy(hx, hy, ADOPT_RADIUS_M)
+    cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != river.link_id)]
+    cand = cand[_names_match(cand, want)]
+    if cand.empty:
+        return None
+    ups = cand["start_node"].map(net.upstream_m).fillna(0.0)
+    cand = cand[ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)]
+    if cand.empty:
+        return None
+    return _snap_to_links(net, hx, hy, {cand.index[0]})   # candidates_xy sorts nearest first
+
+
 def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLocation:
     want = river_words(hint)
     shown = river_words(hint, welsh=False)   # the name is shown as spots.csv spells it, Welsh or English
     if not want:
         return pin
+    if pin.mode == "river" and pin.adopted_main_channel:
+        head = _adopt_at_head(net, pin.x, pin.y, want)
+        if head is not None:
+            start, _ = net.link_nodes(head.link_id)
+            log.info("placed on %s where the side arm leaves it, %.0f m from the arm's head", hint, head.dist_m)
+            return PinLocation("river", pin.x, pin.y, head, trace_node=start,
+                               trace_offset_m=head.frac * net.links.loc[head.link_id, "length"],
+                               watercourse=_link_name(net, head.link_id, prefer=shown), adopted_main_channel=True,
+                               placement="side arm head")
     if pin.mode == "river" and pin.snap is not None:
         own = net.links.loc[[pin.snap.link_id]]
         if bool(_names_match(own, want).iloc[0]):   # the link itself, not a name borrowed from downstream
