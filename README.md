@@ -961,7 +961,11 @@ Share links, previews and the sitemap need the absolute one: the repository
 variable `DIPCAST_SITE_URL` (set it when adding a custom domain) or, unset, the
 repository's GitHub Pages address. `icons/og.png` is the preview image
 (`uv run --with pillow python scripts/make_share_image.py` redraws it after a
-name change). `sw.js` keeps the page and the latest forecast on the device, so
+name change). `cards/` holds pictures of the forecast to post to Instagram and
+Facebook groups, a weekend card per area and a storm card while overflows upstream
+of spots are discharging, each with a caption (`src/dipcast/cards.py`; the page
+`cards/index.html` is unlisted; `uv run python scripts/make_cards.py --out <dir>`
+makes them from the live site's data). `sw.js` keeps the page and the latest forecast on the device, so
 the home-screen app opens without signal and says how old the forecast is. A
 saved spot is kept in the browser's local storage (and by the alert service, if
 alerts are turned on), and `saved/` lists the

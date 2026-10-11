@@ -19,6 +19,7 @@ dependencies = [
     "pydantic>=2.8",
     "pyarrow>=17",
     "segno>=1.6",
+    "pillow>=11",   # the social cards (src/dipcast/cards.py); reads the site's WOFF2 fonts
 ]
 
 [project.optional-dependencies]

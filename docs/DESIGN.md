@@ -1108,3 +1108,28 @@ gives all four navigation links a single full-width row.
   build's notices) comes after the caveat's line, so the opening never grows above it and the
   picture never paints again, larger, when the script draws the real one. Words typed into the search
   before then carry over.
+
+## Cards to share (11 October 2026, draft)
+
+Pictures of the forecast for Instagram and Facebook groups, drawn by `src/dipcast/cards.py` at
+1080 x 1350 and 1080 x 1080, with a caption to paste beside each. The build writes them to
+`site/cards/`, with a page at `cards/index.html` (noindex, in no sitemap, linked from no page) that
+shows them with their download links; `scripts/make_cards.py --out <dir>` makes the same from the
+live site's data.
+
+- **Two kinds.** A weekend card per area (`AREAS`: an area's spots and the short name each gets on
+  the card): the coming Saturday and Sunday, or today and tomorrow when run on a Saturday or a Sunday;
+  none on a Monday or a Tuesday, when the five days do not reach Sunday. A storm card: the spots with
+  monitored overflows upstream discharging now, most first, at most eight; none at all when no
+  overflow is discharging, never an "all clear" card.
+- **The page's words, not new ones.** A day's level is `alerts.json`'s, which `levels.js` writes, so a
+  card says what the spot's page says on that day. The cells sit under a column headed "Pollution
+  risk"; a spot with no daily level goes in a line under the table in its headline's words ("No sewage
+  risk from monitored overflows at Buttermere and Wastwater."); a water rated poor gets the rating's
+  sentence. The storm card's clearing time is the "Right now" tile's (`clearSentence`, `partOfDay`),
+  and its count is in the very-high brick, the colour of an overflow discharging now.
+- **The site's look.** The slate header with the mark and the address, the paper, Source Serif 4 for
+  the area and the spots, Source Sans 3 for the rest, hairlines between rows, dots in the level marks
+  and level words in the text shades. No text under 28 px, since the card is seen at about a third of
+  its size; every text colour is 4.5:1 or more on its ground (a test checks). The foot gives the issue
+  time and "A forecast, not a water test."; the storm card adds the overflow data's CC BY 4.0 credit.
