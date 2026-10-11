@@ -181,3 +181,91 @@ If an option is changed after the results are seen, both results are kept and th
 - A pass shows the extra weight does not hurt the E. coli scores and lands where E. coli is high. It
   does not show that 1 km, or the 5 km and 5× thresholds, are right.
 - The `named` rule moves 684 outfalls nationally. Only 65 of them change a weight at a live spot or evaluation site.
+
+## Results (added 11 October 2026, after the runs; everything above is unchanged)
+
+The pre-statement above was committed in 91dd7b4 (11 October 2026, 20:45 BST) and pushed before the
+first run started (20:45 BST). Neither option was changed after the results.
+
+**Verdict: neither option passes. Both stay off.**
+- `junction` fails conditions 1, 2 and 3. "Both" fails the same way.
+- `named` passes 1-5 and fails 6, so it needs more and stays off.
+
+The runs:
+- Four fresh runs on the same 1,546 model samples.
+- 0 network attempts in all 20 script runs.
+- Peak memory 4.0 GB.
+- Base LOYO Brier is 0.0911, against 0.0909 in the lake test. The overflow table and the lake rule
+  have changed since.
+
+Paired 95% intervals from 2,000 resamples. Brier and AUC resample site-weeks (1,369 clusters); the
+cross-site interval resamples the 32 sites.
+
+| measure | base | `junction` | `named` | both |
+|---|---|---|---|---|
+| LOYO Brier | 0.09106 | 0.09101 | 0.09113 | 0.09102 |
+| change [95% CI] | | -0.00004 [-0.00075, +0.00063] | +0.00008 [+0.00001, +0.00015] | -0.00003 [-0.00074, +0.00064] |
+| LOSO Brier | 0.09056 | 0.09031 | 0.09066 | 0.09031 |
+| change [95% CI] | | -0.00025 [-0.00097, +0.00042] | +0.00009 [+0.00002, +0.00017] | -0.00025 [-0.00096, +0.00041] |
+| Forward (2025-26) Brier | 0.08291 | 0.08285 | 0.08304 | 0.08286 |
+| change [95% CI] | | -0.00007 [-0.00083, +0.00071] | +0.00013 [-0.00001, +0.00027] | -0.00006 [-0.00082, +0.00072] |
+| LOYO AUC | 0.8145 | 0.8128 | 0.8143 | 0.8127 |
+| change [95% CI] | | -0.0017 [-0.0038, +0.0004] | -0.0003 [-0.0008, +0.0003] | -0.0018 [-0.0039, +0.0004] |
+| LOYO AUC, rivers | 0.7478 | 0.7450 | 0.7472 | 0.7449 |
+| change [95% CI] | | -0.0029 [-0.0068, +0.0014] | -0.0006 [-0.0016, +0.0004] | -0.0030 [-0.0069, +0.0012] |
+| Cross-site rho | 0.687 | 0.688 | 0.687 | 0.688 |
+| change [95% CI] | | +0.001 [-0.074, +0.075] | 0.000 [0.000, 0.000] | +0.001 [-0.074, +0.075] |
+| LOYO Brier, lakes (639 samples) | 0.02487 | 0.02488 | 0.02486 | 0.02488 |
+| change [95% CI] | | [-0.00005, +0.00005] | [-0.00002, -0.00000] | [-0.00005, +0.00005] |
+| Within-site rho, exposure (not held out) | 0.2866 | 0.2948 | 0.2869 | 0.2947 |
+| LOYO within-site rho, rain + risk + season | 0.387 | 0.388 | 0.387 | 0.388 |
+
+Against the conditions:
+- **`junction`:**
+  1. The Brier upper ends are +0.00063 (LOYO), +0.00042 (LOSO) and +0.00071 (forward), and two of them
+     are over +0.0005. **Fails.**
+  2. The river AUC lower end is -0.0068, under -0.005. **Fails.**
+  3. The cross-site lower end is -0.074. **Fails.**
+  4. Holds.
+  5. Holds.
+  6. Holds: the pooled Brier at the eight raised sites is 0.12987 → 0.12982.
+- **`named`:**
+  1. Holds: the upper ends are +0.00015, +0.00017 and +0.00027.
+  2. Holds.
+  3. Holds.
+  4. Holds.
+  5. Holds.
+  6. Friars Meadow, the one raised site, goes 0.0870 → 0.0885. **Fails.**
+- **Both:** as `junction`.
+
+The raised sites under `junction`, LOYO, base → `junction`:
+
+| site | samples | share over 900 | mean prediction | Brier | exposure rank of 32 |
+|---|---|---|---|---|---|
+| Wharfe at Cromwheel, Ilkley | 57 | 0.30 | 0.271 → 0.261 | 0.1597 → 0.1611 | 4 → 5 |
+| Sheep's Green, River Cam | 58 | 0.52 | 0.203 → 0.198 | 0.3364 → 0.3407 | 16 → 17 |
+| Friars Meadow, River Stour | 59 | 0.10 | 0.171 → 0.190 | 0.0870 → 0.0918 | 13 → 10 |
+| Pangbourne Meadow | 16 | 0.00 | 0.108 → 0.116 | 0.0191 → 0.0222 | 27 → 25 |
+| Wallingford Beach | 57 | 0.04 | 0.133 → 0.151 | 0.0534 → 0.0574 | 19 → 13 |
+| River Severn at Ironbridge | 59 | 0.20 | 0.229 → 0.224 | 0.1256 → 0.1253 | 10 → 11 |
+| Coniston Water, Brown Howe | 57 | 0.02 | 0.022 → 0.026 | 0.0178 → 0.0179 | 26 → 19 |
+| River Ribble at Edisford Bridge | 59 | 0.42 | 0.307 → 0.349 | 0.1573 → 0.1422 | 6 → 1 |
+| pooled | 422 | 0.22 | 0.188 → 0.198 | 0.12987 → 0.12982 | |
+
+What this shows:
+- *Established:* `junction` changes the exposure at a quarter of the sites. On the point estimates it
+  lowers the held-out Brier slightly and the AUC slightly. Its intervals are too wide for the margins,
+  so by the rule it stays off. It is not shown to be worse.
+- *Established:* where the option raises exposure, the data do not agree consistently.
+  - It helps where E. coli is often high: Ribble at Edisford, 42% of samples over 900.
+  - It hurts at three of the named cases: Wallingford (4% of samples over 900), Friars Meadow (10%) and
+    Ilkley Cromwheel (30%).
+  - So at those bathing waters, more weight on the overflow the EA names as closest made the held-out
+    E. coli forecast slightly worse. At Ironbridge, whose case overflow neither option changes, it is
+    slightly better.
+- *Established:* `named` makes the held-out Brier very slightly but measurably worse (+0.00008, interval
+  above 0), within the margin. It fails at Friars Meadow, the one site it moves much.
+- *Inferred, not tested:* at Wallingford and Sudbury, the EA's closest overflow may spill rarely or
+  little. The length dilution was low there for the wrong reason, but a higher weight does not match
+  the samples either. A fair test of the EA profile cases needs a spill-size or spill-frequency
+  term, not a better position.
