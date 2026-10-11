@@ -9,9 +9,10 @@ feed that publishes no status start (South West Water's) keeps one row per
 overwritten by the next day's.
 
 A company whose feed fails, or returns no rows, keeps its last snapshot in
-live_latest.parquet with status FEED_DOWN and the time of that snapshot in
-`feed_down_since`, so the map says the feed is down rather than that its
-overflows have no live feed. Only fresh rows reach the history, the coverage
+live_latest.parquet with status FEED_DOWN, the time of that snapshot in
+`feed_down_since` and the status it had then in `last_status`, so the map says the
+feed is down rather than that its overflows have no live feed, and a spill running
+when it went down still counts. Only fresh rows reach the history, the coverage
 file and the poll log.
 
 A company whose read returns far fewer rows than its feed usually holds (a short
@@ -20,7 +21,8 @@ missing keep their last snapshot as FEED_DOWN in the same way, rather than readi
 as "not in the company's live feed".
 
 Each overflow also gets a data state (data_states): whether its status can be
-taken as current, so that a frozen feed never reads as "not discharging".
+taken as current, so that a frozen feed, or a record that has stopped updating in a
+feed that has not (frozen_records), never reads as "not discharging".
 """
 
 from __future__ import annotations
@@ -213,6 +215,54 @@ def feed_age_hours(df: pd.DataFrame) -> pd.Series:
     return age.groupby(df["company"]).min()
 
 
+# Records that stop updating in a feed that does (11 Oct 2026). The company test above looks at a
+# feed's freshest stamp, so one record can stop updating while the rest of its feed goes on, and it
+# read as "not discharging" for months: Wessex Water's WSX10153 last stamped on 22 Jul 2025 and
+# WXW00014 on 31 Mar 2026, both counted at spots and scored as dry days. A record's own stamp says
+# whether it is current only where the company stamps every record on every refresh. Northumbrian
+# and Southern stamp a record only when it changes, so there an old stamp is a quiet overflow, and
+# their records keep the company test alone.
+#
+# The rule: a company stamps every record when at least EVERY_RECORD_SHARE of its records in the
+# poll carry a stamp from the STAMPED_WITHIN_H before it. In the poll of 11 Oct 2026 18:16 UTC that
+# share was 99.4-100% at Severn Trent, Thames, United Utilities, Wessex and Yorkshire, 98.5% at
+# Anglian (22 records with no stamp), 97.9% at South West Water, 1.4% at Northumbrian and 0.3% at
+# Southern. In such a company a record whose own stamp is missing or older than FEED_CURRENT_H is
+# stale. The share is decided poll by poll from the poll's own rows. A company whose share falls
+# between half and EVERY_RECORD_SHARE is logged: it may be either kind (many records frozen, or a
+# stamp-on-change feed in a storm), and it is read as stamp-on-change.
+STAMPED_WITHIN_H = 24.0
+EVERY_RECORD_SHARE = 0.95
+
+
+def _stamp_age_h(df: pd.DataFrame) -> pd.Series:
+    """Hours from each record's own stamp to its poll; NaN where it has no stamp."""
+    if "last_updated" not in df or "fetched_at" not in df:
+        return pd.Series(np.nan, index=df.index)
+    return (pd.to_datetime(df["fetched_at"], utc=True) - pd.to_datetime(df["last_updated"], utc=True)).dt.total_seconds() / 3600
+
+
+def stamps_every_record(poll: pd.DataFrame) -> pd.Series:
+    """Per company in `poll` (one poll's rows), whether it stamps every record (rule above)."""
+    if poll.empty:
+        return pd.Series(dtype=bool)
+    share = _stamp_age_h(poll).le(STAMPED_WITHIN_H).groupby(poll["company"]).mean()
+    for c, s in share[(share >= 0.5) & (share < EVERY_RECORD_SHARE)].items():
+        log.warning("%s: %.1f%% of its records stamped within %g h of the poll; read as a feed that stamps a record "
+                    "only when it changes", c, 100 * s, STAMPED_WITHIN_H)
+    return share >= EVERY_RECORD_SHARE
+
+
+def frozen_records(poll: pd.DataFrame) -> pd.Series:
+    """True for each row of `poll` (one poll's rows) whose company stamps every record and whose own
+    stamp is missing or older than FEED_CURRENT_H: the record has stopped updating, whatever its feed
+    does. False elsewhere, and on every row of a table without stamps or poll times."""
+    if poll.empty or "last_updated" not in poll or "fetched_at" not in poll:
+        return pd.Series(False, index=poll.index, dtype=bool)
+    every = poll["company"].map(stamps_every_record(poll)).eq(True)
+    return every & ~_stamp_age_h(poll).le(FEED_CURRENT_H)
+
+
 # An overflow's data state (data_states). Kept beside `status`, which keeps its numbers.
 LIVE, STALE, OFFLINE, NO_FEED = "live", "stale", "offline", "no_feed"
 
@@ -246,10 +296,15 @@ def data_states(ov: pd.DataFrame) -> pd.DataFrame:
     FEED_CURRENT_H (`layer_edited_at`). That is enough to say what the feed shows now; it is not
     enough to say a day had no spill, so the scorer does not take it. `feed_updated_at` is the
     company's feed time (feed_updated_at) on every row with a status from this poll (1, 0, -1).
-    A table without the poll's times (a test's) gets its states from the status alone."""
+
+    A record that has stopped updating in a feed that has not (frozen_records) is stale too, with
+    `record_stale` True and its own stamp, or NaT, as `feed_updated_at`: the page then says when that
+    record last updated, not when its feed did. A table without the poll's times (a test's) gets its
+    states from the status alone."""
     out = pd.DataFrame(index=ov.index)
     if ov.empty:
-        return out.assign(data_state=pd.Series(dtype=object), feed_updated_at=pd.Series(dtype="datetime64[ns, UTC]"))
+        return out.assign(data_state=pd.Series(dtype=object), feed_updated_at=pd.Series(dtype="datetime64[ns, UTC]"),
+                          record_stale=pd.Series(dtype=bool))
     status = ov["status"]
     known, polled = status.isin([0, 1]), status.isin([0, 1, -1])
     if {"fetched_at", "last_updated"} <= set(ov.columns):
@@ -257,14 +312,19 @@ def data_states(ov: pd.DataFrame) -> pd.DataFrame:
         fetched = pd.to_datetime(p["fetched_at"], utc=True).groupby(p["company"]).max()
         updated = feed_updated_at(p)
         age_h = ((fetched - updated).dt.total_seconds() / 3600).reindex(fetched.index)
-        current = ov["company"].map(age_h <= FEED_CURRENT_H).eq(True)   # a NaN age (no time) is not current
+        feed_ok = ov["company"].map(age_h <= FEED_CURRENT_H).eq(True)   # a NaN age (no time) is not current
+        frozen = known & feed_ok & frozen_records(p).reindex(ov.index, fill_value=False).astype(bool)
+        current = feed_ok & ~frozen
         when = pd.to_datetime(ov["company"].map(updated), utc=True)
+        when = when.where(~frozen, pd.to_datetime(ov["last_updated"], utc=True))
     else:
         current = pd.Series(True, index=ov.index)
+        frozen = pd.Series(False, index=ov.index)
         when = pd.Series(pd.NaT, index=ov.index, dtype="datetime64[ns, UTC]")
     has_feed = ov["company"].isin(ov.loc[ov["has_live"].astype(bool), "company"]) if "has_live" in ov else status.ne(-2)
     out["data_state"] = np.select([known & current, known, status.ne(-2) | has_feed], [LIVE, STALE, OFFLINE], NO_FEED)
     out["feed_updated_at"] = when.where(polled)
+    out["record_stale"] = frozen.astype(bool)
     return out
 
 
@@ -273,7 +333,7 @@ def with_data_states(ov: pd.DataFrame) -> pd.DataFrame:
     before 4 Oct 2026, or a test's). One with no status at all is returned as it is."""
     if "data_state" in ov or "status" not in ov:
         return ov
-    return pd.concat([ov.drop(columns=["feed_updated_at"], errors="ignore"), data_states(ov)], axis=1)
+    return pd.concat([ov.drop(columns=["feed_updated_at", "record_stale"], errors="ignore"), data_states(ov)], axis=1)
 
 
 def coverage_rows(df: pd.DataFrame) -> pd.DataFrame:
@@ -287,13 +347,14 @@ def coverage_rows(df: pd.DataFrame) -> pd.DataFrame:
     carries neither a record stamp nor event times, so a poll sees only what is
     discharging at that moment, and a day of such polls cannot support "no spill".
     The layer's own last edit (`layer_edited_at`) is not used here for the same reason:
-    it says the snapshot is current, not what happened between polls."""
+    it says the snapshot is current, not what happened between polls. A record that has
+    stopped updating in a feed that has not (frozen_records) is stale, as in data_states."""
     if df.empty:
         return pd.DataFrame(columns=COVERAGE_COLS)
     local = pd.to_datetime(df["fetched_at"], utc=True).dt.tz_convert(LOCAL_TZ)
     known = df["status"].isin([0, 1])
     age = df["company"].map(feed_age_hours(df))
-    stale = known & ~(age <= FEED_CURRENT_H)     # NaN (no stamp) is not current
+    stale = known & (~(age <= FEED_CURRENT_H) | frozen_records(df))     # NaN (no stamp) is not current
     slot = (local.dt.hour * 2 + local.dt.minute // 30).astype(int)
     slots = np.where(known & ~stale, np.left_shift(np.int64(1), slot.to_numpy()), np.int64(0))
     return pd.DataFrame({"site_id": df["site_id"].astype(str).to_numpy(), "day": local.dt.date.to_numpy(),
@@ -355,9 +416,16 @@ def carry_forward(df: pd.DataFrame, previous: pd.DataFrame | None,
     poll that answered. Event times are kept: they were true at that poll. A company whose
     read was short (is_short against `expected`, expected_rows) gets the same for the rows of
     the previous snapshot that this poll is missing: those were not read, not dropped from
-    the feed. Without `expected` only a company that returned nothing is carried."""
+    the feed. Without `expected` only a company that returned nothing is carried.
+
+    `last_status` is the status the last poll that read the overflow saw: its status on a fresh
+    row, and on a carried row the status before it was carried (kept through every poll the feed
+    stays down). Until 11 Oct 2026 a carried row kept only FEED_DOWN, and every discharging row
+    has an empty event end, so a spill running when its company's feed failed dropped out of the
+    right-now risk (transport.running counts it now). NaN on a row carried before the column."""
     out = df.copy()
     out["feed_down_since"] = pd.Series(pd.NaT, index=out.index, dtype="datetime64[ns, UTC]")
+    out["last_status"] = pd.to_numeric(out["status"], errors="coerce").astype(float)
     if previous is None or previous.empty:
         return out
     companies = list((feeds or config.LIVE_FEEDS).keys())
@@ -375,6 +443,9 @@ def carry_forward(df: pd.DataFrame, previous: pd.DataFrame | None,
     if "feed_down_since" in old:
         since = pd.to_datetime(old["feed_down_since"], utc=True).fillna(since)
     old["feed_down_since"] = since
+    before = pd.to_numeric(old["status"], errors="coerce").astype(float)
+    carried = pd.to_numeric(old["last_status"], errors="coerce").astype(float) if "last_status" in old else np.nan
+    old["last_status"] = before.where(before != FEED_DOWN, carried)
     old["status"] = FEED_DOWN
     for c in sorted(set(old["company"]) & set(down)):
         log.warning("%s: no rows this poll; keeping its last snapshot (%s) as feed down", c,

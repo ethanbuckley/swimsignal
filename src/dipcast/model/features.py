@@ -79,13 +79,53 @@ def daily_rain_features(rain_hourly: pd.DataFrame) -> pd.DataFrame:
     return res
 
 
+# The annual-return covariates the spill model reads, and what a value missing everywhere becomes.
+COVARIATES = ("lta_spills", "spill_hours", "edm_operational_pct")
+COVARIATE_DEFAULTS = {"lta_spills": 20.0, "spill_hours": 100.0, "edm_operational_pct": 90.0}
+FILLED = "{}_filled"   # the column fill_covariates writes beside each covariate
+
+
+def fill_covariates(table: pd.DataFrame) -> pd.DataFrame:
+    """`table` (the whole overflow table, overflows.build_overflows) with `<covariate>_filled` beside
+    each of COVARIATES: the overflow's own value, else the median over every overflow of its company
+    in the table, else the median over the table, else COVARIATE_DEFAULTS. The raw columns are left
+    as they are, so the pages never show a filled count as the overflow's own; `covariates_filled`
+    says which rows had any value filled.
+
+    Until 11 Oct 2026 the fill happened in site_static_features, over the overflows upstream of one
+    spot at a time, so a missing count took the median of whatever else of its company was upstream:
+    16.0 to 41.0 spills a year at the 10 spots with one, against company-wide medians of 11.2 to 25.4,
+    and YWS02298 had 34.3 at one spot and 41.0 at another. The accuracy baseline filled the same
+    gaps with 20 (forecast_log._site_climatology); it reads these columns now."""
+    t = table.copy()
+    missing = pd.Series(False, index=t.index)
+    for c in COVARIATES:
+        v = pd.to_numeric(t[c], errors="coerce") if c in t else pd.Series(np.nan, index=t.index)
+        filled = v
+        if "company" in t:
+            filled = filled.fillna(v.groupby(t["company"]).transform("median"))
+        t[FILLED.format(c)] = filled.fillna(v.median()).fillna(COVARIATE_DEFAULTS[c]).astype(float)
+        missing |= v.isna()
+    t["covariates_filled"] = missing
+    return t
+
+
+def model_covariates(ov: pd.DataFrame) -> pd.DataFrame:
+    """The covariate columns to give the spill model for `ov`: the filled ones (fill_covariates)
+    where the table has them, else the raw ones, which site_static_features then fills itself."""
+    return pd.DataFrame({c: ov[FILLED.format(c)] if FILLED.format(c) in ov else ov.get(c, np.nan)
+                         for c in COVARIATES}, index=ov.index)
+
+
 def site_static_features(sites: pd.DataFrame) -> pd.DataFrame:
     """Per-site covariates from the EA annual returns.
 
     `sites` needs: site_id, lat, lon, lta_spills, spill_hours, edm_operational_pct.
-    Missing values fall back to company medians, then to global medians."""
+    Missing values fall back to company medians, then to global medians, over `sites`. The forecast
+    gives values already filled over the whole overflow table (fill_covariates); training and the
+    offline scripts give their own tables and are filled here."""
     s = sites.copy()
-    for c, dflt in [("lta_spills", 20.0), ("spill_hours", 100.0), ("edm_operational_pct", 90.0)]:
+    for c, dflt in COVARIATE_DEFAULTS.items():
         if c not in s:
             s[c] = np.nan
         if "company" in s:

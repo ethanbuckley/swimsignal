@@ -139,30 +139,40 @@ const AnyPoint = (() => {
     // counts in full until its water has passed this point (its end, from ended_h, plus the travel time
     // here; a running one's water is still coming), then dies off with T90 for recent_spill_hours. A file
     // from before 4 Oct 2026 has no ended_h: its `live` weights allow no travel time.
-    const status = rows.map(r => od.status[r.i]);
+    // A spill running when its company's feed last answered counts as running (transport.running,
+    // `last_running`), and a record that has stopped updating in a feed that has not is stale with its
+    // own last update (ingest.live.frozen_records, `stale_rows`), as forecast.live_counts has them.
+    const status = rows.map(r => od.status[r.i]), lastRunning = new Set(od.last_running || []), staleRows = od.stale_rows || {};
+    const run = rows.map((r, k) => status[k] === 1 || (status[k] === -3 && lastRunning.has(r.i)));
     const extra = rows.map((r, k) => {
       if (!od.ended_h) return od.live[r.i] / od.scale;
-      if (status[k] === 1) return 1;
+      if (run[k]) return 1;
       const e = od.ended_h[r.i]; if (e === null || e === undefined) return 0;
       const age = e - travel[k];
       return age <= 0 ? 1 : age <= a.recent_spill_hours ? Math.pow(10, -age / a.t90_hours) : 0; });
     const company = rows.map(r => od.companies[od.company[r.i]]), staleSince = od.feed_stale_since || {}, noFeed = new Set(od.no_feed || []);
-    const state = status.map((s, k) => s === 0 || s === 1 ? (company[k] in staleSince ? 'stale' : 'live')
+    const ownStale = rows.map((r, k) => !(company[k] in staleSince) && String(r.i) in staleRows);
+    const state = status.map((s, k) => s === 0 || s === 1 ? (company[k] in staleSince || ownStale[k] ? 'stale' : 'live')
       : s === -2 && noFeed.has(company[k]) ? 'no_feed' : 'offline');
     const contrib = rows.map((_, k) => w[k] * extra[k]);
     const nowRisk = 1 - contrib.reduce((acc, c) => acc * (1 - Math.min(1, Math.max(0, c))), 1);
-    const down = status.map(s => s === -3), hasLive = status.map(s => s !== -2);
-    const recent = contrib.map((c, k) => c > 0 && status[k] !== 1 && !down[k]);
+    const down = status.map((s, k) => s === -3 && !run[k]), hasLive = status.map(s => s !== -2);
+    const recent = contrib.map((c, k) => c > 0 && !run[k] && status[k] !== -3);
     const quiet = state.map((st, k) => st === 'live' && status[k] === 0 && !recent[k]);
-    const stale = state.map((st, k) => st === 'stale' && status[k] !== 1 && !recent[k]);
-    const monitored = status.filter((s, k) => s === 1 || recent[k] || quiet[k]).length, fd = {}, fs = {};
-    rows.forEach((r, k) => { if (down[k]) fd[company[k]] = (fd[company[k]] || 0) + 1; if (stale[k]) fs[company[k]] = (fs[company[k]] || 0) + 1; });
-    const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: status.filter(s => s === 1).length,
+    const stale = state.map((st, k) => st === 'stale' && !run[k] && !recent[k]);
+    const monitored = run.filter((x, k) => x || recent[k] || quiet[k]).length, fd = {}, fs = {}, fr = {}, frSince = {};
+    rows.forEach((r, k) => {
+      if (down[k]) fd[company[k]] = (fd[company[k]] || 0) + 1;
+      if (stale[k] && !ownStale[k]) fs[company[k]] = (fs[company[k]] || 0) + 1;
+      if (stale[k] && ownStale[k]) { const c = company[k], t = staleRows[String(r.i)];
+        fr[c] = (fr[c] || 0) + 1; if (t && (!frSince[c] || Date.parse(t) > Date.parse(frSince[c]))) frSince[c] = t; } });
+    const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: run.filter(Boolean).length,
       recent_upstream: recent.filter(Boolean).length, monitored_upstream: monitored,
       feed_down_upstream: down.filter(Boolean).length,
       feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
       stale_upstream: stale.filter(Boolean).length,
-      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null })) };
+      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null }))
+        .concat(Object.keys(fr).sort().map(c => ({ company: c, overflows: fr[c], since: frSince[c] ?? null, records: true }))) };
     // The overflows that matter most: forecast_point's relevance, the build's ten.
     const ahead = Pc.map(row => row.slice(hist, hist + DAYS_AHEAD + 1));
     const order = rows.map((_, k) => k).sort((x, y) => relevance(y) - relevance(x)).slice(0, KEEP);
@@ -170,7 +180,8 @@ const AnyPoint = (() => {
     const contributors = order.map(k => { const r = rows[k], i = r.i, pd = ahead[k];
       return { site_id: names ? names.ids[i] : String(i), site_name: names ? names.name[i] : null, company: od.companies[od.company[i]],
         lat: names ? names.lat[i] : null, lon: names ? names.lon[i] : null, status: status[k], has_live: hasLive[k],
-        data_state: state[k], feed_updated_at: state[k] === 'stale' ? staleSince[company[k]] ?? null : null,
+        data_state: state[k], feed_updated_at: state[k] !== 'stale' ? null : ownStale[k] ? staleRows[String(i)] ?? null : staleSince[company[k]] ?? null,
+        ...(status[k] === -3 ? { last_status: lastRunning.has(i) ? 1 : null, feed_down_since: (od.feed_down_since || {})[company[k]] ?? null } : {}),
         snap_confidence: low.has(i) ? 'low' : null, distance_km: r1(r.dist / 1000), lake_distance_km: r1(r.dlake / 1000),
         travel_h: r1(travel[k]), weight: r3(w[k]), p_spill_today: r3(Number.isNaN(pd[0]) ? 0 : pd[0]),
         p_spill_tomorrow: r3(Number.isNaN(pd[1]) ? 0 : pd[1]), p_spill_days: pd.map(x => Number.isNaN(x) ? null : r3(x)),

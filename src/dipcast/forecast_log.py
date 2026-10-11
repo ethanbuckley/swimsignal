@@ -418,6 +418,7 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
            "rules": {"decision_hour_local": DECISION_HOUR, "min_known_polls": MIN_KNOWN_POLLS, "max_gap_h": MAX_GAP_H,
                      "strict_gap_h": STRICT_GAP_H, "feed_current_h": 6.0,
                      "unstamped_feed": "a feed with no record stamp is never current: its overflows are not scored that day. South West Water's lastUpdated stamp was read only from 4 Oct 2026, so its overflows are scored from 5 Oct",
+                     "frozen_record": "in a feed that stamps every record on every refresh (95% of a poll's records stamped within the day before it), a record whose own stamp is missing or over 6 h old is not current that poll, from 11 Oct 2026 (ingest.live.frozen_records)",
                      "discharging_without_event_times": "a spill on the local day of the poll that saw it",
                      "baseline": "annual spill count / 365, an approximation (spill-days per counted spill = "
                                  f"{_spill_days_per_spill():.2f} pooled over United Utilities 2023-25; not checked per overflow or company)"},
@@ -935,13 +936,21 @@ def _spill_days_per_spill() -> float:
 def _site_climatology(site_ids: pd.Series, path: Path | None = None) -> np.ndarray:
     """Long-run daily spill-day probability per overflow: the annual-return spill
     count times the measured spill-days-per-spill ratio, over 365. The same baseline
-    as the offline tests. `path`: another overflow table with site_id and lta_spills."""
+    as the offline tests. `path`: another overflow table with site_id and lta_spills.
+    An overflow with no count of its own takes the count the forecast was given for it
+    (`lta_spills_filled`, features.fill_covariates), so forecast and baseline fill a gap
+    alike; until 11 Oct 2026 the baseline took 20. An id not in the table still takes 20."""
     p = config.state_read("overflows.parquet") if path is None else path
     default = 20.0 / 365.0
     ratio = _spill_days_per_spill()
     if not p.exists():
         return np.full(len(site_ids), default)
-    ov = pd.read_parquet(p, columns=["site_id", "lta_spills"]).drop_duplicates("site_id").set_index("site_id")["lta_spills"]
+    import pyarrow.parquet as pq
+
+    from dipcast.model.features import FILLED
+    col = FILLED.format("lta_spills")
+    col = col if col in pq.read_schema(p).names else "lta_spills"
+    ov = pd.read_parquet(p, columns=["site_id", col]).drop_duplicates("site_id").set_index("site_id")[col]
     clim = site_ids.map(ov).astype(float).fillna(default * 365.0).to_numpy() * ratio / 365.0
     return np.clip(clim, 0.001, 0.95)
 

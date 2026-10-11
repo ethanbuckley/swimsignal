@@ -1096,15 +1096,20 @@ const feedTime = iso => new Date(iso).toLocaleString('en-GB', { day: 'numeric', 
 const endedOn = (iso, time = false) => { const d = new Date(iso);
   return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', ...(d.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' }),
     ...(time ? { hour: '2-digit', minute: '2-digit' } : {}) }); };
-const statusText = (s, c = {}) => c.data_state === 'stale'
+// A spill running when its company's feed last answered (transport.running): the feed is down now, so
+// the build carried the overflow with its last status, and the spill still counts.
+const runningAtLastAnswer = (s, c = {}) => s === -3 && c.last_status === 1;
+const statusText = (s, c = {}) => runningAtLastAnswer(s, c)
+  ? `discharging when the feed last answered${c.feed_down_since ? `, ${feedTime(c.feed_down_since)}` : ''}`
+  : c.data_state === 'stale'
   ? (s === 1 ? `discharging at its last update, ${c.feed_updated_at ? feedTime(c.feed_updated_at) : 'time not given'}`
     : c.feed_updated_at ? `no update since ${feedTime(c.feed_updated_at)}` : 'no update time from the company')
   : s === -2 && c.data_state === 'offline' ? 'not in the company’s live feed'
   : ({1:'discharging', 0:'not discharging', '-1':'monitor offline', '-2':'no live feed', '-3':'company feed down'})[s] ?? '?';
 const colourFor = s => s === 1 ? '#a32d2d' : s === 0 ? '#5b6470' : '#b3bac2';
 // The status an overflow is drawn with: a "not discharging" that is not current is drawn as unknown, in
-// the grey of offline. A discharge stays a discharge.
-const drawnStatus = c => c.status === 0 && c.data_state && c.data_state !== 'live' ? -1 : c.status;
+// the grey of offline. A discharge stays a discharge, and so does one running when its feed last answered.
+const drawnStatus = c => runningAtLastAnswer(c.status, c) ? 1 : c.status === 0 && c.data_state && c.data_state !== 'live' ? -1 : c.status;
 const initial = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'narrow'});
 // The colour that goes with the headline: grey where there is no level.
 const headTone = s => tone(level(s));
@@ -1546,13 +1551,34 @@ const rangeBar = rs => { const lo = rs.typical_low_m, hi = rs.typical_high_m; if
 // A company feed that did not answer the last poll: its overflows keep their last snapshot, marked down.
 const feedDown = now => (now.feed_down || []).map(f => ` ${esc(f.company)}'s live feed is down${f.since ? ` (last answered ${new Date(f.since).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // A company feed that answered but has not updated within six hours, or gives no time (forecast.live_counts):
-// its readings may be frozen, so its quiet overflows do not count as reporting live.
-const feedStale = now => (now.feed_stale || []).map(f => ` ${esc(f.company)}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
+// its readings may be frozen, so its quiet overflows do not count as reporting live. An entry with
+// `records` is overflows whose own records have stopped updating while the rest of the feed has not.
+const feedStale = now => (now.feed_stale || []).map(f => f.records
+  ? ` ${esc(f.company)} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
+    : `gives no update time for ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here`}: ${f.overflows === 1 ? 'it' : 'they'} could be spilling unseen.`
+  : ` ${esc(f.company)}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // Which upstream overflows report live. Those on a feed that is down or stale are named with the feed,
 // not counted again in the general clause, which covers offline monitors and overflows with no feed.
 const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, st = now.stale_upstream || 0, other = total - mon - fd - st;
   if (!fd && !st) return `${mon} of ${total} report live${mon < total ? `; ${total - mon === 1 ? 'the one that does not' : `the ${total - mon} that do not`} could be spilling unseen` : ''}.`;
   return `${mon} of ${total} report live.${other > 0 ? ` ${other === 1 ? 'One more gives' : `${other} more give`} no live reading and could be spilling unseen.` : ''}${feedDown(now)}${feedStale(now)}`; };
+// The build tells "not discharging" from stale by the feed's age when it polled (ingest.live.data_states,
+// six hours), but a page can be read hours later, and before 11 Oct 2026 it went on saying "not
+// discharging" until the 8-hour "Stale" notice. Where the page is read, each company's quiet overflows
+// (forecast.live_counts' quiet_by_feed) whose feed time is now over six hours old stop counting as
+// reporting live and are named as a stale feed; its quiet overflows in the list then say "no update
+// since". Done once per spot and per list of overflows; a forecast from before quiet_by_feed is left as it is.
+const FEED_CURRENT_MS = 6 * 3600e3;
+const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.quiet_by_feed)) return s;
+  n.aged = n.aged || [];
+  for (const f of n.quiet_by_feed) { const t = Date.parse(f.updated_at);
+    if (!f.updated_at || !(nowMs - t > FEED_CURRENT_MS) || n.aged.includes(f.company)) continue;
+    n.aged.push(f.company);
+    n.monitored_upstream = Math.max(0, (n.monitored_upstream || 0) - f.overflows);
+    n.stale_upstream = (n.stale_upstream || 0) + f.overflows;
+    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at }]; }
+  for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') c.data_state = 'stale';
+  return s; };
 // The overflows that stopped lately and still count right now (transport.live_now_risk): a spill counts
 // until recent_spill_hours after its water has passed here, so one far upstream counts for longer after its end.
 const recentSay = (rec, dis, h) => `${rec ? rec + (dis ? ' more' : '') : 'None'} stopped lately: a spill counts until ${h}&nbsp;h after its water has passed here.`;
@@ -1858,7 +1884,7 @@ async function loadOverflows() {
   const b = map.getBounds(); ovLayer.clearLayers();
   const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
   L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties, nm = overflowNames(p);
-    return L.circleMarker(ll, { radius: p.status === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
+    return L.circleMarker(ll, { radius: drawnStatus(p) === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
       .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
@@ -2570,7 +2596,8 @@ function spotDetail(s) {
     DETAILS.set(s.id, (early || fetch(`data/${s.detail_file}`, { cache: 'no-cache' }))
       .then(r => { if (!r.ok) throw new Error(`the spot's file answered ${r.status}`); return r.json(); })
       .then(j => { if (!j || j.id !== s.id) throw new Error('another spot\'s file');
-        const { id, generated_at, credits, ...fields } = j; Object.assign(s, fields); s.detail_loaded = true; delete s.detail_missing; })
+        const { id, generated_at, credits, ...fields } = j; Object.assign(s, fields); s.detail_loaded = true; delete s.detail_missing;
+        ageReadings(s, Date.now()); })
       .catch(() => { s.detail_missing = true; if (!s.contributors) s.contributors = []; })
       .then(() => { DETAILS.delete(s.id); return s; }));
   }
@@ -2716,7 +2743,7 @@ const onWater = w => { const n = nameCase(w).trim().replace(/^The /, '');
 // One overflow and where it is, as the list below gives it: "Ilkley sewage works overflow on the River
 // Wharfe, 6.0 km upstream, about 5 hours away". The plain name alone: the list gives the company's.
 const sourcePlace = s => { const h = Math.round(s.travel_h), water = onWater(s.receiving_watercourse);
-  return `<b>${esc(overflowNames(s).plain)}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? ', discharging now' : ''}, `
+  return `<b>${esc(overflowNames(s).plain)}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? ', discharging now' : s.status === -3 && s.last_status === 1 ? ', discharging when its company’s feed last answered' : ''}, `
     + `${fmt(s.distance_km + s.lake_distance_km, 1)}&nbsp;km upstream, ${s.travel_h < 1 ? 'under an hour' : `about ${h} hour${h === 1 ? '' : 's'}`} away`; };
 // The sentence for one risk, right now's (when = 'now') or a day's (an ISO date). One overflow is named
 // alone only when it holds at least half the risk (transport.risk_shares, which splits 1 - prod(1 - e)
@@ -2922,6 +2949,7 @@ async function main() {
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
   DATA = await res.json();
   serverToday = DATA.generated_at.slice(0, 10);
+  for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
   for (const s of DATA.spots) {
     MARKERS.set(s.id, L.circleMarker([s.lat, s.lon], { radius: 9 })
       .bindTooltip('').on('click', () => select(s.id, false, true, VIEW.day)).addTo(spotLayer));

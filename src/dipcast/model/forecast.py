@@ -15,7 +15,12 @@ from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
 from dipcast.model import ecoli
-from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features
+from dipcast.model.features import (
+    ALL_FEATURES,
+    build_site_days,
+    daily_rain_features,
+    model_covariates,
+)
 from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.transport import (
     ARRIVING_SAYS,
@@ -30,6 +35,7 @@ from dipcast.model.transport import (
     risk_label,
     risk_shares,
     river_velocity,
+    running,
     spread_count,
     still_coming,
     upstream_overflows,
@@ -186,7 +192,9 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
         return (*none, np.full(shape, np.nan)) if return_rain else none
     rain["time"] = rain["time"].dt.tz_convert(LOCAL_TZ)   # local-midnight day boundaries
     daily = daily_rain_features(rain)
-    sites = ov[["site_id", "lat", "lon", "company", "lta_spills", "spill_hours", "edm_operational_pct"]]
+    # The covariates as filled once over the whole overflow table (features.fill_covariates), not
+    # over this spot's upstream overflows alone.
+    sites = pd.concat([ov[["site_id", "lat", "lon", "company"]], model_covariates(ov)], axis=1)
     # The pivots below need one row per site_id ("Index contains duplicate entries, cannot reshape"
     # failed four spots on 3 Oct 2026). A repeated id is computed once, from its first row; the
     # reindex on ov["site_id"] still gives each of ov's rows its own row of the result.
@@ -354,7 +362,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # on its way (transport.clear_time), and which overflows it comes from: written where the page says
     # them, moderate or worse, or while an overflow upstream is discharging.
     clears_at, clears_by, last_water = clear_time(ov, now)
-    spilling = bool(len(ov)) and bool((ov["status"] == 1).any())
+    spilling = bool(len(ov)) and bool(running(ov).any())
     said = now_risk >= LOW_CUT or (spilling and now_risk > 0)
     arriving = arriving_of(ov, now, now_contrib) if said else None
     clearing = {"clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
@@ -367,7 +375,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk), **clearing,
                   **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
                                             "feed_down_upstream", "feed_down", "stale_upstream", "feed_stale",
-                                            "no_feed_upstream")}}
+                                            "no_feed_upstream", "quiet_by_feed")}}
     out["days"] = day_rows
     out["upstream_summary"] = {
         "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
@@ -409,7 +417,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 "p_spill_tomorrow": round(float(r["p_tomorrow"]), 3),
                 "p_spill_days": r["p_days"],   # one per entry in "days", None where unknown
                 "now_contribution": round(float(r["now_contribution"]), 3),
-            })
+            } | carried_fields(r))
     out["contributors"] = contrib
     if pin.snap is not None:
         slon, slat = bng_to_lonlat(pin.snap.x, pin.snap.y)
@@ -439,7 +447,19 @@ def source_of(ov: pd.DataFrame, share: np.ndarray) -> dict | None:
         "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
         "travel_h": round(float(r["travel_h"]), 1),
         "share": round(float(share.max()), 3), "spread_over": spread_count(share),
-    }
+    } | carried_fields(r)
+
+
+def carried_fields(r: pd.Series) -> dict:
+    """For an overflow carried through its company's feed outage (status FEED_DOWN): the status the
+    last poll that read it saw (`last_status`, 1 for a spill running then) and when that poll was
+    (`feed_down_since`), so the page can say "discharging when the feed last answered". Nothing for
+    any other overflow, to keep spots.json small."""
+    from dipcast.ingest.live import FEED_DOWN
+    if r.get("status") != FEED_DOWN:
+        return {}
+    last = pd.to_numeric(r.get("last_status"), errors="coerce")
+    return {"last_status": None if pd.isna(last) else int(last), "feed_down_since": _clean(r.get("feed_down_since"))}
 
 
 def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> dict | None:
@@ -461,7 +481,7 @@ def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> 
         "travel_h": round(float(r["travel_h"]), 1),
         "arrives_at": (now + pd.Timedelta(hours=float(left[k]))).round("min").isoformat(),
         "share": round(float(share[coming].sum()), 3),
-    }
+    } | carried_fields(r)
 
 
 def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
@@ -483,26 +503,37 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     `no_feed_upstream` counts those not reporting because their company has no live feed SwimSignal reads
     (data_state no_feed), so the page can tell them from monitors that are offline: what is not
     reporting is then stale_upstream + no_feed_upstream + the rest, which are offline (feed_down_upstream
-    among them)."""
+    among them).
+
+    11 Oct 2026. A spill running at the last poll before its company's feed failed (transport.running)
+    counts as discharging, as a stale feed's discharge does, and not as feed down. A record that has
+    stopped updating in a feed that has not (data_states' `record_stale`) is stale like a stale
+    feed's, and named in `feed_stale` with "records": True and the newest of those records' own
+    stamps. `quiet_by_feed` gives, per company, the quiet overflows counted as reporting and when
+    their feed last updated, so the page can stop counting them once that is over
+    ingest.live.FEED_CURRENT_H old where it is read (a page open hours after the build)."""
     from dipcast.ingest.live import FEED_DOWN, LIVE, NO_FEED, STALE
-    feed_down = feed_down_summary(ov)
     if ov.empty:
         return {"discharging_upstream": 0, "recent_upstream": 0, "monitored_upstream": 0,
-                "feed_down_upstream": 0, "feed_down": feed_down, "stale_upstream": 0, "feed_stale": [],
-                "no_feed_upstream": 0}
+                "feed_down_upstream": 0, "feed_down": [], "stale_upstream": 0, "feed_stale": [],
+                "no_feed_upstream": 0, "quiet_by_feed": []}
     ov = with_data_states(ov)
     status, state = ov["status"], ov["data_state"]
-    down = status == FEED_DOWN
     contrib = pd.Series(np.asarray(now_contrib, dtype=float), index=ov.index)
-    dis = status == 1
-    recent = contrib.gt(0) & ~dis & ~down
+    dis = pd.Series(running(ov), index=ov.index)
+    down = (status == FEED_DOWN) & ~dis
+    recent = contrib.gt(0) & ~dis & (status != FEED_DOWN)
     quiet = (state == LIVE) & (status == 0) & ~recent
     stale = (state == STALE) & ~dis & ~recent
+    rec = ov["record_stale"].fillna(False).astype(bool) if "record_stale" in ov else pd.Series(False, index=ov.index)
     return {"discharging_upstream": int(dis.sum()), "recent_upstream": int(recent.sum()),
             "monitored_upstream": int((dis | recent | quiet).sum()),
-            "feed_down_upstream": int(down.sum()), "feed_down": feed_down,
-            "stale_upstream": int(stale.sum()), "feed_stale": feed_stale_summary(ov[stale]),
-            "no_feed_upstream": int(((state == NO_FEED) & ~(dis | recent | quiet)).sum())}
+            "feed_down_upstream": int(down.sum()), "feed_down": feed_down_summary(ov[down]),
+            "stale_upstream": int(stale.sum()),
+            "feed_stale": feed_stale_summary(ov[stale & ~rec]) + feed_stale_summary(ov[stale & rec], records=True),
+            "no_feed_upstream": int(((state == NO_FEED) & ~(dis | recent | quiet)).sum()),
+            "quiet_by_feed": [{"company": f["company"], "overflows": f["overflows"], "updated_at": f["since"]}
+                              for f in feed_stale_summary(ov[quiet])]}
 
 
 def feed_down_summary(ov: pd.DataFrame) -> list[dict]:
@@ -522,16 +553,19 @@ def feed_down_summary(ov: pd.DataFrame) -> list[dict]:
     return out
 
 
-def feed_stale_summary(ov: pd.DataFrame) -> list[dict]:
+def feed_stale_summary(ov: pd.DataFrame, records: bool = False) -> list[dict]:
     """Per company, for overflows whose feed answered but is stale (ingest.live.data_states):
-    how many of them there are and when the feed last updated (None: it gives no time)."""
+    how many of them there are and when the feed last updated (None: it gives no time). With
+    `records`, for records that have stopped updating in a feed that has not: the newest of their
+    own stamps, and "records": True."""
     if ov.empty:
         return []
     t = pd.to_datetime(ov["feed_updated_at"], utc=True) if "feed_updated_at" in ov else pd.Series(pd.NaT, index=ov.index)
     out = []
     for c, g in ov.groupby(ov["company"].fillna("unknown")):
         u = t.loc[g.index].max()
-        out.append({"company": str(c), "overflows": len(g), "since": None if pd.isna(u) else u.isoformat()})
+        out.append({"company": str(c), "overflows": len(g), "since": None if pd.isna(u) else u.isoformat(),
+                    **({"records": True} if records else {})})
     return out
 
 
@@ -548,6 +582,7 @@ def overflows_geojson(bbox: tuple[float, float, float, float] | None = None, lim
             "latest_event_start", "latest_event_end", "lta_spills"]}
         if props["data_state"] == "stale":   # its feed's last update, on these alone: the file is 6 MB
             props["feed_updated_at"] = _clean(r.get("feed_updated_at"))
+        props |= carried_fields(r)          # a feed-down overflow's last status, on those alone
         feats.append({
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [float(r.lon), float(r.lat)]},
