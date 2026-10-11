@@ -43,6 +43,16 @@ docs/LAKE-PATH-TEST-2026-10.md:
                         dilution.
 
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
+
+The lake near field (config.LAKE_NEAR_MODE, off by default) follows a site review of 11 Oct 2026:
+on 16 of 19 lake spots with overflows the index could never pass Low, because the lake-area term
+divides a length dilution whose spot length is the whole lake's catchment. Pre-stated in
+docs/LAKE-NEAR-FIELD-TEST-2026-10.md:
+
+* lake near "blend"     for a lake pin, an overflow's dilution blends from the inflow's own river
+                        dilution at its mouth (spot length: the inflow's own network) towards the lake
+                        dilution, with straight-line distance d across the lake from that entry:
+                        near f + far (1 - f), f = exp(-d / LAKE_NEAR_M) (lake_near_dilution).
 """
 
 from __future__ import annotations
@@ -710,15 +720,16 @@ def _path_lakes(net: RiverNetwork, root: str, cap_m: float, lake_of: dict[str, t
 
 def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], on_path: set[str],
                   max_steps: int = 5000, lake_of: dict[str, tuple[int, float]] | None = None,
-                  ) -> tuple[float, tuple[float, float], float, PathLakes] | None:
-    """_path_to_lake, also giving the seconds the river part takes at reach_velocity (scale 1) and,
-    with `lake_of` (_wfd_lake_of), the WFD lakes crossed before the spot's lake. The distance and
+                  ) -> tuple[float, tuple[float, float], float, PathLakes, str] | None:
+    """_path_to_lake, also giving the seconds the river part takes at reach_velocity (scale 1),
+    with `lake_of` (_wfd_lake_of) the WFD lakes crossed before the spot's lake, and the node where the
+    water enters the lake (an outfall on the lake: the start of its own link). The distance and
     seconds still include those lakes' links."""
     links = net.links
     lake_of = lake_of or {}
     if link_id in comp:
         pt = links.loc[link_id, "geometry"].interpolate(frac, normalized=True)
-        return 0.0, (pt.x, pt.y), 0.0, NO_LAKES
+        return 0.0, (pt.x, pt.y), 0.0, NO_LAKES, links.loc[link_id, "start_node"]
 
     def speed(node: str) -> float:
         return float(reach_velocity(net.upstream_m.get(node, 0.0)))
@@ -733,7 +744,7 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
             lid = net.graph.edges[node, m]["link"]
             if lid in comp:
                 pt = links.loc[lid, "geometry"].coords[0]
-                return d, (pt[0], pt[1]), t, crossed
+                return d, (pt[0], pt[1]), t, crossed, node
             if lid in on_path:
                 nxt = (m, lid)
         if nxt is None:
@@ -747,13 +758,46 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
     return None
 
 
+# Lake near "blend": the distance over which an inflow's plume mixes into the lake. Nekouee (2010, NOAA
+# Technical Memorandum GLERL-151, summary) found bacterial reductions due to dilution "generally small
+# (less than 10:1) up to 4.5 km from the river mouth" for the Grand River plume in Lake Michigan: for an
+# exponential blend that is an e-folding distance of at least 4.5 km / ln 10, about 2 km, for a large
+# river. Inflows to English lakes are far smaller, with less momentum and buoyancy to carry them out
+# before the lake's own turbulence mixes them, so their scale is shorter: 1 km, half the large-river
+# bound. A judgment from the literature, fixed before any evaluation, not fitted to samples.
+LAKE_NEAR_M = 1_000.0
+
+
+def _inflow_length(net: RiverNetwork, node: str, comp: set[str], up: dict[str, float]) -> float:
+    """Lake near "blend": the network of the inflow that reaches the lake at `node`, its mouth: the
+    links into `node` from outside the lake (`comp`), each with the network above it (`up`). Water the
+    lake's own centreline carries to `node` from further up the lake is not the inflow's."""
+    g = net.graph
+    total = 0.0
+    for p in g.predecessors(node):
+        ed = g.edges[p, node]
+        if ed["link"] not in comp:
+            total += up.get(p, 0.0) + ed["length"]
+    return total
+
+
+def lake_near_dilution(near: np.ndarray | float, far: np.ndarray | float, d_m: np.ndarray | float,
+                       scale_m: float = LAKE_NEAR_M) -> np.ndarray | float:
+    """Lake near "blend": near f + far (1 - f) with f = exp(-d / scale), d the straight line across the
+    spot's lake from where the water enters it. `near` is the inflow's own river dilution at its entry,
+    `far` the lake dilution (with the lake-area term)."""
+    f = np.exp(-np.asarray(d_m, dtype=float) / scale_m)
+    return np.asarray(near, dtype=float) * f + np.asarray(far, dtype=float) * (1.0 - f)
+
+
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
-                       dilution_mode: str | None = None, lake_path_mode: str | None = None) -> pd.DataFrame:
+                       dilution_mode: str | None = None, lake_path_mode: str | None = None,
+                       lake_near_mode: str | None = None) -> pd.DataFrame:
     """Overflows upstream of the pin with distance, travel time and transport weight.
-    `velocity_mode`, `dilution_mode` and `lake_path_mode` default to config.VELOCITY_MODE,
-    config.DILUTION_MODE and config.LAKE_PATH_MODE.
+    `velocity_mode`, `dilution_mode`, `lake_path_mode` and `lake_near_mode` default to
+    config.VELOCITY_MODE, config.DILUTION_MODE, config.LAKE_PATH_MODE and config.LAKE_NEAR_MODE.
     With velocity 'catchment', `velocity_ms` only scales each reach's speed by
     velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it.
     With lake path 'lake', the length of each WFD lake crossed on the way moves from distance_m to
@@ -762,10 +806,12 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
+    lake_near_mode = lake_near_mode or config.LAKE_NEAR_MODE
     if (velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban")
-            or lake_path_mode not in ("river", "lake")):
+            or lake_path_mode not in ("river", "lake") or lake_near_mode not in ("off", "blend")):
         raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}, "
-                         f"lake path {lake_path_mode!r}")
+                         f"lake path {lake_path_mode!r}, lake near {lake_near_mode!r}")
+    near = lake_near_mode == "blend" and pin.mode == "lake"
     by_reach = velocity_mode == "catchment"
     on_lakes = lake_path_mode == "lake"
     scale = velocity_ms / config.RIVER_VELOCITY_MS
@@ -820,15 +866,18 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
             res = _walk_to_lake(net, r["link_id"], r["frac"], pin.lake_links, on_path, lake_of=lake_of)
             if res is None:
                 continue
-            d_river, (ex, ey), t_river, (lm, ls, lk) = res
+            d_river, (ex, ey), t_river, (lm, ls, lk), entry = res
             d_lake = math.hypot(ex - pin.x, ey - pin.y)
-            rows.append((r.name, d_river, d_lake, t_river / scale, (lm, ls / scale, lk)))
+            rows.append((r.name, d_river, d_lake, t_river / scale, (lm, ls / scale, lk), entry))
         if rows:
-            idx, dr, dl, tr, crossed = zip(*rows, strict=True)
+            idx, dr, dl, tr, crossed, entries = zip(*rows, strict=True)
             ov = ov.loc[list(idx)].copy()
             ov["distance_m"] = list(dr)
             ov["lake_distance_m"] = list(dl)
             ov["river_s"] = list(tr)
+            if near:   # lake near "blend": the entry node and the straight line across the spot's lake
+                ov["_entry"] = list(entries)
+                ov["_across_m"] = list(dl)
             if on_lakes:
                 _put_lakes(ov, list(crossed), lake_area)
         else:
@@ -865,6 +914,24 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         # A big lake dilutes an inflow far more than a river reach of similar
         # upstream network would; halve the weight at LAKE_A0_KM2 and shrink from there.
         ov["dilution"] = ov["dilution"] / (1.0 + pin.lake_area_km2 / LAKE_A0_KM2)
+    if near:
+        # Lake near "blend": near where it enters, the inflow is diluted by its own river only: the same
+        # rule with the spot's length taken as the inflow's own network at its mouth (_inflow_length), and
+        # no lake-area term. An outfall on the lake has no inflow: its own dilution there is 1.
+        on_lake = ov["link_id"].isin(pin.lake_links).to_numpy()
+
+        def inflow(up: dict[str, float]) -> np.ndarray:
+            return np.array([0.0 if lk else _inflow_length(net, e, pin.lake_links, up)
+                             for e, lk in zip(ov["_entry"], on_lake, strict=True)])
+
+        if dilution_mode == "flow":
+            d_near = np.asarray(flow_dilution(inflow(net.upstream_m)), dtype=float)
+        elif dilution_mode == "urban":
+            d_near = np.asarray(urban_dilution(overflow_urban_km2(ov).to_numpy(), inflow(net.upstream_m)), dtype=float)
+        else:
+            d_near = np.minimum(1.0, (ov_lup.to_numpy() + L0_M) / (inflow(lup) + L0_M))
+        ov["dilution"] = lake_near_dilution(d_near, ov["dilution"].to_numpy(), ov["_across_m"].to_numpy())
+        ov = ov.drop(columns=["_entry", "_across_m"])
     if on_lakes:
         ov["dilution"] = ov["dilution"] / ov["_lake_div"]   # the same factor for each lake on the way
     ov["weight"] = ov["decay"] * ov["dilution"]

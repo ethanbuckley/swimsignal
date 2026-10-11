@@ -135,3 +135,11 @@ DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 #                         LAKE_VELOCITY_MS, and its area in the lake dilution factor
 #                "river"  the lake's length is walked at river speed, with no lake dilution
 LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "lake")
+
+# The near field of a lake (a site review of 11 Oct 2026: on 16 of 19 lake spots with overflows the
+# index could never pass Low). Off by default until its pre-stated test passes
+# (docs/LAKE-NEAR-FIELD-TEST-2026-10.md).
+# LAKE_NEAR_MODE "off"    a lake spot's dilution is the lake dilution, wherever the water enters
+#                "blend"  it blends from the inflow's own river dilution at its entry towards the lake
+#                         dilution with straight-line distance across the lake (transport.LAKE_NEAR_M)
+LAKE_NEAR_MODE = os.environ.get("DIPCAST_LAKE_NEAR_MODE", "off")

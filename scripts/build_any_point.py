@@ -24,7 +24,8 @@ Everything is written under site/data/anypoint/:
                        metres of lake and the lake factor; a lake link points at its lake in lakes.json
   lakes.json           the WFD lake polygons (England) and every lake an overflow reaches: its
                        inlets, each with the overflows whose water enters there (river distance
-                       and dilution before the lake-area term, and any WFD lake crossed before it)
+                       and dilution before the lake-area term, and any WFD lake crossed before it;
+                       under lake near "blend", also each one's own river dilution at the inlet)
   outside_england.json Wales, Scotland and the island of Ireland, widened over their estuaries, where a
                        click gets "England only", and which part of the island is Northern Ireland (a
                        copy of data/raw/outside_england.json, scripts/make_outside_england.py)
@@ -100,8 +101,9 @@ FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
-CACHE_VERSION = 7         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
-                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key; 11 Oct 2026)
+CACHE_VERSION = 8         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
+                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key;
+                          # 8: lake near field; 11-12 Oct 2026)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
@@ -339,7 +341,7 @@ def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
     factor 1 where none, or with no `crossings`), as the lake branch of transport.upstream_overflows
     computes them. The page takes lake_m off the river distance, adds it and the straight line from
     the entry to the click at the lake velocity, and multiplies by the factor and 1 / (1 + area / 5 km2)."""
-    cols = ["site_id", "distance_m", "entry_x", "entry_y", "dilution", "lake_m", "factor"]
+    cols = ["site_id", "distance_m", "entry_x", "entry_y", "dilution", "lake_m", "factor", "near"]
     link_dist, lup = upstream_lengths(net, outlet, cap_m)
     on_path = set(link_dist)
     lake_of = {lid: v for lid, v in (crossings or {}).items() if lid in link_dist and lid not in comp}
@@ -351,12 +353,16 @@ def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
         res = transport._walk_to_lake(net, r.link_id, r.frac, set(comp), on_path, lake_of=lake_of)
         if res is None:
             continue
-        d_river, (ex, ey), _, part = res
+        d_river, (ex, ey), _, part, entry = res
         if d_river > cap_m:
             continue
         ov_lup = lup.get(r.start_node, 0.0)
         lake_m, factor = _crossing(part, area) or (0.0, 1.0)
-        rows.append((r.site_id, d_river, ex, ey, min(1.0, (ov_lup + L0_M) / (spot_lup + L0_M)), lake_m, factor))
+        # Lake near "blend": the inflow's own river dilution at its mouth (transport._inflow_length; an
+        # outfall on the lake has no inflow, so 1)
+        inflow = 0.0 if r.link_id in comp else transport._inflow_length(net, entry, set(comp), lup)
+        near = min(1.0, (ov_lup + L0_M) / (inflow + L0_M))
+        rows.append((r.site_id, d_river, ex, ey, min(1.0, (ov_lup + L0_M) / (spot_lup + L0_M)), lake_m, factor, near))
     return pd.DataFrame(rows, columns=cols)
 
 
@@ -366,7 +372,8 @@ def _net_key(net_hash: str, lakes_hash: str) -> dict:
     everything again. The lake path mode changes the rows' lake metres and factors; CACHE_VERSION
     changes with the code's rules."""
     return {"version": CACHE_VERSION, "network": net_hash, "lakes": lakes_hash, "cap_km": config.MAX_UPSTREAM_KM,
-            "l0_m": L0_M, "lake_path": config.LAKE_PATH_MODE, "lake_a0_km2": LAKE_A0_KM2}
+            "l0_m": L0_M, "lake_path": config.LAKE_PATH_MODE, "lake_a0_km2": LAKE_A0_KM2,
+            "lake_near": config.LAKE_NEAR_MODE, "lake_near_m": transport.LAKE_NEAR_M}
 
 
 def upstream_table(net: RiverNetwork, ov: pd.DataFrame, lakes, net_hash: str, lakes_hash: str = "",
@@ -664,14 +671,19 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         r["lon"], r["lat"] = np.round(elon, 5), np.round(elat, 5)
         if "lake_m" not in r:   # rows from before lakes crossed on the way
             r["lake_m"], r["factor"] = 0.0, 1.0
+        blend = config.LAKE_NEAR_MODE == "blend" and "near" in r
         inlets = []
         for (a, b), g in r.groupby(["lon", "lat"], sort=True):
-            flat, cross = [], []
+            flat, cross, near = [], [], []
             for s, d, w, m, f in zip(g["site_id"], g["distance_m"], g["dilution"], g["lake_m"], g["factor"], strict=True):
                 flat += [pos[s], round(float(d)), round(float(w) * DIL_SCALE)]
                 if m > 0:
                     cross += [pos[s], round(float(m)), round(float(f) * PATH_SCALE)]
-            inlets.append({"at": [float(a), float(b)], "o": flat, **({"k": cross} if cross else {})})
+            if blend:
+                for s, n in zip(g["site_id"], g["near"], strict=True):
+                    near += [pos[s], round(float(n) * DIL_SCALE)]
+            inlets.append({"at": [float(a), float(b)], "o": flat, **({"k": cross} if cross else {}),
+                           **({"n": near} if near else {})})
         comp = table["wfd"][int(k[1:])]["links"] if k.startswith("w") else table["comp_sets"][k]
         # The furthest a click in this lake can be from an inlet: across the lake's box, plus the
         # shore rule (WFD lakes) or the snap radius (centreline lakes). It sets how many past days
@@ -712,7 +724,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
                  "where water enters the lake, and o = flat triples (overflow index, distance along the network m, "
                  "dilution x 10000 before dividing by 1 + area / 5 km2); k = flat triples (overflow index, metres of "
                  "another WFD lake crossed on the way, which travel at the lake velocity, lake factor x 1000000 to "
-                 "multiply the dilution by) for the overflows in o whose water crosses one."),
+                 "multiply the dilution by) for the overflows in o whose water crosses one. With near_m (lake near "
+                 "'blend'): n = flat pairs (overflow index, its own river dilution at the inlet x 10000); the dilution "
+                 "is n f + (o after the area term) (1 - f), f = exp(-d / near_m), d the straight line from inlet to click, "
+                 "before k's factor."),
+        **({"near_m": transport.LAKE_NEAR_M} if config.LAKE_NEAR_MODE == "blend" else {}),
         "polygons": polys, "lakes": lakes_json, **({"credits": credits} if credits else {})}, separators=(",", ":")))
 
     names = ovl["site_name"].where(ovl["site_name"].notna(), None) if "site_name" in ovl else pd.Series(None, index=ovl.index)

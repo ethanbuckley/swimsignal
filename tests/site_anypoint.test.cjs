@@ -46,9 +46,11 @@ test('the calibration follows numpy.interp, flat beyond the knots, and keeps an 
   assert.equal(A.historyDays([33.3]), 3);
 });
 
-// The synthetic network's files, as the page would fetch them, once per lake path mode (config.
-// LAKE_PATH_MODE): "lake", the default, where water crossing Test Water on the way to a click below
-// it counts that lake as lake, and "river", the rule before 11 Oct 2026.
+// The synthetic network's files, as the page would fetch them, once per transport rule
+// (tests/test_anypoint.py, MODES): "lake", the defaults, where water crossing Test Water on the way to
+// a click below it counts that lake as lake; "river", lake path "river", the rule before 11 Oct 2026;
+// and "near", lake near "blend", where a lake click near an inlet gets the inflow's own dilution
+// (docs/LAKE-NEAR-FIELD-TEST-2026-10.md).
 const SYN = fixture('anypoint_synthetic.json');
 const filesOf = s => {
   const tiles = {};
@@ -65,7 +67,7 @@ const placeIn = files => c => {
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
 
 for (const [mode, s] of Object.entries(SYN.modes)) {
-  test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (lake path "${mode}")`, () => {
+  test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (rule "${mode}")`, () => {
     const at = placeIn(filesOf(s));
     let rows = 0, crossed = 0;
     for (const c of s.clicks.filter(x => x.what !== 'the lonely pool')) {
@@ -87,10 +89,26 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
       });
     }
     assert.ok(rows > 50, `${rows} rows compared`);
-    // Below Test Water a river click's rows cross it in mode "lake" only.
-    if (mode === 'lake') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
+    // Below Test Water a river click's rows cross it, except under lake path "river".
+    if (mode !== 'river') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
   });
 }
+
+test('a lake click near an inlet gets the inflow\'s own dilution under lake near "blend", as the API does', () => {
+  // In Test Water, 500 m from where A6 (on the lake) enters and 1.1 km from Inflow Beck's mouth.
+  const pick = s => s.clicks.find(x => x.what === 'in the lake');
+  const [off, blend] = [SYN.modes.lake, SYN.modes.near].map(s => placeIn(filesOf(s))(pick(s)));
+  assert.equal(SYN.modes.lake.files.lakes.near_m, undefined);
+  const nearM = SYN.modes.near.files.lakes.near_m;
+  assert.equal(nearM, 1000);
+  const a6 = r => r.rows.find(x => SYN.modes.near.files.ids[x.i] === 'A6');
+  const f = Math.exp(-a6(blend).dlake / nearM);
+  // A6 sits on the lake, so its own dilution at its inlet is 1: n f + lake (1 - f)
+  near(a6(blend).dil, f + a6(off).dil * (1 - f), 2e-4, 'A6 blended');
+  assert.ok(a6(blend).dil > 2 * a6(off).dil, `${a6(blend).dil} against ${a6(off).dil}`);
+  // distances and the lake factor of the rest are the same in both modes
+  for (const r of blend.rows) { const o = off.rows.find(x => x.i === r.i); near(r.dist, o.dist, 1e-9, 'distance'); near(r.dlake, o.dlake, 1e-9, 'across'); }
+});
 
 test('a lake on the way slows the water and thins it, as the API does', () => {
   // Outflow Beck, below Test Water: A5's water enters Test Water above the click. Same click, both modes.

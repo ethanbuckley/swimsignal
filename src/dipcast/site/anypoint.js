@@ -100,13 +100,19 @@ const AnyPoint = (() => {
   // A lake's inlets (lakes.json) for a click: the distance to the inlet, then the straight line
   // across; a WFD lake's area divides the dilution by 1 + area / 5 km2. Another WFD lake crossed
   // before the inlet moves its metres to the lake distance and multiplies the dilution by its factor.
-  function lakeRows(lake, at, area, a0) {
+  // Lake near "blend" (lakes.json near_m, transport.lake_near_dilution): near the inlet the water is
+  // diluted by its own river only (inlet.n), and mixes into the lake with the straight line across:
+  // n f + lake (1 - f), f = exp(-across / near_m). Without near_m, the lake dilution everywhere.
+  function lakeRows(lake, at, area, a0, nearM = null) {
     const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1;
     for (const inlet of lake.inlets) {
-      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k);
+      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k), near = new Map();
+      for (let j = 0; j + 1 < (inlet.n || []).length; j += 2) near.set(inlet.n[j], inlet.n[j + 1] / SCALE);
+      const f = nearM ? Math.exp(-across / nearM) : 0;
       for (let k = 0; k < inlet.o.length; k += 3) {
-        const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
-        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor });
+        const [crossed, factor] = path.get(inlet.o[k]) || [0, 1], far = inlet.o[k + 2] / SCALE / div;
+        const dil = nearM && near.has(inlet.o[k]) ? near.get(inlet.o[k]) * f + far * (1 - f) : far;
+        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: dil * factor });
       }
     }
     return out;
@@ -355,7 +361,7 @@ const AnyPoint = (() => {
     if (poly) {
       const p = poly.poly, name = p.name || 'Unnamed lake';
       if (p.lake === -1) return { mode: 'isolated', kind: 'lake', name, error: ISOLATED };
-      return { mode: 'lake', kind: 'lake', name, rows: p.lake === null ? [] : lakeRows(lakes.lakes[p.lake], [lat, lon], p.area_km2, a.lake_area_halving_km2),
+      return { mode: 'lake', kind: 'lake', name, rows: p.lake === null ? [] : lakeRows(lakes.lakes[p.lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, lakes.near_m),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
     // A square has files where an overflow is, or a link with one upstream. In England, then, no square
@@ -365,7 +371,7 @@ const AnyPoint = (() => {
     const at = locate(candidates(lat, lon, tiles), cfg);
     if (at.mode === 'none') return { mode: 'none', kind: '', name: 'This point', error: 'No river or lake within 1.5 km of this point.' };
     const entry = tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
-    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2))
+    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, lakes.near_m))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
       location: { mode: at.mode, watercourse: at.link.name, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
