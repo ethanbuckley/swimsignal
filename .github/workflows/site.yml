@@ -96,6 +96,8 @@ jobs:
           # Map tiles (README, "Map tiles"): a provider in build_site.TILE_PROVIDERS and its key; unset = OpenStreetMap.
           DIPCAST_TILES: ${{ vars.DIPCAST_TILES }}
           DIPCAST_TILE_KEY: ${{ vars.DIPCAST_TILE_KEY }}
+          # Scottish Water shadow (Scotland plan S4, S5): 1 polls and scores in state only, publishes nothing; unset = off.
+          DIPCAST_SCOTTISH_WATER: ${{ vars.DIPCAST_SCOTTISH_WATER }}
         run: uv run python scripts/build_site.py
 
       - name: Save mutable state
