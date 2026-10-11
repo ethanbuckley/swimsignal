@@ -217,13 +217,13 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
 
 def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = config.MAX_UPSTREAM_KM,
                    include_contributors: int = 25, log_to_store: bool = True, gauge: bool = True,
-                   kind_hint: str | None = None, river_hint: str | None = None) -> dict:
+                   kind_hint: str | None = None, river_hint: str | None = None, name: str | None = None) -> dict:
     net, ov_all, model = _net(), _overflows(), _model()
     now = pd.Timestamp.now(tz=LOCAL_TZ)
     # The EA gauge lookup is slow and optional: run it alongside everything else.
     pool = ThreadPoolExecutor(max_workers=1)
     state_future = pool.submit(nearest_level_station, lat, lon, 15, river_hint) if gauge else None
-    pin = locate_pin(net, lon, lat, kind_hint=kind_hint, river_hint=river_hint)
+    pin = locate_pin(net, lon, lat, kind_hint=kind_hint, river_hint=river_hint, name=name)
 
     out: dict = {
         "query": {"lat": lat, "lon": lon, "issued_at": now.isoformat()},

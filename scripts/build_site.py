@@ -537,7 +537,7 @@ def prefetch_rain(spots: pd.DataFrame) -> None:
     for r in spots.itertuples(index=False):
         try:
             pin = locate_pin(net, float(r.lon), float(r.lat), kind_hint=(r.kind if r.kind in ("lake", "river") else None),
-                             river_hint=_river_of(r))
+                             river_hint=_river_of(r), name=r.name)
             up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
             lat += list(up["lat"]); lon += list(up["lon"])
         except Exception as e:  # noqa: BLE001
@@ -1833,7 +1833,8 @@ def build(refresh: bool = True) -> dict:
     for r in spots.itertuples(index=False):
         try:
             f = forecast_point(float(r.lat), float(r.lon), gauge=False, include_contributors=ALL_CONTRIBUTORS,
-                               kind_hint=(r.kind if r.kind in ("lake", "river") else None), river_hint=_river_of(r))
+                               kind_hint=(r.kind if r.kind in ("lake", "river") else None), river_hint=_river_of(r),
+                               name=r.name)
             upstream[r.id] = f.get("contributors", [])   # all of them, for the organisers' page
             f["contributors"] = f.get("contributors", [])[:KEEP_CONTRIBUTORS]
         except Exception as e:  # noqa: BLE001 - one bad spot must not sink the site

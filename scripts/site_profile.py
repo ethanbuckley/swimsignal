@@ -57,12 +57,13 @@ def slug(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-") or "profile"
 
 
-def trace(lat: float, lon: float, kind: str | None, river: str | None) -> tuple[pd.DataFrame, dict]:
+def trace(lat: float, lon: float, kind: str | None, river: str | None,
+          name: str | None = None) -> tuple[pd.DataFrame, dict]:
     """The overflows upstream of the point, as a spot's forecast finds them."""
     from dipcast.model.forecast import _net, _overflows
     from dipcast.model.transport import locate_pin, upstream_overflows
     net, ov = _net(), _overflows()
-    pin = locate_pin(net, lon, lat, kind_hint=kind, river_hint=river)
+    pin = locate_pin(net, lon, lat, kind_hint=kind, river_hint=river, name=name)
     where = {"mode": pin.mode, "watercourse": pin.watercourse,
              "snap_m": None if pin.snap is None else round(pin.snap.dist_m)}
     if pin.mode in ("none", "isolated"):
@@ -168,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=Path("profiles"))
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
-    up, where = trace(a.lat, a.lon, "lake" if a.lake else None, a.river)
+    up, where = trace(a.lat, a.lon, "lake" if a.lake else None, a.river, a.name)
     t = with_returns(up, load_returns()) if len(up) else up
     md, page = render(a.name, a.lat, a.lon, where, t, summary(t) if len(t) else [])
     a.out.mkdir(parents=True, exist_ok=True)

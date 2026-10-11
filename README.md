@@ -180,7 +180,21 @@ its water routed along the network to where it enters the lake and then
 straight-line to the click. Lake dilution divides the weight by
 1 + area / 5 km², so Windermere's north basin (8.7 km²) cuts a shoreline spill's
 weight to about a third. Windermere is two WFD basins and is treated as such.
-Lakes not in the WFD set (small tarns) fall back to the centreline heuristic.
+A click on the map that is not near a WFD lake falls back to the centreline
+heuristic: a lake centreline within 1.5 km, if it is nearer than the nearest
+river after a bias towards rivers.
+
+A spot listed as a lake (`kind = lake`) is placed more strictly, because a lake
+borrowed by mistake brings its overflows with it. Off a WFD shore, it goes into
+a WFD lake within 1 km only if the spot is named after it, word for word
+("Ullswater, Pooley Bridge" is 587 m from the Ullswater polygon; "Blea Tarn,
+Langdale" does not take Little Langdale Tarn). Otherwise it is a small lake the
+WFD set leaves out (under 50 ha), and its own centreline, if OS Open Rivers
+draws one, must be within 500 m and not inside a WFD lake. Otherwise it is
+isolated: no monitored overflow reaches it by water. Until 11 Oct 2026 any
+centreline within 1.5 km counted, and Loughrigg Tarn took Grasmere's, 883 m
+away, with Grasmere WwTW as its overflow upstream. No water flows from Grasmere
+into the tarn (reported by a Lake District water-quality group, 11 Oct 2026).
 
 **Spot placement.** A clicked point goes to the nearest link within 1.5 km. A
 spot in `spots.csv` or `spots-osm.csv` also names its river (the `river` column, blank for lakes),
