@@ -145,16 +145,63 @@ def test_save_writes_only_its_own_files_and_a_failed_poll_writes_nothing(tmp_pat
     _state(tmp_path, monkeypatch)
     from dipcast.ingest import scottish_water as sw
     sw.save(sw.parse(FIXTURE, FETCHED))
-    assert sorted(p.name for p in tmp_path.iterdir()) == sorted([sw.LATEST_FILE, sw.HISTORY_FILE])
+    assert sorted(p.name for p in tmp_path.iterdir()) == sorted([sw.LATEST_FILE, sw.HISTORY_FILE, sw.COVERAGE_FILE])
 
     def down():
         raise RuntimeError("Scottish Water API failed after 3 attempts")
     monkeypatch.setattr(sw, "fetch", down)
     before = (tmp_path / sw.LATEST_FILE).read_bytes()
-    assert sw.poll() == {"ok": False, "error": "Scottish Water API failed after 3 attempts"}
+    later = FETCHED + pd.Timedelta(hours=2)   # past the hourly limit, so it asks
+    assert sw.poll(later) == {"ok": False, "error": "Scottish Water API failed after 3 attempts"}
     assert (tmp_path / sw.LATEST_FILE).read_bytes() == before
     monkeypatch.setattr(sw, "fetch", lambda: {"results": [], "last_updated": None})
-    assert sw.poll()["assets"] == 0 and (tmp_path / sw.LATEST_FILE).read_bytes() == before
+    assert sw.poll(later)["assets"] == 0 and (tmp_path / sw.LATEST_FILE).read_bytes() == before
+
+
+def test_poll_asks_at_most_once_an_hour_by_the_stored_answers_time(tmp_path, monkeypatch):
+    _state(tmp_path, monkeypatch)
+    from dipcast.ingest import scottish_water as sw
+    asked = []
+    monkeypatch.setattr(sw, "fetch", lambda: asked.append(1) or FIXTURE)
+    assert sw.poll(FETCHED)["assets"] == 13 and asked == [1]            # nothing stored: it asks
+    assert sw.last_poll_at() == FETCHED
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    for minutes in (0, 30, 59.9):
+        out = sw.poll(FETCHED + pd.Timedelta(minutes=minutes))
+        assert out["skipped"] and out["ok"] and asked == [1]
+    # A skipped poll writes nothing: the shadow forecasts read the stored answer as it was.
+    assert {p.name: p.read_bytes() for p in tmp_path.iterdir()} == before
+    assert sw.poll(FETCHED + pd.Timedelta(minutes=60))["assets"] == 13 and asked == [1, 1]
+    # A failed poll stores nothing, so the next build may ask again at once.
+    monkeypatch.setattr(sw, "fetch", lambda: (_ for _ in ()).throw(RuntimeError("down")))
+    assert not sw.poll(FETCHED + pd.Timedelta(minutes=200))["ok"]
+    monkeypatch.setattr(sw, "fetch", lambda: asked.append(1) or FIXTURE)
+    assert sw.poll(FETCHED + pd.Timedelta(minutes=201))["assets"] == 13 and len(asked) == 3
+
+
+def test_each_poll_adds_coverage_by_each_assets_own_data_state(tmp_path, monkeypatch):
+    _state(tmp_path, monkeypatch)
+    from dipcast.forecast_log import covered_site_days
+    from dipcast.ingest import scottish_water as sw
+    snap = sw.parse(FIXTURE, FETCHED)
+    sw.save(snap)
+    cov = pd.read_parquet(tmp_path / sw.COVERAGE_FILE).set_index("site_id")
+    states = snap.set_index("site_id")["data_state"]
+    live = states.index[states == "live"]
+    assert (cov.loc[live, ["n_known", "n_stale"]] == [1, 0]).all().all() and (cov.loc[live, "slots"] > 0).all()
+    # Stale (an old transmit time, or stuck) is known but gives no slot; offline is unknown.
+    assert cov.loc["CSO000325", ["n_known", "n_stale", "slots"]].tolist() == [1, 1, 0]
+    assert cov.loc["CSO006614", ["n_known", "n_stale", "slots"]].tolist() == [1, 1, 0]
+    assert cov.loc["CSO000026", ["n_known", "n_unknown", "slots"]].tolist() == [0, 1, 0]
+    # Polls two hours apart to the morning of 6 Oct: on 5 Oct the live assets pass England's rules (12
+    # polls, no gap over 8 hours, seen the next day). 4 Oct does not: its first poll was at 19:19.
+    for h in range(2, 36, 2):
+        later = sw.parse(FIXTURE, FETCHED + pd.Timedelta(hours=h))
+        later["data_state"] = states.reindex(later["site_id"]).to_numpy()   # as if each kept transmitting
+        sw.save(later)
+    ok = covered_site_days(pd.read_parquet(tmp_path / sw.COVERAGE_FILE).assign(
+        day=lambda d: pd.to_datetime(d["day"]).dt.date))
+    assert set(ok["day"].astype(str)) == {"2026-10-05"} and set(ok["site_id"]) == set(live)
 
 
 def test_the_setting_is_off_unless_set_to_1():

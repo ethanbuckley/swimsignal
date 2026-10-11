@@ -304,8 +304,13 @@ def coverage_rows(df: pd.DataFrame) -> pd.DataFrame:
 def update_coverage(df: pd.DataFrame) -> pd.DataFrame:
     """Add this poll to live_coverage.parquet and return the merged table. Compact:
     one row per overflow per day, counts summed and slot bits OR-ed."""
-    new = coverage_rows(df)
-    p = config.state_read(COVERAGE_FILE)
+    return merge_coverage(coverage_rows(df))
+
+
+def merge_coverage(new: pd.DataFrame, name: str = COVERAGE_FILE) -> pd.DataFrame:
+    """Add one poll's coverage rows (COVERAGE_COLS) to the state file `name` and return the merged
+    table. Scottish Water's shadow poll keeps its own file this way (ingest.scottish_water)."""
+    p = config.state_read(name)
     if p.exists():
         old = pd.read_parquet(p)
         old["day"] = pd.to_datetime(old["day"]).dt.date
@@ -318,7 +323,7 @@ def update_coverage(df: pd.DataFrame) -> pd.DataFrame:
         n_known=("n_known", "sum"), n_unknown=("n_unknown", "sum"), n_stale=("n_stale", "sum"),
         slots=("slots", lambda s: int(np.bitwise_or.reduce(s.to_numpy(dtype="int64")))))
     cov["day"] = pd.to_datetime(cov["day"])
-    write_parquet(cov, config.state_write(COVERAGE_FILE))
+    write_parquet(cov, config.state_write(name))
     return cov
 
 
