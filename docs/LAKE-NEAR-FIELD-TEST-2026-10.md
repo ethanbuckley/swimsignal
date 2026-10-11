@@ -234,10 +234,12 @@ What this shows:
   with overflows were under Low, and 10 are with `blend`.
 - *Established:* at the one evaluation site it changes most, its exposure rank and the samples
   disagree.
-- *Inferred, not tested:* any of these would explain the Coniston gap:
-  - the WwTW's real outfall or plume path is further from the sampling point than the network
-    suggests;
-  - it spills less than the model expects;
-  - wind carries the plume away.
+- *Checked after the results:* the outfall is where the model puts it. Coniston WwTW (UUP00534,
+  receiving water Church Beck) is 112 m from the Boating Centre by both its live position and its
+  annual-return outlet. It spills often: 168 spills and 1,765 hours a year on the long-term average.
+- *Inferred, not tested:* the gap must be in the near field itself or in the sampling, for example:
+  - the beck's plume runs along the shore away from the sampling point;
+  - Church Beck in spate dilutes a storm spill more than its network length suggests;
+  - samples rarely fall on spill days.
 
-  Checking the outfall's position against the EA's consent record would settle the first.
+  A plume or dye survey at the Church Beck mouth would settle it. The samples here cannot.
