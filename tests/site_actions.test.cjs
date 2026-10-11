@@ -110,7 +110,8 @@ function pageContext(names, extra = {}) {
   vm.runInContext(pageDefs(names), ctx);
   return ctx;
 }
-const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'answerWords'];
+const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'answerWords',
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked'];
 
 test('the answer puts the line under where the week goes, for today and for a picked day', () => {
   const ctx = pageContext(PAGE, {DATA: {generated_at: '2026-09-30T08:00:00+01:00'}});
@@ -155,7 +156,7 @@ test('the answer says what the level counts: the overflows and their rain, not r
   // forecast.py's isolated-lake message (11 Oct 2026) keeps the prefix the pages detect, so it reads as before.
   const tarn = {id: 't', days: [], error: 'An isolated lake: the river network links no monitored storm overflow to it, so the forecast has nothing to say about it.'};
   assert.equal(L.level(tarn), L.NO_RIVER);
-  assert.equal(L.headline(tarn), 'No monitored overflow drains into this lake');
+  assert.equal(L.headline(tarn), 'No monitored overflow found upstream');   // the same words as no overflow within 60 km (11 Oct 2026)
   assert.equal(L.levelScope(tarn), '');
   assert.equal(L.levelScope({...river, error: 'forecast failed: open-meteo request failed'}), '');
   // Plain words: no level word without its noun, no "safe", short sentences.

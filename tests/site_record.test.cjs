@@ -66,14 +66,14 @@ test('the level and why follow levels.js, with the overflows that matter most, h
   assert.equal(L.dayHeadline(ilkley, DAYS[1]), 'High risk: rated poor');
   assert.ok(h.includes('<p class="r-level high">High risk</p><p class="r-why">Rated poor</p>'));
   assert.ok(h.includes('Low risk: about 1 of the 15 overflows upstream is expected to spill. Exposure index <b>8</b> of 100'));
-  assert.match(h, /<b>Rivadale View storm overflow<\/b> \(Rivadale View\/CSO\): 0\.5 km upstream, sewage arrives in under an hour\. Spill chance 2%, reach 98%\./);
-  assert.match(h, /<b>Burnsall CAR PK storm overflow<\/b> \(Burnsall CAR PK\/CSO\): 21\.8 km upstream, sewage arrives in about 12 h\. Spill chance 7%, reach 21%\./);
+  assert.match(h, /<b>Rivadale View storm overflow<\/b> \(Rivadale View\/CSO\): 0\.5\skm upstream, sewage arrives in under an hour\. Spill chance 2%, reach 98%\./);
+  assert.match(h, /<b>Burnsall CAR PK storm overflow<\/b> \(Burnsall CAR PK\/CSO\): 21\.8\skm upstream, sewage arrives in about 12 h\. Spill chance 7%, reach 21%\./);
   assert.ok(h.includes('<dt>Discharging when the forecast was issued</dt><dd>0 of 15 discharging. All 15 report live.</dd>'));
   assert.ok(h.includes('6 mm in the 48 hours to midday on Monday, 5 October 2026.'));
   assert.ok(h.includes('1 day. In tests on past years, spill forecasts this far ahead were about 85% as good as same-day ones'));
   // A plain level: the words of the spot's page, and the other risks.
   const b = Rec.view(lake, DAYS[0], DATA, VER, BASE, NOW);
-  assert.ok(b.includes('<p class="r-level clear">No sewage risk from monitored overflows</p>') && b.includes(L.OTHER_RISKS));
+  assert.ok(b.includes('<p class="r-level clear">No monitored overflow found upstream</p>') && b.includes(L.OTHER_RISKS));
 });
 
 test('every input has its time, its age when the page was opened, and its source', () => {
@@ -99,13 +99,24 @@ test('what the forecast cannot see is the About page\'s list, word for word', ()
   const about = fs.readFileSync(path.join(ROOT, 'src', 'dipcast', 'api', 'static', 'about.html'), 'utf8');
   const list = about.split('<h2>What it cannot see</h2>')[1].split('</ul>')[0];
   const items = [...list.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
-  assert.deepEqual(Rec.CANNOT_SEE, items);
-  // Every line but Dŵr Cymru's, which only a spot with its overflows upstream carries (11 Oct 2026: Chee Dale had it).
+  // One exception, the overflows in Wales (11 Oct 2026): the About page's item says Dŵr Cymru's overflows "which
+  // matter at the spots on the Dee and on the Wye in Herefordshire" are forecast from rain and their yearly record,
+  // but those in Wales are not in the data. Until the About page says what the record says, its Welsh item may
+  // differ from the record's, and only that item.
+  const wales = Rec.CANNOT_SEE.findIndex(t => t.startsWith('Dŵr Cymru Welsh Water\'s overflows in Wales are not in SwimSignal\'s data'));
+  assert.ok(wales >= 0);
+  assert.deepEqual(Rec.CANNOT_SEE.filter((_, k) => k !== wales), items.filter((_, k) => k !== wales));
+  assert.ok(items[wales].startsWith('Dŵr Cymru'), items[wales]);
+  assert.ok(!Rec.CANNOT_SEE.some(t => /which matter at the spots on the Dee/.test(t)));
+  // Every line but Dŵr Cymru's, which only a spot with its overflows upstream, or a river from Wales, carries
+  // (11 Oct 2026: Chee Dale had it).
   const h = Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW);
-  for (const t of items.filter(t => !t.startsWith('Dŵr Cymru'))) assert.ok(text(h).includes(t.replace(/\s+/g, ' ')), t);
-  assert.ok(!text(h).includes('Dŵr Cymru Welsh Water\'s live overflow status'));
+  for (const t of Rec.CANNOT_SEE.filter(t => !t.startsWith('Dŵr Cymru'))) assert.ok(text(h).includes(t.replace(/\s+/g, ' ')), t);
+  assert.ok(!text(h).includes('Dŵr Cymru Welsh Water\'s overflows in Wales'));
   const wye = {...ilkley, contributors: [...ilkley.contributors, ov('HAY ON WYE/STW', 0.5, 12, {company: 'Dwr Cymru Welsh Water'})]};
-  assert.ok(text(Rec.view(wye, DAYS[1], DATA, VER, BASE, NOW)).includes('Dŵr Cymru Welsh Water\'s live overflow status is not shown.'));
+  assert.ok(text(Rec.view(wye, DAYS[1], DATA, VER, BASE, NOW)).includes(Rec.CANNOT_SEE[wales]));
+  const ludlow = {...ilkley, upstream_summary: {...ilkley.upstream_summary, wales_share: 0.12}};
+  assert.ok(text(Rec.view(ludlow, DAYS[1], DATA, VER, BASE, NOW)).includes(Rec.CANNOT_SEE[wales]));
   // The E. coli estimate's sentence only where the spot shows the estimate: not at a lake.
   assert.ok(text(h).includes('On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.'));
   const tarn = Rec.cannotSee({...ilkley, kind: 'lake', location: {mode: 'lake'}});

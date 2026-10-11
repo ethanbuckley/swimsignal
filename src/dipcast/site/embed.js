@@ -10,12 +10,12 @@
 // `Embed`, so no name here can clash with one of levels.js's.
 const Embed = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
-    : { ORDER, NO_OVERFLOWS, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction };   // levels.js's globals
+    : { ORDER, NO_OVERFLOWS, NO_RIVER, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction, walesWords, eaUnchecked, EA_UNCHECKED };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the page and build_site.py use the same rule
   const STALE_MIN = 8 * 60;   // the app's "Stale" notice waits as long (index.html, STALE_MIN)
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-  const tone = l => l === R.NO_OVERFLOWS ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');
+  const tone = l => l === R.NO_OVERFLOWS || l === R.NO_RIVER ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');   // index.html's
   const shortDay = iso => iso === R.today() ? 'Today' : new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
   const ago = m => { const t = Math.max(0, Math.round(m)); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };
   // Links open the site in a new tab: inside a frame, a link that opened in place would leave the
@@ -46,13 +46,17 @@ const Embed = (() => {
       + `<span class="dbar" aria-hidden="true"><i style="width:${lv ? (R.rank(lv) + 1) * 25 : 0}%"></i></span></li>`;
   }).join('');
 
-  // The caveat, as the spot's page puts it beside the forecast (check() in index.html). At a bathing
-  // water the Environment Agency's page is the one place with advice against bathing given at short
-  // notice, so it is linked here too.
-  const check = s => {
+  // The caveat, as the spot's page puts it beside the forecast (check() in index.html).
+  const check = () => 'A forecast, not a water test: check the signs at the water before you swim.';
+  // What the card cannot count or check, under what to do, as the spot page's answer says it (index.html,
+  // unchecked): the overflows in Wales, and at a bathing water the Environment Agency's advice for today,
+  // which nothing here can read (levels.js, EA_UNCHECKED). The EA's page is the one place with advice
+  // against bathing given at short notice, so it is linked.
+  const gaps = s => {
     const url = (s.classification || {}).url;
-    return 'A forecast, not a water test: check the signs at the water before you swim.'
-      + (s.source === 'designated' && url ? ` ${out(url, 'The Environment Agency’s page')} has any advice against bathing there today, which this forecast does not include.` : '');
+    const ea = R.eaUnchecked(s) ? `${esc(R.EA_UNCHECKED)} ${/^https:\/\//.test(url || '') ? out(url, 'The Environment Agency’s page') : 'The Environment Agency’s page'} says when bathing is not advised.` : '';
+    const said = [esc(R.walesWords(s)), ea].filter(Boolean);
+    return said.length ? `<p class="act">${said.join(' ')}</p>` : '';
   };
 
   // The card's HTML for spot s from spots.json (data); now is a time in ms, for the age. offline: the
@@ -64,12 +68,12 @@ const Embed = (() => {
     let h = `<h1 class="name">${out(page, esc(s.name))}</h1>`;
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: ${offline ? 'this screen has not been able to fetch a newer one' : 'the automatic update has not run since'}. Treat it as out of date.</p>`;
     // Where the week goes, unless the headline already says it: "Low risk now · Very high risk on Thursday" was
-    // followed by "Very high risk on Thursday" (11 Oct 2026).
+    // followed by "Very high risk on Thursday" (11 Oct 2026). A worse later day is in both (levels.js, headParts).
     const head = R.headline(s);
     h += `<p class="hl ${tone(R.level(s))}">${esc(head)}</p>` + (next && !head.includes(next) ? `<p class="next">${esc(next)}</p>` : '');
-    h += `<p class="act">${esc(R.levelAction(s))}</p>`;   // what to do, as under the spot page's answer
+    h += `<p class="act">${esc(R.levelAction(s))}</p>` + gaps(s);   // what to do, as under the spot page's answer
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
-    return h + `<p class="check">${check(s)}</p>`
+    return h + `<p class="check">${check()}</p>`
       + `<p class="foot">Issued ${esc(issued)}, ${ago(age)} ago · ${out(page, 'Full forecast on SwimSignal', 'back')}</p>`
       + `<p class="credit">${s.source === 'openstreetmap' ? OSM : ''}${CREDIT}</p>`;
   }

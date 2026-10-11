@@ -47,7 +47,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert "very high" not in head.lower().replace("veryhigh", "")
     assert head.count("<title>") == 1 and "page-meta" not in page
     assert '<h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in page   # before the script runs
-    assert "no monitored storm overflow can reach this lake" in (tmp_path / "spot" / "tarn" / "index.html").read_text()
+    assert "no monitored storm overflow found upstream of this lake" in (tmp_path / "spot" / "tarn" / "index.html").read_text()
     home = (tmp_path / "index.html").read_text()
     assert '<link rel="canonical" href="https://example.org/swim/">' in home
     assert '<base href="./">' in home.split("</head>")[0]   # pushState to spot/<id>/ must not move its links
@@ -342,7 +342,7 @@ def test_the_alerts_file_uses_the_page_rules(tmp_path):
                                  "best": {"date": "2026-09-30", "level": "low", "words": "tomorrow, low risk"},
                                  "days": out["spots"]["a"]["days"]}
     assert out["spots"]["tarn"]["rank"] == -1 and out["spots"]["tarn"]["level"] == "no river connection"
-    assert out["spots"]["tarn"]["headline"] == "No monitored overflow drains into this lake"
+    assert out["spots"]["tarn"]["headline"] == "No monitored overflow found upstream"   # one plain wording since 11 Oct 2026
     assert out["spots"]["tarn"]["action"] == "After heavy rain, wait a couple of days before swimming if you can."
     assert "best" not in out["spots"]["tarn"]   # the same every day: nothing for the weekly note
     assert "days" not in out["spots"]["tarn"]   # nor for a date: the alerts use its own level

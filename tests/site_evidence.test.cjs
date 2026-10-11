@@ -66,20 +66,21 @@ test('the overflows say which report live, and why the others do not, in the dat
   const say = now => row(cromwheel({ now: { discharging_upstream: 1, recent_upstream: 2, ...now } }), 'Overflows upstream').say;
   // forecast.live_counts with no_feed_upstream: offline monitors told from a company with no live feed.
   assert.equal(say({ monitored_upstream: 12, no_feed_upstream: 2, stale_upstream: 0, feed_down_upstream: 0 }),
-    '1 of 15 discharging, 2 stopped lately. 12 of 15 report live. Not reporting: 1 offline; 2 with no live feed.');
+    '1 discharging, 2 stopped lately. 12 of 15 report live. Not reporting: 1 offline; 2 with no live feed.');
   // A forecast from before that field: the two cannot be told apart, and the page does not guess.
   assert.equal(say({ monitored_upstream: 12, stale_upstream: 0, feed_down_upstream: 0 }),
-    '1 of 15 discharging, 2 stopped lately. 12 of 15 report live. Not reporting: 3 offline or with no live feed.');
+    '1 discharging, 2 stopped lately. 12 of 15 report live. Not reporting: 3 offline or with no live feed.');
   // A stale feed and a feed that is down are named with their company, a stale one with its last update.
   assert.equal(say({ monitored_upstream: 10, no_feed_upstream: 0, stale_upstream: 3, feed_down_upstream: 2,
     feed_stale: [{ company: 'Southern Water', overflows: 3, since: '2026-10-03T08:12:00+00:00' }],
     feed_down: [{ company: 'Thames Water', overflows: 2, since: null }] }),
-    "1 of 15 discharging, 2 stopped lately. 10 of 15 report live. Not reporting: 2 on Thames Water's feed, which is down; 3 on Southern Water's feed, not updated since 3 Oct, 09:12.");
+    "1 discharging, 2 stopped lately. 10 of 15 report live. Not reporting: 2 on Thames Water's feed, which is down; 3 on Southern Water's feed, not updated since 3 Oct, 09:12.");
   assert.match(say({ monitored_upstream: 14, no_feed_upstream: 0, stale_upstream: 1, feed_stale: [{ company: 'South West Water', overflows: 1, since: null }] }),
     /Not reporting: 1 on South West Water's feed, which gives no update time\.$/);
   // Every overflow on a company with no live feed (Dŵr Cymru Welsh Water's, upstream on the Wye).
   const wye = cromwheel({ upstream_summary: { overflows: 14 }, now: { discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 0, no_feed_upstream: 14 } });
-  assert.equal(row(wye, 'Overflows upstream').say, '0 of 14 discharging. None of 14 report live. Not reporting: 14 with no live feed.');
+  // None reports, so whether any is discharging is not known: never "0 of 14 discharging" (11 Oct 2026).
+  assert.equal(row(wye, 'Overflows upstream').say, 'Whether any is discharging is not known. None of 14 report live. Not reporting: 14 with no live feed.');
   const one = cromwheel({ upstream_summary: { overflows: 1 }, now: { discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1 } });
   assert.equal(row(one, 'Overflows upstream').say, '0 of 1 discharging. It reports live.');
   const html = ev.evidenceTile(cromwheel({ now: { monitored_upstream: 14, stale_upstream: 1, feed_stale: [{ company: '<b>X</b>', overflows: 1, since: null }] } }), NOW, BUILT);

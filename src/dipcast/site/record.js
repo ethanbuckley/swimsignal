@@ -21,7 +21,7 @@
 const Record = (() => {
   const node = typeof module === 'object' && module.exports;
   const R = node ? require('./levels.js')
-    : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, nowBecause, daily, ecoliBand, ecoliUntested, poorAdvice };   // levels.js's globals
+    : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, nowBecause, daily, ecoliBand, ecoliUntested, poorAdvice, walesShare };   // levels.js's globals
   const E = node ? require('./evidence.js') : { evidenceAge, evidenceOverflows, evidenceSample };
   const O = node ? require('./organisers.js') : Organisers;
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;
@@ -41,12 +41,20 @@ const Record = (() => {
   const row = (label, body) => body ? `<dt>${label}</dt><dd>${body}</dd>` : '';
 
   // What the forecast cannot see: the About page's list, word for word (about.html, "What it cannot see").
-  // tests/site_record.test.cjs fails when the two differ. A record shows the lines that apply to its spot (cannotSee).
+  // tests/site_record.test.cjs fails when the two differ, except in the Welsh item below. A record shows the
+  // lines that apply to its spot (cannotSee).
+  // The overflows in Wales (11 Oct 2026). The About page's item says Dŵr Cymru's overflows "which matter at
+  // the spots on the Dee and on the Wye in Herefordshire, are forecast from rain and their yearly spill
+  // record": true of its overflows in England, but its overflows in Wales are not in the data at all, and
+  // those are most of what lies above Sandy Lane, Chester (73% of the river within 60 km). Until the About
+  // page says this too, the test lets the two differ here only.
+  const WALES_CANNOT_SEE = 'Dŵr Cymru Welsh Water\'s overflows in Wales are not in SwimSignal\'s data: there is no licence to reuse them yet, and SwimSignal is waiting for Dŵr Cymru\'s terms. '
+    + 'Where a spot\'s river runs from Wales, its page says how much of the river above it is in Wales. Dŵr Cymru\'s overflows in England are forecast from rain and their yearly spill record, with no "right now".';
   const CANNOT_SEE = [
     'The spill forecast covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident. On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.',
     'It does not count the treated sewage that sewage works let into rivers every day, only their storm overflows.',
     'It does not count wildlife or other bathers. On a lake it does not use the wind, which decides where river water goes. The method page says what you can do instead.',
-    'Dŵr Cymru Welsh Water\'s live overflow status is not shown. Its map has a public data layer, but with no licence to reuse it, and SwimSignal is waiting for Dŵr Cymru\'s terms. Its overflows, which matter at the spots on the Dee and on the Wye in Herefordshire, are forecast from rain and their yearly spill record, with no "right now".',
+    WALES_CANNOT_SEE,
     'Its level does not include the Environment Agency\'s short-notice advice against bathing after pollution or an algal bloom. On a bathing water\'s page, opening "Today\'s EA advice" loads the Agency\'s own panel, which has it.',
     'It says nothing about currents, cold water or other dangers.',
     'A "low" reading means nothing the site looks at flags the day. It does not mean the water is clean, or that it is safe to swim there.',
@@ -57,7 +65,7 @@ const Record = (() => {
   // a river with a daily forecast (levels.js, ecoliBand): a lake's record described an estimate its page never shows.
   const ECOLI_SENTENCE = / On rivers, the E\. coli estimate [^.]*\./;
   function cannotSee(s) {
-    const welsh = (s.contributors || []).some(c => /Cymru/i.test(String(c.company || '')));
+    const welsh = (s.contributors || []).some(c => /Cymru/i.test(String(c.company || ''))) || R.walesShare(s) > 0;   // or its river runs from Wales
     const ecoli = R.daily(s) && (s.location || {}).mode !== 'lake';
     return CANNOT_SEE.filter(t => welsh || !t.startsWith('Dŵr Cymru')).map(t => ecoli ? t : t.replace(ECOLI_SENTENCE, ''));
   }
@@ -105,7 +113,7 @@ const Record = (() => {
     const likely = all.filter(x => !nil(x.p) && x.c.weight * x.p >= 0.001).sort((a, b) => b.c.weight * b.p - a.c.weight * a.p).slice(0, 3);
     const list = likely.length ? likely : all.slice().sort((a, b) => b.c.weight - a.c.weight).slice(0, 3);
     if (!list.length) return '';
-    const one = ({ c, p, o }) => `<li><b>${esc(o.plain)}</b>${o.own ? ` (${esc(o.own)})` : ''}: ${o.km} km upstream, sewage arrives in ${away(o.travel_h)}. `
+    const one = ({ c, p, o }) => `<li><b>${esc(o.plain)}</b>${o.own ? ` (${esc(o.own)})` : ''}: ${esc(o.where)}, sewage arrives in ${away(o.travel_h)}. `
       + `${nil(p) ? '' : `Spill chance ${pct(p)}, `}reach ${pct(o.reach)}.${c.status === 1 ? ' Discharging when the forecast was issued.' : ''}</li>`;
     return (likely.length ? '' : 'None is likely to reach the spot that day. The ones with the most reach: ') + `<ul class="r-ovs">${list.map(one).join('')}</ul>`;
   }
@@ -118,10 +126,11 @@ const Record = (() => {
     if (reason) h += `<p class="r-why">${esc(reason)}</p>`;
     if (lv === R.NO_OVERFLOWS || lv === R.NO_RIVER) h += `<p class="r-why">${esc(R.OTHER_RISKS)}</p>`;
     const rows = [];
-    // Right now, on the day itself, where the live feeds put it higher than the day's forecast.
+    // Right now, on the day itself, where the live feeds put it higher than the day's forecast; since 11 Oct
+    // 2026 they raise the day's level too (levels.js, risk), and this row says where that came from.
     if (iso === R.today() && R.daily(s) && s.now) {
       const n = R.risk(s, s.now, true);
-      if (R.rank(n.level) > R.rank(lv)) rows.push(row('Right now', `${cap(n.level)} risk: ${esc(R.nowBecause(s, n))}, from the live feeds when the forecast was issued.`));
+      if (R.rank(n.level) > R.rank(lv) || (x && R.risk(s, x).now)) rows.push(row('Right now', `${cap(n.level)} risk: ${esc(R.nowBecause(s, n))}, from the live feeds when the forecast was issued.`));
     }
     if (R.daily(s) && x) {
       if (nil(x.risk)) rows.push(row('Sewage spills upstream', 'The rainfall forecast for this day has not arrived, so there is no figure.'));
@@ -169,7 +178,7 @@ const Record = (() => {
     const sample = E.evidenceSample(s.lab_sample, now);
     if (sample) add('Latest lab sample', sample, when(s.lab_sample.taken_at), ea);
     const rs = s.river_state;
-    if (rs && !nil(rs.level_m) && rs.observed_at) add('River level', `${rs.level_m.toFixed(2)} m at ${esc(rs.station)}${nil(rs.distance_km) ? '' : `, ${rs.distance_km} km away`}`
+    if (rs && !nil(rs.level_m) && rs.observed_at) add(rs.water === 'lake' ? 'Lake level' : 'River level', `${rs.level_m.toFixed(2)} m at ${esc(rs.station)}${nil(rs.distance_km) ? '' : `, ${rs.distance_km} km away`}`
       + `${!nil(rs.typical_low_m) && !nil(rs.typical_high_m) ? `; its usual range is ${rs.typical_low_m.toFixed(2)} to ${rs.typical_high_m.toFixed(2)} m` : ''}. Not part of the pollution level.`,
       when(rs.observed_at), 'Environment Agency real-time flood and river level data');
     const wt = s.water_temp;

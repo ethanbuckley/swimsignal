@@ -53,7 +53,9 @@ test('a row gives the headline and the five days by levels.js, and the reason in
   assert.ok(h.indexOf('River Eden, Lazonby') < h.indexOf('River Thames') && h.indexOf('River Thames') < h.indexOf('Buttermere'));
   assert.ok(h.includes(`<p class="s-head high">${L.headParts(lazonby)[0]}</p>`));
   assert.equal(L.headParts(lazonby)[0], 'High risk tomorrow');
-  assert.ok(h.includes('<p class="s-why">Sewage spills. Moderate risk by Tuesday.</p>'));
+  // Thursday is very high, worse than the headline's high: said first (11 Oct 2026), where it once said where the level fell.
+  assert.equal(L.headParts(lazonby)[2], 'Very high risk on Thursday');
+  assert.ok(h.includes('<p class="s-why">Sewage spills. Very high risk on Thursday.</p>'));
   // The five days: a bar a day in its level's colour, read out in words.
   const strip = h.split('River Eden, Lazonby')[1].split('</li>')[0];
   assert.deepEqual([...strip.matchAll(/<i class="([a-z]*)"/g)].map(m => m[1]), ['low', 'high', 'moderate', 'moderate', 'veryhigh']);
@@ -62,7 +64,7 @@ test('a row gives the headline and the five days by levels.js, and the reason in
   assert.equal(L.headParts(henley)[0], 'Low risk now · Moderate risk on Tuesday');
   assert.ok(h.includes('<p class="s-why">Under one spill is expected from the 51 overflows upstream today.</p>'));
   // No overflow upstream: the plain level, the other risks, and the rain as bars.
-  assert.ok(h.includes('<p class="s-head clear">No sewage risk from monitored overflows</p>') && h.includes(L.OTHER_RISKS));
+  assert.ok(h.includes('<p class="s-head clear">No monitored overflow found upstream</p>') && h.includes(L.OTHER_RISKS));
   assert.ok(h.includes('class="week rain"') && h.includes('Rain in the 48 hours to midday: Sun 0 mm'));
   // Each row links its spot and a decision record for today and tomorrow.
   assert.ok(h.includes('href="spot/eden-lazonby/"') && h.includes('href="record.html#spot=eden-lazonby&amp;day=2026-10-05">tomorrow</a>'));

@@ -218,6 +218,41 @@ def lead_skill(processed: Path = config.PROCESSED) -> dict | None:
     return {"spill": held(spill), "water": held(water)}
 
 
+# The test of the E. coli estimate on Welsh river samples (docs/WALES-PLAN-2026-10.md, task W10, run 10 Oct
+# 2026): 185 samples at 11 stations on the Wye and the Tywi, 11 of them over 900 per 100 ml; the estimate
+# averaged 32.4%, and its Brier score was worse than England's flat rate. Its summary file is not in git
+# (data/processed/wales_ecoli_check.json in the main checkout), so its result is here, with where it is from.
+WALES_ECOLI_TEST = {"n_samples": 185, "mean": 0.324, "observed": 0.059, "run": "2026-10-10",
+                    "source": "docs/WALES-PLAN-2026-10.md, W10"}
+# Shown skill on live samples: a Brier score better than the samples' own rate, and an AUC of at least this.
+LIVE_SKILL_AUC = 0.6
+
+
+def ecoli_check(live: dict | None = None) -> dict:
+    """What a spot's page says about the E. coli estimate beside it (levels.js, ecoliNotes; Ethan, 11 Oct
+    2026: shown all year, labelled with what is true today), for spots.json's `ecoli_check`. `live` is
+    verification_live.json, as the scoring in refresh_all wrote it this build; its ecoli_live is each EA
+    sample since the forecast began against the latest forecast issued before it (forecast_log.verify_ecoli).
+    On 11 Oct 2026: 37 samples at 26 spots, AUC 0.52, Brier 0.107 against 0.104 for the samples' own rate,
+    so no skill shown yet. The words follow the numbers each build; nothing here says how they read."""
+    if live is None:
+        p = config.state_read("verification_live.json")
+        try:
+            live = json.loads(p.read_text()) if p.exists() else None
+        except (OSError, ValueError) as e:
+            log.warning("verification_live.json unreadable, the E. coli label leaves out its live record: %s", e)
+            live = None
+    e = (live or {}).get("ecoli_live") or {}
+    o = e.get("overall") or {}
+    out: dict = {"wales": WALES_ECOLI_TEST}
+    if e.get("n_samples") and o.get("auc") is not None and o.get("brier") is not None:
+        clim = o.get("climatology_brier")
+        out["live"] = {"n_samples": int(e["n_samples"]), "n_sites": e.get("n_sites"), "auc": round(float(o["auc"]), 2),
+                       "brier": round(float(o["brier"]), 3), "climatology_brier": None if clim is None else round(float(clim), 3),
+                       "skill": bool(clim is not None and o["brier"] < clim and o["auc"] >= LIVE_SKILL_AUC)}
+    return out
+
+
 # Alerts (push/): on when both repository variables are set. The Worker's address and its public
 # key sit in spots.json for the page; the private key never leaves the Worker.
 PUSH_URL_ENV, PUSH_KEY_ENV = "DIPCAST_PUSH_URL", "DIPCAST_VAPID_PUBLIC_KEY"
@@ -897,6 +932,28 @@ def _km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 12742 * math.asin(math.sqrt(h))
 
 
+RIVER_WORD = re.compile(r"\b(river|afon|beck|brook|burn|stream|cut|gill|ghyll|canal|ditch|dyke)\b", re.IGNORECASE)
+
+
+def lake_gauge(r: dict, state: dict | None) -> dict | None:
+    """The gauge reading a spot keeps. A lake keeps only a gauge on the lake itself, marked `water`
+    "lake", whose page words it as a lake level (index.html, riverTile); a gauge on another water is
+    dropped. On 11 Oct 2026 Loughrigg Tarn showed the River Brathay's level, the Serpentine the Wandle's,
+    eight km away, and Windermere's "0.73 m, High water" sat inside its usual 0.23 to 1.00 m with "A high
+    river runs faster": a river's level says nothing about a lake's water, and the river words do not fit
+    a lake's own. On the lake: its name shares a word with the lake's, as same_river reads them, and has
+    no river word (the River Derwent at Portinscale shares "Derwent" with Derwent Water but is the river
+    below it). A river spot keeps its gauge as before."""
+    if state is None or not (r.get("kind") == "lake" or (r.get("location") or {}).get("mode") in ("lake", "isolated")):
+        return state
+    from dipcast.network.names import same_river
+    lake = (r.get("location") or {}).get("watercourse") or r.get("name")
+    gauge = state.get("river") or ""
+    if RIVER_WORD.search(gauge) or not (same_river(lake, gauge) or same_river(r.get("name"), gauge)):
+        return None
+    return {**state, "same_river": True, "water": "lake"}
+
+
 def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=None) -> int:
     """The Environment Agency's nearest level gauge, on the spot's own river where it has one, as
     an observation beside the forecast: the latest level, the gauge's usual range and a word for
@@ -943,8 +1000,8 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
             log.warning("river level gauges not kept for the next build: %s", e)
     n = 0
     for r, s in zip(results, states, strict=True):
-        r["river_state"] = s
-        n += s is not None and not s["stale"]
+        r["river_state"] = lake_gauge(r, s)   # a lake keeps only a gauge on itself
+        n += r["river_state"] is not None and not r["river_state"]["stale"]
     return n
 
 
@@ -1260,9 +1317,10 @@ def spot_blurb(spot: dict) -> str:
     name, kind = spot["name"], "lake" if spot.get("kind") == "lake" else "river"
     n = (spot.get("upstream_summary") or {}).get("overflows")
     if spot.get("error") and not str(spot["error"]).startswith("forecast failed"):
-        return f"{name}: no monitored storm overflow can reach this {kind} along the river network, so {BRAND} has no spill forecast for it."
-    if n == 0:
-        return f"{name}: no sewage risk from monitored overflows, as none is within {config.MAX_UPSTREAM_KM:g} km upstream. Other risks apply: algae, wildlife, runoff and bathers."
+        return f"{name}: no monitored storm overflow found upstream of this {kind} on the river network, so {BRAND} has no spill forecast for it."
+    if n == 0:   # "no sewage risk" until 11 Oct 2026, which read as no risk at all
+        return (f"{name}: no monitored storm overflow found within {config.MAX_UPSTREAM_KM:g} km upstream, so {BRAND} has no spill "
+                "forecast for it. Other risks apply: algae, wildlife, runoff and bathers.")
     upstream = f" from the {n} monitored storm overflow{'' if n == 1 else 's'} upstream," if n else ""
     return (f"Five-day pollution risk forecast for {name},{upstream} using live overflow status, rainfall forecasts "
             f"and the river network. Updated several times a day.")
@@ -1993,7 +2051,8 @@ def build(refresh: bool = True) -> dict:
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     push, email = push_config(), email_config()
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
-           "lead_skill": lead_skill(), **({"push": push} if push else {}), **({"email": email} if email else {}),
+           "lead_skill": lead_skill(), "ecoli_check": ecoli_check(),
+           **({"push": push} if push else {}), **({"email": email} if email else {}),
            "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads

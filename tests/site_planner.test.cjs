@@ -50,8 +50,8 @@ test('the lowest-risk day counts low days among spots with a daily forecast, tie
 test('standing ratings and missing coverage are not called daily forecasts', () => {
   assert.equal(dayHeadline({days:[],classification:{class:'sufficient'}},'2026-10-01'),'Moderate risk: rated sufficient by the Environment Agency');
   // An excellent or good rating no longer makes such a spot "low": the plain level says what is true there.
-  assert.equal(dayHeadline({days:[],classification:{class:'excellent'}},'2026-10-01'),'No sewage risk from monitored overflows');
-  assert.equal(dayHeadline({days:[]},'2026-10-01'),'No sewage risk from monitored overflows');
+  assert.equal(dayHeadline({days:[],classification:{class:'excellent'}},'2026-10-01'),'No monitored overflow found upstream');
+  assert.equal(dayHeadline({days:[]},'2026-10-01'),'No monitored overflow found upstream');
 });
 
 const {evidenceRows, comparisonIds} = require('../src/dipcast/site/experience.js');
@@ -73,7 +73,7 @@ test('evidence distinguishes missing feeds, dated records, and out-of-season mod
 });
 test('a spot without a forecast is described in the headline’s words', () => {
   const lake = {days:[], error:'An isolated lake with no river connection', classification:{class:'excellent', year:2025}};
-  assert.equal(Object.fromEntries(evidenceRows(lake,'2026-09-30','')).Forecast, 'No monitored overflow drains into this lake.');
+  assert.equal(Object.fromEntries(evidenceRows(lake,'2026-09-30','')).Forecast, 'No monitored overflow found upstream.');
   const away = {days:[], error:'No river or lake within 1.5 km of this point.'};
   assert.equal(Object.fromEntries(evidenceRows(away,'2026-09-30','')).Forecast, 'Not covered by the forecast.');
   const failed = {days:[], error:'forecast failed: timeout'};
@@ -81,7 +81,7 @@ test('a spot without a forecast is described in the headline’s words', () => {
 });
 test('missing coverage is not reported as a low risk or current test', () => {
   const facts = Object.fromEntries(evidenceRows({days:[]},'2026-09-30',''));
-  assert.match(facts.Forecast,/^No sewage risk from monitored overflows: none is within reach upstream, so there is no daily spill forecast/);
+  assert.match(facts.Forecast,/^No monitored overflow found upstream within 60 km, so there is no daily spill forecast/);
   assert.match(facts['Live spill feeds'], /other pollution sources/);
   assert.match(facts['Algae observation'], /does not mean algae are absent/);
 });
@@ -122,7 +122,10 @@ test('a later worse day is named by its full weekday, in the headline and in whe
 test('where the week goes starts at today when the level comes from right now', () => {
   const now = week(['low', 'low', 'low', 'low', 'low'], {now:{label:'moderate'}});
   assert.equal(L.headline(now), 'Moderate risk right now: sewage spills');
-  assert.equal(L.weekNext(now), 'Low risk later today');   // was "Low risk tomorrow": the search began a day late
+  // Today is at least right now since 11 Oct 2026 (levels.js, risk), so today is moderate too and the
+  // level falls tomorrow. Until then this read "Low risk later today" over a "Today: Moderate" row.
+  assert.equal(L.dayLevel(now, DATES[0]), 'moderate');
+  assert.equal(L.weekNext(now), 'Low risk tomorrow');
   assert.equal(L.weekNext(week(['high', 'low', 'low', 'low', 'low'])), 'Low risk tomorrow');
   assert.equal(L.weekNext(week(['high', 'high', 'moderate', 'low', 'low'])), 'Low risk by Saturday');
   assert.equal(L.weekNext(week(['high', 'high', 'high', 'high', 'high'])), 'High risk on all five days');
@@ -132,13 +135,15 @@ test('where the week goes starts at today when the level comes from right now', 
 test('where the week goes starts after where the level came from, not the first day that shares it', () => {
   // Greenholme on 4 Oct 2026: right now moderate, and Sunday's moderate came after it. The search began
   // after Sunday, found nothing, and the line was blank.
+  // Since 11 Oct 2026 a worse later day comes first, in the headline and in where the week goes.
   const greenholme = week(['low', 'low', 'high', 'very high', 'moderate'], {now:{label:'moderate'}});
-  assert.equal(L.headline(greenholme), 'Moderate risk right now: sewage spills');
-  assert.equal(L.weekNext(greenholme), 'Low risk later today');
-  // Right now high and Thursday high: the search began after Thursday, missed today's low and said "Moderate risk by Friday".
-  assert.equal(L.weekNext(week(['low', 'high', 'moderate', 'high', 'high'], {now:{label:'high'}})), 'Low risk later today');
-  // No low day: the lowest from right now on is today's moderate. The search after Thursday found nothing lower: blank.
-  assert.equal(L.weekNext(week(['moderate', 'high', 'high', 'high', 'high'], {now:{label:'high'}})), 'Moderate risk later today');
+  assert.equal(L.headline(greenholme), 'Moderate risk right now: sewage spills · Very high risk on Saturday');
+  assert.equal(L.weekNext(greenholme), 'Very high risk on Saturday');
+  assert.equal(L.weekNext(week(['low', 'low', 'high', 'moderate', 'moderate'], {now:{label:'moderate'}})), 'High risk on Friday');
+  // Right now high and Thursday high: today is high too (today is at least right now), and the lowest after it is Friday's moderate.
+  assert.equal(L.weekNext(week(['low', 'high', 'moderate', 'high', 'high'], {now:{label:'high'}})), 'Moderate risk by Friday');
+  // No lower day: today is high with right now, so the level holds on all five days.
+  assert.equal(L.weekNext(week(['moderate', 'high', 'high', 'high', 'high'], {now:{label:'high'}})), 'High risk on all five days');
   assert.equal(L.weekNext(week(['moderate', 'moderate', 'moderate', 'moderate', 'moderate'], {now:{label:'moderate'}})),
     'Moderate risk on all five days');
   // From tomorrow: the search starts after tomorrow even when today has no forecast, and a later day sharing it does not move it.
@@ -168,7 +173,7 @@ function pageContext(names, extra = {}) {
   return ctx;
 }
 test('the day-by-day table gives each day the level its row in the five days gives', () => {
-  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'dayTable']);
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'dayTable']);
   const poor = week(['low', 'low', 'high', 'low', 'low'], {classification:{class:'poor'}});
   const table = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)(poor);
   const cells = [...table.matchAll(/<span class="badge [\w-]+">([^<]+)<\/span>/g)].map(m => m[1]);
@@ -226,7 +231,7 @@ test('a water rated poor names the advice against bathing in its season only, by
   assert.equal(L.headline(poor), 'High risk: rated poor, advice against bathing');
   assert.equal(L.dayHeadline(poor, '2026-09-30'), 'High risk: rated poor, advice against bathing');
   assert.equal(L.dayHeadline(poor, '2026-10-01'), 'High risk: rated poor');
-  assert.deepEqual(L.headParts(poor), ['High risk', 'rated poor, advice against bathing']);
+  assert.deepEqual(L.headParts(poor), ['High risk', 'rated poor, advice against bathing', '']);
   assert.equal(L.dayLevel(poor, '2026-10-01'), 'high');
   assert.match(L.poorAdvice('2026-09-30'), /^Advice against bathing applies here while the rating is poor/);
   assert.match(L.poorAdvice('2026-10-01'), /^The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September\.$/);
@@ -236,7 +241,7 @@ test('a water rated poor names the advice against bathing in its season only, by
   finally { L.setToday('2026-09-30'); }
 });
 test('the day table’s † note shows only while a cell carries a †', () => {
-  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'dayTable']);
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'dayTable']);
   const off = week(['low', 'low', 'low', 'low', 'low']);   // every day out of season, with a figure
   const river = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)(off);
   assert.match(river, /<sup>†<\/sup>Outside May to September, when the Environment Agency takes no samples/);
@@ -251,7 +256,7 @@ test('the day table’s † note shows only while a cell carries a †', () => {
 // river flows into. The level says so in words of its own, with one line under it and the rain.
 const PAGE = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'initial', 'VIEW', 'km', 'dist', 'away',
   'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
-  'listHeadline', 'listPath', 'spotItem', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'dayTable'];
+  'listHeadline', 'listPath', 'headNote', 'spotItem', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'ecoliCheck', 'dayTable'];
 const plainCtx = () => pageContext(PAGE, {ROOT: {pathname: '/'}});
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 // A river with days but no contributors: the build still computes an E. coli figure for it (35% here).
@@ -262,8 +267,9 @@ const isolatedLake = {id: 'henleaze', name: 'Henleaze Lake', kind: 'lake', sourc
   error: 'An isolated lake with no river connection in the network: storm overflows cannot reach it by water, so the forecast has nothing to say about it.',
   classification: {class: 'excellent', year: 2025, url: 'https://example.org/bw'}, assumptions: {max_upstream_km: 60}};
 
-test('a spot with days but nothing upstream reads "No sewage risk from monitored overflows" on every surface', () => {
-  const words = 'No sewage risk from monitored overflows';
+// Until 11 Oct 2026 "No sewage risk from monitored overflows", which read as no risk at all.
+test('a spot with days but nothing upstream reads "No monitored overflow found upstream" on every surface', () => {
+  const words = 'No monitored overflow found upstream';
   assert.equal(L.level(clearRiver), L.NO_OVERFLOWS);
   assert.equal(L.headline(clearRiver), words);
   assert.deepEqual(DATES.map(iso => L.dayHeadline(clearRiver, iso)), DATES.map(() => words));   // the list and map on a picked day
@@ -277,10 +283,10 @@ test('a spot with days but nothing upstream reads "No sewage risk from monitored
   assert.equal(run('colour', L.NO_OVERFLOWS), '#4aa39a');
   // The saved card, the list row and the map's tooltip say the same.
   const card = run('savedCard', clearRiver);
-  assert.match(card, /<p class="big-head clear">No sewage risk from monitored overflows<\/p>/);
+  assert.match(card, /<p class="big-head clear">No monitored overflow found upstream<\/p>/);
   assert.match(text(card), /Other risks apply: algae, wildlife, runoff and bathers\. Check the signs at the water\. 12 mm of rain in the last two days\./);
-  assert.match(run('spotItem', clearRiver), /<span class="hl clear">No sewage risk from monitored overflows<\/span>/);
-  assert.equal(run('markerTip', clearRiver), 'River Duddon, Birks Bridge: No sewage risk from monitored overflows');
+  assert.match(run('spotItem', clearRiver), /<span class="hl clear">No monitored overflow found upstream<\/span>/);
+  assert.equal(run('markerTip', clearRiver), 'River Duddon, Birks Bridge: No monitored overflow found upstream');
   // No E. coli estimate anywhere: the model was fitted on sites with overflows upstream.
   assert.equal(L.ecoliBand(clearRiver, clearRiver.days[0]), null);
   const table = run('dayTable', clearRiver, 0, false, {});
@@ -326,8 +332,10 @@ test('overflows discharging now: the sentence over the five days gives right now
   const one = week(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', discharging_upstream: 1}});
   assert.equal(run('summary', one)[0], '1 upstream overflow is discharging now: low risk from it right now.');
 });
-test('an isolated lake reads "No monitored overflow drains into this lake" in the unknown grey, with the same line and no rain', () => {
-  const words = 'No monitored overflow drains into this lake';
+// Since 11 Oct 2026 the same words and the same teal as a spot with no overflow within reach: until then
+// only 3 of the 12 lakes with nothing upstream read "No monitored overflow drains into this lake", in grey.
+test('an isolated lake reads "No monitored overflow found upstream" in the clear teal, with the same line and no rain', () => {
+  const words = 'No monitored overflow found upstream';
   assert.equal(L.level(isolatedLake), L.NO_RIVER);   // its excellent rating made it "low" before
   assert.equal(L.headline(isolatedLake), words);
   assert.equal(L.dayHeadline(isolatedLake, DATES[2]), words);
@@ -335,12 +343,13 @@ test('an isolated lake reads "No monitored overflow drains into this lake" in th
   const ctx = plainCtx(), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const m = run('answerParts', isolatedLake);
   assert.deepEqual([m.word, m.tone, m.head, m.sub, m.next],
-    [null, 'na', words, 'Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water.', '']);
-  assert.equal(run('colour', L.NO_RIVER), '#98a2aa');
-  assert.match(run('savedCard', isolatedLake), /<p class="big-head na">No monitored overflow drains into this lake<\/p>/);
-  assert.match(run('spotItem', isolatedLake), /<span class="hl na">No monitored overflow drains into this lake<\/span>/);
+    [null, 'clear', words, 'Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water.', '']);
+  assert.equal(run('colour', L.NO_RIVER), '#4aa39a');
+  assert.match(run('savedCard', isolatedLake), /<p class="big-head clear">No monitored overflow found upstream<\/p>/);
+  assert.match(run('spotItem', isolatedLake), /<span class="hl clear">No monitored overflow found upstream<\/span>/);
   assert.equal(run('markerTip', isolatedLake), `Henleaze Lake: ${words}`);
-  assert.match(text(run('check', isolatedLake)), /^A forecast, not a water test\. The EA's page has any advice/);
+  // A designated water: the answer says the EA's advice could not be checked (unchecked), not this line.
+  assert.equal(text(run('check', isolatedLake)), 'A forecast, not a water test.');
 });
 test('a rating or an algae check that raises the level still sets it; excellent or good does not', () => {
   const base = {...clearRiver, source: 'designated', location: {mode: 'lake'}};
@@ -405,5 +414,6 @@ test('right now raised with nothing discharging says the spills are recent', () 
     'Moderate risk today: sewage spills');   // a day's forecast is about spills to come, not recent ones
   const m = vm.runInContext('answerParts', plainCtx())(recent);
   assert.equal(m.sub, 'Recent sewage spills');
-  assert.equal(m.next, 'Low risk later today');
+  assert.equal(m.next, 'Low risk tomorrow');   // today is at least right now (11 Oct 2026): "later today" before
+  assert.equal(L.dayHeadline(recent, DATES[0]), 'Moderate risk: recent sewage spills');
 });

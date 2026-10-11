@@ -95,11 +95,30 @@ def summary(t: pd.DataFrame) -> list[dict]:
     return rows
 
 
+def in_lake(t: pd.DataFrame) -> pd.Series:
+    """Overflows in the spot's own lake: some lake on the way and no river (11 Oct 2026). They are across the
+    lake, not upstream: Glebe Road PS in Bowness read "2.6 km upstream" of Millerground, though Windermere
+    drains south. The site's pages say it the same way (levels.js, overflowWhere)."""
+    if "distance_km" in t:
+        river, lake = t["distance_km"].fillna(0), t.get("lake_distance_km", pd.Series(0.0, index=t.index)).fillna(0)
+    else:
+        river, lake = t["distance_m"].fillna(0) / 1000, t.get("lake_distance_m", pd.Series(0.0, index=t.index)).fillna(0) / 1000
+    return (lake > 0) & (river < 0.05)
+
+
 def in_short(t: pd.DataFrame) -> dict:
-    """How many overflows upstream, how many within NEAR_KM, how many live, and the nearest's km."""
+    """How many overflows upstream, how many within NEAR_KM, how many live, the nearest's km, and whether it
+    is in the same lake."""
     km = t["km"] if "km" in t else km_upstream(t)
     return {"n": len(t), "near": int((km <= NEAR_KM).sum()), "live": int(t["has_live"].fillna(False).astype(bool).sum()),
-            "nearest_km": float(km.min()) if len(t) else None}
+            "nearest_km": float(km.min()) if len(t) else None,
+            "nearest_in_lake": bool(in_lake(t).loc[km.idxmin()]) if len(t) else False}
+
+
+def company_name(name) -> str:
+    """A company's name as the pages write it: the EA's returns spell Dŵr Cymru without its circumflex
+    (levels.js, companyName)."""
+    return re.sub(r"\bDwr Cymru\b", "Dŵr Cymru", str(name or ""))
 
 
 def hours_away(h) -> str:
@@ -167,7 +186,8 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
                    f"<li><b>{s['n']}</b> monitored storm overflow{'' if s['n'] == 1 else 's'} drain{'s' if s['n'] == 1 else ''} into "
                    f"the water within {km:g}&nbsp;km upstream; <b>{s['near']}</b> of them within {NEAR_KM}&nbsp;km.</li>"
                    f"<li>{s['live']} of them report live to the water companies' public feeds.</li>"
-                   f"<li>The nearest is {fmt(s['nearest_km'], 1)}&nbsp;km upstream.</li></ul></aside>")
+                   f"<li>The nearest is {fmt(s['nearest_km'], 1)}&nbsp;km "
+                   f"{'away, across the lake' if s['nearest_in_lake'] else 'upstream'}.</li></ul></aside>")
         out.append("<h2>Each year, all overflows upstream</h2>")
         out.append(_table([("Year", False), ("Overflows with a return", True), ("Spills", True), ("Spill hours", True),
                            ("Spill hours, weighted by reach", True)],
@@ -175,16 +195,20 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
                            for r in years], "yearly totals"))
         out.append(f'<p class="small muted">{escape(REACH_NOTE)} <a href="methods.html#how">How reach is worked out</a>.</p>')
         out.append(f"<h2>The overflows, by reach</h2><p>All {s['n']}, the one whose spills matter most here first. "
-                   "Hours away is how long sewage takes to arrive at the model's river speed.</p>")
+                   "km away is along the river network, through any lake on the way, or across the lake for one that drains "
+                   "into the same lake. Hours away is how long sewage takes to arrive, at the model's river speed, and "
+                   "across a lake at its slower lake speed.</p>")
         def named(r) -> str:   # the plain name, then the company's own and the id, as the site's other pages give them
             plain, own = overflow_names(r["site_name"] if pd.notna(r.get("site_name")) else None, r["site_id"])
             return (f'{escape(plain)}<br><span class="muted">{escape(own) + " · " if own else ""}'
                     f'{escape(str(r["site_id"]))}</span>')
+        lake = in_lake(t)
         rows = [[named(r),
-                 escape(str(r.get("company") or "")), fmt(r["km"], 1), hours_away(r.get("travel_h")), escape(reach(r.get("weight"))),
+                 escape(company_name(r.get("company"))), fmt(r["km"], 1) + (" across the lake" if on_lake else ""),
+                 hours_away(r.get("travel_h")), escape(reach(r.get("weight"))),
                  fmt(r.get("spills_2023")), fmt(r.get("spills_2024")), fmt(r.get("spills_2025")),
-                 fmt(r.get("spill_hours_2025")), uptime(r.get("edm_operational_pct_2025"))] for _, r in t.iterrows()]
-        out.append(_table([("Overflow and id", False), ("Company", False), ("km upstream", True), ("Hours away", True),
+                 fmt(r.get("spill_hours_2025")), uptime(r.get("edm_operational_pct_2025"))] for (_, r), on_lake in zip(t.iterrows(), lake.to_numpy())]
+        out.append(_table([("Overflow and id", False), ("Company", False), ("km away", True), ("Hours away", True),
                            ("Reach", True), ("Spills 2023", True), ("Spills 2024", True), ("Spills 2025", True),
                            ("Spill hours 2025", True), ("Monitor uptime 2025", True)], rows, "overflows"))
         out.append('<p class="small muted">A dash: no annual return for that overflow in that year.</p>')

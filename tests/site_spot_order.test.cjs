@@ -34,6 +34,10 @@ test('the notes and the reviews still find the guide to mount after: it stays a 
 test('the overflows fold whole, and what their figures mean stays inside the fold', () => {
   const ov = html.slice(html.indexOf('function overflowTile('), html.indexOf('\n}\n', html.indexOf('function overflowTile(')));
   assert.match(ov, /<details class="tile fold" id="overflows"><summary><span class="t-lab">\$\{ICON\.spills\}<span>Overflows that matter most<\/span><\/span><\/summary>/);
-  assert.match(ov, /<p class="sub">Live status, and today's modelled chance of a spill/);
+  // The caption says what the order is (11 Oct 2026): it said "the 10 with the most reach" over a list
+  // where 80% came above 98%.
+  assert.match(ov, /<p class="sub">\$\{total > n \? `The \$\{n\} of the \$\{total\} overflows upstream that matter most this week`/);
+  assert.match(ov, /most first: `\n\s+\+ 'one matters more the more of a spill would reach here, the likelier it is to spill this week, and if it is discharging now\. '/);
+  assert.doesNotMatch(ov, /with the most reach of/);
   assert.doesNotMatch(ov, /t-more/);   // its corner fold would sit on the fold's own chevron
 });

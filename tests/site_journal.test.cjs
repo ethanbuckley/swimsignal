@@ -71,7 +71,8 @@ test('keeps what the spot\'s page showed on the day of the swim', () => {
 
 test('right now\'s spills set the level kept where they are worse than the day\'s forecast', () => {
   const s = j.journalSeen(spot({ now: { label: 'very high', discharging_upstream: 3 } }), TODAY, TODAY, ISSUED, LATER);
-  assert.equal(s.head, 'Very high risk: sewage spills'); assert.equal(s.level, 'very high'); assert.equal(s.dis, 3);
+  // Today is at least right now since 11 Oct 2026 (levels.js, risk), and its reason says so.
+  assert.equal(s.head, 'Very high risk: sewage spills right now'); assert.equal(s.level, 'very high'); assert.equal(s.dis, 3);
   // Raised by spills that have stopped, whose water is still counted: the words say so, as the page does.
   const recent = j.journalSeen(spot({ now: { label: 'moderate', discharging_upstream: 0 } }), TODAY, TODAY, ISSUED, LATER);
   assert.equal(recent.head, 'Moderate risk: recent sewage spills'); assert.equal(recent.dis, 0);
@@ -112,9 +113,22 @@ test('a reading the page would not show is not kept', () => {
 test('a spot with nothing to forecast keeps its plain level, its rain and its readings', () => {
   const plain = spot({ upstream_summary: { overflows: 0 }, now: {}, river_state: undefined });
   assert.deepEqual(j.journalSeen(plain, TODAY, TODAY, ISSUED, LATER),
-    { head: 'No sewage risk from monitored overflows', level: 'no overflows', issued: ISSUED, rain: 0, dis: null, of: null, river: null, temp: { c: 14.9 } });
+    { head: 'No monitored overflow found upstream', level: 'no overflows', issued: ISSUED, rain: 0, dis: null, of: null, river: null, temp: { c: 14.9 } });
   const lake = { id: 'x', name: 'X', error: 'An isolated lake: no river flows into it', days: [], upstream_summary: { overflows: 0 } };
   assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED, LATER).level, 'no river connection');
+});
+
+// 11 Oct 2026: "none of the 14 overflows upstream discharging" was not known at Hereford, whose 14 have no
+// live feed; and a lake's own gauge is a lake level, not a river's "high water".
+test('a swim keeps no overflow count where none reports, and no lake level as a river level', () => {
+  const wye = spot({ upstream_summary: { overflows: 14 }, now: { label: 'low', discharging_upstream: 0, monitored_upstream: 0, no_feed_upstream: 14 } });
+  const s = j.journalSeen(wye, TODAY, TODAY, ISSUED, LATER);
+  assert.equal(s.dis, null); assert.equal(s.of, null);
+  assert.ok(!j.journalSeenWords(s).some(w => /overflow/.test(w)));
+  const some = j.journalSeen(spot({ upstream_summary: { overflows: 14 }, now: { label: 'low', discharging_upstream: 0, monitored_upstream: 3 } }), TODAY, TODAY, ISSUED, LATER);
+  assert.equal(some.of, 14);
+  const lake = spot({ river_state: { station: 'Far Sawrey', river: 'Windermere', level_m: 0.73, label: 'high', water: 'lake', stale: false } });
+  assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED, LATER).river, null);
 });
 
 test('what was kept, in words', () => {

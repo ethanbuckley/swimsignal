@@ -20,7 +20,7 @@
 const Sites = (() => {
   const node = typeof module === 'object' && module.exports;
   const R = node ? require('./levels.js')
-    : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, headParts, weekNext, daily };   // levels.js's globals
+    : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, headParts, weekNext, daily, walesWords, eaUnchecked };   // levels.js's globals
   const Li = node ? require('./lists.js') : { listName, listIds, sitesHash, LINK_SPOTS_MAX };
   const O = node ? require('./organisers.js') : Organisers;
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
@@ -28,7 +28,7 @@ const Sites = (() => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   const nil = v => v === null || v === undefined;
-  const tone = l => l === R.NO_OVERFLOWS ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');
+  const tone = l => l === R.NO_OVERFLOWS || l === R.NO_RIVER ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');   // index.html's
   const spotHref = id => PAGE_ID.test(id) ? `spot/${id}/` : `./?spot=${encodeURIComponent(id)}`;
   const recordHref = (id, iso) => `record.html#spot=${encodeURIComponent(id)}&day=${iso}`;
   const initial = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'narrow' });
@@ -74,14 +74,17 @@ const Sites = (() => {
   // The headline, as the list and the spot's page give it ("High risk tomorrow", "High risk: rated poor"), and the
   // reason in one line: what set it and where the five days go, or, at a low spot, how many of the
   // overflows upstream are expected to spill today, in the spot page's words.
+  // Then what it cannot count or check, short, as under the list's rows: the overflows in Wales, and at a
+  // bathing water the EA's advice for today (levels.js, walesWords and eaUnchecked).
+  const gaps = s => [R.walesWords(s, true), R.eaUnchecked(s) ? "Today's EA advice not checked: see the EA's page" : ""].filter(Boolean).map(w => w + '.').join(' ');
   function words(s) {
-    const lv = R.level(s), [head, why] = R.headParts(s);
-    if (R.COVER[lv]) return { head, tone: tone(lv), why: lv === R.NO_OVERFLOWS || lv === R.NO_RIVER ? R.OTHER_RISKS : '' };
+    const lv = R.level(s), [head, why] = R.headParts(s), g = gaps(s);
+    if (R.COVER[lv]) return { head, tone: tone(lv), why: [lv === R.NO_OVERFLOWS || lv === R.NO_RIVER ? R.OTHER_RISKS : '', g].filter(Boolean).join(' ') };
     const next = R.daily(s) ? R.weekNext(s) : '';   // left out where the headline already says it ("Low risk now · Moderate risk on Wednesday")
     const parts = [why && cap(why), next && !head.includes(next) ? next : ''].filter(Boolean);
     const x0 = (s.days || [])[0], total = (s.upstream_summary || {}).overflows || 0;
     if (!parts.length && x0 && !nil(x0.risk)) { const k = O.spilling(x0, total); if (k) parts.push(`${cap(k)} today`); }
-    return { head, tone: tone(lv), why: parts.length ? parts.join('. ') + '.' : '' };
+    return { head, tone: tone(lv), why: [parts.length ? parts.join('. ') + '.' : '', g].filter(Boolean).join(' ') };
   }
   function row(s) {
     const w = words(s), loc = s.location || {};

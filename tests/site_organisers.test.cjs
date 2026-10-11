@@ -77,7 +77,7 @@ test('spots with nothing to forecast get their plain words, here as everywhere',
   const tarn = {id: 'tarn', name: 'A Tarn', kind: 'lake', source: 'curated', days: [], contributors: [], error: 'An isolated lake with no river connection.'};
   const t = O.view(tarn, '2026-10-17', DATA, BASE, NOW);
   assert.ok(t.includes('The river network links no monitored storm overflow to this lake') && !t.includes('<table'));
-  assert.ok(O.view(tarn, '2026-10-05', DATA, BASE, NOW).includes(`<p class="ev-level na">${L.COVER[L.NO_RIVER]}</p>`));
+  assert.ok(O.view(tarn, '2026-10-05', DATA, BASE, NOW).includes(`<p class="ev-level clear">${L.COVER[L.NO_RIVER]}</p>`));   // one colour with its words (11 Oct 2026)
 });
 
 test('the overflows are the forecast\'s, most reach first, and say when the list is not all of them', () => {
@@ -92,7 +92,7 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
   assert.ok(O.overflows(henley, 'loading').includes('The table lists the 3 that matter most in the current forecast while the other 48 load.'));
   const cells = [...h.matchAll(/<tr><th scope="row" class="ov">([^<]+) <span class="own">([^<]+)<\/span><\/th>(.*?)<\/tr>/g)]
     .map(m => [m[1], m[2], [...m[3].matchAll(/data-l="([^"]+)">([^<]*)</g)].map(c => c.slice(1))]);
-  assert.deepEqual(cells[1], ['Wargrave sewage works overflow', 'Wargrave STW', [['Company', 'Thames Water'], ['Into', 'River Thames'], ['Upstream', '7.3\u00a0km'], ['Travel', '4\u00a0h'],
+  assert.deepEqual(cells[1], ['Wargrave sewage works overflow', 'Wargrave STW', [['Company', 'Thames Water'], ['Into', 'River Thames'], ['Distance', '7.3\u00a0km'], ['Travel', '4\u00a0h'],
     ['Reach', '31%'], ['Spills a year', '18'], ['Hours spilling', '121'], ['Live feed', 'Yes']]]);
   assert.equal(cells[2][2][7][1], 'No');
   const mixed = {...henley, upstream_summary: {overflows: 3, with_live_feed: 2, without_live_feed: 1, max_travel_h: 0.4}};

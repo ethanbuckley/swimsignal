@@ -70,7 +70,9 @@ test('a forecast over eight hours old says so', () => {
 test('a bathing water links the Environment Agency page, and a poor one says so on every day', () => {
   const bw = {...river, id: 'bw-x', source: 'designated', classification: {class: 'poor', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/x'}};
   const h = Embed.card(bw, DATA, NOW);
-  assert.ok(h.includes('<a href="https://environment.data.gov.uk/bwq/profiles/x" target="_blank" rel="noopener">The Environment Agency’s page</a> has any advice against bathing there today'));
+  // Under what to do, as on the spot's page: the EA's advice for today could not be checked (11 Oct 2026).
+  assert.ok(h.includes('<p class="act">The Environment Agency&#39;s advice for today could not be checked. <a href="https://environment.data.gov.uk/bwq/profiles/x" target="_blank" rel="noopener">The Environment Agency’s page</a> says when bathing is not advised.</p>'));
+  assert.ok(h.indexOf('could not be checked') < h.indexOf('class="check"'));
   assert.ok(h.includes('High risk: rated poor') && !h.includes('from 15 May') && h.includes('At least high risk every day'));
   assert.equal((h.match(/<span class="l">High<\/span>/g) || []).length, 5);   // the rating holds every day at high, even one without rain data
   assert.ok(!Embed.card(river, DATA, NOW).includes('Environment Agency’s page'));   // not a bathing water
@@ -79,10 +81,11 @@ test('a bathing water links the Environment Agency page, and a poor one says so 
 test('a spot without a daily forecast gets its words and no strip', () => {
   const none = {...river, id: 'semerwater', upstream_summary: {overflows: 0}, days: []};
   const h = Embed.card(none, DATA, NOW);
-  assert.ok(h.includes('<p class="hl clear">No sewage risk from monitored overflows</p>') && !h.includes('drow'));
+  assert.ok(h.includes('<p class="hl clear">No monitored overflow found upstream</p>') && !h.includes('drow'));
   const isolated = {id: 'tarn', name: 'A Tarn', kind: 'lake', source: 'curated', days: [], error: 'An isolated lake with no river connection.'};
   const t = Embed.card(isolated, DATA, NOW);
-  assert.ok(t.includes('<p class="hl na">No monitored overflow drains into this lake</p>') && !t.includes('drow') && t.includes('All credits and licences'));
+  // The same words and the same colour as no overflow within reach (11 Oct 2026).
+  assert.ok(t.includes('<p class="hl clear">No monitored overflow found upstream</p>') && !t.includes('drow') && t.includes('All credits and licences'));
 });
 
 test('names are escaped, and an id the site gives no page keeps ?spot=', () => {

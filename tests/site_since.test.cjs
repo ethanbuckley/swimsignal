@@ -28,7 +28,7 @@ test('a level that moved says what it was, when, and what it is now, with "risk"
   const clear = {...spot('low'), upstream_summary: {overflows: 0}, source: 'designated', location: {mode: 'lake'}};
   assert.equal(L.level(clear), L.NO_OVERFLOWS);
   const algae = {...clear, algae: {date: '2026-10-01', level: 2, phrase: 'some at intervals'}};
-  assert.equal(line(clear, algae), 'Was no sewage risk from monitored overflows when you looked on Friday at 18:20; now moderate risk.');
+  assert.equal(line(clear, algae), 'Was no monitored overflow found upstream when you looked on Friday at 18:20; now moderate risk.');
 });
 
 test('the day is the forecast\'s own word within the week before it, else the date', () => {

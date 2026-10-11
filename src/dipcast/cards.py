@@ -199,8 +199,8 @@ class WeekendCard:
 
 def weekend_card(area: Area, levels: dict[str, dict], days: list[str]) -> WeekendCard | None:
     """An area's card for two days, or None when none of its spots is in the forecast. A spot whose
-    level is one of the four goes in a row; one with a plain level ("No sewage risk from monitored
-    overflows", "No monitored overflow drains into this lake") goes in a line under the table, in the page's words."""
+    level is one of the four goes in a row; one with a plain level ("No monitored overflow found upstream")
+    goes in a line under the table, in the page's words."""
     card = WeekendCard(area, days, [])
     plain: dict[str, tuple[str, list[str]]] = {}
     for sid, label in area.spots:
@@ -468,7 +468,8 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     draw.rectangle((M, y, w - M, y + 1), fill=LINE)
 
     name_f, cell_f, note_f = font("serif", st.name), font("sans", st.cell, 700), font("sans", 30, 600)
-    notes = [(CLEAR_MARK if lv == "no overflows" else NA_MARK, CLEAR_TEXT if lv == "no overflows" else NA_TEXT,
+    plain = ("no overflows", "no river connection")   # the two plain levels, one colour as on the site (11 Oct 2026)
+    notes = [(CLEAR_MARK if lv in plain else NA_MARK, CLEAR_TEXT if lv in plain else NA_TEXT,
               f"{headline} at {and_list(names)}.") for headline, lv, names in card.plain]
     poor = [r.label for r in card.rows if r.poor]
     if poor:
