@@ -103,3 +103,23 @@ def test_the_build_lists_outfalls_that_could_join_below_a_spot():
     assert [g["site_id"] for g in got] == ["YWS00002"]
     assert got[0] == {"spot": "osm-rivelin-plunge-pool", "site_id": "YWS00002", "snap_m": 709, "km": 0.7,
                       "receiving": "Unnamed Trib Of Black Brook"}
+
+
+def test_when_names_decide_nothing_the_outlet_by_the_named_place_wins(monkeypatch):
+    """Earl Sterndale STW: Glutton Brook is not named in OS Open Rivers at either position; the live
+    position is by Hartington, 6.7 km off, the outlet by the village."""
+    net = _net(WYE)
+    village, other = (408350, 366650), (415000, 362000)
+    monkeypatch.setattr(overflows, "_places", lambda: {"earl sterndale": np.array([village])})
+    row = _row(other, (village[0] + 300, village[1]), recv="GLUTTON BROOK", recv_ar="Glutton Brook")
+    df = pd.DataFrame([row | {"site_name": "EARL STERNDALE STW (CSO)"},
+                       # receiving waters disagree: two assets under one id, so nothing moves
+                       row | {"site_name": "EARL STERNDALE STW (CSO)", "receiving_water": "NORTH SEA"},
+                       # no place in the name: nothing moves
+                       row | {"site_name": "MAIN STREET CSO"},
+                       # under PLACE_GAP_M apart: nothing moves
+                       _row((village[0] + 900, village[1]), village, recv="GLUTTON BROOK") | {"site_name": "EARL STERNDALE STW"}])
+    out = overflows.choose_positions(net, df)
+    assert out["position_source"].tolist() == ["annual return", "live", "live", "live"]
+    # a generic name on one side does not block it ("FRESHWATER RIVER" for Hazeldene Lane, Newick)
+    assert overflows._same_water("OUSE", "FRESHWATER RIVER") and not overflows._same_water("WEY", "RIVER KIRD")
