@@ -123,3 +123,16 @@ def test_when_names_decide_nothing_the_outlet_by_the_named_place_wins(monkeypatc
     assert out["position_source"].tolist() == ["annual return", "live", "live", "live"]
     # a generic name on one side does not block it ("FRESHWATER RIVER" for Hazeldene Lane, Newick)
     assert overflows._same_water("OUSE", "FRESHWATER RIVER") and not overflows._same_water("WEY", "RIVER KIRD")
+
+
+def test_the_build_lists_an_uncounted_outfall_at_a_spot():
+    """Wetherby High Street CSO, 5 m from the Wharfe at Wilderness Carpark, snapped onto a stub that
+    joins below the bathing water point, so not counted there."""
+    bs = _build_site()
+    lon, lat = -1.38542, 53.92655
+    ov = pd.DataFrame({"site_id": ["YWS00033", "FAR", "UNSNAPPED"], "lat": [53.926505, 53.93, 53.92655],
+                       "lon": [-1.385434, -1.39, -1.38542], "link_id": ["stub", "x", None]})
+    results = [{"id": "bw-uke4200-08904", "lat": lat, "lon": lon}, {"id": "nolatlon"}]
+    assert bs.near_uncounted(results, {"bw-uke4200-08904": []}, ov) == [
+        {"spot": "bw-uke4200-08904", "site_id": "YWS00033", "metres": 5}]
+    assert bs.near_uncounted(results, {"bw-uke4200-08904": [{"site_id": "YWS00033"}]}, ov) == []
