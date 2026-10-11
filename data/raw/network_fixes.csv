@@ -1,0 +1,8 @@
+# Fixes to OS Open Rivers' network that the rules in src/dipcast/network/fixes.py do not make.
+# Read by dipcast.network.fixes.apply_overrides when the network loads, before the gap repairs and the rules.
+# action: reverse (a = the link id, turned round) or join (an edge from node a to node b, length_m metres;
+# blank = the straight distance between the two nodes). Ids are OS Open Rivers' own (the data-v1 release).
+# A row whose link or nodes are not in the network is passed over; scripts/check_network.py says which.
+# One row per fix; say where it is, when it was checked, and why.
+action,a,b,length_m,place,checked,reason
+join,7B0CE04A-A592-4E9F-AD87-D1F73DCF6D9A,6AB9D06B-4C0D-48D2-81E8-7F49CFE8D241,533,"River Test, braid above Chilbolton",2026-10-11,"The Test splits into two channels below Barton Stacey, both named River Test by OS; they meet again below Chilbolton. The eastern channel starts at node 6AB9D06B, 21 m from the western channel's link 88C6258E, and OS joins it to nothing but a 74 m ditch, so it carried the River Dever and 0.1 km of network instead of the Test. The Chilbolton Cow Common spot (osm-test-chilbolton) is on that channel and showed no overflow within 60 km (site review, 11 Oct 2026), with Overton SSO and SWS90060 upstream on the Test. Joined from the start of 88C6258E, 512 m above the point beside the channel's start, plus the 21 m gap. Inferred from OS geometry and names; not checked against another map."

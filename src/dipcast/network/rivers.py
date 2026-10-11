@@ -11,6 +11,7 @@ function name says otherwise.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import pickle
 from dataclasses import dataclass
@@ -53,12 +54,41 @@ class Snap:
 
 class RiverNetwork:
     def __init__(self, links: gpd.GeoDataFrame, graph: nx.DiGraph, upstream_m: dict[str, float] | None = None,
-                 repairs: dict[str, float] | None = None):
+                 repairs: dict[str, float] | None = None, fix: bool = True):
+        """With `repairs` None the network is mended as it loads: the override list, the gap repairs
+        and the rules in dipcast.network.fixes (`self.fixes` lists what each changed). `fix=False`
+        makes the gap repairs alone, as before 11 Oct 2026, loops and all (scripts/check_network.py
+        compares the two)."""
         self.links = links            # indexed by link id, EPSG:27700
         self.graph = graph
         self._sindex = links.sindex   # STRtree, built lazily by geopandas
-        self.repairs = repairs if repairs is not None else self._repair_gaps()
+        self.fixes: list = []
+        if repairs is not None:
+            self.repairs = repairs
+        elif not fix:
+            self.repairs = self._repair_gaps(no_loops=False)
+        else:
+            from dipcast.network import fixes as nf
+            pts = self.node_points()
+            self.repairs = {}
+            self.fixes = nf.apply_overrides(self, pts)
+            self.repairs.update(self._repair_gaps(pts=pts))
+            self.fixes += nf.apply_rules(self, pts)
+            if self.fixes:
+                kinds = pd.Series([f"{f.rule} ({f.kind})" for f in self.fixes]).value_counts().to_dict()
+                log.info("network fixes: %s", ", ".join(f"{k} {v}" for k, v in sorted(kinds.items())))
         self.upstream_m = upstream_m if upstream_m is not None else self._compute_upstream_m()
+
+    def topology_key(self) -> str:
+        """A short hash of what the load changed: every repair edge and its length, every fix. The
+        network file's hash does not change when the repairs or fixes do, so the click-anywhere
+        cache (scripts/build_any_point.py) is keyed by both."""
+        h = hashlib.sha256()
+        for eid, length in sorted(self.repairs.items()):
+            h.update(f"{eid} {length:.1f}\n".encode())
+        for f in sorted((f.kind, f.link, f.a, f.b) for f in self.fixes):
+            h.update((" ".join(f) + "\n").encode())
+        return h.hexdigest()[:8]
 
     def node_points(self) -> gpd.GeoSeries:
         """One point per hydro node, from the link ends (nodes carry no geometry of their own)."""
@@ -69,14 +99,20 @@ class RiverNetwork:
         pts = pd.concat([starts, ends]).drop_duplicates("node").set_index("node")["geom"]
         return gpd.GeoSeries(pts.values, index=pts.index, crs=27700)
 
-    def _repair_gaps(self, max_gap_m: float = 60.0, min_upstream_m: float = 1_000.0) -> dict[str, float]:
+    def _repair_gaps(self, max_gap_m: float = 60.0, min_upstream_m: float = 1_000.0, no_loops: bool = True,
+                     pts: gpd.GeoSeries | None = None) -> dict[str, float]:
         """OS Open Rivers leaves small breaks at weirs, mills and culverts: a channel
         ends in a dead-end node a few metres from where the next section starts as
         a fresh 'headwater'. Join each headwater to a foreign dead-end within
         `max_gap_m` that carries real upstream network. Adds graph edges with
-        form 'repair' and no geometry; returns {edge_id: length_m}."""
+        form 'repair' and no geometry; returns {edge_id: length_m}.
+
+        A headwater whose own water already reaches that dead end is not joined to it (`no_loops`):
+        the join would make a loop, and the dead end's water would still go nowhere. Until 11 Oct 2026
+        62 of the 653 joins were such loops, among them the Hampshire Avon at Ratfyn, where a 42 m
+        stub flows into the dead end its head was joined from."""
         g = self.graph
-        pts = self.node_points()
+        pts = self.node_points() if pts is None else pts
         heads = [n for n in g.nodes if g.in_degree(n) == 0 and n in pts.index]
         sinks = {n for n in g.nodes if g.out_degree(n) == 0 and g.in_degree(n) > 0}
         # provisional upstream lengths (before repairs) to judge which sinks matter
@@ -85,6 +121,7 @@ class RiverNetwork:
         repairs: dict[str, float] = {}
         if sink_pts.empty:
             return repairs
+        loops = 0
         for h in heads:
             hp = pts[h]
             idx = sink_pts.sindex.query(hp.buffer(max_gap_m), predicate="intersects")
@@ -95,10 +132,14 @@ class RiverNetwork:
             sink = d.idxmin()
             if sink == h or g.has_edge(sink, h):
                 continue
+            if no_loops and nx.has_path(g, h, sink):
+                loops += 1
+                continue
             eid = f"repair:{sink[:8]}->{h[:8]}"
             g.add_edge(sink, h, link=eid, length=float(max(d.min(), 1.0)), form="repair")
             repairs[eid] = float(max(d.min(), 1.0))
-        log.info("network repairs: %d gaps joined (<= %.0f m)", len(repairs), max_gap_m)
+        log.info("network repairs: %d gaps joined (<= %.0f m)%s", len(repairs), max_gap_m,
+                 f"; {loops} left alone that would have made a loop" if loops else "")
         return repairs
 
     def _compute_upstream_m(self, quiet: bool = False) -> dict[str, float]:
@@ -107,11 +148,22 @@ class RiverNetwork:
         node-ID order. This is an approximation, but must not change between processes."""
         g = self.graph
         up: dict[str, float] = {}
-        try:
-            order = list(nx.topological_sort(g))
-        except nx.NetworkXUnfeasible:
-            cyc = nx.condensation(g)
-            order = []
+        # A topological order by Kahn's algorithm; the nodes it cannot place are in a cycle or below
+        # one, and only those are condensed (a handful in OS data: condensing the whole graph took a
+        # second or two, and the fixes at load recompute these lengths several times). Any
+        # topological order gives the same sums, so this matches condensing the whole graph.
+        indeg = {n: d for n, d in g.in_degree()}
+        ready = [n for n, d in indeg.items() if d == 0]
+        order = []
+        while ready:
+            n = ready.pop()
+            order.append(n)
+            for s in g.successors(n):
+                indeg[s] -= 1
+                if indeg[s] == 0:
+                    ready.append(s)
+        if len(order) < len(indeg):
+            cyc = nx.condensation(g.subgraph([n for n, d in indeg.items() if d > 0]))
             for comp in nx.topological_sort(cyc):
                 order.extend(sorted(cyc.nodes[comp]["members"]))
         for n in order:
@@ -122,14 +174,20 @@ class RiverNetwork:
 
     # ------------------------------------------------------------------ build
     @classmethod
-    def from_gpkg(cls, path: Path = config.RIVERS_GPKG) -> RiverNetwork:
+    def from_gpkg(cls, path: Path = config.RIVERS_GPKG, fix: bool = True) -> RiverNetwork:
         log.info("reading %s ...", path)
-        return cls.from_links(gpd.read_file(path, layer="watercourse_link"))
+        return cls.from_links(gpd.read_file(path, layer="watercourse_link"), fix=fix)
 
     @classmethod
-    def from_links(cls, links: gpd.GeoDataFrame) -> RiverNetwork:
+    def from_links(cls, links: gpd.GeoDataFrame, fix: bool = True) -> RiverNetwork:
         """The network from OS Open Rivers' watercourse_link layer (or a small frame with the
         same columns, as the tests build)."""
+        return cls(*cls.oriented(links), fix=fix)
+
+    @staticmethod
+    def oriented(links: gpd.GeoDataFrame) -> tuple[gpd.GeoDataFrame, nx.DiGraph]:
+        """OS Open Rivers' links indexed by id and turned to the direction of flow, and the graph of
+        them, as data/processed/river_network.pkl holds them: before any repair or fix."""
         links = links.set_index("id", drop=False)
         # Orient every link in the direction of flow.
         rev = links["flow_direction"].eq("in opposite direction")
@@ -150,23 +208,22 @@ class RiverNetwork:
                                        links["length"], links["form"], strict=True)},
         )
         log.info("network: %d links, %d nodes", len(links), g.number_of_nodes())
-        return cls(links, g)
-
-    def save(self, path: Path = config.PROCESSED / "river_network.pkl") -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "wb") as f:
-            pickle.dump({"links": self.links, "graph": self.graph, "upstream_m": self.upstream_m,
-                         "repairs": self.repairs}, f, protocol=5)
+        return links, g
 
     @classmethod
-    def load(cls, path: Path = config.PROCESSED / "river_network.pkl") -> RiverNetwork:
+    def load(cls, path: Path = config.PROCESSED / "river_network.pkl", fix: bool = True) -> RiverNetwork:
+        """The network from the pickle, mended as it loads. The pickle holds the links and graph as
+        OS draws them (RiverNetwork.oriented), never a mended copy: the repairs and fixes are made
+        afresh at every load, so a change to them needs no new pickle (the data-v1 release)."""
         if not path.exists():
-            net = cls.from_gpkg()
-            net.save(path)
-            return net
+            links, g = cls.oriented(gpd.read_file(config.RIVERS_GPKG, layer="watercourse_link"))
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "wb") as f:
+                pickle.dump({"links": links, "graph": g}, f, protocol=5)
+            return cls(links, g, fix=fix)
         with open(path, "rb") as f:
             d = pickle.load(f)
-        return cls(d["links"], d["graph"])
+        return cls(d["links"], d["graph"], fix=fix)
 
     # ------------------------------------------------------------------ snap
     def snap_xy(self, x: float, y: float, max_m: float = config.SNAP_MAX_M,
