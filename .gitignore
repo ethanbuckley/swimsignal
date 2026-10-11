@@ -44,6 +44,8 @@ data/raw/*
 !data/raw/outside_england.json
 # Checked joins of outfalls on streams OS Open Rivers does not draw (overflows.apply_joins).
 !data/raw/overflow_joins.csv
+# Fixes to the river network that the load-time rules do not make (dipcast.network.fixes).
+!data/raw/network_fixes.csv
 /site/
 .claude/
 /state/

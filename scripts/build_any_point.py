@@ -39,9 +39,10 @@ upstream_overflows crosses it in config.LAKE_PATH_MODE "lake" (the default): its
 velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings).
 
 The upstream lists depend on the network, on where each overflow sits on it and on the transport
-rule. They are cached in the state directory keyed by the network and lakes files' hashes, the lake
-path mode and CACHE_VERSION; when overflows are added, removed or moved, only the links downstream
-of them (within config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
+rule. They are cached in the state directory keyed by the network and lakes files' hashes, what the
+network's load mended (RiverNetwork.topology_key), the lake path mode and CACHE_VERSION; when
+overflows are added, removed or moved, only the links downstream of them (within
+config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
 
 Rain: every overflow's cell (about 1,650) against the spots' 300. Open-Meteo stopped answering
 this build after 600 locations in a minute (3 Oct 2026), so each build fetches at most
@@ -99,7 +100,8 @@ FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
-CACHE_VERSION = 6         # bump when the table's rules change (6: lakes crossed on the way, 11 Oct 2026)
+CACHE_VERSION = 7         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
+                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key; 11 Oct 2026)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
@@ -865,7 +867,9 @@ def build(site: Path, net: RiverNetwork, ov: pd.DataFrame, probabilities, credit
     out = site / "data" / OUT
     out.mkdir(parents=True, exist_ok=True)
     net_path = config.PROCESSED / "river_network.pkl"
-    net_hash = file_hash(net_path) if net_path.exists() else "unknown"
+    # The file's hash and what the load changed: the gap repairs and fixes are made afresh at every load,
+    # so a change to them leaves the file as it was (RiverNetwork.topology_key).
+    net_hash = f"{file_hash(net_path) if net_path.exists() else 'unknown'}-{net.topology_key()}"
     lakes = transport._lakes()
     lakes_hash = file_hash(LAKES_PATH) if LAKES_PATH.exists() else "none"
     cache = (state_dir or config.STATE) / CACHE_NAME
