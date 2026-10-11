@@ -154,6 +154,8 @@ def test_a_share_is_said_as_the_nearest_simple_fraction():
                     0.26: "about one in four", 0.31: "about three in ten", 0.34: "about one in three",
                     0.66: "about two in three", 0.74: "about three in four", 0.12: "about one in ten",
                     0.875: "about nine in ten", 0.049: "fewer than one in twenty", 0.951: "nearly all"}
+    # 16.7% of spills warned of (11 Oct 2026) read "about one in five" before sixths were offered.
+    assert bs.share_words(223 / 1335) == "about one in six" and bs.share_words(5 / 6) == "about five in six"
 
 
 def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path):
@@ -164,6 +166,19 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
     words = text((tmp_path / "clubs.html").read_text())
     assert ("It misses most spills. Its live scores ran from 29 December 2026 to 4 January 2027. At the high risk line, "
             "it warned of about three in ten spills. About one in two of its warnings were followed by a spill.") in words
+    # With the scorer's count of days and its warnings by company (11 Oct 2026): the days are counted, not spanned,
+    # and the hits at the one company the model learned from are set apart.
+    oct11 = {"level": "high", "hit_rate": 223 / 1335, "warnings_true": 223 / 560, "first_day": "2026-09-29", "last_day": "2026-10-10",
+             "n_days": 10, "hits": 223, "trained_on": "United Utilities",
+             "by_company": [{"company": "United Utilities", "hits": 208, "misses": 489}, {"company": "Anglian Water", "hits": 0, "misses": 127},
+                            {"company": "Yorkshire Water", "hits": 15, "misses": 496}]}
+    (tmp_path / "data" / "verification.json").write_text(json.dumps({"live": {"warning_table": oct11}}))
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", day="2026-10-11")
+    words = text((tmp_path / "clubs.html").read_text())
+    assert ("It misses most spills. Its live scores cover 10 days between 29 September and 10 October 2026. At the high risk line, "
+            "it warned of about one in six spills. About two in five of its warnings were followed by a spill. 208 of the 223 "
+            "warnings that came true were at United Utilities, the one company the spill model learned from. At the other "
+            "companies, so far, it warned of fewer than one in twenty spills.") in words
     # Without the table, or with a field missing, the page's own words stay.
     fallback = "it warned of about one in five spills. About two in five of its warnings were followed by a spill."
     for v in ({}, {"live": {"warning_table": {**table, "hit_rate": None}}}, None):

@@ -41,15 +41,26 @@ const Record = (() => {
   const row = (label, body) => body ? `<dt>${label}</dt><dd>${body}</dd>` : '';
 
   // What the forecast cannot see: the About page's list, word for word (about.html, "What it cannot see").
-  // tests/site_record.test.cjs fails when the two differ.
+  // tests/site_record.test.cjs fails when the two differ. A record shows the lines that apply to its spot (cannotSee).
   const CANNOT_SEE = [
-    'The spill forecast covers monitored storm overflows only. The E. coli estimate allows for rain washing in pollution from other sources on average, but knows nothing about a particular farm, road, boat, misconnected drain or incident.',
+    'The spill forecast covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident. On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.',
+    'It does not count the treated sewage that sewage works let into rivers every day, only their storm overflows.',
     'It does not count wildlife or other bathers. On a lake it does not use the wind, which decides where river water goes. The method page says what you can do instead.',
-    'Dŵr Cymru Welsh Water\'s live overflow status is not shown. Its map has a public data layer, but with no licence to reuse it, and SwimSignal is waiting for Dŵr Cymru\'s terms. Its overflows, which matter at the spots on the Dee and the Wye, are forecast from rain and their yearly spill record, with no "right now".',
+    'Dŵr Cymru Welsh Water\'s live overflow status is not shown. Its map has a public data layer, but with no licence to reuse it, and SwimSignal is waiting for Dŵr Cymru\'s terms. Its overflows, which matter at the spots on the Dee and on the Wye in Herefordshire, are forecast from rain and their yearly spill record, with no "right now".',
     'Its level does not include the Environment Agency\'s short-notice advice against bathing after pollution or an algal bloom. On a bathing water\'s page, opening "Today\'s EA advice" loads the Agency\'s own panel, which has it.',
     'It says nothing about currents, cold water or other dangers.',
     'A "low" reading means nothing the site looks at flags the day. It does not mean the water is clean, or that it is safe to swim there.',
   ];
+
+  // The lines of CANNOT_SEE for spot s (11 Oct 2026). Dŵr Cymru's line only where its overflows are upstream: Chee
+  // Dale, on the Derbyshire Wye, carried it. The E. coli estimate's sentence only where the spot shows the estimate,
+  // a river with a daily forecast (levels.js, ecoliBand): a lake's record described an estimate its page never shows.
+  const ECOLI_SENTENCE = / On rivers, the E\. coli estimate [^.]*\./;
+  function cannotSee(s) {
+    const welsh = (s.contributors || []).some(c => /Cymru/i.test(String(c.company || '')));
+    const ecoli = R.daily(s) && (s.location || {}).mode !== 'lake';
+    return CANNOT_SEE.filter(t => welsh || !t.startsWith('Dŵr Cymru')).map(t => ecoli ? t : t.replace(ECOLI_SENTENCE, ''));
+  }
 
   // ------------------------------------------------------------------ 1. what it is
   // The live scores as warnings (verification.json, live.warning_table): the share of spills warned of,
@@ -59,11 +70,20 @@ const Record = (() => {
     if (!W || !W.n || nil(W.hit_rate) || nil(W.warnings_true) || !W.first_day || !W.last_day)
       return `The live accuracy figures could not be loaded. They are on ${esc(base)}verification.html.`;
     const sameYear = W.first_day.slice(0, 4) === W.last_day.slice(0, 4);
-    let t = `In live scoring from ${shortDate(W.first_day, !sameYear)} to ${shortDate(W.last_day)}, it warned of ${pct(W.hit_rate)} of the spills at the storm overflows it scores, `
+    // "On 10 days of live scoring between 29 September and 10 October" (11 Oct 2026): "from ... to" read as an
+    // unbroken run, and 8 and 9 October had nothing scored.
+    const span = `${shortDate(W.first_day, !sameYear)} and ${shortDate(W.last_day)}`;
+    let t = `${W.n_days ? `On ${W.n_days} day${W.n_days === 1 ? '' : 's'} of live scoring between ${span}` : `In live scoring between ${span}`}, it warned of ${pct(W.hit_rate)} of the spills at the storm overflows it scores, `
       + `and ${pct(W.warnings_true)} of its warnings were followed by a spill. A warning is a spill chance of ${pct(W.warn_at ?? 0.4)} or more, the High risk line.`;
     if (W.hit_rate < 0.5) t += ` So it misses most spills${W.warnings_true < 0.5 ? ', and most of its warnings are false alarms' : ''}.`;
     else if (W.warnings_true < 0.5) t += ' Most of its warnings are false alarms.';
-    if (W.n_days < 14) t += ` That is ${W.n_days} day${W.n_days === 1 ? '' : 's'} of scores, too few to judge across different weather.`;
+    // Whose spills it caught (11 Oct 2026): 208 of the 223 hits were at United Utilities, the one company the spill
+    // model learned from (forecast_log: warning_table.by_company).
+    const C = W.by_company || [], own = C.find(r => r.company === W.trained_on), rest = C.filter(r => r !== own);
+    const sp = rest.reduce((a, r) => a + r.hits + r.misses, 0), hits = rest.reduce((a, r) => a + r.hits, 0);
+    if (own && W.hits) t += ` ${own.hits} of the ${W.hits} warnings that came true were at ${esc(own.company)}, the one company the spill model learned from.`
+      + (sp ? ` At the other companies it warned of ${pct(hits / sp)} of the spills.` : '');
+    if (W.n_days < 14) t += ` That is too few days to judge across different weather.`;
     return t;
   }
   function opening(ver, base) {
@@ -185,7 +205,7 @@ const Record = (() => {
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
     return h + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
-      + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${CANNOT_SEE.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`
+      + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`
       + DECIDE
       + '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this record</button></p>'
       + `<p class="print-only r-foot">Printed from ${esc(base)}record.html#spot=${esc(encodeURIComponent(s.id))}&amp;day=${iso}, ${esc(at(now))}.</p>`;
@@ -224,7 +244,7 @@ const Record = (() => {
     draw();
   }
 
-  return { view, opening, accuracy, levelBlock, inputs, topOverflows, fromHash, toHash, start, CANNOT_SEE };
+  return { view, opening, accuracy, levelBlock, inputs, topOverflows, fromHash, toHash, start, CANNOT_SEE, cannotSee };
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Record;

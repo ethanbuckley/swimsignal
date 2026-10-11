@@ -52,9 +52,9 @@ test('the first paragraph says what it is not, and quotes the live accuracy figu
   const first = text(h.split('</p>')[0]).trim();
   assert.ok(first.startsWith('This page records SwimSignal\'s pollution risk forecast for one spot on one day, to attach to a written decision.'));
   assert.ok(first.includes('It is a forecast, not a water test: nothing was sampled at the water for it. It never says the water is safe or clean, and no level means that.'));
-  assert.ok(first.includes('In live scoring from 29 September to 4 October 2026, it warned of 21% of the spills at the storm overflows it scores, and 41% of its warnings were followed by a spill.'));
+  assert.ok(first.includes('On 6 days of live scoring between 29 September and 4 October 2026, it warned of 21% of the spills at the storm overflows it scores, and 41% of its warnings were followed by a spill.'));
   assert.ok(first.includes('A warning is a spill chance of 40% or more, the High risk line. So it misses most spills, and most of its warnings are false alarms.'));
-  assert.ok(first.includes('That is 6 days of scores, too few to judge across different weather.'));
+  assert.ok(first.includes('That is too few days to judge across different weather.'));
   assert.ok(h.indexOf('r-first') < h.indexOf('r-spot'));   // before anything about the spot
   // Without the scores, it says where they are rather than leaving them out silently.
   assert.ok(Rec.view(ilkley, DAYS[1], DATA, null, BASE, NOW).includes('The live accuracy figures could not be loaded. They are on https://swimsignal.co.uk/verification.html.'));
@@ -100,8 +100,26 @@ test('what the forecast cannot see is the About page\'s list, word for word', ()
   const list = about.split('<h2>What it cannot see</h2>')[1].split('</ul>')[0];
   const items = [...list.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
   assert.deepEqual(Rec.CANNOT_SEE, items);
+  // Every line but Dŵr Cymru's, which only a spot with its overflows upstream carries (11 Oct 2026: Chee Dale had it).
   const h = Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW);
-  for (const t of items) assert.ok(text(h).includes(t.replace(/\s+/g, ' ')), t);
+  for (const t of items.filter(t => !t.startsWith('Dŵr Cymru'))) assert.ok(text(h).includes(t.replace(/\s+/g, ' ')), t);
+  assert.ok(!text(h).includes('Dŵr Cymru Welsh Water\'s live overflow status'));
+  const wye = {...ilkley, contributors: [...ilkley.contributors, ov('HAY ON WYE/STW', 0.5, 12, {company: 'Dwr Cymru Welsh Water'})]};
+  assert.ok(text(Rec.view(wye, DAYS[1], DATA, VER, BASE, NOW)).includes('Dŵr Cymru Welsh Water\'s live overflow status is not shown.'));
+  // The E. coli estimate's sentence only where the spot shows the estimate: not at a lake.
+  assert.ok(text(h).includes('On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.'));
+  const tarn = Rec.cannotSee({...ilkley, kind: 'lake', location: {mode: 'lake'}});
+  assert.equal(tarn[0], 'The spill forecast covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident.');
+  assert.ok(!tarn.join(' ').includes('E. coli') && Rec.cannotSee(lake).every(t => !t.includes('E. coli')));
+});
+
+test('the accuracy line says how many days, and that most hits were at the one company the model learned from', () => {
+  const by = [{company: 'United Utilities', hits: 208, misses: 489, false_alarms: 266}, {company: 'Anglian Water', hits: 0, misses: 127, false_alarms: 8},
+    {company: 'Yorkshire Water', hits: 15, misses: 496, false_alarms: 63}];
+  const W = {...VER.live.warning_table, hits: 223, n_days: 10, first_day: '2026-09-29', last_day: '2026-10-10', trained_on: 'United Utilities', by_company: by};
+  const t = Rec.accuracy({live: {warning_table: W}}, BASE);
+  assert.ok(t.startsWith('On 10 days of live scoring between 29 September and 10 October 2026, it warned of 21%'), t);
+  assert.ok(t.includes('208 of the 223 warnings that came true were at United Utilities, the one company the spill model learned from. At the other companies it warned of 2% of the spills.'), t);
 });
 
 test('blank decision lines close a record within the five days', () => {

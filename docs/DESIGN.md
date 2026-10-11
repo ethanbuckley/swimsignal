@@ -216,8 +216,12 @@ those sizes; they were taken off to keep the rule simple.)
     takes in water quality and the bathing-water rating, and the strip already says "Pollution
     risk". "Sewage" stays where a sentence is about the overflows themselves.
   - The spill score is the **exposure index**, defined where it is explained (About, Accuracy,
-    Testing) as "a 0–100 score of how likely sewage from upstream is to reach the spot". Not
-    "spill risk", "overflow exposure" or "the modelled chance", and not called a probability.
+    Testing, a spot's page) as "a 0–100 score for sewage from upstream reaching the spot", then
+    "It is a score, not a probability." Not "spill risk", "overflow exposure" or "the modelled
+    chance", and not called a probability. Until 11 October 2026 the definition said "how likely
+    sewage from upstream is to reach the spot", which read as a probability beside the Method
+    page's "not a probability". An overflow's reach is likewise a weight, the share of a spill's
+    bacteria the model expects to arrive, not "the chance a spill affects this spot".
     Its tile and rows keep their labels, "Sewage spills" and "Sewage spills upstream".
   - The E. coli figure is the **E. coli estimate** in prose, and its tile is **Water quality**.
     Not "E. coli chance", "E. coli risk", "E. coli > 900" or "water-quality estimate".
@@ -267,8 +271,12 @@ paper, as the site's first screen looked in the fifth round.
   answer in a few lines, and the shared foot: one line about what the site is, then the small links.
 - **Accuracy page:** first the forecasts as warnings (4 October 2026): a plain sentence with the figures, the
   share right always beside what saying "no" every time gets right, then a two-by-two table of hits, misses,
-  false alarms and correct quiet days, each count over its name so it fits a 320 px phone; the same for the
-  E. coli estimate. Then the four numbers that matter in a ruled definition list, a short "in short" list,
+  false alarms and correct quiet days, each count over its name so it fits a 320 px phone. Under it (11 October
+  2026) the warnings by company, a sentence and a table, since most hits were at the one company the model
+  learned from, then the error read as a chance against both the long-run rate and a flat forecast at the
+  period's own rate. Then the same for the E. coli estimate. A scored row is a forecast (one overflow, day and
+  lead), never called an overflow-day, and days are counted, never spanned. Then the four numbers that matter
+  in a ruled definition list, a short "in short" list,
   a contents list, then sections in the same order as before, with "Did the forecast run on time?" last of the
   live ones. The held-out ranking (an AUC) is said as pairs, "93 in 100", over "Pairs ranked the right way round"
   and a line saying it is a ranking, not a share of forecasts right (4 October 2026): as "93%" under "warned of 21% of
@@ -496,11 +504,13 @@ river line and the issue time (`levelScope` in `levels.js`, `.scope` in `index.h
 centred as the answer is, no box, no bold lead. Once a page, never in a tile.
 
 - Every spot with a daily level: "This forecast counts sewage from the monitored storm overflows upstream,
-  and the rain that makes them spill. It does not count runoff from farmland and roads, wildlife or other
-  bathers."
+  and the rain that makes them spill. It does not count treated sewage from sewage works, runoff from
+  farmland and roads, wildlife or other bathers."
 - On a river from May to September, where the E. coli estimate counts that day, the second sentence is
-  "It counts runoff from farmland and roads, wildlife and other bathers only as an average, from the rain
-  here and the time of year."
+  "It counts treated sewage from sewage works, runoff, wildlife and other bathers only as an average. That
+  average comes from the rain here and the time of year."
+- Treated sewage, which a works lets out every day, was added to both on 11 October 2026, and to the Method
+  page's limits and About's "What it cannot see": it is a source of its own, apart from the storm spills.
 - A lake adds "In a lake, the wind decides where river water goes. The forecast does not use wind."
 - A plain level keeps its own line, "Other risks apply: ...", which says the same in its place.
 - "This forecast", not "the level": at a bathing water the level also takes in the Environment Agency's
@@ -508,9 +518,12 @@ centred as the answer is, no box, no bold lead. Once a page, never in a tile.
   it a sewage risk is Ethan's decision.
 
 The Method page's "What the forecast does not count" (`methods.html#limits`) is the one place for each
-limit and what a swimmer can do instead: runoff, wildlife and bathers, wind and mixing on a lake, spills
-in dry weather. The page for groups says the same under its levels, and About's "What it cannot see"
-(which the decision record copies word for word) adds wildlife, bathers and the wind.
+limit and what a swimmer can do instead: runoff, treated sewage from sewage works, wildlife and bathers,
+wind and mixing on a lake, spills in dry weather. The page for groups says the same under its levels, and
+About's "What it cannot see" (which the decision record copies word for word) adds wildlife, bathers and
+the wind. A record shows the lines that apply to its spot (`cannotSee` in `record.js`, 11 October 2026):
+Dŵr Cymru's only where its overflows are upstream, and the E. coli estimate's sentence only where the spot
+shows the estimate.
 
 ### River high and flood alerts (3 October 2026)
 
