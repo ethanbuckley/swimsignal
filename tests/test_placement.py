@@ -10,13 +10,14 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 import pytest
-from shapely.geometry import LineString
+from shapely.geometry import LineString, box
 
 from dipcast.model import transport
 from dipcast.network.names import river_words, same_river
 from dipcast.network.rivers import RiverNetwork, bng_to_lonlat
 
 ROOT = Path(__file__).resolve().parents[1]
+LAKE_POLYGON_AT = transport._lake_polygon_at   # kept before _no_lake_polygons replaces it
 
 
 def _build_site():
@@ -229,3 +230,86 @@ def test_placement_check_flags_a_spot_on_a_canal():
          "location": {"mode": "river", "watercourse": "Kennet and Avon Canal", "snap_distance_m": 40, "form": "canal"}}
     (m,) = bs.placement_check([r])
     assert m["reason"] == "snapped to a canal link"
+
+
+# Lakes. A WFD lake polygon "Grasmere" spans x 330000-331000, y 505000-506000. Its centreline G1 runs
+# west to east through it; the River Rothay R1 flows in from the west with an overflow on it, and O1
+# flows out to the east. Loughrigg Tarn (11 Oct 2026) took Grasmere's centreline 883 m away, and with
+# it Grasmere WwTW, though no water flows from Grasmere into the tarn.
+GRASMERE_POLY = box(330000, 505000, 331000, 506000)
+LAKES = [
+    ("R1", "River Rothay", None, "r0", "g0", [(328000, 505500), (330200, 505500)], "inlandRiver"),
+    ("G1", None, None, "g0", "g1", [(330200, 505500), (330800, 505500)], "lake"),
+    ("O1", "River Rothay", None, "g1", "o1", [(330800, 505500), (333000, 505500)], "inlandRiver"),
+]
+LAKE_OVERFLOWS = pd.DataFrame({"site_id": ["UUP00829"], "link_id": ["R1"], "frac": [0.9], "link_length": [2200.0],
+                               "start_node": ["r0"], "has_live": [True], "status": [0]})
+
+
+def _lake_net(links: list[tuple]) -> RiverNetwork:
+    """As _net, with each link's form last: (id, name, alternative, start, end, [(x, y), ...], form)."""
+    gdf = gpd.GeoDataFrame(
+        [{"id": i, "flow_direction": "in direction", "form": f, "fictitious": False,
+          "watercourse_name": n, "watercourse_name_alternative": alt, "start_node": s, "end_node": e,
+          "geometry": LineString(xy)} for i, n, alt, s, e, xy, f in links], crs=27700)
+    return RiverNetwork.from_links(gdf)
+
+
+def _wfd(monkeypatch, *lakes: tuple[str, object]):
+    """WFD lake polygons, (name, polygon) in British National Grid; the shore test is the real one."""
+    frame = gpd.GeoDataFrame({"wb_id": [f"GB{i}" for i in range(len(lakes))], "lake_name": [n for n, _ in lakes],
+                              "area_km2": [p.area / 1e6 for _, p in lakes]},
+                             geometry=[p for _, p in lakes], crs=27700)
+    monkeypatch.setattr(transport, "_lakes", lambda: frame)
+    monkeypatch.setattr(transport, "_lake_polygon_at", LAKE_POLYGON_AT)   # the autouse fixture turned it off
+
+
+def test_lake_words_drop_brackets_and_punctuation():
+    assert transport._lake_words("Windermere (N Basin)") == "windermere"
+    assert transport._lake_words("Ullswater, Pooley Bridge") == "ullswater pooley bridge"
+
+
+def test_a_tarn_off_a_mapped_lake_does_not_take_that_lakes_overflows(monkeypatch):
+    net = _lake_net(LAKES)
+    _wfd(monkeypatch, ("Grasmere", GRASMERE_POLY))
+    # The old Loughrigg Tarn pin: 850 m south of the polygon, 1,350 m from its centreline.
+    pin = transport.locate_pin(net, *bng_to_lonlat(330500, 504150), kind_hint="lake", name="Loughrigg Tarn")
+    assert pin.mode == "isolated" and pin.trace_node is None
+    assert transport.upstream_overflows(net, pin, LAKE_OVERFLOWS, velocity_ms=0.5).empty
+    # A pin 200 m from a centreline that runs out of the polygon is still not in an unnamed mapped lake.
+    spur = _lake_net(LAKES + [("G2", None, None, "g2", "g0", [(330200, 504300), (330200, 505500)], "lake")])
+    pin = transport.locate_pin(spur, *bng_to_lonlat(330400, 504300), kind_hint="lake", name="Loughrigg Tarn")
+    assert pin.mode == "isolated"
+
+
+def test_a_spot_named_after_a_mapped_lake_is_in_it_from_the_village(monkeypatch):
+    net = _lake_net(LAKES)
+    _wfd(monkeypatch, ("Grasmere", GRASMERE_POLY))
+    # 600 m east of the polygon, as Ullswater, Pooley Bridge is 587 m from Ullswater's.
+    pin = transport.locate_pin(net, *bng_to_lonlat(331600, 505200), kind_hint="lake", name="Grasmere (lake)")
+    assert pin.mode == "lake" and pin.lake_source == "polygon" and pin.watercourse == "Grasmere"
+    assert pin.lake_links == {"G1"} and round(pin.lake_area_km2, 2) == 1.0
+    up = transport.upstream_overflows(net, pin, LAKE_OVERFLOWS, velocity_ms=0.5)
+    assert list(up["site_id"]) == ["UUP00829"]
+    # Whole words only: "Blea Tarn, Langdale" is not "Little Langdale Tarn".
+    _wfd(monkeypatch, ("Little Langdale Tarn", GRASMERE_POLY))
+    pin = transport.locate_pin(net, *bng_to_lonlat(331600, 505200), kind_hint="lake", name="Blea Tarn, Langdale")
+    assert pin.mode == "isolated"
+    # Beyond LAKE_NAMED_M the name does not reach.
+    _wfd(monkeypatch, ("Grasmere", GRASMERE_POLY))
+    far = transport.locate_pin(net, *bng_to_lonlat(332100, 505200), kind_hint="lake", name="Grasmere (lake)")
+    assert far.mode == "isolated"
+
+
+def test_a_small_unmapped_lake_keeps_its_own_centreline(monkeypatch):
+    net = _lake_net(LAKES)
+    _wfd(monkeypatch)   # no WFD lakes at all: G1 is a small lake only OS Open Rivers draws
+    near = transport.locate_pin(net, *bng_to_lonlat(330500, 505100), kind_hint="lake", name="Some Tarn")
+    assert near.mode == "lake" and near.lake_source == "centreline" and near.lake_links == {"G1"}
+    assert len(transport.upstream_overflows(net, near, LAKE_OVERFLOWS, velocity_ms=0.5)) == 1
+    # Over LAKE_UNMAPPED_M from it, the spot is some other water: isolated, not this lake.
+    far = transport.locate_pin(net, *bng_to_lonlat(330500, 504900), kind_hint="lake", name="Some Tarn")
+    assert far.mode == "isolated"
+    # Without a kind hint (a click on the map) nothing changes: the nearest centreline within LAKE_SNAP_M.
+    click = transport.locate_pin(net, *bng_to_lonlat(330500, 504900))
+    assert click.mode == "lake" and click.lake_links == {"G1"}

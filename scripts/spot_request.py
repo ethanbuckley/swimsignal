@@ -429,10 +429,10 @@ def place(point: Point, req: Request, net, overflows, spots: list[dict], check=N
     from dipcast.network.names import same_river
     check = check or build_placement_check()
     hint = river_from_name(req.name) if req.kind != "lake" else None
-    pin = locate_pin(net, point.lon, point.lat, kind_hint=req.kind, river_hint=hint)
+    pin = locate_pin(net, point.lon, point.lat, kind_hint=req.kind, river_hint=hint, name=req.name)
     if hint and pin.placement == "river not found" and not _names_water(hint):
         hint = None   # a bare word from the name that no nearby link carries was not a river's name
-    nearest = locate_pin(net, point.lon, point.lat, kind_hint=req.kind) if pin.placement == "moved to river" else None
+    nearest = locate_pin(net, point.lon, point.lat, kind_hint=req.kind, name=req.name) if pin.placement == "moved to river" else None
     if nearest is not None and same_river(nearest.watercourse, pin.watercourse):
         nearest = None   # an unnamed link that drains to the same river: not a different water to mention
     loc = location_fields(pin)

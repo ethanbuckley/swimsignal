@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import logging
 import math
+import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 
@@ -53,6 +54,8 @@ log = logging.getLogger(__name__)
 L0_M = 5_000.0          # dilution smoothing length
 LAKE_SNAP_M = 1_500.0   # fallback: a pin this close to a lake centreline is 'in the lake'
 LAKE_SHORE_M = 150.0    # a click this close to a WFD lake polygon counts as in that lake
+LAKE_NAMED_M = 1_000.0  # a lake spot named after a WFD lake this close is in that lake
+LAKE_UNMAPPED_M = 500.0 # a lake spot with no WFD lake: its own centreline must be this close
 LAKE_A0_KM2 = 5.0       # lake area at which the lake dilution factor halves the weight
 LOW_CONFIDENCE_FACTOR = 0.7   # outfalls snapped by proximity alone (750-1500 m, no name match)
 
@@ -146,6 +149,46 @@ def _lake_polygon_at(x: float, y: float):
     return cand.loc[cand.geometry.distance(pt).idxmin()]
 
 
+def _lake_words(name: str) -> str:
+    """A lake's or spot's name as lower-case words, without a bracketed part:
+    "Windermere (N Basin)" -> "windermere", "Ullswater, Pooley Bridge" -> "ullswater pooley bridge"."""
+    name = re.sub(r"\(.*?\)", " ", name)
+    return " ".join(re.findall(r"[a-z]+", name.lower()))
+
+
+def _named_lake_polygon(x: float, y: float, name: str | None):
+    """The nearest WFD lake within LAKE_NAMED_M whose name is in the spot's name, else None.
+    Curated pins often sit on the shore path or in the village: Ullswater, Pooley Bridge is
+    587 m from the Ullswater polygon. Matched on whole words, so Blea Tarn, Langdale does not
+    take Little Langdale Tarn."""
+    if not name:
+        return None
+    lakes = _lakes()
+    if lakes is None or lakes.empty or "lake_name" not in lakes:
+        return None
+    pt = Point(x, y)
+    idx = lakes.sindex.query(pt.buffer(LAKE_NAMED_M), predicate="intersects")
+    if len(idx) == 0:
+        return None
+    cand = lakes.iloc[idx]
+    spot = f" {_lake_words(name)} "
+    keep = cand["lake_name"].map(lambda n: isinstance(n, str) and bool(_lake_words(n))
+                                 and f" {_lake_words(n)} " in spot)
+    cand = cand[keep.astype(bool)]
+    if cand.empty:
+        return None
+    return cand.loc[cand.geometry.distance(pt).idxmin()]
+
+
+def _in_mapped_lake(net: RiverNetwork, links: set[str]) -> bool:
+    """Whether any of these lake centreline links lies inside a WFD lake polygon."""
+    lakes = _lakes()
+    if lakes is None or lakes.empty or not links:
+        return False
+    geom = net.links.loc[list(links)].geometry.union_all()
+    return len(lakes.sindex.query(geom, predicate="intersects")) > 0
+
+
 def _snap_to_links(net: RiverNetwork, x: float, y: float, link_ids: set[str]) -> Snap | None:
     if not link_ids:
         return None
@@ -160,11 +203,13 @@ def _snap_to_links(net: RiverNetwork, x: float, y: float, link_ids: set[str]) ->
 
 
 def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None = None,
-               river_hint: str | None = None) -> PinLocation:
+               river_hint: str | None = None, name: str | None = None) -> PinLocation:
     """`kind_hint` = 'lake' says the caller knows this is a lake (e.g. a designated
     lake bathing water or a curated spot). A lake with no WFD polygon and no lake
     centreline nearby is then treated as isolated rather than snapped to whatever
     river passes closest, which would credit it with that river's overflows.
+    `name` is the spot's name; for a lake it finds the WFD lake the spot is named
+    after when the pin is off its shore (_locate_lake).
 
     `river_hint` is the river the spot is on (spots.csv's `river` column). The pin
     goes to the nearest link carrying that name (or OS's alternative name, so
@@ -173,7 +218,7 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
     and was traced up the beck, finding no overflows (2 Oct 2026). With no such link
     the nearest is kept, with a warning. Ignored for lakes."""
     x, y = lonlat_to_bng(lon, lat)
-    pin = _locate(net, x, y, kind_hint)
+    pin = _locate(net, x, y, kind_hint, name)
     if river_hint and kind_hint != "lake":
         pin = _apply_river_hint(net, pin, river_hint)
     return pin
@@ -208,42 +253,84 @@ def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLoca
                        placement="moved to river")
 
 
-def _locate(net: RiverNetwork, x: float, y: float, kind_hint: str | None) -> PinLocation:
-    # 1. Inside (or on the shore of) a WFD lake polygon: the lake's centreline
-    #    links are the ones intersecting the polygon.
+def _in_polygon(net: RiverNetwork, x: float, y: float, poly) -> PinLocation | None:
+    """The pin placed in a WFD lake: the lake's centreline links are the ones intersecting
+    the polygon. None when the polygon holds no lake centreline and none is near."""
+    idx = net.links.sindex.query(poly.geometry, predicate="intersects")
+    cand = net.links.iloc[idx]
+    lake_links = set(cand.index[cand["form"] == "lake"])
+    if not lake_links:
+        near = net.snap_xy(x, y, max_m=LAKE_SNAP_M, forms=("lake",))
+        if near is not None:
+            lake_links = net.lake_component(near.link_id)
+    if not lake_links:
+        return None
+    outlet = _lake_outlet(net, lake_links)
+    name = poly.get("lake_name")
+    return PinLocation("lake", x, y, _snap_to_links(net, x, y, lake_links), lake_links, outlet,
+                       trace_node=outlet, watercourse=str(name) if isinstance(name, str) else None,
+                       lake_area_km2=float(poly["area_km2"]), lake_source="polygon")
+
+
+def _centreline_lake(net: RiverNetwork, x: float, y: float, lake: Snap) -> PinLocation:
+    comp = net.lake_component(lake.link_id)
+    outlet = _lake_outlet(net, comp)
+    own = net.links.loc[lake.link_id, "watercourse_name"]  # do not borrow the outflow river's name
+    return PinLocation("lake", x, y, lake, comp, outlet, trace_node=outlet,
+                       watercourse=str(own) if isinstance(own, str) and own else None, lake_source="centreline")
+
+
+def _locate_lake(net: RiverNetwork, x: float, y: float, name: str | None) -> PinLocation:
+    """A spot known to be a lake, with no WFD lake within LAKE_SHORE_M.
+
+    1. A WFD lake within LAKE_NAMED_M that the spot is named after: the spot is in it.
+    2. Otherwise the spot is a small lake the WFD set leaves out (under 50 ha). Its own
+       centreline, if OS Open Rivers draws one, is within LAKE_UNMAPPED_M: half the width
+       of a 50 ha lake, plus a margin for a pin on the bank. A centreline inside a WFD lake
+       is that lake's, not this one's.
+    3. Otherwise it is isolated: no overflow reaches it by water.
+
+    Until 11 Oct 2026 any lake centreline within LAKE_SNAP_M counted. Loughrigg Tarn then
+    took Grasmere's centreline, 883 m away, and with it Grasmere WwTW as an overflow upstream,
+    though no water flows from Grasmere into the tarn (reported by a Lake District water-quality
+    group, 11 Oct 2026)."""
+    poly = _named_lake_polygon(x, y, name)
+    if poly is not None:
+        pin = _in_polygon(net, x, y, poly)
+        if pin is not None:
+            return pin
+    lake = net.snap_xy(x, y, max_m=LAKE_UNMAPPED_M, forms=("lake",))
+    if lake is not None:
+        comp = net.lake_component(lake.link_id)
+        if not _in_mapped_lake(net, comp):
+            return _centreline_lake(net, x, y, lake)
+        # A pin 150-500 m off a WFD lake whose name it does not carry: most likely that lake under
+        # another name, so say so in the build log rather than let it pass as isolated unseen.
+        log.warning("lake spot %r: the nearest lake centreline, %.0f m away, is in a WFD lake the spot "
+                    "is not named after; treated as isolated", name, lake.dist_m)
+    return PinLocation("isolated", x, y, None, watercourse=None, lake_source="none")
+
+
+def _locate(net: RiverNetwork, x: float, y: float, kind_hint: str | None, name: str | None = None) -> PinLocation:
+    # 1. Inside (or on the shore of) a WFD lake polygon.
     poly = _lake_polygon_at(x, y)
     if poly is not None:
-        idx = net.links.sindex.query(poly.geometry, predicate="intersects")
-        cand = net.links.iloc[idx]
-        lake_links = set(cand.index[cand["form"] == "lake"])
-        if not lake_links:
-            near = net.snap_xy(x, y, max_m=LAKE_SNAP_M, forms=("lake",))
-            if near is not None:
-                lake_links = net.lake_component(near.link_id)
-        if lake_links:
-            outlet = _lake_outlet(net, lake_links)
-            name = poly.get("lake_name")
-            return PinLocation("lake", x, y, _snap_to_links(net, x, y, lake_links), lake_links, outlet,
-                               trace_node=outlet, watercourse=str(name) if isinstance(name, str) else None,
-                               lake_area_km2=float(poly["area_km2"]), lake_source="polygon")
+        pin = _in_polygon(net, x, y, poly)
+        if pin is not None:
+            return pin
 
-    # 2. Otherwise decide between river and (small, unmapped) lake by centreline distance.
+    # 2. A spot known to be a lake: its own lake, or isolated, never a river.
+    if kind_hint == "lake":
+        return _locate_lake(net, x, y, name)
+
+    # 3. Otherwise decide between river and (small, unmapped) lake by centreline distance.
     river = net.snap_xy(x, y, max_m=PIN_SNAP_M)
     lake = net.snap_xy(x, y, max_m=LAKE_SNAP_M, forms=("lake",))
-    if kind_hint == "lake":
-        if lake is None:
-            return PinLocation("isolated", x, y, None, watercourse=None, lake_source="none")
-        use_lake = True
-    else:
-        use_lake = lake is not None and (
-            river is None or river.form == "lake" or lake.dist_m * LAKE_BIAS < river.dist_m
-        )
+    use_lake = lake is not None and (
+        river is None or river.form == "lake" or lake.dist_m * LAKE_BIAS < river.dist_m
+    )
     if use_lake:
-        comp = net.lake_component(lake.link_id)
-        outlet = _lake_outlet(net, comp)
-        own = net.links.loc[lake.link_id, "watercourse_name"]  # do not borrow the outflow river's name
-        return PinLocation("lake", x, y, lake, comp, outlet, trace_node=outlet,
-                           watercourse=str(own) if isinstance(own, str) and own else None, lake_source="centreline")
+        return _centreline_lake(net, x, y, lake)
     if river is None:
         return PinLocation("none", x, y, None)
     river, adopted = _adopt_main_channel(net, x, y, river)
