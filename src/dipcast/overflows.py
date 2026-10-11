@@ -184,6 +184,49 @@ def on_named(net: RiverNetwork, df: pd.DataFrame) -> pd.Series:
                      index=df.index, dtype=bool)
 
 
+# Regional words for a small stream, and the place-words choose_positions already leaves out, which
+# GENERIC does not hold: "Spicey Gill" must not match "Old Wives Gill" 521 m away (Ilkley, 11 Oct 2026).
+# Used by prefer_named only, so the other name rules are unchanged.
+SNAP_EXTRA = POSITION_EXTRA | {"gill", "ghyll", "sike", "syke", "clough", "lode", "rhyne", "rhine", "pill",
+                               "fleet", "bourne", "gutter", "goit"}
+
+
+def prefer_named(net: RiverNetwork, df: pd.DataFrame, max_m: float = config.SNAP_MAX_M) -> pd.DataFrame:
+    """Outfall snap "named" (config.OUTFALL_SNAP_MODE, off by default; docs/OUTFALL-CHANNEL-TEST-2026-10.md):
+    an outfall snapped by the first pass onto a link that does not carry a distinctive word of its own
+    receiving water (own_water) moves to the nearest link within `max_m` that does, where there is one.
+    The first pass takes the nearest link whatever its name: three overflows into Caldy Brook at Chester
+    sat 155-252 m away on the Shropshire Union Canal, which does not join the Dee. Checked joins
+    (position_source 'join') and outfalls with no own name are left as they are. Adds nothing to the
+    table; `on_named` then says which outfalls are on their named water."""
+    names = net.links["watercourse_name"]
+    alt = net.links.get("watercourse_name_alternative", pd.Series(None, index=net.links.index, dtype=object))
+    todo = df["link_id"].notna() & df["snap_confidence"].eq("high")
+    if "position_source" in df:
+        todo &= df["position_source"].ne("join")
+    xs, ys = _TO_BNG.transform(df["lon"].to_numpy(), df["lat"].to_numpy())
+    moved = 0
+    for i in df.index[todo.to_numpy()]:
+        want = own_water(df.at[i, "receiving_watercourse"]) - SNAP_EXTRA
+        lid = df.at[i, "link_id"]
+        if not want or want & (_tokens(names.get(lid)) | _tokens(alt.get(lid))):
+            continue
+        k = df.index.get_loc(i)
+        cand = net.candidates_xy(xs[k], ys[k], max_m)
+        cand_alt = cand.get("watercourse_name_alternative", pd.Series(None, index=cand.index, dtype=object))
+        hit = [bool(want & (_tokens(n) | _tokens(a))) for n, a in zip(cand["watercourse_name"], cand_alt, strict=True)]
+        cand = cand[hit]
+        if cand.empty:
+            continue
+        pick = cand.iloc[0]
+        pt = Point(xs[k], ys[k])
+        df.loc[i, ["link_id", "frac", "snap_dist_m", "form"]] = [
+            pick["id"], float(pick.geometry.project(pt, normalized=True)), float(pick["dist_m"]), pick["form"]]
+        moved += 1
+    log.info("named snap: %d outfalls moved to the nearest link carrying their receiving water's name", moved)
+    return df
+
+
 def _second_pass(net: RiverNetwork, df: pd.DataFrame, is_marine=None) -> pd.DataFrame:
     """Try a wider radius for inland outfalls that missed the first pass, preferring
     a link whose name shares a distinctive word with the recorded receiving water.
@@ -273,6 +316,10 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     g = df.pop("_ground").astype(bool).to_numpy()
     df.loc[g, ["link_id", "frac", "snap_dist_m", "form"]] = np.nan
     df.loc[g, "snap_confidence"] = "ground"
+    if config.OUTFALL_SNAP_MODE == "named":
+        df = prefer_named(net, df)
+    elif config.OUTFALL_SNAP_MODE != "nearest":
+        raise ValueError(f"unknown outfall snap option {config.OUTFALL_SNAP_MODE!r}")
     df = _second_pass(net, df)
     snapped = df["link_id"].notna()
     df.loc[snapped, "start_node"] = net.links.loc[df.loc[snapped, "link_id"], "start_node"].to_numpy()

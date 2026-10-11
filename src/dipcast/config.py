@@ -135,3 +135,15 @@ DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 #                         LAKE_VELOCITY_MS, and its area in the lake dilution factor
 #                "river"  the lake's length is walked at river speed, with no lake dilution
 LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "lake")
+
+# Two options for outfalls snapped onto a small side channel (an EA bathing water profile cross-check,
+# 11 Oct 2026), both off by default; pre-stated in docs/OUTFALL-CHANNEL-TEST-2026-10.md.
+# OUTFALL_CHANNEL_MODE "own"       the dilution uses the network upstream of the outfall's own link
+#                      "junction"  an outfall on a link with little network upstream that joins a much
+#                                  bigger one within transport.OUTFALL_JOIN_M takes that junction's
+#                                  upstream length for the dilution (transport._outfall_junction)
+# OUTFALL_SNAP_MODE    "nearest"   the first snap takes the nearest link within SNAP_MAX_M
+#                      "named"     a link carrying a word of the outfall's own receiving water beats a
+#                                  nearer one that does not, within SNAP_MAX_M (overflows.prefer_named)
+OUTFALL_CHANNEL_MODE = os.environ.get("DIPCAST_OUTFALL_CHANNEL_MODE", "own")
+OUTFALL_SNAP_MODE = os.environ.get("DIPCAST_OUTFALL_SNAP_MODE", "nearest")

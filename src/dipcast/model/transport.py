@@ -43,6 +43,15 @@ docs/LAKE-PATH-TEST-2026-10.md:
                         dilution.
 
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
+
+Outfalls on a small side channel (config.OUTFALL_CHANNEL_MODE, off by default) follow an EA bathing
+water profile cross-check (11 Oct 2026). Pre-stated in docs/OUTFALL-CHANNEL-TEST-2026-10.md:
+
+* outfall channel "junction"  an outfall snapped onto a link with under ADOPT_MIN_M of network
+                        upstream, whose water reaches a node with at least ADOPT_RATIO times as much
+                        within OUTFALL_JOIN_M downstream, takes that node's upstream length for the
+                        length dilution (_outfall_junction): the outfall analogue of
+                        _adopt_main_channel. Distance and travel time stay as traced.
 """
 
 from __future__ import annotations
@@ -692,13 +701,62 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
     return None
 
 
+# Outfall channel "junction": how far downstream of an outfall, along the network, its water may run
+# before the river it joins counts for its dilution. 1 km is about half an hour at 0.5 m/s, 2% of the
+# die-off time T90, and of the order of an outfall's position error (SNAP_MAX_M is 750 m). Fixed before
+# any evaluation (docs/OUTFALL-CHANNEL-TEST-2026-10.md), not tuned.
+OUTFALL_JOIN_M = 1_000.0
+
+
+def _outfall_junction(net: RiverNetwork, link_id: str, frac: float, link_dist: dict[str, float],
+                      max_m: float = OUTFALL_JOIN_M, max_steps: int = 200) -> str | None:
+    """Outfall channel "junction": the node whose upstream length the outfall's dilution takes, or None
+    to keep its own. An outfall whose link has under ADOPT_MIN_M of network upstream (RiverNetwork.
+    upstream_m at the link's start) is followed downstream along the traced path (links in
+    `link_dist`, at a fork the one nearer the root, as the distance is measured) for up to `max_m`
+    from the outfall; the first node with at least max(ADOPT_MIN_M, ADOPT_RATIO x its own) upstream
+    is the junction: _adopt_main_channel's thresholds, for an outfall instead of a pin. An outfall on
+    the pin's own link (not in `link_dist`) keeps its own."""
+    if link_id not in link_dist:
+        return None
+    links, g, up = net.links, net.graph, net.upstream_m
+    own = up.get(links.at[link_id, "start_node"], 0.0)
+    if own >= ADOPT_MIN_M:
+        return None
+    need = max(ADOPT_MIN_M, ADOPT_RATIO * own)
+    node = links.at[link_id, "end_node"]
+    d = (1.0 - frac) * float(links.at[link_id, "length"])
+    for _ in range(max_steps):
+        if d > max_m:
+            return None
+        if up.get(node, 0.0) >= need:
+            return node
+        nxt = [(link_dist[lid], str(m), lid) for m in g.successors(node)
+               if (lid := g.edges[node, m]["link"]) in link_dist]
+        if not nxt:
+            return None
+        _, m, lid = min(nxt)
+        d += net.repairs.get(lid, 0.0) if lid.startswith("repair:") else float(links.at[lid, "length"])
+        node = m
+    return None
+
+
+def outfall_nodes(net: RiverNetwork, ov: pd.DataFrame, link_dist: dict[str, float]) -> pd.Series:
+    """For each row of `ov`, the node whose upstream length its length dilution uses under outfall
+    channel "junction": _outfall_junction's node, else the start of its own link."""
+    return pd.Series([_outfall_junction(net, lid, f, link_dist) or sn
+                      for lid, f, sn in zip(ov["link_id"], ov["frac"], ov["start_node"], strict=True)],
+                     index=ov.index, dtype=object)
+
+
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
-                       dilution_mode: str | None = None, lake_path_mode: str | None = None) -> pd.DataFrame:
+                       dilution_mode: str | None = None, lake_path_mode: str | None = None,
+                       outfall_channel_mode: str | None = None) -> pd.DataFrame:
     """Overflows upstream of the pin with distance, travel time and transport weight.
-    `velocity_mode`, `dilution_mode` and `lake_path_mode` default to config.VELOCITY_MODE,
-    config.DILUTION_MODE and config.LAKE_PATH_MODE.
+    `velocity_mode`, `dilution_mode`, `lake_path_mode` and `outfall_channel_mode` default to
+    config.VELOCITY_MODE, config.DILUTION_MODE, config.LAKE_PATH_MODE and config.OUTFALL_CHANNEL_MODE.
     With velocity 'catchment', `velocity_ms` only scales each reach's speed by
     velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it.
     With lake path 'lake', the length of each WFD lake crossed on the way moves from distance_m to
@@ -707,10 +765,11 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
+    outfall_channel_mode = outfall_channel_mode or config.OUTFALL_CHANNEL_MODE
     if (velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban")
-            or lake_path_mode not in ("river", "lake")):
+            or lake_path_mode not in ("river", "lake") or outfall_channel_mode not in ("own", "junction")):
         raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}, "
-                         f"lake path {lake_path_mode!r}")
+                         f"lake path {lake_path_mode!r}, outfall channel {outfall_channel_mode!r}")
     by_reach = velocity_mode == "catchment"
     on_lakes = lake_path_mode == "lake"
     scale = velocity_ms / config.RIVER_VELOCITY_MS
@@ -804,7 +863,8 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     elif dilution_mode == "urban":
         ov["dilution"] = np.asarray(urban_dilution(overflow_urban_km2(ov).to_numpy(), spot_up_full), dtype=float)
     else:
-        ov_lup = ov["start_node"].map(lup).fillna(0.0) + (1.0 - ov["frac"]) * ov["link_length"] * 0  # at the outfall
+        at = outfall_nodes(net, ov, link_dist) if outfall_channel_mode == "junction" else ov["start_node"]
+        ov_lup = at.map(lup).fillna(0.0) + (1.0 - ov["frac"]) * ov["link_length"] * 0  # at the outfall
         ov["dilution"] = np.minimum(1.0, (ov_lup + L0_M) / (spot_lup + L0_M))
     if pin.mode == "lake" and pin.lake_area_km2:
         # A big lake dilutes an inflow far more than a river reach of similar
