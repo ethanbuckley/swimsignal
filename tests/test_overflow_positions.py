@@ -136,3 +136,16 @@ def test_the_build_lists_an_uncounted_outfall_at_a_spot():
     assert bs.near_uncounted(results, {"bw-uke4200-08904": []}, ov) == [
         {"spot": "bw-uke4200-08904", "site_id": "YWS00033", "metres": 5}]
     assert bs.near_uncounted(results, {"bw-uke4200-08904": [{"site_id": "YWS00033"}]}, ov) == []
+
+
+def test_a_settled_join_at_a_spot_is_not_listed():
+    """Abbey Mill CSO, Knaresborough: placed by the joins file 29 m below the Lido and kept uncounted,
+    per the EA's profile. The joins file settles it, so the build does not list it."""
+    bs = _build_site()
+    lon, lat = -1.45145, 53.9982
+    ov = pd.DataFrame({"site_id": ["YWS00278", "OTHER"], "lat": [53.998403, 53.99821],
+                       "lon": [-1.451726, -1.45146], "link_id": ["below", "below"],
+                       "position_source": ["join", "live"]})
+    results = [{"id": "bw-uke2203-08903", "lat": lat, "lon": lon}]
+    assert bs.near_uncounted(results, {"bw-uke2203-08903": []}, ov) == [
+        {"spot": "bw-uke2203-08903", "site_id": "OTHER", "metres": 1}]

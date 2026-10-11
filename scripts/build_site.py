@@ -669,11 +669,14 @@ def near_uncounted(results: list[dict], upstream: dict[str, list[dict]], ov: pd.
     tens of metres, and a swim spot is a stretch of water, so an outfall at the spot should count
     whichever side of the pin its snap fell. Wetherby High Street CSO was 5 m from the Wharfe at
     Wilderness Carpark bathing water, snapped onto a stub joining 43 m below it (11 Oct 2026).
-    Settle each one in data/raw/overflow_joins.csv."""
+    Settle each one in data/raw/overflow_joins.csv. A row there is settled either way, so it is not
+    listed: Knaresborough's Abbey Mill CSO is placed 29 m below the Lido and kept uncounted, per the
+    EA's profile, and was listed on every build from 11 Oct until 12 Oct 2026."""
     from dipcast.network.rivers import lonlat_to_bng
     if ov is None or ov.empty:
         return []
-    snapped = ov[ov["link_id"].notna() & ov["lat"].notna()]
+    settled = ov["position_source"].eq("join") if "position_source" in ov else pd.Series(False, index=ov.index)
+    snapped = ov[ov["link_id"].notna() & ov["lat"].notna() & ~settled]
     ox, oy = lonlat_to_bng(snapped["lon"].to_numpy(), snapped["lat"].to_numpy())
     out = []
     for r in results:
