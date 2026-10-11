@@ -61,3 +61,31 @@ says the correction helps on days like these, not in a wet winter or a summer st
 coli estimate takes the calibrated spill chances as an input and was fitted without this
 correction, so deploying it is a separate decision: apply it to the spill level only, or refit the
 E. coli model.
+
+## Result (run 11 Oct 2026 after the commit above; nothing above was changed)
+
+`scripts/live_recalibration_test.py` on the file named above.
+
+**One departure from the plan, found when run:** the file has scored rows on 10 target days, not
+12 (29 Sep to 10 Oct, with 2 days unscored). Leave-one-day-out therefore has 10 folds. Condition 2
+was run as "at least 8 of the held-out days". Neither candidate's verdict depends on this, because
+both fail condition 1.
+
+| | Brier (held out) | AUC | Mean forecast |
+|---|---|---|---|
+| Current (`forecast_calibrated`) | 0.02494 | 0.8351 | 0.0344 |
+| A, isotonic | 0.02447 (−1.9%) | 0.8186 | 0.0286 |
+| B, company intercepts | 0.02406 (−3.5%) | 0.8504 | 0.0277 |
+
+Observed rate 0.0278. Days with lower Brier: A 7 of 10, B 6 of 10. Block check: both lower in both
+directions.
+
+- **A fails** conditions 1, 2 and 3.
+- **B fails** conditions 1 and 2.
+- **Verdict: neither passes. Nothing changes.**
+
+What the run does show:
+- The current forecasts are too high above 0.1. Held out, the 0.4–0.5 bin is 0.444 forecast against 0.268 observed.
+- B brings Southern Water's Brier from 0.0091 to 0.0030 and Thames Water's from 0.0051 to 0.0023. It makes Severn Trent and United Utilities slightly worse.
+
+So the over-forecasting is real, and it is concentrated at the two driest southern companies over these ten autumn days. A correction fitted on them does not yet beat the bar set above. Re-run with the same rule when more days are scored.
