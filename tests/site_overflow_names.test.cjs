@@ -41,8 +41,22 @@ test('the examples in the markets plan, and one of each company\'s ways of writi
     ['95/97 Craig Road CSO', '95/97 Craig Road storm overflow'],
     ['Grasmere Waste Water Treatment Works', 'Grasmere sewage works overflow'],
     ['WORTH MATRAVERS STORM TANK', 'Worth Matravers storm tank overflow'],
+    // A phrase in capitals is read before the codes (11 Oct 2026): it was "Buxton Storm sewage works overflow".
+    ['BUXTON STW INLET STORM OVERFLOW (CSO)', 'Buxton sewage works overflow'],
+    ['BUSTY BANK STORM SEWAGE OVERFLOW', 'Busty Bank storm sewage overflow'],
+    ['THE GREEN COMBINED SEWER OVERFLOW', 'The Green storm overflow'],
   ];
   for (const [name, plain] of cases) assert.equal(L.plainName(name), plain, name);
+});
+
+test('the company\'s name in normal case: three capitals too in a name all in capitals, never a code', () => {
+  // "BEN Rhydding/STW" beside its plain name until 11 Oct 2026.
+  for (const [name, own] of [['BEN RHYDDING/STW', 'Ben Rhydding/STW'], ['ALL CANNINGS', 'All Cannings'],
+    ['ABBERLEY - THE COMMON STW (SSTO)', 'Abberley - The Common STW (SSTO)'], ['BERRY EDGE ROAD CSO DER096', 'Berry Edge Road CSO DER096'],
+    ['SENNEN SPS_PSCSOEO_LANDS END', 'Sennen SPS_PSCSOEO_Lands End'], ['LOW Mill Lane 179/CSO', 'LOW Mill Lane 179/CSO'],
+    ['LITTLE SALKELD WwTW', 'Little Salkeld WwTW']])
+    assert.equal(L.nameCase(name), own, name);
+  assert.equal(L.overflowNames({site_name: 'BEN RHYDDING/STW'}).own, 'Ben Rhydding/STW');
 });
 
 test('a name without a code, or with nothing left once the codes are out, is nameCase\'s: never a guessed place', () => {

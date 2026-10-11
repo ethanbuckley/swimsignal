@@ -116,6 +116,10 @@ def test_source_failures_preserve_catalogue_but_never_advice():
     assert len(asked) == 2
     assert snapshot["status"] == "advice_unavailable"
     assert snapshot["sites"][0]["advice"] == {"state": "unavailable"}
+    # Said once above the list, not on every card (11 Oct 2026: all 426 cards said it).
+    rendered = coastal.render({**snapshot, "sites": snapshot["sites"] * 3})
+    assert rendered.count("current advice could not be fetched for this snapshot") == 1
+    assert "Current EA advice unavailable" not in rendered and "At snapshot:" not in rendered
 
 
 def test_current_and_yesterday_empty_results_are_explicitly_no_advice():

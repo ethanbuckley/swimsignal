@@ -25,6 +25,16 @@ test('the card gives the headline, the five days and where they go, by the page 
                           ['low', 'Tue', 'Low', '25'], ['na', 'Wed', 'No data', '0']]);
 });
 
+test('where the week goes is left out when the headline already says it', () => {
+  // "Low risk now · Very high risk on Thursday" was followed by "Very high risk on Thursday" (11 Oct 2026).
+  L.setToday('2026-10-03');
+  const later = {...river, days: [day('2026-10-03', 'low', 0.01), day('2026-10-04', 'low', 0.01), day('2026-10-05', 'very high', 0.8),
+    day('2026-10-06', 'low', 0.01), day('2026-10-07', 'low', 0.01)]};
+  const h = Embed.card(later, DATA, NOW);
+  assert.ok(L.headline(later).includes(L.weekNext(later)) && L.weekNext(later), L.headline(later));
+  assert.ok(h.includes(`<p class="hl low">${L.headline(later)}</p>`) && !h.includes('<p class="next">'), h);
+});
+
 test('the caveat, the issue time, the link back and the credits are always on the card', () => {
   const h = Embed.card(river, DATA, NOW);
   assert.ok(h.includes('A forecast, not a water test: check the signs at the water before you swim.'));

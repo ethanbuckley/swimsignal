@@ -34,3 +34,6 @@ def test_the_examples():
     assert plain_name("RIVADALE VIEW/CSO") == "Rivadale View storm overflow"
     assert plain_name("Bridge Lane/CSO") == "Bridge Lane storm overflow"
     assert plain_name(None) == "" and plain_name("WAREHAM NORTH BRIDGE") == name_case("WAREHAM NORTH BRIDGE")
+    # 11 Oct 2026: a phrase in capitals before the codes, and three capitals in a name all in capitals.
+    assert plain_name("BUXTON STW INLET STORM OVERFLOW (CSO)") == "Buxton sewage works overflow"
+    assert name_case("BEN RHYDDING/STW") == "Ben Rhydding/STW" and name_case("BUXTON STW (SSTO)") == "Buxton STW (SSTO)"

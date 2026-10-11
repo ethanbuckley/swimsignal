@@ -63,7 +63,10 @@ const Embed = (() => {
     const issued = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     let h = `<h1 class="name">${out(page, esc(s.name))}</h1>`;
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: ${offline ? 'this screen has not been able to fetch a newer one' : 'the automatic update has not run since'}. Treat it as out of date.</p>`;
-    h += `<p class="hl ${tone(R.level(s))}">${esc(R.headline(s))}</p>` + (next ? `<p class="next">${esc(next)}</p>` : '');
+    // Where the week goes, unless the headline already says it: "Low risk now · Very high risk on Thursday" was
+    // followed by "Very high risk on Thursday" (11 Oct 2026).
+    const head = R.headline(s);
+    h += `<p class="hl ${tone(R.level(s))}">${esc(head)}</p>` + (next && !head.includes(next) ? `<p class="next">${esc(next)}</p>` : '');
     h += `<p class="act">${esc(R.levelAction(s))}</p>`;   // what to do, as under the spot page's answer
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
     return h + `<p class="check">${check(s)}</p>`

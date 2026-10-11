@@ -343,7 +343,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             out["ecoli_scope"] = {
                 "water_body_validated": pin.mode == "river",
                 "season_validated_months": [int(m) for m in ECOLI_SEASON_MONTHS],
-                "note": ("Not validated on lakes: no ranking skill in the fitting data (16 exceedances in 803 lake samples)."
+                # 641 lake samples in the fitting data, 2024-26 (ecoli_model.json: 1,548 x the lake share 0.414),
+                # 16 of them over 900. Until 11 Oct 2026 this said 803, the validation set's lake samples (2023-26).
+                "note": ("Not validated on lakes: no ranking skill in the fitting data (16 exceedances in 641 lake samples, 2024 to 2026)."
                          if pin.mode == "lake" else
                          "Validated on Environment Agency river bathing waters, May-September; other sites and months are extrapolation."),
             }

@@ -160,8 +160,9 @@ function levelScope(s, iso = null) {
   if (!daily(s)) return '';
   const x = (s.days || []).slice(0, 5).find(d => d.date === (iso || today()));
   const out = ['This forecast counts sewage from the monitored storm overflows upstream, and the rain that makes them spill.',
-    ecoliLevel(s, x) ? 'It counts runoff from farmland and roads, wildlife and other bathers only as an average, from the rain here and the time of year.'
-      : 'It does not count runoff from farmland and roads, wildlife or other bathers.'];
+    // Treated sewage from sewage works, let out every day, is a source of its own (11 Oct 2026: it was missing here).
+    ecoliLevel(s, x) ? 'It counts treated sewage from sewage works, runoff, wildlife and other bathers only as an average. That average comes from the rain here and the time of year.'
+      : 'It does not count treated sewage from sewage works, runoff from farmland and roads, wildlife or other bathers.'];
   if ((s.location || {}).mode === 'lake') out.push('In a lake, the wind decides where river water goes. The forecast does not use wind.');
   return out.join(' ');
 }
@@ -365,9 +366,17 @@ function weekendWords(spots, dates, yours = false) {
 }
 
 // ------------------------------------------------------------------------------ overflow names
-// Overflow names that arrive in capitals ("LITTLE SALKELD WwTW") in normal case: words of four or
-// more capitals only, so codes such as STW and CSO stay as written.
-const nameCase = s => String(s ?? '').replace(/[A-Za-z']+/g, w => /^[A-Z']{4,}$/.test(w) ? w[0] + w.slice(1).toLowerCase() : w);
+// Overflow names that arrive in capitals ("LITTLE SALKELD WwTW") in normal case: words of four or more
+// capitals, and of three in a name all in capitals ("BEN RHYDDING/STW" is "Ben Rhydding/STW"; until
+// 11 Oct 2026 it was "BEN Rhydding/STW"). Codes (KEEP_CAPS) and a reference that runs into a number
+// ("DER096") stay as written.
+const KEEP_CAPS = new Set(('STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO CSO CSOEO SO OV EO FEEO '
+  + 'DWF XDWF FFT OOS NWL ESO EMO SWO HLR SCC SDC ICI RAF IOW').split(' '));
+const nameCase = s => {
+  const t = String(s ?? ''), shouty = !/[a-z]/.test(t.replace(/\b(?:WwTW|Wwtw|STWs|CSOs)\b/g, ''));
+  return t.replace(/[A-Za-z']+/g, (w, i) => !/^[A-Z']+$/.test(w) || KEEP_CAPS.has(w) || /[0-9]/.test(t.charAt(i + w.length)) ? w
+    : w.length >= 4 || (shouty && w.length === 3) ? w[0] + w.slice(1).toLowerCase() : w);
+};
 // An overflow's name in plain words, from the company's own (markets plan B1, 5 Oct 2026): the place,
 // then what the overflow is at. "Addingham/NO 1 SPS/Preliminary Treatment-STW/6Xdwf Overflow" is
 // "Addingham sewage works overflow", "RIVADALE VIEW/CSO" "Rivadale View storm overflow". Pages show
@@ -447,8 +456,9 @@ const plainName = (() => {
     for (const [part, j] of parts) {
       const found = [];
       const take = (all, before, code, after) => { found.push([kindOf(code), before || after]); return ' '; };
+      // Phrases before codes: "STORM OVERFLOW" in capitals is one phrase, not "STORM" and the code OVERFLOW.
       const rest = trimEdges(part.replace(TECH, ' ').replace(TANK, () => { tank = true; return ' '; })
-        .replace(CODES, take).replace(PHRASES, take));
+        .replace(PHRASES, take).replace(CODES, take));
       for (const [k, n] of found) {
         if (k === SSO) sso = true;
         if (k < best) { best = k; tag = n || null; } else if (k === best && n && !tag) tag = n;

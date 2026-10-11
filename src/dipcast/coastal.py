@@ -319,6 +319,9 @@ def render(snapshot):
                 "no_forecast": "No EA pollution risk forecast at this site",
                 "no_current_advice": "No current EA advice in this snapshot",
                 "unavailable": "Current EA advice unavailable"}
+    # Advice unavailable at every site (the source refused the build, or failed) is said once, above the list:
+    # on 11 Oct 2026 all 426 cards repeated "Current EA advice unavailable".
+    none = all(s["advice"]["state"] == "unavailable" for s in snapshot["sites"])
     cards = []
     for site in snapshot["sites"]:
         rating, advice = site["rating"], site["advice"]
@@ -333,12 +336,16 @@ def render(snapshot):
         # site into this fold when it is first opened. Without the script, the fold points to the profile.
         today = (f'<details class="ea-today" data-site="{escape(site["id"], quote=True)}"><summary>Today\'s EA advice</summary>'
                  f'<p class="small">Open the <a href="{profile}">official profile</a> for today\'s advice.</p></details>')
+        said = '' if none else f'<br><span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}'
         cards.append(f'<li class="coastal-site"><a href="{profile}">{escape(site["name"])}</a>'
-                     f'<p class="small">{escape(site["kind"].title())} · {escape(historical)}<br>'
-                     f'<span{expiry}>At snapshot: {messages[advice["state"]]}</span>{stamp}{sample}</p>{today}</li>')
+                     f'<p class="small">{escape(site["kind"].title())} · {escape(historical)}'
+                     f'{said}{sample}</p>{today}</li>')
     return (f'<p class="small">{len(cards)} designated coastal and estuary bathing waters. Snapshot '
             f'{when(snapshot["fetched_at"])}. Advice can change after this snapshot: open the official profile '
             'and check the signs before swimming. Missing advice does not mean clean water.</p>'
+            + ('<p class="small">The Environment Agency\'s current advice could not be fetched for this snapshot, so no site '
+               'below shows it. Open a site\'s "Today\'s EA advice" to load the Agency\'s own panel, or its official profile.</p>'
+               if none else '')
             + (f'<p class="small">The live catalogue could not be retrieved; names and historical ratings use '
                f'the official catalogue retrieved {when(snapshot["catalogue_fetched_at"])}. '
                'New designations or changed ratings may not be included.</p>' if snapshot.get("catalogue_state") == "cached" else '')
