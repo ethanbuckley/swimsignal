@@ -17,7 +17,9 @@ RiverNetwork applies, in this order:
    reason, for what the rules below leave alone.
 2. The gap repairs (RiverNetwork._repair_gaps): a dead end within 60 m of a headwater is joined to
    it. Until 11 Oct 2026 the headwater could be the start of a link flowing into that same dead
-   end, which made a two-node loop that drained nowhere (62 of the 653 joins); those are no longer made.
+   end, which made a loop (62 of the 653 joins); at Ratfyn the loop drained nowhere. Those joins
+   are left out here, and put back after the rules (restore_loop_repairs) only where the dead end
+   still has no outlet and the loop has a way out to the sea, as it had before.
 3. These rules, pass after pass until neither changes anything, so that a break downstream mended
    in one pass lets a break above it be mended in the next. Reversals are repeated until they find
    no more before each pass of joins: turning a link round keeps OS's geometry, a join has none.
@@ -36,9 +38,10 @@ RiverNetwork applies, in this order:
    Named join. A gap the 60 m repair cannot close: the next link starts more than 60 m away
    (the Test at Whitchurch, 205 m; the Thame, 277 m) or at a node some ditch already flows into,
    so it is not a headwater (the Windrush, 11 m). A dead end T is joined to the nearest node within
-   JOIN_MAX_M that starts a link sharing a word of the name of the river reaching T (main_words:
-   its largest named inflow, looked for up to NAME_STEPS links up an unnamed one), drains, and is
-   not upstream of T. A dead end whose river is a canal by name is left alone, and so is a side
+   JOIN_MAX_M that starts or ends a link sharing a word of the name of the river reaching T
+   (main_words: its largest named inflow, looked for up to NAME_STEPS links up an unnamed one),
+   drains, and is not upstream of T. An end counts: Scotsgrove Brook stops 10 m from the node where
+   another branch of it meets Cuttle Brook, above Wallingford. A dead end whose river is a canal by name is left alone, and so is a side
    arm: one where a node upstream of it carrying SIDE_ARM_SHARE or more of its water already
    drains another way, so the river carries on without it.
 
@@ -249,14 +252,14 @@ def join_for(net, t: str, up: dict[str, float], drains: set[str], pts: pd.Series
     cand = net.candidates_xy(p.x, p.y, JOIN_MAX_M)
     best = None
     for lid in sorted(cand.index):
-        s = cand.at[lid, "start_node"]
-        if s == t or s in anc or s not in drains or s not in pts.index:
-            continue
         if not words & link_words(net.links, lid):
             continue
-        d = float(pts[s].distance(p))
-        if d <= JOIN_MAX_M and (best is None or (d, s) < (best[1], best[0])):
-            best = (s, d, lid)
+        for s in (cand.at[lid, "start_node"], cand.at[lid, "end_node"]):
+            if s == t or s in anc or s not in drains or s not in pts.index:
+                continue
+            d = float(pts[s].distance(p))
+            if d <= JOIN_MAX_M and (best is None or (d, s) < (best[1], best[0])):
+                best = (s, d, lid)
     return best
 
 
@@ -309,6 +312,26 @@ def apply_rules(net, pts: pd.Series) -> list[Fix]:
         if len(fixes) == n0:
             break
     return fixes
+
+
+def restore_loop_repairs(net, pts: pd.Series, skipped: list[tuple[str, str, float]]) -> dict[str, float]:
+    """The gap repairs left out because they make a loop (RiverNetwork._repair_gaps), put back where
+    the dead end still has no outlet after the rules and the headwater drains: the loop then has a way
+    out, and the dead end's water reached the sea through it before 11 Oct 2026 (the Blackbrook River
+    on Dartmoor through the Devonport Leat). A loop with no way out (Ratfyn) stays out."""
+    g = net.graph
+    sea = sea_ends(net, pts)
+    out: dict[str, float] = {}
+    for sink, h, length in sorted(skipped):
+        # The way out must not be the dead end itself: one near the coast counts as a sea end.
+        if g.out_degree(sink) == 0 and not g.has_edge(sink, h) and (nx.descendants(g, h) & sea) - {sink}:
+            eid = f"repair:{sink[:8]}->{h[:8]}"
+            g.add_edge(sink, h, link=eid, length=length, form="repair")
+            out[eid] = length
+    if out:
+        log.info("network repairs: %d that make a loop with a way out put back (no rule gave their dead end an outlet)",
+                 len(out))
+    return out
 
 
 # ------------------------------------------------------------------ overrides

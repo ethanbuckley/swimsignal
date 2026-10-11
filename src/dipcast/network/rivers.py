@@ -72,8 +72,10 @@ class RiverNetwork:
             pts = self.node_points()
             self.repairs = {}
             self.fixes = nf.apply_overrides(self, pts)
-            self.repairs.update(self._repair_gaps(pts=pts))
+            skipped: list = []
+            self.repairs.update(self._repair_gaps(pts=pts, skipped=skipped))
             self.fixes += nf.apply_rules(self, pts)
+            self.repairs.update(nf.restore_loop_repairs(self, pts, skipped))
             if self.fixes:
                 kinds = pd.Series([f"{f.rule} ({f.kind})" for f in self.fixes]).value_counts().to_dict()
                 log.info("network fixes: %s", ", ".join(f"{k} {v}" for k, v in sorted(kinds.items())))
@@ -100,7 +102,7 @@ class RiverNetwork:
         return gpd.GeoSeries(pts.values, index=pts.index, crs=27700)
 
     def _repair_gaps(self, max_gap_m: float = 60.0, min_upstream_m: float = 1_000.0, no_loops: bool = True,
-                     pts: gpd.GeoSeries | None = None) -> dict[str, float]:
+                     pts: gpd.GeoSeries | None = None, skipped: list | None = None) -> dict[str, float]:
         """OS Open Rivers leaves small breaks at weirs, mills and culverts: a channel
         ends in a dead-end node a few metres from where the next section starts as
         a fresh 'headwater'. Join each headwater to a foreign dead-end within
@@ -108,9 +110,11 @@ class RiverNetwork:
         form 'repair' and no geometry; returns {edge_id: length_m}.
 
         A headwater whose own water already reaches that dead end is not joined to it (`no_loops`):
-        the join would make a loop, and the dead end's water would still go nowhere. Until 11 Oct 2026
-        62 of the 653 joins were such loops, among them the Hampshire Avon at Ratfyn, where a 42 m
-        stub flows into the dead end its head was joined from."""
+        the join would make a loop. Until 11 Oct 2026 62 of the 653 joins were such loops, among them
+        the Hampshire Avon at Ratfyn, where a 42 m stub flows into the dead end its head was joined
+        from, and the loop drained nowhere. Each one left out is added to `skipped` as (dead end,
+        headwater, length): dipcast.network.fixes.restore_loop_repairs puts it back after the rules
+        when the dead end still has no outlet and the loop has a way out to the sea."""
         g = self.graph
         pts = self.node_points() if pts is None else pts
         heads = [n for n in g.nodes if g.in_degree(n) == 0 and n in pts.index]
@@ -134,6 +138,8 @@ class RiverNetwork:
                 continue
             if no_loops and nx.has_path(g, h, sink):
                 loops += 1
+                if skipped is not None:
+                    skipped.append((sink, h, float(max(d.min(), 1.0))))
                 continue
             eid = f"repair:{sink[:8]}->{h[:8]}"
             g.add_edge(sink, h, link=eid, length=float(max(d.min(), 1.0)), form="repair")

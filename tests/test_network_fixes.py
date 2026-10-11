@@ -78,6 +78,37 @@ def test_a_gap_repair_no_longer_closes_a_loop():
     assert not any(k.startswith("repair:t") for k in net.repairs)
 
 
+def test_a_loop_with_a_way_out_is_kept_where_no_rule_mends_the_dead_end():
+    """The Blackbrook River on Dartmoor: the stream stops at s; a head h 30 m away starts a link to x,
+    which splits into a link back to s and one on to the sea. The old join s -> h made a loop with a
+    way out, the only way the stream's water reached the sea. Under 10 km upstream, so no rule looks
+    at s; the join is put back."""
+    links = [
+        ("M1", None, "inlandRiver", "m0", "s", [(0, 6000), (0, 1000)]),
+        ("H", None, "inlandRiver", "h", "x", [(30, 1000), (300, 800)]),
+        ("X1", None, "inlandRiver", "x", "s", [(300, 800), (0, 1000)]),
+        ("X2", None, "inlandRiver", "x", "y", [(300, 800), (600, 0)]),
+        ("Y", "Estuary", "tidalRiver", "y", "z", [(600, 0), (600, -3000)]),
+    ]
+    old, net = _net(links, fix=False), _net(links)
+    assert _reaches(old, "m0", "z") and _reaches(net, "m0", "z")
+    assert set(net.repairs) == set(old.repairs) == {"repair:s->h"}
+
+
+def test_a_loop_with_no_way_out_is_not_put_back_near_the_coast():
+    """As above, but x has no link on to the sea, and s is within 2 km of a tidal link: s counts as a
+    sea end, so h reaches the sea only through s. Joining s to h would make a loop with no way out."""
+    links = [
+        ("M1", None, "inlandRiver", "m0", "s", [(0, 6000), (0, 1000)]),
+        ("H", None, "inlandRiver", "h", "x", [(30, 1000), (300, 800)]),
+        ("X1", None, "inlandRiver", "x", "s", [(300, 800), (0, 1000)]),
+        ("Y", "Estuary", "tidalRiver", "y", "z", [(1500, 0), (3000, 0)]),
+    ]
+    net = _net(links)
+    assert not net.repairs
+    assert all(len(c) == 1 for c in nx.strongly_connected_components(net.graph))
+
+
 def _variant(changes: dict[str, tuple]) -> list[tuple]:
     out = [changes.get(r[0], r) for r in RATFYN]
     return [r for r in out if r is not None] + [v for k, v in changes.items() if v is not None and k not in {r[0] for r in RATFYN}]
@@ -133,6 +164,21 @@ def test_no_join_to_another_river_or_beyond_the_distance(why, row):
     if why == "too far":
         links = [("X", None, "inlandRiver", "x0", "n", [(900, 5200), (700, 4992)]) if r[0] == "X" else r for r in links]
     assert not _net(links).fixes, why
+
+
+def test_a_dead_end_is_joined_where_another_branch_of_its_brook_ends():
+    """Scotsgrove Brook stops 10 m from the node where its other branch meets Cuttle Brook: no link
+    of its name starts there, one ends there."""
+    links = [
+        ("S1", "Scotsgrove Brook", "inlandRiver", "s0", "s1", [(0, 30000), (0, 5000)]),
+        ("S2", "Scotsgrove Brook", "inlandRiver", "r0", "c", [(2000, 9000), (6, 4992)]),
+        ("C1", "Cuttle Brook", "inlandRiver", "c", "c1", [(6, 4992), (0, 0)]),
+        ("C2", "River Thame", "tidalRiver", "c1", "c2", [(0, 0), (0, -3000)]),
+    ]
+    assert not _reaches(_net(links, fix=False), "s0", "c2")
+    net = _net(links)
+    assert [(f.rule, f.a, f.b) for f in net.fixes] == [("named join", "s1", "c")]
+    assert _reaches(net, "s0", "c2")
 
 
 def test_no_join_to_a_link_that_reaches_no_sea():

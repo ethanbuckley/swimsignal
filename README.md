@@ -836,17 +836,19 @@ time contributes to today (it started at yesterday before, and did not).
   the Thames overflows were invisible from Wolvercote Mill Stream and the Cam
   stopped 6 km above Cambridge. Reported as `adopted_main_channel` in the API.
   Until 11 Oct 2026 62 of those joins (653 then) ran from a dead end to the head
-  of a link flowing into it: a loop that drained nowhere, among them the
-  Hampshire Avon at Ratfyn. Since then such joins are not made, and the network
-  is mended further as it loads (`dipcast.network.fixes`): 59 links drawn into a
-  dead end are turned round where the river carries on from their other end
-  under the same name, 27 dead ends are joined to the next link of their river's
-  name within 600 m, and `data/raw/network_fixes.csv` lists by hand what no rule
-  finds (the Test's braid above Chilbolton). Each rule looks only at dead ends
-  with 10 km or more of network upstream. `scripts/check_network.py` lists the
-  dead ends and loops before and after: of 175 with 30 km or more upstream, 36
-  were links drawn the wrong way, 15 gaps, 71 side arms whose river carries on
-  without them, 15 lakes with no outflow or canal ends, and 38 unclear, left alone.
+  of a link flowing into it, making a loop; at the Hampshire Avon by Ratfyn the
+  loop drained nowhere. Such joins are now left out, and put back (6 of them)
+  only where no rule mends the dead end and the loop has a way out to the sea.
+  The network is mended further as it loads (`dipcast.network.fixes`): 59 links
+  drawn into a dead end are turned round where the river carries on from their
+  other end under the same name, 28 dead ends are joined to the nearest node of
+  their river's name within 600 m, and `data/raw/network_fixes.csv` lists by hand
+  what no rule finds (the Test's braid above Chilbolton). Each rule looks only at
+  dead ends with 10 km or more of network upstream. `scripts/check_network.py`
+  lists the dead ends and loops before and after: of 175 with 30 km or more
+  upstream, 36 were links drawn the wrong way, 16 gaps, 71 side arms whose river
+  carries on without them, 15 lakes with no outflow or canal ends, and 37
+  unclear, left alone.
 - Snapping outfalls to the network: 85% sit within 750 m of a link ("high"
   confidence). A second pass to 1.5 km recovers 9% more, preferring a link whose
   name shares a distinctive word with the recorded receiving watercourse
