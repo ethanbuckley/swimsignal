@@ -334,7 +334,12 @@ def test_no_shadow_file_is_published_or_read_by_the_site():
     build = (ROOT / "scripts" / "build_site.py").read_text() + (ROOT / "scripts" / "build_any_point.py").read_text()
     for n in names:
         assert n not in workflow and n not in site and n not in build, n
-    assert "scottish" not in workflow.lower()
+    # The workflow may only pass the on/off setting to the build; any other Scottish line (an upload, a
+    # release asset, a Pages path) fails here.
+    allowed = {"# scottish water shadow (scotland plan s4, s5): 1 polls and scores in state only, publishes nothing; unset = off.",
+               "dipcast_scottish_water: ${{ vars.dipcast_scottish_water }}"}
+    lines = [ln.strip() for ln in workflow.lower().splitlines() if "scottish" in ln]
+    assert set(lines) <= allowed, lines
 
 
 def test_run_never_raises(tmp_path, monkeypatch):
