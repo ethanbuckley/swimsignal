@@ -82,7 +82,7 @@ def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows
     if not n:
         msg = ("No monitored storm overflow was found within 60 km upstream of this point."
                if where["mode"] not in ("none", "isolated") else
-               "This point is not on the river network, or is a lake with no river flowing into it, so no overflow can reach it by water.")
+               "This point is not on the river network, or is a lake that the network links to no river, so no overflow is traced to it.")
         md = "\n".join(head + [msg, "", CREDITS, ""])
         return md, to_html(name, md)
     lines = head + [

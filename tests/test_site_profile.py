@@ -48,4 +48,4 @@ def test_the_page_puts_the_caveat_first_and_never_calls_the_water_safe():
 
 def test_a_point_with_nothing_upstream_says_so():
     md, _ = sp.render("Tarn", 54.5, -3.1, {"mode": "isolated", "watercourse": None}, pd.DataFrame(), [])
-    assert "no river flowing into it" in md and pf.CAVEAT in md
+    assert "a lake that the network links to no river" in md and pf.CAVEAT in md

@@ -133,7 +133,7 @@ test('the list counts the spots without a level by why; a spot\'s page notes onl
     {issued: () => 'Tue 14:51', DATA: {build: {spots: 4, forecast_failed: 1, no_forecast_possible: 2, today_rain_unavailable: 1}}});
   const run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   assert.equal(run('overview', [ok, failed, lake('Henleaze Lake'), lake('Cotswold Country Park and Beach')]),
-    'Updated Tue 14:51 · Pollution risk: 1 low · 0 moderate · 0 high or very high · 3 without a level: 2 no river connection, 1 no forecast in this update. Today and tomorrow.');
+    'Updated Tue 14:51 · Pollution risk: 1 low · 0 moderate · 0 high or very high · 3 without a level: 2 lakes with no monitored overflow draining in, 1 no forecast in this update. Today and tomorrow.');
   assert.equal(run('overview', [ok]), 'Updated Tue 14:51 · Pollution risk: 1 low · 0 moderate · 0 high or very high · 0 without a level. Today and tomorrow.');
   assert.equal(text(run('gaps', null, true)), '1 spot has no rainfall data for today in this update.');
   assert.equal(run('gaps', null, false), '');   // Saved, a shared list, a plan: their cards say it
