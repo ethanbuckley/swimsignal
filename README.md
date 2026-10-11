@@ -178,6 +178,11 @@ lake speed, and its area in the lake dilution. `river` is the rule before, which
 walked such a lake as river. It passed a pre-stated no-harm test, but the E. coli
 data barely touch it (docs/LAKE-PATH-TEST-2026-10.md). Click-anywhere follows the
 same mode.
+`DIPCAST_LAKE_NEAR_MODE=blend` (off) gives a lake spot near an inflow that inflow's own
+river dilution, mixing into the lake dilution over about 1 km of straight line
+across the lake. It lifts the ceiling of lake spots near an overflow and did no harm
+to the held-out scores, but failed its pre-stated cross-site ranking condition,
+because of Coniston Water (docs/LAKE-NEAR-FIELD-TEST-2026-10.md).
 
 **Lakes.** A click inside or within 150 m of a WFD lake polygon is treated as
 that lake. The lake's centreline links (OS Open Rivers `form = lake`) inside the

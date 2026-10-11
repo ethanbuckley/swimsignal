@@ -169,3 +169,75 @@ What follows:
 
 If the option or its constant is changed after the results are seen, both results are kept and the
 change is stated.
+
+## Results (added 12 October 2026, after the runs; everything above is unchanged)
+
+The pre-statement above was committed in 01234e8 (12 October 2026, 00:07:18 BST) and pushed before the
+first run started (00:07:34). The branch was rebased onto main 7d1924a before the pre-statement, so
+the runs used the rebased code. Neither the option nor its constant was changed after the results.
+
+**Verdict: `blend` fails condition 3, the cross-site ranking. By the rule above it stays off.**
+Conditions 1, 2, 4, 5 and 6 hold.
+
+The runs:
+- Two fresh runs on the same 1,546 model samples.
+- 0 network attempts in 10 script runs.
+- Peak memory 4.0 GB.
+
+Paired 95% intervals from 2,000 resamples. Brier and AUC resample site-weeks; the cross-site interval
+resamples the 32 sites.
+
+| measure | base (`off`) | `blend` | change [95% CI] |
+|---|---|---|---|
+| LOYO Brier | 0.09106 | 0.09106 | -0.00000 [-0.00022, +0.00021] |
+| LOYO Brier, rivers | 0.13768 | 0.13778 | +0.00009 [-0.00023, +0.00043] |
+| LOSO Brier | 0.09056 | 0.09039 | -0.00017 [-0.00037, +0.00001] |
+| Forward (2025-26) Brier | 0.08291 | 0.08265 | -0.00026 [-0.00050, -0.00003] |
+| LOYO AUC | 0.8145 | 0.8148 | +0.0003 [-0.0019, +0.0028] |
+| LOYO AUC, rivers | 0.7478 | 0.7479 | +0.0000 [-0.0014, +0.0014] |
+| LOYO Brier, lakes (639 samples, 16 over 900) | 0.02487 | 0.02474 | -0.00013 [-0.00041, +0.00009] |
+| LOYO AUC, lakes | 0.472 | 0.454 | -0.018 [-0.054, +0.019] |
+| Cross-site rho | 0.687 | 0.602 | -0.085 [-0.237, +0.006] |
+| Within-site rho, exposure (not held out) | 0.2866 | 0.2987 | +0.012 |
+| Within-site rho, lakes | 0.212 | 0.225 | +0.012 |
+| LOYO within-site rho, rain + risk + season | 0.387 | 0.387 | 0.000 |
+| Pooled rho, exposure (not held out) | 0.561 | 0.513 | -0.048 |
+
+Against the conditions:
+1. Brier: the upper ends are +0.00021 (LOYO), +0.00001 (LOSO) and -0.00003 (forward). **Holds.**
+2. AUC: the lower ends are -0.0019 (all sites) and -0.0014 (rivers). **Holds.**
+3. Cross-site rho: the lower end is -0.237, under -0.05. **Fails.**
+4. Within-site rho: +0.012 and 0.000. **Holds.**
+5. Lakes: the upper end of the LOYO Brier change is +0.00009. **Holds.**
+6. Face check: `tests/test_lake_near.py` passes. The overflow 200 m off reads High with `blend` and Low
+   with `off`. **Holds.**
+
+The Coniston sites, LOYO, base → `blend` (for the record, not a condition):
+
+| site | samples | over 900 | mean prediction | Brier | within-site rho | mean exposure |
+|---|---|---|---|---|---|---|
+| Boating Centre | 57 | 2 | 0.030 → 0.048 | 0.0327 → 0.0324 | 0.379 → 0.374 | 0.030 → 0.276 |
+| Monk Coniston | 57 | 1 | 0.027 → 0.031 | 0.0175 → 0.0177 | 0.580 → 0.577 | 0.018 → 0.066 |
+| Brown Howe | 57 | 1 | 0.022 → 0.022 | 0.0178 → 0.0178 | 0.664 → 0.645 | 0.007 → 0.016 |
+
+**After the results, not pre-stated:** what drives the cross-site loss.
+- Coniston Boating Centre goes from 15th to 1st of 32 sites by mean exposure. Its mean E. coli ranks
+  20th.
+- Without the three Coniston sites, the cross-site rho is 0.678 under base and 0.676 under `blend`.
+- So the whole loss is the near field putting Coniston WwTW's spills, 84 m away, at nearly full
+  strength at a site whose samples are middling.
+
+What this shows:
+- *Established:* `blend` does no harm to the held-out probability scores. Forward Brier is slightly
+  better, and the lake Brier is better on the point estimate.
+- *Established:* it lifts the ceiling at lake spots near an overflow, as asked: 16 of 19 lake spots
+  with overflows were under Low, and 10 are with `blend`.
+- *Established:* at the one evaluation site it changes most, its exposure rank and the samples
+  disagree.
+- *Inferred, not tested:* any of these would explain the Coniston gap:
+  - the WwTW's real outfall or plume path is further from the sampling point than the network
+    suggests;
+  - it spills less than the model expects;
+  - wind carries the plume away.
+
+  Checking the outfall's position against the EA's consent record would settle the first.
