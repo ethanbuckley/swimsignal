@@ -1689,6 +1689,9 @@ function facts(d) {
     say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
       ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
   if (!d.error && total) out.push(nowTile(d, total));
+  // The E. coli estimate's tile takes the full width: after Right now, so that the spills and Right now pair up.
+  const ec = out.findIndex(o => o.wide && o.icon === ICON.water);
+  if (ec >= 0 && out[out.length - 1].label === 'Right now') out.push(...out.splice(ec, 1));
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
     const when = new Date(a.date + 'T12:00:00').toLocaleDateString('en-GB', a.season === thisYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
