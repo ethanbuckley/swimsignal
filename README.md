@@ -172,6 +172,10 @@ National River Flow Archive). `model/transport.py` says how each one works.
 proportion to the ONS built-up area apportioned to it
 (`scripts/make_overflow_urban_area.py`; OGL). It scored worse than the default on
 the held-out E. coli tests (docs/URBAN-DILUTION-TEST-2026-10.md).
+`DIPCAST_LAKE_PATH_MODE=lake` treats each WFD lake between an overflow and the spot
+as the spot's own lake is treated: its length at the lake speed, and its area in the
+lake dilution. By default such a lake is walked as river. It passed a pre-stated
+no-harm test, but the E. coli data barely touch it (docs/LAKE-PATH-TEST-2026-10.md).
 
 **Lakes.** A click inside or within 150 m of a WFD lake polygon is treated as
 that lake. The lake's centreline links (OS Open Rivers `form = lake`) inside the

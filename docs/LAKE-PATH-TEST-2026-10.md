@@ -155,3 +155,73 @@ If the option is changed after the results are seen, both results are kept and t
   at Fellfoot the exposure is under that floor in both variants, so the change cannot show there.
 - The lake factor and lake speed are the ones already used for the spot's own lake. They were not
   fitted to anything, and this test does not fit them.
+
+## Results (added 11 October 2026, after the runs; everything above is unchanged)
+
+The pre-statement above was committed in 5fbd5ac (11 October 2026, 19:24 BST) and pushed before the
+first run started (19:25 BST). The option was not changed after the results.
+
+**Verdict: all five conditions hold. By the rule above, `lake` is a candidate to switch on.** The
+switch is Ethan's decision. The data show it does no harm; they cannot show it helps (see below).
+
+The runs:
+- Two fresh runs on the same inputs, 1,546 model samples each, in the same order.
+- 0 network attempts in all 10 script runs.
+- The fresh default run reproduces #166's default figures to four decimal places (LOYO Brier 0.0909,
+  LOYO AUC 0.8151, cross-site rho 0.685).
+- Peak memory 3.9 GB (`replay_ecoli_leads.py` in the `lake` run).
+
+Paired intervals are 95%, from 2,000 resamples. The Brier and AUC intervals resample site-weeks
+(1,369 clusters; 923 in the forward test). The cross-site interval resamples the 32 sites.
+
+| measure | default (`river`) | `lake` | change [95% CI] |
+|---|---|---|---|
+| LOYO Brier, full model | 0.09094 | 0.09091 | -0.00003 [-0.00005, -0.00001] |
+| LOYO Brier, rivers | 0.13748 | 0.13743 | -0.00005 [-0.00009, -0.00002] |
+| LOSO Brier, full model | 0.09044 | 0.09043 | -0.00002 [-0.00004, +0.00000] |
+| Forward (2025-26) Brier | 0.08275 | 0.08273 | -0.00003 [-0.00006, -0.00000] |
+| LOYO AUC, full model | 0.8151 | 0.8154 | +0.0002 [+0.0001, +0.0004] |
+| LOYO AUC, rivers | 0.7492 | 0.7494 | +0.0003 [+0.0000, +0.0005] |
+| LOSO AUC, full model | 0.8077 | 0.8078 | +0.0001 [-0.0001, +0.0004] |
+| Forward AUC | 0.8097 | 0.8100 | +0.0003 [-0.0001, +0.0009] |
+| Cross-site rho (site-mean exposure vs log E. coli) | 0.685 | 0.685 | 0.000 [0.000, 0.000] |
+| Within-site rho, exposure vs log E. coli (not held out) | 0.2885 | 0.2884 | -0.0001 |
+| LOYO within-site rho, rain + risk + season | 0.387 | 0.388 | +0.001 |
+| Pooled rho, exposure vs log E. coli (not held out) | 0.552 | 0.557 | +0.005 |
+
+Against the conditions:
+1. Brier: the upper ends of the change are -0.00001 (LOYO), +0.000005 (LOSO) and -0.000004 (forward),
+   all under +0.0005. **Holds.**
+2. AUC: the lower ends are +0.0001 (all sites) and +0.00001 (rivers), both above -0.005. **Holds.**
+3. Cross-site rho: no site changes rank, so the change is 0 in every resample. **Holds.**
+4. Within-site rho: -0.0001 and +0.001, both above -0.01. **Holds.**
+5. South basin pooled LOYO Brier: 0.00038 to 0.00034. **Holds.**
+
+The affected-site look, LOYO, default to `lake`:
+
+| site | model samples | share over 900 | mean LOYO prediction | LOYO Brier | within-site rho | exposure rank (of 32) |
+|---|---|---|---|---|---|---|
+| Windermere, Lakeside YMCA | 57 | 0 | 0.0192 to 0.0182 | 0.00043 to 0.00038 | 0.337 to 0.342 | 29 to 29 |
+| Windermere, Fellfoot | 59 | 0 | 0.0170 to 0.0164 | 0.00033 to 0.00030 | 0.120 to 0.129 | 30 to 30 |
+| Wolvercote Mill Stream | 55 | 0.036 | 0.162 to 0.161 | 0.0577 to 0.0571 | 0.173 to 0.173 | 21 to 21 |
+| South basin pooled | 116 | 0 | 0.0181 to 0.0173 | 0.00038 to 0.00034 | | |
+
+(The within-site rho column uses all of each site's rows with every input: 77, 79 and 75.)
+
+What this shows, and what it does not:
+- *Established:* every full-set change is tiny. The largest Brier change is 0.00005, a fiftieth of
+  the full model's gain over rain alone. The direction is the same on every held-out measure: slightly
+  better.
+- *Established:* neither south-basin site had a sample over 900 cfu/100 ml in the model set (0 of 116).
+  At a site with no exceedance, the Brier score is the mean of the squared predictions, so any lower
+  prediction gives a lower Brier. Condition 5 therefore holds by arithmetic once exposure falls. It is
+  consistent with the option, but it is not evidence for it.
+- *Established:* the two south-basin sites were already 29th and 30th of 32 by exposure, and stay
+  there. So the cross-site ranking cannot move.
+- *Inferred, not tested:* the evaluation set cannot test the case the note was about. Rydal Water and
+  Waterhead have no Environment Agency samples. Samples below Grasmere and Rydal Water would be the
+  test.
+- *Inferred, not tested:* for a small lake the existing constants do little dilution. Grasmere
+  (0.60 km²) divides the weight by only 1.12. Most of Rydal Water's 41.5% drop comes from the slower
+  crossing (5.5 more hours of die-off). Whether that matches the observation that a Grasmere spill has
+  dissipated below Rydal Water is not known.
