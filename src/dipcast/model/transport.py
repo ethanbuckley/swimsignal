@@ -238,6 +238,17 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
     return pin
 
 
+def spot_hints(kind, river) -> tuple[str | None, str | None]:
+    """locate_pin's `kind_hint` and `river_hint` for a listed spot, from its spots.csv `kind` and `river`:
+    the kind only when it is 'lake' or 'river', the river only for a spot that is not a lake. The site
+    build and the E. coli evaluation (scripts/eval_pins.py) both place spots with it. Until 12 Oct 2026
+    the evaluation passed no hints, and put Colwick West Lake on the River Trent, 357 overflows that the
+    site does not count (docs/EVAL-PINS-TEST-2026-10.md)."""
+    kind = kind if kind in ("lake", "river") else None
+    river = river.strip() if isinstance(river, str) else ""
+    return kind, (river if river and kind != "lake" else None)
+
+
 def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
     """Where a side arm with little network above it begins: up its links while there is exactly one
     link in and the network above stays under ADOPT_MIN_M. Returns that point (BNG)."""

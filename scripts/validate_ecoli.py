@@ -21,6 +21,7 @@ import logging
 
 import numpy as np
 import pandas as pd
+from eval_pins import bathing_water_pin
 from scipy.stats import spearmanr
 from sklearn.metrics import roc_auc_score
 
@@ -32,7 +33,6 @@ from dipcast.model.spill_model import SpillModel
 from dipcast.model.transport import (
     combine_daily,
     history_days,
-    locate_pin,
     river_velocity,
     upstream_overflows,
 )
@@ -72,7 +72,7 @@ def main() -> None:
     out = []
     for bw_id, g in samples.groupby("bw_id"):
         s = g.iloc[0]
-        pin = locate_pin(net, float(s.lon), float(s.lat))
+        pin = bathing_water_pin(net, bw_id, float(s.lon), float(s.lat))
         up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
         from dipcast.ingest.rainfall import grid_cell
         cl, cn = (float(v) for v in grid_cell(float(s.lat), float(s.lon)))

@@ -39,7 +39,7 @@ from dipcast.model.forecast import (
     overflows_geojson,
     reload_caches,
 )
-from dipcast.model.transport import locate_pin, river_velocity, upstream_overflows
+from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -557,8 +557,7 @@ def load_spots(files: list[Path] | None = None) -> pd.DataFrame:
 
 def _river_of(row) -> str | None:
     """spots.csv's `river` for a river spot (the river it is on), None for a lake or a blank."""
-    river = str(getattr(row, "river", "") or "").strip()
-    return river if river and getattr(row, "kind", "") != "lake" else None
+    return spot_hints(getattr(row, "kind", ""), getattr(row, "river", ""))[1]
 
 
 def prefetch_rain(spots: pd.DataFrame) -> None:
@@ -572,8 +571,8 @@ def prefetch_rain(spots: pd.DataFrame) -> None:
     lat, lon = list(spots["lat"]), list(spots["lon"])
     for r in spots.itertuples(index=False):
         try:
-            pin = locate_pin(net, float(r.lon), float(r.lat), kind_hint=(r.kind if r.kind in ("lake", "river") else None),
-                             river_hint=_river_of(r), name=r.name)
+            kind, river = spot_hints(r.kind, r.river)
+            pin = locate_pin(net, float(r.lon), float(r.lat), kind_hint=kind, river_hint=river, name=r.name)
             up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
             lat += list(up["lat"]); lon += list(up["lon"])
         except Exception as e:  # noqa: BLE001
@@ -1960,9 +1959,9 @@ def build(refresh: bool = True) -> dict:
     results, upstream = [], {}
     for r in spots.itertuples(index=False):
         try:
+            kind, river = spot_hints(r.kind, r.river)
             f = forecast_point(float(r.lat), float(r.lon), gauge=False, include_contributors=ALL_CONTRIBUTORS,
-                               kind_hint=(r.kind if r.kind in ("lake", "river") else None), river_hint=_river_of(r),
-                               name=r.name)
+                               kind_hint=kind, river_hint=river, name=r.name)
             upstream[r.id] = f.get("contributors", [])   # all of them, for the organisers' page
             f["contributors"] = f.get("contributors", [])[:KEEP_CONTRIBUTORS]
         except Exception as e:  # noqa: BLE001 - one bad spot must not sink the site

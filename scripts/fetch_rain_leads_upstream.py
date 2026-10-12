@@ -10,12 +10,13 @@ import logging
 import sys
 
 import pandas as pd
+from eval_pins import bathing_water_pin
 
 from dipcast import config
 from dipcast.ingest import rainfall_leads
 from dipcast.ingest.rainfall import cells_for_sites
 from dipcast.ingest.rainfall_leads import fetch_leads
-from dipcast.model.transport import locate_pin, river_velocity, upstream_overflows
+from dipcast.model.transport import river_velocity, upstream_overflows
 from dipcast.network.rivers import RiverNetwork
 from dipcast.overflows import load_overflows
 
@@ -31,7 +32,7 @@ def replay_cells() -> list[tuple[float, float]]:
     s = pd.read_parquet(config.RAW / "bwq_samples.parquet").drop_duplicates("bw_id")
     lat, lon = list(s.lat), list(s.lon)
     for r in s.itertuples(index=False):
-        pin = locate_pin(net, float(r.lon), float(r.lat))
+        pin = bathing_water_pin(net, r.bw_id, float(r.lon), float(r.lat))
         up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
         lat += list(up.lat)
         lon += list(up.lon)

@@ -4,10 +4,11 @@ import json
 import logging
 
 import pandas as pd
+from eval_pins import bathing_water_pin
 
 from dipcast import config
 from dipcast.ingest.rainfall import fetch_archive, grid_cell
-from dipcast.model.transport import locate_pin, upstream_overflows
+from dipcast.model.transport import upstream_overflows
 from dipcast.network.rivers import RiverNetwork
 from dipcast.overflows import load_overflows
 
@@ -19,7 +20,7 @@ sites = json.loads((config.RAW / "bathing_waters_inland.json").read_text())
 cells = set()
 rows = []
 for s in sites:
-    pin = locate_pin(net, s["lon"], s["lat"])
+    pin = bathing_water_pin(net, s["id"], s["lon"], s["lat"])
     up = upstream_overflows(net, pin, ov, velocity_ms=config.RIVER_VELOCITY_MS)
     cl, cn = grid_cell(s["lat"], s["lon"]); cells.add((float(cl), float(cn)))
     for a, b in zip(*grid_cell(up["lat"].to_numpy(), up["lon"].to_numpy())) if len(up) else []:
