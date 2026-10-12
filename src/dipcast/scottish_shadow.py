@@ -145,8 +145,9 @@ def overflow_table(net, snap: pd.DataFrame | None = None, year: int | None = Non
 # ------------------------------------------------------------------ 2. rain
 def forecast_calls(n_cells: int) -> float:
     """Open-Meteo's count for forecasts of n_cells cells: locations x days/14 (scripts/fetch_wales_history.py,
-    archive_calls), with FORECAST_PAST_DAYS + FORECAST_DAYS days of one variable."""
-    return n_cells * max(1.0, (config.FORECAST_PAST_DAYS + config.FORECAST_DAYS) / 14)
+    archive_calls), with FORECAST_PAST_DAYS + FORECAST_DAYS + 1 days of one variable (rainfall.fetch_forecast
+    asks for one more UTC day than the local days shown)."""
+    return n_cells * max(1.0, (config.FORECAST_PAST_DAYS + config.FORECAST_DAYS + 1) / 14)
 
 
 def shadow_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD, max_age_h: float = RAIN_MAX_AGE_H,

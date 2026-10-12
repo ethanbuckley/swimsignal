@@ -45,7 +45,7 @@ MAX_WAIT_S = 60.0
 CONNECT_TIMEOUT_S = 8.0
 # A cached forecast up to this old stands in for one Open-Meteo did not send. The same rule as
 # the click-anywhere data's (scripts/build_any_point.py, RAIN_MAX_AGE_H): a day-old run still
-# covers today and the next days but its last.
+# covers today and the next four days, but not the last of them for a build from 23:00 UTC in summer time.
 STALE_MAX_AGE_S = 24 * 3600
 # After this many forecast requests in a row fail every attempt, Open-Meteo is taken to be down:
 # fetch_forecast makes no request for OUTAGE_COOLOFF_S and serves the cache, so an outage costs a
@@ -269,7 +269,9 @@ def fetch_forecast(cells: list[tuple[float, float]],
     raise: its cells get their cached forecast if it is at most `stale_max_age_s` old and are
     left out otherwise, so they have no rain data (never zero rain). Requests are the same as
     before, one per FORECAST_BATCH cells not freshly cached; a cell that failed earlier in this
-    process, or any cell during an outage (OUTAGE_AFTER), goes to the cache without one."""
+    process, or any cell during an outage (OUTAGE_AFTER), goes to the cache without one.
+    `forecast_days` counts the Europe/London days the forecast shows, today first. Open-Meteo is
+    asked for one more UTC day than that, so the last of them is whole at any hour."""
     CACHE.mkdir(parents=True, exist_ok=True)
     frames, todo, held = [], [], []
     now = time.time()
@@ -293,7 +295,11 @@ def fetch_forecast(cells: list[tuple[float, float]],
                 "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
                 "hourly": "precipitation",
                 "past_days": past_days,
-                "forecast_days": forecast_days,
+                # One UTC day more than the local days shown. In summer time, from 23:00 UTC the
+                # local date is a day ahead of the UTC one, so the fifth local day ends an hour into
+                # a UTC day not asked for. With forecast_days alone it had one hour of rain, and every
+                # build issued from 23:00 to 00:00 UTC showed no figure for it (16 Sep-12 Oct 2026).
+                "forecast_days": forecast_days + 1,
                 "timezone": "UTC",
             }
             try:
