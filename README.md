@@ -1100,11 +1100,13 @@ EA's own embeddable panel for the site in the reader's browser when opened: a
 sandboxed frame the page cannot read, so it never sets the level.
 
 **Where there is nothing to forecast (3 Oct 2026).** A spot with no monitored
-overflow within 60 km upstream gets a plain level of its own, "No sewage risk
-from monitored overflows" (teal), and an isolated lake, which the river network
-links to no monitored overflow, "No monitored overflow drains into this lake"
-(grey; "No river connection: overflows cannot reach this lake" until 11 Oct 2026,
-which was false at a tarn with becks the network does not draw).
+overflow within 60 km upstream, and an isolated lake, which the river network
+links to no monitored overflow, both get a plain level of their own, "No
+monitored overflow found upstream" (teal; since 12 Oct 2026). Before, they read
+"No sewage risk from monitored overflows", which a red-team review read as "no
+risk", and "No monitored overflow drains into this lake" (grey; "No river
+connection: overflows cannot reach this lake" until 11 Oct 2026, which was false
+at a tarn with becks the network does not draw).
 Under either, the page says "Other risks apply: algae, wildlife, runoff and
 bathers. Check the signs at the water." and gives the rain in the 48 hours to
 midday today as "12 mm of rain in the last two days". Neither shows an E. coli

@@ -75,8 +75,10 @@ function evidenceOverflows(d, generatedAt) {
     src: "The water companies' live feeds" };
 }
 
-// The rain in the 48 h to midday on the first day, and the wettest day ahead, from the rainfall forecast
-// read with the forecast; a day with no rain figure is named among the gaps.
+// The rain in the 48 h to midday on the first day, and the most ahead, from the rainfall forecast read
+// with the forecast; a day with no rain figure is named among the gaps. Every figure is a 48 h total to
+// midday: until 12 Oct 2026 the most ahead read "The wettest day ahead is Tuesday, with 7 mm", as if it
+// were that day's rain (red-team review, 11 Oct).
 function evidenceRain(d, nowMs, generatedAt) {
   const days = (d.days || []).slice(0, 5), x0 = days[0];
   if (!x0 || evidenceNil(x0.rain_48h_mm)) return null;
@@ -85,7 +87,7 @@ function evidenceRain(d, nowMs, generatedAt) {
     .reduce((a, b) => !a || b.rain_48h_mm > a.rain_48h_mm ? b : a, null);
   const when = x0.date === evidenceISO(nowMs) ? 'today' : evidenceDayName(x0.date);
   return { what: 'Rain here', at: generatedAt,
-    say: `${amount} in the 48&nbsp;h to midday ${when}.${wet ? ` The wettest day ahead is ${evidenceDayName(wet.date)}, with ${Math.round(wet.rain_48h_mm)}&nbsp;mm.` : ''}`,
+    say: `${amount} in the 48&nbsp;h to midday ${when}.${wet ? ` The most ahead is ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${evidenceDayName(wet.date)}.` : ''}`,
     src: `<a href="https://open-meteo.com/">Open-Meteo.com</a>'s forecast` };
 }
 

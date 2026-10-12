@@ -185,7 +185,10 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
         out.append('<aside class="summary" aria-labelledby="short-h"><h2 id="short-h">In short</h2><ul>'
                    f"<li><b>{s['n']}</b> monitored storm overflow{'' if s['n'] == 1 else 's'} drain{'s' if s['n'] == 1 else ''} into "
                    f"the water within {km:g}&nbsp;km upstream; <b>{s['near']}</b> of them within {NEAR_KM}&nbsp;km.</li>"
-                   f"<li>{s['live']} of them report live to the water companies' public feeds.</li>"
+                   # "Report live" here read as a count of what reports now, which the spot's page gives
+                   # and which can be lower: Ilkley's history said 15 where its page said 14 (12 Oct 2026).
+                   f"<li>{s['live']} of them are in the water companies' live feeds. "
+                   f"<a href=\"spot/{sid}/\">The spot's page</a> says how many report right now.</li>"
                    f"<li>The nearest is {fmt(s['nearest_km'], 1)}&nbsp;km "
                    f"{'away, across the lake' if s['nearest_in_lake'] else 'upstream'}.</li></ul></aside>")
         out.append("<h2>Each year, all overflows upstream</h2>")

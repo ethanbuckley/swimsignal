@@ -41,13 +41,13 @@ const Record = (() => {
   const row = (label, body) => body ? `<dt>${label}</dt><dd>${body}</dd>` : '';
 
   // What the forecast cannot see: the About page's list, word for word (about.html, "What it cannot see").
-  // tests/site_record.test.cjs fails when the two differ, except in the Welsh item below. A record shows the
-  // lines that apply to its spot (cannotSee).
-  // The overflows in Wales (11 Oct 2026). The About page's item says Dŵr Cymru's overflows "which matter at
+  // tests/site_record.test.cjs fails when the two differ. A record shows the lines that apply to its spot
+  // (cannotSee).
+  // The overflows in Wales (11 Oct 2026). The About page's item said Dŵr Cymru's overflows "which matter at
   // the spots on the Dee and on the Wye in Herefordshire, are forecast from rain and their yearly spill
   // record": true of its overflows in England, but its overflows in Wales are not in the data at all, and
-  // those are most of what lies above Sandy Lane, Chester (73% of the river within 60 km). Until the About
-  // page says this too, the test lets the two differ here only.
+  // those are most of what lies above Sandy Lane, Chester (77% of the river within 60 km). Both say it
+  // this way since 12 Oct 2026.
   const WALES_CANNOT_SEE = 'Dŵr Cymru Welsh Water\'s overflows in Wales are not in SwimSignal\'s data: there is no licence to reuse them yet, and SwimSignal is waiting for Dŵr Cymru\'s terms. '
     + 'Where a spot\'s river runs from Wales, its page says how much of the river above it is in Wales. Dŵr Cymru\'s overflows in England are forecast from rain and their yearly spill record, with no "right now".';
   const CANNOT_SEE = [
