@@ -61,7 +61,7 @@ differs by more than 0.003, I stop. I report it before committing anything.
 Nothing else is committed. The exposure and rows parquets are git-ignored. No spill model is
 refitted. Nothing merges without Ethan's go.
 
-## Results (12 Oct 2026, 23:2x–23:34 BST, after the statement above was committed in 495334e)
+## Results (12 Oct 2026, 23:25–23:34 BST, after the statement above was committed in 495334e)
 
 **Cache top-up: as expected.** The two scripts added exactly the 16 files stated (lead and archive
 rain, cells (51.4, -1.9) and (51.9, -1.7), 2023–2026), with no failed request. The cache now has
@@ -89,7 +89,8 @@ Compared with #199's `site` run, using #199's own `compare.measures` on both:
   claims changed:
   - On rivers the gain over rain alone is 2% to 6.5% of the Brier score (it was 3% to 7%).
     With a year or a site left out, its 95% interval includes no gain under any of the three
-    resamplings. Before, it did so only by calendar week.
+    resamplings. Before, with a year left out, it did so only by calendar week. With a site left
+    out it already did so under all three, though the page did not say so.
   - Against rain and season, the gain holds under all three resamplings with a year left out, but
     not with a site left out. Before, it held in both.
   - Site-mean rho is 0.76 and rainfall -0.23 (the page said 0.68 and -0.25, the 14 Sep figures).
