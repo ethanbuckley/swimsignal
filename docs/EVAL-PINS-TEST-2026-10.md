@@ -101,7 +101,7 @@ Two runs of the E. coli chain, one at a time, with every outgoing connection ref
 `site`. Everything else is the same:
 
 - network `ccc58f6b` and the overflow table above;
-- rain: a frozen copy (APFS clone) of the main checkout's `data/cache/rain`, taken at about 17:45 BST
+- rain: a frozen copy (APFS clone) of the main checkout's `data/cache/rain`, taken at 17:35 BST
   on 12 Oct, after another session added 42 lead and 170 archive files at 17:25. It holds every cell
   the old pins need. The site's pins need two more cells, (51.4, −1.9) and (51.9, −1.7). They carry
   0.53% of Queen Elizabeth Gardens' weight and 0.05% of Wolvercote's. Their 16 files were fetched into
