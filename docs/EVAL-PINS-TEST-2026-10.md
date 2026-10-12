@@ -273,9 +273,10 @@ Nadder), runs south, and enters the Nadder 73 m below the point. The Nadder meet
 further on, 159 m from the point. So the water at the point comes from the Avon above the Nadder.
 The Nadder runs 71 m away. How much of its water mixes back up to the point is not known.
 
-**Not counted, though inside the zone: 2 overflows.** All Cannings (WXW00072, about 19 spill days a
-year) and WSX10016 snap to The Gog. OS Open Rivers draws The Gog flowing north from All Cannings to a
+**Not counted, though inside the zone: 2 overflows.** All Cannings (WXW00072, about 19 spills a year
+in the annual returns) and WSX10016 snap to The Gog. OS Open Rivers draws The Gog flowing north from All Cannings to a
 dead end near the Kennet and Avon Canal, so the trace never reaches the Avon. They are not counted
 even with a 100 km limit. The EA's catchment puts both on the Avon side. Whether The Gog reaches the
-Avon, the canal or neither is not established. At Queen Elizabeth Gardens they would weigh about
-0.003 each, as Horton and Coate do at 58 km. The weight would be larger at spots further up the Avon.
+Avon, the canal or neither is not established. Inferred: at Queen Elizabeth Gardens they would weigh
+about 0.003 each, as Horton and Coate do at 58 km, if they fell inside the 60 km limit at all. The
+weight would be larger at spots further up the Avon.
