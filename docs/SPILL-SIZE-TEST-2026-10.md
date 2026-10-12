@@ -133,3 +133,96 @@ running it again, three changes, committed before any paired result was computed
    reported beside the stated result; it does not replace it.
 
 Seen before these changes: `summary.csv`, the per-run measures on each run's own samples.
+
+### Verdict: fails. Spill hours stay off.
+
+Conditions 1 and 4 fail; 2, 3 and 5 hold. No model code changes. `judge.py` prints "VERDICT: fails".
+
+### Condition 1: information against its own placebos. Fails.
+
+As stated, each run on its own samples (`length` 1,546, `flow` 1,529, `sh` 1,502, placebos 1,417 to 1,546):
+
+| measure | `sh` | `length` | `flow` | 20 placebos: lowest, median, highest | placebos at least as good as `sh` | holds |
+|---|---|---|---|---|---|---|
+| LOYO Brier (lower is better) | 0.0917 | 0.0911 | 0.0880 | 0.0867, 0.0890, 0.0912 | 20 | no |
+| LOYO AUC, all | 0.8197 | 0.8145 | 0.8142 | 0.8087, 0.8160, 0.8258 | 3 | no |
+| LOYO AUC, rivers | 0.7621 | 0.7476 | 0.7403 | 0.7342, 0.7454, 0.7661 | 1 | yes |
+| cross-site rho | 0.649 | 0.684 | 0.558 | 0.408, 0.583, 0.729 | 8 | no |
+
+Holds on 1 of 4; it needs 3.
+
+The check (`common.py`), on the 1,373 samples that all 23 runs keep (28 sites, 196 over the limit;
+the four sites above left out):
+
+| measure | `sh` | `length` | `flow` | 20 placebos: lowest, median, highest | placebos at least as good as `sh` | holds |
+|---|---|---|---|---|---|---|
+| LOYO Brier | 0.0908 | 0.0929 | 0.0905 | 0.0894, 0.0918, 0.0926 | 5 | no |
+| LOYO AUC, all | 0.8252 | 0.8195 | 0.8149 | 0.8092, 0.8167, 0.8270 | 1 | yes |
+| LOYO AUC, rivers | 0.7590 | 0.7449 | 0.7357 | 0.7342, 0.7414, 0.7617 | 1 | yes |
+| cross-site rho | 0.649 | 0.684 | 0.558 | 0.408, 0.583, 0.729 | 8 | no |
+
+Holds on 2 of 4. It fails either way. Each run's measures recomputed on its own samples equal
+`summary.csv`'s, which checks the recomputation.
+
+### Conditions 2 to 5: `sh` against `length`, paired
+
+On the 1,502 samples both keep (Colwick's 44 left out). Change is `sh` minus `length`, 95% interval.
+
+| condition | measure | `length` | `sh` | change | bar | holds |
+|---|---|---|---|---|---|---|
+| 2 | LOYO Brier | 0.0936 | 0.0917 | −0.0019 [−0.0042, +0.0003] | upper ≤ +0.0005 | yes |
+| 2 | LOSO Brier | 0.0928 | 0.0906 | −0.0022 [−0.0046, +0.0001] | upper ≤ +0.0005 | yes |
+| 2 | forward Brier (997 samples) | 0.0853 | 0.0821 | −0.0032 [−0.0072, +0.0004] | upper ≤ +0.0005 | yes |
+| 3 | LOYO AUC, all | 0.8130 | 0.8197 | +0.0067 [−0.0017, +0.0151] | lower ≥ −0.005 | yes |
+| 3 | LOYO AUC, rivers (907) | 0.7476 | 0.7621 | +0.0145 [+0.0002, +0.0299] | lower ≥ −0.005 | yes |
+| 4 | cross-site rho (32 sites) | 0.684 | 0.649 | −0.036 [−0.299, +0.226] | lower ≥ −0.05 | **no** |
+| 5 | LOYO Brier, lakes (595) | 0.0262 | 0.0263 | +0.0001 [−0.0004, +0.0004] | upper ≤ +0.0005 | yes |
+
+### `sh` against `flow`: the sizes alone
+
+On the 1,485 samples both keep (Colwick and Queen Elizabeth Gardens left out). Change is `sh` minus
+`flow`.
+
+| measure | `flow` | `sh` | change |
+|---|---|---|---|
+| LOYO Brier | 0.0905 | 0.0911 | +0.0006 [−0.0006, +0.0016] |
+| LOSO Brier | 0.0894 | 0.0900 | +0.0006 [−0.0006, +0.0017] |
+| forward Brier (980) | 0.0804 | 0.0811 | +0.0007 [−0.0007, +0.0021] |
+| LOYO AUC, all | 0.8095 | 0.8196 | +0.0101 [+0.0031, +0.0179] |
+| LOYO AUC, rivers (890) | 0.7403 | 0.7617 | +0.0214 [+0.0081, +0.0354] |
+| LOYO Brier, lakes (595) | 0.0263 | 0.0263 | +0.0000 [−0.0002, +0.0002] |
+| cross-site rho (32 sites) | 0.558 | 0.649 | +0.091 [−0.052, +0.260] |
+
+### What this shows
+
+Established, from the tables above:
+- Spill hours fail the stated test. They stay off, and nothing in the model changes.
+- On probability accuracy (Brier), spill hours do no better than random reshuffles of the same sizes:
+  all 20 placebos are at least as good on each run's own samples, and 5 of 20 on the common samples.
+  Against a single size for every overflow (`flow`), Brier is no better either.
+- On ranking samples (AUC), spill hours do better than a single size (+0.010 over all sites, +0.021
+  over rivers, both intervals above 0) and better than most reshuffles.
+- On ranking the 32 sites (cross-site rho), the result is too uncertain to read: against `length` the
+  interval runs from −0.30 to +0.23. Condition 4 fails because a loss of that size cannot be ruled out,
+  not because a loss was shown.
+
+Inferred, not tested:
+- The AUC gain may mean spill hours carry some information on which days are worse. It did not carry
+  over to probabilities or to sites, and it was found on the same samples that judged the four earlier
+  tests. It is not a candidate under this rule.
+- The reasons stated beforehand fit: spill hours measure duration, and the spill model already uses
+  them.
+
+A side finding, not part of the test. At six of the 38 sites the replay covers, a fixed share of the weight under
+`length` comes from overflows with no rain data on any sample day in these runs: River Avon at Queen
+Elizabeth Gardens 5.4%, Colwick 1.0%, River Severn in Shrewsbury 0.18%, Ham and Kingston 0.13%,
+Wolvercote Mill Stream 0.09%, Wallingford Beach 0.06%. Those overflows count as not spilling, as in
+production (`replay_ecoli_leads.py`, `transport.missing_share`). Why they have no rain data, and
+whether the live forecast has the same gap, was not checked.
+
+### Files
+
+Outputs are in the run's scratch folder, not in the repo: `summary.csv`, `common.json`,
+`paired_length_sh.json`, `paired_flow_sh.json`, `judge.json`, and per-run logs. Harness:
+`scripts/spill_size_eval/`. Overflow table SHA-256 `f3c7ed7b…`, `sh.parquet` `7d33d7bd…`, main
+`204d2a1`. About six minutes a run, 23 runs one at a time.
