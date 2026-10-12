@@ -236,6 +236,13 @@ Inferred:
   and one of the lowest E. coli means.
 - The lake AUC gain rests on 16 exceedances. It is not evidence the model now works on lakes.
 
+**#200, merged after these runs.** Both runs used main e52b750's `validate_ecoli.py`. #200 makes
+missing rain unknown rather than dry. On a complete cache, its own check (docs/MISSING-RAIN-CHECK-2026-10.md,
+result 1) changed two rows: Derwent Water and Colwick on 7 Sep 2026, where the rain archive ends. Both
+already had no `rain_48h`, so neither was in the fit. Inferred: with #200 the fits and the paired results
+here are the same; `ecoli_validation.json`'s `risk_model` figures would lose at most those two rows. Not
+re-run.
+
 **One thing to check, which does not change the rule:** Queen Elizabeth Gardens. With the site's pin
 its exposure is a fifth of the evaluation's, yet 4 of its 17 samples were over 900. If #179's placement
 is wrong, this is where it would show. Settling it needs the EA's zone-of-influence map. The profile's
