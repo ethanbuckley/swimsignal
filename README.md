@@ -282,6 +282,15 @@ compares it with the naive competitor, rainfall at the site in the previous
 48 hours. Results (Spearman rank correlation with log E. coli; AUC for samples
 over 900 cfu/100 ml, the inland "sufficient" threshold):
 
+*12 Oct 2026:* the figures in this section are from 14 Sep. Rerun on the network
+after #184, the refilled rain cache and the site's own placement of each bathing
+water (#199; `docs/ECOLI-REFIT-SITE-PINS-2026-10.md`), the spill risk scores
+pooled ρ 0.63, within-site ρ 0.31 and AUC > 900 0.81 on 1,684 samples at 31
+sites (Colwick West Lake has no overflows upstream with the site's placement).
+Site-mean risk ranks the sites at ρ = 0.76; site-mean rainfall gets −0.23. The
+current figures are in `data/processed/ecoli_validation*.json` and on the
+Accuracy page.
+
 | Predictor | Pooled ρ | Within-site ρ | AUC > 900 |
 |---|---|---|---|
 | rainfall, previous 48 h at the site | 0.09 | 0.35 | 0.65 |
@@ -357,6 +366,17 @@ spot in the previous 48 and 24 h, SwimSignal's overflow exposure for the day, la
 river, and season. The rain is Open-Meteo's archived lead-0 forecast, the same
 source the map uses for "today". The competitor that matters is rain alone: the
 question is whether the overflow exposure adds anything a rain gauge would not.
+
+*Refitted 12 Oct 2026* on the site's placement of each bathing water (#199;
+`docs/ECOLI-REFIT-SITE-PINS-2026-10.md`): 1,502 samples at 31 bathing waters.
+Leaving a year out: Brier 0.094, AUC 0.81 (rivers 0.75, lakes 0.53); rain only
+0.096 and 0.79. On rivers the gain over rain alone shrank (leave one year out,
++3.9 thousandths). With a year or a site left out, its 95% interval now includes
+no gain under all three resamplings. Against rain + season it holds under all
+three with a year left out, not with a site left out. Forward in time it is much
+as before (+8.1 [+2.6, +13.4] by site-weeks). The tables below are the 16-17 Sep
+fit; the current ones are in `data/processed/ecoli_model_eval.json` and on the
+Accuracy page.
 
 Rebuilt on 16-17 Sep 2026 after the rain-window fixes: 1,548 samples at 32
 bathing waters, 2024-2026 (the 202 samples from 2023 are gone, because
