@@ -247,3 +247,36 @@ re-run.
 its exposure is a fifth of the evaluation's, yet 4 of its 17 samples were over 900. If #179's placement
 is wrong, this is where it would show. Settling it needs the EA's zone-of-influence map. The profile's
 image link returned an HTML page, not a map, so I have not seen it.
+
+## Queen Elizabeth Gardens against the EA's zone of influence (12 Oct 2026, after the merge)
+
+**The site's pin is right.** The EA's own zone of influence for the bathing water takes in every
+overflow the site counts and none of the ones the old evaluation added.
+
+**The zone.** The EA's linked-data API serves the polygon as GML in British National Grid:
+`https://environment.data.gov.uk/doc/bathing-water-profile/ukk1500-19002:latest.json?_properties=bathingWater.zoneOfInfluence.extent.asGML`
+(OGL). It is the "surface water catchment boundary" drawn on the profile page. One ring, 397 km²,
+from Salisbury north up the Avon to the Vale of Pewsey. The sampling point (413957, 129834) is inside
+it, 35 m from its southern edge. It does not reach the Wylye or Nadder valleys.
+
+**The overflows** (positions from the overflow table on network `ccc58f6b`):
+
+| Set | Overflows | Inside the zone |
+|---|---|---|
+| Counted at both pins (Avon above Salisbury) | 14 | 14 |
+| Counted only at the site's pin (Horton, Coate) | 2 | 2 |
+| Counted only at the old evaluation pin (Wylye, Nadder, Till, Were, Sem, Fovant Brook) | 18 | 0; the nearest, Wishford Wilton Road Storm Tank, is 2.0 km outside |
+
+**The network agrees.** The sampling point is 1.3 m from an unnamed channel in OS Open Rivers. It
+leaves the River Avon 1 km north of the point (its head is 77 m from the Avon and 835 m from the
+Nadder), runs south, and enters the Nadder 73 m below the point. The Nadder meets the Avon 101 m
+further on, 159 m from the point. So the water at the point comes from the Avon above the Nadder.
+The Nadder runs 71 m away. How much of its water mixes back up to the point is not known.
+
+**Not counted, though inside the zone: 2 overflows.** All Cannings (WXW00072, about 19 spills a year
+in the annual returns) and WSX10016 snap to The Gog. OS Open Rivers draws The Gog flowing north from All Cannings to a
+dead end near the Kennet and Avon Canal, so the trace never reaches the Avon. They are not counted
+even with a 100 km limit. The EA's catchment puts both on the Avon side. Whether The Gog reaches the
+Avon, the canal or neither is not established. Inferred: at Queen Elizabeth Gardens they would weigh
+about 0.003 each, as Horton and Coate do at 58 km, if they fell inside the 60 km limit at all. The
+weight would be larger at spots further up the Avon.
