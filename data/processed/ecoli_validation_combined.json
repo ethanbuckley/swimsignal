@@ -1,32 +1,32 @@
 {
- "n_samples": 1750,
+ "n_samples": 1748,
  "sites": 32,
- "between_site_rho_risk": 0.684,
- "between_site_rho_rain": -0.246,
+ "between_site_rho_risk": 0.705,
+ "between_site_rho_rain": -0.239,
  "loyo_within_site": {
   "rain only": {
-   "n": 1648,
+   "n": 1646,
    "rho_within": 0.347,
    "rmse": 0.464,
    "auc_gt900": 0.863
   },
   "spill risk only": {
-   "n": 1648,
-   "rho_within": 0.363,
-   "rmse": 0.459,
-   "auc_gt900": 0.865
+   "n": 1646,
+   "rho_within": 0.361,
+   "rmse": 0.46,
+   "auc_gt900": 0.866
   },
   "rain + spill risk": {
-   "n": 1648,
-   "rho_within": 0.37,
+   "n": 1646,
+   "rho_within": 0.369,
    "rmse": 0.458,
-   "auc_gt900": 0.869
+   "auc_gt900": 0.87
   },
   "rain + spill risk + season": {
-   "n": 1648,
+   "n": 1646,
    "rho_within": 0.389,
    "rmse": 0.455,
-   "auc_gt900": 0.867
+   "auc_gt900": 0.868
   }
  },
  "loyo_within_site_river": {
@@ -39,51 +39,51 @@
   "spill risk only": {
    "n": 845,
    "rho_within": 0.509,
-   "rmse": 0.416,
-   "auc_gt900": 0.775
+   "rmse": 0.418,
+   "auc_gt900": 0.776
   },
   "rain + spill risk": {
    "n": 845,
-   "rho_within": 0.526,
-   "rmse": 0.412,
-   "auc_gt900": 0.785
+   "rho_within": 0.524,
+   "rmse": 0.413,
+   "auc_gt900": 0.787
   },
   "rain + spill risk + season": {
    "n": 845,
-   "rho_within": 0.53,
-   "rmse": 0.411,
-   "auc_gt900": 0.789
+   "rho_within": 0.528,
+   "rmse": 0.412,
+   "auc_gt900": 0.791
   }
  },
  "loyo_within_site_lake": {
   "rain only": {
-   "n": 803,
-   "rho_within": 0.179,
+   "n": 801,
+   "rho_within": 0.181,
    "rmse": 0.497,
-   "auc_gt900": 0.917
+   "auc_gt900": 0.918
   },
   "spill risk only": {
-   "n": 803,
-   "rho_within": 0.215,
-   "rmse": 0.495,
+   "n": 801,
+   "rho_within": 0.214,
+   "rmse": 0.497,
    "auc_gt900": 0.925
   },
   "rain + spill risk": {
-   "n": 803,
-   "rho_within": 0.168,
+   "n": 801,
+   "rho_within": 0.17,
    "rmse": 0.499,
-   "auc_gt900": 0.917
+   "auc_gt900": 0.918
   },
   "rain + spill risk + season": {
-   "n": 803,
+   "n": 801,
    "rho_within": 0.295,
    "rmse": 0.485,
    "auc_gt900": 0.927
   }
  },
  "coef_lrain48_lrain24_logitrisk": [
-  0.099,
-  -0.014,
-  0.092
+  0.102,
+  -0.011,
+  0.076
  ]
 }

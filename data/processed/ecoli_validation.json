@@ -2,36 +2,36 @@
  "all_sites": [
   {
    "predictor": "rain_24h",
-   "n": 1750,
+   "n": 1748,
    "sites": 32,
-   "spearman_pooled": 0.0882,
-   "spearman_within_site": 0.2931,
-   "auc_gt500": 0.5924,
-   "rate_gt500": 0.2097,
-   "auc_gt900": 0.6197,
-   "rate_gt900": 0.1246
+   "spearman_pooled": 0.0895,
+   "spearman_within_site": 0.2937,
+   "auc_gt500": 0.5927,
+   "rate_gt500": 0.21,
+   "auc_gt900": 0.6198,
+   "rate_gt900": 0.1247
   },
   {
    "predictor": "rain_48h",
-   "n": 1750,
+   "n": 1748,
    "sites": 32,
-   "spearman_pooled": 0.0938,
-   "spearman_within_site": 0.3542,
-   "auc_gt500": 0.6112,
-   "rate_gt500": 0.2097,
-   "auc_gt900": 0.6537,
-   "rate_gt900": 0.1246
+   "spearman_pooled": 0.0944,
+   "spearman_within_site": 0.3548,
+   "auc_gt500": 0.6115,
+   "rate_gt500": 0.21,
+   "auc_gt900": 0.6538,
+   "rate_gt900": 0.1247
   },
   {
    "predictor": "risk_model",
-   "n": 1750,
+   "n": 1748,
    "sites": 32,
-   "spearman_pooled": 0.5722,
-   "spearman_within_site": 0.2925,
-   "auc_gt500": 0.7933,
-   "rate_gt500": 0.2097,
-   "auc_gt900": 0.7967,
-   "rate_gt900": 0.1246
+   "spearman_pooled": 0.5655,
+   "spearman_within_site": 0.2873,
+   "auc_gt500": 0.7914,
+   "rate_gt500": 0.21,
+   "auc_gt900": 0.7966,
+   "rate_gt900": 0.1247
   }
  ],
  "river": [
@@ -39,9 +39,9 @@
    "predictor": "rain_48h",
    "n": 947,
    "sites": 20,
-   "spearman_pooled": 0.4283,
-   "spearman_within_site": 0.4749,
-   "auc_gt500": 0.7254,
+   "spearman_pooled": 0.4284,
+   "spearman_within_site": 0.4746,
+   "auc_gt500": 0.7255,
    "rate_gt500": 0.3527,
    "auc_gt900": 0.749,
    "rate_gt900": 0.2133
@@ -50,70 +50,70 @@
    "predictor": "risk_model",
    "n": 947,
    "sites": 20,
-   "spearman_pooled": 0.4769,
-   "spearman_within_site": 0.407,
-   "auc_gt500": 0.7459,
+   "spearman_pooled": 0.4785,
+   "spearman_within_site": 0.403,
+   "auc_gt500": 0.7449,
    "rate_gt500": 0.3527,
-   "auc_gt900": 0.7472,
+   "auc_gt900": 0.7486,
    "rate_gt900": 0.2133
   }
  ],
  "lake": [
   {
    "predictor": "rain_48h",
-   "n": 803,
+   "n": 801,
    "sites": 12,
-   "spearman_pooled": 0.2577,
-   "spearman_within_site": 0.2675,
+   "spearman_pooled": 0.2586,
+   "spearman_within_site": 0.269,
    "auc_gt500": 0.5712,
-   "rate_gt500": 0.0411,
-   "auc_gt900": 0.5554,
-   "rate_gt900": 0.0199
+   "rate_gt500": 0.0412,
+   "auc_gt900": 0.5553,
+   "rate_gt900": 0.02
   },
   {
    "predictor": "risk_model",
-   "n": 803,
+   "n": 801,
    "sites": 12,
-   "spearman_pooled": 0.283,
-   "spearman_within_site": 0.2133,
-   "auc_gt500": 0.6155,
-   "rate_gt500": 0.0411,
-   "auc_gt900": 0.6016,
-   "rate_gt900": 0.0199
+   "spearman_pooled": 0.2918,
+   "spearman_within_site": 0.2094,
+   "auc_gt500": 0.6227,
+   "rate_gt500": 0.0412,
+   "auc_gt900": 0.6068,
+   "rate_gt900": 0.02
   }
  ],
  "uu_observed": [
   {
    "predictor": "rain_48h",
-   "n": 601,
+   "n": 600,
    "sites": 9,
-   "spearman_pooled": 0.2963,
-   "spearman_within_site": 0.3976,
-   "auc_gt500": 0.6438,
-   "rate_gt500": 0.0998,
-   "auc_gt900": 0.6241,
-   "rate_gt900": 0.0682
+   "spearman_pooled": 0.2986,
+   "spearman_within_site": 0.3983,
+   "auc_gt500": 0.644,
+   "rate_gt500": 0.1,
+   "auc_gt900": 0.6242,
+   "rate_gt900": 0.0683
   },
   {
    "predictor": "risk_model",
-   "n": 601,
+   "n": 600,
    "sites": 9,
-   "spearman_pooled": 0.5138,
-   "spearman_within_site": 0.3976,
-   "auc_gt500": 0.8336,
-   "rate_gt500": 0.0998,
-   "auc_gt900": 0.8155,
-   "rate_gt900": 0.0682
+   "spearman_pooled": 0.5115,
+   "spearman_within_site": 0.3958,
+   "auc_gt500": 0.8357,
+   "rate_gt500": 0.1,
+   "auc_gt900": 0.8164,
+   "rate_gt900": 0.0683
   },
   {
    "predictor": "risk_observed",
    "n": 601,
    "sites": 9,
-   "spearman_pooled": 0.2227,
-   "spearman_within_site": 0.2269,
-   "auc_gt500": 0.625,
+   "spearman_pooled": 0.2412,
+   "spearman_within_site": 0.2274,
+   "auc_gt500": 0.6239,
    "rate_gt500": 0.0998,
-   "auc_gt900": 0.6145,
+   "auc_gt900": 0.6115,
    "rate_gt900": 0.0682
   }
  ],
@@ -122,5 +122,7 @@
  "period": [
   "2023-05-03",
   "2026-09-07"
- ]
+ ],
+ "max_missing_share": 0.1,
+ "samples_without_figure": 2
 }
