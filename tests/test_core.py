@@ -221,6 +221,31 @@ def test_a_cached_overflow_table_with_a_repeated_id_loads_one_row_each(tmp_path,
     assert sorted(overflows.load_overflows()["site_id"]) == ["AWS00528", "X1"]
 
 
+def test_a_cached_overflow_table_is_read_only_on_the_network_it_was_built_on(tmp_path, monkeypatch):
+    """Each overflow's link, frac and start node are measured on the network the table was built on.
+    Since 11 Oct 2026 59 links are turned round as the network loads, so a table from another network
+    (or one cached before 12 Oct 2026, with no key) is refused, not read and not rebuilt in its place."""
+    import pytest
+
+    from dipcast import config, overflows
+
+    class Net:
+        def __init__(self, key): self.key = key
+        def topology_key(self): return self.key
+
+    monkeypatch.setattr(config, "state_read", lambda name: tmp_path / name)
+    t = pd.Timestamp("2026-10-12 00:00", tz="UTC")
+    table = pd.DataFrame({"site_id": ["X1"], "weight": [0.3], "fetched_at": [t], overflows.NETWORK_KEY: ["abcd1234"]})
+    table.to_parquet(tmp_path / overflows.NAME, index=False)
+    assert overflows.load_overflows(Net("abcd1234"))["site_id"].tolist() == ["X1"]
+    with pytest.raises(overflows.StaleOverflowTable, match="another river network"):
+        overflows.load_overflows(Net("ffff0000"))
+    table.drop(columns=overflows.NETWORK_KEY).to_parquet(tmp_path / overflows.NAME, index=False)
+    with pytest.raises(overflows.StaleOverflowTable, match="before 12 Oct 2026"):
+        overflows.load_overflows(Net("abcd1234"))
+    assert overflows.load_overflows()["site_id"].tolist() == ["X1"]   # no network given: nothing to check
+
+
 def test_a_cell_on_the_meridian_is_read_from_the_cache_whichever_sign_its_zero_has(tmp_path, monkeypatch):
     """River Great Ouse, Overcote (lon -0.004) failed in most scheduled builds from 3 to 6 Oct 2026. Its
     cells snap to lon -0.0; overflows of other spots just east of the meridian snap to the same cell as

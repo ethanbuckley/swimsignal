@@ -64,7 +64,6 @@ from dipcast.network.names import river_words
 log = logging.getLogger(__name__)
 
 FIXES_CSV = config.RAW / "network_fixes.csv"
-RULES_VERSION = 1           # bump when a rule or constant below changes (click-anywhere's cache key)
 MIN_UPSTREAM_M = 10_000.0   # dead ends the rules look at
 JOIN_MAX_M = 600.0          # named join: the farthest a dead end is joined
 NAME_STEPS = 5              # named join: how many unnamed links up the main inflow to look for its name
@@ -110,8 +109,11 @@ def link_words(links: pd.DataFrame, lid: str) -> frozenset[str]:
 
 
 def _canal(links: pd.DataFrame, lid: str) -> bool:
-    """A canal by name. The form alone is not enough: OS gives the Weaver Navigation, the River
-    Weaver, the canal form, and it carries the whole river."""
+    """A canal by name, "Canal" or "Navigation", not by OS's form. Some navigations carry their river
+    (the Weaver Navigation) and some are cuts (the Aire and Calder's Knottingley and Goole Canal), and
+    the name cannot tell which. Measured on 12 Oct 2026 (review of #184): counting "Navigation" as a
+    river made one more fix in the whole network, a named join from a dead end into the Knottingley
+    and Goole Canal, and changed no spot's overflows. So a navigation stays a canal here."""
     n = _name(links, lid)
     return bool(n) and any(w in n.lower().split() for w in ("canal", "navigation"))
 
@@ -348,6 +350,14 @@ def read_overrides(path: Path | None = None) -> pd.DataFrame:
     missing = set(OVERRIDE_COLUMNS) - set(df.columns)
     if missing:
         raise ValueError(f"{path}: missing columns {sorted(missing)}")
+    for i, r in df.iterrows():
+        v = str(r["length_m"]).strip()
+        try:
+            ok = not v or float(v) > 0
+        except ValueError:
+            ok = False
+        if not ok:
+            raise ValueError(f"{path}: row {i + 1} ({r['place']}): length_m must be blank or metres as a number, not {v!r}")
     return df
 
 

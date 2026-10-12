@@ -343,17 +343,41 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     log.info("overflows: %d total, %d with live feed, %d snapped to network (%.0f%%); confidence %s; data states %s",
              len(df), int(df.has_live.sum()), int(snapped.sum()), 100 * snapped.mean(),
              df["snap_confidence"].value_counts(dropna=False).to_dict(), df["data_state"].value_counts().to_dict())
+    df[NETWORK_KEY] = net.topology_key()
     df.to_parquet(config.state_write(NAME), index=False)
     return df
 
 
+# The network a table was built on (RiverNetwork.topology_key): each overflow's link, frac and start node
+# are measured on it. Since 11 Oct 2026 the network is mended as it loads, and 59 links are turned round,
+# so a table cached before then, or built with other fixes, places some overflows from the wrong end of
+# their link. The live pipeline rebuilds the table on every run; offline scripts read the cache.
+NETWORK_KEY = "network_key"
+
+
+class StaleOverflowTable(RuntimeError):
+    """The cached overflow table was built on another river network."""
+
+
 def load_overflows(net: RiverNetwork | None = None, rebuild: bool = False) -> pd.DataFrame:
+    """The cached overflow table, or a new one. With `net`, a cached table must have been built on that
+    network: one built on another (or before 12 Oct 2026, with no key) raises StaleOverflowTable rather
+    than be read, and is not rebuilt in its place, since that would overwrite a shared copy (set
+    DIPCAST_STATE to a scratch folder and pass rebuild=True). Without `net` nothing is checked."""
     path = config.state_read(NAME)
     if path.exists() and not rebuild:
+        df = pd.read_parquet(path)
+        if net is not None:
+            key = df[NETWORK_KEY].iloc[0] if NETWORK_KEY in df and len(df) else None
+            if key != net.topology_key():
+                raise StaleOverflowTable(
+                    f"{path} was built on {'another river network' if key else 'a network before 12 Oct 2026'} "
+                    f"({key or 'no key'}, this one is {net.topology_key()}): rebuild it with "
+                    "load_overflows(net, rebuild=True), with DIPCAST_STATE set to a scratch folder")
         # A table cached before build_overflows dropped repeats can still list an id twice
         # (AWS00528 in the 3 Oct 2026 02:59 state); its weight would then count twice upstream of a spot.
         # One cached before 4 Oct 2026 has no data states: they are worked out from its live columns.
-        return with_data_states(one_row_per_overflow(pd.read_parquet(path)))
+        return with_data_states(one_row_per_overflow(df))
     assert net is not None
     return build_overflows(net)
 
