@@ -223,6 +223,15 @@ test('where no overflow upstream reports live, the headline does not claim a low
   const some = { ...quiet, now: { ...quiet.now, monitored_upstream: 3 } };
   assert.equal(L.nowUnknown(some), false);
   assert.equal(L.headline(some), 'Low risk for the next five days');
+  // Judged by weight where the build gives it (12 Oct 2026): Sandy Lane, 1 of 13 reporting with 0.3% of
+  // the weight, is not known; the Medway at Tonbridge, 65 of 67 with 66%, is.
+  const sandy = { ...quiet, upstream_summary: { overflows: 13 }, now: { ...quiet.now, monitored_upstream: 1, monitored_weight: 0.0097, upstream_weight: 2.839 } };
+  assert.equal(L.nowUnknown(sandy), true);
+  assert.equal(L.headline(sandy), 'Low risk forecast: the overflows that matter most here do not report live');
+  const medway = { ...quiet, upstream_summary: { overflows: 67 }, now: { ...quiet.now, monitored_upstream: 65, monitored_weight: 1.5, upstream_weight: 2.261 } };
+  assert.equal(L.nowUnknown(medway), false);
+  assert.equal(L.headline(medway), 'Low risk for the next five days');
+  assert.equal(L.nowUnknown({ ...sandy, now: { ...sandy.now, discharging_upstream: 1, label: 'low' } }), false);   // a discharge is known
   // A Northumbrian spot whose feed went stale: the same rule (no no_feed count needed).
   const stale = { ...quiet, now: { label: 'low', risk: 0, discharging_upstream: 0, monitored_upstream: 0, stale_upstream: 8 }, upstream_summary: { overflows: 8 } };
   assert.equal(L.headline(stale), 'Low risk forecast: no overflow upstream reports live');

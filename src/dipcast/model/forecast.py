@@ -527,12 +527,17 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     feed's, and named in `feed_stale` with "records": True and the newest of those records' own
     stamps. `quiet_by_feed` gives, per company, the quiet overflows counted as reporting and when
     their feed last updated, so the page can stop counting them once that is over
-    ingest.live.FEED_CURRENT_H old where it is read (a page open hours after the build)."""
+    ingest.live.FEED_CURRENT_H old where it is read (a page open hours after the build).
+
+    12 Oct 2026. `monitored_weight` and `upstream_weight`: the transport weight of the overflows that
+    report live, and of all of them, so the page can tell how much of what matters here is watched
+    (levels.js, nowUnknown). Sandy Lane, Chester: 1 of its 13 overflows reports live, and it carries
+    0.3% of the weight. Each `quiet_by_feed` entry gives its overflows' weight, for the page's ageing."""
     from dipcast.ingest.live import FEED_DOWN, LIVE, NO_FEED, STALE
     if ov.empty:
         return {"discharging_upstream": 0, "recent_upstream": 0, "monitored_upstream": 0,
                 "feed_down_upstream": 0, "feed_down": [], "stale_upstream": 0, "feed_stale": [],
-                "no_feed_upstream": 0, "quiet_by_feed": []}
+                "no_feed_upstream": 0, "quiet_by_feed": [], "monitored_weight": 0.0, "upstream_weight": 0.0}
     ov = with_data_states(ov)
     status, state = ov["status"], ov["data_state"]
     contrib = pd.Series(np.asarray(now_contrib, dtype=float), index=ov.index)
@@ -542,13 +547,17 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     quiet = (state == LIVE) & (status == 0) & ~recent
     stale = (state == STALE) & ~dis & ~recent
     rec = ov["record_stale"].fillna(False).astype(bool) if "record_stale" in ov else pd.Series(False, index=ov.index)
+    w = pd.to_numeric(ov["weight"], errors="coerce").fillna(0.0) if "weight" in ov else pd.Series(0.0, index=ov.index)
+    quiet_w = w[quiet].groupby(ov.loc[quiet, "company"].fillna("unknown")).sum()
     return {"discharging_upstream": int(dis.sum()), "recent_upstream": int(recent.sum()),
             "monitored_upstream": int((dis | recent | quiet).sum()),
+            "monitored_weight": round(float(w[dis | recent | quiet].sum()), 4), "upstream_weight": round(float(w.sum()), 4),
             "feed_down_upstream": int(down.sum()), "feed_down": feed_down_summary(ov[down]),
             "stale_upstream": int(stale.sum()),
             "feed_stale": feed_stale_summary(ov[stale & ~rec]) + feed_stale_summary(ov[stale & rec], records=True),
             "no_feed_upstream": int(((state == NO_FEED) & ~(dis | recent | quiet)).sum()),
-            "quiet_by_feed": [{"company": f["company"], "overflows": f["overflows"], "updated_at": f["since"]}
+            "quiet_by_feed": [{"company": f["company"], "overflows": f["overflows"], "updated_at": f["since"],
+                               "weight": round(float(quiet_w.get(f["company"], 0.0)), 4)}
                               for f in feed_stale_summary(ov[quiet])]}
 
 

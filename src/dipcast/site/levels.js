@@ -131,9 +131,21 @@ const standingLevel = s => { const c = CLASS_LEVEL[classOf(s)] ?? null, a = alga
 // every day with a forecast" beside a tile saying no overflow there reported. So a low right now with
 // no reading behind it is no level at all: it sets nothing, and the headline does not claim it.
 // A raised right now (spills that stopped lately, from the records the feeds last gave) still counts.
-const nowUnknown = s => { if (!daily(s) || !s.now || rank(s.now.label) >= 1) return false;
-  const n = s.now, total = overflows(s);
-  return !Math.min(total, n.monitored_upstream ?? total) && !(n.discharging_upstream || 0); };
+// What is watched is judged by weight where the build gives it (forecast.live_counts): right now is
+// known when the overflows reporting live carry at least half the weight upstream. Sandy Lane, Chester,
+// after its Caldy Brook overflows were joined (12 Oct 2026): 1 of its 13 reports live, with 0.3% of the
+// weight, and the headline went back to "Low risk for the next five days". On the live data of that day
+// the rule changed Sandy Lane alone: the next lowest share is the Medway at Tonbridge, 66%, then 92%.
+const NOW_WATCHED_SHARE = 0.5;
+const nowWatched = s => { const n = s.now || {}, total = overflows(s), mon = Math.min(total, n.monitored_upstream ?? total);
+  if (!mon) return 0;
+  const w = Number(n.upstream_weight), m = Number(n.monitored_weight);
+  return w > 0 && Number.isFinite(m) ? Math.min(1, Math.max(0, m) / w) : 1; };
+const nowUnknown = s => { if (!daily(s) || !s.now || rank(s.now.label) >= 1 || (s.now.discharging_upstream || 0)) return false;
+  return nowWatched(s) < NOW_WATCHED_SHARE; };
+// Why right now is not known, after "Low risk forecast": none reports, or the ones that do matter little here.
+const nowUnknownWhy = s => !Math.min(overflows(s), (s.now || {}).monitored_upstream ?? overflows(s))
+  ? 'no overflow upstream reports live' : 'the overflows that matter most here do not report live';
 // Right now's level from the live status, where it has one.
 const nowSpill = s => daily(s) && s.now && !nowUnknown(s) && ORDER[s.now.label] !== undefined ? s.now.label : null;
 // One day, or right now (isNow, from the live overflow status): the level and what set it, 'spill',
@@ -290,11 +302,10 @@ function headParts(s) {
   if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, when === 'right now' ? nowBecause(s, r) : because(r), laterWords(s)];
   const later = laterWords(s);
   // Right now not known: the forecast's low, and why it is not more (nowUnknown).
-  if (nowUnknown(s)) return ['Low risk forecast', NOW_UNKNOWN, later];
+  if (nowUnknown(s)) return ['Low risk forecast', nowUnknownWhy(s), later];
   if (later) return [`Low risk now · ${later}`, '', ''];
   return [s.days.slice(0, 5).every(hasData) ? 'Low risk for the next five days' : 'Low risk on every day with a forecast', '', ''];
 }
-const NOW_UNKNOWN = 'no overflow upstream reports live';
 // "Moderate risk today: sewage spills · Very high risk on Tuesday".
 const headline = s => { const [h, w, later] = headParts(s); return [h, w].filter(Boolean).join(': ') + (later ? ` · ${later}` : ''); };
 // The level on one day (a date in s.days), for the map's day picker and the alerts: where the
@@ -644,7 +655,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk, nowUnknown, NOW_UNKNOWN,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE,
     level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,

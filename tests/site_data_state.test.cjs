@@ -143,6 +143,10 @@ test('a quiet reading over six hours old where the page is read stops counting a
   assert.equal(s.now.monitored_upstream, 8); assert.equal(s.now.stale_upstream, 12);
   const old = { now: { monitored_upstream: 5 } };                 // a forecast from before quiet_by_feed
   assert.equal(ageReadings(old, built + 9 * 3600e3).now.monitored_upstream, 5);
+  // The weight that reports live goes down with them (levels.js, nowWatched).
+  const wt = spot(); wt.now.monitored_weight = 1.0; wt.now.upstream_weight = 1.2;
+  wt.now.quiet_by_feed[0].weight = 0.7; wt.now.quiet_by_feed[1].weight = 0.1;
+  assert.equal(Math.round(ageReadings(wt, built + 2 * 3600e3).now.monitored_weight * 1000) / 1000, 0.3);
 });
 
 test('click anywhere counts a carried spill and a frozen record as forecast.live_counts does', () => {

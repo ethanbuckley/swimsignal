@@ -126,8 +126,13 @@ def test_a_frozen_record_is_not_scored_and_not_counted_as_reporting():
     c = live_counts(ov, pd.Series(0.0, index=ov.index))
     assert c["monitored_upstream"] == 37 + 3 and c["stale_upstream"] == 2
     assert c["feed_stale"] == [{"company": "W", "overflows": 2, "since": "2026-03-31T14:23:00+00:00", "records": True}]
-    assert c["quiet_by_feed"] == [{"company": "N", "overflows": 3, "updated_at": H(1.3).isoformat()},
-                                  {"company": "W", "overflows": 37, "updated_at": H(0.1).isoformat()}]
+    assert c["quiet_by_feed"] == [{"company": "N", "overflows": 3, "updated_at": H(1.3).isoformat(), "weight": 0.0},
+                                  {"company": "W", "overflows": 37, "updated_at": H(0.1).isoformat(), "weight": 0.0}]
+    # With weights: how much of the weight upstream reports live (levels.js, nowUnknown).
+    wt = ov.assign(weight=[0.5 if i in ("WM", "WN") else 0.01 for i in ov["site_id"]])
+    c = live_counts(wt, pd.Series(0.0, index=wt.index))
+    assert c["upstream_weight"] == round(0.01 * (len(wt) - 2) + 1.0, 4) and c["monitored_weight"] == round(0.01 * 40, 4)
+    assert {f["company"]: f["weight"] for f in c["quiet_by_feed"]} == {"N": 0.03, "W": 0.37}
 
 
 def test_a_company_under_the_share_is_read_as_stamp_on_change(caplog):
