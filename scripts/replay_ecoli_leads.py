@@ -37,12 +37,13 @@ import logging
 
 import numpy as np
 import pandas as pd
+from eval_pins import bathing_water_pin
 
 from dipcast import config
 from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features
 from dipcast.model.forecast import calibrate_at_lead
 from dipcast.model.spill_model import SpillModel
-from dipcast.model.transport import history_days, locate_pin, river_velocity, upstream_overflows
+from dipcast.model.transport import history_days, river_velocity, upstream_overflows
 from dipcast.network.rivers import RiverNetwork
 from dipcast.overflows import load_overflows
 
@@ -136,7 +137,7 @@ def main() -> None:
     out, missing = [], []
     for bw_id, g in samples.groupby("bw_id"):
         s = g.iloc[0]
-        pin = locate_pin(net, float(s.lon), float(s.lat))
+        pin = bathing_water_pin(net, bw_id, float(s.lon), float(s.lat))
         up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
         sample_days = pd.DatetimeIndex(sorted(g["day"].unique()))
         if len(up) == 0:
