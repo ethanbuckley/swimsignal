@@ -1583,9 +1583,15 @@ const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.com
 // A company feed that answered but has not updated within six hours, or gives no time (forecast.live_counts):
 // its readings may be frozen, so its quiet overflows do not count as reporting live. An entry with
 // `records` is overflows whose own records have stopped updating while the rest of the feed has not.
+// One with `on_change` is a feed that stamps a record only when it changes (ingest.live.data_states): its
+// time is its last change anywhere, which a quiet spell leaves old too, and nothing in the feed tells the
+// two apart, so the words say both (12 Oct 2026). Before, Northumbrian Water's feed "has not updated since
+// 17:57" read as a stopped feed on a quiet night.
 const feedStale = now => (now.feed_stale || []).map(f => f.records
   ? ` ${esc(companyName(f.company))} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
     : `gives no update time for ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here`}: ${f.overflows === 1 ? 'it' : 'they'} could be spilling unseen.`
+  : f.on_change && f.since ? ` ${esc(companyName(f.company))} changes a record in its live feed only when an overflow's status changes, and none has changed since ${feedTime(f.since)}.`
+    + ` A quiet spell looks like this, and so does a feed that has stopped: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
   : ` ${esc(companyName(f.company))}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // Which upstream overflows report live. Those on a feed that is down or stale are named with the feed,
 // not counted again in the general clause, which covers offline monitors and overflows with no feed.
@@ -1606,7 +1612,8 @@ const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.
     n.aged.push(f.company);
     n.monitored_upstream = Math.max(0, (n.monitored_upstream || 0) - f.overflows);
     n.stale_upstream = (n.stale_upstream || 0) + f.overflows;
-    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at }]; }
+    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at,
+      ...((n.feeds_on_change || []).includes(f.company) ? { on_change: true } : {}) }]; }
   for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') c.data_state = 'stale';
   return s; };
 // The overflows that stopped lately and still count right now (transport.live_now_risk): a spill counts

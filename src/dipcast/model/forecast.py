@@ -292,6 +292,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     ov = with_data_states(upstream_overflows(net, pin, ov_all, velocity_ms=v, max_km=max_km))
     now_risk, now_contrib = live_now_risk(ov, now)
     counts = live_counts(ov, now_contrib)
+    on_change = feeds_on_change(ov)
+    if on_change:
+        counts["feeds_on_change"] = on_change   # for the page's own ageing of quiet readings (index.html, ageReadings)
 
     weights = ov["weight"].to_numpy(dtype=float) if not ov.empty else np.zeros(0)
     travel = ov["travel_h"].to_numpy(dtype=float) if not ov.empty else np.zeros(0)
@@ -569,19 +572,29 @@ def feed_down_summary(ov: pd.DataFrame) -> list[dict]:
     return out
 
 
+def feeds_on_change(ov: pd.DataFrame) -> list[str]:
+    """The companies upstream whose feed stamps a record only when it changes (ingest.live.data_states,
+    `feed_on_change`)."""
+    if ov.empty or "feed_on_change" not in ov:
+        return []
+    return sorted(ov.loc[ov["feed_on_change"].fillna(False).astype(bool), "company"].dropna().astype(str).unique())
+
+
 def feed_stale_summary(ov: pd.DataFrame, records: bool = False) -> list[dict]:
     """Per company, for overflows whose feed answered but is stale (ingest.live.data_states):
     how many of them there are and when the feed last updated (None: it gives no time). With
     `records`, for records that have stopped updating in a feed that has not: the newest of their
-    own stamps, and "records": True."""
+    own stamps, and "records": True. A feed that stamps a record only when it changes (data_states'
+    `feed_on_change`) has "on_change": True: its time is its last change, which a quiet spell leaves old."""
     if ov.empty:
         return []
     t = pd.to_datetime(ov["feed_updated_at"], utc=True) if "feed_updated_at" in ov else pd.Series(pd.NaT, index=ov.index)
     out = []
     for c, g in ov.groupby(ov["company"].fillna("unknown")):
         u = t.loc[g.index].max()
+        on_change = not records and "feed_on_change" in g and bool(g["feed_on_change"].fillna(False).astype(bool).all())
         out.append({"company": str(c), "overflows": len(g), "since": None if pd.isna(u) else u.isoformat(),
-                    **({"records": True} if records else {})})
+                    **({"records": True} if records else {}), **({"on_change": True} if on_change else {})})
     return out
 
 

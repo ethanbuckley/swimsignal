@@ -253,13 +253,13 @@ def stamps_every_record(poll: pd.DataFrame) -> pd.Series:
     return share >= EVERY_RECORD_SHARE
 
 
-def frozen_records(poll: pd.DataFrame) -> pd.Series:
+def frozen_records(poll: pd.DataFrame, every: pd.Series | None = None) -> pd.Series:
     """True for each row of `poll` (one poll's rows) whose company stamps every record and whose own
     stamp is missing or older than FEED_CURRENT_H: the record has stopped updating, whatever its feed
     does. False elsewhere, and on every row of a table without stamps or poll times."""
     if poll.empty or "last_updated" not in poll or "fetched_at" not in poll:
         return pd.Series(False, index=poll.index, dtype=bool)
-    every = poll["company"].map(stamps_every_record(poll)).eq(True)
+    every = poll["company"].map(stamps_every_record(poll) if every is None else every).eq(True)
     return every & ~_stamp_age_h(poll).le(FEED_CURRENT_H)
 
 
@@ -300,11 +300,17 @@ def data_states(ov: pd.DataFrame) -> pd.DataFrame:
     A record that has stopped updating in a feed that has not (frozen_records) is stale too, with
     `record_stale` True and its own stamp, or NaT, as `feed_updated_at`: the page then says when that
     record last updated, not when its feed did. A table without the poll's times (a test's) gets its
-    states from the status alone."""
+    states from the status alone.
+
+    `feed_on_change` (12 Oct 2026): the company stamps its records, but only when one changes: some of
+    them, and under EVERY_RECORD_SHARE, stamped within the day. Its feed time is then its last change anywhere, and a
+    quiet spell reads as a stale feed: Southern Water's was over six hours old at 20 of 173 polls from
+    28 Sep to 11 Oct 2026. The layer's own last edit is the same time, and the services have no other
+    layer or table, so nothing tells a quiet feed from a stopped one. The page says so (index.html, feedStale)."""
     out = pd.DataFrame(index=ov.index)
     if ov.empty:
         return out.assign(data_state=pd.Series(dtype=object), feed_updated_at=pd.Series(dtype="datetime64[ns, UTC]"),
-                          record_stale=pd.Series(dtype=bool))
+                          record_stale=pd.Series(dtype=bool), feed_on_change=pd.Series(dtype=bool))
     status = ov["status"]
     known, polled = status.isin([0, 1]), status.isin([0, 1, -1])
     if {"fetched_at", "last_updated"} <= set(ov.columns):
@@ -313,18 +319,24 @@ def data_states(ov: pd.DataFrame) -> pd.DataFrame:
         updated = feed_updated_at(p)
         age_h = ((fetched - updated).dt.total_seconds() / 3600).reindex(fetched.index)
         feed_ok = ov["company"].map(age_h <= FEED_CURRENT_H).eq(True)   # a NaN age (no time) is not current
-        frozen = known & feed_ok & frozen_records(p).reindex(ov.index, fill_value=False).astype(bool)
+        every = stamps_every_record(p)
+        # Some records stamped within the day, but not most: a feed that stamps on change. None at all is
+        # not taken as one: an every-record feed that has frozen looks like that too (Wessex's records, say).
+        share = _stamp_age_h(p).le(STAMPED_WITHIN_H).groupby(p["company"]).mean()
+        on_change = ov["company"].map((share > 0) & (share < EVERY_RECORD_SHARE)).eq(True)
+        frozen = known & feed_ok & frozen_records(p, every).reindex(ov.index, fill_value=False).astype(bool)
         current = feed_ok & ~frozen
         when = pd.to_datetime(ov["company"].map(updated), utc=True)
         when = when.where(~frozen, pd.to_datetime(ov["last_updated"], utc=True))
     else:
         current = pd.Series(True, index=ov.index)
-        frozen = pd.Series(False, index=ov.index)
+        frozen = on_change = pd.Series(False, index=ov.index)
         when = pd.Series(pd.NaT, index=ov.index, dtype="datetime64[ns, UTC]")
     has_feed = ov["company"].isin(ov.loc[ov["has_live"].astype(bool), "company"]) if "has_live" in ov else status.ne(-2)
     out["data_state"] = np.select([known & current, known, status.ne(-2) | has_feed], [LIVE, STALE, OFFLINE], NO_FEED)
     out["feed_updated_at"] = when.where(polled)
     out["record_stale"] = frozen.astype(bool)
+    out["feed_on_change"] = on_change.astype(bool)
     return out
 
 
@@ -333,7 +345,7 @@ def with_data_states(ov: pd.DataFrame) -> pd.DataFrame:
     before 4 Oct 2026, or a test's). One with no status at all is returned as it is."""
     if "data_state" in ov or "status" not in ov:
         return ov
-    return pd.concat([ov.drop(columns=["feed_updated_at", "record_stale"], errors="ignore"), data_states(ov)], axis=1)
+    return pd.concat([ov.drop(columns=["feed_updated_at", "record_stale", "feed_on_change"], errors="ignore"), data_states(ov)], axis=1)
 
 
 def coverage_rows(df: pd.DataFrame) -> pd.DataFrame:

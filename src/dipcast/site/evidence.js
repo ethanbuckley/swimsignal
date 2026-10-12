@@ -62,8 +62,10 @@ function evidenceOverflows(d, generatedAt) {
   if (nf) not.push(`${nf} with no live feed`);
   for (const f of n.feed_down || []) not.push(`${f.overflows} on ${evidenceEsc(f.company)}'s feed, which is down`);
   // `records`: overflows whose own records have stopped updating while the rest of the feed has not.
+  // `on_change`: a feed that stamps a record only when it changes, so a quiet spell looks stale (index.html, feedStale).
   for (const f of n.feed_stale || []) not.push(f.records
     ? `${f.overflows} whose records on ${evidenceEsc(f.company)}'s feed ${f.since ? `have not updated since ${evidenceSince(f.since)}` : 'give no update time'}`
+    : f.on_change && f.since ? `${f.overflows} on ${evidenceEsc(f.company)}'s feed, where no record has changed since ${evidenceSince(f.since)} (it changes a record only when an overflow's status does)`
     : `${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
   const live = mon >= total ? (total === 1 ? 'It reports live.' : `All ${total} report live.`)
     : `${mon || 'None'} of ${total} report live.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`;
