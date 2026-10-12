@@ -843,7 +843,8 @@ time contributes to today (it started at yesterday before, and did not).
   drawn into a dead end are turned round where the river carries on from their
   other end under the same name, 28 dead ends are joined to the nearest node of
   their river's name within 600 m, and `data/raw/network_fixes.csv` lists by hand
-  what no rule finds (the Test's braid above Chilbolton). Each rule looks only at
+  what no rule finds (the Test's braid above Chilbolton; The Gog at All Cannings, drawn
+  backwards into a dead end with no other link, turned round on 12 Oct 2026). Each rule looks only at
   dead ends with 10 km or more of network upstream. `scripts/check_network.py`
   lists the dead ends and loops before and after: of 175 with 30 km or more
   upstream, 36 were links drawn the wrong way, 16 gaps, 71 side arms whose river
