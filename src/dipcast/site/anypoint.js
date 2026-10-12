@@ -58,6 +58,7 @@ const AnyPoint = (() => {
     });
   }
   // transport.combine_daily: 1 - prod(1 - p w), a day with no rain data counting as no spill.
+  const FEED_CURRENT_MS = 6 * 3600e3;   // ingest.live.FEED_CURRENT_H
   function combineDaily(P, w, travel, nd) {
     if (!P.length) return new Array(nd).fill(0);
     const eff = shiftByTravel(P.map(row => row.map(x => Number.isNaN(x) ? 0 : x)), travel);
@@ -115,7 +116,7 @@ const AnyPoint = (() => {
   // The forecast for upstream rows, as forecast_point builds it (gauge off, as for the listed
   // spots). od: overflow_days.json; cal: lead_calibration.leads; names: overflow_ids.json, for the
   // overflows that matter most (optional).
-  function forecast(rows, od, cal, names = null) {
+  function forecast(rows, od, cal, names = null, nowMs = Date.now()) {
     const a = od.assumptions, low = new Set(od.low), n = rows.length;
     const travel = rows.map(r => (r.dist / a.river_velocity_ms + r.dlake / a.lake_velocity_ms) / 3600);
     const w = rows.map((r, k) => Math.pow(10, -travel[k] / a.t90_hours) * r.dil * (low.has(r.i) ? a.low_confidence_factor : 1));
@@ -150,9 +151,13 @@ const AnyPoint = (() => {
       const e = od.ended_h[r.i]; if (e === null || e === undefined) return 0;
       const age = e - travel[k];
       return age <= 0 ? 1 : age <= a.recent_spill_hours ? Math.pow(10, -age / a.t90_hours) : 0; });
-    const company = rows.map(r => od.companies[od.company[r.i]]), staleSince = od.feed_stale_since || {}, noFeed = new Set(od.no_feed || []);
+    // A feed current at the build whose last update is over six hours old where the page is read: its quiet
+    // readings are stale too (`feed_updated`), as on a spot's page (index.html, ageReadings). A discharge stays one.
+    const fu = od.feed_updated || {}, aged = new Set(Object.keys(fu).filter(c => fu[c] && nowMs - Date.parse(fu[c]) > FEED_CURRENT_MS));
+    const company = rows.map(r => od.companies[od.company[r.i]]), noFeed = new Set(od.no_feed || []);
+    const staleSince = { ...Object.fromEntries([...aged].map(c => [c, fu[c]])), ...(od.feed_stale_since || {}) };
     const ownStale = rows.map((r, k) => !(company[k] in staleSince) && String(r.i) in staleRows);
-    const state = status.map((s, k) => s === 0 || s === 1 ? (company[k] in staleSince || ownStale[k] ? 'stale' : 'live')
+    const state = status.map((s, k) => s === 0 || s === 1 ? ((company[k] in staleSince && (s === 0 || !aged.has(company[k]))) || ownStale[k] ? 'stale' : 'live')
       : s === -2 && noFeed.has(company[k]) ? 'no_feed' : 'offline');
     const contrib = rows.map((_, k) => w[k] * extra[k]);
     const nowRisk = 1 - contrib.reduce((acc, c) => acc * (1 - Math.min(1, Math.max(0, c))), 1);

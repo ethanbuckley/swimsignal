@@ -815,6 +815,14 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
                   for i, t in zip(np.flatnonzero(rec.to_numpy()), pd.to_datetime(st.loc[rec, "feed_updated_at"], utc=True), strict=True)}
     last_running = [int(i) for i in np.flatnonzero(running(sub) & (sub["status"] == FEED_DOWN).to_numpy())]
     no_feed = sorted(str(c) for c in st.loc[st["data_state"] == NO_FEED, "company"].fillna("unknown").unique())
+    # Each current feed's last update, so the page can age its quiet readings where it is read, as a spot's
+    # page does (index.html, ageReadings): until 12 Oct 2026 a click hours after the build counted them live.
+    from dipcast.ingest.live import LIVE
+    feed_updated = {}
+    for c, g in st[st["data_state"] == LIVE].groupby(st["company"].fillna("unknown")):
+        t = pd.to_datetime(g["feed_updated_at"], utc=True).max()
+        if not pd.isna(t):
+            feed_updated[str(c)] = t.isoformat()
     body = {
         "generated_at": now.isoformat(), "ids": idv, "days": [d.date().isoformat() for d in days], "today": int(past),
         "scale": P_SCALE,
@@ -824,7 +832,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "status": [int(s) for s in sub["status"]],
         "company": [cpos[str(c)] for c in sub["company"].fillna("unknown")],
         "companies": companies, "feed_down_since": since, "feed_stale_since": stale_since, "no_feed": no_feed,
-        "stale_rows": stale_rows, "last_running": last_running,
+        "stale_rows": stale_rows, "last_running": last_running, "feed_updated": feed_updated,
         "rain_h": rain_h,
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
@@ -844,7 +852,8 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
                  "updated within 6 h while the rest of their company's feed has, with their last update (null: "
                  "none); their statuses are not current either. last_running: overflows, by index, on a feed "
                  "that is down whose spill was running when it last answered; they count as discharging. "
-                 "no_feed: companies with no live feed. rain_h: hours "
+                 "no_feed: companies with no live feed. feed_updated: each current feed's last update; where "
+                 "the page is read over 6 h after it, that feed's quiet overflows are stale too. rain_h: hours "
                  "between the rain forecast the overflow's probabilities used and generated_at. low: overflows "
                  "snapped by proximity alone, whose weight is multiplied by low_confidence_factor."),
         **({"credits": credits} if credits else {}),

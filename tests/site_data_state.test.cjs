@@ -84,6 +84,29 @@ test('click anywhere counts an offline monitor and a stale feed as forecast.live
   assert.equal(A.forecast(fx.rows, od, fx.cal).contributors.find(x => x.status === -2).data_state, 'no_feed');
 });
 
+test('click anywhere ages a quiet feed where the page is read, as a spot page does', () => {
+  // Until 12 Oct 2026 a click hours after the build counted a quiet feed as reporting, whatever its age.
+  const fx = spot(), od = fx.od, idx = fx.rows.map(r => r.i);
+  const t = '2026-10-11T18:00:00+00:00', at = Date.parse(t);
+  od.feed_updated = { 'Yorkshire Water': t };
+  const fresh = A.forecast(fx.rows, od, fx.cal, null, at + 2 * 3600e3);   // read 2 h after the feed's update
+  assert.equal(fresh.now.monitored_upstream, 15);
+  assert.deepEqual(fresh.now.feed_stale, []);
+  const late = A.forecast(fx.rows, od, fx.cal, null, at + 7 * 3600e3);     // 7 h after: stale where read
+  const rec = late.now.recent_upstream;
+  assert.equal(late.now.monitored_upstream, rec);
+  assert.deepEqual(late.now.feed_stale, [{ company: 'Yorkshire Water', overflows: 15 - rec, since: t }]);
+  assert.equal(late.contributors.find(c => c.status === 0).feed_updated_at, t);
+  // A discharge stays a discharge.
+  const k = [...idx.keys()].find(j => od.live[idx[j]] === 0); od.status[idx[k]] = 1;
+  const dis = A.forecast(fx.rows, od, fx.cal, null, at + 7 * 3600e3);
+  assert.equal(dis.now.discharging_upstream, 1);
+  assert.equal(dis.contributors.find(c => c.status === 1).data_state, 'live');
+  // A file from before feed_updated: nothing ages.
+  delete od.feed_updated; od.status[idx[k]] = 0;
+  assert.equal(A.forecast(fx.rows, od, fx.cal, null, at + 70 * 3600e3).now.monitored_upstream, 15);
+});
+
 test("a picked day's overflows are drawn and named as the overflows tile draws them", () => {
   const day = vm.createContext({ esc: ctx.esc, statusText, drawnStatus, overflowNames, nil: v => v === null || v === undefined });
   vm.runInContext(between('const ownName = ', '\n') + '\n' + between('const share = p =>', '\n// How good a forecast this far ahead')
