@@ -138,7 +138,9 @@ def test_right_now_counts_an_offline_or_stale_quiet_overflow_as_unknown():
     assert c["discharging_upstream"] == 2 and c["recent_upstream"] == 0
     assert c["monitored_upstream"] == 5          # before 4 Oct: every has_live row but D0, 8 of 11
     assert c["stale_upstream"] == 2 and c["feed_down_upstream"] == 1
-    assert c["feed_stale"] == [{"company": "Frozen", "overflows": 1, "since": (T - pd.Timedelta(hours=9)).isoformat()},
+    # "Frozen" has one record stamped 9 h before the poll and one 30 h: some within the day, not most, as a
+    # feed that stamps a record only when it changes looks (ingest.live.data_states, feed_on_change).
+    assert c["feed_stale"] == [{"company": "Frozen", "overflows": 1, "since": (T - pd.Timedelta(hours=9)).isoformat(), "on_change": True},
                                {"company": "Unknown", "overflows": 1, "since": None}]
     # The page's dots: quiet = monitored - discharging - recent = 3; the other 6 are not reporting.
     assert c["monitored_upstream"] - c["discharging_upstream"] - c["recent_upstream"] == 3
@@ -177,3 +179,19 @@ def test_an_unreadable_status_is_offline(bad):
         m.setattr(live, "fetch_all", lambda url, **kw: [dict(r) for r in rows])
         df = live.fetch_live({"X": "https://x/0"}).assign(has_live=True)
     assert df["status"].tolist() == [-1] and live.data_states(df)["data_state"].tolist() == ["offline"]
+
+
+def test_a_feed_that_stamps_only_on_change_is_told_from_a_frozen_one():
+    """Northumbrian and Southern stamp a record only when it changes (1.4% and 0.3% within a day on 11 Oct
+    2026); a quiet spell then reads as a stale feed. An every-record feed that froze has no record within
+    the day, or all of them: neither is taken for one that stamps on change (12 Oct 2026)."""
+    from dipcast.ingest.live import data_states
+    h = lambda x: T - pd.Timedelta(hours=x)
+    rows = ([("C%d" % i, "OnChange", 0, h(7 if i == 0 else 200 + i)) for i in range(50)]    # 1 of 50 within the day
+            + [("A%d" % i, "AllOld", 0, h(30)) for i in range(50)]                          # every-record, frozen 30 h
+            + [("B%d" % i, "AllRecent", 0, h(8)) for i in range(50)])                       # every-record, frozen 8 h
+    df = pd.DataFrame(rows, columns=["site_id", "company", "status", "last_updated"]).assign(fetched_at=T, has_live=True)
+    df["last_updated"] = pd.to_datetime(df["last_updated"], utc=True)
+    st = df[["company"]].join(data_states(df)).groupby("company")
+    assert st["feed_on_change"].all().to_dict() == {"AllOld": False, "AllRecent": False, "OnChange": True}
+    assert st["data_state"].first().to_dict() == {"AllOld": "stale", "AllRecent": "stale", "OnChange": "stale"}

@@ -318,7 +318,7 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     df["receiving_watercourse"] = df["receiving_watercourse"].fillna(df["receiving_water"])
     df["has_live"] = df["status"].notna()
     df["status"] = df["status"].fillna(-2).astype(int)   # -2 = no live feed
-    df = pd.concat([df.drop(columns=["data_state", "feed_updated_at", "record_stale"], errors="ignore"), data_states(df)], axis=1)
+    df = pd.concat([df.drop(columns=["data_state", "feed_updated_at", "record_stale", "feed_on_change"], errors="ignore"), data_states(df)], axis=1)
     df = df.assign(_ground=ground).dropna(subset=["lat", "lon"]).drop(columns=["ar_lat", "ar_lon", "ar_company", "receiving_water"])
     df = df[(df.lat.between(49, 61)) & (df.lon.between(-9, 3))].reset_index(drop=True)
     # The spill model's covariates, filled once over the whole table (company-wide medians) for the

@@ -169,3 +169,24 @@ test('click anywhere counts a carried spill and a frozen record as forecast.live
   assert.equal(got.now.monitored_upstream, 14); assert.equal(got.now.stale_upstream, 1);
   assert.deepEqual(got.now.feed_stale, [{ company: 'Yorkshire Water', overflows: 1, since: '2026-03-31T14:23:00+00:00', records: true }]);
 });
+
+test('a feed that stamps a record only when it changes says so, quiet or stopped', () => {
+  // Northumbrian Water at the Coquet, Rothbury, 11 Oct 2026 23:11 UTC: no record changed after 16:57.
+  const now = { stale_upstream: 8, feed_stale: [{ company: 'Northumbrian Water', overflows: 8, since: '2026-10-11T16:57:08+00:00', on_change: true }] };
+  assert.equal(liveSay(now, 8, 0), '0 of 8 report live. Northumbrian Water changes a record in its live feed only when an overflow\'s status changes,'
+    + ' and none has changed since 11 Oct, 17:57. A quiet spell looks like this, and so does a feed that has stopped: its 8 overflows here could be spilling unseen.');
+  // Without the flag (an every-record feed, or a forecast from before it), as before.
+  const old = { stale_upstream: 8, feed_stale: [{ company: 'Northumbrian Water', overflows: 8, since: '2026-10-11T16:57:08+00:00' }] };
+  assert.match(liveSay(old, 8, 0), /Northumbrian Water's live feed has not updated since 11 Oct, 17:57: its 8 overflows here could be spilling unseen\.$/);
+  // The evidence row.
+  const ev = require('../src/dipcast/site/evidence.js');
+  const d = { upstream_summary: { overflows: 8 }, now: { discharging_upstream: 0, monitored_upstream: 0, ...now } };
+  assert.match(ev.evidenceOverflows(d, '2026-10-12T00:11:00+01:00').say,
+    /8 on Northumbrian Water's feed, where no record has changed since .+ \(it changes a record only when an overflow's status does\)\./);
+  // Aged where the page is read: the company's flag comes from feeds_on_change.
+  const built = Date.parse('2026-10-11T18:00:00Z');
+  const s = ageReadings({ now: { monitored_upstream: 8, stale_upstream: 0, feed_stale: [], discharging_upstream: 0, recent_upstream: 0,
+    feeds_on_change: ['Northumbrian Water'], quiet_by_feed: [{ company: 'Northumbrian Water', overflows: 8, updated_at: '2026-10-11T16:57:08+00:00' }] },
+    contributors: [] }, built + 6 * 3600e3);
+  assert.equal(JSON.parse(JSON.stringify(s.now.feed_stale))[0].on_change, true);
+});
