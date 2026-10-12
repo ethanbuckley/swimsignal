@@ -138,3 +138,27 @@ committing anything.
 **What gets committed** is the same six files as above. The methods page's Test 3 table and the
 README notes change only if a figure they show moves at the precision they show it. Nothing merges
 without Ethan's go.
+
+### Results of the rerun (13 Oct 2026, 00:34–00:40 BST, after the statement above was committed in 261a91a)
+
+**Every stated check holds.** The run was offline (0 network attempts in all six scripts) and alone,
+with a peak of 3.7 GB. The only warning was the Derwent Water sample of 7 Sep 2026.
+`fetch_rain_validation.py` and `fetch_rain_leads_upstream.py` made no request, so every cell they ask
+for is cached.
+
+- **Rows.** All 2,165 present and paired. At the 37 other bathing waters, `upstream` and `risk_model`
+  equal the `site` run's, apart from the Derwent Water row (no `risk_model`, as in #203). The replayed
+  exposures differ by at most 1e-15. At Queen Elizabeth Gardens, `upstream` is 18, and no sample's
+  `risk_model` moves by more than 0.00023. The mean goes from 0.00488 to 0.00494.
+- **`train_ecoli`:** 1,502 samples at 31 sites, as before. Every Brier score and AUC moves by 0.0002
+  or less, from LOYO lake AUC 0.528 to 0.5278. The coefficients move by 0.0001 or less: exposure
+  0.58946, lake −0.26312, intercept −2.40553. The water lead skill is unchanged: 0.76, 0.69, 0.55 and
+  0.55. No interval end changes sign.
+- **`validate_ecoli_combined`:** byte-identical to #203's file.
+- **`validate_ecoli`:** the `risk_model` measures move by 0.0001 or less. Queen Elizabeth Gardens'
+  within-site rho goes from 0.533 to 0.506 (17 samples).
+- **`validation_sites.csv`:** only Queen Elizabeth Gardens' row changes, to 18 upstream and a sum of
+  weights of 1.183.
+
+**Committed:** the five data files that changed; `ecoli_validation_combined.json` is byte-identical. Not changed: the methods page and the README. Every figure they
+quote is the same at the precision they show it, and `tests/test_methods_csv_prf.py` passes.
