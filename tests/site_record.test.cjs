@@ -99,15 +99,13 @@ test('what the forecast cannot see is the About page\'s list, word for word', ()
   const about = fs.readFileSync(path.join(ROOT, 'src', 'dipcast', 'api', 'static', 'about.html'), 'utf8');
   const list = about.split('<h2>What it cannot see</h2>')[1].split('</ul>')[0];
   const items = [...list.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
-  // One exception, the overflows in Wales (11 Oct 2026): the About page's item says Dŵr Cymru's overflows "which
-  // matter at the spots on the Dee and on the Wye in Herefordshire" are forecast from rain and their yearly record,
-  // but those in Wales are not in the data. Until the About page says what the record says, its Welsh item may
-  // differ from the record's, and only that item.
+  // Every item, the overflows in Wales included: until 12 Oct 2026 the About page's said Dŵr Cymru's overflows
+  // "which matter at the spots on the Dee and on the Wye in Herefordshire" are forecast from rain and their
+  // yearly record, though those in Wales are not in the data, and the test let that item differ.
   const wales = Rec.CANNOT_SEE.findIndex(t => t.startsWith('Dŵr Cymru Welsh Water\'s overflows in Wales are not in SwimSignal\'s data'));
   assert.ok(wales >= 0);
-  assert.deepEqual(Rec.CANNOT_SEE.filter((_, k) => k !== wales), items.filter((_, k) => k !== wales));
-  assert.ok(items[wales].startsWith('Dŵr Cymru'), items[wales]);
-  assert.ok(!Rec.CANNOT_SEE.some(t => /which matter at the spots on the Dee/.test(t)));
+  assert.deepEqual(Rec.CANNOT_SEE, items.map(t => t.replace(/&quot;/g, '"')));
+  assert.ok(![...Rec.CANNOT_SEE, ...items].some(t => /which matter at the spots on the Dee/.test(t)));
   // Every line but Dŵr Cymru's, which only a spot with its overflows upstream, or a river from Wales, carries
   // (11 Oct 2026: Chee Dale had it).
   const h = Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW);

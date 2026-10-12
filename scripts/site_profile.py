@@ -88,7 +88,7 @@ def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows
     lines = head + [
         "## In short", "",
         f"- **{n}** monitored storm overflows drain into the water upstream, within 60 km; **{s['near']}** of them within {NEAR_KM} km.",
-        f"- {s['live']} of them report live to the water companies' public feeds.",
+        f"- {s['live']} of them are in the water companies' live feeds; how many report at a given time varies.",
         f"- The nearest is {fmt(s['nearest_km'], 1)} km upstream.",
         "", "## Each year, all overflows upstream", "",
         "| Year | Overflows with a return | Spills | Spill hours | Spill hours, weighted by reach |",

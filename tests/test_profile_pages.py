@@ -62,7 +62,7 @@ def test_a_profile_page_joins_the_spots_overflows_to_their_returns(tmp_path):
     assert words.index("It is not a water test") < words.index("In short") < words.index("Sources and credits")
     assert pf.CREDITS in words and "safe" not in words.lower()
     assert "2 monitored storm overflows drain into the water within 60 km upstream; 1 of them within 10 km." in words
-    assert "1 of them report live" in words and "The nearest is 0.5 km upstream." in words   # river and lake together
+    assert "1 of them are in the water companies' live feeds. The spot's page says how many report right now." in words and "The nearest is 0.5 km upstream." in words   # river and lake together
     # Each year: 2021 has A1 alone; 2025 both, with hours weighted by reach.
     assert re.search(r"<tr><td>2021</td><td class=\"num\">1</td><td class=\"num\">10</td><td class=\"num\">20</td>", page)
     assert re.search(r"<tr><td>2025</td><td class=\"num\">2</td><td class=\"num\">12</td><td class=\"num\">25</td><td class=\"num\">20</td>", page)

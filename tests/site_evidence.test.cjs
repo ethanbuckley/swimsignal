@@ -29,7 +29,7 @@ test('a bathing water: every item with its age and whose it is, in order, and no
   assert.deepEqual(r.map(x => x.age), ['1 h 30 min ago', '1 h 30 min ago', '2025', '10 days ago', '10 days ago']);
   assert.equal(r[0].say, '0 of 15 discharging, 1 stopped lately. All 15 report live.');
   assert.equal(r[0].src, "The water companies' live feeds");
-  assert.equal(r[1].say, 'No rain in the 48&nbsp;h to midday today. The wettest day ahead is Wednesday, with 12&nbsp;mm.');
+  assert.equal(r[1].say, 'No rain in the 48&nbsp;h to midday today. The most ahead is 12&nbsp;mm in the 48&nbsp;h to midday Wednesday.');
   assert.match(r[1].src, /^<a href="https:\/\/open-meteo\.com\/">Open-Meteo\.com<\/a>'s forecast$/);
   assert.equal(r[2].say, 'Poor.');
   assert.equal(r[2].src, `<a href="${URL_}">Environment Agency</a>, from its lab samples over up to four seasons`);
@@ -164,7 +164,7 @@ test('no overflow upstream, and rain that did not arrive, are gaps; an old build
     days: [day('2026-10-04', 0.3), day('2026-10-05', null), day('2026-10-06', 9), day('2026-10-07', undefined), day('2026-10-08', null)] };
   const { rows: r, gaps } = rows(tees);
   assert.deepEqual(r.map(x => x.what), ['Rain here']);
-  assert.equal(r[0].say, 'Under 1&nbsp;mm of rain in the 48&nbsp;h to midday today. The wettest day ahead is Tuesday, with 9&nbsp;mm.');
+  assert.equal(r[0].say, 'Under 1&nbsp;mm of rain in the 48&nbsp;h to midday today. The most ahead is 9&nbsp;mm in the 48&nbsp;h to midday Tuesday.');
   assert.deepEqual(gaps, [
     'No monitored overflow within 60&nbsp;km upstream, so no spills to go on; farms, wildlife and unmonitored sources are not modelled.',
     'No rain forecast arrived for Monday, Wednesday or Thursday.',

@@ -1704,7 +1704,7 @@ function facts(d) {
   const rt = riverTile(d.river_state); if (rt) out.push(rt);
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d),
-      say: `In the 48&nbsp;h to midday today.${wet !== x0 && wet.rain_48h_mm >= 1 ? ` Wettest ${dayName(wet.date)}, ${Math.round(wet.rain_48h_mm)}&nbsp;mm.` : ''}` }); }
+      say: `In the 48&nbsp;h to midday today.${wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
   const wt = waterTile(d.water_temp); if (wt) out.push(wt);
   const wx = weatherOn(d, today());
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx),
