@@ -1520,7 +1520,7 @@ function answerParts(d, iso = null) {
     sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
   // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
-  const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${NOW_UNKNOWN}`   // right now not known (levels.js)
+  const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${nowUnknownWhy(d)}`   // right now not known (levels.js)
     : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
   return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
@@ -1605,6 +1605,7 @@ const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.
     if (!f.updated_at || !(nowMs - t > FEED_CURRENT_MS) || n.aged.includes(f.company)) continue;
     n.aged.push(f.company);
     n.monitored_upstream = Math.max(0, (n.monitored_upstream || 0) - f.overflows);
+    if (Number.isFinite(n.monitored_weight) && Number.isFinite(f.weight)) n.monitored_weight = Math.max(0, n.monitored_weight - f.weight);   // levels.js, nowWatched
     n.stale_upstream = (n.stale_upstream || 0) + f.overflows;
     n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at }]; }
   for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') c.data_state = 'stale';
