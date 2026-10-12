@@ -39,7 +39,6 @@ def _sww_rows(stamped: bool):
              "latestEventEnd": None, "latitude": None, "longitude": None, "receivingWaterCourse": "River Dart",
              "lastUpdated": t, "_x": -3.8, "_y": 50.5 + 0.01 * i} for i, s in enumerate([0, 1])]
 
-
 def test_fetch_live_reads_camel_case_fields_and_asks_the_layer_only_when_records_carry_no_stamp(monkeypatch):
     from dipcast.ingest import live
     asked = []
@@ -103,6 +102,22 @@ def test_data_states():
     assert t["Z0"] == t["Z1"] == T - pd.Timedelta(hours=9) and t["N0"] == T - pd.Timedelta(hours=0.2)
     assert t["F2"] == T - pd.Timedelta(hours=0.4)                 # a monitor offline on a current feed
     assert t[["U0", "D0", "F3", "W0"]].isna().all()
+
+
+def test_click_anywhere_gets_each_current_feeds_last_update(tmp_path):
+    """overflow_days.json's feed_updated: each current feed's last update, so the page can age its quiet
+    readings where it is read (anypoint.js), as a spot's page does. Stale feeds are in feed_stale_since."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("bap", Path(__file__).resolve().parents[1] / "scripts" / "build_any_point.py")
+    bap = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bap)
+    df = _table().assign(lat=52.0, lon=-1.0, latest_event_start=pd.NaT, latest_event_end=pd.NaT, snap_confidence="high")
+    bap.write_overflow_days(tmp_path, df, df["site_id"].tolist(), "v", 0, T, probabilities=None,
+                            rain=lambda sub: (pd.DataFrame(), {}))
+    body = json.loads((tmp_path / "overflow_days.json").read_text())
+    assert body["feed_updated"] == {"Fresh": (T - pd.Timedelta(hours=0.4)).isoformat(),
+                                    "Unstamped": (T - pd.Timedelta(hours=0.2)).isoformat()}
+    assert set(body["feed_stale_since"]) == {"Frozen", "Unknown"}
 
 
 def test_stale_agrees_with_the_coverage_rule():
