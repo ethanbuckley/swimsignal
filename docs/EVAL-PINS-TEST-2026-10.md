@@ -160,4 +160,83 @@ those reasons. The paired run isolates the pins' part: both runs share everythin
 
 ## Results
 
-To be added after the runs.
+Run 12 Oct 2026: `bare` 17:44 to 17:50 BST, `site` 17:51 to 17:57, after another session's runs had
+finished. Both completed. Neither tried the network. Peak memory stayed under 4.7 GB. Nothing in this
+section was known when sections 1 to 6 were written.
+
+**Verdict under the rule above: the recommendation stands.** The check held and both runs completed.
+The evaluation should use the site's pins.
+
+### The check holds
+
+At the 35 other bathing waters: 2,008 samples, all paired; upstream counts and rain the same;
+`risk_model` within 1.1e-5; the replayed exposures within 1e-4. The change does only what section 1
+says.
+
+### The predictions
+
+- **P1 held.** Colwick leaves the fit. `train_ecoli` had kept 44 of its 65 samples in `bare` (it also
+  drops samples without forecast rain or a shown figure at every lead). The fit goes from 1,546 samples
+  at 32 sites to 1,502 at 31. The paired comparison keeps all 1,502; Colwick is the only site lost.
+- **P2 held, for the reason given and no other.** Cross-site rho rises from 0.705 to 0.763. On the 31
+  sites both runs keep, it falls from 0.821 to 0.763 (change −0.058, 95% interval −0.207 to 0.000).
+  Colwick leaving raises it; Queen Elizabeth Gardens lowers it (next point).
+- **P3, no direction stated.** Queen Elizabeth Gardens' mean `risk_model` falls from 0.024 to 0.005
+  and its maximum from 0.140 to 0.016. Within-site rho goes from 0.596 to 0.533 (17 samples). Its sum
+  of weights rose (1.099 to 1.170), so the dropped Wylye and Nadder overflows carried most of its
+  exposure. It now has low exposure and 4 of 17 samples over 900, which is what lowers cross-site rho.
+- **P4 held.** Wolvercote's mean `risk_model` moves from 0.0257 to 0.0261.
+
+### The published measures
+
+"Published" is the files on main, made 16 Sep. `bare` is the old pins on today's network and rain;
+the gap between those two columns is section 5's other changes, not the pins.
+
+| Measure | Published | bare | site |
+|---|---|---|---|
+| Samples in the fit (sites) | 1,548 (32) | 1,546 (32) | 1,502 (31) |
+| LOYO Brier, all | 0.0908 | 0.0911 | 0.0938 |
+| LOYO AUC: all, rivers, lakes | 0.815, 0.749, 0.466 | 0.814, 0.748, 0.472 | 0.813, 0.747, 0.528 |
+| LOSO Brier, AUC | 0.0903, 0.808 | 0.0906, 0.806 | 0.0933, 0.807 |
+| Forward Brier, AUC (test samples) | 0.0826, 0.810 (1,028) | 0.0830, 0.809 (1,026) | 0.0852, 0.807 (997) |
+| Water lead skill shown on spot pages, leads 1 to 4 | 0.752, 0.692, 0.547, 0.547 | 0.745, 0.685, 0.537, 0.537 | 0.759, 0.694, 0.551, 0.551 |
+| `risk_model` rho, pooled and within site, all sites | 0.572, 0.293 | 0.564, 0.288 | 0.631, 0.314 |
+| `risk_model` AUC over 900, all sites | 0.797 | 0.796 | 0.810 |
+| `risk_model` rho pooled, within site, AUC over 900: rivers | 0.477, 0.407, 0.747 | 0.479, 0.403, 0.749 | 0.470, 0.399, 0.744 |
+| `risk_model` rho pooled, within site, AUC over 900: lakes | 0.283, 0.213, 0.602 | 0.290, 0.211, 0.606 | 0.342, 0.264, 0.656 |
+| Between-site rho (combined file) | 0.684 | 0.705 | 0.763 |
+| LOYO within-site rho (combined file) | 0.389 | 0.389 | 0.422 |
+| Model coefficients: exposure, lake, intercept | 0.545, −0.467, −2.492 | 0.531, −0.456, −2.486 | 0.589, −0.263, −2.406 |
+
+### Paired, on the 1,502 samples both runs keep
+
+2,000 resamples of site-week clusters. Brier gain is `bare` minus `site`, so positive means the site's
+pins do better.
+
+| Split | Brier, bare | Brier, site | Gain (95% interval) | AUC, bare to site (interval of change) |
+|---|---|---|---|---|
+| LOYO, all | 0.09360 | 0.09383 | −0.00023 (−0.00085 to +0.00029) | 0.813 to 0.813 (−0.003 to +0.003) |
+| LOYO, rivers (907) | 0.13781 | 0.13821 | −0.00040 (−0.00146 to +0.00048) | 0.748 to 0.747 (−0.004 to +0.003) |
+| LOYO, lakes (595, 16 over 900) | 0.02621 | 0.02618 | +0.00002 (−0.00016 to +0.00026) | 0.504 to 0.528 (+0.001 to +0.048) |
+| LOSO, all | 0.09281 | 0.09326 | −0.00045 (−0.00111 to +0.00010) | 0.808 to 0.807 (−0.004 to +0.001) |
+| Forward, all (997) | 0.08535 | 0.08523 | +0.00012 (−0.00051 to +0.00069) | 0.807 to 0.807 (−0.004 to +0.004) |
+
+### Reading
+
+Established from the tables above:
+- On the samples both runs keep, no Brier change can be told from zero, in any split.
+- Most published figures move because Colwick's samples leave, not because forecasts elsewhere change.
+  LOYO Brier rises by 0.0027 on the published figure but by 0.0002 on the paired samples.
+- The refitted model weighs exposure more (coefficient 0.531 to 0.589) and penalises lakes less (−0.456
+  to −0.263).
+
+Inferred:
+- LOYO Brier rises on the published figure because Colwick's samples were easy to score: none was over
+  900. The validation rho and between-site rho rise because Colwick had the most exposure of any site
+  and one of the lowest E. coli means.
+- The lake AUC gain rests on 16 exceedances. It is not evidence the model now works on lakes.
+
+**One thing to check, which does not change the rule:** Queen Elizabeth Gardens. With the site's pin
+its exposure is a fifth of the evaluation's, yet 4 of its 17 samples were over 900. If #179's placement
+is wrong, this is where it would show. Settling it needs the EA's zone-of-influence map. The profile's
+image link returned an HTML page, not a map, so I have not seen it.
