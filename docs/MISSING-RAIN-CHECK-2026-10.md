@@ -93,3 +93,63 @@ What I expect, and what will be reported:
    Whether to regenerate the published validation files (`data/processed/ecoli_validation*.json`
    and `.csv`) on the refreshed cache is Ethan's decision. This PR does not regenerate them. PR
    #197's runs are not redone here.
+
+## Results (12 Oct 2026, 17:31–17:43 BST, after the statement above was committed in 243cebe)
+
+All four runs were offline and logged 0 network attempts. They ran one at a time, with a peak of
+3.7 GB each. Every expectation held as stated.
+
+### 1. Neutral on a complete cache: holds
+
+R1 and R2 have the same 2,165 rows. On the 2,163 rows where R2's `missing_share` is 0, the largest
+difference in `risk_model` is 6.7e-16. Two rows have `missing_share` above 0. Both are on 7 Sep
+2026, where the archive ends, and both already had no `rain_48h`:
+
+| site | day | `missing_share` | R2 `risk_model` | R1 `risk_model` |
+|---|---|---|---|---|
+| Derwent Water at Crow Park | 7 Sep 2026 | 0.103 | none | 0.016 |
+| Colwick Country Park (West Lake) | 7 Sep 2026 | 0.814 | none | 0.177 |
+
+### 2. The guard works: holds
+
+R3 warns at the seven sites, and their shares match the ones stated above within 0.002:
+
+| site | `missing_share` on sample days | stated |
+|---|---|---|
+| Sheep's Green, River Cam | 0.7048 | 0.705 |
+| Wolvercote Mill Stream | 0.2088 | 0.209 |
+| River Avon at Queen Elizabeth Gardens | 0.0675 | 0.067 |
+| Ham and Kingston, River Thames | 0.0265 | 0.027 |
+| Wallingford Beach, River Thames | 0.0246 | 0.025 |
+| Colwick Country Park (West Lake) | 0.0102 | 0.010 |
+| River Severn in Shrewsbury | 0.0018 | 0.002 |
+
+The only other shares are the two 7 Sep 2026 rows of point 1. 135 samples are over 0.1: Sheep's
+Green's 58, Wolvercote's 75, and those two rows. None of the 135 has a `risk_model`.
+
+### 3. What the gap did to the numbers (R4 against R1, both main's code)
+
+These are `risk_model` measures. R4 used the cache as it was; R1 used the refreshed one.
+
+| measure | R4 (stale cache) | R1 (refreshed) | change |
+|---|---|---|---|
+| all sites: Spearman pooled | 0.563 | 0.564 | +0.001 |
+| all sites: Spearman within site | 0.286 | 0.288 | +0.002 |
+| all sites: AUC over 900 | 0.793 | 0.796 | +0.004 |
+| all sites: AUC over 500 | 0.789 | 0.791 | +0.002 |
+| rivers: AUC over 900 | 0.744 | 0.749 | +0.004 |
+| lakes: AUC over 900 | 0.606 | 0.606 | 0 |
+| combined: between-site rho (risk) | 0.684 | 0.705 | +0.021 |
+| combined: within site, spill risk only, rho | 0.357 | 0.361 | +0.004 |
+| combined: rivers, spill risk only, rho | 0.500 | 0.509 | +0.009 |
+| combined: within site, rain + risk + season, AUC over 900 | 0.866 | 0.868 | +0.002 |
+
+At site level the gap mattered most at Sheep's Green. There, `risk_model` rises by 0.023 on
+average and by up to 0.216, and the site's rho goes from 0.320 to 0.346. Wolvercote's rho goes from
+0.165 to 0.152, and River Avon at Queen Elizabeth Gardens' from 0.584 to 0.596. The other four
+sites move by 0.005 or less.
+
+The gap biased these measures down a little. The largest effect is on between-site rho (+0.021).
+The published `ecoli_validation.json` and `ecoli_validation_combined.json` were last regenerated on
+14 Sep (c11d8f0), on an older network and older code, so they match neither run. Regenerating them
+is Ethan's decision, and this PR does not do it.
