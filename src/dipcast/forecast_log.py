@@ -150,6 +150,10 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS version VARCHAR")
     # Added 28 Sep 2026: the target day's rain (mm) at the overflow's cell that the forecast used.
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_mm DOUBLE")
+    # Added 12 Oct 2026: the overflow's travel time to the point, in hours, so the 2027 spot-level score
+    # can shift each overflow's observed spill days as the forecast shifted its chances
+    # (docs/PREREGISTRATION-2027.md, amendment 1; transport.shift_by_travel).
+    con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS travel_h DOUBLE")
     # Added 4 Oct 2026: the run log (log_build). `failed` holds why a build did not publish, else NULL.
     con.execute("""
         CREATE TABLE IF NOT EXISTS build_runs (
@@ -177,6 +181,8 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
             return None
         return float(arr[j])
 
+    travel = ([None if pd.isna(t) else float(t) for t in ov["travel_h"]] if len(ov) and "travel_h" in ov
+              else [None] * len(ov))
     for j, d in enumerate(days):
         lead = (d.date() - issue_day).days
         if lead < 0:
@@ -188,13 +194,14 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
                 ok = True if available is None else bool(available[i, j])
                 rain = None if rain_mm is None or np.isnan(rain_mm[i, j]) else float(rain_mm[i, j])
                 rows.append((issued_at, issue_day, lat, lon, str(sid), bool(ov["has_live"].iloc[i]),
-                             d.date(), lead, float(p_raw[i, j]), float(p_cal[i, j]), float(ov["weight"].iloc[i]), ok, version, rain))
+                             d.date(), lead, float(p_raw[i, j]), float(p_cal[i, j]), float(ov["weight"].iloc[i]), ok, version, rain,
+                             travel[i]))
     with _LOCK:
         con = _conn()
         try:
             con.executemany("INSERT INTO forecast_points VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", pts)
             if rows:
-                con.executemany("INSERT INTO forecast_overflows VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
+                con.executemany("INSERT INTO forecast_overflows VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
         finally:
             con.close()
 

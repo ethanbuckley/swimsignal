@@ -273,3 +273,25 @@ def test_a_cell_on_the_meridian_is_read_from_the_cache_whichever_sign_its_zero_h
     assert len(calls) == 1 and len(got) == 3
     assert rainfall.cell_key(52.3, -0.0) == rainfall.cell_key(52.3, 0.0) == "52.300_0.000"
     assert str(spot[0][1]) == "0.0"   # no "-0.0" left in the cell itself
+
+
+def test_each_logged_overflow_forecast_keeps_its_travel_time(tmp_path, monkeypatch):
+    """The 2027 spot-level score shifts each overflow's observed spill days by its travel time to the
+    spot, as the forecast shifted its chances (docs/PREREGISTRATION-2027.md, amendment 1). Logged from
+    12 Oct 2026; a table without travel_h (a test's) logs null."""
+    import duckdb
+
+    from dipcast import config
+    from dipcast import forecast_log as fl
+
+    monkeypatch.setattr(config, "STATE", tmp_path)
+    monkeypatch.setattr(config, "DUCKDB_PATH", tmp_path / "t.duckdb")
+    issued = pd.Timestamp("2026-10-12 07:00", tz="Europe/London")
+    days = pd.date_range("2026-10-12", periods=2, freq="D", tz="Europe/London")
+    ov = pd.DataFrame({"site_id": ["A", "B"], "has_live": [True, True], "weight": [0.5, 0.1], "travel_h": [3.5, np.nan]})
+    p = np.full((2, 2), 0.2)
+    fl.log_forecast(issued, 54.0, -2.0, "river", "R", 0.0, days, np.array([0.1, 0.1]), ov, p, p)
+    fl.log_forecast(issued, 54.1, -2.0, "river", "R", 0.0, days, np.array([0.1, 0.1]), ov.drop(columns="travel_h"), p, p)
+    con = duckdb.connect(str(tmp_path / "t.duckdb"))
+    got = con.execute("SELECT lat, site_id, travel_h FROM forecast_overflows WHERE lead = 0 ORDER BY lat, site_id").fetchall()
+    assert got == [(54.0, "A", 3.5), (54.0, "B", None), (54.1, "A", None), (54.1, "B", None)]
