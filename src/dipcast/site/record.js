@@ -51,7 +51,7 @@ const Record = (() => {
   const WALES_CANNOT_SEE = 'Dŵr Cymru Welsh Water\'s overflows in Wales are not in SwimSignal\'s data: there is no licence to reuse them yet, and SwimSignal is waiting for Dŵr Cymru\'s terms. '
     + 'Where a spot\'s river runs from Wales, its page says how much of the river above it is in Wales. Dŵr Cymru\'s overflows in England are forecast from rain and their yearly spill record, with no "right now".';
   const CANNOT_SEE = [
-    'The spill forecast covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident. On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.',
+    'The sewage spill risk covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident. On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.',
     'It does not count the treated sewage that sewage works let into rivers every day, only their storm overflows.',
     'It does not count wildlife or other bathers. On a lake it does not use the wind, which decides where river water goes. The method page says what you can do instead.',
     WALES_CANNOT_SEE,
@@ -135,7 +135,7 @@ const Record = (() => {
     if (R.daily(s) && x) {
       if (nil(x.risk)) rows.push(row('Sewage spills upstream', 'The rainfall forecast for this day has not arrived, so there is no figure.'));
       else { const i = x.risk * 100;
-        rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${O.spilling(x, total)}. Exposure index <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`));
+        rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${O.spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`));
         rows.push(row('The overflows that matter most', topOverflows(s, j))); }
       const ov = E.evidenceOverflows(s, data.generated_at);
       if (ov) rows.push(row('Discharging when the forecast was issued', ov.say));

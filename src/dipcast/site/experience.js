@@ -21,8 +21,8 @@ function evidenceRows(s, iso, issued, generatedAt = null, now = Date.now()) {
   // that day, or one built before the mark) goes by the calendar month, May to September.
   const offSeason = day && typeof day.in_validated_season === 'boolean' ? !day.in_validated_season
     : ![5, 6, 7, 8, 9].includes(Number(iso.slice(5, 7)));
-  const model = s.error ? `${rules().coverage(s)}.` : !total ? `${rules().COVER[rules().NO_OVERFLOWS]} within 60 km, so there is no daily spill forecast.`
-    : !day || day.risk == null ? 'No spill forecast for this day.' : 'Model prediction, not a water sample.';
+  const model = s.error ? `${rules().coverage(s)}.` : !total ? `${rules().COVER[rules().NO_OVERFLOWS]} within 60 km, so there is no daily sewage spill risk.`
+    : !day || day.risk == null ? 'No sewage spill risk for this day.' : 'Model prediction, not a water sample.';
   return [
     ['Forecast', model + (issued ? ` Issued ${issued}.` : '')],
     ['Live spill feeds', !total ? 'Nothing to report: no monitored overflow is within reach upstream; other pollution sources may still affect this water.'

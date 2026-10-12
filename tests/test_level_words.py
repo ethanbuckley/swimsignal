@@ -40,8 +40,8 @@ BARE = [
 ]
 # Kept on purpose, each with why. A phrase here must still be found, so a stale entry fails too.
 ALLOWED = {
-    # The exposure index is a 0-100 score: a low score is a number, not a spot's level.
-    "when the exposure index is low": "src/dipcast/site/index.html",
+    # The sewage spill risk is a 0-100 score: a low score is a number, not a spot's level.
+    "when the sewage spill risk is low": "src/dipcast/site/index.html",
     # The operator's log line in `wrangler tail` (push/README.md), never shown to a visitor.
     "spots rose to high": "push/src/index.js",
 }
