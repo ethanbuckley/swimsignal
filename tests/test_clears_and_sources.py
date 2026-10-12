@@ -308,3 +308,16 @@ def test_a_quiet_low_spot_gets_no_clear_time_and_no_sources(monkeypatch):
     assert out["now"]["clears_at"] is None and out["now"]["clears_by"] is None and "source" not in out["now"]
     assert "clears_after" not in out["now"] and "arriving" not in out["now"]
     assert all(d["risk"] < LOW_CUT and "source" not in d for d in out["days"])
+
+
+def test_a_spots_now_carries_every_count_the_page_reads(monkeypatch):
+    """forecast_point copies live_counts into a spot's `now` (forecast.NOW_KEYS). On 12 Oct 2026 the copy was a
+    list written where it is used, and the weights (levels.js, nowWatched) and feeds_on_change (ageReadings)
+    added that night never reached a page: Sandy Lane kept "Low risk for the next five days"."""
+    from dipcast.model.forecast import NOW_KEYS, live_counts
+    assert set(live_counts(pd.DataFrame(), pd.Series(dtype=float))) <= set(NOW_KEYS)
+    assert "feeds_on_change" in NOW_KEYS
+    ov = _upstream()
+    now = _forecast(monkeypatch, ov, _Steady())["now"]
+    assert now["upstream_weight"] == round(float(ov["weight"].sum()), 4)
+    assert 0 < now["monitored_weight"] <= now["upstream_weight"]

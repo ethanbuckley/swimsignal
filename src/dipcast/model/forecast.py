@@ -391,9 +391,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 # The spill whose water is still on its way, when such spills hold at least half the risk.
                 **({"arriving": arriving} if arriving else {})}
     out["now"] = {"risk": round(now_risk, 3), "label": risk_label(now_risk), **clearing,
-                  **{k: counts[k] for k in ("discharging_upstream", "recent_upstream", "monitored_upstream",
-                                            "feed_down_upstream", "feed_down", "stale_upstream", "feed_stale",
-                                            "no_feed_upstream", "quiet_by_feed")}}
+                  **{k: counts[k] for k in NOW_KEYS if k in counts}}
     out["days"] = day_rows
     out["upstream_summary"] = {
         "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
@@ -501,6 +499,15 @@ def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> 
         "arrives_at": (now + pd.Timedelta(hours=float(left[k]))).round("min").isoformat(),
         "share": round(float(share[coming].sum()), 3),
     } | carried_fields(r)
+
+
+# What forecast_point copies from live_counts (and feeds_on_change) into a spot's `now`. Until 12 Oct 2026 the
+# list was written out where it is used and missed the keys added that night: monitored_weight and
+# upstream_weight (levels.js, nowWatched) and feeds_on_change (index.html, ageReadings), so neither rule
+# reached a page. tests/test_feed_freshness.py checks that every key live_counts gives is here.
+NOW_KEYS = ("discharging_upstream", "recent_upstream", "monitored_upstream", "feed_down_upstream", "feed_down",
+            "stale_upstream", "feed_stale", "no_feed_upstream", "quiet_by_feed", "monitored_weight", "upstream_weight",
+            "feeds_on_change")
 
 
 def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
