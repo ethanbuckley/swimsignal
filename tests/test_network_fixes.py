@@ -166,6 +166,17 @@ def test_no_join_to_another_river_or_beyond_the_distance(why, row):
     assert not _net(links).fixes, why
 
 
+def test_a_dead_end_on_a_canal_or_a_navigation_is_not_joined():
+    """Some navigations are cuts, and the name cannot tell which (fixes._canal). On the real network,
+    counting "Navigation" as a river added only a join into the Knottingley and Goole Canal (12 Oct 2026)."""
+    rename = lambda new: [(i, new if n == "River Windrush" else n, f, s, e, xy) for i, n, f, s, e, xy in WINDRUSH]
+    for name in ("Trent and Mersey Canal", "Aire and Calder Navigation"):
+        assert not _net(rename(name)).fixes, name
+        assert nf._canal(_gdf(rename(name)).set_index("id"), "W1")
+    [f] = _net(rename("River Weaver")).fixes
+    assert (f.rule, f.name) == ("named join", "River Weaver")
+
+
 def test_a_dead_end_is_joined_where_another_branch_of_its_brook_ends():
     """Scotsgrove Brook stops 10 m from the node where its other branch meets Cuttle Brook: no link
     of its name starts there, one ends there."""
@@ -265,9 +276,22 @@ def test_an_override_join_that_would_close_a_loop_is_refused(tmp_path, monkeypat
 
 
 def test_the_override_file_in_the_repository_reads():
-    rows = nf.read_overrides(ROOT / "data" / "raw" / "network_fixes.csv")
+    rows = nf.read_overrides(ROOT / "data" / "raw" / "network_fixes.csv")   # raises on a bad length_m
     assert set(rows["action"]) <= {"reverse", "join"}
     assert (rows["reason"].str.len() > 40).all() and (rows["checked"].str.len() == 10).all()
+
+
+@pytest.mark.parametrize("length", ["533 m", "-5", "0", "about 500"])
+def test_a_malformed_length_is_named_when_the_list_is_read(tmp_path, length):
+    """A length the code cannot read stopped every site build at network load, and CI did not see it,
+    since the repo test checked only the action, reason and date (review of #184)."""
+    p = tmp_path / "network_fixes.csv"
+    p.write_text(f"action,a,b,length_m,place,checked,reason\njoin,x,y,{length},River Test braid,2026-10-12,a test\n")
+    with pytest.raises(ValueError, match=r"row 1 \(River Test braid\): length_m must be blank or metres"):
+        nf.read_overrides(p)
+    p.write_text("action,a,b,length_m,place,checked,reason\njoin,x,y,,blank is the straight line,2026-10-12,a test\n"
+                 "join,x,z,533,a number,2026-10-12,a test\n")
+    assert len(nf.read_overrides(p)) == 2
 
 
 def test_the_topology_key_follows_the_fixes():
