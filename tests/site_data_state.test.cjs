@@ -10,11 +10,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const A = require('../src/dipcast/site/anypoint.js');
-const { overflowNames } = require('../src/dipcast/site/levels.js');
+const { overflowNames, companyName } = require('../src/dipcast/site/levels.js');
 
 const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
 const between = (from, to) => { const a = page.indexOf(from), b = page.indexOf(to, a); assert.ok(a >= 0 && b > a, from); return page.slice(a, b); };
-const ctx = vm.createContext({ esc: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;') });
+const ctx = vm.createContext({ esc: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'), companyName });
 vm.runInContext(between("// An overflow's live status in words.", '\nconst initial = ')
   + between('// A company feed that did not answer the last poll', '\n// Every overflow upstream as a dot')
   + '\nthis.statusText = statusText; this.drawnStatus = drawnStatus; this.liveSay = liveSay; this.ageReadings = ageReadings;', ctx);

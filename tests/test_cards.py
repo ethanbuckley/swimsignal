@@ -55,8 +55,8 @@ def alerts_fixture() -> dict:
                      "days": [day("high", 2)] * 5},
             "gap": {"name": "River A, Gap", "level": "low", "headline": "Low risk",
                     "days": [day("low", 0)] * 3 + [day("very high", 3), None]},
-            "lake": {"name": "Quiet Lake", "level": "no overflows", "headline": "No sewage risk from monitored overflows"},
-            "tarn": {"name": "Quiet Tarn", "level": "no overflows", "headline": "No sewage risk from monitored overflows"},
+            "lake": {"name": "Quiet Lake", "level": "no overflows", "headline": "No monitored overflow found upstream"},
+            "tarn": {"name": "Quiet Tarn", "level": "no overflows", "headline": "No monitored overflow found upstream"},
             "rated": {"name": "Rated Lake", "level": "moderate", "headline": "Moderate risk: rated sufficient by the Environment Agency"},
         },
     }
@@ -74,7 +74,7 @@ def test_weekend_card_rows():
     assert rows["poor"].cells == ["high", "high"] and rows["poor"].poor
     assert rows["gap"].cells == ["very high", None]                       # no level on Sunday: no forecast
     assert rows["rated"].cells == ["moderate", "moderate"]               # a standing level holds every day
-    assert card.plain == [("No sewage risk from monitored overflows", "no overflows", ["Quiet Lake", "Quiet Tarn"])]
+    assert card.plain == [("No monitored overflow found upstream", "no overflows", ["Quiet Lake", "Quiet Tarn"])]
     assert card.missing == ["missing"]
     assert card.ids == ["a", "poor", "gap", "lake", "tarn", "rated"]
 
@@ -147,7 +147,7 @@ def test_captions_words():
     assert text.startswith("River A this weekend: the pollution risk forecast for Saturday 17 and Sunday 18 October.")
     assert "Upper: low risk on Saturday, moderate risk on Sunday." in text
     assert "Gap: very high risk on Saturday, no forecast on Sunday." in text
-    assert "Quiet Lake and Quiet Tarn: no sewage risk from monitored overflows." in text
+    assert "Quiet Lake and Quiet Tarn: no monitored overflow found upstream." in text
     assert "The Poor is rated poor by the Environment Agency, so it stays at high risk or worse." in text
     assert "swimsignal.co.uk" in text and "saved/#list=River%20A&day=2026-10-17&spots=a,poor,gap,lake,tarn,rated" in text
     assert "Forecast issued Wednesday 14 October at 08:12. A forecast, not a water test." in text

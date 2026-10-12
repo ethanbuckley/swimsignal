@@ -110,9 +110,13 @@ function journalSeen(d, date, today, issued, time) {
   const rs = d.river_state || {}, wt = d.water_temp || {};
   const temp = typeof wt.temp_c === 'number' && !Number.isNaN(Date.parse(wt.observed_at)) && typeof wt.river_km === 'number'
     && ['upstream', 'downstream'].includes(wt.direction) ? { c: wt.temp_c } : null;
+  // The overflows only where some report live: "none of the 14 discharging" was not known at Hereford,
+  // whose 14 have no live feed (11 Oct 2026). A lake's own gauge (river_state.water "lake") is not a river
+  // level, and its words are not these: kept out.
+  const known = !!total && ((now.monitored_upstream ?? total) > 0 || (now.discharging_upstream || 0) > 0);
   return jnSeenOk({ head, level, issued, rain: x && typeof x.rain_48h_mm === 'number' ? Math.round(x.rain_48h_mm * 10) / 10 : null,
-    dis: total ? now.discharging_upstream || 0 : null, of: total || null,
-    river: !rs.stale && typeof rs.level_m === 'number' ? { m: rs.level_m, word: JN_RIVER[rs.label] || '' } : null, temp });
+    dis: known ? now.discharging_upstream || 0 : null, of: known ? total : null,
+    river: !rs.stale && rs.water !== 'lake' && typeof rs.level_m === 'number' ? { m: rs.level_m, word: JN_RIVER[rs.label] || '' } : null, temp });
 }
 // The figures kept with a swim, as phrases: the rain, the overflows, the river and the water.
 function journalSeenWords(s) {

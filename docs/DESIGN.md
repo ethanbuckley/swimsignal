@@ -89,8 +89,8 @@ those sizes; they were taken off to keep the rule simple.)
   `#855817`, `#a04623`, `#992a2a`, which pass 4.5:1 on the paper and on white (5.6:1 or more on the
   paper). The ochre and rust marks are too light for text (3.3:1 and 4.1:1 on the paper), hence
   the two sets. A spot with no monitored overflow upstream is teal `#4aa39a`, not grey: it is a
-  calm answer, not a missing one. Grey `#98a2aa` means no level; an isolated lake, which the river
-  network links to no monitored overflow, is grey too ("No monitored overflow drains into this lake").
+  calm answer, not a missing one. Grey `#98a2aa` means no level. An isolated lake, which the river
+  network links to no monitored overflow, is teal too since 11 October 2026: it has the same words.
   An overflow discharging now is
   the very-high brick. An overflow with no current reading is the light grey, and the map keys call it
   that, "no current reading" (4 October 2026; they said "offline" and "offline or no feed"): a monitor
@@ -152,14 +152,16 @@ those sizes; they were taken off to keep the rule simple.)
   nothing to join them up.
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
   (3 October 2026), in the answer, on a saved card, in the list row, the map's tooltip and key,
-  and the alerts (the key lists the teal one; an isolated lake sits under its grey "No level"):
-  - **"No sewage risk from monitored overflows"**, in the clear teal, where the trace finds no
-    monitored overflow within 60 km upstream.
-  - **"No monitored overflow drains into this lake"**, in the grey of no level, for an
-    isolated lake (the forecast's `error` begins "An isolated lake"). Until 11 October 2026 it was "No
-    river connection: overflows cannot reach this lake", true at a flooded quarry (Henleaze Lake) but
-    false at a fell tarn with becks in and out that the river network does not draw (Loughrigg Tarn).
-    The level's key, `no river connection`, stays: the alerts, the journal and the push Worker store it.
+  and the alerts (the key lists it in the teal):
+  - **"No monitored overflow found upstream"**, in the clear teal, where the trace finds no
+    monitored overflow within 60 km upstream, and for an isolated lake (the forecast's `error` begins
+    "An isolated lake"), whose spills row says why in plain words (levels.js, `ISOLATED_WHY`). Until
+    11 October 2026 these were "No sewage risk from monitored overflows", which read as no risk at
+    all, and "No monitored overflow drains into this lake", in grey, which only 3 of the 12 lakes with
+    nothing upstream got. Before that the lake's was "No river connection: overflows cannot reach this
+    lake", false at a fell tarn with becks in and out that the river network does not draw (Loughrigg
+    Tarn). The levels' keys, `no overflows` and `no river connection`, stay: the alerts, the journal and
+    the push Worker store them.
   - Under either, one line kept in view: "Other risks apply: algae, wildlife, runoff and bathers.
     Check the signs at the water." That line is the view's one "check the signs", so the caveat
     in the tile under the answer drops its own. Then, where the forecast has it, the rain in the 48 hours

@@ -250,6 +250,8 @@
   .hl.low { color:var(--k-low); } .hl.moderate { color:var(--k-moderate); } .hl.high { color:var(--k-high); } .hl.veryhigh { color:var(--k-veryhigh); } .hl.na { color:var(--muted); }
   .hl.clear { color:var(--k-clear); }
   .k { font-size:var(--fs-meta); color:var(--muted); line-height:1.35; }
+  /* What a headline cannot count, under it in a row (headNote): ink, the meta size, never a level's colour. */
+  .hl-note { font-size:var(--fs-meta); color:var(--ink); line-height:1.35; }
   .week { flex:none; display:flex; gap:4px; }
   .wk { display:flex; flex-direction:column; align-items:center; gap:3px; }
   .wk i { display:block; width:10px; height:22px; background:var(--unknown); }   /* square, as the day strip's bars */
@@ -345,6 +347,8 @@
   /* What the level counts and what it does not (levels.js, levelScope): ink, the notes' size, once a page. */
   .answer .scope { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   .answer .flow { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
+  /* What the answer could not check (unchecked): ink, after what to do, never a box. */
+  .answer .gaps { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   /* Every tile is built the same way: a label with its icon, one figure, one drawing, one sentence, and
      the rest of the explanation one tap away in its corner. */
   .t-lab { display:flex; align-items:center; gap:6px; margin:0; padding-right:36px; font:600 var(--fs-meta)/1.3 var(--font-text); color:var(--muted); }
@@ -869,27 +873,28 @@
         <p class="small muted">A day's level is the highest of these. A spot's page shows each one.</p>
         <dl>
           <dt>Sewage spills</dt><dd>The exposure index, a 0–100 score for sewage from upstream reaching the spot. Low under 15, moderate 15 to 40, high 40 to 70, very high 70 or more.</dd>
-          <dt>Water quality</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. In the May to September season only: from October to April, when the EA takes no samples, the estimate is shown marked † but does not set the level.</dd>
+          <dt>Sewage spills right now</dt><dd>Today only: the overflows upstream discharging now, or stopped lately, from the water companies' live feeds. Today's level is at least right now's.</dd>
+          <dt>E. coli estimate</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. It is tested only for May to September, so it sets the level only then: from October to April, when the EA takes no samples, it is shown marked † but does not set the level. A spot's page says how it has done on live samples so far.</dd>
           <dt>Environment Agency rating</dt><dd>At a designated bathing water, the EA's yearly rating from up to four seasons of lab samples. When it is poor, advice against bathing applies through the bathing season, 15 May to 30 September, and the level is at least high risk on every day. Where there is no daily forecast, a rating of sufficient makes the level moderate risk and poor makes it high risk; excellent or good leave the plain level below.</dd>
           <dt>Algae</dt><dd>At a designated bathing water, the EA sampler's last look, if under two weeks old: enough algae to be objectionable makes the level at least high risk, some at intervals at least moderate risk.</dd>
-          <dt>Not included</dt><dd>The EA's short-term advice against bathing after a pollution incident or an algal bloom. On a bathing water's page, opening "Today's EA advice" loads the EA's own panel, which has it.</dd>
+          <dt>Lab sample</dt><dd>At a designated bathing water, the EA's latest sample, if under two weeks old and over 900 E. coli per 100 ml: the level is at least moderate risk.</dd>
+          <dt>Not included</dt><dd>The EA's short-term advice against bathing after a pollution incident or an algal bloom: SwimSignal cannot read it, so a bathing water's page says it could not be checked. Opening "Today's EA advice" there loads the EA's own panel, which has it. Nor the overflows in Wales, which are not in the data: where a spot's river runs from Wales, its page says how much of it is in Wales.</dd>
         </dl>
         <dl class="levels">
           <dt><span class="badge b-low">Low</span></dt><dd>Nothing in the forecasts or the EA's rating flags the day. That is not a guarantee of clean water, and it says nothing about currents, cold water or algae.</dd>
           <dt><span class="badge b-moderate">Moderate</span></dt><dd>Some chance that sewage reaches the spot, or that a water sample would be over 900 E. coli per 100 ml.</dd>
           <dt><span class="badge b-high">High</span></dt><dd>Sewage reaching the spot, or a sample over 900, is a real prospect; or the EA rates the water poor.</dd>
           <dt><span class="badge b-veryhigh">Very high</span></dt><dd>Sewage reaching the spot, or a sample over 900, is likely.</dd>
-          <dt><span class="badge b-clear">No sewage risk from monitored overflows</span></dt><dd>The trace found no monitored storm overflow upstream, so there is no spill forecast and no E. coli estimate. Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water. Where a rating of sufficient or poor, or algae at the last check, raises the level, that sets it instead.</dd>
-          <dt><span class="badge b-na">No monitored overflow drains into this lake</span></dt><dd>A lake that the river network links to no monitored storm overflow: a flooded quarry or gravel pit with no river flowing in, or a tarn whose becks are not on the network and carry no monitored overflow. The same other risks apply.</dd>
+          <dt><span class="badge b-clear">No monitored overflow found upstream</span></dt><dd>The trace found no monitored storm overflow within 60 km upstream, or the river network draws no river into the lake, so there is no spill forecast and no E. coli estimate. That is not the same as no risk. Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water. Where a rating of sufficient or poor, algae at the last check or a recent sample raises the level, that sets it instead.</dd>
           <dt><span class="badge b-na">No level</span></dt><dd>No forecast in this update, or no river or lake on the network near the spot. There is nothing to go by, which is not the same as clean water.</dd>
         </dl>
         <p class="small muted">Under its level, a spot's page says in one line what to do, from published health advice for swimmers. <a href="methods.html#actions">Each line and its sources</a>.</p>
       </details>
       <details class="more"><summary>What each part of a spot's page means</summary>
         <dl>
-          <dt>Right now</dt><dd>Which upstream storm overflows are discharging now or stopped lately, from the water companies' live feeds. A spill counts in full from its start until its water has passed the spot, then for less over the next 48 hours.</dd>
+          <dt>Right now</dt><dd>Which upstream storm overflows are discharging now or stopped lately, from the water companies' live feeds. A spill counts in full from its start until its water has passed the spot, then for less over the next 48 hours. Today's level is at least right now's. A spill reported running for over two days is named as possibly a monitor fault, and still counts.</dd>
           <dt id="about-exposure">Exposure index (0–100)</dt><dd>A 0–100 score for sewage from upstream reaching the spot. It is built from the chance that at least one overflow upstream spills and its discharge arrives, after travel time, die-off and dilution. The spill part is verified against what the overflows did; the die-off and dilution weights are physical estimates, not calibrated against water samples, so the score is not a probability. The colour levels (low to very high) come from it.</dd>
-          <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the exposure index, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the exposure index is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: the figure is still shown, marked †, but it does not set the level, and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it.</dd>
+          <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the exposure index, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the exposure index is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: the figure is still shown, marked †, but it does not set the level, and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
           <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor nothing is shown; the temperature is never estimated. It is not part of the level.</dd>
           <dt>What it does not know</dt><dd>The treated sewage that sewage works let out every day, and anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled. Nor does it use the wind, which decides where river water goes in a lake. <a href="methods.html#limits">What the forecast does not count, and what you can do</a>.</dd>
@@ -1075,11 +1080,13 @@ const VIEW = { q: '', filter: 'all', sort: 'risk', here: null, geoMsg: '', lowOn
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
 const fmt = (x, d=0) => (x === null || x === undefined) ? '–' : Number(x).toFixed(d);
 const cls = l => ORDER[l] === undefined ? 'b-na' : 'b-' + l.replace(' ', '');
-// 'clear': no monitored overflow upstream ("No sewage risk from monitored overflows"). Its own calm
-// teal, not the grey of "no level", which is for a spot the forecast cannot trace at all: an isolated
-// lake ("No monitored overflow drains into this lake"), a run that failed.
-const tone = l => l === NO_OVERFLOWS ? 'clear' : ORDER[l] === undefined ? 'na' : l.replace(' ', '');
-const colour = l => ({low:'#3b7d4f', moderate:'#b7791f', high:'#c2552a', 'very high':'#a32d2d', [NO_OVERFLOWS]:'#4aa39a'})[l] || '#98a2aa';   // --low, --moderate, --high, --veryhigh, --clear, --unknown
+// 'clear': no monitored overflow found upstream, whether the trace found none within its 60 km or the
+// river network draws nothing into the lake (an isolated lake). Its own calm teal, not the grey of "no
+// level", which is for a spot without a forecast: a run that failed, or no water on the network nearby.
+// Until 11 Oct 2026 an isolated lake was grey, under words of its own; the two now share their words
+// (levels.js, COVER), so they share the colour too.
+const tone = l => l === NO_OVERFLOWS || l === NO_RIVER ? 'clear' : ORDER[l] === undefined ? 'na' : l.replace(' ', '');
+const colour = l => ({low:'#3b7d4f', moderate:'#b7791f', high:'#c2552a', 'very high':'#a32d2d', [NO_OVERFLOWS]:'#4aa39a', [NO_RIVER]:'#4aa39a'})[l] || '#98a2aa';   // --low, --moderate, --high, --veryhigh, --clear, --unknown
 const PAPER = '#f6f4ee';   // --bg: the ring round each marker, which parts it from the grey tiles
 const RING = () => '#0f5a61';   // --brand: the ring round the open spot
 const SCROLL = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -1316,9 +1323,10 @@ function summary(d) {
   const why = x => { const t = spilling(x, total); return t ? ': ' + t : ''; };
   // All low: the headline already says so, so say what it rests on rather than repeat it.
   if (!ORDER[peak.label]) out.push(`A spill from the ${total === 1 ? 'overflow' : `${total} overflows`} upstream is unlikely to reach here${known.length === days.length ? '' : ' on any day with a forecast'}.`);
-  else if (peak === days[0]) out.push(`${cap(peak.label)} risk today${why(peak)}.`);
+  else if (peak === days[0] && !risk(d, days[0]).now) out.push(`${cap(peak.label)} risk today${why(peak)}.`);
   else {
-    out.push(hasData(days[0]) ? `${cap(days[0].label)} risk today.` : 'No forecast for today.');
+    // Today raised by the spills under way (levels.js, risk): the first sentence has said so already.
+    if (!risk(d, days[0]).now) out.push(hasData(days[0]) ? `${cap(days[0].label)} risk today.` : 'No forecast for today.');
     // The badge covers tomorrow, so a raised tomorrow is named even when the worst day is later:
     // "Low today. High on Saturday" sat under a "Moderate" badge.
     if (peak !== days[1] && days[1] && hasData(days[1]) && ORDER[days[1].label]) out.push(`${cap(days[1].label)} risk tomorrow.`);
@@ -1341,29 +1349,44 @@ const factorRow = (label, lv, value, detail, rel = '') => `<div class="factor"><
 const explain = (what, body) => `<details class="more"><summary>${what}</summary><p>${body}</p></details>`;
 // A spot without a forecast (an isolated lake, a failed run): why, short, since the answer above gives it in
 // full and a whole phrase pushed over the row's label on a phone. The headline's words up to any colon ("No
-// forecast in this update"); an isolated lake's are a sentence with none, so it has a short form of its own.
+// forecast in this update"); an isolated lake's are long, so it has a short form of its own.
 // Its rating and algae are tiles, as on any spot's page (facts).
-// A failed run's error is the build's own ("forecast failed: open-meteo request failed"): plain words instead.
-const factors = d => `<div class="factors">${factorRow('Sewage spills', null, coverage(d) === COVER[NO_RIVER] ? 'No overflow drains in' : coverage(d).split(':')[0], String(d.error).startsWith('forecast failed')
-  ? 'This update could not work out the forecast for this spot. The next update tries again. Until then there is nothing to go by, which is not the same as clean water.' : esc(d.error))}</div>`;
+// A failed run's error is the build's own ("forecast failed: open-meteo request failed"), and an isolated
+// lake's said "An isolated lake" to a swimmer at Loughrigg Tarn, which has becks in and out (11 Oct 2026):
+// plain words instead, the lake's being ISOLATED_WHY, what the trace can and cannot say.
+const factors = d => `<div class="factors">${factorRow('Sewage spills', null, isolated(d) ? 'None found upstream' : coverage(d).split(':')[0], String(d.error).startsWith('forecast failed')
+  ? 'This update could not work out the forecast for this spot. The next update tries again. Until then there is nothing to go by, which is not the same as clean water.'
+  : isolated(d) ? `${ISOLATED_WHY} Risk from farms, wildlife, runoff and bathers is not modelled.` : esc(d.error))}</div>`;
+// The E. coli estimate's label (Ethan, 11 Oct 2026: shown all year, labelled with what is true today):
+// what it and the level each count, its tested season, how it has done on live samples and, where the
+// river runs from Wales, the Welsh test (levels.js, ecoliNotes, from the build's ecoli_check in
+// spots.json). Its own name is "E. coli estimate": "Water quality" read as a measurement. Out of season
+// its word says it is untested now, not a band: "Very high risk" under a "Low risk" answer read as a
+// contradiction.
+const untestedWord = () => `Untested in ${new Date(today() + 'T12:00:00').toLocaleDateString('en-GB', { month: 'long' })}`;
+const ecoliCheck = () => (typeof DATA === 'object' && DATA && DATA.ecoli_check) || null;
+const ecoliSaid = (d, x) => ecoliNotes(d, ecoliCheck(), x).join(' ');
+const ecoliMore = () => { const l = (ecoliCheck() || {}).live;
+  return 'The minimum bathing-water standard lets about one sample in ten be over 900.'
+    + (l && l.n_samples && !nil(l.auc) ? ` On the ${l.n_samples} live samples so far, its AUC is ${Number(l.auc).toFixed(2)}: 0.5 is chance, 1 is perfect.` : '')
+    + ' <a href="#about-ecoli">What this counts</a>'; };
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can
 // raise it when the spills are low. Rivers with overflows upstream only, the case it was tested on.
 function water(d, days) {
-  if (ecoliTested(d) && d.unlisted) return factorRow('Water quality', null, 'Not estimated', UNLISTED_ECOLI);
+  if (ecoliTested(d) && d.unlisted) return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', UNLISTED_ECOLI);
   if (ecoliTested(d)) {
     // The figure's own band in season. From October to April nothing tests it and it does not set the
-    // level (levels.js, ecoliLevel), so its band is not given either: "Very high risk" under a "Low
-    // risk" answer read as a contradiction. The figure stays, marked †.
+    // level (levels.js, ecoliLevel), so its band is not given either. The figure stays, marked †.
     const ds = days.filter(x => !nil(x.p_ecoli_gt900)), off = ds.some(ecoliUntested);
     const wq = off ? null : ds.map(x => ecoliBand(d, x)).reduce(higher, null);
-    // The value is a risk, said so: beside "Water quality", a bare "Very high" read as very good water.
-    return factorRow('Water quality', wq, !ds.length ? 'No data' : off ? 'Out of season†' : `${cap(wq)} risk`, !ds.length ? 'No rainfall forecast has arrived, so there is no estimate.'
-      : `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: ${ds.map(x => `<b>${Math.round(x.p_ecoli_gt900 * 100)}%</b> ${dayWord(x.date)}`).join(', ')}.`
-      + explain('About this estimate', `The minimum bathing-water standard lets about one sample in ten be over 900.${off ? ' † The Environment Agency takes no samples from October to April, so nothing tests this estimate now: it is shown, but it does not set the level above.' : ''} <a href="#about-ecoli">What this counts</a>`),
+    // The value is a risk, said so: a bare "Very high" read as very good water.
+    return factorRow('E.&nbsp;coli estimate', wq, !ds.length ? 'No data' : off ? `${untestedWord()}†` : `${cap(wq)} risk`, !ds.length ? 'No rainfall forecast has arrived, so there is no estimate.'
+      : `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: ${ds.map(x => `<b>${Math.round(x.p_ecoli_gt900 * 100)}%</b> ${dayWord(x.date)}`).join(', ')}. ${ecoliSaid(d, ds[0])}`
+      + explain('About this estimate', ecoliMore()),
       days.length === 1 ? tileLine(d, 'water', days[0].date) : '');
   }
   if (d.error) return '';
-  return factorRow('Water quality', null, 'Not estimated', (d.location || {}).mode === 'lake'
+  return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', (d.location || {}).mode === 'lake'
     ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.'
     : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
 }
@@ -1388,16 +1411,17 @@ function standing(d, iso) {
 // Beside every reading: a forecast is not a test, and the signs at the water come first. A website
 // that, read as a whole, tells people to check for themselves owes them less (Patchett v SPATA [2009]).
 // The EA is the one source of advice against bathing that starts mid-season (after pollution, or
-// algae), so it is pointed to here, beside the headline, as well as with the rating: to the rating
-// tile's "Today's EA advice", which opens the EA's own panel, or without it to the EA's page.
-// Under a plain level the answer's own line already says to check the signs (OTHER_RISKS): said once.
+// algae). Since 11 Oct 2026 the answer says, beside the level, that it could not be checked, and links
+// to the rating tile's "Today's EA advice" or the EA's page (unchecked); before, only this line did,
+// under the five days, below "Low risk" and "Usual care". Said once: a spot without the answer's line
+// keeps it here. Under a plain level the answer's own line already says to check the signs (OTHER_RISKS).
 const check = d => { const url = (d.classification || {}).url;
   // A point off the list (anypoint.js, source 'unlisted') may well be a bathing water: a click on Brighton
   // beach said "This is not a designated bathing water". Nothing checks a clicked point, so nothing is said.
   return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source === 'unlisted' ? ''
     : d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
-    : typeof eaTodayFold === 'function' && eaTodayFold(d) ? ' Open <a href="#ea-today">Today\'s EA advice</a>, below, for the Environment Agency\'s own panel. It shows any advice against bathing there today, which this forecast does not include.'
+    : eaUnchecked(d) ? ''
     : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`
     + (d.access ? `<p class="check"><b>Access:</b> ${esc(d.access.text)}${/^https:\/\//.test(d.access.url || '') ? ` <a href="${esc(d.access.url)}">Authority guidance</a>.` : ''} Desk check ${esc(d.access.checked_at)}; current signs have not been inspected.</p>` : ''); };
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
@@ -1488,7 +1512,7 @@ function answerParts(d, iso = null) {
     const when = (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     return { word: r.level ? cap(r.level) : null, tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(because(r)) : '', next: when, act: dayAction(d, iso),
+      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(dayBecause(d, r)) : '', next: when, act: dayAction(d, iso),
       scope: r.level ? levelScope(d, iso) : '' };
   }
   const l = level(d), [h, w] = headParts(d);
@@ -1496,13 +1520,16 @@ function answerParts(d, iso = null) {
     sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
   // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
-  const sub = h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
+  const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${NOW_UNKNOWN}`   // right now not known (levels.js)
+    : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
   return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
-// with nothing upstream says so, and names its wettest day.
+// with nothing upstream says so, and names its wettest day. Overflows discharging now come first: since
+// 11 Oct 2026 they raise today's row (levels.js, risk), and "A spill ... is possible today" under a
+// "Today: Very high" row, with one discharging, read as though nothing was.
 function daysSentence(d) {
   const total = overflows(d), known = d.days.slice(0, 5).filter(hasData);
   if (!total) return summary(d).join(' ');
@@ -1514,6 +1541,7 @@ function daysSentence(d) {
     // "...possible today, about 8 on Thursday" left "8" with no noun (Greenholme, 11 Oct 2026).
     : `. About ${Math.round(most)} of the ${total} ${Math.round(most) === 1 ? 'is' : 'are'} expected to spill ${dayWord(peak.date)}`;
   return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. ` : '')
+    + ((d.now || {}).discharging_upstream ? summary(d)[0] + ' ' : '')
     + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.`;
 }
 // A day's place on its bar, 0 to 1: four equal bands, the day in its level's band, placed in it by
@@ -1551,14 +1579,14 @@ const rangeBar = rs => { const lo = rs.typical_low_m, hi = rs.typical_high_m; if
   return `<div class="range" role="img" aria-label="${fmt(rs.level_m, 2)} m, in a usual range of ${fmt(lo, 2)} to ${fmt(hi, 2)} m"><div><b style="left:${(p * 100).toFixed(1)}%"></b></div>`
     + `<p><span>${fmt(lo, 2)}</span><span>${fmt(hi, 2)} m</span></p></div>`; };
 // A company feed that did not answer the last poll: its overflows keep their last snapshot, marked down.
-const feedDown = now => (now.feed_down || []).map(f => ` ${esc(f.company)}'s live feed is down${f.since ? ` (last answered ${new Date(f.since).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
+const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.company))}'s live feed is down${f.since ? ` (last answered ${new Date(f.since).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // A company feed that answered but has not updated within six hours, or gives no time (forecast.live_counts):
 // its readings may be frozen, so its quiet overflows do not count as reporting live. An entry with
 // `records` is overflows whose own records have stopped updating while the rest of the feed has not.
 const feedStale = now => (now.feed_stale || []).map(f => f.records
-  ? ` ${esc(f.company)} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
+  ? ` ${esc(companyName(f.company))} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
     : `gives no update time for ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here`}: ${f.overflows === 1 ? 'it' : 'they'} could be spilling unseen.`
-  : ` ${esc(f.company)}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
+  : ` ${esc(companyName(f.company))}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // Which upstream overflows report live. Those on a feed that is down or stale are named with the feed,
 // not counted again in the general clause, which covers offline monitors and overflows with no feed.
 const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, st = now.stale_upstream || 0, other = total - mon - fd - st;
@@ -1584,6 +1612,21 @@ const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.
 // The overflows that stopped lately and still count right now (transport.live_now_risk): a spill counts
 // until recent_spill_hours after its water has passed here, so one far upstream counts for longer after its end.
 const recentSay = (rec, dis, h) => `${rec ? rec + (dis ? ' more' : '') : 'None'} stopped lately: a spill counts until ${h}&nbsp;h after its water has passed here.`;
+// The Right now tile: how many overflows upstream are discharging, out of those that report live. Never
+// "0 of 14 discharging" where none of the 14 reports (11 Oct 2026: Hereford, Symonds Yat and Sandy Lane,
+// whose overflows are all Dŵr Cymru's, with no live feed SwimSignal reads): the figure is then "Unknown".
+// Where some do not report, the count alone, and the line under it says how many report (liveSay).
+function nowTile(d, total) {
+  const now = d.now || {}, n = now.discharging_upstream || 0, mon = Math.min(total, now.monitored_upstream ?? total);
+  const base = { icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel: tileLine(d, 'now') };
+  if (!mon && !n) {
+    const feeds = [...new Set((d.contributors || []).filter(c => c.data_state === 'no_feed' || c.status === -2).map(c => companyName(c.company)).filter(Boolean))];
+    return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.`
+      + (feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : '') + feedDown(now) + feedStale(now) };
+  }
+  return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
+    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}` };
+}
 // Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
   const quiet = Math.max(0, Math.min(total, n.monitored_upstream ?? total) - dis - rec), off = Math.max(0, total - dis - rec - quiet);
@@ -1635,18 +1678,21 @@ function facts(d) {
       vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Exposure index ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill'),
       say: `${cap(spilling(x0, total))} today.`,
       more: `The exposure index, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
-  // Out of season the figure stays but its band does not (water): it does not set the level.
+  // Out of season the figure stays but its band does not (water): it does not set the level. Its label
+  // says what it and the level each count, and how far it has been tested (ecoliSaid): the full width, as
+  // the rating's tile, since that is four sentences.
   if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
-    out.push({ icon: ICON.water, label: 'Water quality', fig: pct(x0.p_ecoli_gt900) + '%', word: off ? 'Out of season†' : `${cap(b)} risk`, wordTone: off ? '' : tone(b),
-      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${off ? 'out of season, untested' : b + ' risk'}`), rel: tileLine(d, 'water'),
-      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml today${x1 && !nil(x1.p_ecoli_gt900) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}.${off ? ' ' + UNTESTED_NOTE : ''}`,
-      more: 'The minimum bathing-water standard lets about one sample in ten be over 900. <a href="#about-ecoli">What this counts</a>' }); }
-  else if (!d.error) out.push({ icon: ICON.water, label: 'Water quality', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
+    out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: off ? untestedWord() : `${cap(b)} risk`, wordTone: off ? '' : tone(b),
+      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${off ? 'untested now' : b + ' risk'}`), rel: tileLine(d, 'water'),
+      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml today${x1 && !nil(x1.p_ecoli_gt900) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
+      more: ecoliMore() }); }
+  else if (!d.error) out.push({ icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
     say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
       ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
-  if (!d.error && total) { const n = now.discharging_upstream || 0, mon = now.monitored_upstream ?? total;
-    out.push({ icon: ICON.now, label: 'Right now', fig: n, unit: `of ${total} discharging`, figTone: n ? 'hot' : '', vis: overflowDots(d), rel: tileLine(d, 'now'),
-      say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}` }); }
+  if (!d.error && total) out.push(nowTile(d, total));
+  // The E. coli estimate's tile takes the full width: after Right now, so that the spills and Right now pair up.
+  const ec = out.findIndex(o => o.wide && o.icon === ICON.water);
+  if (ec >= 0 && out[out.length - 1].label === 'Right now') out.push(...out.splice(ec, 1));
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
     const when = new Date(a.date + 'T12:00:00').toLocaleDateString('en-GB', a.season === thisYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
@@ -1667,18 +1713,26 @@ function facts(d) {
 // The River level tile, or null without a reading. A reading the build found over a day old (stale,
 // from attach_river_levels) is not the level now: the tile stays, so the gauge is still named and
 // linked, but with no figure, no word and no range, and says how old the last reading is.
+// A lake's own gauge (build_site.lake_gauge marks it `water: "lake"`; a lake keeps no gauge on another
+// water) is a lake level: its words say where it sits against the EA's usual range, below, in or above,
+// as the EA's own pages do, and not a river's "High water" or that "a high river runs faster" (Windermere,
+// 0.73 m inside 0.23 to 1.00 m, 11 Oct 2026).
 function riverTile(rs) {
   if (!rs || (!rs.stale && nil(rs.level_m))) return null;
+  const lake = rs.water === 'lake', label = lake ? 'Lake level' : 'River level';
   const at = rs.observed_at ? new Date(rs.observed_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-  const gauge = `Gauge at ${esc(rs.station)}${rs.river ? ` on the ${esc(rs.river)}` : ''}, ${rs.distance_km}&nbsp;km away${rs.same_river === false ? ', on a different watercourse' : ''}`;
-  const more = `A high river runs faster and colder, and after rain it can rise quickly.${rs.rloi ? ` <a href="https://check-for-flooding.service.gov.uk/station/${encodeURIComponent(rs.rloi)}">The Environment Agency's page for this gauge</a> has the last five days.` : ''}`;
+  const gauge = `Gauge at ${esc(rs.station)}${rs.river ? ` on ${lake ? '' : 'the '}${esc(rs.river)}` : ''}, ${rs.distance_km}&nbsp;km away${rs.same_river === false ? ', on a different watercourse' : ''}`;
+  const page = rs.rloi ? ` <a href="https://check-for-flooding.service.gov.uk/station/${encodeURIComponent(rs.rloi)}">The Environment Agency's page for this gauge</a> has the last five days.` : '';
+  const more = (lake ? 'The level of the lake at the gauge. After heavy rain a lake rises slowly and falls slowly.' : 'A high river runs faster and colder, and after rain it can rise quickly.') + page;
   if (rs.stale) { const h = rs.age_hours, n = nil(h) ? null : h <= 24 ? Math.round(h) : Math.round(h / 24), unit = nil(h) ? '' : h <= 24 ? 'hour' : 'day';
-    return { icon: ICON.level, label: 'River level', fig: '–', unit: 'no current reading',
+    return { icon: ICON.level, label, fig: '–', unit: 'no current reading',
       say: `${n === null ? 'The last reading is old' : `Last reading ${n} ${unit}${n === 1 ? '' : 's'} ago`}, not shown as current. Not part of the pollution level. ${gauge}.`, more }; }
+  const lo = rs.typical_low_m, hi = rs.typical_high_m, ranged = !nil(lo) && !nil(hi) && hi > lo;
   // Words of its own, in ink: "High" in a level's colour, on a page of pollution levels, read as one.
-  return { icon: ICON.level, label: 'River level', fig: fmt(rs.level_m, 2), unit: 'm', wordTone: 'plain',
-    word: ({ low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || '') + (rs.label === 'very high' ? ', above its usual range' : ''),
-    vis: nil(rs.typical_low_m) || nil(rs.typical_high_m) ? '' : rangeBar(rs),
+  const word = lake ? (!ranged ? '' : rs.level_m < lo ? 'Below its usual range' : rs.level_m > hi ? 'Above its usual range' : 'In its usual range')
+    : ({ low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || '') + (rs.label === 'very high' ? ', above its usual range' : '');
+  return { icon: ICON.level, label, fig: fmt(rs.level_m, 2), unit: 'm', wordTone: 'plain', word,
+    vis: ranged ? rangeBar(rs) : '',
     say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more };
 }
 // The answer's words, which a picked day fills again (showDay). What to do comes after the facts it
@@ -1686,7 +1740,41 @@ function riverTile(rs) {
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso);
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
-    + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
+    + unchecked(d, iso) + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
+// An overflow's spill under way, from its event's start (levels.js, spillStart): "since Tue 6 Oct, 11:46"
+// in UK time, and for how long.
+const sinceTime = ms => new Date(ms).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+const spillFor = h => h < 48 ? `${Math.max(1, Math.round(h))} hour${Math.round(h) === 1 ? '' : 's'}` : `over ${Math.floor(h / 24)} days`;
+// Its live status for the overflows list: a spill under way says since when, and a long one that it may
+// be a fault (levels.js, LONG_SPILL); anything else, and a reading that is not current, as statusText says it.
+const statusSaid = (c, nowMs = Date.now()) => { const a = spillStart(c);
+  if (a === null || c.data_state === 'stale') return statusText(c.status, c);
+  return `discharging since ${sinceTime(a)}${longSpill(c, nowMs) ? `, for ${spillFor((nowMs - a) / 36e5)}: a spill this long may be a monitor fault` : ''}`; };
+// An overflow named in a sentence: its plain name, or, with none in its company's feed, the company and its id.
+const overflowSaid = c => c.site_name ? esc(overflowNames(c).plain) : `${esc(companyName(c.company) || 'an')} overflow ${esc(c.site_id)} (no name in its feed)`;
+// The overflow that holds most of right now's risk, where it has been discharging for over SPILL_LONG_H
+// (levels.js): its name, since when, and that a spill this long may be a fault, beside the answer, since
+// it sets the level there. Greenholme's "Very high risk right now" (11 Oct 2026) came from YWS02298,
+// discharging since 6 Oct. Needs the spot's overflows (its own file); '' until they arrive.
+function longSpillLine(d, nowMs = Date.now()) {
+  const n = d.now || {}, src = n.source;
+  if (!src || !daily(d) || rank(n.label) < 1) return '';
+  const c = (d.contributors || []).find(x => x.site_id === src.site_id);
+  if (!c || !longSpill(c, nowMs)) return '';
+  return `${src.share >= 0.5 ? 'Most of the risk right now comes' : 'Part of the risk right now comes'} from ${overflowSaid(c)}, which has reported discharging since ${sinceTime(spillStart(c))}, `
+    + `for ${spillFor((nowMs - spillStart(c)) / 36e5)}. ${LONG_SPILL}`;
+}
+// What the answer could not check, in ink beside it (11 Oct 2026): a long spill that may be a fault, the
+// overflows in Wales, and the Environment Agency's advice for today at a bathing water, which links to
+// the EA's own panel ("Today's EA advice", eatoday.js) or, without it, the EA's page. A picked later day
+// leaves out right now's spill.
+function unchecked(d, iso = null) {
+  const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
+  const ea = !eaUnchecked(d) ? '' : `${esc(EA_UNCHECKED)} ${fold ? 'Open <a href="#ea-today">Today\'s EA advice</a>'
+    : /^https:\/\//.test(url || '') ? `Open <a href="${esc(url)}">the EA's page</a>` : 'Look at the EA\'s page'} before you swim: it says when bathing is not advised.`;
+  const said = [!iso || iso === today() ? longSpillLine(d) : '', esc(walesWords(d)), ea].filter(Boolean);
+  return said.length ? `<p class="gaps">${said.join(' ')}</p>` : '';
+}
 // Under the headline, on every day's view, kept in view: the river high or rising fast at a gauge on
 // the spot's own river, and any Environment Agency flood alert in force nearby (experience.js,
 // flowFacts). A different hazard, said in ink and never in a level's colour, and not part of the level.
@@ -1741,10 +1829,15 @@ async function shareImage(d) {
   g.fillStyle = v('--muted'); g.font = `600 30px ${F}`; g.textAlign = 'right'; g.fillText(location.host, W - 60, 96); g.textAlign = 'left';
   g.fillStyle = v('--line'); g.fillRect(0, 148, W, 2);
   g.fillStyle = v('--ink'); g.font = `600 66px ${FD}`; let y = wrapText(g, d.name, 60, 270, W - 120, 78);
-  const iso = DAY, [head, why] = iso ? [dayHeadline(d, iso), dateLabel(iso)] : headParts(d);
+  // The headline as the list gives it, with a worse later day (levels.js, headParts), then what it cannot
+  // count or check, short: the overflows in Wales, and the EA's advice for today at a bathing water.
+  const iso = DAY, [head, why, later] = iso ? [dayHeadline(d, iso), dateLabel(iso), ''] : headParts(d);
   const lv = iso ? dayLevel(d, iso) : level(d);
   g.fillStyle = v(`--k-${tone(lv)}`) || v('--ink'); g.font = `700 60px ${F}`; y = wrapText(g, head, 60, y + 40, W - 120, 70);
   if (why) { g.fillStyle = v('--muted'); g.font = `600 36px ${F}`; y = wrapText(g, cap(why), 60, y + 6, W - 120, 46); }
+  if (later) { g.fillStyle = v('--ink'); g.font = `600 36px ${F}`; y = wrapText(g, later, 60, y + 6, W - 120, 46); }
+  const notes = [walesWords(d, true), eaUnchecked(d) ? "Today's EA advice not checked: see the EA's page" : ''].filter(Boolean);
+  if (notes.length) { g.fillStyle = v('--ink'); g.font = `500 30px ${F}`; y = wrapText(g, notes.join('. ') + '.', 60, y + 10, W - 120, 40); }
   const days = d.days.slice(0, 5), on = daily(d), pct = ecoliTested(d), cw = (W - 120) / 5; y += 30;
   days.forEach((x, i) => { const lx = 60 + i * cw, dl = on ? risk(d, x).level : null;
     if (i) { g.fillStyle = v('--line'); g.fillRect(lx, y, 2, 230); }
@@ -1887,7 +1980,7 @@ async function loadOverflows() {
   const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
   L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties, nm = overflowNames(p);
     return L.circleMarker(ll, { radius: drawnStatus(p) === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
-      .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(p.company)}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusText(p.status, p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
+      .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(companyName(p.company))}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusSaid(p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
 // Offline the layer is not stored (6 MB): the map then shows the spots without it.
@@ -2010,21 +2103,20 @@ const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNo
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
 // The counts over the list, after when the forecast was issued: freshness where the list begins.
-// The spots without a level are counted by why, in their rows' own words up to the colon: "3 without a
-// level: 2 lakes with no monitored overflow draining in, 1 no forecast in this update". An isolated lake's
-// words are a sentence with no colon ("No monitored overflow drains into this lake"), so it has a count's own.
+// The spots without a level are counted by why, in their rows' own words up to the colon: "1 without a
+// level: 1 no forecast in this update". The two plain levels are one count, in their shared words: until
+// 11 Oct 2026 an isolated lake was counted "without a level" and the rest as "no sewage risk".
 function overview(spots) {
   const rated = spots.filter(s => ORDER[mapLevel(s)] !== undefined);
   const low = rated.filter(s => mapLevel(s) === 'low').length;
-  const high = rated.filter(s => rank(mapLevel(s)) >= 2).length, clear = spots.filter(s => mapLevel(s) === NO_OVERFLOWS).length;
+  const high = rated.filter(s => rank(mapLevel(s)) >= 2).length, clear = spots.filter(s => plainLevel(mapLevel(s))).length;
   const why = {};
-  spots.filter(s => ORDER[mapLevel(s)] === undefined && mapLevel(s) !== NO_OVERFLOWS)
-    .forEach(s => { const w = mapLevel(s) === NO_RIVER ? NO_RIVER : listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
+  spots.filter(s => ORDER[mapLevel(s)] === undefined && !plainLevel(mapLevel(s)))
+    .forEach(s => { const w = listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
   const none = Object.values(why).reduce((a, b) => a + b, 0);
   return `Updated ${issued()} · Pollution risk: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
-    + `${clear ? ` · ${clear} no sewage risk from monitored overflows` : ''} · ${none} without a level`
-    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1])
-      .map(([w, n]) => `${n} ${w === NO_RIVER ? `lake${n === 1 ? '' : 's'} with no monitored overflow draining in` : w}`).join(', ') : ''}. ${cap(mapWhen())}.`;
+    + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''} · ${none} without a level`
+    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`;
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -2034,11 +2126,13 @@ const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as
 // No water-quality figure in a row (6 Oct 2026). Rows named it only out of season, as "E. coli estimate
 // 43%†", when it is untested and does not set the level: a percentage with no unit, beside a level it
 // does not count in. The spot's page keeps it, marked †, with its unit.
+// Under a row's headline, what it cannot count, short: the overflows in Wales (levels.js, walesWords).
+const headNote = s => walesWords(s, true) ? `<span class="hl-note">${esc(walesWords(s, true))}</span>` : '';
 function spotItem(s) {
   const d = dist(s);
   const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, rainMeta(s)].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(listPath(s))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span><span class="k">${meta}</span></span>${week(s)}</a></li>`;
+    + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span>${headNote(s)}<span class="k">${meta}</span></span>${week(s)}</a></li>`;
 }
 function bindItems(ul) {
   ul.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => {
@@ -2159,6 +2253,7 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
+    + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
     + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 // A list's spots that the forecast has, in the list's order.
@@ -2416,7 +2511,9 @@ function planWhy(s, day) {
   const out = [], total = overflows(s), x = (s.days || []).slice(0, 5).find(y => y.date === day), head = dayHeadline(s, day), c = classOf(s);
   // The group's heading names the day. A spill expected on a low day reads as a contradiction unless the
   // row says why the level is low: what the exposure index measures is whether the sewage gets here.
-  if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && Math.round(x.expected_spilling_overflows || 0) >= 1;
+  // Not where spills right now raised today (levels.js, risk): the row's headline then says "sewage spills
+  // right now", and "unlikely to reach here" under it said the opposite (12 Oct 2026).
+  if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && !risk(s, x).now && Math.round(x.expected_spilling_overflows || 0) >= 1;
     if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
     if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
   else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
@@ -2725,6 +2822,7 @@ function dayTable(d, total, isLake, scope) {
   if (isLake) notes.push(`<b>E. coli not shown for lakes</b>: ${esc(scope.note || 'no ranking skill on lakes in the fitting data.')}`);
   else if (!total) notes.push('<b>E. coli not shown here</b>: estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
   if (anyOffSeason) notes.push(`<sup>†</sup>Outside May to September, when the Environment Agency takes no samples: untested. <a href="#about-ecoli">What this means</a>`);
+  if (!isLake && total) notes.push(ecoliNotes(d, ecoliCheck(), d.days[0]).slice(1).join(' '));   // how it has done on live samples, and in Wales
   if (anyNoData) notes.push(`<b>No data</b>: the rainfall forecast for that day did not arrive; no figure is shown rather than one computed as if it were dry.`);
   if (notes.length) h += `<div class="small muted msg">${notes.join(' ')}</div>`;
   return h + `<p class="small muted msg"><b>Exposure index</b>: a 0–100 score for sewage from upstream reaching the spot, from Open-Meteo rainfall through a spill model trained on 743,735 United Utilities discharge events (2023–25) and verified on a held-out year, then travel time, die-off and dilution. Not a probability. <b>E. coli estimate</b>: the estimated chance that a midday sample would show over 900 E. coli per 100 ml, from rain at the spot in the 48 h to midday, the exposure index, and season. Daily resolution. <a href="#levels">What the levels mean</a> · <a href="verification.html">How accurate is it?</a></p></details>`;
@@ -2744,10 +2842,14 @@ const onWater = w => { const n = nameCase(w).trim().replace(/^The /, '');
   if (!/^[A-Z][a-z'-]+( [A-Z][a-z'-]+)*$/.test(n) || /\b(Trib|Tributary|Via|Groundwater|Unknown)\b/.test(n)) return '';
   return /^(River|Afon) |^\S+$/.test(n) ? `on the ${n}` : `on ${n}`; };
 // One overflow and where it is, as the list below gives it: "Ilkley sewage works overflow on the River
-// Wharfe, 6.0 km upstream, about 5 hours away". The plain name alone: the list gives the company's.
-const sourcePlace = s => { const h = Math.round(s.travel_h), water = onWater(s.receiving_watercourse);
-  return `<b>${esc(overflowNames(s).plain)}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? ', discharging now' : s.status === -3 && s.last_status === 1 ? ', discharging when its company’s feed last answered' : ''}, `
-    + `${fmt(s.distance_km + s.lake_distance_km, 1)}&nbsp;km upstream, ${s.travel_h < 1 ? 'under an hour' : `about ${h} hour${h === 1 ? '' : 's'}`} away`; };
+// Wharfe, 6.0 km upstream, about 5 hours away". The plain name alone: the list gives the company's. One
+// with no name is its company's and its id; one discharging says since when (statusSaid); one in the
+// same lake is across it (levels.js, overflowWhere). s is a source (forecast.py, source_of) with the
+// overflow's own fields from the spot's list where it has them (whereFrom).
+const sourcePlace = s => { const h = Math.round(s.travel_h), water = onWater(s.receiving_watercourse), a = s.status === 1 ? spillStart(s) : null;
+  return `<b>${overflowSaid(s)}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? (a === null ? ', discharging now' : `, discharging since ${sinceTime(a)}`)
+    : s.status === -3 && s.last_status === 1 ? ', discharging when its company’s feed last answered' : ''}, `
+    + `${overflowWhere(s)}, ${s.travel_h < 1 ? 'under an hour' : `about ${h} hour${h === 1 ? '' : 's'}`} away`; };
 // The sentence for one risk, right now's (when = 'now') or a day's (an ISO date). One overflow is named
 // alone only when it holds at least half the risk (transport.risk_shares, which splits 1 - prod(1 - e)
 // exactly); otherwise the risk is spread over the overflows that make up nine tenths of it.
@@ -2795,7 +2897,7 @@ function arriveSentence(d) {
   if (!(min > 0)) return '';
   const when = min < 10 ? 'in a few minutes' : min < 55 ? `in about ${Math.round(min / 10) * 10} minutes`
     : min < 90 ? 'in about an hour' : min < 12 * 60 ? `in about ${Math.round(min / 60)} hours` : partOfDay(a.arrives_at);
-  return `Water from a spill ${fmt(a.distance_km + a.lake_distance_km, 1)}&nbsp;km upstream reaches here ${when}.`;
+  return `Water from a spill ${overflowWhere(a)} reaches here ${when}.`;
 }
 // The tile, for the day shown (DAY, or today). The day's sources when it is moderate or worse; on
 // today, right now's instead where right now is the higher risk, or where only right now has any to
@@ -2804,50 +2906,79 @@ function arriveSentence(d) {
 function whereFrom(d) {
   if (!daily(d)) return '';
   const iso = DAY || today(), x = d.days.find(y => y.date === iso), n = d.now || {}, first = iso === today();
-  const day = x && hasData(x) && x.source && rank(x.label) >= 1 ? sourceSentence(x.source, iso) : '';
-  const now = first && n.source ? sourceSentence(n.source, 'now') : '';
+  // A source with its overflow's own fields from the list (company, spill start, how it was placed).
+  const own = src => ({ ...((d.contributors || []).find(c => c.site_id === src.site_id) || {}), ...src });
+  const day = x && hasData(x) && x.source && rank(x.label) >= 1 ? sourceSentence(own(x.source), iso) : '';
+  const now = first && n.source ? sourceSentence(own(n.source), 'now') : '';
   const said = [now && (!day || n.risk >= x.risk) ? now : day, first ? arriveSentence(d) : '', first ? clearSentence(d) : ''].filter(Boolean);
   return said.length ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>Where the risk comes from</span></h2>`
     + said.map(t => `<p class="t-say">${t}</p>`).join('') + '</section>' : '';
 }
 // The overflows that matter most, as rows, each with its reach drawn: on a phone a five-column table
-// was too tight to read. Their circles go on the map, a bigger one for more reach.
+// was too tight to read. Their circles go on the map, a bigger one for more reach. Each row: its names,
+// company (Dŵr Cymru with its circumflex), live status (a spill under way says since when, and a long
+// one that it may be a fault: statusSaid), and where it is (across the lake for one in the same lake, a
+// checked join said so: levels.js, overflowWhere). On the right its reach, and today's modelled chance
+// of a spill, except while it is discharging: Greenholme's YWS02298 read "discharging" beside "spill 1%
+// today" on 11 Oct 2026, the rain model's chance of a new spill.
+// The order is forecast.py's: the build keeps the ten that matter most this week (relevance, the most
+// of right now's share, reach times the week's highest spill chance, and a tenth of the reach), most
+// first. Until 11 Oct 2026 the caption said "the 10 with the most reach", over a list where 80% came
+// above 98% (Ilkley): it now says what the order is.
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
     L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
       .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
-      + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(c.company)} · ${statusText(c.status, c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
-      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${far}&nbsp;km upstream, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
-      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>spill ${Math.round(c.p_spill_today * 100)}% today</small></div></li>`; }).join('');
+      + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
+      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
+      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
   return `<details class="tile fold" id="overflows"><summary><span class="t-lab">${ICON.spills}<span>Overflows that matter most</span></span></summary><ul class="ovs" id="contrib">${rows}</ul>`
     + (n > SHOW ? `<button type="button" class="btn quiet" id="more-contrib" aria-controls="contrib" aria-expanded="false">Show all ${n}</button>` : '')
     + (PAGE_ID.test(d.id) ? `<p class="t-say"><a href="spot/${d.id}/profile/">Overflow history, 2021 to 2025</a></p>` : '')   // spot/<id>/profile/ (build_site.write_profiles)
-    + `<p class="sub">Live status, and today's modelled chance of a spill${total > n ? `: the ${n} with the most reach of ${total} upstream` : ''}. `
+    + `<p class="sub">${total > n ? `The ${n} of the ${total} overflows upstream that matter most this week` : `The ${n === 1 ? 'overflow' : `${n} overflows`} upstream`}, most first: `
+    + 'one matters more the more of a spill would reach here, the likelier it is to spill this week, and if it is discharging now. '
+    + 'Each with its live status and today\'s modelled chance of a spill. '
     + 'Reach: the share of a spill\'s bacteria the model expects to arrive here, after die-off over the travel time and dilution by the size of the river network upstream. An estimate, not a measured chance.</p></details>';
 }
 // "Nearby": up to three other spots within 40 km, nearest first, each opening on the day shown (DAY,
 // or else the headline). At a spot that is moderate or worse that day, or rated poor, it becomes
-// "Lower risk nearby" and offers only spots lower that day. Never offered then: a spot without a risk
-// level (a plain level, "No sewage risk from monitored overflows" or "No monitored overflow drains into this lake", or none),
-// since it is not on the same scale and says nothing of algae or runoff; and a water rated poor, where
-// advice against bathing applies. Its "high" is lower than a very high one: on 1 Oct 2026, without
-// this, the Eden at Armathwaite would have offered Derwent Water at Crow Park. Anywhere else the
-// nearest three, whatever their level: each row's headline says what it is.
+// "Lower risk nearby" and offers only spots lower on the same days. Never offered then: a spot without
+// a risk level (a plain level, "No monitored overflow found upstream", or none), since it is not on the
+// same scale and says nothing of algae or runoff; and a water rated poor, where advice against bathing
+// applies. Its "high" is lower than a very high one: on 1 Oct 2026, without this, the Eden at
+// Armathwaite would have offered Derwent Water at Crow Park. Anywhere else the nearest three, whatever
+// their level: each row's headline says what it is.
+// The same days (11 Oct 2026): with a day picked, that day; without, lower than this spot's level (right
+// now, today and tomorrow) and no higher on any of the five days. Ilkley, high every day, offered
+// Burnsall and Appletreewick, low until then but very high on Thursday. And what the suggestion claims:
+// at a water rated poor, whose line says "Choose a spot with a better rating", only waters the EA rates
+// better than poor. Crow Park offered Calfclose Bay, which the EA does not rate.
+// A day counts where this spot (d) has a level; the alternative (s) must have one that day too, no
+// higher (12 Oct 2026: a day with no forecast at the alternative passed, so a spot with two days missing
+// was offered as "no higher on any of the five days"). And "lower now" needs a known now: not a spot
+// whose right now is not known (levels.js, nowUnknown).
 const NEAR_KM = 40;
+const notHigherAnyDay = (s, d) => (d.days || []).slice(0, 5).every(x => { const a = rank(dayLevel(s, x.date)), b = rank(dayLevel(d, x.date));
+  return b < 0 || (a >= 0 && a <= b); });
+const allFiveDays = d => (d.days || []).slice(0, 5).length === 5 && d.days.slice(0, 5).every(x => rank(dayLevel(d, x.date)) >= 0);
+const ratedBetter = s => ['excellent', 'good', 'sufficient'].includes(classOf(s));
 function nearby(d) {
-  const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d);
-  const alts = DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine)))
+  const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
+  const alts = DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
+      && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
     .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]).slice(0, 3);
   if (!alts.length) return '';
+  const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day'
+    : `now, and no higher on ${allFiveDays(d) ? 'any of the five days' : 'any day with a forecast here'}`}.`;
   return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
     + alts.map(([s, k]) => `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
-      + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>`
-      + `<span class="k">${[away(k), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ')}</span></span></a></li>`).join('')
-    + `</ul>${lower ? '<p class="sub">A lower forecast level, not clean water: check the signs there too.</p>' : ''}</section>`;
+      + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`
+      + `<span class="k">${[away(k), cap(s.kind), s.source === 'designated' ? (classOf(s) ? `bathing water rated ${classOf(s)}` : 'bathing water') : null].filter(Boolean).join(' · ')}</span></span></a></li>`).join('')
+    + `</ul>${lower ? `<p class="sub">${claim} A lower forecast level, not clean water: check the signs there too.</p>` : ''}</section>`;
 }
 // The rows open their spot on the same day. One listener on the box, which showDay refills.
 const bindNearby = () => { const box = document.getElementById('nearby-host'); if (!box) return;

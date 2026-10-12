@@ -40,6 +40,7 @@ from dipcast.model.transport import (
     still_coming,
     upstream_overflows,
 )
+from dipcast.network.nations import traced_wales_share
 from dipcast.network.rivers import RiverNetwork, bng_to_lonlat
 from dipcast.overflows import load_overflows
 
@@ -223,6 +224,18 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
     return out
 
 
+def _in_wales(net: RiverNetwork, pin, max_km: float) -> dict:
+    """upstream_summary's `wales_share`, where the river the trace walks above the spot runs partly
+    through Wales, whose overflows are not in the data (network/nations.py): the page says they are not
+    counted, and how much of that river is in Wales. Nothing where none of it is."""
+    try:
+        share = traced_wales_share(net, pin.trace_node, max_km)
+    except Exception as e:  # noqa: BLE001 - a label beside the forecast must never fail it
+        log.warning("share of the river in Wales not worked out: %s", e)
+        return {}
+    return {"wales_share": share} if share else {}
+
+
 def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = config.MAX_UPSTREAM_KM,
                    include_contributors: int = 25, log_to_store: bool = True, gauge: bool = True,
                    kind_hint: str | None = None, river_hint: str | None = None, name: str | None = None) -> dict:
@@ -384,6 +397,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
         "without_live_feed": int(len(ov) - counts["monitored_upstream"]),
         "sum_weight": round(float(weights.sum()), 3),
         "history_days": int(hist), "max_travel_h": round(float(travel.max()), 1) if len(travel) else 0.0,
+        **_in_wales(net, pin, max_km),
     }
     contrib = []
     if not ov.empty:

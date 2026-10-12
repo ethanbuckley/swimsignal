@@ -20,8 +20,8 @@ const SEEN_KEY = 'dipcast.seen';
 const RATED = /^((excellent|good|sufficient|poor) \d{4}|unrated)$/;
 
 // ------------------------------------------------------------------------------ what a spot showed
-// Its level where there is one to compare: the four, or "No sewage risk from monitored overflows". An
-// isolated lake's "No monitored overflow drains into this lake" and "Not covered" have none (null), and do not change from day
+// Its level where there is one to compare: the four, or "No monitored overflow found upstream". An
+// isolated lake (the same words since 11 Oct 2026, levels.js COVER) and "Not covered" have none (null), and do not change from day
 // to day. How many overflows upstream were discharging, where that is known (null otherwise). Its
 // Environment Agency rating with the year ("good 2025"), or "unrated" for a bathing water too new to
 // have one. Null for a spot whose forecast failed in this update: the note kept from before stays, so

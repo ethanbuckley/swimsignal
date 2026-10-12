@@ -13,6 +13,8 @@
 // which also checks that no other script of the page defines one of these names).
 
 const EVIDENCE_TZ = 'Europe/London';
+// The level rules (levels.js): the page loads them before this file, Node requires them.
+const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel } : require('./levels.js');
 const evidenceEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const evidenceNil = v => v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v));
 const evidenceCap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
@@ -65,8 +67,11 @@ function evidenceOverflows(d, generatedAt) {
     : `${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
   const live = mon >= total ? (total === 1 ? 'It reports live.' : `All ${total} report live.`)
     : `${mon || 'None'} of ${total} report live.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`;
+  // Never "0 of 14 discharging" where none of the 14 reports (11 Oct 2026, Hereford): out of all of them
+  // only where all report; where some do not, the count alone, beside how many report; with none, not known.
+  const count = !mon && !dis ? 'Whether any is discharging is not known' : mon >= total ? `${dis} of ${total} discharging` : `${dis} discharging`;
   return { what: 'Overflows upstream', at: generatedAt,
-    say: `${dis} of ${total} discharging${rec ? `, ${rec} stopped lately` : ''}. ${live}`,
+    say: `${count}${rec ? `, ${rec} stopped lately` : ''}. ${live}`,
     src: "The water companies' live feeds" };
 }
 
@@ -120,8 +125,10 @@ function evidenceItems(d, nowMs, generatedAt) {
   if (a && a.date) rows.push({ what: 'Algae at the last check', at: a.date, say: `${evidenceCap(evidenceEsc(a.phrase))}, ${evidenceDate(a.date, nowMs)}.`,
     src: "The Environment Agency sampler's look, not a lab test" });
   else if (designated) gaps.push('No algae check here this season.');
-  const s = d.lab_sample;
-  if (evidenceSample(s, nowMs)) rows.push({ what: 'Latest lab sample', at: s.taken_at, say: evidenceSample(s, nowMs, true), src: ea });
+  // A sample over 900 counts in the level for 14 days (levels.js, sampleLevel): the row says whether it does.
+  const s = d.lab_sample, counted = evidenceRules().sampleLevel(d), over = /: (<a [^>]*>)?over 900/.test(evidenceSample(s, nowMs));
+  if (evidenceSample(s, nowMs)) rows.push({ what: 'Latest lab sample', at: s.taken_at, src: ea,
+    say: evidenceSample(s, nowMs, true) + (counted ? ' It makes the level at least moderate risk.' : over ? ' Over two weeks old, so not counted in the level.' : '') });
   else if (designated && s === null) gaps.push('No lab sample here this season.');
   else if (designated) gaps.push(`The latest lab sample is not in this forecast's data${cl && /^https:\/\//.test(cl.url || '') ? `: <a href="${evidenceEsc(cl.url)}">the Environment Agency's page</a> has it` : ''}.`);
   // The facts only: the line under the five days (check, in index.html) already says why.

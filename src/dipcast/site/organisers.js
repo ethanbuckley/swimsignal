@@ -13,7 +13,7 @@
 const Organisers = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
     : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, poorAdvice,
-      overflowNames };   // levels.js's globals
+      overflowNames, overflowWhere, companyName };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
   const STALE_MIN = 8 * 60;              // the app's "Stale" notice waits as long (index.html, STALE_MIN)
@@ -27,7 +27,7 @@ const Organisers = (() => {
   const pct = p => p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%';
   const hoursAway = h => h < 1 ? 'under an hour' : `about ${Math.round(h)} h`;
   const ago = m => { const t = Math.max(0, Math.round(m)); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };
-  const tone = l => l === R.NO_OVERFLOWS ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');
+  const tone = l => l === R.NO_OVERFLOWS || l === R.NO_RIVER ? 'clear' : R.ORDER[l] === undefined ? 'na' : l.replace(' ', '');   // index.html's
   const isolated = s => R.level(s) === R.NO_RIVER;
   const spotHref = id => PAGE_ID.test(id) ? `spot/${id}/` : `./?spot=${encodeURIComponent(id)}`;
 
@@ -224,8 +224,10 @@ const Organisers = (() => {
   // company's, which is the one to look it up by: under it in the table, beside it in the CSV.
   function overflowRows(s, full) {
     return listOf(s, full).slice().sort((a, b) => b.weight - a.weight).map(c => ({ ...R.overflowNames(c),
-      site_id: c.site_id, site_name: c.site_name ?? c.site_id, company: c.company || '', into: c.receiving_watercourse || '',
+      site_id: c.site_id, site_name: c.site_name ?? c.site_id, company: R.companyName(c.company || ''), into: c.receiving_watercourse || '',
       km: Math.round(((c.distance_km || 0) + (c.lake_distance_km || 0)) * 10) / 10, travel_h: c.travel_h, reach: c.weight,
+      // One in the same lake (no river between) is across it, not upstream; where is levels.js's overflowWhere.
+      in_lake: (c.lake_distance_km || 0) > 0 && (c.distance_km || 0) < 0.05, where: R.overflowWhere(c),
       spills: c.lta_spills, spill_hours: c.spill_hours, live: !!c.has_live, lat: c.lat, lon: c.lon }));
   }
   const num = (v, d = 0) => nil(v) || Number.isNaN(Number(v)) ? '–' : Number(v).toFixed(d);
@@ -246,15 +248,16 @@ const Organisers = (() => {
       : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${total} could not be loaded. Try again later.</p>`;
     const cell = (l, v, cls = '') => `<td${cls ? ` class="${cls}"` : ''} data-l="${l}">${v}</td>`;
     h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
-      + '<th scope="col" class="num">Upstream</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
+      + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
       + '<th scope="col" class="num">Spills a year</th><th scope="col" class="num">Hours spilling</th><th scope="col">Live feed</th></tr></thead><tbody>'
       + list.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
-        + cell('Upstream', `${num(o.km, 1)} km`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
+        + cell('Distance', `${num(o.km, 1)} km${o.in_lake ? ' across the lake' : ''}`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
         + cell('Reach', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
         + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
         + cell('Live feed', o.live ? 'Yes' : 'No') + '</tr>').join('') + '</tbody></table></div>';
     if (PAGE_ID.test(s.id)) h += `<p><a href="spot/${esc(s.id)}/profile/">Overflow history, 2021 to 2025</a>: each overflow's spills and spill hours a year.</p>`;   // build_site.write_profiles
-    return h + '<p class="small muted"><b>Upstream</b>: along the river network. <b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed. '
+    return h + '<p class="small muted"><b>Distance</b>: upstream along the river network, through any lake on the way; "across the lake" for one that drains into the same lake. '
+      + '<b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed, and across a lake at its slower lake speed. '
       + '<b>Reach</b>: the share of a spill\'s bacteria the model expects to arrive here, after die-off over the travel time and dilution by the size of the river network upstream. An estimate, not a measured chance. '
       + '<b>Spills a year</b>: its long-term average, from the Environment Agency\'s annual returns. <b>Hours spilling</b>: the total in its latest annual return. '
       + '<b>Live feed</b>: whether its water company reports its status as it happens.</p>';
@@ -275,7 +278,8 @@ const Organisers = (() => {
       `${u.overflows || 0} monitored overflows within ${km} km upstream along the river network` + (list.length < (u.overflows || 0) ? `; these are the ${list.length} that matter most in that forecast.` : '.'),
       'Columns: site_id and site_name, the water company\'s id and name for the overflow; plain_name, SwimSignal\'s plain words for that name;',
       'company; receiving_watercourse, as the company names it;',
-      'km_upstream, along the river network; travel_hours, at the model\'s river speed; reach, 0 to 1, the chance a spill there affects the spot;',
+      'km_upstream, along the river network and through any lake, or across the lake for one in the same lake;',
+      'travel_hours, at the model\'s river speed and its slower lake speed; reach, 0 to 1, the chance a spill there affects the spot;',
       'spills_a_year, its long-term average from the Environment Agency\'s annual returns; spill_hours_latest_return, the hours it spilled in its',
       'latest annual return; live_feed, 1 if its water company reports its status live; lat, lon.',
       'Lines that start with # are notes: skip them when reading (pandas: comment=\'#\'; R: comment.char=\'#\').',

@@ -22,10 +22,10 @@ const pageDefs = names => names.map(n => { const i = pageSrc.findIndex(l => l.st
   return pageSrc.slice(i, j).join('\n'); }).join('\n');
 const ctx = vm.createContext({Date: FixedDate});
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + '\nsetToday("2026-10-04"); let DAY = null;', ctx);
-vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'onWater', 'sourcePlace', 'sourceSentence', 'DAY_PARTS',
+vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'onWater', 'sinceTime', 'overflowSaid', 'sourcePlace', 'sourceSentence', 'DAY_PARTS',
   'partOfDay', 'arriveSentence', 'clearSentence', 'whereFrom']), ctx);
 const run = (expr, ...args) => vm.runInContext(expr, ctx)(...args);
-const plain = h => h.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
+const plain = h => h.replace(/<[^>]+>/g, '').replace(/&nbsp;|\u00a0/g, ' ');
 
 const ILKLEY = {site_id: 'YW1', site_name: 'ILKLEY WwTW', receiving_watercourse: 'River Wharfe', status: 0,
   distance_km: 6.0, lake_distance_km: 0.0, travel_h: 5.2, share: 0.62, spread_over: 3};
@@ -48,13 +48,13 @@ test('one overflow is named alone only when it holds at least half the risk', ()
   const kirk = {...ILKLEY, site_name: 'KIRKOSWALD WwTW', receiving_watercourse: 'River Eden', status: 1, distance_km: 0.4, travel_h: 0.4, share: 0.74};
   assert.equal(plain(run('sourceSentence', kirk, 'now')),
     'Most of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, discharging now, 0.4 km upstream, under an hour away.');
-  assert.match(plain(run('sourceSentence', {...ILKLEY, distance_km: 1.2, lake_distance_km: 0.8, travel_h: 1.4}, 'now')), /2\.0 km upstream, about 1 hour away\.$/);
+  assert.match(plain(run('sourceSentence', {...ILKLEY, distance_km: 1.2, lake_distance_km: 0.8, travel_h: 1.4}, 'now')), /2\.0 km upstream by river and lake, about 1 hour away\.$/);
   // A spill running when its company's feed last answered (11 Oct 2026): the feed is down now.
   assert.match(plain(run('sourceSentence', {...kirk, status: -3, last_status: 1}, 'now')),
     /Kirkoswald sewage works overflow on the River Eden, discharging when its company’s feed last answered, 0\.4 km upstream/);
   assert.doesNotMatch(plain(run('sourceSentence', {...kirk, status: -3, last_status: 0}, 'now')), /discharging/);
-  // A feed's id where it has no name; a name that could break the page is escaped.
-  assert.match(plain(run('sourceSentence', {...ILKLEY, site_name: null}, 'now')), /comes from YW1 on the River Wharfe/);
+  // A feed's id where it has no name, with its company's; a name that could break the page is escaped.
+  assert.match(plain(run('sourceSentence', {...ILKLEY, site_name: null, company: 'Yorkshire Water'}, 'now')), /comes from Yorkshire Water overflow YW1 \(no name in its feed\) on the River Wharfe/);
   assert.match(run('sourceSentence', {...ILKLEY, site_name: '<img src=x>'}, 'now'), /&lt;img src=x&gt;/);
 });
 
@@ -119,8 +119,9 @@ test('water still on its way: when it reaches here, counted when the page is rea
   assert.equal(plain(run('arriveSentence', coming(5 * 60 + 10))), 'Water from a spill 3.1 km upstream reaches here in about 5 hours.');
   // Twelve hours or more: the part of the day, as the clearing time says it.
   assert.equal(plain(run('arriveSentence', coming(20 * 60))), 'Water from a spill 3.1 km upstream reaches here by about Sunday evening.');
-  // Across a lake: the river and the crossing together, as the sources say it.
-  assert.match(plain(run('arriveSentence', coming(30, {arriving: {distance_km: 1.2, lake_distance_km: 0.8, arrives_at: at(30)}}))), /a spill 2\.0 km upstream reaches here in about 30 minutes\.$/);
+  // Through a lake: the river and the crossing together, as the sources say it; in the same lake, across it.
+  assert.match(plain(run('arriveSentence', coming(30, {arriving: {distance_km: 1.2, lake_distance_km: 0.8, arrives_at: at(30)}}))), /a spill 2\.0 km upstream by river and lake reaches here in about 30 minutes\.$/);
+  assert.match(plain(run('arriveSentence', coming(30, {arriving: {distance_km: 0, lake_distance_km: 2.6, arrives_at: at(30)}}))), /a spill 2\.6 km across the lake reaches here/);
   // Nothing to say: arrived already (an old page), right now low, or no field.
   assert.equal(run('arriveSentence', coming(-5)), '');
   assert.equal(run('arriveSentence', coming(20, {risk: 0.1, label: 'low'})), '');
@@ -159,6 +160,28 @@ test('the tile follows the day shown, and is left out where there is nothing to 
   assert.equal(tile(spot({risk: 0.62, label: 'high'}, {'2026-10-04': {risk: 0.5, label: 'high'}})), '');
   assert.equal(tile({...d, upstream_summary: {overflows: 0}}), '');
   assert.equal(tile({...d, error: 'forecast failed: x'}), '');
+  vm.runInContext('DAY = null', ctx);
+});
+
+// 11 Oct 2026: Glebe Road PS, in Bowness, read "2.6 km upstream" of Millerground though Windermere drains
+// south; Greenholme's YWS02298 read "discharging now" with no start, after five days; Culham STW read "0.0 km
+// upstream" at Clifton Hampden with nothing to say its stream's join was checked.
+test('an overflow in the same lake is across it, a spill under way says since when, and a checked join says so', () => {
+  const glebe = {...ILKLEY, site_name: 'Glebe Road PS', receiving_watercourse: 'Lake Windermere', distance_km: 0, lake_distance_km: 2.6, travel_h: 14.3, share: 0.9};
+  assert.equal(plain(run('sourceSentence', glebe, 'now')),
+    'Nearly all of the risk from sewage spills right now comes from Glebe Road pumping station overflow on Lake Windermere, 2.6 km across the lake, about 14 hours away.');
+  const yws = {site_id: 'YWS02298', site_name: null, company: 'Yorkshire Water', receiving_watercourse: '#N/A', status: 1, distance_km: 4.4,
+    lake_distance_km: 0, travel_h: 2.4, share: 0.865, spread_over: 2, latest_event_start: '2026-10-06T10:46:39+00:00', latest_event_end: null};
+  assert.equal(plain(run('sourceSentence', yws, 'now')),
+    'Most of the risk from sewage spills right now comes from Yorkshire Water overflow YWS02298 (no name in its feed), discharging since Tue 6 Oct, 11:46, 4.4 km upstream, about 2 hours away.');
+  // The source in spots.json has no start: whereFrom takes it from the spot's own list of overflows.
+  const { latest_event_start, latest_event_end, company, ...source } = yws;
+  const d = spot({risk: 0.8, label: 'very high', discharging_upstream: 1, source});
+  d.contributors = [{...yws, position_source: 'live'}];
+  assert.match(tile(d), /Yorkshire Water overflow YWS02298 \(no name in its feed\), discharging since Tue 6 Oct, 11:46/);
+  const culham = {...ILKLEY, site_name: 'Culham STW', receiving_watercourse: 'Clifton Hampden Ditch', distance_km: 0, travel_h: 0, share: 0.99, position_source: 'join'};
+  assert.match(plain(run('sourceSentence', culham, '2026-10-05')), /Culham sewage works overflow on Clifton Hampden Ditch, at the spot: its stream joins the river here, to within the map's precision \(checked on a map\), under an hour away\.$/);
+  assert.match(plain(run('sourceSentence', {...culham, distance_km: 0.4}, '2026-10-05')), /0\.4 km upstream, where its stream joins the river \(checked on a map\), under an hour away\.$/);
   vm.runInContext('DAY = null', ctx);
 });
 

@@ -132,8 +132,10 @@ test('the list counts the spots without a level by why; a spot\'s page notes onl
   const ctx = pageContext(['VIEW', 'mapLevel', 'mapWhen', 'listHeadline', 'overview', 'gaps'],
     {issued: () => 'Tue 14:51', DATA: {build: {spots: 4, forecast_failed: 1, no_forecast_possible: 2, today_rain_unavailable: 1}}});
   const run = (f, ...a) => vm.runInContext(f, ctx)(...a);
+  // The isolated lakes are counted with the other plain level, in its words (11 Oct 2026): until then they
+  // were "without a level" and the rest "no sewage risk from monitored overflows".
   assert.equal(run('overview', [ok, failed, lake('Henleaze Lake'), lake('Cotswold Country Park and Beach')]),
-    'Updated Tue 14:51 · Pollution risk: 1 low · 0 moderate · 0 high or very high · 3 without a level: 2 lakes with no monitored overflow draining in, 1 no forecast in this update. Today and tomorrow.');
+    'Updated Tue 14:51 · Pollution risk: 1 low · 0 moderate · 0 high or very high · 2 with no monitored overflow found upstream · 1 without a level: 1 no forecast in this update. Today and tomorrow.');
   assert.equal(run('overview', [ok]), 'Updated Tue 14:51 · Pollution risk: 1 low · 0 moderate · 0 high or very high · 0 without a level. Today and tomorrow.');
   assert.equal(text(run('gaps', null, true)), '1 spot has no rainfall data for today in this update.');
   assert.equal(run('gaps', null, false), '');   // Saved, a shared list, a plan: their cards say it
@@ -146,7 +148,7 @@ test('the list counts the spots without a level by why; a spot\'s page notes onl
 
 test('a list row gives no water figure: out of season it is untested, and it had no unit', () => {
   const ctx = pageContext(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath',
-    'week', 'rainMeta', 'mapLevel', 'listHeadline', 'listPath', 'spotItem'], {ROOT: {pathname: '/'}});
+    'week', 'rainMeta', 'mapLevel', 'listHeadline', 'listPath', 'headNote', 'spotItem'], {ROOT: {pathname: '/'}});
   const row = text(vm.runInContext('spotItem', ctx)(wharfe));
   assert.match(row, /High risk: rated poor/);
   assert.doesNotMatch(row, /E\. ?coli|%/);
