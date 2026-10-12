@@ -3,7 +3,8 @@ PR #172's scripts/urban_diagnosis/paired.py, with the lake samples added for doc
 
   paired.py prep <root> <out.parquet>    per-sample held-out predictions, rebuilt exactly as train_ecoli.main
                                           (run with DIPCAST_ROOT=<root>; checked against its ecoli_model_eval.json)
-  paired.py compare <ref> <new>           paired bootstraps, ref vs new (variant names under roots/)
+  paired.py compare <ref> <new>           paired bootstraps, ref vs new (variant names under roots/), on the
+                                          samples that both runs keep
 """
 import json
 import os
@@ -87,11 +88,16 @@ def compare(ref: str, new: str) -> dict:
     from train_ecoli import cluster_bootstrap
     a = pd.read_parquet(HERE / f"preds_{ref}.parquet")
     b = pd.read_parquet(HERE / f"preds_{new}.parquet")
-    keys = ["bw_id", "sample_time", "y", "week", "lake"]
-    assert a[keys].reset_index(drop=True).equals(b[keys].reset_index(drop=True))
-    m = pd.concat([a.add_suffix("_a"), b.add_suffix("_b")], axis=1)
+    # The samples that both runs keep (#166's statement). A run drops a whole site when more than
+    # MAX_MISSING_SHARE of its weight comes from overflows without rain data, and the sizes move that weight.
+    # A site can have two samples at one time: they pair in order.
+    keys = ["bw_id", "sample_time", "occ"]
+    a, b = (d.assign(occ=d.groupby(["bw_id", "sample_time"]).cumcount()) for d in (a, b))
+    m = a.merge(b, on=keys, how="inner", suffixes=("_a", "_b"), validate="one_to_one")
+    assert (m.y_a == m.y_b).all() and (m.week_a == m.week_b).all() and (m.lake_a == m.lake_b).all()
     y, week, rivers = m.y_a.to_numpy(), m.week_a.to_numpy(), m.lake_a.to_numpy() == 0.0
-    out = {"n_ref": len(a), "n_new": len(b), "n_paired": len(m)}
+    out = {"n_ref": len(a), "n_new": len(b), "n_paired": len(m),
+           "sites_ref_only": sorted(set(a.bw_id) - set(b.bw_id)), "sites_new_only": sorted(set(b.bw_id) - set(a.bw_id))}
     for key, mask in (("loyo_all", None), ("loyo_rivers", rivers)):
         out[key] = cluster_bootstrap(y, m.loyo_full_a.to_numpy(), m.loyo_full_b.to_numpy(), week,
                                      mask=None if mask is None else mask.copy(), n_boot=BOOT, seed=SEED)

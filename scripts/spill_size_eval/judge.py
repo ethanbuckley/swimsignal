@@ -28,7 +28,7 @@ def main() -> None:
     real = s.loc["sh"]
     c1 = {}
     for m, higher in MEASURES.items():
-        k = int(((ph[m] <= real[m]) if higher else (ph[m] >= real[m])).sum())   # placebos at least as good as the real one
+        k = int(((ph[m] >= real[m]) if higher else (ph[m] <= real[m])).sum())   # placebos at least as good as the real one
         c1[m] = {"real": float(real[m]), "flow": float(s.loc["flow", m]), "length": float(s.loc["length", m]),
                  "placebo_median": float(ph[m].median()), "placebo_min": float(ph[m].min()), "placebo_max": float(ph[m].max()),
                  "k_at_least_as_good": k, "holds": k <= K_MAX}

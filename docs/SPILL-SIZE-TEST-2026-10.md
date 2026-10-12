@@ -110,4 +110,26 @@ If anything is changed after a result is seen, both results are kept and the cha
 
 ## Results
 
-Not yet run.
+### Changes made after the per-run measures were seen, before any paired result
+
+All 23 runs finished on 12 October 2026 (14:11 to 16:39 local), each with 0 network attempts. The paired
+step then stopped: `paired.py` checks that both runs kept the same samples, and they did not. Before
+running it again, three changes, committed before any paired result was computed:
+
+1. **Pairing.** The runs keep different samples. A run leaves out a whole site when more than
+   `MAX_MISSING_SHARE` (0.1) of its weight comes from overflows without rain data, and the sizes move
+   that weight. Colwick Country Park (West Lake) is at 0.010 under `length` and 0.114 under `sh`, so `sh`
+   leaves out its 44 samples (none over the limit). The placebos leave out up to three of River Avon at
+   Queen Elizabeth Gardens (17 samples), River Severn in Shrewsbury (57), Wolvercote Mill Stream (55) and
+   Colwick. `paired.py compare` now pairs on the samples that both runs keep. This is the rule of the
+   #166 statement that this harness comes from; #172's runs all kept the same 1,546 samples, so its
+   check was stricter than the rule.
+2. **A bug in `judge.py`, fixed to match the statement.** Its condition 1 count was the wrong way
+   round: it counted placebos at least as *bad* as `sh`. The statement, and the code's own comment, say
+   at least as *good*. #172's judge counted "at least as bad" and said so; it is not affected.
+3. **A check on condition 1, added (`common.py`).** Condition 1 as stated compares each run's measures
+   on its own samples, which now differ. `common.py` recomputes condition 1 on the samples that all
+   23 runs keep. Cross-site rho uses every site in every run, so it is unchanged. This check is
+   reported beside the stated result; it does not replace it.
+
+Seen before these changes: `summary.csv`, the per-run measures on each run's own samples.
