@@ -152,7 +152,7 @@ def test_rain_asks_for_at_most_the_budget_oldest_first_and_uses_the_cache(tmp_pa
     rain, stats = shadow_rain(sub, budget=2, fetch=fetch)
     assert len(asked) == 1 and len(asked[0]) == 2
     assert stats["cells"] == 3 and stats["asked"] == 2 and stats["usable"] == 2 and stats["requests"] == 1
-    assert stats["calls"] == round(forecast_calls(2), 1) == round(2 * 36 / 14, 1)
+    assert stats["calls"] == round(forecast_calls(2), 1) == round(2 * 37 / 14, 1)
     # The next build asks only for the one never fetched; the two fresh ones come from the cache.
     _, stats = shadow_rain(sub, budget=2, fetch=fetch)
     assert asked[1] == [c for c in cells if c not in asked[0]] and stats["usable"] == 3

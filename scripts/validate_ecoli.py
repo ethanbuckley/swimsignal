@@ -12,6 +12,14 @@ For every EA lab sample at the 38 inland designated bathing waters (2023 on):
 against log10 E. coli and against exceedance of 900 and 500 cfu/100 ml. Spearman
 rank correlation pooled and within site (site means removed, so a site that is
 always dirty cannot inflate the score), and AUC for exceedance.
+
+Rain comes from the archive cache only (scripts/fetch_rain_validation.py fills it).
+An overflow-day with no rain data is unknown, as in production and the replay
+(replay_ecoli_leads.py): it adds nothing, `missing_share` is the share of transport
+weight it carries, and a sample day over forecast.MAX_MISSING_SHARE gets no
+risk_model (the site would have shown none). Until 12 Oct 2026 missing rain was
+filled with 0 here, so an overflow whose cell the cache lacked counted as a dry day
+without a warning (docs/MISSING-RAIN-CHECK-2026-10.md).
 """
 
 from __future__ import annotations
@@ -28,11 +36,12 @@ from sklearn.metrics import roc_auc_score
 from dipcast import config
 from dipcast.model.ecoli import rain_windows
 from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features
-from dipcast.model.forecast import calibrate_at_lead
+from dipcast.model.forecast import MAX_MISSING_SHARE, calibrate_at_lead
 from dipcast.model.spill_model import SpillModel
 from dipcast.model.transport import (
     combine_daily,
     history_days,
+    missing_share,
     river_velocity,
     upstream_overflows,
 )
@@ -52,6 +61,26 @@ def load_rain() -> pd.DataFrame:
     return rain
 
 
+def hindcast(up: pd.DataFrame, daily: pd.DataFrame, days: pd.DatetimeIndex, model) -> tuple[pd.Series, pd.Series]:
+    """(risk, missing share) at a site on each of `days` (consecutive: combine_daily shifts by array
+    position). Spill chances at every upstream overflow from reanalysis rain, calibrated as lead 0 (a
+    hindcast), through the transport step. An overflow-day with no rain data has no chance (NaN, which
+    the calibration keeps and combine_daily counts as 0), as in forecast.spill_probabilities; a day with
+    more than MAX_MISSING_SHARE of the weight from such overflow-days gets no risk (NaN)."""
+    sd = build_site_days(up[["site_id", "lat", "lon", "company", "lta_spills", "spill_hours", "edm_operational_pct"]],
+                         daily, days)
+    sd["ok"] = sd["rain_d"].notna()
+    X = sd.astype({f: np.float32 for f in ALL_FEATURES}).fillna({f: 0.0 for f in ALL_FEATURES})
+    sd["p"] = np.where(sd["ok"], model.predict(X), np.nan)
+    mat = sd.pivot(index="site_id", columns="day", values="p").reindex(index=up["site_id"], columns=days)
+    okm = sd.pivot(index="site_id", columns="day", values="ok").reindex(index=up["site_id"], columns=days)
+    pm = calibrate_at_lead(mat.to_numpy(dtype=float), lead=0)  # a hindcast: every day is lead 0
+    w = up["weight"].to_numpy(dtype=float); tr = up["travel_h"].to_numpy(dtype=float)
+    miss = pd.Series(missing_share(okm.fillna(False).to_numpy(dtype=bool), w, tr), index=days)
+    risk = pd.Series(combine_daily(pm, w, tr), index=days).where(miss <= MAX_MISSING_SHARE)
+    return risk, miss
+
+
 def main() -> None:
     samples = pd.read_parquet(config.RAW / "bwq_samples.parquet")
     samples = samples.dropna(subset=["ecoli", "sample_time"]).copy()
@@ -69,7 +98,7 @@ def main() -> None:
     events["event_start"] = events["event_start"].dt.tz_convert(TZ)
     events["event_end"] = events["event_end"].fillna(events["event_start"]).dt.tz_convert(TZ)
 
-    out = []
+    out, gaps = [], []
     for bw_id, g in samples.groupby("bw_id"):
         s = g.iloc[0]
         pin = bathing_water_pin(net, bw_id, float(s.lon), float(s.lat))
@@ -84,25 +113,24 @@ def main() -> None:
         # sampling period (a continuous daily grid: combine_daily shifts by array position, so
         # it must see consecutive days, not just sample days), then pick out the sample days.
         sample_days = pd.DatetimeIndex(sorted(g["day"].unique()))
-        p_by_day = {}
+        p_by_day, miss_by_day = {}, {}
         if len(up):
             lead_days = history_days(up["travel_h"])   # the same rule the live forecast uses
             days = pd.date_range(sample_days.min() - pd.Timedelta(days=lead_days), sample_days.max(), freq="D")
-            sd = build_site_days(up[["site_id", "lat", "lon", "company", "lta_spills", "spill_hours", "edm_operational_pct"]],
-                                 daily, days)
-            sd = sd.astype({f: np.float32 for f in ALL_FEATURES}).fillna({f: 0.0 for f in ALL_FEATURES})
-            sd["p"] = model.predict(sd)
-            mat = sd.pivot(index="site_id", columns="day", values="p").reindex(index=up["site_id"], columns=days)
-            pm = np.nan_to_num(mat.to_numpy(dtype=float))
-            pm = calibrate_at_lead(pm, lead=0)  # a hindcast: every day is lead 0
-            w = up["weight"].to_numpy(dtype=float); tr = up["travel_h"].to_numpy(dtype=float)
-            risk = pd.Series(combine_daily(pm, w, tr), index=days)
+            risk, miss = hindcast(up, daily, days, model)
             p_by_day = risk.reindex(sample_days).to_dict()
+            miss_by_day = miss.reindex(sample_days).to_dict()
+            on_samples = miss.reindex(sample_days)
+            if on_samples.max() > 0:
+                gaps.append({"site": s["name"], "max_missing_share": round(float(on_samples.max()), 3),
+                             "sample_days_without_figure": int((on_samples > MAX_MISSING_SHARE).sum()),
+                             "sample_days": len(sample_days)})
         r48_all, r24_all = rain_windows(site_rain, pd.DatetimeIndex(g["sample_time"]))
         for i, (_, r) in enumerate(g.iterrows()):
             t = r["sample_time"]
             rain_48, rain_24 = float(r48_all[i]), float(r24_all[i])   # NaN unless the window is covered
             risk_model = float(p_by_day.get(r["day"], 0.0)) if len(up) else 0.0
+            miss_share = float(miss_by_day.get(r["day"], 0.0)) if len(up) else 0.0
             # Observed-spill exposure (event history only covers United Utilities).
             risk_obs = np.nan
             if len(up) and (up["company"] == "United Utilities").any():
@@ -120,7 +148,11 @@ def main() -> None:
             out.append({"bw_id": bw_id, "name": s["name"], "kind": s["kind"], "undertaker": s["undertaker"],
                         "sample_time": t, "ecoli": r["ecoli"], "log_ecoli": r["log_ecoli"], "ie": r["ie"],
                         "abnormal_weather": r["abnormal_weather"], "upstream": len(up),
-                        "rain_24h": rain_24, "rain_48h": rain_48, "risk_model": risk_model, "risk_observed": risk_obs})
+                        "rain_24h": rain_24, "rain_48h": rain_48, "risk_model": risk_model, "missing_share": miss_share,
+                        "risk_observed": risk_obs})
+    if gaps:
+        log.warning("sites with upstream overflow-days lacking rain on sample days (missing_share > 0; refill the "
+                    "archive with scripts/fetch_rain_validation.py): %s", gaps)
     df = pd.DataFrame(out)
     df.to_parquet(config.PROCESSED / "ecoli_validation_rows.parquet", index=False)
     log.info("scored %d samples at %d sites (%d with upstream overflows)", len(df), df.bw_id.nunique(),
@@ -164,7 +196,7 @@ def main() -> None:
         print(results["uu_observed"].round(3).to_string())
     print("\n=== per-site Spearman (risk_model vs log E. coli), sites with >= 15 samples ===")
     per = []
-    for bw, g in d_all.groupby("bw_id"):
+    for bw, g in d_all.dropna(subset=["risk_model"]).groupby("bw_id"):
         if len(g) >= 15 and g.risk_model.std() > 0:
             per.append({"site": g.name.iloc[0], "kind": g.kind.iloc[0], "n": len(g), "upstream": int(g.upstream.iloc[0]),
                         "median_ecoli": g.ecoli.median(), "rho_model": spearmanr(g.risk_model, g.log_ecoli).statistic,
@@ -175,6 +207,8 @@ def main() -> None:
     summary = {k: v.round(4).reset_index().to_dict("records") for k, v in results.items()}
     summary["n_samples"] = len(df); summary["n_sites"] = int(df.bw_id.nunique())
     summary["period"] = [str(df.sample_time.min().date()), str(df.sample_time.max().date())]
+    summary["max_missing_share"] = MAX_MISSING_SHARE
+    summary["samples_without_figure"] = int((d_all.missing_share > MAX_MISSING_SHARE).sum())
     (config.PROCESSED / "ecoli_validation.json").write_text(json.dumps(summary, indent=1, default=str))
     log.info("saved ecoli_validation.json / _rows.parquet / _per_site.csv")
 
