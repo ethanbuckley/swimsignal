@@ -27,9 +27,10 @@ so the unit is colony-forming units (cfu) per 100 ml, as the model's own target 
 scores 1 when its count is over 900 (`forecast_log.py` line 827). A count of exactly 900 scores 0.
 A count published as "<10" or ">10000" is read as 10 or 10000 (`ingest/wqa._count`).
 
-Not tested here: a spot's exposure index and its level (no observation of it exists; its die-off
-and dilution steps are physical estimates), "right now", the action lines, coastal, Welsh and
-Scottish waters, algae and access.
+Not tested here: "right now", the action lines, coastal, Welsh and Scottish waters, algae and
+access. A spot's exposure index and its level were not tested either until amendment 1 (12 October
+2026, section 17), which adds two secondary scores for them; their die-off and dilution steps
+remain physical estimates that neither score can test.
 
 The spill warning line is applied to each overflow's chance, as the Accuracy page has done since
 #96. 40% is the chance at which a spot right beside one overflow (reach 100%) reads High risk. A spot
@@ -411,7 +412,8 @@ What the dry run showed about the method:
 Dated, for Ethan. Also in the pull request.
 
 1. **When this is merged** (October 2026): the merge commit registers the protocol.
-2. **By 31 January 2027**: prerequisites A and B merged (C recommended), each with its tests, so
+2. **By 31 January 2027**: prerequisites A and B merged (C recommended), and D with B's `exposure`
+   column and `evaluate_2027.py`'s S1 and S2 (amendment 1), each with its tests, so
    the files are published for three months before the season. B can only be tried on real samples
    once the season's first samples arrive in May; until then its tests carry it.
 3. **By mid-April 2027**: if the EA has published the 2026 annual returns (it published the 2024
@@ -448,4 +450,95 @@ Dated, for Ethan. Also in the pull request.
 
 ## 17. Amendments
 
-None yet.
+### Amendment 1, 12 October 2026: a score for a spot's level
+
+**Why.** Section 1 scores one overflow's chance. The site warns by a spot's level: a saved spot at
+High risk sends a push alert (section 6). That level is never scored, so nothing in this protocol
+says how often an alert was right. On 11 October 2026 a review of the site found the Accuracy page's
+scores were all overflow-days, while its alerts are spot-days (handoff, section 4G). This amendment
+adds two scores for a spot's level. Both are **secondary**: they are reported in full beside the
+four primary outcomes, but they are not a fifth.
+
+**What is forecast.** For each eligible spot and target day, its spill exposure index: the logged
+`forecast_points.risk` for the spot, the latest issued by 08:00 Europe/London on the issue day
+(section 5's decision time), at each lead 0 to 4. A logged point belongs to a spot when its
+coordinates round to the spot's at 4 decimal places (section 5). Its level is the index's band
+(section 6: Low under 0.15, Moderate to under 0.40, High to under 0.70, Very high above). Only the
+spill exposure is scored here: not the E. coli estimate, the rating, algae, samples or right now,
+which can also set the level the page shows.
+
+**Score S1: the level against the spills that happened.**
+
+- *The observation.* The exposure index with what happened in place of what was forecast: for the
+  spot and target day, `o = 1 - prod_i(1 - w_i * e_i)`. Here `w_i` is overflow i's weight in the same
+  logged forecast (`forecast_overflows.weight`), and `e_i` is its observed spill days (1 or 0, by
+  section 5's rules) moved later by its logged travel time `travel_h` exactly as
+  `transport.shift_by_travel` moves a chance. So S1 uses the forecast's own transport on both sides.
+- *Observed or not.* A spot-day is observed only when the overflows carrying at least 95% of the
+  spot's summed weight each have a section 5 observation (spill or no spill) on every source day
+  that reaches the target day. Otherwise it is not scored, and the reason is kept (section 9). A
+  spot whose overflows without a live feed carry over 5% of its weight is never observed, and is
+  listed as such. On 12 October 2026 that was Sandy Lane (Chester), the Wye at Hereford and the Wye
+  at Symonds Yat, whose overflows are Dŵr Cymru's.
+- *The event.* `o` at or above 0.40: the spot would have read High had the spills been known.
+- *What is reported*, by lead, same day and in advance pooled, river and lake spots, and company of
+  the largest weight:
+  - **the alert's record**: at the High line (forecast index 0.40 or more), hits, misses, false
+    alarms and correct quiet ones; the share of events warned of; the share of warnings that came
+    true; with intervals;
+  - **ranking**: the AUC of the forecast index for the event (section 7's plain-words meaning);
+  - **levels**: the four-by-four table of forecast level against observed level, `o` banded by the
+    same cuts;
+  - **bias**: the mean forecast index beside the mean `o`, by 7-day block.
+- *Reference.* The same combination with each overflow's section 7 primary reference, `c x f`, in
+  place of its chance: the spot's climatology index. Its alert record and AUC are reported beside the
+  forecast's.
+- *No Brier or skill score.* The index is not a probability of `o` reaching 0.40, so a Brier score
+  on that event would not be proper. The alert's record and the AUC say what the alert did, with
+  no claim of calibration.
+- *What S1 cannot test.* The transport (weights, travel time, die-off, dilution) is the same on
+  both sides. S1 tests the spill forecasts as the alerts combine them, not whether sewage reaches a
+  spot as the model says.
+
+**Score S2: the level against EA samples.**
+
+- For each statutory sample at an eligible designated bathing water in the season (section 5's E.
+  coli rules), the spot's forecast exposure index for the sample's local date, the latest issued
+  before the sample, at each lead.
+- *The event.* The sample over 900 cfu/100 ml (section 1).
+- *What is reported*, rivers and lakes apart:
+  - the AUC of the index for the event;
+  - the share over 900 in each forecast level, with intervals;
+  - the alert's record at the High line, as in S1.
+- *What S2 cannot test.* Sewage spills are one source of E. coli. A low index on a day a sample
+  fails can be farm runoff or wildlife, which the index does not count (the site says so).
+
+**Uncertainty.** Section 10's bootstrap, with spots as the sites and the same 7-day blocks, 2,000
+draws from `default_rng(20270502)`, a stream of its own so the primary outcomes' draws do not
+change.
+
+**Data.** From published files only (section 4). Two additions, due with A and B by 31 January
+2027 (section 15, step 2):
+
+- **D. `verification_spots_live.csv`**: one row per eligible spot, target day in the season and lead
+  0 to 4: `spot_id`, `day`, `lead`, `issued_at`, `forecast` (the index), `observed` (`o`, empty when
+  not observed), `covered` (the share of the spot's weight with a section 5 observation on every
+  source day), `reason` (why not observed, else empty), `version`. Where no forecast was issued by
+  08:00, `issued_at`, `forecast` and `version` are empty.
+- **B, one more column**: `exposure`, the spot's forecast index matched as above.
+
+To make D possible, the forecast log keeps each overflow's travel time to the spot
+(`forecast_overflows.travel_h`) from 12 October 2026 (`forecast_log.py`, this amendment's pull
+request). Before then, forecasts carry no travel time and S1 cannot be made from them.
+
+**Eligible spots.** The spots in `spots.csv` and `spots-osm.csv` at the tag that have at least one
+monitored overflow upstream, in England. The list is frozen with D, as `data/eval2027/spots.csv`,
+with its hash in section 13, and each excluded spot listed with its reason.
+
+**Expected size**, inferred and not a promise: 80 spots had an overflow upstream in the build of
+12 October 2026 00:17 UTC, 3 of them never observed (above), so about 77 spots x 153 days x 5 leads
+= 58,905 cells. S2: the river samples of section 8, about 340, and the lake samples, not estimated here.
+
+**Code.** `scripts/evaluate_2027.py` gains S1 and S2 by 31 January 2027, with tests, and a dry run
+on autumn 2026 from 12 October (section 14's form). A further amendment records its new hash and
+the list's. Until then the hashes in section 13 stand.
