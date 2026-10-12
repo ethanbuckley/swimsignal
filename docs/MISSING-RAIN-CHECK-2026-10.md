@@ -153,3 +153,17 @@ The gap biased these measures down a little. The largest effect is on between-si
 The published `ecoli_validation.json` and `ecoli_validation_combined.json` were last regenerated on
 14 Sep (c11d8f0), on an older network and older code, so they match neither run. Regenerating them
 is Ethan's decision, and this PR does not do it.
+
+## Published files regenerated (12 Oct 2026, after #200 merged)
+
+On Ethan's request, `data/processed/ecoli_validation.json`, `ecoli_validation_combined.json` and
+`ecoli_validation_per_site.csv` are now R2's outputs. R2 ran the code that is on main after #200: its
+`validate_ecoli.py` and `validate_ecoli_combined.py` are byte-identical to main's. It used the
+refreshed cache. Since R2 ran, main has changed only the live forecast's rain request and the
+Scottish shadow model (#198), which these scripts do not use, so a fresh run would repeat R2.
+
+The previous files dated from 14 Sep (c11d8f0). Since then the validation code changed five times,
+and the network and overflow table changed with #184 and the checked joins. So the change from the
+old published figures mixes all of these. The effect of the cache alone is R4 against R1 above.
+
+`ecoli_model.json` and `ecoli_model_eval.json` (train_ecoli.py, 28 Sep) are not refitted.
