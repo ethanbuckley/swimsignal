@@ -41,7 +41,7 @@ test('a day inside the forecast gives its level by the page rules, why, and how 
   assert.ok(h.includes(`<p class="ev-level moderate">${L.dayHeadline(henley, '2026-10-06')}</p>`));
   assert.equal(L.dayHeadline(henley, '2026-10-06'), 'Moderate risk: sewage spills');
   assert.ok(h.includes('Moderate risk: about 2 of the 51 overflows upstream are expected to spill.'));
-  assert.ok(h.includes('Exposure index <b>20</b> of 100'));
+  assert.ok(h.includes('Sewage spill risk <b>20</b> of 100'));
   // The three most likely to reach the spot that day, chance times reach, by their plain names (levels.js, plainName).
   assert.match(h, /Most likely to reach the spot: Friday Street \(Henley\) pumping station overflow \(spill chance 3%, reach 100%\); Wargrave sewage works overflow \(/);
   assert.ok(h.includes('<b>41%</b>. Untested from October to April'));   // out of season: shown, not counted

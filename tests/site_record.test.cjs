@@ -65,7 +65,7 @@ test('the level and why follow levels.js, with the overflows that matter most, h
   const h = Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW);
   assert.equal(L.dayHeadline(ilkley, DAYS[1]), 'High risk: rated poor');
   assert.ok(h.includes('<p class="r-level high">High risk</p><p class="r-why">Rated poor</p>'));
-  assert.ok(h.includes('Low risk: about 1 of the 15 overflows upstream is expected to spill. Exposure index <b>8</b> of 100'));
+  assert.ok(h.includes('Low risk: about 1 of the 15 overflows upstream is expected to spill. Sewage spill risk <b>8</b> of 100'));
   assert.match(h, /<b>Rivadale View storm overflow<\/b> \(Rivadale View\/CSO\): 0\.5\skm upstream, sewage arrives in under an hour\. Spill chance 2%, reach 98%\./);
   assert.match(h, /<b>Burnsall CAR PK storm overflow<\/b> \(Burnsall CAR PK\/CSO\): 21\.8\skm upstream, sewage arrives in about 12 h\. Spill chance 7%, reach 21%\./);
   assert.ok(h.includes('<dt>Discharging when the forecast was issued</dt><dd>0 of 15 discharging. All 15 report live.</dd>'));
@@ -118,7 +118,7 @@ test('what the forecast cannot see is the About page\'s list, word for word', ()
   // The E. coli estimate's sentence only where the spot shows the estimate: not at a lake.
   assert.ok(text(h).includes('On rivers, the E. coli estimate allows for rain washing in pollution from other sources, but only on average.'));
   const tarn = Rec.cannotSee({...ilkley, kind: 'lake', location: {mode: 'lake'}});
-  assert.equal(tarn[0], 'The spill forecast covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident.');
+  assert.equal(tarn[0], 'The sewage spill risk covers monitored storm overflows only. It knows nothing about a particular farm, road, boat, misconnected drain or incident.');
   assert.ok(!tarn.join(' ').includes('E. coli') && Rec.cannotSee(lake).every(t => !t.includes('E. coli')));
 });
 

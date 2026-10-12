@@ -57,7 +57,7 @@ test('a water rated poor: the spills tile says the rating raises it, the rating 
 test('spills that set the level say so; another day or right now is named when it raises it', () => {
   L.setToday(DATES[0]);
   assert.equal(L.tileLine(spot(['moderate', 'low', 'low', 'low', 'low']), 'spill'), 'This sets the level above.');
-  assert.equal(L.tileLine(spot(['low', 'high', 'low', 'low', 'low']), 'spill'), "Tomorrow's spill forecast raises the level to high risk.");
+  assert.equal(L.tileLine(spot(['low', 'high', 'low', 'low', 'low']), 'spill'), "Tomorrow's sewage spill risk raises the level to high risk.");
   const recent = spot(['low', 'low', 'low', 'low', 'low'], {now: {label: 'moderate', discharging_upstream: 0}});
   assert.equal(L.headline(recent), 'Moderate risk right now: recent sewage spills');
   assert.equal(L.tileLine(recent, 'spill'), 'Recent spills raise the level to moderate risk right now.');
@@ -77,7 +77,7 @@ test('in season the water estimate is counted: it sets the level, or says what r
   assert.equal(L.tileLine(wet, 'water'), 'This sets the level above.');
   assert.equal(L.tileLine(wet, 'spill'), 'On its own: low risk. The E. coli estimate raises the level to high risk.');
   const dry = spot(['moderate', 'low', 'low', 'low', 'low'], {}, 0.02, true);
-  assert.equal(L.tileLine(dry, 'water'), 'On its own: low risk. The spill forecast raises the level to moderate risk.');
+  assert.equal(L.tileLine(dry, 'water'), 'On its own: low risk. The sewage spill risk raises the level to moderate risk.');
 });
 
 test('a rating or algae that is not counted says so, and one that sets a plain spot\'s level says that', () => {

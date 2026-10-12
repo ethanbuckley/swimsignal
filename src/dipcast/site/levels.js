@@ -371,7 +371,7 @@ function tileLine(s, kind, iso = null) {
     : by === 'sample' ? `A recent EA sample over 900 E. coli raises the level to ${L} risk.`
     : by === 'water' ? `${day} E. coli estimate raises the level to ${L} risk.`
     : lifted ? `${recent ? 'Recent spills' : 'Spills right now'} raise today's level to ${L} risk.`
-    : when !== 'right now' ? `${day} spill forecast raises the level to ${L} risk.`
+    : when !== 'right now' ? `${day} sewage spill risk raises the level to ${L} risk.`
     : recent ? `Recent spills raise the level to ${L} risk right now.` : `Spills right now raise the level to ${L} risk.`;
   // A spills tile under a level set by spills on another day: the raiser says it all.
   return (kind === 'spill' && by === 'spill' ? '' : `On its own: ${t} risk. `) + raiser;

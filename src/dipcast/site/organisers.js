@@ -82,7 +82,7 @@ const Organisers = (() => {
     if (R.daily(s) && x) {
       if (nil(x.risk)) rows.push(row('Sewage spills upstream', 'The rainfall forecast for this day has not arrived, so there is no figure.'));
       else { const i = x.risk * 100, top = topOn(s, w.j);
-        rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Exposure index <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
+        rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
           + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
       const band = R.ecoliBand(s, x);
       if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>.`
@@ -193,9 +193,9 @@ const Organisers = (() => {
     const total = (s.upstream_summary || {}).overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60;
     let h = `<p>The forecast for ${dateWords(iso)} first appears on <b>${dateWords(from)}</b>, as the last of its five days, and is updated several times a day after that.</p>`;
     const rows = [];
-    if (isolated(s)) rows.push(row('Storm overflows', `The river network links no monitored storm overflow to this lake, so there will be no spill forecast here. ${esc(R.OTHER_RISKS)}`));
+    if (isolated(s)) rows.push(row('Storm overflows', `The river network links no monitored storm overflow to this lake, so there will be no sewage spill risk here. ${esc(R.OTHER_RISKS)}`));
     else if (s.error) rows.push(row('Forecast', esc(R.COVER[R.level(s)] || 'No forecast in this update')));
-    else if (!total) rows.push(row('Storm overflows', `None monitored within ${km} km upstream, so there will be no spill forecast here. ${esc(R.OTHER_RISKS)}`));
+    else if (!total) rows.push(row('Storm overflows', `None monitored within ${km} km upstream, so there will be no sewage spill risk here. ${esc(R.OTHER_RISKS)}`));
     else rows.push(row('Storm overflows', `${total} monitored upstream, listed below with how often each spills in a year.`));
     rows.push(rating(s, iso));
     return h + `<p class="ev-say">What is known now:</p><dl class="fields">${rows.join('')}</dl>`;
