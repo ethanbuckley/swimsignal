@@ -114,7 +114,7 @@ def test_the_method_page_states_the_level_cuts_and_constants_the_code_uses():
     assert [c[0] for c in cells] == [f"under {spill[0]}", f"{spill[0]} to {spill[1]}", f"{spill[1]} to {spill[2]}", f"{spill[2]} or more"]
     assert [c[1] for c in cells] == [f"under {ecoli[0]}%", f"{ecoli[0]}% to {ecoli[1]}%", f"{ecoli[1]}% to {ecoli[2]}%", f"{ecoli[2]}% or more"]
     assert f"up to {config.MAX_UPSTREAM_KM:g} km" in page and f"{config.RIVER_VELOCITY_MS:g} m a second on rivers" in page
-    assert f"{config.LAKE_VELOCITY_MS:g} m a second across the spot's own lake" in page and f"90% in {config.T90_HOURS:g} hours" in page
+    assert f"{config.LAKE_VELOCITY_MS:g} m a second across a lake" in page and f"90% in {config.T90_HOURS:g} hours" in page
     assert f"for {config.RECENT_SPILL_HOURS:g} hours after its water has passed" in page
 
 

@@ -74,10 +74,9 @@ def _trace(net, pin=None, **kw) -> pd.DataFrame:
     return up.set_index("site_id")
 
 
-def test_the_default_is_residence(net):
-    assert config.LAKE_PATH_MODE == "residence"
-    assert _trace(net).equals(_trace(net, lake_path_mode="residence"))
-    assert not _trace(net).equals(_trace(net, lake_path_mode="lake"))
+def test_the_default_is_unchanged(net):
+    assert config.LAKE_PATH_MODE == "lake"
+    assert _trace(net).equals(_trace(net, lake_path_mode="lake"))
 
 
 def test_the_well_mixed_lake():

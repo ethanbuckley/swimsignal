@@ -39,9 +39,9 @@ The build reads both and credits OpenStreetMap on the terms page and in the `cre
 (Messager, M.L., Lehner, B., Grill, G., Nedeva, I., Schmitt, O. (2016): Estimating the volume and age of water
 stored in global lakes using a geo-statistical approach. Nature Communications 7: 13603), licensed under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), matched to the Environment Agency's WFD lake water
-bodies (Open Government Licence v3.0) by `scripts/make_lake_residence.py`. Lake path `residence`, the default
-(docs/LAKE-RESIDENCE-TEST-2026-10.md), reads it. The terms page, the README's Data section and the `credits`
-field of the published data carry the credit too.
+bodies (Open Government Licence v3.0) by `scripts/make_lake_residence.py`. It is used only by lake path
+`residence`, which is off (docs/LAKE-RESIDENCE-TEST-2026-10.md). If that is switched on, the credit goes on the
+terms page and in the README's Data section too.
 
 ## Other data
 
