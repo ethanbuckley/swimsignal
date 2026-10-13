@@ -386,3 +386,16 @@ Written while the runs were going, in commit 6be6f1a; the E. coli chain does not
   - the Thames at Port Meadow: 29 overflows, largest weight difference 2e-16, travel equal.
 
 So the condition in "What follows" is met. The default switch is in the next commit, left for Ethan to merge.
+
+### The source checked against the official file (13 Oct 2026, after the results)
+
+"How it was read" says the ArcGIS Online copy was not checked against the HydroSHEDS download. Ethan approved the download, and the check is done.
+
+- **File:** `HydroLAKES_points_v10_shp.zip` from `data.hydrosheds.org/file/hydrolakes/`, 78,725,399 bytes, SHA-256 begins `587df220`.
+  - It is HydroSHEDS' points file, which carries the same attribute table as the 820 MB polygons file.
+  - It was kept in a scratch folder, not the repo.
+- **Match:** all 282 `hylak_id`s in `data/raw/lake_residence.csv` are in it.
+  - Each of the seven copied fields equals the official value exactly, in every row: area, total volume, volume source, mean depth, mean discharge, `Res_time` and watershed area.
+- **The model's own times:** `res_time_d` differs from `Res_time` in 76 rows. Each is `Res_time` times `area_share`, as "How each WFD lake gets a time" states. For Windermere, 271.3 days becomes 187.0 (north basin) and 131.2 (south basin).
+
+Nothing else above or below changes.
