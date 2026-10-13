@@ -145,6 +145,18 @@ def test_catchment_speed_with_residence(net):
     assert res.loc["above", "travel_h"] == pytest.approx(lake.loc["above", "travel_h"] - lake_h + transport.lake_hold_h(tau))
 
 
+def test_residence_spill_reads_its_own_file(net, monkeypatch, tmp_path):
+    f = tmp_path / "spill.csv"
+    pd.DataFrame({"wb_id": ["GBUPPER"], "res_time_d": [TAU_D / 4]}).to_csv(f, index=False)
+    monkeypatch.setattr(config, "LAKE_RESIDENCE_SPILL_FILE", f)
+    assert transport.lake_residence_h("residence_spill") == {0: pytest.approx(TAU_D / 4 * 24)}
+    spill, res = _trace(net, lake_path_mode="residence_spill"), _trace(net, lake_path_mode="residence")
+    tau = TAU_D / 4 * 24
+    assert spill.loc["above", "decay"] == pytest.approx(10 ** (-21_000 / 0.5 / 3600 / config.T90_HOURS) * transport.lake_pass(tau))
+    assert spill.loc["above", "weight"] > res.loc["above", "weight"]   # a quicker lake removes less
+    assert spill.loc["below"].equals(res.loc["below"])
+
+
 def test_the_residence_file_is_read_by_water_body(net):
     got = transport.lake_residence_h()
     assert got == {0: pytest.approx(TAU_D * 24)}

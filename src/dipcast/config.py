@@ -137,7 +137,14 @@ DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 #                "residence"  off by default; under test in docs/LAKE-RESIDENCE-TEST-2026-10.md. A WFD lake
 #                         crossed on the way with a residence time in LAKE_RESIDENCE_FILE is a well-mixed
 #                         lake: 1 / (1 + ln10 x tau / T90_HOURS) of a spill's bacteria leave it alive.
-#                         A lake without one is crossed as in "lake". Click-anywhere does not follow it yet.
+#                         A lake without one is crossed as in "lake". It passed its test (13 Oct 2026) but
+#                         stays off while "residence_spill" is tested.
+#                "residence_spill"  off; under test in docs/LAKE-RESIDENCE-SPILL-2026-10.md. As "residence",
+#                         with tau divided by the lake's spill-time flow ratio R >= 1 (LAKE_RESIDENCE_SPILL_FILE,
+#                         scripts/make_lake_spill_ratio.py, EA Hydrology daily mean flows, OGL v3.0).
 LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "lake")
 # Residence times of WFD lakes (scripts/make_lake_residence.py, from HydroLAKES v1.0, CC BY 4.0).
 LAKE_RESIDENCE_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_FILE", RAW / "lake_residence.csv"))
+# The same at spill-time flow, tau / R (lake path "residence_spill").
+LAKE_RESIDENCE_SPILL_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_SPILL_FILE", RAW / "lake_residence_spill.csv"))
+RESIDENCE_MODES = ("residence", "residence_spill")

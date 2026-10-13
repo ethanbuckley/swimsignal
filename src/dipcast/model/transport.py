@@ -48,6 +48,9 @@ docs/LAKE-PATH-TEST-2026-10.md:
                         survivors' mean time in it is tau / (1 + k tau) (lake_hold_h). Those replace
                         the crossing at LAKE_VELOCITY_MS, its die-off and the area factor. A lake with
                         no residence time is crossed as in "lake". The spot's own lake is unchanged.
+* lake path "residence_spill" off, under test (docs/LAKE-RESIDENCE-SPILL-2026-10.md): as "residence", with
+                        each tau divided by the lake's spill-time flow ratio R >= 1, from
+                        config.LAKE_RESIDENCE_SPILL_FILE.
 
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
 """
@@ -701,12 +704,14 @@ def _residence_by_wb(path: str) -> dict[str, float]:
     return dict(zip(t["wb_id"], t["res_time_d"].astype(float) * 24.0, strict=True))
 
 
-def lake_residence_h() -> dict[int, float]:
-    """Row in _lakes() -> residence time (hours), for the WFD lakes that have one (lake path 'residence')."""
+def lake_residence_h(mode: str = "residence") -> dict[int, float]:
+    """Row in _lakes() -> residence time (hours), for the WFD lakes that have one: from
+    config.LAKE_RESIDENCE_FILE for lake path 'residence', config.LAKE_RESIDENCE_SPILL_FILE for 'residence_spill'."""
     lakes = _lakes()
     if lakes is None or lakes.empty:
         return {}
-    by_wb = _residence_by_wb(str(config.LAKE_RESIDENCE_FILE))
+    path = config.LAKE_RESIDENCE_SPILL_FILE if mode == "residence_spill" else config.LAKE_RESIDENCE_FILE
+    by_wb = _residence_by_wb(str(path))
     return {i: by_wb[w] for i, w in enumerate(lakes["wb_id"]) if w in by_wb}
 
 
@@ -814,12 +819,12 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
     if (velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban")
-            or lake_path_mode not in ("river", "lake", "residence")):
+            or lake_path_mode not in ("river", "lake", *config.RESIDENCE_MODES)):
         raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}, "
                          f"lake path {lake_path_mode!r}")
     by_reach = velocity_mode == "catchment"
-    on_lakes = lake_path_mode in ("lake", "residence")
-    residence = lake_path_mode == "residence"
+    on_lakes = lake_path_mode in ("lake", *config.RESIDENCE_MODES)
+    residence = lake_path_mode in config.RESIDENCE_MODES
     scale = velocity_ms / config.RIVER_VELOCITY_MS
     cols = list(overflows.columns) + ["distance_m", "lake_distance_m", "travel_h", "decay", "dilution", "weight"]
     if pin.mode == "none" or pin.trace_node is None:
@@ -832,7 +837,7 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     lake_of = _wfd_lake_of(net, on_path, exclude=pin.lake_links) if on_lakes else {}
     lake_area = {k: a for k, a in lake_of.values()}
     # Lake path 'residence': the lakes on the way that have a residence time, and those times (hours).
-    tau = lake_residence_h() if residence else {}
+    tau = lake_residence_h(lake_path_mode) if residence else {}
     res_of = {lid: v for lid, v in lake_of.items() if v[0] in tau}
 
     # Overflows on the pin's own link, upstream of the pin (river mode only).

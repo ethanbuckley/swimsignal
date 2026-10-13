@@ -180,7 +180,7 @@ def lake_crossings(net: RiverNetwork) -> dict[str, tuple[int, float]] | None:
     """Every lake-form link in a WFD lake polygon: link -> (the lake's row, its area km2), as
     transport._wfd_lake_of gives it, for config.LAKE_PATH_MODE "lake" and "residence"; None in mode
     "river". Which polygon a link is in does not depend on the trace, so one map serves every root."""
-    if config.LAKE_PATH_MODE not in ("lake", "residence"):
+    if config.LAKE_PATH_MODE not in ("lake", *config.RESIDENCE_MODES):
         return None
     links = net.links
     return transport._wfd_lake_of(net, list(links.index[links["form"] == "lake"]))
@@ -196,7 +196,7 @@ def _crossing(part: transport.PathLakes, area: dict[int, float], mixed: frozense
 
 def residence_lakes() -> dict[int, float]:
     """Lake path "residence": WFD lake row -> residence time (hours); empty in the other modes."""
-    return transport.lake_residence_h() if config.LAKE_PATH_MODE == "residence" else {}
+    return transport.lake_residence_h(config.LAKE_PATH_MODE) if config.LAKE_PATH_MODE in config.RESIDENCE_MODES else {}
 
 
 def _mixing(part: transport.PathLakes, tau: dict[int, float]) -> tuple[float, float, float] | None:
@@ -413,8 +413,9 @@ def _net_key(net_hash: str, lakes_hash: str) -> dict:
     changes with the code's rules."""
     key = {"version": CACHE_VERSION, "network": net_hash, "lakes": lakes_hash, "cap_km": config.MAX_UPSTREAM_KM,
            "l0_m": L0_M, "lake_path": config.LAKE_PATH_MODE, "lake_a0_km2": LAKE_A0_KM2}
-    if config.LAKE_PATH_MODE == "residence":   # the residence times and T90 set the rows' holds
-        key["residence"] = hashlib.sha256(Path(config.LAKE_RESIDENCE_FILE).read_bytes()).hexdigest()[:16]
+    if config.LAKE_PATH_MODE in config.RESIDENCE_MODES:   # the residence times and T90 set the rows' holds
+        f = config.LAKE_RESIDENCE_SPILL_FILE if config.LAKE_PATH_MODE == "residence_spill" else config.LAKE_RESIDENCE_FILE
+        key["residence"] = hashlib.sha256(Path(f).read_bytes()).hexdigest()[:16]
         key["t90_h"] = config.T90_HOURS
     return key
 

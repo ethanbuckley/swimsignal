@@ -7,8 +7,9 @@ M=${1:?data dir}; T=${2:?residence files dir}
 S=${DIAG_DIR:?set DIAG_DIR}
 PY=(${=PYTHON:-uv run --offline python})
 free_gb() { vm_stat | awk '/Pages free/{f=$3} /Pages inactive/{i=$3} END{printf "%d", (f+i)*16384/1e9}'; }
-jobs=("lake lake" "res residence $T/res.csv")
-for k in {01..20}; do jobs+=("ph$k residence $T/ph$k.csv"); done
+MODE=${MODE:-residence}   # residence_spill for docs/LAKE-RESIDENCE-SPILL-2026-10.md; the candidate run is still "res"
+jobs=("lake lake" "res $MODE $T/res.csv")
+for k in {01..20}; do jobs+=("ph$k $MODE $T/ph$k.csv"); done
 for job in $jobs; do
   set -- ${=job}
   [[ -f $S/logs/$1/done ]] && continue

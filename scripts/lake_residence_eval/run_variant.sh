@@ -23,12 +23,13 @@ for f in $M/processed/*; do
   if [[ $b == river_network.pkl ]]; then ln -sfn ${f:A} $R/data/processed/$b
   else cp -pL $f $R/data/processed/$b; fi
 done
-unset DIPCAST_VELOCITY_MODE DIPCAST_DILUTION_MODE DIPCAST_EVAL_PINS DIPCAST_LAKE_RESIDENCE_FILE
+unset DIPCAST_VELOCITY_MODE DIPCAST_DILUTION_MODE DIPCAST_EVAL_PINS DIPCAST_LAKE_RESIDENCE_FILE DIPCAST_LAKE_RESIDENCE_SPILL_FILE
 export DIPCAST_ROOT=$R DIPCAST_STATE=$R/data/processed DIPCAST_CACHE=${M:A}/cache
 export DIPCAST_LAKE_PATH_MODE=$2
 if [[ -n $4 ]]; then
   cp -p $4 $R/lake_residence.csv
-  export DIPCAST_LAKE_RESIDENCE_FILE=$R/lake_residence.csv
+  # the file the mode reads: residence -> LAKE_RESIDENCE_FILE, residence_spill -> LAKE_RESIDENCE_SPILL_FILE
+  export DIPCAST_LAKE_RESIDENCE_FILE=$R/lake_residence.csv DIPCAST_LAKE_RESIDENCE_SPILL_FILE=$R/lake_residence.csv
 fi
 export PYTHONPATH=$W/src:$W/scripts${PYTHONPATH:+:$PYTHONPATH}
 cd $W
