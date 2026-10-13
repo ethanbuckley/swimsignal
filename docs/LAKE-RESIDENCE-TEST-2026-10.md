@@ -260,3 +260,129 @@ change is stated.
 ---
 
 ## Results
+
+Added 13 October 2026, after the runs. Everything above the line is as committed in 0cc95e9 (13 October 2026,
+13:31 BST), pushed before the first run started (13:33 BST). The option, the residence file and the harness were
+not changed after any result was seen.
+
+**Verdict: all seven conditions hold. By the rule above, `residence` is a candidate for the default.** The data
+show it does no harm. As stated beforehand, they cannot show that it helps.
+
+The runs:
+- 22 runs, 13:33 to 16:00 BST, one at a time, about 6 minutes each, with waits for memory while another session
+  ran its own evaluation.
+- 0 network attempts in all 22 runs (110 script runs).
+- Peak memory 6.6 GB (`replay_ecoli_leads.py`); 4.6 GB in the `lake` run.
+- **Check:** the `lake` run reproduces #205's figures: 1,502 samples, 31 sites, LOYO Brier 0.0938, LOYO AUC 0.8129,
+  between-site rho 0.763, LOYO within-site rho 0.422.
+- Every run kept the same 1,502 samples, so the pairing dropped nothing.
+- `res.csv` is `data/raw/lake_residence.csv` read and written again by pandas. Its bytes differ (SHA-256 `5a0e12eb`)
+  and its values are equal (`DataFrame.equals`).
+
+### Conditions 1 to 5, `res` against `lake`, paired
+
+Change is `res` minus `lake`, with its 95% interval.
+
+| measure | `lake` | `res` | change [95% CI] |
+|---|---|---|---|
+| LOYO Brier (1,502) | 0.09383 | 0.09380 | −0.00003 [−0.00004, −0.00001] |
+| LOYO Brier, rivers (907) | 0.13821 | 0.13817 | −0.00004 [−0.00006, −0.00002] |
+| LOSO Brier | 0.09326 | 0.09324 | −0.00001 [−0.00003, −0.00000] |
+| Forward (2025-26) Brier (997) | 0.08523 | 0.08521 | −0.00002 [−0.00004, −0.00000] |
+| LOYO Brier, lakes (595) | 0.02618 | 0.02618 | −0.000003 [−0.000007, −0.0000002] |
+| LOYO AUC | 0.8129 | 0.8129 | +0.0001 [−0.0001, +0.0002] |
+| LOYO AUC, rivers | 0.7470 | 0.7470 | +0.0001 [−0.0001, +0.0003] |
+| LOSO AUC | 0.8066 | 0.8068 | +0.0002 [+0.0000, +0.0003] |
+| Forward AUC | 0.8070 | 0.8069 | −0.0000 [−0.0003, +0.0002] |
+| LOYO AUC, lakes | 0.5278 | 0.5291 | +0.0013 [−0.0004, +0.0038] |
+| Cross-site rho (31 sites) | 0.7625 | 0.7617 | −0.0008 [−0.0065, 0.0000] |
+| Within-site rho, exposure, all sites (not held out) | 0.3139 | 0.3139 | 0.0000 |
+| LOYO within-site rho, rain + risk + season | 0.422 | 0.423 | +0.001 |
+| Within-site rho, lakes (reported only) | 0.2642 | 0.2636 | −0.0006 |
+
+Against the conditions:
+1. Brier: the upper ends are −0.00001 (LOYO), −0.000001 (LOSO) and −0.000002 (forward), all under +0.0005.
+   **Holds.**
+2. AUC: the lower ends are −0.0001 (all sites) and −0.0001 (rivers), both above −0.005. **Holds.**
+3. Cross-site rho: the lower end is −0.0065, above −0.05. **Holds.**
+4. Within-site rho: 0.0000 and +0.001, both above −0.01. **Holds.**
+5. Lakes: the upper end of the lake Brier change is −0.0000002, under +0.0005. **Holds.**
+
+### Condition 6: placebos. Holds.
+
+As stated, each run's own figures from `summary.py`:
+
+| measure | `res` | `lake` | 20 placebos: lowest, median, highest | at least as bad as `res` | at least as good |
+|---|---|---|---|---|---|
+| LOYO Brier | 0.0938 | 0.0938 | 0.0938, 0.0938, 0.0938 | 20 | 20 |
+| LOYO AUC | 0.8129 | 0.8129 | 0.8129, 0.8129, 0.8129 | 20 | 20 |
+| LOYO AUC, rivers | 0.7470 | 0.7470 | 0.7469, 0.7471, 0.7471 | 6 | 18 |
+| Cross-site rho | 0.76169 | 0.76250 | 0.76169, 0.76169, 0.76169 | 20 | 20 |
+
+**A weakness of the statement, found in the results.** `summary.py` reads `train_ecoli`'s figures, which are
+rounded to four decimals. At that precision every run ties on three of the four measures, so condition 6 holds
+there by ties. #197's statement had the same property; its differences were larger than the rounding.
+
+A check beside the stated rule, not replacing it: the same counts unrounded, from each run's held-out predictions
+(`preds_<run>.parquet`) on its own samples:
+
+| measure | `res` | placebos at least as bad as `res` | at least as good |
+|---|---|---|---|
+| LOYO Brier | 0.0938042 | 6 | 14 |
+| LOYO AUC | 0.8129187 | 11 | 16 |
+| LOYO AUC, rivers | 0.7470435 | 6 | 16 |
+| Cross-site rho | 0.7616935 | 20 | 20 |
+
+So the check gives the same answer. The placebos fall on both sides of `res`, as expected: most permuted
+residence times are also weeks long, and they remove almost as much. The samples cannot tell one lake's time from
+another's.
+
+### Condition 7: face check. Holds.
+
+`tests/test_lake_residence.py`: 9 passed.
+
+### The sites that move, for the record
+
+LOYO, `lake` → `res`:
+
+| site | samples | over 900 | mean LOYO prediction | LOYO Brier | within-site rho | mean exposure | rank of 31 |
+|---|---|---|---|---|---|---|---|
+| Windermere, Lakeside YMCA | 57 | 0 | 0.0221 → 0.0218 | 0.00056 → 0.00054 | 0.342 → 0.337 | 0.00206 → 0.00184 | 28 → 28 |
+| Windermere, Fellfoot | 59 | 0 | 0.0201 → 0.0199 | 0.00046 → 0.00045 | 0.129 → 0.123 | 0.00070 → 0.00062 | 29 → 30 |
+| Windermere, Millerground Landing | 59 | 0 | 0.0272 → 0.0272 | 0.00087 → 0.00087 | 0.492 → 0.493 | 0.00805 → 0.00801 | 23 → 23 |
+| Windermere, Rayrigg Meadow | 57 | 0 | 0.0284 → 0.0284 | 0.00094 → 0.00094 | 0.211 → 0.212 | 0.00865 → 0.00862 | 22 → 22 |
+| Wolvercote Mill Stream | 55 | 2 | 0.1615 → 0.1607 | 0.0571 → 0.0567 | 0.152 → 0.158 | 0.0261 → 0.0255 | 15 → 15 |
+
+The cross-site change comes from one swap at the bottom of the ranking: Fellfoot goes from 29th to 30th.
+
+### What this shows
+
+Established, from the tables above:
+- `residence` does no harm to any held-out score. Every Brier change is a small gain, and its interval stays below 0.
+- None of the four Windermere sites had a sample over 900 cfu/100 ml. At a site with no exceedance, a lower
+  prediction always gives a lower Brier score. So the lake Brier gain is arithmetic, not evidence.
+- The 20 placebos score the same as `res` to four decimals. The samples cannot tell whether a lake's own
+  residence time is right.
+
+Inferred, not tested:
+- Rydal Water and Waterhead have no Environment Agency samples. So what the reviewer described is not tested
+  here: a spill in Grasmere is gone by Rydal Water's outflow. The model now agrees with it (Grasmere WwTW at Rydal
+  Water 0.0398 → 0.00098). Samples below Grasmere and Rydal Water would test it.
+- The three simplifications under "Which way the errors go" all overstate what a lake removes. The case for
+  switching is that a fixed 0.05 m/s drift is further from how lakes hold water than a residence time is. The
+  quartered sensitivity reaches the same conclusion at Rydal Water.
+
+### Click-anywhere
+
+Written while the runs were going, in commit 6be6f1a; the E. coli chain does not import it.
+- Link records and lake inlets carry `h`: per overflow, the metres of well-mixed lake, the survivors' hours and the
+  share alive.
+- `anypoint.js` `transportOf` gives travel and die-off as `upstream_overflows` does.
+- The cache key holds the residence file's hash and T90 in this mode.
+- Lake and river output is unchanged. Their fixture data are identical; only the `lakes.json` note text changed.
+- The consistency tests and page fixture cover all three modes, with travel and die-off.
+- On the real network, checked against `upstream_overflows`:
+  - a click in Rydal Water: Grasmere WwTW, weight 1.053e-3 and 17.62 h in both;
+  - the Thames at Port Meadow: 29 overflows, largest weight difference 2e-16, travel equal.
+
+So the condition in "What follows" is met. The default switch is in the next commit, left for Ethan to merge.
