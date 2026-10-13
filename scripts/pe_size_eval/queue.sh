@@ -1,6 +1,7 @@
 #!/bin/zsh
 # queue.sh <data dir> <size table dir>: every run of docs/PE-SIZE-TEST-2026-10.md, one at a time, then the
-# paired comparisons and the judge. A finished run (logs/<name>/done) is not run again.
+# paired comparisons and the judge. A finished run (logs/<name>/done) is not run again. GATE, if set, is a command
+# that each run is passed to (e.g. one that waits for free memory first).
 H=${0:A:h}
 M=${1:?data dir}; T=${2:?size table dir}
 S=${DIAG_DIR:?set DIAG_DIR}
@@ -11,7 +12,7 @@ for job in $jobs; do
   set -- ${=job}
   [[ -f $S/logs/$1/done ]] && continue
   echo "$(date +%T) start $1"
-  zsh $H/run_variant.sh $1 $2 $M $3 || { echo "$(date +%T) $1 FAILED"; exit 1; }
+  ${=GATE} zsh $H/run_variant.sh $1 $2 $M $3 || { echo "$(date +%T) $1 FAILED"; exit 1; }
   echo "$(date +%T) end $1"
 done
 $PY $H/paired.py compare length dwf > /dev/null && $PY $H/paired.py compare flow dwf > /dev/null
