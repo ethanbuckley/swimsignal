@@ -178,4 +178,91 @@ If anything is changed after a result is seen, both results are kept and the cha
 
 ## Results
 
-Not yet run.
+Run on 13 October 2026, 13:28 to 15:58 BST, after the statement was pushed (`c262b11`, 12:28 UTC). One
+harness change came between the statement and the first run, before any run: `queue.sh` takes an
+optional `GATE` command that each run waits on (`c9d52d2`). It waited for free memory; it changes no
+measure. Nothing above the line changed.
+
+All 23 runs finished with 0 network attempts, one at a time. The largest single process peaked at 5.6 GB.
+
+**The check held.** The `length` run reproduced #205's `train_ecoli`: 1,502 samples, LOYO Brier 0.0938.
+
+All 23 runs kept the same 1,502 samples at 31 sites (212 over the limit). So the pairing rule and the
+common-sample check had nothing to drop, and `common.py` gives the same table as the stated one.
+
+### Verdict: fails. DWF stays off.
+
+Conditions 1 to 4 fail; 5 holds. No model code changes. `judge.py` prints "VERDICT: fails".
+
+### Condition 1: information against its own placebos. Fails.
+
+| measure | `dwf` | `length` | `flow` | 20 placebos: lowest, median, highest | placebos at least as good as `dwf` | holds |
+|---|---|---|---|---|---|---|
+| LOYO Brier (lower is better) | 0.0934 | 0.0938 | 0.0916 | 0.0904, 0.0922, 0.0941 | 17 | no |
+| LOYO AUC, all | 0.8038 | 0.8129 | 0.8075 | 0.8024, 0.8109, 0.8212 | 19 | no |
+| LOYO AUC, rivers | 0.7357 | 0.7470 | 0.7384 | 0.7324, 0.7474, 0.7664 | 19 | no |
+| cross-site rho | 0.551 | 0.763 | 0.613 | 0.496, 0.667, 0.787 | 18 | no |
+
+Holds on 0 of 4; it needs 3. On every measure, `dwf` is worse than at least 17 of 20 reshuffles of
+its own sizes.
+
+### Conditions 2 to 5: `dwf` against `length`, paired
+
+On all 1,502 samples. Change is `dwf` minus `length`, 95% interval.
+
+| condition | measure | `length` | `dwf` | change | bar | holds |
+|---|---|---|---|---|---|---|
+| 2 | LOYO Brier | 0.0938 | 0.0934 | −0.0004 [−0.0025, +0.0015] | upper ≤ +0.0005 | **no** |
+| 2 | LOSO Brier | 0.0933 | 0.0923 | −0.0009 [−0.0031, +0.0011] | upper ≤ +0.0005 | **no** |
+| 2 | forward Brier (997 samples) | 0.0852 | 0.0841 | −0.0011 [−0.0048, +0.0024] | upper ≤ +0.0005 | **no** |
+| 3 | LOYO AUC, all | 0.8129 | 0.8038 | −0.0091 [−0.0168, −0.0016] | lower ≥ −0.005 | **no** |
+| 3 | LOYO AUC, rivers (907) | 0.7470 | 0.7357 | −0.0113 [−0.0235, +0.0005] | lower ≥ −0.005 | **no** |
+| 4 | cross-site rho (31 sites) | 0.763 | 0.551 | −0.211 [−0.470, +0.032] | lower ≥ −0.05 | **no** |
+| 5 | LOYO Brier, lakes (595) | 0.0262 | 0.0264 | +0.0002 [+0.0000, +0.00048] | upper ≤ +0.0005 | yes |
+
+### `dwf` against `flow`: the sizes alone
+
+On all 1,502 samples. Change is `dwf` minus `flow`.
+
+| measure | `flow` | `dwf` | change |
+|---|---|---|---|
+| LOYO Brier | 0.0916 | 0.0934 | +0.0019 [+0.0007, +0.0031] |
+| LOSO Brier | 0.0905 | 0.0923 | +0.0018 [+0.0005, +0.0031] |
+| forward Brier (997) | 0.0819 | 0.0841 | +0.0022 [+0.0006, +0.0039] |
+| LOYO Brier, rivers (907) | 0.1344 | 0.1374 | +0.0030 [+0.0010, +0.0051] |
+| LOYO AUC, all | 0.8075 | 0.8038 | −0.0037 [−0.0083, +0.0006] |
+| LOYO AUC, rivers | 0.7384 | 0.7357 | −0.0027 [−0.0098, +0.0043] |
+| forward AUC | 0.8041 | 0.7908 | −0.0133 [−0.0218, −0.0045] |
+| LOYO Brier, lakes (595) | 0.0263 | 0.0264 | +0.0001 [−0.0001, +0.0003] |
+| cross-site rho (31 sites) | 0.613 | 0.551 | −0.061 [−0.212, +0.079] |
+
+### What this shows
+
+Established, from the tables above:
+- DWF fails the stated test on four of five conditions. It stays off, and nothing in the model changes.
+- DWF sizes do worse than one size for every overflow (`flow`): Brier is worse on LOYO, LOSO and
+  forward, with each interval above zero.
+- They also do worse than 17 to 19 of 20 random reshuffles of the same sizes, on every measure. So the
+  sizes do carry information, but they point the wrong way: giving the bigger spills to the
+  overflows with the bigger consented DWF makes the forecast worse than giving them out at random.
+- The join was not the limit. 91% of overflows matched a consent outlet, most at 0 m. The sizes reach
+  21.5% of overflows; the rest took the median, as stated.
+
+Inferred, not tested:
+- This is the same direction #172 found for built-up area, and the DWF sizes go with built-up share
+  (rho 0.52). A big works or a big urban catchment does not mean more E. coli at the sampled spot.
+  Possible reasons: big works have bigger storm tanks, and their spills are better diluted or settled
+  before they reach a bathing water. None of this was tested.
+- The sampled sites see mostly unsized overflows, which could weaken a real effect. It cannot turn one
+  into a loss against every placebo, so it does not explain this result.
+- Population equivalent itself was not tested, because the source has no such field. A works' PE and
+  its DWF both scale with the population it serves, so PE would likely point the same way. That is an
+  inference, not a result.
+
+### Files
+
+Outputs are in the run's scratch folder, not in the repo: `summary.csv`, `common.json`,
+`paired_length_dwf.json`, `paired_flow_dwf.json`, `judge.json`, and per-run logs. The size tables and
+the join table stay there too, since they hold values from the consents. Harness:
+`scripts/pe_size_eval/`. Overflow table SHA-256 `e6ef0459…`, network `b5724303`, main `25e735a`. About
+six minutes a run, 23 runs one at a time.
