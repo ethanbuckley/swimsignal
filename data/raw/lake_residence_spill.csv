@@ -1,0 +1,283 @@
+wb_id,lake_name,res_time_mean_d,uu_overflows,spill_days,why,side,gauge_m,station,label,river,measure,q_mean_m3s,record_from,record_to,days_with_flow,R,R_source,R_used,res_time_d
+GB30228476,Castle Carrock Reservoir,87,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,46.2851
+GB30228955,Ullswater,379.7,1,154,,outflow,840,c1773369-9f5c-4cc6-a934-9b7d58625cbb,Pooley Bridge,River Eamont,c1773369-9f5c-4cc6-a934-9b7d58625cbb-flow-m-86400-m3s-qualified,8.30209,1970-07-01,2026-10-11,154,1.6815,gauge,1.6815,225.81
+GB30229073,Haweswater Reservoir,929.4,0,0,no United Utilities overflow upstream,outflow,536,d0d00ab4-bfa9-458c-96c3-33dd5a401559,Burnbanks,Haweswater Beck,d0d00ab4-bfa9-458c-96c3-33dd5a401559-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,494.452
+GB30229116,Brothers Water,45.8178,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,24.3756
+GB30229125,Hayeswater,152.942,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,81.367
+GB30229133,Wet Sleddale,49.3,0,0,no United Utilities overflow upstream,outflow,9992,029d4a8c-45f6-4c66-8a23-1785a26aa017,Bampton Grange,River Lowther,029d4a8c-45f6-4c66-8a23-1785a26aa017-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,26.2282
+GB30327568,Catcleugh Reservoir,79.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,42.1886
+GB30327677,Fontburn Reservoir,21.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,11.2255
+GB30327698,Kielder Water,373.2,0,0,no United Utilities overflow upstream,inflow,4386,f4e33ecf-176b-44e9-b45f-8f2990d18547,Kielder Burn,Kielder Burn,f4e33ecf-176b-44e9-b45f-8f2990d18547-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,198.547
+GB30327880,Sweethope Loughs,201.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,107.413
+GB30327960,Colt Crag Reservoir,69.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,36.8684
+GB30327979,Hallington Reservoirs or West Hallington Reservoir,157.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,83.8451
+GB30328165,Greenlee Lough,561.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,298.618
+GB30328172,Broomlee Lough,922.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,490.994
+GB30328202,Great Northern Reservoir,31.7,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,16.8648
+GB30328236,Great Southern Reservoir,19.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,10.3742
+GB30328395,Tindale Tarn,64.3,0,0,no United Utilities overflow upstream,outflow,8600,7c139149-6466-425a-a287-9f8fa1e049ae,Featherstone,River South Tyne,7c139149-6466-425a-a287-9f8fa1e049ae-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,34.2084
+GB30328519,Derwent Reservoir,302.5,0,0,no United Utilities overflow upstream,outflow,2084,78f44c69-5edc-486a-8c14-1f59391fb7e8,Eddys Bridge,River Derwent,78f44c69-5edc-486a-8c14-1f59391fb7e8-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,160.934
+GB30328696,Waskerley Reservoir,74.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,39.4753
+GB30328720,Tunstall Reservoir,14.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,7.60777
+GB30328742,Burnhope Reservoir,50.3,0,0,no United Utilities overflow upstream,outflow,1163,f8c99b93-43b1-4d3e-90b6-be2b8333ed91,Burnhope,Burnhope Burn,f8c99b93-43b1-4d3e-90b6-be2b8333ed91-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,26.7602
+GB30328825,Hurworth Burn Reservoir,31.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,16.7584
+GB30328860,Cow Green Reservoir,282.4,0,0,no United Utilities overflow upstream,outflow,294,2b849897-a5e1-40d8-8b2d-bdab93ba8cf6,Cow Green,River Tees,2b849897-a5e1-40d8-8b2d-bdab93ba8cf6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,150.24
+GB30328862,Whitton Castle East Lake,0.255131,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.135733
+GB30328976,Grassholme Reservoir,17.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,9.15061
+GB30328995,Selset Reservoir,96.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,51.1264
+GB30329011,Hury Reservoir,22.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,11.9171
+GB30329025,Balderhead Reservoir,414.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,220.572
+GB30329027,Blackton Reservoir,13.7329,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,7.30607
+GB30347036,Bakethin,13.5,0,0,no United Utilities overflow upstream,inflow,3500,f4e33ecf-176b-44e9-b45f-8f2990d18547,Kielder Burn,Kielder Burn,f4e33ecf-176b-44e9-b45f-8f2990d18547-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,7.18216
+GB30429122,Scaling Dam Reservoir,258.649,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,137.604
+GB30429479,Semer Water,14.8186,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,7.88368
+GB30429612,Leighton Reservoir,33.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,17.8224
+GB30429634,Roundhill Reservoir,32,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,17.0244
+GB30429639,Scar House Reservoir,201.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,107.041
+GB30429658,Angram Reservoir,42,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,22.3445
+GB30429770,Gouthwaite Reservoir,29.8,0,0,no United Utilities overflow upstream,outflow,1,437d2a8e-0946-4b22-9594-78ffbe4a104e,Gouthwaite,River Nidd,437d2a8e-0946-4b22-9594-78ffbe4a104e-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,15.854
+GB30429844,Malham Tarn,115,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,61.1814
+GB30429866,Grimwith Reservoir,378.9,0,0,no United Utilities overflow upstream,outflow,369,e02a1b65-521b-4672-a336-14aae201ac78,Grimwith,River Dibb,e02a1b65-521b-4672-a336-14aae201ac78-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,201.579
+GB30429990,Thruscross Reservoir,39.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,21.1209
+GB30430012,Upper Barden Reservoir,127.105,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,67.6214
+GB30430033,Lower Barden Reservoir,53.2064,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,28.3065
+GB30430068,Fewston Reservoir,28.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,15.322
+GB30430091,Swinsty Reservoir,25.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,13.3535
+GB30430124,Chelker Reservoir,1133.84,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,603.217
+GB30430244,Hornsea Mere,142.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,75.5989
+GB30430374,Eccup Reservoir,229.283,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,121.981
+GB30430504,Lower Laithe Reservoir,412.328,0,0,no United Utilities overflow upstream,outflow,8117,2ea3c543-66af-4a63-a413-bdba8a81c8d2,Keighley,River Worth,2ea3c543-66af-4a63-a413-bdba8a81c8d2-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,219.364
+GB30430575,Walshaw Dean Reservoirs (middle),36.0874,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,19.1989
+GB30430594,Walshaw Dean Reservoirs (lower),21.7325,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,11.562
+GB30430596,Thornton Moor Reservoir,355.5,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,189.13
+GB30430604,Widdop Reservoir,242.405,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,128.962
+GB30430621,Warley Moor Reservoir,410.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,218.444
+GB30430632,Gorple Reservoirs (lower),35.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,19.046
+GB30430633,Gorple Reservoirs (upper),146.42,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,77.8972
+GB30430651,Ogden Water,253.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,134.812
+GB30430996,Withens Clough Reservoir,115.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,61.3942
+GB30431104,White Holme Reservoir,667.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,354.959
+GB30431150,Baitings Reservoir,55.9,0,0,no United Utilities overflow upstream,outflow,2837,2ab16180-81f3-4694-8236-0ad3610bf012,Ripponden,River Ryburn,2ab16180-81f3-4694-8236-0ad3610bf012-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,29.7395
+GB30431169,Ringstone Edge Reservoir,2628.1,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,1398.18
+GB30431243,Scammonden Water,251.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,133.907
+GB30431247,Green Withens Reservoir,136.5,0,0,no United Utilities overflow upstream,outflow,7794,2ab16180-81f3-4694-8236-0ad3610bf012,Ripponden,River Ryburn,2ab16180-81f3-4694-8236-0ad3610bf012-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,72.6197
+GB30431248,Booth Wood Reservoir,23.4,0,0,no United Utilities overflow upstream,outflow,3150,2ab16180-81f3-4694-8236-0ad3610bf012,Ripponden,River Ryburn,2ab16180-81f3-4694-8236-0ad3610bf012-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,12.4491
+GB30431382,Blackmoorfoot Reservoir,2056.2,0,0,no United Utilities overflow upstream,outflow,6970,c570853f-a563-424f-aeb2-a926b1c30223,Huddersfield Longroyd Bridge,River Colne,c570853f-a563-424f-aeb2-a926b1c30223-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,1093.92
+GB30431517,Butterley Reservoir,29.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,15.8008
+GB30431685,Digley Reservoir,38.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,20.4293
+GB30431693,Bilberry IRE,5.25148,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,2.79385
+GB30431740,Ingbirchworth Reservoir,71.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,37.8261
+GB30431800,Royd Moor Reservoir,233.7,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,124.331
+GB30431809,Cadney Reservoir,53.3085,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,28.3608
+GB30431876,Winscar Reservoir,204.575,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,108.836
+GB30432034,Langsett Reservoir,68.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,36.5492
+GB30432078,Midhope Reservoir,149.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,79.6954
+GB30432209,Covenham Reservoir,257.543,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,137.016
+GB30432223,Broomhead Reservoir,68.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,36.6556
+GB30432299,Howden Reservoir,110.2,0,0,no United Utilities overflow upstream,outflow,8633,cad502d9-12f9-4449-a1e5-568b9f7d32e6,Yorkshire Bridge,River Derwent,cad502d9-12f9-4449-a1e5-568b9f7d32e6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,58.6277
+GB30432352,Agden Reservoir,54.6,0,0,no United Utilities overflow upstream,outflow,5625,c1c64084-6c91-47b4-8c8c-ecedec9ee99d,Loxley Rowell Bridge,River Loxley,c1c64084-6c91-47b4-8c8c-ecedec9ee99d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,29.0479
+GB30432359,Derwent Reservoir,82.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,43.7314
+GB30432388,Dale Dike Reservoir,31.7,0,0,no United Utilities overflow upstream,outflow,7055,c1c64084-6c91-47b4-8c8c-ecedec9ee99d,Loxley Rowell Bridge,River Loxley,c1c64084-6c91-47b4-8c8c-ecedec9ee99d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,16.8648
+GB30432418,Strines Reservoir,52.0894,0,0,no United Utilities overflow upstream,outflow,8999,c1c64084-6c91-47b4-8c8c-ecedec9ee99d,Loxley Rowell Bridge,River Loxley,c1c64084-6c91-47b4-8c8c-ecedec9ee99d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,27.7122
+GB30432459,Ladybower Reservoir,99.5,0,0,no United Utilities overflow upstream,outflow,509,cad502d9-12f9-4449-a1e5-568b9f7d32e6,Yorkshire Bridge,River Derwent,cad502d9-12f9-4449-a1e5-568b9f7d32e6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,52.9352
+GB30432568,Rivelin Dams,17.4652,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,9.2917
+GB30432619,Upper Redmires,212.248,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,112.919
+GB30432621,Middle Redmires,95.2067,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,50.6511
+GB30432627,Redmires Reservoirs,62.7087,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,33.3618
+GB30433056,Clumber Lake,6.8,0,0,no United Utilities overflow upstream,inflow,5553,70a6e855-44fd-424f-b3e1-b9e46da57f1c,Cuckney,River Poulter,70a6e855-44fd-424f-b3e1-b9e46da57f1c-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,3.61768
+GB30433100,Great Lake or Welbeck,24.8,0,0,no United Utilities overflow upstream,inflow,1604,70a6e855-44fd-424f-b3e1-b9e46da57f1c,Cuckney,River Poulter,70a6e855-44fd-424f-b3e1-b9e46da57f1c-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,13.1939
+GB30433316,Thoresby Lake,6.3,0,0,no United Utilities overflow upstream,outflow,1518,28b63ceb-b74d-46ea-ad0a-1be320ce6878,Perlethorpe,River Meden,28b63ceb-b74d-46ea-ad0a-1be320ce6878-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,3.35168
+GB30433781,Ogston Reservoir,81.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,43.1994
+GB30433784,Rudyard Reservoir,199.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,106.243
+GB30433790,Tittesworth Reservoir,43,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,22.8765
+GB30434995,Attenborough Nature Reserve - Main Pond,0.1,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.0532012
+GB30435060,Attenborough NR,0.1,0,0,no United Utilities overflow upstream,inflow,5769,34d2f579-82e0-468f-97c8-962cf792e6e9,Sandiacre Total Flow,River Erewash,34d2f579-82e0-468f-97c8-962cf792e6e9-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,0.0532012
+GB30435122,Church Wilne Reservoir,65.7576,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,34.9838
+GB30435478,Blithfield Reservoir,100.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,53.5204
+GB30435548,Foremark Reservoir,1668.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,887.822
+GB30435554,Staunton Harold Reservoir,94.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,50.1155
+GB30435928,Blackbrook Reservoir,36.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,19.3652
+GB30436108,Swithland Reservoir,43.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,22.9829
+GB30436331,Cropston Reservoir,49.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,26.4942
+GB30436396,Belvide Reservoir,144.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,76.8758
+GB30436523,Chasewater,309.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,164.551
+GB30437497,Shustoke Reservoirs,18.7,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,9.94863
+GB30447006,Carsington Water,1549.82,0,0,no United Utilities overflow upstream,outflow,290,535004f8-c455-40a5-8b19-f66c2d40831c,Carsington,Scow Brook,535004f8-c455-40a5-8b19-f66c2d40831c-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,824.523
+GB30535640,Hickling Broad,55,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,29.2607
+GB30535645,Horsey Mere,35.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,19.046
+GB30535655,Barton Broad,11.3,0,0,no United Utilities overflow upstream,inflow,7728,885476c5-bdad-4caa-8c64-eddfaf9ef962,Honing Lock,River Ant,885476c5-bdad-4caa-8c64-eddfaf9ef962-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,6.01174
+GB30535953,Wroxham Broad,107.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,57.0849
+GB30536422,Tallington Lakes,1.85386,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.986276
+GB30536479,Rutland Water,1893.4,0,0,no United Utilities overflow upstream,inflow,460,e4122606-b2ba-4461-9e13-0af12f5da7f6,Manton,River Gwash,e4122606-b2ba-4461-9e13-0af12f5da7f6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,1007.31
+GB30536989,Fritton Decoy,64.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,34.5276
+GB30537182,Eyebrook Reservoir,137.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,73.2581
+GB30537913,Thrapston Lake,1.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.638415
+GB30538132,Hollowell Reservoir,174.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,92.9425
+GB30538199,Pitsford Water,407.5,0,0,no United Utilities overflow upstream,outflow,7285,e37d3d7e-592c-4f88-baac-0e359a750c74,Geldharts Mill,River Nene,e37d3d7e-592c-4f88-baac-0e359a750c74-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,216.795
+GB30538230,Ravensthorpe Reservoir,130,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,69.1616
+GB30538310,Grafham Water,4316,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,2296.16
+GB30539450,Stewartby Lake,55,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,29.2607
+GB30539554,Brogborough Reservoir,218.9,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,116.457
+GB30539601,Alton Water Reservoir,513.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,273.348
+GB30539699,Foxcote Reservoir,395.2,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,210.251
+GB30540418,Abberton Reservoir,935.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,497.644
+GB30541427,Hanningfield Reservoir,2374.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,1263.42
+GB30547009,Ormesby Broad,39.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,21.0145
+GB30547010,Rollesby Broad,31.1383,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,16.566
+GB30547011,Ormesby Little Broad,18.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,9.62942
+GB30547012,Filby Broad,18.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,9.84223
+GB30640514,Blenheim Lakes,19.3,0,0,no United Utilities overflow upstream,inflow,2332,8ed7ac07-fd8c-42b2-a6d4-3f02480244ae,Woodstock,River Glyme,8ed7ac07-fd8c-42b2-a6d4-3f02480244ae-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,10.2678
+GB30641011,Farmoor Reservoir,258.479,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,137.514
+GB30641313,Bowyers Water,0.2,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.106402
+GB30641523,King Georges Reservoir,4.17377,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,2.2205
+GB30641559,Cotswold Water Park Lake 12,1.66767,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.887221
+GB30641659,William Girling Reservoir,1.95653,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,1.0409
+GB30641690,Welsh Harp,26.8837,0,0,no United Utilities overflow upstream,inflow,1231,6f727c14-422c-4b7f-922d-b430d9aa07a2,Colindale,Silk Stream,6f727c14-422c-4b7f-922d-b430d9aa07a2-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,14.3025
+GB30641865,Lockwood Reservoir,0.723863,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.385104
+GB30641884,Walthamstow Reservoirs,0.366846,0,0,no United Utilities overflow upstream,outflow,3452,f463f458-8115-42d8-834a-c6872116737d,Lee Bridge,"['River Lee', 'River Lea Or Lee']",f463f458-8115-42d8-834a-c6872116737d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,0.195167
+GB30641900,Walthamstow Reservoirs,0.246653,0,0,no United Utilities overflow upstream,outflow,2933,f463f458-8115-42d8-834a-c6872116737d,Lee Bridge,"['River Lee', 'River Lea Or Lee']",f463f458-8115-42d8-834a-c6872116737d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,0.131222
+GB30641907,Mid Colne Valley,4,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,2.12805
+GB30641922,Reservoir No 4,0.30692,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.163285
+GB30641924,Reservoir no 1,0.199001,0,0,no United Utilities overflow upstream,outflow,1651,f463f458-8115-42d8-834a-c6872116737d,Lee Bridge,"['River Lee', 'River Lea Or Lee']",f463f458-8115-42d8-834a-c6872116737d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,0.105871
+GB30641939,Warwick Reservoir,0.178171,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.0947891
+GB30641956,Warwick Reservoir,0.137032,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.0729027
+GB30642155,Coate Water,66,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,35.1128
+GB30642334,The Queen Mother Reservoir,182.156,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,96.9092
+GB30642393,Sonning Eye gravel pit,0.363249,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.193253
+GB30642407,unnamed,157.877,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,83.9925
+GB30642417,Wraysbury Reservoir,2.50152,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,1.33084
+GB30642424,Cliffe Pools South Lake,95.2694,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,50.6845
+GB30642430,Wraysbury No1 Gravel Pit,211.9,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,112.733
+GB30642488,King George VI Reservoir,218.142,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,116.054
+GB30642489,Wraysbury II Gravel Pit/ Wellapool Lake,203.8,0,0,no United Utilities overflow upstream,outflow,1635,8eb010eb-3cce-4244-bde9-4c60bdd6c9b1,Hythe End,Colne Brook,8eb010eb-3cce-4244-bde9-4c60bdd6c9b1-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,108.424
+GB30642490,Staines Reservoirs,976.051,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,519.271
+GB30642525,Staines Reservoir South,372.7,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,198.281
+GB30642611,Farnham Flint or Englefield Lagoon,0.2,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.106402
+GB30642622,Ameys Lake or Theale Lakes,1.75973,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.936198
+GB30642639,Queen Mary Reservoir,28.5088,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,15.167
+GB30642691,Virginia Water,52.8,0,0,no United Utilities overflow upstream,outflow,5688,f311890e-f160-4533-9cfe-39271fc164e6,Thorpe,The Bourne,f311890e-f160-4533-9cfe-39271fc164e6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,28.0902
+GB30642753,"Manor, Fleet, Abbey, St Ann's Lakes atThorpe Park",67.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,36.1236
+GB30642779,Bessborough Reservoir,94.015,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,50.0171
+GB30642791,Knight Reservoir,65.5122,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,34.8533
+GB30642813,Queen Elizabeth 2 Storage Reservoir,176.328,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,93.8086
+GB30642841,Island Barn Reservoir,522.373,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,277.909
+GB30643315,Fleet Pond,87.3,0,0,no United Utilities overflow upstream,outflow,9928,a9d74547-58ba-498f-9fe0-6d95901507ed,Bramshill,River Hart,a9d74547-58ba-498f-9fe0-6d95901507ed-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,46.4447
+GB30643602,Bough Beech Reservoir,885.1,0,0,no United Utilities overflow upstream,outflow,3941,139a7706-11ac-4ef1-b81a-4dd517bef6c2,Vexour Bridge,"['Eden Tributary Medway', 'River Eden']",139a7706-11ac-4ef1-b81a-4dd517bef6c2-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,470.884
+GB30643943,Frensham Little Pond,42,0,0,no United Utilities overflow upstream,outflow,2878,a99b0223-fd15-4a76-8c45-4958137fa2ed,Tilford,River Wey,a99b0223-fd15-4a76-8c45-4958137fa2ed-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,22.3445
+GB30644023,Hedgecourt Lake,57.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,30.4311
+GB30644031,Frensham Great Pond,94.1,0,0,no United Utilities overflow upstream,outflow,8892,a99b0223-fd15-4a76-8c45-4958137fa2ed,Tilford,River Wey,a99b0223-fd15-4a76-8c45-4958137fa2ed-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,50.0623
+GB30644310,Weir Wood Reservoir,204.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,108.796
+GB30644398,Bewl Water,1244.6,0,0,no United Utilities overflow upstream,outflow,1462,f8745051-b1d4-47f0-96b5-76b67c6ebaf4,Bewl Bridge,River Bewl,f8745051-b1d4-47f0-96b5-76b67c6ebaf4-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,662.142
+GB30647003,Banbury Reservoir,0.902438,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.480108
+GB30743097,Great Puckstone,1.3,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.691616
+GB30743127,Westbere Lakes,1.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.798018
+GB30743164,Fordwich Lake,984.9,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,523.979
+GB30744533,Ardingly Reservoir,167.7,0,0,no United Utilities overflow upstream,outflow,227,f0719364-e4e5-4607-afce-a6f475d182e1,Ardingly Shellbrook,Shell Brook,f0719364-e4e5-4607-afce-a6f475d182e1-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,89.2184
+GB30744935,Greatstone Lake,11.1,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,5.90534
+GB30744955,Darwell Reservoir,150.7,0,0,no United Utilities overflow upstream,outflow,8394,e4ef0a1b-2cd2-4488-b8c1-cdd506ab9b08,Udiam,River Rother,e4ef0a1b-2cd2-4488-b8c1-cdd506ab9b08-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,80.1742
+GB30745009,"North Point Lake, Rye golf club",0.4,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.212805
+GB30745011,Powdermill Reservoir,64,0,0,no United Utilities overflow upstream,outflow,2718,77b42c7f-1412-4ea1-8e85-7fc99b8ee3a3,Brede Weir,River Brede,77b42c7f-1412-4ea1-8e85-7fc99b8ee3a3-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,34.0488
+GB30745015,Dungeness Gravel Pit,145.752,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,77.5418
+GB30745055,Nook Beach,230.8,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,122.788
+GB30745060,Burrows Pit,165.094,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,87.832
+GB30745429,Arlington Reservoir,8.2,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,4.3625
+GB30745790,Sowley Pond,17.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,9.20381
+GB30843922,Wistlandpound Reservoir,102.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,54.4248
+GB30844261,Durleigh Reservoir,32.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,17.5032
+GB30844471,Wimbleball Lake,346.3,0,0,no United Utilities overflow upstream,inflow,0,d59509c9-a7c1-4cac-8f12-2e0287c59a63,Upton (Trib),"['River Haddeo', 'Haddeo (trib)']",d59509c9-a7c1-4cac-8f12-2e0287c59a63-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,184.236
+GB30844473,Clatworthy Reservoir,81.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,43.359
+GB30845277,Upper Tamar Lake,28.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,15.322
+GB30845316,Sutton Bingham Reservoir,31.8,0,0,no United Utilities overflow upstream,outflow,8384,3b5fce31-211e-4999-b7b5-b9fcf1e1ae3d,Pen Mill,"['River Yeo', 'Somerset Yeo']",3b5fce31-211e-4999-b7b5-b9fcf1e1ae3d-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,16.918
+GB30845412,Ivy Lake,8.89134,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,4.7303
+GB30845427,Ellingham,5.7,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,3.03247
+GB30845428,Blashford Lake,14.1602,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,7.5334
+GB30845945,Meldon Reservoir,22.3,0,0,no United Utilities overflow upstream,outflow,50,7aec20ef-6d53-43e0-80dd-7431d5ce6495,Meldon,West Okement River,7aec20ef-6d53-43e0-80dd-7431d5ce6495-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,11.8639
+GB30846102,Little Sea,184.3,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,98.0498
+GB30846114,Kennick Reservoir,68.3,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,36.3364
+GB30846123,Fernworthy Reservoir,50.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,27.0262
+GB30846131,Crowdy Reservoir,111.846,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,59.5034
+GB30846225,Colliford Lake,805.8,0,0,no United Utilities overflow upstream,outflow,120,9cba8a99-f947-4661-8745-3cf4350dfda5,Colliford Weir,St Neot River,9cba8a99-f947-4661-8745-3cf4350dfda5-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,428.695
+GB30846262,Siblyback Lake,114.4,0,0,no United Utilities overflow upstream,outflow,40,1aa41da2-0712-475e-beeb-a22df0cb7bfc,Siblyback Weir,Trib (fowey),1aa41da2-0712-475e-beeb-a22df0cb7bfc-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,60.8622
+GB30846264,Venford Reservoir,77.8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,41.3905
+GB30846279,Burrator Reservoir,36.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,19.2588
+GB30846291,Avon Dam Reservoir,19.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,10.321
+GB30846472,Slapton Ley,64.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,34.4212
+GB30846501,Stithians Reservoir,280.3,0,0,no United Utilities overflow upstream,outflow,6050,951f7162-24d4-45f4-a03e-ee55d3c864c1,Ponsanooth,River Kennall,951f7162-24d4-45f4-a03e-ee55d3c864c1-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,149.123
+GB30846526,Argal Reservoir,99.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,52.8288
+GB30847000,Roadford Lake,419.4,0,0,no United Utilities overflow upstream,outflow,284,14846041-47d6-49c2-8419-f70fc3bbe1b5,Roadford Comp,River Wolf,14846041-47d6-49c2-8419-f70fc3bbe1b5-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,223.126
+GB30847017,Rockford Lake,14.7384,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,7.84101
+GB30935079,Cole Mere,82.6771,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,43.9852
+GB30935091,White Mere,1010.8,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,537.758
+GB30935211,Crose Mere,67.2,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,35.7512
+GB30935724,Aqualate Mere,23.1,0,0,no United Utilities overflow upstream,inflow,1215,4d6127c2-e324-4177-b13a-068d150f3a5c,Coley Mill,Coley Brook,4d6127c2-e324-4177-b13a-068d150f3a5c-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,12.2895
+GB30937631,Chelmarsh Reservoir,1268.28,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,674.74
+GB30937864,Stanford Reservoir,19.6,0,0,no United Utilities overflow upstream,outflow,6014,f7897367-bb3b-4599-8184-b8941e889c9c,Lilbourne,River Avon,f7897367-bb3b-4599-8184-b8941e889c9c-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,10.4274
+GB30937926,Coombe Pool,9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,4.78811
+GB30937959,Trimpley Reservoir,0.0876028,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,0.0466058
+GB30938250,Draycote Water,3700.4,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,1968.66
+GB30938586,Westwood Great Pool,1037.2,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,551.803
+GB30940946,Frampton Gravel Pits,115.7,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,61.5538
+GB30943096,Chew Valley lake,195.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,103.902
+GB30943135,Blagdon Lake,153.9,0,0,no United Utilities overflow upstream,outflow,7768,959f3e4f-bb6e-4f4a-8082-0157eea99482,Iwood,Congresbury Yeo,959f3e4f-bb6e-4f4a-8082-0157eea99482-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,81.8767
+GB30943348,Cheddar Reservoir,375.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,199.558
+GB31228806,Over Water,100.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,53.2544
+GB31228847,Bassenthwaite Lake,64.2,16,624,,outflow,233,6152bfd2-a1e8-408c-abd4-076bee104444,Ouse Bridge,River Derwent,6152bfd2-a1e8-408c-abd4-076bee104444-flow-m-86400-m3s-qualified,17.4156,1968-03-01,2026-10-11,624,1.21919,gauge,1.21919,52.6579
+GB31228965,Derwent Water,86.3,3,190,under 30 spill days with a reading,outflow,1164,7663b8bf-5756-4c71-a6a2-727e4c7448a3,Portinscale,River Derwent,7663b8bf-5756-4c71-a6a2-727e4c7448a3-flow-m-86400-m3s-qualified,12.501,1976-01-01,2026-10-11,0,1.87966,median of gauged lakes,1.87966,45.9127
+GB31228986,Loweswater,133.9,0,0,no United Utilities overflow upstream,outflow,3844,532a2993-7275-4050-8df4-b2314bc4f8e0,Scalehill,River Cocker,532a2993-7275-4050-8df4-b2314bc4f8e0-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,71.2364
+GB31229000,Crummock Water,240.5,0,0,no United Utilities overflow upstream,outflow,789,532a2993-7275-4050-8df4-b2314bc4f8e0,Scalehill,River Cocker,532a2993-7275-4050-8df4-b2314bc4f8e0-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,127.949
+GB31229021,Thirlmere,499.5,0,0,no United Utilities overflow upstream,outflow,986,56493f12-16e9-4748-8a3d-7046a1fc93ee,Thirlmere St Johns,St John's Beck,56493f12-16e9-4748-8a3d-7046a1fc93ee-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,265.74
+GB31229052,Buttermere,159,0,0,no United Utilities overflow upstream,outflow,6232,532a2993-7275-4050-8df4-b2314bc4f8e0,Scalehill,River Cocker,532a2993-7275-4050-8df4-b2314bc4f8e0-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,84.5899
+GB31229062,Ennerdale Water,379.9,0,0,no United Utilities overflow upstream,outflow,600,f1914b03-f60b-4174-9966-743e4fae2f61,Bleach Green Weir,River Ehen,f1914b03-f60b-4174-9966-743e4fae2f61-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,202.111
+GB31229183,Wast Water,299.2,0,0,no United Utilities overflow upstream,outflow,1297,6c67bb15-c4f3-4606-ad99-21295393de4a,Galesyke,River Irt,6c67bb15-c4f3-4606-ad99-21295393de4a-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,159.178
+GB31229184,Grasmere,38.9,1,271,,outflow,5085,a9417599-e466-4b53-babe-0c81229c4328,Miller Bridge House,River Rothay,a9417599-e466-4b53-babe-0c81229c4328-flow-m-86400-m3s-qualified,4.40594,1976-01-01,2026-10-11,271,2.23857,gauge,2.23857,17.3772
+GB31229197,Rydal Water,15.9,1,271,,outflow,2832,a9417599-e466-4b53-babe-0c81229c4328,Miller Bridge House,River Rothay,a9417599-e466-4b53-babe-0c81229c4328-flow-m-86400-m3s-qualified,4.40594,1976-01-01,2026-10-11,271,2.23857,gauge,2.23857,7.10275
+GB31229215,Burnmoor Tarn,296.4,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,157.688
+GB31229321,Coniston Water,281,2,498,,inflow,306,fbecd84a-70b6-4725-80ba-67c7adb3cae7,Coniston Upstream,Church Beck,fbecd84a-70b6-4725-80ba-67c7adb3cae7-flow-m-86400-m3s-qualified,0.811375,2003-12-05,2026-10-11,498,1.36189,gauge,1.36189,206.331
+GB31229328,Esthwaite Water,79.5,1,430,,outflow,1412,e8f318af-7c16-40c2-a2a2-c723e1c21eee,Eel House Bridge,Cunsey Beck,e8f318af-7c16-40c2-a2a2-c723e1c21eee-flow-m-86400-m3s-qualified,0.978831,1976-01-01,2026-10-11,423,1.87264,gauge,1.87264,42.4534
+GB31229338,Devoke Water,199.1,0,0,no United Utilities overflow upstream,outflow,3336,1d9b9038-501a-459e-8bad-5fe0962c9cb9,Cropple How,River Esk,1d9b9038-501a-459e-8bad-5fe0962c9cb9-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,105.924
+GB31229430,Killington Reservoir,115.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,61.6602
+GB31230030,Stocks Reservoir,96.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,51.3924
+GB31230600,Dean Clough Reservoir,287.295,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,152.844
+GB31230625,Hurstwood Reservoir,179.993,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,95.7585
+GB31230663,Cant Clough Reservoir,77.8712,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,41.4284
+GB31230769,Clowbridge Reservoir,100.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,53.2544
+GB31231013,Ogden Reservoir Lancashire,48.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,25.5898
+GB31231141,Cowm Reservoir,123.006,0,0,no United Utilities overflow upstream,outflow,8831,0b61ef5d-3db7-42de-ae00-ebd8df2b7312,Rochdale,River Roch,0b61ef5d-3db7-42de-ae00-ebd8df2b7312-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,65.4407
+GB31231164,Watergrove Reservoir,239.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,127.204
+GB31231168,Blackstone Edge Reservoir,261.5,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,139.121
+GB31231190,Anglezarke Reservoir,1037,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,551.697
+GB31231200,Wayoh Reservoir,35.2,0,0,no United Utilities overflow upstream,outflow,4891,ffe31960-febf-4c98-963d-6f23354add54,Bradshaw Tennis Club,Bradshaw Brook,ffe31960-febf-4c98-963d-6f23354add54-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,18.7268
+GB31231202,Turton and Entwistle Reservoir,87.4,0,0,no United Utilities overflow upstream,outflow,6702,ffe31960-febf-4c98-963d-6f23354add54,Bradshaw Tennis Club,Bradshaw Brook,ffe31960-febf-4c98-963d-6f23354add54-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,46.4979
+GB31231212,Spring Mill Reservoir,81.2374,0,0,no United Utilities overflow upstream,outflow,7282,0b61ef5d-3db7-42de-ae00-ebd8df2b7312,Rochdale,River Roch,0b61ef5d-3db7-42de-ae00-ebd8df2b7312-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,43.2193
+GB31231250,Lower Naden Reservoir,4.17727,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,2.22236
+GB31231260,Greenbooth Reservoir,64.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,34.4212
+GB31231264,Delph Reservoir,309.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,164.498
+GB31231266,Yarrow Reservoir,64.9,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,34.5276
+GB31231267,Ashworth Moor Reservoir,365.1,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,194.238
+GB31231288,Rivington Reservoirs,122.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,64.9587
+GB31231312,Springs Reservoir,375.404,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,199.72
+GB31231314,Dingle Reservoir,269.576,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,143.418
+GB31231393,Piethorne Reservoir,51.4,0,0,no United Utilities overflow upstream,outflow,9321,e96f8156-84b5-49aa-b931-5698f421b729,Albert Royds Bridge,River Roch,e96f8156-84b5-49aa-b931-5698f421b729-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,27.3454
+GB31231496,Worthington Reservoir,3.3,7,313,,outflow,5306,e7bc8b2f-525b-4f1f-902d-6398a291f85f,Wigan,River Douglas,e7bc8b2f-525b-4f1f-902d-6398a291f85f-flow-m-86400-m3s-qualified,1.36113,1999-12-01,2026-10-11,313,1.88667,gauge,1.88667,1.74911
+GB31231791,Yeoman Hey Reservoir,26.7,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,14.2047
+GB31231829,Dovestone Reservoir,41.3,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,21.9721
+GB31231942,Chew Reservoir,109.21,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,58.1011
+GB31232065,Woodhead Reservoir,48.5907,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,25.8508
+GB31232085,Pennington Flash,16.1,29,515,,outflow,8629,4c0ab2d3-ff26-47a2-bdce-abfbb07c6e0a,Little Woolden Hall,Glaze Brook,4c0ab2d3-ff26-47a2-bdce-abfbb07c6e0a-flow-m-86400-m3s-qualified,3.16976,1995-06-30,2026-10-11,515,1.35247,gauge,1.35247,11.9042
+GB31232111,Torside Reservoir,30.1,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,16.0136
+GB31232136,Rhodeswood Reservoir,8,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,4.2561
+GB31232150,Valehouse Reservoir,16.2,1,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,8.6186
+GB31232166,Arnfield Reservoir,40.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,21.3869
+GB31232499,Kinder Reservoir,60.1117,0,0,no United Utilities overflow upstream,outflow,7122,4662701f-d016-44e9-8fe2-e50064e5e924,Watford Bridge,River Sett,4662701f-d016-44e9-8fe2-e50064e5e924-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,31.9802
+GB31232650,Rostherne Mere,140.3,0,0,no United Utilities overflow upstream,outflow,5447,c02ac46e-bfca-4209-8521-5e1b8f2a7459,Bollington Mill,River Bollin,c02ac46e-bfca-4209-8521-5e1b8f2a7459-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,74.6413
+GB31232744,The Mere,165.7,0,0,no United Utilities overflow upstream,outflow,8650,c02ac46e-bfca-4209-8521-5e1b8f2a7459,Bollington Mill,River Bollin,c02ac46e-bfca-4209-8521-5e1b8f2a7459-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,88.1544
+GB31232793,Toddbrook Reservoir,18.4,0,0,no United Utilities overflow upstream,outflow,5271,b0166a7b-cf7c-4ada-8688-deaa14a01898,Goytside Farm,River Goyt,b0166a7b-cf7c-4ada-8688-deaa14a01898-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,9.78902
+GB31232804,Tatton Mere,81,1,30,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,43.093
+GB31232950,Fernilee Reservoir,44.9,0,0,no United Utilities overflow upstream,outflow,2239,ce15ea40-742a-4221-ab0c-166d42ef4fa6,Taxal,River Goyt,ce15ea40-742a-4221-ab0c-166d42ef4fa6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,23.8873
+GB31233043,Errwood Reservoir,50,0,0,no United Utilities overflow upstream,outflow,4237,ce15ea40-742a-4221-ab0c-166d42ef4fa6,Taxal,River Goyt,ce15ea40-742a-4221-ab0c-166d42ef4fa6-flow-m-86400-m3s-qualified,,,,,1.87966,median of gauged lakes,1.87966,26.6006
+GB31233063,Lamaload Reservoir,92.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,49.2643
+GB31233344,Petty Pool,46.6,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,24.7918
+GB31233474,Oakmere,305.3,,,no lake links,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,162.423
+GB31234480,Combermere,106.2,0,0,no gauge,,,,,,,,,,,1.87966,median of gauged lakes,1.87966,56.4997
+GB31247007,Windermere (N Basin),187.032,3,289,,inflow,348,126c6cee-4963-4d67-b788-6c32e1138237,Calgarth (Trout Beck Bridge),Trout Beck,126c6cee-4963-4d67-b788-6c32e1138237-flow-m-86400-m3s-qualified,1.66419,1995-11-07,2026-10-11,268,2.04033,gauge,2.04033,91.6676
+GB31247008,Windermere (S Basin),131.173,6,473,,outflow,384,c9fb80f4-1454-40ca-a87e-da4a12ea76fa,Newby Bridge,River Leven,c9fb80f4-1454-40ca-a87e-da4a12ea76fa-flow-m-86400-m3s-qualified,14.3951,1939-01-01,2026-10-11,473,1.90086,gauge,1.90086,69.0073
