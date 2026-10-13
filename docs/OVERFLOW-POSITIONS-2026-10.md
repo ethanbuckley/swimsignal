@@ -125,4 +125,154 @@ moves today and this rule does not is listed in the results.
 
 ## Results
 
-(Added after this file was pushed.)
+Added after commit 5808340, which was pushed at 13:04 BST on 13 October 2026 before any of this was
+run. Every case, with its evidence, is in `docs/OVERFLOW-POSITIONS-2026-10-cases.csv`.
+
+**Answer.**
+- Three joins are added: Sudbury WRC, Sudbury Bailey and Coates CSO, and Ilkley Bridge Lane CSO.
+  Benson STW is flagged, not joined: its OpenMap Local lines stop before any river.
+- Of the 166 position conflicts, 37 are settled: 19 at the outlet, 16 at the live position and 2 in
+  the ground. One more move to the outlet, East Worthing CSO, is kept at the live position because
+  the EA's features contradict it.
+- 128 stay open.
+- The position rule changes no listed spot. The joins change five spots' weights and no spot's set
+  of overflows.
+- With today's forecast (13 October, 11:54 BST build), no published level changes.
+
+### Joins (section 1)
+
+| Overflow | Spills a year | Trace (OS OpenMap Local) | Row |
+|---|---|---|---|
+| AWS01334 Sudbury WRC | 53 | The outfall is 11 m from a drawn channel (a water area). It runs to the head of an unnamed OS Open Rivers link, which meets the Stour 435 m below. No other drawn water touches it. The 2025 return's outlet, 130 m west, is 59 m from the same channel. | 15 m down the Stour below that link, 1.1 km above Friars Meadow |
+| AWS01332 Sudbury Bailey and Coates CSO | 13 | The outfall is 3 m from a short channel. It runs about 120 m into an unnamed arm, which meets the Stour 95 m below. | 15 m down the Stour below the arm, 0.4 km above Friars Meadow |
+| YWS00179 Ilkley Bridge Lane CSO | 4 | The outfall is 2 m from the reach OS Open Rivers names Ewe Croft Beck, below where Spicey Gill joins it. A water area 3 m away meets that reach 68 m above the Wharfe. | 15 m down the Wharfe below the beck's mouth, 1.1 km above Cromwheel |
+| TWL00034 Benson STW | 31 | The outfall's line (54 m) and the lines it joins (928 m in all, with a 15 m gap allowed) run north-east and south-east, away from the river. They stop 288 m from the nearest link: an unnamed ditch that meets the Thames 1.0 km above Wallingford Beach. No water area joins them. OpenMap Local gives no name for Howbery Ditch. | **None: flagged.** Benson stays snapped onto that ditch, as before. It counts at Wallingford Beach at 0.006. |
+
+Established: the traces above, and that each join point is upstream of the spot named.
+
+Inferred:
+- Benson's water probably reaches the Thames by that ditch, because it is the only drawn way out of
+  the drains around the works. But the trace breaks, so this was not used.
+- What would settle it: Thames Water's own asset map, or a look on the ground.
+
+### The 166 (section 2)
+
+| Class | Count |
+|---|---|
+| Settled: outlet (moved) | 19 |
+| Settled: live (no change) | 16 |
+| Settled: ground (off the network either way) | 2 |
+| Kept live: a check contradicts the move (East Worthing CSO) | 1 |
+| Open: under 1 km apart | 58 |
+| Open: no evidence | 39 |
+| Open: the two records name different waters | 17 |
+| Open: evidence conflicts | 14 |
+
+**K2, the place rule's 12.** Ten stay at the outlet. Two go back to the live position:
+- **Scruton STW (YWS00371).** The place points to the outlet. The water body, "Ings Goit from
+  Source to Burneston Beck", points to the live position through the word "ings", so the evidence
+  conflicts. "Ings" is a common Yorkshire word for wet meadows, so this may be a false match.
+- **East Worthing CSO (SWS00971).** See K3.
+
+**Nine new moves to the outlet.** None counts at a listed spot from either position.
+- AWS00702 Kirton Drunkards Lane STW: the water.
+- AWS00829 Kibworth Meadowsbrook Rd SSO: the water body.
+- AWS01217 Colchester Mile End Rd and AWS01221 Colchester North Gate: the water body (Salary Brook).
+- SVT00595 Coalville Hermitage Road: the water and the water body.
+- SVT00963 Desford Cross Road PS: the water.
+- SWS00393 Petworth Road Hambledon: the water body.
+- SWS00807 St Andrews Road Portsmouth: the water body.
+- YWS00412 Tadcaster Road: the water.
+
+A weakness shows in Colchester. Eleven Colchester overflows share one live position and one
+outlet, so neither position is any one asset's own. Two of them move, on the water body. The other
+nine stay open, because the place (Colchester, 0.55 km from the live position) points the other way.
+
+**K3, EA features.** 41 bathing waters lie within 2 km of a conflict position, with 99 feature points.
+25 conflicts have a feature within 2 km.
+- **Contradicts a move.** East Worthing CSO. Its live position is 8 m from a storm overflow in the
+  features for ukj2407-15350, and its outlet is 1.2 km from any. It is kept live (`KEEP_LIVE`).
+- **Contradicts a settled-live case.** Elizabeth Street, Dover (SWS00259). Its outlet is 0 m from a
+  storm overflow for ukj4208-13300, and its live position is 8.1 km away. The place points to the
+  live position. The stated rule makes no exception in this direction, so it stays live. It is
+  marine and counts at no listed spot.
+- **Agrees.** Sandown New No. 1 SSO (outlet). Southend Southchurch Road and the two Broadstairs
+  overflows have features at both positions.
+- **Points one way where the rule leaves the case open.** It points to the outlet at AWS01190,
+  NWL01292, SBB00698, SWS00474 and SWS00770, and to the live position at NWL00769 and SWS00381. All
+  seven are sea or estuary outfalls with no listed spot either way. The rule used K3 only as a check,
+  so they stay open. They are the easiest next cases.
+
+**K4, OpenMap Local names, for the conflicts that change a listed spot.**
+- **TWL00743, South Lane, Ash.** "The Ash" is 834 m from the live position, and the River Wey 647 m
+  from the outlet. The receiving water, a Blackwater tributary, is named by neither. Open.
+- **YWS00049, Darley Rd.** Horn Beck is 826 m from the live position, and Cockhill Beck 364 m from
+  the outlet. The receiving water, the Nidd, is named by neither. Open.
+- **TWL00418 and SWS00413.** Tiles not held, so not checked.
+- **AWS00023, Arthingworth.** Live position not checked (tile not held). No water name lies within
+  1 km of the outlet.
+- No K4 result contradicts a move.
+
+**The spot-relevant open cases.** Each counts at a listed spot from one position only, and none
+moved.
+- **TWL00418, Trumps Green Road (Virginia Water) SPS.** The live position counts at
+  bw-uki2203-11942 at 0.012. The outlet counts nowhere. The place points to the live position, and
+  the water body (Bulbourne) to the outlet.
+- **TWL00743, South Lane, Ash.** The live position counts at Henley at 0.001. The outlet counts at
+  bw-uki2203-11942 at 0.017.
+- **YWS00049, Darley Rd.** The outlet counts at Knaresborough at 0.011. The live position counts
+  nowhere.
+- **Weight only:** Farnham STW (0.09 or 0.20 at the Wey at Waverley), the three Harrogate Oak Beck
+  overflows, and two Wellow and Cam Brook overflows. These are all under 1 km apart.
+
+**The weakest settled case.** AWS00023, Arthingworth TPS, is settled live by the place
+(Arthingworth, 0.8 km). But both records name the Rhee, a Cam tributary, and so does the water
+body, "Rhee (DS Wendy)". The outlet is 66 km away in Cambridgeshire. That it lies by the Rhee is
+inferred: no link within 3 km carries the name. If the outlet were right, the overflow would count at Grantchester and
+bw-ukh1201-09801 at 0.004 each. Nothing moves, so the map is as before.
+
+**Spelling.** "Lilington" and "Lillington" Brook, and "Garman Carr" and "Garmancarr" Dike, count as
+different waters under `_same_water`, so both cases stay open. Both pairs are under 1 km apart.
+
+### K5, effect on spots
+
+Both tables were built from the same snapshot and network (`b5724303`). The before table reproduces
+the published `sum_weight` at Friars Meadow (2.155). 14 overflows are placed differently: the 3
+joins, 9 new moves, and 2 moved back. Five spots change, all through the joins. No spot gains or
+loses an overflow.
+
+| Spot | Summed weight | What changed |
+|---|---|---|
+| Friars Meadow, River Stour (`bw-ukh1401-11051`) | 2.155 → 4.035 (+87%) | Sudbury WRC 0.022 → 0.945, Bailey and Coates 0.023 → 0.978 |
+| River Stour, Dedham | 0.917 → 1.116 (+22%) | the same two, 0.003 → 0.10 each |
+| Wharfe at Cromwheel, Ilkley (`bw-uke4100-08901`) | 5.031 → 5.958 (+18%) | Bridge Lane 0.022 → 0.949 |
+| River Wharfe, Greenholme | 8.930 → 9.583 (+7%) | Bridge Lane 0.016 → 0.669 |
+| Wharfe at Wilderness Carpark (`bw-uke4200-08904`) | 7.984 → 8.043 (+1%) | Bridge Lane 0.003 → 0.062 |
+
+**Could levels move?**
+- Friars Meadow, Dedham and Cromwheel pass the 10% test stated in K5. Greenholme has an overflow
+  rising to 0.67.
+- With today's published spill chances, no level changes. These come from click-anywhere's
+  `overflow_days.json`, calibrated by lead; they reproduce the published contributors' chances to
+  0.001.
+  - Friars Meadow's highest day goes from 0.022 to 0.047. It stays Low.
+  - Cromwheel moves by at most 0.002.
+- On a wet day it could change. Sudbury WRC spills about 53 times a year, and it now counts at
+  nearly full weight 1.1 km above Friars Meadow. So Friars Meadow will read higher on days when it
+  is likely to spill.
+
+### K6, tests
+
+- `pytest -q`: 682 passed, and 4 failed in `tests/test_cards.py` (Pillow missing locally, known).
+- `node --test tests/*.test.cjs`: 339 passed.
+
+### Tiles and downloads
+
+- OS OpenMap Local SE and TL were downloaded, 123 MB and 115 MB. SU was copied from a previous
+  session's scratch folder. All three MD5s match OS's list.
+- Other downloads, each one small request:
+  - the EA bathing-water list;
+  - the `features.json` of 41 bathing waters;
+  - five published spot files, `spots-lite.json`, and click-anywhere's `overflow_days.json` and
+    `overflow_ids.json`.
+- No Open-Meteo requests were made, and the EA consents register was not used.

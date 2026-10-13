@@ -100,9 +100,14 @@ POSITION_GAP_M = 300.0    # live position and annual-return outlet further apart
 NAMED_NEAR_M = 750.0      # ...by which has a link carrying the receiving water's name this close
 POSITION_EXTRA = {"lake", "tarn", "reservoir", "pond", "mere", "via", "sws", "culverted", "pumped", "outlet",
                   "and", "tribs", "various", "sites"}
-PLACE_GAP_M = 1000.0      # names decide nothing and the two are this far apart: the one by the overflow's place
-PLACE_NEAR_M = 3000.0     # ...within this of a place its name gives, while the other is not
+PLACE_GAP_M = 1000.0      # names decide nothing near either and the two are this far apart: weigh the evidence
+PLACE_NEAR_M = 3000.0     # ...within this of each: the water's name, the water body's name, the overflow's place
 PLACES = config.RAW / "places.json"
+# Words that match unrelated links within PLACE_NEAR_M: regional stream words, the sea, plurals.
+EVIDENCE_EXTRA = {"gill", "ghyll", "sike", "syke", "clough", "lode", "rhyne", "goit", "stell", "dean", "dene",
+                  "gutter", "fleet", "carr", "sea", "estuary", "channel", "bay", "harbour", "sound", "streams",
+                  "brooks", "becks", "burns"}
+WATER_BODY_TAIL = re.compile(r"\s(?:from|to|conf)\b.*$", re.IGNORECASE)
 
 
 @lru_cache(maxsize=1)
@@ -158,13 +163,16 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     feed, 6.7 km from the village. The live position alone matched at 55, both at 159, neither at
     166 (11 Oct 2026).
 
-    When names decide nothing and the two are over PLACE_GAP_M apart, the outlet is used when it is
-    within PLACE_NEAR_M of a place the overflow's name gives (OS Open Names) and the live position is
-    not, provided the two receiving waters agree (or one is generic), so both rows describe the same
-    asset. Earl Sterndale STW (Glutton Brook, 35% of Dovedale's weight) and Hazeldene Lane, Newick
-    (above Barcombe Mills, live 61 km away) move; Holy Island STW does not ("Birkley Burn" live,
-    "NORTH SEA" in the return: two assets under one id). Adds `position_source`: 'live',
-    'annual return' or 'join' (overflow_joins)."""
+    When names decide nothing within NAMED_NEAR_M and the two are over PLACE_GAP_M apart, the
+    evidence within PLACE_NEAR_M of each is weighed (position_evidence): the receiving waters' names,
+    the WFD water body's name, and a place the overflow's name gives (OS Open Names). The outlet is
+    used when some evidence points to it and none to the live position, provided the two receiving
+    waters agree (or one is generic), so both rows describe the same asset, and do not put it in the
+    ground. Until 13 Oct 2026 only the place counted (#179). Earl Sterndale STW (Glutton Brook, 35%
+    of Dovedale's weight) and Hazeldene Lane, Newick (above Barcombe Mills, live 61 km away) move;
+    Holy Island STW does not ("Birkley Burn" live, "NORTH SEA" in the return: two assets under one
+    id). KEEP_LIVE lists any move a check contradicts (docs/OVERFLOW-POSITIONS-2026-10.md). Adds
+    `position_source`: 'live', 'annual return' or 'join' (overflow_joins)."""
     df = df.copy()
     df["position_source"] = np.where(df["lat"].notna(), "live", "annual return")
     both = df["lat"].notna() & df["ar_lat"].notna()
@@ -173,7 +181,7 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     lx, ly = _TO_BNG.transform(df.loc[both, "lon"].to_numpy(), df.loc[both, "lat"].to_numpy())
     ax, ay = _TO_BNG.transform(df.loc[both, "ar_lon"].to_numpy(), df.loc[both, "ar_lat"].to_numpy())
     gap = np.hypot(lx - ax, ly - ay)
-    moved, by_place = [], 0
+    moved, by_evidence = [], 0
     for i, lxi, lyi, axi, ayi, g in zip(df.index[both], lx, ly, ax, ay, gap, strict=True):
         if g <= POSITION_GAP_M:
             continue
@@ -182,20 +190,67 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
         at_outlet, at_live = _named_within(net, axi, ayi, want), _named_within(net, lxi, lyi, want)
         if at_outlet and not at_live:
             moved.append(i)
-        elif not at_outlet and not at_live and g > PLACE_GAP_M and _same_water(rw, rw_ar):
-            pts = _named_place(df.at[i, "site_name"] if "site_name" in df else None)
-            if pts is not None:
-                d_out = float(np.hypot(pts[:, 0] - axi, pts[:, 1] - ayi).min())
-                d_live = float(np.hypot(pts[:, 0] - lxi, pts[:, 1] - lyi).min())
-                if d_out <= PLACE_NEAR_M < d_live:
-                    moved.append(i)
-                    by_place += 1
+        elif (not at_outlet and not at_live and g > PLACE_GAP_M and _same_water(rw, rw_ar)
+              and not _ground_names(rw, rw_ar)):
+            ev = position_evidence(net, df.loc[i], (lxi, lyi), (axi, ayi)).values()
+            if "annual return" in ev and "live" not in ev and df.at[i, "site_id"] not in KEEP_LIVE:
+                moved.append(i)
+                by_evidence += 1
     df.loc[moved, "lat"] = df.loc[moved, "ar_lat"]
     df.loc[moved, "lon"] = df.loc[moved, "ar_lon"]
     df.loc[moved, "position_source"] = "annual return"
     log.info("positions: %d overflows moved to their annual-return outlet: %d by the named water, %d by the "
-             "named place", len(moved), len(moved) - by_place, by_place)
+             "evidence within %.0f km", len(moved), len(moved) - by_evidence, by_evidence, PLACE_NEAR_M / 1000)
     return df
+
+
+def _ground_names(*names) -> bool:
+    return bool(to_ground(*(pd.Series([n], dtype=object) for n in names)).iloc[0])
+
+
+def water_body_words(name) -> set[str]:
+    """The distinctive words of a WFD water body name, before any "from", "to" or "conf", brackets
+    dropped: "Crimple Beck from Source to Park Beck" -> {"crimple"}, "Wey (Shalford to River Thames
+    confluence at Weybridge)" -> {"wey"}."""
+    if not isinstance(name, str):
+        return set()
+    return _tokens(WATER_BODY_TAIL.sub("", re.sub(r"\(.*?\)", " ", name)))
+
+
+def position_evidence(net: RiverNetwork, row, live_xy, ar_xy) -> dict[str, str | None]:
+    """Which position each kind of evidence points to ('live', 'annual return' or None), within
+    PLACE_NEAR_M of each (BNG points): e1, a link carrying the receiving waters' words; e2, a link
+    carrying the WFD water body's words; e3, a place the site name gives (OS Open Names). A kind
+    points to a position when that position has it and the other does not."""
+    def side(at_live: bool, at_ar: bool) -> str | None:
+        return "live" if at_live and not at_ar else "annual return" if at_ar and not at_live else None
+
+    def named(xy, want) -> bool:
+        if not want:
+            return False
+        cand = net.candidates_xy(xy[0], xy[1], PLACE_NEAR_M)
+        alt = cand.get("watercourse_name_alternative", pd.Series(None, index=cand.index, dtype=object))
+        return any(want & (_tokens(n) | _tokens(a)) for n, a in zip(cand["watercourse_name"], alt))
+
+    drop = POSITION_EXTRA | EVIDENCE_EXTRA
+    water = (_tokens(row.get("receiving_watercourse")) | _tokens(row.get("receiving_water"))) - drop
+    body = water_body_words(row.get("wfd_waterbody_name")) - drop
+    out = {"e1": side(named(live_xy, water), named(ar_xy, water)),
+           "e2": side(named(live_xy, body), named(ar_xy, body)), "e3": None}
+    pts = _named_place(row.get("site_name"))
+    if pts is not None:
+        d_live = float(np.hypot(pts[:, 0] - live_xy[0], pts[:, 1] - live_xy[1]).min())
+        d_ar = float(np.hypot(pts[:, 0] - ar_xy[0], pts[:, 1] - ar_xy[1]).min())
+        out["e3"] = side(d_live <= PLACE_NEAR_M, d_ar <= PLACE_NEAR_M)
+    return out
+
+
+# Overflows the evidence would move to the outlet but a check against another source contradicts:
+# id -> why. They keep the live position (docs/OVERFLOW-POSITIONS-2026-10.md, checks K3 and K4).
+KEEP_LIVE: dict[str, str] = {
+    "SWS00971": "East Worthing CSO: the place points to the outlet, but the live position is 8 m from a storm "
+                "overflow in the EA's features for its bathing water (ukj2407-15350) and the outlet 1.2 km from any",
+}
 
 
 JOINS = config.RAW / "overflow_joins.csv"
