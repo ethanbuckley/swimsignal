@@ -73,7 +73,7 @@ No accuracy test applies: clicks are not scored.
    - This design was made after the first run's size was seen and before the rerun. The rule did not change.
 5. **Reach: fails.**
    - 13,836 small links have a move. At the midpoint of 9,095 of them (a sample, seed 13: all would have taken over 20 minutes), 8,501 clicks move and 1,196 change the set of overflows counted.
-   - The ten largest changes:
+   - The ten largest changes. Not looked at on a map, as stated: they are judged from the network's names and lengths. A channel of a big river's name with 12 or 19 km of network above it is a braided channel OS draws disconnected, and that is enough to call those two wrong.
 
 | Click | Old: channel, network above | New: channel, network above | Overflows, old → new | Looks |
 |---|---|---|---|---|
