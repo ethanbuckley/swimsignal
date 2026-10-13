@@ -284,6 +284,10 @@ def test_a_click_on_a_side_arm_goes_where_the_arm_leaves_its_river(world, tmp_pa
     arms = bap.arm_heads(net, list(net.links.index))
     assert {ch: h.link_id for ch, h in arms["XA"].items()} == {"AV1": "AV1", "AV2": "AV1"}
     assert {h.link_id for h in arms["S1"].values()} == {"M3"}
+    # Written once a square, by the name the page has for the channel the old rule chose.
+    lno = pd.Series(range(len(net.links)), index=net.links.index.sort_values())
+    row = bap.encode_arm(net, arms["XA"], bap.link_names(net, list(arms["XA"])), lno, {"AV1": ["t"]}, "t")
+    assert row == [[int(lno["AV1"]), 0, 7500, 200, 0, ["River Avon"]]]
     # A click on the Nadder is not on an arm, and a listed spot's river hint still decides for a spot.
     at = net.links.at["ND1", "geometry"].interpolate(0.9, normalized=True)
     assert transport.locate_pin(net, *bng_to_lonlat(at.x, at.y)).placement is None

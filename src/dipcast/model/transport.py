@@ -115,9 +115,11 @@ def _names_match(cand: pd.DataFrame, want: frozenset[str]) -> pd.Series:
     """Which candidate links carry the wanted river's name, as their name or OS's alternative
     (Welsh links often have the English name there)."""
     def matches(col: pd.Series) -> pd.Series:
-        # .astype(bool): on an empty frame pandas 3 keeps the str dtype through .map, and
-        # OR-ing two empty str Series raises (Shilley Pool, no link within HINT_SNAP_M, 3 Oct 2026).
-        return col.map(lambda n: bool(river_words(n) & want) if isinstance(n, str) else False).astype(bool)
+        # A list, not .map: on an empty frame pandas 3 kept the str dtype through .map, and OR-ing two
+        # empty str Series raised (Shilley Pool, 3 Oct 2026); and .map on an arrow string column cost
+        # about 9 ms a call, which the click-anywhere build makes tens of thousands of (13 Oct 2026).
+        return pd.Series([bool(river_words(n) & want) if isinstance(n, str) else False for n in col],
+                         index=col.index, dtype=bool)
     alt = cand.get("watercourse_name_alternative", pd.Series(None, index=cand.index, dtype=object))
     return matches(cand["watercourse_name"]) | matches(alt)
 
@@ -297,7 +299,7 @@ def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str]) -> Snap |
     cand = cand[_names_match(cand, want)]
     if cand.empty:
         return None
-    ups = cand["start_node"].map(net.upstream_m).fillna(0.0)
+    ups = pd.Series([net.upstream_m.get(n, 0.0) for n in cand["start_node"]], index=cand.index)   # as _names_match, no .map
     cand = cand[ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)]
     if cand.empty:
         return None

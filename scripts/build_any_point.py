@@ -178,13 +178,13 @@ def link_names(net: RiverNetwork, lids) -> dict[str, str | None]:
     return out
 
 
-def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap]]:
+def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap | None]]:
     """transport._click_at_head for every click the page can make, as the page cannot walk the
-    network: small river link (the arm) -> {main channel the old rule chose -> where the click goes}.
-    Only arms with a channel big enough for the old rule within ADOPT_RADIUS_M of their head can move,
-    and only to a channel the old rule could choose for a click on them: within PIN_SNAP_M +
-    ADOPT_RADIUS_M of the arm, and big enough. Each is asked with that channel's own name, as the
-    API asks (transport.channel_words); an answer is kept where there is one."""
+    network: small river link (the arm) -> {main channel the old rule could choose -> where the click
+    goes, or None where it stays}. Only arms with a channel big enough for the old rule within
+    ADOPT_RADIUS_M of their head can move, and only to a channel the old rule could choose for a click
+    on them: within PIN_SNAP_M + ADOPT_RADIUS_M of the arm, and big enough. Each is asked with that
+    channel's own name, as the API asks (transport.channel_words). Arms with no move are left out."""
     links = net.links
     up = links["start_node"].map(net.upstream_m).fillna(0.0)
     river = links["form"].isin(RIVER_FORMS)
@@ -195,24 +195,61 @@ def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap]]:
     bigs = links.loc[big]
     heads = shapely.points([transport._side_arm_head(net, l) for l in small])
     near_head = set(np.asarray(small)[np.unique(bigs.sindex.query(heads, predicate="dwithin", distance=ADOPT_RADIUS_M)[0])])
-    out: dict[str, dict[str, Snap]] = {}
+    out: dict[str, dict[str, Snap | None]] = {}
     words_of: dict[str, frozenset[str]] = {}
     for arm in sorted(near_head):
         floor = max(ADOPT_MIN_M, ADOPT_RATIO * up.at[arm])
         reach = bigs.index[bigs.sindex.query(links.at[arm, "geometry"], predicate="dwithin", distance=PIN_SNAP_M + ADOPT_RADIUS_M)]
-        asked: dict[frozenset[str], Snap | None] = {}
+        asked: dict[frozenset[str], Snap | None] = {frozenset(): None}
+        moves: dict[str, Snap | None] = {}
         for ch in sorted(reach):
             if up.at[ch] < floor:
                 continue
             if ch not in words_of:
                 words_of[ch] = transport.channel_words(net, ch)
             want = words_of[ch]
-            if not want:
-                continue
             if want not in asked:
                 asked[want] = transport.head_of_arm(net, arm, want)
-            if asked[want] is not None:
-                out.setdefault(arm, {})[ch] = asked[want]
+            moves[ch] = asked[want]
+        if any(h is not None for h in moves.values()):
+            out[arm] = moves
+    return out
+
+
+ARM_FRAC_SCALE = 10_000   # an arm's head along its main channel, in ten-thousandths (under a metre on a 10 km link)
+
+
+def encode_arm(net: RiverNetwork, moves: dict[str, Snap | None], names: dict[str, str | None], lno_of: pd.Series,
+               tiles_of: dict[str, list[str]], here: str) -> list:
+    """An arm's moves (arm_heads) for links/<t>.json `arms`: one row per place a click can go,
+    [link number, a square with its record (0: this one; null: none), fraction x ARM_FRAC_SCALE,
+    metres from the arm's head, form as the index codes it, the channels that send a click there].
+    The channels are given by the name the index gives them, which the page has for the channel it
+    chose, where that settles it: every channel of a name goes to the same place, and none that moves
+    is unnamed. Otherwise by link number. A row with no square ends with the link's name, which the
+    page then cannot read from an index. `names`: link_names for every channel; `tiles_of`: the
+    squares each link is in, sorted."""
+    def place(h):
+        return None if h is None else (h.link_id, round(h.frac * ARM_FRAC_SCALE), round(h.dist_m))
+    by_name: dict[str | None, set] = {}
+    for ch, h in moves.items():
+        by_name.setdefault(names[ch], set()).add(place(h))
+    by_number = any(len(v) > 1 for v in by_name.values()) or any(p is not None for p in by_name.get(None, ()))
+    rows: dict[tuple, list] = {}
+    form: dict[str, str] = {}
+    for ch, h in sorted(moves.items()):
+        p = place(h)
+        if p is None:
+            continue
+        form[h.link_id] = h.form
+        key = int(lno_of[ch]) if by_number else names[ch]
+        if key not in rows.setdefault(p, []):
+            rows[p].append(key)
+    out = []
+    for (lid, frac, dist), keys in sorted(rows.items()):
+        sq = tiles_of.get(lid, [])
+        row = [int(lno_of[lid]), 0 if here in sq else (sq[0] if sq else None), frac, dist, FORMS.index(form[lid]), keys]
+        out.append(row if sq else [*row, transport._link_name(net, lid)])
     return out
 
 
@@ -658,17 +695,13 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             name_of[i] = n if isinstance(n, str) and n else None
         else:
             name_of[i] = river_names[lids[i]]
-    # Side arms (arm_heads): arm number -> [channel number, where the click goes: link number, a square
-    # with its record (null for none), fraction along it x 1000000, metres from the arm's head, its name,
-    # its form as the index codes it].
+    # Side arms: where a click on one goes (arm_heads, encode_arm), in each square the arm is in.
     arms = arm_heads(net, [lids[i] for i in in_tiles])
-    tile_of = {}
+    tiles_of: dict[str, list[str]] = {}
     for t, ix in sorted(by_tile.items()):
         for i in ix:
-            tile_of.setdefault(lids[i], t)
-    arm_rows = {lid: [[int(lno_of[ch]), int(lno_of[h.link_id]), tile_of.get(h.link_id), round(h.frac * PATH_SCALE),
-                       round(h.dist_m), transport._link_name(net, h.link_id), FORMS.index(h.form)] for ch, h in sorted(moves.items())]
-                for lid, moves in arms.items()}
+            tiles_of.setdefault(lids[i], []).append(t)
+    arm_names = link_names(net, sorted({ch for moves in arms.values() for ch in moves}))
 
     for d in ("link_index", "links"):
         (out / d).mkdir(parents=True, exist_ok=True)
@@ -694,8 +727,8 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         entries, arms_here = {}, {}
         for i, lno in zip(ix, lnos, strict=True):
             lid = lids[i]
-            if lid in arm_rows:
-                arms_here[str(int(lno))] = arm_rows[lid]
+            if lid in arms:
+                arms_here[str(int(lno))] = encode_arm(net, arms[lid], arm_names, lno_of, tiles_of, t)
             if form_code[i] == 2:
                 c = table["link_comp"].get(lid)
                 if c in lake_pos:
@@ -780,7 +813,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         "lon": [round(float(v), 4) for v in ovl["lon"]], "lat": [round(float(v), 4) for v in ovl["lat"]],
         **({"credits": credits} if credits else {})}, separators=(",", ":")))
     return {"ids": ids, "ids_version": idv, "tiles": sorted(by_tile), "past_days": int(past),
-            "counts": {"links_indexed": len(in_tiles), "links_traced": len(records), "entries": n_entries, "arms": len(arm_rows),
+            "counts": {"links_indexed": len(in_tiles), "links_traced": len(records), "entries": n_entries, "arms": len(arms),
                        "rows": n_rows, "lakes_reached": len(lake_ids), "wfd_lakes": len(polys),
                        "wfd_isolated": sum(p["lake"] == -1 for p in polys)}}
 

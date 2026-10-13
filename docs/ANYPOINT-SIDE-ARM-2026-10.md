@@ -42,3 +42,63 @@ No accuracy test applies: clicks are not scored.
 ---
 
 ## Results
+
+13 Oct 2026. Inputs:
+- the current code on `river_network.pkl`;
+- an overflow table rebuilt from the `state` release of 13 Oct 03:20 UTC into a scratch folder (14,631 overflows);
+- 0 network requests.
+
+**Outcome: the rule fails check 5 and stays off.** It fixes Queen Elizabeth Gardens, but elsewhere it moves clicks onto small parallel channels that share the river's name. The code stays on this branch as a record. Nothing the site uses changes.
+
+### Check by check
+
+1. **Queen Elizabeth Gardens: passes.**
+   - The click counts the same 18 overflows as the spot, on the same link.
+   - None of them names the Nadder or the Wylye.
+   - The old rule counted 34, and 11 of those named the Nadder or the Wylye.
+2. **The page agrees with the API: fails as stated, 198 of 200.**
+   - The synthetic tests pass.
+   - The two disagreements come from the page's lines, which are simplified to 30 m, not from the rule:
+     - one click is called a lake centreline at 19 m when the arm is 11 m away;
+     - in the other, the River Lark is nearer than the arm on the simplified line, so the page never sees the arm.
+   - For comparison, the old rule on both sides disagreed on 20 of the same 200 clicks. Most of those were distances more than 6 m apart, from projecting the click onto a simplified main channel.
+3. **Listed spots: pass.** None of the 105 moves.
+4. **Size: passes on the second design.**
+   - The first design wrote one row per channel the old rule could choose: 95,135 rows. It added 5.08 MB (+37%) and took 1,432 s to build. Most of the time was pandas `.map` on arrow string columns in `_names_match` and `head_of_arm`.
+   - The second design does three things:
+     - it groups an arm's channels by where they send a click;
+     - it names channels as the index does, using link numbers for the 2,766 arms where a name does not settle it;
+     - it replaces the two `.map` calls with lists.
+   - Result: +0.90 MB (13.59 to 14.49 MB, +6.6%), 68 s.
+   - This design was made after the first run's size was seen and before the rerun. The rule did not change.
+5. **Reach: fails.**
+   - 13,836 small links have a move. At the midpoint of 9,095 of them (a sample, seed 13: all would have taken over 20 minutes), 8,501 clicks move and 1,196 change the set of overflows counted.
+   - The ten largest changes:
+
+| Click | Old: channel, network above | New: channel, network above | Overflows, old → new | Looks |
+|---|---|---|---|---|
+| 52.8756, −1.2739 (Trent, by Sawley) | River Trent, 3,196 km | River Trent, 2,509 km | 427 → 247 | plausible: above the Derwent and Soar |
+| 53.5424, −2.3537 (Irwell; the arm is the Manchester Bolton and Bury Canal) | River Irwell, 395 km | River Irwell, 256 km | 231 → 135 | doubtful: a canal, 1.9 km from its head |
+| 52.5105, −1.8655 (Tame, Hawthorn Brook) | River Tame, 43 km | River Tame, 15 km | 76 → 20 | unclear |
+| 51.3458, −2.1202 (Semington Brook) | "Semington Brook", 390 km | Semington Brook, 45 km | 101 → 15 | unclear: a name on a larger river's link |
+| 51.2278, 0.4206 (Medway) | River Medway, 893 km | River Medway, 370 km | 123 → 37 | plausible |
+| 54.0158, −1.2205 (Ouse, Mill Sike) | River Ouse, 2,236 km | River Ouse, 1,820 km | 174 → 100 | plausible: above the Nidd |
+| 54.0158, −1.2250 (same) | as above | as above | 174 → 100 | plausible |
+| 51.1986, 0.3079 (Medway) | River Medway, 420 km | River Medway, **12 km** | 78 → 7 | **wrong** |
+| 53.8774, −1.8467 (Morton Beck, Bingley) | "Morton Beck", 285 km | Morton Beck, 7 km | 70 → 0 | doubtful |
+| 52.2898, −0.2196 (Great Ouse) | River Great Ouse, 1,316 km | River Great Ouse, **19 km** | 69 → 1 | **wrong** |
+
+### Why it fails
+
+`head_of_arm` takes the channel nearest the arm's head that carries the river's name and has at least `max(5 km, 5 × the arm's own)` of network above it. Arms with nothing above them are common, and for them that floor is just 5 km. OS draws many braided channels of a big river under the river's name, disconnected above, with a few km of network. The nearest of them wins, and the click loses most of the river. This is the case `_adopt_main_channel` was written for.
+
+At Queen Elizabeth Gardens the nearest named channel happens to be the main Avon above the Nadder, so the rule works there.
+
+### What would be needed
+
+- A rule that, among channels of the river's name near the arm's head, takes the one with the most network, not the nearest. Then check that it still separates the Avon above the Nadder from the Avon below at Queen Elizabeth Gardens.
+- Or a floor tied to the channel the old rule chose (for example, at least half its network), so that a click never moves to a channel far smaller than the river it was on.
+
+Either is a new rule, and needs a new statement before it is run.
+
+The same weakness could affect listed spots. Today only Queen Elizabeth Gardens and Wolvercote Mill Stream use the side-arm head, and both were checked by hand (#179, #199).

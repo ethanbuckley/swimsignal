@@ -22,7 +22,7 @@ const AnyPoint = (() => {
   const BASE = 'data/anypoint/';
   const FORMS = ['inlandRiver', 'tidalRiver', 'lake', 'canal'], LAKE = 2, RIVER_FORMS = [0, 1];
   const ADOPT = { radius: 500, min: 5000, ratio: 5 };   // transport.ADOPT_RADIUS_M, ADOPT_MIN_M, ADOPT_RATIO
-  const BASE_UNIT = 10, SCALE = 10000, PATH_SCALE = 1e6;   // build_any_point.BASE_UNIT_M, DIL_SCALE, PATH_SCALE
+  const BASE_UNIT = 10, SCALE = 10000, PATH_SCALE = 1e6, ARM_SCALE = 1e4;   // build_any_point.BASE_UNIT_M, DIL_SCALE, PATH_SCALE, ARM_FRAC_SCALE
   const DAYS_AHEAD = 4, KEEP = 10;                       // forecast_point's days, build_site.KEEP_CONTRIBUTORS
   const RAD = Math.PI / 180, A_ELL = 6378137, E2 = 0.00669438;   // WGS84
 
@@ -289,13 +289,23 @@ const AnyPoint = (() => {
     return { mode: 'river', link: target, adopted, from: river };
   }
   // transport._click_at_head: a click moved from a side arm to a main channel goes where the arm leaves
-  // the river of that channel's name. The build worked it out for each arm and channel (build_any_point
-  // .arm_heads): [channel, link, square, fraction x 1e6, metres from the arm's head, name, form].
-  // null where the click stays.
+  // the river of that channel's name. The build worked it out for each arm (build_any_point.arm_heads,
+  // encode_arm): rows [link, square (0: the arm's; null: no record), fraction x ARM_SCALE, metres from
+  // the arm's head, form, the channels that send a click there by name or link number, and the name
+  // where there is no square]. {lno, tile, frac, d, form, name?}, or null where the click stays.
   function armMove(at, tiles) {
     if (!at.adopted || !RIVER_FORMS.includes(at.from.form)) return null;
-    const row = (((tiles[at.from.tile] || {}).arms || {})[String(at.from.lno)] || []).find(r => r[0] === at.link.lno);
-    return row ? { lno: row[1], tile: row[2], frac: row[3] / PATH_SCALE, d: row[4], name: row[5], form: row[6] } : null;
+    const row = (((tiles[at.from.tile] || {}).arms || {})[String(at.from.lno)] || [])
+      .find(r => r[5].includes(at.link.lno) || (at.link.name !== null && r[5].includes(at.link.name)));
+    if (!row) return null;
+    const tile = row[1] === 0 ? at.from.tile : row[1];
+    return { lno: row[0], tile, frac: row[2] / ARM_SCALE, d: row[3], form: row[4], name: tile === null ? row[6] : undefined };
+  }
+  // A link's name as the index of its square gives it.
+  function indexName(t, lno) {
+    const ix = t.index;
+    for (let k = 0; k < ix.n; k++) if (ix.lno[k] === lno) { const nm = (ix.meta[k] >> 2) - 1; return nm >= 0 ? ix.names[nm] : null; }
+    return null;
   }
 
   // ------------------------------------------------------------------ the files
@@ -382,6 +392,7 @@ const AnyPoint = (() => {
     const move = armMove(at, tiles);
     if (move) {
       if (move.tile && !tiles[move.tile]) return { need: [move.tile] };   // the arm's head can be a square away
+      if (move.tile) move.name = indexName(tiles[move.tile], move.lno);
       at.link = move;
     }
     const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
