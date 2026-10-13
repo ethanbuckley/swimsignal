@@ -134,4 +134,10 @@ DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 # LAKE_PATH_MODE "lake"   each WFD lake crossed is treated as the spot's own lake is: its length at
 #                         LAKE_VELOCITY_MS, and its area in the lake dilution factor
 #                "river"  the lake's length is walked at river speed, with no lake dilution
+#                "residence"  off by default; under test in docs/LAKE-RESIDENCE-TEST-2026-10.md. A WFD lake
+#                         crossed on the way with a residence time in LAKE_RESIDENCE_FILE is a well-mixed
+#                         lake: 1 / (1 + ln10 x tau / T90_HOURS) of a spill's bacteria leave it alive.
+#                         A lake without one is crossed as in "lake". Click-anywhere does not follow it yet.
 LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "lake")
+# Residence times of WFD lakes (scripts/make_lake_residence.py, from HydroLAKES v1.0, CC BY 4.0).
+LAKE_RESIDENCE_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_FILE", RAW / "lake_residence.csv"))

@@ -175,6 +175,10 @@ def lake_crossings(net: RiverNetwork) -> dict[str, tuple[int, float]] | None:
     """Every lake-form link in a WFD lake polygon: link -> (the lake's row, its area km2), as
     transport._wfd_lake_of gives it, for config.LAKE_PATH_MODE "lake"; None in mode "river". Which
     polygon a link is in does not depend on the trace, so one map serves every root."""
+    if config.LAKE_PATH_MODE == "residence":
+        # Off by default and under test (docs/LAKE-RESIDENCE-TEST-2026-10.md); anypoint.js has no well-mixed
+        # lake yet, so a click would disagree with the spot pages.
+        raise ValueError("click-anywhere does not follow lake path 'residence' yet")
     if config.LAKE_PATH_MODE != "lake":
         return None
     links = net.links

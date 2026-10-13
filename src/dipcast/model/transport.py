@@ -41,6 +41,13 @@ docs/LAKE-PATH-TEST-2026-10.md:
                         outside every WFD polygon (mill ponds, weir pools) stay river.
 * lake path "river"     the rule before: such a lake is walked at river speed, with no lake
                         dilution.
+* lake path "residence" off by default, under test (docs/LAKE-RESIDENCE-TEST-2026-10.md). A WFD lake
+                        crossed on the way that has a residence time tau in config.LAKE_RESIDENCE_FILE
+                        is a well-mixed lake whose bacteria die at k = ln 10 / T90: the share of a
+                        spill's bacteria that leaves it alive is 1 / (1 + k tau) (lake_pass), and the
+                        survivors' mean time in it is tau / (1 + k tau) (lake_hold_h). Those replace
+                        the crossing at LAKE_VELOCITY_MS, its die-off and the area factor. A lake with
+                        no residence time is crossed as in "lake". The spot's own lake is unchanged.
 
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
 """
@@ -685,6 +692,35 @@ def _wfd_lake_of(net: RiverNetwork, link_ids, exclude=frozenset()) -> dict[str, 
     return {lid: (int(p), float(area[p])) for lid, p in zip(pairs["link"], pairs["lake"], strict=True)}
 
 
+@lru_cache(maxsize=4)
+def _residence_by_wb(path: str) -> dict[str, float]:
+    """WFD water body id -> residence time (hours), from the file scripts/make_lake_residence.py writes.
+    Rows with no positive time are left out, so those lakes are crossed as in lake path 'lake'."""
+    t = pd.read_csv(path, usecols=["wb_id", "res_time_d"])
+    t = t[t["res_time_d"] > 0]
+    return dict(zip(t["wb_id"], t["res_time_d"].astype(float) * 24.0, strict=True))
+
+
+def lake_residence_h() -> dict[int, float]:
+    """Row in _lakes() -> residence time (hours), for the WFD lakes that have one (lake path 'residence')."""
+    lakes = _lakes()
+    if lakes is None or lakes.empty:
+        return {}
+    by_wb = _residence_by_wb(str(config.LAKE_RESIDENCE_FILE))
+    return {i: by_wb[w] for i, w in enumerate(lakes["wb_id"]) if w in by_wb}
+
+
+def lake_pass(tau_h: float | np.ndarray, t90_h: float = config.T90_HOURS) -> float | np.ndarray:
+    """Share of a spill's bacteria that leaves a well-mixed lake alive: 1 / (1 + k tau), k = ln 10 / T90.
+    Bacteria leave at rate 1 / tau and die at rate k, so a share (1/tau) / (1/tau + k) leaves alive."""
+    return 1.0 / (1.0 + math.log(10.0) * np.asarray(tau_h, dtype=float) / t90_h)
+
+
+def lake_hold_h(tau_h: float | np.ndarray, t90_h: float = config.T90_HOURS) -> float | np.ndarray:
+    """Mean time (hours) that the bacteria which leave a well-mixed lake alive spent in it: 1 / (1/tau + k)."""
+    return np.asarray(tau_h, dtype=float) * lake_pass(tau_h, t90_h)
+
+
 def _lake_divisor(lakes: frozenset, lake_area: dict[int, float]) -> float:
     """The product of 1 + A / LAKE_A0_KM2 over the lakes crossed: the spot's own-lake factor, once per lake."""
     return float(np.prod([1.0 + lake_area[k] / LAKE_A0_KM2 for k in sorted(lakes)])) if lakes else 1.0
@@ -769,16 +805,21 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     velocity_ms / config.RIVER_VELOCITY_MS, so a gauge's level index still moves it.
     With lake path 'lake', the length of each WFD lake crossed on the way moves from distance_m to
     lake_distance_m (their sum, the distance along the network, is unchanged, and the 60 km cap
-    still applies to it), and the dilution is divided by 1 + A / LAKE_A0_KM2 for each such lake."""
+    still applies to it), and the dilution is divided by 1 + A / LAKE_A0_KM2 for each such lake.
+    With lake path 'residence', a lake on the way with a residence time (lake_residence_h) is crossed
+    as a well-mixed lake instead: its metres still move to lake_distance_m, but travel_h counts
+    lake_hold_h for it in place of its metres at LAKE_VELOCITY_MS, decay is the die-off of the rest of
+    the journey times lake_pass, and its area factor is dropped. Other lakes are crossed as in 'lake'."""
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
     if (velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban")
-            or lake_path_mode not in ("river", "lake")):
+            or lake_path_mode not in ("river", "lake", "residence")):
         raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}, "
                          f"lake path {lake_path_mode!r}")
     by_reach = velocity_mode == "catchment"
-    on_lakes = lake_path_mode == "lake"
+    on_lakes = lake_path_mode in ("lake", "residence")
+    residence = lake_path_mode == "residence"
     scale = velocity_ms / config.RIVER_VELOCITY_MS
     cols = list(overflows.columns) + ["distance_m", "lake_distance_m", "travel_h", "decay", "dilution", "weight"]
     if pin.mode == "none" or pin.trace_node is None:
@@ -790,6 +831,9 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     # The WFD lakes on the way, other than the spot's own (lake path 'lake' only).
     lake_of = _wfd_lake_of(net, on_path, exclude=pin.lake_links) if on_lakes else {}
     lake_area = {k: a for k, a in lake_of.values()}
+    # Lake path 'residence': the lakes on the way that have a residence time, and those times (hours).
+    tau = lake_residence_h() if residence else {}
+    res_of = {lid: v for lid, v in lake_of.items() if v[0] in tau}
 
     # Overflows on the pin's own link, upstream of the pin (river mode only).
     if pin.mode == "river" and pin.snap is not None:
@@ -822,6 +866,12 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
                 parts.append(_with_lake(below.get(lid, NO_LAKES), own, (1.0 - frac) * length, v))
             _put_lakes(ov, parts, lake_area)
             _put_lakes(same, [NO_LAKES] * len(same), lake_area)
+            if residence:
+                below_res = _path_lakes(net, pin.trace_node, cap, res_of, scale)
+                _put_residence(ov, [_with_lake(below_res.get(lid, NO_LAKES), res_of.get(lid), (1.0 - frac) * length, 1.0)
+                                    for lid, frac, length in zip(ov["link_id"], ov["frac"], ov["link_length"], strict=True)],
+                               lake_area, tau, t90_h)
+                _put_residence(same, [NO_LAKES] * len(same), lake_area, tau, t90_h)
         ov = pd.concat([ov, same], ignore_index=True)
         spot_lup = lup.get(pin.trace_node, 0.0) + pin.trace_offset_m
         spot_up_full = net.upstream_m.get(pin.trace_node, 0.0) + pin.trace_offset_m
@@ -842,6 +892,10 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
             ov["river_s"] = list(tr)
             if on_lakes:
                 _put_lakes(ov, list(crossed), lake_area)
+            if residence:
+                # The same walk, with only the lakes that have a residence time.
+                _put_residence(ov, [_walk_to_lake(net, r["link_id"], r["frac"], pin.lake_links, on_path, lake_of=res_of)[3]
+                                    for _, r in ov.iterrows()], lake_area, tau, t90_h)
         else:
             ov = ov.iloc[0:0].copy()
             ov["distance_m"] = []
@@ -861,9 +915,17 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         if by_reach:
             ov["river_s"] = ov["river_s"] - ov["_lake_s"]
     river_s = ov["river_s"] if by_reach else ov["distance_m"] / velocity_ms
-    ov["travel_h"] = (river_s + ov["lake_distance_m"] / config.LAKE_VELOCITY_MS) / 3600.0
+    if residence:
+        # A lake with a residence time: the survivors' time in it, not its metres at LAKE_VELOCITY_MS;
+        # its die-off is in lake_pass, so the rest of the journey decays as before.
+        moving_h = (river_s + (ov["lake_distance_m"] - ov["_res_m"]) / config.LAKE_VELOCITY_MS) / 3600.0
+        ov["travel_h"] = moving_h + ov["_res_hold_h"]
+        ov["decay"] = np.power(10.0, -moving_h / t90_h) * ov["_res_pass"]
+        ov["_lake_div"] = ov["_lake_div"] / ov["_res_div"]   # no area factor for those lakes
+    else:
+        ov["travel_h"] = (river_s + ov["lake_distance_m"] / config.LAKE_VELOCITY_MS) / 3600.0
+        ov["decay"] = np.power(10.0, -ov["travel_h"] / t90_h)
     ov = ov.drop(columns="river_s", errors="ignore")
-    ov["decay"] = np.power(10.0, -ov["travel_h"] / t90_h)
     if dilution_mode == "flow":
         # The whole catchment's network, not the traced 60 km: flow comes from all of it.
         ov["dilution"] = float(flow_dilution(spot_up_full))
@@ -883,9 +945,21 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         ov.loc[ov["snap_confidence"] == "low", "weight"] *= LOW_CONFIDENCE_FACTOR
     if on_lakes:
         ov = ov[ov["_cap_m"] <= cap].drop(columns=["_cap_m", "_lake_m", "_lake_s", "_lake_div"])
+        ov = ov.drop(columns=["_res_m", "_res_hold_h", "_res_pass", "_res_div"], errors="ignore")
     else:
         ov = ov[ov["distance_m"] <= cap]
     return ov.sort_values("weight", ascending=False).reset_index(drop=True)
+
+
+def _put_residence(ov: pd.DataFrame, parts: list[PathLakes], lake_area: dict[int, float], tau: dict[int, float],
+                   t90_h: float) -> None:
+    """Lake path 'residence': each row's lakes on the way that have a residence time (`parts`, walked with only
+    those lakes), as working columns: their metres, the survivors' hours in them (sum of lake_hold_h), the share
+    that leaves them alive (product of lake_pass) and their area divisor, which comes out of _lake_div."""
+    ov["_res_m"] = [p[0] for p in parts]
+    ov["_res_hold_h"] = [float(sum(lake_hold_h(tau[k], t90_h) for k in p[2])) for p in parts]
+    ov["_res_pass"] = [float(np.prod([lake_pass(tau[k], t90_h) for k in sorted(p[2])])) if p[2] else 1.0 for p in parts]
+    ov["_res_div"] = [_lake_divisor(p[2], lake_area) for p in parts]
 
 
 def _put_lakes(ov: pd.DataFrame, parts: list[PathLakes], lake_area: dict[int, float]) -> None:

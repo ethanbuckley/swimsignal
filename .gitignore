@@ -46,6 +46,8 @@ data/raw/*
 !data/raw/overflow_joins.csv
 # Fixes to the river network that the load-time rules do not make (dipcast.network.fixes).
 !data/raw/network_fixes.csv
+# Residence times of WFD lakes from HydroLAKES v1.0 (CC BY 4.0), for lake path 'residence' (scripts/make_lake_residence.py).
+!data/raw/lake_residence.csv
 /site/
 .claude/
 /state/
