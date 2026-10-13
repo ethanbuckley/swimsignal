@@ -236,6 +236,8 @@
   .sortseg button:hover { background:var(--hover); color:var(--ink); }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
+  .geo { margin:0 0 8px; }
+  #all-group { scroll-margin-top:calc(var(--header-h) + 8px); }   /* Near me in the first-run line brings it up clear of the sticky header */
   /* The list: rows between hairlines on the paper, with no box round them. */
   ul.spots { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   ul.spots li + li { border-top:1px solid var(--line); }
@@ -2179,10 +2181,13 @@ function renderList() {
     : `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here${'geolocation' in navigator
       ? ', or sort the list by distance: <button type="button" class="linkbtn small" data-near>Near me</button>' : '.'}</span></p>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
-  h += `<section class="group tile" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
+  h += `<section class="group tile" id="all-group" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
     + `<div class="sortseg" role="group" aria-label="Sort">${sorts.map(([k, t]) => `<button type="button" data-sort="${k}" aria-pressed="${VIEW.sort === k}">${t}</button>`).join('')}</div></div>`
+    // Under the sort buttons, where the eye is after pressing Near me: below the overview it was off a
+    // phone's screen, so a declined or failed location changed nothing you could see.
+    + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg ? '' : ' hidden'}>${esc(VIEW.geoMsg)}</p>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
-    + `<p class="overview" id="overview"></p><p class="small muted" id="geo" aria-live="polite">${esc(VIEW.geoMsg)}</p><ul class="spots" id="spots"></ul><p class="count" id="count" role="status"></p></section>`;
+    + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><p class="count" id="count" role="status"></p></section>`;
   h += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`;
   setPanel(h);
   if (saved.length) bindItems(document.getElementById('saved-list'));
@@ -2200,7 +2205,9 @@ function renderList() {
     document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     steady(b, drawSpots); }));
   document.querySelector('[data-low]').addEventListener('click', () => setLowOnly(!VIEW.lowOnly));
-  const nearMe = document.querySelector('[data-near]'); if (nearMe) nearMe.addEventListener('click', () => locate());   // the first-run line's
+  // The first-run line's: the list it sorts starts below it, so bring the list's heading up first.
+  const nearMe = document.querySelector('[data-near]'); if (nearMe) nearMe.addEventListener('click', () => {
+    document.getElementById('all-group').scrollIntoView({ behavior: SCROLL(), block: 'start' }); locate(); });
   document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.sort === 'near' && !VIEW.here) { locate(); return; }
     setSort(b.dataset.sort); drawSpots(); }));
@@ -2209,10 +2216,14 @@ function renderList() {
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 function locate() {
-  const msg = t => { VIEW.geoMsg = t; const g = document.getElementById('geo'); if (g) g.textContent = t; };
-  msg('Finding your location…');
+  const msg = t => { VIEW.geoMsg = t; const g = document.getElementById('geo'); if (g) { g.textContent = t; g.hidden = !t; } };
+  // Near me shows as chosen while the position is found, so the press is seen to take.
+  setSort('near'); msg('Finding your location…');
   navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg(''); drawSpots(); },
-    e => { setSort('risk'); msg(e.code === 1 ? 'Location permission was declined, so the list is sorted by risk.' : 'Your location is not available right now, so the list is sorted by risk.'); drawSpots(); },
+    // A browser remembers a refusal and does not ask again, so say where to undo it.
+    e => { setSort('risk'); msg(e.code === 1
+      ? 'Location is blocked for this site, so the list stays sorted by risk. Allow it in your browser’s settings, then press Near me again.'
+      : 'Your device could not find where you are, so the list stays sorted by risk. Check that location services are on for your browser, then try again.'); drawSpots(); },
     { maximumAge: 10 * 60 * 1000, timeout: 10000 });
 }
 // Search ignores case, accents, punctuation and word order, and looks in the river's name and the
@@ -2228,7 +2239,8 @@ function drawSpots() {
     || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
   const rank = s => ORDER[mapLevel(s)] ?? -1;
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
-    : VIEW.sort === 'risk' ? rank(b) - rank(a) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name));
+    // Near me before a position has arrived keeps the risk order, which a failed location returns to.
+    : VIEW.sort !== 'name' ? rank(b) - rank(a) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name));
   const savedGroup = document.getElementById('saved-group');
   if (savedGroup) {
     savedGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
