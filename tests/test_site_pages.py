@@ -104,12 +104,17 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
     for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} spots in England, or ",
-                 " any river or lake on the map. <a href=\"#about\">How it works</a></p>", bs.LEAD_NOTE,
+                 " any river or lake on the map. <a href=\"#about\">How it works</a></p>",
                  'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
                  '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>',
                  '<button type="button" class="chip-btn low" data-low aria-pressed="']:
         assert part in lead and part.split("${")[0] in body, part
-    assert lead.index(bs.LEAD_NOTE) < lead.index("best-day")   # the caveat's line is the last thing built in
+    # Near me under the search, the script's own markup; the row of controls is the last thing built in,
+    # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
+    assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
+    assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
+    assert lead.index('<div class="toolbar">') < lead.index("best-day")
+    assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
     assert "<span data-low-t>Low\u00a0risk only</span>" in body
     spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
