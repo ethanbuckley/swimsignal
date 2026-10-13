@@ -119,3 +119,64 @@ passes, nothing changes.
    rows for those days were not rescored since.
 2. Mean `forecast_calibrated` against observed rate per company, to update the handoff's "about
    ten times" for Thames Water and Southern Water. Descriptive only.
+
+### Result (run 13 Oct 2026 after the commit above; nothing above was changed)
+
+Run offline on the file named above. No departure from the plan.
+
+| | Brier (held out) | AUC | Mean forecast | 11 Oct run |
+|---|---|---|---|---|
+| Current (`forecast_calibrated`) | 0.02280 | 0.8287 | 0.0327 | 0.02494, 0.8351 |
+| A, isotonic | 0.02215 (−2.8%) | 0.8138 | 0.0254 | −1.9%, 0.8186 |
+| B, company intercepts | 0.02182 (−4.3%) | 0.8440 | 0.0248 | −3.5%, 0.8504 |
+
+Observed rate 0.0249. Days with lower Brier: A 8 of 12, B 10 of 12 (11 Oct: 7 and 6 of 10).
+Block check: both lower in both directions, as on 11 Oct.
+
+- **A fails** conditions 1 and 3. It passes 2 and 4.
+- **B fails** condition 1 only: 4.3% lower against the 5% bar. It passes 2, 3 and 4.
+- **Verdict: neither passes. Nothing changes.**
+
+Per company, held-out Brier (current / A / B) and observed rate, all 12 days:
+
+| Company | Current | A | B | Observed | n |
+|---|---|---|---|---|---|
+| Anglian Water | 0.01910 | 0.01865 | 0.01894 | 0.0187 | 7,598 |
+| Northumbrian Water | 0.03304 | 0.03388 | 0.03374 | 0.0366 | 628 |
+| Severn Trent Water | 0.01957 | 0.01956 | 0.02067 | 0.0206 | 6,073 |
+| South West Water | 0.04865 | 0.04455 | 0.04431 | 0.0440 | 750 |
+| Southern Water | 0.00827 | 0.00536 | 0.00278 | 0.0028 | 3,960 |
+| Thames Water | 0.00519 | 0.00397 | 0.00287 | 0.0029 | 10,469 |
+| United Utilities | 0.08254 | 0.08313 | 0.08255 | 0.1054 | 7,137 |
+| Wessex Water | 0.00714 | 0.00650 | 0.00638 | 0.0065 | 14,594 |
+| Yorkshire Water | 0.03211 | 0.03184 | 0.03177 | 0.0340 | 7,065 |
+
+Reliability, held out: the current forecast is still too high above 0.1. The 0.4–0.5 bin is 0.443
+forecast against 0.259 observed (239 rows); 0.7–0.8 is 0.756 against 0.380 (79 rows).
+
+**Check 1 (first-run days only).** The script on the 48,090 rows for 29 Sep to 10 Oct gives the
+11 Oct numbers exactly: Brier 0.02494 / 0.02447 / 0.02406, AUC 0.8351 / 0.8186 / 0.8504, days
+7 and 6 of 10. Those days were not rescored. The changes above come from 11 and 12 Oct alone.
+
+**Check 2 (mean forecast against observed rate).**
+
+| Company | Forecast | Observed | Ratio | Spill days | Ratio, first 10 days |
+|---|---|---|---|---|---|
+| Southern Water | 0.0334 | 0.0028 | 12.0 | 11 | 11.8 |
+| Thames Water | 0.0199 | 0.0029 | 6.9 | 30 | 9.3 |
+| Wessex Water | 0.0202 | 0.0065 | 3.1 | 95 | 2.7 |
+| United Utilities | 0.1112 | 0.1054 | 1.06 | 752 | 0.99 |
+| Northumbrian Water | 0.0132 | 0.0366 | 0.36 | 23 | 0.32 |
+
+The other four companies are between 0.66 and 1.10. Southern Water is still about twelve times its
+observed rate. Thames Water fell from about nine to about seven times, because 11 and 12 Oct had
+10 spill days in 1,844 rows (0.0054) against a mean forecast of 0.0116.
+
+What this shows, and what it does not:
+- Measured: B moved from 3.5% to 4.3% below the current Brier with two more days, and now fails on
+  condition 1 alone. A moved from 1.9% to 2.8%.
+- Inferred, not tested: B's gain still comes from Southern and Thames Water, where its Brier is
+  about a third and a half of the current one. These two companies have 41 spill days between them,
+  so their correction rests on few events.
+- Not settled: whether B would cross 5% with more days. Two days moved it 0.8 points, and both
+  were drier than average at most companies. The next run should use a file with more new days.
