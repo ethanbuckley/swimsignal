@@ -81,6 +81,7 @@ The other tools were checked on their own pages on 3 Oct 2026.
 | Open-Meteo | Hourly rainfall: ERA5-Land archive for training, model forecast for prediction | CC BY 4.0; the forecast for England is Met Office data, CC BY-SA 4.0 |
 | OS Open Rivers | 193,040 directed watercourse links incl. lake traversals, BNG | OGL v3 |
 | EA WFD Lake Water Bodies Cycle 3 | 564 lake polygons (lakes over 50 ha, 5 ha in protected areas), names and areas | OGL v3 |
+| HydroLAKES v1.0 (Messager et al. 2016) | Residence times of 282 of those lakes (`data/raw/lake_residence.csv`, `scripts/make_lake_residence.py`) | CC BY 4.0 |
 | EA flood-monitoring API | Near-real-time river levels and typical ranges; the API version only | OGL v3 |
 | EA Hydrology API | Water temperature from water-quality sensors that reported in the last day, beside the forecast | OGL v3 |
 | EA Water Quality Archive (Water Quality Explorer) | E. coli results and the sampler's visual algae check at the 38 inland bathing waters | OGL v3 |
@@ -187,12 +188,17 @@ straight-line to the click. Lake dilution divides the weight by
 1 + area / 5 km², so Windermere's north basin (8.7 km²) cuts a shoreline spill's
 weight to about a third. Windermere is two WFD basins and is treated as such.
 A WFD lake that an overflow's water crosses on the way to a spot, river or lake, is
-treated the same way: its centreline length at 0.05 m/s and its own area term. So
-Grasmere WwTW counts at Rydal Water at 0.040, not 0.068, and the north basin thins
-Ambleside's water before it reaches the south basin. A lake-form link outside every
-WFD polygon (a mill pond, a weir pool) stays river. The lake term is a fixed drift
-and an area: no wind, depth or residence time, so a small lake still passes most
-of a spill.
+a well-mixed lake if HydroLAKES gives it a residence time τ (282 of the 564; lake
+path `residence`, the default after docs/LAKE-RESIDENCE-TEST-2026-10.md): a share
+1 / (1 + ln 10 · τ / T90) of a spill's bacteria leaves it alive, after
+τ / (1 + ln 10 · τ / T90) hours, about 13. So Grasmere (τ 39 days) passes 1.4%, and
+Grasmere WwTW counts at Rydal Water at 0.00098, not 0.040. A lake with no τ (Elter
+Water, most under 10 ha) is crossed at 0.05 m/s with its own area term, as from
+11 Oct 2026 (lake path `lake`). A lake-form link outside every WFD polygon (a mill
+pond, a weir pool) stays river. The spot's own lake keeps the fixed drift and the
+area term, and there is no wind term. The residence times are modelled volumes over
+modelled mean flows, and a well-mixed lake at mean flow removes more of a spill
+than a lake in flood or in summer layering would.
 A click on the map that is not near a WFD lake falls back to the centreline
 heuristic: a lake centreline within 1.5 km, if it is nearer than the nearest
 river after a bias towards rivers.

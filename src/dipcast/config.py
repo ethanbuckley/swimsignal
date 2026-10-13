@@ -129,15 +129,15 @@ VELOCITY_MODE = os.environ.get("DIPCAST_VELOCITY_MODE", "fixed")
 DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 
 # A lake on the way from an overflow to a spot (a Lake District water-quality group, 11 Oct 2026: a
-# spill into Grasmere has dissipated by the time the water leaves Rydal Water). "lake" is the default
-# since 11 Oct 2026, after the test in docs/LAKE-PATH-TEST-2026-10.md; "river" is the rule before it.
-# LAKE_PATH_MODE "lake"   each WFD lake crossed is treated as the spot's own lake is: its length at
+# spill into Grasmere has dissipated by the time the water leaves Rydal Water). "residence" is the
+# default after the test in docs/LAKE-RESIDENCE-TEST-2026-10.md (all seven conditions held, 13 Oct 2026);
+# "lake" was the default from 11 Oct 2026 (docs/LAKE-PATH-TEST-2026-10.md); "river" is the rule before it.
+# LAKE_PATH_MODE "residence"  a WFD lake crossed on the way with a residence time in LAKE_RESIDENCE_FILE is
+#                         a well-mixed lake: 1 / (1 + ln10 x tau / T90_HOURS) of a spill's bacteria leave
+#                         it alive. A lake without one is crossed as in "lake".
+#                "lake"   each WFD lake crossed is treated as the spot's own lake is: its length at
 #                         LAKE_VELOCITY_MS, and its area in the lake dilution factor
 #                "river"  the lake's length is walked at river speed, with no lake dilution
-#                "residence"  off by default; under test in docs/LAKE-RESIDENCE-TEST-2026-10.md. A WFD lake
-#                         crossed on the way with a residence time in LAKE_RESIDENCE_FILE is a well-mixed
-#                         lake: 1 / (1 + ln10 x tau / T90_HOURS) of a spill's bacteria leave it alive.
-#                         A lake without one is crossed as in "lake". Click-anywhere does not follow it yet.
-LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "lake")
+LAKE_PATH_MODE = os.environ.get("DIPCAST_LAKE_PATH_MODE", "residence")
 # Residence times of WFD lakes (scripts/make_lake_residence.py, from HydroLAKES v1.0, CC BY 4.0).
 LAKE_RESIDENCE_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_FILE", RAW / "lake_residence.csv"))

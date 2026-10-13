@@ -69,8 +69,10 @@ def _trace(net, pin=None, **kw) -> pd.DataFrame:
     return up.set_index("site_id")
 
 
-def test_the_default_crosses_a_lake_on_the_way_as_a_lake(net):
-    assert config.LAKE_PATH_MODE == "lake"
+def test_the_default_is_residence_and_lake_is_still_there(net):
+    # The default since docs/LAKE-RESIDENCE-TEST-2026-10.md; these lakes have no residence time (no wb_id), so
+    # it crosses them as lake path "lake" does.
+    assert config.LAKE_PATH_MODE == "residence"
     assert _trace(net).equals(_trace(net, lake_path_mode="lake"))
 
 
