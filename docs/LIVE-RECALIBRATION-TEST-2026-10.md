@@ -178,5 +178,6 @@ What this shows, and what it does not:
 - Inferred, not tested: B's gain still comes from Southern and Thames Water, where its Brier is
   about a third and a half of the current one. These two companies have 41 spill days between them,
   so their correction rests on few events.
-- Not settled: whether B would cross 5% with more days. Two days moved it 0.8 points, and both
-  were drier than average at most companies. The next run should use a file with more new days.
+- Not settled: whether B would cross 5% with more days. Two days moved it 0.8 points. On those
+  two days six of the nine companies had a lower spill rate than on the first 10 days, so they are
+  not typical of a wet month. The next run should use a file with more new days.
