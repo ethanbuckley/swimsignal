@@ -21,7 +21,8 @@ Everything is written under site/data/anypoint/:
                        upstream overflows as transport.upstream_overflows finds them, in a form
                        that gives the distance and dilution for a click anywhere along it
                        (`rows_at`), and for those whose water crosses a WFD lake on the way, the
-                       metres of lake and the lake factor; a lake link points at its lake in lakes.json
+                       metres of lake and the lake factor; a lake link points at its lake in lakes.json;
+                       and `arms`: where a click on a small side arm goes (arm_heads)
   lakes.json           the WFD lake polygons (England) and every lake an overflow reaches: its
                        inlets, each with the overflows whose water enters there (river distance
                        and dilution before the lake-area term, and any WFD lake crossed before it)
@@ -33,8 +34,10 @@ A click is placed as transport._locate places it: inside or within 150 m of a WF
 is that lake; otherwise the nearest link within 1.5 km, or the nearest lake centreline when that
 is less than twice as far; a click on a side channel near a much bigger river is traced as that
 river (_adopt_main_channel, which the page applies with each link's upstream network length from
-the index). River distances and dilutions then follow upstream_overflows exactly for the click's
-position along the link. A WFD lake between an overflow and the click is crossed as
+the index), and then, as a listed spot on a side arm is, to the river the arm leaves, where the arm
+begins (transport._click_at_head; the page reads it from `arms`, as it cannot walk the network).
+River distances and dilutions then follow upstream_overflows exactly for the click's position along
+the link. A WFD lake between an overflow and the click is crossed as
 upstream_overflows crosses it in config.LAKE_PATH_MODE "lake" (the default): its metres at the lake
 velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings).
 
@@ -69,19 +72,23 @@ import shapely
 from dipcast import config
 from dipcast.model import transport
 from dipcast.model.transport import (
+    ADOPT_MIN_M,
+    ADOPT_RADIUS_M,
+    ADOPT_RATIO,
     L0_M,
     LAKE_A0_KM2,
     LAKE_SHORE_M,
     LAKE_SNAP_M,
     LOW_CONFIDENCE_FACTOR,
     PIN_SNAP_M,
+    RIVER_FORMS,
     history_days,
     live_now_risk,
     river_velocity,
     running,
     upstream_lengths,
 )
-from dipcast.network.rivers import _TO_WGS, RiverNetwork
+from dipcast.network.rivers import _TO_WGS, RiverNetwork, Snap
 
 log = logging.getLogger("build_any_point")
 
@@ -168,6 +175,44 @@ def link_names(net: RiverNetwork, lids) -> dict[str, str | None]:
                 break
             cur = succ_link(end[cur])
         out[lid] = name
+    return out
+
+
+def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap]]:
+    """transport._click_at_head for every click the page can make, as the page cannot walk the
+    network: small river link (the arm) -> {main channel the old rule chose -> where the click goes}.
+    Only arms with a channel big enough for the old rule within ADOPT_RADIUS_M of their head can move,
+    and only to a channel the old rule could choose for a click on them: within PIN_SNAP_M +
+    ADOPT_RADIUS_M of the arm, and big enough. Each is asked with that channel's own name, as the
+    API asks (transport.channel_words); an answer is kept where there is one."""
+    links = net.links
+    up = links["start_node"].map(net.upstream_m).fillna(0.0)
+    river = links["form"].isin(RIVER_FORMS)
+    small = [l for l in lids if river.at[l] and up.at[l] < ADOPT_MIN_M]
+    big = links.index[river & (up >= ADOPT_MIN_M)]
+    if not small or not len(big):
+        return {}
+    bigs = links.loc[big]
+    heads = shapely.points([transport._side_arm_head(net, l) for l in small])
+    near_head = set(np.asarray(small)[np.unique(bigs.sindex.query(heads, predicate="dwithin", distance=ADOPT_RADIUS_M)[0])])
+    out: dict[str, dict[str, Snap]] = {}
+    words_of: dict[str, frozenset[str]] = {}
+    for arm in sorted(near_head):
+        floor = max(ADOPT_MIN_M, ADOPT_RATIO * up.at[arm])
+        reach = bigs.index[bigs.sindex.query(links.at[arm, "geometry"], predicate="dwithin", distance=PIN_SNAP_M + ADOPT_RADIUS_M)]
+        asked: dict[frozenset[str], Snap | None] = {}
+        for ch in sorted(reach):
+            if up.at[ch] < floor:
+                continue
+            if ch not in words_of:
+                words_of[ch] = transport.channel_words(net, ch)
+            want = words_of[ch]
+            if not want:
+                continue
+            if want not in asked:
+                asked[want] = transport.head_of_arm(net, arm, want)
+            if asked[want] is not None:
+                out.setdefault(arm, {})[ch] = asked[want]
     return out
 
 
@@ -613,6 +658,17 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             name_of[i] = n if isinstance(n, str) and n else None
         else:
             name_of[i] = river_names[lids[i]]
+    # Side arms (arm_heads): arm number -> [channel number, where the click goes: link number, a square
+    # with its record (null for none), fraction along it x 1000000, metres from the arm's head, its name,
+    # its form as the index codes it].
+    arms = arm_heads(net, [lids[i] for i in in_tiles])
+    tile_of = {}
+    for t, ix in sorted(by_tile.items()):
+        for i in ix:
+            tile_of.setdefault(lids[i], t)
+    arm_rows = {lid: [[int(lno_of[ch]), int(lno_of[h.link_id]), tile_of.get(h.link_id), round(h.frac * PATH_SCALE),
+                       round(h.dist_m), transport._link_name(net, h.link_id), FORMS.index(h.form)] for ch, h in sorted(moves.items())]
+                for lid, moves in arms.items()}
 
     for d in ("link_index", "links"):
         (out / d).mkdir(parents=True, exist_ok=True)
@@ -635,9 +691,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         lnos = lno_of.loc[lids[ix]].to_numpy()
         (out / "link_index" / f"{t}.bin").write_bytes(
             pack_link_index(lnos, np.asarray(meta), upstream[ix], offsets, np.concatenate(seg), names))
-        entries = {}
+        entries, arms_here = {}, {}
         for i, lno in zip(ix, lnos, strict=True):
             lid = lids[i]
+            if lid in arm_rows:
+                arms_here[str(int(lno))] = arm_rows[lid]
             if form_code[i] == 2:
                 c = table["link_comp"].get(lid)
                 if c in lake_pos:
@@ -647,7 +705,8 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
                 n_rows += len(records[lid]["other"]) + len(records[lid]["same"])
         n_entries += len(entries)
         (out / "links" / f"{t}.json").write_text(json.dumps(
-            {"ids": idv, "network": net_hash, **({"credits": credits["full"]} if credits and "full" in credits else {}), "links": entries}, separators=(",", ":")))
+            {"ids": idv, "network": net_hash, **({"credits": credits["full"]} if credits and "full" in credits else {}), "links": entries,
+             **({"arms": arms_here} if arms_here else {})}, separators=(",", ":")))
 
     # Lakes. The longest travel a click can have sets how many past days of spill probabilities the
     # page may need (transport.history_days): 60 km of river, or, where an overflow's water crosses a
@@ -721,7 +780,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         "lon": [round(float(v), 4) for v in ovl["lon"]], "lat": [round(float(v), 4) for v in ovl["lat"]],
         **({"credits": credits} if credits else {})}, separators=(",", ":")))
     return {"ids": ids, "ids_version": idv, "tiles": sorted(by_tile), "past_days": int(past),
-            "counts": {"links_indexed": len(in_tiles), "links_traced": len(records), "entries": n_entries,
+            "counts": {"links_indexed": len(in_tiles), "links_traced": len(records), "entries": n_entries, "arms": len(arm_rows),
                        "rows": n_rows, "lakes_reached": len(lake_ids), "wfd_lakes": len(polys),
                        "wfd_isolated": sum(p["lake"] == -1 for p in polys)}}
 

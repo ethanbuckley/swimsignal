@@ -336,7 +336,8 @@ def test_a_spot_on_a_side_arm_takes_the_river_the_arm_leaves_not_the_one_below_a
     spot = transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon")
     assert spot.placement == "side arm head" and spot.snap.link_id == "A1" and spot.adopted_main_channel
     assert set(transport.upstream_overflows(net, spot, ov, velocity_ms=0.5)["site_id"]) == {"avon"}
-    # A click on the map (no river named) keeps the old rule: the link below the confluence.
+    # A click on the map (no river named) does the same since 13 Oct 2026, the river being the one the
+    # old rule chose, the link below the confluence: until then it counted the Nadder.
     click = transport.locate_pin(net, lon, lat)
-    assert click.snap.link_id == "B"
-    assert set(transport.upstream_overflows(net, click, ov, velocity_ms=0.5)["site_id"]) == {"avon", "nadder"}
+    assert click.placement == "side arm head" and click.snap.link_id == "A1"
+    assert set(transport.upstream_overflows(net, click, ov, velocity_ms=0.5)["site_id"]) == {"avon"}

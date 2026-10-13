@@ -54,13 +54,17 @@ const filesOf = s => {
   const tiles = {};
   for (const [k, t] of Object.entries(s.files.tiles)) {
     const b = Buffer.from(t.index, 'base64');
-    tiles[k] = { index: A.decodeIndex(b.buffer.slice(b.byteOffset, b.byteOffset + b.length)), links: t.links };
+    tiles[k] = { index: A.decodeIndex(b.buffer.slice(b.byteOffset, b.byteOffset + b.length)), links: t.links, arms: t.arms || {} };
   }
   return { cfg: s.files.cfg, lakes: s.files.lakes, od: s.files.od, tiles };
 };
 const placeIn = files => c => {
   const keys = A.lakePolygon(c.lat, c.lon, files.lakes, files.cfg.lake_shore_m) ? [] : A.squares(c.lat, c.lon, files.cfg);
-  return A.place(c.lat, c.lon, { ...files, tiles: Object.fromEntries(keys.map(k => [k, files.tiles[k]])) });
+  const tiles = Object.fromEntries(keys.map(k => [k, files.tiles[k]]));
+  const got = A.place(c.lat, c.lon, { ...files, tiles });
+  if (!got.need) return got;   // a side arm's head in a square not yet loaded, as point() loads it
+  for (const k of got.need) tiles[k] = files.tiles[k];
+  return A.place(c.lat, c.lon, { ...files, tiles });
 };
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
 
@@ -91,6 +95,18 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
     if (mode === 'lake') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
   });
 }
+
+test('a click on a side arm goes where the arm leaves its river, as a listed spot does', () => {
+  // The unnamed arm XA leaves the Avon above the Nadder (ND1) and rejoins it below; the old rule
+  // took the Avon link with the most network near the click, below the Nadder (B1) and B3.
+  for (const f of [0.15, 0.5, 0.85]) {
+    const c = syn.clicks.find(x => x.what === `XA at ${f}`), got = placeAt(c);
+    assert.equal(got.location.adopted_main_channel, true, c.what);
+    assert.equal(got.location.watercourse, 'River Avon', c.what);
+    assert.deepEqual(got.rows.map(r => syn.files.ids[r.i]), ['B2'], c.what);
+    assert.equal(got.location.snap_distance_m, 200, c.what);
+  }
+});
 
 test('a lake on the way slows the water and thins it, as the API does', () => {
   // Outflow Beck, below Test Water: A5's water enters Test Water above the click. Same click, both modes.

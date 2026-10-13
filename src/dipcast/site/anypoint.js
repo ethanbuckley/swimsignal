@@ -4,7 +4,8 @@
 //  - where the click goes (model/transport.py, _locate): inside or within 150 m of a WFD lake, that
 //    lake; else the nearest link within 1.5 km, or the nearest lake centreline if it is less than
 //    twice as far; a click on a small side channel near a much bigger river is traced as that
-//    river (_adopt_main_channel);
+//    river (_adopt_main_channel), and then where the channel leaves it, as the build found
+//    (_click_at_head; the links file's `arms`);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
 //    for the click's place along it, or from the lake's inlets and the straight line across; a WFD
 //    lake crossed on the way counts as lake, with its lake factor (lake path "lake", crossings);
@@ -285,7 +286,16 @@ const AnyPoint = (() => {
         .reduce((a, b) => !a || b.upstream > a.upstream || (b.upstream === a.upstream && b.d < a.d) ? b : a, null);
       if (alt && alt.upstream >= Math.max(ADOPT.min, ADOPT.ratio * river.upstream)) { target = alt; adopted = true; }
     }
-    return { mode: 'river', link: target, adopted };
+    return { mode: 'river', link: target, adopted, from: river };
+  }
+  // transport._click_at_head: a click moved from a side arm to a main channel goes where the arm leaves
+  // the river of that channel's name. The build worked it out for each arm and channel (build_any_point
+  // .arm_heads): [channel, link, square, fraction x 1e6, metres from the arm's head, name, form].
+  // null where the click stays.
+  function armMove(at, tiles) {
+    if (!at.adopted || !RIVER_FORMS.includes(at.from.form)) return null;
+    const row = (((tiles[at.from.tile] || {}).arms || {})[String(at.from.lno)] || []).find(r => r[0] === at.link.lno);
+    return row ? { lno: row[1], tile: row[2], frac: row[3] / PATH_SCALE, d: row[4], name: row[5], form: row[6] } : null;
   }
 
   // ------------------------------------------------------------------ the files
@@ -301,7 +311,7 @@ const AnyPoint = (() => {
     const name = `tile:${key}`;
     if (!memo.has(name)) memo.set(name, Promise.all([
       fetch(`${BASE}link_index/${key}.bin?n=${cfg.network}`).then(r => { if (!r.ok) throw new Error(`square ${key} answered ${r.status}`); return r.arrayBuffer(); }),
-      json(`links/${key}.json`)]).then(([buf, links]) => ({ index: decodeIndex(buf), links: links.links, ids: links.ids }))
+      json(`links/${key}.json`)]).then(([buf, links]) => ({ index: decodeIndex(buf), links: links.links, arms: links.arms || {}, ids: links.ids }))
       .catch(e => { memo.delete(name); throw e; }));
     return memo.get(name);
   };
@@ -369,7 +379,12 @@ const AnyPoint = (() => {
       : `No river or lake near this point has a monitored storm overflow within ${a.max_upstream_km} km upstream, so SwimSignal has no sewage spills to forecast here.` };
     const at = locate(candidates(lat, lon, tiles), cfg);
     if (at.mode === 'none') return { mode: 'none', kind: '', name: 'This point', error: 'No river or lake within 1.5 km of this point.' };
-    const entry = tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
+    const move = armMove(at, tiles);
+    if (move) {
+      if (move.tile && !tiles[move.tile]) return { need: [move.tile] };   // the arm's head can be a square away
+      at.link = move;
+    }
+    const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
     const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
@@ -384,7 +399,11 @@ const AnyPoint = (() => {
       json('outside_england.json').catch(() => null)]);
     const skip = outsideEngland(lat, lon, outside) || lakePolygon(lat, lon, lakes, cfg.lake_shore_m), keys = skip ? [] : squares(lat, lon, cfg);
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    const at = place(lat, lon, { cfg, lakes, od, tiles, outside });
+    let at = place(lat, lon, { cfg, lakes, od, tiles, outside });
+    if (at.need) {
+      for (const k of at.need) tiles[k] = await tile(k, cfg);
+      at = place(lat, lon, { cfg, lakes, od, tiles, outside });
+    }
     const rows = at.rows || [];
     const ids = rows.length ? await json('overflow_ids.json') : null;
     const versions = new Set([cfg.ids, od.ids, lakes.ids, ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);

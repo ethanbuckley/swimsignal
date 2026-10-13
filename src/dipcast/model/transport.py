@@ -235,6 +235,8 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
     pin = _locate(net, x, y, kind_hint, name)
     if river_hint and kind_hint != "lake":
         pin = _apply_river_hint(net, pin, river_hint)
+    elif kind_hint != "lake" and pin.mode == "river" and pin.adopted_main_channel:
+        pin = _click_at_head(net, pin)
     return pin
 
 
@@ -279,12 +281,19 @@ def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) 
     river = net.snap_xy(x, y, max_m=PIN_SNAP_M)
     if river is None or river.form not in RIVER_FORMS:
         return None
-    own = net.link_upstream_m(river.link_id)
+    return head_of_arm(net, river.link_id, want)
+
+
+def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str]) -> Snap | None:
+    """_adopt_at_head from the arm's own link: where a pin on that river link goes, or None. The
+    click-anywhere build (scripts/build_any_point.py, arm_heads) calls it for every small link, as
+    the page cannot walk the network."""
+    own = net.link_upstream_m(link_id)
     if own >= ADOPT_MIN_M:
         return None
-    hx, hy = _side_arm_head(net, river.link_id)
+    hx, hy = _side_arm_head(net, link_id)
     cand = net.candidates_xy(hx, hy, ADOPT_RADIUS_M)
-    cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != river.link_id)]
+    cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != link_id)]
     cand = cand[_names_match(cand, want)]
     if cand.empty:
         return None
@@ -295,6 +304,38 @@ def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) 
     return _snap_to_links(net, hx, hy, {cand.index[0]})   # candidates_xy sorts nearest first
 
 
+def _at_head(net: RiverNetwork, pin: PinLocation, head: Snap, prefer: frozenset[str] | None = None) -> PinLocation:
+    start, _ = net.link_nodes(head.link_id)
+    return PinLocation("river", pin.x, pin.y, head, trace_node=start,
+                       trace_offset_m=head.frac * net.links.loc[head.link_id, "length"],
+                       watercourse=_link_name(net, head.link_id, prefer=prefer), adopted_main_channel=True,
+                       placement="side arm head")
+
+
+def channel_words(net: RiverNetwork, link_id: str) -> frozenset[str]:
+    """The words of a link's own name and OS's alternative: the river a click moved to that link is
+    taken to be on. Empty for an unnamed link."""
+    row = net.links.loc[link_id]
+    words: frozenset[str] = frozenset()
+    for col in ("watercourse_name", "watercourse_name_alternative"):
+        n = row.get(col)
+        if isinstance(n, str) and n:
+            words |= river_words(n)
+    return words
+
+
+def _click_at_head(net: RiverNetwork, pin: PinLocation) -> PinLocation:
+    """A click, with no river named, that the old rule moved from a side channel to a main channel
+    takes the side-arm head rule too, the wanted river being the channel the old rule chose. Until
+    13 Oct 2026 only listed spots did: a click at Queen Elizabeth Gardens, Salisbury, counted the
+    Nadder and the Wylye, which the spot leaves out (docs/ANYPOINT-SIDE-ARM-2026-10.md)."""
+    want = channel_words(net, pin.snap.link_id)
+    if not want:
+        return pin
+    head = _adopt_at_head(net, pin.x, pin.y, want)
+    return pin if head is None else _at_head(net, pin, head)
+
+
 def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLocation:
     want = river_words(hint)
     shown = river_words(hint, welsh=False)   # the name is shown as spots.csv spells it, Welsh or English
@@ -303,12 +344,8 @@ def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLoca
     if pin.mode == "river" and pin.adopted_main_channel:
         head = _adopt_at_head(net, pin.x, pin.y, want)
         if head is not None:
-            start, _ = net.link_nodes(head.link_id)
             log.info("placed on %s where the side arm leaves it, %.0f m from the arm's head", hint, head.dist_m)
-            return PinLocation("river", pin.x, pin.y, head, trace_node=start,
-                               trace_offset_m=head.frac * net.links.loc[head.link_id, "length"],
-                               watercourse=_link_name(net, head.link_id, prefer=shown), adopted_main_channel=True,
-                               placement="side arm head")
+            return _at_head(net, pin, head, prefer=shown)
     if pin.mode == "river" and pin.snap is not None:
         own = net.links.loc[[pin.snap.link_id]]
         if bool(_names_match(own, want).iloc[0]):   # the link itself, not a name borrowed from downstream

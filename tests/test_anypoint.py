@@ -41,6 +41,8 @@ def _net(links: list[tuple]) -> RiverNetwork:
 # joining at x = 406000, and a mill leat beside its third reach that is not joined upstream. To the
 # east, a beck flows south into a two-link lake, which drains south into a second, smaller lake:
 # water from above the first lake crosses it on the way to a click below it or in the second.
+# To the south, as at Queen Elizabeth Gardens, Salisbury: the Avon, joined by the Nadder, and an
+# unnamed arm with nothing above it that leaves the Avon above the Nadder and rejoins it well below.
 LINKS = [
     ("M1", "River Test", "inlandRiver", "n0", "n1", [(400000, 450000), (402000, 450000)]),
     ("M2", "River Test", "inlandRiver", "n1", "n2", [(402000, 450000), (404000, 450000)]),
@@ -55,6 +57,11 @@ LINKS = [
     ("O1", "Outflow Beck", "inlandRiver", "k2", "o1", [(420000, 452000), (420000, 448000)]),
     ("L3", "Lower Water", "lake", "o1", "l3", [(420000, 448000), (420000, 446000)]),
     ("O2", "Lower Beck", "inlandRiver", "l3", "o2", [(420000, 446000), (420000, 443000)]),
+    ("AV0", "River Avon", "inlandRiver", "a0", "a1", [(410000, 440000), (430000, 440000)]),
+    ("AV1", "River Avon", "inlandRiver", "a1", "a2", [(430000, 440000), (432000, 440000)]),
+    ("AV2", "River Avon", "inlandRiver", "a2", "a3", [(432000, 440000), (436000, 440000)]),
+    ("ND1", "River Nadder", "inlandRiver", "nd0", "a2", [(432000, 434000), (432000, 440000)]),
+    ("XA", None, "inlandRiver", "x0", "a3", [(431500, 440200), (433500, 440200), (436000, 440000)]),
 ]
 LAKE_POLY = box(419000, 451800, 421000, 456200)          # 8.8 km2
 LOWER_POLY = box(419400, 445900, 420600, 447900)         # 2.4 km2, 100 m below Outflow Beck's end
@@ -76,8 +83,9 @@ def _overflows(net: RiverNetwork, spec: list[tuple]) -> pd.DataFrame:
 
 OVERFLOWS = [("A1", "M1", 0.3, "high"), ("A2", "T1", 0.45, "high"), ("A3", "M3", 0.2, "low"),
              ("A4", "M3", 0.8, "high"), ("A5", "R1", 0.4, "high"), ("A6", "K1", 0.5, "high"),
-             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high")]
-RIVER_LINKS = ["M1", "M2", "M3", "M4", "T1", "D1", "S1", "R1", "O1", "O2"]
+             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high"),
+             ("B1", "ND1", 0.3, "high"), ("B2", "AV0", 0.5, "high"), ("B3", "AV2", 0.2, "high")]
+RIVER_LINKS = ["M1", "M2", "M3", "M4", "T1", "D1", "S1", "R1", "O1", "O2", "AV0", "AV1", "AV2", "ND1", "XA"]
 
 
 @pytest.fixture
@@ -259,6 +267,28 @@ def test_a_change_of_lake_path_rule_traces_everything_again(world, tmp_path, mon
     assert stats["cache"] == "stale rules"
 
 
+def test_a_click_on_a_side_arm_goes_where_the_arm_leaves_its_river(world, tmp_path):
+    """The old rule moves a click on the arm to the Avon link with the most network near it, the one
+    below the Nadder; the arm leaves the Avon above the Nadder, so the click goes there, and the
+    Nadder's overflow and the one below the confluence are not counted (ANYPOINT-SIDE-ARM-2026-10)."""
+    bap = _bap()
+    net, _, ov = world
+    for f in (0.15, 0.45, 0.85):
+        at = net.links.at["XA", "geometry"].interpolate(f, normalized=True)
+        pin, up = _api(net, ov, *bng_to_lonlat(at.x, at.y))
+        assert (pin.snap.link_id, pin.placement, pin.watercourse) == ("AV1", "side arm head", "River Avon"), f
+        assert pin.snap.frac == pytest.approx(0.75, abs=1e-6) and pin.snap.dist_m == pytest.approx(200, abs=0.01)
+        assert list(up["site_id"]) == ["B2"], f
+    # The build's table says the same for every channel the old rule could choose, and leaves the
+    # mill leat beside the Test, whose head is by the Test link the old rule chooses, where it is.
+    arms = bap.arm_heads(net, list(net.links.index))
+    assert {ch: h.link_id for ch, h in arms["XA"].items()} == {"AV1": "AV1", "AV2": "AV1"}
+    assert {h.link_id for h in arms["S1"].values()} == {"M3"}
+    # A click on the Nadder is not on an arm, and a listed spot's river hint still decides for a spot.
+    at = net.links.at["ND1", "geometry"].interpolate(0.9, normalized=True)
+    assert transport.locate_pin(net, *bng_to_lonlat(at.x, at.y)).placement is None
+
+
 def test_link_names_follow_the_api():
     bap = _bap()
     net = _net(LINKS)
@@ -310,7 +340,8 @@ def _page_fixture_in(world, tmp_path, monkeypatch, mode: str) -> dict:
         "lakes": json.loads((out / "lakes.json").read_text()), "ids": meta["ids"],
         "od": {"assumptions": {"max_upstream_km": 60.0, "l0_m": transport.L0_M, "lake_area_halving_km2": transport.LAKE_A0_KM2}},
         "tiles": {t: {"index": base64.b64encode((out / "link_index" / f"{t}.bin").read_bytes()).decode(),
-                      "links": json.loads((out / "links" / f"{t}.json").read_text())["links"]} for t in meta["tiles"]},
+                      **{k: v for k, v in json.loads((out / "links" / f"{t}.json").read_text()).items() if k in ("links", "arms")}}
+                  for t in meta["tiles"]},
     }
     clicks = []
     for what, where in CLICKS_BNG:
