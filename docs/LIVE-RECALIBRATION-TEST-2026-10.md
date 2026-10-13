@@ -89,3 +89,33 @@ What the run does show:
 - B brings Southern Water's Brier from 0.0091 to 0.0030 and Thames Water's from 0.0051 to 0.0023. It makes Severn Trent and United Utilities slightly worse.
 
 So the over-forecasting is real, and it is concentrated at the two driest southern companies over these ten autumn days. A correction fitted on them does not yet beat the bar set above. Re-run with the same rule when more days are scored.
+
+## Rerun 1 (pre-stated, 13 October 2026)
+
+Written and committed before the script was run on the new file. Seen before writing: the file's
+hash, its row count, and its rows per day and per company. No forecast or outcome column was read.
+
+**Rule.** The one above, unchanged: candidates A and B, leave one target day out, the block check,
+and all four adoption conditions. Same script, `scripts/live_recalibration_test.py`, unchanged.
+
+**Data.** `data/verification_live.csv` as published by the 11:52 BST build of 13 Oct 2026 (site
+workflow run 38386135087, commit 25e735a), taken from that run's Pages artifact. 58,274
+overflow-days, 9 companies, SHA-256
+`2b9fa1709dcfcc92174b58de8a156a0984d666d17de8176a0ff3d7cb49ec0fb8`. Its row count equals
+`n_scored` in the same build's `verification.json`. Scored target days: 29 Sep to 12 Oct, with
+8 and 9 Oct unscored, so 12 days and 12 folds. The 10 days of the first run have the same row
+counts per day as before (48,090 in all); 11 and 12 Oct are new (10,184 rows).
+
+**Condition 2.** With 12 held-out days, "at least 8 of the 12" applies as written. The block check
+splits at the middle day: 29 Sep to 4 Oct against 5 to 12 Oct.
+
+**What counts as a change worth acting on.** Only a pass under the rule. If a candidate passes,
+the PR says so and stays a draft for Ethan. Deploying it is a separate decision (see "What passing
+would and would not mean"), and no model or calibration file changes in this PR. If neither
+passes, nothing changes.
+
+**Two checks that are not part of the rule.**
+1. The script on the first-run days only (29 Sep to 10 Oct). If it gives the 11 Oct numbers, the
+   rows for those days were not rescored since.
+2. Mean `forecast_calibrated` against observed rate per company, to update the handoff's "about
+   ten times" for Thames Water and Southern Water. Descriptive only.
