@@ -74,9 +74,10 @@ def _trace(net, pin=None, **kw) -> pd.DataFrame:
     return up.set_index("site_id")
 
 
-def test_the_default_is_unchanged(net):
-    assert config.LAKE_PATH_MODE == "lake"
-    assert _trace(net).equals(_trace(net, lake_path_mode="lake"))
+def test_the_default_is_residence_spill(net):
+    assert config.LAKE_PATH_MODE == "residence_spill"
+    assert transport.lake_residence_h("residence_spill") == {}   # GBUPPER is not in the committed spill file
+    assert transport.lake_residence_h("residence") == {0: pytest.approx(TAU_D * 24)}
 
 
 def test_the_well_mixed_lake():

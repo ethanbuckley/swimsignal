@@ -32,7 +32,8 @@ Dr James Shucksmith's review of 9 Oct 2026:
                         docs/URBAN-DILUTION-TEST-2026-10.md.
 
 Lakes on the way (config.LAKE_PATH_MODE) follow a note on lakes from a Lake District water-quality
-group (11 Oct 2026). "lake" is the default since 11 Oct 2026, after the test pre-stated in
+group (11 Oct 2026). "residence_spill" is the default after the test pre-stated in
+docs/LAKE-RESIDENCE-SPILL-2026-10.md; "lake" was the default from 11 Oct 2026, after the test pre-stated in
 docs/LAKE-PATH-TEST-2026-10.md:
 
 * lake path "lake"      a WFD lake crossed between an overflow and the spot is treated as the
@@ -41,18 +42,18 @@ docs/LAKE-PATH-TEST-2026-10.md:
                         outside every WFD polygon (mill ponds, weir pools) stay river.
 * lake path "river"     the rule before: such a lake is walked at river speed, with no lake
                         dilution.
-* lake path "residence" off by default, under test (docs/LAKE-RESIDENCE-TEST-2026-10.md). A WFD lake
+* lake path "residence" passed docs/LAKE-RESIDENCE-TEST-2026-10.md. A WFD lake
                         crossed on the way that has a residence time tau in config.LAKE_RESIDENCE_FILE
                         is a well-mixed lake whose bacteria die at k = ln 10 / T90: the share of a
                         spill's bacteria that leaves it alive is 1 / (1 + k tau) (lake_pass), and the
                         survivors' mean time in it is tau / (1 + k tau) (lake_hold_h). Those replace
                         the crossing at LAKE_VELOCITY_MS, its die-off and the area factor. A lake with
                         no residence time is crossed as in "lake". The spot's own lake is unchanged.
-* lake path "residence_spill" off, under test (docs/LAKE-RESIDENCE-SPILL-2026-10.md): as "residence", with
+* lake path "residence_spill" the default (docs/LAKE-RESIDENCE-SPILL-2026-10.md): as "residence", with
                         each tau divided by the lake's spill-time flow ratio R >= 1, from
                         config.LAKE_RESIDENCE_SPILL_FILE.
 
-scripts/build_any_point.py and site/anypoint.js (click anywhere) follow both.
+scripts/build_any_point.py and site/anypoint.js (click anywhere) follow all four.
 """
 
 from __future__ import annotations
@@ -708,7 +709,7 @@ def lake_residence_h(mode: str = "residence") -> dict[int, float]:
     """Row in _lakes() -> residence time (hours), for the WFD lakes that have one: from
     config.LAKE_RESIDENCE_FILE for lake path 'residence', config.LAKE_RESIDENCE_SPILL_FILE for 'residence_spill'."""
     lakes = _lakes()
-    if lakes is None or lakes.empty:
+    if lakes is None or lakes.empty or "wb_id" not in lakes:
         return {}
     path = config.LAKE_RESIDENCE_SPILL_FILE if mode == "residence_spill" else config.LAKE_RESIDENCE_FILE
     by_wb = _residence_by_wb(str(path))
