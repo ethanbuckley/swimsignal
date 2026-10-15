@@ -144,3 +144,23 @@ test('the week’s best day is in words, lower case mid-sentence, on any day', (
                 spot(sat, ['high', 'high', 'high', 'low', 'high'])];
   assert.equal(text(noteOn(sat)(sats)), 'Best this weekend: tomorrow, 2 spots at low risk. Lowest pollution risk this week: Tuesday · Show');
 });
+
+test("the list's answer line names the weekend's better day while the week reaches one, else the best day", () => {
+  const thu = '2026-10-08';   //        Thu     Fri     Sat     Sun     Mon
+  const spots = [spot(thu, ['high', 'high', 'low', 'high', 'low']),
+                 spot(thu, ['high', 'high', 'low', 'low', 'low']),
+                 spot(thu, ['high', 'high', 'high', 'high', 'low']), clear];
+  at(thu, dates => {
+    const a = L.lowAnswerDay(spots, dates);
+    assert.equal(a.date, '2026-10-10');   // Saturday, though Monday has more
+    assert.equal(L.lowAnswerWords(a), 'Saturday: 2 of 4 spots at low risk');   // every listed spot, as the lede
+  });
+  const mon = '2026-10-12';   // Mon to Fri: no weekend day
+  at(mon, dates => {
+    const a = L.lowAnswerDay([spot(mon, ['high', 'low', 'low', 'high', 'high']), clear], dates);
+    assert.equal(L.lowAnswerWords(a), 'Tomorrow: 1 of 2 spots at low risk');
+    assert.equal(L.lowAnswerWords(L.lowAnswerDay([spot(mon, ['high', 'high', 'high', 'high', 'high'])], dates)),
+                 'Today: none of 1 spot at low risk');
+  });
+  assert.equal(L.lowAnswerDay([clear], fiveFrom(thu)), null);   // no daily level anywhere: no line
+});

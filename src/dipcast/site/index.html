@@ -217,6 +217,11 @@
   .plan-row select { font-weight:600; }
   .planner-note { margin:8px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .best-day b { color:var(--k-low); }
+  /* The list's answer (option B, 13 Oct 2026): how many spots are at low risk on the weekend's better day,
+     or the week's best, in the display face at the heading size, the count in the low colour. */
+  .low-answer { font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); margin:12px 0 0; }
+  .low-answer .n { color:var(--k-low); }
+  .low-answer .pick { font:400 var(--fs-note) var(--font-text); white-space:nowrap; }
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
   /* Near me, the way most people come in: one full-width button under the search (14 Oct 2026). */
   .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
@@ -664,6 +669,7 @@
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen (14 Oct 2026) */
+    .low-answer { font-size:var(--fs-body); margin-top:10px; }   /* one line on a 375 px phone, so the first spot still shows */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
@@ -1802,11 +1808,21 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
 // line of its own, with how many of your spots are low. While the five days reach a weekend, how it
 // looks comes first (levels.js, weekendWords), so the Show button stays last, beside its day. The day
 // is in words, as in a sentence ("tomorrow", "Friday"); the button's label keeps the picker's name.
-function bestDayNote(spots, yours = false) {
-  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
+function bestDayNote(spots, yours = false, weekend = true) {
+  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), b = bestDay(spots, dates), wk = weekend ? weekendWords(spots, dates, yours) : '';
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
   return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
+}
+// The list's answer line (levels.js, lowAnswerDay): "Saturday: 64 of 105 spots at low risk", with the
+// same Show button as the best-day line. That line then follows only when the week's best day is
+// another day with more spots at low risk, and without the weekend's words, which the answer says.
+function lowAnswer(spots) {
+  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), a = lowAnswerDay(spots, dates);
+  if (!a) return { html: '', note: bestDayNote(spots, false, false) };
+  const w = bestDay(spots, dates), words = lowAnswerWords(a).replace(/: (\S+ of \d+)/, ': <span class="n">$1</span>');
+  return { html: `<p class="low-answer">${words}<span class="pick"${VIEW.day === a.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${a.date}" aria-label="Show ${dateLabel(a.date)}">Show</button></span></p>`,
+           note: w && w.date !== a.date && w.low > a.low ? bestDayNote(spots, false, false) : '' };
 }
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
@@ -2168,7 +2184,7 @@ function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
   document.title = `${BRAND} · pollution risk forecasts for swim spots`;
-  const saved = DATA.spots.filter(s => SAVED.has(s.id)), best = bestDayNote(DATA.spots);
+  const saved = DATA.spots.filter(s => SAVED.has(s.id)), ans = lowAnswer(DATA.spots), best = ans.note;
   const sorts = Object.entries(SORTS).filter(([k]) => k !== 'near' || 'geolocation' in navigator);
   // The answer first: the intro and one row of controls, with a line under it (the caveat, who it is
   // for and the tools for groups) and then the week's best day, under the sky (.lead); then the saved
@@ -2182,7 +2198,7 @@ function renderList() {
     + (offerNear() ? NEAR_CTA + `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
     + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${[0,1,2,3,4].map(k => addDays(today(), k)).map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
-    + (best ? `<p class="planner-note best-day">${best}</p>` : '')
+    + ans.html + (best ? `<p class="planner-note best-day">${best}</p>` : '')
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
