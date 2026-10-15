@@ -183,3 +183,24 @@ def test_a_settled_join_at_a_spot_is_not_listed():
     results = [{"id": "bw-uke2203-08903", "lat": lat, "lon": lon}]
     assert bs.near_uncounted(results, {"bw-uke2203-08903": []}, ov) == [
         {"spot": "bw-uke2203-08903", "site_id": "OTHER", "metres": 1}]
+
+
+def test_an_outlet_the_ea_features_settle_moves_only_while_it_sits_on_the_feature(monkeypatch):
+    """Kings Hall, Herne Bay (SWS00474): live and outlet 370 m apart on the North Sea, which names no
+    link, so the names decide nothing. The EA's features put a storm overflow at the outlet. A later
+    return with a new outlet, 500 m from that feature, leaves it at its live position."""
+    net = _net(WYE)
+    feature = (420000.0, 420000.0)
+    monkeypatch.setattr(overflows, "FEATURE_OUTLET", {"SWS00474": (feature, "test")})
+    row = {"site_id": "SWS00474", "site_name": "X CSO"}
+    on = pd.DataFrame([_row((420370, 420000), (420000, 420000), recv="NORTH SEA", recv_ar="NORTH SEA") | row])
+    moved = pd.DataFrame([_row((420370, 420000), (419500, 420000), recv="NORTH SEA", recv_ar="NORTH SEA") | row])
+    other = pd.DataFrame([_row((420370, 420000), (420000, 420000), recv="NORTH SEA", recv_ar="NORTH SEA")
+                          | {"site_id": "SWS00475", "site_name": "X CSO"}])
+    assert overflows.choose_positions(net, on)["position_source"].tolist() == ["annual return"]
+    assert overflows.choose_positions(net, moved)["position_source"].tolist() == ["live"]
+    assert overflows.choose_positions(net, other)["position_source"].tolist() == ["live"]
+
+
+def test_the_checked_feature_cases_are_disjoint():
+    assert not set(overflows.FEATURE_OUTLET) & set(overflows.KEEP_LIVE)

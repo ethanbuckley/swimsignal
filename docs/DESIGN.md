@@ -464,7 +464,8 @@ What makes Apple's page clean, and what was taken from it:
 - **A background that is the place.** A picture of fells over a lake (`icons/fells.webp`, 8 KB,
   drawn by `scripts/make_sky_image.py`, so it needs no licence and no request to anyone else) hangs
   behind the opening of each view: its sky ends at the bottom of the answer's words, its fells fill a
-  128 px band below them (48 px on a phone since 6 October 2026: see "The first screen"), and it is
+  128 px band below them (48 px on a phone since 6 October 2026: see "The first screen"; the list's
+  band is 48 px on a wider screen and 28 px on a phone since 14–15 October 2026), and it is
   the paper about 300 px further down. Its top rows are the
   `--sky` colour that runs on up to the header, so it has no edge. The weather data has only the
   day's high, sunrise and sunset, so the picture cannot follow the weather, as Apple's does. A
@@ -1141,6 +1142,14 @@ gives all four navigation links a single full-width row.
   activities read oddly); the week's best day follows it on its own line; and on
   a phone the fells' band under the opening is 48 px, not 128, so the first tile starts on the fells,
   which show through its glass. Wider screens keep 128.
+- **15 October 2026: the list's band on a wider screen is 48 px.** At 128 it was an empty band of fells
+  between the opening and the list, and on a 1440 x 900 screen only the first spot showed, at the
+  foot. A spot's page keeps 128 on a wider screen.
+- **15 October 2026: the list's answer line** (option B of the 13 October mock-ups): "Sunday: 67 of
+  105 spots at low risk · Show", in the display face at the heading size (the body size on a phone,
+  so it stays one line at 375 px), the count in the low colour. It names the weekend's better day
+  while the five days reach one, and otherwise the week's best. The best-day line follows only when
+  the week's best is another day with more spots at low risk.
 - **"Low risk only"**, not "Low risk", on the list's switch: it hides every spot that is not low risk,
   as the map's switch of the same name does. Under 375 px it takes two lines ("Low risk", "only") so
   that "Today and tomorrow" still fits beside it.

@@ -474,6 +474,18 @@ function bestDay(spots, dates) {
   }
   return best;
 }
+// The list's answer line (option B of the 13 Oct 2026 mock-ups, "Saturday: 64 of 105 spots at low
+// risk"): the weekend's better day while the five days reach a Saturday or a Sunday, since that is
+// when most people swim, and otherwise the week's best day. `n` is every listed spot, as the lede
+// counts them ("forecasts for 105 spots"); a spot with no daily level is never counted low, so the
+// line claims only what it counts. Null when no day has a level (bestDay).
+function lowAnswerDay(spots, dates) {
+  const weekend = dates.filter(iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay()));
+  const b = bestDay(spots, weekend.length ? weekend : dates);
+  return b && { ...b, n: spots.length };
+}
+const lowAnswerWords = a => `${cap(dayName(a.date))}: ${a.low || 'none'} of ${a.n} spot${a.n === 1 ? '' : 's'} at low risk`;
+
 // Saved spots with nothing upstream have no daily level, so a count of levelled spots can be lower
 // than the saved total the page states ("your 4 spots", then "2 of your 3 spots"). Say which three.
 const yoursLevelled = (d, spots) => d.known < spots.length ? ' with a daily level' : '';
@@ -656,7 +668,7 @@ const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It 
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE,
-    level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled,
+    level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
     companyName, overflowWhere, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
