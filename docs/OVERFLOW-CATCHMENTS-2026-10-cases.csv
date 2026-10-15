@@ -1,0 +1,167 @@
+site_id,outcome,reason,wb_id,wb_name_poly,live_out_m,ar_out_m,e4
+SWS00971,kept live: K3 contradicts,evidence points to the outlet only,GB640704540003,,,,
+AWS00017,open,no evidence,GB105030056780,Witham - conf Cringle Bk to conf Brant,0.0,0.0,
+AWS00292,open,under 1 km apart,GB105032045510,Hollowell Arm of Spratton Brook,0.0,0.0,
+AWS00319,open,under 1 km apart,GB105032045360,"Welton Village Trib, Whilton branch of R. Nene",0.0,0.0,
+AWS00329,open,under 1 km apart,GB40501G400400,,,,
+AWS00562,open,no evidence,GB105032045380,Church Brampton Arm,0.0,0.0,
+AWS00576,open,under 1 km apart,GB105037028742,Roach,0.0,0.0,
+AWS00651,open,under 1 km apart,GB105032045060,Knuston Brook,0.0,0.0,
+AWS00871,open,under 1 km apart,GB650503520002,,,,
+AWS00887,open,under 1 km apart,GB104029061850,Ancholme from Source to Bishopbridge,0.0,0.0,
+AWS01118,open,under 1 km apart,GB105033037900,Loughton Brook,0.0,0.0,
+AWS01153,open,under 1 km apart,GB205033000050,Middle Level,0.0,0.0,
+AWS01166,open,no evidence,GB530603911401,,,,
+AWS01190,open,no evidence,GB530603911401,,,,
+AWS01213,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01214,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01215,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01216,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01218,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01220,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01222,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01223,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01224,open,evidence conflicts,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01456,open,evidence conflicts,GB105031050580,Welland - conf Langton Bk to conf Gwash,16778.0,0.0,annual return
+AWS01487,open,no evidence,GB105032045340,Whilton Branch - Lower,0.0,0.0,
+AWS01520,open,under 1 km apart,GB205033000060,Old Bedford River / River Delph (inc The Hundred Foot Washes),2842.0,3328.0,
+NWL00190,open,"different waters: live 'Unnamed Watercourse to North Sea', return 'THE STELL'",GB650301500005,,,,
+NWL00213,open,no evidence,GB650301500005,,,,
+NWL00288,open,"different waters: live 'Blackstone Beck', return 'BACKSTONE BURN'",GB103023074790,Derwent from Burnhope Burn to River Tyne,0.0,0.0,
+NWL00393,open,under 1 km apart,GB650301500002,,,,
+NWL00464,open,under 1 km apart,GB650301500001,,,,
+NWL00698,open,"different waters: live 'Birkley Burn', return 'NORTH SEA'",GB650301440000,,,,
+NWL00769,open,under 1 km apart,GB650301500005,,,,
+NWL00848,open,"different waters: live 'Usworth Burn', return 'DON'",GB103023075690,Don from Source to Tidal Limit,0.0,0.0,
+NWL01206,open,under 1 km apart,GB103025071950,Kilton Beck from Middle Gill Beck to North Sea,373.0,0.0,annual return
+NWL01247,open,under 1 km apart,GB620301100000,,,,
+NWL01292,open,under 1 km apart,GB103023075801,Tyne from Watersmeet to Tidal Limit,61520.0,61815.0,
+NWL01378,open,under 1 km apart,GB510302509900,,,,
+NWL01457,open,"different waters: live 'Warren House Burn', return 'NORTH SEA'",GB650301500002,,,,
+SVT00682,open,"different waters: live 'LILINGTON BROOK', return 'Lillington Brook'",GB109054044140,Leam - conf R Itchen to conf R Avon,0.0,0.0,
+SVT00957,open,under 1 km apart,GB104028046730,Rothley Brook Catchment (trib of Soar),0.0,0.0,
+SVT00961,open,under 1 km apart,GB104028046730,Rothley Brook Catchment (trib of Soar),0.0,0.0,
+SVT01828,open,no evidence,GB104028046870,Sence from Countesthorpe Brook to Soar,0.0,411.0,live
+SVT01830,open,under 1 km apart,GB104028042560,Countesthorpe Brook from Source to Sence,0.0,0.0,
+SVT01943,open,no evidence,GB104028042620,Soar from Soar Brook to Thurlaston Brook,0.0,0.0,
+SVT01945,open,under 1 km apart,GB104028042620,Soar from Soar Brook to Thurlaston Brook,0.0,0.0,
+SVT02210,open,no evidence,GB104028053272,Trent from Tittensor to River Sow,0.0,0.0,
+SVT02392,open,no evidence,GB104028046730,Rothley Brook Catchment (trib of Soar),0.0,0.0,
+SBB00698,open,no evidence,429,,,,
+SBB01137,open,under 1 km apart,72,,,,
+SWS00111,open,under 1 km apart,GB640604290000,,,,
+SWS00260,open,under 1 km apart,GB640704540001,,,,
+SWS00273,open,no evidence,GB640704540002,,,,
+SWS00275,open,under 1 km apart,GB640704540002,,,,
+SWS00350,open,under 1 km apart,GB107042022580,Itchen,1229.0,633.0,
+SWS00381,open,no evidence,GB650705150000,,,,
+SWS00443,open,under 1 km apart,GB520704202800,,,,
+SWS00474,open,under 1 km apart,GB650704510000,,,,
+SWS00515,open,"different waters: live 'ENGLISH CHANNEL', return 'CONTROLLED SEA'",GB107041012220,Adur (Burgess Hill),40227.0,0.0,annual return
+SWS00550,open,no evidence,GB650704510000,,,,
+SWS00551,open,no evidence,GB640704540003,,,,
+SWS00617,open,"different waters: live 'WEY', return 'RIVER KIRD'",GB107041012300,Kird,89144.0,0.0,annual return
+SWS00671,open,no evidence,GB640704540003,,,,
+SWS00770,open,no evidence,GB640704540003,,,,
+SWS00843,open,no evidence,GB640604640000,,,,
+SWS00894,open,under 1 km apart,GB106040018510,Tributary of Teise at Bedgebury,0.0,0.0,
+TWL00008,open,no evidence,GB106039023590,Lower Brent,0.0,0.0,
+TWL00156,open,no evidence,GB106039023590,Lower Brent,0.0,0.0,
+TWL00168,open,no evidence,GB106039023590,Lower Brent,0.0,0.0,
+TWL00182,open,under 1 km apart,GB106039017830,North Wey (Alton to Tilford),0.0,0.0,
+TWL00247,open,under 1 km apart,GB106039023590,Lower Brent,0.0,0.0,
+TWL00265,open,under 1 km apart,GB106039023590,Lower Brent,0.0,0.0,
+TWL00267,open,no evidence,GB106039022940,Wealdstone Brook,0.0,0.0,
+TWL00279,open,"different waters: live 'Mitchell Brook', return 'Brent'",GB106039023590,Lower Brent,0.0,0.0,
+TWL00307,open,under 1 km apart,GB106038077852,Lee (Tottenham Locks to Bow Locks/Three Mills Locks),0.0,0.0,
+TWL00398,open,no evidence,GB106039023590,Lower Brent,0.0,0.0,
+TWL00418,open,evidence conflicts,GB106039029890,Bulbourne,35468.0,0.0,annual return
+TWL00636,open,"different waters: live 'Salmon Brook', return 'Not Applicable'",GB106038027960,Salmon Brook upstream Deephams STW,0.0,0.0,
+TWL00719,open,"different waters: live 'Edgware Brook', return 'Not Applicable'",GB106039022970,Silk Stream and Edgware Brook,0.0,0.0,
+TWL00743,open,evidence conflicts,GB106039017630,Wey (Shalford to River Thames confluence at Weybridge),6863.0,0.0,annual return
+UUP00035,open,"different waters: live 'Ousel Brook via a surface water sewer', return 'OUEL BROOK'",GB112069061452,Irwell / Manchester Ship Canal (Irk to confluence with Upper Mersey),0.0,0.0,
+UUP00129,open,no evidence,GB112069061120,Wince Brook,0.0,0.0,
+UUP00210,open,no evidence,GB112069061100,Astley Brook (Mersey),0.0,0.0,
+UUP00455,open,no evidence,GB641211630001,,,,
+UUP00473,open,no evidence,GB112069064540,Middle Brook,0.0,0.0,
+UUP00520,open,no evidence,GB641211630001,,,,
+UUP00817,open,"different waters: live 'Black Brook', return 'Corn Brook'",GB112069061452,Irwell / Manchester Ship Canal (Irk to confluence with Upper Mersey),0.0,0.0,
+UUP00892,open,under 1 km apart,GB112069061451,Irwell (Croal to Irk),0.0,0.0,
+UUP00952,open,under 1 km apart,GB112069061451,Irwell (Croal to Irk),0.0,0.0,
+UUP01132,open,no evidence,GB112071065651,Main Drain (Ribble),0.0,1427.0,live
+UUP01260,open,no evidence,GB641211630003,,,,
+UUP01480,open,no evidence,GB641211630001,,,,
+UUP01521,open,under 1 km apart,GB112069061452,Irwell / Manchester Ship Canal (Irk to confluence with Upper Mersey),196.0,0.0,
+UUP01725,open,no evidence,GB112072065950,Overton Dyke,0.0,1012.0,live
+UUP01916,open,under 1 km apart,GB112069061451,Irwell (Croal to Irk),0.0,0.0,
+UUP02112,open,no evidence,GB112075073640,Ellen (lower),0.0,0.0,
+UUP02117,open,no evidence,GB112074070040,Lowca Beck,0.0,1270.0,live
+UUP02175,open,no evidence,GB641211630003,,,,
+WXW00010,open,under 1 km apart,GB109053027540,Stoke Bk - source to conf Bradley Bk,0.0,0.0,
+WXW00154,open,under 1 km apart,GB610807680004,,,,
+WXW00212,open,under 1 km apart,GB109053027840,Frome (Brist) - Bradley Bk to conf Floating Hbr,0.0,0.0,
+WXW00228,open,under 1 km apart,68,,,,
+WXW00397,open,under 1 km apart,GB109053021970,The Malago - source to conf R Avon (Brist New Cut),217.0,0.0,
+WXW00699,open,under 1 km apart,GB109053022290,Cam Bk - source to conf Wellow Bk,0.0,0.0,
+WXW00867,open,under 1 km apart,GB520804415800,,,,
+WXW00875,open,under 1 km apart,GB530905415405,,,,
+WXW00975,open,under 1 km apart,GB108043016110,Stirchell Brook,0.0,0.0,
+WXW01134,open,under 1 km apart,GB530905415405,,,,
+WXW01213,open,under 1 km apart,GB109053022250,Wellow Bk - source to conf Snails Bk,0.0,0.0,
+YWS00049,open,evidence conflicts,GB104027063741,Crimple Beck from Source to Park Beck,0.0,4413.0,live
+YWS00242,open,under 1 km apart,GB104027063741,Crimple Beck from Source to Park Beck,0.0,0.0,
+YWS00261,open,under 1 km apart,GB104027063760,Oak Beck Catchment (Trib of Nidd),0.0,0.0,
+YWS00263,open,under 1 km apart,GB104027063760,Oak Beck Catchment (Trib of Nidd),0.0,0.0,
+YWS00270,open,under 1 km apart,GB104027063760,Oak Beck Catchment (Trib of Nidd),0.0,0.0,
+YWS00283,open,under 1 km apart,GB104027069260,Kex Beck and the Laver,0.0,0.0,
+YWS00371,open,evidence conflicts,GB104027068800,Ings Goit from Source to Burneston Beck,0.0,8750.0,live
+YWS00719,open,under 1 km apart,GB104027063035,Aire from Gill Beck (Baildon) to Wyke Beck,0.0,0.0,
+YWS00764,open,under 1 km apart,GB104026067211,Beverley and Barmston Drain,0.0,0.0,
+YWS00765,open,under 1 km apart,GB104026067211,Beverley and Barmston Drain,0.0,0.0,
+YWS00854,open,"different waters: live 'Crank Mill Beck (Culverted)', return 'COTTON MILL BECK'",GB104027062750,Milshaw Beck from Source to Low/Wortley/Pudsey Bks,0.0,0.0,
+YWS00913,open,"different waters: live 'Howl Beck', return 'Permit applied for'",GB104027068313,Derwent from River Rye to Kirkham,0.0,0.0,
+YWS01151,open,under 1 km apart,GB104027069450,Otterington Beck catchment (trib of Wiske),0.0,0.0,
+YWS01215,open,no evidence,GB104027063580,Spittle/Bulmer/Ings Becks catch (trib of Derwent),0.0,0.0,
+YWS01222,open,no evidence,GB104026067200,Burstwick Drain from Source to Humber,0.0,539.0,live
+YWS01249,open,no evidence,GB104027067811,Hertford from Source to River Derwent,0.0,0.0,
+YWS01285,open,"different waters: live 'Ellers Beck', return 'TRIB OF RIVER KYLE'",GB104027067760,Foss from Source to Farlington Beck,0.0,89.0,
+YWS01316,open,"different waters: live 'Garman Carr Dike', return 'GARMANCARR DIKE'",GB104027063650,Holmes Dike catchment (trib of Ouse),0.0,0.0,
+YWS01608,open,under 1 km apart,GB104027062590,Choke Churl Bk from Source to River Calder,0.0,0.0,
+YWS01735,open,no evidence,GB640402491000,,,,
+SWS00983,settled: ground,every receiving-water name says ground; off the network either way,GB107042022580,Itchen,0.0,0.0,
+WXW00545,settled: ground,every receiving-water name says ground; off the network either way,GB108043022500,Fonthill Stream,0.0,0.0,
+AWS00023,settled: live,evidence points to the live position only,GB105033037610,Rhee (DS Wendy),63851.0,0.0,annual return
+AWS01447,settled: live,evidence points to the live position only,GB205032050385,North Level Pumped Areas 2 and 3,50764.0,0.0,annual return
+NWL01170,settled: live,evidence points to the live position only,GB650301500005,,,,
+SVT00775,settled: live,evidence points to the live position only,GB104028046930,Tame (W/ton Arm) source to conf Oldbury,0.0,0.0,
+SVT00958,settled: live,evidence points to the live position only,GB104028046730,Rothley Brook Catchment (trib of Soar),0.0,0.0,
+SVT00959,settled: live,evidence points to the live position only,GB104028046730,Rothley Brook Catchment (trib of Soar),0.0,0.0,
+SVT00960,settled: live,evidence points to the live position only,GB104028046730,Rothley Brook Catchment (trib of Soar),0.0,0.0,
+SVT02437,settled: live,evidence points to the live position only,GB104028047600,Scalford Brook Catchment (trib of Wreake),0.0,0.0,
+SVT02438,settled: live,evidence points to the live position only,GB104028047600,Scalford Brook Catchment (trib of Wreake),0.0,0.0,
+SWS00106,settled: live,evidence points to the live position only,GB650704510000,,,,
+SWS00107,settled: live,evidence points to the live position only,GB650704510000,,,,
+SWS00121,settled: live,evidence points to the live position only,GB650705150000,,,,
+SWS00259,settled: live,evidence points to the live position only,GB640704540001,,,,
+SWS00574,settled: live,evidence points to the live position only,GB107041012510,Glynde Reach,35887.0,0.0,annual return
+YWS00031,settled: live,evidence points to the live position only,GB104027057771,"Rother, Spittal Brook to Doe Lea",0.0,927.0,live
+YWS01758,settled: live,evidence points to the live position only,GB104027062700,Clifton Beck from Source to River Calder,0.0,7207.0,live
+AWS00528,settled: outlet,evidence points to the outlet only,GB530402609201,,,,
+AWS00702,settled: outlet,evidence points to the outlet only,GB520503503900,,,,
+AWS00829,settled: outlet,evidence points to the outlet only,GB104028046620,Sence from Burton Brook to Countesthorpe Brook,667.0,0.0,annual return
+AWS01176,settled: outlet,evidence points to the outlet only,GB530603911401,,,,
+AWS01217,settled: outlet,evidence points to the outlet only,GB105037041320,Salary Brook,2779.0,0.0,annual return
+AWS01221,settled: outlet,evidence points to the outlet only,GB105037041320,Salary Brook,2779.0,0.0,annual return
+NWL01201,settled: outlet,evidence points to the outlet only,GB103025075930,Castle Eden Burn from Source to North Sea,7030.0,0.0,annual return
+SVT00595,settled: outlet,evidence points to the outlet only,GB104028047090,Grace Dieu Brook Catchment (trib of Black Brook),1798.0,0.0,annual return
+SVT00963,settled: outlet,evidence points to the outlet only,GB104028046940,Thurlaston Brook Catchment (trib of Soar),0.0,1787.0,live
+SVT02723,settled: outlet,evidence points to the outlet only,GB104028057780,Dove from Source to River Manifold,0.0,0.0,
+SWS00393,settled: outlet,evidence points to the outlet only,GB107041017980,Loxwood Stm-Hambledon Trb,15868.0,0.0,annual return
+SWS00413,settled: outlet,evidence points to the outlet only,GB107041012710,Middle Ouse,56739.0,0.0,annual return
+SWS00741,settled: outlet,evidence points to the outlet only,GB650705530000,,,,
+SWS00807,settled: outlet,evidence points to the outlet only,GB580705130000,,,,
+SWS00925,settled: outlet,evidence points to the outlet only,GB640704540001,,,,
+TWL00073,settled: outlet,evidence points to the outlet only,GB106039023460,Wandle (Croydon to Wandsworth) and the Graveney,0.0,0.0,
+UUP00998,settled: outlet,evidence points to the outlet only,GB112069060810,Bedford Brook,5151.0,0.0,annual return
+UUP01216,settled: outlet,evidence points to the outlet only,GB112071065651,Main Drain (Ribble),0.0,894.0,live
+YWS00412,settled: outlet,evidence points to the outlet only,GB104027063980,The Foss Catchment (trib of Wharfe),0.0,6041.0,live

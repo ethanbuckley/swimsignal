@@ -84,3 +84,54 @@ these hold:
 ---
 
 ## Results
+
+Added after commit 9ce4211, pushed at 21:32 BST on 15 October 2026 before any catchment was fetched
+for a case. Every case with its distances is in `docs/OVERFLOW-CATCHMENTS-2026-10-cases.csv`.
+
+**Answer: V fails, so E4 is not used. Nothing moves, and no code changes.**
+
+### Coverage
+
+- All 166 cases have a water body ID on their latest return.
+- 116 of those IDs have a river catchment polygon. The other 50 are mostly transitional and coastal
+  water bodies (GB5…, GB6…: 46), plus a few malformed IDs ("429", "72", "68"). The river catchment
+  dataset does not cover those.
+- E4 points one way in 38 of the 166: 26 to the outlet and 12 to the live position.
+
+### V, the check on E4
+
+Of the 38 settled cases, 13 have no polygon. E4 points in 16 of the rest. It agrees with the
+settled answer in 10 and **disagrees in 6**. The rule allowed at most 2 when E4 points in fewer than
+20, so E4 is not used.
+
+| Overflow | Settled to | E4 points to | Live / outlet, metres outside the catchment |
+|---|---|---|---|
+| SVT00963 Desford Cross Road PS | outlet | live | 0 / 1,787 |
+| UUP01216 | outlet | live | 0 / 894 |
+| YWS00412 Tadcaster Road | outlet | live | 0 / 6,041 |
+| AWS00023 Arthingworth TPS | live | outlet | 63,851 / 0 |
+| AWS01447 | live | outlet | 50,764 / 0 |
+| SWS00574 | live | outlet | 35,887 / 0 |
+
+### Why, inferred and not tested
+
+- **The water body ID and the outlet come from the same row of the same return.** When the outlet
+  is inside the catchment of the water body the return names, the company agrees with itself. That
+  is not independent evidence. The three cases where E4 says "outlet" against a settled "live"
+  position are all of this kind. The outlet lies 0 m from the named catchment and the live position
+  36 to 64 km away. Arthingworth was already #209's weakest settled case: both records name the
+  Rhee, and the place points the other way.
+- The three where E4 says "live" against a settled "outlet" show that the return's outlet and its
+  own water body can disagree too. So the ID is not reliable on its own.
+- What would settle these: a source for the outfall that is independent of the annual return, such
+  as the company's asset map or the EA's bathing-water features (used in #214 where they exist).
+
+### For the 125 open cases
+
+E4 would have pointed in 22 of them (15 outlet, 7 live). None is applied. The cases file lists them,
+in case a later rule with an independent source wants a starting list.
+
+### Downloads
+
+110 catchment polygons, one request each, from the EA's OGC features API, all under the Open
+Government Licence. No other requests were made.
