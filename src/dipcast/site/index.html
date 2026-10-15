@@ -242,7 +242,9 @@
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
   .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
-  .sortseg button:hover { background:var(--hover); color:var(--ink); }
+  /* Hover only where there is a pointer: on a phone a tapped sort button kept its hover shade, so after
+     Near me failed it looked pressed beside A–Z (15 Oct 2026, iOS Safari). */
+  @media (hover: hover) { .sortseg button:hover { background:var(--hover); color:var(--ink); } }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
   .geo { margin:0 0 8px; }
@@ -2255,16 +2257,19 @@ function locate(at = 'sort') {
   const before = VIEW.sort === 'near' ? 'name' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : 'in A–Z order';
   // Said where it was asked: under the button under the search ('cta'), or under the sort buttons.
   VIEW.geoAt = at;
-  const msg = t => { VIEW.geoMsg = t; const g = document.getElementById(at === 'cta' ? 'geo-cta' : 'geo');
-    if (g) { g.textContent = t; g.hidden = !t; } };
+  // One message at a time: a refusal under the button, then another under the sorts, showed both (15 Oct 2026).
+  const msg = t => { VIEW.geoMsg = t;
+    for (const [id, here] of [['geo-cta', at === 'cta'], ['geo', at !== 'cta']]) {
+      const g = document.getElementById(id); if (g) { g.textContent = here ? t : ''; g.hidden = !here || !t; } } };
   // Near me shows as chosen while the position is found, so the press is seen to take.
   setSort('near'); msg('Finding your location…');
   navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg('');
       const cta = document.querySelector('[data-near-cta]'); if (cta) cta.hidden = true;   // its answer is the cards below
       drawSpots(); },
-    // A browser remembers a refusal and does not ask again, so say where to undo it.
+    // A browser remembers a refusal and does not ask again, so say where to undo it, and name the button
+    // that was pressed: "Show spots near me" under the search, "Near me" among the sorts (15 Oct 2026).
     e => { setSort(before); msg(e.code === 1
-      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press Near me again.`
+      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press ${at === 'cta' ? 'Show spots near me' : 'Near me'} again.`
       : `Your device could not find where you are, so the list stays ${order}. Check that location services are on for your browser, then try again.`); drawSpots(); },
     { maximumAge: 10 * 60 * 1000, timeout: 10000 });
 }
