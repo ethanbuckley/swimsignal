@@ -134,7 +134,7 @@
   .brand svg { display:block; width:28px; height:28px; border-radius:var(--radius-mark); }
   .top nav { margin-left:auto; display:flex; align-items:center; gap:4px; }
   .top nav a, .hbtn { color:var(--bar-ink); text-decoration:none; font-size:var(--fs-note); font-weight:600; line-height:1.2; min-height:44px; display:inline-flex; align-items:center; padding:8px 10px; border-radius:var(--radius); border:0; background:transparent; cursor:pointer; }
-  .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); }
+  @media (hover: hover) { .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); } }
   .top .hbtn[aria-pressed=true], .top .hbtn[aria-current=page] { color:var(--on-fill); box-shadow:inset 0 -2px 0 var(--on-fill); border-radius:0; background:transparent; }
   .top :focus-visible { outline-color:var(--on-fill); }
   .hbtn .n { display:inline-block; min-width:20px; margin-left:6px; padding:0 6px; border-radius:999px; background:var(--on-fill); color:var(--bar); font-size:var(--fs-meta); font-weight:600; line-height:20px; text-align:center; vertical-align:1px; }
@@ -234,7 +234,7 @@
   .chips-row::-webkit-scrollbar { display:none; }
   /* Choices without a border round each: words in the text's weight, the one chosen filled. */
   .chip-btn { min-height:44px; flex:none; font-size:var(--fs-note); font-weight:600; padding:6px 12px; border-radius:var(--radius); border:0; background:transparent; color:var(--ink); cursor:pointer; }
-  .chip-btn:hover { background:var(--hover); }
+  @media (hover: hover) { .chip-btn:hover { background:var(--hover); } }
   .chip-btn[aria-pressed=true] { background:var(--brand); color:var(--on-fill); }
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
@@ -242,8 +242,9 @@
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
   .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
-  /* Hover only where there is a pointer: on a phone a tapped sort button kept its hover shade, so after
-     Near me failed it looked pressed beside A–Z (15 Oct 2026, iOS Safari). */
+  /* Hover only where there is a pointer, here and on every hover in this page bar the map's own controls: on
+     a phone a tapped button kept its hover shade, so after Near me failed it looked pressed beside A–Z
+     (15 Oct 2026, iOS Safari). */
   @media (hover: hover) { .sortseg button:hover { background:var(--hover); color:var(--ink); } }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
@@ -261,7 +262,7 @@
   a.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
   a.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
   /* Hover and press reach 8 px past the row on either side, so the text keeps the column's edge. */
-  a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); }
+  @media (hover: hover) { a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); } }
   a.row:active { background:var(--active); box-shadow:-8px 0 0 var(--active), 8px 0 0 var(--active); }
   .row-main { flex:1; min-width:0; display:flex; flex-direction:column; }
   .nm { font-weight:600; font-size:var(--fs-body); line-height:1.3; overflow-wrap:anywhere; }
@@ -524,9 +525,9 @@
   .ov-reach small { display:block; font-size:var(--fs-meta); line-height:1.25; color:var(--muted); }
   .ov-reach b small { display:inline; font-weight:600; }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; font-size:var(--fs-note); font-weight:600; padding:8px 14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); color:var(--ink); text-decoration:none; cursor:pointer; }
-  .btn:hover { background:var(--hover); }
+  @media (hover: hover) { .btn:hover { background:var(--hover); } }
   .btn.primary { background:var(--brand); border-color:var(--brand); color:var(--on-fill); }
-  .btn.primary:hover { background:var(--brand-deep); border-color:var(--brand-deep); }
+  @media (hover: hover) { .btn.primary:hover { background:var(--brand-deep); border-color:var(--brand-deep); } }
   .btn[hidden] { display:none; }   /* display:inline-flex would otherwise show it */
   .btn.quiet { margin-top:8px; padding:6px 12px; }
   /* Two equal columns: four buttons make a two by two, not a ragged wrap, on a phone and in the
@@ -586,7 +587,7 @@
   .place .k { margin-top:2px; }
   .unsave { position:relative; z-index:1; flex:none; display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin:-8px -10px 0 0; border:0; border-radius:50%; background:transparent; color:var(--link); cursor:pointer; }
   .unsave .ic { width:20px; height:20px; fill:currentColor; }
-  .unsave:hover { background:var(--hover); }
+  @media (hover: hover) { .unsave:hover { background:var(--hover); } }
   .place-mid { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:8px; }
   .place .big { margin:0; font-size:var(--fs-head); font-weight:700; letter-spacing:0; }
   .place .big-head { margin:0; max-width:none; font-size:var(--fs-body); text-align:left; }
@@ -658,7 +659,7 @@
   .about dl.levels .badge { white-space:normal; }   /* the plain levels are phrases, wider than a phone */
   footer.fine { margin-top:24px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-meta); color:var(--muted); }
   footer.fine p { margin:0 0 8px; }
-  footer.fine a { color:var(--muted); } footer.fine a:hover { color:var(--link); }
+  footer.fine a { color:var(--muted); } @media (hover: hover) { footer.fine a:hover { color:var(--link); } }
   /* Keyboards: the first Tab shows a link past the header and the map to the forecasts. */
   .skip { position:fixed; top:-100px; left:16px; z-index:3000; background:var(--card); border:1px solid var(--line); padding:12px 16px; border-radius:var(--radius); }
   .skip:focus { top:8px; }
