@@ -95,7 +95,7 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
       const want = [...c.rows].sort((a, b) => a.site_id.localeCompare(b.site_id));
       assert.deepEqual(mine.map(r => r.site_id), want.map(r => r.site_id), c.what);
       mine.forEach((r, k) => {
-        // Distances in tens of metres, the click's place along a line simplified to 30 m.
+        // Distances in tens of metres.
         near(r.dist, want[k].distance_m, 6, `${c.what} ${r.site_id} distance`);
         near(r.dlake, want[k].lake_distance_m, 3, `${c.what} ${r.site_id} across the lake`);
         near(r.dil, want[k].dilution, 1e-3, `${c.what} ${r.site_id} dilution`);
@@ -125,6 +125,20 @@ test('a lake on the way slows the water and thins it, as the API does', () => {
   near(lake.dil, river.dil / (1 + area / 5), 1e-4, 'divided by 1 + area / 5 km2');
   const hours = r => (r.dist / 0.5 + r.dlake / 0.05) / 3600;   // forecast()'s travel at the default speeds
   near(hours(lake) - hours(river), 4000 / 0.05 / 3600 - 4000 / 0.5 / 3600, 0.01, '4 km at 0.05 m/s, not 0.5');
+});
+
+// The River Stor in West Sussex (16 Oct 2026): a click on a short side link's kink, 35 m from a pond's
+// centreline. With lines simplified to 30 m the kink was 25 m from its link, the pond won (35 x 0.5 < 25)
+// and the page said there was no river, where the API traced the Stor and its overflows.
+test('a click on a side link by a pond is traced as the river, as the API does', () => {
+  const c = syn.clicks.find(x => x.what === 'the kink by the pond');
+  assert.deepEqual([c.mode, c.watercourse, c.adopted, c.rows.map(r => r.site_id)], ['river', 'River Stor', true, ['A9']]);
+  const got = placeAt(c);
+  assert.equal(got.mode, 'river');
+  assert.equal(got.location.watercourse, 'River Stor');
+  assert.equal(got.location.adopted_main_channel, true);
+  assert.deepEqual(got.rows.map(r => syn.files.ids[r.i]), ['A9']);
+  near(got.rows[0].dist, c.rows[0].distance_m, 6, 'distance');
 });
 
 test('a click in a lake the river network links to no overflow says so', () => {
