@@ -58,10 +58,10 @@ LINKS = [
     # Empty Water has no lake link inside. East Pond is the nearer to its middle, West Pond to a click on
     # its west shore; neither is within 1.5 km of its north shore.
     ("E1", "East Beck", "inlandRiver", "e0", "pe0", [(451300, 472500), (451300, 470600)]),
-    ("P1", "East Pond", "lake", "pe0", "pe1", [(451300, 470600), (451300, 470400)]),
+    ("EP", "East Pond", "lake", "pe0", "pe1", [(451300, 470600), (451300, 470400)]),
     ("E2", "East Beck", "inlandRiver", "pe1", "e2", [(451300, 470400), (451300, 468000)]),
     ("W1", "West Beck", "inlandRiver", "w0", "pw0", [(448800, 472500), (448800, 470600)]),
-    ("P2", "West Pond", "lake", "pw0", "pw1", [(448800, 470600), (448800, 470400)]),
+    ("WP", "West Pond", "lake", "pw0", "pw1", [(448800, 470600), (448800, 470400)]),
     ("W2", "West Beck", "inlandRiver", "pw1", "w2", [(448800, 470400), (448800, 468000)]),
     # Notch Water's lake link, unnamed, runs down its middle.
     ("N0", "Notch Beck", "inlandRiver", "nb0", "nb1", [(460500, 472500), (460500, 470800)]),
@@ -279,9 +279,9 @@ def test_a_lake_with_no_centreline_inside_takes_the_one_nearest_the_click_not_it
     assert links["Notch Water"] == {"N1"} and links["Test Water"] == {"K1", "K2"}
     # The API: West Pond for a click on the west shore, though East Pond is the nearer to the middle.
     pin, up = _api(net, ov, *bng_to_lonlat(449900, 470500))
-    assert (pin.mode, pin.lake_source, pin.watercourse, pin.lake_links) == ("lake", "polygon", "Empty Water", {"P2"})
+    assert (pin.mode, pin.lake_source, pin.watercourse, pin.lake_links) == ("lake", "polygon", "Empty Water", {"WP"})
     assert list(up["site_id"]) == ["B2"]
-    assert EMPTY_POLY.centroid.distance(net.links.at["P1", "geometry"]) < 1500 < EMPTY_POLY.centroid.distance(net.links.at["P2", "geometry"])
+    assert EMPTY_POLY.centroid.distance(net.links.at["EP", "geometry"]) < 1500 < EMPTY_POLY.centroid.distance(net.links.at["WP", "geometry"])
     # The page finds the pond in the link index: Quiet Pond's square has files though no overflow is near it.
     table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
     out = tmp_path / "anypoint"
