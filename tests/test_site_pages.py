@@ -842,7 +842,7 @@ def test_carto_tiles_bring_their_own_colour_filter_and_others_keep_openstreetmap
         html = bs.with_tiles(template, "index.html", {**p, "url": p["url"].replace("__KEY__", "testkey123")})
         assert bs.CARTO_FILTERS[key] in html and osm_filter not in html, name
         assert html.count('<filter id="tiles"') == 1, name
-        assert "--tile-filter:url(#tiles)" in html, name   # the tiles still use it
+        assert "tintTiles(L.tileLayer(" in html, name   # the tiles still go through it, by script
     p = bs.TILE_PROVIDERS["thunderforest-atlas"]
     html = bs.with_tiles(template, "index.html", {**p, "url": p["url"].replace("__KEY__", "testkey123")})
     assert osm_filter in html
