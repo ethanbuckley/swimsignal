@@ -267,7 +267,18 @@ def spot_hints(kind, river) -> tuple[str | None, str | None]:
 def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
     """Where a side arm with little network above it begins: up its links while there is exactly one
     link in and the network above stays under ADOPT_MIN_M. Returns that point (BNG)."""
+    return _side_arm(net, link_id)[0]
+
+
+ARM_MAX_M = 2_000.0   # a side arm longer than this, head to the end of the link clicked, takes no head move
+
+
+def _side_arm(net: RiverNetwork, link_id: str) -> tuple[tuple[float, float], float]:
+    """_side_arm_head's point, and the arm's length along its links from there to the downstream end
+    of `link_id`. The length is what ARM_MAX_M limits: on the Little Stour at 51.3240, 1.2561 a click
+    was sent to an arm's head 3.6 km away (docs/ANYPOINT-SIDE-ARM-LENGTH-2026-10.md)."""
     lid = link_id
+    length = float(net.links.at[lid, "length"])
     for _ in range(50):
         s, _e = net.link_nodes(lid)
         preds = list(net.graph.predecessors(s))
@@ -277,8 +288,9 @@ def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
         if up.startswith("repair:") or net.link_upstream_m(up) >= ADOPT_MIN_M:
             break
         lid = up
+        length += float(net.links.at[lid, "length"])
     x, y = net.links.loc[lid, "geometry"].coords[0][:2]
-    return x, y
+    return (x, y), length
 
 
 def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) -> Snap | None:
@@ -304,7 +316,9 @@ def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str]) -> Snap |
     own = net.link_upstream_m(link_id)
     if own >= ADOPT_MIN_M:
         return None
-    hx, hy = _side_arm_head(net, link_id)
+    (hx, hy), arm_m = _side_arm(net, link_id)
+    if arm_m > ARM_MAX_M:
+        return None
     cand = net.candidates_xy(hx, hy, ADOPT_RADIUS_M)
     cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != link_id)]
     cand = cand[_names_match(cand, want)]

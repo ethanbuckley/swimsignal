@@ -18,6 +18,14 @@ from dipcast import config
 from dipcast.model import transport
 from dipcast.network.rivers import RiverNetwork, bng_to_lonlat, lonlat_to_bng
 
+
+@pytest.fixture(autouse=True)
+def _long_schematic_arm(monkeypatch):
+    """The side arm XA here is a 4.5 km schematic, over transport.ARM_MAX_M (2 km). These tests check
+    that the page and the API agree on an arm's move, so the limit is lifted for them; it has its own
+    test in test_placement.py (docs/ANYPOINT-SIDE-ARM-LENGTH-2026-10.md)."""
+    monkeypatch.setattr(transport, "ARM_MAX_M", 10_000.0)
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
