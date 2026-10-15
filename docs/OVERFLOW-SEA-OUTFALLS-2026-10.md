@@ -88,3 +88,68 @@ them without saying so.
 ---
 
 ## Results
+
+Added after commit 4bba063, which was pushed at 19:38 BST on 15 October 2026 before any of this was
+fetched or run. Each case, with its distances and the overflows near its feature, is in
+`docs/OVERFLOW-SEA-OUTFALLS-2026-10-cases.csv`.
+
+**Answer.**
+- 3 of the 7 are settled, not 7. Station Road CSO (Redcar) and Kings Hall (Herne Bay) move to their
+  outlets. Marsh Road (Gurnard) stays at its live position and is added to `KEEP_LIVE`.
+- 4 stay open, all on S3: another overflow already sits within 100 m of the same feature.
+- No listed spot changes. Both moved overflows are marine before and after the move, so they are
+  left out of river tracing either way. What changes is where they are drawn.
+
+### C1, the four checks
+
+| Overflow | S1: storm overflow within 100 m | S2 | S3: other overflows within 100 m of the feature | Outcome |
+|---|---|---|---|---|
+| NWL01292 Station Road CSO, Redcar | outlet 3 m, live 550 m (ukc1202-06400) | yes | none | **outlet** |
+| SWS00474 Kings Hall, Herne Bay | outlet 0 m, live 370 m (ukj4202-12200) | yes | none | **outlet** |
+| SWS00381 Marsh Road, Gurnard | live 16 m, outlet 2.17 km (ukj3400-17700) | yes | none | **live** |
+| AWS01190 Southend Prittle Brook Storage Tank | outlet 0 m, live 1.47 km (ukh3100-11902) | yes | AWS01191 and AWS01192, Southend Chalkwell/Ridgeway, both positions 10 m | open |
+| SBB00698 Littlegate Road CSO, Paignton | outlet 0 m, live 694 m (ukk4200-24100) | yes | SBB00274 Clennon Valley SPS and SBB00900 Paignton Tank CSO, both positions 0–1 m | open |
+| SWS00770 Shoreham CSO | outlet 6 m, live 2.84 km (ukj2401-15100) | yes | SWS00769 Albion Street, Portslade, live 10 m and outlet 6 m | open |
+| NWL00769 Lakes CSO, Redcar | live 0 m, outlet 581 m (ukc1202-06300) | yes | NWL00930 New Coatham CSO, both positions 49 m | open |
+
+S4 held: no two of the seven matched the same feature.
+
+Established: every distance above, from today's feature files and the 13 October snapshot.
+
+Inferred, not established:
+- At Southend, Paignton and Shoreham the other overflows sit on the feature at both of their own
+  positions, so that feature is most likely theirs. The overflow under test may share their sea
+  outfall: a storage tank or a second overflow often spills through the same long pipe. If so, its
+  outlet would be right too. The features cannot tell, because they carry no name or permit.
+- What would settle these four: the company's own asset record of which outfall each overflow uses,
+  or the permit number on a feature, which the EA's files do not give.
+- The distances to "any storm overflow" differ from #209's K3, which took any feature type. Paignton's
+  live position is 482 m from a river intersection and 694 m from the nearest storm overflow. Marsh
+  Road's outlet is 1.89 km from a river intersection and 2.17 km from the nearest storm overflow.
+
+### C2, did the features change?
+
+The seven's positions lie within 2 km of 15 bathing waters. #209 held copies of all 15 from
+13 October. Today's files are identical to those copies: 50 feature points, no feature added,
+removed or moved. 27 are storm overflows, 14 river or stream intersections and 9 surface water
+outfalls.
+
+### C3, effect on spots
+
+Both tables were built from the same snapshot (`live_latest.parquet`, MD5 5877fc61…) and network
+(`b5724303`). Main's build reproduces #209: 59 moves to the outlet, 40 by the named water and 19 by
+the evidence. This branch moves 61: the same 59 plus the 2 by the EA's features.
+
+- Overflows placed differently: 2, NWL01292 and SWS00474. Both are `marine` before and after.
+- Listed spots whose set of overflows or summed weight changes: 0 of all in `spots.csv` and
+  `spots-osm.csv`.
+
+### C4, tests
+
+- `pytest -q`: 717 passed, and 4 failed in `tests/test_cards.py` (Pillow missing locally, known).
+- `node --test tests/*.test.cjs`: 341 passed.
+
+### Downloads
+
+The EA bathing-water list and 15 `features.json` files, each one small request. No Open-Meteo
+requests were made, and the EA consents register was not used.

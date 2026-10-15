@@ -1,0 +1,8 @@
+site_id,rw_live,rw_ar,live_to_so_m,ar_to_so_m,s1,s2,feature_bw,feature_e,feature_n,feature_lat,feature_lon,s3_others_within_100m,s3,s4,settled
+AWS01190,THAMES ESTUARY,THAMES ESTUARY,1470,0,annual return,True,ukh3100-11902,585360.0,185460.0,51.537603,0.671349,AWS01191 live 10 m; AWS01191 outlet 10 m; AWS01192 live 10 m; AWS01192 outlet 10 m,False,True,open
+NWL01292,North Sea,NORTH SEA,550,3,annual return,True,ukc1202-06400,460150.0,525450.0,54.620622,-1.069993,,True,True,annual return
+SBB00698,ENGLISH CHANNEL & VICT PARK WC,ENGLISH CHANNEL & VICT PARK WC,694,0,annual return,True,ukk4200-24100,289840.0,60360.0,50.432725,-3.552419,SBB00274 live 1 m; SBB00274 outlet 0 m; SBB00900 live 1 m; SBB00900 outlet 0 m,False,True,open
+SWS00474,NORTH SEA,NORTH SEA,370,0,annual return,True,ukj4202-12200,618890.0,169140.0,51.379089,1.144008,,True,True,annual return
+SWS00770,ENGLISH CHANNEL,ENGLISH CHANNEL,2836,6,annual return,True,ukj2401-15100,524094.0,104229.0,50.824312,-0.239522,SWS00769 live 10 m; SWS00769 outlet 6 m,False,True,open
+NWL00769,North Sea,NORTH SEA,0,581,live,True,ukc1202-06300,459830.0,525520.0,54.621289,-1.074934,NWL00930 live 49 m; NWL00930 outlet 49 m,False,True,open
+SWS00381,SOLENT,THE SOLENT,16,2169,live,True,ukj3400-17700,447219.0,95676.0,50.758765,-1.331921,,True,True,live
