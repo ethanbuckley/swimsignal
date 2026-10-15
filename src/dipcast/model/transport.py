@@ -53,6 +53,14 @@ docs/LAKE-PATH-TEST-2026-10.md:
                         each tau divided by the lake's spill-time flow ratio R >= 1, from
                         config.LAKE_RESIDENCE_SPILL_FILE.
 
+Within the spot's own lake (config.LAKE_DISTANCE_MODE), the distance from where an overflow's water
+enters the lake to the spot:
+
+* lake distance "line"  the straight line, the default. In a lake that bends it crosses land.
+* lake distance "water" the shortest path inside the WFD lake polygons the spot's lake links lie in
+                        (model/lake_water.py), stated in docs/LAKE-DISTANCE-2026-10.md. Off. A lake
+                        with no WFD polygon (a centreline lake) keeps the straight line.
+
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow all four.
 """
 
@@ -71,6 +79,7 @@ from shapely.geometry import Point
 
 from dipcast import config
 from dipcast.ingest.lakes import load_lakes
+from dipcast.model import lake_water
 from dipcast.network.names import river_words
 from dipcast.network.rivers import RiverNetwork, Snap, lonlat_to_bng
 
@@ -803,7 +812,8 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
-                       dilution_mode: str | None = None, lake_path_mode: str | None = None) -> pd.DataFrame:
+                       dilution_mode: str | None = None, lake_path_mode: str | None = None,
+                       lake_distance_mode: str | None = None) -> pd.DataFrame:
     """Overflows upstream of the pin with distance, travel time and transport weight.
     `velocity_mode`, `dilution_mode` and `lake_path_mode` default to config.VELOCITY_MODE,
     config.DILUTION_MODE and config.LAKE_PATH_MODE.
@@ -815,10 +825,15 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     With lake path 'residence', a lake on the way with a residence time (lake_residence_h) is crossed
     as a well-mixed lake instead: its metres still move to lake_distance_m, but travel_h counts
     lake_hold_h for it in place of its metres at LAKE_VELOCITY_MS, decay is the die-off of the rest of
-    the journey times lake_pass, and its area factor is dropped. Other lakes are crossed as in 'lake'."""
+    the journey times lake_pass, and its area factor is dropped. Other lakes are crossed as in 'lake'.
+    `lake_distance_mode` (default config.LAKE_DISTANCE_MODE) sets, for a lake spot, the distance from where
+    each overflow's water enters the spot's lake to the spot (spot_lake_m)."""
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
+    lake_distance_mode = lake_distance_mode or config.LAKE_DISTANCE_MODE
+    if lake_distance_mode not in config.LAKE_DISTANCE_MODES:
+        raise ValueError(f"unknown lake distance {lake_distance_mode!r}: use one of {config.LAKE_DISTANCE_MODES}")
     if (velocity_mode not in ("fixed", "catchment") or dilution_mode not in ("length", "flow", "urban")
             or lake_path_mode not in ("river", "lake", *config.RESIDENCE_MODES)):
         raise ValueError(f"unknown transport option: velocity {velocity_mode!r}, dilution {dilution_mode!r}, "
@@ -888,13 +903,13 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
             if res is None:
                 continue
             d_river, (ex, ey), t_river, (lm, ls, lk) = res
-            d_lake = math.hypot(ex - pin.x, ey - pin.y)
-            rows.append((r.name, d_river, d_lake, t_river / scale, (lm, ls / scale, lk)))
+            rows.append((r.name, d_river, (ex, ey), t_river / scale, (lm, ls / scale, lk)))
         if rows:
-            idx, dr, dl, tr, crossed = zip(*rows, strict=True)
+            idx, dr, entry, tr, crossed = zip(*rows, strict=True)
             ov = ov.loc[list(idx)].copy()
             ov["distance_m"] = list(dr)
-            ov["lake_distance_m"] = list(dl)
+            ov["lake_distance_m"] = spot_lake_m(net, pin, ov["site_id"].to_numpy(), np.asarray(entry, dtype=float),
+                                                lake_distance_mode)
             ov["river_s"] = list(tr)
             if on_lakes:
                 _put_lakes(ov, list(crossed), lake_area)
@@ -955,6 +970,32 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     else:
         ov = ov[ov["distance_m"] <= cap]
     return ov.sort_values("weight", ascending=False).reset_index(drop=True)
+
+
+def spot_water(net: RiverNetwork, pin: PinLocation) -> lake_water.Water | None:
+    """The water of a lake spot's own lake: the WFD lake polygons its lake links lie in (_wfd_lake_of), as
+    one region. None for a lake with no WFD polygon (a centreline lake)."""
+    lakes = _lakes()
+    if lakes is None or lakes.empty or not pin.lake_links:
+        return None
+    rows = sorted({k for k, _ in _wfd_lake_of(net, pin.lake_links).values()})
+    return lake_water.water(tuple(lakes.geometry.iloc[k] for k in rows)) if rows else None
+
+
+def spot_lake_m(net: RiverNetwork, pin: PinLocation, site_ids: np.ndarray, entry_xy: np.ndarray,
+                mode: str) -> np.ndarray:
+    """Metres from where each overflow's water enters a lake spot's lake (entry_xy, (n, 2) BNG) to the pin.
+    Lake distance 'line': the straight line. 'water': the shortest path through the lake's water
+    (lake_water.water_distance); the straight line where the lake has no WFD polygon, or where the two
+    points lie in parts of the water that do not meet. `site_ids` name the rows; the rule does not use them."""
+    line = np.hypot(entry_xy[:, 0] - pin.x, entry_xy[:, 1] - pin.y) if len(entry_xy) else np.zeros(0)
+    if mode == "line" or not len(entry_xy):
+        return line
+    w = spot_water(net, pin)
+    if w is None:
+        return line
+    d = np.array([lake_water.water_distance(w, ex, ey, pin.x, pin.y) for ex, ey in entry_xy])
+    return np.where(np.isfinite(d), d, line)
 
 
 def _put_residence(ov: pd.DataFrame, parts: list[PathLakes], lake_area: dict[int, float], tau: dict[int, float],
