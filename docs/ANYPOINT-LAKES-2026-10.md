@@ -118,4 +118,60 @@ misses in 1,600).
 
 ## Results
 
-(Below this line after the run.)
+Run on 16 October 2026 from commit a46a40d (this branch) and from main 0f6840a, with the same API answers.
+
+### Shore clicks, full river lines (seeds 18 and 19, 400 clicks)
+
+| | main | this branch |
+|---|---|---|
+| agree | 348 | **349** |
+| 1. isolated lake against a river | 48 | **51** |
+| 2 and 4. another lake centreline | 2 | **0** |
+| 3. outline | 2 | **0** |
+| other | 0 | 0 |
+
+As expected. Classes 2 to 4 are gone, and nothing new appeared. The misses that changed:
+- **Fixed (2).** Riding Wood Reservoir: 143.7 m from the real outline, which the page missed (class 3). Avon
+  Dam Reservoir: 147.2 m from the 15 m outline but over 150 m from the real one, the other way round (class 3).
+- **Moved to class 1 (3).** Snodland Reservoir, twice (class 2 on main): the build gave it a centreline from the
+  lake's middle; none is within 1.5 km of either click. By the River Wear: 149.4 m from a lake with no centreline. The 15 m outline
+  put the click outside it, so the page agreed with the API by accident.
+
+With main's 30 m river lines this branch also has 1 "other nearest link" and 2 "same link, distances off" on the
+shore set. Those are #225's, not lakes.
+
+**Seeds 16 and 17 again**, the clicks #225 found: Church Wilne, Chelker, Island Barn, Gorpley and Eccup now
+agree. White Mere and King George VI are now class 1, as stated above. All 400: 54 class 1, 1 distance off by
+6.1 m (the one on #225), nothing else.
+
+### Class 1, for the decision (seeds 18 and 19)
+
+51 shore clicks, by 38 lakes. The API traces a river for all 51.
+
+| | clicks | the API's river has no overflow | median overflows | most |
+|---|---|---|---|---|
+| inside the outline | 16 | 7 | 1 | 35 (River Thames) |
+| outside, within 150 m | 35 | 17 | 1 | 202 (River Wear) |
+
+So, of the 51:
+- **A** (isolated everywhere) hides a river's overflows on 27 clicks (9 inside, 18 outside).
+- **B** (as if no lake) gives 16 clicks on the water a river's forecast, 9 of them with overflows.
+- **C** (inside: lake; outside: river) hides overflows on 9 clicks on the water, and gives the river to the 35
+  on the bank.
+
+One river click (seed 18, by the River Glem, 3 overflows) is class 1 too: river clicks can land within 150 m of
+such a lake.
+
+### River clicks
+
+With full lines, 795 of 797 clicks on the line and 792 of 796 off it agree. The misses: 5 with the same link and
+a distance just over 6 m (#225's), and the River Glem click above. One click on the line (seed 18) that main
+placed by another lake centreline now agrees.
+
+### Cost
+
+- `lakes.json`: 631,549 bytes to 634,103 (the `err` values).
+- `lake_outlines/`: 564 files, 3.84 MB in all. A click fetches one only near 150 m from a lake: 24 of the
+  1,993 clicks did.
+- No new squares: every square a lake link near such a lake touches already had files. The rule stays, for a
+  lake far from any overflow (Quiet Water in the tests).
