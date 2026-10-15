@@ -245,6 +245,12 @@
   /* The list: rows between hairlines on the paper, with no box round them. */
   ul.spots { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   ul.spots li + li { border-top:1px solid var(--line); }
+  /* A–Z by area (drawSpots, areaGroups): the area's name in the display face, then how many of its
+     spots are at low risk on the day shown, in grey. A heavier gap above each but the first. */
+  ul.spots li.area-head { padding:16px 0 6px; }
+  ul.spots li.area-head:first-child { padding-top:8px; }
+  li.area-head h3 { font-size:var(--fs-body); line-height:1.3; margin:0; }
+  li.area-head span { font:400 var(--fs-note) var(--font-text); color:var(--muted); }
   a.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
   a.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
   /* Hover and press reach 8 px past the row on either side, so the text keeps the column's edge. */
@@ -2246,6 +2252,18 @@ function locate(at = 'sort') {
 // spot's notes as well as its own name: "ilkley wharfe" finds "River Wharfe at Ilkley".
 const fold = t => String(t ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const searchText = s => fold([s.name, s.kind, s.notes, (s.location || {}).watercourse].join(' '));
+// A–Z groups the list by area (spots.csv's `area`), north to south by the mean latitude of each area's
+// spots, A–Z within each. Not in the other orders, which rank the whole list, and not while any spot
+// has no area (a forecast built before 15 Oct 2026), so the page never shows a group without a name.
+function areaGroups(items) {
+  if (VIEW.sort !== 'name' || !items.length || DATA.spots.some(s => !s.area)) return null;
+  const by = new Map();
+  for (const s of items) { if (!by.has(s.area)) by.set(s.area, []); by.get(s.area).push(s); }
+  const lat = a => { const xs = DATA.spots.filter(s => s.area === a); return xs.reduce((t, s) => t + s.lat, 0) / xs.length; };
+  return [...by.entries()].sort(([a], [b]) => lat(b) - lat(a));
+}
+const areaHead = (a, xs) => { const low = xs.filter(s => mapLevel(s) === 'low').length;
+  return `<li class="area-head"><h3>${esc(a)} <span>· ${xs.length} spot${xs.length === 1 ? '' : 's'}, ${low || 'none'} at low risk</span></h3></li>`; };
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -2275,7 +2293,9 @@ function drawSpots() {
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
-  ul.innerHTML = items.length ? items.map(spotItem).join('')
+  const groups = areaGroups(items);
+  ul.innerHTML = groups ? groups.map(([a, xs]) => areaHead(a, xs) + xs.map(spotItem).join('')).join('')
+    : items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;

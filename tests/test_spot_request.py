@@ -273,7 +273,7 @@ def test_the_row_is_one_valid_spots_csv_line():
     parsed = next(csv.reader([row]))
     assert dict(zip(header, parsed, strict=True)) == {
         "id": "wharfe-burnsall", "name": 'River Wharfe, "the" beach', "lat": "54.04700", "lon": "-1.95300",
-        "kind": "river", "river": "River Wharfe", "source": "curated", "notes": ""}
+        "kind": "river", "river": "River Wharfe", "source": "curated", "notes": "", "area": ""}
 
 
 # ------------------------------------------------------------------------------------- placing and the comment
