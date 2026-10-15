@@ -56,14 +56,19 @@ const filesOf = s => {
     const b = Buffer.from(t.index, 'base64');
     tiles[k] = { index: A.decodeIndex(b.buffer.slice(b.byteOffset, b.byteOffset + b.length)), links: t.links };
   }
-  return { cfg: s.files.cfg, lakes: s.files.lakes, od: s.files.od, tiles };
+  return { cfg: s.files.cfg, lakes: s.files.lakes, od: s.files.od, tiles, outlines: s.files.outlines || {} };
 };
+// As point() fetches them: the real outlines the click needs, then the squares if it needs them.
 const placeIn = files => c => {
-  const keys = A.lakePolygon(c.lat, c.lon, files.lakes, files.cfg.lake_shore_m) ? [] : A.squares(c.lat, c.lon, files.cfg);
-  return A.place(c.lat, c.lon, { ...files, tiles: Object.fromEntries(keys.map(k => [k, files.tiles[k]])) });
+  const outlines = Object.fromEntries(A.outlinesNeeded(c.lat, c.lon, files.lakes, files.cfg.lake_shore_m).map(i => [i, files.outlines[i]]));
+  const keys = A.needsSquares(c.lat, c.lon, files.lakes, files.cfg, null, outlines) ? A.squares(c.lat, c.lon, files.cfg) : [];
+  return A.place(c.lat, c.lon, { ...files, outlines, tiles: Object.fromEntries(keys.map(k => [k, files.tiles[k]])) });
 };
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
 const DEFAULT_SPEEDS = { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30 };   // config's, as the API ran
+// Clicks by a WFD lake with no lake centreline within 1.5 km: the page says "isolated lake", the API traces
+// the nearest river or finds none. What such a click should mean is Ethan's to decide (docs/ANYPOINT-LAKES-2026-10.md).
+const OPEN = ['the lonely pool', 'north of Empty Water, no pond within 1.5 km'];
 
 test('a lake with a residence time on the way is a well-mixed lake, as the API does', () => {
   // Outflow Beck, below Test Water (20 days): A5's water enters Test Water above the click.
@@ -85,7 +90,7 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
   test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (lake path "${mode}")`, () => {
     const at = placeIn(filesOf(s));
     let rows = 0, crossed = 0;
-    for (const c of s.clicks.filter(x => x.what !== 'the lonely pool')) {
+    for (const c of s.clicks.filter(x => !OPEN.includes(x.what))) {
       const got = at(c);
       assert.equal(got.mode, c.mode, c.what);
       if (c.mode === 'none') { assert.match(got.error, /No river or lake within 1\.5 km/, c.what); continue; }
@@ -132,6 +137,43 @@ test('a click in a lake the river network links to no overflow says so', () => {
   assert.equal(got.mode, 'isolated');
   assert.equal(got.name, 'Lonely Pool');
   assert.match(got.error, /^An isolated lake: the river network links no monitored storm overflow to it/);
+});
+
+test('a click by a lake with no centreline inside takes the one nearest the click, not the lake\'s middle', () => {
+  // Eccup Reservoir, Church Wilne, Chelker, Island Barn, White Mere and King George VI (16 Oct 2026).
+  const at = what => placeAt(syn.clicks.find(x => x.what === what));
+  const west = at('west of Empty Water, nearer West Pond'), east = at('in Empty Water, nearer East Pond');
+  for (const got of [west, east]) assert.deepEqual([got.mode, got.location.watercourse, got.location.lake_source], ['lake', 'Empty Water', 'polygon']);
+  assert.deepEqual(west.rows.map(r => syn.files.ids[r.i]), ['B2']);
+  assert.deepEqual(east.rows.map(r => syn.files.ids[r.i]), ['B1']);
+  // Quiet Pond, which no overflow reaches, is in the link index all the same: a lake with nothing upstream.
+  const quiet = at('in Quiet Water');
+  assert.deepEqual([quiet.mode, quiet.location.watercourse, quiet.rows.length], ['lake', 'Quiet Water', 0]);
+});
+
+test('with no lake centreline within 1.5 km, the page still says isolated lake and the API the river (left for Ethan)', () => {
+  const c = syn.clicks.find(x => x.what === 'north of Empty Water, no pond within 1.5 km');
+  assert.deepEqual([c.mode, c.watercourse], ['river', 'East Beck']);
+  const got = placeAt(c);
+  assert.deepEqual([got.mode, got.name], ['isolated', 'Empty Water']);
+});
+
+test('a click near 150 m from a lake is settled on its real outline, not the 15 m one', () => {
+  // Gorpley Reservoir (16 Oct 2026): 149.1 m from the real outline, 151.1 m from the simplified one.
+  const c = syn.clicks.find(x => x.what === "149 m off Notch Water's spit"), n = files.lakes.polygons.findIndex(p => p.name === 'Notch Water');
+  assert.equal(A.lakePolygon(c.lat, c.lon, files.lakes, 150), null, 'the 15 m outline drops the spit');
+  assert.deepEqual(A.outlinesNeeded(c.lat, c.lon, files.lakes, 150), [n]);
+  near(A.lakePolygon(c.lat, c.lon, files.lakes, 150, { [n]: files.outlines[n] }).d, 149, 0.2, 'the real outline');
+  assert.deepEqual(A.outlinesNeeded(c.lat, c.lon, files.lakes, 150, { [n]: files.outlines[n] }), []);
+  const got = placeAt(c);
+  assert.deepEqual([got.mode, got.location.watercourse, got.rows.map(r => syn.files.ids[r.i])], ['lake', 'Notch Water', ['B3']]);
+  // A click well inside a lake, or far from every lake, needs no outline.
+  for (const what of ['in the lake', 'far from water', 'M2 at 0.5']) {
+    const x = syn.clicks.find(y => y.what === what);
+    assert.deepEqual(A.outlinesNeeded(x.lat, x.lon, files.lakes, 150), [], what);
+  }
+  // An outline from another build (another lake at that place) is not used.
+  assert.equal(A.lakePolygon(c.lat, c.lon, files.lakes, 150, { [n]: { ...files.outlines[n], wb_id: 'GB0' } }), null);
 });
 
 test('a click outside every square with data says there is no data there', () => {
