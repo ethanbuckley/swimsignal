@@ -31,8 +31,10 @@ other than the consents register") until a reason to reopen it appears.
   works as small as 18 p.e. So unlike UWWTD they reach small works. But:
   - they are PDFs, not a table;
   - they give one figure per works, not per overflow;
-  - their licence was not checked. United Utilities shows its DWMP through a
-  customer portal. No company was found publishing a downloadable table.
+  - their licence was not checked.
+
+  United Utilities shows its DWMP through a customer portal. No company was found publishing a
+  downloadable table.
 - **A web search** for an open per-overflow PE dataset found none.
 
 ## Why parked
