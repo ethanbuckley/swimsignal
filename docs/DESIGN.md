@@ -1145,6 +1145,11 @@ gives all four navigation links a single full-width row.
 - **15 October 2026: the list's band on a wider screen is 48 px.** At 128 it was an empty band of fells
   between the opening and the list, and on a 1440 x 900 screen only the first spot showed, at the
   foot. A spot's page keeps 128 on a wider screen.
+- **15 October 2026: the list's answer line** (option B of the 13 October mock-ups): "Sunday: 67 of
+  105 spots at low risk · Show", in the display face at the heading size (the body size on a phone,
+  so it stays one line at 375 px), the count in the low colour. It names the weekend's better day
+  while the five days reach one, and otherwise the week's best. The best-day line follows only when
+  the week's best is another day with more spots at low risk.
 - **"Low risk only"**, not "Low risk", on the list's switch: it hides every spot that is not low risk,
   as the map's switch of the same name does. Under 375 px it takes two lines ("Low risk", "only") so
   that "Today and tomorrow" still fits beside it.
