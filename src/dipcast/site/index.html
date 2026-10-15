@@ -319,6 +319,10 @@
      through its glass, and the first saved spot fits on a 375 x 812 screen. */
   #panel { isolation:isolate; }
   .answer, .lead { position:relative; margin-bottom:128px; }
+  /* The list's band, 48 px on a wider screen since 15 Oct 2026: at 128 the fells were an empty band
+     between the opening and the list, and the first spot sat at the foot of a 1440 x 900 screen. The
+     picture still runs 310 px below the opening, so its fells show through the list's glass. */
+  .lead { margin-bottom:48px; }
   .answer::before, .lead::before { content:""; position:absolute; z-index:-1; top:-600px; bottom:-310px; left:-24px; right:-24px; pointer-events:none;
     background:var(--sky) url(icons/fells.webp) center bottom / max(100%, 500px) 600px no-repeat; }
   /* A tile: frosted over the picture, near white over the paper further down. The one radius, no border
