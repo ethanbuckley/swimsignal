@@ -282,8 +282,8 @@ def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
 
 
 def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) -> Snap | None:
-    """A spot on a side arm takes the water of the river the arm leaves: the main channel named like
-    the spot's river nearest the arm's head, with at least ADOPT_RATIO times its network, snapped
+    """A spot on a side arm takes the water of the river the arm leaves: of the channels named like the
+    spot's river near the arm's head, with at least ADOPT_RATIO times its network, the one with most, snapped
     where the head is. None when the pin's link is not a side arm or no such channel is near its head.
 
     _adopt_main_channel takes the candidate near the pin with the most network, which is right for a
@@ -311,10 +311,14 @@ def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str]) -> Snap |
     if cand.empty:
         return None
     ups = pd.Series([net.upstream_m.get(n, 0.0) for n in cand["start_node"]], index=cand.index)   # as _names_match, no .map
-    cand = cand[ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)]
-    if cand.empty:
+    keep = ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)
+    if not keep.any():
         return None
-    return _snap_to_links(net, hx, hy, {cand.index[0]})   # candidates_xy sorts nearest first
+    # The one with the most network, not the nearest: OS draws braided channels of a big river under its
+    # name, disconnected above, and the nearest of those took a click on the Medway from 420 km of network
+    # to 12 km (docs/ANYPOINT-SIDE-ARM-MOST-2026-10.md). idxmax keeps the first of equals, and
+    # candidates_xy sorts nearest first, so a tie goes to the nearer.
+    return _snap_to_links(net, hx, hy, {ups[keep].idxmax()})
 
 
 def _at_head(net: RiverNetwork, pin: PinLocation, head: Snap, prefer: frozenset[str] | None = None) -> PinLocation:
