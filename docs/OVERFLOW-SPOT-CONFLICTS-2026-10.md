@@ -56,3 +56,46 @@ The evidence is OS OpenMap Local (Open Government Licence), tiles TQ, SU, SE and
 ---
 
 ## Results
+
+Added after commit 4486875, pushed at 22:45 BST on 15 October 2026 before any tile was read for these
+three. Tiles TQ and SP were downloaded; SE and SU were reused from #209. All four MD5s match OS's list.
+
+**Answer.**
+- One of the three is settled: **South Lane, Ash stays at its live position**, now in `KEEP_LIVE`.
+- The other two stay open.
+- Nothing moves and no spot changes. All three were already at their live positions.
+
+### C1
+
+| Overflow | R1, the road (500 m) | R2, the water (1 km) | Outcome |
+|---|---|---|---|
+| TWL00418 Trumps Green Road | no road of that exact name within 3 km of either position | River Bulbourne 876 m from the outlet; none near the live position | **open**: R1 does not point, R2 points to the outlet |
+| TWL00743 South lane, ash | South Lane **2 m from the live position**; none near the outlet | Blackwater River 1,966 m from the live position (outside 1 km); none near the outlet | **settled: live** |
+| YWS00049 Darley Rd | Darley Road 2,195 m from the outlet (outside 500 m); none near the live position | River Nidd 1,486 m from the outlet (outside 1 km); none near the live position | **open**: neither points |
+
+The settled case adds nothing to the map, because the live position is the default. The entry guards
+it against a later rule moving it 9 km east to the Wey.
+
+### Seen after the rule ran, not used
+
+- **Trumps Green Road.** OS spells it **Trumpsgreen Road**, and it lies **85 m from the live
+  position**. Trumps Green Avenue and Trumps Green Close are nearby too. The rule asked for the exact
+  name, so the case stays open.
+- **The Bourne** is labelled 2.5 km from the live position. This supports, but does not prove, the
+  hypothesis stated above: "River Bulborne" is a mis-entry for the Bourne, and the outlet and water
+  body were then filled in to match.
+- What would settle it: a stated rule that matches road names with their spaces removed, or Thames
+  Water's own record. Since the overflow already sits at its live position, nothing on the map
+  depends on it today.
+- **Darley Rd** has a Darley Road 2.2 km from the outlet, on the Nidd side. That leans toward the
+  outlet, but only weakly, and the rule does not use it.
+
+### C2, effect on spots
+
+Both tables were built from the 13 Oct snapshot on network `b5724303`: main (1da6ad0) and this branch.
+Both give 61 moves to the outlet. Overflows placed differently: 0. Listed spots that change: 0.
+
+### C3, tests
+
+- `pytest -q`: 718 passed, 4 known Pillow failures.
+- `node --test`: 342 passed.
