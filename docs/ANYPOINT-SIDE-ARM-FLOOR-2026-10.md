@@ -54,3 +54,62 @@ If every check passes, the PR still waits for Ethan to merge it, as a change to 
 ---
 
 ## Results
+
+15 Oct 2026. The statement was pushed at 21:29 BST (b5d4149), and the code at d03395c, before the run.
+- Same inputs as #218.
+- 0 network requests.
+- 1,019 s.
+
+**Outcome: fails check 5 as stated, and stays off.** Every other check passes, including page parity
+at 200 of 200. One of the ten largest changes on fresh clicks lands between the floor and the 25% line.
+
+### Check by check
+
+1. **Queen Elizabeth Gardens: passes.** The click counts the spot's 18 overflows, none on the Nadder
+   or the Wylye.
+2. **The page agrees with the API: passes, 200 of 200** (seed 15, fresh moved clicks). Neither
+   #208's misses nor #218's constant offset came up in this sample.
+3. **Listed spots: pass.** None of the 105 moves. Queen Elizabeth Gardens keeps 40% and stays above
+   the floor.
+4. **Size: passes.** +0.88 MB (13.85 to 14.73 MB).
+5. **Reach, on fresh clicks: fails.**
+   - #218's run had sampled 8,111 of the 13,836 arms with a move. The other 5,725 are fresh.
+   - At their midpoints, 5,363 clicks move, and 271 change the set of overflows counted.
+   - Network ratios (new over old), over the 5,363:
+
+| Under 0.10 | 0.10–0.25 | 0.25–0.5 | 0.5–0.9 | 0.9–1.1 | Over 10 |
+|---|---|---|---|---|---|
+| 0 | 2 | 13 | 270 | 5,069 | 2 |
+
+   - The failing case is in the ten largest:
+
+| Click | Old channel, network | New channel, network | Overflows | Ratio | Head from click |
+|---|---|---|---|---|---|
+| **51.3240, 1.2561** | **Little Stour, 240 km** | **Little Stour, 37 km** | **34 → 1** | **0.154** | **3.6 km** |
+
+   - The other nine are 0.43 to 1.0. Among them: the Aire (1,209 to 515 km, at 0.43), the Ouse
+     (0.78), the Thames at Oxford (0.70), the Colne (0.80), and a Test click gaining 9 overflows
+     (13.8 to 182 km).
+   - Also reported: 90 of the 5,363 moved clicks have the arm's head over 1 km from the click.
+     2 move to over 10 times the old network.
+6. **Tests:** `pytest -q` 717 passed, 4 known Pillow failures; `node --test` 342 passed.
+
+### What this shows
+
+Established, from the run:
+- The floor removed every move under 10%.
+- Parity is clean.
+- Fewer than 1 in 300 fresh moves (15 of 5,363) land under 50% of the old network.
+
+The case that failed has the arm's head 3.6 km from the click, as #218's Test case had it 362 m away.
+Inferred, not tested: the remaining errors come from **how far the arm runs**, not from which
+channel is picked. A click on a long drain or arm is sent to wherever that arm leaves a river, which
+can be kilometres away and up a different reach. 90 fresh clicks moved over 1 km.
+
+### What would be needed
+
+A limit on the distance from the click to the arm's head (for example 1 km) is the next candidate.
+It is new, and it was seen in this run's data, so it needs its own statement and clicks that no run
+has seen. The pool of unseen arms is now empty: #218 sampled 8,111 and this run took the other 5,725.
+A fair test would need another way to get fresh cases, for example clicks at other points along
+the arms (this run used midpoints only), or a later network release.
