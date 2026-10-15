@@ -99,3 +99,15 @@ Both give 61 moves to the outlet. Overflows placed differently: 0. Listed spots 
 
 - `pytest -q`: 718 passed, 4 known Pillow failures.
 - `node --test`: 342 passed.
+
+### Later, 15 October 2026: Trumps Green Road kept live by judgment
+
+Added in a separate PR after #221 merged, and labelled for what it is: **a judgment, not a stated
+test**. The evidence below was seen after the rule had run.
+- OS's Trumpsgreen Road is 85 m from the live position.
+- The Bourne runs 2.5 km from the live position.
+- The return's outlet is 42 km away, by the Bulbourne in Hertfordshire.
+
+TWL00418 goes in `KEEP_LIVE` with that reason. It already sits at its live position, so nothing on
+the map or at any spot changes. The entry stops a later rule from moving it 42 km on the strength of
+the return's water body.
