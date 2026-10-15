@@ -6,9 +6,10 @@
 //    twice as far; a click on a small side channel near a much bigger river is traced as that
 //    river (_adopt_main_channel);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
-//    for the click's place along it, or from the lake's inlets and the straight line across; a WFD
-//    lake crossed on the way counts as lake, with its lake factor (lake path "lake", crossings), or,
-//    in lake path "residence", as a well-mixed lake where it has a residence time (holds);
+//    for the click's place along it, or from the lake's inlets and the straight line across (in lake
+//    distance "water", the shortest way through the lake's water, waterWay); a WFD lake crossed on the
+//    way counts as lake, with its lake factor (lake path "lake", crossings), or, in lake path
+//    "residence", as a well-mixed lake where it has a residence time (holds);
 //  - travel at the river speed (the lake speed across a lake, the survivors' hours in a well-mixed
 //    one), die-off 10^(-t / T90) times the share that leaves a well-mixed lake alive, weight =
 //    die-off x dilution, less for an overflow placed by proximity alone (transportOf);
@@ -115,13 +116,57 @@ const AnyPoint = (() => {
       if (rec.s[k + 1] < offset) out.push({ i: rec.s[k], dist: offset - rec.s[k + 1], dlake: 0, dil: Math.min(1, shrink) });
     return out;
   }
+  // Lake distance "water" (model/lake_water.py, water_distance): the shortest way from an inlet to the
+  // click inside the lake's water. lake.water (build_any_point._water_json): its reflex corners, its
+  // outline widened by 10 m ("inside", which a straight way must stay in) and its outline ("shore");
+  // inlet.w: where the inlet enters the water, the metres to there, and the metres on to each corner
+  // (-1 where none). A click outside the widened outline first goes to the nearest point of the shore.
+  // Returns inlet -> metres, or null for a lake without water (the straight line, as the API).
+  function crossesAny(p, q, rings) {
+    const side = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
+    for (const r of rings)
+      for (let k = 0; k + 1 < r.length; k++)
+        if (side(p, q, r[k]) * side(p, q, r[k + 1]) < 0 && side(r[k], r[k + 1], p) * side(r[k], r[k + 1], q) < 0) return true;
+    return false;
+  }
+  function nearestPoint(rings) {   // the nearest point of the rings to the frame's origin
+    let best = { d: Infinity, x: 0, y: 0 };
+    for (const r of rings)
+      for (let k = 0; k + 1 < r.length; k++) {
+        const [x0, y0] = r[k], [x1, y1] = r[k + 1], dx = x1 - x0, dy = y1 - y0, l2 = dx * dx + dy * dy;
+        const t = l2 > 0 ? Math.min(1, Math.max(0, -(x0 * dx + y0 * dy) / l2)) : 0, x = x0 + t * dx, y = y0 + t * dy, d = Math.hypot(x, y);
+        if (d < best.d) best = { d, x, y };
+      }
+    return best;
+  }
+  function waterWay(water, at, xy) {
+    if (!water) return null;
+    const local = rings => rings.map(r => r.map(([lon, lat]) => xy(lat, lon)));
+    const inside = local(water.inside), corners = water.corners.map(([lon, lat]) => xy(lat, lon));
+    const inWater = inside.reduce((odd, r, k) => odd !== inRing(at[1], at[0], water.inside[k]), false);
+    const near = inWater ? { d: 0, x: 0, y: 0 } : nearestPoint(local(water.shore)), q = [near.x, near.y];
+    const seen = corners.map(c => !crossesAny(q, c, inside));
+    return inlet => {
+      if (!inlet.w) return null;
+      const a = xy(inlet.w[1], inlet.w[0]);
+      if (!crossesAny(a, q, inside)) return inlet.w[2] + Math.hypot(a[0] - q[0], a[1] - q[1]) + near.d;
+      let best = Infinity;
+      corners.forEach((c, k) => {
+        const via = inlet.w[3 + k];
+        if (seen[k] && via >= 0) best = Math.min(best, via + Math.hypot(c[0] - q[0], c[1] - q[1]));
+      });
+      return Number.isFinite(best) ? best + near.d : null;
+    };
+  }
   // A lake's inlets (lakes.json) for a click: the distance to the inlet, then the straight line
-  // across; a WFD lake's area divides the dilution by 1 + area / 5 km2. Another WFD lake crossed
-  // before the inlet moves its metres to the lake distance and multiplies the dilution by its factor.
+  // across (or the way through the water, waterWay); a WFD lake's area divides the dilution by
+  // 1 + area / 5 km2. Another WFD lake crossed before the inlet moves its metres to the lake distance
+  // and multiplies the dilution by its factor.
   function lakeRows(lake, at, area, a0) {
-    const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1;
+    const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1, way = waterWay(lake.water, at, xy);
     for (const inlet of lake.inlets) {
-      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k), mixed = holds(inlet.h);
+      const [x, y] = xy(inlet.at[1], inlet.at[0]), path = crossings(inlet.k), mixed = holds(inlet.h);
+      const across = (way && way(inlet)) ?? Math.hypot(x, y);
       for (let k = 0; k < inlet.o.length; k += 3) {
         const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
         out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor,
@@ -493,7 +538,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast,
-    frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
+    frame, nearestOnLine, waterWay, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

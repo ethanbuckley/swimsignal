@@ -972,14 +972,19 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     return ov.sort_values("weight", ascending=False).reset_index(drop=True)
 
 
-def spot_water(net: RiverNetwork, pin: PinLocation) -> lake_water.Water | None:
-    """The water of a lake spot's own lake: the WFD lake polygons its lake links lie in (_wfd_lake_of), as
-    one region. None for a lake with no WFD polygon (a centreline lake)."""
+def links_water(net: RiverNetwork, lake_links) -> lake_water.Water | None:
+    """The water a lake's centreline links lie in: the WFD lake polygons that hold them (_wfd_lake_of), as one
+    region. None when no polygon holds any (a centreline lake). Click-anywhere publishes the same for each lake."""
     lakes = _lakes()
-    if lakes is None or lakes.empty or not pin.lake_links:
+    if lakes is None or lakes.empty or not lake_links:
         return None
-    rows = sorted({k for k, _ in _wfd_lake_of(net, pin.lake_links).values()})
+    rows = sorted({k for k, _ in _wfd_lake_of(net, lake_links).values()})
     return lake_water.water(tuple(lakes.geometry.iloc[k] for k in rows)) if rows else None
+
+
+def spot_water(net: RiverNetwork, pin: PinLocation) -> lake_water.Water | None:
+    """The water of a lake spot's own lake (links_water of its lake links)."""
+    return links_water(net, pin.lake_links)
 
 
 def spot_lake_m(net: RiverNetwork, pin: PinLocation, site_ids: np.ndarray, entry_xy: np.ndarray,

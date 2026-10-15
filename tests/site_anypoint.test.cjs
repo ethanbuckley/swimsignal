@@ -214,3 +214,24 @@ test('a point with no overflow upstream gets the API\'s answer: every day zero, 
   assert.deepEqual(got.days.map(d => [d.date, d.risk, d.label]), od.days.slice(1).map(d => [d, 0, 'low']));
   assert.equal(got.upstream_summary.overflows, 0);
 });
+
+// Lake distance "water" (docs/LAKE-DISTANCE-2026-10.md): an L-shaped lake's files and the API's ways through its
+// water for clicks in it, on its shore and off its arm by the centreline (tests/test_anypoint_water.py).
+test('in lake distance "water" a lake click goes round the bend, as the API does', () => {
+  const W = fixture('anypoint_water.json'), at = placeIn(filesOf(W));
+  let rows = 0, longer = 0;
+  for (const c of W.clicks) {
+    const got = at(c);
+    assert.equal(got.mode, c.mode, c.what);
+    const mine = got.rows.map(r => ({ ...r, site_id: W.files.ids[r.i] })).sort((a, b) => a.site_id.localeCompare(b.site_id));
+    const want = [...c.rows].sort((a, b) => a.site_id.localeCompare(b.site_id));
+    assert.deepEqual(mine.map(r => r.site_id), want.map(r => r.site_id), c.what);
+    mine.forEach((r, k) => {
+      near(r.dlake, want[k].lake_distance_m, 3, `${c.what} ${r.site_id} through the water`);
+      near(A.transportOf(r, DEFAULT_SPEEDS).travel, want[k].travel_h, 0.1, `${c.what} ${r.site_id} travel`);
+      rows++;
+      if (want[k].lake_distance_m > want[k].line_m + 100) longer++;
+    });
+  }
+  assert.ok(rows >= 8 && longer >= 3, `${rows} rows, ${longer} round the bend`);
+});

@@ -93,22 +93,32 @@ def _into(w: Water, x: float, y: float) -> tuple[float, float, float]:
     return q.x, q.y, math.hypot(x - q.x, y - q.y)
 
 
+def _seen(w: Water, x: float, y: float) -> np.ndarray:
+    """Which corners a point in the water sees: the segment to each stays inside the widened water."""
+    n = len(w.xy)
+    return shapely.covers(w.test, _segments(np.repeat(np.array([[x, y]]), n, axis=0), w.xy)) if n else np.zeros(0, bool)
+
+
+def from_point(w: Water, x: float, y: float) -> tuple[float, float, float, np.ndarray]:
+    """Where a point enters the water (itself, or the nearest point of the water), the leg to there, and
+    the distance through the water from the point to every corner (inf where none): the leg, then straight to a
+    corner it sees, then the corners' shortest paths. Click-anywhere publishes these for each lake inlet."""
+    px, py, leg = _into(w, x, y)
+    seen = _seen(w, px, py)
+    if not seen.any():
+        return px, py, leg, np.full(len(w.xy), np.inf)
+    to = np.hypot(*(w.xy[seen] - np.array([px, py])).T)
+    return px, py, leg, leg + (to[:, None] + w.dist[seen]).min(axis=0)
+
+
 def water_distance(w: Water, ax: float, ay: float, bx: float, by: float) -> float:
     """Metres from a to b through the water. The straight line where it stays in the water; inf when
     the two are in parts of the water that do not meet."""
-    ax, ay, da = _into(w, ax, ay)
+    ax, ay, da, via = from_point(w, ax, ay)
     bx, by, db = _into(w, bx, by)
     if shapely.covers(w.test, shapely.LineString([(ax, ay), (bx, by)])):
         return da + math.hypot(ax - bx, ay - by) + db
-    if not len(w.xy):
+    seen = _seen(w, bx, by)
+    if not seen.any():
         return math.inf
-    a, b = np.array([ax, ay]), np.array([bx, by])
-    n = len(w.xy)
-    va = shapely.covers(w.test, _segments(np.repeat(a[None], n, axis=0), w.xy))
-    vb = shapely.covers(w.test, _segments(np.repeat(b[None], n, axis=0), w.xy))
-    if not va.any() or not vb.any():
-        return math.inf
-    la = np.hypot(*(w.xy[va] - a).T)
-    lb = np.hypot(*(w.xy[vb] - b).T)
-    best = (la[:, None] + w.dist[np.ix_(va, vb)] + lb[None, :]).min()
-    return da + float(best) + db
+    return float((via[seen] + np.hypot(*(w.xy[seen] - np.array([bx, by])).T)).min()) + db
