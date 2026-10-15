@@ -1972,6 +1972,7 @@ def build(refresh: bool = True) -> dict:
             f = {"error": f"forecast failed: {e}"}
         results.append({"id": r.id, "name": r.name, "kind": r.kind, "river": _river_of(r), "source": r.source,
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
+                        **({"area": r.area} if getattr(r, "area", "") else {}),   # the list's groups in A-Z
                         **({"osm_id": r.osm_id} if getattr(r, "osm_id", "") else {}), **f})
     attach_access(results)
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit

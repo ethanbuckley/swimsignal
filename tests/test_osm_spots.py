@@ -119,3 +119,13 @@ def test_candidates_within_150_m_are_one_and_the_one_with_most_to_say_is_kept():
     ])
     out = osc.dedupe(df).set_index("osm_id")
     assert sorted(out.index) == ["node/3", "way/2"] and out.loc["way/2", "duplicates"] == "node/1"
+
+
+def test_every_spot_has_an_area_of_the_list():
+    """The list groups spots by `area` in A-Z (index.html, drawSpots), north to south by each area's
+    mean latitude. A blank or misspelt area would make a group of its own, so the names are fixed here."""
+    areas = {"North East", "Cumbria and the Lake District", "Yorkshire", "Lancashire", "Peak District and Sheffield",
+             "Severn and the Welsh borders", "Midlands", "East of England", "Thames Valley", "London", "South West",
+             "South and South East"}
+    spots = pd.concat([pd.read_csv(ROOT / f).fillna("") for f in ("spots.csv", "spots-osm.csv")])
+    assert set(spots["area"]) == areas
