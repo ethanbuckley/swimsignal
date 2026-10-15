@@ -341,6 +341,21 @@ def channel_words(net: RiverNetwork, link_id: str) -> frozenset[str]:
     return words
 
 
+HEAD_FLOOR_SHARE = 0.10   # a side-arm head move keeps at least this share of the old rule's channel's network
+
+
+def keeps_river(net: RiverNetwork, head: Snap | None, old_link: str) -> Snap | None:
+    """`head`, unless its channel has under HEAD_FLOOR_SHARE of the network above `old_link`, the
+    channel _adopt_main_channel chose. On the Test at 50.9379, -1.4865 the arm's head is 362 m from
+    the click and the only Test channel near it has 9 km above it, against the 391 km of the Test
+    under the click (docs/ANYPOINT-SIDE-ARM-FLOOR-2026-10.md). At Queen Elizabeth Gardens the Avon
+    above the Nadder keeps 40% of the Avon below it, so that move stands."""
+    if head is None:
+        return None
+    up = lambda lid: net.upstream_m.get(net.links.at[lid, "start_node"], 0.0)   # noqa: E731
+    return head if up(head.link_id) >= HEAD_FLOOR_SHARE * up(old_link) else None
+
+
 def _click_at_head(net: RiverNetwork, pin: PinLocation) -> PinLocation:
     """A click, with no river named, that the old rule moved from a side channel to a main channel
     takes the side-arm head rule too, the wanted river being the channel the old rule chose. Until
@@ -349,7 +364,7 @@ def _click_at_head(net: RiverNetwork, pin: PinLocation) -> PinLocation:
     want = channel_words(net, pin.snap.link_id)
     if not want:
         return pin
-    head = _adopt_at_head(net, pin.x, pin.y, want)
+    head = keeps_river(net, _adopt_at_head(net, pin.x, pin.y, want), pin.snap.link_id)
     return pin if head is None else _at_head(net, pin, head)
 
 
@@ -359,7 +374,7 @@ def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLoca
     if not want:
         return pin
     if pin.mode == "river" and pin.adopted_main_channel:
-        head = _adopt_at_head(net, pin.x, pin.y, want)
+        head = keeps_river(net, _adopt_at_head(net, pin.x, pin.y, want), pin.snap.link_id)
         if head is not None:
             log.info("placed on %s where the side arm leaves it, %.0f m from the arm's head", hint, head.dist_m)
             return _at_head(net, pin, head, prefer=shown)

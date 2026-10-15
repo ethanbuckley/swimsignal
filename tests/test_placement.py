@@ -341,3 +341,26 @@ def test_a_spot_on_a_side_arm_takes_the_river_the_arm_leaves_not_the_one_below_a
     click = transport.locate_pin(net, lon, lat)
     assert click.placement == "side arm head" and click.snap.link_id == "A1"
     assert set(transport.upstream_overflows(net, click, ov, velocity_ms=0.5)["site_id"]) == {"avon"}
+
+
+def test_no_side_arm_move_to_a_channel_with_under_a_tenth_of_the_river(monkeypatch):
+    """The floor (docs/ANYPOINT-SIDE-ARM-FLOOR-2026-10.md): the same arm, but with a tributary so long
+    that the Avon above it has under 10% of the network below. The click keeps the old rule's channel,
+    as on the Test at 50.9379, -1.4865, where the only Test channel near the arm's head had 9 km above
+    it against 391 km under the click."""
+    net = _net([
+        ("A0", "River Avon", None, "a0", "a1", [(400000, 530000), (400000, 520000)]),
+        ("A1", "River Avon", None, "a1", "a2", [(400000, 520000), (400000, 510200)]),
+        ("A2", "River Avon", None, "a2", "j", [(400000, 510200), (400000, 510000)]),
+        ("N1", "River Nadder", None, "n0", "n1", [(100000, 510000), (399800, 510000)]),   # 300 km
+        ("N2", "River Nadder", None, "n1", "j", [(399800, 510000), (400000, 510000)]),
+        ("S", None, None, "s0", "n1", [(399900, 511000), (399800, 510000)]),
+        ("B", "River Avon", None, "j", "b1", [(400000, 510000), (400000, 505000)]),
+    ])
+    lon, lat = bng_to_lonlat(399820, 510200)
+    click = transport.locate_pin(net, lon, lat)
+    assert click.placement != "side arm head" and click.snap.link_id != "A1"
+    spot = transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon")
+    assert spot.placement != "side arm head"
+    monkeypatch.setattr(transport, "HEAD_FLOOR_SHARE", 0.0)   # without the floor, both move
+    assert transport.locate_pin(net, lon, lat).snap.link_id == "A1"

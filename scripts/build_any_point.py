@@ -189,7 +189,8 @@ def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap | None]]:
     goes, or None where it stays}. Only arms with a channel big enough for the old rule within
     ADOPT_RADIUS_M of their head can move, and only to a channel the old rule could choose for a click
     on them: within PIN_SNAP_M + ADOPT_RADIUS_M of the arm, and big enough. Each is asked with that
-    channel's own name, as the API asks (transport.channel_words). Arms with no move are left out."""
+    channel's own name, as the API asks (transport.channel_words), and kept only above the floor
+    against that channel (transport.keeps_river). Arms with no move are left out."""
     links = net.links
     up = links["start_node"].map(net.upstream_m).fillna(0.0)
     river = links["form"].isin(RIVER_FORMS)
@@ -215,7 +216,7 @@ def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap | None]]:
             want = words_of[ch]
             if want not in asked:
                 asked[want] = transport.head_of_arm(net, arm, want)
-            moves[ch] = asked[want]
+            moves[ch] = transport.keeps_river(net, asked[want], ch)   # the floor is against this channel
         if any(h is not None for h in moves.values()):
             out[arm] = moves
     return out
