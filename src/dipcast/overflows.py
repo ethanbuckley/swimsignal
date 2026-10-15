@@ -261,6 +261,10 @@ KEEP_LIVE: dict[str, str] = {
     "TWL00743": "South Lane, Ash: OS OpenMap Local's South Lane is 2 m from the live position and none is within "
                 "500 m of the outlet, 9 km east; no Blackwater label points to the outlet "
                 "(docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md)",
+    # A judgment on evidence seen after #221's rule had run, not a stated test: it moves nothing.
+    "TWL00418": "Trumps Green Road (Virginia Water) SPS: OS OpenMap Local's Trumpsgreen Road is 85 m from the live "
+                "position; the return's 'River Bulborne' outlet is 42 km away in Hertfordshire, and the Bourne runs "
+                "2.5 km from the live position (docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md, 'Seen after the rule ran')",
 }
 
 # Overflows moved to the outlet because it, and not the live position, is within FEATURE_NEAR_M of a
