@@ -101,10 +101,12 @@ Established, from the run:
 - Parity is clean.
 - Fewer than 1 in 300 fresh moves (15 of 5,363) land under 50% of the old network.
 
-The case that failed has the arm's head 3.6 km from the click, as #218's Test case had it 362 m away.
-Inferred, not tested: the remaining errors come from **how far the arm runs**, not from which
-channel is picked. A click on a long drain or arm is sent to wherever that arm leaves a river, which
-can be kilometres away and up a different reach. 90 fresh clicks moved over 1 km.
+The case that failed has the arm's head 3.6 km from the click. #218's Test case had it only 362 m
+away, so distance does not explain every error.
+
+Inferred, not tested: part of what remains comes from **how far the arm runs**. A click on a long
+drain or arm is sent to wherever that arm leaves a river, which can be kilometres away and up a
+different reach. 90 fresh clicks moved over 1 km.
 
 ### What would be needed
 
