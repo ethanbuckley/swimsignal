@@ -258,6 +258,9 @@ KEEP_LIVE: dict[str, str] = {
                 "overflow in the EA's features for its bathing water (ukj2407-15350) and the outlet 1.2 km from any",
     "SWS00381": "Marsh Road, Gurnard: the live position is 16 m from a storm overflow in the EA's features for "
                 "ukj3400-17700, the outlet 2.2 km from any, and no other overflow is within 100 m of it",
+    "TWL00743": "South Lane, Ash: OS OpenMap Local's South Lane is 2 m from the live position and none is within "
+                "500 m of the outlet, 9 km east; no Blackwater label points to the outlet "
+                "(docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md)",
 }
 
 # Overflows moved to the outlet because it, and not the live position, is within FEATURE_NEAR_M of a
