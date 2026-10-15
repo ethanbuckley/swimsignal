@@ -33,6 +33,22 @@ derivative of OpenStreetMap, and the whole file would have to be offered under t
 The build reads both and credits OpenStreetMap on the terms page and in the `credits` field of
 `data/spots.json`, where each spot from `spots-osm.csv` carries `"source": "openstreetmap"`.
 
+## data/raw/lake_residence.csv is under CC BY 4.0
+
+`data/raw/lake_residence.csv` holds residence times, volumes, depths and flows of lakes from HydroLAKES v1.0
+(Messager, M.L., Lehner, B., Grill, G., Nedeva, I., Schmitt, O. (2016): Estimating the volume and age of water
+stored in global lakes using a geo-statistical approach. Nature Communications 7: 13603), licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), matched to the Environment Agency's WFD lake water
+bodies (Open Government Licence v3.0) by `scripts/make_lake_residence.py`.
+
+`data/raw/lake_residence_spill.csv` holds the same residence times divided by a spill-time flow ratio
+(`scripts/make_lake_spill_ratio.py`), made from Environment Agency Hydrology API daily mean flows (© Environment
+Agency copyright and/or database right, Open Government Licence v3.0) and United Utilities storm overflow event
+data (CC BY 4.0). So it carries HydroLAKES' CC BY 4.0 terms and both credits.
+
+Lake path `residence_spill`, the default (docs/LAKE-RESIDENCE-SPILL-2026-10.md), reads it. The terms page, the
+README's Data section and the `credits` field of the published data carry the credits.
+
 ## Other data
 
 The other data sources, their licences and the credits they ask for are listed on the site's terms

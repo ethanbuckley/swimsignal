@@ -67,6 +67,23 @@ const placeIn = files => c => {
   return A.place(c.lat, c.lon, { ...files, tiles });
 };
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
+const DEFAULT_SPEEDS = { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30 };   // config's, as the API ran
+
+test('a lake with a residence time on the way is a well-mixed lake, as the API does', () => {
+  // Outflow Beck, below Test Water (20 days): A5's water enters Test Water above the click.
+  const pick = s => s.clicks.find(x => x.what === 'O1 at 0.5');
+  const [mixed, lake] = [SYN.modes.residence, SYN.modes.lake].map(s =>
+    placeIn(filesOf(s))(pick(s)).rows.find(x => s.files.ids[x.i] === 'A5'));
+  near(mixed.dlake, lake.dlake, 3, 'the same lake metres');
+  near(mixed.dres, 4000, 3, 'all of them well mixed');
+  const tau = 20 * 24, k = Math.log(10) / 30;
+  near(mixed.pass, 1 / (1 + k * tau), 1e-6, 'share alive');
+  near(mixed.hold, tau / (1 + k * tau), 1e-3, "survivors' hours");
+  const area = SYN.modes.lake.files.lakes.polygons.find(p => p.name === 'Test Water').area_km2;
+  near(mixed.dil, lake.dil * (1 + area / 5), 1e-4, 'no area factor');
+  const [tm, tl] = [mixed, lake].map(r => A.transportOf(r, DEFAULT_SPEEDS));
+  near(tm.travel - tl.travel, tau / (1 + k * tau) - 4000 / 0.05 / 3600, 0.01, 'hours in the lake, not 4 km at 0.05 m/s');
+});
 
 for (const [mode, s] of Object.entries(SYN.modes)) {
   test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (lake path "${mode}")`, () => {
@@ -86,13 +103,17 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
         near(r.dist, want[k].distance_m, 6, `${c.what} ${r.site_id} distance`);
         near(r.dlake, want[k].lake_distance_m, 3, `${c.what} ${r.site_id} across the lake`);
         near(r.dil, want[k].dilution, 1e-3, `${c.what} ${r.site_id} dilution`);
+        // Travel and die-off at the default speeds (lake path "residence": a well-mixed lake's hours and share alive).
+        const t = A.transportOf(r, DEFAULT_SPEEDS);
+        near(t.travel, want[k].travel_h, 0.1, `${c.what} ${r.site_id} travel`);
+        near(t.decay / want[k].decay, 1, 0.01, `${c.what} ${r.site_id} die-off`);
         rows++;
         if (c.mode === 'river' && r.dlake > 0) crossed++;
       });
     }
     assert.ok(rows > 50, `${rows} rows compared`);
-    // Below Test Water a river click's rows cross it in mode "lake" only.
-    if (mode === 'lake') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
+    // Below Test Water a river click's rows cross it in modes "lake" and "residence" only.
+    if (mode !== 'river') assert.ok(crossed > 10, `${crossed} river rows cross a lake`); else assert.equal(crossed, 0);
   });
 }
 

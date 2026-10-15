@@ -1154,6 +1154,24 @@ gives all four navigation links a single full-width row.
   picture never paints again, larger, when the script draws the real one. Words typed into the search
   before then carry over.
 
+## Near you first (14 October 2026)
+
+Ethan chose this from three mock-ups (near you first, an answer line with the list by area, a trim
+only), shown at 375 and 1440 px on the day's data.
+
+- **Near me under the search.** One full-width button, "Show spots near me", the way most people come
+  in. It is in the built page too (`NEAR_CTA`, word for word the script's), so the picture still paints
+  before the forecast. Once a place is given, the button goes and the three nearest spots show as cards
+  ("Near you") above the list, each with how far it is; the list sorts by distance. The cards hide while
+  the list is narrowed by a search, a kind of water or Low risk only. The place stays in the page, as
+  before.
+- **A–Z until then.** The list no longer opens on the highest risk, so a first look is not a stack of
+  red rows. A refused or failed location says so under the button that asked, and the list keeps its order.
+- **Less before the first spot.** The line for groups moved to the foot of the list. The line on how to
+  save a spot shows only once a spot has been opened in this visit (nothing is stored for it). On a
+  phone the fells' band under the list's opening is 28 px; a spot's page keeps 48.
+- **Not changed:** the counts line keeps "Pollution risk:", since a level word needs its noun.
+
 ## Cards to share (11 October 2026, draft)
 
 Pictures of the forecast for Instagram and Facebook groups, drawn by `src/dipcast/cards.py` at

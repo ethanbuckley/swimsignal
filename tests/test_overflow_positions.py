@@ -125,6 +125,40 @@ def test_when_names_decide_nothing_the_outlet_by_the_named_place_wins(monkeypatc
     assert overflows._same_water("OUSE", "FRESHWATER RIVER") and not overflows._same_water("WEY", "RIVER KIRD")
 
 
+def test_when_names_decide_nothing_nearby_the_evidence_within_3_km_decides(monkeypatch):
+    """docs/OVERFLOW-POSITIONS-2026-10.md: the water's name, the WFD water body's name and the place,
+    each within 3 km. The outlet wins only when some evidence points to it and none to the live position."""
+    net = _net(WYE + [("C1", "Crimple Beck", "e", "f", [(430000, 450000), (432000, 450000)]),
+                      ("G1", "Old Wives Gill", "g", "h", [(440000, 446000), (441000, 446000)])])
+    monkeypatch.setattr(overflows, "_places", lambda: {"scruton": np.array([(399000, 330000)])})
+    by_wye, by_crimple, nowhere = (406500, 371000), (431000, 451500), (420000, 420000)   # 1.0 and 1.5 km off
+    df = pd.DataFrame([
+        # e1: the Wye within 3 km of the outlet only
+        _row(nowhere, by_wye) | {"site_name": "X CSO"},
+        # e2: the water body (Crimple Beck) within 3 km of the outlet only; the water ("Nidd") of neither
+        _row(nowhere, by_crimple, recv="RIVER NIDD", recv_ar="RIVER NIDD")
+        | {"site_name": "X CSO", "wfd_waterbody_name": "Crimple Beck from Source to Park Beck"},
+        # e1 to the outlet, e3 (Scruton) to the live position: evidence conflicts, nothing moves
+        _row((399500, 330500), by_wye) | {"site_name": "SCRUTON/STW"},
+        # no evidence either way
+        _row(nowhere, (440000, 440000)) | {"site_name": "X CSO"},
+        # a regional stream word is not evidence: "Spicey Gill" does not match "Old Wives Gill"
+        _row(nowhere, (440500, 447500), recv="SPICEY GILL", recv_ar="SPICEY GILL") | {"site_name": "X CSO"},
+    ])
+    out = overflows.choose_positions(net, df)
+    assert out["position_source"].tolist() == ["annual return", "annual return", "live", "live", "live"]
+    assert overflows.water_body_words("Wey (Shalford to River Thames confluence at Weybridge)") == {"wey"}
+    assert overflows.water_body_words("Crimple Beck from Source to Park Beck") == {"crimple"}
+
+
+def test_a_move_a_check_contradicts_keeps_the_live_position(monkeypatch):
+    net = _net(WYE)
+    df = pd.DataFrame([_row((420000, 420000), (406500, 371000)) | {"site_id": "SWS00971", "site_name": "X CSO"}])
+    assert overflows.choose_positions(net, df)["position_source"].tolist() == ["live"]
+    monkeypatch.setattr(overflows, "KEEP_LIVE", {})
+    assert overflows.choose_positions(net, df)["position_source"].tolist() == ["annual return"]
+
+
 def test_the_build_lists_an_uncounted_outfall_at_a_spot():
     """Wetherby High Street CSO, 5 m from the Wharfe at Wilderness Carpark, snapped onto a stub that
     joins below the bathing water point, so not counted there."""

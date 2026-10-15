@@ -836,7 +836,8 @@ def data_credits(root: str) -> dict:
             "database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the "
             "real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by "
             "Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures "
-            "stay under CC BY-SA 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): "
+            "stay under CC BY-SA 4.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature "
+            "Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): "
             "contains modified Copernicus "
             "Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any "
             "use that may be made of the Copernicus information or data it contains."),
@@ -1336,26 +1337,28 @@ def spot_blurb(spot: dict) -> str:
 # later paint would count instead; so it holds only what does not depend on the forecast.
 SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
                'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
-LEAD_NOTE = ('<p class="planner-note groups">For swimming and water sports. Forecasts, not water tests. '
-             '<a href="clubs.html">Tools for clubs, centres and events</a>.</p>')
+# Near me, under the search (index.html's NEAR_CTA, word for word). The line for groups moved to the
+# foot of the list on 14 Oct 2026, so the opening ends with the row of controls.
+NEAR_CTA = ('<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Show spots near me</span></button>')
 # Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
 # sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
 SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="skel-r"></span>' * 4 + '</div>'
 
 
 def home_lead(n: int) -> str:
-    """The list's opening as index.html's renderList draws it, down to the caveat's line, for n spots,
+    """The list's opening as index.html's renderList draws it, down to the row of controls, for n spots,
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
     typed carries over. The day picker has only its first choice until the forecast's dates are known."""
     return ('<div id="result"><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
             f'<p class="lede">Five-day pollution risk forecasts for {n} spots in England, or <span class="w-touch">tap</span>'
             '<span class="w-click">click</span> any river or lake on the map. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
-            'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div></section>'
+            'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
+            f'{NEAR_CTA}</section>'
             '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
             '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
             '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
-            f'{LEAD_NOTE}</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
+            f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
 
 
 def spot_page(template: str, spot: dict, root: str) -> str:

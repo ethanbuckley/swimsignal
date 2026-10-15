@@ -88,8 +88,14 @@ OVERFLOWS = [("A1", "M1", 0.3, "high"), ("A2", "T1", 0.45, "high"), ("A3", "M3",
 RIVER_LINKS = ["M1", "M2", "M3", "M4", "T1", "D1", "S1", "R1", "O1", "O2", "AV0", "AV1", "AV2", "ND1", "XA"]
 
 
+TEST_WATER_TAU_D = 20.0   # lake path "residence": Test Water holds its water 20 days; Lower Water has no time
+
+
 @pytest.fixture
-def world(monkeypatch):
+def world(monkeypatch, tmp_path):
+    res = tmp_path / "lake_residence.csv"
+    pd.DataFrame({"wb_id": ["GB1"], "res_time_d": [TEST_WATER_TAU_D]}).to_csv(res, index=False)
+    monkeypatch.setattr(config, "LAKE_RESIDENCE_FILE", res)
     net = _net(LINKS)
     lakes = gpd.GeoDataFrame({"wb_id": ["GB1", "GB2", "GB3"], "lake_name": ["Test Water", "Lonely Pool", "Lower Water"],
                               "area_km2": [LAKE_POLY.area / 1e6, ALONE_POLY.area / 1e6, LOWER_POLY.area / 1e6]},
@@ -98,7 +104,15 @@ def world(monkeypatch):
     return net, lakes, _overflows(net, OVERFLOWS)
 
 
-MODES = ["lake", "river"]   # config.LAKE_PATH_MODE: the default, and the rule before 11 Oct 2026
+MODES = ["lake", "river", "residence"]   # config.LAKE_PATH_MODE: the default, the rule before 11 Oct 2026, and
+                                         # the well-mixed lake under test (docs/LAKE-RESIDENCE-TEST-2026-10.md)
+
+
+def _travel(rows: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """Travel (h) and die-off of rows_at's rows at the default speeds, as anypoint.js transportOf: the
+    metres of a well-mixed lake travel as its survivors' hours, and the share alive multiplies the die-off."""
+    moving = (rows["distance_m"] / 0.5 + (rows["lake_distance_m"] - rows["res_m"]) / config.LAKE_VELOCITY_MS) / 3600
+    return (moving + rows["hold_h"]).to_numpy(float), (10 ** (-moving / config.T90_HOURS) * rows["lake_pass"]).to_numpy(float)
 
 
 def _tile_files(out: Path, lid: str, net: RiverNetwork, bap) -> tuple[dict, dict, int]:
@@ -153,6 +167,9 @@ def test_every_click_on_a_river_matches_the_api_trace(world, tmp_path, monkeypat
             assert np.allclose(got["distance_m"].astype(float), want["distance_m"].astype(float), atol=6.0), (lid, f)   # tens of metres
             assert np.allclose(got["lake_distance_m"].astype(float), want["lake_distance_m"].astype(float), atol=1.0), (lid, f)
             assert np.allclose(got["dilution"].astype(float), want["dilution"].astype(float), atol=1e-4), (lid, f)
+            travel, decay = _travel(got) if len(got) else (np.zeros(0), np.zeros(0))
+            assert np.allclose(travel, want["travel_h"].astype(float), atol=0.01), (lid, f)
+            assert np.allclose(decay, want["decay"].astype(float), rtol=1e-3), (lid, f)
             checked += len(want)
             crossed |= {(lid, s) for s, m in zip(want["site_id"], want["lake_distance_m"], strict=True) if m > 0}
         # The index carries the link, its form, the name the API gives a click on it, its line, and
@@ -168,12 +185,20 @@ def test_every_click_on_a_river_matches_the_api_trace(world, tmp_path, monkeypat
     assert checked > 20
     # Below the first lake, water from above it or on it crosses it in mode "lake"; below the second,
     # it crosses both. A8, on Outflow Beck, crosses only the second. In mode "river" nothing does.
-    if mode == "lake":
+    if mode in ("lake", "residence"):
         assert {("O1", "A5"), ("O1", "A6"), ("O2", "A5"), ("O2", "A6"), ("O2", "A8")} <= crossed
         o2 = _record(out, "O2", net, ids, bap)
         lower = 1 + LOWER_POLY.area / 1e6 / transport.LAKE_A0_KM2
         assert o2["path"]["A8"][1] == pytest.approx(1 / lower, abs=1e-6)
-        assert o2["path"]["A5"][1] == pytest.approx(1 / lower / (1 + LAKE_POLY.area / 1e6 / transport.LAKE_A0_KM2), abs=1e-6)
+        if mode == "lake":
+            assert o2["path"]["A5"][1] == pytest.approx(1 / lower / (1 + LAKE_POLY.area / 1e6 / transport.LAKE_A0_KM2), abs=1e-6)
+            assert "hold" not in o2
+        else:   # Test Water is well mixed: no area factor, its survivors' hours and share alive instead
+            tau = TEST_WATER_TAU_D * 24
+            assert o2["path"]["A5"][1] == pytest.approx(1 / lower, abs=1e-6)
+            assert o2["hold"]["A5"][1] == pytest.approx(transport.lake_hold_h(tau), abs=1e-3)
+            assert o2["hold"]["A5"][2] == pytest.approx(transport.lake_pass(tau), rel=1e-6)
+            assert "A8" not in o2["hold"]   # Lower Water has no residence time: crossed as in "lake"
     else:
         assert not crossed
     # Side channels: the leat, and the beck and the drain near where they join, are traced as the river.
@@ -210,22 +235,25 @@ def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path,
         for inlet in doc["lakes"][poly["lake"]]["inlets"]:
             ex, ey = lonlat_to_bng(*inlet["at"])
             path = {int(i): (m, f / bap.PATH_SCALE) for i, m, f in np.asarray(inlet.get("k", []), dtype=float).reshape(-1, 3)}
+            mix = {int(i): (m, h / bap.HOLD_SCALE, q / bap.PASS_SCALE)
+                   for i, m, h, q in np.asarray(inlet.get("h", []), dtype=float).reshape(-1, 4)}
             for i, d, w in np.asarray(inlet["o"], dtype=float).reshape(-1, 3):
                 m, factor = path.get(int(i), (0.0, 1.0))
+                res_m, _hold, alive = mix.get(int(i), (0.0, 0.0, 1.0))   # the hours move the day, not the weight
                 d_lake = math.hypot(ex - click[0], ey - click[1]) + m
-                travel = ((d - m) / 0.5 + d_lake / 0.05) / 3600
+                travel = ((d - m) / 0.5 + (d_lake - res_m) / 0.05) / 3600
                 rows.append((ids[int(i)], d - m, d_lake,
-                             10 ** (-travel / 30) * w / bap.DIL_SCALE / (1 + poly["area_km2"] / 5) * factor))
+                             10 ** (-travel / 30) * alive * w / bap.DIL_SCALE / (1 + poly["area_km2"] / 5) * factor))
         got = pd.DataFrame(rows, columns=["site_id", "distance_m", "lake_distance_m", "weight"])
         got = got.sort_values("site_id").reset_index(drop=True)
         assert list(got["site_id"]) == list(want["site_id"]) == sites
         assert np.allclose(got["distance_m"], want["distance_m"], atol=1.0)
         assert np.allclose(got["lake_distance_m"], want["lake_distance_m"], atol=2.0)
         assert np.allclose(got["weight"], want["weight"], rtol=2e-3)
-        # In the lower lake, water from above Test Water has crossed it in mode "lake" only.
+        # In the lower lake, water from above Test Water has crossed it in modes "lake" and "residence" only.
         if poly is lower:
             a5 = want.set_index("site_id").loc["A5"]
-            assert (a5["lake_distance_m"] > 4_000) == (mode == "lake")
+            assert (a5["lake_distance_m"] > 4_000) == (mode != "river")
 
 
 def test_moving_an_overflow_retraces_only_whats_downstream(world, tmp_path):
@@ -359,7 +387,8 @@ def _page_fixture_in(world, tmp_path, monkeypatch, mode: str) -> dict:
         clicks.append({"what": what, "lat": round(lat, 7), "lon": round(lon, 7), "mode": pin.mode, "watercourse": pin.watercourse,
                        "adopted": bool(pin.adopted_main_channel),
                        "rows": [{"site_id": r.site_id, "distance_m": round(float(r.distance_m), 2),
-                                 "lake_distance_m": round(float(r.lake_distance_m), 2), "dilution": round(float(r.dilution), 6)}
+                                 "lake_distance_m": round(float(r.lake_distance_m), 2), "dilution": round(float(r.dilution), 6),
+                                 "travel_h": round(float(r.travel_h), 4), "decay": float(f"{float(r.decay):.6g}")}
                                 for r in up.itertuples()]})
     return {"files": files, "clicks": clicks}
 
@@ -381,6 +410,8 @@ def test_the_page_fixture_still_says_what_the_api_says(world, tmp_path, monkeypa
                 assert a["distance_m"] == pytest.approx(b["distance_m"], abs=0.1), (mode, k["what"])
                 assert a["lake_distance_m"] == pytest.approx(b["lake_distance_m"], abs=0.1), (mode, k["what"])
                 assert a["dilution"] == pytest.approx(b["dilution"], abs=1e-5), (mode, k["what"])
+                assert a["travel_h"] == pytest.approx(b["travel_h"], abs=1e-3), (mode, k["what"])
+                assert a["decay"] == pytest.approx(b["decay"], rel=1e-5), (mode, k["what"])
         # The API, given no hint that the click is a lake, finds no river within 1.5 km of the lonely
         # pool; the page says it is a lake with no river connection, as the API does for a lake spot.
         assert {c["mode"] for c in kept["clicks"]} == {"river", "lake", "none"}

@@ -8,9 +8,11 @@
 //    (_click_at_head; the links file's `arms`);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
 //    for the click's place along it, or from the lake's inlets and the straight line across; a WFD
-//    lake crossed on the way counts as lake, with its lake factor (lake path "lake", crossings);
-//  - travel at the river speed (the lake speed across a lake), die-off 10^(-t / T90), weight =
-//    die-off x dilution, less for an overflow placed by proximity alone;
+//    lake crossed on the way counts as lake, with its lake factor (lake path "lake", crossings), or,
+//    in lake path "residence", as a well-mixed lake where it has a residence time (holds);
+//  - travel at the river speed (the lake speed across a lake, the survivors' hours in a well-mixed
+//    one), die-off 10^(-t / T90) times the share that leaves a well-mixed lake alive, weight =
+//    die-off x dilution, less for an overflow placed by proximity alone (transportOf);
 //  - each day's spill probability through the lead calibration (forecast.calibrate_by_lead),
 //    moved later by the travel time and combined, 1 - prod(1 - p w) (transport.combine_daily),
 //    with no figure where over 10% of the weight has no rain data (missing_share);
@@ -23,6 +25,7 @@ const AnyPoint = (() => {
   const FORMS = ['inlandRiver', 'tidalRiver', 'lake', 'canal'], LAKE = 2, RIVER_FORMS = [0, 1];
   const ADOPT = { radius: 500, min: 5000, ratio: 5 };   // transport.ADOPT_RADIUS_M, ADOPT_MIN_M, ADOPT_RATIO
   const BASE_UNIT = 10, SCALE = 10000, PATH_SCALE = 1e6, ARM_SCALE = 1e4;   // build_any_point.BASE_UNIT_M, DIL_SCALE, PATH_SCALE, ARM_FRAC_SCALE
+  const HOLD_SCALE = 1e3, PASS_SCALE = 1e9;                // build_any_point.HOLD_SCALE, PASS_SCALE
   const DAYS_AHEAD = 4, KEEP = 10;                       // forecast_point's days, build_site.KEEP_CONTRIBUTORS
   const RAD = Math.PI / 180, A_ELL = 6378137, E2 = 0.00669438;   // WGS84
 
@@ -83,17 +86,31 @@ const AnyPoint = (() => {
     for (let j = 0; j + 2 < (k || []).length; j += 3) out.set(k[j], [k[j + 1], k[j + 2] / PATH_SCALE]);
     return out;
   }
+  // Lake path "residence": h = flat quadruples (overflow index, metres of lake with a residence time, the
+  // survivors' hours in it in thousandths, the share that leaves it alive in billionths). overflow index ->
+  // {dres, hold, pass}; those metres are in dlake but travel as the hours, and the share multiplies the die-off.
+  function holds(h) {
+    const out = new Map();
+    for (let j = 0; j + 3 < (h || []).length; j += 4) out.set(h[j], { dres: h[j + 1], hold: h[j + 2] / HOLD_SCALE, pass: h[j + 3] / PASS_SCALE });
+    return out;
+  }
+  const NO_HOLD = { dres: 0, hold: 0, pass: 1 };
+  // transport.upstream_overflows' travel time (hours) and die-off for a row at the default speeds in `a`.
+  function transportOf(r, a) {
+    const moving = (r.dist / a.river_velocity_ms + (r.dlake - (r.dres || 0)) / a.lake_velocity_ms) / 3600;
+    return { travel: moving + (r.hold || 0), decay: Math.pow(10, -moving / a.t90_hours) * (r.pass === undefined ? 1 : r.pass) };
+  }
   // A link record (links/<t>.json) at a click `frac` along the link: [{i, dist, dlake, dil}], as
   // upstream_overflows gives them (build_any_point.rows_at and Tracer say how). The cap is on the
   // whole distance along the network; a lake crossed on the way then moves its metres from dist to
   // dlake and multiplies the dilution by its factor.
   function rowsAt(rec, frac, cap, l0) {
-    const offset = frac * rec.n, shrink = (rec.u + l0) / (rec.u + l0 + offset), out = [], path = crossings(rec.k);
+    const offset = frac * rec.n, shrink = (rec.u + l0) / (rec.u + l0 + offset), out = [], path = crossings(rec.k), mixed = holds(rec.h);
     let i = 0;
     for (let k = 0; k < (rec.o || []).length; k += 3) {
       i += rec.o[k];
       const dist = rec.o[k + 1] * BASE_UNIT + offset, [lake, factor] = path.get(i) || [0, 1];
-      if (dist <= cap) out.push({ i, dist: dist - lake, dlake: lake, dil: Math.min(1, rec.o[k + 2] / SCALE * shrink) * factor });
+      if (dist <= cap) out.push({ i, dist: dist - lake, dlake: lake, dil: Math.min(1, rec.o[k + 2] / SCALE * shrink) * factor, ...(mixed.get(i) || NO_HOLD) });
     }
     for (let k = 0; k < (rec.s || []).length; k += 2)
       if (rec.s[k + 1] < offset) out.push({ i: rec.s[k], dist: offset - rec.s[k + 1], dlake: 0, dil: Math.min(1, shrink) });
@@ -105,10 +122,11 @@ const AnyPoint = (() => {
   function lakeRows(lake, at, area, a0) {
     const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1;
     for (const inlet of lake.inlets) {
-      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k);
+      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k), mixed = holds(inlet.h);
       for (let k = 0; k < inlet.o.length; k += 3) {
         const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
-        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor });
+        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor,
+          ...(mixed.get(inlet.o[k]) || NO_HOLD) });
       }
     }
     return out;
@@ -119,8 +137,8 @@ const AnyPoint = (() => {
   // overflows that matter most (optional).
   function forecast(rows, od, cal, names = null, nowMs = Date.now()) {
     const a = od.assumptions, low = new Set(od.low), n = rows.length;
-    const travel = rows.map(r => (r.dist / a.river_velocity_ms + r.dlake / a.lake_velocity_ms) / 3600);
-    const w = rows.map((r, k) => Math.pow(10, -travel[k] / a.t90_hours) * r.dil * (low.has(r.i) ? a.low_confidence_factor : 1));
+    const tr = rows.map(r => transportOf(r, a)), travel = tr.map(t => t.travel);
+    const w = rows.map((r, k) => tr[k].decay * r.dil * (low.has(r.i) ? a.low_confidence_factor : 1));
     const hist = historyDays(travel), nd = hist + DAYS_AHEAD + 1, t0 = od.today;
     const P = rows.map(r => Array.from({ length: nd }, (_, j) => {
       const v = od.p[r.i][t0 - hist + j]; return v === null || v === undefined ? NaN : v / od.scale; }));
@@ -504,7 +522,7 @@ const AnyPoint = (() => {
     open(e.latlng.lat, e.latlng.lng);
   }
 
-  return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, forecast,
+  return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast,
     frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
 })();
 

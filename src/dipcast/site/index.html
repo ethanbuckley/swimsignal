@@ -218,6 +218,10 @@
   .planner-note { margin:8px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .best-day b { color:var(--k-low); }
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
+  /* Near me, the way most people come in: one full-width button under the search (14 Oct 2026). */
+  .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
+  .near-cta svg { width:18px; height:18px; flex:none; }
+  .intro .geo { margin:8px 0 0; }
   .save-hint .ic { margin-top:3px; }   /* centred on the first line (22.5 px) when the text wraps */
   /* The padding is room for a focus ring, which the scrolling row would otherwise clip; the margin
      takes it back, so the chips line up with the rows. */
@@ -658,7 +662,8 @@
   @media (max-width: 800px) {
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
-    .answer, .lead { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
+    .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
+    .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen (14 Oct 2026) */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
@@ -1077,7 +1082,7 @@ window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, OVERFLOWS = null, current = null, shown = null;
-const VIEW = { q: '', filter: 'all', sort: 'risk', here: null, geoMsg: '', lowOnly: false, day: null };
+const VIEW = { q: '', filter: 'all', sort: 'name', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null };   // A–Z until a place is given (14 Oct 2026)
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
 const fmt = (x, d=0) => (x === null || x === undefined) ? '–' : Number(x).toFixed(d);
@@ -2111,6 +2116,10 @@ const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d
 // With more than one list, Save says which list it adds to: the one the Saved page shows.
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
+// Near me under the search: the way most people come in (14 Oct 2026). Also in the built page (home_lead).
+const NEAR_CTA = '<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Show spots near me</span></button>';
+const NEAR_N = 3;   // the nearest spots shown as cards once a place is given
+let OPENED = false;   // a spot has been opened this visit: only then does the list say how to save one (kept nowhere)
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
 // The counts over the list, after when the forecast was issued: freshness where the list begins.
 // The spots without a level are counted by why, in their rows' own words up to the colon: "1 without a
@@ -2168,27 +2177,29 @@ function renderList() {
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
   let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} spots in England, or ${TOUCH ? 'tap' : 'click'} any river or lake on the map. <a href="#about">How it works</a></p>`
-    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div></section>`
+    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
+    // Until a place is given, Near me; then the nearest spots, as cards above the list (drawSpots).
+    + (offerNear() ? NEAR_CTA + `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
     + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${[0,1,2,3,4].map(k => addDays(today(), k)).map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
-    // Who it is for: the same forecast serves anyone who gets in the water (clubs.html says how wet each
-    // activity gets), and groups and events have their own tools.
-    + `<p class="planner-note groups">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
     + (best ? `<p class="planner-note best-day">${best}</p>` : '')
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
-    : `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here${'geolocation' in navigator
-      ? ', or sort the list by distance: <button type="button" class="linkbtn small" data-near>Near me</button>' : '.'}</span></p>`;
+    : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
+  h += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
   h += `<section class="group tile" id="all-group" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
     + `<div class="sortseg" role="group" aria-label="Sort">${sorts.map(([k, t]) => `<button type="button" data-sort="${k}" aria-pressed="${VIEW.sort === k}">${t}</button>`).join('')}</div></div>`
     // Under the sort buttons, where the eye is after pressing Near me: below the overview it was off a
     // phone's screen, so a declined or failed location changed nothing you could see.
-    + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg ? '' : ' hidden'}>${esc(VIEW.geoMsg)}</p>`
+    + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
     + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><p class="count" id="count" role="status"></p></section>`;
-  h += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`;
+  h += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
+    // Who it is for, at the foot since 14 Oct 2026: the same forecast serves anyone who gets in the water
+    // (clubs.html says how wet each activity gets), and groups and events have their own tools.
+    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`;
   setPanel(h);
   if (saved.length) bindItems(document.getElementById('saved-list'));
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
@@ -2205,9 +2216,7 @@ function renderList() {
     document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     steady(b, drawSpots); }));
   document.querySelector('[data-low]').addEventListener('click', () => setLowOnly(!VIEW.lowOnly));
-  // The first-run line's: the list it sorts starts below it, so bring the list's heading up first.
-  const nearMe = document.querySelector('[data-near]'); if (nearMe) nearMe.addEventListener('click', () => {
-    document.getElementById('all-group').scrollIntoView({ behavior: SCROLL(), block: 'start' }); locate(); });
+  const nearCta = document.querySelector('[data-near-cta]'); if (nearCta) nearCta.addEventListener('click', () => locate('cta'));
   document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.sort === 'near' && !VIEW.here) { locate(); return; }
     setSort(b.dataset.sort); drawSpots(); }));
@@ -2215,15 +2224,22 @@ function renderList() {
 }
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
 // The position stays in this page: it only orders the list, and is not sent anywhere.
-function locate() {
-  const msg = t => { VIEW.geoMsg = t; const g = document.getElementById('geo'); if (g) { g.textContent = t; g.hidden = !t; } };
+const offerNear = () => 'geolocation' in navigator && !VIEW.here;
+function locate(at = 'sort') {
+  const before = VIEW.sort === 'near' ? 'name' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : 'in A–Z order';
+  // Said where it was asked: under the button under the search ('cta'), or under the sort buttons.
+  VIEW.geoAt = at;
+  const msg = t => { VIEW.geoMsg = t; const g = document.getElementById(at === 'cta' ? 'geo-cta' : 'geo');
+    if (g) { g.textContent = t; g.hidden = !t; } };
   // Near me shows as chosen while the position is found, so the press is seen to take.
   setSort('near'); msg('Finding your location…');
-  navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg(''); drawSpots(); },
+  navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg('');
+      const cta = document.querySelector('[data-near-cta]'); if (cta) cta.hidden = true;   // its answer is the cards below
+      drawSpots(); },
     // A browser remembers a refusal and does not ask again, so say where to undo it.
-    e => { setSort('risk'); msg(e.code === 1
-      ? 'Location is blocked for this site, so the list stays sorted by risk. Allow it in your browser’s settings, then press Near me again.'
-      : 'Your device could not find where you are, so the list stays sorted by risk. Check that location services are on for your browser, then try again.'); drawSpots(); },
+    e => { setSort(before); msg(e.code === 1
+      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press Near me again.`
+      : `Your device could not find where you are, so the list stays ${order}. Check that location services are on for your browser, then try again.`); drawSpots(); },
     { maximumAge: 10 * 60 * 1000, timeout: 10000 });
 }
 // Search ignores case, accents, punctuation and word order, and looks in the river's name and the
@@ -2249,6 +2265,14 @@ function drawSpots() {
     bindItems(savedList);
     if (!savedGroup.hidden && !VIEW.day && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
   }
+  const nearGroup = document.getElementById('near-group');
+  if (nearGroup) {   // the nearest spots as cards, once a place is given; not while the list is narrowed
+    nearGroup.hidden = !VIEW.here || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
+    const nearList = document.getElementById('near-list');
+    nearList.innerHTML = nearGroup.hidden ? '' : [...DATA.spots].sort((a, b) => dist(a) - dist(b)).slice(0, NEAR_N)
+      .map(s => savedCard(s, false, VIEW.day, false, 'spots near you', true)).join('');
+    bindItems(nearList);
+  }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
   ul.innerHTML = items.length ? items.map(spotItem).join('')
@@ -2266,8 +2290,8 @@ function drawSpots() {
 // the list with its bookmark (aria-label: from, the list's name), and Undo puts it back in place. The
 // list shows the same cards, without the bookmark, on its day (iso), on one tile; a list someone shared
 // shows them without it, each a tile. With no day picked, what changed since you last looked (since.js).
-function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots') {
-  const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
+function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots', far = false) {
+  const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, far && dist(s) !== null ? away(dist(s)) : null].filter(Boolean).join(' · ');
   return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
@@ -2694,6 +2718,7 @@ document.getElementById('planbtn').addEventListener('click', e => { if (!DATA ||
 let OPENING = 0;
 function select(id, fly=false, push=true, day=null) {
   const s = DATA.spots.find(x => x.id === id); if (!s) return;
+  OPENED = true;
   const n = ++OPENING, at = location.href;
   if (s.detail_file && !s.detail_loaded) {
     spotDetail(s).then(() => { if (n === OPENING && location.href === at) openSpot(s, fly, push, day); });
@@ -3146,7 +3171,7 @@ main().catch(e => { document.getElementById('result').innerHTML = `<p class="not
 const LOADED = Date.now(), VIEW_KEY = 'dipcast.view';
 function reload() {
   const { here, geoMsg, ...rest } = VIEW;
-  try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...rest, sort: rest.sort === 'near' ? 'risk' : rest.sort, y: shown === 'list' ? scrollPos() : 0 })); } catch (e) { /* starts afresh */ }
+  try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...rest, sort: rest.sort === 'near' ? 'name' : rest.sort, y: shown === 'list' ? scrollPos() : 0 })); } catch (e) { /* starts afresh */ }
   location.reload();
 }
 // Not while something being written would be lost (a review: data-keep-page).
