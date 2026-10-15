@@ -91,7 +91,7 @@
           /* The app's own: the map, the controls that float on it, and the rain bars. The tiles are grey
              and the water a muted blue (#bccfd8), so the markers stay the only strong colours on the map.
              CSS cannot pick out one colour, so the filter is the SVG one at the top of <body>. */
-          --map-bg:#e4e2dc; --tile-filter:url(#tiles); --float:#fff; --veil:rgba(255,255,255,.9); --scrim:rgba(20,33,43,.55); --lift:0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--hair);
+          --map-bg:#e4e2dc; --float:#fff; --veil:rgba(255,255,255,.9); --scrim:rgba(20,33,43,.55); --lift:0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--hair);
           --rain:#3d8bd4; --header-h:56px;
           /* The sky and the glass: the picture's own top colour, which runs up to the header; a tile,
              three-quarters white; the empty part of a bar; an overflow quiet, and not reporting. */
@@ -145,7 +145,6 @@
   #map { position:absolute; inset:0; background:var(--map-bg); }
   /* Each tile through the filter, not the pane they sit in: an SVG filter covers the box of the element
      it is on, and Leaflet's tile pane is 0 by 0. */
-  .leaflet-container .leaflet-tile { filter:var(--tile-filter); }
   /* Leaflet's own controls in the system: the one lift, the one radius, the site's type and colours.
      Leaflet marks every map .leaflet-touch on any browser with pointer events, and styles the zoom bar
      through that class, so these rules start .leaflet-container to equal it and win by coming later. */
@@ -855,7 +854,9 @@
 </style>
 </head>
 <body class="view-list">
-<!-- The map's tiles (--tile-filter): grey, as grayscale(1) brightness(1.04) contrast(.95) made them
+<!-- The map's tiles: the script reads this filter and applies it once to each tile as it loads
+     (tintTiles), not as a CSS filter on every tile, which Safari redrew on every frame of a pan:
+     in iOS Safari, 18 of 306 frames over 50 ms at zoom 6, none without it (16 Oct 2026). Grey, as grayscale(1) brightness(1.04) contrast(.95) made them
      (land), with OpenStreetMap's water (#aad3df) moved to a muted blue, #bccfd8 (tint: the grey plus
      -19, 0 and +9 in 255ths). Water is where blue is above red (r1), green above red (r2) and blue not
      below green by more than a little (r3); each ramps up, so a shore or a thin river, blended with
@@ -1001,12 +1002,73 @@ const TOUCH = matchMedia('(pointer: coarse)').matches;
 // Less motion, if asked for: no animated zoom, fade or glide, and setView and fitBounds jump (MOTION).
 const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MOTION = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? { animate: false } : {};
+// The tiles' colours (the SVG filter with id tiles, which the build sets for each provider), worked out once per
+// tile as it loads and drawn into a canvas. As a CSS filter on each tile, iOS Safari recomputed it on
+// every frame of a pan or zoom, and the map stuttered. The filter's primitives are read from the page,
+// so a provider's own filter applies unchanged: feColorMatrix, feComposite (arithmetic or "in") and
+// feMerge, in sRGB, as the browser would. A tile has few colours, so each is worked out once.
+const tileColour = (() => {
+  const f = document.getElementById('tiles'); if (!f) return null;
+  const steps = [...f.children].map(e => ({ tag: e.tagName.replace(/^.*:/, ''), result: e.getAttribute('result'),
+    in1: e.getAttribute('in'), in2: e.getAttribute('in2'), op: e.getAttribute('operator'),
+    k: ['k1', 'k2', 'k3', 'k4'].map(a => +(e.getAttribute(a) || 0)),
+    m: (e.getAttribute('values') || '').trim().split(/[\s,]+/).map(Number),
+    nodes: [...e.children].map(n => n.getAttribute('in')) }));
+  const cl = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const cache = new Map();
+  return (r, g, b) => {   // 0..255 in, an opaque pixel; [r, g, b] 0..255 out
+    const key = (r << 16) | (g << 8) | b, hit = cache.get(key); if (hit) return hit;
+    const src = [r / 255, g / 255, b / 255, 1], got = { SourceGraphic: src };   // premultiplied rgba
+    let last = src;
+    const take = n => (n && got[n]) || (n ? src : last);
+    for (const st of steps) {
+      let o;
+      if (st.tag === 'feColorMatrix') {
+        const i = take(st.in1), a = i[3], u = a ? [i[0] / a, i[1] / a, i[2] / a, a] : [0, 0, 0, 0], m = st.m;
+        const row = j => cl(m[j] * u[0] + m[j + 1] * u[1] + m[j + 2] * u[2] + m[j + 3] * u[3] + m[j + 4]);
+        const oa = row(15); o = [row(0) * oa, row(5) * oa, row(10) * oa, oa];
+      } else if (st.tag === 'feComposite') {
+        const i1 = take(st.in1), i2 = take(st.in2);
+        if (st.op === 'in') o = i1.map(c => c * i2[3]);
+        else { const [k1, k2, k3, k4] = st.k; o = i1.map((c, j) => cl(k1 * c * i2[j] + k2 * c + k3 * i2[j] + k4)); o = o.map((c, j) => j < 3 ? Math.min(c, o[3]) : c); }
+      } else if (st.tag === 'feMerge') {
+        o = [0, 0, 0, 0];
+        for (const n of st.nodes) { const i = take(n); o = o.map((c, j) => i[j] + c * (1 - i[3])); }
+      } else continue;
+      last = o; if (st.result) got[st.result] = o;
+    }
+    const a = last[3] || 1, out = [0, 1, 2].map(j => Math.round(cl(last[j] / a) * 255));
+    cache.set(key, out); return out;
+  };
+})();
+const TintedTiles = L.TileLayer.extend({
+  createTile(coords, done) {
+    const c = document.createElement('canvas'), img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      c.width = img.naturalWidth; c.height = img.naturalHeight;   // a retina tile keeps its pixels
+      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+      try {
+        const d = g.getImageData(0, 0, c.width, c.height), px = d.data;
+        for (let i = 0; i < px.length; i += 4) { if (px[i + 3] !== 255) continue;
+          const o = tileColour(px[i], px[i + 1], px[i + 2]); px[i] = o[0]; px[i + 1] = o[1]; px[i + 2] = o[2]; }
+        g.putImageData(d, 0, 0);
+      } catch (e) { /* a provider without CORS: its own colours */ }
+      done(null, c);
+    };
+    img.onerror = e => done(e, c);
+    img.src = this.getTileUrl(coords);
+    return c;
+  }
+});
+// The build swaps the tile layer line inside this call (build_site.TILE_LINE); without the filter, as is.
+const tintTiles = layer => tileColour ? new TintedTiles(layer._url, layer.options) : layer;
 const map = L.map('map', { zoomControl: true, dragging: !TOUCH, zoomAnimation: !STILL, fadeAnimation: !STILL, markerZoomAnimation: !STILL,
   inertia: !STILL }).setView([53.6, -2.0], 6);
 map.attributionControl.setPrefix(false);   // the map's credit is the tiles', as on the small map; the terms credit Leaflet
 // The build swaps this line for another provider's (build_site.TILE_LINE, DIPCAST_TILES): keep its shape.
-const tiles = () => L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
+const tiles = () => tintTiles(L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }));
 tiles().addTo(map);
 if (TOUCH) {
   const hint = document.createElement('div'); let t = null;
