@@ -12,7 +12,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
-from shapely.geometry import LineString, box
+from shapely.geometry import LineString, Polygon, box
 
 from dipcast import config
 from dipcast.model import transport
@@ -41,6 +41,8 @@ def _net(links: list[tuple]) -> RiverNetwork:
 # joining at x = 406000, and a mill leat beside its third reach that is not joined upstream. To the
 # east, a beck flows south into a two-link lake, which drains south into a second, smaller lake:
 # water from above the first lake crosses it on the way to a click below it or in the second.
+# Further east, the River Stor in West Sussex (16 Oct 2026): a short unnamed link with a 25 m kink, cut
+# off from the network as OS often draws them, 35 m from a pond's centreline and 230 m from the river.
 LINKS = [
     ("M1", "River Test", "inlandRiver", "n0", "n1", [(400000, 450000), (402000, 450000)]),
     ("M2", "River Test", "inlandRiver", "n1", "n2", [(402000, 450000), (404000, 450000)]),
@@ -55,10 +57,33 @@ LINKS = [
     ("O1", "Outflow Beck", "inlandRiver", "k2", "o1", [(420000, 452000), (420000, 448000)]),
     ("L3", "Lower Water", "lake", "o1", "l3", [(420000, 448000), (420000, 446000)]),
     ("O2", "Lower Beck", "inlandRiver", "l3", "o2", [(420000, 446000), (420000, 443000)]),
+    ("V1", "River Stor", "inlandRiver", "v0", "v1", [(430000, 432000), (430000, 440000)]),
+    ("V2", "River Stor", "inlandRiver", "v1", "v2", [(430000, 440000), (430000, 442000)]),
+    ("U1", None, "inlandRiver", "u0", "u1", [(430200, 439975), (430230, 440000), (430260, 439975)]),
+    ("P1", None, "lake", "p0", "p1", [(430200, 440035), (430300, 440035)]),
+    # Empty Water has no lake link inside. East Pond is the nearer to its middle, West Pond to a click on
+    # its west shore; neither is within 1.5 km of its north shore.
+    ("E1", "East Beck", "inlandRiver", "e0", "pe0", [(451300, 472500), (451300, 470600)]),
+    ("EP", "East Pond", "lake", "pe0", "pe1", [(451300, 470600), (451300, 470400)]),
+    ("E2", "East Beck", "inlandRiver", "pe1", "e2", [(451300, 470400), (451300, 468000)]),
+    ("W1", "West Beck", "inlandRiver", "w0", "pw0", [(448800, 472500), (448800, 470600)]),
+    ("WP", "West Pond", "lake", "pw0", "pw1", [(448800, 470600), (448800, 470400)]),
+    ("W2", "West Beck", "inlandRiver", "pw1", "w2", [(448800, 470400), (448800, 468000)]),
+    # Notch Water's lake link, unnamed, runs down its middle.
+    ("N0", "Notch Beck", "inlandRiver", "nb0", "nb1", [(460500, 472500), (460500, 470800)]),
+    ("N1", None, "lake", "nb1", "nb2", [(460500, 470800), (460500, 470200)]),
+    ("N2", "Notch Beck", "inlandRiver", "nb2", "nb3", [(460500, 470200), (460500, 468000)]),
+    # Quiet Pond, 450 m from Quiet Water, which has no lake link inside. No overflow is anywhere near.
+    ("Q1", "Quiet Pond", "lake", "q0", "q1", [(500000, 501000), (500200, 501000)]),
 ]
+KINK = (430230, 440000)   # U1's kink: 0 m from U1, 25 m from U1 simplified to 30 m, 35 m from P1
 LAKE_POLY = box(419000, 451800, 421000, 456200)          # 8.8 km2
 LOWER_POLY = box(419400, 445900, 420600, 447900)         # 2.4 km2, 100 m below Outflow Beck's end
 ALONE_POLY = box(440000, 470000, 441000, 471000)         # no lake centreline anywhere near
+EMPTY_POLY = box(450000, 470000, 451000, 473000)         # no lake link inside; East Pond 1.2 km from its middle
+NOTCH_POLY = Polygon([(460000, 470000), (461000, 470000), (461000, 470490), (461012, 470500), (461000, 470510),
+                      (461000, 471000), (460000, 471000)])   # a 12 m spit on its east side, which 15 m outlines drop
+QUIET_POLY = box(499000, 500000, 499800, 500600)         # no lake link inside; Quiet Pond 450 m off
 
 
 def _overflows(net: RiverNetwork, spec: list[tuple]) -> pd.DataFrame:
@@ -76,7 +101,8 @@ def _overflows(net: RiverNetwork, spec: list[tuple]) -> pd.DataFrame:
 
 OVERFLOWS = [("A1", "M1", 0.3, "high"), ("A2", "T1", 0.45, "high"), ("A3", "M3", 0.2, "low"),
              ("A4", "M3", 0.8, "high"), ("A5", "R1", 0.4, "high"), ("A6", "K1", 0.5, "high"),
-             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high")]
+             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high"), ("A9", "V1", 0.5, "high"), ("B1", "E1", 0.5, "high"),
+             ("B2", "W1", 0.5, "high"), ("B3", "N0", 0.5, "high")]
 RIVER_LINKS = ["M1", "M2", "M3", "M4", "T1", "D1", "S1", "R1", "O1", "O2"]
 
 
@@ -89,9 +115,10 @@ def world(monkeypatch, tmp_path):
     pd.DataFrame({"wb_id": ["GB1"], "res_time_d": [TEST_WATER_TAU_D]}).to_csv(res, index=False)
     monkeypatch.setattr(config, "LAKE_RESIDENCE_FILE", res)
     net = _net(LINKS)
-    lakes = gpd.GeoDataFrame({"wb_id": ["GB1", "GB2", "GB3"], "lake_name": ["Test Water", "Lonely Pool", "Lower Water"],
-                              "area_km2": [LAKE_POLY.area / 1e6, ALONE_POLY.area / 1e6, LOWER_POLY.area / 1e6]},
-                             geometry=[LAKE_POLY, ALONE_POLY, LOWER_POLY], crs=27700)
+    polys = [LAKE_POLY, ALONE_POLY, LOWER_POLY, EMPTY_POLY, NOTCH_POLY, QUIET_POLY]
+    lakes = gpd.GeoDataFrame({"wb_id": ["GB1", "GB2", "GB3", "GB4", "GB5", "GB6"],
+                              "lake_name": ["Test Water", "Lonely Pool", "Lower Water", "Empty Water", "Notch Water", "Quiet Water"],
+                              "area_km2": [p.area / 1e6 for p in polys]}, geometry=polys, crs=27700)
     monkeypatch.setattr(transport, "_lakes", lambda: lakes)
     return net, lakes, _overflows(net, OVERFLOWS)
 
@@ -214,7 +241,7 @@ def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path,
     bap.write_files(out, net, ov, table, "net0")
     doc = json.loads((out / "lakes.json").read_text())
     ids = json.loads((out / "overflow_ids.json").read_text())["ids"]
-    water, alone, lower = doc["polygons"]
+    water, alone, lower, *_ = doc["polygons"]
     assert water["name"] == "Test Water" and isinstance(water["lake"], int) and alone["lake"] == -1
     assert lower["name"] == "Lower Water" and isinstance(lower["lake"], int)
     # A click in each lake. What the page does: from each inlet, the distance along the network less any
@@ -246,6 +273,54 @@ def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path,
         if poly is lower:
             a5 = want.set_index("site_id").loc["A5"]
             assert (a5["lake_distance_m"] > 4_000) == (mode != "river")
+
+
+def test_a_lake_with_no_centreline_inside_takes_the_one_nearest_the_click_not_its_middle(world, tmp_path):
+    # Eccup Reservoir, Church Wilne, Chelker, Island Barn, White Mere and King George VI (16 Oct 2026): the build
+    # took the lake link nearest the lake's middle, the API the one nearest the click (docs/ANYPOINT-LAKES-2026-10.md).
+    bap = _bap()
+    net, lakes, ov = world
+    wfd, _, _ = bap.lake_link_sets(net, lakes)
+    links = {w["name"]: w["links"] for w in wfd}
+    assert links["Empty Water"] is None and links["Quiet Water"] is None and links["Lonely Pool"] is None
+    assert links["Notch Water"] == {"N1"} and links["Test Water"] == {"K1", "K2"}
+    # The API: West Pond for a click on the west shore, though East Pond is the nearer to the middle.
+    pin, up = _api(net, ov, *bng_to_lonlat(449900, 470500))
+    assert (pin.mode, pin.lake_source, pin.watercourse, pin.lake_links) == ("lake", "polygon", "Empty Water", {"WP"})
+    assert list(up["site_id"]) == ["B2"]
+    assert EMPTY_POLY.centroid.distance(net.links.at["EP", "geometry"]) < 1500 < EMPTY_POLY.centroid.distance(net.links.at["WP", "geometry"])
+    # The page finds the pond in the link index: Quiet Pond's square has files though no overflow is near it.
+    table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
+    out = tmp_path / "anypoint"
+    meta = bap.write_files(out, net, ov, table, "net0")
+    doc = json.loads((out / "lakes.json").read_text())
+    assert [p["lake"] for p in doc["polygons"] if p["name"] in ("Empty Water", "Quiet Water", "Lonely Pool")] == [-1, -1, -1]
+    assert meta["counts"]["wfd_no_centreline"] == 3
+    quiet = bap.tile_key(*reversed(bng_to_lonlat(500100, 501000)))
+    assert quiet in meta["tiles"] and quiet not in {bap.tile_key(a, b) for a, b in zip(ov["lat"], ov["lon"], strict=True)}
+    idx, _, lno = _tile_files(out, "Q1", net, bap)
+    assert lno in idx["lno"]
+
+
+def test_lakes_json_says_how_far_each_outline_is_from_the_real_one_which_is_published_too(world, tmp_path):
+    # Gorpley Reservoir (16 Oct 2026): a click 149.1 m from the real outline was 151.1 m from the 15 m one.
+    bap = _bap()
+    net, lakes, ov = world
+    table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
+    out = tmp_path / "anypoint"
+    bap.write_files(out, net, ov, table, "net0")
+    doc = json.loads((out / "lakes.json").read_text())
+    n = next(i for i, p in enumerate(doc["polygons"]) if p["name"] == "Notch Water")
+    notch = doc["polygons"][n]
+    spit = list(np.round(bng_to_lonlat(461012, 470500), 6))
+    real = json.loads((out / "lake_outlines" / f"{n}.json").read_text())
+    assert real["wb_id"] == "GB5" and spit in real["rings"][0]
+    assert not any(np.allclose(v, spit, atol=1e-5) for v in notch["rings"][0])   # the 15 m outline drops the spit
+    assert 13 <= notch["err"] <= 14                                               # 12 m, plus 1 m for 5 decimals
+    assert all(p["err"] == 1 for p in doc["polygons"] if p["name"] != "Notch Water")   # boxes lose nothing
+    assert sorted(int(f.stem) for f in (out / "lake_outlines").iterdir()) == list(range(len(doc["polygons"])))
+    pin, _ = _api(net, ov, *bng_to_lonlat(461161, 470500))
+    assert (pin.mode, pin.lake_source, pin.watercourse) == ("lake", "polygon", "Notch Water")
 
 
 def test_moving_an_overflow_retraces_only_whats_downstream(world, tmp_path):
@@ -287,6 +362,25 @@ def test_a_change_of_lake_path_rule_traces_everything_again(world, tmp_path, mon
     assert stats["cache"] == "stale rules"
 
 
+def test_the_index_keeps_every_vertex_so_a_click_on_a_kink_is_on_its_link(world, tmp_path):
+    """The page measures a click against the index's lines, the API against the network's. Lines simplified
+    to 30 m put U1's kink 25 m from its line, and the pond's centreline, 35 m away, won by the lake rule
+    (35 x 0.5 < 25): the page found no river where the API traced the River Stor (16 Oct 2026)."""
+    bap = _bap()
+    net, lakes, ov = world
+    table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
+    out = tmp_path / "anypoint"
+    bap.write_files(out, net, ov, table, "net0")
+    for lid in net.links.index:
+        idx, _, lno = _tile_files(out, lid, net, bap)
+        k = int(np.flatnonzero(idx["lno"] == lno)[0])
+        line = idx["lonlat"][idx["offsets"][k]:idx["offsets"][k + 1]]
+        want = np.array([bng_to_lonlat(x, y) for x, y in net.links.at[lid, "geometry"].coords])
+        assert line.shape == want.shape and np.allclose(line, want, atol=1e-6), lid   # Float32: under 0.5 m
+    pin, up = _api(net, ov, *bng_to_lonlat(*KINK))
+    assert (pin.mode, pin.watercourse, pin.adopted_main_channel, list(up["site_id"])) == ("river", "River Stor", True, ["A9"])
+
+
 def test_link_names_follow_the_api():
     bap = _bap()
     net = _net(LINKS)
@@ -316,7 +410,11 @@ FIXTURE = ROOT / "tests" / "fixtures" / "anypoint_synthetic.json"
 CLICKS_BNG = ([(lid, f) for lid in RIVER_LINKS for f in (0.15, 0.5, 0.85)]
               + [("in the lake", (419500, 455000)), ("beside the lake", (418700, 455000)),
                  ("in the lower lake", (420300, 447000)),
-                 ("the lonely pool", (440500, 470500)), ("far from water", (412000, 456000))])
+                 ("the lonely pool", (440500, 470500)), ("far from water", (412000, 456000)),
+                 ("the kink by the pond", KINK),
+                 ("west of Empty Water, nearer West Pond", (449900, 470500)), ("in Empty Water, nearer East Pond", (450900, 470500)),
+                 ("north of Empty Water, no pond within 1.5 km", (450500, 473100)),
+                 ("149 m off Notch Water's spit", (461161, 470500)), ("in Quiet Water", (499400, 500300))])
 
 
 def _page_fixture(world, tmp_path, monkeypatch) -> dict:
@@ -339,6 +437,7 @@ def _page_fixture_in(world, tmp_path, monkeypatch, mode: str) -> dict:
         "od": {"assumptions": {"max_upstream_km": 60.0, "l0_m": transport.L0_M, "lake_area_halving_km2": transport.LAKE_A0_KM2}},
         "tiles": {t: {"index": base64.b64encode((out / "link_index" / f"{t}.bin").read_bytes()).decode(),
                       "links": json.loads((out / "links" / f"{t}.json").read_text())["links"]} for t in meta["tiles"]},
+        "outlines": {f.stem: json.loads(f.read_text()) for f in sorted((out / "lake_outlines").iterdir())},
     }
     clicks = []
     for what, where in CLICKS_BNG:

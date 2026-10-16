@@ -91,7 +91,7 @@
           /* The app's own: the map, the controls that float on it, and the rain bars. The tiles are grey
              and the water a muted blue (#bccfd8), so the markers stay the only strong colours on the map.
              CSS cannot pick out one colour, so the filter is the SVG one at the top of <body>. */
-          --map-bg:#e4e2dc; --tile-filter:url(#tiles); --float:#fff; --veil:rgba(255,255,255,.9); --scrim:rgba(20,33,43,.55); --lift:0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--hair);
+          --map-bg:#e4e2dc; --float:#fff; --veil:rgba(255,255,255,.9); --scrim:rgba(20,33,43,.55); --lift:0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--hair);
           --rain:#3d8bd4; --header-h:56px;
           /* The sky and the glass: the picture's own top colour, which runs up to the header; a tile,
              three-quarters white; the empty part of a bar; an overflow quiet, and not reporting. */
@@ -134,7 +134,7 @@
   .brand svg { display:block; width:28px; height:28px; border-radius:var(--radius-mark); }
   .top nav { margin-left:auto; display:flex; align-items:center; gap:4px; }
   .top nav a, .hbtn { color:var(--bar-ink); text-decoration:none; font-size:var(--fs-note); font-weight:600; line-height:1.2; min-height:44px; display:inline-flex; align-items:center; padding:8px 10px; border-radius:var(--radius); border:0; background:transparent; cursor:pointer; }
-  .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); }
+  @media (hover: hover) { .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); } }
   .top .hbtn[aria-pressed=true], .top .hbtn[aria-current=page] { color:var(--on-fill); box-shadow:inset 0 -2px 0 var(--on-fill); border-radius:0; background:transparent; }
   .top :focus-visible { outline-color:var(--on-fill); }
   .hbtn .n { display:inline-block; min-width:20px; margin-left:6px; padding:0 6px; border-radius:999px; background:var(--on-fill); color:var(--bar); font-size:var(--fs-meta); font-weight:600; line-height:20px; text-align:center; vertical-align:1px; }
@@ -145,7 +145,6 @@
   #map { position:absolute; inset:0; background:var(--map-bg); }
   /* Each tile through the filter, not the pane they sit in: an SVG filter covers the box of the element
      it is on, and Leaflet's tile pane is 0 by 0. */
-  .leaflet-container .leaflet-tile { filter:var(--tile-filter); }
   /* Leaflet's own controls in the system: the one lift, the one radius, the site's type and colours.
      Leaflet marks every map .leaflet-touch on any browser with pointer events, and styles the zoom bar
      through that class, so these rules start .leaflet-container to equal it and win by coming later. */
@@ -234,7 +233,7 @@
   .chips-row::-webkit-scrollbar { display:none; }
   /* Choices without a border round each: words in the text's weight, the one chosen filled. */
   .chip-btn { min-height:44px; flex:none; font-size:var(--fs-note); font-weight:600; padding:6px 12px; border-radius:var(--radius); border:0; background:transparent; color:var(--ink); cursor:pointer; }
-  .chip-btn:hover { background:var(--hover); }
+  @media (hover: hover) { .chip-btn:hover { background:var(--hover); } }
   .chip-btn[aria-pressed=true] { background:var(--brand); color:var(--on-fill); }
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
@@ -242,8 +241,9 @@
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
   .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
-  /* Hover only where there is a pointer: on a phone a tapped sort button kept its hover shade, so after
-     Near me failed it looked pressed beside A–Z (15 Oct 2026, iOS Safari). */
+  /* Hover only where there is a pointer, here and on every hover in this page bar the map's own controls: on
+     a phone a tapped button kept its hover shade, so after Near me failed it looked pressed beside A–Z
+     (15 Oct 2026, iOS Safari). */
   @media (hover: hover) { .sortseg button:hover { background:var(--hover); color:var(--ink); } }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
@@ -261,7 +261,7 @@
   a.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
   a.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
   /* Hover and press reach 8 px past the row on either side, so the text keeps the column's edge. */
-  a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); }
+  @media (hover: hover) { a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); } }
   a.row:active { background:var(--active); box-shadow:-8px 0 0 var(--active), 8px 0 0 var(--active); }
   .row-main { flex:1; min-width:0; display:flex; flex-direction:column; }
   .nm { font-weight:600; font-size:var(--fs-body); line-height:1.3; overflow-wrap:anywhere; }
@@ -524,9 +524,9 @@
   .ov-reach small { display:block; font-size:var(--fs-meta); line-height:1.25; color:var(--muted); }
   .ov-reach b small { display:inline; font-weight:600; }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; font-size:var(--fs-note); font-weight:600; padding:8px 14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); color:var(--ink); text-decoration:none; cursor:pointer; }
-  .btn:hover { background:var(--hover); }
+  @media (hover: hover) { .btn:hover { background:var(--hover); } }
   .btn.primary { background:var(--brand); border-color:var(--brand); color:var(--on-fill); }
-  .btn.primary:hover { background:var(--brand-deep); border-color:var(--brand-deep); }
+  @media (hover: hover) { .btn.primary:hover { background:var(--brand-deep); border-color:var(--brand-deep); } }
   .btn[hidden] { display:none; }   /* display:inline-flex would otherwise show it */
   .btn.quiet { margin-top:8px; padding:6px 12px; }
   /* Two equal columns: four buttons make a two by two, not a ragged wrap, on a phone and in the
@@ -586,7 +586,7 @@
   .place .k { margin-top:2px; }
   .unsave { position:relative; z-index:1; flex:none; display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin:-8px -10px 0 0; border:0; border-radius:50%; background:transparent; color:var(--link); cursor:pointer; }
   .unsave .ic { width:20px; height:20px; fill:currentColor; }
-  .unsave:hover { background:var(--hover); }
+  @media (hover: hover) { .unsave:hover { background:var(--hover); } }
   .place-mid { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:8px; }
   .place .big { margin:0; font-size:var(--fs-head); font-weight:700; letter-spacing:0; }
   .place .big-head { margin:0; max-width:none; font-size:var(--fs-body); text-align:left; }
@@ -658,7 +658,7 @@
   .about dl.levels .badge { white-space:normal; }   /* the plain levels are phrases, wider than a phone */
   footer.fine { margin-top:24px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-meta); color:var(--muted); }
   footer.fine p { margin:0 0 8px; }
-  footer.fine a { color:var(--muted); } footer.fine a:hover { color:var(--link); }
+  footer.fine a { color:var(--muted); } @media (hover: hover) { footer.fine a:hover { color:var(--link); } }
   /* Keyboards: the first Tab shows a link past the header and the map to the forecasts. */
   .skip { position:fixed; top:-100px; left:16px; z-index:3000; background:var(--card); border:1px solid var(--line); padding:12px 16px; border-radius:var(--radius); }
   .skip:focus { top:8px; }
@@ -854,7 +854,9 @@
 </style>
 </head>
 <body class="view-list">
-<!-- The map's tiles (--tile-filter): grey, as grayscale(1) brightness(1.04) contrast(.95) made them
+<!-- The map's tiles: the script reads this filter and applies it once to each tile as it loads
+     (tintTiles), not as a CSS filter on every tile, which Safari redrew on every frame of a pan:
+     in iOS Safari, 18 of 306 frames over 50 ms at zoom 6, none without it (16 Oct 2026). Grey, as grayscale(1) brightness(1.04) contrast(.95) made them
      (land), with OpenStreetMap's water (#aad3df) moved to a muted blue, #bccfd8 (tint: the grey plus
      -19, 0 and +9 in 255ths). Water is where blue is above red (r1), green above red (r2) and blue not
      below green by more than a little (r3); each ramps up, so a shore or a thin river, blended with
@@ -1000,12 +1002,73 @@ const TOUCH = matchMedia('(pointer: coarse)').matches;
 // Less motion, if asked for: no animated zoom, fade or glide, and setView and fitBounds jump (MOTION).
 const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MOTION = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? { animate: false } : {};
+// The tiles' colours (the SVG filter with id tiles, which the build sets for each provider), worked out once per
+// tile as it loads and drawn into a canvas. As a CSS filter on each tile, iOS Safari recomputed it on
+// every frame of a pan or zoom, and the map stuttered. The filter's primitives are read from the page,
+// so a provider's own filter applies unchanged: feColorMatrix, feComposite (arithmetic or "in") and
+// feMerge, in sRGB, as the browser would. A tile has few colours, so each is worked out once.
+const tileColour = (() => {
+  const f = document.getElementById('tiles'); if (!f) return null;
+  const steps = [...f.children].map(e => ({ tag: e.tagName.replace(/^.*:/, ''), result: e.getAttribute('result'),
+    in1: e.getAttribute('in'), in2: e.getAttribute('in2'), op: e.getAttribute('operator'),
+    k: ['k1', 'k2', 'k3', 'k4'].map(a => +(e.getAttribute(a) || 0)),
+    m: (e.getAttribute('values') || '').trim().split(/[\s,]+/).map(Number),
+    nodes: [...e.children].map(n => n.getAttribute('in')) }));
+  const cl = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const cache = new Map();
+  return (r, g, b) => {   // 0..255 in, an opaque pixel; [r, g, b] 0..255 out
+    const key = (r << 16) | (g << 8) | b, hit = cache.get(key); if (hit) return hit;
+    const src = [r / 255, g / 255, b / 255, 1], got = { SourceGraphic: src };   // premultiplied rgba
+    let last = src;
+    const take = n => (n && got[n]) || (n ? src : last);
+    for (const st of steps) {
+      let o;
+      if (st.tag === 'feColorMatrix') {
+        const i = take(st.in1), a = i[3], u = a ? [i[0] / a, i[1] / a, i[2] / a, a] : [0, 0, 0, 0], m = st.m;
+        const row = j => cl(m[j] * u[0] + m[j + 1] * u[1] + m[j + 2] * u[2] + m[j + 3] * u[3] + m[j + 4]);
+        const oa = row(15); o = [row(0) * oa, row(5) * oa, row(10) * oa, oa];
+      } else if (st.tag === 'feComposite') {
+        const i1 = take(st.in1), i2 = take(st.in2);
+        if (st.op === 'in') o = i1.map(c => c * i2[3]);
+        else { const [k1, k2, k3, k4] = st.k; o = i1.map((c, j) => cl(k1 * c * i2[j] + k2 * c + k3 * i2[j] + k4)); o = o.map((c, j) => j < 3 ? Math.min(c, o[3]) : c); }
+      } else if (st.tag === 'feMerge') {
+        o = [0, 0, 0, 0];
+        for (const n of st.nodes) { const i = take(n); o = o.map((c, j) => i[j] + c * (1 - i[3])); }
+      } else continue;
+      last = o; if (st.result) got[st.result] = o;
+    }
+    const a = last[3] || 1, out = [0, 1, 2].map(j => Math.round(cl(last[j] / a) * 255));
+    cache.set(key, out); return out;
+  };
+})();
+const TintedTiles = L.TileLayer.extend({
+  createTile(coords, done) {
+    const c = document.createElement('canvas'), img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      c.width = img.naturalWidth; c.height = img.naturalHeight;   // a retina tile keeps its pixels
+      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+      try {
+        const d = g.getImageData(0, 0, c.width, c.height), px = d.data;
+        for (let i = 0; i < px.length; i += 4) { if (px[i + 3] !== 255) continue;
+          const o = tileColour(px[i], px[i + 1], px[i + 2]); px[i] = o[0]; px[i + 1] = o[1]; px[i + 2] = o[2]; }
+        g.putImageData(d, 0, 0);
+      } catch (e) { /* a provider without CORS: its own colours */ }
+      done(null, c);
+    };
+    img.onerror = e => done(e, c);
+    img.src = this.getTileUrl(coords);
+    return c;
+  }
+});
+// The build swaps the tile layer line inside this call (build_site.TILE_LINE); without the filter, as is.
+const tintTiles = layer => tileColour ? new TintedTiles(layer._url, layer.options) : layer;
 const map = L.map('map', { zoomControl: true, dragging: !TOUCH, zoomAnimation: !STILL, fadeAnimation: !STILL, markerZoomAnimation: !STILL,
   inertia: !STILL }).setView([53.6, -2.0], 6);
 map.attributionControl.setPrefix(false);   // the map's credit is the tiles', as on the small map; the terms credit Leaflet
 // The build swaps this line for another provider's (build_site.TILE_LINE, DIPCAST_TILES): keep its shape.
-const tiles = () => L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
+const tiles = () => tintTiles(L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }));
 tiles().addTo(map);
 if (TOUCH) {
   const hint = document.createElement('div'); let t = null;

@@ -2,8 +2,9 @@
 // browser from the files the build publishes under data/anypoint/ (scripts/build_any_point.py says
 // what is in each). The steps are the API's, in the same order:
 //  - where the click goes (model/transport.py, _locate): inside or within 150 m of a WFD lake, that
-//    lake; else the nearest link within 1.5 km, or the nearest lake centreline if it is less than
-//    twice as far; a click on a small side channel near a much bigger river is traced as that
+//    lake (by its real outline where the 15 m one is too close to call; one with no lake centreline
+//    inside takes the centreline nearest the click within 1.5 km); else the nearest link within
+//    1.5 km, or the nearest lake centreline if it is less than twice as far; a click on a small side channel near a much bigger river is traced as that
 //    river (_adopt_main_channel);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
 //    for the click's place along it, or from the lake's inlets and the straight line across (in lake
@@ -323,18 +324,42 @@ const AnyPoint = (() => {
     const xy = frame(lat, lon);
     return Math.min(...poly.rings.map(r => nearestOnLine(r.map(([x, y]) => xy(y, x))).d));
   }
-  // transport._lake_polygon_at: the WFD lake the click is in, or within the shore distance of.
-  function lakePolygon(lat, lon, lakes, shore) {
-    const pad = shore / 111000, padx = pad / Math.cos(lat * RAD);
-    let best = null;
-    for (const p of lakes.polygons) {
-      const [w, s, e, n] = p.bbox;
-      if (lon < w - padx || lon > e + padx || lat < s - pad || lat > n + pad) continue;
-      const d = polygonDistance(lat, lon, p);
-      if (d <= shore && (!best || d < best.d)) best = { poly: p, d };
-    }
-    return best;
+  // The WFD lakes within `reach` metres of a click, give or take each outline's err: [{i, d, e}], d the
+  // distance to the outline in lakes.json (simplified to 15 m), e how far that can be from the real one
+  // (0 where `outlines` has the real outline: {place in polygons: lake_outlines/<n>.json}).
+  function nearLakes(lat, lon, lakes, reach, outlines = {}) {
+    const out = [];
+    lakes.polygons.forEach((p, i) => {
+      const real = outlines[i] && outlines[i].wb_id === p.wb_id ? outlines[i] : null, e = real ? 0 : (p.err || 0);
+      const pad = (reach + (p.err || 0)) / 111000, padx = pad / Math.cos(lat * RAD), [w, s, east, n] = p.bbox;   // bbox: of the 15 m outline
+      if (lon < w - padx || lon > east + padx || lat < s - pad || lat > n + pad) return;
+      const d = polygonDistance(lat, lon, real || p);
+      if (d - e <= reach) out.push({ i, d, e });
+    });
+    return out.sort((a, b) => a.d - b.d);
   }
+  // transport._lake_polygon_at: the WFD lake the click is in, or within the shore distance of, by the
+  // outlines given (lakes.json's, or the real ones where `outlines` has them).
+  function lakePolygon(lat, lon, lakes, shore, outlines = {}) {
+    const best = nearLakes(lat, lon, lakes, shore, outlines).find(c => c.d <= shore);
+    return best ? { poly: lakes.polygons[best.i], d: best.d, i: best.i } : null;
+  }
+  // The real outlines (places in polygons) lakePolygon needs for this click: none where the simplified
+  // ones settle it, else every lake within the shore distance give or take its err.
+  function outlinesNeeded(lat, lon, lakes, shore, outlines = {}) {
+    const near = nearLakes(lat, lon, lakes, shore, outlines);
+    if (!near.length) return [];
+    const [a, ...rest] = near;
+    if (a.d + a.e <= shore && rest.every(b => b.d - b.e > a.d + a.e)) return [];
+    return near.filter(c => c.e > 0).map(c => c.i);
+  }
+  // Whether a click needs the squares' link index: not outside England, nor in a WFD lake with a lake
+  // centreline inside (lakes.json has its inlets). A WFD lake with none (lake -1) takes the nearest one.
+  const needsSquares = (lat, lon, lakes, cfg, outside, outlines = {}) => {
+    if (outsideEngland(lat, lon, outside)) return false;
+    const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
+    return !poly || poly.poly.lake === -1;
+  };
   // transport._locate's second step, and _adopt_main_channel: river or lake centreline, and the
   // link a river click is traced along. cands: candidates(); cfg: tiles.json.
   function locate(cands, cfg) {
@@ -416,14 +441,22 @@ const AnyPoint = (() => {
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
     + 'Risk from wildlife, runoff and bathers is not modelled.';
   function place(lat, lon, files) {
-    const { cfg, lakes, od, tiles, outside = null } = files, a = od.assumptions;
+    const { cfg, lakes, od, tiles, outside = null, outlines = {} } = files, a = od.assumptions;
     const where = outsideWhere(lat, lon, outside);
     if (where) return { mode: 'none', kind: '', name: 'This point', error: OUTSIDE[where].error, outside: where };
-    const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m);
+    const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
     if (poly) {
       const p = poly.poly, name = p.name || 'Unnamed lake';
-      if (p.lake === -1) return { mode: 'isolated', kind: 'lake', name, error: ISOLATED };
-      return { mode: 'lake', kind: 'lake', name, rows: p.lake === null ? [] : lakeRows(lakes.lakes[p.lake], [lat, lon], p.area_km2, a.lake_area_halving_km2),
+      let lake = p.lake, link = null;
+      if (lake === -1) {
+        // No lake centreline inside: the one nearest the click within 1.5 km (transport._in_polygon), else isolated.
+        link = candidates(lat, lon, tiles).filter(c => c.form === LAKE && c.d <= cfg.lake_snap_m).reduce((x, y) => !x || y.d < x.d ? y : x, null);
+        if (!link) return { mode: 'isolated', kind: 'lake', name, error: ISOLATED };
+        const entry = tiles[link.tile].links[String(link.lno)];
+        lake = entry && entry.lake !== undefined ? entry.lake : null;
+      }
+      return { mode: 'lake', kind: 'lake', name, rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2),
+        ...(link ? { link } : {}),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
     // A square has files where an overflow is, or a link with one upstream. In England, then, no square
@@ -445,9 +478,11 @@ const AnyPoint = (() => {
   async function point(lat, lon, again = true) {
     const [cfg, lakes, od, outside] = await Promise.all([json('tiles.json'), json('lakes.json'), json('overflow_days.json'),
       json('outside_england.json').catch(() => null)]);
-    const skip = outsideEngland(lat, lon, outside) || lakePolygon(lat, lon, lakes, cfg.lake_shore_m), keys = skip ? [] : squares(lat, lon, cfg);
+    const outlines = Object.fromEntries(await Promise.all(outlinesNeeded(lat, lon, lakes, cfg.lake_shore_m)
+      .map(async i => [i, await json(`lake_outlines/${i}.json`).catch(() => null)])));
+    const keys = needsSquares(lat, lon, lakes, cfg, outside, outlines) ? squares(lat, lon, cfg) : [];
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    const at = place(lat, lon, { cfg, lakes, od, tiles, outside });
+    const at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
     const rows = at.rows || [];
     const ids = rows.length ? await json('overflow_ids.json') : null;
     const versions = new Set([cfg.ids, od.ids, lakes.ids, ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
@@ -538,7 +573,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast,
-    frame, nearestOnLine, waterWay, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
+    frame, nearestOnLine, waterWay, decodeIndex, candidates, inRing, polygonDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {
