@@ -114,7 +114,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
     assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
     assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
-    assert lead.index('<div class="toolbar">') < lead.index("best-day")
+    assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
     assert "<span data-low-t>Low\u00a0risk only</span>" in body

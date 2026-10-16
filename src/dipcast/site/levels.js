@@ -6,7 +6,8 @@
 // and in Node the last lines export them.
 
 // The forecast's own date: the build's date, not the phone's, so "today" is the day the forecast
-// was issued for. The page sets it from spots.json; Node calls setToday.
+// was issued for. Node calls setToday; the page sets it from spots.json, and to the phone's date
+// between midnight and the next build (readerDay).
 let serverToday = null;
 const setToday = iso => { serverToday = iso; };
 
@@ -27,6 +28,32 @@ const shortDay = iso => iso === today() ? 'Today' : new Date(iso + 'T12:00:00').
 const dayWord = iso => iso === today() ? 'today' : iso === addDays(today(), 1) ? 'tomorrow'
   : 'on ' + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'long'});
 const dayName = iso => dayWord(iso).replace(/^on /, '');
+// The reader's day (16 Oct 2026, G1). The build's date was "today" everywhere, and builds come up to
+// 7.7 h apart, so between midnight and the next build the page said "Today" for yesterday and
+// "Tomorrow: 67 of 105 spots at low risk" about today. While the forecast is no more than `freshMin`
+// minutes old (the page's stale notice comes after that) the page's day is the device's, if later;
+// fromDay then moves the rows before it out of each spot's five days. The alerts, the organisers' record
+// and the other pages keep the build's day (setToday with the build's date).
+function readerDay(generatedAt, nowMs, freshMin) {
+  const built = String(generatedAt).slice(0, 10), mine = localISO(new Date(nowMs));
+  return mine > built && nowMs - Date.parse(generatedAt) <= freshMin * 6e4 ? mine : built;
+}
+// A spot's forecast from the day `iso`, `built` being the build's date: the rows before it move to `past`
+// (a spot's page greys the last as "Yesterday"), and each overflow's chances of a spill, one a day from
+// the build's date (p_spill_days), lose as many, so "today" in its list is today's. Changes the spot in
+// place, and only once: a spot's own file, merged in later, brings its overflows back, and they are moved then.
+function fromDay(s, iso, built) {
+  const n = Math.round((Date.parse(iso + 'T12:00:00') - Date.parse(built + 'T12:00:00')) / 864e5);
+  if (!(n > 0)) return s;
+  const days = s.days || [], k = days.filter(x => x.date < iso).length;
+  if (k) { s.past = days.slice(0, k); s.days = days.slice(k); }
+  for (const c of s.contributors || []) {
+    if (!Array.isArray(c.p_spill_days) || c.days_from === iso) continue;
+    c.p_spill_days = c.p_spill_days.slice(n); c.days_from = iso;
+    c.p_spill_today = c.p_spill_days[0] ?? null; c.p_spill_tomorrow = c.p_spill_days[1] ?? null;
+  }
+  return s;
+}
 // ------------------------------------------------------------------------------ risk
 // A day's level is the worse of two forecasts and one record, because sewage from overflows is
 // only part of what makes river water dirty: before this, every Thames spot read "low".
@@ -304,7 +331,8 @@ function headParts(s) {
   // Right now not known: the forecast's low, and why it is not more (nowUnknown).
   if (nowUnknown(s)) return ['Low risk forecast', nowUnknownWhy(s), later];
   if (later) return [`Low risk now · ${later}`, '', ''];
-  return [s.days.slice(0, 5).every(hasData) ? 'Low risk for the next five days' : 'Low risk on every day with a forecast', '', ''];
+  // Four days between midnight and the next build, when yesterday's has left them (fromDay).
+  return [s.days.slice(0, 5).every(hasData) ? `Low risk for the next ${s.days.length === 4 ? 'four' : 'five'} days` : 'Low risk on every day with a forecast', '', ''];
 }
 // "Moderate risk today: sewage spills · Very high risk on Tuesday".
 const headline = s => { const [h, w, later] = headParts(s); return [h, w].filter(Boolean).join(': ') + (later ? ` · ${later}` : ''); };
@@ -478,10 +506,11 @@ function bestDay(spots, dates) {
 // risk"): the weekend's better day while the five days reach a Saturday or a Sunday, since that is
 // when most people swim, and otherwise the week's best day. `n` is every listed spot, as the lede
 // counts them ("forecasts for 105 spots"); a spot with no daily level is never counted low, so the
-// line claims only what it counts. Null when no day has a level (bestDay).
-function lowAnswerDay(spots, dates) {
+// line claims only what it counts. Null when no day has a level (bestDay). With a day picked (one of
+// `dates`), that day's (16 Oct 2026, G4): the list said "On Monday" under "Tomorrow: 67 of 105 spots".
+function lowAnswerDay(spots, dates, picked = null) {
   const weekend = dates.filter(iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay()));
-  const b = bestDay(spots, weekend.length ? weekend : dates);
+  const b = bestDay(spots, picked && dates.includes(picked) ? [picked] : weekend.length ? weekend : dates);
   return b && { ...b, n: spots.length };
 }
 const lowAnswerWords = a => `${cap(dayName(a.date))}: ${a.low || 'none'} of ${a.n} spot${a.n === 1 ? '' : 's'} at low risk`;
@@ -643,14 +672,22 @@ const companyName = name => String(name ?? '').replace(/\bDwr Cymru\b/g, 'Dŵr C
 // goes (config.LAKE_VELOCITY_MS), so the words say how far, not which way. One placed where its stream
 // meets the river by a checked join (data/raw/overflow_joins.csv) says so, and one that joins at the
 // spot says it is there to within the map's precision: Culham STW read "0.0 km upstream" with 100%
-// reach at Clifton Hampden, with nothing to say why. Plain text, its spaces before "km" unbroken.
+// reach at Clifton Hampden, with nothing to say why. Any other under 0.1 km is "at the spot" (16 Oct 2026,
+// G5): Friday Street SPS read "0.0 km upstream" at Henley. Plain text, its spaces before "km" unbroken.
+const atSpot = c => (Number(c.distance_km) || 0) + (Number(c.lake_distance_km) || 0) < 0.1;
 function overflowWhere(c) {
   const r = Number(c.distance_km) || 0, l = Number(c.lake_distance_km) || 0, k = `${(r + l).toFixed(1)} km`;
   const join = c.position_source === 'join';
-  if (join && r + l < 0.05) return "at the spot: its stream joins the river here, to within the map's precision (checked on a map)";
+  if (atSpot(c)) return join ? "at the spot: its stream joins the river here, to within the map's precision (checked on a map)" : 'at the spot';
   const where = l > 0 && r < 0.05 ? `${k} across the lake` : l > 0 ? `${k} upstream by river and lake` : `${k} upstream`;
   return join ? `${where}, where its stream joins the river (checked on a map)` : where;
 }
+// How long its water takes to get here, said after overflowWhere's words: ", about 5 hours away", with
+// a longer time in its page's own words (`hours`). Under half an hour says so (16 Oct 2026, G5): Rivadale
+// View CSO, 0.3 h above Ilkley, read "under an hour". One at the spot says nothing: its travel is 0.0 h,
+// and Culham STW read "at the spot ..., under an hour away".
+const travelSaid = (c, hours) => atSpot(c) ? ''
+  : `, ${c.travel_h < 0.5 ? 'under half an hour' : c.travel_h < 1 ? 'under an hour' : hours(c.travel_h)} away`;
 // An overflow discharging without a break for longer than this is named as possibly a fault (11 Oct
 // 2026). YWS02298, with no name, no receiving water ("#N/A") and no annual return, had reported
 // discharging since 6 Oct 10:46 UTC and set Greenholme's "Very high risk right now", the site's top
@@ -667,9 +704,9 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE,
     level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
-    companyName, overflowWhere, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
+    companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }

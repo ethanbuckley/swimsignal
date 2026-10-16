@@ -38,7 +38,7 @@ function page(names, extra = {}) {
   return ctx;
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
-const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'answerWords',
+const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
   'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
@@ -295,6 +295,8 @@ test('an overflow in the same lake is across it, one through a lake is by river 
   assert.equal(at(1.4, 0.4), '1.8 km upstream by river and lake');   // Ambleside WwTW to Waterhead, by the Rothay
   assert.equal(at(6, 0), '6.0 km upstream');
   assert.equal(at(0, 0, { position_source: 'join' }), "at the spot: its stream joins the river here, to within the map's precision (checked on a map)");   // Culham STW
+  assert.equal(at(0, 0), 'at the spot');   // Friday Street SPS at Henley, on its live position (G5, 16 Oct 2026)
+  assert.equal(at(0.1, 0), '0.1 km upstream');
   assert.equal(at(0.4, 0, { position_source: 'join' }), '0.4 km upstream, where its stream joins the river (checked on a map)');   // CSO behind Lager's Store
   // The organisers' table and its CSV note.
   const lake = week(['low', 'low', 'low', 'low', 'low'], { upstream_summary: { overflows: 1 }, contributors: [{ site_id: 'UUP00804', site_name: 'Glebe Road PS', company: 'United Utilities',

@@ -466,6 +466,9 @@
   .dbar i { position:absolute; left:0; top:0; bottom:0; background:var(--unknown); }
   .drow.low .dbar i { background:var(--low); } .drow.moderate .dbar i { background:var(--moderate); } .drow.high .dbar i { background:var(--high); } .drow.veryhigh .dbar i { background:var(--veryhigh); }
   .drow.rain .dbar i { background:var(--rain); opacity:.85; }
+  /* Yesterday's row, between midnight and the next build: grey, and its word wider than "Today". */
+  .drows.with-past .drow { grid-template-columns:84px 96px minmax(0, 1fr); }
+  .drow.past .d, .drow.past .l { color:var(--faint); } .drow.past .dbar i { background:var(--unknown); }
   /* The gaps between the four bands cut through the fill too (a mask, not a colour). */
   .dbar.lv { -webkit-mask:linear-gradient(90deg, #000 calc(25% - 1px), transparent 0 calc(25% + 1px), #000 0 calc(50% - 1px), transparent 0 calc(50% + 1px), #000 0 calc(75% - 1px), transparent 0 calc(75% + 1px), #000 0);
              mask:linear-gradient(90deg, #000 calc(25% - 1px), transparent 0 calc(25% + 1px), #000 0 calc(50% - 1px), transparent 0 calc(50% + 1px), #000 0 calc(75% - 1px), transparent 0 calc(75% + 1px), #000 0); }
@@ -1186,6 +1189,16 @@ const SCROLL = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'a
 const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
   if (iso === t) return 'Today'; if (iso === addDays(t, 1)) return 'Tomorrow';
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}); };
+// The page's day, and every spot's days from it (levels.js, readerDay and fromDay): the device's day
+// between midnight and the next build, while the forecast is fresh, and the build's otherwise. Set when
+// the forecast arrives and on each spot's page, with the point clicked on the map (anypoint.js) if that
+// is the one shown. Then the forecast's days are four, from today (fiveDays), and the build's time is
+// "yesterday at 23:24" (yesterdayLine).
+const setDays = (...more) => { serverToday = readerDay(DATA.generated_at, Date.now(), STALE_MIN);
+  for (const s of [...DATA.spots, ...more]) fromDay(s, serverToday, DATA.generated_at.slice(0, 10)); };
+const fiveDays = () => [0, 1, 2, 3, 4].map(k => addDays(today(), k)).filter(iso => !DATA || iso < addDays(DATA.generated_at.slice(0, 10), 5));
+const nextDay = () => !!DATA && today() > DATA.generated_at.slice(0, 10);
+const yesterdayLine = () => `Issued yesterday at ${new Date(DATA.generated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}; today's update is due.`;
 // An overflow's live status in words. With the build's data_state (ingest.live.data_states), a reading
 // from a feed that has not updated within six hours says when it last did, not "not discharging": a
 // frozen feed would go on saying that. One missing from its company's live feed says so.
@@ -1654,12 +1667,14 @@ function levelPlace(d, x) {
 // The five days as Apple's ten-day rows: the day, its level, its bar. Where nothing upstream can spill,
 // the rain in the 48 h to midday, as the list's week shows it. A day you can pick is a button: it opens
 // the day under the rows (showDay).
-const dayRows = d => { const on = daily(d);
-  return `<div class="drows"${on ? ' id="day-strip" role="group" aria-label="Pick a day"' : ''}>` + d.days.slice(0, 5).map(x => {
-    const lv = on ? risk(d, x).level : null, rain = nil(x.rain_48h_mm) ? null : x.rain_48h_mm, tag = on ? 'button' : 'div';
+// Between midnight and the next build, yesterday's row stays at the top, in grey and not a button
+// (setDays), so today is the second row as the phone's date says.
+const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1);
+  return `<div class="drows${past.length ? ' with-past' : ''}"${on ? ' id="day-strip" role="group" aria-label="Pick a day"' : ''}>` + [...past, ...d.days.slice(0, 5)].map(x => {
+    const gone = past.includes(x), lv = on ? risk(d, x).level : null, rain = nil(x.rain_48h_mm) ? null : x.rain_48h_mm, tag = on && !gone ? 'button' : 'div';
     const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40);
-    const attrs = on ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
-    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}"${attrs}><span class="d">${shortDay(x.date)}</span>`
+    const attrs = tag === 'button' ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
+    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="d">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
       + `<span class="l">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}</span>`
       + `<span class="dbar${on ? ' lv' : ''}" aria-hidden="true"><i style="width:${Math.max(on ? 3 : 2, Math.round(v * 100))}%"></i></span></${tag}>`; }).join('') + '</div>'; };
 // The drawings. A scale: its bands as steps, the value a dot in its level's colour (Apple's UV tile,
@@ -1841,7 +1856,7 @@ function riverTile(rs) {
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso);
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
-    + unchecked(d, iso) + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">Issued ${issued()}, ${ago(ageMin())} ago</p>`; };
+    + unchecked(d, iso) + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
 // An overflow's spill under way, from its event's start (levels.js, spillStart): "since Tue 6 Oct, 11:46"
 // in UK time, and for how long.
 const sinceTime = ms => new Date(ms).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
@@ -1889,7 +1904,7 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
 // looks comes first (levels.js, weekendWords), so the Show button stays last, beside its day. The day
 // is in words, as in a sentence ("tomorrow", "Friday"); the button's label keeps the picker's name.
 function bestDayNote(spots, yours = false, weekend = true) {
-  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), b = bestDay(spots, dates), wk = weekend ? weekendWords(spots, dates, yours) : '';
+  const dates = fiveDays(), b = bestDay(spots, dates), wk = weekend ? weekendWords(spots, dates, yours) : '';
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
   return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
@@ -1897,17 +1912,19 @@ function bestDayNote(spots, yours = false, weekend = true) {
 // The list's answer line (levels.js, lowAnswerDay): "Saturday: 64 of 105 spots at low risk", with the
 // same Show button as the best-day line. That line then follows only when the week's best day is
 // another day with more spots at low risk, and without the weekend's words, which the answer says.
+// With a day picked the answer is that day's, and setMapDay redraws both lines (answerLines).
 function lowAnswer(spots) {
-  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), a = lowAnswerDay(spots, dates);
+  const dates = fiveDays(), a = lowAnswerDay(spots, dates, VIEW.day);
   if (!a) return { html: '', note: bestDayNote(spots, false, false) };
   const w = bestDay(spots, dates), words = lowAnswerWords(a).replace(/: (\S+ of \d+)/, ': <span class="n">$1</span>');
   return { html: `<p class="low-answer">${words}<span class="pick"${VIEW.day === a.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${a.date}" aria-label="Show ${dateLabel(a.date)}">Show</button></span></p>`,
            note: w && w.date !== a.date && w.low > a.low ? bestDayNote(spots, false, false) : '' };
 }
+const answerLines = () => { const a = lowAnswer(DATA.spots); return a.html + (a.note ? `<p class="planner-note best-day">${a.note}</p>` : ''); };
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
 // The button hides once pressed, so the focus goes to the day picker, which now shows its day.
-const bindBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => b.addEventListener('click', () => {
+const bindBestDay = (root = document) => root.querySelectorAll('[data-pick-day]').forEach(b => b.addEventListener('click', () => {
   setMapDay(b.dataset.pickDay); const sel = document.getElementById('listday'); if (sel) sel.focus(); }));
 
 // ------------------------------------------------------------------------------ swim journal
@@ -2079,6 +2096,7 @@ const steady = (el, redraw) => { const y = el.getBoundingClientRect().top; redra
 
 let ovCall = 0;
 async function loadOverflows() {
+  // A receiving water the feed does not name, or gives as "#N/A", is null in the file (overflow_names.water_name).
   // Every overflow in view, when zoomed in. Not in a phone's small spot map, where the ones that
   // matter are already drawn and the 6 MB layer would cost the data.
   const call = ++ovCall;
@@ -2091,7 +2109,7 @@ async function loadOverflows() {
   const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
   L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties, nm = overflowNames(p);
     return L.circleMarker(ll, { radius: drawnStatus(p) === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
-      .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(companyName(p.company))}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusSaid(p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
+      .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(companyName(p.company))}<br>${p.receiving_watercourse ? esc(p.receiving_watercourse) : 'Receiving water not named in its feed'}<br>Status: ${statusSaid(p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
 // Offline the layer is not stored (6 MB): the map then shows the spots without it.
@@ -2138,12 +2156,13 @@ function setMapDay(iso) {
   VIEW.day = iso || null;
   document.querySelectorAll('#mapday, #listday').forEach(el => { el.value = VIEW.day || ''; });
   styleMarkers(); syncBestDay();
+  const ans = document.getElementById('answer-lines'); if (ans) { ans.innerHTML = answerLines(); bindBestDay(ans); }
   if (document.getElementById('spots')) drawSpots();
 }
-// The five days, once the forecast has loaded: its dates, not the phone's.
+// The five days, once the forecast has loaded: its dates, from the page's day (setDays).
 function fillMapDays() {
   const sel = document.getElementById('mapday');
-  sel.innerHTML = `<option value="">Today and tomorrow</option>` + [0, 1, 2, 3, 4].map(k => addDays(today(), k))
+  sel.innerHTML = `<option value="">Today and tomorrow</option>` + fiveDays()
     .map(iso => `<option value="${iso}">${dateLabel(iso)}</option>`).join('');
   sel.value = VIEW.day || '';
 }
@@ -2166,9 +2185,11 @@ const STALE_MIN = 8 * 60;
 const ageMin = () => (Date.now() - new Date(DATA.generated_at).getTime()) / 60000;
 const ago = m => { const t = Math.round(m); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };   // "6 h", not "6 h 0 min"
 const issued = () => new Date(DATA.generated_at).toLocaleString('en-GB', {weekday:'short', hour:'2-digit', minute:'2-digit'});
-function freshness() {
+function freshness(spot = false) {
   const m = ageMin(); const b = DATA.build || {};
   let h = '';
+  // After midnight, before the next build (setDays): a spot's page says it where it gives the issue time.
+  if (!spot && m <= STALE_MIN && nextDay()) h += `<p class="issued">${yesterdayLine()}</p>`;
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${new Date(DATA.generated_at).toLocaleString('en-GB')}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
@@ -2190,10 +2211,10 @@ function gaps(d, list) {
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
 let NOTICE = '';
 const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN}`;
-const notices = (d = null, list = false) => { NOTICE = noticeState(); return `<div data-notices>${freshness()}</div>${gaps(d, list)}`; };
+const notices = (d = null, list = false) => { NOTICE = noticeState(); return `<div data-notices${d ? ' data-spot' : ''}>${freshness(!!d)}</div>${gaps(d, list)}`; };
 function refreshNotices() {
   if (!DATA || noticeState() === NOTICE) return;
-  NOTICE = noticeState(); document.querySelectorAll('[data-notices]').forEach(el => { el.innerHTML = freshness(); });
+  NOTICE = noticeState(); document.querySelectorAll('[data-notices]').forEach(el => { el.innerHTML = freshness(el.hasAttribute('data-spot')); });
 }
 window.addEventListener('offline', refreshNotices);
 window.addEventListener('online', refreshNotices);
@@ -2267,7 +2288,7 @@ function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
   document.title = `${BRAND} · pollution risk forecasts for swim spots`;
-  const saved = DATA.spots.filter(s => SAVED.has(s.id)), ans = lowAnswer(DATA.spots), best = ans.note;
+  const saved = DATA.spots.filter(s => SAVED.has(s.id));
   const sorts = Object.entries(SORTS).filter(([k]) => k !== 'near' || 'geolocation' in navigator);
   // The answer first: the intro and one row of controls, with a line under it (the caveat, who it is
   // for and the tools for groups) and then the week's best day, under the sky (.lead); then the saved
@@ -2279,9 +2300,9 @@ function renderList() {
     + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
     // Until a place is given, Near me; then the nearest spots, as cards above the list (drawSpots).
     + (offerNear() ? NEAR_CTA + `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
-    + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${[0,1,2,3,4].map(k => addDays(today(), k)).map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
+    + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${fiveDays().map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
-    + ans.html + (best ? `<p class="planner-note best-day">${best}</p>` : '')
+    + `<div id="answer-lines">${answerLines()}</div>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
@@ -2423,7 +2444,7 @@ function compareSection(spots) {
   if (spots.length < 2) return '';   // nothing to compare until two spots are saved
   const ids = comparisonIds(COMPARE.ids || spots.slice(0,2).map(s => s.id), spots);
   COMPARE.ids = ids;
-  const dates = [0,1,2,3,4].map(k => addDays(today(),k));
+  const dates = fiveDays();
   if (!dates.includes(COMPARE.day)) COMPARE.day = VIEW.day || dates[0];
   return `<details class="sec tile comparison"${COMPARE.open ? ' open' : ''}><summary>Compare your spots</summary><p class="sub">Choose up to three saved spots for the same day. A lower forecast level does not guarantee safe water.</p>
     <div class="compare-fields"><label>Compare day<select id="compare-day">${dates.map(iso => `<option value="${iso}"${iso === COMPARE.day ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></label>
@@ -2657,7 +2678,7 @@ let PLAN = { ...PLAN_DEFAULT }, PLACES = null, planNote = '', planTyped = 0, PLA
 // The plan's reach on the map: the ring, or the start and the nearest spots at any distance. The full
 // map on a phone opens on it too (setMapMode).
 const fitPlan = () => map.fitBounds(PLAN_BOUNDS, { padding: [30, 30], ...MOTION() });
-const planDates = () => [0, 1, 2, 3, 4].map(k => addDays(today(), k));
+const planDates = () => fiveDays();
 // The places, once: a promise of the index, forgotten if it fails, so the next try asks again.
 const loadPlaces = () => PLACES || (PLACES = fetch('data/places.json').then(r => { if (!r.ok) throw new Error(`the list of places answered ${r.status}`); return r.json(); })
   .then(placeIndex).catch(e => { PLACES = null; throw e; }));
@@ -2857,7 +2878,7 @@ function spotDetail(s) {
       .then(r => { if (!r.ok) throw new Error(`the spot's file answered ${r.status}`); return r.json(); })
       .then(j => { if (!j || j.id !== s.id) throw new Error('another spot\'s file');
         const { id, generated_at, credits, ...fields } = j; Object.assign(s, fields); s.detail_loaded = true; delete s.detail_missing;
-        ageReadings(s, Date.now()); })
+        ageReadings(s, Date.now()); fromDay(s, today(), DATA.generated_at.slice(0, 10)); })
       .catch(() => { s.detail_missing = true; if (!s.contributors) s.contributors = []; })
       .then(() => { DETAILS.delete(s.id); return s; }));
   }
@@ -3010,7 +3031,7 @@ const onWater = w => { const n = nameCase(w).trim().replace(/^The /, '');
 const sourcePlace = s => { const h = Math.round(s.travel_h), water = onWater(s.receiving_watercourse), a = s.status === 1 ? spillStart(s) : null;
   return `<b>${overflowSaid(s)}</b>${water ? ' ' + esc(water) : ''}${s.status === 1 ? (a === null ? ', discharging now' : `, discharging since ${sinceTime(a)}`)
     : s.status === -3 && s.last_status === 1 ? ', discharging when its company’s feed last answered' : ''}, `
-    + `${overflowWhere(s)}, ${s.travel_h < 1 ? 'under an hour' : `about ${h} hour${h === 1 ? '' : 's'}`} away`; };
+    + `${overflowWhere(s)}${travelSaid(s, () => `about ${h} hour${h === 1 ? '' : 's'}`)}`; };
 // The sentence for one risk, right now's (when = 'now') or a day's (an ISO date). One overflow is named
 // alone only when it holds at least half the risk (transport.risk_shares, which splits 1 - prod(1 - e)
 // exactly); otherwise the risk is spread over the overflows that make up nine tenths of it.
@@ -3093,7 +3114,7 @@ function overflowTile(d, total) {
       .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
-      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}, ${c.travel_h < 1 ? 'under an hour' : `about ${fmt(c.travel_h, 0)}&nbsp;h`} away</div></div>`
+      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div></div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
@@ -3166,7 +3187,7 @@ function spotTop(d) {
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div id="day-view"></div>${check(d)}</section>`;
 function render(d) {
-  serverToday = DATA.generated_at.slice(0, 10);
+  setDays(d);
   contribLayer.clearLayers();
   setView('spot');
   if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
@@ -3251,7 +3272,7 @@ async function main() {
   const res = await (window.FORECAST || fetch('data/spots-lite.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
   DATA = await res.json();
-  serverToday = DATA.generated_at.slice(0, 10);
+  setDays();
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
   for (const s of DATA.spots) {
     MARKERS.set(s.id, L.circleMarker([s.lat, s.lon], { radius: 9 })
@@ -3284,7 +3305,7 @@ function keptView() {
   if (FILTERS[v.filter]) VIEW.filter = v.filter;
   if (SORTS[v.sort] && v.sort !== 'near') VIEW.sort = v.sort;
   VIEW.lowOnly = v.lowOnly === true;
-  VIEW.day = [0, 1, 2, 3, 4].map(k => addDays(today(), k)).includes(v.day) ? v.day : null;
+  VIEW.day = fiveDays().includes(v.day) ? v.day : null;
   return { y: Number(v.y) || 0 };
 }
 main().catch(e => { document.getElementById('result').innerHTML = `<p class="notice">Could not load forecasts: ${esc(e.message)}${navigator.onLine ? '' : '. You are offline, and this device has no saved copy yet.'}</p>`; });
