@@ -77,7 +77,10 @@ Nothing from the nine companies' event files has been read.
 - **Rain.** For the cells that have none, the fetch adds ERA5-Land for 2024 and 2025. It also adds
   1 to 31 December 2023, so January 2024's 7-day and 30-day windows and its antecedent index are
   complete. That file is saved as `archive_<cell>_2023dec.parquet`, so no script mistakes it for a
-  whole year.
+  whole year. Every new rain file goes to `data/cache/rain_nine/`, not `data/cache/rain/`, because
+  `validate_ecoli.py` and the hindcasts read every file in the shared folder, and a new cell there
+  would change what they compute (`scripts/fetch_rain_nine.py`). Ethan approved the download and the
+  fetch on 16 Oct 2026, with no other Open-Meteo job running from this Mac meanwhile.
 - **Fit.** Layer 1 is fitted on every kept 2024 site-day of the nine companies, with the same
   settings as now (`neg_frac` 0.25, seed 0). Layer 2 gives offsets for every overflow with 2024
   site-days, with prior strength 15 and recency 1. Nothing is tuned on 2025.
@@ -166,8 +169,10 @@ It is written under the results line from the fitted maps, before the change rea
    annual returns, and per company the median event length, the share of events under 15 minutes,
    and the median gap between one event's stop and the next start at the same overflow. These are
    the measured signs of company-specific event definitions.
-2. Fetch the missing rain (two UTC days; about 9,800 Open-Meteo calls in all, under the free
-   limits).
+2. Fetch the missing rain: about 9,800 Open-Meteo calls in all, under the free limits, paced at
+   3,000 an hour. The breakdown is 3,289 calls for 2024, 3,280 for 2025, 1,260 for December 2023
+   and 1,955 for the lead sample. One variable for a year weighs 2.6 calls a cell (locations ×
+   days/14 × variables/10, from Open-Meteo's blog).
 3. Train on 2024, verify on 2025, and check conditions 1-4.
 4. Fit the lead calibration for the model that will be deployed, and write the pre-stated note.
 5. Write the results below the line, then make the change or keep the record.
