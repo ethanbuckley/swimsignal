@@ -175,3 +175,36 @@ placed by another lake centreline now agrees.
   1,993 clicks did.
 - No new squares: every square a lake link near such a lake touches already had files. The rule stays, for a
   lake far from any overflow (Quiet Water in the tests).
+
+---
+
+## Option C, built (16 October 2026)
+
+Ethan picked option C for class 1. Written before the sweep below was run.
+
+**The rule.** A click within 150 m of a WFD lake that has no lake centreline within 1.5 km of the click:
+- on the lake's water (inside the outline of one of its parts, islands included): that lake, isolated;
+- on its shore (outside the outline): placed as if the lake were not there, by the river rule.
+
+**Where it is.**
+- API: `transport._locate`, step 1. It applies to points with no lake hint. A listed lake spot still goes to
+  `_locate_lake`, as before. All 105 listed spots in `spots.csv` and `spots-osm.csv` were placed with main's
+  code and this branch's: none moves.
+- Page: `anypoint.js`, `place`. Whether a click is on the water is settled on the real outline when the 15 m
+  one is within `err` of it (`outlinesNeeded`).
+- Islands: no WFD island has a point more than 150 m from its water, so an island click is always that lake.
+- The isolated pin now carries the lake's name and area in the API, as the page shows them.
+
+**Not changed.** The lake with no centreline inside still takes the centreline nearest the click (Eccup).
+
+**What I expect** (seeds 18 and 19 as above, and a fresh seed 20; full river lines):
+- Class 1: **0** of the 600 shore clicks.
+- The 51 class 1 clicks on seeds 18 and 19: the 16 on the water agree as isolated; the 35 on the shore agree
+  as river.
+- A new kind of miss is possible: a shore click where the page has no squares near (no overflow anywhere
+  near), so it says there is nothing to forecast, while the API names a river with no overflows. Both give no
+  forecast. I expect at most 3.
+- Agree on seeds 18 and 19: at least 395 of 400 shore clicks (main: 349). Seed 20: at least 196 of 200.
+- River clicks: the same as main.
+
+### Results
