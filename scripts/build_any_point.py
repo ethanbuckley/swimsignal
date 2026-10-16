@@ -26,15 +26,18 @@ Everything is written under site/data/anypoint/:
   lakes.json           the WFD lake polygons (England) and every lake an overflow reaches: its
                        inlets, each with the overflows whose water enters there (river distance
                        and dilution before the lake-area term, and any WFD lake crossed before it)
+  lake_outlines/<n>.json the real outline of the n-th WFD lake, which the page fetches when a click is
+                       too near 150 m from the simplified outline in lakes.json to tell
   outside_england.json Wales, Scotland and the island of Ireland, widened over their estuaries, where a
                        click gets "England only", and which part of the island is Northern Ireland (a
                        copy of data/raw/outside_england.json, scripts/make_outside_england.py)
 
 A click is placed as transport._locate places it: inside or within 150 m of a WFD lake polygon it
-is that lake; otherwise the nearest link within 1.5 km, or the nearest lake centreline when that
-is less than twice as far; a click on a side channel near a much bigger river is traced as that
-river (_adopt_main_channel, which the page applies with each link's upstream network length from
-the index). River distances and dilutions then follow upstream_overflows exactly for the click's
+is that lake (one with no lake centreline inside takes the centreline nearest the click within
+1.5 km, as _in_polygon does); otherwise the nearest link within 1.5 km, or the nearest lake
+centreline when that is less than twice as far; a click on a side channel near a much bigger
+river is traced as that river (_adopt_main_channel, which the page applies with each link's
+upstream network length from the index). River distances and dilutions then follow upstream_overflows exactly for the click's
 position along the link. A WFD lake between an overflow and the click is crossed as
 upstream_overflows crosses it in config.LAKE_PATH_MODE "lake" (the default): its metres at the lake
 velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings). In lake
@@ -90,7 +93,9 @@ from dipcast.network.rivers import _TO_WGS, RiverNetwork
 log = logging.getLogger("build_any_point")
 
 TILE_DEG = 0.25           # squares of 0.25 degrees: about 28 km north-south, 17 km east-west
-LAKE_SIMPLIFY_M = 15.0    # lake outlines; the shore rule is 150 m
+LAKE_SIMPLIFY_M = 15.0    # lake outlines in lakes.json; the shore rule is 150 m. Each carries how far it is from
+                          # the real outline (err), and the page fetches the real one (lake_outlines/) when that matters
+OUTLINE_DP = 6            # decimals of the real outlines: 0.1 m
 DAYS_AHEAD = 4            # today and four more, as forecast_point
 DIL_SCALE = 10_000        # dilutions and dilution ratios in ten-thousandths
 PATH_SCALE = 1_000_000    # the lake factor of lakes crossed on the way, in millionths
@@ -105,8 +110,9 @@ FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
-CACHE_VERSION = 7         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
-                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key; 11 Oct 2026)
+CACHE_VERSION = 8         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
+                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key; 11 Oct 2026;
+                          # 8: no centreline for a WFD lake with none inside, 16 Oct 2026)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
@@ -328,8 +334,10 @@ def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000
 def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, frozenset], dict[str, str]]:
     """(WFD lakes with the lake links transport._locate gives a click inside them, centreline
     lakes {id: links}, lake link -> centreline lake id). A WFD lake's links are the lake-form links
-    crossing its polygon, else the centreline lake nearest its middle within 1.5 km, else none
-    (isolated: no river connection in the network)."""
+    crossing its polygon, else none. With none, transport._in_polygon takes the centreline lake
+    nearest the click within 1.5 km, which the page finds in the link index (lake -1 in lakes.json).
+    Until 16 Oct 2026 the build took the one nearest the lake's middle, which is not the API's
+    (docs/ANYPOINT-LAKES-2026-10.md)."""
     links = net.links
     lake_links = links.index[links["form"] == "lake"]
     # Centreline lakes: lake links joined through shared nodes (RiverNetwork.lake_component).
@@ -350,17 +358,11 @@ def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, froz
     comp_sets = {f"c{i}": frozenset(v) for i, v in enumerate(sorted(comps.values(), key=lambda s: min(s)))}
     link_comp = {lid: cid for cid, s in comp_sets.items() for lid in s}
     wfd = []
-    lake_frame = links.loc[lake_links]   # snap_xy(forms=("lake",)) builds this on every call
     if lakes is not None and not lakes.empty:
         for _, poly in lakes.iterrows():
             idx = links.sindex.query(poly.geometry, predicate="intersects")
             cand = links.iloc[idx]
             ll = frozenset(cand.index[cand["form"] == "lake"])
-            if not ll and len(lake_frame):
-                near = lake_frame.sindex.nearest(poly.geometry.representative_point(), return_all=False,
-                                                 max_distance=LAKE_SNAP_M)
-                if near.shape[1]:
-                    ll = comp_sets[link_comp[lake_frame.index[near[1, 0]]]]
             name = poly.get("lake_name")
             wfd.append({"wb_id": str(poly.get("wb_id") or ""), "name": str(name) if isinstance(name, str) else None,
                         "area_km2": float(poly["area_km2"]), "geometry": poly.geometry, "links": ll or None})
@@ -656,6 +658,14 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     starts = np.searchsorted(which, np.arange(len(links) + 1))
     bounds = np.column_stack([np.minimum.reduceat(lon, starts[:-1]), np.minimum.reduceat(lat, starts[:-1]),
                               np.maximum.reduceat(lon, starts[:-1]), np.maximum.reduceat(lat, starts[:-1])])
+    # A click by a WFD lake with no lake link inside takes the lake link nearest it within 1.5 km
+    # (transport._in_polygon). The page finds it in the link index, so every square such a link touches has files.
+    no_line = [w["geometry"] for w in table["wfd"] if not w["links"]]
+    if no_line:
+        lake_pos_ix = np.flatnonzero((links["form"] == "lake").to_numpy())
+        near = links.iloc[lake_pos_ix].sindex.query(shapely.buffer(no_line, LAKE_SHORE_M + LAKE_SNAP_M), predicate="intersects")[1]
+        for ts in _tiles_of_bounds(bounds[lake_pos_ix[np.unique(near)]]):
+            covered.update(ts)
     by_tile: dict[str, list[int]] = {}
     for i, ts in enumerate(_tiles_of_bounds(bounds)):
         for t in ts:
@@ -761,23 +771,42 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             own = [own_name[j] for j in sorted(links.index.get_indexer(list(comp)))]
             name = next((n for n in own if isinstance(n, str) and n), None)
         lakes_json.append({"id": k, "name": name, "inlets": inlets})
-    polys = []
-    for i, w in enumerate(table["wfd"]):
-        g = shapely.simplify(w["geometry"], LAKE_SIMPLIFY_M)
+    # WFD lake outlines (exterior rings: no island has a point more than 150 m from its water). lakes.json has
+    # them simplified to LAKE_SIMPLIFY_M, with err, the most they are off by; lake_outlines/<n>.json has the real ones.
+    def rings_of(g, dp: int) -> list:
         rings = []
         for part in getattr(g, "geoms", [g]):
             x, y = np.asarray(part.exterior.coords).T
             plon, plat = _to_lonlat(x, y)
-            rings.append(np.round(np.column_stack([plon, plat]), 5).tolist())
+            rings.append(np.round(np.column_stack([plon, plat]), dp).tolist())
+        return rings
+
+    def exteriors(g):
+        return shapely.MultiLineString([p.exterior for p in getattr(g, "geoms", [g])])
+
+    (out / "lake_outlines").mkdir(parents=True, exist_ok=True)
+    for f in (out / "lake_outlines").iterdir():
+        f.unlink()
+    polys = []
+    for i, w in enumerate(table["wfd"]):
+        g = shapely.simplify(w["geometry"], LAKE_SIMPLIFY_M)
+        rings = rings_of(g, 5)
+        # Densified: the largest gap can be partway along a simplified segment. + 1 m: the 5 decimals.
+        err = math.ceil(shapely.hausdorff_distance(exteriors(w["geometry"]), exteriors(g), densify=0.25) + 1.0)
+        (out / "lake_outlines" / f"{i}.json").write_text(json.dumps(
+            {"wb_id": w["wb_id"], **({"credits": credits["full"]} if credits and "full" in credits else {}),
+             "rings": rings_of(w["geometry"], OUTLINE_DP)}, separators=(",", ":")))
         allc = np.concatenate([np.asarray(r) for r in rings])
         lake = f"w{i}"
         polys.append({"name": w["name"], "wb_id": w["wb_id"], "area_km2": round(w["area_km2"], 3),
                       "bbox": [float(allc[:, 0].min()), float(allc[:, 1].min()), float(allc[:, 0].max()), float(allc[:, 1].max())],
-                      "lake": (lake_pos.get(lake) if w["links"] else -1), "rings": rings})
+                      "lake": (lake_pos.get(lake) if w["links"] else -1), "err": err, "rings": rings})
     (out / "lakes.json").write_text(json.dumps({
         "ids": idv, "network": net_hash,
-        "note": ("polygons: the Environment Agency's WFD lakes. lake: index into lakes; null when no monitored overflow "
-                 "upstream reaches it; -1 when the lake has no river connection in the network (isolated). lakes[].inlets: "
+        "note": ("polygons: the Environment Agency's WFD lakes, outlines simplified to 15 m. err: the most, in metres, an "
+                 "outline is off from the real one in lake_outlines/<place in polygons>.json. lake: index into lakes; null "
+                 "when no monitored overflow upstream reaches it; -1 when no lake centreline is inside the lake: a click "
+                 "there takes the lake centreline nearest it within lake_snap_m (link index), else it is isolated. lakes[].inlets: "
                  "where water enters the lake, and o = flat triples (overflow index, distance along the network m, "
                  "dilution x 10000 before dividing by 1 + area / 5 km2); k = flat triples (overflow index, metres of "
                  "another WFD lake crossed on the way, which travel at the lake velocity, lake factor x 1000000 to "
@@ -795,7 +824,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     return {"ids": ids, "ids_version": idv, "tiles": sorted(by_tile), "past_days": int(past),
             "counts": {"links_indexed": len(in_tiles), "links_traced": len(records), "entries": n_entries,
                        "rows": n_rows, "lakes_reached": len(lake_ids), "wfd_lakes": len(polys),
-                       "wfd_isolated": sum(p["lake"] == -1 for p in polys)}}
+                       "wfd_no_centreline": sum(p["lake"] == -1 for p in polys)}}
 
 
 # ------------------------------------------------------------------ rain and the days
