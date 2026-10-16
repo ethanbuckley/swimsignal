@@ -171,7 +171,8 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     ground. Until 13 Oct 2026 only the place counted (#179). Earl Sterndale STW (Glutton Brook, 35%
     of Dovedale's weight) and Hazeldene Lane, Newick (above Barcombe Mills, live 61 km away) move;
     Holy Island STW does not ("Birkley Burn" live, "NORTH SEA" in the return: two assets under one
-    id). KEEP_LIVE lists any move a check contradicts (docs/OVERFLOW-POSITIONS-2026-10.md). Adds
+    id). KEEP_LIVE lists any move a check contradicts (docs/OVERFLOW-POSITIONS-2026-10.md), and
+    FEATURE_OUTLET the outlets the EA's bathing-water features settle (docs/OVERFLOW-SEA-OUTFALLS-2026-10.md). Adds
     `position_source`: 'live', 'annual return' or 'join' (overflow_joins)."""
     df = df.copy()
     df["position_source"] = np.where(df["lat"].notna(), "live", "annual return")
@@ -181,26 +182,31 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     lx, ly = _TO_BNG.transform(df.loc[both, "lon"].to_numpy(), df.loc[both, "lat"].to_numpy())
     ax, ay = _TO_BNG.transform(df.loc[both, "ar_lon"].to_numpy(), df.loc[both, "ar_lat"].to_numpy())
     gap = np.hypot(lx - ax, ly - ay)
-    moved, by_evidence = [], 0
+    moved, by_evidence, by_feature = [], 0, 0
     for i, lxi, lyi, axi, ayi, g in zip(df.index[both], lx, ly, ax, ay, gap, strict=True):
         if g <= POSITION_GAP_M:
             continue
         rw, rw_ar = df.at[i, "receiving_watercourse"], df.at[i, "receiving_water"]
         want = (_tokens(rw) | _tokens(rw_ar)) - POSITION_EXTRA
         at_outlet, at_live = _named_within(net, axi, ayi, want), _named_within(net, lxi, lyi, want)
+        feature = FEATURE_OUTLET.get(df.at[i, "site_id"])
         if at_outlet and not at_live:
             moved.append(i)
         elif (not at_outlet and not at_live and g > PLACE_GAP_M and _same_water(rw, rw_ar)
-              and not _ground_names(rw, rw_ar)):
-            ev = position_evidence(net, df.loc[i], (lxi, lyi), (axi, ayi)).values()
-            if "annual return" in ev and "live" not in ev and df.at[i, "site_id"] not in KEEP_LIVE:
-                moved.append(i)
-                by_evidence += 1
+              and not _ground_names(rw, rw_ar)
+              and "annual return" in (ev := position_evidence(net, df.loc[i], (lxi, lyi), (axi, ayi)).values())
+              and "live" not in ev and df.at[i, "site_id"] not in KEEP_LIVE):
+            moved.append(i)
+            by_evidence += 1
+        elif feature and np.hypot(axi - feature[0][0], ayi - feature[0][1]) <= FEATURE_NEAR_M:
+            moved.append(i)
+            by_feature += 1
     df.loc[moved, "lat"] = df.loc[moved, "ar_lat"]
     df.loc[moved, "lon"] = df.loc[moved, "ar_lon"]
     df.loc[moved, "position_source"] = "annual return"
     log.info("positions: %d overflows moved to their annual-return outlet: %d by the named water, %d by the "
-             "evidence within %.0f km", len(moved), len(moved) - by_evidence, by_evidence, PLACE_NEAR_M / 1000)
+             "evidence within %.0f km, %d by the EA's features", len(moved), len(moved) - by_evidence - by_feature,
+             by_evidence, PLACE_NEAR_M / 1000, by_feature)
     return df
 
 
@@ -250,6 +256,28 @@ def position_evidence(net: RiverNetwork, row, live_xy, ar_xy) -> dict[str, str |
 KEEP_LIVE: dict[str, str] = {
     "SWS00971": "East Worthing CSO: the place points to the outlet, but the live position is 8 m from a storm "
                 "overflow in the EA's features for its bathing water (ukj2407-15350) and the outlet 1.2 km from any",
+    "SWS00381": "Marsh Road, Gurnard: the live position is 16 m from a storm overflow in the EA's features for "
+                "ukj3400-17700, the outlet 2.2 km from any, and no other overflow is within 100 m of it",
+    "TWL00743": "South Lane, Ash: OS OpenMap Local's South Lane is 2 m from the live position and none is within "
+                "500 m of the outlet, 9 km east; no Blackwater label points to the outlet "
+                "(docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md)",
+    # A judgment on evidence seen after #221's rule had run, not a stated test: it moves nothing.
+    "TWL00418": "Trumps Green Road (Virginia Water) SPS: OS OpenMap Local's Trumpsgreen Road is 85 m from the live "
+                "position; the return's 'River Bulborne' outlet is 42 km away in Hertfordshire, and the Bourne runs "
+                "2.5 km from the live position (docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md, 'Seen after the rule ran')",
+}
+
+# Overflows moved to the outlet because it, and not the live position, is within FEATURE_NEAR_M of a
+# storm overflow in the EA's bathing-water features, and no other overflow is
+# (docs/OVERFLOW-SEA-OUTFALLS-2026-10.md): id -> (that feature's BNG point, why). The move holds only
+# while the outlet is still that close to the feature, so a later return stating a new outlet leaves
+# the overflow at its live position rather than somewhere unchecked.
+FEATURE_NEAR_M = 100.0
+FEATURE_OUTLET: dict[str, tuple[tuple[float, float], str]] = {
+    "NWL01292": ((460150.0, 525450.0), "Station Road CSO, Redcar: the outlet is 3 m from a storm overflow in the "
+                                       "EA's features for ukc1202-06400, the live position 550 m from any"),
+    "SWS00474": ((618890.0, 169140.0), "Kings Hall, Herne Bay: the outlet is 0 m from a storm overflow in the "
+                                       "EA's features for ukj4202-12200, the live position 370 m from any"),
 }
 
 

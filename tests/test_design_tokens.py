@@ -12,7 +12,7 @@ APP = ROOT / "src" / "dipcast" / "site" / "index.html"
 CSS = ROOT / "src" / "dipcast" / "api" / "static" / "page.css"
 STATIC = CSS.parent
 # The app's own layout and its SVG filter, which only index.html has.
-APP_ONLY = {"--tile-filter", "--header-h", "--nav-h"}
+APP_ONLY = {"--header-h", "--nav-h"}
 
 
 def styles(path: Path) -> str:

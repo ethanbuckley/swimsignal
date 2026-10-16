@@ -2,14 +2,17 @@
 // browser from the files the build publishes under data/anypoint/ (scripts/build_any_point.py says
 // what is in each). The steps are the API's, in the same order:
 //  - where the click goes (model/transport.py, _locate): inside or within 150 m of a WFD lake, that
-//    lake; else the nearest link within 1.5 km, or the nearest lake centreline if it is less than
-//    twice as far; a click on a small side channel near a much bigger river is traced as that
-//    river (_adopt_main_channel), and then where the channel leaves it, as the build found
-//    (_click_at_head; the links file's `arms`);
+//    lake (by its real outline where the 15 m one is too close to call; one with no lake centreline
+//    inside takes the centreline nearest the click within 1.5 km, and with none a click on its water
+//    is the isolated lake and one on its shore goes on as if it were not there); else the nearest
+//    link within 1.5 km, or the nearest lake centreline if it is less than twice as far; a click on
+//    a small side channel near a much bigger river is traced as that river (_adopt_main_channel), and
+//    then where the channel leaves it, as the build found (_click_at_head; the links file's `arms`);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
-//    for the click's place along it, or from the lake's inlets and the straight line across; a WFD
-//    lake crossed on the way counts as lake, with its lake factor (lake path "lake", crossings), or,
-//    in lake path "residence", as a well-mixed lake where it has a residence time (holds);
+//    for the click's place along it, or from the lake's inlets and the straight line across (in lake
+//    distance "water", the shortest way through the lake's water, waterWay); a WFD lake crossed on the
+//    way counts as lake, with its lake factor (lake path "lake", crossings), or, in lake path
+//    "residence", as a well-mixed lake where it has a residence time (holds);
 //  - travel at the river speed (the lake speed across a lake, the survivors' hours in a well-mixed
 //    one), die-off 10^(-t / T90) times the share that leaves a well-mixed lake alive, weight =
 //    die-off x dilution, less for an overflow placed by proximity alone (transportOf);
@@ -116,13 +119,58 @@ const AnyPoint = (() => {
       if (rec.s[k + 1] < offset) out.push({ i: rec.s[k], dist: offset - rec.s[k + 1], dlake: 0, dil: Math.min(1, shrink) });
     return out;
   }
+  // Lake distance "water" (model/lake_water.py, water_distance): the shortest way from an inlet to the
+  // click inside the lake's water. water (lake_water/<n>.json, fetched for a click on lake n): its reflex
+  // corners, its outline widened by 10 m ("inside", which a straight way must stay in), its outline
+  // ("shore"), and per inlet ("ways"): where it enters the water, the metres to there, and the metres on
+  // to each corner (-1 where none). A click outside the widened outline first goes to the nearest point of
+  // the shore. Returns inlet number -> metres, or null for a lake without water (the straight line, as the API).
+  function crossesAny(p, q, rings) {
+    const side = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
+    for (const r of rings)
+      for (let k = 0; k + 1 < r.length; k++)
+        if (side(p, q, r[k]) * side(p, q, r[k + 1]) < 0 && side(r[k], r[k + 1], p) * side(r[k], r[k + 1], q) < 0) return true;
+    return false;
+  }
+  function nearestPoint(rings) {   // the nearest point of the rings to the frame's origin
+    let best = { d: Infinity, x: 0, y: 0 };
+    for (const r of rings)
+      for (let k = 0; k + 1 < r.length; k++) {
+        const [x0, y0] = r[k], [x1, y1] = r[k + 1], dx = x1 - x0, dy = y1 - y0, l2 = dx * dx + dy * dy;
+        const t = l2 > 0 ? Math.min(1, Math.max(0, -(x0 * dx + y0 * dy) / l2)) : 0, x = x0 + t * dx, y = y0 + t * dy, d = Math.hypot(x, y);
+        if (d < best.d) best = { d, x, y };
+      }
+    return best;
+  }
+  function waterWay(water, at, xy) {
+    if (!water) return null;
+    const local = rings => rings.map(r => r.map(([lon, lat]) => xy(lat, lon)));
+    const inside = local(water.inside), corners = water.corners.map(([lon, lat]) => xy(lat, lon));
+    const inWater = inside.reduce((odd, r, k) => odd !== inRing(at[1], at[0], water.inside[k]), false);
+    const near = inWater ? { d: 0, x: 0, y: 0 } : nearestPoint(local(water.shore)), q = [near.x, near.y];
+    const seen = corners.map(c => !crossesAny(q, c, inside));
+    return j => {
+      const w = (water.ways || [])[j];
+      if (!w) return null;
+      const a = xy(w[1], w[0]);
+      if (!crossesAny(a, q, inside)) return w[2] + Math.hypot(a[0] - q[0], a[1] - q[1]) + near.d;
+      let best = Infinity;
+      corners.forEach((c, k) => {
+        const via = w[3 + k];
+        if (seen[k] && via >= 0) best = Math.min(best, via + Math.hypot(c[0] - q[0], c[1] - q[1]));
+      });
+      return Number.isFinite(best) ? best + near.d : null;
+    };
+  }
   // A lake's inlets (lakes.json) for a click: the distance to the inlet, then the straight line
-  // across; a WFD lake's area divides the dilution by 1 + area / 5 km2. Another WFD lake crossed
-  // before the inlet moves its metres to the lake distance and multiplies the dilution by its factor.
-  function lakeRows(lake, at, area, a0) {
-    const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1;
-    for (const inlet of lake.inlets) {
-      const [x, y] = xy(inlet.at[1], inlet.at[0]), across = Math.hypot(x, y), path = crossings(inlet.k), mixed = holds(inlet.h);
+  // across (or the way through the water, waterWay); a WFD lake's area divides the dilution by
+  // 1 + area / 5 km2. Another WFD lake crossed before the inlet moves its metres to the lake distance
+  // and multiplies the dilution by its factor.
+  function lakeRows(lake, at, area, a0, water = null) {
+    const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1, way = waterWay(water, at, xy);
+    for (const [j, inlet] of lake.inlets.entries()) {
+      const [x, y] = xy(inlet.at[1], inlet.at[0]), path = crossings(inlet.k), mixed = holds(inlet.h);
+      const across = (way && way(j)) ?? Math.hypot(x, y);
       for (let k = 0; k < inlet.o.length; k += 3) {
         const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
         out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor,
@@ -274,23 +322,52 @@ const AnyPoint = (() => {
     }
     return inside;
   }
-  function polygonDistance(lat, lon, poly) {
-    if (poly.rings.some(r => inRing(lon, lat, r))) return 0;
+  function outlineDistance(lat, lon, poly) {
     const xy = frame(lat, lon);
     return Math.min(...poly.rings.map(r => nearestOnLine(r.map(([x, y]) => xy(y, x))).d));
   }
-  // transport._lake_polygon_at: the WFD lake the click is in, or within the shore distance of.
-  function lakePolygon(lat, lon, lakes, shore) {
-    const pad = shore / 111000, padx = pad / Math.cos(lat * RAD);
-    let best = null;
-    for (const p of lakes.polygons) {
-      const [w, s, e, n] = p.bbox;
-      if (lon < w - padx || lon > e + padx || lat < s - pad || lat > n + pad) continue;
-      const d = polygonDistance(lat, lon, p);
-      if (d <= shore && (!best || d < best.d)) best = { poly: p, d };
-    }
-    return best;
+  function polygonDistance(lat, lon, poly) {
+    return poly.rings.some(r => inRing(lon, lat, r)) ? 0 : outlineDistance(lat, lon, poly);
   }
+  // The WFD lakes within `reach` metres of a click, give or take each outline's err: [{i, d, e, edge}], d the
+  // distance to the outline in lakes.json (simplified to 15 m), 0 inside it, e how far that can be from the
+  // real one (0 where `outlines` has the real outline: {place in polygons: lake_outlines/<n>.json}), and
+  // edge the distance to the outline from either side.
+  function nearLakes(lat, lon, lakes, reach, outlines = {}) {
+    const out = [];
+    lakes.polygons.forEach((p, i) => {
+      const real = outlines[i] && outlines[i].wb_id === p.wb_id ? outlines[i] : null, e = real ? 0 : (p.err || 0);
+      const pad = (reach + (p.err || 0)) / 111000, padx = pad / Math.cos(lat * RAD), [w, s, east, n] = p.bbox;   // bbox: of the 15 m outline
+      if (lon < w - padx || lon > east + padx || lat < s - pad || lat > n + pad) return;
+      const d = polygonDistance(lat, lon, real || p);
+      if (d - e <= reach) out.push({ i, d, e, edge: d > 0 ? d : outlineDistance(lat, lon, real || p) });
+    });
+    return out.sort((a, b) => a.d - b.d);
+  }
+  // transport._lake_polygon_at: the WFD lake the click is in, or within the shore distance of, by the
+  // outlines given (lakes.json's, or the real ones where `outlines` has them).
+  function lakePolygon(lat, lon, lakes, shore, outlines = {}) {
+    const best = nearLakes(lat, lon, lakes, shore, outlines).find(c => c.d <= shore);
+    return best ? { poly: lakes.polygons[best.i], d: best.d, i: best.i } : null;
+  }
+  // The real outlines (places in polygons) lakePolygon needs for this click: none where the simplified
+  // ones settle it, else every lake within the shore distance give or take its err. For a lake with no
+  // lake centreline inside (lake -1), whether the click is on its water matters too (place).
+  function outlinesNeeded(lat, lon, lakes, shore, outlines = {}) {
+    const near = nearLakes(lat, lon, lakes, shore, outlines);
+    if (!near.length) return [];
+    const [a, ...rest] = near;
+    const water = lakes.polygons[a.i].lake === -1 && a.edge <= a.e;
+    if (a.d + a.e <= shore && rest.every(b => b.d - b.e > a.d + a.e) && !water) return [];
+    return near.filter(c => c.e > 0).map(c => c.i);
+  }
+  // Whether a click needs the squares' link index: not outside England, nor in a WFD lake with a lake
+  // centreline inside (lakes.json has its inlets). A WFD lake with none (lake -1) takes the nearest one.
+  const needsSquares = (lat, lon, lakes, cfg, outside, outlines = {}) => {
+    if (outsideEngland(lat, lon, outside)) return false;
+    const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
+    return !poly || poly.poly.lake === -1;
+  };
   // transport._locate's second step, and _adopt_main_channel: river or lake centreline, and the
   // link a river click is traced along. cands: candidates(); cfg: tiles.json.
   function locate(cands, cfg) {
@@ -391,14 +468,22 @@ const AnyPoint = (() => {
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
     + 'Risk from wildlife, runoff and bathers is not modelled.';
   function place(lat, lon, files) {
-    const { cfg, lakes, od, tiles, outside = null } = files, a = od.assumptions;
+    const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {} } = files, a = od.assumptions;
     const where = outsideWhere(lat, lon, outside);
     if (where) return { mode: 'none', kind: '', name: 'This point', error: OUTSIDE[where].error, outside: where };
-    const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m);
-    if (poly) {
-      const p = poly.poly, name = p.name || 'Unnamed lake';
-      if (p.lake === -1) return { mode: 'isolated', kind: 'lake', name, error: ISOLATED };
-      return { mode: 'lake', kind: 'lake', name, rows: p.lake === null ? [] : lakeRows(lakes.lakes[p.lake], [lat, lon], p.area_km2, a.lake_area_halving_km2),
+    const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
+    // A WFD lake with no lake centreline inside takes the one nearest the click within 1.5 km
+    // (transport._in_polygon). With none, a click on its water is the isolated lake, and one on its
+    // shore is placed as if the lake were not there (transport._locate; Ethan's option C, 16 Oct 2026).
+    const p = poly && poly.poly, link = p && p.lake === -1
+      ? candidates(lat, lon, tiles).filter(c => c.form === LAKE && c.d <= cfg.lake_snap_m).reduce((x, y) => !x || y.d < x.d ? y : x, null) : null;
+    if (p && p.lake === -1 && !link && poly.d === 0) return { mode: 'isolated', kind: 'lake', name: p.name || 'Unnamed lake', error: ISOLATED,
+      location: { mode: 'isolated', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
+    if (p && (p.lake !== -1 || link)) {
+      const entry = link && tiles[link.tile].links[String(link.lno)];
+      const lake = !link ? p.lake : entry && entry.lake !== undefined ? entry.lake : null;
+      return { mode: 'lake', kind: 'lake', name: p.name || 'Unnamed lake', rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, waters[lake]),
+        ...(link ? { link } : {}), ...(lake === null ? {} : { lake }),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
     // A square has files where an overflow is, or a link with one upstream. In England, then, no square
@@ -414,9 +499,10 @@ const AnyPoint = (() => {
       at.link = move;
     }
     const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
-    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2))
+    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake]))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
+      ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
       location: { mode: at.mode, watercourse: at.link.name, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
         lake_source: lake ? 'centreline' : null, adopted_main_channel: !!at.adopted } };
   }
@@ -426,16 +512,21 @@ const AnyPoint = (() => {
   async function point(lat, lon, again = true) {
     const [cfg, lakes, od, outside] = await Promise.all([json('tiles.json'), json('lakes.json'), json('overflow_days.json'),
       json('outside_england.json').catch(() => null)]);
-    const skip = outsideEngland(lat, lon, outside) || lakePolygon(lat, lon, lakes, cfg.lake_shore_m), keys = skip ? [] : squares(lat, lon, cfg);
+    const outlines = Object.fromEntries(await Promise.all(outlinesNeeded(lat, lon, lakes, cfg.lake_shore_m)
+      .map(async i => [i, await json(`lake_outlines/${i}.json`).catch(() => null)])));
+    const keys = needsSquares(lat, lon, lakes, cfg, outside, outlines) ? squares(lat, lon, cfg) : [];
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    let at = place(lat, lon, { cfg, lakes, od, tiles, outside });
+    let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
     if (at.need) {
       for (const k of at.need) tiles[k] = await tile(k, cfg);
-      at = place(lat, lon, { cfg, lakes, od, tiles, outside });
+      at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
     }
+    // Lake distance "water": the lake's water, only for a click placed on a lake that has one; then place again.
+    const water = at.lake !== undefined && (lakes.lakes[at.lake] || {}).water ? await json(`lake_water/${at.lake}.json`).catch(() => null) : null;
+    if (water) at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, waters: { [at.lake]: water } });
     const rows = at.rows || [];
     const ids = rows.length ? await json('overflow_ids.json') : null;
-    const versions = new Set([cfg.ids, od.ids, lakes.ids, ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
+    const versions = new Set([cfg.ids, od.ids, lakes.ids, ...(water ? [water.ids] : []), ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
     if (versions.size > 1) {
       if (!again) throw new Error('the forecast files changed while loading; try again in a minute');
       memo.clear();
@@ -523,7 +614,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast,
-    frame, nearestOnLine, decodeIndex, candidates, inRing, polygonDistance, lakePolygon, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
+    frame, nearestOnLine, waterWay, decodeIndex, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

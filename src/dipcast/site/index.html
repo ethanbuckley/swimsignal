@@ -91,7 +91,7 @@
           /* The app's own: the map, the controls that float on it, and the rain bars. The tiles are grey
              and the water a muted blue (#bccfd8), so the markers stay the only strong colours on the map.
              CSS cannot pick out one colour, so the filter is the SVG one at the top of <body>. */
-          --map-bg:#e4e2dc; --tile-filter:url(#tiles); --float:#fff; --veil:rgba(255,255,255,.9); --scrim:rgba(20,33,43,.55); --lift:0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--hair);
+          --map-bg:#e4e2dc; --float:#fff; --veil:rgba(255,255,255,.9); --scrim:rgba(20,33,43,.55); --lift:0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--hair);
           --rain:#3d8bd4; --header-h:56px;
           /* The sky and the glass: the picture's own top colour, which runs up to the header; a tile,
              three-quarters white; the empty part of a bar; an overflow quiet, and not reporting. */
@@ -134,7 +134,7 @@
   .brand svg { display:block; width:28px; height:28px; border-radius:var(--radius-mark); }
   .top nav { margin-left:auto; display:flex; align-items:center; gap:4px; }
   .top nav a, .hbtn { color:var(--bar-ink); text-decoration:none; font-size:var(--fs-note); font-weight:600; line-height:1.2; min-height:44px; display:inline-flex; align-items:center; padding:8px 10px; border-radius:var(--radius); border:0; background:transparent; cursor:pointer; }
-  .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); }
+  @media (hover: hover) { .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); } }
   .top .hbtn[aria-pressed=true], .top .hbtn[aria-current=page] { color:var(--on-fill); box-shadow:inset 0 -2px 0 var(--on-fill); border-radius:0; background:transparent; }
   .top :focus-visible { outline-color:var(--on-fill); }
   .hbtn .n { display:inline-block; min-width:20px; margin-left:6px; padding:0 6px; border-radius:999px; background:var(--on-fill); color:var(--bar); font-size:var(--fs-meta); font-weight:600; line-height:20px; text-align:center; vertical-align:1px; }
@@ -145,7 +145,6 @@
   #map { position:absolute; inset:0; background:var(--map-bg); }
   /* Each tile through the filter, not the pane they sit in: an SVG filter covers the box of the element
      it is on, and Leaflet's tile pane is 0 by 0. */
-  .leaflet-container .leaflet-tile { filter:var(--tile-filter); }
   /* Leaflet's own controls in the system: the one lift, the one radius, the site's type and colours.
      Leaflet marks every map .leaflet-touch on any browser with pointer events, and styles the zoom bar
      through that class, so these rules start .leaflet-container to equal it and win by coming later. */
@@ -217,6 +216,11 @@
   .plan-row select { font-weight:600; }
   .planner-note { margin:8px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .best-day b { color:var(--k-low); }
+  /* The list's answer (option B, 13 Oct 2026): how many spots are at low risk on the weekend's better day,
+     or the week's best, in the display face at the heading size, the count in the low colour. */
+  .low-answer { font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); margin:12px 0 0; }
+  .low-answer .n { color:var(--k-low); }
+  .low-answer .pick { font:400 var(--fs-note) var(--font-text); white-space:nowrap; }
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
   /* Near me, the way most people come in: one full-width button under the search (14 Oct 2026). */
   .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
@@ -229,7 +233,7 @@
   .chips-row::-webkit-scrollbar { display:none; }
   /* Choices without a border round each: words in the text's weight, the one chosen filled. */
   .chip-btn { min-height:44px; flex:none; font-size:var(--fs-note); font-weight:600; padding:6px 12px; border-radius:var(--radius); border:0; background:transparent; color:var(--ink); cursor:pointer; }
-  .chip-btn:hover { background:var(--hover); }
+  @media (hover: hover) { .chip-btn:hover { background:var(--hover); } }
   .chip-btn[aria-pressed=true] { background:var(--brand); color:var(--on-fill); }
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
@@ -237,7 +241,10 @@
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
   .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
-  .sortseg button:hover { background:var(--hover); color:var(--ink); }
+  /* Hover only where there is a pointer, here and on every hover in this page bar the map's own controls: on
+     a phone a tapped button kept its hover shade, so after Near me failed it looked pressed beside A–Z
+     (15 Oct 2026, iOS Safari). */
+  @media (hover: hover) { .sortseg button:hover { background:var(--hover); color:var(--ink); } }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
   .geo { margin:0 0 8px; }
@@ -245,10 +252,16 @@
   /* The list: rows between hairlines on the paper, with no box round them. */
   ul.spots { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   ul.spots li + li { border-top:1px solid var(--line); }
+  /* A–Z by area (drawSpots, areaGroups): the area's name in the display face, then how many of its
+     spots are at low risk on the day shown, in grey. A heavier gap above each but the first. */
+  ul.spots li.area-head { padding:16px 0 6px; }
+  ul.spots li.area-head:first-child { padding-top:8px; }
+  li.area-head h3 { font-size:var(--fs-body); line-height:1.3; margin:0; }
+  li.area-head span { font:400 var(--fs-note) var(--font-text); color:var(--muted); }
   a.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
   a.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
   /* Hover and press reach 8 px past the row on either side, so the text keeps the column's edge. */
-  a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); }
+  @media (hover: hover) { a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); } }
   a.row:active { background:var(--active); box-shadow:-8px 0 0 var(--active), 8px 0 0 var(--active); }
   .row-main { flex:1; min-width:0; display:flex; flex-direction:column; }
   .nm { font-weight:600; font-size:var(--fs-body); line-height:1.3; overflow-wrap:anywhere; }
@@ -319,6 +332,10 @@
      through its glass, and the first saved spot fits on a 375 x 812 screen. */
   #panel { isolation:isolate; }
   .answer, .lead { position:relative; margin-bottom:128px; }
+  /* The list's band, 48 px on a wider screen since 15 Oct 2026: at 128 the fells were an empty band
+     between the opening and the list, and the first spot sat at the foot of a 1440 x 900 screen. The
+     picture still runs 310 px below the opening, so its fells show through the list's glass. */
+  .lead { margin-bottom:48px; }
   .answer::before, .lead::before { content:""; position:absolute; z-index:-1; top:-600px; bottom:-310px; left:-24px; right:-24px; pointer-events:none;
     background:var(--sky) url(icons/fells.webp) center bottom / max(100%, 500px) 600px no-repeat; }
   /* A tile: frosted over the picture, near white over the paper further down. The one radius, no border
@@ -507,9 +524,9 @@
   .ov-reach small { display:block; font-size:var(--fs-meta); line-height:1.25; color:var(--muted); }
   .ov-reach b small { display:inline; font-weight:600; }
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; font-size:var(--fs-note); font-weight:600; padding:8px 14px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); color:var(--ink); text-decoration:none; cursor:pointer; }
-  .btn:hover { background:var(--hover); }
+  @media (hover: hover) { .btn:hover { background:var(--hover); } }
   .btn.primary { background:var(--brand); border-color:var(--brand); color:var(--on-fill); }
-  .btn.primary:hover { background:var(--brand-deep); border-color:var(--brand-deep); }
+  @media (hover: hover) { .btn.primary:hover { background:var(--brand-deep); border-color:var(--brand-deep); } }
   .btn[hidden] { display:none; }   /* display:inline-flex would otherwise show it */
   .btn.quiet { margin-top:8px; padding:6px 12px; }
   /* Two equal columns: four buttons make a two by two, not a ragged wrap, on a phone and in the
@@ -569,7 +586,7 @@
   .place .k { margin-top:2px; }
   .unsave { position:relative; z-index:1; flex:none; display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin:-8px -10px 0 0; border:0; border-radius:50%; background:transparent; color:var(--link); cursor:pointer; }
   .unsave .ic { width:20px; height:20px; fill:currentColor; }
-  .unsave:hover { background:var(--hover); }
+  @media (hover: hover) { .unsave:hover { background:var(--hover); } }
   .place-mid { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:8px; }
   .place .big { margin:0; font-size:var(--fs-head); font-weight:700; letter-spacing:0; }
   .place .big-head { margin:0; max-width:none; font-size:var(--fs-body); text-align:left; }
@@ -641,7 +658,7 @@
   .about dl.levels .badge { white-space:normal; }   /* the plain levels are phrases, wider than a phone */
   footer.fine { margin-top:24px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-meta); color:var(--muted); }
   footer.fine p { margin:0 0 8px; }
-  footer.fine a { color:var(--muted); } footer.fine a:hover { color:var(--link); }
+  footer.fine a { color:var(--muted); } @media (hover: hover) { footer.fine a:hover { color:var(--link); } }
   /* Keyboards: the first Tab shows a link past the header and the map to the forecasts. */
   .skip { position:fixed; top:-100px; left:16px; z-index:3000; background:var(--card); border:1px solid var(--line); padding:12px 16px; border-radius:var(--radius); }
   .skip:focus { top:8px; }
@@ -664,6 +681,7 @@
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen (14 Oct 2026) */
+    .low-answer { font-size:var(--fs-body); margin-top:10px; }   /* one line on a 375 px phone, so the first spot still shows */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
@@ -836,7 +854,9 @@
 </style>
 </head>
 <body class="view-list">
-<!-- The map's tiles (--tile-filter): grey, as grayscale(1) brightness(1.04) contrast(.95) made them
+<!-- The map's tiles: the script reads this filter and applies it once to each tile as it loads
+     (tintTiles), not as a CSS filter on every tile, which Safari redrew on every frame of a pan:
+     in iOS Safari, 18 of 306 frames over 50 ms at zoom 6, none without it (16 Oct 2026). Grey, as grayscale(1) brightness(1.04) contrast(.95) made them
      (land), with OpenStreetMap's water (#aad3df) moved to a muted blue, #bccfd8 (tint: the grey plus
      -19, 0 and +9 in 255ths). Water is where blue is above red (r1), green above red (r2) and blue not
      below green by more than a little (r3); each ramps up, so a shore or a thin river, blended with
@@ -982,12 +1002,73 @@ const TOUCH = matchMedia('(pointer: coarse)').matches;
 // Less motion, if asked for: no animated zoom, fade or glide, and setView and fitBounds jump (MOTION).
 const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MOTION = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? { animate: false } : {};
+// The tiles' colours (the SVG filter with id tiles, which the build sets for each provider), worked out once per
+// tile as it loads and drawn into a canvas. As a CSS filter on each tile, iOS Safari recomputed it on
+// every frame of a pan or zoom, and the map stuttered. The filter's primitives are read from the page,
+// so a provider's own filter applies unchanged: feColorMatrix, feComposite (arithmetic or "in") and
+// feMerge, in sRGB, as the browser would. A tile has few colours, so each is worked out once.
+const tileColour = (() => {
+  const f = document.getElementById('tiles'); if (!f) return null;
+  const steps = [...f.children].map(e => ({ tag: e.tagName.replace(/^.*:/, ''), result: e.getAttribute('result'),
+    in1: e.getAttribute('in'), in2: e.getAttribute('in2'), op: e.getAttribute('operator'),
+    k: ['k1', 'k2', 'k3', 'k4'].map(a => +(e.getAttribute(a) || 0)),
+    m: (e.getAttribute('values') || '').trim().split(/[\s,]+/).map(Number),
+    nodes: [...e.children].map(n => n.getAttribute('in')) }));
+  const cl = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const cache = new Map();
+  return (r, g, b) => {   // 0..255 in, an opaque pixel; [r, g, b] 0..255 out
+    const key = (r << 16) | (g << 8) | b, hit = cache.get(key); if (hit) return hit;
+    const src = [r / 255, g / 255, b / 255, 1], got = { SourceGraphic: src };   // premultiplied rgba
+    let last = src;
+    const take = n => (n && got[n]) || (n ? src : last);
+    for (const st of steps) {
+      let o;
+      if (st.tag === 'feColorMatrix') {
+        const i = take(st.in1), a = i[3], u = a ? [i[0] / a, i[1] / a, i[2] / a, a] : [0, 0, 0, 0], m = st.m;
+        const row = j => cl(m[j] * u[0] + m[j + 1] * u[1] + m[j + 2] * u[2] + m[j + 3] * u[3] + m[j + 4]);
+        const oa = row(15); o = [row(0) * oa, row(5) * oa, row(10) * oa, oa];
+      } else if (st.tag === 'feComposite') {
+        const i1 = take(st.in1), i2 = take(st.in2);
+        if (st.op === 'in') o = i1.map(c => c * i2[3]);
+        else { const [k1, k2, k3, k4] = st.k; o = i1.map((c, j) => cl(k1 * c * i2[j] + k2 * c + k3 * i2[j] + k4)); o = o.map((c, j) => j < 3 ? Math.min(c, o[3]) : c); }
+      } else if (st.tag === 'feMerge') {
+        o = [0, 0, 0, 0];
+        for (const n of st.nodes) { const i = take(n); o = o.map((c, j) => i[j] + c * (1 - i[3])); }
+      } else continue;
+      last = o; if (st.result) got[st.result] = o;
+    }
+    const a = last[3] || 1, out = [0, 1, 2].map(j => Math.round(cl(last[j] / a) * 255));
+    cache.set(key, out); return out;
+  };
+})();
+const TintedTiles = L.TileLayer.extend({
+  createTile(coords, done) {
+    const c = document.createElement('canvas'), img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      c.width = img.naturalWidth; c.height = img.naturalHeight;   // a retina tile keeps its pixels
+      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+      try {
+        const d = g.getImageData(0, 0, c.width, c.height), px = d.data;
+        for (let i = 0; i < px.length; i += 4) { if (px[i + 3] !== 255) continue;
+          const o = tileColour(px[i], px[i + 1], px[i + 2]); px[i] = o[0]; px[i + 1] = o[1]; px[i + 2] = o[2]; }
+        g.putImageData(d, 0, 0);
+      } catch (e) { /* a provider without CORS: its own colours */ }
+      done(null, c);
+    };
+    img.onerror = e => done(e, c);
+    img.src = this.getTileUrl(coords);
+    return c;
+  }
+});
+// The build swaps the tile layer line inside this call (build_site.TILE_LINE); without the filter, as is.
+const tintTiles = layer => tileColour ? new TintedTiles(layer._url, layer.options) : layer;
 const map = L.map('map', { zoomControl: true, dragging: !TOUCH, zoomAnimation: !STILL, fadeAnimation: !STILL, markerZoomAnimation: !STILL,
   inertia: !STILL }).setView([53.6, -2.0], 6);
 map.attributionControl.setPrefix(false);   // the map's credit is the tiles', as on the small map; the terms credit Leaflet
 // The build swaps this line for another provider's (build_site.TILE_LINE, DIPCAST_TILES): keep its shape.
-const tiles = () => L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
+const tiles = () => tintTiles(L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }));
 tiles().addTo(map);
 if (TOUCH) {
   const hint = document.createElement('div'); let t = null;
@@ -1802,11 +1883,21 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
 // line of its own, with how many of your spots are low. While the five days reach a weekend, how it
 // looks comes first (levels.js, weekendWords), so the Show button stays last, beside its day. The day
 // is in words, as in a sentence ("tomorrow", "Friday"); the button's label keeps the picker's name.
-function bestDayNote(spots, yours = false) {
-  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
+function bestDayNote(spots, yours = false, weekend = true) {
+  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), b = bestDay(spots, dates), wk = weekend ? weekendWords(spots, dates, yours) : '';
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
   return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
+}
+// The list's answer line (levels.js, lowAnswerDay): "Saturday: 64 of 105 spots at low risk", with the
+// same Show button as the best-day line. That line then follows only when the week's best day is
+// another day with more spots at low risk, and without the weekend's words, which the answer says.
+function lowAnswer(spots) {
+  const dates = [0, 1, 2, 3, 4].map(k => addDays(today(), k)), a = lowAnswerDay(spots, dates);
+  if (!a) return { html: '', note: bestDayNote(spots, false, false) };
+  const w = bestDay(spots, dates), words = lowAnswerWords(a).replace(/: (\S+ of \d+)/, ': <span class="n">$1</span>');
+  return { html: `<p class="low-answer">${words}<span class="pick"${VIEW.day === a.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${a.date}" aria-label="Show ${dateLabel(a.date)}">Show</button></span></p>`,
+           note: w && w.date !== a.date && w.low > a.low ? bestDayNote(spots, false, false) : '' };
 }
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
@@ -2168,7 +2259,7 @@ function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
   document.title = `${BRAND} · pollution risk forecasts for swim spots`;
-  const saved = DATA.spots.filter(s => SAVED.has(s.id)), best = bestDayNote(DATA.spots);
+  const saved = DATA.spots.filter(s => SAVED.has(s.id)), ans = lowAnswer(DATA.spots), best = ans.note;
   const sorts = Object.entries(SORTS).filter(([k]) => k !== 'near' || 'geolocation' in navigator);
   // The answer first: the intro and one row of controls, with a line under it (the caveat, who it is
   // for and the tools for groups) and then the week's best day, under the sky (.lead); then the saved
@@ -2182,7 +2273,7 @@ function renderList() {
     + (offerNear() ? NEAR_CTA + `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
     + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${[0,1,2,3,4].map(k => addDays(today(), k)).map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
-    + (best ? `<p class="planner-note best-day">${best}</p>` : '')
+    + ans.html + (best ? `<p class="planner-note best-day">${best}</p>` : '')
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
@@ -2229,16 +2320,19 @@ function locate(at = 'sort') {
   const before = VIEW.sort === 'near' ? 'name' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : 'in A–Z order';
   // Said where it was asked: under the button under the search ('cta'), or under the sort buttons.
   VIEW.geoAt = at;
-  const msg = t => { VIEW.geoMsg = t; const g = document.getElementById(at === 'cta' ? 'geo-cta' : 'geo');
-    if (g) { g.textContent = t; g.hidden = !t; } };
+  // One message at a time: a refusal under the button, then another under the sorts, showed both (15 Oct 2026).
+  const msg = t => { VIEW.geoMsg = t;
+    for (const [id, here] of [['geo-cta', at === 'cta'], ['geo', at !== 'cta']]) {
+      const g = document.getElementById(id); if (g) { g.textContent = here ? t : ''; g.hidden = !here || !t; } } };
   // Near me shows as chosen while the position is found, so the press is seen to take.
   setSort('near'); msg('Finding your location…');
   navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg('');
       const cta = document.querySelector('[data-near-cta]'); if (cta) cta.hidden = true;   // its answer is the cards below
       drawSpots(); },
-    // A browser remembers a refusal and does not ask again, so say where to undo it.
+    // A browser remembers a refusal and does not ask again, so say where to undo it, and name the button
+    // that was pressed: "Show spots near me" under the search, "Near me" among the sorts (15 Oct 2026).
     e => { setSort(before); msg(e.code === 1
-      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press Near me again.`
+      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press ${at === 'cta' ? 'Show spots near me' : 'Near me'} again.`
       : `Your device could not find where you are, so the list stays ${order}. Check that location services are on for your browser, then try again.`); drawSpots(); },
     { maximumAge: 10 * 60 * 1000, timeout: 10000 });
 }
@@ -2246,6 +2340,18 @@ function locate(at = 'sort') {
 // spot's notes as well as its own name: "ilkley wharfe" finds "River Wharfe at Ilkley".
 const fold = t => String(t ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const searchText = s => fold([s.name, s.kind, s.notes, (s.location || {}).watercourse].join(' '));
+// A–Z groups the list by area (spots.csv's `area`), north to south by the mean latitude of each area's
+// spots, A–Z within each. Not in the other orders, which rank the whole list, and not while any spot
+// has no area (a forecast built before 15 Oct 2026), so the page never shows a group without a name.
+function areaGroups(items) {
+  if (VIEW.sort !== 'name' || !items.length || DATA.spots.some(s => !s.area)) return null;
+  const by = new Map();
+  for (const s of items) { if (!by.has(s.area)) by.set(s.area, []); by.get(s.area).push(s); }
+  const lat = a => { const xs = DATA.spots.filter(s => s.area === a); return xs.reduce((t, s) => t + s.lat, 0) / xs.length; };
+  return [...by.entries()].sort(([a], [b]) => lat(b) - lat(a));
+}
+const areaHead = (a, xs) => { const low = xs.filter(s => mapLevel(s) === 'low').length;
+  return `<li class="area-head"><h3>${esc(a)} <span>· ${xs.length} spot${xs.length === 1 ? '' : 's'}, ${low || 'none'} at low risk</span></h3></li>`; };
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -2275,7 +2381,9 @@ function drawSpots() {
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
-  ul.innerHTML = items.length ? items.map(spotItem).join('')
+  const groups = areaGroups(items);
+  ul.innerHTML = groups ? groups.map(([a, xs]) => areaHead(a, xs) + xs.map(spotItem).join('')).join('')
+    : items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;

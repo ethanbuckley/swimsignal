@@ -459,10 +459,11 @@ def place(point: Point, req: Request, net, overflows, spots: list[dict], check=N
 
 
 def csv_row(sid: str, name: str, point: Point, kind: str, river: str) -> str:
-    """One spots.csv line. Notes stay blank: the page shows them to swimmers, so a maintainer writes them."""
+    """One spots.csv line. Notes and area stay blank: the page shows them to swimmers, so a maintainer
+    writes them (a test fails until the area is one of the list's)."""
     buf = io.StringIO()
     csv.writer(buf, lineterminator="").writerow(
-        [sid, _clean(name)[:100], f"{point.lat:.5f}", f"{point.lon:.5f}", kind, river, "curated", ""])
+        [sid, _clean(name)[:100], f"{point.lat:.5f}", f"{point.lon:.5f}", kind, river, "curated", "", ""])
     return buf.getvalue()
 
 
