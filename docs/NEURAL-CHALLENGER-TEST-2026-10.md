@@ -95,7 +95,7 @@ E. coli tests found most demanding (README, Method).
 5. **More rain does not lower the risk.** On the 2025 rows, adding 1 mm to every hour of the 72-hour
    window lowers the challenger's probability on fewer than 0.5% of rows, and by no more than 0.01
    on any row. The same holds for doubling every hour of the window.
-6. **Cheap to run.** The numpy forward pass for every overflow in `overflows.geojson` for five days
+6. **Cheap to run.** The numpy forward pass for every overflow in the built site's `data/overflows.geojson` for five days
    takes under 60 seconds on this Mac (an Apple M3 with 16 GB).
 
 If all six hold, the challenger replaces layer 1 in production. The lead map is refitted for it by
