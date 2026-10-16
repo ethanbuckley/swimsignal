@@ -1,5 +1,6 @@
 """The static site's pages: every spot gets a page of its own whose share preview carries its
-name (never today's level, which a cached preview would show for days), every page carries
+name (today's level only on its picture, beside when the forecast was issued, since a cached preview
+is shown for days), every page carries
 absolute preview links, a spot's page has a relative <base>, and the live scorer reports when the
 observation records its coverage rule needs begin."""
 
@@ -182,6 +183,31 @@ def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_ne
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
     page = (tmp_path / "verification.html").read_text()
     assert '<main class="doc">' in page and "Loading the scores…" in page
+
+
+def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_picture(tmp_path):
+    """og:image is the spot's own card (cards/spot/<id>.png, src/dipcast/cards.py) with this build's
+    stamp, so a preview fetched again gets the new one; its alt gives the issue time beside the level.
+    The words under the preview (description) still carry no level."""
+    bs = _build_site()
+    alt = "Wharfe: Very high risk right now: sewage spills. Forecast issued Fri 16 Oct, 21:03."
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/", spot_cards={"wharfe-ilkley": alt}, cards_v="202610162103")
+    head = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text().split("</head>")[0]
+    assert '<meta property="og:image" content="https://example.org/swim/cards/spot/wharfe-ilkley.png?v=202610162103">' in head
+    assert f'<meta property="og:image:alt" content="{alt}">' in head and '<meta property="og:image:width" content="1200">' in head
+    assert "very high" not in re.search(r'<meta name="description" content="([^"]*)"', head)[1].lower()
+    for page in ["spot/tarn/index.html", "index.html", "plan/index.html"]:
+        assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in (tmp_path / page).read_text(), page
+
+
+def test_the_build_draws_the_share_cards_from_this_runs_levels(tmp_path):
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    gen = "2026-10-16T21:03:00+01:00"
+    (tmp_path / "data" / "alerts.json").write_text(json.dumps({"generated_at": gen, "spots": {"wharfe-ilkley": {"level": "low", "headline": "Low risk"}}}))
+    assert list(bs.write_spot_cards(tmp_path, SPOTS, gen)) == ["wharfe-ilkley"] and (tmp_path / "cards" / "spot" / "wharfe-ilkley.png").exists()
+    assert bs.write_spot_cards(tmp_path, SPOTS, gen, alerts_ok=False) == {}   # this run's alerts.json failed: none, never an old level
+    assert bs.write_spot_cards(tmp_path, None, gen) == {}   # nonsense in: nothing, no exception
 
 
 def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(tmp_path):

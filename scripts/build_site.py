@@ -1288,13 +1288,16 @@ def site_url() -> str:
     return url.rstrip("/") + "/"
 
 
-def page_meta(title: str, description: str, url: str, root: str, base: str | None = None, noindex: bool = False) -> str:
+def page_meta(title: str, description: str, url: str, root: str, base: str | None = None, noindex: bool = False,
+              image: tuple[str, str] | None = None) -> str:
     """The <head> block index.html marks with page-meta. Messaging apps and search engines need
     absolute addresses for the page and its preview image. Every page gets a relative <base> at
     the site root ("./" on the home page, "../../" in spot/<id>/). The page moves between the list
     and spots with pushState, and without a <base> every relative link would then resolve inside
     spot/<id>/; a <base> is resolved once, as the page loads. Relative, so the pages work at any
-    address (a custom domain serves the site at / rather than /dipcast/)."""
+    address (a custom domain serves the site at / rather than /dipcast/). image: a picture of the page's
+    own and its description, (path from the site root, alt), in place of the shared icons/og.png."""
+    src, alt = image or ("icons/og.png", f"{BRAND}: pollution risk forecasts for river and lake swim spots")
     return "\n".join([
         *([f'<base href="{escape(base)}">'] if base else []),
         f"<title>{escape(title)}</title>",
@@ -1306,10 +1309,10 @@ def page_meta(title: str, description: str, url: str, root: str, base: str | Non
         f'<meta property="og:title" content="{escape(title)}">',
         f'<meta property="og:description" content="{escape(description)}">',
         f'<meta property="og:url" content="{escape(url)}">',
-        f'<meta property="og:image" content="{escape(root)}icons/og.png">',
+        f'<meta property="og:image" content="{escape(root + src)}">',
         '<meta property="og:image:width" content="1200">',
         '<meta property="og:image:height" content="630">',
-        f'<meta property="og:image:alt" content="{escape(BRAND)}: pollution risk forecasts for river and lake swim spots">',
+        f'<meta property="og:image:alt" content="{escape(alt)}">',
         '<meta name="twitter:card" content="summary_large_image">',
     ])
 
@@ -1361,15 +1364,15 @@ def home_lead(n: int) -> str:
             f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
 
 
-def spot_page(template: str, spot: dict, root: str, top: str | None = None) -> str:
+def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
-    <head>. In the body, top: the spot's answer and five days as the page's script draws them
+    <head>, and its share card (card: path and alt, write_spot_cards) as the preview picture. In the body, top: the spot's answer and five days as the page's script draws them
     (prerender_spots), for crawlers, readers without scripts and the moment before the script runs.
     Without it, its name under the sky, as the answer will be (see home_lead)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
-                                             base="../../"), template, count=1)
+                                             base="../../", image=card), template, count=1)
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
@@ -1644,11 +1647,13 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
-                push_dates: bool = False) -> int:
+                push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "") -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
-    provider (tile_config), or None for OpenStreetMap's."""
+    provider (tile_config), or None for OpenStreetMap's. spot_cards: {id: alt} for the spots with a share
+    card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
+    gets this build's card rather than a cached one."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
@@ -1711,7 +1716,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             log.warning("spot id %r is not letters, digits and hyphens: no page of its own, it keeps ?spot=", r["id"])
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
-        (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"])), token))
+        (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
+            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/
@@ -2001,6 +2007,20 @@ def write_cards(site: Path, results: list[dict], generated_at: str, root: str, a
         return {"warning": f"cards not written: {e}"}
 
 
+def write_spot_cards(site: Path, results: list[dict], generated_at: str, alerts_ok: bool = True) -> dict[str, str]:
+    """site/cards/spot/<id>.png, each spot's share card with its level in the page's own words (this
+    run's alerts.json; src/dipcast/cards.py). Returns {id: alt}. Nothing here stops the build: without
+    the cards the pages keep the shared picture, and the log says why."""
+    try:
+        from dipcast import cards
+        path = site / "data" / "alerts.json"
+        alerts = json.loads(path.read_text()) if alerts_ok and path.exists() else None
+        return cards.write_spot_cards(site / "cards" / "spot", results, alerts, generated_at)
+    except Exception as e:  # noqa: BLE001 - a picture for previews must never stop the site publishing
+        log.warning("spot share cards not written: %s", e)
+        return {}
+
+
 def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> None:
     """A spot's sign, spot/<id>/sign/index.html, and its QR code as a file, spot/<id>/qr.svg."""
     from dipcast.signs import page_url, qr_file, sign_page
@@ -2120,6 +2140,8 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
+    spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
+    health["spot_cards"] = len(spot_cards)
     health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
     (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
@@ -2135,7 +2157,8 @@ def build(refresh: bool = True) -> dict:
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
-                                       push_dates=bool(push and push.get("dates")))
+                                       push_dates=bool(push and push.get("dates")),
+                                       spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"))
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
