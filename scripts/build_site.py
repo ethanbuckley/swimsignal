@@ -189,6 +189,17 @@ TILE_PROVIDERS = {
     "thunderforest-outdoors": {**_THUNDERFOREST, "url": "https://api.thunderforest.com/outdoors/{z}/{x}/{y}{r}.png?apikey=__KEY__"},
 }
 TILE_LINE = "L.tileLayer('{url}', {{ maxZoom: 19,\n  attribution: '{credit}' }})"
+# The preconnect in index.html's head, for the tile host; with_tiles swaps the host, so the
+# page opens the right connection early. No crossorigin: the tiles are plain images.
+TILE_PRECONNECT = '<link rel="preconnect" href="{origin}">'
+
+
+def tile_origin(url: str) -> str:
+    """The scheme and host of a tile URL template: https://basemaps.cartocdn.com."""
+    m = re.match(r"(https://[^/]+)/", url)
+    if not m:
+        raise ValueError(f"tile url has no https host: {url!r}")
+    return m.group(1)
 OSM_PRIVACY_LI = ('<li><b>The OpenStreetMap Foundation</b>, for the map images. Its '
                   '<a href="https://osmfoundation.org/wiki/Privacy_Policy">privacy policy</a> applies.</li>')
 OSM_TERMS = "map tiles from the OpenStreetMap Foundation."
@@ -481,6 +492,10 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
         if before not in html:
             raise ValueError("index.html has lost its tile layer line: build_site.TILE_LINE no longer matches it")
         html = html.replace(before, TILE_LINE.format(**tiles))
+        pre = TILE_PRECONNECT.format(origin=tile_origin(osm["url"]))
+        if pre not in html:
+            raise ValueError("index.html has lost its tile preconnect: build_site.TILE_PRECONNECT no longer matches it")
+        html = html.replace(pre, TILE_PRECONNECT.format(origin=tile_origin(tiles["url"])))
         if tiles.get("filter"):   # tuned to the provider's own colours; Thunderforest keeps OpenStreetMap's
             if not TILE_FILTER.search(html):
                 raise ValueError('index.html has lost its <filter id="tiles">: build_site.TILE_FILTER no longer finds it')
