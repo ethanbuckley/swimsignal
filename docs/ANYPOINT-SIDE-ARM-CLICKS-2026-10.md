@@ -85,8 +85,9 @@ match main exactly. Whether that is enough is Ethan's decision.**
      - this branch gives the same three under the same seeds;
      - the rerun this morning had main at 9E639D5A.
 
-     Python orders sets of strings by a per-process random seed, and Lakeside's link comes from a tie
-     that this order settles. Its lake and its overflows never change.
+     Established: the link depends on the hash seed; its lake and its overflows do not. Inferred, not
+     traced in the code: Python orders sets of strings by that per-process seed, and Lakeside's link
+     comes from a tie the order settles.
    - **With `PYTHONHASHSEED=1` in both processes, 0 of 105 spots differ.**
 4. **Size: passes.** +0.85 MB.
 5. **Reach: passes.**
