@@ -30,8 +30,11 @@ def test_lite_file_leaves_out_overflows_and_guides_and_each_spot_file_has_them(t
     stale.parent.mkdir(parents=True)
     stale.write_text("{}")                                     # a spot no longer listed
     assert bs.write_app_data(tmp_path, doc) == 3
-    lite = json.loads((tmp_path / "data" / "spots-lite.json").read_text())
+    text = (tmp_path / "data" / "spots-lite.json").read_text()
+    lite = json.loads(text)
     assert {k: v for k, v in lite.items() if k != "spots"} == {k: v for k, v in doc.items() if k != "spots"}
+    # The push Worker reads the build's time from the file's first 4 KB (push/src/dispatch.js, firstField).
+    assert text.startswith(f'{{"generated_at":"{doc["generated_at"]}",')
     by = {s["id"]: s for s in lite["spots"]}
     assert [s["id"] for s in lite["spots"]] == [s["id"] for s in doc["spots"]]   # same spots, same order
     for sid in ("thames-henley", "henleaze-lake", "osm-great-ouse-overcote"):
