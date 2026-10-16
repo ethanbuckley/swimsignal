@@ -61,10 +61,14 @@ network's load mended (RiverNetwork.topology_key), the lake path mode and CACHE_
 overflows are added, removed or moved, only the links downstream of them (within
 config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
 
-Rain: every overflow's cell (about 1,650) against the spots' 300. Open-Meteo stopped answering
+Rain: every overflow's cell (about 1,590) against the spots' 330. Open-Meteo stopped answering
 this build after 600 locations in a minute (3 Oct 2026), so each build fetches at most
 RAIN_CELLS_PER_BUILD of the oldest cells and uses cached ones up to RAIN_MAX_AGE_H old; an
-overflow without either has no rain data, which the page shows as no data, as for a spot.
+overflow without either has no rain data, which the page shows as no data, as for a spot. A cell
+is asked for again only once its cached forecast is RAIN_REFRESH_H old, however many builds run:
+with a 1-hour floor, builds every 30 minutes would have asked for 300 cells each time, 14,400
+Open-Meteo calls a day, more than the free 10,000 alone. At 12 hours the 1,270 cells the spots do
+not share cost about 2,540 a day.
 """
 
 from __future__ import annotations
@@ -132,6 +136,7 @@ OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
 RAIN_MAX_AGE_H = 24.0
+RAIN_REFRESH_H = 12.0   # a cell is asked for at most every 12 hours (module docstring, "Rain")
 
 
 # ------------------------------------------------------------------ helpers
@@ -969,10 +974,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
 
 # ------------------------------------------------------------------ rain and the days
 def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
-                   max_age_h: float = RAIN_MAX_AGE_H) -> tuple[pd.DataFrame, dict]:
+                   max_age_h: float = RAIN_MAX_AGE_H, refresh_h: float = RAIN_REFRESH_H) -> tuple[pd.DataFrame, dict]:
     """Hourly rain for every overflow's cell: the cached forecast where it is under max_age_h old,
-    after fetching the `budget` oldest cells that are due (over rainfall.FORECAST_TTL_S old, or
-    never fetched). A failed fetch keeps what is cached; nothing here raises."""
+    after fetching the `budget` oldest cells that are due (`refresh_h` old, or never fetched). A
+    failed fetch, or one the day's Open-Meteo ration has no room for, keeps what is cached; nothing
+    here raises."""
     from dipcast.ingest import rainfall
     cells = rainfall.cells_for_sites(sub["lat"], sub["lon"])
     path = {c: rainfall.CACHE / f"forecast_{rainfall.cell_key(*c)}.parquet" for c in cells}
@@ -980,7 +986,7 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
     def age(c) -> float:
         return time.time() - path[c].stat().st_mtime if path[c].exists() else math.inf
 
-    due = sorted((c for c in cells if age(c) >= rainfall.FORECAST_TTL_S), key=lambda c: -age(c))
+    due = sorted((c for c in cells if age(c) >= max(rainfall.FORECAST_TTL_S, refresh_h * 3600)), key=lambda c: -age(c))
     take = due[:max(0, budget)]
     error = None
     if take:
@@ -988,7 +994,7 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
         try:
             # One retry, after 1-2 s or a Retry-After of up to a minute. A failed request no longer
             # raises or stops the later ones; its cells keep their cached forecast, read below.
-            rainfall.fetch_forecast(take, attempts=2)
+            rainfall.fetch_forecast(take, attempts=2, what="anypoint")
         except Exception as e:  # noqa: BLE001 - what was fetched before the failure is kept
             error = str(e)
         error = error or next(iter(rainfall.fetch_errors()[seen:]), None)
@@ -999,7 +1005,7 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
     rain = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=cols)
     fetched = sum(1 for c in take if age(c) < rainfall.FORECAST_TTL_S)
     return rain, {"cells": len(cells), "due": len(due), "fetched": fetched, "usable": len(frames),
-                  **({"error": error} if error else {})}
+                  "calls": rainfall.forecast_weight(fetched), **({"error": error} if error else {})}
 
 
 def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, past: int, now: pd.Timestamp,

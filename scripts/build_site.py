@@ -1107,35 +1107,78 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
 
 
 WEATHER_CREDIT = "Weather data by Open-Meteo.com"
+# The weather's refresh floor. Asked for in every build, it was 105 calls a build, 5,040 a day at a
+# build every 30 minutes. A daily high, sunrise and sunset change little in 3 hours.
+WEATHER_REFRESH_H = 3.0
+WEATHER_CACHE = "weather.json"
 
 
-def attach_weather(results: list[dict], request=None, batch: int = 50) -> int:
+def _weather_key(r: dict) -> str:
+    return f"{r['lat']:.3f},{r['lon']:.3f}"
+
+
+def attach_weather(results: list[dict], request=None, batch: int = 50, cache: Path | None = None,
+                   refresh_h: float = WEATHER_REFRESH_H) -> int:
     """Each spot's daytime high, sunrise and sunset for the forecast's days, from Open-Meteo in a
     few calls for all spots (three daily variables over five days weigh one call per location).
-    Context beside the forecast, not an input to it; a failed call leaves the spots without."""
-    from dipcast.ingest.rainfall import _request
-    request = request or _request
+    Context beside the forecast, not an input to it. The answers are kept in `cache` (in the rain
+    cache, so they persist with the state) and used again while under `refresh_h` old and from the
+    same Europe/London day, so only spots not in it are asked for; the day's Open-Meteo ration
+    (rainfall.may_spend) can hold the request back. A failed or held call leaves a spot with what
+    the cache has from today, or without."""
+    from dipcast.ingest import rainfall
+    request = request or rainfall._request
+    cache = cache or rainfall.CACHE / WEATHER_CACHE
     spots = [r for r in results if not (r.get("error") and str(r["error"]).startswith("forecast failed"))]
-    n = 0
-    for i in range(0, len(spots), batch):
-        chunk = spots[i:i + batch]
+    today = pd.Timestamp.now(tz="Europe/London").strftime("%Y-%m-%d")
+    try:
+        stored = json.loads(cache.read_text())
+        stored = stored if isinstance(stored, dict) and stored.get("day") == today else {}
+    except (OSError, ValueError):
+        stored = {}
+    known = stored.get("points") or {}
+    fresh = bool(known) and time.time() - float(stored.get("fetched_at", 0)) < refresh_h * 3600
+    todo = [r for r in spots if not (fresh and _weather_key(r) in known)]
+    got = {}
+    for i in range(0, len(todo), batch):
+        chunk = todo[i:i + batch]
+        weight = rainfall.call_weight(len(chunk), config.FORECAST_DAYS, variables=3)
+        if not rainfall.may_spend(weight, "weather"):
+            break
         try:
             res = request(config.OPEN_METEO_FORECAST, {
                 "latitude": ",".join(f"{r['lat']:.3f}" for r in chunk), "longitude": ",".join(f"{r['lon']:.3f}" for r in chunk),
                 "daily": "temperature_2m_max,sunrise,sunset", "forecast_days": config.FORECAST_DAYS, "timezone": "Europe/London"}, timeout=30)
         except Exception as e:  # noqa: BLE001 - context beside the forecast must not sink the build
+            if isinstance(e, rainfall.OpenMeteoBadBody):
+                rainfall.spend(weight, "weather")
             log.warning("weather: %s", e)
-            return n
+            break
+        rainfall.spend(weight, "weather")
         for r, w in zip(chunk, res if isinstance(res, list) else [res], strict=False):
-            d = (w or {}).get("daily") or {}
-            try:
-                days = [{"date": t, "tmax": None if x is None else round(float(x)), "sunrise": str(sr)[11:16], "sunset": str(ss)[11:16]}
-                        for t, x, sr, ss in zip(d["time"], d["temperature_2m_max"], d["sunrise"], d["sunset"], strict=True)]
-            except (KeyError, TypeError, ValueError) as e:
-                log.warning("weather for %s: %s", r["name"], e)
-                continue
-            r["weather"] = {"days": days, "credit": WEATHER_CREDIT}
-            n += 1
+            got[_weather_key(r)] = (w or {}).get("daily") or {}
+    if got:
+        # Spots added to a fresh set keep its time, so the whole set is asked for again together.
+        keep = {**known, **got} if fresh else got
+        try:
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps({"day": today, "fetched_at": stored.get("fetched_at") if fresh else time.time(),
+                                         "points": keep}))
+        except OSError as e:
+            log.warning("weather cache not written: %s", e)
+    n = 0
+    for r in spots:
+        d = got.get(_weather_key(r)) or known.get(_weather_key(r))
+        if d is None:
+            continue
+        try:
+            days = [{"date": t, "tmax": None if x is None else round(float(x)), "sunrise": str(sr)[11:16], "sunset": str(ss)[11:16]}
+                    for t, x, sr, ss in zip(d["time"], d["temperature_2m_max"], d["sunrise"], d["sunset"], strict=True)]
+        except (KeyError, TypeError, ValueError) as e:
+            log.warning("weather for %s: %s", r["name"], e)
+            continue
+        r["weather"] = {"days": days, "credit": WEATHER_CREDIT}
+        n += 1
     return n
 
 
@@ -2192,6 +2235,10 @@ def build(refresh: bool = True) -> dict:
         # to the state directory alone; the build log gets counts and costs, no scores.
         from dipcast.scottish_shadow import run as scottish_shadow
         summary["scottish_water_shadow"] = scottish_shadow(_net())
+    if refresh:
+        # Open-Meteo calls since 00:00 UTC by every build that day, and what the ration held back.
+        from dipcast.ingest.rainfall import calls_today
+        summary["open_meteo"] = calls_today()
     log.info("site built: %s", summary)
     return summary
 
