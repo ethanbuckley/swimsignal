@@ -152,7 +152,7 @@ overflows, and a model fitted on the earlier years over-predicts it. On wet days
 climatology; on dry days 0.023 against 0.038.
 
 **Transport.** For each upstream overflow: distance along the network (plus a
-straight-line lake crossing for lake spots), travel time at a fixed reach
+lake crossing for lake spots, the shortest way through the lake's water), travel time at a fixed reach
 velocity of 0.5 m/s (0.05 m/s across lakes), first-order
 die-off with T90 = 30 h, and dilution as the ratio of upstream network length
 at the outfall to that at the spot. The product is the probability that a spill
@@ -184,8 +184,12 @@ same mode.
 **Lakes.** A click inside or within 150 m of a WFD lake polygon is treated as
 that lake. The lake's centreline links (OS Open Rivers `form = lake`) inside the
 polygon define its outlet; every overflow upstream of the outlet contributes,
-its water routed along the network to where it enters the lake and then
-straight-line to the click. Lake dilution divides the weight by
+its water routed along the network to where it enters the lake and then by the
+shortest way through the WFD lake's water to the click, not a straight line over
+land (lake distance `water`, the default after docs/LAKE-DISTANCE-2026-10.md;
+`DIPCAST_LAKE_DISTANCE_MODE=line` is the rule before). At Pooley Bridge,
+Glenridding WwTW's line ran 6.7 of 10.9 km over land; through the water it is
+11.5 km. Lake dilution divides the weight by
 1 + area / 5 km², so Windermere's north basin (8.7 km²) cuts a shoreline spill's
 weight to about a third. Windermere is two WFD basins and is treated as such.
 A WFD lake that an overflow's water crosses on the way to a spot, river or lake, is

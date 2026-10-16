@@ -28,6 +28,8 @@ Everything is written under site/data/anypoint/:
                        and dilution before the lake-area term, and any WFD lake crossed before it)
   lake_outlines/<n>.json the real outline of the n-th WFD lake, which the page fetches when a click is
                        too near 150 m from the simplified outline in lakes.json to tell
+  lake_water/<n>.json  lake distance "water": the water of the n-th lake in lakes.json's lakes, and the way
+                       from each of its inlets into it, which the page fetches for a click placed on that lake
   outside_england.json Wales, Scotland and the island of Ireland, widened over their estuaries, where a
                        click gets "England only", and which part of the island is Northern Ireland (a
                        copy of data/raw/outside_england.json, scripts/make_outside_england.py)
@@ -44,6 +46,10 @@ velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake
 path "residence" (off by default, docs/LAKE-RESIDENCE-TEST-2026-10.md) a lake with a residence time is
 crossed as a well-mixed lake instead: the records carry, per overflow, its metres, the survivors' hours
 in it and the share that leaves it alive ("h"), and its area factor is left out of the path factor.
+In lake distance "water" (the default since docs/LAKE-DISTANCE-2026-10.md) a lake click's distance from each inlet
+is the shortest way through the lake's water (model/lake_water.py): lake_water/<n>.json carries the lake's water (its
+reflex corners and outlines) and, per inlet, where it enters the water and the metres on to every corner (ways), and
+the lake in lakes.json says it has one (water: true). Lake distance "line" writes none.
 
 The upstream lists depend on the network, on where each overflow sits on it and on the transport
 rule. They are cached in the state directory keyed by the network and lakes files' hashes, what the
@@ -74,7 +80,7 @@ import pandas as pd
 import shapely
 
 from dipcast import config
-from dipcast.model import transport
+from dipcast.model import lake_water, transport
 from dipcast.model.transport import (
     L0_M,
     LAKE_A0_KM2,
@@ -96,6 +102,7 @@ TILE_DEG = 0.25           # squares of 0.25 degrees: about 28 km north-south, 17
 LAKE_SIMPLIFY_M = 15.0    # lake outlines in lakes.json; the shore rule is 150 m. Each carries how far it is from
                           # the real outline (err), and the page fetches the real one (lake_outlines/) when that matters
 OUTLINE_DP = 6            # decimals of the real outlines: 0.1 m
+WATER_INSIDE_M = 1.0      # lake distance "water": the widened outline a straight way must stay in, simplified
 DAYS_AHEAD = 4            # today and four more, as forecast_point
 DIL_SCALE = 10_000        # dilutions and dilution ratios in ten-thousandths
 PATH_SCALE = 1_000_000    # the lake factor of lakes crossed on the way, in millionths
@@ -624,6 +631,22 @@ def ids_version(ids: list[str]) -> str:
     return hashlib.sha256("\n".join(ids).encode()).hexdigest()[:12]
 
 
+def _water_json(w) -> dict:
+    """A lake's water (lake distance "water") as the page reads it, in lon/lat to six decimals."""
+    def rings(g, tol=0.0) -> list:
+        g = shapely.simplify(g, tol) if tol else g
+        out = []
+        for part in getattr(g, "geoms", [g]):
+            for ring in [part.exterior, *part.interiors]:
+                x, y = np.asarray(ring.coords)[:, :2].T
+                rlon, rlat = _to_lonlat(x, y)
+                out.append(np.round(np.column_stack([rlon, rlat]), 6).tolist())
+        return out
+    clon, clat = _to_lonlat(w.xy[:, 0], w.xy[:, 1]) if len(w.xy) else (np.zeros(0), np.zeros(0))
+    return {"corners": np.round(np.column_stack([clon, clat]), 6).tolist(), "inside": rings(w.test, WATER_INSIDE_M),
+            "shore": rings(w.region)}
+
+
 def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net_hash: str,
                 credits: dict | None = None) -> dict:
     """Every file except overflow_days.json and tiles.json. Returns {ids, ids_version, tiles,
@@ -730,6 +753,9 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     held = max((hh for rec in records.values() for _, hh, _ in rec.get("hold", {}).values()), default=0.0)
     past = history_days(np.array([((cap - crossed) / v + crossed / v_lake) / 3600.0 + held]))   # held: an upper bound
     lakes_json = []
+    (out / "lake_water").mkdir(parents=True, exist_ok=True)
+    for f in (out / "lake_water").iterdir():
+        f.unlink()
     for k in lake_ids:
         r = table["lake_rows"][k]
         r = r[[sid in pos for sid in r["site_id"]]].copy()
@@ -739,7 +765,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             r["lake_m"], r["factor"] = 0.0, 1.0
         if "res_m" not in r:    # rows from before lake path "residence"
             r["res_m"], r["hold_h"], r["lake_pass"] = 0.0, 0.0, 1.0
-        inlets = []
+        comp = table["wfd"][int(k[1:])]["links"] if k.startswith("w") else table["comp_sets"][k]
+        # Lake distance "water": the lake's water, and from each inlet its way into it and to every corner.
+        water = transport.links_water(net, comp) if config.LAKE_DISTANCE_MODE == "water" and comp else None
+        far_via = 0.0
+        inlets, ways = [], []
         for (a, b), g in r.groupby(["lon", "lat"], sort=True):
             flat, cross, mix = [], [], []
             for s, d, w, m, f, rm, hh, ps in zip(g["site_id"], g["distance_m"], g["dilution"], g["lake_m"], g["factor"],
@@ -749,8 +779,15 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
                     cross += [pos[s], round(float(m)), round(float(f) * PATH_SCALE)]
                 if hh > 0:
                     mix += [pos[s], round(float(rm)), round(float(hh) * HOLD_SCALE), round(float(ps) * PASS_SCALE)]
+            way = None
+            if water is not None:
+                px, py, leg, via = lake_water.from_point(water, float(g["entry_x"].iloc[0]), float(g["entry_y"].iloc[0]))
+                (plon,), (plat,) = _to_lonlat(np.array([px]), np.array([py]))
+                way = [round(float(plon), 6), round(float(plat), 6), round(leg, 1),
+                       *[round(float(v)) if np.isfinite(v) else -1 for v in via]]
+                far_via = max(far_via, float(np.max(via[np.isfinite(via)], initial=0.0)))
+            ways.append(way)
             inlets.append({"at": [float(a), float(b)], "o": flat, **({"k": cross} if cross else {}), **({"h": mix} if mix else {})})
-        comp = table["wfd"][int(k[1:])]["links"] if k.startswith("w") else table["comp_sets"][k]
         # The furthest a click in this lake can be from an inlet: across the lake's box, plus the
         # shore rule (WFD lakes) or the snap radius (centreline lakes). It sets how many past days
         # of spill probabilities the page may need (transport.history_days).
@@ -763,6 +800,8 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         if len(r):
             far = max(math.hypot(max(abs(ex - x0), abs(ex - x1)) + pad, max(abs(ey - y0), abs(ey - y1)) + pad)
                       for ex, ey in zip(r["entry_x"], r["entry_y"], strict=True))
+            if water is not None:   # round the bends: to a corner, then across the box
+                far = max(far, far_via + math.hypot(x1 - x0, y1 - y0) + pad)
             travel = float(((r["distance_m"] - r["lake_m"]) / v + (far + r["lake_m"]) / v_lake).max()) / 3600.0
             travel += float(r["hold_h"].max())   # lake path "residence": an upper bound
             past = max(past, history_days(np.array([travel])))
@@ -770,7 +809,10 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         if k.startswith("c"):
             own = [own_name[j] for j in sorted(links.index.get_indexer(list(comp)))]
             name = next((n for n in own if isinstance(n, str) and n), None)
-        lakes_json.append({"id": k, "name": name, "inlets": inlets})
+        lakes_json.append({"id": k, "name": name, "inlets": inlets, **({"water": True} if water is not None else {})})
+        if water is not None:
+            (out / "lake_water" / f"{lake_pos[k]}.json").write_text(json.dumps(
+                {"ids": idv, **_water_json(water), "ways": ways}, separators=(",", ":")))
     # WFD lake outlines (exterior rings: no island has a point more than 150 m from its water). lakes.json has
     # them simplified to LAKE_SIMPLIFY_M, with err, the most they are off by; lake_outlines/<n>.json has the real ones.
     def rings_of(g, dp: int) -> list:
@@ -813,7 +855,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
                  "multiply the dilution by) for the overflows in o whose water crosses one; h = flat quadruples (lake path "
                  "residence: overflow index, metres of those lakes with a residence time, which do not travel at the lake "
                  "velocity, survivors' hours in them x 1000 added to the travel time, share alive x 1000000000 to multiply "
-                 "the die-off by)."),
+                 "the die-off by). lakes[].water: true where lake_water/<place in lakes>.json has the lake's water (lake "
+                 "distance water): corners, the reflex corners of the lake's water (model/lake_water.py); inside, its outline "
+                 "widened by 10 m, which a straight way must stay in; shore, its outline, for a click outside it; ways, one per "
+                 "inlet in order: where it enters the water (lon, lat), the metres to there, then the metres through the water "
+                 "to each corner, -1 where none."),
         "polygons": polys, "lakes": lakes_json, **({"credits": credits} if credits else {})}, separators=(",", ":")))
 
     names = ovl["site_name"].where(ovl["site_name"].notna(), None) if "site_name" in ovl else pd.Series(None, index=ovl.index)

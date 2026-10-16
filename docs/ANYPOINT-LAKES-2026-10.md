@@ -175,3 +175,56 @@ placed by another lake centreline now agrees.
   1,993 clicks did.
 - No new squares: every square a lake link near such a lake touches already had files. The rule stays, for a
   lake far from any overflow (Quiet Water in the tests).
+
+---
+
+## Option C, built (16 October 2026)
+
+Ethan picked option C for class 1. Written before the sweep below was run.
+
+**The rule.** A click within 150 m of a WFD lake that has no lake centreline within 1.5 km of the click:
+- on the lake's water (inside the outline of one of its parts, islands included): that lake, isolated;
+- on its shore (outside the outline): placed as if the lake were not there, by the river rule.
+
+**Where it is.**
+- API: `transport._locate`, step 1. It applies to points with no lake hint. A listed lake spot still goes to
+  `_locate_lake`, as before. All 105 listed spots in `spots.csv` and `spots-osm.csv` were placed with main's
+  code and this branch's: none moves.
+- Page: `anypoint.js`, `place`. Whether a click is on the water is settled on the real outline when the 15 m
+  one is within `err` of it (`outlinesNeeded`).
+- Islands: no WFD island has a point more than 150 m from its water, so an island click is always that lake.
+- The isolated pin now carries the lake's name and area in the API, as the page shows them.
+
+**Not changed.** The lake with no centreline inside still takes the centreline nearest the click (Eccup).
+
+**What I expect** (seeds 18 and 19 as above, and a fresh seed 20; full river lines):
+- Class 1: **0** of the 600 shore clicks.
+- The 51 class 1 clicks on seeds 18 and 19: the 16 on the water agree as isolated; the 35 on the shore agree
+  as river.
+- A new kind of miss is possible: a shore click where the page has no squares near (no overflow anywhere
+  near), so it says there is nothing to forecast, while the API names a river with no overflows. Both give no
+  forecast. I expect at most 3.
+- Agree on seeds 18 and 19: at least 395 of 400 shore clicks (main: 349). Seed 20: at least 196 of 200.
+- River clicks: the same as main.
+
+### Results
+
+Run on 16 October 2026 from commit 868ad8a, against main baba005, with the same API answers on each side
+except for the rule itself.
+
+| Shore clicks | main | option C |
+|---|---|---|
+| seed 18 | 168 of 200 | **200** |
+| seed 19 | 181 of 200 | **200** |
+| seed 20 (fresh) | 176 of 200 | **200** |
+| all | 525 of 600 | **600 of 600** |
+
+- Main's 75 misses were all class 1. On seed 20 they included the River Don click with 436 overflows.
+- No shore click hit the case I flagged (page with no squares near, API on a river): 0.
+- River clicks: 1,189 of 1,195 on the line and 1,191 of 1,196 off it agree (main: 1,188 and 1,189). Option C
+  fixes 3 river clicks that were within 150 m of such a lake. The 11 misses left are on both sides: the same
+  link, with a distance 6.0 to 7.1 m out (#225's tens of metres).
+- Real outlines fetched: 70 of about 2,990 clicks. More than before, since a click near such a lake's outline
+  needs it to tell water from shore.
+
+All predictions held.
