@@ -169,3 +169,14 @@ def test_built_up_area_is_split_equally_between_its_overflows():
     assert out.loc[["t1", "t2", "t3"], "urban_km2"].tolist() == pytest.approx([4 / 3] * 3)
     assert out.loc["v1", "urban_km2"] == pytest.approx(1.0) and out.loc["v1", "n_in_bua"] == 1
     assert pd.isna(out.loc["far", "bua22cd"]) and out.loc["far", "urban_km2"] == mk.FLOOR_KM2
+
+
+def test_dilution_power_raises_the_capped_length_ratio(net):
+    """docs/TRANSPORT-FIT-TEST-2026-10.md: an exponent on the length ratio. 1 is the rule in use, exactly."""
+    assert transport.DILUTION_POWER == 1.0
+    up = _trace(net)
+    assert up.equals(_trace(net, dilution_power=1.0))
+    sq = _trace(net, dilution_power=2.0)
+    assert sq["dilution"].to_numpy() == pytest.approx(up["dilution"].to_numpy() ** 2)
+    assert sq["weight"].to_numpy() == pytest.approx(up["decay"].to_numpy() * up["dilution"].to_numpy() ** 2)
+    assert sq["travel_h"].equals(up["travel_h"])   # only the dilution moves

@@ -86,6 +86,7 @@ from dipcast.network.rivers import RiverNetwork, Snap, lonlat_to_bng
 log = logging.getLogger(__name__)
 
 L0_M = 5_000.0          # dilution smoothing length
+DILUTION_POWER = 1.0    # exponent on the length ratio (dilution "length"); docs/TRANSPORT-FIT-TEST-2026-10.md
 LAKE_SNAP_M = 1_500.0   # fallback: a pin this close to a lake centreline is 'in the lake'
 LAKE_SHORE_M = 150.0    # a click this close to a WFD lake polygon counts as in that lake
 LAKE_NAMED_M = 1_000.0  # a lake spot named after a WFD lake this close is in that lake
@@ -912,7 +913,8 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
                        dilution_mode: str | None = None, lake_path_mode: str | None = None,
-                       lake_distance_mode: str | None = None) -> pd.DataFrame:
+                       lake_distance_mode: str | None = None,
+                       dilution_power: float = DILUTION_POWER) -> pd.DataFrame:
     """Overflows upstream of the pin with distance, travel time and transport weight.
     `velocity_mode`, `dilution_mode` and `lake_path_mode` default to config.VELOCITY_MODE,
     config.DILUTION_MODE and config.LAKE_PATH_MODE.
@@ -926,7 +928,8 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     lake_hold_h for it in place of its metres at LAKE_VELOCITY_MS, decay is the die-off of the rest of
     the journey times lake_pass, and its area factor is dropped. Other lakes are crossed as in 'lake'.
     `lake_distance_mode` (default config.LAKE_DISTANCE_MODE) sets, for a lake spot, the distance from where
-    each overflow's water enters the spot's lake to the spot (spot_lake_m)."""
+    each overflow's water enters the spot's lake to the spot (spot_lake_m).
+    `dilution_power` raises dilution 'length''s ratio, after its cap at 1, to that power (1 leaves it as it is)."""
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
@@ -1053,7 +1056,7 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         ov["dilution"] = np.asarray(urban_dilution(overflow_urban_km2(ov).to_numpy(), spot_up_full), dtype=float)
     else:
         ov_lup = ov["start_node"].map(lup).fillna(0.0) + (1.0 - ov["frac"]) * ov["link_length"] * 0  # at the outfall
-        ov["dilution"] = np.minimum(1.0, (ov_lup + L0_M) / (spot_lup + L0_M))
+        ov["dilution"] = np.power(np.minimum(1.0, (ov_lup + L0_M) / (spot_lup + L0_M)), dilution_power)
     if pin.mode == "lake" and pin.lake_area_km2:
         # A big lake dilutes an inflow far more than a river reach of similar
         # upstream network would; halve the weight at LAKE_A0_KM2 and shrink from there.
