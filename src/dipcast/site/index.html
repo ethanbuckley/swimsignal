@@ -183,6 +183,10 @@
   .map-legend .keys { display:flex; flex-wrap:wrap; gap:2px 12px; }
   .map-legend .ovkey { margin-top:4px; padding-top:4px; border-top:1px solid var(--line); color:var(--muted); }
   .map-legend .ovkey[hidden] { display:none; }
+  /* The traced river's key (drawTrace): a short stroke of the line itself, the brand teal, 2 px. */
+  .map-legend .trkey { margin-top:4px; padding-top:4px; border-top:1px solid var(--line); color:var(--muted); }
+  .trkey[hidden] { display:none; }
+  .trline { display:inline-block; width:16px; height:0; border-top:2px solid var(--brand); margin-right:6px; vertical-align:middle; }
   .dot { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:6px; vertical-align:-1px; box-shadow:0 0 0 1.5px var(--card), 0 0 0 2.5px var(--track); }
   /* The map's "Low risk only" switch, and the list's chip for the same thing. */
   .low-ctl { display:flex; flex-direction:column; align-items:flex-end; }
@@ -2104,10 +2108,40 @@ const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very hig
 const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
   el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}</div>`
-    + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`;
+    + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`
+    + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
   L.DomEvent.disableClickPropagation(el); return el; };
 legend.addTo(map);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
+// The river the forecast traced upstream of the open spot (build_site.write_traces, data/spot/<id>-trace.json;
+// docs/REVIEW-2026-10-16.md, G6): the water that reaches the spot, every river and stream within 60 km
+// above it, so a counted overflow 40 km away is seen to sit on it. From zoom 10, where the line follows
+// its river; further out it is a tangle over the whole catchment. In a pane of its own under the overlay
+// pane (400), where the overflows' circles are drawn, so they sit on it. The file is asked for once a
+// spot, when first drawn; sw.js stores it with the spot's own file. It joins contribLayer, which each
+// view clears; the map's layerremove then hides its key, here and on a phone's Upstream tile.
+map.createPane('trace').style.zIndex = 350;
+const TRACE_ZOOM = 10, TRACES = new Map();
+let traceLine = null;
+// An encoded polyline (src/dipcast/trace.py, encode) as [lat, lon] points.
+function decodeLine(str) {
+  const pts = []; let i = 0, lat = 0, lon = 0;
+  const next = () => { let shift = 0, res = 0, b; do { b = str.charCodeAt(i++) - 63; res |= (b & 31) << shift; shift += 5; } while (b >= 32); return res & 1 ? ~(res >> 1) : res >> 1; };
+  while (i < str.length) { lat += next(); lon += next(); pts.push([lat / 1e5, lon / 1e5]); }
+  return pts;
+}
+const traceKey = on => document.querySelectorAll('.trkey').forEach(k => { k.hidden = !on; });
+function drawTrace() {
+  const s = current;
+  if (traceLine) contribLayer.removeLayer(traceLine);
+  if (!s || !s.detail_file || map.getZoom() < TRACE_ZOOM) return;
+  if (!TRACES.has(s.id)) TRACES.set(s.id, fetch(`data/${s.detail_file.replace(/\.json$/, '-trace.json')}`)
+    .then(r => r.ok ? r.json() : null).then(j => j && j.id === s.id && Array.isArray(j.lines) ? j.lines.map(decodeLine) : null).catch(() => null));
+  TRACES.get(s.id).then(lines => { if (!lines || !lines.length || current !== s || map.getZoom() < TRACE_ZOOM || traceLine) return;
+    traceLine = L.polyline(lines, { pane: 'trace', color: RING(), weight: 2, opacity: .7, interactive: false }).addTo(contribLayer); traceKey(true); });
+}
+map.on('zoomend', drawTrace);
+map.on('layerremove', e => { if (e.layer === traceLine) { traceLine = null; traceKey(false); } });
 // "Low risk only": every other spot shrinks to a faint dot, so the green ones stand out while you
 // pan and the rest still show where there are spots. The list's "Low risk only" chip is the same switch.
 // The day picker above it colours the map by one day instead of today and tomorrow (VIEW.day), and
@@ -3198,7 +3232,8 @@ function render(d) {
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
   if (total) h += `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
     + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
-    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p></div>`;
+    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
+    + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
   h += tiles;
   if (d.contributors.length) h += overflowTile(d, total);
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div>';
@@ -3207,7 +3242,7 @@ function render(d) {
   const more = document.getElementById('more-contrib');
   if (more) more.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     more.setAttribute('aria-expanded', String(all)); more.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
-  placeMap();
+  placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
 }
 // Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those
 // scripts arrived: without them the rest of the spot still draws.

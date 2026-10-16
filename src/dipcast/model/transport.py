@@ -617,6 +617,31 @@ def upstream_lengths(net: RiverNetwork, root: str, cap_m: float) -> tuple[dict[s
     return link_dist, lup
 
 
+def traced_lines(net: RiverNetwork, pin: PinLocation, max_km: float = config.MAX_UPSTREAM_KM) -> list:
+    """The river network upstream_overflows traces above the pin, as shapely lines in EPSG:27700: every
+    link upstream of the trace node, cut where it passes max_km along the network (upstream_edges keeps
+    a link whose lower end is inside the cap, however far its upper end runs), and in river mode the
+    pin's own link from its upper end down to the pin. Gap repairs have no geometry and are left out.
+    For the spot's map (build_site.write_traces): the water that reaches the spot."""
+    from shapely.ops import substring
+    if pin.mode not in ("river", "lake") or pin.trace_node is None:
+        return []
+    cap = max_km * 1000.0
+    off = pin.trace_offset_m if pin.mode == "river" else 0.0
+    geom = net.links.geometry
+    out = []
+    for lid, dn in net.upstream_edges(pin.trace_node, cap).items():
+        if lid.startswith("repair:") or lid not in geom.index:
+            continue
+        line, keep = geom.loc[lid], cap - dn - off
+        if keep > 0:
+            out.append(line if keep >= line.length else substring(line, line.length - keep, line.length))
+    if pin.mode == "river" and pin.snap is not None and pin.snap.frac > 0:
+        line = geom.loc[pin.snap.link_id]
+        out.append(substring(line, 0.0, pin.snap.frac, normalized=True))
+    return out
+
+
 def river_velocity(state_index: float | None) -> float:
     """Reach-averaged velocity (m/s) from the EA level index (0 = typical low, 1 = typical high)."""
     if state_index is None or not np.isfinite(state_index):
