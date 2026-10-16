@@ -292,6 +292,36 @@ test('a point with no overflow upstream gets the API\'s answer: every day zero, 
   assert.equal(got.upstream_summary.overflows, 0);
 });
 
+// The map click's rain-only days (review of 16 Oct 2026, C8): with no overflow upstream, each day's row
+// shows the millimetres beside its bar, as a listed spot's rows do. Langstrath Beck, 16 Oct 2026.
+test('a point with no overflow upstream shows each day\'s rain in mm, from its own square or the nearest', () => {
+  const od = { today: 1, days: ['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'], scale: 1000,
+    p: [], live: [], status: [], company: [], companies: [], low: [],
+    assumptions: { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30, low_confidence_factor: 0.7, max_missing_share: 0.1 },
+    rain_48h: { '54.5,-3.1': [12.4, 0.2, null, 31, 7.6], '54.4,-3.2': [1, 1, 1, 1, 1], '54.5,0.0': [3, 3, 3, 3, 3] } };
+  assert.deepEqual(A.rainAt(od, 54.48, -3.13), { mm: [12.4, 0.2, null, 31, 7.6], km: 0 });   // its own square
+  // The nearest square around with a forecast, and how far its centre is.
+  const next = A.rainAt(od, 54.46, -3.04);
+  assert.deepEqual(next.mm, [12.4, 0.2, null, 31, 7.6]);
+  assert.equal(next.km, 6);
+  assert.equal(A.rainAt(od, 52.0, -1.0), null);                    // nothing within a square
+  assert.equal(A.rainAt({ ...od, rain_48h: undefined }, 54.48, -3.13), null);   // a file from before
+  assert.deepEqual(A.rainAt(od, 54.5, -0.02).mm, [3, 3, 3, 3, 3]);   // just west of Greenwich: "0.0", not "-0.0"
+  // The days, drawn by the spot page's own rows.
+  const got = A.forecast([], od, {}), rain = A.rainAt(od, 54.48, -3.13);
+  got.days.forEach((x, k) => { x.rain_48h_mm = rain.mm[k] ?? null; });
+  const vm = require('node:vm'), dir = path.join(__dirname, '../src/dipcast/site/');
+  const page = fs.readFileSync(dir + 'index.html', 'utf8'), src = page.slice(page.indexOf('<script>\n') + 9, page.lastIndexOf('</script>')).split('\n');
+  const def = n => { const i = src.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`)); assert.ok(i >= 0, n);
+    let k = i + 1; while (k < src.length && /^[\s})\]+]/.test(src[k])) k++; return src.slice(i, k).join('\n'); };
+  const ctx = vm.createContext({});
+  for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
+  vm.runInContext(`setToday('2026-10-16');\n${def('tone')}\n${def('dayRows')}`, ctx);
+  const d = { id: 'point-54.48000,-3.13000', unlisted: true, name: 'Langstrath Beck', kind: 'river', location: { mode: 'river' }, ...got };
+  const words = [...vm.runInContext('dayRows', ctx)(d).matchAll(/<span class="l">([^<]*)<\/span>/g)].map(m => m[1]);
+  assert.deepEqual(words, ['12 mm', '0 mm', '–', '31 mm', '8 mm']);
+});
+
 // Lake distance "water" (docs/LAKE-DISTANCE-2026-10.md): an L-shaped lake's files and the API's ways through its
 // water for clicks in it, on its shore and off its arm by the centreline (tests/test_anypoint_water.py).
 test('in lake distance "water" a lake click goes round the bend, as the API does', () => {

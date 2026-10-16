@@ -14,7 +14,8 @@ Everything is written under site/data/anypoint/:
   overflow_days.json   per overflow: spill probability by day (thousandths; null where its rain
                        cell had no data, which is the `ok` mask), the "right now" weight
                        (thousandths), live status, company, how old its rain forecast is, and
-                       the low-confidence snaps
+                       the low-confidence snaps; and per rain square, the rain in the 48 h to
+                       midday on each day ahead, for a click with no overflow upstream
   link_index/<t>.bin   per link: number, form, name and its line as the network has it, packed
                        Int32/Float32
                        (layout in `pack_link_index`), so the page can snap a click to a link
@@ -1002,6 +1003,26 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
                   **({"error": error} if error else {})}
 
 
+def cell_rain_48h(hourly: pd.DataFrame, days: pd.DatetimeIndex) -> dict[str, list]:
+    """Each rain square's rain in the 48 h to midday, local time, on each of `days`, in mm to one
+    decimal: the figure a listed spot's day rows show (forecast.py, rain_48h_mm, by ecoli.rain_windows,
+    with its rule for missing hours: None where under 90% of them have a value). Keyed "lat,lon" by
+    the square's centre. A click with no overflow upstream has only rain to show (anypoint.js, rainAt)."""
+    from dipcast.model import ecoli
+    if not len(hourly):
+        return {}
+    days = pd.DatetimeIndex(days)
+    days = days.tz_localize("Europe/London") if days.tz is None else days.tz_convert("Europe/London")
+    ends = days + pd.Timedelta(hours=ecoli.SAMPLE_HOUR)
+    out = {}
+    for (a, b), g in hourly.groupby(["cell_lat", "cell_lon"]):
+        series = pd.Series(g["precip_mm"].to_numpy(dtype=float),
+                           index=pd.to_datetime(g["time"], utc=True).dt.tz_convert("Europe/London"))
+        r48, _ = ecoli.rain_windows(series, ends)
+        out[f"{float(a) + 0.0:.1f},{float(b) + 0.0:.1f}"] = [None if np.isnan(v) else round(float(v), 1) for v in r48]
+    return out
+
+
 def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, past: int, now: pd.Timestamp,
                         probabilities, credits: dict | None = None, rain=any_point_rain) -> dict:
     """overflow_days.json. `probabilities(ov, days, rain)` is forecast.spill_probabilities with the
@@ -1075,6 +1096,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "companies": companies, "feed_down_since": since, "feed_stale_since": stale_since, "no_feed": no_feed,
         "stale_rows": stale_rows, "last_running": last_running, "feed_updated": feed_updated,
         "rain_h": rain_h,
+        "rain_48h": cell_rain_48h(hourly, days[past:]),
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,
@@ -1095,7 +1117,10 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
                  "that is down whose spill was running when it last answered; they count as discharging. "
                  "no_feed: companies with no live feed. feed_updated: each current feed's last update; where "
                  "the page is read over 6 h after it, that feed's quiet overflows are stale too. rain_h: hours "
-                 "between the rain forecast the overflow's probabilities used and generated_at. low: overflows "
+                 "between the rain forecast the overflow's probabilities used and generated_at. rain_48h: per "
+                 "rain square (0.1 degrees, keyed by its centre, \"lat,lon\"), the rain in mm in the 48 h to midday "
+                 "local time on each day from today (days[today:]), as a listed spot's rain_48h_mm; null where "
+                 "under 90% of the hours have data. low: overflows "
                  "snapped by proximity alone, whose weight is multiplied by low_confidence_factor."),
         **({"credits": credits} if credits else {}),
     }
