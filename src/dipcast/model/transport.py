@@ -75,7 +75,7 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 import shapely
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 
 from dipcast import config
 from dipcast.ingest.lakes import load_lakes
@@ -411,6 +411,13 @@ def _locate_lake(net: RiverNetwork, x: float, y: float, name: str | None) -> Pin
     return PinLocation("isolated", x, y, None, watercourse=None, lake_source="none")
 
 
+def _on_water(poly, x: float, y: float) -> bool:
+    """Whether (x, y) is on a WFD lake's water: inside the outline of one of its parts. An island counts as
+    the lake: none in England's WFD lakes has a point more than 150 m from the water around it."""
+    pt = Point(x, y)
+    return any(Polygon(part.exterior).covers(pt) for part in getattr(poly.geometry, "geoms", [poly.geometry]))
+
+
 def _locate(net: RiverNetwork, x: float, y: float, kind_hint: str | None, name: str | None = None) -> PinLocation:
     # 1. Inside (or on the shore of) a WFD lake polygon.
     poly = _lake_polygon_at(x, y)
@@ -418,6 +425,15 @@ def _locate(net: RiverNetwork, x: float, y: float, kind_hint: str | None, name: 
         pin = _in_polygon(net, x, y, poly)
         if pin is not None:
             return pin
+        # No lake centreline within LAKE_SNAP_M: the network draws nothing into this lake. A click on its
+        # water is that lake, isolated. A click on its shore is placed as if the lake were not there, so a
+        # river beside it keeps its overflows. A spot known to be a lake goes on to step 2 as before.
+        # Ethan's option C, 16 Oct 2026 (docs/ANYPOINT-LAKES-2026-10.md); until then every such click
+        # fell through to step 3, and the map page said "isolated lake" for all of them.
+        if kind_hint != "lake" and _on_water(poly, x, y):
+            own = poly.get("lake_name")
+            return PinLocation("isolated", x, y, None, watercourse=str(own) if isinstance(own, str) else None,
+                               lake_area_km2=float(poly["area_km2"]), lake_source="polygon")
 
     # 2. A spot known to be a lake: its own lake, or isolated, never a river.
     if kind_hint == "lake":

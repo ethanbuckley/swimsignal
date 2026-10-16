@@ -80,7 +80,8 @@ KINK = (430230, 440000)   # U1's kink: 0 m from U1, 25 m from U1 simplified to 3
 LAKE_POLY = box(419000, 451800, 421000, 456200)          # 8.8 km2
 LOWER_POLY = box(419400, 445900, 420600, 447900)         # 2.4 km2, 100 m below Outflow Beck's end
 ALONE_POLY = box(440000, 470000, 441000, 471000)         # no lake centreline anywhere near
-EMPTY_POLY = box(450000, 470000, 451000, 473000)         # no lake link inside; East Pond 1.2 km from its middle
+EMPTY_POLY = box(450000, 470000, 451000, 473000).difference(box(450400, 472400, 450600, 472600))
+                                                         # no lake link inside; East Pond 1.2 km from its middle; an islet
 NOTCH_POLY = Polygon([(460000, 470000), (461000, 470000), (461000, 470490), (461012, 470500), (461000, 470510),
                       (461000, 471000), (460000, 471000)])   # a 12 m spit on its east side, which 15 m outlines drop
 QUIET_POLY = box(499000, 500000, 499800, 500600)         # no lake link inside; Quiet Pond 450 m off
@@ -305,6 +306,21 @@ def test_a_lake_with_no_centreline_inside_takes_the_one_nearest_the_click_not_it
     assert lno in idx["lno"]
 
 
+def test_option_c_a_click_on_an_isolated_lakes_water_is_the_lake_and_on_its_shore_the_river(world):
+    # Ethan's option C, 16 Oct 2026 (docs/ANYPOINT-LAKES-2026-10.md): before it, the API traced East Beck for both.
+    net, _, _ = world
+    on = transport.locate_pin(net, *bng_to_lonlat(450500, 472900))
+    assert (on.mode, on.watercourse, on.lake_source, on.trace_node) == ("isolated", "Empty Water", "polygon", None)
+    assert on.lake_area_km2 == pytest.approx(EMPTY_POLY.area / 1e6)
+    islet = transport.locate_pin(net, *bng_to_lonlat(450500, 472500))   # 100 m from the water all round
+    assert (islet.mode, islet.watercourse) == ("isolated", "Empty Water")
+    shore = transport.locate_pin(net, *bng_to_lonlat(450500, 473100))   # 100 m off the outline
+    assert (shore.mode, shore.watercourse) == ("river", "East Beck")
+    # A listed lake spot keeps its own rule (_locate_lake), whatever the point.
+    spot = transport.locate_pin(net, *bng_to_lonlat(450500, 472900), kind_hint="lake", name="Empty Water")
+    assert (spot.mode, spot.lake_source) == ("isolated", "none")
+
+
 def test_lakes_json_says_how_far_each_outline_is_from_the_real_one_which_is_published_too(world, tmp_path):
     # Gorpley Reservoir (16 Oct 2026): a click 149.1 m from the real outline was 151.1 m from the 15 m one.
     bap = _bap()
@@ -417,6 +433,7 @@ CLICKS_BNG = ([(lid, f) for lid in RIVER_LINKS for f in (0.15, 0.5, 0.85)]
                  ("the kink by the pond", KINK),
                  ("west of Empty Water, nearer West Pond", (449900, 470500)), ("in Empty Water, nearer East Pond", (450900, 470500)),
                  ("north of Empty Water, no pond within 1.5 km", (450500, 473100)),
+                 ("on Empty Water, no pond within 1.5 km", (450500, 472900)), ("on Empty Water's islet", (450500, 472500)),
                  ("149 m off Notch Water's spit", (461161, 470500)), ("in Quiet Water", (499400, 500300))])
 
 
@@ -479,10 +496,13 @@ def test_the_page_fixture_still_says_what_the_api_says(world, tmp_path, monkeypa
                 assert a["dilution"] == pytest.approx(b["dilution"], abs=1e-5), (mode, k["what"])
                 assert a["travel_h"] == pytest.approx(b["travel_h"], abs=1e-3), (mode, k["what"])
                 assert a["decay"] == pytest.approx(b["decay"], rel=1e-5), (mode, k["what"])
-        # The API, given no hint that the click is a lake, finds no river within 1.5 km of the lonely
-        # pool; the page says it is a lake with no river connection, as the API does for a lake spot.
-        assert {c["mode"] for c in kept["clicks"]} == {"river", "lake", "none"}
-        assert next(c for c in kept["clicks"] if c["what"] == "the lonely pool")["mode"] == "none"
+        # A click on the water of a lake with no lake centreline within 1.5 km is that lake, isolated, and one on
+        # its shore goes on as if the lake were not there (option C, 16 Oct 2026). An islet counts as the lake.
+        assert {c["mode"] for c in kept["clicks"]} == {"river", "lake", "none", "isolated"}
+        mode = {c["what"]: (c["mode"], c["watercourse"]) for c in kept["clicks"]}
+        assert mode["the lonely pool"] == ("isolated", "Lonely Pool")
+        assert mode["on Empty Water, no pond within 1.5 km"] == mode["on Empty Water's islet"] == ("isolated", "Empty Water")
+        assert mode["north of Empty Water, no pond within 1.5 km"] == ("river", "East Beck")
         assert sorted(kept["files"]["tiles"]) == sorted(mine["files"]["tiles"])
     # Below Test Water, mode "lake" puts lake metres on rows where mode "river" has none.
     def crossed(mode):

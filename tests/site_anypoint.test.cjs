@@ -66,9 +66,6 @@ const placeIn = files => c => {
 };
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
 const DEFAULT_SPEEDS = { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30 };   // config's, as the API ran
-// Clicks by a WFD lake with no lake centreline within 1.5 km: the page says "isolated lake", the API traces
-// the nearest river or finds none. What such a click should mean is Ethan's to decide (docs/ANYPOINT-LAKES-2026-10.md).
-const OPEN = ['the lonely pool', 'north of Empty Water, no pond within 1.5 km'];
 
 test('a lake with a residence time on the way is a well-mixed lake, as the API does', () => {
   // Outflow Beck, below Test Water (20 days): A5's water enters Test Water above the click.
@@ -90,10 +87,11 @@ for (const [mode, s] of Object.entries(SYN.modes)) {
   test(`a click goes where the API puts it, and gets the API's overflows, distances and dilutions (lake path "${mode}")`, () => {
     const at = placeIn(filesOf(s));
     let rows = 0, crossed = 0;
-    for (const c of s.clicks.filter(x => !OPEN.includes(x.what))) {
+    for (const c of s.clicks) {
       const got = at(c);
       assert.equal(got.mode, c.mode, c.what);
       if (c.mode === 'none') { assert.match(got.error, /No river or lake within 1\.5 km/, c.what); continue; }
+      if (c.mode === 'isolated') { assert.equal(got.location.watercourse, c.watercourse, c.what); continue; }
       assert.equal(got.location.watercourse, c.watercourse, c.what);
       assert.equal(!!got.location.adopted_main_channel, c.adopted, `${c.what}: moved to the main channel`);
       const mine = got.rows.map(r => ({ ...r, site_id: s.files.ids[r.i] })).sort((a, b) => a.site_id.localeCompare(b.site_id));
@@ -165,11 +163,18 @@ test('a click by a lake with no centreline inside takes the one nearest the clic
   assert.deepEqual([quiet.mode, quiet.location.watercourse, quiet.rows.length], ['lake', 'Quiet Water', 0]);
 });
 
-test('with no lake centreline within 1.5 km, the page still says isolated lake and the API the river (left for Ethan)', () => {
-  const c = syn.clicks.find(x => x.what === 'north of Empty Water, no pond within 1.5 km');
+test('with no lake centreline within 1.5 km, a click on the lake\'s water is the isolated lake, one on its shore the river', () => {
+  // Ethan's option C (16 Oct 2026, docs/ANYPOINT-LAKES-2026-10.md). Until then the page said "isolated lake" for both,
+  // and the API traced the nearest river for both.
+  const at = what => { const c = syn.clicks.find(x => x.what === what); return [c, placeAt(c)]; };
+  for (const what of ['on Empty Water, no pond within 1.5 km', "on Empty Water's islet", 'the lonely pool']) {
+    const [c, got] = at(what);
+    assert.deepEqual([c.mode, got.mode, got.location.watercourse], ['isolated', 'isolated', c.watercourse], what);
+    assert.match(got.error, /^An isolated lake/, what);
+  }
+  const [c, got] = at('north of Empty Water, no pond within 1.5 km');
   assert.deepEqual([c.mode, c.watercourse], ['river', 'East Beck']);
-  const got = placeAt(c);
-  assert.deepEqual([got.mode, got.name], ['isolated', 'Empty Water']);
+  assert.deepEqual([got.mode, got.location.watercourse], ['river', 'East Beck']);
 });
 
 test('a click near 150 m from a lake is settled on its real outline, not the 15 m one', () => {
