@@ -41,6 +41,8 @@ def _net(links: list[tuple]) -> RiverNetwork:
 # joining at x = 406000, and a mill leat beside its third reach that is not joined upstream. To the
 # east, a beck flows south into a two-link lake, which drains south into a second, smaller lake:
 # water from above the first lake crosses it on the way to a click below it or in the second.
+# Further east, the River Stor in West Sussex (16 Oct 2026): a short unnamed link with a 25 m kink, cut
+# off from the network as OS often draws them, 35 m from a pond's centreline and 230 m from the river.
 LINKS = [
     ("M1", "River Test", "inlandRiver", "n0", "n1", [(400000, 450000), (402000, 450000)]),
     ("M2", "River Test", "inlandRiver", "n1", "n2", [(402000, 450000), (404000, 450000)]),
@@ -55,7 +57,12 @@ LINKS = [
     ("O1", "Outflow Beck", "inlandRiver", "k2", "o1", [(420000, 452000), (420000, 448000)]),
     ("L3", "Lower Water", "lake", "o1", "l3", [(420000, 448000), (420000, 446000)]),
     ("O2", "Lower Beck", "inlandRiver", "l3", "o2", [(420000, 446000), (420000, 443000)]),
+    ("V1", "River Stor", "inlandRiver", "v0", "v1", [(430000, 432000), (430000, 440000)]),
+    ("V2", "River Stor", "inlandRiver", "v1", "v2", [(430000, 440000), (430000, 442000)]),
+    ("U1", None, "inlandRiver", "u0", "u1", [(430200, 439975), (430230, 440000), (430260, 439975)]),
+    ("P1", None, "lake", "p0", "p1", [(430200, 440035), (430300, 440035)]),
 ]
+KINK = (430230, 440000)   # U1's kink: 0 m from U1, 25 m from U1 simplified to 30 m, 35 m from P1
 LAKE_POLY = box(419000, 451800, 421000, 456200)          # 8.8 km2
 LOWER_POLY = box(419400, 445900, 420600, 447900)         # 2.4 km2, 100 m below Outflow Beck's end
 ALONE_POLY = box(440000, 470000, 441000, 471000)         # no lake centreline anywhere near
@@ -76,7 +83,7 @@ def _overflows(net: RiverNetwork, spec: list[tuple]) -> pd.DataFrame:
 
 OVERFLOWS = [("A1", "M1", 0.3, "high"), ("A2", "T1", 0.45, "high"), ("A3", "M3", 0.2, "low"),
              ("A4", "M3", 0.8, "high"), ("A5", "R1", 0.4, "high"), ("A6", "K1", 0.5, "high"),
-             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high")]
+             ("A7", "D1", 0.1, "high"), ("A8", "O1", 0.5, "high"), ("A9", "V1", 0.5, "high")]
 RIVER_LINKS = ["M1", "M2", "M3", "M4", "T1", "D1", "S1", "R1", "O1", "O2"]
 
 
@@ -287,6 +294,25 @@ def test_a_change_of_lake_path_rule_traces_everything_again(world, tmp_path, mon
     assert stats["cache"] == "stale rules"
 
 
+def test_the_index_keeps_every_vertex_so_a_click_on_a_kink_is_on_its_link(world, tmp_path):
+    """The page measures a click against the index's lines, the API against the network's. Lines simplified
+    to 30 m put U1's kink 25 m from its line, and the pond's centreline, 35 m away, won by the lake rule
+    (35 x 0.5 < 25): the page found no river where the API traced the River Stor (16 Oct 2026)."""
+    bap = _bap()
+    net, lakes, ov = world
+    table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
+    out = tmp_path / "anypoint"
+    bap.write_files(out, net, ov, table, "net0")
+    for lid in net.links.index:
+        idx, _, lno = _tile_files(out, lid, net, bap)
+        k = int(np.flatnonzero(idx["lno"] == lno)[0])
+        line = idx["lonlat"][idx["offsets"][k]:idx["offsets"][k + 1]]
+        want = np.array([bng_to_lonlat(x, y) for x, y in net.links.at[lid, "geometry"].coords])
+        assert line.shape == want.shape and np.allclose(line, want, atol=1e-6), lid   # Float32: under 0.5 m
+    pin, up = _api(net, ov, *bng_to_lonlat(*KINK))
+    assert (pin.mode, pin.watercourse, pin.adopted_main_channel, list(up["site_id"])) == ("river", "River Stor", True, ["A9"])
+
+
 def test_link_names_follow_the_api():
     bap = _bap()
     net = _net(LINKS)
@@ -316,7 +342,8 @@ FIXTURE = ROOT / "tests" / "fixtures" / "anypoint_synthetic.json"
 CLICKS_BNG = ([(lid, f) for lid in RIVER_LINKS for f in (0.15, 0.5, 0.85)]
               + [("in the lake", (419500, 455000)), ("beside the lake", (418700, 455000)),
                  ("in the lower lake", (420300, 447000)),
-                 ("the lonely pool", (440500, 470500)), ("far from water", (412000, 456000))])
+                 ("the lonely pool", (440500, 470500)), ("far from water", (412000, 456000)),
+                 ("the kink by the pond", KINK)])
 
 
 def _page_fixture(world, tmp_path, monkeypatch) -> dict:
