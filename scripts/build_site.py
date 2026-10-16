@@ -1361,17 +1361,44 @@ def home_lead(n: int) -> str:
             f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
 
 
-def spot_page(template: str, spot: dict, root: str) -> str:
+def spot_page(template: str, spot: dict, root: str, top: str | None = None) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
-    <head>, and in the body its name under the sky, as the answer will be (see home_lead), for
-    crawlers and for the moment before the script runs."""
+    <head>. In the body, top: the spot's answer and five days as the page's script draws them
+    (prerender_spots), for crawlers, readers without scripts and the moment before the script runs.
+    Without it, its name under the sky, as the answer will be (see home_lead)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
                                              base="../../"), template, count=1)
+    if top:
+        # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
+        page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
+        return page.replace(LOADING, f'<div id="result" data-built>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
     return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
                                  f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
+
+
+# Under a built spot page's five days, for a reader without scripts: what they are seeing, and what not.
+NOSCRIPT = ("This is the forecast as it was issued. With JavaScript on, the page updates it and adds the map, "
+            "the overflows upstream and the rest of the detail.")
+
+
+def prerender_spots(site: Path, root: str) -> dict[str, str]:
+    """Each spot's answer and five days as index.html draws them, {id: html}, from this build's
+    data/spots.json (scripts/prerender_spots.js runs the page's own spotTop and daysTile in Node,
+    in UK time, as at the moment the forecast was issued). Without Node, or the file, {}: the pages
+    keep the name-only opening, and the build says why."""
+    src = site / "data" / "spots.json"
+    if not src.exists():
+        return {}
+    try:
+        run = subprocess.run(["node", str(ROOT / "scripts" / "prerender_spots.js"), str(src), "-", root], check=True,
+                             capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "Europe/London"})
+        return json.loads(run.stdout)
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        log.warning("spot pages without their forecast in the HTML (%s)", getattr(e, "stderr", "") or e)
+        return {}
 
 
 def saved_page(template: str, root: str) -> str:
@@ -1397,6 +1424,33 @@ def plan_page(template: str, root: str) -> str:
     page = PAGE_META.sub(lambda m: page_meta(PLAN_TITLE, PLAN_DESCRIPTION, f"{root}plan/", root, base="../"), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Plan a swim</h1>'
                                  f'<p class="muted">{escape(PLAN_DESCRIPTION)} Loading the forecasts…</p></div>', 1)
+
+
+# The Accuracy page's four boxes, which its script fills from data/verification.json.
+VERIFICATION_BOXES = {"answer": '<div id="answer"></div>', "short": '<div id="short"><p class="muted">Loading the scores…</p></div>',
+                      "live": '<div id="live"></div>', "offline": '<div id="offline"></div>'}
+
+
+def with_verification_figures(html: str, verification: Path) -> str:
+    """The Accuracy page with its figures, tables and lists written in from this build's
+    verification.json (scripts/prerender_verification.js runs the page's own script in Node, in UK
+    time), and data-built on <main>: when those live scores were made, so the script draws them
+    again only from newer ones. Unchanged, with the reason in the log, without Node or the file."""
+    if not verification.exists():
+        return html
+    try:
+        run = subprocess.run(["node", str(ROOT / "scripts" / "prerender_verification.js"), "-", str(verification)], input=html,
+                             check=True, capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "Europe/London"})
+        out = json.loads(run.stdout)
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        log.warning("Accuracy page without its figures in the HTML (%s)", getattr(e, "stderr", "") or e)
+        return html
+    if not all(box in html for box in VERIFICATION_BOXES.values()) or '<main class="doc">' not in html:
+        log.warning("Accuracy page without its figures in the HTML: its boxes have changed")
+        return html
+    for key, box in VERIFICATION_BOXES.items():
+        html = html.replace(box, f'<div id="{key}">{out[key]}</div>', 1)
+    return html.replace('<main class="doc">', f'<main class="doc" data-built="{escape(out["built"])}">' if out["built"] else '<main class="doc">', 1)
 
 
 def with_counts(html: str, results: list[dict]) -> str:
@@ -1603,6 +1657,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
         s = (STATIC / name).read_text()
+        if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
+            s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
         for a, b in REWRITES:
             s = s.replace(a, b)
         if name == "about.html":
@@ -1648,13 +1704,14 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "data").mkdir(exist_ok=True)
     shutil.copy(PLACES, site / "data" / "places.json")   # before the data page, which lists data/
     shutil.rmtree(site / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
+    tops = prerender_spots(site, root)
     ids = []
     for r in results:
         if not SPOT_ID.fullmatch(str(r["id"])):
             log.warning("spot id %r is not letters, digits and hyphens: no page of its own, it keeps ?spot=", r["id"])
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
-        (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root), token))
+        (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"])), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/

@@ -121,6 +121,69 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     assert '<section class="answer"><h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in spot
 
 
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(tmp_path):
+    """With this build's spots.json, a spot's page carries its level, headline and five days in the
+    page's own markup (scripts/prerender_spots.js runs index.html's spotTop and daysTile), and the
+    view the script will draw, so nothing moves when it does (docs/REVIEW-2026-10-16.md, F4)."""
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    days = [{"date": f"2026-09-{29 + i}" if i < 2 else f"2026-10-0{i - 1}", "risk": 0.01, "label": "low"} for i in range(5)]
+    river = {"id": "a", "name": "A river", "kind": "river", "source": "curated", "upstream_summary": {"overflows": 3},
+             "location": {"mode": "river"}, "now": {"label": "low", "discharging_upstream": 0}, "contributors": [], "days": days}
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river, SPOTS[1]]}))
+    bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
+    page = (tmp_path / "spot" / "a" / "index.html").read_text()
+    assert '<body class="view-spot">' in page and '<div id="result" data-built>' in page
+    assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
+    assert '<h2 class="big low" id="risk-headline">Low risk</h2>' in page
+    assert '<p class="act">Usual care: cover cuts' in page
+    assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d">Today</span>' in page
+    assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
+    # Issued when, without how long ago, which would be wrong by the time the page is read.
+    assert '<p class="issued">Issued Tue 08:00</p>' in page
+    assert f"<noscript><p class=\"muted\">{bs.NOSCRIPT}</p></noscript>" in page
+    # A spot without a forecast: its answer, no five days.
+    tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
+    assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
+    # The page's script draws over the build's copy without the rise it gives a new view.
+    script = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
+    assert "built = box.hasAttribute('data-built')" in script and "let h = spotTop(d);" in script and "${daysTile(d)}" in script
+    # Without the file (or Node), the name-only opening, as before.
+    (tmp_path / "data" / "spots.json").unlink()
+    bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
+    page = (tmp_path / "spot" / "a" / "index.html").read_text()
+    assert '<body class="view-list">' in page and '<div id="result" data-built>' not in page and '<h2 class="spot-name">A river</h2>' in page
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_newer_scores(tmp_path):
+    """verification.html carries what its script draws from this build's verification.json
+    (scripts/prerender_verification.js), and says when those scores were made, so the script does
+    not move the page by drawing the same figures again (docs/REVIEW-2026-10-16.md, F3)."""
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    table = {"warn_at": 0.4, "level": "high", "n": 23395, "hits": 152, "misses": 573, "false_alarms": 211, "quiet_correct": 22459,
+             "hit_rate": 152 / 725, "warnings_true": 152 / 363, "share_correct": 22611 / 23395, "always_no_correct": 22670 / 23395,
+             "base_rate": 725 / 23395, "warning_lift": (152 / 363) / (725 / 23395), "n_overflow_days": 4695, "n_spill_overflow_days": 145,
+             "n_days": 5, "first_day": "2026-09-29", "last_day": "2026-10-03", "by_lead": []}
+    ver = {"live": {"generated_at": "2026-10-04T00:15:52+01:00", "n_scored": 0, "warning_table": table}}
+    (tmp_path / "data" / "verification.json").write_text(json.dumps(ver))
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
+    page = (tmp_path / "verification.html").read_text()
+    assert '<main class="doc" data-built="2026-10-04T00:15:52+01:00">' in page
+    assert "the spill forecast warned of 21% of spills." in page and "Loading the scores…" not in page
+    assert '<dl class="stats">' in page and '<h2 id="short-h">In short</h2>' in page   # the figure tiles and the list
+    assert 'href="/' not in page.split("<script>")[0]   # the links in the figures are the static site's too
+    script = (ROOT / "src" / "dipcast" / "api" / "static" / "verification.html").read_text()
+    assert "if (built && !(fresh > built)) return;" in script
+    # Without the file, the page as it is, which its script fills.
+    (tmp_path / "data" / "verification.json").unlink()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
+    page = (tmp_path / "verification.html").read_text()
+    assert '<main class="doc">' in page and "Loading the scores…" in page
+
+
 def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(tmp_path):
     bs = _build_site()
     spots = [{**SPOTS[0], "source": "designated"}, {**SPOTS[1], "source": "curated"}]

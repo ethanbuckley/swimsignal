@@ -2196,9 +2196,12 @@ setInterval(refreshNotices, 60 * 1000);
 // Redraw the panel. The map is parked in its column first, or replacing the HTML would destroy it.
 // The new view rises into place (#result.fresh, the day strip's own motion): the class comes off and
 // goes back on with a layout read between, so the animation runs again each time.
+// Over the build's own copy of a spot's opening (data-built, scripts/prerender_spots.js) it does not
+// rise: the same words are already in place.
 function setPanel(h) { parkMap(); if (MINI) { MINI.remove(); MINI = null; }
-  const box = document.getElementById('result'); box.innerHTML = h;
-  box.classList.remove('fresh'); void box.offsetWidth; box.classList.add('fresh'); }
+  const box = document.getElementById('result'), built = box.hasAttribute('data-built'); box.innerHTML = h;
+  box.classList.remove('fresh'); if (built) { box.removeAttribute('data-built'); return; }
+  void box.offsetWidth; box.classList.add('fresh'); }
 
 // ------------------------------------------------------------------------------ the list
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };
@@ -3138,13 +3141,11 @@ const bindNearby = () => { const box = document.getElementById('nearby-host'); i
   box.addEventListener('click', e => { const a = e.target.closest('a[data-id]');
     if (a && plainClick(e)) { e.preventDefault(); select(a.dataset.id, true, true, DAY); } }); };
 
-function render(d) {
-  serverToday = DATA.generated_at.slice(0, 10);
-  contribLayer.clearLayers();
-  setView('spot');
-  if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
-  document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
-  const loc = d.location || {}, total = overflows(d);
+// The top of a spot's page, down to the answer, and the five days' tile. The build writes both into
+// the spot's own page (scripts/prerender_spots.js runs these two functions in Node), so the words
+// and the sky show before the forecast arrives and render() redraws them in the same place.
+function spotTop(d) {
+  const loc = d.location || {};
   const tags = [cap(d.kind), d.source === 'designated' ? 'Environment Agency designated bathing water' : null,
     loc.watercourse ? esc(loc.watercourse) : null, loc.lake_area_km2 ? `${loc.lake_area_km2} km²` : null,
     d.notes && d.notes !== 'Environment Agency designated bathing water' ? esc(d.notes) : null].filter(Boolean);
@@ -3154,8 +3155,19 @@ function render(d) {
   let h = `<div class="top-row"><a href="${esc(from === 'saved' ? savedPath() : from === 'plan' ? planPath() : ROOT.pathname)}" class="back" id="back">${from === 'saved' ? 'Saved spots' : from === 'plan' ? 'Plan a swim' : from === 'map' ? 'Map' : 'All spots'}</a>${saveButton(d)}</div>`;
   h += notices(d);
   // The answer, under the sky: the place, its name, then its words (answerWords).
-  h += `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
+  return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
     + `<div id="answer-words">${answerWords(d)}</div></section>`;
+}
+const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
+  + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div id="day-view"></div>${check(d)}</section>`;
+function render(d) {
+  serverToday = DATA.generated_at.slice(0, 10);
+  contribLayer.clearLayers();
+  setView('spot');
+  if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
+  document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
+  const loc = d.location || {}, total = overflows(d);
+  let h = spotTop(d);
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:
   // above, on a small phone, it pushed the level below the fold.
   const where = `<div class="loc phone-only"><div id="loc-map" aria-hidden="true"></div><button type="button" class="loc-open" id="loc-open" aria-label="Open map at ${esc(d.name)}">Open map</button></div>`;
@@ -3175,8 +3187,7 @@ function render(d) {
       + `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div>` + actions(d);
     setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
   }
-  h += `<div class="stack"><section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
-    + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div id="day-view"></div>${check(d)}</section>${where}`
+  h += `<div class="stack">${daysTile(d)}${where}`
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;

@@ -28,7 +28,8 @@ const SERVICE = {scheduled_per_day: 48, decision_hour_local: 8,
 
 async function render(data) {
   const els = {};
-  const document = {getElementById: id => (els[id] = els[id] || {innerHTML: ''}), querySelectorAll: () => []};
+  const document = {getElementById: id => (els[id] = els[id] || {innerHTML: ''}), querySelectorAll: () => [],
+    querySelector: () => ({dataset: {}})};   // <main>, without the build's data-built: the page draws
   vm.runInNewContext(src, {document, location: {hash: ''}, fetch: async () => ({json: async () => data}), console});
   for (let i = 0; i < 5; i++) await new Promise(r => setImmediate(r));
   return els;
