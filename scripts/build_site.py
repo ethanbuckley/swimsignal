@@ -1658,6 +1658,25 @@ def lean_page(html: str) -> str:
     return INLINE_SCRIPT.sub(lambda m: m.group(1) + js_without_comment_lines(m.group(2)) + m.group(3), html)
 
 
+# The app page's scripts, none of them blocking the first paint (docs/REVIEW-2026-10-16.md, F2: they
+# held it back 850 ms on 16 Oct 2026). In the built page every <script src> is deferred and the page's
+# own script, inline in the source, is app.js?v=<stamp>, deferred too, which the offline copy stores
+# as it does the others. Deferred scripts run in the order of their tags once the page is parsed, so
+# the order is the source's: the fourteen, then the page's script, then anypoint.js. The source keeps
+# the script inline, where the tests and scripts/prerender_spots.js read it.
+APP_SCRIPT = re.compile(r"<script>\n(const BRAND = .*?)</script>", re.S)
+SCRIPT_TAG = re.compile(r'<script src="[^"]+"(?: integrity="[^"]+")?></script>')
+
+
+def split_app_script(html: str, stamp: str) -> tuple[str, str]:
+    """The built app page with its scripts deferred, and app.js: its own script, out of the page."""
+    m = APP_SCRIPT.search(html)
+    if not m or html.count("\nconst BRAND = ") != 1:
+        raise ValueError("index.html has lost its script, which starts const BRAND = ...")
+    html = html[:m.start()] + f'<script src="app.js?v={stamp}" defer></script>' + html[m.end():]
+    return SCRIPT_TAG.sub(lambda t: t[0].replace("></script>", " defer></script>"), html), m.group(1)
+
+
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
@@ -1675,6 +1694,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
+    template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
         s = (STATIC / name).read_text()
         if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
@@ -1714,6 +1734,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
+    (site / "app.js").write_text(app_js)
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./"), template, count=1)
     home = home.replace(LOADING, home_lead(len(results)), 1)
     (site / "index.html").write_text(with_counter(home, token))
@@ -1818,6 +1839,40 @@ def with_data_files(html: str, data: Path) -> tuple[str, list[str]]:
     rows = "".join(f'<tr data-file="{escape(n)}"><td>{name(n)}</td><td>Not described here yet.</td>'
                    f'<td class="num">{file_size(files[n])}</td></tr>\n' for n in extra)
     return html.replace(MORE_FILES, rows, 1), extra
+
+
+# The overflow layer cut into map tiles (docs/REVIEW-2026-10-16.md, C4): data/overflows/<x>-<y>.json, and
+# index.json naming the tiles that have any. The map asks for the tiles in view (index.html, loadOverflows)
+# rather than the whole 6.3 MB overflows.geojson, which stays for the data page and the download. Zoom 10:
+# on 16 Oct 2026 293 tiles, and a spot's view at zoom 12 needed at most 38 kB of them gzipped (the
+# median 8 kB); zoom 9's 89 tiles needed up to 92 kB. The offline copy (sw.js) stores neither.
+OVERFLOW_TILE_Z = 10
+
+
+def overflow_tile(lon: float, lat: float, z: int = OVERFLOW_TILE_Z) -> tuple[int, int]:
+    """The Web Mercator (slippy map) tile at zoom z that holds a point, as index.html's ovTile works it out."""
+    n, r = 2 ** z, math.radians(max(-85.0511, min(85.0511, lat)))
+    y = (1 - math.log(math.tan(r) + 1 / math.cos(r)) / math.pi) / 2 * n
+    return min(n - 1, max(0, math.floor((lon + 180) / 360 * n))), min(n - 1, max(0, math.floor(y)))
+
+
+def write_overflow_tiles(site: Path, geo: dict) -> int:
+    """data/overflows/: geo's features by tile, and index.json with the zoom, the tiles and the credits.
+    Returns the number of tiles."""
+    out = site / "data" / "overflows"
+    shutil.rmtree(out, ignore_errors=True)   # a tile that has lost its overflows goes
+    out.mkdir(parents=True)
+    tiles: dict[tuple[int, int], list] = {}
+    for f in geo["features"]:
+        lon, lat = f["geometry"]["coordinates"][:2]
+        if not (math.isfinite(lon) and math.isfinite(lat)):   # nowhere on the map
+            continue
+        tiles.setdefault(overflow_tile(lon, lat), []).append(f)
+    for (x, y), feats in tiles.items():
+        (out / f"{x}-{y}.json").write_text(json.dumps({"type": "FeatureCollection", "features": feats}, separators=(",", ":"), default=str))
+    (out / "index.json").write_text(json.dumps({"z": OVERFLOW_TILE_Z, "tiles": [f"{x}-{y}" for x, y in sorted(tiles)],
+                                                **({"credits": geo["credits"]} if geo.get("credits") else {})}))
+    return len(tiles)
 
 
 def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Timestamp, credits: dict) -> int:
@@ -2159,7 +2214,9 @@ def build(refresh: bool = True) -> dict:
     health["spot_cards"] = len(spot_cards)
     health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
-    (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
+    geo = {**overflows_geojson(limit=20000), "credits": credits}
+    (SITE / "data" / "overflows.geojson").write_text(json.dumps(geo, default=str))
+    health["overflow_tiles"] = write_overflow_tiles(SITE, geo)   # what the map loads, a few tiles at a time
     if refresh:   # the run log, before verification.json reads it (forecast_log.service_record)
         from dipcast.forecast_log import log_build
         log_build(health, generated)

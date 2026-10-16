@@ -103,6 +103,8 @@ test('nothing from another site is handled: the map library is this site\'s own'
   assert.equal(fetchEvent(w, 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'), undefined);
   assert.equal(fetchEvent(w, 'https://tile.openstreetmap.org/7/63/41.png'), undefined);
   assert.equal(fetchEvent(w, SCOPE + 'data/overflows.geojson'), undefined);
+  assert.equal(fetchEvent(w, SCOPE + 'data/overflows/505-327.json'), undefined);   // the map's tiles of it
+  assert.equal(fetchEvent(w, SCOPE + 'data/overflows/index.json'), undefined);
 });
 
 test('the map library is the stored copy first, as the fonts are; the site\'s own scripts the network first', async () => {

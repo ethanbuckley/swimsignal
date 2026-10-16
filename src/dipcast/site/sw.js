@@ -5,22 +5,24 @@
 // or takes over 4 s (a slow answer still refreshes the stored copy when it arrives). Icons, the
 // picture behind the pages, the fonts and the map library (vendor/): the stored copy first,
 // refreshed in the background. Everything is this site's own: map tiles are their provider's
-// (OpenStreetMap's, or DIPCAST_TILES') and the page-view counter Cloudflare's, so neither is stored, nor is the 6 MB overflow layer, nor
+// (OpenStreetMap's, or DIPCAST_TILES') and the page-view counter Cloudflare's, so neither is stored,
+// nor is the 6 MB overflow layer (whole, or in the tiles the map loads, data/overflows/), nor
 // swimmers' photos (reviews/photos/), which would pile up on the device a spot at a time.
 //
 // BUILD is a hash of the files this worker stores, which scripts/build_site.py (shell_stamp) writes
 // in on every build. A changed font, icon or script therefore changes this file, the browser
 // installs the new worker, and it fills a new cache, so nothing is served stale for a visit; the
-// old cache is deleted when it takes over. The page asks for levels.js, experience.js, anypoint.js
-// and plan.js with ?v=BUILD too, so a page and its scripts come from one build: a page from the
-// network never runs with a stored older levels.js, and a stored page never with a newer one.
+// old cache is deleted when it takes over. The page asks for its own script (app.js, taken out of
+// index.html at build), levels.js, experience.js, anypoint.js and the rest with ?v=BUILD too, so a
+// page and its scripts come from one build: a page from the network never runs with a stored older
+// levels.js, and a stored page never with a newer one.
 //
 // To retire this worker, publish a sw.js that unregisters itself: a deleted file leaves the
 // installed worker running on visitors' devices.
 const BUILD = 'dev';
 const CACHE = `dipcast-${BUILD}`;
 const TIMEOUT_MS = 4000;
-const SHELL = ['./', `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, `lists.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots-lite.json', 'manifest.webmanifest',
+const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, `lists.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots-lite.json', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/fells.webp',
   `since.js?v=${BUILD}`,   // what changed at a saved spot since you last looked
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
@@ -48,7 +50,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url), here = url.origin === self.location.origin;
   if (!here) return;                                            // tiles, the page-view counter: not ours to keep
-  if (url.pathname.endsWith('/data/overflows.geojson') || url.pathname.includes('/reviews/photos/')) return;
+  if (url.pathname.endsWith('/data/overflows.geojson') || url.pathname.includes('/data/overflows/') || url.pathname.includes('/reviews/photos/')) return;
   // The stylesheet changes with the pages; a library in vendor/ changes only with its version.
   const fresh = req.mode === 'navigate' || (/\.(html|json|js|css)$/.test(url.pathname) && !url.pathname.includes('/vendor/'));
   e.respondWith(fresh ? networkFirst(req) : storedFirst(req));
