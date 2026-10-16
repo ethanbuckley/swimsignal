@@ -17,6 +17,7 @@
 <li>The files are in the site's <code>data/</code> folder, in JSON, GeoJSON and CSV, with packed river data for forecasts at a clicked point. The table below links them. Each build writes the current forecasts again.</li>
 <li>Keep the files' credits, or the <a href="/terms#data">credits on the terms page</a>, with anything you publish from them. The CSV carries its credits in comment lines; the packed river data uses the credits in <code>anypoint/tiles.json</code>.</li>
 <li>The data from the water companies, the Environment Agency and the other providers keeps its own licence. SwimSignal's own forecasts, levels and scores may be reused for non-commercial purposes with credit; ask first about any other use.</li>
+<li>The same levels are in <a href="#feeds">Atom feeds</a>, for every spot, each area and each spot on its own.</li>
 <li>The levels are forecasts, not water tests.</li>
 </ul></div>
 
@@ -99,6 +100,17 @@
 <dt><code>spots</code></dt><dd>Keyed by spot id: <code>name</code>; <code>level</code>, one of low, moderate, high and very high, or "no overflows", "not covered" or "no forecast"; <code>rank</code>, 0 for low to 3 for very high and −1 without a level; <code>headline</code>, as the list shows it ("High risk today: sewage spills"); <code>action</code>, what to do at that level, the line under the answer on the spot's page; <code>url</code>, the spot's page; <code>best</code>, only where the level changes from day to day: the lowest <code>level</code> of the four days after today, the first <code>date</code> with it, and the <code>words</code> the weekly note uses ("Saturday, low risk")</dd>
 </dl>
 <p><b>Licence.</b> SwimSignal's levels and headlines, made from the same sources as spots.json.</p>
+
+<h2 id="feeds">Feeds</h2>
+<p>The same levels and headlines as Atom feeds, for a feed reader, Slack's RSS app, a Discord bot or IFTTT. Each time the forecast is issued, a feed gets a new entry for each of its spots: the spot's name and headline as the title, the headline and what to do as the summary, the spot's page as the link, its level as the category, and the time the forecast was issued as <code>updated</code>. The feed's <code>rights</code> carries the credits.</p>
+<ul>
+<li><a href="feed.xml">feed.xml</a>: every spot.</li>
+<li><code>spot/&lt;id&gt;/feed.xml</code>: one spot, beside its page (for the spot at <code>spot/&lt;id&gt;/</code>).</li>
+<li>One for each area in the list:</li>
+</ul>
+<!-- feeds -->
+<p>A reader that checks every 30 minutes misses nothing: the forecast is issued at most that often. The feeds keep only the latest forecast, so a reader that checks less often skips the ones in between.</p>
+<p><b>Licence.</b> As alerts.json.</p>
 
 <h2 id="overflows-geojson">overflows.geojson</h2>
 <p>Every storm overflow on the map, as a GeoJSON point (longitude, latitude), with what its water company's live feed last said about it. The largest file.</p>

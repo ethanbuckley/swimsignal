@@ -6,7 +6,8 @@
 // picture behind the pages, the fonts and the map library (vendor/): the stored copy first,
 // refreshed in the background. Everything is this site's own: map tiles are their provider's
 // (OpenStreetMap's, or DIPCAST_TILES') and the page-view counter Cloudflare's, so neither is stored, nor is the 6 MB overflow layer, nor
-// swimmers' photos (reviews/photos/), which would pile up on the device a spot at a time.
+// swimmers' photos (reviews/photos/), which would pile up on the device a spot at a time, nor the Atom
+// feeds (feed.xml, feed/, spot/<id>/feed.xml), which are for feed readers, not the app.
 //
 // BUILD is a hash of the files this worker stores, which scripts/build_site.py (shell_stamp) writes
 // in on every build. A changed font, icon or script therefore changes this file, the browser
@@ -49,6 +50,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url), here = url.origin === self.location.origin;
   if (!here) return;                                            // tiles, the page-view counter: not ours to keep
   if (url.pathname.endsWith('/data/overflows.geojson') || url.pathname.includes('/reviews/photos/')) return;
+  if (url.pathname.endsWith('.xml')) return;                    // the Atom feeds and the sitemap: for readers and crawlers, not the app
   // The stylesheet changes with the pages; a library in vendor/ changes only with its version.
   const fresh = req.mode === 'navigate' || (/\.(html|json|js|css)$/.test(url.pathname) && !url.pathname.includes('/vendor/'));
   e.respondWith(fresh ? networkFirst(req) : storedFirst(req));

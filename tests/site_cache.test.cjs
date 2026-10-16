@@ -105,6 +105,11 @@ test('nothing from another site is handled: the map library is this site\'s own'
   assert.equal(fetchEvent(w, SCOPE + 'data/overflows.geojson'), undefined);
 });
 
+test('the Atom feeds are never stored: they are for feed readers, not the app', () => {
+  const w = worker(async () => new Response('x'));
+  for (const f of ['feed.xml', 'feed/yorkshire.xml', 'spot/warleigh-weir/feed.xml']) assert.equal(fetchEvent(w, SCOPE + f), undefined, f);
+});
+
 test('the map library is the stored copy first, as the fonts are; the site\'s own scripts the network first', async () => {
   const lib = SCOPE + 'vendor/leaflet/leaflet.js', levels = SCOPE + 'levels.js?v=dev';
   const w = worker(async () => new Response('from the network'), { [lib]: new Response('stored'), [levels]: new Response('stored') });
