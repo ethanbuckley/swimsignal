@@ -132,6 +132,11 @@ function relTable(rows) {
 }
 async function main() {
   const d = await (await fetch('/api/verification')).json();
+  // The build wrote the figures below from its own copy of this file (scripts/prerender_verification.js),
+  // and says when its live scores were made in data-built. They are drawn again only from newer scores:
+  // drawn on every load, everything moved down under the reader as it came.
+  const built = Date.parse(document.querySelector('main').dataset.built), fresh = Date.parse((d.live || {}).generated_at);
+  if (built && !(fresh > built)) return;
   const L = d.live;
   let h = '';
   if (L && L.ecoli_live && L.ecoli_live.samples && L.ecoli_live.samples.all_failed) h += `<p class="notice"><b>E. coli scoring is stalled:</b> at the last fetch neither Environment Agency source of lab samples answered. <a href="#ecoli-live">Details</a>. The spill scores below are unaffected.</p>`;

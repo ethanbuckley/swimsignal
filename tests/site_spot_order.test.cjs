@@ -14,7 +14,9 @@ const render = html.slice(html.indexOf('\nfunction render(d) {'), html.indexOf('
 
 test('the page puts nearby, then the water, then why, in the order a swimmer asks', () => {
   const at = s => { const i = render.indexOf(s); assert.ok(i >= 0, `render() has no ${s}`); return i; };
-  const days = at('Pollution risk, next five days'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
+  // The five days are daysTile's, which the build also writes into the spot's own page (prerender_spots.js).
+  assert.match(html, /\nconst daysTile = d => `<section class="tile" aria-labelledby="days-h">[^\n]*Pollution risk, next five days/);
+  const days = at('<div class="stack">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
   const why = at('<div id="sources-host">'), map = at('<span>Upstream</span>'), tiles = at('h += tiles;'), ovs = at('overflowTile(d, total)'), table = at('dayTable(d, total');
   assert.ok(days < near && near < why && why < map && map < tiles && tiles < ovs && ovs < table);
 });
