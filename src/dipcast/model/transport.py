@@ -302,10 +302,11 @@ def _side_arm(net: RiverNetwork, link_id: str) -> tuple[tuple[float, float], flo
     return (x, y), length
 
 
-def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) -> Snap | None:
+def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str], spot: bool = False) -> Snap | None:
     """A spot on a side arm takes the water of the river the arm leaves: of the channels named like the
-    spot's river near the arm's head, with at least ADOPT_RATIO times its network, the one with most, snapped
-    where the head is. None when the pin's link is not a side arm or no such channel is near its head.
+    spot's river near the arm's head, with at least ADOPT_RATIO times its network, the nearest for a
+    listed spot and the one with most for a map click (head_of_arm), snapped where the head is. None
+    when the pin's link is not a side arm or no such channel is near its head.
 
     _adopt_main_channel takes the candidate near the pin with the most network, which is right for a
     mill stream beside its river but not where the arm passes a confluence: at Queen Elizabeth Gardens,
@@ -315,18 +316,23 @@ def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) 
     river = net.snap_xy(x, y, max_m=PIN_SNAP_M)
     if river is None or river.form not in RIVER_FORMS:
         return None
-    return head_of_arm(net, river.link_id, want)
+    return head_of_arm(net, river.link_id, want, spot=spot)
 
 
-def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str]) -> Snap | None:
+def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str], spot: bool = False) -> Snap | None:
     """_adopt_at_head from the arm's own link: where a pin on that river link goes, or None. The
     click-anywhere build (scripts/build_any_point.py, arm_heads) calls it for every small link, as
-    the page cannot walk the network."""
+    the page cannot walk the network.
+
+    Two rules (docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md). A listed spot (`spot`) keeps the rule it
+    has had since #179: the nearest channel, with no limit on the arm. A map click takes the channel
+    with the most network, from an arm no longer than ARM_MAX_M (and _click_at_head adds the floor,
+    keeps_river). The click rule moved Wolvercote Mill Stream and Hurley when spots used it too."""
     own = net.link_upstream_m(link_id)
     if own >= ADOPT_MIN_M:
         return None
     (hx, hy), arm_m = _side_arm(net, link_id)
-    if arm_m > ARM_MAX_M:
+    if not spot and arm_m > ARM_MAX_M:
         return None
     cand = net.candidates_xy(hx, hy, ADOPT_RADIUS_M)
     cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != link_id)]
@@ -337,6 +343,8 @@ def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str]) -> Snap |
     keep = ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)
     if not keep.any():
         return None
+    if spot:   # main's rule: the nearest that qualifies (candidates_xy sorts nearest first)
+        return _snap_to_links(net, hx, hy, {ups[keep].index[0]})
     # The one with the most network, not the nearest: OS draws braided channels of a big river under its
     # name, disconnected above, and the nearest of those took a click on the Medway from 420 km of network
     # to 12 km (docs/ANYPOINT-SIDE-ARM-MOST-2026-10.md). idxmax keeps the first of equals, and
@@ -397,7 +405,7 @@ def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLoca
     if not want:
         return pin
     if pin.mode == "river" and pin.adopted_main_channel:
-        head = keeps_river(net, _adopt_at_head(net, pin.x, pin.y, want), pin.snap.link_id)
+        head = _adopt_at_head(net, pin.x, pin.y, want, spot=True)   # main's rule for listed spots: no floor
         if head is not None:
             log.info("placed on %s where the side arm leaves it, %.0f m from the arm's head", hint, head.dist_m)
             return _at_head(net, pin, head, prefer=shown)
