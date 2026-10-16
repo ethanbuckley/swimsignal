@@ -226,10 +226,13 @@ def _in_mapped_lake(net: RiverNetwork, links: set[str]) -> bool:
 
 
 def _snap_to_links(net: RiverNetwork, x: float, y: float, link_ids: set[str]) -> Snap | None:
+    """The nearest of these links; of links equally near, the first by id. A pin nearest a node
+    where lake links meet is equally near all of them: Windermere, Lakeside YMCA is 466.6 m from
+    a node three meet at. Taken in set order, the link changed with PYTHONHASHSEED (16 Oct 2026)."""
     if not link_ids:
         return None
     pt = Point(x, y)
-    sub = net.links.loc[list(link_ids)]
+    sub = net.links.loc[sorted(link_ids)]
     d = sub.geometry.distance(pt)
     lid = d.idxmin()
     geom = sub.loc[lid, "geometry"]
@@ -568,7 +571,7 @@ def _lake_outlet(net: RiverNetwork, comp: set[str]) -> str:
         s, e = net.link_nodes(lid)
         nodes.update((s, e))
     candidates = []
-    for n in nodes:
+    for n in sorted(nodes):   # max() keeps the first of a tie: by node id, not set order
         outs = [g.edges[n, m]["link"] for m in g.successors(n)]
         if not outs or any(l not in comp for l in outs):
             candidates.append(n)
