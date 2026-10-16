@@ -376,6 +376,40 @@ function tileLine(s, kind, iso = null) {
   // A spills tile under a level set by spills on another day: the raiser says it all.
   return (kind === 'spill' && by === 'spill' ? '' : `On its own: ${t} risk. `) + raiser;
 }
+// ------------------------------------------------------------------------------ when it clears
+// "When will it clear?" (docs/REVIEW-2026-10-16.md, G7): forecast.py's now.clears_at, the time right
+// now's raised level should be back to low if no new spill starts (transport.clear_time: the spills
+// running now stop now, and each spill's water passes the spot and dies off). Said as a clock time in
+// UK time on the Right now tile and in the alerts (scripts/alerts.js writes it as `clears`): "The
+// spills upstream should have passed and died off by Saturday 22:47." Only while right now is raised
+// (moderate or worse, and known: nowSpill), and never a time already past (an old page, a late alert).
+// The page's "where the risk comes from" says the same time as a part of the day, with its reason.
+const UK_CLOCK = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', weekday: 'long', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+// "Saturday 22:47", the weekday even when it is today or tomorrow: an alert or a page read after midnight
+// would make "tomorrow" wrong (the forecast's today, as in REVIEW G1), and the weekday never is.
+function clockWords(iso) {
+  const p = Object.fromEntries(UK_CLOCK.formatToParts(new Date(iso)).map(x => [x.type, x.value]));
+  return `${p.weekday} ${p.hour}:${p.minute}`;
+}
+function clearWords(s, nowMs = Date.now()) {
+  const n = (s && s.now) || {};
+  if (!n.clears_at || rank(nowSpill(s)) < 1 || !(Date.parse(n.clears_at) > nowMs)) return '';
+  const k = n.discharging_upstream || 0, one = k + (n.recent_upstream || 0) <= 1;
+  const by = `should have passed and died off by ${clockWords(n.clears_at)}`;
+  if (!k) return `The spill${one ? '' : 's'} upstream ${by}.`;
+  return `If ${k === 1 ? 'the overflow discharging upstream stops' : `the ${k} overflows discharging upstream stop`} now, ${k === 1 && one ? 'its spill' : `the spill${one ? '' : 's'}`} ${by}.`;
+}
+// The first day back at low after a raised day in the five days, for the sentence over them: "Back to
+// low risk on Saturday." Raised is the day's own level (risk: a day's spills, its E. coli, a rating,
+// algae, and today's right now). Empty where no day is raised, or none after the first raised day is low
+// (a water rated poor never is).
+function backToLow(s) {
+  if (!daily(s)) return '';
+  const ls = s.days.slice(0, 5).map(x => ({ x, l: hasData(x) ? risk(s, x).level : null }));
+  const up = ls.findIndex(o => rank(o.l) >= 1);
+  const back = up < 0 ? null : ls.slice(up + 1).find(o => o.l === 'low');
+  return back ? `Back to low risk ${dayWord(back.x.date)}.` : '';
+}
 // ------------------------------------------------------------------------------ what to do
 // One line under the level saying what to do, as NSW Beachwatch gives an action with each of its
 // forecasts. A level with no action left the swimmer to turn "Moderate risk" into a decision alone.
@@ -668,7 +702,7 @@ const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It 
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE,
-    level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords,
+    level, dayLevel, headParts, headline, clockWords, clearWords, backToLow, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
     companyName, overflowWhere, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };

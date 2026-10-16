@@ -392,12 +392,14 @@ async function eachLimit(items, limit, fn) {
 // One spot: its headline, then what to do (levels.js levelAction, `action` in alerts.json), as the page
 // says them under the level; the site's worker adds the issue time. The headline comes first: Android
 // shows about one line until the notification is opened, an iPhone's lock screen about four. An
-// alerts.json from before 4 Oct 2026 has no action. Several spots: their names, since each has its own line.
+// alerts.json from before 4 Oct 2026 has no action. Then, after a spill, when it should have cleared
+// (levels.js clearWords, `clears`, only while right now is raised). Several spots: their names, since
+// each has its own line.
 export function alertPayload(ids, spots, siteUrl) {
   if (ids.length === 1) {
     const [id] = ids;
     const spot = spots[id];
-    const body = spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '';
+    const body = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
     return { title: spot.name ?? id, body, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
   }
   const names = ids.map((id) => spots[id].name ?? id).join(', ');

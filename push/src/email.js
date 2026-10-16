@@ -385,7 +385,7 @@ export function alertEmail(env, to, ids, spots, issuedAt, unsubscribe) {
   const subject = one ? `${spotLines(first).head} at ${first.name ?? ids[0]}` : `${ids.length} of your saved spots are at high or very high risk`;
   const url = (id) => spots[id].url ?? `${env.SITE_URL}spot/${id}/`;
   const text = [
-    ...ids.flatMap((id) => [spots[id].name ?? id, `${spotLines(spots[id]).line}.`, url(id), '']),
+    ...ids.flatMap((id) => [spots[id].name ?? id, `${spotLines(spots[id]).line}.`, ...(spots[id].clears ? [spots[id].clears] : []), url(id), '']),
     `From the forecast issued at ${issued}. A forecast, not a water test: check the signs at the water before you swim.`,
     'An alert can be late or not come at all, so no alert does not mean the water is clean.', '',
     'You get this because you asked for SwimSignal email alerts for your saved spots and confirmed it.',
@@ -396,6 +396,7 @@ export function alertEmail(env, to, ids, spots, issuedAt, unsubscribe) {
     return `<div style="margin:0 0 20px;padding-left:12px;border-left:4px solid ${KRULE[level]};">`
       + `<h1 style="margin:0 0 4px;font:600 20px/1.25 ${SERIF};">${esc(s.name ?? id)}</h1>`
       + `<p style="margin:0 0 4px;font-weight:600;color:${KTEXT[level]};">${esc(line)}</p>`
+      + (s.clears ? `<p style="margin:0 0 4px;">${esc(s.clears)}</p>` : '')   // when it should have cleared (alerts.json `clears`)
       + `<p style="margin:0;font-size:15px;"><a href="${esc(url(id))}" style="${linkStyle}">See the forecast</a></p></div>`;
   }).join('')
     + `<p style="margin:0;font-size:15px;color:#5a6166;">From the forecast issued at ${esc(issued)}. A forecast, not a water test: check the signs at the water before you swim. `

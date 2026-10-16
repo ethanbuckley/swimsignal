@@ -1622,11 +1622,12 @@ function answerParts(d, iso = null) {
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
 // with nothing upstream says so, and names its wettest day. Overflows discharging now come first: since
 // 11 Oct 2026 they raise today's row (levels.js, risk), and "A spill ... is possible today" under a
-// "Today: Very high" row, with one discharging, read as though nothing was.
+// "Today: Very high" row, with one discharging, read as though nothing was. After a raised day, the first
+// day back at low (G7), which the rows show only as a colour.
 function daysSentence(d) {
-  const total = overflows(d), known = d.days.slice(0, 5).filter(hasData);
+  const total = overflows(d), known = d.days.slice(0, 5).filter(hasData), back = backToLow(d) ? ' ' + backToLow(d) : '';   // the first day back at low (levels.js)
   if (!total) return summary(d).join(' ');
-  if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ');
+  if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ') + back;
   const e = known.map(x => x.expected_spilling_overflows ?? 0), most = Math.max(...e), peak = known[e.indexOf(most)];
   const down = e.every((v, i) => !i || v <= e[i - 1] + .05), up = e.every((v, i) => !i || v >= e[i - 1] - .05);
   const trend = most < 1 || e.length < 2 ? '' : down ? ', fewer each day after' : up ? ', more each day after'
@@ -1635,7 +1636,7 @@ function daysSentence(d) {
     : `. About ${Math.round(most)} of the ${total} ${Math.round(most) === 1 ? 'is' : 'are'} expected to spill ${dayWord(peak.date)}`;
   return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. ` : '')
     + ((d.now || {}).discharging_upstream ? summary(d)[0] + ' ' : '')
-    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.`;
+    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}`;
 }
 // A day's place on its bar, 0 to 1: four equal bands, the day in its level's band, placed in it by
 // what set the level: the exposure index (bands at SPILL_CUTS, 15, 40 and 70 of 100), the E. coli estimate
@@ -1726,7 +1727,7 @@ function nowTile(d, total) {
       + (feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : '') + feedDown(now) + feedStale(now) };
   }
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
-    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}` };
+    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}${clearWords(d) ? ' ' + clearWords(d) : ''}` };   // when it should clear (levels.js)
 }
 // Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
