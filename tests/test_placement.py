@@ -336,7 +336,75 @@ def test_a_spot_on_a_side_arm_takes_the_river_the_arm_leaves_not_the_one_below_a
     spot = transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon")
     assert spot.placement == "side arm head" and spot.snap.link_id == "A1" and spot.adopted_main_channel
     assert set(transport.upstream_overflows(net, spot, ov, velocity_ms=0.5)["site_id"]) == {"avon"}
-    # A click on the map (no river named) keeps the old rule: the link below the confluence.
+    # A click on the map (no river named) does the same since 13 Oct 2026, the river being the one the
+    # old rule chose, the link below the confluence: until then it counted the Nadder.
     click = transport.locate_pin(net, lon, lat)
-    assert click.snap.link_id == "B"
-    assert set(transport.upstream_overflows(net, click, ov, velocity_ms=0.5)["site_id"]) == {"avon", "nadder"}
+    assert click.placement == "side arm head" and click.snap.link_id == "A1"
+    assert set(transport.upstream_overflows(net, click, ov, velocity_ms=0.5)["site_id"]) == {"avon"}
+
+
+def test_no_side_arm_move_to_a_channel_with_under_a_tenth_of_the_river(monkeypatch):
+    """The floor (docs/ANYPOINT-SIDE-ARM-FLOOR-2026-10.md): the same arm, but with a tributary so long
+    that the Avon above it has under 10% of the network below. The click keeps the old rule's channel
+    (a listed spot does not: it keeps main's rule),
+    as on the Test at 50.9379, -1.4865, where the only Test channel near the arm's head had 9 km above
+    it against 391 km under the click."""
+    net = _net([
+        ("A0", "River Avon", None, "a0", "a1", [(400000, 530000), (400000, 520000)]),
+        ("A1", "River Avon", None, "a1", "a2", [(400000, 520000), (400000, 510200)]),
+        ("A2", "River Avon", None, "a2", "j", [(400000, 510200), (400000, 510000)]),
+        ("N1", "River Nadder", None, "n0", "n1", [(100000, 510000), (399800, 510000)]),   # 300 km
+        ("N2", "River Nadder", None, "n1", "j", [(399800, 510000), (400000, 510000)]),
+        ("S", None, None, "s0", "n1", [(399900, 511000), (399800, 510000)]),
+        ("B", "River Avon", None, "j", "b1", [(400000, 510000), (400000, 505000)]),
+    ])
+    lon, lat = bng_to_lonlat(399820, 510200)
+    click = transport.locate_pin(net, lon, lat)
+    assert click.placement != "side arm head" and click.snap.link_id != "A1"
+    # A listed spot keeps main's rule, with no floor (docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md): it still moves.
+    spot = transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon")
+    assert spot.placement == "side arm head" and spot.snap.link_id == "A1"
+    monkeypatch.setattr(transport, "HEAD_FLOOR_SHARE", 0.0)   # without the floor, the click moves too
+    assert transport.locate_pin(net, lon, lat).snap.link_id == "A1"
+
+
+def test_no_side_arm_move_from_an_arm_longer_than_two_km(monkeypatch):
+    """The arm limit (docs/ANYPOINT-SIDE-ARM-LENGTH-2026-10.md): the same Avon and Nadder, but the arm
+    runs 2.5 km from its head, so a click is not sent there; a listed spot still is. On the Little Stour at
+    51.3240, 1.2561 a click was sent to a head 3.6 km away."""
+    net = _net([
+        ("A0", "River Avon", None, "a0", "a1", [(400000, 530000), (400000, 520000)]),
+        ("A1", "River Avon", None, "a1", "a2", [(400000, 520000), (400000, 510200)]),
+        ("A2", "River Avon", None, "a2", "j", [(400000, 510200), (400000, 510000)]),
+        ("N1", "River Nadder", None, "n0", "n1", [(390000, 510000), (399800, 510000)]),
+        ("N2", "River Nadder", None, "n1", "j", [(399800, 510000), (400000, 510000)]),
+        ("S", None, None, "s0", "n1", [(399900, 512500), (399800, 510000)]),   # 2.5 km, head by A1
+        ("B", "River Avon", None, "j", "b1", [(400000, 510000), (400000, 505000)]),
+    ])
+    lon, lat = bng_to_lonlat(399820, 510200)
+    assert transport.locate_pin(net, lon, lat).placement != "side arm head"
+    # A listed spot keeps main's rule, with no limit on the arm: it still moves.
+    assert transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon").placement == "side arm head"
+    monkeypatch.setattr(transport, "ARM_MAX_M", 3_000.0)   # with a longer limit, the click moves
+    assert transport.locate_pin(net, lon, lat).placement == "side arm head"
+
+
+def test_a_listed_spot_takes_the_nearest_named_channel_a_click_the_biggest():
+    """Two Avon channels near the arm's head: the nearer with 6 km above it, the farther with 30 km. A
+    listed spot keeps main's rule and takes the nearer; a click takes the one with most network
+    (docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md). So spots are as on main by construction."""
+    net = _net([
+        ("BU", "River Avon", None, "bu", "b0", [(350000, 510300), (380000, 510300)]),            # 30 km above BIG
+        ("BIG", "River Avon", None, "b0", "b1", [(380000, 510300), (410000, 510300)]),          # 300 m off the head
+        ("SU", "River Avon", None, "su", "s0", [(388000, 510100), (394000, 510100)]),            # 6 km above SM
+        ("SM", "River Avon", None, "s0", "s1", [(394000, 510100), (400000, 510100)]),           # 100 m off the head
+        ("SM2", "River Avon", None, "s1", "j", [(400000, 510100), (400100, 510000)]),
+        ("BIG2", "River Avon", None, "b1", "j", [(410000, 510300), (400100, 510000)]),
+        ("B", "River Avon", None, "j", "e", [(400100, 510000), (400100, 505000)]),
+        ("X", None, None, "x0", "x1", [(399500, 510000), (399700, 509000)]),                     # the arm, head at (399500, 510000)
+    ])
+    lon, lat = bng_to_lonlat(399690, 509100)
+    spot = transport.locate_pin(net, lon, lat, kind_hint="river", river_hint="River Avon")
+    click = transport.locate_pin(net, lon, lat)
+    assert spot.placement == "side arm head" and spot.snap.link_id == "SM"
+    assert click.placement == "side arm head" and click.snap.link_id == "BIG"
