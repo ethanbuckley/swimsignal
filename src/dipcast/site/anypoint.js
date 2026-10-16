@@ -6,7 +6,8 @@
 //    inside takes the centreline nearest the click within 1.5 km, and with none a click on its water
 //    is the isolated lake and one on its shore goes on as if it were not there); else the nearest
 //    link within 1.5 km, or the nearest lake centreline if it is less than twice as far; a click on
-//    a small side channel near a much bigger river is traced as that river (_adopt_main_channel);
+//    a small side channel near a much bigger river is traced as that river (_adopt_main_channel), and
+//    then where the channel leaves it, as the build found (_click_at_head; the links file's `arms`);
 //  - each upstream overflow's distance and dilution (upstream_overflows), from the link's record
 //    for the click's place along it, or from the lake's inlets and the straight line across (in lake
 //    distance "water", the shortest way through the lake's water, waterWay); a WFD lake crossed on the
@@ -26,7 +27,7 @@ const AnyPoint = (() => {
   const BASE = 'data/anypoint/';
   const FORMS = ['inlandRiver', 'tidalRiver', 'lake', 'canal'], LAKE = 2, RIVER_FORMS = [0, 1];
   const ADOPT = { radius: 500, min: 5000, ratio: 5 };   // transport.ADOPT_RADIUS_M, ADOPT_MIN_M, ADOPT_RATIO
-  const BASE_UNIT = 10, SCALE = 10000, PATH_SCALE = 1e6;   // build_any_point.BASE_UNIT_M, DIL_SCALE, PATH_SCALE
+  const BASE_UNIT = 10, SCALE = 10000, PATH_SCALE = 1e6, ARM_SCALE = 1e4;   // build_any_point.BASE_UNIT_M, DIL_SCALE, PATH_SCALE, ARM_FRAC_SCALE
   const HOLD_SCALE = 1e3, PASS_SCALE = 1e9;                // build_any_point.HOLD_SCALE, PASS_SCALE
   const DAYS_AHEAD = 4, KEEP = 10;                       // forecast_point's days, build_site.KEEP_CONTRIBUTORS
   const RAD = Math.PI / 180, A_ELL = 6378137, E2 = 0.00669438;   // WGS84
@@ -380,7 +381,26 @@ const AnyPoint = (() => {
         .reduce((a, b) => !a || b.upstream > a.upstream || (b.upstream === a.upstream && b.d < a.d) ? b : a, null);
       if (alt && alt.upstream >= Math.max(ADOPT.min, ADOPT.ratio * river.upstream)) { target = alt; adopted = true; }
     }
-    return { mode: 'river', link: target, adopted };
+    return { mode: 'river', link: target, adopted, from: river };
+  }
+  // transport._click_at_head: a click moved from a side arm to a main channel goes where the arm leaves
+  // the river of that channel's name. The build worked it out for each arm (build_any_point.arm_heads,
+  // encode_arm): rows [link, square (0: the arm's; null: no record), fraction x ARM_SCALE, metres from
+  // the arm's head, form, the channels that send a click there by name or link number, and the name
+  // where there is no square]. {lno, tile, frac, d, form, name?}, or null where the click stays.
+  function armMove(at, tiles) {
+    if (!at.adopted || !RIVER_FORMS.includes(at.from.form)) return null;
+    const row = (((tiles[at.from.tile] || {}).arms || {})[String(at.from.lno)] || [])
+      .find(r => r[5].includes(at.link.lno) || (at.link.name !== null && r[5].includes(at.link.name)));
+    if (!row) return null;
+    const tile = row[1] === 0 ? at.from.tile : row[1];
+    return { lno: row[0], tile, frac: row[2] / ARM_SCALE, d: row[3], form: row[4], name: tile === null ? row[6] : undefined };
+  }
+  // A link's name as the index of its square gives it.
+  function indexName(t, lno) {
+    const ix = t.index;
+    for (let k = 0; k < ix.n; k++) if (ix.lno[k] === lno) { const nm = (ix.meta[k] >> 2) - 1; return nm >= 0 ? ix.names[nm] : null; }
+    return null;
   }
 
   // ------------------------------------------------------------------ the files
@@ -396,7 +416,7 @@ const AnyPoint = (() => {
     const name = `tile:${key}`;
     if (!memo.has(name)) memo.set(name, Promise.all([
       fetch(`${BASE}link_index/${key}.bin?n=${cfg.network}`).then(r => { if (!r.ok) throw new Error(`square ${key} answered ${r.status}`); return r.arrayBuffer(); }),
-      json(`links/${key}.json`)]).then(([buf, links]) => ({ index: decodeIndex(buf), links: links.links, ids: links.ids }))
+      json(`links/${key}.json`)]).then(([buf, links]) => ({ index: decodeIndex(buf), links: links.links, arms: links.arms || {}, ids: links.ids }))
       .catch(e => { memo.delete(name); throw e; }));
     return memo.get(name);
   };
@@ -472,7 +492,13 @@ const AnyPoint = (() => {
       : `No river or lake near this point has a monitored storm overflow within ${a.max_upstream_km} km upstream, so SwimSignal has no sewage spills to forecast here.` };
     const at = locate(candidates(lat, lon, tiles), cfg);
     if (at.mode === 'none') return { mode: 'none', kind: '', name: 'This point', error: 'No river or lake within 1.5 km of this point.' };
-    const entry = tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
+    const move = armMove(at, tiles);
+    if (move) {
+      if (move.tile && !tiles[move.tile]) return { need: [move.tile] };   // the arm's head can be a square away
+      if (move.tile) move.name = indexName(tiles[move.tile], move.lno);
+      at.link = move;
+    }
+    const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
     const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake]))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
@@ -491,6 +517,10 @@ const AnyPoint = (() => {
     const keys = needsSquares(lat, lon, lakes, cfg, outside, outlines) ? squares(lat, lon, cfg) : [];
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
     let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
+    if (at.need) {
+      for (const k of at.need) tiles[k] = await tile(k, cfg);
+      at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
+    }
     // Lake distance "water": the lake's water, only for a click placed on a lake that has one; then place again.
     const water = at.lake !== undefined && (lakes.lakes[at.lake] || {}).water ? await json(`lake_water/${at.lake}.json`).catch(() => null) : null;
     if (water) at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, waters: { [at.lake]: water } });

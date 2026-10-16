@@ -135,9 +135,11 @@ def _names_match(cand: pd.DataFrame, want: frozenset[str]) -> pd.Series:
     """Which candidate links carry the wanted river's name, as their name or OS's alternative
     (Welsh links often have the English name there)."""
     def matches(col: pd.Series) -> pd.Series:
-        # .astype(bool): on an empty frame pandas 3 keeps the str dtype through .map, and
-        # OR-ing two empty str Series raises (Shilley Pool, no link within HINT_SNAP_M, 3 Oct 2026).
-        return col.map(lambda n: bool(river_words(n) & want) if isinstance(n, str) else False).astype(bool)
+        # A list, not .map: on an empty frame pandas 3 kept the str dtype through .map, and OR-ing two
+        # empty str Series raised (Shilley Pool, 3 Oct 2026); and .map on an arrow string column cost
+        # about 9 ms a call, which the click-anywhere build makes tens of thousands of (13 Oct 2026).
+        return pd.Series([bool(river_words(n) & want) if isinstance(n, str) else False for n in col],
+                         index=col.index, dtype=bool)
     alt = cand.get("watercourse_name_alternative", pd.Series(None, index=cand.index, dtype=object))
     return matches(cand["watercourse_name"]) | matches(alt)
 
@@ -224,10 +226,13 @@ def _in_mapped_lake(net: RiverNetwork, links: set[str]) -> bool:
 
 
 def _snap_to_links(net: RiverNetwork, x: float, y: float, link_ids: set[str]) -> Snap | None:
+    """The nearest of these links; of links equally near, the first by id. A pin nearest a node
+    where lake links meet is equally near all of them: Windermere, Lakeside YMCA is 466.6 m from
+    a node three meet at. Taken in set order, the link changed with PYTHONHASHSEED (16 Oct 2026)."""
     if not link_ids:
         return None
     pt = Point(x, y)
-    sub = net.links.loc[list(link_ids)]
+    sub = net.links.loc[sorted(link_ids)]
     d = sub.geometry.distance(pt)
     lid = d.idxmin()
     geom = sub.loc[lid, "geometry"]
@@ -255,6 +260,8 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
     pin = _locate(net, x, y, kind_hint, name)
     if river_hint and kind_hint != "lake":
         pin = _apply_river_hint(net, pin, river_hint)
+    elif kind_hint != "lake" and pin.mode == "river" and pin.adopted_main_channel:
+        pin = _click_at_head(net, pin)
     return pin
 
 
@@ -272,7 +279,18 @@ def spot_hints(kind, river) -> tuple[str | None, str | None]:
 def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
     """Where a side arm with little network above it begins: up its links while there is exactly one
     link in and the network above stays under ADOPT_MIN_M. Returns that point (BNG)."""
+    return _side_arm(net, link_id)[0]
+
+
+ARM_MAX_M = 2_000.0   # a side arm longer than this, head to the end of the link clicked, takes no head move
+
+
+def _side_arm(net: RiverNetwork, link_id: str) -> tuple[tuple[float, float], float]:
+    """_side_arm_head's point, and the arm's length along its links from there to the downstream end
+    of `link_id`. The length is what ARM_MAX_M limits: on the Little Stour at 51.3240, 1.2561 a click
+    was sent to an arm's head 3.6 km away (docs/ANYPOINT-SIDE-ARM-LENGTH-2026-10.md)."""
     lid = link_id
+    length = float(net.links.at[lid, "length"])
     for _ in range(50):
         s, _e = net.link_nodes(lid)
         preds = list(net.graph.predecessors(s))
@@ -282,14 +300,16 @@ def _side_arm_head(net: RiverNetwork, link_id: str) -> tuple[float, float]:
         if up.startswith("repair:") or net.link_upstream_m(up) >= ADOPT_MIN_M:
             break
         lid = up
+        length += float(net.links.at[lid, "length"])
     x, y = net.links.loc[lid, "geometry"].coords[0][:2]
-    return x, y
+    return (x, y), length
 
 
-def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) -> Snap | None:
-    """A spot on a side arm takes the water of the river the arm leaves: the main channel named like
-    the spot's river nearest the arm's head, with at least ADOPT_RATIO times its network, snapped
-    where the head is. None when the pin's link is not a side arm or no such channel is near its head.
+def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str], spot: bool = False) -> Snap | None:
+    """A spot on a side arm takes the water of the river the arm leaves: of the channels named like the
+    spot's river near the arm's head, with at least ADOPT_RATIO times its network, the nearest for a
+    listed spot and the one with most for a map click (head_of_arm), snapped where the head is. None
+    when the pin's link is not a side arm or no such channel is near its head.
 
     _adopt_main_channel takes the candidate near the pin with the most network, which is right for a
     mill stream beside its river but not where the arm passes a confluence: at Queen Elizabeth Gardens,
@@ -299,20 +319,87 @@ def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str]) 
     river = net.snap_xy(x, y, max_m=PIN_SNAP_M)
     if river is None or river.form not in RIVER_FORMS:
         return None
-    own = net.link_upstream_m(river.link_id)
+    return head_of_arm(net, river.link_id, want, spot=spot)
+
+
+def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str], spot: bool = False) -> Snap | None:
+    """_adopt_at_head from the arm's own link: where a pin on that river link goes, or None. The
+    click-anywhere build (scripts/build_any_point.py, arm_heads) calls it for every small link, as
+    the page cannot walk the network.
+
+    Two rules (docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md). A listed spot (`spot`) keeps the rule it
+    has had since #179: the nearest channel, with no limit on the arm. A map click takes the channel
+    with the most network, from an arm no longer than ARM_MAX_M (and _click_at_head adds the floor,
+    keeps_river). The click rule moved Wolvercote Mill Stream and Hurley when spots used it too."""
+    own = net.link_upstream_m(link_id)
     if own >= ADOPT_MIN_M:
         return None
-    hx, hy = _side_arm_head(net, river.link_id)
+    (hx, hy), arm_m = _side_arm(net, link_id)
+    if not spot and arm_m > ARM_MAX_M:
+        return None
     cand = net.candidates_xy(hx, hy, ADOPT_RADIUS_M)
-    cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != river.link_id)]
+    cand = cand[cand["form"].isin(RIVER_FORMS) & (cand.index != link_id)]
     cand = cand[_names_match(cand, want)]
     if cand.empty:
         return None
-    ups = cand["start_node"].map(net.upstream_m).fillna(0.0)
-    cand = cand[ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)]
-    if cand.empty:
+    ups = pd.Series([net.upstream_m.get(n, 0.0) for n in cand["start_node"]], index=cand.index)   # as _names_match, no .map
+    keep = ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)
+    if not keep.any():
         return None
-    return _snap_to_links(net, hx, hy, {cand.index[0]})   # candidates_xy sorts nearest first
+    if spot:   # main's rule: the nearest that qualifies (candidates_xy sorts nearest first)
+        return _snap_to_links(net, hx, hy, {ups[keep].index[0]})
+    # The one with the most network, not the nearest: OS draws braided channels of a big river under its
+    # name, disconnected above, and the nearest of those took a click on the Medway from 420 km of network
+    # to 12 km (docs/ANYPOINT-SIDE-ARM-MOST-2026-10.md). idxmax keeps the first of equals, and
+    # candidates_xy sorts nearest first, so a tie goes to the nearer.
+    return _snap_to_links(net, hx, hy, {ups[keep].idxmax()})
+
+
+def _at_head(net: RiverNetwork, pin: PinLocation, head: Snap, prefer: frozenset[str] | None = None) -> PinLocation:
+    start, _ = net.link_nodes(head.link_id)
+    return PinLocation("river", pin.x, pin.y, head, trace_node=start,
+                       trace_offset_m=head.frac * net.links.loc[head.link_id, "length"],
+                       watercourse=_link_name(net, head.link_id, prefer=prefer), adopted_main_channel=True,
+                       placement="side arm head")
+
+
+def channel_words(net: RiverNetwork, link_id: str) -> frozenset[str]:
+    """The words of a link's own name and OS's alternative: the river a click moved to that link is
+    taken to be on. Empty for an unnamed link."""
+    row = net.links.loc[link_id]
+    words: frozenset[str] = frozenset()
+    for col in ("watercourse_name", "watercourse_name_alternative"):
+        n = row.get(col)
+        if isinstance(n, str) and n:
+            words |= river_words(n)
+    return words
+
+
+HEAD_FLOOR_SHARE = 0.10   # a side-arm head move keeps at least this share of the old rule's channel's network
+
+
+def keeps_river(net: RiverNetwork, head: Snap | None, old_link: str) -> Snap | None:
+    """`head`, unless its channel has under HEAD_FLOOR_SHARE of the network above `old_link`, the
+    channel _adopt_main_channel chose. On the Test at 50.9379, -1.4865 the arm's head is 362 m from
+    the click and the only Test channel near it has 9 km above it, against the 391 km of the Test
+    under the click (docs/ANYPOINT-SIDE-ARM-FLOOR-2026-10.md). At Queen Elizabeth Gardens the Avon
+    above the Nadder keeps 40% of the Avon below it, so that move stands."""
+    if head is None:
+        return None
+    up = lambda lid: net.upstream_m.get(net.links.at[lid, "start_node"], 0.0)   # noqa: E731
+    return head if up(head.link_id) >= HEAD_FLOOR_SHARE * up(old_link) else None
+
+
+def _click_at_head(net: RiverNetwork, pin: PinLocation) -> PinLocation:
+    """A click, with no river named, that the old rule moved from a side channel to a main channel
+    takes the side-arm head rule too, the wanted river being the channel the old rule chose. Until
+    13 Oct 2026 only listed spots did: a click at Queen Elizabeth Gardens, Salisbury, counted the
+    Nadder and the Wylye, which the spot leaves out (docs/ANYPOINT-SIDE-ARM-2026-10.md)."""
+    want = channel_words(net, pin.snap.link_id)
+    if not want:
+        return pin
+    head = keeps_river(net, _adopt_at_head(net, pin.x, pin.y, want), pin.snap.link_id)
+    return pin if head is None else _at_head(net, pin, head)
 
 
 def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLocation:
@@ -321,14 +408,10 @@ def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLoca
     if not want:
         return pin
     if pin.mode == "river" and pin.adopted_main_channel:
-        head = _adopt_at_head(net, pin.x, pin.y, want)
+        head = _adopt_at_head(net, pin.x, pin.y, want, spot=True)   # main's rule for listed spots: no floor
         if head is not None:
-            start, _ = net.link_nodes(head.link_id)
             log.info("placed on %s where the side arm leaves it, %.0f m from the arm's head", hint, head.dist_m)
-            return PinLocation("river", pin.x, pin.y, head, trace_node=start,
-                               trace_offset_m=head.frac * net.links.loc[head.link_id, "length"],
-                               watercourse=_link_name(net, head.link_id, prefer=shown), adopted_main_channel=True,
-                               placement="side arm head")
+            return _at_head(net, pin, head, prefer=shown)
     if pin.mode == "river" and pin.snap is not None:
         own = net.links.loc[[pin.snap.link_id]]
         if bool(_names_match(own, want).iloc[0]):   # the link itself, not a name borrowed from downstream
@@ -488,7 +571,7 @@ def _lake_outlet(net: RiverNetwork, comp: set[str]) -> str:
         s, e = net.link_nodes(lid)
         nodes.update((s, e))
     candidates = []
-    for n in nodes:
+    for n in sorted(nodes):   # max() keeps the first of a tie: by node id, not set order
         outs = [g.edges[n, m]["link"] for m in g.successors(n)]
         if not outs or any(l not in comp for l in outs):
             candidates.append(n)
