@@ -130,3 +130,42 @@ either side, after any click. This kind is added below.
   reach result above stands.
 
 ### Rerun results
+
+Run 16 October 2026 after a1c0f4d was pushed (10:22 BST). Same inputs as before. Branch at aa43c89 (main merged).
+
+**Outcome: check 2 passes. Check 3 fails, so the rule stays off.**
+
+- **Check 1, Queen Elizabeth Gardens: passes.** The click counts the spot's 18 overflows, none on the
+  Nadder or the Wylye.
+- **Check 2, page against API: passes, 200 of 200.** No allowed-kind misses were needed (300 arms,
+  seed 26, clicks at 65%). With #225's full lines, the Stor kind is gone.
+- **Check 4, size: passes.** +0.85 MB.
+- **Check 3, listed spots: fails.** Compared this time against main's own code, in a separate process,
+  4 of 105 spots differ:
+
+| Spot | Main | This branch |
+|---|---|---|
+| Wolvercote Mill Stream (bw-ukj1402-11946) | 31 overflows | 29: TWL00057 and TWL00723 dropped |
+| River Thames, Hurley | 43 overflows | 42: TWL00157 dropped |
+| River Thames, Buscot Weir | link B55406DA | link 46ABF4C3, same 23 overflows |
+| Windermere, Lakeside YMCA | link 9E639D5A | link 3E45C8C5, same 6 overflows |
+
+### A correction to every earlier check 3 in this series
+
+The earlier runs (#218's second, third and fourth tries) reported "none of the 105 moves". That
+was wrong. They compared the branch with itself, switching off only the click part of the rule
+(`_click_at_head`). But "most network", the 10% floor and the 2 km limit live in `head_of_arm`, which
+listed spots use too. So the spot check never saw them. This rerun compares against main's code.
+
+### What this means
+
+- The rule is ready for map clicks: the page and the API now agree.
+- But as written it also changes where listed spots on side arms are placed. Wolvercote is the
+  sharpest case: its pin was checked by hand in #199, and it is one of the E. coli evaluation's sites.
+- The Lakeside change is not explained here. It is a lake spot, which this rule should not touch. It
+  is listed, not dismissed.
+
+**Next, if this is taken up:** a new statement that keeps listed spots on main's rule (nearest
+channel, no floor, no limit) and applies the new rule to clicks only. Spots would then be unchanged
+by construction, and check 3 would test exactly that. Or, if the new rule should also apply to
+spots: a stated test on the E. coli evaluation, as the lake tests were run.
