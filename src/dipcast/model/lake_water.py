@@ -27,9 +27,9 @@ from functools import lru_cache
 
 import numpy as np
 import shapely
-from shapely.ops import nearest_points
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import shortest_path
+from shapely.ops import nearest_points
 
 WATER_SIMPLIFY_M = 10.0   # the polygons' simplification, and the widening a segment may use
 

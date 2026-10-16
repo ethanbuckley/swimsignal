@@ -149,10 +149,10 @@ LAKE_RESIDENCE_SPILL_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_SPILL_FI
 RESIDENCE_MODES = ("residence", "residence_spill")
 
 # A lake spot's distance from where an overflow's water enters its lake to the spot (outside review, 12 Oct
-# 2026: Pooley Bridge's straight line from Glenridding runs 6.7 of 10.9 km over land). Off by default until
-# docs/LAKE-DISTANCE-2026-10.md is judged.
-# LAKE_DISTANCE_MODE "line"   the straight line (the rule before)
-#                    "water"  the shortest path inside the WFD lake polygons the spot's lake is made of
+# 2026: Pooley Bridge's straight line from Glenridding runs 6.7 of 10.9 km over land). "water" is the default
+# after docs/LAKE-DISTANCE-2026-10.md (all seven stated conditions held, 16 Oct 2026).
+# LAKE_DISTANCE_MODE "water"  the shortest path inside the WFD lake polygons the spot's lake is made of
 #                             (model/lake_water.py); the straight line where it stays in the water
-LAKE_DISTANCE_MODE = os.environ.get("DIPCAST_LAKE_DISTANCE_MODE", "line")
+#                    "line"   the straight line (the rule before)
+LAKE_DISTANCE_MODE = os.environ.get("DIPCAST_LAKE_DISTANCE_MODE", "water")
 LAKE_DISTANCE_MODES = ("line", "water")

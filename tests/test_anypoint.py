@@ -114,6 +114,9 @@ def world(monkeypatch, tmp_path):
     res = tmp_path / "lake_residence.csv"
     pd.DataFrame({"wb_id": ["GB1"], "res_time_d": [TEST_WATER_TAU_D]}).to_csv(res, index=False)
     monkeypatch.setattr(config, "LAKE_RESIDENCE_FILE", res)
+    # These tests are of the lake path modes, with the straight line across a lake; lake distance "water", the
+    # default, is tested on a lake that bends in test_anypoint_water.py.
+    monkeypatch.setattr(config, "LAKE_DISTANCE_MODE", "line")
     net = _net(LINKS)
     polys = [LAKE_POLY, ALONE_POLY, LOWER_POLY, EMPTY_POLY, NOTCH_POLY, QUIET_POLY]
     lakes = gpd.GeoDataFrame({"wb_id": ["GB1", "GB2", "GB3", "GB4", "GB5", "GB6"],

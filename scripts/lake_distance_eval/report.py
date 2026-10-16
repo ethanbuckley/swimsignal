@@ -19,13 +19,13 @@ import pandas as pd
 
 W = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(W / "scripts"))
-import eval_pins  # noqa: E402
-from build_site import load_spots  # noqa: E402
+import eval_pins
+from build_site import load_spots
 
-from dipcast import config  # noqa: E402
-from dipcast.model import transport as T  # noqa: E402
-from dipcast.network.rivers import RiverNetwork  # noqa: E402
-from dipcast.overflows import load_overflows  # noqa: E402
+from dipcast import config
+from dipcast.model import transport as T
+from dipcast.network.rivers import RiverNetwork
+from dipcast.overflows import load_overflows
 
 
 def main() -> None:

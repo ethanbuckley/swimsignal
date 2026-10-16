@@ -56,10 +56,10 @@ docs/LAKE-PATH-TEST-2026-10.md:
 Within the spot's own lake (config.LAKE_DISTANCE_MODE), the distance from where an overflow's water
 enters the lake to the spot:
 
-* lake distance "line"  the straight line, the default. In a lake that bends it crosses land.
-* lake distance "water" the shortest path inside the WFD lake polygons the spot's lake links lie in
-                        (model/lake_water.py), stated in docs/LAKE-DISTANCE-2026-10.md. Off. A lake
-                        with no WFD polygon (a centreline lake) keeps the straight line.
+* lake distance "water" the default: the shortest path inside the WFD lake polygons the spot's lake
+                        links lie in (model/lake_water.py). It passed docs/LAKE-DISTANCE-2026-10.md.
+                        A lake with no WFD polygon (a centreline lake) keeps the straight line.
+* lake distance "line"  the rule before: the straight line. In a lake that bends it crosses land.
 
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow all four.
 """

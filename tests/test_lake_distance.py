@@ -1,4 +1,4 @@
-"""Lake distance 'water' (off by default; docs/LAKE-DISTANCE-2026-10.md): a lake spot's distance from where an
+"""Lake distance 'water' (the default since docs/LAKE-DISTANCE-2026-10.md): a lake spot's distance from where an
 overflow's water enters its lake is the shortest path inside the lake's WFD polygons, not the straight line.
 Network-free: a river into an L-shaped lake whose two arms meet at a right angle, the spot at the end of the
 second arm, so the straight line from the entry cuts across the land inside the bend."""
@@ -60,11 +60,10 @@ def _trace(net, pin=None, **kw) -> pd.Series:
     return up.set_index("site_id").loc["beck"]
 
 
-def test_the_default_is_the_straight_line(net):
-    assert config.LAKE_DISTANCE_MODE == "line"
-    r = _trace(net)
-    assert r["lake_distance_m"] == pytest.approx(math.hypot(*PIN))
-    assert r["lake_distance_m"] == pytest.approx(_trace(net, lake_distance_mode="line")["lake_distance_m"])
+def test_the_default_goes_through_the_water(net):
+    assert config.LAKE_DISTANCE_MODE == "water"
+    assert _trace(net)["lake_distance_m"] == pytest.approx(_trace(net, lake_distance_mode="water")["lake_distance_m"])
+    assert _trace(net, lake_distance_mode="line")["lake_distance_m"] == pytest.approx(math.hypot(*PIN))
 
 
 def test_water_goes_round_the_bend(net):
