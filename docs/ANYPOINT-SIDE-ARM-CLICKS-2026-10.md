@@ -61,3 +61,44 @@ else.
 ---
 
 ## Results
+
+16 October 2026. The statement was pushed at 10:44 BST (83d496a) and the code at 8c9b613, before the run.
+Branch includes main 0d81c37. Same snapshot and network (`b5724303`). 0 network requests. 651 s.
+
+**Outcome: checks 1, 2, 4, 5 and 6 pass. Check 3 fails as stated, on one spot, Windermere Lakeside
+YMCA, whose link varies on main itself from run to run. With that variation removed, all 105 spots
+match main exactly. Whether that is enough is Ethan's decision.**
+
+### Check by check
+
+1. **Queen Elizabeth Gardens: passes.** The click counts the spot's 18 overflows, none on the Nadder
+   or the Wylye.
+2. **Page against API: passes, 200 of 200** (seed 27, clicks at 35%). No allowed-kind misses were needed.
+3. **Listed spots against main: fails as stated, on Lakeside alone.**
+   - 104 of 105 match main exactly: link, placement, mode and set of overflows. Among them are
+     Wolvercote Mill Stream, Hurley and Buscot Weir, which differed in the rerun.
+   - **Windermere Lakeside YMCA** has the same lake, the same 6 overflows and a different link: main
+     F1FA1D90, this branch 3E45C8C5.
+   - **Seen after the run.** This is main's own nondeterminism, not this rule:
+     - Lakeside placed with main's code under `PYTHONHASHSEED` 1, 2 and 3 gives links 3E45C8C5,
+       9E639D5A and 9E639D5A;
+     - this branch gives the same three under the same seeds;
+     - the rerun this morning had main at 9E639D5A.
+
+     Python orders sets of strings by a per-process random seed, and Lakeside's link comes from a tie
+     that this order settles. Its lake and its overflows never change.
+   - **With `PYTHONHASHSEED=1` in both processes, 0 of 105 spots differ.**
+4. **Size: passes.** +0.85 MB.
+5. **Reach: passes.**
+   - 1,000 arms (seed 28) at 35%: 950 clicks move and 41 change the set of overflows.
+   - The ten largest keep 39% to 100% of the old channel's network. The lowest is the Whitewater, 92
+     to 36 km. The largest set change is the Idle (166 to 126 km), which loses 11 overflows.
+   - No move goes to over 10 times the old network.
+6. **Tests: pass.** `pytest -q`: 736 passed, 4 known Pillow failures. `node --test`: 349 passed.
+   This includes the new case: a listed spot takes the nearer named channel, a click the bigger.
+
+### Found on the way
+
+Windermere Lakeside YMCA's link differs from one build to the next on main, because of Python's
+per-process hashing. Its overflows do not change. Whether anything shown on its page does was not
+checked. That is a separate issue from side arms.
