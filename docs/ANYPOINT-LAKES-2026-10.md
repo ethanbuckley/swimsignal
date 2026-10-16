@@ -208,3 +208,23 @@ Ethan picked option C for class 1. Written before the sweep below was run.
 - River clicks: the same as main.
 
 ### Results
+
+Run on 16 October 2026 from commit 868ad8a, against main baba005, with the same API answers on each side
+except for the rule itself.
+
+| Shore clicks | main | option C |
+|---|---|---|
+| seed 18 | 168 of 200 | **200** |
+| seed 19 | 181 of 200 | **200** |
+| seed 20 (fresh) | 176 of 200 | **200** |
+| all | 525 of 600 | **600 of 600** |
+
+- Main's 75 misses were all class 1. On seed 20 they included the River Don click with 436 overflows.
+- No shore click hit the case I flagged (page with no squares near, API on a river): 0.
+- River clicks: 1,189 of 1,195 on the line and 1,191 of 1,196 off it agree (main: 1,188 and 1,189). Option C
+  fixes 3 river clicks that were within 150 m of such a lake. The 11 misses left are on both sides: the same
+  link, with a distance 6.0 to 7.1 m out (#225's tens of metres).
+- Real outlines fetched: 70 of about 2,990 clicks. More than before, since a click near such a lake's outline
+  needs it to tell water from shore.
+
+All predictions held.
