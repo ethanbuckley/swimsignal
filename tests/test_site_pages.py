@@ -810,6 +810,8 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     bs = _build_site()
     template = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     assert bs.TILE_LINE.format(**bs.TILE_PROVIDERS["osm"]) in template   # what with_tiles swaps
+    assert '<link rel="preconnect" href="https://tile.openstreetmap.org">' in template   # and this
+    assert bs.tile_origin(bs.TILE_PROVIDERS["carto-voyager"]["url"]) == "https://basemaps.cartocdn.com"
     bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
     off = {n: (tmp_path / n).read_text() for n in ["index.html", "privacy.html", "terms.html"]}
     assert "tile.openstreetmap.org" in off["index.html"] and bs.OSM_PRIVACY_LI in off["privacy.html"]
@@ -823,6 +825,8 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
         html = (tmp_path / page).read_text()
         assert "tile.openstreetmap.org" not in html, page
         assert "basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=testkey123" in html, page
+        assert '<link rel="preconnect" href="https://basemaps.cartocdn.com">' in html, page
+        assert "tile.openstreetmap.org" not in html, page   # the preconnect swapped too
         assert 'href="https://carto.com/attribution/">CARTO</a>' in html, page
     privacy = (tmp_path / "privacy.html").read_text()
     assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
