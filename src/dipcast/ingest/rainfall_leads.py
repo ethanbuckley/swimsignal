@@ -37,7 +37,7 @@ def fetch_leads(cells: list[tuple[float, float]], year: int) -> pd.DataFrame:
             frames.append(pd.read_parquet(p))
         else:
             todo.append((cl, cn))
-    end = min(pd.Timestamp(f"{year}-12-31"), pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(days=2))
+    end = min(pd.Timestamp(f"{year}-12-31"), pd.Timestamp.now("UTC").tz_localize(None) - pd.Timedelta(days=2))
     for i in range(0, len(todo), BATCH):
         chunk = todo[i:i + BATCH]
         params = {
