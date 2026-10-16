@@ -2201,12 +2201,43 @@ setInterval(refreshNotices, 60 * 1000);
 // Redraw the panel. The map is parked in its column first, or replacing the HTML would destroy it.
 // The new view rises into place (#result.fresh, the day strip's own motion): the class comes off and
 // goes back on with a layout read between, so the animation runs again each time.
-// Over the build's own copy of a spot's opening (data-built, scripts/prerender_spots.js) it does not
-// rise: the same words are already in place.
+// Over the build's own copy of a view's opening (data-built: the home page's .lead, build_site.home_lead,
+// and a spot's answer, scripts/prerender_spots.js) it does not rise: the same words are already in place.
 function setPanel(h) { parkMap(); if (MINI) { MINI.remove(); MINI = null; }
-  const box = document.getElementById('result'), built = box.hasAttribute('data-built'); box.innerHTML = h;
-  box.classList.remove('fresh'); if (built) { box.removeAttribute('data-built'); return; }
-  void box.offsetWidth; box.classList.add('fresh'); }
+  const box = document.getElementById('result');
+  box.classList.remove('fresh');
+  if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); return; }
+  box.innerHTML = h; void box.offsetWidth; box.classList.add('fresh'); }
+// The built opening stays the same element, changed only where the script's words differ ("Issued 08:00"
+// gains "2 min ago"), and the rest of the view goes in around it. Replaced, its picture (the sky, .lead
+// and .answer's ::before) was painted a second time, later, and page-speed tests time the load by that
+// second paint, the largest one (LCP): 3.4 s on a phone after the scripts were deferred (17 Oct 2026).
+const builtTop = el => el.id === 'risk-hero' || el.classList.contains('lead');
+function overBuilt(box, h) {
+  const t = document.createElement('template'); t.innerHTML = h;
+  const old = [...box.children].find(builtTop), neu = [...t.content.children].find(builtTop);
+  if (!old || !neu || old.id !== neu.id || old.className !== neu.className) { box.replaceChildren(t.content); return; }
+  [...box.childNodes].forEach(n => { if (n !== old) n.remove(); });
+  const before = []; for (let n = t.content.firstChild; n !== neu; n = n.nextSibling) before.push(n);
+  old.before(...before); neu.remove(); old.after(...t.content.childNodes); patchNode(old, neu);
+}
+// Make node old match node neu, keeping old's elements down to the first that differs: that one is
+// updated the same way if it has the same tag (its attributes, then its children), and everything
+// after it is replaced. A kept element below a change could have moved, and a page-speed test counts
+// a kept element that moves (a layout shift) but not a new one: Barcombe Mills' answer gained a line
+// over its built copy, which moved the three lines under it, 0.006 (17 Oct 2026). Changed text is
+// replaced too, not edited: an edited line that grows counts as moved (0.001 for "Issued").
+function patchNode(old, neu) {
+  if (old.isEqualNode(neu)) return;
+  if (old.nodeType !== 1 || old.nodeName !== neu.nodeName) { old.replaceWith(neu); return; }
+  for (const a of [...old.attributes]) if (!neu.hasAttribute(a.name)) old.removeAttribute(a.name);
+  for (const a of [...neu.attributes]) if (old.getAttribute(a.name) !== a.value) old.setAttribute(a.name, a.value);
+  const os = [...old.childNodes], ns = [...neu.childNodes];
+  let same = true;
+  ns.forEach((n, i) => { const o = os[i];
+    if (!o) old.append(n); else if (same) { same = o.isEqualNode(n); patchNode(o, n); } else o.replaceWith(n); });
+  os.slice(ns.length).forEach(o => o.remove());
+}
 
 // ------------------------------------------------------------------------------ the list
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };

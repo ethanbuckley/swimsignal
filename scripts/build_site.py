@@ -1366,8 +1366,10 @@ SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="ske
 def home_lead(n: int) -> str:
     """The list's opening as index.html's renderList draws it, down to the row of controls, for n spots,
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
-    typed carries over. The day picker has only its first choice until the forecast's dates are known."""
-    return ('<div id="result"><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
+    typed carries over. The day picker has only its first choice until the forecast's dates are known.
+    data-built: the script updates this .lead where it stands rather than replacing it (index.html,
+    overBuilt), so its picture is painted once, at the first paint."""
+    return ('<div id="result" data-built><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
             f'<p class="lede">Five-day pollution risk forecasts for {n} spots in England, or <span class="w-touch">tap</span>'
             '<span class="w-click">click</span> any river or lake on the map. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
