@@ -55,6 +55,7 @@ def _made(world, tmp_path) -> dict:
         "cfg": {"network": "net0", "tile_deg": bap.TILE_DEG, "tiles": meta["tiles"], "snap_m": transport.PIN_SNAP_M,
                 "lake_snap_m": transport.LAKE_SNAP_M, "lake_shore_m": transport.LAKE_SHORE_M, "lake_bias": transport.LAKE_BIAS},
         "lakes": json.loads((out / "lakes.json").read_text()), "ids": meta["ids"],
+        "waters": {f.stem: json.loads(f.read_text()) for f in sorted((out / "lake_water").glob("*.json"))},
         "od": {"assumptions": {"max_upstream_km": 60.0, "l0_m": transport.L0_M, "lake_area_halving_km2": transport.LAKE_A0_KM2}},
         "tiles": {t: {"index": base64.b64encode((out / "link_index" / f"{t}.bin").read_bytes()).decode(),
                       "links": json.loads((out / "links" / f"{t}.json").read_text())["links"]} for t in meta["tiles"]},
@@ -74,8 +75,13 @@ def _made(world, tmp_path) -> dict:
 
 def test_the_lake_files_carry_the_water_and_the_clicks_go_round_the_corner(world, tmp_path):
     made = _made(world, tmp_path)
-    lake = next(k for k in made["files"]["lakes"]["lakes"] if k["id"].startswith("w"))
-    assert len(lake["water"]["corners"]) == 1 and all("w" in i for i in lake["inlets"])
+    lakes = made["files"]["lakes"]["lakes"]
+    n = next(i for i, k in enumerate(lakes) if k["id"].startswith("w"))
+    # The water is in its own file, not in lakes.json, which every click fetches.
+    assert lakes[n]["water"] is True and not any("w" in i for i in lakes[n]["inlets"])
+    water = made["files"]["waters"][str(n)]
+    assert len(water["corners"]) == 1 and len(water["ways"]) == len(lakes[n]["inlets"])
+    assert set(made["files"]["waters"]) == {str(i) for i, k in enumerate(lakes) if k.get("water")}
     by = {c["what"]: c for c in made["clicks"]}
     assert [c["mode"] for c in made["clicks"]] == ["lake"] * 5
     assert by["off the second arm, by its centreline"]["source"] == "centreline"
@@ -98,7 +104,7 @@ def test_the_page_fixture_still_says_what_the_api_says(world, tmp_path):
     if os.environ.get("UPDATE_FIXTURES") == "1":
         FIXTURE.write_text(json.dumps(made, separators=(",", ":")) + "\n")
     kept = json.loads(FIXTURE.read_text())
-    assert kept["files"]["lakes"] == made["files"]["lakes"]
+    assert kept["files"]["lakes"] == made["files"]["lakes"] and kept["files"]["waters"] == made["files"]["waters"]
     assert [c["what"] for c in kept["clicks"]] == [c["what"] for c in made["clicks"]]
     for k, m in zip(kept["clicks"], made["clicks"], strict=True):
         assert k["mode"] == m["mode"] and [r["site_id"] for r in k["rows"]] == [r["site_id"] for r in m["rows"]]
@@ -113,5 +119,5 @@ def test_in_lake_distance_line_the_files_carry_no_water(world, tmp_path, monkeyp
     table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
     bap.write_files(tmp_path, net, ov, table, "net0")
     doc = json.loads((tmp_path / "lakes.json").read_text())
-    assert doc["lakes"] and not any("water" in k or any("w" in i for i in k["inlets"]) for k in doc["lakes"])
+    assert doc["lakes"] and not any("water" in k for k in doc["lakes"]) and not any((tmp_path / "lake_water").iterdir())
     assert pd.notna(doc["polygons"][0]["lake"])

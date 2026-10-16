@@ -118,11 +118,11 @@ const AnyPoint = (() => {
     return out;
   }
   // Lake distance "water" (model/lake_water.py, water_distance): the shortest way from an inlet to the
-  // click inside the lake's water. lake.water (build_any_point._water_json): its reflex corners, its
-  // outline widened by 10 m ("inside", which a straight way must stay in) and its outline ("shore");
-  // inlet.w: where the inlet enters the water, the metres to there, and the metres on to each corner
-  // (-1 where none). A click outside the widened outline first goes to the nearest point of the shore.
-  // Returns inlet -> metres, or null for a lake without water (the straight line, as the API).
+  // click inside the lake's water. water (lake_water/<n>.json, fetched for a click on lake n): its reflex
+  // corners, its outline widened by 10 m ("inside", which a straight way must stay in), its outline
+  // ("shore"), and per inlet ("ways"): where it enters the water, the metres to there, and the metres on
+  // to each corner (-1 where none). A click outside the widened outline first goes to the nearest point of
+  // the shore. Returns inlet number -> metres, or null for a lake without water (the straight line, as the API).
   function crossesAny(p, q, rings) {
     const side = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
     for (const r of rings)
@@ -147,13 +147,14 @@ const AnyPoint = (() => {
     const inWater = inside.reduce((odd, r, k) => odd !== inRing(at[1], at[0], water.inside[k]), false);
     const near = inWater ? { d: 0, x: 0, y: 0 } : nearestPoint(local(water.shore)), q = [near.x, near.y];
     const seen = corners.map(c => !crossesAny(q, c, inside));
-    return inlet => {
-      if (!inlet.w) return null;
-      const a = xy(inlet.w[1], inlet.w[0]);
-      if (!crossesAny(a, q, inside)) return inlet.w[2] + Math.hypot(a[0] - q[0], a[1] - q[1]) + near.d;
+    return j => {
+      const w = (water.ways || [])[j];
+      if (!w) return null;
+      const a = xy(w[1], w[0]);
+      if (!crossesAny(a, q, inside)) return w[2] + Math.hypot(a[0] - q[0], a[1] - q[1]) + near.d;
       let best = Infinity;
       corners.forEach((c, k) => {
-        const via = inlet.w[3 + k];
+        const via = w[3 + k];
         if (seen[k] && via >= 0) best = Math.min(best, via + Math.hypot(c[0] - q[0], c[1] - q[1]));
       });
       return Number.isFinite(best) ? best + near.d : null;
@@ -163,11 +164,11 @@ const AnyPoint = (() => {
   // across (or the way through the water, waterWay); a WFD lake's area divides the dilution by
   // 1 + area / 5 km2. Another WFD lake crossed before the inlet moves its metres to the lake distance
   // and multiplies the dilution by its factor.
-  function lakeRows(lake, at, area, a0) {
-    const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1, way = waterWay(lake.water, at, xy);
-    for (const inlet of lake.inlets) {
+  function lakeRows(lake, at, area, a0, water = null) {
+    const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1, way = waterWay(water, at, xy);
+    for (const [j, inlet] of lake.inlets.entries()) {
       const [x, y] = xy(inlet.at[1], inlet.at[0]), path = crossings(inlet.k), mixed = holds(inlet.h);
-      const across = (way && way(inlet)) ?? Math.hypot(x, y);
+      const across = (way && way(j)) ?? Math.hypot(x, y);
       for (let k = 0; k < inlet.o.length; k += 3) {
         const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
         out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor,
@@ -441,7 +442,7 @@ const AnyPoint = (() => {
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
     + 'Risk from wildlife, runoff and bathers is not modelled.';
   function place(lat, lon, files) {
-    const { cfg, lakes, od, tiles, outside = null, outlines = {} } = files, a = od.assumptions;
+    const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {} } = files, a = od.assumptions;
     const where = outsideWhere(lat, lon, outside);
     if (where) return { mode: 'none', kind: '', name: 'This point', error: OUTSIDE[where].error, outside: where };
     const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
@@ -455,8 +456,8 @@ const AnyPoint = (() => {
         const entry = tiles[link.tile].links[String(link.lno)];
         lake = entry && entry.lake !== undefined ? entry.lake : null;
       }
-      return { mode: 'lake', kind: 'lake', name, rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2),
-        ...(link ? { link } : {}),
+      return { mode: 'lake', kind: 'lake', name, rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, waters[lake]),
+        ...(link ? { link } : {}), ...(lake === null ? {} : { lake }),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
     // A square has files where an overflow is, or a link with one upstream. In England, then, no square
@@ -466,9 +467,10 @@ const AnyPoint = (() => {
     const at = locate(candidates(lat, lon, tiles), cfg);
     if (at.mode === 'none') return { mode: 'none', kind: '', name: 'This point', error: 'No river or lake within 1.5 km of this point.' };
     const entry = tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
-    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2))
+    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake]))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
+      ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
       location: { mode: at.mode, watercourse: at.link.name, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
         lake_source: lake ? 'centreline' : null, adopted_main_channel: !!at.adopted } };
   }
@@ -482,10 +484,13 @@ const AnyPoint = (() => {
       .map(async i => [i, await json(`lake_outlines/${i}.json`).catch(() => null)])));
     const keys = needsSquares(lat, lon, lakes, cfg, outside, outlines) ? squares(lat, lon, cfg) : [];
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    const at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
+    let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
+    // Lake distance "water": the lake's water, only for a click placed on a lake that has one; then place again.
+    const water = at.lake !== undefined && (lakes.lakes[at.lake] || {}).water ? await json(`lake_water/${at.lake}.json`).catch(() => null) : null;
+    if (water) at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, waters: { [at.lake]: water } });
     const rows = at.rows || [];
     const ids = rows.length ? await json('overflow_ids.json') : null;
-    const versions = new Set([cfg.ids, od.ids, lakes.ids, ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
+    const versions = new Set([cfg.ids, od.ids, lakes.ids, ...(water ? [water.ids] : []), ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
     if (versions.size > 1) {
       if (!again) throw new Error('the forecast files changed while loading; try again in a minute');
       memo.clear();

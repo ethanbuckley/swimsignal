@@ -274,11 +274,15 @@ test('a point with no overflow upstream gets the API\'s answer: every day zero, 
 // Lake distance "water" (docs/LAKE-DISTANCE-2026-10.md): an L-shaped lake's files and the API's ways through its
 // water for clicks in it, on its shore and off its arm by the centreline (tests/test_anypoint_water.py).
 test('in lake distance "water" a lake click goes round the bend, as the API does', () => {
-  const W = fixture('anypoint_water.json'), at = placeIn(filesOf(W));
+  const W = fixture('anypoint_water.json'), withWater = placeIn({ ...filesOf(W), waters: W.files.waters });
+  const lakes = W.files.lakes.lakes;
+  // lakes.json says which lakes have water; the water itself is in lake_water/<n>.json.
+  assert.ok(lakes.some(k => k.water) && lakes.every(k => k.inlets.every(i => !('w' in i))));
   let rows = 0, longer = 0;
   for (const c of W.clicks) {
-    const got = at(c);
+    const got = withWater(c);
     assert.equal(got.mode, c.mode, c.what);
+    assert.ok(lakes[got.lake].water, `${c.what}: placed on a lake with water`);
     const mine = got.rows.map(r => ({ ...r, site_id: W.files.ids[r.i] })).sort((a, b) => a.site_id.localeCompare(b.site_id));
     const want = [...c.rows].sort((a, b) => a.site_id.localeCompare(b.site_id));
     assert.deepEqual(mine.map(r => r.site_id), want.map(r => r.site_id), c.what);
@@ -290,4 +294,14 @@ test('in lake distance "water" a lake click goes round the bend, as the API does
     });
   }
   assert.ok(rows >= 8 && longer >= 3, `${rows} rows, ${longer} round the bend`);
+});
+
+// What point() does first: place the click without the water, read which lake it is on, and fetch that lake's
+// lake_water/<n>.json only if lakes.json says it has one. Without the file the page keeps the straight line.
+test('a lake click says which lake it is on, and without its water file keeps the straight line', () => {
+  const W = fixture('anypoint_water.json'), bare = placeIn(filesOf(W));
+  const c = W.clicks.find(x => x.what === 'up the second arm'), got = bare(c);
+  assert.ok(Number.isInteger(got.lake) && W.files.lakes.lakes[got.lake].water && W.files.waters[String(got.lake)]);
+  const want = Object.fromEntries(c.rows.map(r => [r.site_id, r.line_m]));
+  got.rows.forEach(r => near(r.dlake, want[W.files.ids[r.i]], 3, `${W.files.ids[r.i]} straight line`));
 });
