@@ -15,7 +15,8 @@ Everything is written under site/data/anypoint/:
                        cell had no data, which is the `ok` mask), the "right now" weight
                        (thousandths), live status, company, how old its rain forecast is, and
                        the low-confidence snaps
-  link_index/<t>.bin   per link: number, form, name and a simplified line, packed Int32/Float32
+  link_index/<t>.bin   per link: number, form, name and its line as the network has it, packed
+                       Int32/Float32
                        (layout in `pack_link_index`), so the page can snap a click to a link
   links/<t>.json       per traced link: its length, the network length upstream of it, and its
                        upstream overflows as transport.upstream_overflows finds them, in a form
@@ -92,7 +93,6 @@ from dipcast.network.rivers import _TO_WGS, RiverNetwork
 log = logging.getLogger("build_any_point")
 
 TILE_DEG = 0.25           # squares of 0.25 degrees: about 28 km north-south, 17 km east-west
-SIMPLIFY_M = 30.0         # line simplification for snapping; the snap radius is 1,500 m
 LAKE_SIMPLIFY_M = 15.0    # lake outlines in lakes.json; the shore rule is 150 m. Each carries how far it is from
                           # the real outline (err), and the page fetches the real one (lake_outlines/) when that matters
 OUTLINE_DP = 6            # decimals of the real outlines: 0.1 m
@@ -647,9 +647,12 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     entry_links = set(records) | {l for l, c in table["link_comp"].items() if c in lake_pos}
     covered |= set(home.loc[list(entry_links)])
 
-    # Simplified lines in lon/lat, and every square each line's box touches.
-    simp = shapely.simplify(links.geometry.values, SIMPLIFY_M)
-    coords, which = shapely.get_coordinates(simp, return_index=True)
+    # Lines in lon/lat, every vertex the network has, and every square each line's box touches. Until
+    # 16 Oct 2026 they were simplified to 30 m. The page then measured a click against lines up to 30 m
+    # from the API's: a click on a short side link 0.001 m from it was 24 m from its simplified line, so
+    # the page took a lake centreline 35 m away and found no river, where the API traced the River Stor
+    # (docs/ANYPOINT-LINES-2026-10.md). The full lines add about 5.7 MB, most of it link_index/.
+    coords, which = shapely.get_coordinates(links.geometry.values, return_index=True)
     lon, lat = _to_lonlat(coords[:, 0], coords[:, 1])
     lonlat = np.column_stack([lon, lat])
     starts = np.searchsorted(which, np.arange(len(links) + 1))
@@ -988,7 +991,7 @@ def build(site: Path, net: RiverNetwork, ov: pd.DataFrame, probabilities, credit
     t3 = time.time()
     (out / "tiles.json").write_text(json.dumps({
         "generated_at": now.isoformat(), "network": net_hash, "ids": meta["ids_version"], "tile_deg": TILE_DEG,
-        "tiles": meta["tiles"], "dilution_scale": DIL_SCALE, "p_scale": P_SCALE, "simplify_m": SIMPLIFY_M,
+        "tiles": meta["tiles"], "dilution_scale": DIL_SCALE, "p_scale": P_SCALE,
         "forms": FORMS, "snap_m": PIN_SNAP_M, "lake_snap_m": LAKE_SNAP_M, "lake_shore_m": LAKE_SHORE_M,
         "lake_bias": transport.LAKE_BIAS, **({"credits": credits} if credits else {})}, separators=(",", ":")))
     # The overflow data is England's: without this file a click in Wales or Scotland near the border is

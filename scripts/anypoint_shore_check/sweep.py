@@ -1,14 +1,15 @@
 """The page against the API on seeded random clicks (docs/ANYPOINT-LINES-2026-10.md, docs/ANYPOINT-LAKES-2026-10.md).
 
-Builds the click-anywhere files once per river-line tolerance into OUT/files_<tol>, and writes OUT/clicks.json
-with the API's answers. parity.cjs then places the same clicks with anypoint.js and sorts the misses by cause.
+Builds the click-anywhere files into OUT/files, and writes OUT/clicks.json with the API's answers. parity.cjs then places the same clicks with anypoint.js and sorts the misses by cause.
 Never run it against the main checkout's state: it writes overflows.parquet and the upstream table.
 
     DIPCAST_ROOT=<scratch root> DIPCAST_STATE=<scratch state> PYTHONPATH=<worktree>/src \\
-        python scripts/anypoint_shore_check/sweep.py <worktree> <out> 30,0 400 18
+        python scripts/anypoint_shore_check/sweep.py <worktree> <out> 400 18
+    node scripts/anypoint_shore_check/parity.cjs src/dipcast/site/anypoint.js <out>/files <out>/clicks.json \
+        data/raw/outside_england.json
 
-Arguments: worktree, out dir, river-line tolerances (m; main's is build_any_point.SIMPLIFY_M), clicks per set
-(the shore set has half), seed. Three sets:
+Arguments: worktree, out dir, clicks per set (the shore set has half), seed. The runs in
+docs/ANYPOINT-LAKES-2026-10.md also wrote files with 30 m river lines, before #225 removed that option. Three sets:
   on     points on river links that have an overflow upstream, in proportion to length;
   off    the same, then 0 to 200 m in a random direction;
   shore  a random WFD lake, a random point on its outline, then 0 to 250 m in a random direction.
@@ -24,9 +25,8 @@ import pandas as pd
 from shapely.geometry import Point
 
 WT, OUT = Path(sys.argv[1]), Path(sys.argv[2])
-TOLS = [float(t) for t in sys.argv[3].split(",")]
-N = int(sys.argv[4]) if len(sys.argv) > 4 else 400
-SEED = int(sys.argv[5]) if len(sys.argv) > 5 else 16
+N = int(sys.argv[3]) if len(sys.argv) > 3 else 400
+SEED = int(sys.argv[4]) if len(sys.argv) > 4 else 16
 OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(WT / "src"))
 from dipcast import config  # noqa: E402
@@ -44,19 +44,16 @@ ov = load_overflows(net, rebuild=True)
 lakes = transport._lakes()
 table, stats = bap.upstream_table(net, ov, lakes, "sweep", "sweep", OUT / "cache.pkl")
 print("table", stats, f"{time.time() - t0:.0f} s", flush=True)
-sizes = {}
-for tol in TOLS:
-    bap.SIMPLIFY_M = tol
-    d = OUT / f"files_{tol:g}"
-    meta = bap.write_files(d, net, ov, table, "sweep")
-    cfg = {"network": "sweep", "tile_deg": bap.TILE_DEG, "tiles": meta["tiles"], "snap_m": transport.PIN_SNAP_M,
-           "lake_snap_m": transport.LAKE_SNAP_M, "lake_shore_m": transport.LAKE_SHORE_M, "lake_bias": transport.LAKE_BIAS}
-    (d / "tiles.json").write_text(json.dumps(cfg))
-    sizes[tol] = {k: sum(f.stat().st_size for f in (d / k).rglob("*") if f.is_file()) for k in ("link_index", "links", "lake_outlines")}
-    sizes[tol]["lakes.json"] = (d / "lakes.json").stat().st_size
-    sizes[tol]["all"] = sum(f.stat().st_size for f in d.rglob("*") if f.is_file())
-    sizes[tol]["tiles"] = len(meta["tiles"])
-    print("files", tol, sizes[tol], meta["counts"], f"{time.time() - t0:.0f} s", flush=True)
+d = OUT / "files"
+meta = bap.write_files(d, net, ov, table, "sweep")
+cfg = {"network": "sweep", "tile_deg": bap.TILE_DEG, "tiles": meta["tiles"], "snap_m": transport.PIN_SNAP_M,
+       "lake_snap_m": transport.LAKE_SNAP_M, "lake_shore_m": transport.LAKE_SHORE_M, "lake_bias": transport.LAKE_BIAS}
+(d / "tiles.json").write_text(json.dumps(cfg))
+sizes = {k: sum(f.stat().st_size for f in (d / k).rglob("*") if f.is_file()) for k in ("link_index", "links", "lake_outlines")}
+sizes["lakes.json"] = (d / "lakes.json").stat().st_size
+sizes["all"] = sum(f.stat().st_size for f in d.rglob("*") if f.is_file())
+sizes["tiles"] = len(meta["tiles"])
+print("files", sizes, meta["counts"], f"{time.time() - t0:.0f} s", flush=True)
 
 links = net.links
 rec = links.loc[[lid for lid in table["records"] if links.at[lid, "form"] in transport.RIVER_FORMS]]
