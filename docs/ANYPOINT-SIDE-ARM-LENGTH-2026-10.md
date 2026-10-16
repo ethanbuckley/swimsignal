@@ -96,3 +96,37 @@ What would be needed before this could merge:
 - Find why the page counts one more overflow at 52.1579, −0.6306, and fix the page or the files.
 - Look at the Stor click on main. It is a page fault independent of side arms.
 - Then rerun check 2 on a new seed. The rule itself would not change.
+
+---
+
+## Rerun of check 2, 16 October 2026: stated before the run
+
+Main (0d81c37) is merged into this branch. That brings:
+- #225: full river lines in the page's files;
+- #227 and #230: lake shores and isolated lakes;
+- #231: lake distance through the water.
+
+In the merge, the synthetic test map's side arm moved 20 km south and its overflows were renamed C1 to
+C3, so they don't collide with main's new Stor case. **The rule itself is unchanged.**
+
+**What was found before this was written.** The one miss blamed on the rule above (Great Ouse, 52.1579,
+−0.6306) is AWS00660 at the 60 km limit:
+- the API puts it at 60,000.67 m and leaves it out;
+- the page puts it at 59,996.53 m and counts it.
+
+The page's files store distances in 10 m units (`BASE_UNIT`), so its distances agree with the API's
+only to about ±5 m. That is why check 2 allows 6 m. An overflow within that of the limit can fall on
+either side, after any click. This kind is added below.
+
+**The rerun:**
+- **Clicks.** 300 arms with a move, drawn at random (seed 26), each clicked 65% of the way along. Of
+  those whose click moves, the first 200. Neither the seed nor the position has been used before.
+- **Checks, as before.** Check 1 (Queen Elizabeth Gardens), check 3 (listed spots unchanged against
+  main), check 4 (size) and check 2 (page against API, 200 clicks).
+- **Allowed misses in check 2:** #208's two kinds, #218's constant offset, and one new kind.
+  - **Cap edge:** an overflow counted on one side only, whose distance on the side that counts it is
+    within 6 m of 60 km. Every other row agrees within the usual tolerances.
+- **Any other miss fails check 2.** If check 2 passes, the rule is ready for Ethan to decide on. The
+  reach result above stands.
+
+### Rerun results
