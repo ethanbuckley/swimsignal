@@ -41,9 +41,10 @@ centreline when that is less than twice as far; a click on a side channel near a
 river is traced as that river (_adopt_main_channel, which the page applies with each link's
 upstream network length from the index). River distances and dilutions then follow upstream_overflows exactly for the click's
 position along the link. A WFD lake between an overflow and the click is crossed as
-upstream_overflows crosses it in config.LAKE_PATH_MODE "lake" (the default): its metres at the lake
-velocity, and the dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings). In lake
-path "residence" (off by default, docs/LAKE-RESIDENCE-TEST-2026-10.md) a lake with a residence time is
+upstream_overflows crosses it in config.LAKE_PATH_MODE "lake": its metres at the lake velocity, and the
+dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings). In lake paths "residence"
+(docs/LAKE-RESIDENCE-TEST-2026-10.md) and "residence_spill" (the default since #213,
+docs/LAKE-RESIDENCE-SPILL-2026-10.md: the residence time at spill-day flow) a lake with a residence time is
 crossed as a well-mixed lake instead: the records carry, per overflow, its metres, the survivors' hours
 in it and the share that leaves it alive ("h"), and its area factor is left out of the path factor.
 In lake distance "water" (the default since docs/LAKE-DISTANCE-2026-10.md) a lake click's distance from each inlet
