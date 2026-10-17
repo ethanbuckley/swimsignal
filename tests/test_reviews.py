@@ -185,7 +185,7 @@ def test_the_page_loads_the_reviews_script_from_its_build(tmp_path):
     page = (tmp_path / "index.html").read_text()
     sw = (tmp_path / "sw.js").read_text()
     for script in ("reviews.js", "visits.js", "illness.js"):   # the notes and the illness reports after the reviews, whose parts they use
-        assert f'<script src="{script}?v={stamp}">' in page
+        assert f'<script src="{script}?v={stamp}" defer>' in page
         assert (tmp_path / script).read_bytes() == (bs.TEMPLATE.parent / script).read_bytes()
         assert f"`{script}?v=${{BUILD}}`" in sw
     assert page.index('src="reviews.js') < page.index('src="visits.js') < page.index('src="illness.js')

@@ -82,7 +82,7 @@ def test_the_page_loads_the_evidence_script_from_its_build(tmp_path):
     bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
     stamp = bs.shell_stamp()
     page = (tmp_path / "index.html").read_text()
-    assert f'<script src="evidence.js?v={stamp}">' in page
-    assert page.index('src="evidence.js') < page.index("<script>\n")   # before the page script that calls evidenceTile
+    assert f'<script src="evidence.js?v={stamp}" defer>' in page
+    assert page.index('src="evidence.js') < page.index('src="app.js')   # before the page script that calls evidenceTile
     assert (tmp_path / "evidence.js").read_bytes() == (bs.TEMPLATE.parent / "evidence.js").read_bytes()
     assert "`evidence.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()

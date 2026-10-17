@@ -42,6 +42,7 @@ from dipcast.model.transport import (
 )
 from dipcast.network.nations import traced_wales_share
 from dipcast.network.rivers import RiverNetwork, bng_to_lonlat
+from dipcast.overflow_names import water_name
 from dipcast.overflows import load_overflows
 
 log = logging.getLogger(__name__)
@@ -69,7 +70,10 @@ def _net() -> RiverNetwork:
 
 @lru_cache(maxsize=1)
 def _overflows_uncached() -> pd.DataFrame:
-    return load_overflows(_net())
+    ov = load_overflows(_net())
+    # For the page only: the model has used the names already (overflows.py, the position checks).
+    ov["receiving_watercourse"] = ov["receiving_watercourse"].map(water_name)
+    return ov
 
 
 def _overflows() -> pd.DataFrame:

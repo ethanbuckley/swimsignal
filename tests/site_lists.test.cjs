@@ -127,3 +127,108 @@ test('lists.js loads beside the page’s other scripts without a clash', () => {
   const script = page.match(/<script>\nconst BRAND[\s\S]*?<\/script>/)[0];
   for (const n of mine) assert.doesNotMatch(script, new RegExp(`^(?:const|let|var|function) ${n.replace('$', '\\$')}\\b`, 'm'), n);
 });
+
+// The list's answer line with a day picked (16 Oct 2026, docs/REVIEW-2026-10-16.md 8.4, G4): picking
+// "Mon 19 Oct" turned the list to "On Monday" while the line above it still said "Tomorrow: 67 of 105
+// spots at low risk". With a day picked the line is that day's; with none, the weekend's better day
+// stays the rule (Ethan, PR #216).
+test('the answer line follows the picked day, and keeps the weekend rule with none', () => {
+  const dir = path.join(__dirname, '../src/dipcast/site/');
+  const html = fs.readFileSync(dir + 'index.html', 'utf8');
+  const src = html.slice(html.indexOf('<script>\nconst BRAND') + 9, html.lastIndexOf('</script>')).split('\n');
+  const defs = names => names.map(n => { const i = src.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`));
+    assert.ok(i >= 0, `no ${n} in index.html`);
+    let j = i + 1; while (j < src.length && /^[\s})\]+]/.test(src[j])) j++;
+    return src.slice(i, j).join('\n'); }).join('\n');
+  const fri = '2026-10-16', days = ['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'];   // Fri to Tue
+  const spot = labels => ({upstream_summary: {overflows: 1}, location: {mode: 'river'}, now: {label: labels[0]},
+    days: labels.map((l, i) => ({date: days[i], label: l, risk: l === 'low' ? 0.01 : 0.5}))});
+  //                      Fri     Sat     Sun     Mon     Tue
+  const spots = [spot(['low', 'high', 'low', 'low', 'high']), spot(['low', 'low', 'high', 'low', 'high']),
+                 spot(['high', 'high', 'high', 'low', 'high']), {days: [], upstream_summary: {overflows: 0}}];
+  const ctx = vm.createContext({});
+  vm.runInContext(fs.readFileSync(dir + 'levels.js', 'utf8') + `\nsetToday("${fri}");`, ctx);
+  vm.runInContext(`let VIEW = {day: null}; const DATA = {generated_at: '2026-10-16T09:12:00+01:00', spots: ${JSON.stringify(spots)}};\n` + defs(['esc', 'dateLabel', 'fiveDays', 'bestDayNote', 'lowAnswer', 'answerLines']), ctx);
+  const line = day => { vm.runInContext(`VIEW.day = ${JSON.stringify(day)}`, ctx);
+    return vm.runInContext('answerLines()', ctx).match(/<p class="low-answer">(.*?)<span class="pick"/)[1].replace(/<[^>]+>/g, ''); };
+  assert.equal(line(null), 'Tomorrow: 1 of 4 spots at low risk');   // the weekend's better day: Saturday and Sunday tie, so the earlier
+  assert.equal(line('2026-10-19'), 'Monday: 3 of 4 spots at low risk');
+  assert.equal(line('2026-10-20'), 'Tuesday: none of 4 spots at low risk');
+  assert.equal(line(fri), 'Today: 2 of 4 spots at low risk');
+  assert.equal(line('2026-10-18'), 'Sunday: 1 of 4 spots at low risk');
+  // A picked day worse than the week's best keeps the best-day line under it.
+  vm.runInContext('VIEW.day = "2026-10-20"', ctx);
+  assert.match(vm.runInContext('answerLines()', ctx), /Lowest pollution risk this week: <b>Monday<\/b>/);
+  // The rule itself (levels.js), and a picked day outside the five read as none picked.
+  const L = require('../src/dipcast/site/levels.js');
+  L.setToday(fri);
+  try {
+    assert.equal(L.lowAnswerDay(spots, days, '2026-10-19').date, '2026-10-19');
+    assert.equal(L.lowAnswerDay(spots, days, '2026-10-30').date, '2026-10-17');
+    assert.equal(L.lowAnswerDay(spots, days).date, '2026-10-17');
+  } finally { L.setToday(null); }
+  // Picking a day redraws the line: setMapDay fills #answer-lines again, and the list draws it there.
+  const setMapDay = html.slice(html.indexOf('function setMapDay(iso) {'), html.indexOf('\n}\n', html.indexOf('function setMapDay(iso) {')));
+  assert.match(setMapDay, /getElementById\('answer-lines'\); if \(ans\) \{ ans\.innerHTML = answerLines\(\); bindBestDay\(ans\); \}/);
+  assert.match(html, /<div id="answer-lines">\$\{answerLines\(\)\}<\/div>/);
+});
+
+// ------------------------------------------------------------------------------ the home list, A–Z by area
+// The rows with no monitored overflow upstream go at the end of their area behind one line (review of
+// 16 Oct 2026, C3). Top-level definitions taken from index.html's script, as site_honest_headlines does.
+const pageSrc = (() => { const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  return page.slice(page.indexOf('<script>\n') + 9, page.lastIndexOf('</script>')).split('\n'); })();
+const pageDefs = names => names.map(n => { const i = pageSrc.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`));
+  assert.ok(i >= 0, `no ${n} in index.html`);
+  let j = i + 1; while (j < pageSrc.length && /^[\s})\]+]/.test(pageSrc[j])) j++;
+  return pageSrc.slice(i, j).join('\n'); }).join('\n');
+const GEN = '2026-10-16T23:24:15+01:00';
+function listPage(spots) {
+  const dir = path.join(__dirname, '../src/dipcast/site/');
+  const ctx = vm.createContext({ console, DATA: { generated_at: GEN, spots } });
+  for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx, { filename: f });
+  vm.runInContext(`setToday('2026-10-16');\n` + pageDefs(['esc', 'VIEW', 'mapLevel', 'mapWhen', 'listHeadline', 'issued', 'overview', 'areaHead', 'QUIET_NAMES', 'areaRows']), ctx);
+  return ctx;
+}
+const DAYS = ['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'];
+const fc = (id, name, n = 3) => ({ id, name, kind: 'lake', area: 'Cumbria and the Lake District', upstream_summary: { overflows: n }, location: { mode: 'lake' },
+  now: { label: 'low', risk: 0, discharging_upstream: 0, monitored_upstream: n }, contributors: [], assumptions: { max_upstream_km: 60, recent_spill_hours: 48 },
+  days: DAYS.map(date => ({ date, label: 'low', risk: n ? 0.01 : 0, rain_48h_mm: 29, in_validated_season: false })) });
+const cumbria = [fc('blea', 'Blea Tarn, Langdale', 0), fc('butt', 'Buttermere', 0), fc('con', 'Coniston Water'), fc('crum', 'Crummock Water', 0),
+  fc('elter', 'Elter Water'), fc('duddon', 'River Duddon, Birks Bridge', 0), fc('loug', 'Loughrigg Tarn', 0)];
+const item = s => `<li><a class="row" data-id="${s.id}">${s.name}</a></li>`;
+const ids = h => [...h.matchAll(/<li( class="quiet"( hidden)?)?><a class="row" data-id="(\w+)"/g)].map(m => m[3] + (m[1] ? (m[2] ? ':hidden' : ':shown') : ''));
+
+test('in A–Z, an area\'s spots with no monitored overflow upstream go last, behind one line that names them', () => {
+  const ctx = listPage(cumbria), rows = vm.runInContext('areaRows', ctx);
+  const h = rows('Cumbria and the Lake District', cumbria, item, new Set());
+  assert.deepEqual(ids(h), ['con', 'elter', 'blea:hidden', 'butt:hidden', 'crum:hidden', 'duddon:hidden', 'loug:hidden']);
+  const line = h.match(/<li class="quiet-head">.*?<\/li>/)[0];
+  assert.match(line, /data-quiet="Cumbria and the Lake District" aria-expanded="false"/);
+  assert.match(line.replace(/<[^>]+>/g, ' '), /5 more spots with no monitored overflow upstream\s+Blea Tarn, Langdale, Buttermere, Crummock Water and 2 more/);
+  // The area's head still counts every spot in it.
+  assert.match(h, /<h3>Cumbria and the Lake District <span>· 7 spots, 2 at low risk<\/span><\/h3>/);
+  // Opened, the rows show and the line says so; an area of quiet spots alone has no "more".
+  assert.deepEqual(ids(rows('Cumbria and the Lake District', cumbria, item, new Set(['Cumbria and the Lake District']))).slice(2), ['blea:shown', 'butt:shown', 'crum:shown', 'duddon:shown', 'loug:shown']);
+  assert.match(rows('X', cumbria.slice(0, 2), item, new Set()), /<span>2 spots with no monitored overflow upstream<\/span><span class="k">Blea Tarn, Langdale and Buttermere<\/span>/);
+  // An area with none has no line; a search (fold false) shows every match as a row, in A–Z.
+  assert.doesNotMatch(rows('X', [cumbria[2], cumbria[4]], item, new Set()), /quiet/);
+  assert.deepEqual(ids(rows('X', cumbria, item, new Set(), false)), cumbria.map(s => s.id));
+});
+
+test('the count over the list still counts every spot with no monitored overflow, folded or not', () => {
+  // 24 of 105 on 16 Oct 2026: here 24 quiet spots among 30.
+  const spots = Array.from({ length: 30 }, (_, i) => fc(`s${i}`, `Spot ${i}`, i < 24 ? 0 : 3));
+  const ctx = listPage(spots);
+  assert.match(vm.runInContext('overview', ctx)(spots), / · 24 with no monitored overflow found upstream · /);
+});
+
+test('"Highest risk", "Near me" and "Low risk only" draw rows as before: only A–Z folds', () => {
+  const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  // areaGroups is A–Z alone; the other orders map every item to a row.
+  assert.match(page, /function areaGroups\(items\) \{\n\s+if \(VIEW\.sort !== 'name'/);
+  assert.match(page, /ul\.innerHTML = groups \? groups\.map\(\(\[a, xs\]\) => areaRows\(a, xs, spotItem, VIEW\.quiet, !words\.length\)\)\.join\(''\)\n\s+: items\.length \? items\.map\(spotItem\)\.join\(''\)/);
+  // "Low risk only" keeps low spots alone, so none is behind the line.
+  const ctx = listPage(cumbria);
+  assert.equal(cumbria.filter(s => vm.runInContext('mapLevel', ctx)(s) === 'low').every(s => s.upstream_summary.overflows > 0), true);
+});

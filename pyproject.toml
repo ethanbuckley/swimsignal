@@ -26,7 +26,7 @@ dependencies = [
 bayes = ["pymc>=5.16", "arviz>=0.19"]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6", "openpyxl>=3.1"]   # openpyxl: scripts/fetch_sw_history.py reads Scottish Water's xlsx
+dev = ["pytest>=8", "ruff>=0.6", "openpyxl>=3.1", "feedparser>=6.0"]   # openpyxl: scripts/fetch_sw_history.py reads Scottish Water's xlsx; feedparser: tests/test_feeds.py
 
 [build-system]
 requires = ["hatchling"]

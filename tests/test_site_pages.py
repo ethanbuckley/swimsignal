@@ -116,7 +116,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
     assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
     assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
-    assert lead.index('<div class="toolbar">') < lead.index("best-day")
+    assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
     assert "<span data-low-t>Low\u00a0risk only</span>" in body
@@ -485,10 +485,10 @@ def test_feedback_and_experience_are_built_for_nested_github_pages(tmp_path):
     stamp = bs.shell_stamp()
     assert re.fullmatch(r"[0-9a-f]{8}", stamp)
     # The page asks for its scripts at the build's stamp, as the offline copy stores them.
-    assert f'<script src="experience.js?v={stamp}">' in home and f'<script src="levels.js?v={stamp}">' in home
-    assert f'<script src="plan.js?v={stamp}">' in home and (tmp_path / "plan.js").exists() and "`plan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert f'<script src="experience.js?v={stamp}" defer>' in home and f'<script src="levels.js?v={stamp}" defer>' in home
+    assert f'<script src="plan.js?v={stamp}" defer>' in home and (tmp_path / "plan.js").exists() and "`plan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     # Named lists of saved spots (lists.js) likewise; a change to it renames the offline copy's cache.
-    assert f'<script src="lists.js?v={stamp}">' in home and (tmp_path / "lists.js").exists() and "`lists.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert f'<script src="lists.js?v={stamp}" defer>' in home and (tmp_path / "lists.js").exists() and "`lists.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert bs.TEMPLATE.parent / "lists.js" in bs.SHELL_SOURCES
     assert (tmp_path / "experience.js").exists()
     sw = (tmp_path / "sw.js").read_text()
@@ -540,8 +540,10 @@ def test_river_levels_are_an_observation_beside_the_forecast():
     assert line in (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
 
 
-def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
+def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_path, monkeypatch):
     bs = _build_site()
+    from dipcast.ingest import rainfall
+    monkeypatch.setattr(rainfall, "CACHE", tmp_path)   # the day's Open-Meteo ledger
     seen = []
 
     def request(url, params, timeout=30):
@@ -553,7 +555,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
 
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1},
              {"id": "d", "name": "Broken", "lat": 54.5, "lon": -3.1, "error": "forecast failed: boom"}]
-    assert bs.attach_weather(spots, request=request) == 2
+    assert bs.attach_weather(spots, request=request, cache=tmp_path / "weather.json") == 2
     assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset" and seen[0]["latitude"] == "54.000,54.100"
     assert spots[0]["weather"]["days"] == [{"date": "2026-10-01", "tmax": 11, "sunrise": "07:12", "sunset": "18:40"},
                                            {"date": "2026-10-02", "tmax": None, "sunrise": "07:14", "sunset": "18:38"}]
@@ -562,7 +564,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
     def broken(url, params, timeout=30):
         raise RuntimeError("open-meteo request failed")
     fresh = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}]
-    assert bs.attach_weather(fresh, request=broken) == 0 and "weather" not in fresh[0]
+    assert bs.attach_weather(fresh, request=broken, cache=tmp_path / "none.json") == 0 and "weather" not in fresh[0]
 
 
 def test_the_api_server_sends_its_home_page_to_the_site_and_keeps_the_prose_pages(monkeypatch):
@@ -631,7 +633,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 16   # spot_scores.json makes 16
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 17   # spot_scores.json makes 16, overflows/ 17
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -907,6 +909,7 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
     off = {n: (tmp_path / n).read_text() for n in ["index.html", "privacy.html", "terms.html"]}
     assert "tile.openstreetmap.org" in off["index.html"] and bs.OSM_PRIVACY_LI in off["privacy.html"]
+    assert bs.TILE_LINE.format(**bs.TILE_PROVIDERS["osm"]) in (tmp_path / "app.js").read_text()
     assert off["privacy.html"].count("map images fetched from OpenStreetMap") == 2 and bs.OSM_TERMS in off["terms.html"]
 
     monkey = {**bs.TILE_PROVIDERS["carto-positron"], "id": "carto-positron"}
@@ -914,7 +917,7 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/", tiles=tiles,
                    support="https://ko-fi.com/swimsignal")
     for page in ["index.html", "saved/index.html", "plan/index.html", "spot/wharfe-ilkley/index.html"]:
-        html = (tmp_path / page).read_text()
+        html = (tmp_path / page).read_text() + (tmp_path / "app.js").read_text()   # the map is drawn by the page's script, app.js
         assert "tile.openstreetmap.org" not in html, page
         assert "basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=testkey123" in html, page
         assert '<link rel="preconnect" href="https://basemaps.cartocdn.com">' in html, page
@@ -968,3 +971,55 @@ def test_the_carto_filters_turn_carto_water_blue_and_its_land_grey():
         assert r == g == b, land
     r, g, b = apply(pz, (250, 250, 248))
     assert r == g == b == 235
+
+
+def test_the_app_pages_scripts_are_all_deferred_in_their_order_and_the_pages_own_is_app_js(tmp_path):
+    # docs/REVIEW-2026-10-16.md, F2: none of the page's scripts holds up the first paint. Deferred
+    # scripts run in the order of their tags, so the order is the source's, with the page's own
+    # script, now app.js, where it was: after the fourteen and before anypoint.js.
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
+    stamp, source = bs.shell_stamp(), bs.TEMPLATE.read_text()
+    app = (tmp_path / "app.js").read_text()
+    assert app.startswith("const BRAND = ") and "function loadOverflows" in app and "</script>" not in app
+    assert bs.js_without_comment_lines(bs.APP_SCRIPT.search(source).group(1)) == app   # the source's script, as lean_page leaves it
+    for page in ["index.html", "saved/index.html", "plan/index.html", "spot/wharfe-ilkley/index.html"]:
+        html = (tmp_path / page).read_text()
+        assert "const BRAND" not in html, page
+        tags = re.findall(r"<script\b[^>]*\bsrc=\"([^\"?]+)[^\"]*\"([^>]*)>", html)
+        assert tags and all("defer" in rest for _, rest in tags), page
+        order = [src for src, _ in tags]
+        assert order == [re.search(r'src="([^"]+)"', t).group(1) for t in re.findall(r"<script src=[^>]+>", source)
+                         if "anypoint" not in t] + ["app.js", "anypoint.js"], page
+        at = order.index
+        assert at("reviews.js") < at("visits.js") and at("reviews.js") < at("illness.js") and at("reviews.js") < at("journal.js")
+        assert at("levels.js") < at("since.js") and at("levels.js") < at("journal.js")
+        assert at("vendor/leaflet/leaflet.js") == 0 and order[-2:] == ["app.js", "anypoint.js"]
+        assert f'<script src="app.js?v={stamp}" defer></script>' in html, page
+        # The scripts left inline are the head's: the early fetch of the forecast, and the counter.
+        assert [m for m in re.findall(r"<script(?: id=\"[^\"]+\")?>", html)] == ["<script>", '<script id="page-counter">'], page
+    assert "`app.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()   # the offline copy keeps it
+
+
+OVERFLOW_TILES = [(51.5074, -0.1278, 511, 340), (54.05, -1.95, 506, 328), (50.1188, -5.5376, 496, 346), (55.7, -2.0, 506, 320),
+                  (52.0, 0.0, 512, 338)]   # the same points as tests/site_overflow_tiles.test.cjs, for index.html's ovTile
+
+
+def test_the_overflow_layer_is_cut_into_the_tiles_the_map_asks_for(tmp_path):
+    # docs/REVIEW-2026-10-16.md, C4: data/overflows/<x>-<y>.json at zoom 10 beside the whole file.
+    bs = _build_site()
+    for lat, lon, x, y in OVERFLOW_TILES:
+        assert bs.overflow_tile(lon, lat) == (x, y), (lat, lon)
+    pt = lambda i, lat, lon: {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]}, "properties": {"site_id": i}}
+    feats = [pt("A", 51.5074, -0.1278), pt("B", 51.5075, -0.1279), pt("C", 54.05, -1.95), pt("nowhere", float("nan"), 0.0)]
+    old = tmp_path / "data" / "overflows" / "1-1.json"
+    old.parent.mkdir(parents=True)
+    old.write_text("{}")   # a tile from an earlier build whose overflows have gone
+    credits = {"attribution": "Contains data from the water companies"}
+    assert bs.write_overflow_tiles(tmp_path, {"type": "FeatureCollection", "features": feats, "credits": credits}) == 2
+    out = tmp_path / "data" / "overflows"
+    assert sorted(p.name for p in out.iterdir()) == ["506-328.json", "511-340.json", "index.json"]
+    assert json.loads((out / "index.json").read_text()) == {"z": 10, "tiles": ["506-328", "511-340"], "credits": credits}
+    london = json.loads((out / "511-340.json").read_text())
+    assert london["type"] == "FeatureCollection" and [f["properties"]["site_id"] for f in london["features"]] == ["A", "B"]
+    assert london["features"][0] == feats[0]   # each overflow as the whole file has it

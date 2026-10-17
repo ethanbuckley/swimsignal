@@ -419,11 +419,11 @@ def flow_state(index: float | None, same_river: bool | None, rise_share: float |
     return None
 
 
-def floods_in_force_anywhere() -> bool:
+def floods_in_force_anywhere(timeout: float = EA_TIMEOUT_S) -> bool:
     """Whether any flood alert or warning (severity 1 to 3) is in force anywhere in England: one
     request for the whole list, so that on most days the build asks nothing per spot. Raises on a
     failed request."""
-    r = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/floods", headers=config.EA_HEADERS, timeout=EA_TIMEOUT_S)
+    r = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/floods", headers=config.EA_HEADERS, timeout=timeout)
     r.raise_for_status()
     levels = []
     for f in r.json().get("items", []):
@@ -434,13 +434,13 @@ def floods_in_force_anywhere() -> bool:
     return any(v in FLOOD_WORDS for v in levels)
 
 
-def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM) -> list[dict]:
+def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM, timeout: float = EA_TIMEOUT_S) -> list[dict]:
     """The Environment Agency's flood alerts and warnings in force for flood areas within `dist_km`
     of a point, the most severe first. Severity 4 ("Warning no longer in force") is left out. Each
     keeps the EA's area name and a link to its page on check-for-flooding.service.gov.uk. Raises on
     a failed request, so that "none in force" and "could not ask" stay apart."""
     r = httpx.get(f"{config.EA_FLOOD_MONITORING}/id/floods", params={"lat": round(lat, 5), "long": round(lon, 5), "dist": dist_km},
-                  headers=config.EA_HEADERS, timeout=EA_TIMEOUT_S)
+                  headers=config.EA_HEADERS, timeout=timeout)
     r.raise_for_status()
     out = []
     for f in r.json().get("items", []):

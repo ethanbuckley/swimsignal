@@ -238,3 +238,34 @@ test('nothing in the journal is sent anywhere', () => {
   const hooks = page.slice(page.indexOf('// ------------------------------------------------------------------------------ swim journal'), page.indexOf('// ------------------------------------------------------------------------------ a picture to share'));
   assert.ok(hooks.includes('journalLogBind') && !/fetch|sendBeacon|XMLHttpRequest/.test(hooks));
 });
+
+// The Saved page with nothing saved is one tile (review of 16 Oct 2026, C7): the journal's tile waits
+// behind a "Swim journal" link until a swim is in it, and then its controls are there as before.
+test('an empty Saved page shows the journal once a swim exists, or once asked; with spots saved, always', () => {
+  const vm = require('node:vm');
+  const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  const src = page.slice(page.indexOf('<script>\n') + 9, page.lastIndexOf('</script>')).split('\n');
+  const def = n => { const i = src.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`let ${n} =`)); assert.ok(i >= 0, n);
+    let k = i + 1; while (k < src.length && /^[\s})\]+|]/.test(src[k])) k++; return src.slice(i, k).join('\n'); };
+  const shown = (swims, { spots = [], hash = '', asked = false } = {}) => {
+    const ctx = vm.createContext({ location: { hash }, journalNow: () => swims });
+    vm.runInContext(`${def('SWIMS_ASKED')}\n${def('swimsShown')}\nSWIMS_ASKED = ${asked};`, ctx);
+    return vm.runInContext('swimsShown', ctx)(spots);
+  };
+  const swim = { key: 'k1', id: 'stour-dedham', date: TODAY };
+  assert.equal(shown([]), false, 'nothing saved, no swims: no journal tile');
+  assert.equal(shown([swim]), true, 'a swim logged: the tile');
+  assert.equal(shown([], { asked: true }), true, 'the "Swim journal" link');
+  assert.equal(shown([], { hash: '#journal' }), true, 'saved/#journal, from a link');
+  assert.equal(shown([], { spots: [{ id: 'a' }] }), true, 'beside saved spots, as before');
+  // The empty tile: one sentence, Find a spot, and the link while the journal is hidden.
+  const empty = page.slice(page.indexOf("  else h += `<div class=\"empty-saved tile\"><p class=\"sub\">Save a spot"), page.indexOf("  if (gone) h +="));
+  assert.match(empty, /Save a spot\$\{many \? ` to \$\{named\}` : ''\} from its page and it shows here with the days ahead\./);
+  assert.match(empty, /id="find">Find a spot<\/a>/);
+  assert.match(empty, /swimsShown\(spots\) \? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal<\/button><\/p>'/);
+  assert.doesNotMatch(empty, /<h2/, 'one sentence, no heading over it');
+  assert.match(page, /\+ \(swimsShown\(spots\) \? swimsCard\(\) : ''\);/);
+  // With a swim, the journal's controls are the same as ever.
+  const h = j.journalSection([{ key: 'k1', id: 'stour-dedham', name: 'River Stour, Dedham', date: TODAY, time: '07:00', note: '', photos: 0 }]);
+  for (const id of ['jn-export', 'jn-import', 'jn-clear', 'jn-file']) assert.ok(h.includes(`id="${id}"`), id);
+});

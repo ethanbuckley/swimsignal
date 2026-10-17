@@ -4,19 +4,25 @@ and which overflows a risk comes from (risk_shares, spread_count, forecast.sourc
 the page's "Where the risk comes from" (index.html, whereFrom)."""
 
 import math
+from functools import partial
 
 import numpy as np
 import pandas as pd
 
+from dipcast.model import transport
 from dipcast.model.transport import (
     LOW_CUT,
-    clear_time,
     daily_effects,
-    live_now_risk,
     risk_shares,
     spread_count,
     still_coming,
 )
+
+# The cases below are written with T90 = 30 h, the setting until 17 Oct 2026 (docs/TRANSPORT-FIT-TEST-2026-10.md):
+# they test the rule, so they pass it that T90 rather than follow config.T90_HOURS.
+T90 = 30.0
+live_now_risk = partial(transport.live_now_risk, t90_h=T90)
+clear_time = partial(transport.clear_time, t90_h=T90)
 
 NOW = pd.Timestamp("2026-10-04 00:16", tz="Europe/London")
 
@@ -84,7 +90,7 @@ def _risk_at(ov: pd.DataFrame, t: pd.Timestamp) -> float:
 
 def test_one_running_spill_falls_to_low_by_die_off():
     at, by, who = clear_time(_ov([1.0], [1], [None]), NOW)
-    want = 30.0 * math.log10(1.0 / LOW_CUT)   # weight x 10^(-t / T90) = cut, with T90 = 30 h
+    want = T90 * math.log10(1.0 / LOW_CUT)   # weight x 10^(-t / T90) = cut, with T90 = 30 h
     assert (by, who) == ("die-off", None)
     assert abs((at - NOW) / pd.Timedelta(hours=1) - want) < 1 / 600   # within six seconds
 
@@ -252,6 +258,8 @@ def _forecast(monkeypatch, ov: pd.DataFrame, model: _Steady) -> dict:
     monkeypatch.setattr(forecast, "upstream_overflows", lambda *a, **k: ov.copy())
     monkeypatch.setattr(forecast, "fetch_forecast", rain)
     monkeypatch.setattr(forecast.ecoli, "load", lambda: None)
+    monkeypatch.setattr(forecast, "live_now_risk", live_now_risk)
+    monkeypatch.setattr(forecast, "clear_time", clear_time)
     return forecast.forecast_point(53.92, -1.70, days_ahead=4, gauge=False, log_to_store=False)
 
 
