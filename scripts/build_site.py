@@ -1038,7 +1038,31 @@ def asked_now(ask):
     return lambda: answer
 
 
-def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None) -> dict:
+# The EA's flood requests sometimes time out: on 16 Oct 2026 (21:03 build) the national list
+# answered and then 48 of the 105 spots' own requests timed out at 4 s, so 48 pages said "not
+# checked". A failed request is asked once more FLOOD_RETRY_S later, and every answer is in within
+# FLOOD_BUDGET_S, so a slow EA adds at most half a minute to the national list and to the spots'.
+FLOOD_RETRY_S = 20.0
+FLOOD_BUDGET_S = 30.0
+
+
+def ask_flood_list(ask=None, sleep=time.sleep, clock=time.monotonic) -> bool:
+    """The national flood list (flows.floods_in_force_anywhere), with one retry: if the first ask
+    fails, the second begins FLOOD_RETRY_S after the first began, and each is allowed what is left
+    of FLOOD_BUDGET_S (10 s each, against flows.EA_TIMEOUT_S's 4 s). Raises the second failure."""
+    if ask is None:
+        from dipcast.ingest.flows import floods_in_force_anywhere as ask
+    start = clock()
+    try:
+        return ask(timeout=FLOOD_BUDGET_S - FLOOD_RETRY_S)
+    except Exception as e:  # noqa: BLE001 - asked again; the second failure is raised
+        log.info("flood list: %s; asking again", e)
+    sleep(max(0.0, start + FLOOD_RETRY_S - clock()))
+    return ask(timeout=max(1.0, start + FLOOD_BUDGET_S - clock()))
+
+
+def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None,
+                      sleep=time.sleep, clock=time.monotonic) -> dict:
     """"Too high to swim", beside the pollution level and never part of it: a high river and a flood
     are a different hazard. After attach_river_levels, each spot gets `flow_state`, a word from the
     gauge on its own river (flows.flow_state: "high" above the usual range, "rising fast" up more
@@ -1049,15 +1073,17 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
     one a spot. The rise is fetched only where it could set the word, a current reading on the
     spot's own river not already above its range, from the last 24 readings, and kept in
     `river_state` as `rise_6h_m` with the times it runs between. A stale reading has no index
-    (reading_fields), so it is never "high". Returns counts for the build log; nothing here can
-    stop a build or change a level."""
+    (reading_fields), so it is never "high". The spots whose flood request failed are asked once
+    more, FLOOD_RETRY_S after the first round, all within FLOOD_BUDGET_S of its end; those still
+    unanswered keep None. Returns counts for the build log; nothing here can stop a build or
+    change a level."""
     from concurrent.futures import ThreadPoolExecutor
     from datetime import UTC, datetime
 
     from dipcast.ingest import flows
     trend = trend or flows.recent_levels
     alerts = alerts or flows.flood_alerts
-    any_alerts = any_alerts or flows.floods_in_force_anywhere
+    any_alerts = any_alerts or (lambda: ask_flood_list(sleep=sleep, clock=clock))
     now = now or datetime.now(UTC)
     try:
         ask = any_alerts()
@@ -1089,11 +1115,31 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
             try:
                 found = alerts(r["lat"], r["lon"])
             except Exception as e:  # noqa: BLE001
-                log.warning("flood alerts for %s: %s", r["name"], e)
+                log.info("flood alerts for %s: %s; asking again", r["name"], e)
         return word, rise, found
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         out = list(pool.map(one, results))
+    failed = [i for i, (_, _, found) in enumerate(out) if found is None] if alerts is not None else []
+    if failed:
+        log.info("flood alerts: %d of %d spots not answered; asking again in %.0f s", len(failed), len(results), FLOOD_RETRY_S)
+        sleep(FLOOD_RETRY_S)
+        deadline = clock() + FLOOD_BUDGET_S - FLOOD_RETRY_S
+
+        def again(i: int) -> list | None:
+            r, left = results[i], deadline - clock()
+            if left < 1:   # out of time: unchecked, as before the retry
+                log.warning("flood alerts for %s: no time left to ask again", r["name"])
+                return None
+            try:
+                return alerts(r["lat"], r["lon"], timeout=left)
+            except Exception as e:  # noqa: BLE001
+                log.warning("flood alerts for %s: %s", r["name"], e)
+                return None
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for i, found in zip(failed, pool.map(again, failed), strict=True):
+                out[i] = (*out[i][:2], found)
     counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0}
     for r, (word, rise, found) in zip(results, out, strict=True):
         r["flow_state"], r["flood_alerts"] = word, found
@@ -1866,7 +1912,9 @@ def write_app_data(site: Path, doc: dict) -> int:
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
         lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json"})
-    (site / "data" / "spots-lite.json").write_text(json.dumps({**doc, "spots": lite}, separators=(",", ":"), default=str))
+    # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
+    (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
+                                                              separators=(",", ":"), default=str))
     return len(doc["spots"]) - sum(1 for s in lite if "detail_file" not in s)
 
 
@@ -2073,8 +2121,7 @@ def build(refresh: bool = True) -> dict:
     n_classified = attach_classifications(results)
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
-    from dipcast.ingest.flows import floods_in_force_anywhere
-    any_floods = asked_now(floods_in_force_anywhere) if refresh else None
+    any_floods = asked_now(ask_flood_list) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level

@@ -389,6 +389,7 @@
   .t-say { margin:10px 0 0; font-size:var(--fs-note); line-height:1.4; }
   .t-key { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); }
   .t-credit { margin:6px 0 0; font-size:var(--fs-meta); } .t-credit a { color:var(--muted); }
+  .t-note { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); } .t-note a { color:inherit; }
   .t-sent { margin:8px 0 2px; padding-bottom:10px; border-bottom:1px solid var(--hair); line-height:1.4; }
   details.t-more > summary { position:absolute; top:0; right:0; width:44px; height:44px; display:flex; align-items:center; justify-content:center; list-style:none; cursor:pointer; }
   details.t-more > summary::-webkit-details-marker { display:none; }
@@ -1752,6 +1753,7 @@ const sunPath = w => { const m = s => { const [h, mm] = String(s).split(':').map
 const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
   + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
   + (o.vis || '') + (o.rel ? `<p class="t-say">${o.rel}</p>` : '') + (o.say ? `<p class="t-say">${o.say}</p>` : '')
+  + (o.note ? `<p class="t-note">${o.note}</p>` : '')   // a quiet line: what the build could not check
   + (o.credit ? '<p class="t-credit"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>' : '')
   + (o.more ? `<details class="t-more"><summary><span class="sr">${o.label}: what this means</span></summary><p>${o.more}</p></details>` : '')
   + (o.fold || '') + '</div>';   // a fold of its own at the foot: the rating tile's "Today's EA advice"
@@ -1809,6 +1811,9 @@ function facts(d) {
   const wx = weatherOn(d, today());
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
+  // Flood warnings the EA did not answer for (experience.js, floodUnchecked): a quiet line under the
+  // River or Lake level tile, or under Weather at a spot with no gauge (22 lakes and a river, 16 Oct 2026).
+  if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) { const host = rt || out.find(o => o.icon === ICON.sun); if (host) host.note = floodUncheckedLine(true); }
   return out;
 }
 // The River level tile, or null without a reading. A reading the build found over a day old (stale,

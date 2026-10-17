@@ -10,6 +10,7 @@ import {
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 import { runWeekly } from './weekly.js';
 import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, pairKey } from './dates.js';
+import { DISPATCH_CRON, runDispatch } from './dispatch.js';
 
 export { forecastExpiry };
 
@@ -25,10 +26,17 @@ const PUSH_SUFFIXES = ['.push.apple.com', '.notify.windows.com'];
 // each, and at most one write a record a day, since a run that finds news looks at every record.
 const TIDY_PER_RUN = 20;
 
+// Two schedules (wrangler.toml): every 2 minutes the alerts, and every 30 the site's build is asked
+// for (dispatch.js). Each event names the cron that fired it; at :00 and :30 both fire, separately.
 export default {
   fetch: (request, env) => handleRequest(request, env),
-  async scheduled(controller, env) { await runCron(env); },
+  scheduled: (controller, env) => scheduled(controller, env),
 };
+
+export async function scheduled(controller, env, deps = {}) {
+  if (controller?.cron === DISPATCH_CRON) return runDispatch(env, deps);
+  return runCron(env, deps);
+}
 
 // ---- HTTP ----
 
