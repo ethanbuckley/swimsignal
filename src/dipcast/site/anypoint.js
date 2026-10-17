@@ -641,6 +641,7 @@ const AnyPoint = (() => {
     const at = map.latLngToContainerPoint(e.latlng);
     for (const s of DATA.spots) if (map.latLngToContainerPoint([s.lat, s.lon]).distanceTo(at) < 14) return;   // the marker's own click opens it
     const say = typeof mapSay === 'function' ? mapSay : () => {};
+    if (typeof mapTapped === 'function') mapTapped();   // the first-tap line (index.html) does not come back
     if (map.getZoom() < POINT_ZOOM) {
       map.setView(e.latlng, POINT_ZOOM + CLOSER, typeof MOTION === 'function' ? MOTION() : {});
       say(`Zoomed in. Now ${typeof TOUCH !== 'undefined' && TOUCH ? 'tap' : 'click'} a river or lake for its forecast.`);

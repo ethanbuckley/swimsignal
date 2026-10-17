@@ -376,3 +376,15 @@ test('a click too far out to pick a river zooms in on itself and says to tap the
     assert.equal(views.length, 1);
   } finally { for (const [k, v] of Object.entries(was)) { if (v === undefined) delete global[k]; else global[k] = v; } }
 });
+
+test('a tap on the map puts the first-tap line away for good, whether it zooms in or forecasts', () => {
+  let tapped = 0; const was = {};
+  const set = (k, v) => { was[k] = global[k]; global[k] = v; };
+  set('DATA', {spots: []}); set('PHONE', {matches: false}); set('mapMode', () => false); set('mapSay', () => {});
+  set('mapTapped', () => { tapped += 1; });
+  set('map', {getZoom: () => 6, setView: () => {}, latLngToContainerPoint: () => ({distanceTo: () => 100})});
+  try {
+    A.onMapClick({latlng: {lat: 52, lng: -1}});
+    assert.equal(tapped, 1);
+  } finally { for (const [k, v] of Object.entries(was)) { if (v === undefined) delete global[k]; else global[k] = v; } }
+});

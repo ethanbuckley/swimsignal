@@ -2199,12 +2199,18 @@ sayCtl.onAdd = () => { const el = L.DomUtil.create('p', 'map-say'); el.setAttrib
   L.DomEvent.disableClickPropagation(el); return el; };
 sayCtl.addTo(map);
 let sayTimer = 0;
-function mapSay(text) {
+function mapSay(text, stay = false) {
   const el = sayCtl.getContainer(); clearTimeout(sayTimer);
   el.textContent = text || ''; el.hidden = !text;
-  if (text) sayTimer = setTimeout(() => mapSay(''), SAY_MS);
+  if (text && !stay) sayTimer = setTimeout(() => mapSay(''), SAY_MS);
 }
 const TAP = () => TOUCH ? 'Tap' : 'Click';
+// Until the first tap on the map, the same line says that any river or lake has a forecast (Ethan picked
+// this of three mock-ups, 17 Oct 2026). A tap on the map (anypoint.js, onMapClick) puts it away for good
+// on this device; with no storage it comes back on the next visit, which does no harm.
+const TAPPED_KEY = 'dipcast.tapped';
+const mapTapped = () => { try { localStorage.setItem(TAPPED_KEY, '1'); } catch (e) { /* asked again next visit */ } };
+if (stored(TAPPED_KEY) !== '1') mapSay(`${TAP()} any river or lake for its forecast.`, true);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
 // The river the forecast traced upstream of the open spot (build_site.write_traces, data/spot/<id>-trace.json;
 // docs/REVIEW-2026-10-16.md, G6): the water that reaches the spot, every river and stream within 60 km
