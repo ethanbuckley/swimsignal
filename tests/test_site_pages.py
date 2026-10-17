@@ -89,6 +89,12 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     places = json.loads((tmp_path / "data" / "places.json").read_text())
     assert places["credit"].startswith("Contains OS data") and len(places["places"]) > 20000
     assert ["Kendal", 54.33, -2.75] in places["places"]
+    # The rivers and lakes the search finds on the map, likewise the site's own file (scripts/make_waters.py).
+    waters = json.loads((tmp_path / "data" / "waters.json").read_text())
+    assert waters["credit"].startswith("Contains OS data") and len(waters["waters"]) > 5000
+    assert any(w[0] == "River Kennet" and w[2] == "river" for w in waters["waters"])
+    assert any(w[0] == "Ullswater" and w[2] == "lake" for w in waters["waters"])
+    assert not any("Canal" in w[0] for w in waters["waters"])
 
 
 def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_path):
@@ -102,13 +108,13 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
     body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
-    assert "Five-day pollution risk forecasts for 3 spots in England, or " in body and 'aria-busy="true"' in body
+    assert "Five-day pollution risk forecasts for 3 swim spots in England, and for any river or lake you " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
-    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} spots in England, or ",
-                 " any river or lake on the map. <a href=\"#about\">How it works</a></p>",
-                 'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
+    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England, and for any river or lake you ",
+                 " on the map. <a href=\"#about\">How it works</a></p>",
+                 'placeholder="Find a river, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
                  '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>',
                  '<button type="button" class="chip-btn low" data-low aria-pressed="']:
         assert part in lead and part.split("${")[0] in body, part
@@ -116,6 +122,9 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
     assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
     assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
+    # Under it, the forecast for the water where you are (hereForecast), likewise word for word.
+    assert f"const HERE_CTA = '{bs.HERE_CTA}';" in page and "'geolocation' in navigator ? HERE_CTA" in lead
+    assert body.index(bs.NEAR_CTA) < body.index(bs.HERE_CTA) < body.index('<div class="toolbar">')
     assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
@@ -623,7 +632,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert row("links/") == '<td>links/</td><td>Not described here yet.</td><td class="num">3 kB</td>'   # a folder, whole
     assert bs.with_data_files((bs.STATIC / "data.html").read_text(), data)[1] == ["links/", "new.csv"]
     # The documented files each have a section of their own.
-    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "spot_scores.json", "places.json"):
+    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "spot_scores.json", "places.json", "waters.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
     assert '<h2 id="anypoint">anypoint/</h2>' in page and '<h2 id="upstream">upstream/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
@@ -633,7 +642,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 17   # spot_scores.json makes 16, overflows/ 17
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 18   # spot_scores.json makes 16, overflows/ 17, waters.json 18
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):

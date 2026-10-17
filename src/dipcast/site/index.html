@@ -181,6 +181,9 @@
      the six keys in one line, and the overflows' key under them while overflows are on the map. */
   .map-legend { background:var(--float); border-radius:var(--radius); padding:6px 10px; font-size:var(--fs-meta); line-height:1.5; box-shadow:var(--lift); color:var(--ink); }
   .map-legend .keys { display:flex; flex-wrap:wrap; gap:2px 12px; }
+  /* What to do next on the map (mapSay), above the colour key and in its style. */
+  .map-say { max-width:260px; margin:0 0 8px; background:var(--float); border-radius:var(--radius); padding:8px 12px; font-size:var(--fs-note); font-weight:600; line-height:1.35; box-shadow:var(--lift); color:var(--ink); }
+  .map-say[hidden] { display:none; }
   .map-legend .ovkey { margin-top:4px; padding-top:4px; border-top:1px solid var(--line); color:var(--muted); }
   .map-legend .ovkey[hidden] { display:none; }
   /* The traced river's key (drawTrace): a short stroke of the line itself, the brand teal, 2 px. */
@@ -234,6 +237,7 @@
   /* Near me, the way most people come in: one full-width button under the search (14 Oct 2026). */
   .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
   .near-cta svg { width:18px; height:18px; flex:none; }
+  .here-cta { margin-top:4px; }   /* under Near me: the forecast for the water where you are (hereForecast) */
   .intro .geo { margin:8px 0 0; }
   .save-hint .ic { margin-top:3px; }   /* centred on the first line (22.5 px) when the text wraps */
   /* The padding is room for a focus ring, which the scrolling row would otherwise clip; the margin
@@ -274,11 +278,17 @@
   .quiet-btn .k { font-weight:400; font-size:var(--fs-meta); color:var(--muted); }
   .quiet-btn::after { content:""; position:absolute; right:6px; top:50%; width:8px; height:8px; margin-top:-6px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); }
   .quiet-btn[aria-expanded="true"]::after { margin-top:-2px; transform:rotate(-135deg); }
-  a.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
-  a.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
+  a.row, button.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
+  button.row { width:100%; font:inherit; text-align:left; background:none; border:0; cursor:pointer; }
+  .row .go { flex:none; width:20px; height:20px; color:var(--muted); }
+  a.row:focus-visible, button.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
   /* Hover and press reach 8 px past the row on either side, so the text keeps the column's edge. */
-  @media (hover: hover) { a.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); } }
-  a.row:active { background:var(--active); box-shadow:-8px 0 0 var(--active), 8px 0 0 var(--active); }
+  @media (hover: hover) { a.row:hover, button.row:hover { background:var(--hover); box-shadow:-8px 0 0 var(--hover), 8px 0 0 var(--hover); } }
+  a.row:active, button.row:active { background:var(--active); box-shadow:-8px 0 0 var(--active), 8px 0 0 var(--active); }
+  /* The search's rivers, lakes and places on the map (offerOnMap), under the matching spots. */
+  ul.on-map { margin-top:16px; }
+  ul.on-map.after-empty { margin-top:0; border-top:0; }   /* straight under "No listed spot matches" */
+  #spots:has(+ ul.after-empty) { border-bottom:0; }
   .row-main { flex:1; min-width:0; display:flex; flex-direction:column; }
   .nm { font-weight:600; font-size:var(--fs-body); line-height:1.3; overflow-wrap:anywhere; }
   .hl { font-size:var(--fs-note); font-weight:600; line-height:1.35; margin-top:1px; }
@@ -2180,6 +2190,27 @@ legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
     + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
   L.DomEvent.disableClickPropagation(el); return el; };
 legend.addTo(map);
+// A line over the map saying what to do next, after the search or "where you are" has moved it, or after a
+// tap too far out to pick a river (anypoint.js): "Tap the River Kennet where you swim". Above the colour
+// key (a later control in a bottom corner goes above), in its style. Gone at the next tap on the map, or
+// after SAY_MS.
+const sayCtl = L.control({ position: 'bottomleft' }), SAY_MS = 15000;
+sayCtl.onAdd = () => { const el = L.DomUtil.create('p', 'map-say'); el.setAttribute('role', 'status'); el.hidden = true;
+  L.DomEvent.disableClickPropagation(el); return el; };
+sayCtl.addTo(map);
+let sayTimer = 0;
+function mapSay(text, stay = false) {
+  const el = sayCtl.getContainer(); clearTimeout(sayTimer);
+  el.textContent = text || ''; el.hidden = !text;
+  if (text && !stay) sayTimer = setTimeout(() => mapSay(''), SAY_MS);
+}
+const TAP = () => TOUCH ? 'Tap' : 'Click';
+// Until the first tap on the map, the same line says that any river or lake has a forecast (Ethan picked
+// this of three mock-ups, 17 Oct 2026). A tap on the map (anypoint.js, onMapClick) puts it away for good
+// on this device; with no storage it comes back on the next visit, which does no harm.
+const TAPPED_KEY = 'dipcast.tapped';
+const mapTapped = () => { try { localStorage.setItem(TAPPED_KEY, '1'); } catch (e) { /* asked again next visit */ } };
+if (stored(TAPPED_KEY) !== '1') mapSay(`${TAP()} any river or lake for its forecast.`, true);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
 // The river the forecast traced upstream of the open spot (build_site.write_traces, data/spot/<id>-trace.json;
 // docs/REVIEW-2026-10-16.md, G6): the water that reaches the spot, every river and stream within 60 km
@@ -2354,6 +2385,8 @@ const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNo
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
 // Near me under the search: the way most people come in (14 Oct 2026). Also in the built page (home_lead).
 const NEAR_CTA = '<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Show spots near me</span></button>';
+// Under it, the forecast for the water where you are (hereForecast, 17 Oct 2026). Also in home_lead.
+const HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>';
 const NEAR_N = 3;   // the nearest spots shown as cards once a place is given
 let OPENED = false;   // a spot has been opened this visit: only then does the list say how to save one (kept nowhere)
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
@@ -2412,10 +2445,11 @@ function renderList() {
   // level in words. Everything down to the caveat's line is also in the built home page, so it and the
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
-  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} spots in England, or ${TOUCH ? 'tap' : 'click'} any river or lake on the map. <a href="#about">How it works</a></p>`
-    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
+  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map. <a href="#about">How it works</a></p>`
+    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
     // Until a place is given, Near me; then the nearest spots, as cards above the list (drawSpots).
-    + (offerNear() ? NEAR_CTA + `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
+    + (offerNear() ? NEAR_CTA : '') + ('geolocation' in navigator ? HERE_CTA : '')
+    + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
     + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${fiveDays().map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
     + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
     + `<div id="answer-lines">${answerLines()}</div>`
@@ -2431,7 +2465,7 @@ function renderList() {
     // phone's screen, so a declined or failed location changed nothing you could see.
     + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
-    + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><p class="count" id="count" role="status"></p></section>`;
+    + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="count" id="count" role="status"></p></section>`;
   h += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot since 14 Oct 2026: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
@@ -2453,6 +2487,7 @@ function renderList() {
     steady(b, drawSpots); }));
   document.querySelector('[data-low]').addEventListener('click', () => setLowOnly(!VIEW.lowOnly));
   const nearCta = document.querySelector('[data-near-cta]'); if (nearCta) nearCta.addEventListener('click', () => locate('cta'));
+  const hereCta = document.querySelector('[data-here-cta]'); if (hereCta) hereCta.addEventListener('click', hereForecast);
   document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.sort === 'near' && !VIEW.here) { locate(); return; }
     setSort(b.dataset.sort); drawSpots(); }));
@@ -2512,6 +2547,8 @@ function areaRows(a, xs, item, open, fold = true) {
     + `<span>${quiet.length}${loud.length ? ' more' : ''} spot${quiet.length === 1 ? '' : 's'} with no monitored overflow upstream</span><span class="k">${list}</span></button></li>`;
   return h + quiet.map(s => item(s).replace(/^<li>/, `<li class="quiet"${on ? '' : ' hidden'}>`)).join('');
 }
+const bindClear = () => { const clear = document.getElementById('clear-filters');
+  if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); }); };
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -2547,9 +2584,9 @@ function drawSpots() {
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
-  const clear = document.getElementById('clear-filters');
-  if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); });
+  bindClear();
   bindItems(ul);
+  offerOnMap();
   ul.querySelectorAll('[data-quiet]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.quiet, on = !VIEW.quiet.has(a);
     if (on) VIEW.quiet.add(a); else VIEW.quiet.delete(a);
@@ -2804,6 +2841,83 @@ function openSaved() {
   if (push) focusHeading();
 }
 document.getElementById('savedbtn').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openSaved(); });
+
+// ------------------------------------------------------------------------------ the search, on the map
+// What the search cannot find among the spots it may find on the map (17 Oct 2026). "River Kennet" has
+// no listed spot, and the search used to end at "No spots match", but any point on the Kennet has a
+// forecast a tap away. So for three letters or more, under the matching spots: the rivers and lakes of
+// that name (data/waters.json, scripts/make_waters.py) and the towns and villages (data/places.json),
+// each a row that takes the map there and says to tap the water. Both files are fetched the first time,
+// and what is typed stays on the device. A river has no one forecast, so a row never opens one itself.
+let WATERS = null, onMapTyped = 0;
+const loadWaters = () => WATERS || (WATERS = fetch('data/waters.json').then(r => { if (!r.ok) throw new Error(`the list of rivers answered ${r.status}`); return r.json(); })
+  .then(waterIndex).catch(e => { WATERS = null; throw e; }));
+const ON_MAP_PLACES = 2;
+const GO = '<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>';
+async function offerOnMap() {
+  const t = VIEW.q.trim(), call = ++onMapTyped;
+  const hide = () => { const box = document.getElementById('on-map'); if (box) { box.hidden = true; box.innerHTML = ''; } };
+  if (placeKey(t).replace(/ /g, '').length < 3 || looksLikePostcode(t)) { hide(); return; }
+  let waters = [], places = [];
+  try { [waters, places] = await Promise.all([loadWaters().then(i => waterMatches(i, t)), loadPlaces().then(i => placeMatches(i, t, ON_MAP_PLACES))]); }
+  catch (e) { /* a file that did not come: the spots still answer, and the next letter asks again */ }
+  const box = document.getElementById('on-map');
+  if (call !== onMapTyped || !box) return;   // a later letter, or another page, has taken over
+  if (!waters.length && !places.length) { hide(); return; }
+  const where = w => `${cap(w.kind)} near ${esc(w.near)}${w.alt ? ` · also called ${esc(w.alt)}` : ''}`;
+  box.innerHTML = `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
+    + waters.map((w, i) => `<li><button type="button" class="row" data-water="${i}"><span class="row-main"><span class="nm">${esc(w.name)}</span><span class="k">${where(w)}</span></span>${GO}</button></li>`).join('')
+    + places.map((p, i) => `<li><button type="button" class="row" data-place="${i}"><span class="row-main"><span class="nm">Rivers and lakes near ${esc(p.name)}</span><span class="k">Show on the map</span></span>${GO}</button></li>`).join('');
+  box.hidden = false;
+  box.classList.toggle('after-empty', Boolean(document.querySelector('#spots li.empty')));
+  // No spot matches: say so above the offers, and put the request and the clear button after them.
+  const empty = document.querySelector('#spots li.empty');
+  if (empty) {
+    empty.innerHTML = '<p class="below">No listed spot matches. Any river or lake has a forecast on the map:</p>';
+    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
+    bindClear();
+  }
+  box.querySelectorAll('[data-water]').forEach(b => b.addEventListener('click', () => { const w = waters[+b.dataset.water];
+    showOnMap([w.lat, w.lon], WATER_ZOOM, `The ring is on ${w.kind === 'river' ? 'the ' : ''}${w.name}. ${TAP()} the ${w.kind} where you swim, for its forecast.`, w.name); }));
+  box.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { const p = places[+b.dataset.place];
+    showOnMap([p.lat, p.lon], PLACE_ZOOM, `${TAP()} a river or lake near ${p.name} for its forecast.`); }));
+}
+// The map on what was picked, ready for a tap, at a zoom where the tiles draw rivers: a river or lake
+// centred on a point on it, ringed and named (the whole of a long river is too far out to see it: the
+// Kennet's box opened at zoom 9 among unnamed tiles), or a place. On a phone the full map opens over the
+// list; on a wider screen the map is already beside it.
+const WATER_ZOOM = 11, PLACE_ZOOM = 12;
+function showOnMap(at, zoom, say, name = null) {
+  if (PHONE.matches) setMapMode(true, [at[0], at[1], zoom]); else map.setView(at, zoom, MOTION());
+  selLayer.clearLayers();
+  if (name) L.circleMarker(at, { radius: 14, color: RING(), weight: 3, fill: false, interactive: false })
+    .bindTooltip(esc(name), { permanent: true, direction: 'top', offset: [0, -14] }).addTo(selLayer);
+  mapSay(say);
+}
+// The water where you are (17 Oct 2026): the forecast for the nearest river or lake to your position, as
+// a tap there on the map gives it (anypoint.js). With none within its reach (1.5 km), the map opens on
+// where you are, to tap the nearest. The position stays on the device, as for Near me (locate), and it
+// orders the list by distance when you come back to it.
+function hereForecast() {
+  const say = t => { VIEW.geoAt = 'cta'; VIEW.geoMsg = t; const g = document.getElementById('geo-cta'); if (g) { g.textContent = t; g.hidden = !t; } };
+  say('Finding your location…');
+  navigator.geolocation.getCurrentPosition(async p => {
+    const at = [p.coords.latitude, p.coords.longitude]; VIEW.here = at; say('');
+    let d = null;
+    try { d = await AnyPoint.point(at[0], at[1]); } catch (e) { /* open() says what went wrong */ }
+    if (d && d.mode === 'none' && !d.outside) {
+      if (PHONE.matches) setMapMode(true, [at[0], at[1], PLACE_ZOOM]); else map.setView(at, PLACE_ZOOM, MOTION());
+      selLayer.clearLayers();   // where you are, as a dot: the water to tap is at least 1.5 km from it
+      L.circleMarker(at, { radius: 6, color: '#fff', weight: 2, fillColor: RING(), fillOpacity: 1, interactive: false }).addTo(selLayer);
+      mapSay(`No river or lake within 1.5 km of you. ${TAP()} the nearest one on the map.`);
+      return;
+    }
+    if (!PHONE.matches) map.setView(at, PLACE_ZOOM, MOTION());   // beside the forecast, where it is for
+    AnyPoint.open(at[0], at[1]);
+  }, e => say(e.code === 1 ? 'Location is blocked for this site. Allow it in your browser’s settings, then try again.'
+    : 'Your device could not find where you are. Check that location services are on for your browser, then try again.'),
+  { maximumAge: 60 * 1000, timeout: 10000 });
+}
 
 // ------------------------------------------------------------------------------ plan a swim
 // plan/: the day, where you start and how far you will go, then the spots within reach that day, the
