@@ -216,3 +216,56 @@ Rain bands, today's mean then B's: under 1 mm 0.011 then 0.019; 1-5 mm 0.054 the
 
 So, inferred: if the live labels behave as up to 16 Oct, L2 is at risk at United Utilities and L1
 and L3 overall.
+
+### Step 3: the secondary check, rows before the window (reported, not deciding)
+
+- **Command:** `scripts/lead_calibration_b_check.py --to 2026-10-17` on `data/verification_live.csv`
+  as published on 17 Oct 2026 10:26 UTC (6,555,677 bytes), read after the map was saved.
+- **Rows:** target days 29 Sep to 16 Oct 2026, 79,084 scored forecasts, 2,334 with a spill.
+- **Sanity check:** today's map recomputed matches the logged calibrated forecast (mean absolute
+  difference 0.00003).
+
+| | Today | B |
+|---|---|---|
+| Brier | **0.02721** | 0.03099 |
+| ECE | **0.0117** | 0.0320 |
+| Mean forecast (observed 0.0295) | 0.0393 | 0.0615 |
+
+| Company | Rows | Spills | Observed | Today | B | Brier today | Brier B |
+|---|---|---|---|---|---|---|---|
+| Anglian | 10,599 | 228 | 0.0215 | 0.0134 | 0.0240 | **0.02158** | 0.02251 |
+| Northumbrian | 908 | 48 | 0.0529 | 0.0224 | 0.0377 | 0.04857 | **0.04835** |
+| Severn Trent | 8,225 | 199 | 0.0242 | 0.0304 | 0.0509 | **0.02406** | 0.02690 |
+| South West | 1,330 | 63 | 0.0474 | 0.0620 | 0.0963 | **0.05241** | 0.06095 |
+| Southern | 5,130 | 51 | 0.0099 | 0.0373 | 0.0612 | **0.01380** | 0.01960 |
+| Thames | 14,238 | 60 | 0.0042 | 0.0225 | 0.0388 | **0.00658** | 0.00996 |
+| United Utilities | 9,740 | 1,107 | 0.1137 | 0.1331 | 0.1838 | **0.08891** | 0.09868 |
+| Wessex | 19,464 | 118 | 0.0061 | 0.0241 | 0.0418 | **0.00746** | 0.01058 |
+| Yorkshire | 9,370 | 390 | 0.0416 | 0.0356 | 0.0589 | **0.03983** | 0.04258 |
+
+By bin of today's forecast, observed then today then B:
+
+| Bin | Observed | Today | B |
+|---|---|---|---|
+| 0.0 | 0.016 | 0.015 | 0.028 |
+| 0.1 | 0.084 | 0.141 | 0.217 |
+| 0.2 | 0.112 | 0.242 | 0.353 |
+| 0.3 | 0.209 | 0.345 | 0.478 |
+| 0.4 | 0.268 | 0.446 | 0.586 |
+| 0.5 | 0.437 | 0.547 | 0.681 |
+
+On these rows **B would fail all three conditions.**
+- L1 fails: 0.03099 against 0.02721.
+- L2 fails at every company with 50 or more spills. Northumbrian, with 48, is just below the bar.
+- L3 fails: 0.0320 against 0.0117.
+
+These rows do not decide; the window from 18 Oct does. But they say the same as the prediction
+above. **Live labels and 2025's EDM files disagree in direction:**
+- On the live rows, today's forecasts are already too high at seven of nine companies.
+- On 2025 EDM truth they were too low at all nine.
+
+A map fitted on EDM truth moves forecasts the wrong way for the live score. Inferred, not
+checked: either 2026 has so far been drier relative to the model than 2025, or the live feeds
+record fewer spill-days than the EDM files for the same overflows. The EA's 2026 files for Thames
+Water and Welsh Water could settle the second question by comparison with the live history for the
+same days.
