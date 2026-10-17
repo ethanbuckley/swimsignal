@@ -83,8 +83,8 @@ def test_the_page_loads_the_script_from_its_build_and_data_html_describes_the_fi
     bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
     stamp = bs.shell_stamp()
     page = (tmp_path / "index.html").read_text()
-    assert f'<script src="spotscores.js?v={stamp}">' in page
-    assert page.index('src="evidence.js') < page.index('src="spotscores.js') < page.index("<script>\n")
+    assert f'<script src="spotscores.js?v={stamp}" defer>' in page
+    assert page.index('src="evidence.js') < page.index('src="spotscores.js') < page.index('src="app.js')
     assert (tmp_path / "spotscores.js").read_bytes() == (bs.TEMPLATE.parent / "spotscores.js").read_bytes()
     assert "`spotscores.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert 'data-file="spot_scores.json"' in (tmp_path / "data.html").read_text()

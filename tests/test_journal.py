@@ -19,7 +19,7 @@ def test_the_page_loads_the_journal_from_its_build(tmp_path):
     bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
     stamp = bs.shell_stamp()
     page = (tmp_path / "index.html").read_text()
-    assert f'<script src="journal.js?v={stamp}">' in page
+    assert f'<script src="journal.js?v={stamp}" defer>' in page
     # After reviews.js (its photo shrinking) and levels.js (the headline it keeps).
     assert page.index('src="reviews.js') < page.index('src="levels.js') < page.index('src="journal.js')
     assert (tmp_path / "journal.js").read_bytes() == (bs.TEMPLATE.parent / "journal.js").read_bytes()

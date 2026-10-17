@@ -14,7 +14,8 @@ Everything is written under site/data/anypoint/:
   overflow_days.json   per overflow: spill probability by day (thousandths; null where its rain
                        cell had no data, which is the `ok` mask), the "right now" weight
                        (thousandths), live status, company, how old its rain forecast is, and
-                       the low-confidence snaps
+                       the low-confidence snaps; and per rain square, the rain in the 48 h to
+                       midday on each day ahead, for a click with no overflow upstream
   link_index/<t>.bin   per link: number, form, name and its line as the network has it, packed
                        Int32/Float32
                        (layout in `pack_link_index`), so the page can snap a click to a link
@@ -61,10 +62,14 @@ network's load mended (RiverNetwork.topology_key), the lake path mode and CACHE_
 overflows are added, removed or moved, only the links downstream of them (within
 config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
 
-Rain: every overflow's cell (about 1,650) against the spots' 300. Open-Meteo stopped answering
+Rain: every overflow's cell (about 1,590) against the spots' 330. Open-Meteo stopped answering
 this build after 600 locations in a minute (3 Oct 2026), so each build fetches at most
 RAIN_CELLS_PER_BUILD of the oldest cells and uses cached ones up to RAIN_MAX_AGE_H old; an
-overflow without either has no rain data, which the page shows as no data, as for a spot.
+overflow without either has no rain data, which the page shows as no data, as for a spot. A cell
+is asked for again only once its cached forecast is RAIN_REFRESH_H old, however many builds run:
+with a 1-hour floor, builds every 30 minutes would have asked for 300 cells each time, 14,400
+Open-Meteo calls a day, more than the free 10,000 alone. At 12 hours the 1,270 cells the spots do
+not share cost about 2,540 a day.
 """
 
 from __future__ import annotations
@@ -132,6 +137,7 @@ OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
 RAIN_MAX_AGE_H = 24.0
+RAIN_REFRESH_H = 12.0   # a cell is asked for at most every 12 hours (module docstring, "Rain")
 
 
 # ------------------------------------------------------------------ helpers
@@ -402,13 +408,15 @@ class Tracer:
         return out
 
 
-def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0) -> pd.DataFrame:
+def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0,
+            power: float = transport.DILUTION_POWER) -> pd.DataFrame:
     """A link record's rows for a click at `frac` along the link: site_id, distance_m, lake_distance_m,
     dilution, as upstream_overflows computes them (the page's anypoint.js does the same), and res_m,
     hold_h and lake_pass (lake path "residence": the metres, survivors' hours and share alive of the
     lakes with a residence time; 0, 0 and 1 where none). The cap applies to the whole distance along
     the network; a WFD lake crossed on the way then moves its metres to the lake distance and
-    multiplies the dilution by its factor."""
+    multiplies the dilution by its factor. The capped length ratio is raised to `power`
+    (transport.DILUTION_POWER) before that factor."""
     offset = frac * rec["len"]
     shrink = (rec["lup"] + L0_M) / (rec["lup"] + L0_M + offset)   # the click's own extra upstream length
     path, hold = rec.get("path", {}), rec.get("hold", {})
@@ -416,8 +424,8 @@ def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000
     for sid, base, r in rec["other"]:
         if base + offset <= cap_m:
             lake_m, factor = path.get(sid, (0.0, 1.0))
-            rows.append((sid, base + offset - lake_m, lake_m, min(1.0, r * shrink) * factor, *hold.get(sid, (0.0, 0.0, 1.0))))
-    rows += [(sid, offset - pos, 0.0, min(1.0, shrink), 0.0, 0.0, 1.0) for sid, pos in rec["same"] if pos < offset]
+            rows.append((sid, base + offset - lake_m, lake_m, min(1.0, r * shrink) ** power * factor, *hold.get(sid, (0.0, 0.0, 1.0))))
+    rows += [(sid, offset - pos, 0.0, min(1.0, shrink) ** power, 0.0, 0.0, 1.0) for sid, pos in rec["same"] if pos < offset]
     return pd.DataFrame(rows, columns=["site_id", "distance_m", "lake_distance_m", "dilution", "res_m", "hold_h", "lake_pass"])
 
 
@@ -969,10 +977,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
 
 # ------------------------------------------------------------------ rain and the days
 def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
-                   max_age_h: float = RAIN_MAX_AGE_H) -> tuple[pd.DataFrame, dict]:
+                   max_age_h: float = RAIN_MAX_AGE_H, refresh_h: float = RAIN_REFRESH_H) -> tuple[pd.DataFrame, dict]:
     """Hourly rain for every overflow's cell: the cached forecast where it is under max_age_h old,
-    after fetching the `budget` oldest cells that are due (over rainfall.FORECAST_TTL_S old, or
-    never fetched). A failed fetch keeps what is cached; nothing here raises."""
+    after fetching the `budget` oldest cells that are due (`refresh_h` old, or never fetched). A
+    failed fetch, or one the day's Open-Meteo ration has no room for, keeps what is cached; nothing
+    here raises."""
     from dipcast.ingest import rainfall
     cells = rainfall.cells_for_sites(sub["lat"], sub["lon"])
     path = {c: rainfall.CACHE / f"forecast_{rainfall.cell_key(*c)}.parquet" for c in cells}
@@ -980,7 +989,7 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
     def age(c) -> float:
         return time.time() - path[c].stat().st_mtime if path[c].exists() else math.inf
 
-    due = sorted((c for c in cells if age(c) >= rainfall.FORECAST_TTL_S), key=lambda c: -age(c))
+    due = sorted((c for c in cells if age(c) >= max(rainfall.FORECAST_TTL_S, refresh_h * 3600)), key=lambda c: -age(c))
     take = due[:max(0, budget)]
     error = None
     if take:
@@ -988,7 +997,7 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
         try:
             # One retry, after 1-2 s or a Retry-After of up to a minute. A failed request no longer
             # raises or stops the later ones; its cells keep their cached forecast, read below.
-            rainfall.fetch_forecast(take, attempts=2)
+            rainfall.fetch_forecast(take, attempts=2, what="anypoint")
         except Exception as e:  # noqa: BLE001 - what was fetched before the failure is kept
             error = str(e)
         error = error or next(iter(rainfall.fetch_errors()[seen:]), None)
@@ -999,7 +1008,27 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
     rain = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=cols)
     fetched = sum(1 for c in take if age(c) < rainfall.FORECAST_TTL_S)
     return rain, {"cells": len(cells), "due": len(due), "fetched": fetched, "usable": len(frames),
-                  **({"error": error} if error else {})}
+                  "calls": rainfall.forecast_weight(fetched), **({"error": error} if error else {})}
+
+
+def cell_rain_48h(hourly: pd.DataFrame, days: pd.DatetimeIndex) -> dict[str, list]:
+    """Each rain square's rain in the 48 h to midday, local time, on each of `days`, in mm to one
+    decimal: the figure a listed spot's day rows show (forecast.py, rain_48h_mm, by ecoli.rain_windows,
+    with its rule for missing hours: None where under 90% of them have a value). Keyed "lat,lon" by
+    the square's centre. A click with no overflow upstream has only rain to show (anypoint.js, rainAt)."""
+    from dipcast.model import ecoli
+    if not len(hourly):
+        return {}
+    days = pd.DatetimeIndex(days)
+    days = days.tz_localize("Europe/London") if days.tz is None else days.tz_convert("Europe/London")
+    ends = days + pd.Timedelta(hours=ecoli.SAMPLE_HOUR)
+    out = {}
+    for (a, b), g in hourly.groupby(["cell_lat", "cell_lon"]):
+        series = pd.Series(g["precip_mm"].to_numpy(dtype=float),
+                           index=pd.to_datetime(g["time"], utc=True).dt.tz_convert("Europe/London"))
+        r48, _ = ecoli.rain_windows(series, ends)
+        out[f"{float(a) + 0.0:.1f},{float(b) + 0.0:.1f}"] = [None if np.isnan(v) else round(float(v), 1) for v in r48]
+    return out
 
 
 def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, past: int, now: pd.Timestamp,
@@ -1075,10 +1104,12 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "companies": companies, "feed_down_since": since, "feed_stale_since": stale_since, "no_feed": no_feed,
         "stale_rows": stale_rows, "last_running": last_running, "feed_updated": feed_updated,
         "rain_h": rain_h,
+        "rain_48h": cell_rain_48h(hourly, days[past:]),
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,
-                        "recent_spill_hours": config.RECENT_SPILL_HOURS, "l0_m": L0_M, "lake_area_halving_km2": LAKE_A0_KM2,
+                        "recent_spill_hours": config.RECENT_SPILL_HOURS, "l0_m": L0_M, "dilution_power": transport.DILUTION_POWER,
+                        "lake_area_halving_km2": LAKE_A0_KM2,
                         "low_confidence_factor": LOW_CONFIDENCE_FACTOR, "max_missing_share": 0.1,
                         "rain_max_age_h": RAIN_MAX_AGE_H},
         "note": ("p: per overflow, spill probability per day in thousandths, before the lead calibration; null where "
@@ -1095,7 +1126,10 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
                  "that is down whose spill was running when it last answered; they count as discharging. "
                  "no_feed: companies with no live feed. feed_updated: each current feed's last update; where "
                  "the page is read over 6 h after it, that feed's quiet overflows are stale too. rain_h: hours "
-                 "between the rain forecast the overflow's probabilities used and generated_at. low: overflows "
+                 "between the rain forecast the overflow's probabilities used and generated_at. rain_48h: per "
+                 "rain square (0.1 degrees, keyed by its centre, \"lat,lon\"), the rain in mm in the 48 h to midday "
+                 "local time on each day from today (days[today:]), as a listed spot's rain_48h_mm; null where "
+                 "under 90% of the hours have data. low: overflows "
                  "snapped by proximity alone, whose weight is multiplied by low_confidence_factor."),
         **({"credits": credits} if credits else {}),
     }

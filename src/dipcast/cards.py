@@ -15,7 +15,11 @@ a level out. The storm card reads each spot's `now` block from spots.json, as th
 does, and words its clearing time as that tile's sentence does (index.html, clearSentence).
 
 scripts/build_site.py writes them to site/cards/ with an unlisted page, cards/index.html, that shows
-them with their captions and download links. scripts/make_cards.py makes them from the live site's
+them with their captions and download links.
+
+A third kind is not for posting: each spot's share card, cards/spot/<id>.png at 1200 x 630, the picture
+a link to the spot's page shows in a messaging app (its og:image). The spot's name, its headline from
+alerts.json and when the forecast was issued, since a preview is kept for days (write_spot_cards). scripts/make_cards.py makes them from the live site's
 data. Drawn with Pillow in the site's own faces (docs/DESIGN.md): Source Serif 4 for names and
 headings, Source Sans 3 for levels and the rest, read from the WOFF2 files the site serves.
 """
@@ -563,6 +567,83 @@ def draw_storm(rows: list[StormRow], generated_at: str, size: str):
         draw.text((M, y + st.pad), f"And {rest} more spot{'s' if rest != 1 else ''}: each spot's page on swimsignal.co.uk.",
                   font=more_f, fill=BRAND_TEAL)
     return img
+
+
+# ------------------------------------------------------------------------------ a spot's share card
+# The picture a link to a spot's page shows in a messaging app or a feed (its og:image), at the size those
+# expect. It carries the level, which a cached preview keeps for days, so when the forecast was issued
+# sits right under it, in ink, not in the grey foot (Ethan, 16 Oct 2026). Remade with each build.
+SHARE_SIZE = (1200, 630)
+PLAIN = ("no overflows", "no river connection")   # the two plain levels, one colour as on the site
+
+
+def spot_where(spot: dict) -> str:
+    """'Lake · Windermere (N Basin)': the kind, and the water it is on where the trace names it. 'River
+    Wharfe' alone, not 'River · River Wharfe'."""
+    kind, water = cap(str(spot.get("kind") or "")), (spot.get("location") or {}).get("watercourse")
+    return water if water and kind and kind.lower() in water.lower().split() else " · ".join(x for x in [kind, water] if x)
+
+
+def level_colours(level: str | None) -> tuple[str, str]:
+    """A level's mark and text colours, as the site's (docs/DESIGN.md)."""
+    if level in PLAIN:
+        return CLEAR_MARK, CLEAR_TEXT
+    return MARKS.get(level, NA_MARK), TEXTS.get(level, NA_TEXT)
+
+
+def draw_spot(name: str, where: str, level: str | None, headline: str, generated_at: str):
+    """A spot's share card as a Pillow image: its name, where it is, the headline from levels.js
+    (alerts.json) beside the level's mark, when it was issued, and the caveat. The name steps down a
+    size before it takes a third line; raises Overflow if it still does not fit."""
+    from PIL import Image, ImageDraw
+
+    w, h = SHARE_SIZE
+    width = w - 2 * M
+    img = Image.new("RGB", (w, h), PAPER)
+    draw = ImageDraw.Draw(img)
+    top = header(img, draw, w, 104) + 32
+    foot_top = footer(draw, w, h, [f"{CAVEAT} The latest is on the spot's page."])
+    head_f, when_f, where_f = font("sans", 44, 700), font("sans", 32, 500), font("sans", 30, 400)
+    mark, text = level_colours(level)
+    head = wrap(draw, headline, head_f, width - 44)
+    for size in (60, 52, 44):
+        name_f = font("serif", size)
+        lines = wrap(draw, name, name_f, width)
+        need = len(lines) * lh(name_f) + 8 + lh(where_f) + 24 + len(head) * lh(head_f) + 8 + lh(when_f)
+        if len(lines) <= 2 and top + need <= foot_top - 24:
+            break
+    else:
+        raise Overflow(f"{name}: the name and headline do not fit the share card")
+    y = text_block(draw, M, top + (foot_top - 24 - top - need) // 2, name, name_f, INK, width)   # in the middle of the room
+    y = text_block(draw, M, y + 8, where, where_f, MUTED, width) + 24
+    dot(img, M + 12, y + lh(head_f) * 0.56, 24, mark)   # on the words' middle, a little under the line's
+    y = text_block(draw, M + 44, y, headline, head_f, text, width - 44) + 8
+    draw.text((M + 44, y), issued(generated_at), font=when_f, fill=INK)
+    return img
+
+
+def write_spot_cards(out: Path, spots: list[dict], alerts: dict | None, generated_at: str) -> dict[str, str]:
+    """out/<id>.png for each spot with a page and a level in alerts.json (the page's own words). Earlier
+    ones go first, so a spot dropped from the lists loses its card. Returns {id: the card's alt text};
+    a spot whose card failed is left out and logged, and its page keeps the shared picture."""
+    import shutil
+
+    shutil.rmtree(out, ignore_errors=True)
+    if not alerts or alerts.get("generated_at") != generated_at:
+        return {}
+    out.mkdir(parents=True)
+    made = {}
+    for s in spots:
+        a = (alerts.get("spots") or {}).get(s["id"])
+        if not a or not re.fullmatch(r"[A-Za-z0-9_-]+", str(s["id"])):
+            continue
+        try:
+            draw_spot(s["name"], spot_where(s), a.get("level"), a.get("headline") or "", generated_at).save(
+                out / f"{s['id']}.png", "PNG", optimize=True)
+            made[s["id"]] = f"{s['name']}: {a.get('headline')}. {issued(generated_at)}."
+        except Exception as e:  # noqa: BLE001 - one card must not stop the others, or the site
+            log.warning("share card for %s not made: %s", s["id"], e)
+    return made
 
 
 # ------------------------------------------------------------------------------ the files and the page

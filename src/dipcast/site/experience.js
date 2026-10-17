@@ -36,7 +36,8 @@ function evidenceRows(s, iso, issued, generatedAt = null, now = Date.now()) {
       : 'No validated daily E. coli estimate is shown here.'],
     ['Algae observation', s.algae?.date ? `${s.algae.phrase || 'Visual check'} · ${dayMonthYear(s.algae.date)}. A past visual observation, not a current algae warning.` : 'No algae observation in this update. This does not mean algae are absent.'],
     ['Local warnings', [...flowFacts(s, Date.now(), generatedAt).filter(f => f.flood).map(f => flowSentence(f)),
-      'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.'].join(' ')]
+      floodUnchecked(s, Date.now(), generatedAt) ? floodUncheckedLine() : '',
+      'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.'].filter(Boolean).join(' ')]
   ];
 }
 // "Too high to swim" (build_site.attach_flow_state): the river high or rising fast at a gauge on the
@@ -58,19 +59,22 @@ function flowFacts(s, now = Date.now(), generatedAt = null) {
     out.push({ lead: 'River rising fast', say: `the gauge at ${rs.station} rose ${rs.rise_6h_m.toFixed(2)} m between ${clockTime(rs.rise_from)} and ${clockTime(rs.rise_to)}` });
   const fl = (s.flood_alerts || []).filter(f => f && f.severity);
   if (fl.length) out.push({ flood: true, lead: `${fl[0].severity} in force nearby`, area: fl[0].area || '', url: fl[0].url || '', more: fl.length - 1 });
-  // null is "the EA did not answer", which must not read as none in force ([]); a spot without the
-  // field (an unlisted point) says nothing.
-  else if (s.flood_alerts === null) out.push({ flood: true, unchecked: true, lead: 'Flood alerts not checked' });
   return out;
 }
+// null is "the EA did not answer" (after one retry, build_site.attach_flow_state), which must not read
+// as none in force ([]); a spot without the field (an unlisted point) says nothing. Said quietly, under
+// the level tile, and not beside the answer: in bold above the five days it read like a hazard (48 of
+// 105 pages, 16 Oct 2026). Not from a build over a day old, as flowFacts.
+const floodUnchecked = (s, now = Date.now(), generatedAt = null) =>
+  s.flood_alerts === null && !(generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build);
+const floodUncheckedLine = (html = false) => 'Flood warnings not checked for this forecast. '
+  + (html ? `<a href="${FLOOD_SERVICE}">See the Environment Agency</a>.` : `See the Environment Agency: ${FLOOD_SERVICE}`);
 // One fact as a sentence: plain text for the comparison, or HTML for the answer (escaped here, with
 // the lead in bold and the flood area linked to the Environment Agency's page for it).
 const htmlText = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
 function flowSentence(f, html = false) {
   const e = html ? htmlText : x => x, lead = html ? `<b>${e(f.lead)}</b>` : f.lead;
   if (!f.flood) return `${lead}: ${e(f.say)}.`;
-  if (f.unchecked) return `${lead}: the Environment Agency did not answer when this forecast was made. `
-    + (html ? `<a href="${FLOOD_SERVICE}">Check flood warnings</a>.` : `Check flood warnings at ${FLOOD_SERVICE}.`);
   const area = !f.area ? '' : html && f.url ? `<a href="${e(f.url)}">${e(f.area)}</a>` : e(f.area);
   return `${lead} (Environment Agency)${area ? ': ' + area : ''}${f.more ? ` and ${f.more} more` : ''}.`;
 }
@@ -85,4 +89,4 @@ function comparisonIds(ids, available) {
   const valid = new Set(available.map(s => s.id));
   return [...new Set(ids.filter(id => valid.has(id)))].slice(0,3);
 }
-if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, comparisonIds, storedList, flowFacts, flowSentence};
+if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, comparisonIds, storedList, flowFacts, flowSentence, floodUnchecked, floodUncheckedLine};

@@ -1,5 +1,6 @@
 """The static site's pages: every spot gets a page of its own whose share preview carries its
-name (never today's level, which a cached preview would show for days), every page carries
+name (today's level only on its picture, beside when the forecast was issued, since a cached preview
+is shown for days), every page carries
 absolute preview links, a spot's page has a relative <base>, and the live scorer reports when the
 observation records its coverage rule needs begin."""
 
@@ -97,7 +98,9 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
     home = (tmp_path / "index.html").read_text()
-    body = home.split('<div id="result">', 1)[1].split('<p class="about-line"', 1)[0]
+    # data-built: the script updates this opening where it stands (index.html, overBuilt), so its
+    # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
+    body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
     assert "Five-day pollution risk forecasts for 3 spots in England, or " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
@@ -113,12 +116,101 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
     assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
     assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
-    assert lead.index('<div class="toolbar">') < lead.index("best-day")
+    assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
     assert "<span data-low-t>Low\u00a0risk only</span>" in body
     spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
     assert '<section class="answer"><h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in spot
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(tmp_path):
+    """With this build's spots.json, a spot's page carries its level, headline and five days in the
+    page's own markup (scripts/prerender_spots.js runs index.html's spotTop and daysTile), and the
+    view the script will draw, so nothing moves when it does (docs/REVIEW-2026-10-16.md, F4)."""
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    days = [{"date": f"2026-09-{29 + i}" if i < 2 else f"2026-10-0{i - 1}", "risk": 0.01, "label": "low"} for i in range(5)]
+    river = {"id": "a", "name": "A river", "kind": "river", "source": "curated", "upstream_summary": {"overflows": 3},
+             "location": {"mode": "river"}, "now": {"label": "low", "discharging_upstream": 0}, "contributors": [], "days": days}
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river, SPOTS[1]]}))
+    bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
+    page = (tmp_path / "spot" / "a" / "index.html").read_text()
+    assert '<body class="view-spot">' in page and '<div id="result" data-built>' in page
+    assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
+    assert '<h2 class="big low" id="risk-headline">Low risk</h2>' in page
+    assert '<p class="act">Usual care: cover cuts' in page
+    assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d">Today</span>' in page
+    assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
+    # Issued when, without how long ago, which would be wrong by the time the page is read.
+    assert '<p class="issued">Issued Tue 08:00</p>' in page
+    assert f"<noscript><p class=\"muted\">{bs.NOSCRIPT}</p></noscript>" in page
+    # A spot without a forecast: its answer, no five days.
+    tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
+    assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
+    # The page's script draws over the build's copy without the rise it gives a new view, keeping the
+    # answer's element (overBuilt, tests/site_built_opening.test.cjs).
+    script = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
+    assert "if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); return; }" in script and "let h = spotTop(d);" in script and "${daysTile(d)}" in script
+    # Without the file (or Node), the name-only opening, as before.
+    (tmp_path / "data" / "spots.json").unlink()
+    bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
+    page = (tmp_path / "spot" / "a" / "index.html").read_text()
+    assert '<body class="view-list">' in page and '<div id="result" data-built>' not in page and '<h2 class="spot-name">A river</h2>' in page
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_newer_scores(tmp_path):
+    """verification.html carries what its script draws from this build's verification.json
+    (scripts/prerender_verification.js), and says when those scores were made, so the script does
+    not move the page by drawing the same figures again (docs/REVIEW-2026-10-16.md, F3)."""
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    table = {"warn_at": 0.4, "level": "high", "n": 23395, "hits": 152, "misses": 573, "false_alarms": 211, "quiet_correct": 22459,
+             "hit_rate": 152 / 725, "warnings_true": 152 / 363, "share_correct": 22611 / 23395, "always_no_correct": 22670 / 23395,
+             "base_rate": 725 / 23395, "warning_lift": (152 / 363) / (725 / 23395), "n_overflow_days": 4695, "n_spill_overflow_days": 145,
+             "n_days": 5, "first_day": "2026-09-29", "last_day": "2026-10-03", "by_lead": []}
+    ver = {"live": {"generated_at": "2026-10-04T00:15:52+01:00", "n_scored": 0, "warning_table": table}}
+    (tmp_path / "data" / "verification.json").write_text(json.dumps(ver))
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
+    page = (tmp_path / "verification.html").read_text()
+    assert '<main class="doc" data-built="2026-10-04T00:15:52+01:00">' in page
+    assert "the spill forecast warned of 21% of spills." in page and "Loading the scores…" not in page
+    assert '<dl class="stats">' in page and '<h2 id="short-h">In short</h2>' in page   # the figure tiles and the list
+    assert 'href="/' not in page.split("<script>")[0]   # the links in the figures are the static site's too
+    script = (ROOT / "src" / "dipcast" / "api" / "static" / "verification.html").read_text()
+    assert "if (built && !(fresh > built)) return;" in script
+    # Without the file, the page as it is, which its script fills.
+    (tmp_path / "data" / "verification.json").unlink()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
+    page = (tmp_path / "verification.html").read_text()
+    assert '<main class="doc">' in page and "Loading the scores…" in page
+
+
+def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_picture(tmp_path):
+    """og:image is the spot's own card (cards/spot/<id>.png, src/dipcast/cards.py) with this build's
+    stamp, so a preview fetched again gets the new one; its alt gives the issue time beside the level.
+    The words under the preview (description) still carry no level."""
+    bs = _build_site()
+    alt = "Wharfe: Very high risk right now: sewage spills. Forecast issued Fri 16 Oct, 21:03."
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/", spot_cards={"wharfe-ilkley": alt}, cards_v="202610162103")
+    head = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text().split("</head>")[0]
+    assert '<meta property="og:image" content="https://example.org/swim/cards/spot/wharfe-ilkley.png?v=202610162103">' in head
+    assert f'<meta property="og:image:alt" content="{alt}">' in head and '<meta property="og:image:width" content="1200">' in head
+    assert "very high" not in re.search(r'<meta name="description" content="([^"]*)"', head)[1].lower()
+    for page in ["spot/tarn/index.html", "index.html", "plan/index.html"]:
+        assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in (tmp_path / page).read_text(), page
+
+
+def test_the_build_draws_the_share_cards_from_this_runs_levels(tmp_path):
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    gen = "2026-10-16T21:03:00+01:00"
+    (tmp_path / "data" / "alerts.json").write_text(json.dumps({"generated_at": gen, "spots": {"wharfe-ilkley": {"level": "low", "headline": "Low risk"}}}))
+    assert list(bs.write_spot_cards(tmp_path, SPOTS, gen)) == ["wharfe-ilkley"] and (tmp_path / "cards" / "spot" / "wharfe-ilkley.png").exists()
+    assert bs.write_spot_cards(tmp_path, SPOTS, gen, alerts_ok=False) == {}   # this run's alerts.json failed: none, never an old level
+    assert bs.write_spot_cards(tmp_path, None, gen) == {}   # nonsense in: nothing, no exception
 
 
 def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(tmp_path):
@@ -393,10 +485,10 @@ def test_feedback_and_experience_are_built_for_nested_github_pages(tmp_path):
     stamp = bs.shell_stamp()
     assert re.fullmatch(r"[0-9a-f]{8}", stamp)
     # The page asks for its scripts at the build's stamp, as the offline copy stores them.
-    assert f'<script src="experience.js?v={stamp}">' in home and f'<script src="levels.js?v={stamp}">' in home
-    assert f'<script src="plan.js?v={stamp}">' in home and (tmp_path / "plan.js").exists() and "`plan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert f'<script src="experience.js?v={stamp}" defer>' in home and f'<script src="levels.js?v={stamp}" defer>' in home
+    assert f'<script src="plan.js?v={stamp}" defer>' in home and (tmp_path / "plan.js").exists() and "`plan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     # Named lists of saved spots (lists.js) likewise; a change to it renames the offline copy's cache.
-    assert f'<script src="lists.js?v={stamp}">' in home and (tmp_path / "lists.js").exists() and "`lists.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert f'<script src="lists.js?v={stamp}" defer>' in home and (tmp_path / "lists.js").exists() and "`lists.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert bs.TEMPLATE.parent / "lists.js" in bs.SHELL_SOURCES
     assert (tmp_path / "experience.js").exists()
     sw = (tmp_path / "sw.js").read_text()
@@ -448,8 +540,10 @@ def test_river_levels_are_an_observation_beside_the_forecast():
     assert line in (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
 
 
-def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
+def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_path, monkeypatch):
     bs = _build_site()
+    from dipcast.ingest import rainfall
+    monkeypatch.setattr(rainfall, "CACHE", tmp_path)   # the day's Open-Meteo ledger
     seen = []
 
     def request(url, params, timeout=30):
@@ -461,7 +555,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
 
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1},
              {"id": "d", "name": "Broken", "lat": 54.5, "lon": -3.1, "error": "forecast failed: boom"}]
-    assert bs.attach_weather(spots, request=request) == 2
+    assert bs.attach_weather(spots, request=request, cache=tmp_path / "weather.json") == 2
     assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset" and seen[0]["latitude"] == "54.000,54.100"
     assert spots[0]["weather"]["days"] == [{"date": "2026-10-01", "tmax": 11, "sunrise": "07:12", "sunset": "18:40"},
                                            {"date": "2026-10-02", "tmax": None, "sunrise": "07:14", "sunset": "18:38"}]
@@ -470,7 +564,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
     def broken(url, params, timeout=30):
         raise RuntimeError("open-meteo request failed")
     fresh = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}]
-    assert bs.attach_weather(fresh, request=broken) == 0 and "weather" not in fresh[0]
+    assert bs.attach_weather(fresh, request=broken, cache=tmp_path / "none.json") == 0 and "weather" not in fresh[0]
 
 
 def test_the_api_server_sends_its_home_page_to_the_site_and_keeps_the_prose_pages(monkeypatch):
@@ -539,7 +633,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 16   # spot_scores.json makes 16
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 17   # spot_scores.json makes 16, overflows/ 17
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -810,9 +904,12 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     bs = _build_site()
     template = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     assert bs.TILE_LINE.format(**bs.TILE_PROVIDERS["osm"]) in template   # what with_tiles swaps
+    assert '<link rel="preconnect" href="https://tile.openstreetmap.org">' in template   # and this
+    assert bs.tile_origin(bs.TILE_PROVIDERS["carto-voyager"]["url"]) == "https://basemaps.cartocdn.com"
     bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
     off = {n: (tmp_path / n).read_text() for n in ["index.html", "privacy.html", "terms.html"]}
     assert "tile.openstreetmap.org" in off["index.html"] and bs.OSM_PRIVACY_LI in off["privacy.html"]
+    assert bs.TILE_LINE.format(**bs.TILE_PROVIDERS["osm"]) in (tmp_path / "app.js").read_text()
     assert off["privacy.html"].count("map images fetched from OpenStreetMap") == 2 and bs.OSM_TERMS in off["terms.html"]
 
     monkey = {**bs.TILE_PROVIDERS["carto-positron"], "id": "carto-positron"}
@@ -820,9 +917,11 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/", tiles=tiles,
                    support="https://ko-fi.com/swimsignal")
     for page in ["index.html", "saved/index.html", "plan/index.html", "spot/wharfe-ilkley/index.html"]:
-        html = (tmp_path / page).read_text()
+        html = (tmp_path / page).read_text() + (tmp_path / "app.js").read_text()   # the map is drawn by the page's script, app.js
         assert "tile.openstreetmap.org" not in html, page
         assert "basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=testkey123" in html, page
+        assert '<link rel="preconnect" href="https://basemaps.cartocdn.com">' in html, page
+        assert "tile.openstreetmap.org" not in html, page   # the preconnect swapped too
         assert 'href="https://carto.com/attribution/">CARTO</a>' in html, page
     privacy = (tmp_path / "privacy.html").read_text()
     assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
@@ -872,3 +971,55 @@ def test_the_carto_filters_turn_carto_water_blue_and_its_land_grey():
         assert r == g == b, land
     r, g, b = apply(pz, (250, 250, 248))
     assert r == g == b == 235
+
+
+def test_the_app_pages_scripts_are_all_deferred_in_their_order_and_the_pages_own_is_app_js(tmp_path):
+    # docs/REVIEW-2026-10-16.md, F2: none of the page's scripts holds up the first paint. Deferred
+    # scripts run in the order of their tags, so the order is the source's, with the page's own
+    # script, now app.js, where it was: after the fourteen and before anypoint.js.
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
+    stamp, source = bs.shell_stamp(), bs.TEMPLATE.read_text()
+    app = (tmp_path / "app.js").read_text()
+    assert app.startswith("const BRAND = ") and "function loadOverflows" in app and "</script>" not in app
+    assert bs.js_without_comment_lines(bs.APP_SCRIPT.search(source).group(1)) == app   # the source's script, as lean_page leaves it
+    for page in ["index.html", "saved/index.html", "plan/index.html", "spot/wharfe-ilkley/index.html"]:
+        html = (tmp_path / page).read_text()
+        assert "const BRAND" not in html, page
+        tags = re.findall(r"<script\b[^>]*\bsrc=\"([^\"?]+)[^\"]*\"([^>]*)>", html)
+        assert tags and all("defer" in rest for _, rest in tags), page
+        order = [src for src, _ in tags]
+        assert order == [re.search(r'src="([^"]+)"', t).group(1) for t in re.findall(r"<script src=[^>]+>", source)
+                         if "anypoint" not in t] + ["app.js", "anypoint.js"], page
+        at = order.index
+        assert at("reviews.js") < at("visits.js") and at("reviews.js") < at("illness.js") and at("reviews.js") < at("journal.js")
+        assert at("levels.js") < at("since.js") and at("levels.js") < at("journal.js")
+        assert at("vendor/leaflet/leaflet.js") == 0 and order[-2:] == ["app.js", "anypoint.js"]
+        assert f'<script src="app.js?v={stamp}" defer></script>' in html, page
+        # The scripts left inline are the head's: the early fetch of the forecast, and the counter.
+        assert [m for m in re.findall(r"<script(?: id=\"[^\"]+\")?>", html)] == ["<script>", '<script id="page-counter">'], page
+    assert "`app.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()   # the offline copy keeps it
+
+
+OVERFLOW_TILES = [(51.5074, -0.1278, 511, 340), (54.05, -1.95, 506, 328), (50.1188, -5.5376, 496, 346), (55.7, -2.0, 506, 320),
+                  (52.0, 0.0, 512, 338)]   # the same points as tests/site_overflow_tiles.test.cjs, for index.html's ovTile
+
+
+def test_the_overflow_layer_is_cut_into_the_tiles_the_map_asks_for(tmp_path):
+    # docs/REVIEW-2026-10-16.md, C4: data/overflows/<x>-<y>.json at zoom 10 beside the whole file.
+    bs = _build_site()
+    for lat, lon, x, y in OVERFLOW_TILES:
+        assert bs.overflow_tile(lon, lat) == (x, y), (lat, lon)
+    pt = lambda i, lat, lon: {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]}, "properties": {"site_id": i}}
+    feats = [pt("A", 51.5074, -0.1278), pt("B", 51.5075, -0.1279), pt("C", 54.05, -1.95), pt("nowhere", float("nan"), 0.0)]
+    old = tmp_path / "data" / "overflows" / "1-1.json"
+    old.parent.mkdir(parents=True)
+    old.write_text("{}")   # a tile from an earlier build whose overflows have gone
+    credits = {"attribution": "Contains data from the water companies"}
+    assert bs.write_overflow_tiles(tmp_path, {"type": "FeatureCollection", "features": feats, "credits": credits}) == 2
+    out = tmp_path / "data" / "overflows"
+    assert sorted(p.name for p in out.iterdir()) == ["506-328.json", "511-340.json", "index.json"]
+    assert json.loads((out / "index.json").read_text()) == {"z": 10, "tiles": ["506-328", "511-340"], "credits": credits}
+    london = json.loads((out / "511-340.json").read_text())
+    assert london["type"] == "FeatureCollection" and [f["properties"]["site_id"] for f in london["features"]] == ["A", "B"]
+    assert london["features"][0] == feats[0]   # each overflow as the whole file has it

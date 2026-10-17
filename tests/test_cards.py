@@ -229,3 +229,43 @@ def test_build_never_stops_for_cards(tmp_path):
     (tmp_path / "data" / "alerts.json").write_text('{"generated_at": "2026-10-10T08:00:00+01:00", "dates": []}')
     out = build_site.write_cards(tmp_path, [spot("a", 0, 3)], GEN, SITE)   # an old alerts.json is not used
     assert out["weekend"] == [] and "levels file" in (tmp_path / "cards" / "index.html").read_text()
+
+
+# ------------------------------------------------------------------------------ a spot's share card
+HEADLINES = ["Low risk for the next five days", "Very high risk right now: sewage spills",
+             "Low risk forecast: the overflows that matter most here do not report live",   # the longest on 16 Oct 2026
+             "No monitored overflow found upstream", "No forecast"]
+
+
+def test_spot_share_card_fits_the_longest_names_and_headlines():
+    """1200 x 630, as the preview size; the longest names in the lists on 16 Oct 2026 and longer, with
+    the longest headline, fit (draw_spot raises Overflow if not)."""
+    for name in ["River Wharfe, Bolton Abbey (Cavendish Pavilion)", "River Lathkill, Lathkill Dale, Over Haddon, Derbyshire Dales"]:
+        for headline in HEADLINES:
+            assert cards.draw_spot(name, "River · River Wharfe", "low", headline, GEN).size == cards.SHARE_SIZE
+    with pytest.raises(cards.Overflow):
+        cards.draw_spot("A name far too long for any card " * 4, "", "low", HEADLINES[2], GEN)
+
+
+def test_spot_where_and_colours():
+    assert cards.spot_where({"kind": "lake", "location": {"watercourse": "Windermere (N Basin)"}}) == "Lake · Windermere (N Basin)"
+    assert cards.spot_where({"kind": "river", "location": {"watercourse": "River Wharfe"}}) == "River Wharfe"
+    assert cards.spot_where({"kind": "lake"}) == "Lake"
+    assert cards.level_colours("high") == (cards.MARKS["high"], cards.TEXTS["high"])
+    assert cards.level_colours("no river connection") == (cards.CLEAR_MARK, cards.CLEAR_TEXT)
+    assert cards.level_colours("no forecast") == (cards.NA_MARK, cards.NA_TEXT)
+
+
+def test_write_spot_cards(tmp_path):
+    """A card for each spot with a page and a level in this run's alerts.json, its alt text with the
+    issue time beside the level; none from another run's file, and old cards go."""
+    spots = [{"id": "a", "name": "A river", "kind": "river"}, {"id": "Bad Id", "name": "Odd", "kind": "river"},
+             {"id": "b", "name": "B lake", "kind": "lake"}]
+    alerts = {"generated_at": GEN, "spots": {"a": {"level": "high", "headline": "High risk today: sewage spills"},
+                                             "Bad Id": {"level": "low", "headline": "Low risk"}}}
+    out = tmp_path / "spot"
+    made = cards.write_spot_cards(out, spots, alerts, GEN)
+    assert made == {"a": "A river: High risk today: sewage spills. Forecast issued Sun 11 Oct, 14:09."}
+    assert sorted(p.name for p in out.iterdir()) == ["a.png"]
+    assert cards.write_spot_cards(out, spots, {**alerts, "generated_at": "2026-10-13T08:00:00+01:00"}, GEN) == {}
+    assert not out.exists()

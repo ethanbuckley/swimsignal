@@ -69,7 +69,8 @@ const placeIn = files => c => {
   return A.place(c.lat, c.lon, { ...files, outlines, tiles });
 };
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
-const DEFAULT_SPEEDS = { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30 };   // config's, as the API ran
+// config's speeds and T90 when the fixture was made, as the API ran (tests/test_anypoint.py writes them)
+const DEFAULT_SPEEDS = SYN.modes.lake.files.od.assumptions;
 
 test('a lake with a residence time on the way is a well-mixed lake, as the API does', () => {
   // Outflow Beck, below Test Water (20 days): A5's water enters Test Water above the click.
@@ -78,13 +79,13 @@ test('a lake with a residence time on the way is a well-mixed lake, as the API d
     placeIn(filesOf(s))(pick(s)).rows.find(x => s.files.ids[x.i] === 'A5'));
   near(mixed.dlake, lake.dlake, 3, 'the same lake metres');
   near(mixed.dres, 4000, 3, 'all of them well mixed');
-  const tau = 20 * 24, k = Math.log(10) / 30;
+  const tau = 20 * 24, k = Math.log(10) / DEFAULT_SPEEDS.t90_hours;
   near(mixed.pass, 1 / (1 + k * tau), 1e-6, 'share alive');
   near(mixed.hold, tau / (1 + k * tau), 1e-3, "survivors' hours");
   const area = SYN.modes.lake.files.lakes.polygons.find(p => p.name === 'Test Water').area_km2;
   near(mixed.dil, lake.dil * (1 + area / 5), 1e-4, 'no area factor');
   const [tm, tl] = [mixed, lake].map(r => A.transportOf(r, DEFAULT_SPEEDS));
-  near(tm.travel - tl.travel, tau / (1 + k * tau) - 4000 / 0.05 / 3600, 0.01, 'hours in the lake, not 4 km at 0.05 m/s');
+  near(tm.travel - tl.travel, tau / (1 + k * tau) - 4000 / DEFAULT_SPEEDS.lake_velocity_ms / 3600, 0.01, 'hours in the lake, not 4 km at 0.05 m/s');
 });
 
 for (const [mode, s] of Object.entries(SYN.modes)) {
@@ -142,8 +143,9 @@ test('a lake on the way slows the water and thins it, as the API does', () => {
   assert.equal(river.dlake, 0);
   const area = SYN.modes.lake.files.lakes.polygons.find(p => p.name === 'Test Water').area_km2;
   near(lake.dil, river.dil / (1 + area / 5), 1e-4, 'divided by 1 + area / 5 km2');
-  const hours = r => (r.dist / 0.5 + r.dlake / 0.05) / 3600;   // forecast()'s travel at the default speeds
-  near(hours(lake) - hours(river), 4000 / 0.05 / 3600 - 4000 / 0.5 / 3600, 0.01, '4 km at 0.05 m/s, not 0.5');
+  const { river_velocity_ms: vr, lake_velocity_ms: vl } = DEFAULT_SPEEDS;
+  const hours = r => (r.dist / vr + r.dlake / vl) / 3600;   // forecast()'s travel at the default speeds
+  near(hours(lake) - hours(river), 4000 / vl / 3600 - 4000 / vr / 3600, 0.01, '4 km at lake speed, not river speed');
 });
 
 // The River Stor in West Sussex (16 Oct 2026): a click on a short side link's kink, 35 m from a pond's
@@ -290,6 +292,36 @@ test('a point with no overflow upstream gets the API\'s answer: every day zero, 
   const got = A.forecast([], od, {});
   assert.deepEqual(got.days.map(d => [d.date, d.risk, d.label]), od.days.slice(1).map(d => [d, 0, 'low']));
   assert.equal(got.upstream_summary.overflows, 0);
+});
+
+// The map click's rain-only days (review of 16 Oct 2026, C8): with no overflow upstream, each day's row
+// shows the millimetres beside its bar, as a listed spot's rows do. Langstrath Beck, 16 Oct 2026.
+test('a point with no overflow upstream shows each day\'s rain in mm, from its own square or the nearest', () => {
+  const od = { today: 1, days: ['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'], scale: 1000,
+    p: [], live: [], status: [], company: [], companies: [], low: [],
+    assumptions: { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30, low_confidence_factor: 0.7, max_missing_share: 0.1 },
+    rain_48h: { '54.5,-3.1': [12.4, 0.2, null, 31, 7.6], '54.4,-3.2': [1, 1, 1, 1, 1], '54.5,0.0': [3, 3, 3, 3, 3] } };
+  assert.deepEqual(A.rainAt(od, 54.48, -3.13), { mm: [12.4, 0.2, null, 31, 7.6], km: 0 });   // its own square
+  // The nearest square around with a forecast, and how far its centre is.
+  const next = A.rainAt(od, 54.46, -3.04);
+  assert.deepEqual(next.mm, [12.4, 0.2, null, 31, 7.6]);
+  assert.equal(next.km, 6);
+  assert.equal(A.rainAt(od, 52.0, -1.0), null);                    // nothing within a square
+  assert.equal(A.rainAt({ ...od, rain_48h: undefined }, 54.48, -3.13), null);   // a file from before
+  assert.deepEqual(A.rainAt(od, 54.5, -0.02).mm, [3, 3, 3, 3, 3]);   // just west of Greenwich: "0.0", not "-0.0"
+  // The days, drawn by the spot page's own rows.
+  const got = A.forecast([], od, {}), rain = A.rainAt(od, 54.48, -3.13);
+  got.days.forEach((x, k) => { x.rain_48h_mm = rain.mm[k] ?? null; });
+  const vm = require('node:vm'), dir = path.join(__dirname, '../src/dipcast/site/');
+  const page = fs.readFileSync(dir + 'index.html', 'utf8'), src = page.slice(page.indexOf('<script>\n') + 9, page.lastIndexOf('</script>')).split('\n');
+  const def = n => { const i = src.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`)); assert.ok(i >= 0, n);
+    let k = i + 1; while (k < src.length && /^[\s})\]+]/.test(src[k])) k++; return src.slice(i, k).join('\n'); };
+  const ctx = vm.createContext({});
+  for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
+  vm.runInContext(`setToday('2026-10-16');\n${def('tone')}\n${def('dayRows')}`, ctx);
+  const d = { id: 'point-54.48000,-3.13000', unlisted: true, name: 'Langstrath Beck', kind: 'river', location: { mode: 'river' }, ...got };
+  const words = [...vm.runInContext('dayRows', ctx)(d).matchAll(/<span class="l">([^<]*)<\/span>/g)].map(m => m[1]);
+  assert.deepEqual(words, ['12 mm', '0 mm', '–', '31 mm', '8 mm']);
 });
 
 // Lake distance "water" (docs/LAKE-DISTANCE-2026-10.md): an L-shaped lake's files and the API's ways through its

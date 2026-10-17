@@ -132,6 +132,16 @@ test('one spot: the headline, then what to do, as the page says them under the l
   assert.equal(u.pushes[0].payload.body, 'Bray headline');
 });
 
+test('after a spill, one spot\'s alert ends with when it should have cleared (alerts.json `clears`)', async () => {
+  const t = await setup({ state: { generated_at: T1, ranks: { b: 1 } }, users: { ann: ['b'] } });
+  const [id, s] = spot('b', 2, 'Bray');
+  await t.run(alertsJson(T2, [[id, { ...s, headline: 'High risk right now: recent sewage spills',
+    action: 'Better to choose a lower day or spot. If you do swim, try not to swallow any water.',
+    clears: 'The spills upstream should have passed and died off by Saturday 22:47.' }]]));
+  assert.equal(t.pushes[0].payload.body, 'High risk right now: recent sewage spills. Better to choose a lower day or spot. '
+    + 'If you do swim, try not to swallow any water. The spills upstream should have passed and died off by Saturday 22:47.');
+});
+
 test('a combined body is cut to 200 characters', async () => {
   const ids = Array.from({ length: 12 }, (_, i) => `s${i}`);
   const t = await setup({ state: { generated_at: T1, ranks: {} }, users: { ann: ids } });

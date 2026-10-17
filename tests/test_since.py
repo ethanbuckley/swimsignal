@@ -19,7 +19,7 @@ def test_the_page_loads_since_js_from_its_build_and_the_offline_copy_keeps_it(tm
     stamp = bs.shell_stamp()
     for page in ("index.html", "saved/index.html"):
         html = (tmp_path / page).read_text()
-        assert f'<script src="since.js?v={stamp}"></script>' in html
+        assert f'<script src="since.js?v={stamp}" defer></script>' in html
         assert html.index('src="levels.js') < html.index('src="since.js')   # it uses the level rules
     assert (tmp_path / "since.js").read_bytes() == (bs.TEMPLATE.parent / "since.js").read_bytes()
     assert "`since.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()

@@ -36,9 +36,12 @@ Scotland and Ireland. Forecasts there wait for the data (see the plans in
 - Tested on a year it never saw, the spill model gave a day that spilled a
   higher chance than a dry day 93 times in 100.
 - Against the Environment Agency's samples, it ranks well which sites are most
-  contaminated. At a single site, it does no better than recent rainfall at
-  saying which days are bad.
-- Its die-off and dilution settings are not yet calibrated against samples.
+  contaminated. At a single site it was no better than recent rainfall at
+  saying which days are bad. Since the transport fit of 17 Oct 2026 it is a
+  little better on rivers, with a year left out (rank correlation 0.55 against
+  0.50; no interval computed for that difference).
+- Its river speed, die-off and dilution settings were fitted to those samples on
+  17 Oct 2026 (docs/TRANSPORT-FIT-TEST-2026-10.md). The lake settings were not.
 - Every forecast it issues is scored afterwards, in public:
   https://swimsignal.co.uk/verification.html. How the 2027 season will be judged
   is fixed in advance in `docs/PREREGISTRATION-2027.md`.
@@ -154,9 +157,13 @@ climatology; on dry days 0.023 against 0.038.
 
 **Transport.** For each upstream overflow: distance along the network (plus a
 lake crossing for lake spots, the shortest way through the lake's water), travel time at a fixed reach
-velocity of 0.5 m/s (0.05 m/s across lakes), first-order
-die-off with T90 = 30 h, and dilution as the ratio of upstream network length
-at the outfall to that at the spot. The product is the probability that a spill
+velocity of 0.2 m/s (0.05 m/s across lakes), first-order
+die-off with T90 = 72 h, and dilution as the square root of the ratio of upstream
+network length at the outfall to that at the spot. The river speed, T90 and the
+square root were fitted to the EA E. coli samples on 17 Oct 2026, leaving one year
+out at a time (docs/TRANSPORT-FIT-TEST-2026-10.md); until then they were 0.5 m/s,
+30 h and the plain ratio, set by hand. They are the setting that best ranks river
+sample days within each site, not a measured speed or die-off rate. The product is the probability that a spill
 there affects the spot. Risk = 1 - prod(1 - p_i w_i). The site runs
 `forecast_point(..., gauge=False)`, so the river level shown beside a forecast
 does not change it; the click-anywhere API (`gauge=True`) scales the velocity by
@@ -200,7 +207,8 @@ flow gauge (lake path `residence_spill`, the default after
 docs/LAKE-RESIDENCE-SPILL-2026-10.md; 10 lakes gauged, the rest take their median,
 1.88). Then a share 1 / (1 + ln 10 · τ/R / T90) of a spill's bacteria leaves the lake
 alive, after about 13 hours. So Grasmere (τ 39 days, R 2.24) passes 3%, and Grasmere
-WwTW counts at Rydal Water at 0.0022, not 0.040. A lake with no τ (Elter Water, most
+WwTW counts at Rydal Water at 0.0022, not 0.040. (Those figures are at T90 = 30 h; at
+72 h, from 17 Oct 2026, Grasmere passes 7%, after about 29 hours.) A lake with no τ (Elter Water, most
 under 10 ha) is crossed at 0.05 m/s with its own area term, as from 11 Oct 2026 (lake
 path `lake`). A lake-form link outside every WFD polygon (a mill pond, a weir pool)
 stays river. The spot's own lake keeps the fixed drift and the area term, and there
@@ -295,6 +303,14 @@ compares it with the naive competitor, rainfall at the site in the previous
 48 hours. Results (Spearman rank correlation with log E. coli; AUC for samples
 over 900 cfu/100 ml, the inland "sufficient" threshold):
 
+*17 Oct 2026:* rerun with the fitted transport settings (0.2 m/s, T90 72 h,
+square-root dilution; `docs/TRANSPORT-FIT-TEST-2026-10.md`), the spill risk scores
+pooled ρ 0.57, within-site ρ 0.37 and AUC > 900 0.81 on 1,685 samples at 31 sites.
+On rivers: within-site ρ 0.47 (rain in the last 48 h 0.475), AUC > 900 0.77. On
+lakes: within-site ρ 0.29, AUC > 900 0.61. Pooled ρ falls: the new settings rank
+days within a site better and sites against each other less well. Site-mean risk
+still ranks the sites at ρ = 0.76.
+
 *12 Oct 2026:* the figures in this section are from 14 Sep. Rerun on the network
 after #184, the refilled rain cache and the site's own placement of each bathing
 water (#199; `docs/ECOLI-REFIT-SITE-PINS-2026-10.md`), the spill risk scores
@@ -379,6 +395,16 @@ spot in the previous 48 and 24 h, SwimSignal's overflow exposure for the day, la
 river, and season. The rain is Open-Meteo's archived lead-0 forecast, the same
 source the map uses for "today". The competitor that matters is rain alone: the
 question is whether the overflow exposure adds anything a rain gauge would not.
+
+*Refitted 17 Oct 2026* on the fitted transport settings
+(`docs/TRANSPORT-FIT-TEST-2026-10.md`): 1,502 samples at 31 bathing waters, as before.
+Leaving a year out: Brier 0.092, AUC 0.82 (rivers 0.76, lakes 0.54); rain only
+0.096 and 0.79. On rivers the gain over rain alone is +7.1 thousandths with a year
+left out (95% interval by site-weeks [+1.3, +12.6]) and +6.8 with a site left out
+([+1.2, +11.9]); by calendar week the year-out interval still includes no gain
+([−1.4, +16.6]). Against rain + season it now holds under all three resamplings,
+with a year or a site left out. Forward in time: +12.8 [+6.0, +19.6] by site-weeks.
+The exposure coefficient rose from 0.59 to 0.79 per SD.
 
 *Refitted 12 Oct 2026* on the site's placement of each bathing water (#199;
 `docs/ECOLI-REFIT-SITE-PINS-2026-10.md`): 1,502 samples at 31 bathing waters.
@@ -908,8 +934,8 @@ time contributes to today (it started at yesterday before, and did not).
   distance plus 300 m: where its stream meets the river is not known, so it may
   be below the spot.
 - The overflow-exposure percentage combines verified spill probabilities with
-  die-off and dilution weights that are physical estimates, not calibrated
-  against water samples, and it treats upstream spills as independent when they
+  die-off and dilution weights whose river settings were fitted to how E. coli
+  samples rank within a site (17 Oct 2026), not measured, and it treats upstream spills as independent when they
   share the same rain. The site labels it an exposure index for that reason;
   the E. coli column is the calibrated quantity.
 - Dilution uses network length as a proxy for flow. Lake volume is not modelled;
