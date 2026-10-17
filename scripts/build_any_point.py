@@ -1078,7 +1078,8 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,
-                        "recent_spill_hours": config.RECENT_SPILL_HOURS, "l0_m": L0_M, "lake_area_halving_km2": LAKE_A0_KM2,
+                        "recent_spill_hours": config.RECENT_SPILL_HOURS, "l0_m": L0_M, "dilution_power": transport.DILUTION_POWER,
+                        "lake_area_halving_km2": LAKE_A0_KM2,
                         "low_confidence_factor": LOW_CONFIDENCE_FACTOR, "max_missing_share": 0.1,
                         "rain_max_age_h": RAIN_MAX_AGE_H},
         "note": ("p: per overflow, spill probability per day in thousandths, before the lead calibration; null where "
