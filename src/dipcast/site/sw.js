@@ -7,7 +7,8 @@
 // refreshed in the background. Everything is this site's own: map tiles are their provider's
 // (OpenStreetMap's, or DIPCAST_TILES') and the page-view counter Cloudflare's, so neither is stored,
 // nor is the 6 MB overflow layer (whole, or in the tiles the map loads, data/overflows/), nor
-// swimmers' photos (reviews/photos/), which would pile up on the device a spot at a time.
+// swimmers' photos (reviews/photos/), which would pile up on the device a spot at a time, nor the Atom
+// feeds (feed.xml, feed/, spot/<id>/feed.xml), which are for feed readers, not the app.
 //
 // BUILD is a hash of the files this worker stores, which scripts/build_site.py (shell_stamp) writes
 // in on every build. A changed font, icon or script therefore changes this file, the browser
@@ -51,6 +52,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url), here = url.origin === self.location.origin;
   if (!here) return;                                            // tiles, the page-view counter: not ours to keep
   if (url.pathname.endsWith('/data/overflows.geojson') || url.pathname.includes('/data/overflows/') || url.pathname.includes('/reviews/photos/')) return;
+  if (url.pathname.endsWith('.xml')) return;                    // the Atom feeds and the sitemap: for readers and crawlers, not the app
   // The stylesheet changes with the pages; a library in vendor/ changes only with its version.
   const fresh = req.mode === 'navigate' || (/\.(html|json|js|css)$/.test(url.pathname) && !url.pathname.includes('/vendor/'));
   e.respondWith(fresh ? networkFirst(req) : storedFirst(req));
@@ -64,7 +66,7 @@ async function networkFirst(req) {
   const cache = await caches.open(CACHE), k = key(req);
   // no-cache: ask the server every time. GitHub Pages sends max-age=600, so without it a reload
   // within 10 minutes of the last one could get the browser's older copy of the forecast.
-  const net = fetch(req, { cache: 'no-cache' }).then(res => { if (res.ok) cache.put(k, res.clone()); return res; });
+  const net = fetch(req, { cache: 'no-cache' }).then(res => { if (res.ok) { cache.put(k, res.clone()); withTrace(cache, k); } return res; });
   net.catch(() => {});   // when the stored copy answers, a later network failure is expected
   try {
     return await Promise.race([net, new Promise((_, no) => setTimeout(() => no(new Error('slow')), TIMEOUT_MS))]);
@@ -78,6 +80,17 @@ async function networkFirst(req) {
     const html = (await home.text()).replace('<head>', `<head>\n<base href="${self.registration.scope}">`);
     return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
+}
+
+// A spot's own file, data/spot/<id>.json, brings its traced river, data/spot/<id>-trace.json, which its map
+// draws only when zoomed in (index.html, drawTrace): stored now, so the map has it at the water. Not every
+// spot has one (an isolated lake has nothing traced), so a missing one is no error.
+const SPOT_FILE = /\/data\/spot\/([A-Za-z0-9_-]+)\.json$/;
+function withTrace(cache, k) {
+  const u = new URL(k), m = u.pathname.match(SPOT_FILE);
+  if (!m || m[1].endsWith('-trace')) return;
+  u.pathname = u.pathname.replace(SPOT_FILE, '/data/spot/$1-trace.json'); u.search = '';
+  fetch(u.href, { cache: 'no-cache', credentials: 'omit' }).then(res => { if (res.ok) cache.put(u.href, res); }).catch(() => {});
 }
 
 async function storedFirst(req) {

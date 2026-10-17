@@ -46,7 +46,8 @@ const daysOf = s => dates.map(iso => { const l = L.dayLevel(s, iso);
 const spots = {};
 for (const s of data.spots) {
   const level = L.level(s), b = best(s);
-  spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: L.levelAction(s),
+  const clears = L.clearWords(s);   // "The spills upstream should have passed and died off by Saturday 22:47."
+  spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: L.levelAction(s), ...(clears ? { clears } : {}),
     url: PAGE_ID.test(s.id) ? `${root}spot/${s.id}/` : `${root}?spot=${encodeURIComponent(s.id)}`, ...(b ? { best: b } : {}),
     ...(L.daily(s) ? { days: daysOf(s) } : {}) };
 }

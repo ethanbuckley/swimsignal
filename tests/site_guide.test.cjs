@@ -31,11 +31,51 @@ test('a site visit, a guide of suggestions only, and an old guide each say so', 
   assert.match(g.guideChecked(guide(), '2027-10-04'), /over a year ago: fees, opening times and paths may have changed/);
 });
 
-test('a spot without a guide asks for one; a point clicked on the map shows nothing', () => {
+test('a spot without a guide asks for one in the shared tile; a point clicked on the map shows nothing', () => {
   const html = g.guideTile(spot({ guide: undefined }), '2026-10-04');
-  assert.match(html, /No guide for this spot yet/);
-  assert.match(html, /type=guide/);
+  assert.match(html, /^<section class="tile know" id="guide" aria-labelledby="know-h">/);   // in the guide's place: the notes and reviews mount after it
+  assert.match(html, /<span>Know this spot\?<\/span>/);
+  assert.match(html, /<a href="feedback\.html\?type=guide&amp;spot=Wharfe%20at%20Cromwheel%2C%20Ilkley">Add a practical guide<\/a>/);
   assert.equal(g.guideTile(spot({ unlisted: true }), '2026-10-04'), '');
+});
+
+// Waterhead on 16 Oct 2026: no guide, and the live reviews index empty, with the service on.
+test('a spot with no guide, notes or reviews draws one tile with three lines, where there were three tiles', () => {
+  const v = require('../src/dipcast/site/visits.js'), r = require('../src/dipcast/site/reviews.js');
+  const waterhead = { id: 'osm-windermere-waterhead', name: 'Windermere, Waterhead, Ambleside', guide: undefined };
+  const index = { on: true, submit: 'https://reviews.example/', complete: true, spots: {}, visits: {} };
+  assert.equal(v.visitsEmpty(index, waterhead.id, [], '2026-10-16'), true);
+  assert.equal(r.reviewsEmpty(index, waterhead.id, []), true);
+  // The page: guideTile writes the tile, then knowAdd puts the notes' and reviews' lines in it.
+  const empty = ['guide', 'visits', 'reviews'].filter(k => k === 'guide' || (k === 'visits' ? v.visitsEmpty(index, waterhead.id, [], '2026-10-16') : r.reviewsEmpty(index, waterhead.id, [])));
+  const html = g.knowTile(waterhead, empty, 'guide');
+  assert.equal((html.match(/<section/g) || []).length, 1);
+  assert.deepEqual([...html.matchAll(/data-know="(\w+)"/g)].map(m => m[1]), ['guide', 'visits', 'reviews']);
+  for (const w of ['Add a practical guide', 'Say what it\'s like today', 'Write a review']) assert.ok(html.includes(w), w);
+  assert.doesNotMatch(html, /<details/, 'no "what this means" fold');
+  // The lines keep the tiles' order whatever order they are asked for in.
+  assert.deepEqual([...g.knowTile(waterhead, ['reviews', 'guide']).matchAll(/data-know="(\w+)"/g)].map(m => m[1]), ['guide', 'reviews']);
+});
+
+test('a section with something in it keeps its own tile', () => {
+  const v = require('../src/dipcast/site/visits.js'), r = require('../src/dipcast/site/reviews.js');
+  const id = 'osm-windermere-waterhead', today = '2026-10-16';
+  const note = { id: 'a'.repeat(20), seen_on: today, kinds: ['busy'] }, review = { id: 'b'.repeat(20), again: true, swam_on: '2026-10-01' };
+  const index = { on: true, submit: 'https://reviews.example/', complete: true, spots: { [id]: [review] }, visits: { [id]: [note] } };
+  assert.equal(v.visitsEmpty(index, id, [], today), false);
+  assert.equal(r.reviewsEmpty(index, id, []), false);
+  // This browser's own, still waiting, count as something too.
+  const none = { ...index, spots: {}, visits: {} };
+  assert.equal(r.reviewsEmpty(none, id, [{ id: 'c'.repeat(20), spot: id, token: 't', swam_on: today }]), false);
+  assert.equal(v.visitsEmpty(none, id, [{ id: 'd'.repeat(20), spot: id, token: 't', seen_on: today, kinds: ['quiet'] }], today), false);
+  // A note that has ended is nothing to show.
+  assert.equal(v.visitsEmpty({ ...none, visits: { [id]: [{ ...note, seen_on: '2026-10-10' }] } }, id, [], today), true);
+  // A file that could not be updated, or no way to write a review, keeps the tile that says so.
+  assert.equal(v.visitsEmpty({ ...none, complete: false }, id, [], today), false);
+  assert.equal(r.reviewsEmpty({ ...none, complete: false }, id, []), false);
+  assert.equal(r.reviewsEmpty({ ...none, submit: '' }, id, []), false);
+  // A spot with a guide keeps the guide's tile, with its own way to correct it.
+  assert.match(g.guideTile(spot(), '2026-10-04'), /^<section class="tile g-tile" id="guide"[\s\S]*Something here wrong or out of date, or missing\? <a href="feedback\.html\?type=guide/);
 });
 
 test('a spot whose own file did not arrive says nothing about a guide, rather than "no guide yet"', () => {

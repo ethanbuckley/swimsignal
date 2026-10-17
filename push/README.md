@@ -1,6 +1,6 @@
 # SwimSignal push alerts
 
-This is a Cloudflare Worker that sends Web Push notifications for SwimSignal. A visitor turns on alerts on the Saved page, and their browser registers with the Worker along with the ids of their saved spots. Every 2 minutes the Worker reads the site's `data/alerts.json` and either revalidates a pending batch or identifies newly high spots. When a saved spot has just become high or very high, it queues one notification for each visitor who saved it, and at most one for each spot in 20 hours: the site is rebuilt several times a day, and a spot near the line can cross it more than once. Visitors who ask also get a weekly note on Thursday evenings with the lowest-risk days ahead ([The weekly note](#the-weekly-note)). It has no npm dependencies. The encryption (RFC 8291) and sender signature (RFC 8292) use the Web Crypto API built into Workers. The same Worker can send these alerts by email too; that part is off until it is set up ([Email alerts](#email-alerts)).
+This is a Cloudflare Worker that sends Web Push notifications for SwimSignal. A visitor turns on alerts on the Saved page, and their browser registers with the Worker along with the ids of their saved spots. Every 2 minutes the Worker reads the site's `data/alerts.json` and either revalidates a pending batch or identifies newly high spots. When a saved spot has just become high or very high, it queues one notification for each visitor who saved it, and at most one for each spot in 20 hours: the site is rebuilt several times a day, and a spot near the line can cross it more than once. Visitors who ask also get a weekly note on Thursday evenings with the lowest-risk days ahead ([The weekly note](#the-weekly-note)). It has no npm dependencies. The encryption (RFC 8291) and sender signature (RFC 8292) use the Web Crypto API built into Workers. The same Worker can send these alerts by email too; that part is off until it is set up ([Email alerts](#email-alerts)). It also asks GitHub to build the site every 30 minutes, once a token is set ([Starting the site's build](#starting-the-sites-build)).
 
 ## What it stores
 
@@ -293,6 +293,66 @@ The most damaging one is changing `MAIL_HASH_KEY` later. Every record's key and 
 ### Trying it on this computer
 
 `npx wrangler dev --local --test-scheduled` with `--var` for `SITE_URL`, `ALLOWED_ORIGIN`, `WORKER_URL`, `MAIL_API_KEY`, `MAIL_HASH_KEY`, the VAPID keys, and `MAIL_API_URL` pointing at a stand-in that accepts `POST` and answers `{"id":"x"}`. `MAIL_API_URL` exists only for this; leave it unset on the real Worker. `curl 'http://127.0.0.1:8787/__scheduled?cron=*/2+*+*+*+*'` runs the cron.
+
+## Starting the site's build
+
+GitHub runs the site's workflow (`.github/workflows/site.yml`) on its own half-hourly schedule only when it has capacity. From 17 Sep to 15 Oct 2026 it ran 289 times in 29 days against the 1,392 the schedule asked for (20.8%): a median gap of 2 h and a longest of 7.7 h. The live scores drop any day whose longest gap between runs is over 8 h, and 8 and 9 Oct were lost that way (`data/verification.json`, `service.runs`; docs/REVIEW-2026-10-16.md, finding 8 and task B1).
+
+So a second cron, every 30 minutes (`*/30 * * * *` in `wrangler.toml`), asks GitHub to run the workflow now. The code is `src/dispatch.js`. Each run:
+
+1. Does nothing if the secret `GITHUB_DISPATCH_TOKEN` is not set. It logs `dispatch: GITHUB_DISPATCH_TOKEN not set`.
+2. Reads the start of the live `data/spots-lite.json` (the first 4 KB; the file is about 430 KB) for its `generated_at`, the time the last build made its forecasts. If that is under 20 minutes ago, it does nothing (`DISPATCH_FRESH_MIN` changes the 20; see [What it costs](#what-it-costs)).
+3. Otherwise it sends `POST https://api.github.com/repos/ethanbuckley/swimsignal/actions/workflows/site.yml/dispatches` with `{"ref":"main"}`. If the file could not be read, it asks anyway: a site that cannot be read needs a build most.
+4. If GitHub refuses, it logs the status with what to check and throws, so the run shows as an error in the Worker's cron events.
+
+GitHub's own schedule stays in `site.yml` as the fallback. The workflow's `concurrency: site` runs one build at a time; a request that arrives while one runs waits, and a newer request replaces a waiting one, so builds never pile up. At :00 and :30 both of this Worker's crons fire, as two separate runs, each with its own limits.
+
+### The token
+
+A fine-grained personal access token, with:
+
+- **Repository access:** only `ethanbuckley/swimsignal`.
+- **Permissions:** Actions: **Read and write**. Metadata: Read is added by GitHub and cannot be removed. Nothing else.
+
+GitHub's list of the permissions each endpoint needs puts this one, `POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches`, under Actions, write (docs.github.com, "Permissions required for fine-grained personal access tokens", read 16 Oct 2026). With this token someone could start, cancel and re-run this repository's workflows, delete their runs and logs, and turn workflows on or off. They could not read or change code, issues, settings or secrets. So it is a nuisance if it leaks, not a takeover, and it is stored only as a Worker secret, never in a file.
+
+### Setting it up (Ethan)
+
+Run the commands from the `push/` folder of an up-to-date main.
+
+1. Open https://github.com/settings/personal-access-tokens/new?name=swimsignal-site-dispatch&description=push%20Worker%3A%20starts%20site.yml&expires_in=366&actions=write. The link fills in the name, the description, an expiry of 366 days (GitHub's longest apart from none) and Actions: Read and write.
+2. Check **Resource owner** is `ethanbuckley`.
+3. Under **Repository access** choose **Only select repositories** and pick `ethanbuckley/swimsignal`. The link cannot do this step.
+4. Under **Permissions**, check that **Actions** says **Read and write** and that nothing else is set except Metadata: Read. If Actions is not set, set it by hand.
+5. Press **Generate token** and copy it. It starts `github_pat_`. GitHub shows it once.
+6. `npx wrangler secret put GITHUB_DISPATCH_TOKEN`, and paste it. The secret is live at once.
+7. `npx wrangler deploy`. This puts the new cron and `src/dispatch.js` live.
+8. Put the expiry date in your calendar, a week early, with "renew swimsignal-site-dispatch".
+
+The most likely mistake is step 3: a token left on **Public repositories** (read-only access to every public repository) cannot dispatch. GitHub's answer is then HTTP 403 or 404, and the tail shows `dispatch: HTTP 403: the token lacks Actions: write on this repository`. It happens because the URL can fill in permissions but not repositories.
+
+The second most likely is deploying from a checkout without this change: wrangler deploys what is on disk. Before step 7, `ls src/dispatch.js` should list the file.
+
+### How you will know it worked
+
+- Within 30 minutes, `npx wrangler tail` shows either `dispatch: site.yml asked to run; the last build started N min ago` or `dispatch: the last build started N min ago; not asked`.
+- `gh run list -R ethanbuckley/swimsignal -w site.yml -e workflow_dispatch -L 5` lists runs started by the dispatch. The Actions page shows them as "Manually run by ethanbuckley", since the token is yours.
+- On the Accuracy page (https://swimsignal.co.uk/verification.html), section "Did the forecast run on time?", the **Runs** row should climb towards "a median of 48 a day" and **Longest wait between runs** should fall under 1 h. The record covers whole days from 17 Sep 2026, so it moves slowly. The median gap, task B1's test, is in https://swimsignal.co.uk/data/verification.json as `service.runs.median_gap_h`, and the page does not show it. It was 1.98 h on 16 Oct. With 48 runs a day, one week adds about 336 short gaps to the 289 gaps so far, so it should drop under 1 h about a week after the token is set. That is an estimate, not a measurement.
+
+### What it costs
+
+GitHub: nothing. The repository is public, and Actions minutes on GitHub's standard runners are free for public repositories.
+
+Cloudflare: 48 more runs a day, against 100,000 requests a day; each makes at most 2 outgoing requests and no KV operations.
+
+Open-Meteo: this is the one to watch. Each build asks for rain at the spots' 332 cells (when over an hour old) and up to 300 click-anywhere cells, each with 37 days of hourly rain, and for weather at 105 points. By the repository's own reckoning (`scottish_shadow.forecast_calls`: locations × days ÷ 14), one cell of 37 days is 2.64 calls. Then one build is up to about 877 + 793 + 105 = 1,775 calls, and 16 Oct's 13 builds were about 25,000, already over the free tier's 10,000 a day. At 48 builds a day, about 67,000. No build log on 16 Oct showed HTTP 429. That is probably because each GitHub run has a different IP address and Open-Meteo counts by IP, but that was not checked. Whether this fits Open-Meteo's terms is the operator's call. To build about once an hour instead of twice, set `DISPATCH_FRESH_MIN = "50"` in `wrangler.toml`'s `[vars]` and deploy.
+
+### Turning it off and revoking the token
+
+- To stop the dispatches and keep the token: `npx wrangler secret delete GITHUB_DISPATCH_TOKEN`. The next run logs `GITHUB_DISPATCH_TOKEN not set`, and GitHub's own schedule carries on.
+- To revoke the token: https://github.com/settings/personal-access-tokens, then **Fine-grained tokens**, `swimsignal-site-dispatch`, **Delete**. It stops working at once; the next run logs `dispatch: HTTP 401` and shows as an error. Then delete the secret as above.
+- If it leaks: revoke it first, then check https://github.com/ethanbuckley/swimsignal/actions for runs you did not start.
+- When it expires, GitHub answers 401 in the same way. Make a new one (steps 1 to 6) and put it with `npx wrangler secret put GITHUB_DISPATCH_TOKEN`; no deploy is needed.
 
 ## Tests
 

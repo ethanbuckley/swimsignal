@@ -5,6 +5,8 @@ on:
     # Asks for every 30 minutes. GitHub treats schedules as best effort: 13-28 Sep 2026 the
     # builds were a median 2.9 h apart, at most 8.1 h. No step may depend on the clock time.
     - cron: "*/30 * * * *"
+  # The push Worker also asks for a run every 30 minutes, once its token is set (push/README.md,
+  # "Starting the site's build"); this schedule stays as the fallback.
   workflow_dispatch: {}
   push:
     branches: [main]
