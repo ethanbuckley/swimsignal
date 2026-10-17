@@ -171,6 +171,8 @@ test('the answer line follows the picked day, and keeps the weekend rule with no
   const setMapDay = html.slice(html.indexOf('function setMapDay(iso) {'), html.indexOf('\n}\n', html.indexOf('function setMapDay(iso) {')));
   assert.match(setMapDay, /getElementById\('answer-lines'\); if \(ans\) \{ ans\.innerHTML = answerLines\(\); bindBestDay\(ans\); \}/);
   assert.match(html, /<div id="answer-lines">\$\{answerLines\(\)\}<\/div>/);
+});
+
 // ------------------------------------------------------------------------------ the home list, A–Z by area
 // The rows with no monitored overflow upstream go at the end of their area behind one line (review of
 // 16 Oct 2026, C3). Top-level definitions taken from index.html's script, as site_honest_headlines does.
