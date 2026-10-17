@@ -30,6 +30,7 @@
 <tr data-file="spot/"><td>spot/</td><td>Each spot's overflows and guide, and the river its forecast traced upstream, two files a spot, which its page loads</td><td class="num">–</td></tr>
 <tr data-file="alerts.json"><td><a href="data/alerts.json">alerts.json</a></td><td>Each spot's level and headline, as the alerts send them</td><td class="num">–</td></tr>
 <tr data-file="overflows.geojson"><td><a href="data/overflows.geojson">overflows.geojson</a></td><td>Every storm overflow on the map, and what it is doing now</td><td class="num">–</td></tr>
+<tr data-file="overflows/"><td><a href="data/overflows/index.json">overflows/</a></td><td>overflows.geojson cut into map tiles, which the map loads a few at a time</td><td class="num">–</td></tr>
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
 <tr data-file="verification_live.csv"><td><a href="data/verification_live.csv">verification_live.csv</a></td><td>The individual forecast and observation pairs behind the live spill scores</td><td class="num">–</td></tr>
 <tr data-file="spot_scores.json"><td><a href="data/spot_scores.json">spot_scores.json</a></td><td>Those live spill scores summed over each spot's upstream overflows, for its page</td><td class="num">–</td></tr>
@@ -115,6 +116,7 @@
 
 <h2 id="overflows-geojson">overflows.geojson</h2>
 <p>Every storm overflow on the map, as a GeoJSON point (longitude, latitude), with what its water company's live feed last said about it. The largest file.</p>
+<p>The same overflows are in <code>overflows/</code> cut into map tiles, the ones the map loads: <code>index.json</code> gives the zoom and lists the tiles that have any, and each tile, <code>&lt;x&gt;-&lt;y&gt;.json</code>, is a GeoJSON FeatureCollection of the overflows in that Web Mercator tile.</p>
 <dl class="fields">
 <dt><code>site_id</code>, <code>company</code>, <code>site_name</code></dt><dd>The water company's id and name for the overflow</dd>
 <dt><code>receiving_watercourse</code></dt><dd>The river or stream it discharges into, as the company names it; null where the feed names none or gives a placeholder such as "#N/A"</dd>
