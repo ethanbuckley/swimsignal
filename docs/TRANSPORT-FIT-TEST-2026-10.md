@@ -325,3 +325,48 @@ Not established, and stated as limits:
 As stated: the switch, in a separate commit, then the confirmation. The E. coli chain is rerun on the new settings
 from an archive of that commit. If `train_ecoli`'s LOYO Brier score is worse than 0.0938 by more than 0.0005, nothing
 is adopted and the switch is reverted.
+
+### Confirmation: the E. coli chain on the fitted settings
+
+Added 17 October 2026. The switch is commit b84cc77. The chain (`validate_ecoli`, `replay_ecoli_leads`,
+`validate_ecoli_combined`, `train_ecoli`) ran from an archive of it, with `scripts/transport_fit_eval/confirm.sh`, on
+the same frozen inputs. It printed 0.2 m/s, 72 h and 0.5 on start. 0 network attempts in all four scripts; peak
+memory 3.3 GB; 08:05 to 09:10 BST.
+
+**The rule: `train_ecoli`'s LOYO Brier score no worse than now (0.0938) by more than 0.0005. It holds: 0.0919.**
+The refitted E. coli model is better on every held-out score below. "Now" is main's committed
+`ecoli_model_eval.json`, made on the same samples and pins.
+
+| held-out | now | fitted settings |
+|---|---|---|
+| Leave one year out, Brier (1,502) | 0.0938 | 0.0919 |
+| Leave one year out, AUC (all, rivers, lakes) | 0.813, 0.747, 0.528 | 0.817, 0.758, 0.538 |
+| Leave one year out, Brier, rivers (907) / lakes (595) | 0.1382 / 0.0262 | 0.1350 / 0.0262 |
+| Leave one site out, Brier | 0.0933 | 0.0909 |
+| Forward (2024 to 2025–26), Brier (997) | 0.0852 | 0.0823 |
+| Exposure coefficient, per SD | 0.589 | 0.792 |
+
+On rivers, the Brier gain over rain alone, with its 95% interval under the three resamplings (site-week, site,
+calendar week), in thousandths:
+
+| | now | fitted settings |
+|---|---|---|
+| Year left out | +3.9 [−0.9, +8.5], [−0.2, +8.2], [−3.1, +11.3] | +7.1 [+1.3, +12.6], [+3.1, +11.0], [−1.4, +16.6] |
+| Site left out | +2.8 [−1.7, +7.1], [−1.9, +7.7], [−2.6, +8.7] | +6.8 [+1.2, +11.9], [+2.1, +11.3], [+0.1, +14.7] |
+| Forward | +8.1 [+2.6, +13.4], [+1.4, +15.3], [−1.1, +17.9] | +12.8 [+6.0, +19.6], [+4.7, +21.0], [+1.7, +25.4] |
+| Against rain + season, year left out | +4.9 [+1.0, +8.8], [+1.3, +8.8], [+0.7, +9.3] | +8.1 [+3.0, +13.0], [+4.5, +11.6], [+2.0, +14.8] |
+| Against rain + season, site left out | +3.5 [−0.5, +7.5], [−0.9, +7.9], [−0.7, +7.7] | +7.4 [+2.4, +12.4], [+2.9, +11.7], [+1.4, +13.8] |
+
+`validate_ecoli` on the fitted settings: within-site ρ 0.471 on rivers (rain in the last 48 h 0.475), 0.290 on lakes,
+0.371 overall (0.314 now). Pooled ρ falls from 0.631 to 0.573, and AUC over 900 from 0.810 to 0.805: the settings rank
+days within a site better and sites against each other a little less well. `validate_ecoli_combined`'s site-mean ρ is
+0.763, unchanged. Its leave-one-year-out within-site ρ on rivers: spill risk alone 0.546 (now 0.509), rain alone 0.504.
+1,685 samples have a `risk_model` figure (1,684 now): Derwent Water's sample of 7 September 2026 has one under the new
+weights.
+
+Committed with this: the refitted `ecoli_model.json` and `ecoli_model_eval.json`, the Accuracy files
+(`ecoli_validation.json`, `ecoli_validation_combined.json`, `ecoli_validation_per_site.csv`), the methods page's Test 3
+table and text, a dated entry in its corrections, and dated notes in the README.
+
+**Not done here:** a site build. The spot pages' levels, the click-anywhere files and the share cards change at the
+next build after merging. The click-anywhere API's gauge rule is unchanged (above).

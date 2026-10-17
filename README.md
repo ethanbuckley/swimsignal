@@ -36,8 +36,10 @@ Scotland and Ireland. Forecasts there wait for the data (see the plans in
 - Tested on a year it never saw, the spill model gave a day that spilled a
   higher chance than a dry day 93 times in 100.
 - Against the Environment Agency's samples, it ranks well which sites are most
-  contaminated. At a single site, it does no better than recent rainfall at
-  saying which days are bad.
+  contaminated. At a single site it was no better than recent rainfall at
+  saying which days are bad. Since the transport fit of 17 Oct 2026 it is a
+  little better on rivers, with a year left out (rank correlation 0.55 against
+  0.50; no interval computed for that difference).
 - Its river speed, die-off and dilution settings were fitted to those samples on
   17 Oct 2026 (docs/TRANSPORT-FIT-TEST-2026-10.md). The lake settings were not.
 - Every forecast it issues is scored afterwards, in public:
@@ -300,6 +302,14 @@ compares it with the naive competitor, rainfall at the site in the previous
 48 hours. Results (Spearman rank correlation with log E. coli; AUC for samples
 over 900 cfu/100 ml, the inland "sufficient" threshold):
 
+*17 Oct 2026:* rerun with the fitted transport settings (0.2 m/s, T90 72 h,
+square-root dilution; `docs/TRANSPORT-FIT-TEST-2026-10.md`), the spill risk scores
+pooled ρ 0.57, within-site ρ 0.37 and AUC > 900 0.81 on 1,685 samples at 31 sites.
+On rivers: within-site ρ 0.47 (rain in the last 48 h 0.475), AUC > 900 0.77. On
+lakes: within-site ρ 0.29, AUC > 900 0.61. Pooled ρ falls: the new settings rank
+days within a site better and sites against each other less well. Site-mean risk
+still ranks the sites at ρ = 0.76.
+
 *12 Oct 2026:* the figures in this section are from 14 Sep. Rerun on the network
 after #184, the refilled rain cache and the site's own placement of each bathing
 water (#199; `docs/ECOLI-REFIT-SITE-PINS-2026-10.md`), the spill risk scores
@@ -384,6 +394,16 @@ spot in the previous 48 and 24 h, SwimSignal's overflow exposure for the day, la
 river, and season. The rain is Open-Meteo's archived lead-0 forecast, the same
 source the map uses for "today". The competitor that matters is rain alone: the
 question is whether the overflow exposure adds anything a rain gauge would not.
+
+*Refitted 17 Oct 2026* on the fitted transport settings
+(`docs/TRANSPORT-FIT-TEST-2026-10.md`): 1,502 samples at 31 bathing waters, as before.
+Leaving a year out: Brier 0.092, AUC 0.82 (rivers 0.76, lakes 0.54); rain only
+0.096 and 0.79. On rivers the gain over rain alone is +7.1 thousandths with a year
+left out (95% interval by site-weeks [+1.3, +12.6]) and +6.8 with a site left out
+([+1.2, +11.9]); by calendar week the year-out interval still includes no gain
+([−1.4, +16.6]). Against rain + season it now holds under all three resamplings,
+with a year or a site left out. Forward in time: +12.8 [+6.0, +19.6] by site-weeks.
+The exposure coefficient rose from 0.59 to 0.79 per SD.
 
 *Refitted 12 Oct 2026* on the site's placement of each bathing water (#199;
 `docs/ECOLI-REFIT-SITE-PINS-2026-10.md`): 1,502 samples at 31 bathing waters.
