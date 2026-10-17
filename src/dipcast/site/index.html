@@ -979,6 +979,8 @@
   <button type="button" id="nav-map" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</button>
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
 </nav>
+<!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
+     so none holds up the first paint. Deferred scripts run in the order of their tags: keep the order. -->
 <script src="vendor/leaflet/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
@@ -993,7 +995,6 @@
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
-<script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; runs after this page's script -->
 <script>
 const BRAND = 'SwimSignal';
 const REPO = 'https://github.com/ethanbuckley/swimsignal';
@@ -1187,7 +1188,7 @@ const fitAll = () => map.fitBounds(L.latLngBounds(DATA.spots.map(s => [s.lat, s.
 window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
-let DATA = null, OVERFLOWS = null, current = null, shown = null;
+let DATA = null, current = null, shown = null;
 const VIEW = { q: '', filter: 'all', sort: 'name', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // A–Z until a place is given (14 Oct 2026)
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
@@ -2108,23 +2109,46 @@ const steady = (el, redraw) => { const y = el.getBoundingClientRect().top; redra
   if (dy) { if (PHONE.matches) window.scrollBy(0, dy); else document.getElementById('panel').scrollTop += dy; } };
 
 let ovCall = 0;
+// The overflows come by map tile (build_site.write_overflow_tiles): data/overflows/index.json gives the
+// zoom of the tiles and names those with any overflows, and the map asks only for the tiles in view,
+// a few kB each, rather than the whole 6 MB overflows.geojson. The last OV_KEEP tiles are kept while
+// the page is open, so panning back costs nothing; a tile that failed is asked for again next time.
+let OV_INDEX = null;
+const OV_TILES = new Map(), OV_KEEP = 128;
+const ovTile = (lat, lon, z) => { const n = 2 ** z, r = Math.max(-85.0511, Math.min(85.0511, lat)) * Math.PI / 180;
+  const y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n;
+  return [Math.min(n - 1, Math.max(0, Math.floor((lon + 180) / 360 * n))), Math.min(n - 1, Math.max(0, Math.floor(y)))]; };
+function ovFetch(k) {
+  let p = OV_TILES.get(k);
+  if (p) { OV_TILES.delete(k); OV_TILES.set(k, p); return p; }   // the most recently used last
+  p = fetch(`data/overflows/${k}.json`).then(r => { if (!r.ok) throw new Error(`overflow tile ${k}: ${r.status}`); return r.json(); }).then(j => j.features);
+  p.catch(() => { if (OV_TILES.get(k) === p) OV_TILES.delete(k); });
+  OV_TILES.set(k, p);
+  if (OV_TILES.size > OV_KEEP) OV_TILES.delete(OV_TILES.keys().next().value);
+  return p;
+}
 async function loadOverflows() {
   // Every overflow in view, when zoomed in. Not in a phone's small spot map, where the ones that
-  // matter are already drawn and the 6 MB layer would cost the data.
+  // matter are already drawn and the layer would cost the data.
   const call = ++ovCall;
   if (map.getZoom() < 9 || (PHONE.matches && !mapMode())) { ovLayer.clearLayers(); ovKey(false); return; }
-  if (!OVERFLOWS) OVERFLOWS = await (await fetch('data/overflows.geojson')).json();
-  // A later move superseded this one while the file loaded (zoomed out, say): drawing now would
-  // put every overflow in the new, wider view on the map, 14,000 of them for England.
+  if (!OV_INDEX) { OV_INDEX = fetch('data/overflows/index.json').then(r => r.json()).then(j => ({ z: j.z, have: new Set(j.tiles) }));
+    OV_INDEX.catch(() => { OV_INDEX = null; }); }
+  const { z, have } = await OV_INDEX, b = map.getBounds(), keys = [];
+  const [x0, y0] = ovTile(b.getNorth(), b.getWest(), z), [x1, y1] = ovTile(b.getSouth(), b.getEast(), z);
+  for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) if (have.has(`${x}-${y}`)) keys.push(`${x}-${y}`);
+  const all = (await Promise.all(keys.map(ovFetch))).flat();
+  // A later move superseded this one while the tiles loaded (zoomed out, say): drawing now would
+  // put this view's overflows on a map showing another.
   if (call !== ovCall) return;
-  const b = map.getBounds(); ovLayer.clearLayers();
-  const feats = OVERFLOWS.features.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
+  ovLayer.clearLayers();
+  const feats = all.filter(f => b.contains([f.geometry.coordinates[1], f.geometry.coordinates[0]]));
   L.geoJSON({type:'FeatureCollection', features: feats}, { pointToLayer: (f, ll) => { const p = f.properties, nm = overflowNames(p);
     return L.circleMarker(ll, { radius: drawnStatus(p) === 1 ? 7 : 4, color: colourFor(drawnStatus(p)), fillColor: colourFor(drawnStatus(p)), fillOpacity: .85, weight: 1 })
       .bindPopup(`<b>${esc(nm.plain)}</b>${nm.own ? `<br><span class="own-name">${esc(nm.own)}</span>` : ''}<br>${esc(companyName(p.company))}<br>${esc(p.receiving_watercourse)}<br>Status: ${statusSaid(p)}<br>Last spill ended: ${p.latest_event_end ? endedOn(p.latest_event_end, true) : '–'}<br>Long-term average spills a year: ${fmt(p.lta_spills,1)}`); } }).addTo(ovLayer);
   ovKey(true);
 }
-// Offline the layer is not stored (6 MB): the map then shows the spots without it.
+// Offline the layer is not stored (sw.js): the map then shows the spots without it.
 map.on('moveend', () => loadOverflows().catch(() => { ovLayer.clearLayers(); ovKey(false); }));
 
 // The colour key: the map's legend, its title and the six keys in one line. The title is what lets the
@@ -3455,5 +3479,6 @@ if (document.getElementById('page-counter')) {
   });
 }
 </script>
+<script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; deferred, so it runs after the script above -->
 </body>
 </html>

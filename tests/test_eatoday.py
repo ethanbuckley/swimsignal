@@ -22,7 +22,7 @@ def test_the_page_loads_the_ea_advice_script_from_its_build(tmp_path):
     bs.write_pages(tmp_path, [spot], root="https://example.org/")
     stamp = bs.shell_stamp()
     page = (tmp_path / "spot" / "bw-ukj2310-11945" / "index.html").read_text()
-    assert f'<script src="eatoday.js?v={stamp}">' in page
+    assert f'<script src="eatoday.js?v={stamp}" defer>' in page
     assert (tmp_path / "eatoday.js").read_bytes() == (bs.TEMPLATE.parent / "eatoday.js").read_bytes()
     assert "`eatoday.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert bs.TEMPLATE.parent / "eatoday.js" in bs.SHELL_SOURCES
