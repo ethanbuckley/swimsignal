@@ -57,7 +57,8 @@ def _made(world, tmp_path) -> dict:
         "lakes": json.loads((out / "lakes.json").read_text()), "ids": meta["ids"],
         "waters": {f.stem: json.loads(f.read_text()) for f in sorted((out / "lake_water").glob("*.json"))},
         "od": {"assumptions": {"max_upstream_km": 60.0, "l0_m": transport.L0_M, "lake_area_halving_km2": transport.LAKE_A0_KM2,
-                               "dilution_power": transport.DILUTION_POWER}},
+                               "dilution_power": transport.DILUTION_POWER, "river_velocity_ms": config.RIVER_VELOCITY_MS,
+                               "lake_velocity_ms": config.LAKE_VELOCITY_MS, "t90_hours": config.T90_HOURS}},
         "tiles": {t: {"index": base64.b64encode((out / "link_index" / f"{t}.bin").read_bytes()).decode(),
                       "links": json.loads((out / "links" / f"{t}.json").read_text())["links"]} for t in meta["tiles"]},
     }

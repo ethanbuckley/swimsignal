@@ -5,7 +5,7 @@ Three physical effects, each a multiplicative weight in [0, 1]:
 * travel time     t = d_river / v_river + d_lake / v_lake
 * die-off         10 ** (-t / T90)   first-order decay of faecal indicator
                   bacteria; T90 is the time for a 90% reduction
-* dilution        (L_up(overflow) + L0) / (L_up(spot) + L0), capped at 1, where
+* dilution        ((L_up(overflow) + L0) / (L_up(spot) + L0)) ** DILUTION_POWER, capped at 1, where
                   L_up is the total upstream network length, a proxy for
                   catchment area and hence flow. L0 keeps tiny tributaries
                   from vanishing.
@@ -86,7 +86,7 @@ from dipcast.network.rivers import RiverNetwork, Snap, lonlat_to_bng
 log = logging.getLogger(__name__)
 
 L0_M = 5_000.0          # dilution smoothing length
-DILUTION_POWER = 1.0    # exponent on the length ratio (dilution "length"); docs/TRANSPORT-FIT-TEST-2026-10.md
+DILUTION_POWER = 0.5    # exponent on the length ratio (dilution "length"); fitted, was 1 (docs/TRANSPORT-FIT-TEST-2026-10.md)
 LAKE_SNAP_M = 1_500.0   # fallback: a pin this close to a lake centreline is 'in the lake'
 LAKE_SHORE_M = 150.0    # a click this close to a WFD lake polygon counts as in that lake
 LAKE_NAMED_M = 1_000.0  # a lake spot named after a WFD lake this close is in that lake

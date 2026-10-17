@@ -402,13 +402,15 @@ class Tracer:
         return out
 
 
-def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0) -> pd.DataFrame:
+def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0,
+            power: float = transport.DILUTION_POWER) -> pd.DataFrame:
     """A link record's rows for a click at `frac` along the link: site_id, distance_m, lake_distance_m,
     dilution, as upstream_overflows computes them (the page's anypoint.js does the same), and res_m,
     hold_h and lake_pass (lake path "residence": the metres, survivors' hours and share alive of the
     lakes with a residence time; 0, 0 and 1 where none). The cap applies to the whole distance along
     the network; a WFD lake crossed on the way then moves its metres to the lake distance and
-    multiplies the dilution by its factor."""
+    multiplies the dilution by its factor. The capped length ratio is raised to `power`
+    (transport.DILUTION_POWER) before that factor."""
     offset = frac * rec["len"]
     shrink = (rec["lup"] + L0_M) / (rec["lup"] + L0_M + offset)   # the click's own extra upstream length
     path, hold = rec.get("path", {}), rec.get("hold", {})
@@ -416,8 +418,8 @@ def rows_at(rec: dict, frac: float, cap_m: float = config.MAX_UPSTREAM_KM * 1000
     for sid, base, r in rec["other"]:
         if base + offset <= cap_m:
             lake_m, factor = path.get(sid, (0.0, 1.0))
-            rows.append((sid, base + offset - lake_m, lake_m, min(1.0, r * shrink) * factor, *hold.get(sid, (0.0, 0.0, 1.0))))
-    rows += [(sid, offset - pos, 0.0, min(1.0, shrink), 0.0, 0.0, 1.0) for sid, pos in rec["same"] if pos < offset]
+            rows.append((sid, base + offset - lake_m, lake_m, min(1.0, r * shrink) ** power * factor, *hold.get(sid, (0.0, 0.0, 1.0))))
+    rows += [(sid, offset - pos, 0.0, min(1.0, shrink) ** power, 0.0, 0.0, 1.0) for sid, pos in rec["same"] if pos < offset]
     return pd.DataFrame(rows, columns=["site_id", "distance_m", "lake_distance_m", "dilution", "res_m", "hold_h", "lake_pass"])
 
 

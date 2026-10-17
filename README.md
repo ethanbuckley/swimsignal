@@ -38,7 +38,8 @@ Scotland and Ireland. Forecasts there wait for the data (see the plans in
 - Against the Environment Agency's samples, it ranks well which sites are most
   contaminated. At a single site, it does no better than recent rainfall at
   saying which days are bad.
-- Its die-off and dilution settings are not yet calibrated against samples.
+- Its river speed, die-off and dilution settings were fitted to those samples on
+  17 Oct 2026 (docs/TRANSPORT-FIT-TEST-2026-10.md). The lake settings were not.
 - Every forecast it issues is scored afterwards, in public:
   https://swimsignal.co.uk/verification.html. How the 2027 season will be judged
   is fixed in advance in `docs/PREREGISTRATION-2027.md`.
@@ -153,9 +154,13 @@ climatology; on dry days 0.023 against 0.038.
 
 **Transport.** For each upstream overflow: distance along the network (plus a
 lake crossing for lake spots, the shortest way through the lake's water), travel time at a fixed reach
-velocity of 0.5 m/s (0.05 m/s across lakes), first-order
-die-off with T90 = 30 h, and dilution as the ratio of upstream network length
-at the outfall to that at the spot. The product is the probability that a spill
+velocity of 0.2 m/s (0.05 m/s across lakes), first-order
+die-off with T90 = 72 h, and dilution as the square root of the ratio of upstream
+network length at the outfall to that at the spot. The river speed, T90 and the
+square root were fitted to the EA E. coli samples on 17 Oct 2026, leaving one year
+out at a time (docs/TRANSPORT-FIT-TEST-2026-10.md); until then they were 0.5 m/s,
+30 h and the plain ratio, set by hand. They are the setting that best ranks river
+sample days within each site, not a measured speed or die-off rate. The product is the probability that a spill
 there affects the spot. Risk = 1 - prod(1 - p_i w_i). The site runs
 `forecast_point(..., gauge=False)`, so the river level shown beside a forecast
 does not change it; the click-anywhere API (`gauge=True`) scales the velocity by
@@ -199,7 +204,8 @@ flow gauge (lake path `residence_spill`, the default after
 docs/LAKE-RESIDENCE-SPILL-2026-10.md; 10 lakes gauged, the rest take their median,
 1.88). Then a share 1 / (1 + ln 10 · τ/R / T90) of a spill's bacteria leaves the lake
 alive, after about 13 hours. So Grasmere (τ 39 days, R 2.24) passes 3%, and Grasmere
-WwTW counts at Rydal Water at 0.0022, not 0.040. A lake with no τ (Elter Water, most
+WwTW counts at Rydal Water at 0.0022, not 0.040. (Those figures are at T90 = 30 h; at
+72 h, from 17 Oct 2026, Grasmere passes 7%, after about 29 hours.) A lake with no τ (Elter Water, most
 under 10 ha) is crossed at 0.05 m/s with its own area term, as from 11 Oct 2026 (lake
 path `lake`). A lake-form link outside every WFD polygon (a mill pond, a weir pool)
 stays river. The spot's own lake keeps the fixed drift and the area term, and there
@@ -907,8 +913,8 @@ time contributes to today (it started at yesterday before, and did not).
   distance plus 300 m: where its stream meets the river is not known, so it may
   be below the spot.
 - The overflow-exposure percentage combines verified spill probabilities with
-  die-off and dilution weights that are physical estimates, not calibrated
-  against water samples, and it treats upstream spills as independent when they
+  die-off and dilution weights whose river settings were fitted to how E. coli
+  samples rank within a site (17 Oct 2026), not measured, and it treats upstream spills as independent when they
   share the same rain. The site labels it an exposure index for that reason;
   the E. coli column is the calibrated quantity.
 - Dilution uses network length as a proxy for flow. Lake volume is not modelled;
