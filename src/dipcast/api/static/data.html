@@ -17,6 +17,7 @@
 <li>The files are in the site's <code>data/</code> folder, in JSON, GeoJSON and CSV, with packed river data for forecasts at a clicked point. The table below links them. Each build writes the current forecasts again.</li>
 <li>Keep the files' credits, or the <a href="/terms#data">credits on the terms page</a>, with anything you publish from them. The CSV carries its credits in comment lines; the packed river data uses the credits in <code>anypoint/tiles.json</code>.</li>
 <li>The data from the water companies, the Environment Agency and the other providers keeps its own licence. SwimSignal's own forecasts, levels and scores may be reused for non-commercial purposes with credit; ask first about any other use.</li>
+<li>The same levels are in <a href="#feeds">Atom feeds</a>, for every spot, each area and each spot on its own.</li>
 <li>The levels are forecasts, not water tests.</li>
 </ul></div>
 
@@ -26,7 +27,7 @@
 <div class="tw"><table id="data-files"><thead><tr><th scope="col">File</th><th scope="col">What it holds</th><th scope="col" class="num">Size</th></tr></thead><tbody>
 <tr data-file="spots.json"><td><a href="data/spots.json">spots.json</a></td><td>Every spot's five-day forecast and what it rests on</td><td class="num">–</td></tr>
 <tr data-file="spots-lite.json"><td><a href="data/spots-lite.json">spots-lite.json</a></td><td>spots.json without each spot's overflows and guide, which the app loads first</td><td class="num">–</td></tr>
-<tr data-file="spot/"><td>spot/</td><td>Each spot's overflows and guide, one file a spot, which its page loads</td><td class="num">–</td></tr>
+<tr data-file="spot/"><td>spot/</td><td>Each spot's overflows and guide, and the river its forecast traced upstream, two files a spot, which its page loads</td><td class="num">–</td></tr>
 <tr data-file="alerts.json"><td><a href="data/alerts.json">alerts.json</a></td><td>Each spot's level and headline, as the alerts send them</td><td class="num">–</td></tr>
 <tr data-file="overflows.geojson"><td><a href="data/overflows.geojson">overflows.geojson</a></td><td>Every storm overflow on the map, and what it is doing now</td><td class="num">–</td></tr>
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
@@ -90,7 +91,8 @@
 
 <h2 id="spots-lite-json">spots-lite.json and spot/</h2>
 <p>The same forecast as spots.json, split for the app. <code>spots-lite.json</code> is spots.json without each spot's <code>contributors</code> and <code>guide</code>, which only a spot's own page shows; they were half its size. Each spot in it has <code>detail_file</code>, its file in <code>spot/</code>, relative to <code>data/</code>. That file, <code>spot/&lt;id&gt;.json</code>, has the spot's <code>id</code>, <code>generated_at</code>, <code>credits</code>, <code>contributors</code> and <code>guide</code>, as in spots.json. spots.json stays whole: read it if you want everything in one file.</p>
-<p><b>Licence.</b> As spots.json.</p>
+<p>Beside it, <code>spot/&lt;id&gt;-trace.json</code> is the river network the forecast traced upstream of the spot: every river and stream within <code>max_upstream_km</code> (60&nbsp;km) along the water, the water that reaches the spot, which its map draws. <code>lines</code> are the network's lines as <a href="https://developers.google.com/maps/documentation/utilities/polylinealgorithm">encoded polylines</a> (latitude and longitude to five decimal places), simplified to within <code>simplified_m</code> metres. <code>overflows</code> lists the monitored overflows counted on them, each as <code>[site_id, latitude, longitude]</code>. A spot with nothing traced (an isolated lake) has no trace file.</p>
+<p><b>Licence.</b> As spots.json. The traced rivers are from OS Open Rivers: contains OS data © Crown copyright and database right 2026.</p>
 
 <h2 id="alerts-json">alerts.json</h2>
 <p>Each spot's level and headline, worked out by the same rules as the page, for the alert service. The smallest file, for anyone who wants only the answer.</p>
@@ -99,6 +101,17 @@
 <dt><code>spots</code></dt><dd>Keyed by spot id: <code>name</code>; <code>level</code>, one of low, moderate, high and very high, or "no overflows", "not covered" or "no forecast"; <code>rank</code>, 0 for low to 3 for very high and −1 without a level; <code>headline</code>, as the list shows it ("High risk today: sewage spills"); <code>action</code>, what to do at that level, the line under the answer on the spot's page; <code>url</code>, the spot's page; <code>best</code>, only where the level changes from day to day: the lowest <code>level</code> of the four days after today, the first <code>date</code> with it, and the <code>words</code> the weekly note uses ("Saturday, low risk")</dd>
 </dl>
 <p><b>Licence.</b> SwimSignal's levels and headlines, made from the same sources as spots.json.</p>
+
+<h2 id="feeds">Feeds</h2>
+<p>The same levels and headlines as Atom feeds, for a feed reader, Slack's RSS app, a Discord bot or IFTTT. Each time the forecast is issued, a feed gets a new entry for each of its spots: the spot's name and headline as the title, the headline and what to do as the summary, the spot's page as the link, its level as the category, and the time the forecast was issued as <code>updated</code>. The feed's <code>rights</code> carries the credits.</p>
+<ul>
+<li><a href="feed.xml">feed.xml</a>: every spot.</li>
+<li><code>spot/&lt;id&gt;/feed.xml</code>: one spot, beside its page (for the spot at <code>spot/&lt;id&gt;/</code>).</li>
+<li>One for each area in the list:</li>
+</ul>
+<!-- feeds -->
+<p>A reader that checks every 30 minutes misses nothing: the forecast is issued at most that often. The feeds keep only the latest forecast, so a reader that checks less often skips the ones in between.</p>
+<p><b>Licence.</b> As alerts.json.</p>
 
 <h2 id="overflows-geojson">overflows.geojson</h2>
 <p>Every storm overflow on the map, as a GeoJSON point (longitude, latitude), with what its water company's live feed last said about it. The largest file.</p>

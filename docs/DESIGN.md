@@ -542,15 +542,21 @@ and it always ends "A separate hazard, not part of the pollution level." The lea
 - "**Flood alert in force nearby** (Environment Agency): River Wharfe at Ilkley.", the area linked to
   its page, with "and 1 more" where there are others. "Flood warning" or "Severe flood warning" leads
   instead when that is the most severe within 10 km.
-- "**Flood alerts not checked**: the Environment Agency did not answer when this forecast was made.
-  Check flood warnings." A failed check never reads as none in force.
+
+A failed check never reads as none in force, and it is not a hazard either, so it gets no bold line
+in the answer (16 Oct 2026: in bold above the five days on 48 of 105 pages, it read like one).
+Instead a quiet line, in the muted meta size, sits under the River or Lake level tile, or under
+Weather at a spot with no gauge: "Flood warnings not checked for this forecast. See the Environment
+Agency." (`floodUnchecked` and `floodUncheckedLine` in `experience.js`; `.t-note` in `index.html`).
+The build asks a failed request once more, 20 s later, before it gives up
+(`build_site.attach_flow_state`).
 
 Nothing is said that may have stopped being true. A river word needs a gauge on the spot's own river
 and a reading under a day old, and a rise needs its last reading under six hours old; a build over a
 day old shows no line at all. Lakes get no river word, because the gauge matched to a lake can be on
 a beck or river that shares its name (`build_site.attach_flow_state`); flood alerts apply to lakes as
-to rivers. The same sentences go in a plan for today, and the flood ones in the Compare table's
-"Local warnings" row. The River level tile keeps its own words in ink too ("High water", "Usual
+to rivers. The same sentences go in a plan for today, and the flood ones, with the quiet "not checked" line,
+in the Compare table's "Local warnings" row. The River level tile keeps its own words in ink too ("High water", "Usual
 level"): "High" in a level's colour read as a pollution level.
 
 ### What to do (4 October 2026)

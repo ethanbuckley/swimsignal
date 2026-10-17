@@ -184,6 +184,20 @@ def _state(level: float, observed: datetime, river: str = "River Wharfe") -> flo
                             measure="F1903-level-stage-i-15_min-m")
 
 
+class _Clock:
+    """time.monotonic and time.sleep for the flood retries, without waiting: sleeping moves the clock."""
+
+    def __init__(self, t: float = 1000.0):
+        self.t, self.slept = t, []
+
+    def __call__(self) -> float:
+        return self.t
+
+    def sleep(self, s: float) -> None:
+        self.slept.append(s)
+        self.t += s
+
+
 def test_attach_flow_state_words_and_flood_alerts():
     """A river above its usual range, one rising fast, one high at a gauge on a tributary, a stale
     reading that was high, a lake under a live flood alert, and a spot where the EA did not answer."""
@@ -203,15 +217,17 @@ def test_attach_flow_state_words_and_flood_alerts():
         asked_trend.append(measure)
         return _readings(NOW - timedelta(hours=5, minutes=45), [0.2 + 0.4 * i / 23 for i in range(24)])   # 0.40 m of a 1.68 m range
 
-    def alerts(lat, lon):
+    def alerts(lat, lon, timeout=None):
         if lat == spots[5]["lat"]:
-            raise httpx.ConnectTimeout("EA timed out")
+            raise httpx.ConnectTimeout("EA timed out")   # and again when asked again
         if lat == spots[4]["lat"]:
             return [{"severity_level": 3, "severity": "Flood alert", "area": "River Wharfe at Ilkley", "area_id": "123WAF456",
                      "url": "https://check-for-flooding.service.gov.uk/target-area/123WAF456", "raised": None}]
         return []
 
-    counts = bs.attach_flow_state(spots, trend=trend, alerts=alerts, any_alerts=lambda: True, workers=1, now=NOW)
+    clock = _Clock()
+    counts = bs.attach_flow_state(spots, trend=trend, alerts=alerts, any_alerts=lambda: True, workers=1, now=NOW,
+                                  sleep=clock.sleep, clock=clock)
     by = {s["id"]: s for s in spots}
     assert by["high"]["flow_state"] == "high"
     assert by["rising"]["flow_state"] == "rising fast"
@@ -259,6 +275,88 @@ def test_flood_alerts_are_asked_spot_by_spot_only_when_one_is_in_force_somewhere
 
     bs.attach_flow_state(spots, alerts=alerts, any_alerts=lambda: True, workers=1, now=NOW)
     assert sorted(asked) == [53.9, 54.0]
+
+
+def test_the_national_flood_list_is_asked_once_more_20_s_after_a_failure_and_all_within_30_s():
+    bs = _build_site()
+    clock, asked = _Clock(), []
+
+    def flaky(timeout):
+        asked.append((clock.t - 1000.0, timeout))
+        clock.t += 3.0   # each ask takes 3 s
+        if len(asked) == 1:
+            raise httpx.ReadTimeout("The read operation timed out")
+        return True
+
+    assert bs.ask_flood_list(flaky, sleep=clock.sleep, clock=clock) is True
+    assert asked == [(0.0, 10.0), (20.0, 10.0)]   # the second begins 20 s after the first; each has 10 s, so 30 s in all
+    assert clock.slept == [17.0]
+
+    clock, asked = _Clock(), []
+    assert bs.ask_flood_list(lambda timeout: asked.append(timeout) or False, sleep=clock.sleep, clock=clock) is False
+    assert asked == [10.0] and clock.slept == []   # an answer the first time: no retry, no wait
+
+    def refused(timeout):
+        raise httpx.HTTPStatusError("403", request=httpx.Request("GET", f"https://{EA}/"), response=httpx.Response(403))
+
+    with pytest.raises(httpx.HTTPStatusError):   # refused twice: the build's asked_now keeps the error, and every spot is unchecked
+        bs.ask_flood_list(refused, sleep=clock.sleep, clock=clock)
+
+
+def test_a_spot_whose_flood_request_timed_out_is_asked_once_more_after_20_s():
+    """16 Oct 2026, 21:03 build: the national list answered, then 48 of 105 spots' own requests timed
+    out at 4 s and their pages said "not checked". Each is now asked again, once, after 20 s."""
+    bs = _build_site()
+    spots = [{"id": k, "name": k, "lat": 53.9 + i / 100, "lon": -1.8} for i, k in enumerate(("ok", "slow", "down"))]
+    clock, asked = _Clock(), []
+
+    def alerts(lat, lon, timeout=None):
+        asked.append((lat, timeout, clock.t - 1000.0))
+        if lat == spots[2]["lat"] or (lat == spots[1]["lat"] and timeout is None):
+            raise httpx.ReadTimeout("The read operation timed out")
+        return []
+
+    counts = bs.attach_flow_state(spots, alerts=alerts, any_alerts=lambda: True, workers=1, now=NOW, sleep=clock.sleep, clock=clock)
+    assert [s["flood_alerts"] for s in spots] == [[], [], None]
+    assert counts["flood_alerts_unchecked"] == 1
+    assert clock.slept == [20.0]   # one wait for all of them, not one a spot
+    assert asked[3:] == [(53.91, 10.0, 20.0), (53.92, 10.0, 20.0)]   # only the failed ones, each with what is left of 30 s
+
+    # Nothing failed: no wait, no second round.
+    clock = _Clock()
+    bs.attach_flow_state(spots, alerts=lambda lat, lon, timeout=None: [], any_alerts=lambda: True, workers=1, now=NOW,
+                         sleep=clock.sleep, clock=clock)
+    assert clock.slept == []
+
+
+def test_the_retry_stops_at_the_budget():
+    bs = _build_site()
+    spots = [{"id": k, "name": k, "lat": 53.9 + i / 100, "lon": -1.8} for i, k in enumerate("abc")]
+    clock, retried = _Clock(), []
+
+    def alerts(lat, lon, timeout=None):
+        if timeout is None:
+            raise httpx.ReadTimeout("slow")
+        retried.append((lat, timeout))
+        clock.t += 6.0   # the EA takes 6 s to answer each: two fit in what is left of 30 s, the third does not start
+        return []
+
+    counts = bs.attach_flow_state(spots, alerts=alerts, any_alerts=lambda: True, workers=1, now=NOW, sleep=clock.sleep, clock=clock)
+    assert retried == [(53.9, 10.0), (53.91, 4.0)]
+    assert [s["flood_alerts"] for s in spots] == [[], [], None] and counts["flood_alerts_unchecked"] == 1
+
+
+def test_no_retry_when_the_national_list_was_not_answered():
+    bs = _build_site()
+    spots = [{"id": "a", "name": "a", "lat": 53.9, "lon": -1.8}]
+    clock = _Clock()
+
+    def refused():
+        raise httpx.ReadTimeout("slow")
+
+    counts = bs.attach_flow_state(spots, alerts=lambda lat, lon, timeout=None: [], any_alerts=refused, workers=1, now=NOW,
+                                  sleep=clock.sleep, clock=clock)
+    assert spots[0]["flood_alerts"] is None and counts["flood_alerts_unchecked"] == 1 and clock.slept == []
 
 
 def test_floods_in_force_anywhere_ignores_warnings_no_longer_in_force(monkeypatch):
@@ -424,3 +522,18 @@ def test_the_flood_list_is_asked_before_the_levels_and_its_refusal_is_kept_for_l
         later()
     spots = [{"id": "a", "name": "a", "lat": 53.9, "lon": -1.8}]
     assert bs.attach_flow_state(spots, alerts=lambda lat, lon: [], any_alerts=later, workers=1, now=NOW)["flood_alerts_unchecked"] == 1
+
+
+def test_the_flood_requests_take_the_timeout_they_are_given(monkeypatch):
+    seen = []
+
+    def get(url, params=None, headers=None, timeout=None):
+        seen.append(timeout)
+        return httpx.Response(200, json={"items": []}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(flows.httpx, "get", get)
+    flows.floods_in_force_anywhere()
+    flows.floods_in_force_anywhere(timeout=10.0)
+    flows.flood_alerts(53.9, -1.8)
+    flows.flood_alerts(53.9, -1.8, timeout=7.5)
+    assert seen == [flows.EA_TIMEOUT_S, 10.0, flows.EA_TIMEOUT_S, 7.5]

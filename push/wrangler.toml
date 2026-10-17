@@ -7,7 +7,10 @@ binding = "PUSH"
 id = "fefed2f744ec4cf7a9aea6eddfc3f74b"
 
 [triggers]
-crons = ["*/2 * * * *"]   # queued alerts go out in batches; see README
+# "*/2": queued alerts go out in batches (README). "*/30": asks GitHub to build the site, unless a build
+# started under 20 minutes ago; off until the secret GITHUB_DISPATCH_TOKEN is set (README, "Starting
+# the site's build"). src/dispatch.js's DISPATCH_CRON must match the second exactly.
+crons = ["*/2 * * * *", "*/30 * * * *"]
 
 [vars]
 SITE_URL = "https://swimsignal.co.uk/"
@@ -15,6 +18,8 @@ ALLOWED_ORIGIN = "https://swimsignal.co.uk"
 VAPID_SUBJECT = "mailto:hello@swimsignal.co.uk"
 VAPID_PUBLIC_KEY = "BGaPAD3oYd4cJ3jJPMF9b8gyImfQ1H7Xtw5nOfSuYx7vLeIjmqlQ9wmcPqXlwMRRx-yzPeNmKs4H3RhDSjgb3OY"
 # SENDS_PER_RUN = "15"   # alerts per run; raise it on the Workers Paid plan (README)
+# DISPATCH_FRESH_MIN = "20"   # the 30-minute cron asks for a build only if the last began this long ago; 50 = about hourly (README)
+# GITHUB_DISPATCH_TOKEN is a secret too (README, "Starting the site's build").
 # VAPID_PRIVATE_KEY is a secret, not a var. Set it with:
 #   npx wrangler secret put VAPID_PRIVATE_KEY
 # Never write it in this file. This file is committed, so anything here is public.

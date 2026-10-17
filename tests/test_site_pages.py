@@ -537,8 +537,10 @@ def test_river_levels_are_an_observation_beside_the_forecast():
     assert line in (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
 
 
-def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
+def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_path, monkeypatch):
     bs = _build_site()
+    from dipcast.ingest import rainfall
+    monkeypatch.setattr(rainfall, "CACHE", tmp_path)   # the day's Open-Meteo ledger
     seen = []
 
     def request(url, params, timeout=30):
@@ -550,7 +552,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
 
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1},
              {"id": "d", "name": "Broken", "lat": 54.5, "lon": -3.1, "error": "forecast failed: boom"}]
-    assert bs.attach_weather(spots, request=request) == 2
+    assert bs.attach_weather(spots, request=request, cache=tmp_path / "weather.json") == 2
     assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset" and seen[0]["latitude"] == "54.000,54.100"
     assert spots[0]["weather"]["days"] == [{"date": "2026-10-01", "tmax": 11, "sunrise": "07:12", "sunset": "18:40"},
                                            {"date": "2026-10-02", "tmax": None, "sunrise": "07:14", "sunset": "18:38"}]
@@ -559,7 +561,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none():
     def broken(url, params, timeout=30):
         raise RuntimeError("open-meteo request failed")
     fresh = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}]
-    assert bs.attach_weather(fresh, request=broken) == 0 and "weather" not in fresh[0]
+    assert bs.attach_weather(fresh, request=broken, cache=tmp_path / "none.json") == 0 and "weather" not in fresh[0]
 
 
 def test_the_api_server_sends_its_home_page_to_the_site_and_keeps_the_prose_pages(monkeypatch):

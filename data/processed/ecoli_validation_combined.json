@@ -12,21 +12,21 @@
   },
   "spill risk only": {
    "n": 1582,
-   "rho_within": 0.39,
+   "rho_within": 0.401,
    "rmse": 0.451,
-   "auc_gt900": 0.862
+   "auc_gt900": 0.868
   },
   "rain + spill risk": {
    "n": 1582,
-   "rho_within": 0.398,
-   "rmse": 0.451,
-   "auc_gt900": 0.866
+   "rho_within": 0.402,
+   "rmse": 0.452,
+   "auc_gt900": 0.868
   },
   "rain + spill risk + season": {
    "n": 1582,
-   "rho_within": 0.422,
-   "rmse": 0.446,
-   "auc_gt900": 0.864
+   "rho_within": 0.423,
+   "rmse": 0.447,
+   "auc_gt900": 0.865
   }
  },
  "loyo_within_site_river": {
@@ -38,21 +38,21 @@
   },
   "spill risk only": {
    "n": 845,
-   "rho_within": 0.509,
-   "rmse": 0.418,
-   "auc_gt900": 0.776
+   "rho_within": 0.546,
+   "rmse": 0.402,
+   "auc_gt900": 0.798
   },
   "rain + spill risk": {
    "n": 845,
-   "rho_within": 0.525,
-   "rmse": 0.412,
-   "auc_gt900": 0.788
+   "rho_within": 0.549,
+   "rmse": 0.402,
+   "auc_gt900": 0.8
   },
   "rain + spill risk + season": {
    "n": 845,
-   "rho_within": 0.528,
-   "rmse": 0.411,
-   "auc_gt900": 0.791
+   "rho_within": 0.551,
+   "rmse": 0.402,
+   "auc_gt900": 0.801
   }
  },
  "loyo_within_site_lake": {
@@ -64,26 +64,26 @@
   },
   "spill risk only": {
    "n": 737,
-   "rho_within": 0.268,
-   "rmse": 0.486,
-   "auc_gt900": 0.917
+   "rho_within": 0.23,
+   "rmse": 0.493,
+   "auc_gt900": 0.916
   },
   "rain + spill risk": {
    "n": 737,
-   "rho_within": 0.223,
-   "rmse": 0.491,
-   "auc_gt900": 0.912
+   "rho_within": 0.208,
+   "rmse": 0.496,
+   "auc_gt900": 0.907
   },
   "rain + spill risk + season": {
    "n": 737,
-   "rho_within": 0.366,
-   "rmse": 0.471,
-   "auc_gt900": 0.922
+   "rho_within": 0.344,
+   "rmse": 0.478,
+   "auc_gt900": 0.917
   }
  },
  "coef_lrain48_lrain24_logitrisk": [
-  0.101,
-  -0.015,
-  0.093
+  0.06,
+  0.025,
+  0.089
  ]
 }
