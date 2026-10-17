@@ -119,7 +119,7 @@
 <p>The same overflows are in <code>overflows/</code> cut into map tiles, the ones the map loads: <code>index.json</code> gives the zoom and lists the tiles that have any, and each tile, <code>&lt;x&gt;-&lt;y&gt;.json</code>, is a GeoJSON FeatureCollection of the overflows in that Web Mercator tile.</p>
 <dl class="fields">
 <dt><code>site_id</code>, <code>company</code>, <code>site_name</code></dt><dd>The water company's id and name for the overflow</dd>
-<dt><code>receiving_watercourse</code></dt><dd>The river or stream it discharges into, as the company names it</dd>
+<dt><code>receiving_watercourse</code></dt><dd>The river or stream it discharges into, as the company names it; null where the feed names none or gives a placeholder such as "#N/A"</dd>
 <dt><code>status</code></dt><dd>1 discharging; 0 not discharging; −1 monitor offline; −2 no live feed: the overflow is in the Environment Agency's annual returns but in no live feed SwimSignal reads, as all of Dŵr Cymru Welsh Water's are; −3 unknown, because the company's feed returned nothing at the last poll (the spill times are from the poll before)</dd>
 <dt><code>has_live</code></dt><dd>Whether the overflow is in its company's live feed</dd>
 <dt><code>data_state</code></dt><dd>Whether its status is current: <code>live</code>, a status from a feed that updated in the 6 hours before the poll; <code>stale</code>, a status from a feed that did not, or gives no time, so "not discharging" may be out of date; <code>offline</code>, no status (−1, −3, or −2 at a company that has a live feed); <code>no_feed</code>, its company has no live feed. On a stale one, <code>feed_updated_at</code> is when its feed last updated (UTC), null if the feed gives no time</dd>
@@ -154,7 +154,7 @@
 <h2 id="upstream">upstream/</h2>
 <p>One file a spot, <code>upstream/&lt;id&gt;.json</code>, with every monitored storm overflow within 60 km upstream along the river network, most reach first. <code>spots.json</code> keeps only the ten that matter most in the current forecast; <a href="organisers.html">the organisers' page</a> loads a spot's file when it has more. A spot with nothing upstream has no file. Each file has the spot's <code>id</code>, <code>generated_at</code>, <code>credits</code> and <code>overflows</code>, one entry an overflow:</p>
 <dl class="fields">
-<dt><code>site_id</code>, <code>site_name</code>, <code>company</code>, <code>receiving_watercourse</code></dt><dd>The water company's id and name for the overflow, the company, and the water it discharges into, as the company names it</dd>
+<dt><code>site_id</code>, <code>site_name</code>, <code>company</code>, <code>receiving_watercourse</code></dt><dd>The water company's id and name for the overflow, the company, and the water it discharges into, as the company names it (null where the feed names none)</dd>
 <dt><code>distance_km</code>, <code>lake_distance_km</code>, <code>travel_h</code></dt><dd>How far upstream along the river network, the part of that across a lake, and how long sewage takes to arrive at the model's speeds</dd>
 <dt><code>weight</code></dt><dd>Reach, 0 to 1: the chance a spill there affects the spot, from die-off over the travel time and dilution</dd>
 <dt><code>lta_spills</code>, <code>spill_hours</code></dt><dd>Its long-term average spills a year, and the hours it spilled in its latest annual return (Environment Agency)</dd>

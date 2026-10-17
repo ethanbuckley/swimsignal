@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from dipcast.overflow_names import name_case, plain_name
+from dipcast.overflow_names import name_case, plain_name, water_name
 
 ROOT = Path(__file__).resolve().parents[1]
 NAMES = (ROOT / "tests" / "fixtures" / "overflow_names.txt").read_text(encoding="utf-8").splitlines()
@@ -37,3 +37,34 @@ def test_the_examples():
     # 11 Oct 2026: a phrase in capitals before the codes, and three capitals in a name all in capitals.
     assert plain_name("BUXTON STW INLET STORM OVERFLOW (CSO)") == "Buxton sewage works overflow"
     assert name_case("BEN RHYDDING/STW") == "Ben Rhydding/STW" and name_case("BUXTON STW (SSTO)") == "Buxton STW (SSTO)"
+
+
+# 16 Oct 2026 (docs/REVIEW-2026-10-16.md, 8.3): the placeholders the feeds give for a receiving water, in
+# the spellings overflows.geojson held, read as no name, so the map's pop-up and the spot's list say the
+# water is not named in its feed rather than print "#N/A".
+@pytest.mark.parametrize("raw", ["#N/A", "N/A", "None", "0", "-", "", "  ", " #n/a ", "n/a", "NONE", None, float("nan")])
+def test_a_placeholder_is_no_water_name(raw):
+    assert water_name(raw) is None
+
+
+def test_a_water_name_is_kept_as_the_feed_gives_it():
+    assert water_name("River Wharfe") == "River Wharfe"
+    assert water_name("  Clifton Hampton Ditch ") == "Clifton Hampton Ditch"
+    # Names that only contain a placeholder's characters are names.
+    assert water_name("R STOUR") == "R STOUR" and water_name("Nonesuch Brook") == "Nonesuch Brook"
+    assert water_name("10") == "10" and water_name("UCK") == "UCK"
+
+
+def test_the_forecast_writes_no_placeholder_water(monkeypatch):
+    import pandas as pd
+
+    from dipcast.model import forecast
+    rows = pd.DataFrame({"site_id": list("abcdef"), "receiving_watercourse": ["#N/A", "N/A", "None", "0", "River Eden", None]})
+    monkeypatch.setattr(forecast, "load_overflows", lambda net: rows.copy())
+    monkeypatch.setattr(forecast, "_net", lambda: None)
+    forecast._overflows_uncached.cache_clear()
+    try:
+        written = [forecast._clean(v) for v in forecast._overflows()["receiving_watercourse"]]   # as spots.json gets them
+        assert written == [None, None, None, None, "River Eden", None]
+    finally:
+        forecast._overflows_uncached.cache_clear()
