@@ -318,10 +318,10 @@ test('a later peak in the sentence over the five days has its noun when today ha
   const ctx = plainCtx(), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const peak = week(['moderate', 'low', 'low', 'high', 'low'], {upstream_summary: {overflows: 60}});
   peak.days.forEach((x, i) => { x.expected_spilling_overflows = [0.3, 0.2, 0.1, 8.2, 2][i]; });
-  assert.match(text(run('daysSentence', peak)), /^A spill from a nearby overflow upstream is possible today\. About 8 of the 60 are expected to spill on \w+\.$/);
+  assert.match(text(run('daysSentence', peak)), /^A spill from a nearby overflow upstream is possible today\. About 8 of the 60 are expected to spill on \w+\. Back to low risk tomorrow\.$/);
   // With a count today, "about 8" follows it, as before.
   peak.days[0].expected_spilling_overflows = 3;
-  assert.match(text(run('daysSentence', peak)), /^About 3 of the 60 overflows upstream are expected to spill today, about 8 on \w+\.$/);
+  assert.match(text(run('daysSentence', peak)), /^About 3 of the 60 overflows upstream are expected to spill today, about 8 on \w+\. Back to low risk tomorrow\.$/);
 });
 test('overflows discharging now: the sentence over the five days gives right now\'s level with "risk"', () => {
   // "exposure right now is moderate" left the level word bare (docs/DESIGN.md, Words).

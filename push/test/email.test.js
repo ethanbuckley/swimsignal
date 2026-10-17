@@ -328,6 +328,18 @@ test('a level word always carries "risk", and several spots make one email', asy
   assert.match(body.html, /color:#992a2a;">Very high risk today/);
 });
 
+test('after a spill the email says when it should have cleared, under the headline', async () => {
+  const w = world();
+  await w.subscribe('ann@example.org', ['a']);
+  const [id, s] = spot('a', 2, 'Aston', 'High risk right now: recent sewage spills');
+  await risen(w, [[id, { ...s, clears: 'The spills upstream should have passed and died off by Saturday 22:47.' }]]);
+  w.emails.length = 0;
+  await w.cron(); w.advance(120e3); await w.cron();
+  const { body } = w.emails[0];
+  assert.match(body.text, /^Aston\nHigh risk right now: recent sewage spills\.\nThe spills upstream should have passed and died off by Saturday 22:47\.\n.*spot\/a\/\n/);
+  assert.match(body.html, /recent sewage spills<\/p><p style="margin:0 0 4px;">The spills upstream should have passed and died off by Saturday 22:47\.<\/p>/);
+});
+
 test('at most EMAILS_PER_RUN a run, and alerts stop short of the daily cap to leave room for sign-ups', async () => {
   const w = world({ extra: { EMAIL_DAILY_CAP: '30', EMAIL_CONFIRM_RESERVE: '5', EMAILS_PER_RUN: '4' } });
   const id = await addressId(w.env, 'x@example.org');

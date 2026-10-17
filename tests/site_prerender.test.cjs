@@ -37,7 +37,7 @@ test("a spot's opening: its name, its headline from levels.js, its five days, is
   assert.ok(h.includes('<h1 class="spot-name" tabindex="-1">A &amp; B</h1>'));
   assert.match(h, /<h2 class="big low" id="risk-headline">Low risk<\/h2><p class="why">Today and tomorrow<\/p>/);
   assert.ok(h.includes('<p class="next">High risk on Thursday</p>'));   // the week, as levels.js weekNext says it
-  assert.ok(h.includes('<p class="t-sent">Low risk today. High risk on Thursday.</p>'));
+  assert.ok(h.includes('<p class="t-sent">Low risk today. High risk on Thursday. Back to low risk on Friday.</p>'));   // levels.js backToLow
   assert.equal((h.match(/<button class="drow /g) || []).length, 5);
   assert.ok(h.includes('<button class="drow high" type="button" data-day="2026-10-01"'));
   assert.ok(h.includes('<p class="issued">Issued Tue 08:00</p>'), h.match(/<p class="issued">[^<]*/)[0]);
