@@ -261,7 +261,9 @@ On these rows **B would fail all three conditions.**
 
 These rows do not decide; the window from 18 Oct does. But they say the same as the prediction
 above. **Live labels and 2025's EDM files disagree in direction:**
-- On the live rows, today's forecasts are already too high at seven of nine companies.
+- On the live rows, today's mean forecast is already above the observed rate at six of nine
+  companies (Severn Trent, South West, Southern, Thames, United Utilities, Wessex), and over all
+  rows (0.0393 against 0.0295). It is below at Anglian, Northumbrian and Yorkshire.
 - On 2025 EDM truth they were too low at all nine.
 
 A map fitted on EDM truth moves forecasts the wrong way for the live score. Inferred, not
