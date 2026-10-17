@@ -1350,14 +1350,15 @@ def site_url() -> str:
 
 
 def page_meta(title: str, description: str, url: str, root: str, base: str | None = None, noindex: bool = False,
-              image: tuple[str, str] | None = None) -> str:
+              image: tuple[str, str] | None = None, feed: tuple[str, str] | None = None) -> str:
     """The <head> block index.html marks with page-meta. Messaging apps and search engines need
     absolute addresses for the page and its preview image. Every page gets a relative <base> at
     the site root ("./" on the home page, "../../" in spot/<id>/). The page moves between the list
     and spots with pushState, and without a <base> every relative link would then resolve inside
     spot/<id>/; a <base> is resolved once, as the page loads. Relative, so the pages work at any
     address (a custom domain serves the site at / rather than /dipcast/). image: a picture of the page's
-    own and its description, (path from the site root, alt), in place of the shared icons/og.png."""
+    own and its description, (path from the site root, alt), in place of the shared icons/og.png. feed: the
+    page's Atom feed, (path from the site root, title), so a feed reader given the page finds it."""
     src, alt = image or ("icons/og.png", f"{BRAND}: pollution risk forecasts for river and lake swim spots")
     return "\n".join([
         *([f'<base href="{escape(base)}">'] if base else []),
@@ -1365,6 +1366,7 @@ def page_meta(title: str, description: str, url: str, root: str, base: str | Non
         f'<meta name="description" content="{escape(description)}">',
         *(['<meta name="robots" content="noindex">'] if noindex else []),
         f'<link rel="canonical" href="{escape(url)}">',
+        *([f'<link rel="alternate" type="application/atom+xml" title="{escape(feed[1])}" href="{escape(root + feed[0])}">'] if feed else []),
         '<meta property="og:type" content="website">',
         f'<meta property="og:site_name" content="{escape(BRAND)}">',
         f'<meta property="og:title" content="{escape(title)}">',
@@ -1425,15 +1427,19 @@ def home_lead(n: int) -> str:
             f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
 
 
-def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None) -> str:
+def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
+              feed: bool = False) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
     <head>, and its share card (card: path and alt, write_spot_cards) as the preview picture. In the body, top: the spot's answer and five days as the page's script draws them
     (prerender_spots), for crawlers, readers without scripts and the moment before the script runs.
-    Without it, its name under the sky, as the answer will be (see home_lead)."""
+    Without it, its name under the sky, as the answer will be (see home_lead). feed: link its Atom feed
+    (write_feeds)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
-                                             base="../../", image=card), template, count=1)
+                                             base="../../", image=card,
+                                             feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None),
+                       template, count=1)
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
@@ -1613,6 +1619,109 @@ def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
 
+# Atom feeds (docs/REVIEW-2026-10-16.md, G8), from this build's alerts.json: feed.xml for every spot,
+# feed/<area>.xml for each of the list's areas, spot/<id>/feed.xml for each spot with a page. Each
+# build adds one entry a spot, its headline and what to do, with the build's time as `updated`, so a
+# reader (Slack's RSS app, Feedly, IFTTT, a Discord bot) gets every new forecast. The entry's id has
+# the build's time in it, so a reader sees a new entry and not an edited one. sw.js stores none of them.
+ATOM = "http://www.w3.org/2005/Atom"
+
+
+def area_slug(area: str) -> str:
+    """'Cumbria and the Lake District' -> 'cumbria-and-the-lake-district', the area feed's file name."""
+    return re.sub(r"[^a-z0-9]+", "-", area.lower()).strip("-")
+
+
+def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list[dict], generated: pd.Timestamp,
+              root: str, credits: dict | None) -> str:
+    """One Atom document (RFC 4287). entries: alerts.json's spots, each with its `id`."""
+    from urllib.parse import urlsplit
+    from xml.etree import ElementTree as ET
+    ET.register_namespace("", ATOM)
+    q = lambda tag: f"{{{ATOM}}}{tag}"
+    when = generated.tz_convert("UTC").floor("s")
+    stamp = when.isoformat().replace("+00:00", "Z")
+    feed = ET.Element(q("feed"))
+
+    def add(parent, tag, text=None, **attrs):
+        el = ET.SubElement(parent, q(tag), {k: str(v) for k, v in attrs.items()})
+        if text is not None:
+            el.text = text
+        return el
+
+    add(feed, "id", url)
+    add(feed, "title", title)
+    add(feed, "subtitle", subtitle)
+    add(feed, "updated", stamp)
+    add(feed, "link", rel="self", type="application/atom+xml", href=url)
+    add(feed, "link", rel="alternate", type="text/html", href=alternate)
+    author = add(feed, "author")
+    add(author, "name", BRAND)
+    add(author, "uri", root)
+    add(feed, "icon", f"{root}icons/icon-192.png")
+    if credits:
+        add(feed, "rights", " ".join(x for x in (credits.get("attribution"), credits.get("modified"),
+                                                 f"Full credits: {credits['full']}" if credits.get("full") else None) if x))
+    # tag: URIs (RFC 4151), from the site's host and the build's date and time: one id a spot a build.
+    host = urlsplit(root).hostname or "swimsignal.co.uk"
+    for s in entries:
+        e = add(feed, "entry")
+        add(e, "id", f"tag:{host},{when.date().isoformat()}:spot/{s['id']}/{when.strftime('%Y%m%dT%H%M%SZ')}")
+        add(e, "title", f"{s['name']} · {s['headline']}")
+        add(e, "updated", stamp)
+        add(e, "link", rel="alternate", type="text/html", href=s["url"])
+        add(e, "category", term=s["level"])
+        add(e, "summary", f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"])
+    ET.indent(feed)
+    return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
+
+
+def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
+    """feed.xml, feed/<area>.xml and spot/<id>/feed.xml from site/data/alerts.json, after the spot pages
+    (write_pages clears spot/). Without alerts.json (Node missing, or a preview) there are no feeds,
+    and none left from an earlier build. Returns the counts, or None."""
+    shutil.rmtree(site / "feed", ignore_errors=True)
+    (site / "feed.xml").unlink(missing_ok=True)
+    path = site / "data" / "alerts.json"
+    try:
+        alerts = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
+    spots = [{"id": sid, **a} for sid, a in alerts["spots"].items()]
+    area_of = {r["id"]: r.get("area") for r in results}
+    (site / "feed.xml").write_text(atom_feed(
+        f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "
+        "a new entry a spot each time the forecast is issued.", spots, generated, root, credits))
+    areas: dict[str, list[dict]] = {}
+    for s in spots:
+        if area_of.get(s["id"]):
+            areas.setdefault(area_of[s["id"]], []).append(s)
+    (site / "feed").mkdir()
+    for area, rows in areas.items():
+        (site / "feed" / f"{area_slug(area)}.xml").write_text(atom_feed(
+            f"{root}feed/{area_slug(area)}.xml", root, f"{BRAND} · {area}",
+            f"The pollution risk forecast at the swim spots in {area}.", rows, generated, root, credits))
+    n = 0
+    for s in spots:
+        if SPOT_ID.fullmatch(s["id"]) and (site / "spot" / s["id"]).is_dir():
+            (site / "spot" / s["id"] / "feed.xml").write_text(atom_feed(
+                f"{root}spot/{s['id']}/feed.xml", s["url"], f"{BRAND} · {s['name']}",
+                f"The pollution risk forecast at {s['name']}.", [s], generated, root, credits))
+            n += 1
+    return {"site": len(spots), "areas": {area_slug(a): len(r) for a, r in areas.items()}, "spots": n}
+
+
+FEEDS = "<!-- feeds -->"
+
+
+def with_feed_list(html: str, site: Path) -> str:
+    """The data page's list of the area feeds this build wrote, at its FEEDS marker."""
+    files = sorted((site / "feed").glob("*.xml")) if (site / "feed").is_dir() else []
+    items = "".join(f'<li><a href="feed/{escape(p.name)}">feed/{escape(p.name)}</a></li>' for p in files)
+    return html.replace(FEEDS, f'<ul class="feeds">{items}</ul>' if items else "", 1)
+
+
 # The app's page carries its reasons as comments, kept in the source. The built pages leave out the
 # CSS comments and the script lines that are only a comment: 22 kB of the page's 86 kB compressed on
 # 6 Oct 2026. A comment after code on the same line stays, and so does every HTML comment (the
@@ -1760,7 +1869,9 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
-    home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./"), template, count=1)
+    feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
+    home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
+                                             feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
     home = home.replace(LOADING, home_lead(len(results)), 1)
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
@@ -1778,10 +1889,11 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
-            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None), token))
+            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/
+    write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
                                               extra=["support.html"] if support else []))
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
@@ -1924,6 +2036,7 @@ def write_data_page(site: Path, token: str | None = None) -> list[str]:
     for a, b in REWRITES:
         page = page.replace(a, b)
     page, extra = with_data_files(page, site / "data")
+    page = with_feed_list(page, site)
     if extra:
         announce(f"data.html does not describe {', '.join(extra)}: listed without a description. "
                  "Add a row and a section for each to src/dipcast/api/static/data.html")
