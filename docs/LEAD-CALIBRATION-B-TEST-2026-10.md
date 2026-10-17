@@ -163,4 +163,56 @@ The check is `scripts/lead_calibration_b_check.py`, committed with this statemen
 
 ## Results
 
-(Nothing below this line yet.)
+### Step 2: the map (17 Oct 2026, after `9367693` was pushed)
+
+- **Fitted with:** `uv run python scripts/verify_leads.py 2025 --model spill_model.pkl --exclude "United
+  Utilities"`, at PR #251's commit `1a81ca2`. The log is `logs/verify_leads_b_2026-10-17.log` in the
+  main checkout.
+- **Rows:** 3,050 overflows, as in the replay. Yorkshire 772, Severn Trent 699, Northumbrian 399,
+  South West 296, Wessex 275, Anglian 251, Thames 205, Southern 153.
+- **Overflow climatology Brier** on these rows: 0.0537.
+- **Saved as** `docs/LEAD-CALIBRATION-B-TEST-2026-10-map.json`, SHA-256 beginning `fce6a1d12025df37`.
+  Its `model` field is the production model's `trained_on`.
+
+| Lead | Raw Brier | Map, cross-fitted by month | Map, in-sample | Saved |
+|---|---|---|---|---|
+| 0 | 0.03570 | 0.03434 | 0.03427 | map |
+| 1 | 0.03787 | 0.03692 | 0.03686 | map |
+| 2 | 0.03986 | 0.03860 | 0.03852 | map |
+| 3 | 0.04085 | 0.03973 | 0.03959 | map |
+| 4 | 0.04225 | 0.04132 | 0.04119 | map |
+
+### The saved map's expected moves, written before the window opens
+
+Measured on the 2025 replay: leads 0 to 4, every company's overflows in lead cells, today's map
+against B's saved map on the same model probabilities. **The production model is in-sample at
+United Utilities**, so that row says where its forecasts go, not whether that is right.
+
+| Company | Rows | Observed 2025 | Today | B |
+|---|---|---|---|---|
+| Anglian | 458,075 | 0.0363 | 0.0211 | 0.0349 |
+| Northumbrian | 728,175 | 0.0484 | 0.0276 | 0.0436 |
+| Severn Trent | 1,275,675 | 0.0451 | 0.0304 | 0.0477 |
+| South West | 540,200 | 0.0855 | 0.0640 | 0.0903 |
+| Southern | 279,225 | 0.0466 | 0.0341 | 0.0522 |
+| Thames | 374,125 | 0.0547 | 0.0381 | 0.0595 |
+| **United Utilities** | 4,129,975 | 0.0746 | 0.0680 | **0.0962** |
+| Wessex | 501,875 | 0.0531 | 0.0379 | 0.0583 |
+| Yorkshire | 1,408,900 | 0.0704 | 0.0437 | 0.0649 |
+
+| Bin of today's forecast | 0.0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Today | 0.013 | 0.143 | 0.243 | 0.346 | 0.445 | 0.548 | 0.650 | 0.754 | 0.832 | 0.936 |
+| B | 0.024 | 0.219 | 0.355 | 0.480 | 0.588 | 0.684 | 0.766 | 0.818 | 0.874 | 0.960 |
+| Observed 2025 | 0.019 | 0.182 | 0.307 | 0.430 | 0.543 | 0.644 | 0.751 | 0.848 | 0.920 | 0.953 |
+
+Rain bands, today's mean then B's: under 1 mm 0.011 then 0.019; 1-5 mm 0.054 then 0.085;
+5-10 mm 0.124 then 0.179; 10 mm or more 0.267 then 0.346.
+
+**What to expect live.** B raises every company's forecasts and every bin below 0.7:
+- by a half to three-quarters outside United Utilities;
+- by about 40% at United Utilities, where in 2025 it overshoots the observed rate (0.096 against
+  0.075).
+
+So, inferred: if the live labels behave as up to 16 Oct, L2 is at risk at United Utilities and L1
+and L3 overall.
