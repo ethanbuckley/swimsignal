@@ -551,3 +551,26 @@ def test_the_page_fixture_still_says_what_the_api_says(world, tmp_path, monkeypa
     def crossed(mode):
         return sum(r["lake_distance_m"] > 0 for c in kept_all["modes"][mode]["clicks"] if c["mode"] == "river" for r in c["rows"])
     assert crossed("lake") > 10 and crossed("river") == 0
+
+
+def test_each_rain_square_gets_the_48_hours_to_midday_a_listed_spot_shows():
+    """overflow_days.json's rain_48h (review of 16 Oct 2026, C8): per rain square, the rain in the 48 h
+    to midday local time on each day ahead, by ecoli.rain_windows, as forecast.py gives a listed spot's
+    rain_48h_mm. A click with no overflow upstream shows it in its day rows (anypoint.js, rainAt)."""
+    from dipcast.model import ecoli
+    bap = _bap()
+    hours = pd.date_range("2026-10-13 00:00", "2026-10-20 23:00", freq="h", tz="UTC")
+    wet = pd.DataFrame({"cell_lat": 54.5, "cell_lon": -3.2, "time": hours, "precip_mm": 0.5, "issued_at": hours[0]})
+    # The second square: dry, then a gap of a day from 17 Oct 06:00 UTC.
+    dry = pd.DataFrame({"cell_lat": 54.5, "cell_lon": -0.0, "time": hours, "precip_mm": 0.0, "issued_at": hours[0]})
+    dry.loc[(dry["time"] >= "2026-10-17 06:00") & (dry["time"] < "2026-10-18 06:00"), "precip_mm"] = np.nan
+    days = pd.date_range("2026-10-16", periods=5, freq="D", tz="Europe/London")
+    got = bap.cell_rain_48h(pd.concat([wet, dry], ignore_index=True), days)
+    assert set(got) == {"54.5,-3.2", "54.5,0.0"}                   # -0.0 written as 0.0, as the page keys it
+    assert got["54.5,-3.2"] == [24.0] * 5                           # 48 hours of 0.5 mm
+    assert got["54.5,0.0"][0] == 0.0 and got["54.5,0.0"][1] is None   # 17 Oct's window is missing over 10% of its hours
+    # The same numbers as forecast.py's call for a listed spot in that square.
+    s = wet.set_index(wet["time"].dt.tz_convert("Europe/London"))["precip_mm"]
+    r48, _ = ecoli.rain_windows(s, days + pd.Timedelta(hours=ecoli.SAMPLE_HOUR))
+    assert got["54.5,-3.2"] == [round(float(v), 1) for v in r48]
+    assert bap.cell_rain_48h(pd.DataFrame(), days) == {}

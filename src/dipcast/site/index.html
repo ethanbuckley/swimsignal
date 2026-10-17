@@ -263,6 +263,13 @@
   ul.spots li.area-head:first-child { padding-top:8px; }
   li.area-head h3 { font-size:var(--fs-body); line-height:1.3; margin:0; }
   li.area-head span { font:400 var(--fs-note) var(--font-text); color:var(--muted); }
+  /* The area's spots with no monitored overflow upstream, behind one line (areaRows): the count, then
+     their names, muted; a tap shows their rows. A chevron says it opens, as a fold's does. */
+  .quiet-btn { display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%; min-height:60px; padding:12px 28px 12px 0; position:relative;
+               font:600 var(--fs-note)/1.35 var(--font-text); color:var(--ink); text-align:left; background:none; border:0; cursor:pointer; }
+  .quiet-btn .k { font-weight:400; font-size:var(--fs-meta); color:var(--muted); }
+  .quiet-btn::after { content:""; position:absolute; right:6px; top:50%; width:8px; height:8px; margin-top:-6px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); }
+  .quiet-btn[aria-expanded="true"]::after { margin-top:-2px; transform:rotate(-135deg); }
   a.row { display:flex; align-items:center; gap:12px; min-height:60px; padding:12px 0; color:inherit; text-decoration:none; }
   a.row:focus-visible { outline-offset:0; border-radius:var(--radius); }
   /* Hover and press reach 8 px past the row on either side, so the text keeps the column's edge. */
@@ -612,6 +619,7 @@
   .linkbtn.small { font-size:inherit; padding:0; }   /* inside a sentence */
   .empty-saved { text-align:center; padding:32px 16px 24px; }
   .empty-saved.tile { padding:28px 16px 20px; }
+  .empty-saved .empty-more { margin:8px 0 0; }
   /* Named lists (lists.js): the lists as chips under the Saved page's heading, the one shown filled, as
      a chosen filter is; "Your lists" folds under the cards, its forms between hairlines. A list someone
      shared opens as its own read-only page, its one action under the lede. */
@@ -834,6 +842,13 @@
   ol.g-key li::marker { font-weight:700; }
   .g-cap { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
   .g-ask { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.45; }
+  /* "Know this spot?" (guide.js, knowTile): a line for each thing swimmers have not added yet, the way
+     to add it (a 44 px target), then what it is, muted. Hairlines between, as the guide's rows. */
+  .know-list { list-style:none; margin:4px 0 0; padding:0; }
+  .know-list li { padding:2px 0 10px; }
+  .know-list li + li { border-top:1px solid var(--hair); }
+  .know-list a { display:inline-flex; align-items:center; min-height:44px; font-size:var(--fs-note); font-weight:600; }
+  .know-list span { display:block; margin-top:-4px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
   /* Notes on a visit (visits.js): built as the reviews are, before them. The ticks are the yes or no's
      chips, two to a row; a note of pollution or algae carries its own line saying it is not verified;
      and a muted line keeps a good note from reading as the all-clear. No level colours: a note is not
@@ -1169,7 +1184,7 @@ window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, OVERFLOWS = null, current = null, shown = null;
-const VIEW = { q: '', filter: 'all', sort: 'name', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null };   // A–Z until a place is given (14 Oct 2026)
+const VIEW = { q: '', filter: 'all', sort: 'name', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // A–Z until a place is given (14 Oct 2026)
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
 const fmt = (x, d=0) => (x === null || x === undefined) ? '–' : Number(x).toFixed(d);
@@ -1920,6 +1935,11 @@ const bindBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b
 // device only and sends nothing. These are the page's hooks into it; without that script they do nothing.
 const bindSwim = d => { if (typeof journalLogBind === 'function') journalLogBind(d, DATA.generated_at); };
 const swimsCard = () => typeof journalCard === 'function' ? journalCard() : '';
+// The journal's tile on the Saved page: beside saved spots, once a swim is logged, once asked for by
+// the empty page's "Swim journal" link (SWIMS_ASKED, this visit), or at saved/#journal.
+let SWIMS_ASKED = false;
+const swimsShown = spots => spots.length > 0 || SWIMS_ASKED || location.hash === '#journal'
+  || (typeof journalNow === 'function' && journalNow().length > 0);
 const bindSwims = () => { if (typeof journalBindSection === 'function') journalBindSection(); };
 
 // ------------------------------------------------------------------------------ a picture to share
@@ -2129,7 +2149,8 @@ function styleMarkers() {
     const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || lv === 'low'; if (!m) continue;
     m.setTooltipContent(markerTip(s));
     m.setStyle(on ? { color: PAPER, weight: 2, fillColor: colour(lv), fillOpacity: 1 } : { color: PAPER, weight: 1, fillColor: '#98a2aa', fillOpacity: .45 });
-    m.setRadius(on ? (VIEW.lowOnly ? 10 : 9) : 4);
+    // No monitored overflow upstream: its teal at a smaller dot, as its row is quieter in the list (C3).
+    m.setRadius(on ? (VIEW.lowOnly ? 10 : plainLevel(lv) ? 6 : 9) : 4);
     if (on) m.bringToFront();
   }
   const ln = document.getElementById('low-note-list'); if (ln) { ln.hidden = !VIEW.lowOnly; ln.textContent = lowListNote(); }
@@ -2365,6 +2386,21 @@ function areaGroups(items) {
 }
 const areaHead = (a, xs) => { const low = xs.filter(s => mapLevel(s) === 'low').length;
   return `<li class="area-head"><h3>${esc(a)} <span>· ${xs.length} spot${xs.length === 1 ? '' : 's'}, ${low || 'none'} at low risk</span></h3></li>`; };
+// The spots with no monitored overflow upstream have only rain to say, and their rows read like a
+// forecast (review of 16 Oct 2026, C3; 24 of 105 rows). In A–Z they go at the end of their area, behind
+// one line that names them and opens them on a tap; a search shows its matches as rows. The count over
+// the list, the other sorts and the spots' own pages are unchanged. `open`: the areas opened (VIEW.quiet).
+const QUIET_NAMES = 3;
+function areaRows(a, xs, item, open, fold = true) {
+  const quiet = fold ? xs.filter(s => plainLevel(mapLevel(s))) : [], loud = xs.filter(s => !quiet.includes(s));
+  let h = areaHead(a, xs) + loud.map(item).join('');
+  if (!quiet.length) return h;
+  const on = open.has(a), names = quiet.slice(0, QUIET_NAMES).map(s => esc(s.name));
+  const rest = quiet.length - names.length, list = rest ? `${names.join(', ')} and ${rest} more` : names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
+  h += `<li class="quiet-head"><button type="button" class="quiet-btn" data-quiet="${esc(a)}" aria-expanded="${on}">`
+    + `<span>${quiet.length}${loud.length ? ' more' : ''} spot${quiet.length === 1 ? '' : 's'} with no monitored overflow upstream</span><span class="k">${list}</span></button></li>`;
+  return h + quiet.map(s => item(s).replace(/^<li>/, `<li class="quiet"${on ? '' : ' hidden'}>`)).join('');
+}
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -2395,7 +2431,7 @@ function drawSpots() {
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
   const groups = areaGroups(items);
-  ul.innerHTML = groups ? groups.map(([a, xs]) => areaHead(a, xs) + xs.map(spotItem).join('')).join('')
+  ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
@@ -2403,6 +2439,12 @@ function drawSpots() {
   const clear = document.getElementById('clear-filters');
   if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); });
   bindItems(ul);
+  ul.querySelectorAll('[data-quiet]').forEach(b => b.addEventListener('click', () => {
+    const a = b.dataset.quiet, on = !VIEW.quiet.has(a);
+    if (on) VIEW.quiet.add(a); else VIEW.quiet.delete(a);
+    b.setAttribute('aria-expanded', String(on));
+    let li = b.parentElement.nextElementSibling;
+    for (; li && li.classList.contains('quiet'); li = li.nextElementSibling) li.hidden = !on; }));
 }
 
 // ------------------------------------------------------------------------------ the Saved page
@@ -2476,8 +2518,8 @@ function renderSaved() {
   // filled; then the cards on the glass.
   let h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Saved spots</h1>`
     + (many ? `<div class="chips-row lists-row" role="group" aria-label="Your lists">${LISTS.lists.map(x => `<button type="button" class="chip-btn" data-list="${esc(x.id)}" aria-pressed="${x.id === l.id}">${esc(x.name)}</button>`).join('')}</div>` : '')
-    + `<p class="lede">${!spots.length ? (many ? `Spots you save to ${named} show here` : 'Spots you save show here')
-      : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`}`}, `
+    + `<p class="lede">${!spots.length ? (many ? `Spots you save to ${named} are` : 'Spots you save are')
+      : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
   h += notices();
@@ -2486,11 +2528,13 @@ function renderSaved() {
   h += '</div>';
   if (spots.length) h += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
     + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
-  else h += `<div class="empty-saved tile"><h2 class="sec-h">${many ? `No spots in ${named} yet` : 'No saved spots yet'}</h2>`
-    + `<p class="sub">Open a spot and press <b>${many ? `Save to ${named}` : 'Save'}</b>. It then shows here with the days ahead.`
+  // Empty: one tile, one sentence and the way to a spot (review of 16 Oct 2026, C7). The swim journal
+  // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
+  else h += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
     + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
     + `${navigator.standalone ? ' Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here.' : ''}</p>`
-    + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
+    + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
+    + `${swimsShown(spots) ? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal</button></p>'}</div>`;
   if (gone) h += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
   h += `<div id="compare-host">${compareSection(spots)}</div>`;
@@ -2500,7 +2544,7 @@ function renderSaved() {
     + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p>`
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
-  h += (many || SAVED.size ? listsCard(l) : '') + swimsCard();   // lists, once there is something to put in one
+  h += (many || SAVED.size ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
   setPanel(h);
   bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
   if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
@@ -2532,6 +2576,8 @@ function bindSavedPage(l, spots) {
   bindFind();
   const forget = $('forget');
   if (forget) forget.addEventListener('click', () => { setLists(keepSpots(LISTS, id => DATA.spots.some(s => s.id === id))); renderSaved(); });
+  const jn = document.getElementById('jn-show');
+  if (jn) jn.addEventListener('click', () => { SWIMS_ASKED = true; renderSaved(); if (typeof journalFocus === 'function') journalFocus(); });
   // The lists: the one chosen is shown, and kept as the one Save adds to.
   document.querySelectorAll('[data-list]').forEach(b => b.addEventListener('click', () => {
     setLists(pickList(LISTS, b.dataset.list)); renderSaved();
