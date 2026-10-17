@@ -12,8 +12,12 @@ from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.training import ece, site_years
 
 
+@pytest.mark.xfail(strict=True, reason=(
+    "Review task A1, open: the map was fitted for the 2023-24 hold-out and production runs the 2023-25 "
+    "refit. On 17 Oct 2026 Ethan chose to fix it only after its own pre-stated test "
+    "(docs/NINE-COMPANY-MODEL-TEST-2026-10.md, 'Lead calibration'); strict, so the fix must remove this mark."))
 def test_lead_calibration_was_fitted_for_the_production_model():
-    # Until 16 Oct 2026 a map fitted for the 2023-24 hold-out model corrected the 2023-25 refit.
+    # The map in use was fitted for the 2023-24 hold-out model and corrects the 2023-25 refit (review 3.1).
     cal = json.loads((config.PROCESSED / "lead_calibration.json").read_text())
     assert cal["model"] == SpillModel.load(MODEL_PATH).trained_on
 

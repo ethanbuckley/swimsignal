@@ -332,3 +332,13 @@ Which route ships is Ethan's decision (asked 17 Oct 2026):
 - the stated fallback;
 - the better route found after the run, which is a deviation from the plan above;
 - neither.
+
+**Ethan's decision, 17 Oct 2026:** "Option 3: ship the record only. Then pre-state a test for
+option B (map fitted on non-UU rows, cross-fitted by month, with the expected bin moves and a
+four-week live check) and run it as its own task."
+
+So nothing in production changes here:
+- `spill_model.pkl` and `lead_calibration.json` are as they were.
+- The test that ties the map to the model (`tests/test_training.py`) is marked as an expected
+  failure, strict, so it must be unmarked when A1 is fixed.
+- Option B is stated in its own document and PR.

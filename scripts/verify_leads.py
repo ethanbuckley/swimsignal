@@ -79,6 +79,10 @@ def main() -> None:
 
     # Covariates from the previous year's return, as in training; the overflows the files cover.
     sites, _ = site_years(ar, ev, NINE, YEAR)
+    # --exclude COMPANY (repeatable): leave out a company whose YEAR the model was trained on, so the
+    # map is fitted out of sample (the production model, United Utilities 2023-25, saw 2025 there).
+    excluded = [sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--exclude"]
+    sites = sites[~sites["company"].isin(excluded)]
     sites = sites[[c in cells_with_leads for c in zip(*grid_cell(sites["lat"].to_numpy(), sites["lon"].to_numpy()), strict=True)]]
     print("\noverflows per company:", sites["company"].value_counts().to_dict())
     days = pd.date_range(f"{YEAR}-01-01", f"{YEAR}-12-31", freq="D", tz="UTC")
@@ -176,7 +180,8 @@ def main() -> None:
     import json
     (config.PROCESSED / "lead_calibration.json").write_text(json.dumps(
         {"fitted_on": YEAR, "model": model.trained_on, "method": "isotonic",
-         "rows": "the nine English companies' overflows in cells with archived lead forecasts",
+         "rows": "the nine English companies' overflows in cells with archived lead forecasts"
+                 + (f", except {', '.join(excluded)} (in the model's training year)" if excluded else ""),
          "crossfit": "odd/even months; a lead whose cross-fitted Brier is not below the raw one is an identity map",
          "climatology_brier": clim, "leads": calib}, indent=1))
     log.info("saved per-lead calibration -> %s", config.PROCESSED / "lead_calibration.json")
