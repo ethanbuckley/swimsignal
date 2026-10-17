@@ -204,4 +204,130 @@ Whatever the verdict:
 
 ## Results
 
-Not yet run.
+Added 17 October 2026, after the run. Everything above the line is as committed in 7644226 (17 October 2026,
+10:43 BST) and pushed before the run started (10:43:39 BST). The harness was not changed after any result was seen.
+
+**Verdict: conditions 1 and 2 fail. The settings stay at PR #248's** (0.2 m/s, T90 72 h, exponent 0.5). The
+full-data pick, 0.15 m/s, 120 h and exponent 0, is not on the new edge, so the edge rule does not apply. With the
+conditions failing, there is no switch commit and no refit. This PR is a record.
+
+### How it was run
+
+- From an archive of 7644226 in a scratch folder, on a copy of the first test's frozen inputs (hashes as above). The
+  run imported `dipcast` from the archive (`which.log`).
+- The gate read 48% free in `memory_pressure`, with no evaluation, training, build or test running. Only another
+  session's rain fetch was running (network only, not an evaluation). The run started at once.
+- 0 network attempts in all four steps.
+- Wall time: `validate_ecoli.py` 168 s, `prep` 82 s, `check` 3 s, `score` 30 s. The first test's 79 and 58 minutes
+  were swapping; this run was not. Peak memory 3.6 GB (`prep`).
+
+### Condition 4: face check. Holds.
+
+- The reference column equals `validate_ecoli.py`'s `risk_model`, run in the same root, on all 2,165 rows: largest
+  difference 4.4e-16. Missing on the same rows (0 mismatches). No row unmatched; `upstream` equal on every row.
+- The numpy rewrite equals `transport.combine_daily` and `transport.missing_share` at all 31 bathing waters with
+  overflows upstream: largest difference 0.0.
+- The reference column equals the first test's `v0.2_t72_p0.5` column on all 2,165 rows: largest difference 7.8e-16,
+  0 missing-value mismatches, none unmatched.
+
+**Rows scored:** all 1,685 samples at bathing waters with overflows upstream have a figure under all 36 settings.
+Rivers 947 at 20 waters (as in the first test); lakes 738 at 11. The first test dropped one lake sample (Derwent Water
+at Crow Park, 7 September 2026), which some of its faster settings left without a figure. Every setting here gives it
+one, as the reference did in the first test's confirmation.
+
+### Leave one year out, rivers
+
+| held-out year | samples | pick (from the other three years) | its score on them | held-out rho, pick | held-out rho, reference |
+|---|---|---|---|---|---|
+| 2023 | 40 | 0.15 m/s, 120 h, 0 | 0.500 | 0.608 | 0.616 |
+| 2024 | 290 | 0.15 m/s, 72 h, 0 | 0.494 | 0.477 | 0.441 |
+| 2025 | 281 | 0.15 m/s, 120 h, 0 | 0.483 | 0.578 | 0.543 |
+| 2026 | 336 | 0.2 m/s, 120 h, 0 | 0.542 | 0.380 | 0.376 |
+
+The years did not agree on one setting, as they did in the first test. All four picked exponent 0. None picked
+0.05 m/s or 200 h.
+
+The full-data pick is 0.15 m/s, 120 h, exponent 0: in-sample within-site rho 0.504 against 0.471 for the reference.
+
+### Conditions 1 to 3
+
+Pooled held-out rows; change is pick minus reference, with its 95% calendar-week cluster bootstrap interval.
+
+| measure | n | weeks | pick | reference | change [95% CI] |
+|---|---|---|---|---|---|
+| Rivers, within-site rho | 947 | 83 | 0.4829 | 0.4727 | +0.0102 [−0.0114, +0.0398] |
+| Rivers, AUC over 900 (202 over) | 947 | 83 | 0.7503 | 0.7685 | −0.0182 [−0.0317, −0.0042] |
+| Lakes, within-site rho, river picks | 738 | 79 | 0.3127 | 0.3044 | +0.0083 [−0.0132, +0.0269] |
+| Lakes, AUC over 900 (16 over), river picks; reported only | 738 | 79 | 0.5757 | 0.6131 | −0.0373 [−0.0603, −0.0125] |
+| All, within-site rho; reported only | 1,685 | 85 | 0.3999 | 0.3816 | +0.0183 [+0.0004, +0.0385] |
+| All, AUC over 900 (218 over); reported only | 1,685 | 85 | 0.7942 | 0.8054 | −0.0112 [−0.0208, −0.0013] |
+
+1. Rivers, rho: +0.010, but the lower end of the interval is −0.011, not above zero. **Fails.**
+2. Rivers, AUC: −0.018, below −0.005; the upper end is −0.004, not above zero. **Fails.** The interval is wholly
+   below zero.
+3. Lakes, rho: +0.008, at least −0.02; upper end +0.027, above zero. **Holds.**
+
+### The in-sample table
+
+Within-site rho on all four years. Rows river speed (m/s), columns T90 (hours). The reference is 0.2 m/s, 72 h,
+exponent 0.5 (0.471 on rivers); the full-data pick is in bold.
+
+Rivers:
+
+| exponent 0 | 72 | 120 | 200 |
+|---|---|---|---|
+| 0.05 | 0.454 | 0.457 | 0.445 |
+| 0.1 | 0.480 | 0.483 | 0.470 |
+| 0.15 | 0.502 | **0.504** | 0.497 |
+| 0.2 | 0.500 | 0.504 | 0.501 |
+
+| exponent 0.25 | 72 | 120 | 200 |
+|---|---|---|---|
+| 0.05 | 0.433 | 0.448 | 0.440 |
+| 0.1 | 0.473 | 0.479 | 0.477 |
+| 0.15 | 0.493 | 0.500 | 0.500 |
+| 0.2 | 0.492 | 0.499 | 0.502 |
+
+| exponent 0.5 | 72 | 120 | 200 |
+|---|---|---|---|
+| 0.05 | 0.412 | 0.431 | 0.431 |
+| 0.1 | 0.454 | 0.468 | 0.472 |
+| 0.15 | 0.470 | 0.485 | 0.489 |
+| 0.2 | *0.471* | 0.483 | 0.489 |
+
+River AUC over 900 runs from 0.749 to 0.780 across the 36 (reference 0.769, full-data pick 0.768). It is highest at
+72 h and falls with longer T90 in 11 of the 12 speed and exponent rows (not at 0.05 m/s and exponent 0.5).
+
+Lakes vary little: within-site rho 0.290 to 0.307 (reference 0.290), highest at exponent 0. Lake AUC over 900 runs
+from 0.558 to 0.628, highest at exponent 0.5 and 0.05 m/s, and falls as the exponent falls in every cell.
+
+**Lake-only selection, for the record:** 0.2 m/s, 72 h, 0 in 2023 and 2025; 0.05 m/s, 120 h, 0 in 2024 and 2026.
+Held-out lake rho 0.3012 against 0.3044, change −0.003 [−0.038, +0.024]; lake AUC 0.557 against 0.613. Not used.
+
+### What this shows
+
+Established:
+- **No setting on this grid beats PR #248's on held-out river years by a margin the interval can tell from zero.**
+  The in-sample gain of the full-data pick (+0.034 in rho) shrinks to +0.010 on held-out years.
+- **River AUC over 900 is worse with the picks,** by 0.018, interval wholly below zero.
+- **Slower speeds lose.** River rho falls from 0.15 m/s to 0.1 and again to 0.05 at every T90 and exponent. Its
+  peak on this grid is at 0.15 or 0.2 m/s. So nothing here supports the smoothing or persistence readings of a very
+  slow speed.
+- **T90 barely matters past 72 h.** River rho moves by at most 0.02 from 72 to 200 h in any row, and AUC mostly falls.
+- **A lower exponent ranks river days better within site.** The better of 0 and 0.25 beats 0.5 in all 12 speed and
+  T90 cells, and every year picked 0. It lowers lake AUC, as in the first test.
+
+Inferred, not tested:
+- The first test's corner sits close to the speed optimum. The corner in T90 and exponent was not the end of the
+  rise in-sample, but the extra gain does not survive leaving a year out.
+- Pooled held-out AUC may suffer here partly because the years picked different settings (different T90s), so
+  risks from different settings are ranked against each other across years. In the first test every year picked the
+  same setting. The full-data pick's in-sample river AUC (0.768) is the same as the reference's (0.769).
+- Exponent 0 means the length ratio adds nothing to within-site ranking on rivers. That is a question about the
+  dilution term, not the grid. It would need its own test (for example the transport step's existing `flow`
+  dilution mode against `length`), stated first, and should look at lake AUC as a condition, not only a report.
+
+### What follows
+
+As stated: the settings stay at PR #248's. No switch commit, no refit, and no change to the Accuracy files, the
+methods page or the README. The edge rule was not triggered, and no third grid follows from this test.
