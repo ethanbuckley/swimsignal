@@ -183,4 +183,152 @@ Evaluations run one at a time on this 16 GB Mac.
 
 ## Results
 
-(Nothing below this line yet.)
+Run 17 October 2026 from commit `f0fcf21`, which holds the statement above (first pushed at `4d90a5a`,
+16 Oct 21:48 BST). The log is `logs/train_nine_2026-10-17.log` in the main checkout (not committed).
+The tables are committed beside this file:
+- `-scores.csv`: every predictor, every company
+- `-reliability.csv`
+- `-coverage.csv`
+- `-events.csv`
+
+### Seen before the main run
+
+- **A code test** of the `--nine` path, with United Utilities as the only company (16 Oct, 21:58).
+  - A model fitted on United Utilities' 2024 alone scored Brier 0.0454 there in 2025.
+  - The hold-out, fitted on 2023-24, scored 0.0446.
+  - It showed that condition 1 at United Utilities was at risk. Nothing above the line was changed
+    after it.
+- **A code test of `verify_leads.py`** on the production model, which is in-sample at United
+  Utilities, so its scores mean nothing.
+
+### Step 1: the files and the companies' event definitions
+
+- **Coverage.** 2.95 million events. Every id is in the annual returns, every event has a position,
+  and no event lacks a stop.
+- **United Utilities against the Stream feed it was trained on,** counted as spill-days:
+  - 2025: identical (61,764).
+  - 2024: 76,958 shared, 1,333 only in the EA file, 846 only in Stream.
+- **Event definitions** (measured; the DSP note gives one definition for all):
+
+| Company | Events 2024 / 2025 | Median event | Under 15 min | Median gap to next start |
+|---|---|---|---|---|
+| Anglian | 290,172 / 96,034 | 6 min | 61-62% | 2-6 min |
+| Northumbrian | 106,346 / 94,698 | 6-15 min | 45-64% | 8-28 min |
+| Severn Trent | 223,400 / 91,790 | 14-19 min | 45-52% | 16-35 min |
+| South West | 237,036 / 209,707 | 5-6 min | 67-71% | 8-12 min |
+| Southern | 73,295 / 52,682 | 7-13 min | 52-62% | 12-15 min |
+| Thames | 31,856 / 12,175 | 75 min | 14-16% | 128-165 min |
+| United Utilities | 216,376 / 175,356 | 16 min | 48-49% | 26-28 min |
+| Wessex | 445,625 / 230,487 | 2 min | 84-85% | 4 min |
+| Yorkshire | 213,899 / 151,220 | 15 min | 24% | 22-30 min |
+
+What the table shows:
+- **Thames** records far fewer, longer events with long gaps between them. *Inferred:* it merges
+  activations close together.
+- **Wessex and Anglian** record many very short ones, two to six minutes apart.
+- The label is "spilled that day", so these differences change counts much more than labels. But an
+  overflow that blips once on a dry day is a spill-day at Wessex and may not be at Thames.
+
+### Overflow-years kept
+
+| | 2024 kept | of | 2025 kept | of |
+|---|---|---|---|---|
+| Anglian | 1,399 | 1,433 | 1,405 | 1,444 |
+| Northumbrian | 1,370 | 1,410 | 1,540 | 1,560 |
+| Severn Trent | 2,382 | 2,430 | 2,412 | 2,459 |
+| South West | 1,345 | 1,367 | 1,353 | 1,370 |
+| Southern | 927 | 976 | 941 | 978 |
+| Thames | 577 | 589 | 575 | 590 |
+| United Utilities | 2,199 | 2,263 | 2,263 | 2,270 |
+| Wessex | 1,291 | 1,294 | 1,281 | 1,295 |
+| Yorkshire | 2,108 | 2,187 | 2,140 | 2,191 |
+
+Per company and rule, 0 to 39 overflows were missing from the file and 0 to 58 had EDM under 50%
+(`-coverage.csv`). This gives 4,976,868 training site-days in 2024, a base rate of 0.087, and
+5,077,150 test site-days in 2025, a base rate of 0.057. 2024 was much the wetter year. The pooled
+layer ran its full 300 iterations.
+
+### Verification on 2025, per company
+
+Brier, with ECE in brackets; bold marks the better of new and hold-out. AUC follows for the new model and the hold-out. "Production" is
+in-sample at United Utilities.
+
+| Company | New | Current hold-out | Current production | Flat rate | Overflow climatology | AUC new / hold-out |
+|---|---|---|---|---|---|---|
+| Anglian | 0.0272 (0.011) | **0.0269** (0.008) | 0.0265 (0.010) | 0.0347 | 0.0382 | 0.883 / 0.868 |
+| Northumbrian | **0.0332** (0.003) | 0.0353 (0.014) | 0.0341 (0.015) | 0.0483 | 0.0468 | 0.922 / 0.921 |
+| Severn Trent | **0.0284** (0.005) | 0.0295 (0.009) | 0.0288 (0.011) | 0.0407 | 0.0418 | 0.928 / 0.924 |
+| South West | **0.0519** (0.009) | 0.0547 (0.012) | 0.0536 (0.015) | 0.0854 | 0.0789 | 0.930 / 0.919 |
+| Southern | **0.0277** (0.011) | 0.0300 (0.010) | 0.0300 (0.013) | 0.0441 | 0.0445 | 0.946 / 0.938 |
+| Thames | **0.0303** (0.024) | 0.0330 (0.010) | 0.0323 (0.012) | 0.0451 | 0.0488 | 0.942 / 0.893 |
+| United Utilities | 0.0456 (0.018) | **0.0446** (0.010) | 0.0369 (0.007) | 0.0695 | 0.0656 | 0.929 / 0.930 |
+| Wessex | **0.0326** (0.014) | 0.0354 (0.005) | 0.0338 (0.009) | 0.0515 | 0.0511 | 0.944 / 0.924 |
+| Yorkshire | **0.0403** (0.005) | 0.0435 (0.022) | 0.0418 (0.022) | 0.0627 | 0.0606 | 0.927 / 0.922 |
+| All nine | **0.0362** (0.008) | 0.0376 (0.009) | 0.0356 (0.011) | 0.0547 | 0.0537 | 0.929 / 0.921 |
+
+**The Welsh test set** (Dŵr Cymru's overflows in England, 2025): 44,165 site-days, base rate
+0.064. The new pooled model scored 0.04206; the hold-out pooled 0.04168.
+
+### The conditions
+
+1. **No company worse than today: FAIL.**
+   - Anglian: new 0.0272 against hold-out 0.0269 and production 0.0265.
+   - United Utilities: new 0.0456 against hold-out 0.0446.
+2. **Skill against both baselines at every company: PASS.**
+3. **Reliability: FAIL** at Thames. ECE 0.0240 against the hold-out's 0.0103, and above 0.02.
+4. **The Welsh test set is not worse: FAIL.** 0.04206 against 0.04168.
+
+**The nine-company model is not adopted.** It stays off, and this document is the record. The
+candidate is kept off-repo as `spill_model_nine_2024.pkl` (SHA-256 begins `1603678923cc`).
+
+### Observations, not tested and not grounds for any change
+
+- The new model is better than the hold-out at seven companies and over the nine together. It
+  loses where the test is hardest for it:
+  - United Utilities, where the hold-out has two years of offsets and the candidate one.
+  - Anglian.
+- **The single-year offsets look like the weak part.** The candidate's own pooled layer, without
+  offsets, scores 0.0260 at Anglian (below every row in the table) and 0.0287 at Thames.
+  - Anglian logged 290,172 events in 2024 and 96,034 in 2025. Its overflow climatology from 2024
+    loses even to the flat rate in 2025.
+  - An offset fitted on one wet year carries that year into the next.
+  - A next test could state, before running: pooled layer only, or offsets with fewer pseudo-counts
+    per year, or two years of offsets once 2026 is in. This needs its own pre-stated test.
+- Thames's miscalibration fits its merged events. Inferred, not checked.
+
+### Lead calibration (A1)
+
+**The map fitted by the stated procedure for the model the fallback would deploy.** Model: the
+United Utilities 2023-24 hold-out. Rows: 2025, 5,313 overflows of the nine companies in 544
+lead cells, 1,939,245 site-days. Climatology Brier 0.0588.
+
+| Lead | Raw Brier | Cross-fitted map | Map kept |
+|---|---|---|---|
+| 0 | 0.03947 | 0.03921 | yes |
+| 1 | 0.04223 | 0.04206 | yes |
+| 2 | 0.04394 | 0.04366 | yes |
+| 3 | 0.04535 | 0.04502 | yes |
+| 4 | 0.04754 | 0.04693 | yes |
+
+**A replay of 2025, leads 0 to 4 pooled, on those rows**, to write the pre-stated note. It found
+that the stated fallback is worse than today outside United Utilities, where neither model saw
+2025. Brier on non-United Utilities rows:
+
+| System | Brier |
+|---|---|
+| Today: production model (2023-25) + old map | 0.03941 |
+| Production model, no map | 0.03931 |
+| Stated fallback: hold-out + its refitted map (map fitted on these same rows) | 0.03966 |
+| Hold-out + a map fitted on non-United Utilities rows, cross-fitted by month | 0.03945 |
+| Production model + a map fitted on non-United Utilities rows, cross-fitted by month | **0.03818** |
+
+**This corrects the review's guess about direction** (finding 3.1, "inferred: a plausible
+contributor to the live over-forecasting"). On 2025, against the EDM files, the old map makes
+forecasts too **low**: mean forecast 0.050 against 0.064 observed. Every refitted map raises the
+low and middle bins. The live page shows 2026 forecasts too **high**. The two years, or the two
+kinds of truth (EDM files and live feed status), disagree.
+
+Which route ships is Ethan's decision (asked 17 Oct 2026):
+- the stated fallback;
+- the better route found after the run, which is a deviation from the plan above;
+- neither.
