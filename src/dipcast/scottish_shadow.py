@@ -16,7 +16,9 @@ everything it publishes is written. Each run:
    rain data (its forecast is logged with rain_available false and never scored, as in England).
    Builds ran 4 to 35 times a day from 1 to 10 Oct 2026 (poll log; pushes start builds too), so the
    refresh floor, not the build count, sets the cost: each of the 320 cells (4 Oct answer) at most 4
-   times a day, 1,280 locations, about 3,290 Open-Meteo calls (forecast_calls) of the 10,000 a day.
+   times a day, 1,280 locations, 1,280 Open-Meteo calls (forecast_calls) of the 10,000 a day. The
+   requests are booked in the build's Open-Meteo ledger (rainfall.calls_today) as "scotland", and
+   they come last in a build, so a spent ration holds them back before the spots'.
    Each row logs how old its rain forecast was (`rain_age_h`).
 3. Forecast. forecast.spill_probabilities with the spill model as it stands (no refit) and the lead
    calibration, for today and DAYS_AHEAD more days, one row per overflow and day. Covariates: Scottish
@@ -144,10 +146,11 @@ def overflow_table(net, snap: pd.DataFrame | None = None, year: int | None = Non
 
 # ------------------------------------------------------------------ 2. rain
 def forecast_calls(n_cells: int) -> float:
-    """Open-Meteo's count for forecasts of n_cells cells: locations x days/14 (scripts/fetch_wales_history.py,
-    archive_calls), with FORECAST_PAST_DAYS + FORECAST_DAYS + 1 days of one variable (rainfall.fetch_forecast
-    asks for one more UTC day than the local days shown)."""
-    return n_cells * max(1.0, (config.FORECAST_PAST_DAYS + config.FORECAST_DAYS + 1) / 14)
+    """Open-Meteo's count for forecasts of n_cells cells (rainfall.forecast_weight): one variable over
+    FORECAST_PAST_DAYS + FORECAST_DAYS + 1 days is 1 a location. Until 17 Oct 2026 this took
+    locations x days/14, 2.64 a cell, which left out Open-Meteo's variables/10 factor."""
+    from dipcast.ingest import rainfall
+    return rainfall.forecast_weight(n_cells)
 
 
 def shadow_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD, max_age_h: float = RAIN_MAX_AGE_H,
@@ -156,7 +159,7 @@ def shadow_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD, max_age_h
     again only once its cached forecast is `refresh_h` old, at most `budget` cells a build, oldest
     first. `fetch(cells)` is rainfall.fetch_forecast with one retry unless given. Never raises."""
     from dipcast.ingest import rainfall
-    fetch = fetch or (lambda cells: rainfall.fetch_forecast(cells, attempts=2))
+    fetch = fetch or (lambda cells: rainfall.fetch_forecast(cells, attempts=2, what="scotland"))
     cells = rainfall.cells_for_sites(sub["lat"], sub["lon"])
     path = {c: rainfall.CACHE / f"forecast_{rainfall.cell_key(*c)}.parquet" for c in cells}
 

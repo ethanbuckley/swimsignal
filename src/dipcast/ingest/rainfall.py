@@ -12,12 +12,23 @@ times with a jittered, growing wait (`_request`). If the forecast still does not
 fetch_forecast uses the cell's cached forecast up to STALE_MAX_AGE_S old and leaves a
 cell with nothing that fresh out, so its overflows have no rain data: the build goes on
 and the page says "no data" for them. `fallback_summary` reports what was served stale.
+
+Open-Meteo's free API allows 10,000 calls a day. It weighs a request by its own rule
+(call_weight): one variable over up to 140 days is one call per location, so a forecast cell
+costs 1 however many past days it asks for. Each build's users of the forecast API ask for a cell
+only once its cached copy is older than a floor (FORECAST_TTL_S here for the spots; the
+click-anywhere rain, the weather and the Scottish shadow have their own), so the cost per day is
+set by the floors, not by how many builds run. The ledger (calls_today, spend) adds up what was
+asked for since 00:00 UTC, when Open-Meteo starts its count again, and a request that would take
+the day over DAILY_CALLS is not made: its cells get their cached forecast, as after a failure.
 """
 
 from __future__ import annotations
 
 import email.utils
+import json
 import logging
+import os
 import random
 import time
 
@@ -30,7 +41,10 @@ from dipcast import config
 log = logging.getLogger(__name__)
 
 CACHE = config.CACHE / "rain"
-FORECAST_TTL_S = 3600
+# The spots' refresh floor. At 1 hour, builds every 30 minutes would ask for the 332 cells 24
+# times a day (7,968 calls) before the map's rain and the weather. At 2 hours it is 12 times
+# (3,984), and the rain a spot shows is at most 2 hours old plus the build's own minutes.
+FORECAST_TTL_S = 2 * 3600
 BATCH = 10           # archive: coordinates per request (long series, keep small)
 FORECAST_BATCH = 50  # forecast: short series, so many cells per request; fewer handshakes
 
@@ -52,6 +66,11 @@ STALE_MAX_AGE_S = 24 * 3600
 # build two requests' retries rather than every chunk's.
 OUTAGE_AFTER = 2
 OUTAGE_COOLOFF_S = 600
+# The day's ration. Open-Meteo's free limit is 10,000 calls a day; the floors keep the build near
+# 8,700 at a build every 30 minutes, and the rest is room for answers the ledger cannot see (a
+# request that timed out after Open-Meteo had counted it).
+DAILY_CALLS = float(os.environ.get("DIPCAST_OPEN_METEO_DAILY_CALLS", "9000"))
+LEDGER_NAME = "open_meteo_calls.json"
 
 _sleep = time.sleep      # replaced in tests
 _random = random.random  # replaced in tests
@@ -59,6 +78,81 @@ _random = random.random  # replaced in tests
 
 class OpenMeteoError(RuntimeError):
     """A request that failed after its retries, or one not worth retrying (a 4xx other than 429)."""
+
+
+class OpenMeteoBadBody(OpenMeteoError):
+    """Open-Meteo answered 2xx with a body that is not JSON (cut short): it counted the call."""
+
+
+# ------------------------------------------------------------------ the day's calls
+def call_weight(n_locations: int, days: float, variables: int = 1) -> float:
+    """Open-Meteo's count for one request, by its own rule (open-meteo/open-meteo,
+    ForecastApiResult.calculateQueryWeight, 16 Oct 2026): per location max(1, v/10, v/10 x days/14),
+    summed over the locations, with v the variables (times the models; one for the default). So one
+    variable over up to 140 days is 1 a location: asking for fewer past days saves no calls."""
+    v = variables / 10
+    return n_locations * max(1.0, v, v * days / 14)
+
+
+def forecast_weight(n_cells: int, past_days: int = config.FORECAST_PAST_DAYS,
+                    forecast_days: int = config.FORECAST_DAYS) -> float:
+    """What fetch_forecast's request for n_cells costs: one variable over past + forecast + 1 days."""
+    return call_weight(n_cells, past_days + forecast_days + 1)
+
+
+def _utc_day(now: float | None = None) -> str:
+    return time.strftime("%Y-%m-%d", time.gmtime(time.time() if now is None else now))
+
+
+def calls_today(now: float | None = None) -> dict:
+    """The ledger for the current UTC day: {"day", "calls", "by": {what: calls}, "held": {what: calls
+    not asked for because the ration was spent}, "limit"}. A missing or unreadable file, or one from
+    an earlier day, is a fresh day."""
+    day = _utc_day(now)
+    try:
+        d = json.loads((CACHE / LEDGER_NAME).read_text())
+    except (OSError, ValueError):
+        d = {}
+    if not isinstance(d, dict) or d.get("day") != day:
+        d = {"day": day, "calls": 0.0, "by": {}, "held": {}}
+    d.setdefault("by", {})
+    d.setdefault("held", {})
+    d["limit"] = DAILY_CALLS
+    return d
+
+
+def calls_left(now: float | None = None) -> float:
+    return DAILY_CALLS - float(calls_today(now)["calls"])
+
+
+def _book(weight: float, what: str, key: str, now: float | None = None) -> None:
+    d = calls_today(now)
+    d[key][what] = round(float(d[key].get(what, 0.0)) + weight, 2)
+    if key == "by":
+        d["calls"] = round(float(d["calls"]) + weight, 2)
+    try:
+        CACHE.mkdir(parents=True, exist_ok=True)
+        tmp = CACHE / (LEDGER_NAME + ".tmp")
+        tmp.write_text(json.dumps(d))
+        tmp.replace(CACHE / LEDGER_NAME)
+    except OSError as e:   # a ledger that cannot be written must not stop a build
+        log.warning("open-meteo ledger not written: %s", e)
+
+
+def spend(weight: float, what: str, now: float | None = None) -> None:
+    """Add a request Open-Meteo answered to the day's ledger, under `what` (spots, weather, ...)."""
+    _book(weight, what, "by", now)
+
+
+def may_spend(weight: float, what: str, now: float | None = None) -> bool:
+    """Whether a request of `weight` fits what is left of the day's ration. One that does not is
+    booked under "held", so the build's summary says what the ration kept back."""
+    if calls_left(now) >= weight:
+        return True
+    _book(weight, what, "held", now)
+    log.warning("open-meteo: %s request of %.0f calls not made; the day's ration (%.0f) is spent",
+                what, weight, DAILY_CALLS)
+    return False
 
 
 def _http_get(url: str, params: dict, timeout: float) -> httpx.Response:
@@ -125,7 +219,7 @@ def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5,
                 try:
                     return r.json()
                 except ValueError as e:
-                    raise OpenMeteoError(f"open-meteo sent a body that is not JSON: {e}") from e
+                    raise OpenMeteoBadBody(f"open-meteo sent a body that is not JSON: {e}") from e
             why = f"HTTP {r.status_code}"
             if r.status_code == 429 and not retry_429:
                 log.warning("open-meteo %s; not retried (retry_429=False)", why)
@@ -263,15 +357,17 @@ def _cached_instead(cells: list[tuple[float, float]], max_age_s: float) -> list[
 def fetch_forecast(cells: list[tuple[float, float]],
                    past_days: int = config.FORECAST_PAST_DAYS,
                    forecast_days: int = config.FORECAST_DAYS, attempts: int = 5,
-                   stale_max_age_s: float = STALE_MAX_AGE_S) -> pd.DataFrame:
-    """Recent observed-ish and forecast hourly precipitation per cell (cached 1 h). `attempts` per
+                   stale_max_age_s: float = STALE_MAX_AGE_S, what: str = "spots") -> pd.DataFrame:
+    """Recent observed-ish and forecast hourly precipitation per cell (cached FORECAST_TTL_S). `attempts` per
     request of up to FORECAST_BATCH cells (see _request). A request that still fails does not
     raise: its cells get their cached forecast if it is at most `stale_max_age_s` old and are
     left out otherwise, so they have no rain data (never zero rain). Requests are the same as
     before, one per FORECAST_BATCH cells not freshly cached; a cell that failed earlier in this
     process, or any cell during an outage (OUTAGE_AFTER), goes to the cache without one.
     `forecast_days` counts the Europe/London days the forecast shows, today first. Open-Meteo is
-    asked for one more UTC day than that, so the last of them is whole at any hour."""
+    asked for one more UTC day than that, so the last of them is whole at any hour. Each request
+    is booked in the day's ledger under `what`; one the ration has no room for is not made, and its
+    cells go to the cache as after a failure."""
     CACHE.mkdir(parents=True, exist_ok=True)
     frames, todo, held = [], [], []
     now = time.time()
@@ -287,8 +383,11 @@ def fetch_forecast(cells: list[tuple[float, float]],
         frames += _cached_instead(held, stale_max_age_s)
     for i in range(0, len(todo), FORECAST_BATCH):
         chunk = todo[i:i + FORECAST_BATCH]
+        weight = forecast_weight(len(chunk), past_days, forecast_days)
         if time.time() < _outage["until"]:
             why = "open-meteo taken as down after repeated failures"
+        elif not may_spend(weight, what):
+            why = "the day's Open-Meteo ration is spent"
         else:
             params = {
                 "latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
@@ -305,6 +404,8 @@ def fetch_forecast(cells: list[tuple[float, float]],
             try:
                 res = _request(config.OPEN_METEO_FORECAST, params, timeout=30, attempts=attempts)  # small payload; fail fast on a bad handshake
             except Exception as e:  # noqa: BLE001 - OpenMeteoError, or anything else a request raises
+                if isinstance(e, OpenMeteoBadBody):
+                    spend(weight, what)   # answered, so counted, though not readable
                 why = str(e) or type(e).__name__
                 _errors.append(why)
                 _outage["run"] += 1
@@ -313,6 +414,7 @@ def fetch_forecast(cells: list[tuple[float, float]],
                     log.warning("open-meteo: %d forecast requests in a row failed; none for %.0f min",
                                 OUTAGE_AFTER, OUTAGE_COOLOFF_S / 60)
             else:
+                spend(weight, what)
                 _outage["run"] = 0
                 results = res if isinstance(res, list) else [res]
                 for (cl, cn), r in zip(chunk, results, strict=True):
