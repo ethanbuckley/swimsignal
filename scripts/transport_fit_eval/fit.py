@@ -41,10 +41,12 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 log = logging.getLogger("transport_fit")
 TZ = "Europe/London"
 
-SPEEDS = (0.2, 0.35, 0.5, 0.75, 1.0)          # river speed, m/s
-T90S = (12.0, 20.0, 30.0, 48.0, 72.0)         # hours
-POWERS = (0.5, 1.0, 1.5)                      # exponent on the length ratio
-CURRENT = (0.5, 30.0, 1.0)
+# docs/TRANSPORT-FIT-2-TEST-2026-10.md: past the first test's corner. The first test's grid was speeds 0.2, 0.35,
+# 0.5, 0.75, 1.0; T90 12, 20, 30, 48, 72; exponents 0.5, 1, 1.5; current (0.5, 30.0, 1.0) (commit b5e0af1).
+SPEEDS = (0.05, 0.1, 0.15, 0.2)               # river speed, m/s
+T90S = (72.0, 120.0, 200.0)                   # hours
+POWERS = (0.0, 0.25, 0.5)                     # exponent on the length ratio
+CURRENT = (0.2, 72.0, 0.5)                    # PR #248's fitted settings, main's defaults
 GRID = [CURRENT] + [g for g in itertools.product(SPEEDS, T90S, POWERS) if g != CURRENT]   # current first: wins ties
 BOOT = 2000
 SEED = 20261016
