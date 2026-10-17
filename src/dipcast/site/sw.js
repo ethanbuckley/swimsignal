@@ -64,7 +64,7 @@ async function networkFirst(req) {
   const cache = await caches.open(CACHE), k = key(req);
   // no-cache: ask the server every time. GitHub Pages sends max-age=600, so without it a reload
   // within 10 minutes of the last one could get the browser's older copy of the forecast.
-  const net = fetch(req, { cache: 'no-cache' }).then(res => { if (res.ok) cache.put(k, res.clone()); return res; });
+  const net = fetch(req, { cache: 'no-cache' }).then(res => { if (res.ok) { cache.put(k, res.clone()); withTrace(cache, k); } return res; });
   net.catch(() => {});   // when the stored copy answers, a later network failure is expected
   try {
     return await Promise.race([net, new Promise((_, no) => setTimeout(() => no(new Error('slow')), TIMEOUT_MS))]);
@@ -78,6 +78,17 @@ async function networkFirst(req) {
     const html = (await home.text()).replace('<head>', `<head>\n<base href="${self.registration.scope}">`);
     return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
+}
+
+// A spot's own file, data/spot/<id>.json, brings its traced river, data/spot/<id>-trace.json, which its map
+// draws only when zoomed in (index.html, drawTrace): stored now, so the map has it at the water. Not every
+// spot has one (an isolated lake has nothing traced), so a missing one is no error.
+const SPOT_FILE = /\/data\/spot\/([A-Za-z0-9_-]+)\.json$/;
+function withTrace(cache, k) {
+  const u = new URL(k), m = u.pathname.match(SPOT_FILE);
+  if (!m || m[1].endsWith('-trace')) return;
+  u.pathname = u.pathname.replace(SPOT_FILE, '/data/spot/$1-trace.json'); u.search = '';
+  fetch(u.href, { cache: 'no-cache', credentials: 'omit' }).then(res => { if (res.ok) cache.put(u.href, res); }).catch(() => {});
 }
 
 async function storedFirst(req) {

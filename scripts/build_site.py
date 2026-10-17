@@ -41,6 +41,7 @@ from dipcast.model.forecast import (
 )
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
+from dipcast.trace import SIMPLIFY_M, spot_trace
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -2043,6 +2044,37 @@ def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Ti
     return n
 
 
+# The river each spot's forecast traced upstream (src/dipcast/trace.py), drawn on its map at zoom 10 or
+# more: data/spot/<id>-trace.json, beside the spot's own file, which sw.js stores it with. `lines` are
+# encoded polylines (trace.encode); `overflows` the monitored overflows counted on them, [site_id, lat, lon].
+TRACE_MAX_BYTES = 50_000   # the review's bound (G6); Warleigh Weir, with the most overflows, is the largest
+
+
+def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                 credits: dict) -> dict:
+    """data/spot/<id>-trace.json for each spot with a traced river and an id that can be a file name.
+    Returns the number written and the largest file's size; a file over TRACE_MAX_BYTES is announced."""
+    out = site / "data" / "spot"
+    out.mkdir(parents=True, exist_ok=True)
+    n, largest = 0, (None, 0)
+    for sid, lines in traces.items():
+        if not lines or not SPOT_ID.fullmatch(str(sid)):
+            continue
+        ovs = [[o.get("site_id"), round(o["lat"], 5), round(o["lon"], 5)] for o in upstream.get(sid, [])
+               if o.get("lat") is not None and o.get("lon") is not None]
+        body = json.dumps({"id": sid, "generated_at": generated.isoformat(), "max_upstream_km": config.MAX_UPSTREAM_KM,
+                           "simplified_m": SIMPLIFY_M, "lines": lines, "overflows": ovs, "credits": credits},
+                          separators=(",", ":"), default=str)
+        (out / f"{sid}-trace.json").write_text(body)
+        n += 1
+        if len(body) > largest[1]:
+            largest = (sid, len(body))
+    if largest[1] > TRACE_MAX_BYTES:
+        announce(f"{largest[0]}'s upstream trace is {largest[1] / 1e3:.0f} kB, over {TRACE_MAX_BYTES / 1e3:.0f} kB: "
+                 "simplify it more (trace.SIMPLIFY_M)")
+    return {"written": n, "largest": largest[0], "largest_bytes": largest[1]}
+
+
 # What every view of the app loads first is spots.json without the fields only a spot's own page
 # shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
 # spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
@@ -2255,7 +2287,7 @@ def build(refresh: bool = True) -> dict:
         reload_caches()
     spots = load_spots()
     prefetch_rain(spots)
-    results, upstream = [], {}
+    results, upstream, traces = [], {}, {}
     for r in spots.itertuples(index=False):
         try:
             kind, river = spot_hints(r.kind, r.river)
@@ -2266,6 +2298,10 @@ def build(refresh: bool = True) -> dict:
         except Exception as e:  # noqa: BLE001 - one bad spot must not sink the site
             log.error("%s: %s", r.name, e)
             f = {"error": f"forecast failed: {e}"}
+        try:   # the river the forecast traced, for the spot's map (write_traces)
+            traces[r.id] = spot_trace(_net(), float(r.lat), float(r.lon), r.kind, r.river, r.name)
+        except Exception as e:  # noqa: BLE001 - a map line must not sink the site
+            log.warning("%s: no upstream trace (%s)", r.name, e)
         results.append({"id": r.id, "name": r.name, "kind": r.kind, "river": _river_of(r), "source": r.source,
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
                         **({"area": r.area} if getattr(r, "area", "") else {}),   # the list's groups in A-Z
@@ -2357,6 +2393,7 @@ def build(refresh: bool = True) -> dict:
            "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
+    health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)

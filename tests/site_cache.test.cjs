@@ -40,6 +40,27 @@ test('a reload asks the server, past the browser cache, and replaces the stored 
   assert.equal((await entries.get(FORECAST).json()).generated_at, 'new');
 });
 
+test('a spot\'s own file brings its traced river into the store; a missing trace is no error', async () => {
+  const spot = SCOPE + 'data/spot/avon-warleigh-weir.json', trace = SCOPE + 'data/spot/avon-warleigh-weir-trace.json';
+  const asked = [];
+  const { context, entries } = worker(async (req) => { const u = typeof req === 'string' ? req : req.url; asked.push(u);
+    return u.endsWith('-trace.json') ? new Response('{"lines":[]}') : new Response('{"id":"avon-warleigh-weir"}'); });
+  await context.networkFirst(new Request(spot + '?v=1'));
+  await new Promise(r => setImmediate(r));
+  assert.ok(entries.has(spot + '?v=1') && entries.has(trace), [...entries.keys()].join(' '));
+  // The trace itself, asked for by the map, brings nothing more.
+  asked.length = 0;
+  await context.networkFirst(new Request(trace));
+  await new Promise(r => setImmediate(r));
+  assert.deepEqual(asked, [trace]);
+  // An isolated lake has no trace: the spot's file is stored all the same.
+  const lake = SCOPE + 'data/spot/tarn.json';
+  const w = worker(async (req) => (typeof req === 'string' ? req : req.url).endsWith('-trace.json') ? new Response('', { status: 404 }) : new Response('{}'));
+  await w.context.networkFirst(new Request(lake));
+  await new Promise(r => setImmediate(r));
+  assert.deepEqual([...w.entries.keys()], [lake]);
+});
+
 test('without a connection the stored forecast answers, unchanged', async () => {
   const { context } = worker(async () => { throw new Error('offline'); }, { [FORECAST]: new Response('{"generated_at":"stored"}') });
   assert.equal((await (await context.networkFirst(new Request(FORECAST))).json()).generated_at, 'stored');

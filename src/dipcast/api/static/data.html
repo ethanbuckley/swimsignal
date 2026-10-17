@@ -27,7 +27,7 @@
 <div class="tw"><table id="data-files"><thead><tr><th scope="col">File</th><th scope="col">What it holds</th><th scope="col" class="num">Size</th></tr></thead><tbody>
 <tr data-file="spots.json"><td><a href="data/spots.json">spots.json</a></td><td>Every spot's five-day forecast and what it rests on</td><td class="num">–</td></tr>
 <tr data-file="spots-lite.json"><td><a href="data/spots-lite.json">spots-lite.json</a></td><td>spots.json without each spot's overflows and guide, which the app loads first</td><td class="num">–</td></tr>
-<tr data-file="spot/"><td>spot/</td><td>Each spot's overflows and guide, one file a spot, which its page loads</td><td class="num">–</td></tr>
+<tr data-file="spot/"><td>spot/</td><td>Each spot's overflows and guide, and the river its forecast traced upstream, two files a spot, which its page loads</td><td class="num">–</td></tr>
 <tr data-file="alerts.json"><td><a href="data/alerts.json">alerts.json</a></td><td>Each spot's level and headline, as the alerts send them</td><td class="num">–</td></tr>
 <tr data-file="overflows.geojson"><td><a href="data/overflows.geojson">overflows.geojson</a></td><td>Every storm overflow on the map, and what it is doing now</td><td class="num">–</td></tr>
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
@@ -91,7 +91,8 @@
 
 <h2 id="spots-lite-json">spots-lite.json and spot/</h2>
 <p>The same forecast as spots.json, split for the app. <code>spots-lite.json</code> is spots.json without each spot's <code>contributors</code> and <code>guide</code>, which only a spot's own page shows; they were half its size. Each spot in it has <code>detail_file</code>, its file in <code>spot/</code>, relative to <code>data/</code>. That file, <code>spot/&lt;id&gt;.json</code>, has the spot's <code>id</code>, <code>generated_at</code>, <code>credits</code>, <code>contributors</code> and <code>guide</code>, as in spots.json. spots.json stays whole: read it if you want everything in one file.</p>
-<p><b>Licence.</b> As spots.json.</p>
+<p>Beside it, <code>spot/&lt;id&gt;-trace.json</code> is the river network the forecast traced upstream of the spot: every river and stream within <code>max_upstream_km</code> (60&nbsp;km) along the water, the water that reaches the spot, which its map draws. <code>lines</code> are the network's lines as <a href="https://developers.google.com/maps/documentation/utilities/polylinealgorithm">encoded polylines</a> (latitude and longitude to five decimal places), simplified to within <code>simplified_m</code> metres. <code>overflows</code> lists the monitored overflows counted on them, each as <code>[site_id, latitude, longitude]</code>. A spot with nothing traced (an isolated lake) has no trace file.</p>
+<p><b>Licence.</b> As spots.json. The traced rivers are from OS Open Rivers: contains OS data © Crown copyright and database right 2026.</p>
 
 <h2 id="alerts-json">alerts.json</h2>
 <p>Each spot's level and headline, worked out by the same rules as the page, for the alert service. The smallest file, for anyone who wants only the answer.</p>
