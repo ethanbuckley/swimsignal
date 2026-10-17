@@ -9,6 +9,16 @@ intensity features and the two previous days use lead-appropriate forecasts
 (k, k-1, k-2, floored at 0); the 7-day, 30-day and antecedent-index features
 use reanalysis, because on the issue day those windows are almost entirely
 observed history.
+
+Which model and rows (docs/NINE-COMPANY-MODEL-TEST-2026-10.md, review task A1, 16 Oct 2026): the
+map is fitted for the model named by --model (default: the production model, spill_model.pkl), and
+lead_calibration.json records that model's trained_on, so the map and the model it corrects cannot
+drift apart again (until then a 2023-24 hold-out's map was applied to a 2023-25 refit). Rows: the
+YEAR site-days of every overflow of the nine English companies in a cell with archived lead
+forecasts, covered by the EA start/stop files (training.site_years). Each map is scored cross-fitted
+by month parity; a lead whose cross-fitted Brier is not below the raw Brier is saved as an identity
+map. The skill reference is the overflow climatology (each overflow's YEAR-1 spill-day rate) on the
+same rows.
 """
 
 from __future__ import annotations
@@ -20,39 +30,38 @@ import numpy as np
 import pandas as pd
 
 from dipcast import config
+from dipcast.ingest.rainfall import grid_cell
 from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features, spill_days
 from dipcast.model.spill_model import SpillModel
+from dipcast.model.training import NINE, RAIN_DIRS, load_events, load_rain, site_years
 from dipcast.model.verify import reliability_table, scores
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("verify_leads")
 YEAR = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
-COMPANY = "United Utilities"
 LEADS = [0, 1, 2, 3, 4]
 
 
 def load(pattern: str) -> pd.DataFrame:
-    files = sorted((config.CACHE / "rain").glob(pattern))
+    files = sorted(f for d in RAIN_DIRS for f in (config.CACHE / d).glob(pattern))
     log.info("%d files for %s", len(files), pattern)
     return pd.concat((pd.read_parquet(f) for f in files), ignore_index=True)
 
 
 def main() -> None:
-    holdout = config.PROCESSED / f"spill_model_holdout_{YEAR}.pkl"
-    if not holdout.exists():
-        log.error("no held-out model for %d at %s; run scripts/train.py %d first", YEAR, holdout, YEAR)
-        sys.exit(1)
-    model = SpillModel.load(holdout)
-    log.info("model: %s", model.trained_on)
-    ev = pd.read_parquet(config.PROCESSED / "edm_events.parquet")
+    path = config.PROCESSED / "spill_model.pkl"
+    if "--model" in sys.argv:
+        path = config.PROCESSED / sys.argv[sys.argv.index("--model") + 1]
+    model = SpillModel.load(path)
+    log.info("model: %s (%s)", model.trained_on, path.name)
+    ev = load_events(NINE)
     ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet")
-    labels = spill_days(ev)
-    labels = labels[labels.day.dt.year == YEAR]
+    all_labels = spill_days(ev)
+    labels = all_labels[all_labels.day.dt.year == YEAR]
 
-    era = load(f"archive_*_{YEAR}.parquet")
     leads = load(f"leads_*_{YEAR}.parquet")
     cells_with_leads = set(map(tuple, leads[["cell_lat", "cell_lon"]].drop_duplicates().to_numpy()))
-    era = era[[tuple(x) in cells_with_leads for x in era[["cell_lat", "cell_lon"]].to_numpy()]]
+    era = load_rain(cells_with_leads, tags=(str(YEAR - 1), str(YEAR)), start=f"{YEAR - 1}-12-01")
     daily_era = daily_rain_features(era)
     daily_lead = {k: daily_rain_features(leads[leads.lead == k].drop(columns="lead")) for k in LEADS}
 
@@ -68,13 +77,28 @@ def main() -> None:
         fa = (fc[~wet] > 10).mean() if (~wet).any() else np.nan
         print(f"{k:>4} {np.abs(fc - obs).mean():7.2f} {(fc - obs).mean():8.2f} {np.corrcoef(obs, fc)[0, 1]:6.3f} {hit:9.2f} {fa:8.3f}")
 
-    # Covariates from the previous year's return, as in training.
-    a = ar[(ar.company == COMPANY) & ar.lat.notna() & (ar.year == YEAR - 1)]
-    sites = a[["site_id", "lat", "lon", "lta_spills", "spill_hours", "edm_operational_pct"]].assign(company=COMPANY)
+    # Covariates from the previous year's return, as in training; the overflows the files cover.
+    sites, _ = site_years(ar, ev, NINE, YEAR)
+    # --exclude COMPANY (repeatable): leave out a company whose YEAR the model was trained on, so the
+    # map is fitted out of sample (the production model, United Utilities 2023-25, saw 2025 there).
+    excluded = [sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--exclude"]
+    sites = sites[~sites["company"].isin(excluded)]
+    sites = sites[[c in cells_with_leads for c in zip(*grid_cell(sites["lat"].to_numpy(), sites["lon"].to_numpy()), strict=True)]]
+    print("\noverflows per company:", sites["company"].value_counts().to_dict())
     days = pd.date_range(f"{YEAR}-01-01", f"{YEAR}-12-31", freq="D", tz="UTC")
     base = build_site_days(sites, daily_era, days, labels)
     base = base[base["rain_d"].notna()].copy()
     y = base["y"].to_numpy()
+    # Overflow climatology: each overflow's spill-day share the year before, among the overflows the
+    # files covered that year (0 if it had no event); else its company's mean share.
+    covered, _ = site_years(ar, ev, NINE, YEAR - 1)
+    n_days = 366 if (YEAR - 1) % 4 == 0 else 365
+    spilled = all_labels[all_labels.day.dt.year == YEAR - 1].groupby("site_id").size()
+    covered["rate"] = covered["site_id"].map(spilled).fillna(0) / n_days
+    company = base["site_id"].map(dict(zip(sites["site_id"], sites["company"], strict=True))).to_numpy()
+    rate = base["site_id"].map(dict(zip(covered["site_id"], covered["rate"], strict=True)))
+    rate = rate.fillna(pd.Series(company, index=base.index).map(covered.groupby("company")["rate"].mean()))
+    clim = scores(y, rate.to_numpy())["brier"]
 
     def with_lead(k: int) -> pd.DataFrame:
         df = base.copy()
@@ -127,9 +151,17 @@ def main() -> None:
             iso_cf = IsotonicRegression(y_min=0.001, y_max=0.99, out_of_bounds="clip").fit(pk[ok][fit_m], y[ok][fit_m])
             pcf[sc_m] = iso_cf.predict(pk[ok][sc_m])
         scf = scores(y[ok], pcf); rows.append({"source": f"forecast lead {k}, isotonic cross-fitted (odd/even months)", **scf})
+        helps = scf["brier"] < s["brier"]
         calib[str(k)] = {"a": a, "b": b, "brier_before": s["brier"], "brier_after": sc["brier"],
-                         "iso_x": [round(float(v), 5) for v in grid], "iso_y": [round(float(v), 5) for v in knots_y],
+                         "iso_x": [round(float(v), 5) for v in grid] if helps else [0.0, 1.0],
+                         "iso_y": [round(float(v), 5) for v in knots_y] if helps else [0.0, 1.0],
+                         "identity": not helps,
                          "brier_isotonic": si["brier"], "brier_isotonic_crossfit": scf["brier"]}
+        by_co = pd.DataFrame({"company": company[ok], "y": y[ok], "raw": pk[ok], "cf": pcf})
+        for co, d in by_co.groupby("company"):
+            calib[str(k)].setdefault("by_company", {})[co] = {
+                "n": len(d), "brier_raw": float(((d.raw - d.y) ** 2).mean()),
+                "brier_crossfit": float(((d.cf - d.y) ** 2).mean())}
         if k in (0, 2):
             print(f"\n--- reliability, lead {k} (raw) ---")
             print(reliability_table(y[ok], pk[ok]).round(3).to_string())
@@ -139,7 +171,7 @@ def main() -> None:
             print(reliability_table(y[ok], pi).round(3).to_string())
     from dipcast.model.verify import brier_skill
     res = pd.DataFrame(rows).set_index("source")
-    clim = 0.0669  # site climatology Brier on the same year from train.py
+    print(f"\noverflow climatology Brier on these rows: {clim:.4f}")
     res["brier_skill_vs_clim"] = [brier_skill(b, clim) for b in res["brier"]]
     pd.set_option("display.width", 160)
     print()
@@ -147,7 +179,11 @@ def main() -> None:
     res.to_csv(config.PROCESSED / f"verification_leads_{YEAR}.csv")
     import json
     (config.PROCESSED / "lead_calibration.json").write_text(json.dumps(
-        {"fitted_on": YEAR, "model": model.trained_on, "method": "isotonic", "leads": calib}, indent=1))
+        {"fitted_on": YEAR, "model": model.trained_on, "method": "isotonic",
+         "rows": "the nine English companies' overflows in cells with archived lead forecasts"
+                 + (f", except {', '.join(excluded)} (in the model's training year)" if excluded else ""),
+         "crossfit": "odd/even months; a lead whose cross-fitted Brier is not below the raw one is an identity map",
+         "climatology_brier": clim, "leads": calib}, indent=1))
     log.info("saved per-lead calibration -> %s", config.PROCESSED / "lead_calibration.json")
 
 

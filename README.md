@@ -78,6 +78,7 @@ The other tools were checked on their own pages on 3 Oct 2026.
 |---|---|---|
 | Water company live feeds (9 companies, ArcGIS, via the National Storm Overflow Hub) | Current status of ~14,200 overflows, latest event start/end, record times (fields under "Live feed fields" below) | CC BY 4.0, per company |
 | United Utilities EDM event history 2023-2025 (via Stream) | 743,735 discharge events with start/end; training only | CC BY 4.0 |
+| EA "Event Duration Monitoring - Storm Overflow - Start/Stop Detailed Data" | One row per discharge, start and stop, for the 10 companies that operate in England, 2024-2025 (2.95 million events for the nine English companies; `scripts/import_ea_events.py`). Tested as training data on 17 Oct 2026 and not adopted (`docs/NINE-COMPANY-MODEL-TEST-2026-10.md`); Welsh Water's files are a Welsh test set | OGL v3 |
 | Stream ID lookup | Company ids to EA permit ids (`id_lookup.parquet`) | CC BY 4.0 |
 | EA storm overflow annual returns 2021-2025 | Spill counts and hours per overflow per year, WFD waterbody, for all 10 companies | OGL v3 |
 | EA bathing water quality (bwq) | Classifications (`data/raw/bathing_water_classifications.json`) and in-season samples | OGL v3 |
@@ -941,10 +942,14 @@ time contributes to today (it started at yesterday before, and did not).
   lake crossing uses a fixed slow advection speed.
 - Daily resolution. Sub-daily timing of a plume is not resolved.
 - Annual returns before 2024 carry old or no overflow IDs; `dipcast/ids.py` resolves 93% of rows (100% of UU 2023, 92% of UU 2021-22) via the Hub lookup, then site name and grid reference.
-- Only United Utilities publishes event-level history on ArcGIS, so the site
-  calibration layer covers their overflows. Others use the pooled model with
-  annual-return covariates, and the live poller accumulates their history. The
-  spill model was trained on United Utilities only; the live verification page
+- The spill model and its site calibration layer were trained on United
+  Utilities' event history only. Other companies' overflows use the pooled model
+  with annual-return covariates. The EA's start/stop files give event history
+  for every company for 2024-25. A model trained on all nine English companies'
+  2024 was tested on 2025 on 17 Oct 2026 and not adopted: it was better at seven
+  companies but worse at Anglian and United Utilities, miscalibrated at Thames
+  and slightly worse on the Welsh test set (`docs/NINE-COMPANY-MODEL-TEST-2026-10.md`).
+  The spill model was trained on United Utilities only; the live verification page
   scores every company's live-feed overflows separately ("By water company"),
   which is the running check that it transfers. (Until 15 Sep 2026 the live
   scorer scored nothing: DuckDB returned its DATE columns as timestamps and the
