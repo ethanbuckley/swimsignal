@@ -312,9 +312,12 @@ Not established, and stated as limits:
 - **Why later arrival helps is not tested.** One reading is that a slow speed spreads each spill over more arrival
   days, smoothing a daily spill chance that is noisy day to day. Another is that bacteria persist in sediment and are
   stirred up later. The fit cannot tell these apart, and 0.2 m/s should not be read as a measured speed.
-- **The live forecast at gauged spots** sets speed from the gauge (0.3 + 0.7 × the level index, so 0.3 m/s or more).
-  The hindcast has no gauge readings. The fit says nothing about that rule. It changes only the no-gauge default, so
-  gauged and ungauged spots will move apart. Whether the gauge rule should follow is a separate question.
+- **The gauge rule.** The site's listed spots run `forecast_point(..., gauge=False)`, so the fitted speed reaches
+  every one of them. Only the click-anywhere API (`gauge=True`) sets speed from the nearest gauge (0.3 + 0.7 × the
+  level index, so 0.3 m/s or more). The fit says nothing about that rule, and the API will now be faster than the
+  listed spots. Whether the gauge rule should follow is a separate question. (Corrected after the first version of
+  these results, which said the listed spots used the gauge; the statement above the line said only that the fitted
+  speed changes the no-gauge default, which stands.)
 - The interval covers which weeks were sampled, given the pick. LOYO covers the selection.
 
 ### What follows
