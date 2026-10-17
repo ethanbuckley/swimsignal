@@ -98,7 +98,9 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
     home = (tmp_path / "index.html").read_text()
-    body = home.split('<div id="result">', 1)[1].split('<p class="about-line"', 1)[0]
+    # data-built: the script updates this opening where it stands (index.html, overBuilt), so its
+    # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
+    body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
     assert "Five-day pollution risk forecasts for 3 spots in England, or " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
@@ -147,9 +149,10 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
-    # The page's script draws over the build's copy without the rise it gives a new view.
+    # The page's script draws over the build's copy without the rise it gives a new view, keeping the
+    # answer's element (overBuilt, tests/site_built_opening.test.cjs).
     script = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
-    assert "built = box.hasAttribute('data-built')" in script and "let h = spotTop(d);" in script and "${daysTile(d)}" in script
+    assert "if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); return; }" in script and "let h = spotTop(d);" in script and "${daysTile(d)}" in script
     # Without the file (or Node), the name-only opening, as before.
     (tmp_path / "data" / "spots.json").unlink()
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
