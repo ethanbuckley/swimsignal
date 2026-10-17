@@ -56,10 +56,11 @@ def test_defaults_are_the_rule_in_use(net):
     # 0.5 m/s on every reach: on_m1 is 5 + 10 + 5 km from the spot
     assert up.loc["on_m1", "distance_m"] == pytest.approx(20_000)
     assert up.loc["on_m1", "travel_h"] == pytest.approx(20_000 / 0.5 / 3600)
-    # length dilution: (L_up at the outfall + L0) / (L_up at the spot + L0)
+    # length dilution: ((L_up at the outfall + L0) / (L_up at the spot + L0)) ** DILUTION_POWER
     # 25 km above the outfall's link against 30 km above the spot; nothing above the tributary's
-    assert up.loc["on_m3", "dilution"] == pytest.approx((25_000 + 5_000) / (30_000 + 5_000))
-    assert up.loc["on_t1", "dilution"] == pytest.approx(5_000 / (30_000 + 5_000))
+    p = transport.DILUTION_POWER
+    assert up.loc["on_m3", "dilution"] == pytest.approx(((25_000 + 5_000) / (30_000 + 5_000)) ** p)
+    assert up.loc["on_t1", "dilution"] == pytest.approx((5_000 / (30_000 + 5_000)) ** p)
 
 
 def test_reach_velocity_follows_jobson_at_the_median_flow():
@@ -71,7 +72,7 @@ def test_reach_velocity_follows_jobson_at_the_median_flow():
 
 
 def test_catchment_velocity_sums_length_over_speed_along_the_path(net):
-    up = _trace(net, velocity_mode="catchment")
+    up = _trace(net, velocity_mode="catchment", velocity_ms=config.RIVER_VELOCITY_MS)   # the default speed: scale 1
     v = {lid: float(transport.reach_velocity(net.upstream_m[net.links.loc[lid, "end_node"]]))
          for lid in ("m1", "m2", "m3")}
     want = (5_000 / v["m1"] + 10_000 / v["m2"] + 5_000 / v["m3"]) / 3600
@@ -86,8 +87,8 @@ def test_catchment_velocity_sums_length_over_speed_along_the_path(net):
 
 
 def test_a_gauge_still_scales_the_catchment_speeds(net):
-    base = _trace(net, velocity_mode="catchment")
-    fast = _trace(net, velocity_mode="catchment", velocity_ms=1.0)   # twice the default 0.5 m/s
+    base = _trace(net, velocity_mode="catchment", velocity_ms=config.RIVER_VELOCITY_MS)
+    fast = _trace(net, velocity_mode="catchment", velocity_ms=2 * config.RIVER_VELOCITY_MS)   # twice the default
     assert fast["travel_h"].to_numpy() == pytest.approx(base["travel_h"].to_numpy() / 2)
 
 
@@ -169,3 +170,14 @@ def test_built_up_area_is_split_equally_between_its_overflows():
     assert out.loc[["t1", "t2", "t3"], "urban_km2"].tolist() == pytest.approx([4 / 3] * 3)
     assert out.loc["v1", "urban_km2"] == pytest.approx(1.0) and out.loc["v1", "n_in_bua"] == 1
     assert pd.isna(out.loc["far", "bua22cd"]) and out.loc["far", "urban_km2"] == mk.FLOOR_KM2
+
+
+def test_dilution_power_raises_the_capped_length_ratio(net):
+    """docs/TRANSPORT-FIT-TEST-2026-10.md: an exponent on the length ratio, fitted to 0.5 (the square root)."""
+    assert transport.DILUTION_POWER == 0.5
+    assert _trace(net).equals(_trace(net, dilution_power=0.5))
+    up = _trace(net, dilution_power=1.0)
+    sq = _trace(net, dilution_power=2.0)
+    assert sq["dilution"].to_numpy() == pytest.approx(up["dilution"].to_numpy() ** 2)
+    assert sq["weight"].to_numpy() == pytest.approx(up["decay"].to_numpy() * up["dilution"].to_numpy() ** 2)
+    assert sq["travel_h"].equals(up["travel_h"])   # only the dilution moves

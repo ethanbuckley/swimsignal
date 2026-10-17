@@ -112,9 +112,9 @@ EA_HEADERS = {"User-Agent": USER_AGENT}
 # Physics defaults for transport. See model/transport.py for how they are used.
 # ---------------------------------------------------------------------------
 SNAP_MAX_M = 750.0            # max distance to snap an outfall to a river link
-RIVER_VELOCITY_MS = 0.5       # default reach-averaged velocity when no gauge
+RIVER_VELOCITY_MS = 0.2       # reach-averaged velocity when no gauge; fitted, was 0.5 (docs/TRANSPORT-FIT-TEST-2026-10.md)
 LAKE_VELOCITY_MS = 0.05       # effective advection across a lake: ~1% of a 5 m/s wind
-T90_HOURS = 30.0              # time for 90% die-off of faecal indicator bacteria
+T90_HOURS = 72.0              # time for 90% die-off of faecal indicator bacteria; fitted, was 30 (the same doc)
 RECENT_SPILL_HOURS = 48.0     # how long a finished spill keeps contributing
 MAX_UPSTREAM_KM = 60.0        # do not trace further than this upstream
 

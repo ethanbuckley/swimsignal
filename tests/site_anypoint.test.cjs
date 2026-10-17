@@ -69,7 +69,8 @@ const placeIn = files => c => {
   return A.place(c.lat, c.lon, { ...files, outlines, tiles });
 };
 const syn = SYN.modes.lake, files = filesOf(syn), placeAt = placeIn(files);
-const DEFAULT_SPEEDS = { river_velocity_ms: 0.5, lake_velocity_ms: 0.05, t90_hours: 30 };   // config's, as the API ran
+// config's speeds and T90 when the fixture was made, as the API ran (tests/test_anypoint.py writes them)
+const DEFAULT_SPEEDS = SYN.modes.lake.files.od.assumptions;
 
 test('a lake with a residence time on the way is a well-mixed lake, as the API does', () => {
   // Outflow Beck, below Test Water (20 days): A5's water enters Test Water above the click.
@@ -78,13 +79,13 @@ test('a lake with a residence time on the way is a well-mixed lake, as the API d
     placeIn(filesOf(s))(pick(s)).rows.find(x => s.files.ids[x.i] === 'A5'));
   near(mixed.dlake, lake.dlake, 3, 'the same lake metres');
   near(mixed.dres, 4000, 3, 'all of them well mixed');
-  const tau = 20 * 24, k = Math.log(10) / 30;
+  const tau = 20 * 24, k = Math.log(10) / DEFAULT_SPEEDS.t90_hours;
   near(mixed.pass, 1 / (1 + k * tau), 1e-6, 'share alive');
   near(mixed.hold, tau / (1 + k * tau), 1e-3, "survivors' hours");
   const area = SYN.modes.lake.files.lakes.polygons.find(p => p.name === 'Test Water').area_km2;
   near(mixed.dil, lake.dil * (1 + area / 5), 1e-4, 'no area factor');
   const [tm, tl] = [mixed, lake].map(r => A.transportOf(r, DEFAULT_SPEEDS));
-  near(tm.travel - tl.travel, tau / (1 + k * tau) - 4000 / 0.05 / 3600, 0.01, 'hours in the lake, not 4 km at 0.05 m/s');
+  near(tm.travel - tl.travel, tau / (1 + k * tau) - 4000 / DEFAULT_SPEEDS.lake_velocity_ms / 3600, 0.01, 'hours in the lake, not 4 km at 0.05 m/s');
 });
 
 for (const [mode, s] of Object.entries(SYN.modes)) {
@@ -142,8 +143,9 @@ test('a lake on the way slows the water and thins it, as the API does', () => {
   assert.equal(river.dlake, 0);
   const area = SYN.modes.lake.files.lakes.polygons.find(p => p.name === 'Test Water').area_km2;
   near(lake.dil, river.dil / (1 + area / 5), 1e-4, 'divided by 1 + area / 5 km2');
-  const hours = r => (r.dist / 0.5 + r.dlake / 0.05) / 3600;   // forecast()'s travel at the default speeds
-  near(hours(lake) - hours(river), 4000 / 0.05 / 3600 - 4000 / 0.5 / 3600, 0.01, '4 km at 0.05 m/s, not 0.5');
+  const { river_velocity_ms: vr, lake_velocity_ms: vl } = DEFAULT_SPEEDS;
+  const hours = r => (r.dist / vr + r.dlake / vl) / 3600;   // forecast()'s travel at the default speeds
+  near(hours(lake) - hours(river), 4000 / vl / 3600 - 4000 / vr / 3600, 0.01, '4 km at lake speed, not river speed');
 });
 
 // The River Stor in West Sussex (16 Oct 2026): a click on a short side link's kink, 35 m from a pond's

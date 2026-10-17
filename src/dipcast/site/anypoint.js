@@ -106,17 +106,18 @@ const AnyPoint = (() => {
   // A link record (links/<t>.json) at a click `frac` along the link: [{i, dist, dlake, dil}], as
   // upstream_overflows gives them (build_any_point.rows_at and Tracer say how). The cap is on the
   // whole distance along the network; a lake crossed on the way then moves its metres from dist to
-  // dlake and multiplies the dilution by its factor.
-  function rowsAt(rec, frac, cap, l0) {
+  // dlake and multiplies the dilution by its factor. `p` is transport.DILUTION_POWER (assumptions.dilution_power):
+  // the length ratio, capped at 1, is raised to it before any lake factor.
+  function rowsAt(rec, frac, cap, l0, p = 1) {
     const offset = frac * rec.n, shrink = (rec.u + l0) / (rec.u + l0 + offset), out = [], path = crossings(rec.k), mixed = holds(rec.h);
     let i = 0;
     for (let k = 0; k < (rec.o || []).length; k += 3) {
       i += rec.o[k];
       const dist = rec.o[k + 1] * BASE_UNIT + offset, [lake, factor] = path.get(i) || [0, 1];
-      if (dist <= cap) out.push({ i, dist: dist - lake, dlake: lake, dil: Math.min(1, rec.o[k + 2] / SCALE * shrink) * factor, ...(mixed.get(i) || NO_HOLD) });
+      if (dist <= cap) out.push({ i, dist: dist - lake, dlake: lake, dil: Math.pow(Math.min(1, rec.o[k + 2] / SCALE * shrink), p) * factor, ...(mixed.get(i) || NO_HOLD) });
     }
     for (let k = 0; k < (rec.s || []).length; k += 2)
-      if (rec.s[k + 1] < offset) out.push({ i: rec.s[k], dist: offset - rec.s[k + 1], dlake: 0, dil: Math.min(1, shrink) });
+      if (rec.s[k + 1] < offset) out.push({ i: rec.s[k], dist: offset - rec.s[k + 1], dlake: 0, dil: Math.pow(Math.min(1, shrink), p) });
     return out;
   }
   // Lake distance "water" (model/lake_water.py, water_distance): the shortest way from an inlet to the
@@ -165,15 +166,15 @@ const AnyPoint = (() => {
   // A lake's inlets (lakes.json) for a click: the distance to the inlet, then the straight line
   // across (or the way through the water, waterWay); a WFD lake's area divides the dilution by
   // 1 + area / 5 km2. Another WFD lake crossed before the inlet moves its metres to the lake distance
-  // and multiplies the dilution by its factor.
-  function lakeRows(lake, at, area, a0, water = null) {
+  // and multiplies the dilution by its factor. `p` as in rowsAt.
+  function lakeRows(lake, at, area, a0, water = null, p = 1) {
     const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1, way = waterWay(water, at, xy);
     for (const [j, inlet] of lake.inlets.entries()) {
       const [x, y] = xy(inlet.at[1], inlet.at[0]), path = crossings(inlet.k), mixed = holds(inlet.h);
       const across = (way && way(j)) ?? Math.hypot(x, y);
       for (let k = 0; k < inlet.o.length; k += 3) {
         const [crossed, factor] = path.get(inlet.o[k]) || [0, 1];
-        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: inlet.o[k + 2] / SCALE / div * factor,
+        out.push({ i: inlet.o[k], dist: inlet.o[k + 1] - crossed, dlake: across + crossed, dil: Math.pow(inlet.o[k + 2] / SCALE, p) / div * factor,
           ...(mixed.get(inlet.o[k]) || NO_HOLD) });
       }
     }
@@ -501,7 +502,7 @@ const AnyPoint = (() => {
     if (p && (p.lake !== -1 || link)) {
       const entry = link && tiles[link.tile].links[String(link.lno)];
       const lake = !link ? p.lake : entry && entry.lake !== undefined ? entry.lake : null;
-      return { mode: 'lake', kind: 'lake', name: p.name || 'Unnamed lake', rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, waters[lake]),
+      return { mode: 'lake', kind: 'lake', name: p.name || 'Unnamed lake', rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, waters[lake], a.dilution_power ?? 1),
         ...(link ? { link } : {}), ...(lake === null ? {} : { lake }),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
@@ -518,8 +519,8 @@ const AnyPoint = (() => {
       at.link = move;
     }
     const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
-    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake]))
-      : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m);
+    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake], a.dilution_power ?? 1))
+      : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m, a.dilution_power ?? 1);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
       ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
       location: { mode: at.mode, watercourse: at.link.name, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],

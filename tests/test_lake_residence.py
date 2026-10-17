@@ -86,7 +86,7 @@ def test_the_well_mixed_lake():
     assert transport.lake_hold_h(tau) == pytest.approx(1 / (1 / tau + K))
     # a lake that empties far faster than bacteria die passes nearly all; one that holds water for weeks, little
     assert transport.lake_pass(0.1) > 0.99
-    assert transport.lake_pass(tau) < 0.02
+    assert transport.lake_pass(tau) < 0.04   # 3.2% at T90 72 h (1.4% at the 30 h used until 17 Oct 2026)
 
 
 def test_a_lake_with_a_residence_time_is_crossed_as_a_well_mixed_lake(net):
@@ -102,9 +102,9 @@ def test_a_lake_with_a_residence_time_is_crossed_as_a_well_mixed_lake(net):
     assert res.loc["above", "decay"] == pytest.approx(10 ** (-river_h / config.T90_HOURS) / (1 + K * tau))
     river = _trace(net, lake_path_mode="river")
     assert res.loc["above", "dilution"] == pytest.approx(river.loc["above", "dilution"])
-    # Face check: a spill that crosses a lake holding water for 39 days keeps under 2% of the weight it has when
-    # the lake is walked as river
-    assert res.loc["above", "weight"] < 0.02 * river.loc["above", "weight"]
+    # Face check: a spill that crosses a lake holding water for 39 days keeps under 4% of the weight it has when
+    # the lake is walked as river (under 2% at the T90 of 30 h used until 17 Oct 2026)
+    assert res.loc["above", "weight"] < 0.04 * river.loc["above", "weight"]
     # below the lake nothing changes
     assert res.loc["below"].equals(lake.loc["below"])
 

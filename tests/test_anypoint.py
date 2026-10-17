@@ -150,7 +150,7 @@ MODES = ["lake", "river", "residence"]   # config.LAKE_PATH_MODE: the default, t
 def _travel(rows: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     """Travel (h) and die-off of rows_at's rows at the default speeds, as anypoint.js transportOf: the
     metres of a well-mixed lake travel as its survivors' hours, and the share alive multiplies the die-off."""
-    moving = (rows["distance_m"] / 0.5 + (rows["lake_distance_m"] - rows["res_m"]) / config.LAKE_VELOCITY_MS) / 3600
+    moving = (rows["distance_m"] / config.RIVER_VELOCITY_MS + (rows["lake_distance_m"] - rows["res_m"]) / config.LAKE_VELOCITY_MS) / 3600
     return (moving + rows["hold_h"]).to_numpy(float), (10 ** (-moving / config.T90_HOURS) * rows["lake_pass"]).to_numpy(float)
 
 
@@ -280,9 +280,9 @@ def test_a_lake_click_from_the_published_inlets_matches_the_api(world, tmp_path,
                 m, factor = path.get(int(i), (0.0, 1.0))
                 res_m, _hold, alive = mix.get(int(i), (0.0, 0.0, 1.0))   # the hours move the day, not the weight
                 d_lake = math.hypot(ex - click[0], ey - click[1]) + m
-                travel = ((d - m) / 0.5 + (d_lake - res_m) / 0.05) / 3600
-                rows.append((ids[int(i)], d - m, d_lake,
-                             10 ** (-travel / 30) * alive * w / bap.DIL_SCALE / (1 + poly["area_km2"] / 5) * factor))
+                travel = ((d - m) / config.RIVER_VELOCITY_MS + (d_lake - res_m) / config.LAKE_VELOCITY_MS) / 3600
+                rows.append((ids[int(i)], d - m, d_lake, 10 ** (-travel / config.T90_HOURS) * alive
+                             * (w / bap.DIL_SCALE) ** transport.DILUTION_POWER / (1 + poly["area_km2"] / 5) * factor))
         got = pd.DataFrame(rows, columns=["site_id", "distance_m", "lake_distance_m", "weight"])
         got = got.sort_values("site_id").reset_index(drop=True)
         assert list(got["site_id"]) == list(want["site_id"]) == sites
@@ -496,7 +496,9 @@ def _page_fixture_in(world, tmp_path, monkeypatch, mode: str) -> dict:
         "cfg": {"network": "net0", "tile_deg": bap.TILE_DEG, "tiles": meta["tiles"], "snap_m": transport.PIN_SNAP_M,
                 "lake_snap_m": transport.LAKE_SNAP_M, "lake_shore_m": transport.LAKE_SHORE_M, "lake_bias": transport.LAKE_BIAS},
         "lakes": json.loads((out / "lakes.json").read_text()), "ids": meta["ids"],
-        "od": {"assumptions": {"max_upstream_km": 60.0, "l0_m": transport.L0_M, "lake_area_halving_km2": transport.LAKE_A0_KM2}},
+        "od": {"assumptions": {"max_upstream_km": 60.0, "l0_m": transport.L0_M, "lake_area_halving_km2": transport.LAKE_A0_KM2,
+                               "dilution_power": transport.DILUTION_POWER, "river_velocity_ms": config.RIVER_VELOCITY_MS,
+                               "lake_velocity_ms": config.LAKE_VELOCITY_MS, "t90_hours": config.T90_HOURS}},
         "tiles": {t: {"index": base64.b64encode((out / "link_index" / f"{t}.bin").read_bytes()).decode(),
                       **{k: v for k, v in json.loads((out / "links" / f"{t}.json").read_text()).items() if k in ("links", "arms")}}
                   for t in meta["tiles"]},

@@ -24,14 +24,14 @@
   },
   {
    "predictor": "risk_model",
-   "n": 1684,
+   "n": 1685,
    "sites": 31,
-   "spearman_pooled": 0.631,
-   "spearman_within_site": 0.3139,
-   "auc_gt500": 0.8093,
-   "rate_gt500": 0.2173,
-   "auc_gt900": 0.8102,
-   "rate_gt900": 0.1295
+   "spearman_pooled": 0.5734,
+   "spearman_within_site": 0.3711,
+   "auc_gt500": 0.8016,
+   "rate_gt500": 0.2172,
+   "auc_gt900": 0.8054,
+   "rate_gt900": 0.1294
   }
  ],
  "river": [
@@ -50,11 +50,11 @@
    "predictor": "risk_model",
    "n": 947,
    "sites": 20,
-   "spearman_pooled": 0.4704,
-   "spearman_within_site": 0.3994,
-   "auc_gt500": 0.7409,
+   "spearman_pooled": 0.5212,
+   "spearman_within_site": 0.4706,
+   "auc_gt500": 0.7664,
    "rate_gt500": 0.3527,
-   "auc_gt900": 0.744,
+   "auc_gt900": 0.7685,
    "rate_gt900": 0.2133
   }
  ],
@@ -72,13 +72,13 @@
   },
   {
    "predictor": "risk_model",
-   "n": 737,
+   "n": 738,
    "sites": 11,
    "spearman_pooled": 0.3401,
-   "spearman_within_site": 0.2642,
-   "auc_gt500": 0.6632,
+   "spearman_within_site": 0.2899,
+   "auc_gt500": 0.6451,
    "rate_gt500": 0.0434,
-   "auc_gt900": 0.6566,
+   "auc_gt900": 0.6131,
    "rate_gt900": 0.0217
   }
  ],
@@ -96,24 +96,24 @@
   },
   {
    "predictor": "risk_model",
-   "n": 600,
+   "n": 601,
    "sites": 9,
-   "spearman_pooled": 0.5115,
-   "spearman_within_site": 0.3958,
-   "auc_gt500": 0.8357,
-   "rate_gt500": 0.1,
-   "auc_gt900": 0.8164,
-   "rate_gt900": 0.0683
+   "spearman_pooled": 0.5089,
+   "spearman_within_site": 0.4316,
+   "auc_gt500": 0.8209,
+   "rate_gt500": 0.0998,
+   "auc_gt900": 0.8009,
+   "rate_gt900": 0.0682
   },
   {
    "predictor": "risk_observed",
    "n": 601,
    "sites": 9,
-   "spearman_pooled": 0.2412,
-   "spearman_within_site": 0.2274,
-   "auc_gt500": 0.6239,
+   "spearman_pooled": 0.2428,
+   "spearman_within_site": 0.2523,
+   "auc_gt500": 0.6393,
    "rate_gt500": 0.0998,
-   "auc_gt900": 0.6115,
+   "auc_gt900": 0.6233,
    "rate_gt900": 0.0682
   }
  ],
@@ -124,5 +124,5 @@
   "2026-09-07"
  ],
  "max_missing_share": 0.1,
- "samples_without_figure": 1
+ "samples_without_figure": 0
 }
