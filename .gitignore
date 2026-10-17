@@ -41,6 +41,8 @@ data/raw/*
 !data/raw/coastal_catalogue.json
 !data/raw/coastal_wqa_points.json
 !data/raw/places.json
+# The rivers and lakes the home page's search finds on the map (scripts/make_waters.py).
+!data/raw/waters.json
 !data/raw/outside_england.json
 # Checked joins of outfalls on streams OS Open Rivers does not draw (overflows.apply_joins).
 !data/raw/overflow_joins.csv

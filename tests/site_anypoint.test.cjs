@@ -358,3 +358,21 @@ test('a lake click says which lake it is on, and without its water file keeps th
   const want = Object.fromEntries(c.rows.map(r => [r.site_id, r.line_m]));
   got.rows.forEach(r => near(r.dlake, want[W.files.ids[r.i]], 3, `${W.files.ids[r.i]} straight line`));
 });
+
+test('a click too far out to pick a river zooms in on itself and says to tap the water, instead of forecasting', () => {
+  const said = [], views = [], was = {};
+  const set = (k, v) => { was[k] = global[k]; global[k] = v; };
+  set('DATA', {spots: [{lat: 54, lon: -2}]}); set('PHONE', {matches: false}); set('mapMode', () => false); set('mapSay', t => said.push(t));
+  let zoom = 6;
+  set('map', {getZoom: () => zoom, setView: (ll, z) => views.push([ll.lat, ll.lng, z]),
+    latLngToContainerPoint: ll => ({x: Array.isArray(ll) ? 0 : 500, y: 0, distanceTo(o) { return Math.abs(this.x - o.x); }})});
+  try {
+    A.onMapClick({latlng: {lat: 52, lng: -1}});
+    assert.deepEqual(views, [[52, -1, A.POINT_ZOOM + 2]]);
+    assert.equal(said[0], 'Zoomed in. Now click a river or lake for its forecast.');
+    // On a phone the small map on a spot's page takes no click at all, at any zoom.
+    global.PHONE = {matches: true};
+    A.onMapClick({latlng: {lat: 52, lng: -1}});
+    assert.equal(views.length, 1);
+  } finally { for (const [k, v] of Object.entries(was)) { if (v === undefined) delete global[k]; else global[k] = v; } }
+});

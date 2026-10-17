@@ -90,3 +90,30 @@ test('distances read as a person says them', () => {
   assert.deepEqual([0.4, 1, 1.04, 7.66, 12.4].map(P.milesAway), ['under a mile away', '1 mile away', '1 mile away', '7.7 miles away', '12 miles away']);
   assert.deepEqual([3, 5, 21, 50, 51].map(P.reachFor), [5, 5, 30, 50, 0]);
 });
+
+test('the search finds a river or lake by its name, its other name or the town it is near, never by a generic word', () => {
+  const doc = {waters: [
+    ['River Derwent', '', 'river', 'Malton', 54.0, -0.89, 54.17, -0.73, 54.0954, -0.8326, 119],
+    ['River Derwent', '', 'river', 'Wirksworth', 52.87, -1.7, 53.36, -1.32, 53.0987, -1.5289, 92],
+    ['River Wye', 'Afon Gwy', 'river', 'Monmouth', 51.62, -3.04, 52.12, -2.56, 51.8362, -2.6701, 125],
+    ['River Kennet', '', 'river', 'Hungerford', 51.39, -1.85, 51.47, -1.03, 51.42, -1.5, 107],
+    ['Rydal Water', '', 'lake', 'Ambleside', 54.44, -3.0, 54.45, -2.99, 54.4455, -2.9916, 1],
+    ['Nowhere Beck', '', 'river', 'Paris', 48.8, 2.3, 48.9, 2.4, 48.85, 2.35, 3],   // outside GB: dropped
+  ]};
+  const ix = P.waterIndex(doc), names = q => P.waterMatches(ix, q).map(w => `${w.name} / ${w.near}`);
+  assert.equal(ix.length, 5);
+  assert.deepEqual(ix[3].box, [[51.39, -1.85], [51.47, -1.03]]);
+  assert.equal(ix[4].kind, 'lake');
+  assert.deepEqual(names('kennet'), ['River Kennet / Hungerford']);
+  assert.deepEqual(names('River  KENNET'), ['River Kennet / Hungerford']);
+  assert.deepEqual(names('derwent'), ['River Derwent / Malton', 'River Derwent / Wirksworth']);   // the longest first
+  assert.deepEqual(names('derwent wirks'), ['River Derwent / Wirksworth']);   // the town tells them apart
+  assert.deepEqual(names('gwy'), ['River Wye / Monmouth']);   // the other name
+  assert.deepEqual(names('rydal'), ['Rydal Water / Ambleside']);
+  assert.deepEqual(names('river'), []);   // a generic word alone
+  assert.deepEqual(names('water'), []);
+  assert.deepEqual(names('malton'), []);   // a town alone is offered as a place, not as its rivers
+  assert.deepEqual(names('ke'), []);   // under three letters
+  assert.equal(P.waterMatches(ix, 'derwent', 1).length, 1);
+  assert.deepEqual(P.waterIndex(null), []);
+});

@@ -70,6 +70,30 @@ function placeNamed(index, text) {
 // "LA22 9", "SW1A": OS Open Names has postcodes, but not in the file the page fetches.
 const looksLikePostcode = text => /^[a-z]{1,2}[0-9][0-9a-z]?(\s*[0-9][a-z]{0,2})?$/i.test(String(text).trim());
 
+// ------------------------------------------------------------------------------ rivers and lakes
+// data/waters.json (scripts/make_waters.py): OS Open Rivers' named rivers and the WFD lakes in England,
+// longest first. The home page's search offers them on the map (index.html, offerOnMap).
+const WATER_WORDS = new Set(['river', 'afon', 'beck', 'brook', 'water', 'the', 'stream', 'lake', 'mere', 'tarn', 'reservoir', 'of', 'and', 'at', 'near']);
+const waterIndex = doc => (doc && Array.isArray(doc.waters) ? doc.waters : [])
+  .filter(w => Array.isArray(w) && typeof w[0] === 'string' && inGB(w[8], w[9]))
+  .map(([name, alt, kind, near, s, west, n, e, lat, lon, km]) => ({ name, alt: alt || '', kind: kind === 'lake' ? 'lake' : 'river', near,
+    box: [[s, west], [n, e]], lat, lon, km,
+    own: placeKey(`${name} ${alt || ''}`).split(' '), all: placeKey(`${name} ${alt || ''} ${near}`).split(' ') }));
+// Up to n waters for what has been typed: each word typed begins a word of the name, its other name or the
+// town it is near ("kennet", "river kennet", "derwent malton"), and one that is not a generic word
+// (WATER_WORDS) begins a word of the name itself, so "river" alone, or a town's name alone, finds none:
+// a town is offered as a place. In the file's order, the longest first.
+function waterMatches(index, text, n = 4) {
+  const typed = placeKey(text).split(' ').filter(Boolean), own = typed.filter(t => !WATER_WORDS.has(t));
+  if (own.join('').length < 3) return [];
+  const out = [];
+  for (const w of index) {
+    if (typed.every(t => w.all.some(x => x.startsWith(t))) && own.some(t => w.own.some(x => x.startsWith(t)))) {
+      out.push(w); if (out.length === n) break; }
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------------------ the spots
 // Which group a spot is in on the day: 0 when nothing flags it (low risk, or a plain level, where no
 // monitored overflow can reach it), 1 at moderate risk or higher (a rating of poor included), 2 with
@@ -108,6 +132,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, readPlan, planHash, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode,
+  module.exports = { MILE_KM, RADII, readPlan, planHash, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway };
 }
