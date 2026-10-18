@@ -1,0 +1,72 @@
+{
+ "dropped_by_90pct_rule": {
+  "total": 0,
+  "Anglian Water": 0,
+  "Northumbrian Water": 0,
+  "Severn Trent Water": 0,
+  "South West Water": 0,
+  "Southern Water": 0,
+  "Thames Water": 0,
+  "United Utilities": 0,
+  "Wessex Water": 0,
+  "Yorkshire Water": 0
+ },
+ "rows_scored": 5077150,
+ "era_feature_recompute_gap": {
+  "rain_d": 3.814697265625e-06,
+  "rain_d1": 3.814697265625e-06,
+  "rain_d2": 3.814697265625e-06,
+  "rain_3d": 7.62939453125e-06,
+  "rain_7d": 1.52587890625e-05,
+  "rain_30d": 3.0517578125e-05,
+  "api": 7.62939453125e-06,
+  "max1h_d": 0.0,
+  "max3h_d": 9.5367431640625e-07,
+  "max6h_d": 1.9073486328125e-06,
+  "doy_sin": 0.0,
+  "doy_cos": 0.0,
+  "log_lta_spills": 0.0,
+  "log_spill_hours": 0.0,
+  "edm_pct": 0.0
+ },
+ "condition_5": {
+  "plus 1 mm every hour": {
+   "rows": 5077150,
+   "lowered": 1,
+   "lowered_share": 1.9696089341461254e-07,
+   "lowered_by_over_1e-6": 1,
+   "largest_drop": 0.0002790893847819387,
+   "pass": true
+  },
+  "double every hour": {
+   "rows": 5077150,
+   "lowered": 0,
+   "lowered_share": 0.0,
+   "lowered_by_over_1e-6": 0,
+   "largest_drop": 0.0,
+   "pass": true
+  }
+ },
+ "condition_6": {
+  "overflows": 14630,
+  "rows": 73150,
+  "seconds": 5.656329154968262,
+  "pass": true,
+  "numpy_vs_torch_max_logit_gap_1000_rows": 1.9073486328125e-06,
+  "file": "https://swimsignal.co.uk/data/overflows.geojson (Last-Modified 18 Oct 2026 06:22:29 GMT), saved locally"
+ },
+ "layer_2": {
+  "overflows": 13598,
+  "prior_strength": 15.0,
+  "recency": 1.0
+ },
+ "conditions": {
+  "1 real gain overall": false,
+  "2 no company clearly worse": false,
+  "3 not worse with forecast rain": false,
+  "4 reliability": false,
+  "5 more rain does not lower the risk": true,
+  "6 cheap to run": true
+ },
+ "adopt": false
+}
