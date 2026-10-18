@@ -110,6 +110,21 @@ function evidenceSample(s, nowMs, html = false) {
     + (cmp ? `: ${html ? `<a href="#about-ecoli">${cmp}</a>` : cmp}` : '') + '.';
 }
 
+// Runoff from farms, which the forecast does not model at a particular spot, where the Environment Agency
+// lists it on the spot's water body: agriculture and rural land management as a confirmed or probable
+// reason the water body does not reach good status, under "Pollution from rural areas", in the Catchment
+// Data Explorer (build_site.attach_water_body, from data/raw/rnags.json). The Agency's words and its
+// certainty, and a link to its page for the water body. A fact about the river, not about today's water:
+// the reasons are for its ecological and chemical status (plants, algae, fish, phosphate), not bacteria.
+// `said`: the no-overflow gap above already says farms are not modelled. Empty where nothing is listed.
+function evidenceRunoff(d, said = false) {
+  const w = d.water_body || {}, how = w.agriculture;
+  if (!/^GB[0-9A-Z]+$/.test(w.id || '') || !['confirmed', 'probable'].includes(how)) return '';
+  const where = d.kind === 'lake' ? 'this lake' : 'this stretch of river';
+  return `${said ? '' : 'Runoff from farms here is not modelled. '}The <a href="https://environment.data.gov.uk/catchment-planning/WaterBody/${w.id}">Environment Agency</a> `
+    + `lists agriculture and rural land management as a ${how} reason ${where} does not reach good status.`;
+}
+
 // The rows and the gaps, for a spot of the list (not a point clicked on the map, nor one without a
 // forecast, whose answer says why). Each row: what, how old (age), what it says (say), whose (src).
 function evidenceItems(d, nowMs, generatedAt) {
@@ -118,6 +133,8 @@ function evidenceItems(d, nowMs, generatedAt) {
   const ov = evidenceOverflows(d, generatedAt);
   if (ov) rows.push(ov);
   else gaps.push(`No monitored overflow within ${(d.assumptions || {}).max_upstream_km ?? 60}&nbsp;km upstream, so no spills to go on; farms, wildlife and unmonitored sources are not modelled.`);
+  const runoff = evidenceRunoff(d, !ov);
+  if (runoff) gaps.push(runoff);
   const rain = evidenceRain(d, nowMs, generatedAt);
   if (rain) rows.push(rain);
   const dry = (d.days || []).slice(0, 5).filter(x => evidenceNil(x.rain_48h_mm)).map(x => x.date === evidenceISO(nowMs) ? 'today' : evidenceDayName(x.date));
@@ -155,5 +172,5 @@ function evidenceTile(d, nowMs, generatedAt) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample };
+  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff };
 }

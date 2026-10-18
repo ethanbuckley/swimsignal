@@ -177,6 +177,45 @@ test('no overflow upstream, and rain that did not arrive, are gaps; an old build
   assert.match(row(tees, 'Rain here', Date.parse('2026-10-05T08:00:00+01:00')).say, /to midday Sunday\./);
 });
 
+// River Wye, Bishop's Meadow, Hereford, as spots.json has it with data/raw/rnags.json of 18 Oct 2026
+// (tests/test_evidence.py checks the build gives it this water body): 14 overflows upstream, none live.
+const hereford = (extra = {}) => ({
+  id: 'wye-hereford', name: "River Wye, Bishop's Meadow, Hereford", source: 'curated', kind: 'river',
+  assumptions: { max_upstream_km: 60 }, upstream_summary: { overflows: 14 },
+  now: { discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 0, no_feed_upstream: 14 },
+  days: [day('2026-10-04', 0), day('2026-10-05', 2)],
+  water_body: { id: 'GB109055037113', name: 'Wye - Bredwardine Br to Hampton Bishop', agriculture: 'probable' },
+  ...extra });
+const WYE_LINE = 'Runoff from farms here is not modelled. The <a href="https://environment.data.gov.uk/catchment-planning/WaterBody/GB109055037113">Environment Agency</a> '
+  + 'lists agriculture and rural land management as a probable reason this stretch of river does not reach good status.';
+
+test("the Environment Agency's reasons on the water body: farm runoff, in its words and with its certainty", () => {
+  // Hereford: the line is the first gap, after the rows it does not change.
+  const { rows: r, gaps } = rows(hereford());
+  assert.deepEqual(r.map(x => x.what), ['Overflows upstream', 'Rain here']);
+  assert.deepEqual(gaps, [WYE_LINE, 'No lab samples, algae checks or rating here.']);
+  const html = ev.evidenceTile(hereford(), NOW, BUILT);
+  assert.match(html, /<div class="ev-gap"><p>Runoff from farms here is not modelled\. The <a href="https:\/\/environment\.data\.gov\.uk\/catchment-planning\/WaterBody\/GB109055037113">Environment Agency<\/a> lists/);
+  // Symonds Yat, the next water body but one down the Wye, lists the same sector as probable.
+  const yat = hereford({ id: 'wye-symonds-yat', water_body: { id: 'GB109055037111', name: 'Wye - conf Walford Bk to Bigsweir Br', agriculture: 'probable' } });
+  assert.equal(rows(yat).gaps[0], WYE_LINE.replace('GB109055037113', 'GB109055037111'));
+  // A lake, where the Agency's certainty is confirmed (Windermere's north basin).
+  const lake = hereford({ kind: 'lake', water_body: { id: 'GB31247007', name: 'Windermere (N Basin)', agriculture: 'confirmed' } });
+  assert.match(rows(lake).gaps[0], /as a confirmed reason this lake does not reach good status\.$/);
+  // No overflow upstream: that gap already says farms are not modelled, so it is not said twice.
+  const none = hereford({ upstream_summary: { overflows: 0 }, now: {} });
+  assert.deepEqual(rows(none).gaps.slice(0, 2), [
+    'No monitored overflow within 60&nbsp;km upstream, so no spills to go on; farms, wildlife and unmonitored sources are not modelled.',
+    WYE_LINE.replace('Runoff from farms here is not modelled. ', '')]);
+  // Nothing where the Agency lists no such reason, the spot is in no water body, or a field is not what the build writes.
+  for (const water_body of [undefined, null, { id: 'GB109055037112', name: 'Wye - Hampton Bishop to conf Kerne Br' },
+    { id: 'GB109055037113', agriculture: 'suspected' }, { id: '"><b>x', agriculture: 'probable' }, { id: 'GB109055037113', agriculture: '<b>' }]) {
+    assert.ok(!rows(hereford({ water_body })).gaps.some(g => /Runoff|agriculture/.test(g)), JSON.stringify(water_body));
+  }
+  // A fact about the river from the Agency, never a word on today's water or on safety.
+  assert.doesNotMatch(WYE_LINE, /safe|bacteria|E\. ?coli|sewage|today/i);
+});
+
 test('nothing for a point clicked on the map or a spot without a forecast', () => {
   assert.equal(ev.evidenceTile(cromwheel({ unlisted: true }), NOW, BUILT), '');
   assert.equal(ev.evidenceTile(cromwheel({ error: 'An isolated lake: no river reaches it.' }), NOW, BUILT), '');

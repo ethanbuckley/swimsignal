@@ -956,6 +956,41 @@ def attach_classifications(results: list[dict], path: Path = CLASSIFICATIONS) ->
     return n
 
 
+RNAGS = config.RAW / "rnags.json"
+FARM_PRESSURE = ("Agriculture and rural land management", "Pollution from rural areas")
+
+
+def attach_water_body(results: list[dict], path: Path = RNAGS) -> tuple[int, list[str]] | None:
+    """Each spot's Environment Agency water body, and whether the Environment Agency lists agriculture and
+    rural land management as a confirmed or probable reason it does not reach good status, under "Pollution
+    from rural areas", for the page's "What the level rests on" (evidence.js, evidenceRunoff): `water_body`
+    {id, name, agriculture?}. Both come from data/raw/rnags.json, which scripts/make_rnags.py writes off CI
+    from the Catchment Data Explorer and which places every listed spot in its water body, so no request is
+    made. A spot the file places nowhere (a tributary it does not name, a lake under 50 ha), or in a water
+    body it lists no reasons for, gets no field. Returns (how many spots got one, the ids of the spots the
+    file does not know: added since it was made), or None without a readable file, when no spot gets one."""
+    try:
+        doc = json.loads(path.read_text())
+        spots, bodies = doc["spots"], doc["water_bodies"]
+    except Exception as e:  # noqa: BLE001 - a record beside the forecast must not sink the build
+        log.warning("reasons for not achieving good status: %s", e)
+        return None
+    n, unknown = 0, []
+    for r in results:
+        if r["id"] not in spots:
+            unknown.append(r["id"])
+            continue
+        at = spots[r["id"]]
+        b = bodies.get(at["id"]) if at else None
+        if b is None or r.get("error"):
+            continue
+        farm = [p["certainty"] for p in b["pressures"] if (p["sector"], p["issue"]) == FARM_PRESSURE]
+        r["water_body"] = {"id": at["id"], "name": b["name"],
+                           **({"agriculture": min(farm, key=("confirmed", "probable").index)} if farm else {})}
+        n += 1
+    return n, unknown
+
+
 def _km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     import math
     r = math.pi / 180
@@ -2386,6 +2421,7 @@ def build(refresh: bool = True) -> dict:
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_classified = attach_classifications(results)
+    water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -2399,6 +2435,13 @@ def build(refresh: bool = True) -> dict:
                           duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["lab_samples"] = n_lab
+    if water_body is None:
+        health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
+    else:
+        health["water_bodies"] = water_body[0]
+        if water_body[1]:
+            health["warnings"].append(f"{len(water_body[1])} spot{'' if len(water_body[1]) == 1 else 's'} not in data/raw/rnags.json "
+                                      f"(rerun scripts/make_rnags.py): {', '.join(water_body[1][:10])}")
     near = near_uncounted(results, upstream, _overflows())
     if near:
         health["near_uncounted"] = near

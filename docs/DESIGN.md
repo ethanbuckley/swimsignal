@@ -744,6 +744,17 @@ sources sit together, and the only place with the latest lab sample.
   unmonitored sources are not modelled.", "No rain forecast arrived for Thursday.", "No lab sample here
   this season." A sample missing because the build had no samples file says that instead, and links the
   Environment Agency's page.
+- Runoff from farms (18 October 2026, review task D7). Where the Environment Agency's Catchment Data
+  Explorer lists agriculture and rural land management as a confirmed or probable reason the spot's water
+  body does not reach good status, under "Pollution from rural areas", the gaps say so in its words and
+  with its certainty, "Environment Agency" linking to its page for the water body: "Runoff from farms here
+  is not modelled. The Environment Agency lists agriculture and rural land management as a probable
+  reason this stretch of river does not reach good status." A lake is "this lake". Under the no-overflow
+  gap, which already says farms are not modelled, only the second sentence. It is a gap, not a row: the
+  level does not take it in. The Agency's reasons are about the water body's plants, animals and
+  chemistry, not bacteria, so the line says nothing about today's water. "Good status" is left as the
+  Agency says it; its page, one tap away, explains it. On the data of 18 October 2026, 36 of the 105
+  spots carry the line (23 rivers, 13 lakes), the two Wye spots among them, both "probable".
 - No level colour anywhere in it: the rating's word is in ink here, since its tile already colours it.
 - Not on a point clicked on the map, nor on a spot without a forecast, whose answer says why.
 
