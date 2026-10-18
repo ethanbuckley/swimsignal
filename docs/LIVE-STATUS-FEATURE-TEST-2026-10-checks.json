@@ -1,0 +1,116 @@
+{
+ "baseline_sha256": "1603678923ccdd1553830fa67c2069714c0a836c9df7e8c52578aabd729b5bcc",
+ "subsample_rows": 1569401,
+ "status_unknown": {
+  "train lead 0": {
+   "spilling_at_issue": 0,
+   "spill_hours_24h": 13598,
+   "spill_days_7d": 95186
+  },
+  "train lead 1": {
+   "spilling_at_issue": 13598,
+   "spill_hours_24h": 27196,
+   "spill_days_7d": 108784
+  },
+  "train lead 2": {
+   "spilling_at_issue": 27196,
+   "spill_hours_24h": 40794,
+   "spill_days_7d": 122382
+  },
+  "train lead 3": {
+   "spilling_at_issue": 40794,
+   "spill_hours_24h": 54392,
+   "spill_days_7d": 135980
+  },
+  "train lead 4": {
+   "spilling_at_issue": 54392,
+   "spill_hours_24h": 67990,
+   "spill_days_7d": 149578
+  },
+  "test lead 0": {
+   "spilling_at_issue": 0,
+   "spill_hours_24h": 280,
+   "spill_days_7d": 1960
+  },
+  "test lead 1": {
+   "spilling_at_issue": 280,
+   "spill_hours_24h": 560,
+   "spill_days_7d": 2240
+  },
+  "test lead 2": {
+   "spilling_at_issue": 560,
+   "spill_hours_24h": 840,
+   "spill_days_7d": 2520
+  },
+  "test lead 3": {
+   "spilling_at_issue": 840,
+   "spill_hours_24h": 1120,
+   "spill_days_7d": 2800
+  },
+  "test lead 4": {
+   "spilling_at_issue": 1120,
+   "spill_hours_24h": 1400,
+   "spill_days_7d": 3080
+  }
+ },
+ "baseline_all_nine_brier": 0.03615308595420895,
+ "lead_rows": {
+  "files": 544,
+  "cells": 544,
+  "rows": 1939245,
+  "overflows": 5313,
+  "era_window_under_90pct": 0
+ },
+ "conditions": {
+  "0": {
+   "1 gain with forecast rain": true,
+   "2 gain with ERA5-Land rain": true,
+   "3 no company clearly worse": true,
+   "4 reliability": true,
+   "5 not worse at a dry start": true,
+   "companies clearly worse": [],
+   "ECE failures": [],
+   "helps": true
+  },
+  "1": {
+   "1 gain with forecast rain": true,
+   "2 gain with ERA5-Land rain": true,
+   "3 no company clearly worse": true,
+   "4 reliability": true,
+   "5 not worse at a dry start": true,
+   "companies clearly worse": [],
+   "ECE failures": [],
+   "helps": true
+  },
+  "2": {
+   "1 gain with forecast rain": true,
+   "2 gain with ERA5-Land rain": true,
+   "3 no company clearly worse": true,
+   "4 reliability": true,
+   "5 not worse at a dry start": true,
+   "companies clearly worse": [],
+   "ECE failures": [],
+   "helps": true
+  },
+  "3": {
+   "1 gain with forecast rain": true,
+   "2 gain with ERA5-Land rain": true,
+   "3 no company clearly worse": true,
+   "4 reliability": true,
+   "5 not worse at a dry start": true,
+   "companies clearly worse": [],
+   "ECE failures": [],
+   "helps": true
+  },
+  "4": {
+   "1 gain with forecast rain": true,
+   "2 gain with ERA5-Land rain": true,
+   "3 no company clearly worse": true,
+   "4 reliability": true,
+   "5 not worse at a dry start": true,
+   "companies clearly worse": [],
+   "ECE failures": [],
+   "helps": true
+  }
+ }
+}
