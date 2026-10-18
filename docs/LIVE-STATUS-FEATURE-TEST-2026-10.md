@@ -231,3 +231,160 @@ not tested here. The candidate's score with every input missing is reported to s
 ---
 
 ## Results
+
+Run 18 October 2026 on this Mac, from commit `5c59059`, which holds the statement above. The script did not change
+after that commit. Nothing else was running. The run took 8.4 minutes. The log is
+`logs/live_status_run_2026-10-18.log` in the worktree (not committed). The tables are committed beside this file:
+- `-scores.csv`: every predictor, company and lead, ERA5-Land rain
+- `-differences.csv`: candidate minus baseline, with the bootstrap intervals
+- `-subsets.csv`: rows spilling at issue, not spilling, dry starts, and rows with a missing input
+- `-leads.csv`: forecast rain, per lead, for the nine together and per company
+- `-reliability.csv`
+- `-checks.json`: row counts, missing inputs, the conditions
+
+### Checks of the code
+
+All measured.
+- **Rows.** 4,976,868 training and 5,077,150 test site-days, and a subsample of 1,569,401: D2's counts.
+- **The baseline reproduces.** 0.03615 on the 2025 rows with ERA5-Land rain (D2: 0.0362). On the lead rows,
+  0.03784, 0.04153, 0.04376, 0.04578 and 0.04919: #239's table to five decimals.
+- **Lead rows.** 1,939,245 site-days for 5,313 overflows in 544 cells, with 1,928,619 scored at each lead, as in #239.
+- **Status.** 14,147 overflows and 2,756,717 events after merging.
+- **Missing inputs.** In the training rows, from 0 (`spilling_at_issue`, lead 0) to 149,578 (`spill_days_7d`,
+  lead 4). In the 2025 rows, from 0 to 3,080.
+- **Fit.** Each candidate ran the full 300 iterations, in about 30 seconds.
+- **Before the run,** the status code was checked on hand-made events: 8 rows at leads 0 and 1, 48 values, each
+  worked out by hand. All matched. That check is not committed.
+
+The five candidates are kept off-repo in `swimsignal-private/baselines/live_status/`. Their SHA-256 begins
+`deb5e1e5ee64`, `e0756b1e9748`, `ed5bb2b9a39e`, `5180de7086c6` and `ecc835c96d70` (leads 0 to 4).
+
+### Verification on 2025, ERA5-Land rain
+
+All nine companies, 5,077,150 rows, base rate 0.057. The baseline is the same at every lead.
+
+| Lead | Candidate | Baseline | Difference [95%] | Change | AUC candidate / baseline | ECE candidate / baseline |
+|---|---|---|---|---|---|---|
+| 0 | **0.0265** | 0.0362 | −0.0096 [−0.0125, −0.0070] | −27% | 0.960 / 0.929 | 0.003 / 0.008 |
+| 1 | **0.0315** | 0.0362 | −0.0047 [−0.0062, −0.0033] | −13% | 0.950 / 0.929 | 0.004 / 0.008 |
+| 2 | **0.0323** | 0.0362 | −0.0039 [−0.0053, −0.0025] | −11% | 0.946 / 0.929 | 0.003 / 0.008 |
+| 3 | **0.0328** | 0.0362 | −0.0034 [−0.0046, −0.0021] | −9% | 0.945 / 0.929 | 0.003 / 0.008 |
+| 4 | **0.0332** | 0.0362 | −0.0030 [−0.0041, −0.0019] | −8% | 0.943 / 0.929 | 0.003 / 0.008 |
+
+Per company: the difference in Brier, candidate minus baseline, with its 95% interval.
+
+| Company | Lead 0 | Lead 1 | Lead 2 | Lead 3 | Lead 4 |
+|---|---|---|---|---|---|
+| Anglian | −0.0087 [−0.0115, −0.0060] | −0.0047 [−0.0062, −0.0034] | −0.0040 [−0.0054, −0.0027] | −0.0035 [−0.0047, −0.0022] | −0.0033 [−0.0045, −0.0020] |
+| Northumbrian | −0.0061 [−0.0088, −0.0037] | −0.0014 [−0.0029, −0.0001] | −0.0013 [−0.0027, +0.0001] | −0.0019 [−0.0033, −0.0006] | −0.0023 [−0.0039, −0.0009] |
+| Severn Trent | −0.0071 [−0.0102, −0.0046] | −0.0035 [−0.0051, −0.0019] | −0.0031 [−0.0050, −0.0014] | −0.0025 [−0.0042, −0.0009] | −0.0022 [−0.0037, −0.0007] |
+| South West | −0.0184 [−0.0230, −0.0140] | −0.0110 [−0.0140, −0.0082] | −0.0087 [−0.0114, −0.0061] | −0.0069 [−0.0094, −0.0045] | −0.0054 [−0.0077, −0.0032] |
+| Southern | −0.0076 [−0.0103, −0.0051] | −0.0031 [−0.0045, −0.0018] | −0.0024 [−0.0035, −0.0012] | −0.0021 [−0.0030, −0.0011] | −0.0017 [−0.0027, −0.0005] |
+| Thames | −0.0153 [−0.0202, −0.0108] | −0.0092 [−0.0121, −0.0066] | −0.0074 [−0.0100, −0.0048] | −0.0057 [−0.0084, −0.0026] | −0.0051 [−0.0077, −0.0023] |
+| United Utilities | −0.0095 [−0.0123, −0.0069] | −0.0044 [−0.0062, −0.0026] | −0.0035 [−0.0054, −0.0018] | −0.0038 [−0.0054, −0.0023] | −0.0032 [−0.0048, −0.0018] |
+| Wessex | −0.0100 [−0.0137, −0.0067] | −0.0052 [−0.0070, −0.0035] | −0.0041 [−0.0060, −0.0022] | −0.0024 [−0.0042, −0.0006] | −0.0021 [−0.0039, −0.0004] |
+| Yorkshire | −0.0094 [−0.0127, −0.0063] | −0.0039 [−0.0059, −0.0020] | −0.0035 [−0.0055, −0.0017] | −0.0032 [−0.0051, −0.0013] | −0.0029 [−0.0046, −0.0013] |
+
+At lead 1, the first lead where the label's definition gives nothing away, Brier candidate / baseline: Anglian
+0.0225 / 0.0272, Northumbrian 0.0318 / 0.0332, Severn Trent 0.0249 / 0.0284, South West 0.0409 / 0.0519, Southern
+0.0246 / 0.0277, Thames 0.0211 / 0.0303, United Utilities 0.0413 / 0.0456, Wessex 0.0274 / 0.0326, Yorkshire
+0.0364 / 0.0403.
+
+**Reliability.** The candidate's ECE is lower than the baseline's at seven companies and every lead. Thames, where D2
+failed its reliability condition, goes from 0.024 to 0.002-0.003. At two companies it is higher, though under 0.02:
+- Northumbrian: 0.004-0.005 against 0.003.
+- Yorkshire: 0.0064 at lead 0, rising to 0.0105 at lead 4, against 0.0052.
+
+**Subsets** (all nine; difference with its 95% interval):
+
+| Lead | Not spilling at issue | Spilling at issue | Dry start (condition 5) |
+|---|---|---|---|
+| 0 | −0.0051 [−0.0066, −0.0038] | −0.307 [−0.368, −0.257] | −0.0039 [−0.0050, −0.0028] |
+| 1 | −0.0037 [−0.0047, −0.0026] | −0.073 [−0.112, −0.036] | −0.0028 [−0.0038, −0.0019] |
+| 2 | −0.0032 [−0.0042, −0.0020] | −0.052 [−0.082, −0.025] | −0.0026 [−0.0035, −0.0016] |
+| 3 | −0.0027 [−0.0036, −0.0016] | −0.050 [−0.079, −0.026] | −0.0023 [−0.0031, −0.0014] |
+| 4 | −0.0024 [−0.0033, −0.0015] | −0.041 [−0.061, −0.023] | −0.0020 [−0.0028, −0.0011] |
+
+- About 76,000 rows (1.5%) were spilling at issue at each lead. At lead 0 their label is certain, and the candidate
+  gives them a Brier of 0.00000 against the baseline's 0.307.
+- The dry-start rows are 4.08 million (80%), base rate 0.020 at lead 0 and 0.031 at lead 4. The candidate's AUC
+  there is 0.934 at lead 0 and 0.933 at lead 4, against the baseline's 0.910 and 0.924.
+- 1,960 to 3,080 rows had a missing input, all in the first two ISO weeks of 2025. Their intervals cannot be
+  computed. About one draw in eight holds neither week ((51/53)^53, from 53 weeks), so its mean is 0/0, and a
+  percentile over draws with a missing value is missing. The script's `RuntimeWarning` comes from this. Their Brier
+  differences are −0.039 to −0.005.
+
+### Verification on 2025, forecast rain
+
+All nine companies, 1,928,619 rows at each lead, base rate 0.063.
+
+| Lead | Candidate | Baseline | Difference [95%] | Change | AUC candidate / baseline |
+|---|---|---|---|---|---|
+| 0 | **0.02868** | 0.03784 | −0.0092 [−0.0118, −0.0067] | −24% | 0.961 / 0.932 |
+| 1 | **0.03706** | 0.04153 | −0.0045 [−0.0059, −0.0031] | −11% | 0.933 / 0.911 |
+| 2 | **0.03965** | 0.04376 | −0.0041 [−0.0056, −0.0026] | −9% | 0.926 / 0.907 |
+| 3 | **0.04187** | 0.04578 | −0.0039 [−0.0054, −0.0023] | −9% | 0.910 / 0.890 |
+| 4 | **0.04510** | 0.04919 | −0.0041 [−0.0058, −0.0024] | −8% | 0.897 / 0.879 |
+
+Per company, Brier candidate / baseline. A star marks an interval of the difference that reaches above zero (5 of
+45). No interval lies wholly above zero.
+
+| Company | Rows | Lead 0 | Lead 1 | Lead 2 | Lead 3 | Lead 4 |
+|---|---|---|---|---|---|---|
+| Anglian | 91,113 | 0.0197 / 0.0283 | 0.0251 / 0.0293 | 0.0261 / 0.0295 | 0.0266 / 0.0297 | 0.0285 / 0.0317 |
+| Northumbrian | 144,837 | 0.0256 / 0.0313 | 0.0310 / 0.0332 | 0.0356 / 0.0369 | 0.0358 / 0.0373 * | 0.0401 / 0.0423 |
+| Severn Trent | 253,737 | 0.0231 / 0.0291 | 0.0299 / 0.0320 | 0.0306 / 0.0329 | 0.0321 / 0.0342 | 0.0336 / 0.0355 |
+| South West | 107,448 | 0.0295 / 0.0423 | 0.0387 / 0.0453 | 0.0432 / 0.0484 | 0.0477 / 0.0501 * | 0.0506 / 0.0527 * |
+| Southern | 55,539 | 0.0197 / 0.0264 | 0.0276 / 0.0295 | 0.0297 / 0.0310 | 0.0312 / 0.0320 * | 0.0340 / 0.0345 * |
+| Thames | 74,415 | 0.0153 / 0.0370 | 0.0257 / 0.0392 | 0.0289 / 0.0393 | 0.0338 / 0.0426 | 0.0357 / 0.0436 |
+| United Utilities | 821,469 | 0.0339 / 0.0429 | 0.0432 / 0.0478 | 0.0459 / 0.0503 | 0.0483 / 0.0534 | 0.0525 / 0.0580 |
+| Wessex | 99,825 | 0.0223 / 0.0333 | 0.0294 / 0.0359 | 0.0324 / 0.0377 | 0.0348 / 0.0378 | 0.0371 / 0.0404 |
+| Yorkshire | 280,236 | 0.0304 / 0.0397 | 0.0396 / 0.0437 | 0.0422 / 0.0465 | 0.0445 / 0.0483 | 0.0471 / 0.0511 |
+
+The candidate's Brier is lower at every company and every lead.
+
+### The conditions
+
+| Condition | Lead 0 | Lead 1 | Lead 2 | Lead 3 | Lead 4 |
+|---|---|---|---|---|---|
+| 1. A gain with forecast rain | PASS | PASS | PASS | PASS | PASS |
+| 2. A gain with ERA5-Land rain | PASS | PASS | PASS | PASS | PASS |
+| 3. No company clearly worse | PASS | PASS | PASS | PASS | PASS |
+| 4. Reliability | PASS | PASS | PASS | PASS | PASS |
+| 5. Not worse at a dry start | PASS | PASS | PASS | PASS | PASS |
+
+- Condition 3: at no company and no lead does the interval lie wholly above zero. Every company's difference is
+  below zero. Northumbrian at lead 2 is the only interval that reaches zero (upper end +0.0001).
+- Condition 4: Northumbrian and Yorkshire pass by the 0.02 clause, not by being no worse than the baseline.
+
+**The status input helps at every lead, 0 to 4.** As stated above, nothing deploys on this. 2025 has now judged
+three candidates. The next step is a confirmation on 2026 data, stated before it runs, with the status computed from
+SwimSignal's own polls. The production change is Ethan's call after that.
+
+### Observations, not tested and not grounds for any change
+
+- **With every status input missing, the candidate is worse than the baseline.** Measured on the 2025 rows:
+  0.0537 at lead 0, 0.0634 at lead 1 and 0.0653 at lead 4, against the baseline's 0.0362 and the company flat rate's
+  0.0547. *Inferred, not checked:* the model saw missing inputs only in the first days of January 2024, a wet spell
+  (the 2024 rows with an unknown 7-day count spilled at 0.31 at lead 0). So it reads "missing" as "wet spell".
+  **Any production use needs the fallback stated above: the baseline for any overflow whose status is missing.**
+  At the 18 Oct poll that was 0.1% to 5.2% of each feed's overflows.
+- **About half of the lead-0 gain is the label's definition.** On rows not spilling at issue, the lead-0 difference
+  is −0.0051, against −0.0096 on all rows. In production, the hold-only "right now" rule already lifts today's level
+  for most of those rows (feasibility, above).
+- **Status buys about a day of lead.** With forecast rain, the candidate at each lead beats the baseline one lead
+  earlier: 0.0371 at lead 1 against 0.0378 at lead 0, then 0.0397 against 0.0415, 0.0419 against 0.0438, and
+  0.0451 against 0.0458. Measured, on the same rows.
+- **The gain is largest where 2024's spells were longest.** Thames (47% of 2024 spill-days in runs of 7 or more) and
+  South West (39%) gain most at every lead: −30% and −21% at lead 1. Northumbrian (9%) gains least: −4% at lead 1.
+  *Inferred:* the input mostly carries persistence the rain totals miss, such as groundwater. Not checked overflow by
+  overflow.
+- **Layer 1 carries the gain.** Without offsets, the candidate scores 0.0269 at lead 0 and 0.0337 at lead 4, against
+  the baseline's layer 1 alone at 0.0364.
+- **Untested here:** status from polls instead of EA events, which is what production would read; the fallback rule;
+  an isotonic lead map for the candidates.
+
+### What was not done
+
+- `spill_model.pkl` and `lead_calibration.json` are unchanged. Nothing reads the candidates.
+- No code in `src/` computes the status inputs from the live feeds.
