@@ -29,6 +29,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
 from dipcast.ingest.rainfall import cells_for_sites, fallback_summary, fetch_forecast
 from dipcast.jobs import refresh_all
@@ -52,6 +53,9 @@ SITE = ROOT / "site"
 STATIC = ROOT / "src" / "dipcast" / "api" / "static"
 TEMPLATE = ROOT / "src" / "dipcast" / "site" / "index.html"
 KEEP_CONTRIBUTORS = 10
+# Open-Meteo requests a build may send, retries included, before the log warns (review task D4). On
+# 18 Oct 2026 a build sent 19 and retried 5; the ensemble adds 7 when it refreshes.
+MAX_OPEN_METEO_REQUESTS = 40
 # Every overflow upstream, for data/upstream/<id>.json (write_upstream): the most within 60 km of a
 # listed spot was 185 on 4 Oct 2026, at Warleigh Weir.
 ALL_CONTRIBUTORS = 10_000
@@ -576,7 +580,7 @@ def _river_of(row) -> str | None:
     return spot_hints(getattr(row, "kind", ""), getattr(row, "river", ""))[1]
 
 
-def prefetch_rain(spots: pd.DataFrame) -> None:
+def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     """One pass over every spot's upstream overflows to collect the rainfall cells,
     then a handful of 50-cell requests. Per-spot fetching meant up to one request
     per spot, and each one risked a slow TLS handshake on shared CI runners. A request
@@ -599,6 +603,14 @@ def prefetch_rain(spots: pd.DataFrame) -> None:
     fb = fallback_summary()
     log.info("rainfall prefetched: %d cells, %d rows, %.0fs%s", len(cells), len(df), time.time() - t0,
              f"; not fetched: {fb['stale']} from the cache, {fb['missing']} with no rain data" if fb else "")
+    # The ensemble's members for the same cells (review task D4), after the spots' own rain and by the
+    # ensemble's own floor, cap and spare-calls rule (rainfall, "ensemble"): each spot's forecast reads them
+    # from the cache, and none asks again in this build.
+    if ensemble:
+        t0 = time.time()
+        ens = fetch_forecast(cells, ensemble=True)
+        log.info("rain ensemble: %d of %d cells with members, %.0fs; %s", ens[["cell_lat", "cell_lon"]].drop_duplicates().shape[0]
+                 if len(ens) else 0, len(cells), time.time() - t0, rainfall.ensemble_summary() or "all from the cache")
 
 
 class BuildUnhealthy(RuntimeError):
@@ -2390,7 +2402,7 @@ def build(refresh: bool = True) -> dict:
         try:
             kind, river = spot_hints(r.kind, r.river)
             f = forecast_point(float(r.lat), float(r.lon), gauge=False, include_contributors=ALL_CONTRIBUTORS,
-                               kind_hint=kind, river_hint=river, name=r.name)
+                               kind_hint=kind, river_hint=river, name=r.name, ensemble=True)
             upstream[r.id] = f.get("contributors", [])   # all of them, for the organisers' page
             f["contributors"] = f.get("contributors", [])[:KEEP_CONTRIBUTORS]
         except Exception as e:  # noqa: BLE001 - one bad spot must not sink the site
@@ -2541,9 +2553,15 @@ def build(refresh: bool = True) -> dict:
         from dipcast.scottish_shadow import run as scottish_shadow
         summary["scottish_water_shadow"] = scottish_shadow(_net())
     if refresh:
-        # Open-Meteo calls since 00:00 UTC by every build that day, and what the ration held back.
-        from dipcast.ingest.rainfall import calls_today
-        summary["open_meteo"] = calls_today()
+        # Open-Meteo calls since 00:00 UTC by every build that day, and what the ration held back; the
+        # requests this build sent, retries included, and what the ensemble's did (review task D4: under
+        # MAX_OPEN_METEO_REQUESTS a build).
+        summary["open_meteo"] = rainfall.calls_today()
+        summary["open_meteo_requests"] = rainfall.requests_made()
+        summary["rain_ensemble"] = rainfall.ensemble_summary()
+        if summary["open_meteo_requests"]["total"] > MAX_OPEN_METEO_REQUESTS:
+            announce(f"{summary['open_meteo_requests']['total']} Open-Meteo requests in this build, over "
+                     f"{MAX_OPEN_METEO_REQUESTS}: {summary['open_meteo_requests']['by_host']}")
     log.info("site built: %s", summary)
     return summary
 

@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 bayes = ["pymc>=5.16", "arviz>=0.19"]
+nn = ["torch>=2.4"]   # scripts/train_nn.py only (docs/NEURAL-CHALLENGER-TEST-2026-10.md); the build never installs it
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6", "openpyxl>=3.1", "feedparser>=6.0"]   # openpyxl: scripts/fetch_sw_history.py reads Scottish Water's xlsx; feedparser: tests/test_feeds.py

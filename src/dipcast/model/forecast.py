@@ -228,6 +228,54 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
     return out
 
 
+def member_rain(rain: pd.DataFrame, ens: pd.DataFrame) -> list[pd.DataFrame]:
+    """Each ensemble member's hourly rain per cell, in fetch_forecast's shape: the single forecast's rain
+    before the hour that forecast was issued, and the member's from that hour on, so every member shares
+    the 31 days of past rain. An hour the member does not reach (past its run, or a cell with no members)
+    is NaN, and a day short of hours has no rain (features.daily_rain_features), never a dry one."""
+    if rain.empty or ens.empty:
+        return []
+    utc = lambda s: pd.to_datetime(s, utc=True).astype("datetime64[ns, UTC]")
+    base = rain[["cell_lat", "cell_lon", "time", "precip_mm"]].assign(time=lambda d: utc(d["time"]))
+    issued = utc(rain["issued_at"]) if "issued_at" in rain else pd.Series(pd.NaT, index=rain.index, dtype="datetime64[ns, UTC]")
+    issued = issued.fillna(pd.Timestamp.now(tz="UTC"))
+    base["cut"] = issued.groupby([rain["cell_lat"], rain["cell_lon"]]).transform("max").dt.floor("h").to_numpy()
+    ens = ens.assign(time=utc(ens["time"])).drop_duplicates(["cell_lat", "cell_lon", "time", "member"], keep="last")
+    out = []
+    for m in sorted(ens["member"].unique()):
+        em = ens.loc[ens["member"] == m, ["cell_lat", "cell_lon", "time", "precip_mm"]].rename(columns={"precip_mm": "pm"})
+        x = base.merge(em, on=["cell_lat", "cell_lon", "time"], how="left")
+        x["precip_mm"] = np.where(x["time"] >= x["cut"], x["pm"], x["precip_mm"])
+        out.append(x[["cell_lat", "cell_lon", "time", "precip_mm"]])
+    return out
+
+
+def ensemble_members(ov: pd.DataFrame, days: pd.DatetimeIndex, model: SpillModel | None, rain: pd.DataFrame,
+                     hist: int, weights: np.ndarray, travel: np.ndarray) -> dict | None:
+    """Review task D4 (docs/ENSEMBLE-RAIN-TEST-2026-11.md): the spill model and the lead calibration run
+    once per member of the ensemble rain, exactly as for the single forecast. `p` and `rain` are
+    (members, overflows, days): each overflow's calibrated chance and the day's rain at its cell, NaN where
+    that member has no rain; `risk` is (members, days), the spot's risk per member, NaN where more than
+    MAX_MISSING_SHARE of the weight has no rain, as for the headline. None without members. Display and
+    the log only: the headline stays on the single forecast until the test says otherwise."""
+    if ov.empty or rain is None or rain.empty:
+        return None
+    ens = fetch_forecast(cells_for_sites(ov["lat"], ov["lon"]), ensemble=True)
+    members = member_rain(rain, ens)
+    if not members:
+        return None
+    ps, rains, risks = [], [], []
+    for mr in members:
+        p_raw, avail, mm = spill_probabilities(ov, days, model, return_rain=True, rain=mr)
+        p = calibrate_by_lead(p_raw, first_lead=-hist)
+        r = combine_daily(p, weights, travel)
+        risks.append(np.where(missing_share(avail, weights, travel) > MAX_MISSING_SHARE, np.nan, r))
+        ps.append(np.where(avail, p, np.nan))
+        rains.append(mm)
+    return {"p": np.stack(ps), "rain": np.stack(rains), "risk": np.stack(risks), "members": len(members),
+            "issued_at": pd.to_datetime(ens["issued_at"], utc=True).min()}
+
+
 def _in_wales(net: RiverNetwork, pin, max_km: float) -> dict:
     """upstream_summary's `wales_share`, where the river the trace walks above the spot runs partly
     through Wales, whose overflows are not in the data (network/nations.py): the page says they are not
@@ -242,7 +290,11 @@ def _in_wales(net: RiverNetwork, pin, max_km: float) -> dict:
 
 def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = config.MAX_UPSTREAM_KM,
                    include_contributors: int = 25, log_to_store: bool = True, gauge: bool = True,
-                   kind_hint: str | None = None, river_hint: str | None = None, name: str | None = None) -> dict:
+                   kind_hint: str | None = None, river_hint: str | None = None, name: str | None = None,
+                   ensemble: bool = False) -> dict:
+    """`ensemble`: also run the spill model on each member of the ensemble rain (ensemble_members) and give
+    each day a `band`, the lowest and highest member's risk. The listed spots only (the build); the headline
+    does not change."""
     net, ov_all, model = _net(), _overflows(), _model()
     now = pd.Timestamp.now(tz=LOCAL_TZ)
     # The EA gauge lookup is slow and optional: run it alongside everything else.
@@ -307,7 +359,10 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     hist = history_days(travel)
     days = pd.date_range(now.floor("D") - pd.Timedelta(days=hist), periods=hist + days_ahead + 1, freq="D")
     today_idx = hist
-    p_raw, avail, rain_mm = spill_probabilities(ov, days, model, return_rain=True)
+    # With the ensemble, the single forecast's rain is fetched here (from the cache the build's prefetch
+    # filled), so the members can share its past; spill_probabilities would fetch the same.
+    rain = fetch_forecast(cells_for_sites(ov["lat"], ov["lon"])) if ensemble and not ov.empty else None
+    p_raw, avail, rain_mm = spill_probabilities(ov, days, model, return_rain=True, rain=rain)
     p = calibrate_by_lead(p_raw, first_lead=-hist)   # column `hist` is today (lead 0)
     risk = combine_daily(p, weights, travel)
     # Which overflows each day's risk comes from (the page's "where the risk comes from"), and the
@@ -322,6 +377,22 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     risk = np.where(missing > MAX_MISSING_SHARE, np.nan, risk)
     # Expected number of spilling upstream overflows per day (unweighted), for context.
     exp_spills = np.nansum(p, axis=0) if len(p) else np.zeros(len(days))
+    members = None
+    if ensemble:
+        try:
+            members = ensemble_members(ov, days, model, rain, hist, weights, travel)
+        except Exception as e:  # noqa: BLE001 - a band beside the forecast must never fail it
+            log.warning("ensemble rain skipped: %s", e)
+        if members is not None:
+            out["assumptions"]["rain_ensemble"] = {"model": config.ENSEMBLE_MODEL, "members": members["members"],
+                                                   "issued_at": _clean(members["issued_at"].round("min"))}
+
+    def _band(j: int) -> dict:
+        """The lowest and highest member's risk for day j, where every member has one."""
+        if members is None or not np.isfinite(members["risk"][:, j]).all():
+            return {}
+        r = members["risk"][:, j]
+        return {"band": {"low": round(float(r.min()), 3), "high": round(float(r.max()), 3)}}
 
     def _status(j: int) -> str:
         if missing[j] > MAX_MISSING_SHARE:
@@ -340,6 +411,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             "data_status": _status(j), "rain_missing_share": round(float(missing[j]), 3),
             "in_validated_season": d.month in ECOLI_SEASON_MONTHS,
             **({"risk_from_later_spills": round(float(risk_later[j]), 3)} if known else {}),
+            **(_band(j) if known else {}),
             # Only where the page says it, moderate or worse, to keep spots.json small.
             **({"source": source_of(ov, shares[:, j])} if known and risk[j] >= LOW_CUT else {}),
         })
@@ -448,7 +520,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             from dipcast.forecast_log import log_forecast
             log_forecast(now, lat, lon, pin.mode, pin.watercourse, now_risk, days, risk, ov,
                          np.nan_to_num(p_raw, nan=0.0), np.nan_to_num(p, nan=0.0), p_ecoli=p_ec, rain_48h=r48,
-                         available=avail, rain_mm=rain_mm, version=model_version())
+                         available=avail, rain_mm=rain_mm, version=model_version(), members=members)
         except Exception as e:  # noqa: BLE001 - logging must never fail a forecast
             log.warning("forecast log failed: %s", e)
     return out
