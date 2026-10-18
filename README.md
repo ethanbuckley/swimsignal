@@ -82,7 +82,7 @@ The other tools were checked on their own pages on 3 Oct 2026.
 | Stream ID lookup | Company ids to EA permit ids (`id_lookup.parquet`) | CC BY 4.0 |
 | EA storm overflow annual returns 2021-2025 | Spill counts and hours per overflow per year, WFD waterbody, for all 10 companies | OGL v3 |
 | EA bathing water quality (bwq) | Classifications (`data/raw/bathing_water_classifications.json`) and in-season samples | OGL v3 |
-| Open-Meteo | Hourly rainfall: ERA5-Land archive for training, model forecast for prediction | CC BY 4.0; the forecast for England is Met Office data, CC BY-SA 4.0 |
+| Open-Meteo | Hourly rainfall: ERA5-Land archive for training, model forecast for prediction, and the Met Office's MOGREPS-UK ensemble (three members) for the listed spots' band on days 3 to 5 | CC BY 4.0; the forecast and the ensemble for England are Met Office data, CC BY-SA 4.0 |
 | OS Open Rivers | 193,040 directed watercourse links incl. lake traversals, BNG | OGL v3 |
 | EA WFD Lake Water Bodies Cycle 3 | 564 lake polygons (lakes over 50 ha, 5 ha in protected areas), names and areas | OGL v3 |
 | HydroLAKES v1.0 (Messager et al. 2016) | Residence times of 282 of those lakes (`data/raw/lake_residence.csv`, `scripts/make_lake_residence.py`) | CC BY 4.0 |

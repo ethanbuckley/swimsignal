@@ -82,7 +82,8 @@ scored once it has passed.
 - The Open-Meteo Ensemble API (`ensemble-api.open-meteo.com/v1/ensemble`), `models=ukmo_uk_ensemble_2km`,
   hourly `precipitation`, `past_days=0`, `forecast_days=6` (one UTC day more than the five local days,
   as `fetch_forecast` asks), in UTC. Three members: the control (`precipitation`) and two perturbed.
-  CC BY 4.0, the same credit as the forecast.
+  Met Office data: Open-Meteo's licence page lists "Atmospheric forecasts from UK Met Office" under
+  CC BY-SA, the same licence and credit as the single forecast for England.
 - For the listed spots' rain cells only, the 0.1° cells `prefetch_rain` already collects (332 on
   18 Oct). Not for click-anywhere (1,588 cells) or the Scottish shadow.
 
