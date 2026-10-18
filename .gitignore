@@ -52,6 +52,8 @@ data/raw/*
 !data/raw/lake_residence.csv
 # The same at spill-time flow (EA Hydrology daily mean flows, OGL v3.0), for lake path 'residence_spill' (scripts/make_lake_spill_ratio.py).
 !data/raw/lake_residence_spill.csv
+# Reasons for not achieving good status per water body, and each spot's water body (EA Catchment Data Explorer, OGL v3.0; scripts/make_rnags.py).
+!data/raw/rnags.json
 /site/
 .claude/
 /state/
