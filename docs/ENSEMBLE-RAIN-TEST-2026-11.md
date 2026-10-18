@@ -275,3 +275,24 @@ The check:
 ## Results
 
 None yet. The window has not opened.
+
+### Seen after the statement, before the window (18 Oct 2026)
+
+One local build of this branch (`3f74486`), 14:22 BST. It used the `state` release, an empty rain cache
+and the Scottish shadow off. These say what the page will look like on one day's weather. They are not
+results: no member has been compared with anything that happened.
+- **Requests:** 23 Open-Meteo requests: 16 to the forecast API (spots 7, weather 3, click-anywhere 6)
+  and 7 to the ensemble API, with no retries.
+- **Calls:** 1,069 in the ledger: spots 332, ensemble 332, weather 105, click-anywhere 300. All 332 cells
+  got members, in 2 seconds.
+- **Bands:** 80 spots had bands, every spot with an overflow upstream. Of the other 25, 22 have none
+  upstream and 3 have no forecast possible.
+
+| Day on the page (lead) | Median width | 90th percentile | Band crosses a level line | Headline inside the range |
+|---|---|---|---|---|
+| 3 (2) | 0.065 | 0.27 | 41% | 70% |
+| 4 (3) | 0.083 | 0.27 | 41% | 70% |
+| 5 (4) | 0.115 | 0.32 | 51% | 65% |
+
+- **The log:** 8,830 overflow rows from the build, all with members. All 8,475 live-fed rows have three
+  finite values.
