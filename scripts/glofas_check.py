@@ -1,8 +1,10 @@
 """GloFAS daily discharge (Open-Meteo Flood API) against EA daily mean flow, for docs/GLOFAS-CHECK-2026-11.md.
 
     python scripts/glofas_check.py --cache <dir> --out <dir> [--network <river_network.pkl>] [--fetch]
+                                   [--step match|compare|all]
 
-Research only: nothing here feeds the site or the model.
+Research only: nothing here feeds the site or the model. `match` needs the river network and writes
+pairs.csv; `compare` reads pairs.csv and needs no network.
 
 - **Spots:** the river spots in spots.csv and spots-osm.csv, placed with locate_pin and the same hints
   as the site build (transport.spot_hints). Lakes are left out (see the note).
@@ -18,6 +20,9 @@ Research only: nothing here feeds the site or the model.
 - **EA:** each station's daily mean flow for the same days, one request per station with PAUSE_S
   between them, cached.
 
+The measures and the verdict rule are the ones stated in the doc before any flow was fetched. The
+measures marked "added after the first results" in `measures` are reported, not part of the rule.
+
 Without --fetch, only cached responses are read: a missing one stops the run, so a rerun never
 reaches the network by accident.
 """
@@ -25,6 +30,7 @@ reaches the network by accident.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -36,12 +42,12 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from make_lake_spill_ratio import RIVER_FORMS, stations  # noqa: E402
+from make_lake_spill_ratio import RIVER_FORMS, stations
 
-from dipcast import config  # noqa: E402
-from dipcast.model import transport as T  # noqa: E402
-from dipcast.network.names import same_river  # noqa: E402
-from dipcast.network.rivers import RiverNetwork, lonlat_to_bng  # noqa: E402
+from dipcast import config
+from dipcast.model import transport as T
+from dipcast.network.names import same_river
+from dipcast.network.rivers import RiverNetwork, lonlat_to_bng
 
 START, END = "2025-10-01", "2026-09-30"   # one year of days, ending before EA's qualified data thins out
 GAUGE_SNAP_M = 250.0
@@ -50,7 +56,10 @@ AREA_RATIO = 2.0          # gauge catchment within a factor of 2 of the spot's
 GLOFAS_MODEL = "seamless_v4"
 FLOOD_URL = "https://flood-api.open-meteo.com/v1/flood"
 BATCH = 100               # locations per Flood API request
-PAUSE_S = 2.0
+PAUSE_S = 2.0             # between EA requests
+# Open-Meteo weighs a location max(1, variables/10 x days/14): 2.6 for one variable over 365 days, so
+# a batch of 100 is about 260 calls. Its free limit is 600 a minute per IP, shared with other local work.
+FLOOD_PAUSE_S = 40.0
 SPOT_FILES = [config.ROOT / "spots.csv", config.ROOT / "spots-osm.csv"]
 GRID = 0.05               # GloFAS v4 cell size, degrees
 # A station that gauges one channel of several measures part of the river's flow, not GloFAS's error.
@@ -62,13 +71,15 @@ PART_LABEL = {"side", "main", "flume", "fishladder", "bypass", "intake"}
 PART_RIVER = {"relief", "navigation", "carrier", "leat"}
 TOTAL_WORDS = {"total", "combined"}
 SAME_SITE_KM = 0.5
+MIN_DAYS = 300            # days with both values for a pair to count
+DROP_QUALITY = {"Suspect", "Rejected", "Missing"}
 
 
 class Cache:
     """GET with a file cache. With fetch=False a miss is an error, not a request."""
 
-    def __init__(self, root: Path, fetch: bool):
-        self.root, self.fetch, self.n = root, fetch, 0
+    def __init__(self, root: Path, fetch: bool, pause_s: float = PAUSE_S):
+        self.root, self.fetch, self.n, self.pause_s = root, fetch, 0, pause_s
         root.mkdir(parents=True, exist_ok=True)
         self.http = httpx.Client(timeout=180, headers=config.EA_HEADERS)
 
@@ -79,7 +90,7 @@ class Cache:
         if not self.fetch:
             raise SystemExit(f"{f} is not cached; rerun with --fetch to request it")
         if self.n:
-            time.sleep(PAUSE_S)
+            time.sleep(self.pause_s)
         self.n += 1
         r = self.http.get(url, params=params)
         if r.status_code in (403, 429) or r.status_code >= 500:
@@ -100,7 +111,7 @@ def part_channel(label: str, river: str) -> bool:
 
 def name_of(v) -> str:
     """riverName is a string, a list of strings, or missing."""
-    return " / ".join(map(str, v)) if isinstance(v, list) else ("" if v is None or v != v else str(v))
+    return " / ".join(map(str, v)) if isinstance(v, list) else ("" if v is None or pd.isna(v) else str(v))
 
 
 def catchment_at(net: RiverNetwork, link_id: str, frac: float) -> float:
@@ -196,26 +207,187 @@ def match(net: RiverNetwork, ea: Cache) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def cell_centre(v: float) -> float:
+    return round(np.floor(v / GRID) * GRID + GRID / 2, 3)
+
+
+def block(lat: float, lon: float) -> list[tuple[float, float]]:
+    """The 3 x 3 GloFAS cells centred on the cell holding (lat, lon); the centre cell first."""
+    c = (cell_centre(lat), cell_centre(lon))
+    out = [c]
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            if dy or dx:
+                out.append((round(c[0] + dy * GRID, 3), round(c[1] + dx * GRID, 3)))
+    return out
+
+
+def ea_flow(ea: Cache, measure: str) -> tuple[pd.Series, dict]:
+    d = ea.get(f"{config.EA_HYDROLOGY}/id/measures/{measure}/readings.json",
+               {"mineq-date": START, "maxeq-date": END, "_limit": 2000}, f"readings_{measure}_{START}_{END}.json")
+    q = pd.DataFrame(d.get("items", []))
+    if q.empty:
+        return pd.Series(dtype=float), {}
+    q["value"] = pd.to_numeric(q.get("value"), errors="coerce")
+    qual = q["quality"].fillna("") if "quality" in q else pd.Series("", index=q.index)
+    counts = qual.value_counts().to_dict()
+    q = q[q["value"].notna() & ~qual.isin(DROP_QUALITY)]
+    return pd.Series(q["value"].to_numpy(float), index=pd.to_datetime(q["date"])).sort_index(), counts
+
+
+def glofas(om: Cache, cells: list[tuple[float, float]]) -> dict[tuple[float, float], pd.Series]:
+    out = {}
+    cells = sorted(set(cells))
+    for i in range(0, len(cells), BATCH):
+        part = cells[i:i + BATCH]
+        key = hashlib.sha256(json.dumps(part).encode()).hexdigest()[:12]
+        d = om.get(FLOOD_URL, {"latitude": ",".join(f"{c[0]:.3f}" for c in part),
+                               "longitude": ",".join(f"{c[1]:.3f}" for c in part),
+                               "daily": "river_discharge", "models": GLOFAS_MODEL, "cell_selection": "nearest",
+                               "start_date": START, "end_date": END}, f"flood_{START}_{END}_{key}.json")
+        d = d if isinstance(d, list) else [d]
+        for c, r in zip(part, d, strict=True):
+            got = (round(r["latitude"], 3), round(r["longitude"], 3))
+            if abs(got[0] - c[0]) > 0.001 or abs(got[1] - c[1]) > 0.001:
+                raise SystemExit(f"asked for cell {c}, got {got}")
+            daily = r["daily"]
+            col = next(k for k in daily if k.startswith("river_discharge"))
+            out[c] = pd.Series(pd.to_numeric(pd.Series(daily[col]), errors="coerce").to_numpy(float),
+                               index=pd.to_datetime(daily["time"]))
+    return out
+
+
+def anomaly(x: pd.Series) -> pd.Series:
+    lx = np.log(x.clip(lower=1e-3))
+    return lx - lx.rolling(31, center=True, min_periods=15).mean()
+
+
+def measures(g: pd.Series, q: pd.Series) -> dict:
+    """GloFAS g against gauge q (already scaled), on the days both have."""
+    days = pd.date_range(START, END, freq="D")
+    g, q = g.reindex(days), q.reindex(days)
+    both = g.notna() & q.notna()
+    n = int(both.sum())
+    if n < MIN_DAYS:
+        return {"days": n}
+    gb, qb = g[both], q[both]
+    ga, qa = anomaly(g.where(both)), anomaly(q.where(both))
+    rho = float(gb.corr(qb, method="spearman"))
+    ev = float(ga.corr(qa, method="spearman"))
+    lags = {L: float(qa.corr(ga.shift(-L), method="spearman")) for L in range(-3, 4)}
+    q90, g90 = qb.quantile(0.9), gb.quantile(0.9)
+    high = (g.where(both) >= g90)
+    near = high | high.shift(1, fill_value=False) | high.shift(-1, fill_value=False)
+    qhigh = both & (q >= q90)
+    r = float(np.corrcoef(gb, qb)[0, 1])
+    alpha, beta = float(gb.std() / qb.std()), float(gb.mean() / qb.mean())
+    # Added after the first results, outside the verdict rule: the same measures one day later, the
+    # same-day hit rate, and a seasonal-only benchmark (GloFAS's centred 31-day mean, which keeps the
+    # wet winter and dry summer and loses every event).
+    g1 = g.shift(-1).where(both)
+    hi1 = g1 >= g1[both].quantile(0.9)
+    smooth = g.rolling(31, center=True, min_periods=15).mean().where(both)
+    s90 = smooth[both].quantile(0.9)
+    shigh = smooth >= s90
+    snear = shigh | shigh.shift(1, fill_value=False) | shigh.shift(-1, fill_value=False)
+    return {"days": n, "bias": beta, "rho": rho, "event_rho": ev, "hit": float(near[qhigh].mean()),
+            "lag": max(lags, key=lags.get), "kge": 1 - float(np.sqrt((r - 1) ** 2 + (alpha - 1) ** 2 + (beta - 1) ** 2)),
+            "g_mean": float(gb.mean()), "q_mean": float(qb.mean()),
+            "wrong": bool(not (1 / 3 <= beta <= 3) or rho < 0.5),
+            "event_rho_lag1": lags[1], "rho_lag1": float(g1.corr(q.where(both), method="spearman")),
+            "hit_same_day": float(high[qhigh].mean()), "hit_same_day_lag1": float(hi1[qhigh].mean()),
+            "season_rho": float(smooth.corr(q.where(both), method="spearman")), "season_hit": float(snear[qhigh].mean())}
+
+
+def compare(pairs: pd.DataFrame, ea: Cache, om: Cache, out: Path) -> None:
+    ok = pairs[pairs["why"].fillna("") == ""].reset_index(drop=True)
+    blocks = {r.id: block(r.lat, r.lon) for r in ok.itertuples()}
+    gcell = {r.station: (cell_centre(r.g_lat), cell_centre(r.g_lon)) for r in ok.itertuples()}
+    cells = sorted({c for b in blocks.values() for c in b} | set(gcell.values()))
+    weight = len(cells) * max(1.0, 1 / 10 * len(pd.date_range(START, END)) / 14)
+    print(f"{len(cells)} distinct GloFAS cells, about {weight:.0f} Open-Meteo calls by its own weighting, "
+          f"in {-(-len(cells) // BATCH)} requests")
+    g = glofas(om, cells)
+    flows, quality = {}, {}
+    for st, m in ok.groupby("station")["measure"].first().items():
+        flows[st], quality[st] = ea_flow(ea, m)
+
+    rows, block_rows = [], []
+    for r in ok.itertuples():
+        q = flows[r.station]
+        scale = r.spot_km2 / r.gauge_km2
+        est = T.QMEAN_PER_KM2 * r.spot_km2
+        means = {c: float(g[c].mean()) for c in blocks[r.id]}
+        valid = {c: v for c, v in means.items() if np.isfinite(v) and v > 0}
+        rule = min(valid, key=lambda c: abs(np.log(valid[c] / est))) if valid else blocks[r.id][0]
+        base = {"id": r.id, "name": r.name, "station": r.station_label, "side": r.side, "along_km": r.along_km,
+                "straight_km": r.straight_km, "area_ratio": round(1 / scale, 3), "net_est_m3s": est}
+        for c in blocks[r.id]:
+            mm = measures(g[c], q * scale)
+            block_rows.append({**base, "cell": f"{c[0]:.3f},{c[1]:.3f}", "centre": c == blocks[r.id][0],
+                               "rule": c == rule, "cell_mean": means[c], **mm})
+        for name, c in (("a_nearest", blocks[r.id][0]), ("b_area_rule", rule)):
+            rows.append({**base, "cells": name, "cell": f"{c[0]:.3f},{c[1]:.3f}",
+                         "cell_km": round(km(r.lat, r.lon, *c), 2), "moved": c != blocks[r.id][0],
+                         **measures(g[c], q * scale)})
+    st_rows = []
+    for st, grp in ok.groupby("station"):
+        r = grp.iloc[0]
+        c = gcell[st]
+        st_rows.append({"station": r.station_label, "river": r.station_river, "spots": len(grp), "cells": "c_gauge_cell",
+                        "cell": f"{c[0]:.3f},{c[1]:.3f}", "cell_km": round(km(r.g_lat, r.g_lon, *c), 2),
+                        "quality": json.dumps(quality[st]), **measures(g[c], flows[st])})
+    spot = pd.DataFrame(rows)
+    gauge = pd.DataFrame(st_rows)
+    spot.to_csv(out / "spot_measures.csv", index=False, float_format="%.4g")
+    gauge.to_csv(out / "gauge_measures.csv", index=False, float_format="%.4g")
+    pd.DataFrame(block_rows).to_csv(out / "block_measures.csv", index=False, float_format="%.4g")
+
+    def summary(df: pd.DataFrame, label: str) -> dict:
+        d = df[df["days"] >= MIN_DAYS]
+        return {"cells": label, "pairs": len(d), "short": int((df["days"] < MIN_DAYS).sum()),
+                "median_bias": d["bias"].median(), "median_rho": d["rho"].median(),
+                "median_event_rho": d["event_rho"].median(), "median_hit": d["hit"].median(),
+                "median_kge": d["kge"].median(), "wrong": int(d["wrong"].sum()),
+                "lag0_share": float((d["lag"] == 0).mean()), "lag1_share": float((d["lag"] == 1).mean()),
+                "median_event_rho_lag1": d["event_rho_lag1"].median(), "median_rho_lag1": d["rho_lag1"].median(),
+                "median_hit_same_day": d["hit_same_day"].median(), "median_hit_same_day_lag1": d["hit_same_day_lag1"].median(),
+                "median_season_rho": d["season_rho"].median(), "median_season_hit": d["season_hit"].median()}
+    summ = pd.DataFrame([summary(spot[spot["cells"] == "a_nearest"], "a_nearest"),
+                         summary(spot[spot["cells"] == "b_area_rule"], "b_area_rule"),
+                         summary(gauge, "c_gauge_cell")])
+    summ.to_csv(out / "summary.csv", index=False, float_format="%.4g")
+    print(summ.T.to_string())
+    b = summ.set_index("cells").loc["b_area_rule"]
+    cond = {"1 median rho >= 0.80": b["median_rho"] >= 0.80, "2 median event rho >= 0.50": b["median_event_rho"] >= 0.50,
+            "3 median hit >= 0.50": b["median_hit"] >= 0.50, "4 wrong river <= 4": b["wrong"] <= 4}
+    for k, v in cond.items():
+        print(f"condition {k}: {'PASS' if v else 'FAIL'}")
+    print(f"verdict: {'tracks' if all(cond.values()) else 'does not track'} (rule b, {int(b['pairs'])} spots); "
+          f"{om.n} Flood API requests, {ea.n} EA requests made")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--network", default=str(config.PROCESSED / "river_network.pkl"))
     ap.add_argument("--fetch", action="store_true")
-    ap.add_argument("--step", choices=("match", "all"), default="all")
+    ap.add_argument("--step", choices=("match", "compare", "all"), default="all")
     a = ap.parse_args()
     cache, out = Path(a.cache), Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     ea = Cache(cache / "ea", a.fetch)
-    net = RiverNetwork.load(Path(a.network))
-    m = match(net, ea)
-    m.to_csv(out / "pairs.csv", index=False)
-    ok = m[m["why"] == ""]
-    print(m["why"].replace("", "qualifies").value_counts().to_string())
-    print(ok[["name", "river", "station_label", "station_river", "side", "along_km", "straight_km",
-              "spot_km2", "gauge_km2", "same_name"]].to_string())
-    if a.step == "match":
-        return
+    if a.step in ("match", "all"):
+        net = RiverNetwork.load(Path(a.network))
+        m = match(net, ea)
+        m.to_csv(out / "pairs.csv", index=False)
+        ok = m[m["why"] == ""]
+        print(m["why"].replace("", "qualifies").value_counts().to_string())
+        print(ok[["name", "river", "station_label", "station_river", "side", "along_km", "straight_km",
+                  "spot_km2", "gauge_km2", "same_name"]].to_string())
+    if a.step in ("compare", "all"):
+        compare(pd.read_csv(out / "pairs.csv"), ea, Cache(cache / "om", a.fetch, FLOOD_PAUSE_S), out)
 
 
 if __name__ == "__main__":
