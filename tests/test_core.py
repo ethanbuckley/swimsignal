@@ -48,7 +48,7 @@ def test_combine_daily_independent_sources():
 
 def test_labels_and_velocity():
     assert risk_label(0.05) == "low" and risk_label(0.9) == "very high"
-    assert river_velocity(None) == 0.5
+    assert river_velocity(None) == 0.2   # fitted, docs/TRANSPORT-FIT-TEST-2026-10.md (0.5 until 17 Oct 2026)
     assert abs(river_velocity(0.0) - 0.3) < 1e-9 and abs(river_velocity(1.0) - 1.0) < 1e-9 and abs(river_velocity(5.0) - 1.35) < 1e-9
 
 

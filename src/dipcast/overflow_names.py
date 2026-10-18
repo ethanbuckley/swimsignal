@@ -178,6 +178,21 @@ def plain_name(raw) -> str:
     return f"{place.replace(HELD, '/')} {words}{' ' + tag if tag else ''}"
 
 
+# What the feeds give in place of a receiving water they do not name. On 16 Oct 2026 overflows.geojson
+# had 38 "#N/A", 7 "N/A", 1 "None" and 1 "0", and the map's pop-up printed them as the water's name
+# (docs/REVIEW-2026-10-16.md, 8.3). Compared in capitals, with the spaces round them dropped.
+NO_WATER = frozenset({"", "#N/A", "N/A", "NONE", "0", "-"})
+
+
+def water_name(raw) -> str | None:
+    """The receiving water as the feed names it, or None where the feed gives a placeholder or nothing:
+    the page then says the water is not named in its feed."""
+    if raw is None or (isinstance(raw, float) and math.isnan(raw)):
+        return None
+    s = str(raw).strip()
+    return None if s.upper() in NO_WATER else s
+
+
 def overflow_names(site_name, site_id=None) -> tuple[str, str]:
     """levels.js's overflowNames: the plain name, and the company's (in normal case) where it says more.
     An overflow with no name is its id, alone."""

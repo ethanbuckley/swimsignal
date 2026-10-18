@@ -127,27 +127,71 @@ function guidePhoto(p, i, g) {
 }
 
 // What to do when the guide is wrong or has a gap: the feedback page, set to a guide, with the spot.
-const guideAsk = (d, has) => `<p class="g-ask">${has ? 'Something here wrong or out of date, or missing?' : 'Know this spot?'} `
-  + `<a href="feedback.html?type=guide&amp;spot=${encodeURIComponent(d.name || '')}">${has ? 'Tell us' : 'Tell us where you parked, the way down, and where you got in and out'}</a>; photos are welcome.</p>`;
+const guideAsk = d => '<p class="g-ask">Something here wrong or out of date, or missing? '
+  + `<a href="feedback.html?type=guide&amp;spot=${encodeURIComponent(d.name || '')}">Tell us</a>; photos are welcome.</p>`;
 
-// The tile. Without a guide, a short one asking for what a swimmer knows: that is how a guide starts.
+// One tile for what swimmers have not added yet (review of 16 Oct 2026, C1): with no guide, no recent
+// notes and no reviews, three tiles each said so, on nearly every page. "Know this spot?" holds a line
+// for each section with nothing in it, in the order the tiles come; a section with something keeps its
+// own tile. The guide's line is written with the page; the notes' and the reviews' join once their file
+// says they have none (visits.js, reviews.js, knowAdd), and their button opens that section's form.
+const KNOW = ['guide', 'visits', 'reviews'];
+function knowItem(kind, d) {
+  if (kind === 'guide') return `<li data-know="guide"><a href="feedback.html?type=guide&amp;spot=${encodeURIComponent(d.name || '')}">Add a practical guide</a>`
+    + '<span>Where you parked, the way down, where you got in and out. Photos are welcome.</span></li>';
+  if (kind === 'visits') return '<li data-know="visits"><button type="button" class="linkbtn">Say what it\'s like today</button>'
+    + '<span>A note on the day: getting in, parking, how busy it was. It ends after a few days.</span></li>';
+  return '<li data-know="reviews"><button type="button" class="linkbtn">Write a review</button>'
+    + '<span>Whether you would swim here again, and what it was like. Checked before it appears.</span></li>';
+}
+const knowTile = (d, kinds, id = 'know') => `<section class="tile know" id="${id}" aria-labelledby="know-h">`
+  + `<h2 class="t-lab" id="know-h">${guideIcon()}<span>Know this spot?</span></h2>`
+  + `<ul class="know-list">${KNOW.filter(k => kinds.includes(k)).map(k => knowItem(k, d)).join('')}</ul></section>`;
+
+// The guide's tile. Without a guide, the shared tile with the guide's line, in the guide's place
+// (id guide: the notes and the reviews mount after it).
 function guideTile(d, today) {
   if (!d || d.unlisted) return '';   // a point clicked on the map (anypoint.js) is not a spot anyone has guided
   if (d.detail_missing) return '';   // its guide is in data/spot/<id>.json, which did not arrive: not "no guide yet"
   const g = d.guide;
+  if (!g || !Array.isArray(g.facts) || !g.facts.length) return knowTile(d, ['guide'], 'guide');
   const head = `<h2 class="t-lab" id="guide-h">${guideIcon()}<span>Practical guide</span></h2>`;
-  if (!g || !Array.isArray(g.facts) || !g.facts.length) {
-    return `<section class="tile g-tile" id="guide" aria-labelledby="guide-h">${head}`
-      + '<p class="t-say">No guide for this spot yet: parking, the path to the water, where to get in and out, toilets and fees.</p>'
-      + guideAsk(d, false) + '</section>';
-  }
   return `<section class="tile g-tile" id="guide" aria-labelledby="guide-h">${head}`
     + `<p class="t-say">${guideChecked(g, today)}</p>`
     + guideFacts(g) + guideGaps(g)
     + (g.photos || []).map((p, i) => guidePhoto(p, i, g)).join('')
-    + guideAsk(d, true) + '</section>';
+    + guideAsk(d) + '</section>';
+}
+
+// In the page: a section's line in the shared tile, the tile made after the last community tile if
+// there is none; `open` runs on its button. False where the page has no place for it.
+function knowAdd(kind, d, open) {
+  const stack = document.querySelector('#result .stack'); if (!stack) return false;
+  let tile = stack.querySelector(':scope > .know');
+  if (!tile) {
+    const after = ['#reviews', '#visits', '#guide', '.tiles'].map(q => stack.querySelector(`:scope > ${q}`)).find(Boolean);
+    if (!after) return false;
+    after.insertAdjacentHTML('afterend', knowTile(d, [])); tile = after.nextElementSibling;
+  }
+  const list = tile.querySelector('.know-list');
+  let li = list.querySelector(`[data-know="${kind}"]`);
+  if (!li) {
+    const box = document.createElement('ul'); box.innerHTML = knowItem(kind, d); li = box.firstChild;
+    list.insertBefore(li, [...list.children].find(x => KNOW.indexOf(x.dataset.know) > KNOW.indexOf(kind)) || null);
+  }
+  const b = li.querySelector('button'); if (b) b.onclick = open;
+  return true;
+}
+// A section given a tile of its own: its tile goes after the shared one, its line goes, and the
+// shared tile with its last line.
+function knowOpen(kind, sec) {
+  const li = document.querySelector(`#result .know [data-know="${kind}"]`); if (!li) return false;
+  const tile = li.closest('.know'), next = kind === 'visits' && document.getElementById('reviews');
+  if (next) next.before(sec); else (kind === 'reviews' && document.getElementById('visits') || tile).after(sec);
+  li.remove(); if (!tile.querySelector('li')) tile.remove();
+  return true;
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick, showRest };
+  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick, showRest };
 }

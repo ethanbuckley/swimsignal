@@ -91,6 +91,11 @@ function reviewRows(entry, mine, spot) {
 // review, and the service takes only the site's own spot ids.
 const reviewable = d => Boolean(d) && !d.unlisted && /^[A-Za-z0-9_-]{1,80}$/.test(String(d.id));
 
+// Nothing for the tile to list: no review, this browser's own waiting ones counted, the reviews up to
+// date (a file that could not be updated says so in a tile of its own), and a way to write one.
+const reviewsEmpty = (index, spot, mine) => Boolean(index) && index.complete !== false && Boolean(index.submit)
+  && !reviewRows((index.spots || {})[spot], mine, spot).length;
+
 // Forget what the site no longer needs remembered: a deleted review once the site has dropped it too.
 function reviewsTidy(mine, index) {
   const live = new Set(Object.values((index && index.spots) || {}).flat().map(r => r.id));
@@ -133,8 +138,10 @@ async function mountReviews(d) {
   if (!after || document.getElementById('reviews')) return;
   const mine = reviewsNow(), tidy = reviewsTidy(mine, data);
   if (tidy.length < mine.length) reviewsKeep(tidy);
-  const sec = document.createElement('section');
-  sec.className = 'tile rv-tile'; sec.id = 'reviews'; sec.tabIndex = -1; sec.setAttribute('aria-labelledby', 'rv-h');
+  // No reviews: a line in the shared "Know this spot?" tile (guide.js), whose button opens this tile's form.
+  if (reviewsEmpty(data, d.id, reviewsNow()) && typeof knowAdd === 'function' && knowAdd('reviews', d, () => {
+    const s = reviewSection(); if (!document.getElementById('reviews') && knowOpen('reviews', s)) { drawReviews(s, d, data); reviewOpenForm(s, d, data); } })) return;
+  const sec = reviewSection();
   (document.getElementById('visits') || after).after(sec);   // after the notes on a visit (visits.js), if they are up
   drawReviews(sec, d, data);
   // A review of yours that is not on the site yet: ask the service whether it is still waiting. One
@@ -147,6 +154,12 @@ async function mountReviews(d) {
   if (gone.size) reviewsKeep(reviewsNow().map(x => (gone.has(x.id) ? { id: x.id, spot: x.spot, gone: true } : x)));
   if (gone.size || states.some(([, st]) => st === 'published')) drawReviews(sec, d, data, !gone.size ? ''
     : gone.size === 1 ? 'A review you sent was not published, or has since been removed.' : 'Reviews you sent were not published, or have since been removed.');
+}
+
+function reviewSection() {
+  const sec = document.createElement('section');
+  sec.className = 'tile rv-tile'; sec.id = 'reviews'; sec.tabIndex = -1; sec.setAttribute('aria-labelledby', 'rv-h');
+  return sec;
 }
 
 function reviewItem(r, extra) {
@@ -377,5 +390,5 @@ function reviewCanvas(src, w, h) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { REVIEW_MIN, REVIEW_LIMITS, reviewScore, reviewSentence, reviewLine, reviewFit, reviewThumb, reviewProblem, reviewsMine, reviewRows, reviewsTidy, reviewItem, reviewable, rvToday };
+  module.exports = { REVIEW_MIN, REVIEW_LIMITS, reviewScore, reviewSentence, reviewLine, reviewFit, reviewThumb, reviewProblem, reviewsMine, reviewRows, reviewsTidy, reviewsEmpty, reviewItem, reviewable, rvToday };
 }

@@ -138,6 +138,11 @@ function visitsTidy(mine, index, today) {
   return mine.filter(v => (v.gone ? live.has(v.id) : visitLive(v, today).length > 0));
 }
 
+// Nothing for the tile to list: no note showing, this browser's own waiting ones counted, and the
+// notes up to date (a file that could not be updated says so in a tile of its own).
+const visitsEmpty = (index, spot, mine, today) => Boolean(index) && index.complete !== false
+  && !visitRows((index.visits || {})[spot], mine, spot, today).length;
+
 // ------------------------------------------------------------------------------ the page
 
 let visitTurn = 0;
@@ -164,8 +169,10 @@ async function mountVisits(d) {
   if (!after || document.getElementById('visits')) return;
   const today = vnLocal(), mine = visitsNow(), tidy = visitsTidy(mine, data, today);
   if (tidy.length < mine.length) visitsKeep(tidy);
-  const sec = document.createElement('section');
-  sec.className = 'tile rv-tile'; sec.id = 'visits'; sec.tabIndex = -1; sec.setAttribute('aria-labelledby', 'vn-h');
+  // No notes: a line in the shared "Know this spot?" tile (guide.js), whose button opens this tile's form.
+  if (visitsEmpty(data, d.id, visitsNow(), today) && typeof knowAdd === 'function' && knowAdd('visits', d, () => {
+    const s = visitSection(); if (!document.getElementById('visits') && knowOpen('visits', s)) { drawVisits(s, d, data); visitOpenForm(s, d, data); } })) return;
+  const sec = visitSection();
   const reviews = document.getElementById('reviews');
   if (reviews) reviews.before(sec); else after.after(sec);
   drawVisits(sec, d, data);
@@ -179,6 +186,12 @@ async function mountVisits(d) {
   const gone = new Set(want.filter(id => visitAsked.get(id) === 'gone'));
   if (gone.size) visitsKeep(visitsNow().map(v => (gone.has(v.id) ? { id: v.id, spot: v.spot, gone: true } : v)));
   drawVisits(sec, d, data, gone.size ? 'A note you sent was not published, or has since been removed.' : '');
+}
+
+function visitSection() {
+  const sec = document.createElement('section');
+  sec.className = 'tile rv-tile'; sec.id = 'visits'; sec.tabIndex = -1; sec.setAttribute('aria-labelledby', 'vn-h');
+  return sec;
 }
 
 function drawVisits(sec, d, data, say = '') {
@@ -350,5 +363,5 @@ function visitOpenForm(sec, d, data) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { VISIT_KINDS, VISIT_TONES, VISIT_LIMITS, visitLive, visitTone, visitLasts, visitsMine, visitRows, visitCaveat, visitProblem,
-    visitWords, visitItem, visitsTidy, vnAdd };
+    visitWords, visitItem, visitsTidy, visitsEmpty, vnAdd };
 }

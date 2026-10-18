@@ -15,8 +15,12 @@ Monitoring-Storm Overflow-Start/Stop Detailed Data".
 
 from __future__ import annotations
 
+import io
 import logging
+import re
+from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from dipcast import config
@@ -115,45 +119,141 @@ def fetch_hd_events(refresh: bool = False) -> pd.DataFrame:
                         out_fields=OUT_FIELDS.removesuffix(",ReceivingWatercourse"))
 
 
-# The EA's start/stop files for Dwr Cymru Welsh Water's overflows in England (checked 4 Oct 2026):
-# 2024 (sheet Start_Stop, times as Excel dates), 2025 (StartStop, ISO text ending in "Z") and 2026 to
-# date (one sheet per month or months, ISO text, sometimes an empty fifth column). Columns: Unique ID
-# (DCW00019, the annual returns' site_id), site name, discharge start and finish, both headed "(GMT)".
-# The files give no position; it comes from the annual returns.
+# The EA's start/stop files ("Event Duration Monitoring-Storm Overflow-Start/Stop Detailed Data"), one
+# per company and calendar year, for the ten companies that operate in England. The DSP note
+# ("Technical Detail DSP April 2026.docx", read 16 Oct 2026) gives one layout for all: column A the
+# Unique ID (the annual returns' site_id), B the site name, C and D the activation's start and stop,
+# headed "(GMT)"; one row per activation. The files differ in what holds that layout (checked
+# 16 Oct 2026): some are CSV, some XLSX, and "Thames 2024 Detailed EDM Data.csv" is an XLSX workbook
+# under a .csv name, so the reader looks at the bytes, not the extension. Times come as Excel dates,
+# Excel serial numbers or text ("2024-01-01T20:14:32Z", "2024/01/01T20:14:32.000Z",
+# "01/01/2024 20:14"). The files give no position; it comes from the annual returns.
+# Dwr Cymru Welsh Water's files (overflows in England only) are a Welsh test set and never train.
+EA_SOURCE = "EA"
+EA_DATASET = "https://environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7"
+EA_CREDIT = ("© Environment Agency copyright and/or database right. Licensed under the Open "
+             "Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)")
 EA_DCWW_SOURCE = "EA Welsh Water"
-EA_DCWW_DATASET = "https://environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7"
-EA_DCWW_CREDIT = ("© Environment Agency copyright and/or database right. Licensed under the Open "
-                  "Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)")
+EA_DCWW_DATASET = EA_DATASET
+EA_DCWW_CREDIT = EA_CREDIT
+# File-name prefix -> the company name in annual_returns.parquet. "South West" is tried before
+# "Southern" only for clarity: neither name starts with the other.
+EA_COMPANIES = {
+    "Anglian": "Anglian Water", "Northumbrian": "Northumbrian Water", "Severn Trent": "Severn Trent Water",
+    "South West": "South West Water", "Southern": "Southern Water", "Thames": "Thames Water",
+    "United Utilities": "United Utilities", "Wessex": "Wessex Water", "Yorkshire": "Yorkshire Water",
+    "Welsh": "Dwr Cymru Welsh Water",
+}
+EA_TEST_ONLY = {"Dwr Cymru Welsh Water"}
 
 
-def read_ea_dcww_events(paths, positions: pd.DataFrame | None = None) -> pd.DataFrame:
-    """The EA's Welsh Water workbooks (`paths`), every sheet, in the fetch_events schema. Times are
-    read as UTC, as the headings say. `positions` (site_id, lat, lon) defaults to the newest
-    position of each id in annual_returns.parquet. For testing the model, never for training."""
-    from openpyxl import load_workbook  # dev dependency; only this off-CI path needs it
+def ea_company(name: str) -> str | None:
+    """The annual-returns company of an EA start/stop file, from its name."""
+    for prefix, company in EA_COMPANIES.items():
+        if name.startswith(prefix):
+            return company
+    return None
+
+
+def _ea_rows(path) -> list[tuple]:
+    """The first four cells of every row of every sheet of `path` (XLSX by its bytes, else CSV)."""
+    path = Path(path)
+    with open(path, "rb") as f:
+        head = f.read(4)
+    if head == b"PK\x03\x04":
+        from openpyxl import load_workbook  # dev dependency; only the off-CI import needs it
+        # A file object, not the path: openpyxl refuses a workbook whose name ends ".csv".
+        with open(path, "rb") as f:
+            wb = load_workbook(f, read_only=True, data_only=True)
+            rows = [tuple(r[:4]) for ws in wb.worksheets for r in ws.iter_rows(values_only=True)
+                    if r and len(r) >= 4]
+            wb.close()
+        return rows
+    raw = path.read_bytes()
+    for enc in ("utf-8-sig", "cp1252"):
+        try:
+            text = raw.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    df = pd.read_csv(io.StringIO(text), header=None, dtype=str, keep_default_na=False,
+                     usecols=range(4), skip_blank_lines=True)
+    return list(df.itertuples(index=False, name=None))
+
+
+_YMD = re.compile(r"^\d{4}[-/]\d{1,2}[-/]\d{1,2}")
+_DMY = re.compile(r"^\d{1,2}[-/]\d{1,2}[-/]\d{4}")
+
+
+def ea_times(values) -> pd.Series:
+    """UTC timestamps from a column of mixed cells: datetime objects (no zone: read as GMT, as the
+    files' headings say), Excel serial numbers, ISO text with "-" or "/" and an optional "Z", and
+    day-first text ("01/01/2024 20:14"). Anything else is NaT. Cell by cell, because a column of
+    Excel dates read whole would be taken for epoch numbers."""
+    out = []
+    for v in values:
+        t = pd.NaT
+        if v is None or (isinstance(v, float) and np.isnan(v)):
+            pass
+        elif hasattr(v, "isoformat"):
+            t = pd.Timestamp(v)
+        elif isinstance(v, (int, float, np.integer, np.floating)) and 20000 < float(v) < 80000:
+            t = pd.Timestamp("1899-12-30") + pd.to_timedelta(float(v), unit="D")
+        else:
+            s = str(v).strip()
+            try:
+                if _YMD.match(s):
+                    t = pd.Timestamp(s[:10].replace("/", "-") + s[10:])
+                elif _DMY.match(s):
+                    t = pd.to_datetime(s, dayfirst=True)
+                elif s.replace(".", "", 1).isdigit() and 20000 < float(s) < 80000:
+                    t = pd.Timestamp("1899-12-30") + pd.to_timedelta(float(s), unit="D")
+            except (ValueError, OverflowError):
+                t = pd.NaT
+        if t is not pd.NaT and not pd.isna(t):
+            t = t.tz_localize("UTC") if t.tzinfo is None else t.tz_convert("UTC")
+            t = t.round("s")
+        out.append(t)
+    return pd.Series(pd.to_datetime(out, utc=True), dtype="datetime64[ns, UTC]")
+
+
+def read_ea_events(paths, positions: pd.DataFrame | None = None, source: str = EA_SOURCE,
+                   remap_ids: bool = True) -> pd.DataFrame:
+    """The EA start/stop files `paths` (any company, CSV or XLSX, every sheet) in the fetch_events
+    schema. Header rows and rows whose start is not a time are dropped; repeated rows (same id, start
+    and stop) are kept once. Old ids are mapped to current ones (`_id_map`) when `remap_ids`.
+    `positions` (site_id, lat, lon) defaults to the newest position of each id in
+    annual_returns.parquet."""
     frames = []
     for path in paths:
-        wb = load_workbook(path, read_only=True, data_only=True)
-        for ws in wb.worksheets:
-            rows = [r[:4] for r in ws.iter_rows(min_row=2, values_only=True) if r and r[0]]
-            df = pd.DataFrame(rows, columns=["site_id", "site_name", "event_start", "event_end"])
-            df["source"] = f"{EA_DCWW_SOURCE} ({path.name if hasattr(path, 'name') else path})"
-            frames.append(df)
+        rows = [r for r in _ea_rows(path) if r[0] not in (None, "")]
+        df = pd.DataFrame(rows, columns=["site_id", "site_name", "event_start", "event_end"])
+        df["source"] = f"{source} ({Path(path).name})"
+        frames.append(df)
     df = pd.concat(frames, ignore_index=True)
     df["site_id"] = df["site_id"].astype(str).str.strip()
-    # Cell by cell: the 2024 file holds Excel dates, the others ISO text. to_utc would read a column
-    # of dates as epoch numbers.
-    for c in ("event_start", "event_end"):
-        df[c] = pd.to_datetime(df[c].map(lambda v: v.isoformat() if hasattr(v, "isoformat") else v),
-                               utc=True, errors="coerce", format="ISO8601")
+    df["site_name"] = df["site_name"].astype(str).str.strip()
+    df["event_start"] = ea_times(df["event_start"]).to_numpy()
+    df["event_end"] = ea_times(df["event_end"]).to_numpy()
+    df = df.dropna(subset=["event_start"])
+    if remap_ids:
+        m = _id_map()
+        if m:
+            df["site_id"] = df["site_id"].map(m).fillna(df["site_id"])
+    df = df.drop_duplicates(["site_id", "event_start", "event_end"])
     if positions is None:
         ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet", columns=["site_id", "year", "lat", "lon"])
         positions = ar.dropna(subset=["site_id", "lat"]).sort_values("year").drop_duplicates("site_id", keep="last")
     df = df.merge(positions[["site_id", "lat", "lon"]], on="site_id", how="left")
-    df = df.dropna(subset=["event_start"])
     df["duration_h"] = (df["event_end"] - df["event_start"]).dt.total_seconds() / 3600.0
     df = df[(df["duration_h"].isna()) | ((df["duration_h"] >= 0) & (df["duration_h"] < 24 * 60))]
     return df[COLS].sort_values(["site_id", "event_start"]).reset_index(drop=True)
+
+
+def read_ea_dcww_events(paths, positions: pd.DataFrame | None = None) -> pd.DataFrame:
+    """The EA's Welsh Water workbooks (`paths`) in the fetch_events schema (read_ea_events). For
+    testing the model, never for training."""
+    return read_ea_events(paths, positions=positions, source=EA_DCWW_SOURCE, remap_ids=False)
 
 
 if __name__ == "__main__":

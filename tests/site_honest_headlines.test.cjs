@@ -38,7 +38,7 @@ function page(names, extra = {}) {
   return ctx;
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
-const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'answerWords',
+const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
   'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
@@ -295,6 +295,8 @@ test('an overflow in the same lake is across it, one through a lake is by river 
   assert.equal(at(1.4, 0.4), '1.8 km upstream by river and lake');   // Ambleside WwTW to Waterhead, by the Rothay
   assert.equal(at(6, 0), '6.0 km upstream');
   assert.equal(at(0, 0, { position_source: 'join' }), "at the spot: its stream joins the river here, to within the map's precision (checked on a map)");   // Culham STW
+  assert.equal(at(0, 0), 'at the spot');   // Friday Street SPS at Henley, on its live position (G5, 16 Oct 2026)
+  assert.equal(at(0.1, 0), '0.1 km upstream');
   assert.equal(at(0.4, 0, { position_source: 'join' }), '0.4 km upstream, where its stream joins the river (checked on a map)');   // CSO behind Lager's Store
   // The organisers' table and its CSV note.
   const lake = week(['low', 'low', 'low', 'low', 'low'], { upstream_summary: { overflows: 1 }, contributors: [{ site_id: 'UUP00804', site_name: 'Glebe Road PS', company: 'United Utilities',
@@ -402,4 +404,53 @@ test('the E. coli estimate is labelled with what is true today: its season, its 
   assert.deepEqual([tile.fig, tile.word, tile.wide], ['16%', 'Untested in October', true]);
   assert.match(text(tile.say), /The level above counts sewage spills\. .* far too high: it averaged 32% where 5\.9% were over 900\.$/);
   assert.match(tile.more, /AUC is 0\.52: 0\.5 is chance, 1 is perfect/);
+});
+
+// ------------------------------------------------------------------------------ G7: when will it clear
+// docs/REVIEW-2026-10-16.md, G7: now.clears_at said as a clock time on the Right now tile and in the
+// alerts (levels.js clearWords, written to alerts.json as `clears`), and the first day back at low in the
+// sentence over the five days (backToLow).
+const spilt = (now, labels = ['high', 'moderate', 'low', 'low', 'low']) => week(labels, {
+  now: { label: 'high', risk: 0.5, discharging_upstream: 0, recent_upstream: 3, monitored_upstream: 3, clears_at: '2026-10-13T22:47:00+01:00', clears_by: 'die-off', ...now } });
+
+test('after a spill, the time it should have cleared, in UK time, while right now is raised', () => {
+  assert.equal(L.clearWords(spilt({}), NOW), 'The spills upstream should have passed and died off by Tuesday 22:47.');
+  assert.equal(L.clearWords(spilt({ recent_upstream: 1 }), NOW), 'The spill upstream should have passed and died off by Tuesday 22:47.');
+  assert.equal(L.clearWords(spilt({ clears_at: '2026-10-11T23:05:00+01:00' }), NOW), 'The spills upstream should have passed and died off by Sunday 23:05.');   // the weekday, never today
+  assert.equal(L.clearWords(spilt({ clears_at: '2026-10-11T23:05:00Z' }), NOW), 'The spills upstream should have passed and died off by Monday 00:05.');   // UK time, not UTC
+  assert.equal(L.clearWords(spilt({ discharging_upstream: 1, recent_upstream: 0, clears_by: 'travel' }), NOW),
+    'If the overflow discharging upstream stops now, its spill should have passed and died off by Tuesday 22:47.');
+  assert.equal(L.clearWords(spilt({ discharging_upstream: 2, recent_upstream: 1 }), NOW),
+    'If the 2 overflows discharging upstream stop now, the spills should have passed and died off by Tuesday 22:47.');
+  // Nothing to say: right now low, no time, a time already past, right now not known.
+  assert.equal(L.clearWords(spilt({ label: 'low', risk: 0.1 }), NOW), '');
+  assert.equal(L.clearWords(spilt({ clears_at: null }), NOW), '');
+  assert.equal(L.clearWords(spilt({ clears_at: '2026-10-11T21:00:00+01:00' }), NOW), '');
+  assert.equal(L.clearWords({ ...spilt({}), upstream_summary: { overflows: 0 } }, NOW), '');
+});
+
+test('the Right now tile and the alerts say it; the five days name the first day back at low', () => {
+  const s = spilt({});
+  const ctx = page(['esc', 'glyph', 'ICON', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'feedTime', 'fmt',
+    'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence'], { DATA: { generated_at: GEN } });
+  assert.match(text(vm.runInContext('nowTile', ctx)(s, 3).say), /3 report live\. The spills upstream should have passed and died off by Tuesday 22:47\.$/);
+  assert.doesNotMatch(text(vm.runInContext('nowTile', ctx)(spilt({ label: 'low', risk: 0.1 }), 3).say), /died off/);
+  assert.equal(L.backToLow(s), 'Back to low risk on Tuesday.');
+  assert.match(text(vm.runInContext('daysSentence', ctx)(s)), / Back to low risk on Tuesday\.$/);
+  assert.equal(L.backToLow(week(['moderate', 'low', 'low', 'high', 'low'])), 'Back to low risk tomorrow.');   // the first raised day's
+  assert.equal(L.backToLow(week(['low', 'low', 'low', 'low', 'low'])), '');
+  assert.equal(L.backToLow(week(['low', 'high', 'high', 'moderate', 'moderate'])), '');   // not back within the five days
+  assert.equal(L.backToLow(week(['high', 'low', 'low', 'low', 'low'], { classification: { class: 'poor', year: 2025 } })), '');   // rated poor: never low
+  // Right now raises today: back at low the next day.
+  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low'])), 'Back to low risk tomorrow.');
+  // The alerts: scripts/alerts.js writes `clears` beside the headline and the action, at the build's time.
+  const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'alerts-'));
+  const gen = new Date(Date.now() - 3600e3).toISOString(), later = new Date(Date.now() + 26 * 3600e3).toISOString();
+  const day0 = gen.slice(0, 10), mk = (id, now) => ({ ...spilt(now), id, days: spilt(now).days.map((x, i) => ({ ...x, date: new Date(Date.parse(day0) + i * 864e5).toISOString().slice(0, 10) })) });
+  fs.writeFileSync(path.join(dir, 'spots.json'), JSON.stringify({ generated_at: gen, spots: [mk('a', { clears_at: later }), mk('b', { label: 'low', risk: 0.1, clears_at: later })] }));
+  require('node:child_process').execFileSync('node', [path.join(__dirname, '../scripts/alerts.js'), path.join(dir, 'spots.json'), path.join(dir, 'alerts.json'), 'https://example.org/']);
+  const out = JSON.parse(fs.readFileSync(path.join(dir, 'alerts.json'), 'utf8')).spots;
+  assert.match(out.a.clears, /^The spills upstream should have passed and died off by (Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day \d\d:\d\d\.$/);
+  assert.equal(out.b.clears, undefined);
+  fs.rmSync(dir, { recursive: true });
 });

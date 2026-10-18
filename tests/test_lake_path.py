@@ -119,7 +119,7 @@ def test_a_lake_pin_gets_its_own_lake_and_the_one_on_the_way(net):
 
 
 def test_catchment_speed_drops_the_lake_from_the_reach_by_reach_time(net):
-    new = _trace(net, velocity_mode="catchment", lake_path_mode="lake")
+    new = _trace(net, velocity_mode="catchment", lake_path_mode="lake", velocity_ms=config.RIVER_VELOCITY_MS)
 
     def v(node: str) -> float:
         return float(transport.reach_velocity(net.upstream_m[node]))
@@ -127,12 +127,12 @@ def test_catchment_speed_drops_the_lake_from_the_reach_by_reach_time(net):
     # r1's half at its own speed, the lake at lake speed, then r2, the pond, and r3 down to the spot
     want = 5_000 / v("b") + 4_000 / config.LAKE_VELOCITY_MS + 10_000 / v("e") + 1_000 / v("f") + 5_000 / v("g")
     assert new.loc["above", "travel_h"] == pytest.approx(want / 3600)
-    lake = _trace(net, _lake_pin(), velocity_mode="catchment", lake_path_mode="lake")
+    lake = _trace(net, _lake_pin(), velocity_mode="catchment", lake_path_mode="lake", velocity_ms=config.RIVER_VELOCITY_MS)
     entry = math.hypot(1_000, 300)
     want = 5_000 / v("b") + 10_000 / v("e") + 1_000 / v("f") + 10_000 / v("g") + (4_000 + entry) / config.LAKE_VELOCITY_MS
     assert lake.loc["above", "travel_h"] == pytest.approx(want / 3600)
     # a gauge still scales the river part, not the lake part
-    fast = _trace(net, velocity_mode="catchment", lake_path_mode="lake", velocity_ms=1.0)
+    fast = _trace(net, velocity_mode="catchment", lake_path_mode="lake", velocity_ms=2 * config.RIVER_VELOCITY_MS)
     river_s = new.loc["above", "travel_h"] * 3600 - 4_000 / config.LAKE_VELOCITY_MS
     assert fast.loc["above", "travel_h"] * 3600 == pytest.approx(river_s / 2 + 4_000 / config.LAKE_VELOCITY_MS)
 

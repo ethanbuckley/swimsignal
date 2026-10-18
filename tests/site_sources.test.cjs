@@ -47,7 +47,7 @@ test('one overflow is named alone only when it holds at least half the risk', ()
   // Right now, with a spill running, close by, across a lake, an hour away.
   const kirk = {...ILKLEY, site_name: 'KIRKOSWALD WwTW', receiving_watercourse: 'River Eden', status: 1, distance_km: 0.4, travel_h: 0.4, share: 0.74};
   assert.equal(plain(run('sourceSentence', kirk, 'now')),
-    'Most of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, discharging now, 0.4 km upstream, under an hour away.');
+    'Most of the risk from sewage spills right now comes from Kirkoswald sewage works overflow on the River Eden, discharging now, 0.4 km upstream, under half an hour away.');
   assert.match(plain(run('sourceSentence', {...ILKLEY, distance_km: 1.2, lake_distance_km: 0.8, travel_h: 1.4}, 'now')), /2\.0 km upstream by river and lake, about 1 hour away\.$/);
   // A spill running when its company's feed last answered (11 Oct 2026): the feed is down now.
   assert.match(plain(run('sourceSentence', {...kirk, status: -3, last_status: 1}, 'now')),
@@ -180,8 +180,9 @@ test('an overflow in the same lake is across it, a spill under way says since wh
   d.contributors = [{...yws, position_source: 'live'}];
   assert.match(tile(d), /Yorkshire Water overflow YWS02298 \(no name in its feed\), discharging since Tue 6 Oct, 11:46/);
   const culham = {...ILKLEY, site_name: 'Culham STW', receiving_watercourse: 'Clifton Hampden Ditch', distance_km: 0, travel_h: 0, share: 0.99, position_source: 'join'};
-  assert.match(plain(run('sourceSentence', culham, '2026-10-05')), /Culham sewage works overflow on Clifton Hampden Ditch, at the spot: its stream joins the river here, to within the map's precision \(checked on a map\), under an hour away\.$/);
-  assert.match(plain(run('sourceSentence', {...culham, distance_km: 0.4}, '2026-10-05')), /0\.4 km upstream, where its stream joins the river \(checked on a map\), under an hour away\.$/);
+  assert.match(plain(run('sourceSentence', culham, '2026-10-05')), /Culham sewage works overflow on Clifton Hampden Ditch, at the spot: its stream joins the river here, to within the map's precision \(checked on a map\)\.$/);
+  assert.match(plain(run('sourceSentence', {...culham, distance_km: 0.4, travel_h: 0.2}, '2026-10-05')), /0\.4 km upstream, where its stream joins the river \(checked on a map\), under half an hour away\.$/);
+  assert.match(plain(run('sourceSentence', {...culham, distance_km: 0.4, travel_h: 0.7}, '2026-10-05')), /\(checked on a map\), under an hour away\.$/);
   vm.runInContext('DAY = null', ctx);
 });
 
@@ -191,4 +192,30 @@ test('the page draws the tile before the overflows and fills it again for a pick
   assert.ok(at("if (src) src.innerHTML = whereFrom(d);") > at('function showDay(d, iso) {'));
   assert.ok(at('#sources-host:empty { display:none; }') > 0);
   assert.ok(at('function whereFrom(d) {') < at('function overflowTile(d, total) {'));
+});
+
+// 16 Oct 2026 (docs/REVIEW-2026-10-16.md, 8.5, G5): the spot's list of overflows, with Culham STW's row as
+// spots.json had it at Clifton Hampden, joined at the spot (0.0 km, 0.0 h). It read "0.0 km" nowhere, but
+// "at the spot ..., under an hour away"; now the place alone. Friday Street SPS at Henley (0.0 km on
+// its live position) is at the spot too, and Rivadale View CSO above Ilkley, 0.3 h away, under half an hour.
+test('the overflow list says "at the spot" under 0.1 km and "under half an hour" under 0.5 h', () => {
+  const c = vm.createContext({Date: FixedDate});
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + '\nsetToday("2026-10-16");', c);
+  vm.runInContext(`const L = {circleMarker: () => ({bindTooltip: () => ({addTo() {}})})}, contribLayer = null, PAGE_ID = /^$/;
+    const colourFor = () => '#000', drawnStatus = x => x.status, statusSaid = () => 'not discharging', endedOn = () => '16 Feb';\n`
+    + pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'overflowTile']), c);
+  const culham = {site_id: 'TWL00147', company: 'Thames Water', site_name: 'Culham STW', receiving_watercourse: 'Clifton Hampton Ditch',
+    lat: 51.65378, lon: -1.21059, status: 0, has_live: true, data_state: 'live', latest_event_start: '2026-02-23T00:30:00+00:00',
+    latest_event_end: '2026-02-23T01:00:00+00:00', lta_spills: 25.29, spill_hours: 378.0, snap_confidence: 'high', position_source: 'join',
+    on_named: false, snap_m: 0, distance_km: 0.0, lake_distance_km: 0.0, travel_h: 0.0, weight: 0.999, p_spill_today: 0.01, p_spill_tomorrow: 0.002,
+    p_spill_days: [0.01, 0.002, 0.016, 0.049, 0.079], now_contribution: 0.0};
+  const henley = {...culham, site_id: 'TWL00191', site_name: 'Friday Street (Henley) SPS', position_source: 'live', snap_m: 66};
+  const rivadale = {...culham, site_id: 'YWS00674', site_name: 'RIVADALE VIEW/CSO', position_source: 'live', distance_km: 0.5, travel_h: 0.3};
+  const far = {...culham, site_id: 'YWS1', site_name: 'ILKLEY WwTW', position_source: 'live', distance_km: 6.0, travel_h: 5.2};
+  const rows = plain(vm.runInContext('overflowTile', c)({id: 'x', contributors: [culham, henley, rivadale, far]}, 4)).split('reach');
+  assert.match(rows[0], /Culham sewage works overflow.* · at the spot: its stream joins the river here, to within the map's precision \(checked on a map\)\d/);
+  assert.match(rows[1], /Friday Street \(Henley\) pumping station overflow.* · at the spot\d/);
+  assert.match(rows[2], /Rivadale View storm overflow.* · 0\.5 km upstream, under half an hour away\d/);
+  assert.match(rows[3], / · 6\.0 km upstream, about 5 h away\d/);
+  for (const r of rows.slice(0, 2)) assert.doesNotMatch(r, /0\.0 km|0 h|hour/);
 });

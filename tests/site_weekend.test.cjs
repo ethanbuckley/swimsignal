@@ -114,7 +114,7 @@ function pageDefs(names) {
 function noteOn(iso) {
   const ctx = vm.createContext({});
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + `\nsetToday("${iso}");`, ctx);
-  vm.runInContext(pageDefs(['VIEW', 'dateLabel', 'bestDayNote']), ctx);
+  vm.runInContext('let DATA = null;\n' + pageDefs(['VIEW', 'dateLabel', 'fiveDays', 'bestDayNote']), ctx);   // DATA: no forecast's dates to keep to
   return vm.runInContext('bestDayNote', ctx);
 }
 const text = html => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();

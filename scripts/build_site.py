@@ -41,6 +41,7 @@ from dipcast.model.forecast import (
 )
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
+from dipcast.trace import SIMPLIFY_M, spot_trace
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -1038,7 +1039,31 @@ def asked_now(ask):
     return lambda: answer
 
 
-def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None) -> dict:
+# The EA's flood requests sometimes time out: on 16 Oct 2026 (21:03 build) the national list
+# answered and then 48 of the 105 spots' own requests timed out at 4 s, so 48 pages said "not
+# checked". A failed request is asked once more FLOOD_RETRY_S later, and every answer is in within
+# FLOOD_BUDGET_S, so a slow EA adds at most half a minute to the national list and to the spots'.
+FLOOD_RETRY_S = 20.0
+FLOOD_BUDGET_S = 30.0
+
+
+def ask_flood_list(ask=None, sleep=time.sleep, clock=time.monotonic) -> bool:
+    """The national flood list (flows.floods_in_force_anywhere), with one retry: if the first ask
+    fails, the second begins FLOOD_RETRY_S after the first began, and each is allowed what is left
+    of FLOOD_BUDGET_S (10 s each, against flows.EA_TIMEOUT_S's 4 s). Raises the second failure."""
+    if ask is None:
+        from dipcast.ingest.flows import floods_in_force_anywhere as ask
+    start = clock()
+    try:
+        return ask(timeout=FLOOD_BUDGET_S - FLOOD_RETRY_S)
+    except Exception as e:  # noqa: BLE001 - asked again; the second failure is raised
+        log.info("flood list: %s; asking again", e)
+    sleep(max(0.0, start + FLOOD_RETRY_S - clock()))
+    return ask(timeout=max(1.0, start + FLOOD_BUDGET_S - clock()))
+
+
+def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None,
+                      sleep=time.sleep, clock=time.monotonic) -> dict:
     """"Too high to swim", beside the pollution level and never part of it: a high river and a flood
     are a different hazard. After attach_river_levels, each spot gets `flow_state`, a word from the
     gauge on its own river (flows.flow_state: "high" above the usual range, "rising fast" up more
@@ -1049,15 +1074,17 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
     one a spot. The rise is fetched only where it could set the word, a current reading on the
     spot's own river not already above its range, from the last 24 readings, and kept in
     `river_state` as `rise_6h_m` with the times it runs between. A stale reading has no index
-    (reading_fields), so it is never "high". Returns counts for the build log; nothing here can
-    stop a build or change a level."""
+    (reading_fields), so it is never "high". The spots whose flood request failed are asked once
+    more, FLOOD_RETRY_S after the first round, all within FLOOD_BUDGET_S of its end; those still
+    unanswered keep None. Returns counts for the build log; nothing here can stop a build or
+    change a level."""
     from concurrent.futures import ThreadPoolExecutor
     from datetime import UTC, datetime
 
     from dipcast.ingest import flows
     trend = trend or flows.recent_levels
     alerts = alerts or flows.flood_alerts
-    any_alerts = any_alerts or flows.floods_in_force_anywhere
+    any_alerts = any_alerts or (lambda: ask_flood_list(sleep=sleep, clock=clock))
     now = now or datetime.now(UTC)
     try:
         ask = any_alerts()
@@ -1089,11 +1116,31 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
             try:
                 found = alerts(r["lat"], r["lon"])
             except Exception as e:  # noqa: BLE001
-                log.warning("flood alerts for %s: %s", r["name"], e)
+                log.info("flood alerts for %s: %s; asking again", r["name"], e)
         return word, rise, found
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         out = list(pool.map(one, results))
+    failed = [i for i, (_, _, found) in enumerate(out) if found is None] if alerts is not None else []
+    if failed:
+        log.info("flood alerts: %d of %d spots not answered; asking again in %.0f s", len(failed), len(results), FLOOD_RETRY_S)
+        sleep(FLOOD_RETRY_S)
+        deadline = clock() + FLOOD_BUDGET_S - FLOOD_RETRY_S
+
+        def again(i: int) -> list | None:
+            r, left = results[i], deadline - clock()
+            if left < 1:   # out of time: unchecked, as before the retry
+                log.warning("flood alerts for %s: no time left to ask again", r["name"])
+                return None
+            try:
+                return alerts(r["lat"], r["lon"], timeout=left)
+            except Exception as e:  # noqa: BLE001
+                log.warning("flood alerts for %s: %s", r["name"], e)
+                return None
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for i, found in zip(failed, pool.map(again, failed), strict=True):
+                out[i] = (*out[i][:2], found)
     counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0}
     for r, (word, rise, found) in zip(results, out, strict=True):
         r["flow_state"], r["flood_alerts"] = word, found
@@ -1107,35 +1154,78 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
 
 
 WEATHER_CREDIT = "Weather data by Open-Meteo.com"
+# The weather's refresh floor. Asked for in every build, it was 105 calls a build, 5,040 a day at a
+# build every 30 minutes. A daily high, sunrise and sunset change little in 3 hours.
+WEATHER_REFRESH_H = 3.0
+WEATHER_CACHE = "weather.json"
 
 
-def attach_weather(results: list[dict], request=None, batch: int = 50) -> int:
+def _weather_key(r: dict) -> str:
+    return f"{r['lat']:.3f},{r['lon']:.3f}"
+
+
+def attach_weather(results: list[dict], request=None, batch: int = 50, cache: Path | None = None,
+                   refresh_h: float = WEATHER_REFRESH_H) -> int:
     """Each spot's daytime high, sunrise and sunset for the forecast's days, from Open-Meteo in a
     few calls for all spots (three daily variables over five days weigh one call per location).
-    Context beside the forecast, not an input to it; a failed call leaves the spots without."""
-    from dipcast.ingest.rainfall import _request
-    request = request or _request
+    Context beside the forecast, not an input to it. The answers are kept in `cache` (in the rain
+    cache, so they persist with the state) and used again while under `refresh_h` old and from the
+    same Europe/London day, so only spots not in it are asked for; the day's Open-Meteo ration
+    (rainfall.may_spend) can hold the request back. A failed or held call leaves a spot with what
+    the cache has from today, or without."""
+    from dipcast.ingest import rainfall
+    request = request or rainfall._request
+    cache = cache or rainfall.CACHE / WEATHER_CACHE
     spots = [r for r in results if not (r.get("error") and str(r["error"]).startswith("forecast failed"))]
-    n = 0
-    for i in range(0, len(spots), batch):
-        chunk = spots[i:i + batch]
+    today = pd.Timestamp.now(tz="Europe/London").strftime("%Y-%m-%d")
+    try:
+        stored = json.loads(cache.read_text())
+        stored = stored if isinstance(stored, dict) and stored.get("day") == today else {}
+    except (OSError, ValueError):
+        stored = {}
+    known = stored.get("points") or {}
+    fresh = bool(known) and time.time() - float(stored.get("fetched_at", 0)) < refresh_h * 3600
+    todo = [r for r in spots if not (fresh and _weather_key(r) in known)]
+    got = {}
+    for i in range(0, len(todo), batch):
+        chunk = todo[i:i + batch]
+        weight = rainfall.call_weight(len(chunk), config.FORECAST_DAYS, variables=3)
+        if not rainfall.may_spend(weight, "weather"):
+            break
         try:
             res = request(config.OPEN_METEO_FORECAST, {
                 "latitude": ",".join(f"{r['lat']:.3f}" for r in chunk), "longitude": ",".join(f"{r['lon']:.3f}" for r in chunk),
                 "daily": "temperature_2m_max,sunrise,sunset", "forecast_days": config.FORECAST_DAYS, "timezone": "Europe/London"}, timeout=30)
         except Exception as e:  # noqa: BLE001 - context beside the forecast must not sink the build
+            if isinstance(e, rainfall.OpenMeteoBadBody):
+                rainfall.spend(weight, "weather")
             log.warning("weather: %s", e)
-            return n
+            break
+        rainfall.spend(weight, "weather")
         for r, w in zip(chunk, res if isinstance(res, list) else [res], strict=False):
-            d = (w or {}).get("daily") or {}
-            try:
-                days = [{"date": t, "tmax": None if x is None else round(float(x)), "sunrise": str(sr)[11:16], "sunset": str(ss)[11:16]}
-                        for t, x, sr, ss in zip(d["time"], d["temperature_2m_max"], d["sunrise"], d["sunset"], strict=True)]
-            except (KeyError, TypeError, ValueError) as e:
-                log.warning("weather for %s: %s", r["name"], e)
-                continue
-            r["weather"] = {"days": days, "credit": WEATHER_CREDIT}
-            n += 1
+            got[_weather_key(r)] = (w or {}).get("daily") or {}
+    if got:
+        # Spots added to a fresh set keep its time, so the whole set is asked for again together.
+        keep = {**known, **got} if fresh else got
+        try:
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps({"day": today, "fetched_at": stored.get("fetched_at") if fresh else time.time(),
+                                         "points": keep}))
+        except OSError as e:
+            log.warning("weather cache not written: %s", e)
+    n = 0
+    for r in spots:
+        d = got.get(_weather_key(r)) or known.get(_weather_key(r))
+        if d is None:
+            continue
+        try:
+            days = [{"date": t, "tmax": None if x is None else round(float(x)), "sunrise": str(sr)[11:16], "sunset": str(ss)[11:16]}
+                    for t, x, sr, ss in zip(d["time"], d["temperature_2m_max"], d["sunrise"], d["sunset"], strict=True)]
+        except (KeyError, TypeError, ValueError) as e:
+            log.warning("weather for %s: %s", r["name"], e)
+            continue
+        r["weather"] = {"days": days, "credit": WEATHER_CREDIT}
+        n += 1
     return n
 
 
@@ -1304,14 +1394,15 @@ def site_url() -> str:
 
 
 def page_meta(title: str, description: str, url: str, root: str, base: str | None = None, noindex: bool = False,
-              image: tuple[str, str] | None = None) -> str:
+              image: tuple[str, str] | None = None, feed: tuple[str, str] | None = None) -> str:
     """The <head> block index.html marks with page-meta. Messaging apps and search engines need
     absolute addresses for the page and its preview image. Every page gets a relative <base> at
     the site root ("./" on the home page, "../../" in spot/<id>/). The page moves between the list
     and spots with pushState, and without a <base> every relative link would then resolve inside
     spot/<id>/; a <base> is resolved once, as the page loads. Relative, so the pages work at any
     address (a custom domain serves the site at / rather than /dipcast/). image: a picture of the page's
-    own and its description, (path from the site root, alt), in place of the shared icons/og.png."""
+    own and its description, (path from the site root, alt), in place of the shared icons/og.png. feed: the
+    page's Atom feed, (path from the site root, title), so a feed reader given the page finds it."""
     src, alt = image or ("icons/og.png", f"{BRAND}: pollution risk forecasts for river and lake swim spots")
     return "\n".join([
         *([f'<base href="{escape(base)}">'] if base else []),
@@ -1319,6 +1410,7 @@ def page_meta(title: str, description: str, url: str, root: str, base: str | Non
         f'<meta name="description" content="{escape(description)}">',
         *(['<meta name="robots" content="noindex">'] if noindex else []),
         f'<link rel="canonical" href="{escape(url)}">',
+        *([f'<link rel="alternate" type="application/atom+xml" title="{escape(feed[1])}" href="{escape(root + feed[0])}">'] if feed else []),
         '<meta property="og:type" content="website">',
         f'<meta property="og:site_name" content="{escape(BRAND)}">',
         f'<meta property="og:title" content="{escape(title)}">',
@@ -1358,6 +1450,8 @@ SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 # Near me, under the search (index.html's NEAR_CTA, word for word). The line for groups moved to the
 # foot of the list on 14 Oct 2026, so the opening ends with the row of controls.
 NEAR_CTA = ('<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Show spots near me</span></button>')
+# Under it, the forecast for the water where you are (index.html's HERE_CTA, word for word; 17 Oct 2026).
+HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>'
 # Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
 # sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
 SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="skel-r"></span>' * 4 + '</div>'
@@ -1366,28 +1460,34 @@ SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="ske
 def home_lead(n: int) -> str:
     """The list's opening as index.html's renderList draws it, down to the row of controls, for n spots,
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
-    typed carries over. The day picker has only its first choice until the forecast's dates are known."""
-    return ('<div id="result"><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
-            f'<p class="lede">Five-day pollution risk forecasts for {n} spots in England, or <span class="w-touch">tap</span>'
-            '<span class="w-click">click</span> any river or lake on the map. <a href="#about">How it works</a></p>'
+    typed carries over. The day picker has only its first choice until the forecast's dates are known.
+    data-built: the script updates this .lead where it stands rather than replacing it (index.html,
+    overBuilt), so its picture is painted once, at the first paint."""
+    return ('<div id="result" data-built><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
+            f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England, and for any river or lake you '
+            '<span class="w-touch">tap</span><span class="w-click">click</span> on the map. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
-            'placeholder="Find a river or lake" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
-            f'{NEAR_CTA}</section>'
+            'placeholder="Find a river, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
+            f'{NEAR_CTA}{HERE_CTA}</section>'
             '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
             '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
             '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
             f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
 
 
-def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None) -> str:
+def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
+              feed: bool = False) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
     <head>, and its share card (card: path and alt, write_spot_cards) as the preview picture. In the body, top: the spot's answer and five days as the page's script draws them
     (prerender_spots), for crawlers, readers without scripts and the moment before the script runs.
-    Without it, its name under the sky, as the answer will be (see home_lead)."""
+    Without it, its name under the sky, as the answer will be (see home_lead). feed: link its Atom feed
+    (write_feeds)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
-                                             base="../../", image=card), template, count=1)
+                                             base="../../", image=card,
+                                             feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None),
+                       template, count=1)
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
@@ -1433,6 +1533,9 @@ def saved_page(template: str, root: str) -> str:
 # The places Plan a swim can start from: OS Open Names' cities, towns, districts and villages in England
 # and Wales (scripts/make_places.py writes it; it changes only when that is run again).
 PLACES = config.RAW / "places.json"
+# The rivers and lakes the home page's search finds on the map: OS Open Rivers' named rivers and the
+# WFD lakes in England (scripts/make_waters.py writes it; likewise only when run again).
+WATERS = config.RAW / "waters.json"
 
 
 def plan_page(template: str, root: str) -> str:
@@ -1567,6 +1670,109 @@ def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
 
+# Atom feeds (docs/REVIEW-2026-10-16.md, G8), from this build's alerts.json: feed.xml for every spot,
+# feed/<area>.xml for each of the list's areas, spot/<id>/feed.xml for each spot with a page. Each
+# build adds one entry a spot, its headline and what to do, with the build's time as `updated`, so a
+# reader (Slack's RSS app, Feedly, IFTTT, a Discord bot) gets every new forecast. The entry's id has
+# the build's time in it, so a reader sees a new entry and not an edited one. sw.js stores none of them.
+ATOM = "http://www.w3.org/2005/Atom"
+
+
+def area_slug(area: str) -> str:
+    """'Cumbria and the Lake District' -> 'cumbria-and-the-lake-district', the area feed's file name."""
+    return re.sub(r"[^a-z0-9]+", "-", area.lower()).strip("-")
+
+
+def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list[dict], generated: pd.Timestamp,
+              root: str, credits: dict | None) -> str:
+    """One Atom document (RFC 4287). entries: alerts.json's spots, each with its `id`."""
+    from urllib.parse import urlsplit
+    from xml.etree import ElementTree as ET
+    ET.register_namespace("", ATOM)
+    q = lambda tag: f"{{{ATOM}}}{tag}"
+    when = generated.tz_convert("UTC").floor("s")
+    stamp = when.isoformat().replace("+00:00", "Z")
+    feed = ET.Element(q("feed"))
+
+    def add(parent, tag, text=None, **attrs):
+        el = ET.SubElement(parent, q(tag), {k: str(v) for k, v in attrs.items()})
+        if text is not None:
+            el.text = text
+        return el
+
+    add(feed, "id", url)
+    add(feed, "title", title)
+    add(feed, "subtitle", subtitle)
+    add(feed, "updated", stamp)
+    add(feed, "link", rel="self", type="application/atom+xml", href=url)
+    add(feed, "link", rel="alternate", type="text/html", href=alternate)
+    author = add(feed, "author")
+    add(author, "name", BRAND)
+    add(author, "uri", root)
+    add(feed, "icon", f"{root}icons/icon-192.png")
+    if credits:
+        add(feed, "rights", " ".join(x for x in (credits.get("attribution"), credits.get("modified"),
+                                                 f"Full credits: {credits['full']}" if credits.get("full") else None) if x))
+    # tag: URIs (RFC 4151), from the site's host and the build's date and time: one id a spot a build.
+    host = urlsplit(root).hostname or "swimsignal.co.uk"
+    for s in entries:
+        e = add(feed, "entry")
+        add(e, "id", f"tag:{host},{when.date().isoformat()}:spot/{s['id']}/{when.strftime('%Y%m%dT%H%M%SZ')}")
+        add(e, "title", f"{s['name']} · {s['headline']}")
+        add(e, "updated", stamp)
+        add(e, "link", rel="alternate", type="text/html", href=s["url"])
+        add(e, "category", term=s["level"])
+        add(e, "summary", f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"])
+    ET.indent(feed)
+    return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
+
+
+def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
+    """feed.xml, feed/<area>.xml and spot/<id>/feed.xml from site/data/alerts.json, after the spot pages
+    (write_pages clears spot/). Without alerts.json (Node missing, or a preview) there are no feeds,
+    and none left from an earlier build. Returns the counts, or None."""
+    shutil.rmtree(site / "feed", ignore_errors=True)
+    (site / "feed.xml").unlink(missing_ok=True)
+    path = site / "data" / "alerts.json"
+    try:
+        alerts = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
+    spots = [{"id": sid, **a} for sid, a in alerts["spots"].items()]
+    area_of = {r["id"]: r.get("area") for r in results}
+    (site / "feed.xml").write_text(atom_feed(
+        f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "
+        "a new entry a spot each time the forecast is issued.", spots, generated, root, credits))
+    areas: dict[str, list[dict]] = {}
+    for s in spots:
+        if area_of.get(s["id"]):
+            areas.setdefault(area_of[s["id"]], []).append(s)
+    (site / "feed").mkdir()
+    for area, rows in areas.items():
+        (site / "feed" / f"{area_slug(area)}.xml").write_text(atom_feed(
+            f"{root}feed/{area_slug(area)}.xml", root, f"{BRAND} · {area}",
+            f"The pollution risk forecast at the swim spots in {area}.", rows, generated, root, credits))
+    n = 0
+    for s in spots:
+        if SPOT_ID.fullmatch(s["id"]) and (site / "spot" / s["id"]).is_dir():
+            (site / "spot" / s["id"] / "feed.xml").write_text(atom_feed(
+                f"{root}spot/{s['id']}/feed.xml", s["url"], f"{BRAND} · {s['name']}",
+                f"The pollution risk forecast at {s['name']}.", [s], generated, root, credits))
+            n += 1
+    return {"site": len(spots), "areas": {area_slug(a): len(r) for a, r in areas.items()}, "spots": n}
+
+
+FEEDS = "<!-- feeds -->"
+
+
+def with_feed_list(html: str, site: Path) -> str:
+    """The data page's list of the area feeds this build wrote, at its FEEDS marker."""
+    files = sorted((site / "feed").glob("*.xml")) if (site / "feed").is_dir() else []
+    items = "".join(f'<li><a href="feed/{escape(p.name)}">feed/{escape(p.name)}</a></li>' for p in files)
+    return html.replace(FEEDS, f'<ul class="feeds">{items}</ul>' if items else "", 1)
+
+
 # The app's page carries its reasons as comments, kept in the source. The built pages leave out the
 # CSS comments and the script lines that are only a comment: 22 kB of the page's 86 kB compressed on
 # 6 Oct 2026. A comment after code on the same line stays, and so does every HTML comment (the
@@ -1658,6 +1864,25 @@ def lean_page(html: str) -> str:
     return INLINE_SCRIPT.sub(lambda m: m.group(1) + js_without_comment_lines(m.group(2)) + m.group(3), html)
 
 
+# The app page's scripts, none of them blocking the first paint (docs/REVIEW-2026-10-16.md, F2: they
+# held it back 850 ms on 16 Oct 2026). In the built page every <script src> is deferred and the page's
+# own script, inline in the source, is app.js?v=<stamp>, deferred too, which the offline copy stores
+# as it does the others. Deferred scripts run in the order of their tags once the page is parsed, so
+# the order is the source's: the fourteen, then the page's script, then anypoint.js. The source keeps
+# the script inline, where the tests and scripts/prerender_spots.js read it.
+APP_SCRIPT = re.compile(r"<script>\n(const BRAND = .*?)</script>", re.S)
+SCRIPT_TAG = re.compile(r'<script src="[^"]+"(?: integrity="[^"]+")?></script>')
+
+
+def split_app_script(html: str, stamp: str) -> tuple[str, str]:
+    """The built app page with its scripts deferred, and app.js: its own script, out of the page."""
+    m = APP_SCRIPT.search(html)
+    if not m or html.count("\nconst BRAND = ") != 1:
+        raise ValueError("index.html has lost its script, which starts const BRAND = ...")
+    html = html[:m.start()] + f'<script src="app.js?v={stamp}" defer></script>' + html[m.end():]
+    return SCRIPT_TAG.sub(lambda t: t[0].replace("></script>", " defer></script>"), html), m.group(1)
+
+
 def write_pages(site: Path, results: list[dict], token: str | None = None, root: str | None = None,
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
@@ -1675,6 +1900,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
+    template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
         s = (STATIC / name).read_text()
         if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
@@ -1714,7 +1940,10 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
-    home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./"), template, count=1)
+    (site / "app.js").write_text(app_js)
+    feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
+    home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
+                                             feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
     home = home.replace(LOADING, home_lead(len(results)), 1)
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
@@ -1723,6 +1952,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "plan" / "index.html").write_text(with_counter(plan_page(template, root), token))
     (site / "data").mkdir(exist_ok=True)
     shutil.copy(PLACES, site / "data" / "places.json")   # before the data page, which lists data/
+    shutil.copy(WATERS, site / "data" / "waters.json")
     shutil.rmtree(site / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
     tops = prerender_spots(site, root)
     ids = []
@@ -1732,10 +1962,11 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
-            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None), token))
+            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/
+    write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
                                               extra=["support.html"] if support else []))
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
@@ -1820,6 +2051,40 @@ def with_data_files(html: str, data: Path) -> tuple[str, list[str]]:
     return html.replace(MORE_FILES, rows, 1), extra
 
 
+# The overflow layer cut into map tiles (docs/REVIEW-2026-10-16.md, C4): data/overflows/<x>-<y>.json, and
+# index.json naming the tiles that have any. The map asks for the tiles in view (index.html, loadOverflows)
+# rather than the whole 6.3 MB overflows.geojson, which stays for the data page and the download. Zoom 10:
+# on 16 Oct 2026 293 tiles, and a spot's view at zoom 12 needed at most 38 kB of them gzipped (the
+# median 8 kB); zoom 9's 89 tiles needed up to 92 kB. The offline copy (sw.js) stores neither.
+OVERFLOW_TILE_Z = 10
+
+
+def overflow_tile(lon: float, lat: float, z: int = OVERFLOW_TILE_Z) -> tuple[int, int]:
+    """The Web Mercator (slippy map) tile at zoom z that holds a point, as index.html's ovTile works it out."""
+    n, r = 2 ** z, math.radians(max(-85.0511, min(85.0511, lat)))
+    y = (1 - math.log(math.tan(r) + 1 / math.cos(r)) / math.pi) / 2 * n
+    return min(n - 1, max(0, math.floor((lon + 180) / 360 * n))), min(n - 1, max(0, math.floor(y)))
+
+
+def write_overflow_tiles(site: Path, geo: dict) -> int:
+    """data/overflows/: geo's features by tile, and index.json with the zoom, the tiles and the credits.
+    Returns the number of tiles."""
+    out = site / "data" / "overflows"
+    shutil.rmtree(out, ignore_errors=True)   # a tile that has lost its overflows goes
+    out.mkdir(parents=True)
+    tiles: dict[tuple[int, int], list] = {}
+    for f in geo["features"]:
+        lon, lat = f["geometry"]["coordinates"][:2]
+        if not (math.isfinite(lon) and math.isfinite(lat)):   # nowhere on the map
+            continue
+        tiles.setdefault(overflow_tile(lon, lat), []).append(f)
+    for (x, y), feats in tiles.items():
+        (out / f"{x}-{y}.json").write_text(json.dumps({"type": "FeatureCollection", "features": feats}, separators=(",", ":"), default=str))
+    (out / "index.json").write_text(json.dumps({"z": OVERFLOW_TILE_Z, "tiles": [f"{x}-{y}" for x, y in sorted(tiles)],
+                                                **({"credits": geo["credits"]} if geo.get("credits") else {})}))
+    return len(tiles)
+
+
 def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Timestamp, credits: dict) -> int:
     """data/upstream/<id>.json: every monitored overflow upstream of a spot, most reach first, with the
     fields the organisers' page lists. spots.json keeps the KEEP_CONTRIBUTORS that matter most this week,
@@ -1840,6 +2105,37 @@ def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Ti
                                                      "credits": credits}, separators=(",", ":"), default=str))
         n += 1
     return n
+
+
+# The river each spot's forecast traced upstream (src/dipcast/trace.py), drawn on its map at zoom 10 or
+# more: data/spot/<id>-trace.json, beside the spot's own file, which sw.js stores it with. `lines` are
+# encoded polylines (trace.encode); `overflows` the monitored overflows counted on them, [site_id, lat, lon].
+TRACE_MAX_BYTES = 50_000   # the review's bound (G6); Warleigh Weir, with the most overflows, is the largest
+
+
+def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                 credits: dict) -> dict:
+    """data/spot/<id>-trace.json for each spot with a traced river and an id that can be a file name.
+    Returns the number written and the largest file's size; a file over TRACE_MAX_BYTES is announced."""
+    out = site / "data" / "spot"
+    out.mkdir(parents=True, exist_ok=True)
+    n, largest = 0, (None, 0)
+    for sid, lines in traces.items():
+        if not lines or not SPOT_ID.fullmatch(str(sid)):
+            continue
+        ovs = [[o.get("site_id"), round(o["lat"], 5), round(o["lon"], 5)] for o in upstream.get(sid, [])
+               if o.get("lat") is not None and o.get("lon") is not None]
+        body = json.dumps({"id": sid, "generated_at": generated.isoformat(), "max_upstream_km": config.MAX_UPSTREAM_KM,
+                           "simplified_m": SIMPLIFY_M, "lines": lines, "overflows": ovs, "credits": credits},
+                          separators=(",", ":"), default=str)
+        (out / f"{sid}-trace.json").write_text(body)
+        n += 1
+        if len(body) > largest[1]:
+            largest = (sid, len(body))
+    if largest[1] > TRACE_MAX_BYTES:
+        announce(f"{largest[0]}'s upstream trace is {largest[1] / 1e3:.0f} kB, over {TRACE_MAX_BYTES / 1e3:.0f} kB: "
+                 "simplify it more (trace.SIMPLIFY_M)")
+    return {"written": n, "largest": largest[0], "largest_bytes": largest[1]}
 
 
 # What every view of the app loads first is spots.json without the fields only a spot's own page
@@ -1866,7 +2162,9 @@ def write_app_data(site: Path, doc: dict) -> int:
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
         lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json"})
-    (site / "data" / "spots-lite.json").write_text(json.dumps({**doc, "spots": lite}, separators=(",", ":"), default=str))
+    # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
+    (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
+                                                              separators=(",", ":"), default=str))
     return len(doc["spots"]) - sum(1 for s in lite if "detail_file" not in s)
 
 
@@ -1876,6 +2174,7 @@ def write_data_page(site: Path, token: str | None = None) -> list[str]:
     for a, b in REWRITES:
         page = page.replace(a, b)
     page, extra = with_data_files(page, site / "data")
+    page = with_feed_list(page, site)
     if extra:
         announce(f"data.html does not describe {', '.join(extra)}: listed without a description. "
                  "Add a row and a section for each to src/dipcast/api/static/data.html")
@@ -2051,7 +2350,7 @@ def build(refresh: bool = True) -> dict:
         reload_caches()
     spots = load_spots()
     prefetch_rain(spots)
-    results, upstream = [], {}
+    results, upstream, traces = [], {}, {}
     for r in spots.itertuples(index=False):
         try:
             kind, river = spot_hints(r.kind, r.river)
@@ -2062,6 +2361,10 @@ def build(refresh: bool = True) -> dict:
         except Exception as e:  # noqa: BLE001 - one bad spot must not sink the site
             log.error("%s: %s", r.name, e)
             f = {"error": f"forecast failed: {e}"}
+        try:   # the river the forecast traced, for the spot's map (write_traces)
+            traces[r.id] = spot_trace(_net(), float(r.lat), float(r.lon), r.kind, r.river, r.name)
+        except Exception as e:  # noqa: BLE001 - a map line must not sink the site
+            log.warning("%s: no upstream trace (%s)", r.name, e)
         results.append({"id": r.id, "name": r.name, "kind": r.kind, "river": _river_of(r), "source": r.source,
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
                         **({"area": r.area} if getattr(r, "area", "") else {}),   # the list's groups in A-Z
@@ -2073,8 +2376,7 @@ def build(refresh: bool = True) -> dict:
     n_classified = attach_classifications(results)
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
-    from dipcast.ingest.flows import floods_in_force_anywhere
-    any_floods = asked_now(floods_in_force_anywhere) if refresh else None
+    any_floods = asked_now(ask_flood_list) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
@@ -2154,12 +2456,15 @@ def build(refresh: bool = True) -> dict:
            "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
+    health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)
     health["upstream_files"] = write_upstream(SITE, upstream, generated, credits)
     # GeoJSON allows extra top-level members, so the credits sit beside the features.
-    (SITE / "data" / "overflows.geojson").write_text(json.dumps({**overflows_geojson(limit=20000), "credits": credits}, default=str))
+    geo = {**overflows_geojson(limit=20000), "credits": credits}
+    (SITE / "data" / "overflows.geojson").write_text(json.dumps(geo, default=str))
+    health["overflow_tiles"] = write_overflow_tiles(SITE, geo)   # what the map loads, a few tiles at a time
     if refresh:   # the run log, before verification.json reads it (forecast_log.service_record)
         from dipcast.forecast_log import log_build
         log_build(health, generated)
@@ -2192,6 +2497,10 @@ def build(refresh: bool = True) -> dict:
         # to the state directory alone; the build log gets counts and costs, no scores.
         from dipcast.scottish_shadow import run as scottish_shadow
         summary["scottish_water_shadow"] = scottish_shadow(_net())
+    if refresh:
+        # Open-Meteo calls since 00:00 UTC by every build that day, and what the ration held back.
+        from dipcast.ingest.rainfall import calls_today
+        summary["open_meteo"] = calls_today()
     log.info("site built: %s", summary)
     return summary
 

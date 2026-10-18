@@ -150,7 +150,7 @@ def test_the_page_loads_the_guide_script_from_its_build(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
     stamp = bs.shell_stamp()
-    assert f'<script src="guide.js?v={stamp}">' in (tmp_path / "index.html").read_text()
+    assert f'<script src="guide.js?v={stamp}" defer>' in (tmp_path / "index.html").read_text()
     assert (tmp_path / "guide.js").read_bytes() == (bs.TEMPLATE.parent / "guide.js").read_bytes()
     assert "`guide.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
 

@@ -174,5 +174,131 @@ def main() -> None:
         log.info("saved refit-on-all-years model -> %s", config.PROCESSED / "spill_model.pkl")
 
 
+# ---------------------------------------------------------------- nine companies
+# docs/NINE-COMPANY-MODEL-TEST-2026-10.md: train on 2024 for the nine English companies (EA start/stop
+# files), verify on 2025 per company against the current models and two baselines, check the stated
+# conditions. Writes the candidate and its tables under their own names; --deploy (only once the
+# conditions hold) makes the candidate the production model.
+NINE_TRAINED_ON = "Nine English water companies 2024 (EA start/stop files); verified on 2025"
+NINE_PATH = config.PROCESSED / "spill_model_nine_2024.pkl"
+
+
+def _frame(sites: pd.DataFrame, year: int, daily: pd.DataFrame, labels: pd.DataFrame) -> pd.DataFrame:
+    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D", tz="UTC")
+    sd = build_site_days(sites, daily, days, labels[labels["day"].dt.year == year])
+    sd = sd[sd["rain_d"].notna()].copy()
+    sd["company"] = sd["site_id"].map(dict(zip(sites["site_id"], sites["company"], strict=True)))
+    sd["year"] = year
+    return sd.astype({f: np.float32 for f in ALL_FEATURES})
+
+
+def main_nine() -> None:
+    from dipcast.model.training import (
+        NINE,
+        WELSH,
+        cells_of,
+        ece,
+        load_events,
+        load_rain,
+        site_years,
+    )
+
+    ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet")
+    ev = load_events(NINE)
+    ev_w = load_events([WELSH])
+    labels = spill_days(ev)
+    labels_w = spill_days(ev_w)
+    s24, c24 = site_years(ar, ev, NINE, 2024)
+    s25, c25 = site_years(ar, ev, NINE, 2025)
+    sw, cw = site_years(ar, ev_w, [WELSH], 2025)
+    counts = pd.concat([c24, c25, cw])
+    print("\n=== Overflow-years kept (coverage rule) ===")
+    print(counts.to_string())
+    rain = load_rain(cells_of(pd.concat([s24, s25, sw])))
+    step(f"rain loaded: {len(rain)} cell-hours")
+    daily = daily_rain_features(rain)
+    del rain
+    step("daily rain features")
+    train = _frame(s24, 2024, daily, labels)
+    test = _frame(s25, 2025, daily, labels)
+    test_w = _frame(sw, 2025, daily, labels_w)
+    del daily
+    step(f"site-days: train {len(train)}, test {len(test)}, Welsh {len(test_w)}")
+
+    m = SpillModel().fit_pooled(train, neg_frac=NEG_FRAC)
+    m.fit_site_offsets(train, recency=RECENCY)
+    m.trained_on = NINE_TRAINED_ON
+    step("candidate fitted")
+    hold = SpillModel.load(config.PROCESSED / "spill_model_holdout_2025.pkl")
+    prod = SpillModel.load()
+    flat = train.groupby("company")["y"].mean()
+    site_rate = train.groupby("site_id")["y"].mean()
+    preds = {
+        "new": m.predict(test),
+        "current hold-out": hold.predict(test),
+        "current production": prod.predict(test),
+        "company flat rate": test["company"].map(flat).to_numpy(),
+        "overflow climatology": test["site_id"].map(site_rate).fillna(test["company"].map(flat)).to_numpy(),
+        "new, pooled only": m.predict_pooled(test),
+    }
+    y = test["y"].to_numpy()
+    rows, rel = [], []
+    for comp in [*NINE, "all nine"]:
+        mask = np.ones(len(test), bool) if comp == "all nine" else (test["company"] == comp).to_numpy()
+        ref_clim = scores(y[mask], preds["overflow climatology"][mask])["brier"]
+        ref_flat = scores(y[mask], preds["company flat rate"][mask])["brier"]
+        for k, p in preds.items():
+            sc = scores(y[mask], p[mask])
+            rows.append({"company": comp, "model": k, **sc, "ece": ece(y[mask], p[mask]),
+                         "brier_skill_vs_clim": brier_skill(sc["brier"], ref_clim),
+                         "brier_skill_vs_flat": brier_skill(sc["brier"], ref_flat)})
+        for k in ("new", "current hold-out"):
+            t = reliability_table(y[mask], preds[k][mask])
+            rel.append(t.assign(company=comp, model=k))
+    res = pd.DataFrame(rows)
+    pd.set_option("display.width", 200)
+    print("\n=== 2025, per company ===")
+    print(res.drop(columns=["log_loss"]).round(4).to_string(index=False))
+
+    yw = test_w["y"].to_numpy()
+    welsh = {"rows": len(test_w), "base_rate": float(yw.mean()),
+             "new_pooled": scores(yw, m.predict_pooled(test_w))["brier"],
+             "hold_pooled": scores(yw, hold.predict_pooled(test_w))["brier"]}
+    print("\n=== Welsh test set (Dwr Cymru, England, 2025) ===", welsh)
+
+    b = res.set_index(["company", "model"])
+    cond = {1: [], 2: [], 3: []}
+    for comp in NINE:
+        new = b.loc[(comp, "new")]
+        ok1 = new.brier <= b.loc[(comp, "current hold-out")].brier
+        if comp != "United Utilities":
+            ok1 = ok1 and new.brier <= b.loc[(comp, "current production")].brier
+        cond[1].append((comp, bool(ok1)))
+        cond[2].append((comp, bool(new.brier < b.loc[(comp, "company flat rate")].brier
+                                    and new.brier < b.loc[(comp, "overflow climatology")].brier)))
+        cond[3].append((comp, bool(new.ece <= b.loc[(comp, "current hold-out")].ece or new.ece <= 0.02)))
+    c4 = welsh["new_pooled"] <= welsh["hold_pooled"]
+    print("\n=== Conditions ===")
+    for k, v in cond.items():
+        print(k, "PASS" if all(ok for _, ok in v) else "FAIL", [c for c, ok in v if not ok])
+    print(4, "PASS" if c4 else "FAIL")
+    adopt = all(ok for v in cond.values() for _, ok in v) and c4
+    print("ADOPT" if adopt else "DO NOT ADOPT")
+
+    res.to_csv(config.PROCESSED / "verification_2025_nine.csv", index=False)
+    pd.concat(rel).to_csv(config.PROCESSED / "reliability_2025_nine.csv", index=False)
+    counts.to_csv(config.PROCESSED / "coverage_nine.csv")
+    import json
+    (config.PROCESSED / "nine_welsh_check.json").write_text(json.dumps(welsh, indent=1))
+    m.save(NINE_PATH)
+    log.info("saved candidate -> %s", NINE_PATH)
+    if "--deploy" in sys.argv:
+        if not adopt:
+            log.error("--deploy refused: the stated conditions do not all hold")
+            sys.exit(1)
+        m.save()
+        log.info("saved as production model -> %s", config.PROCESSED / "spill_model.pkl")
+
+
 if __name__ == "__main__":
-    main()
+    main_nine() if "--nine" in sys.argv else main()
