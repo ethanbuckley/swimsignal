@@ -119,4 +119,63 @@ answers Ethan's question: on this data, the network gives no measurable gain ove
 
 ## Results
 
-(Nothing below this line yet.)
+### Choices the statement leaves open, fixed before any training
+
+Written 18 October 2026, before any network was trained and before any 2025 score of the challenger
+was computed. The code is `scripts/train_nn.py`. D2's 2025 scores for the boosted model were already
+published in its own Results.
+
+- **The baseline.** D2's candidate, `spill_model_nine_2024.pkl`, SHA-256 `1603678923ccdd15…`. It was
+  untracked in the D2 worktree. A copy is kept off-repo in `swimsignal-private/baselines/`.
+- **Rows.** D2's rows, built by D2's own code (`train._frame`). The script stops unless it gets
+  D2's counts: 4,976,868 training site-days, 1,569,401 in the subsample, and 5,077,150 for 2025.
+- **The 90% rule.** At least 65 of the 72 hours must be finite. It drops rows from scoring only.
+  Training rows are D2's rows as stated, so none is dropped there. How many would fall under the
+  rule is reported.
+- **The daily layer has no activation.** The statement gives ReLU to the dense layer of 32 only.
+- **Static inputs are standardized.** Each of the five is shifted and scaled by its mean and
+  standard deviation over the 2024 training rows (inner hold-out excluded). The rain inputs are
+  log(1 + mm) as stated, with no scaling.
+- **Daily totals.** D2's `rain_d` for each day. A day with fewer than 20 finite hours has an unknown
+  total. It enters as 0, which matches the boosted model's 7-day and 30-day totals, since they skip
+  such a day.
+- **Fit details.**
+  - The batch loss is the mean of weight × cross-entropy.
+  - The inner hold-out loss is Σ(weight × cross-entropy) / Σ weight, over the subsampled rows of
+    ISO weeks 4, 8, …, 52 of 2024 (ISO week of the UTC day).
+  - Training stops after 3 epochs without a strictly lower hold-out loss, and the best epoch's
+    weights are kept.
+  - Each seed sets `torch.manual_seed(seed)` for the starting weights and `default_rng(seed)` for
+    the shuffle. Training runs on the CPU.
+- **Ensemble and layer 2.** The mean of the three probabilities is clipped to [0.0001, 0.9999], as
+  `SpillModel.predict_pooled` clips. `SpillModel.fit_site_offsets` (prior 15, recency 1) is then fitted
+  on it over all 4,976,868 rows of 2024, as D2 fitted its own.
+- **Forecast rain, both models fed the same way.**
+  - For lead *k*, the hours of days *d*, *d*−1 and *d*−2 come from the forecasts issued *k*, *k*−1
+    and *k*−2 days ahead (floored at 0). This is `verify_leads.py`'s split.
+  - Every earlier day comes from ERA5-Land.
+  - The boosted model's ten rain features are computed from that same series. So its 3-, 7- and
+    30-day totals and its antecedent index include the forecast days.
+  - This differs from `verify_leads.py`. That script keeps the 7-day, 30-day and antecedent-index
+    features on ERA5-Land. Here, that would give the boosted model the observed rain of *d*, *d*−1
+    and *d*−2, which the challenger never sees. Production computes every feature from one forecast
+    series, as is done here.
+  - A missing feature becomes 0 for the boosted model, as in `verify_leads.py`. There is no
+    isotonic map.
+- **Lead rows.** D2's lead rows less the 90% rule on the ERA5-Land window. Then, at each lead, rows
+  whose day-*d* forecast total is known (`verify_leads.py`'s rule) and whose 72-hour forecast
+  window passes the 90% rule. Both models are scored on the same rows at each lead.
+- **Bootstrap.** Weeks are ISO (year, week) of the UTC day. One set of 2,000 draws of weeks, from
+  `default_rng(0)`, serves every company and every lead. The interval is the 2.5th to 97.5th
+  percentile.
+- **Condition 5.** Only finite hours are changed; a missing hour stays missing. "Lowers" means any
+  decrease in the challenger's final probability, with its layer 2.
+- **Condition 6.**
+  - The file is the live site's `data/overflows.geojson` (swimsignal.co.uk, last modified 18 Oct
+    2026 06:22 GMT).
+  - The inputs have that shape, drawn from 2025 rows.
+  - The timing covers the three networks' forward passes and their mean. Cutting the windows is not
+    timed.
+- **Size.** The stated layers have 5,681 weights, not "about 10,000". That number was an estimate.
+  The layers are as stated.
+- **Software.** `uv` resolved `torch>=2.4` to PyTorch 2.14.1.
