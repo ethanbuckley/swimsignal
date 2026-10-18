@@ -154,6 +154,14 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
     # can shift each overflow's observed spill days as the forecast shifted its chances
     # (docs/PREREGISTRATION-2027.md, amendment 1; transport.shift_by_travel).
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS travel_h DOUBLE")
+    # Added 18 Oct 2026: the ensemble rain's members (review task D4, docs/ENSEMBLE-RAIN-TEST-2026-11.md), one
+    # value a member: each overflow's calibrated spill chance and the day's rain at its cell, and the spot's
+    # risk; when the members were fetched. NULL where the build had no members. 4-byte floats, to keep the
+    # log small: the test's sanity check allows for it.
+    con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS p_cal_members FLOAT[]")
+    con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_members FLOAT[]")
+    con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS risk_members FLOAT[]")
+    con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS ens_issued_at TIMESTAMPTZ")
     # Added 4 Oct 2026: the run log (log_build). `failed` holds why a build did not publish, else NULL.
     con.execute("""
         CREATE TABLE IF NOT EXISTS build_runs (
@@ -163,16 +171,24 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
     return con
 
 
+POINT_COLUMNS = ("issued_at", "lat", "lon", "mode", "watercourse", "now_risk", "target_day", "lead", "risk", "p_ecoli",
+                 "rain_48h", "version", "risk_members", "ens_issued_at")
+OVERFLOW_COLUMNS = ("issued_at", "issue_day", "lat", "lon", "site_id", "has_live", "target_day", "lead", "p_raw", "p_cal",
+                    "weight", "rain_available", "version", "rain_mm", "travel_h", "p_cal_members", "rain_members")
+
+
 def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, watercourse: str | None,
                  now_risk: float, days: pd.DatetimeIndex, risk: np.ndarray,
                  ov: pd.DataFrame, p_raw: np.ndarray, p_cal: np.ndarray,
                  p_ecoli: np.ndarray | None = None, rain_48h: np.ndarray | None = None,
                  available: np.ndarray | None = None, version: str | None = None,
-                 rain_mm: np.ndarray | None = None) -> None:
+                 rain_mm: np.ndarray | None = None, members: dict | None = None) -> None:
     """Append one forecast. `days` may start before today (history for travel time);
     only leads >= 0 are logged. `p_ecoli` and `rain_48h` are aligned with `days` (NaN
     where unavailable); `available` is the (n_overflows, n_days) rain-data mask and
-    `rain_mm` the day's rain at each overflow's cell, same shape."""
+    `rain_mm` the day's rain at each overflow's cell, same shape. `members` is
+    forecast.ensemble_members' result: its "p" and "rain" are (members, n_overflows, n_days),
+    its "risk" (members, n_days), NaN logged as NULL inside the list."""
     issue_day = issued_at.tz_convert(LOCAL_TZ).date()
     pts, rows = [], []
 
@@ -181,6 +197,11 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
             return None
         return float(arr[j])
 
+    def _m(arr) -> list | None:   # one value per member, None for NaN; the list None without members
+        return None if arr is None else [None if np.isnan(v) else round(float(v), 5) for v in arr]
+
+    ens_at = None if members is None or pd.isna(members.get("issued_at")) else members["issued_at"]
+
     travel = ([None if pd.isna(t) else float(t) for t in ov["travel_h"]] if len(ov) and "travel_h" in ov
               else [None] * len(ov))
     for j, d in enumerate(days):
@@ -188,20 +209,25 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
         if lead < 0:
             continue
         pts.append((issued_at, lat, lon, mode, watercourse, float(now_risk), d.date(), lead,
-                    None if np.isnan(risk[j]) else float(risk[j]), _f(p_ecoli, j), _f(rain_48h, j), version))
+                    None if np.isnan(risk[j]) else float(risk[j]), _f(p_ecoli, j), _f(rain_48h, j), version,
+                    _m(None if members is None else members["risk"][:, j]), ens_at))
         if len(ov):
             for i, sid in enumerate(ov["site_id"].to_numpy()):
                 ok = True if available is None else bool(available[i, j])
                 rain = None if rain_mm is None or np.isnan(rain_mm[i, j]) else float(rain_mm[i, j])
                 rows.append((issued_at, issue_day, lat, lon, str(sid), bool(ov["has_live"].iloc[i]),
                              d.date(), lead, float(p_raw[i, j]), float(p_cal[i, j]), float(ov["weight"].iloc[i]), ok, version, rain,
-                             travel[i]))
+                             travel[i], _m(None if members is None else members["p"][:, i, j]),
+                             _m(None if members is None else members["rain"][:, i, j])))
+    # By name, so a column added later (as the members were, 18 Oct 2026) never shifts the others.
     with _LOCK:
         con = _conn()
         try:
-            con.executemany("INSERT INTO forecast_points VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", pts)
+            con.executemany(f"INSERT INTO forecast_points ({', '.join(POINT_COLUMNS)}) "
+                            f"VALUES ({', '.join('?' * len(POINT_COLUMNS))})", pts)
             if rows:
-                con.executemany("INSERT INTO forecast_overflows VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
+                con.executemany(f"INSERT INTO forecast_overflows ({', '.join(OVERFLOW_COLUMNS)}) "
+                                f"VALUES ({', '.join('?' * len(OVERFLOW_COLUMNS))})", rows)
         finally:
             con.close()
 

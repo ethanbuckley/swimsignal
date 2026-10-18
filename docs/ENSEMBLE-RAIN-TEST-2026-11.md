@@ -92,14 +92,18 @@ scored once it has passed.
   of the fifth local day. MOGREPS-UK runs reach 126 hours, so one refresh after local midnight covers
   the whole day. That is about two refreshes a day: 664 calls.
 - At most 1,000 ensemble calls in a UTC day (three refreshes), booked as `ensemble` in the ledger.
-- In each build the ensemble is asked for after the spots' own forecast, and only if at least 1,500
-  of the day's 9,000 would be left after it. A request held back is booked under `held`.
-- At the measured rate (2,173 calls in the first 12 hours of 18 Oct), two refreshes take the day to
-  about 5,000. At the ceiling PR #243 planned for, a build every 30 minutes (about 8,600 a day), two
-  refreshes would take it to about 9,260. The 1,500 reserve does not stop that: the noon refresh
-  still leaves about 4,000. The ration would then hold back about 260 calls in the last builds of
-  the UTC day, and those cells would use their cached forecast (up to 24 hours old for the spots).
+- In each build the ensemble is asked for after the spots' own forecast, and only from spare calls.
+  After the request, what is left of the day's 9,000 must still cover the others' planned use for
+  the rest of the UTC day: 8,750 a day (the most the other users ask for at a build every 30
+  minutes, `tests/test_open_meteo_ration.py`), spread evenly over the day.
+- At that planned ceiling, no ensemble request is made, and none is held from the others. At the
+  measured rate (2,173 calls in the first 12 hours of 18 Oct, about three builds), the first request
+  of a UTC day usually waits for the second build, and two refreshes take the day to about 5,000.
   Builds have run a median 2.9 hours apart (site.yml), so the ceiling has not been reached.
+- **Amended 18 Oct, before any code ran.** The first version of this statement (`e460af5`) kept a
+  fixed reserve of 1,500 calls instead. That would have let the ensemble take a ceiling day to about
+  9,400 and so hold back about 400 of the spots' and the map's calls in the day's last builds. The
+  pace rule replaces it. No condition changed.
 - The build log gains `open_meteo_requests`: the requests made by that build, retries included.
   With the ensemble it should be about 26. Over 40 is a build warning.
 - An ensemble request that fails, or that the rules hold back, uses the cell's cached members if they
@@ -123,7 +127,9 @@ scored once it has passed.
 **What the page shows.** A thin line across the bar of days 3, 4 and 5, from the lowest member's
 risk to the highest, on the same scale as the bar. It is drawn only where the bar is placed by the
 sewage spill risk. Where the E. coli estimate, a poor rating or algae sets the level, the band would
-describe something the bar does not show, so it is left off. A screen reader hears the range in words.
+describe something the bar does not show, so it is left off. Where the three agree to within 2% of
+the bar's length, there is no line. A screen reader hears the range in words. The data is each day's
+`band` in `spots.json`, `{"low", "high"}`, on all five days.
 The Method page gains one paragraph saying what the line is and that it is under test.
 
 **What is logged.**

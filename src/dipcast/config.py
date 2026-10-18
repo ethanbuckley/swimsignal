@@ -94,6 +94,11 @@ OPEN_METEO_FORECAST = "https://api.open-meteo.com/v1/forecast"
 RAIN_GRID_DEG = 0.1
 FORECAST_DAYS = 5
 FORECAST_PAST_DAYS = 31   # enough history for the 30-day and API features
+# Ensemble rain for the listed spots (review task D4, docs/ENSEMBLE-RAIN-TEST-2026-11.md): the Met Office's
+# MOGREPS-UK at 2 km, as Open-Meteo serves it, the control and two perturbed members, to 126 hours.
+OPEN_METEO_ENSEMBLE = "https://ensemble-api.open-meteo.com/v1/ensemble"
+ENSEMBLE_MODEL = "ukmo_uk_ensemble_2km"
+ENSEMBLE_MEMBERS = 3
 
 # ---------------------------------------------------------------------------
 # River flow: Environment Agency hydrology API (qualified, lagged) and

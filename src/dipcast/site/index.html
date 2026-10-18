@@ -488,6 +488,7 @@
   .dbar i { position:absolute; left:0; top:0; bottom:0; background:var(--unknown); }
   .drow.low .dbar i { background:var(--low); } .drow.moderate .dbar i { background:var(--moderate); } .drow.high .dbar i { background:var(--high); } .drow.veryhigh .dbar i { background:var(--veryhigh); }
   .drow.rain .dbar i { background:var(--rain); opacity:.85; }
+  .dbar .band { position:absolute; top:2px; height:2px; background:var(--ink); }   /* the rain forecasts' range (bandPlace) */
   /* Yesterday's row, between midnight and the next build: grey, and its word wider than "Today". */
   .drows.with-past .drow { grid-template-columns:84px 96px minmax(0, 1fr); }
   .drow.past .d, .drow.past .l { color:var(--faint); } .drow.past .dbar i { background:var(--unknown); }
@@ -1696,6 +1697,20 @@ function levelPlace(d, x) {
   const r = rank(risk(d, x).level);
   return r < 0 ? p : Math.min((r + 1) / 4, Math.max(r / 4, p));
 }
+// The rain forecasts' band on days 3 to 5 (review task D4, docs/ENSEMBLE-RAIN-TEST-2026-11.md): the lowest and
+// highest sewage spill risk from three Met Office ensemble rain forecasts (forecast.py, `band`), a thin line on
+// the bar's own scale. Only where the bar is placed by the spill risk: where the E. coli estimate, a rating or
+// algae place it, the line would describe something the bar does not show. Nothing where the three agree to
+// within 2% of the bar. Display only, while the test runs: no words but a screen reader's, no level, no alert.
+const BAND_FROM = 2;   // the first two rows are today and tomorrow
+const SPILL_EDGES = [0, ...SPILL_CUTS, 1];
+const bandPlace = (d, x, i) => { const b = x.band;
+  if (i < BAND_FROM || !b || !hasData(x) || nil(b.low) || nil(b.high) || levelPlace(d, x) !== inBand(x.risk, SPILL_EDGES)) return null;
+  const lo = inBand(b.low, SPILL_EDGES), hi = inBand(b.high, SPILL_EDGES);
+  return hi - lo >= 0.02 ? { lo, hi } : null; };
+const spillWord = v => ['low', 'moderate', 'high', 'very high'][SPILL_CUTS.filter(c => v >= c).length];
+const bandSaid = b => { const a = spillWord(b.low), z = spillWord(b.high);
+  return `Three Met Office rain forecasts give ${a === z ? `${a} risk` : `${a} to ${z} risk`}.`; };
 // The five days as Apple's ten-day rows: the day, its level, its bar. Where nothing upstream can spill,
 // the rain in the 48 h to midday, as the list's week shows it. A day you can pick is a button: it opens
 // the day under the rows (showDay).
@@ -1704,11 +1719,13 @@ function levelPlace(d, x) {
 const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1);
   return `<div class="drows${past.length ? ' with-past' : ''}"${on ? ' id="day-strip" role="group" aria-label="Pick a day"' : ''}>` + [...past, ...d.days.slice(0, 5)].map(x => {
     const gone = past.includes(x), lv = on ? risk(d, x).level : null, rain = nil(x.rain_48h_mm) ? null : x.rain_48h_mm, tag = on && !gone ? 'button' : 'div';
-    const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40);
+    const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40), band = on && !gone ? bandPlace(d, x, d.days.indexOf(x)) : null;
     const attrs = tag === 'button' ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
     return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="d">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
       + `<span class="l">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}</span>`
-      + `<span class="dbar${on ? ' lv' : ''}" aria-hidden="true"><i style="width:${Math.max(on ? 3 : 2, Math.round(v * 100))}%"></i></span></${tag}>`; }).join('') + '</div>'; };
+      + `<span class="dbar${on ? ' lv' : ''}" aria-hidden="true"><i style="width:${Math.max(on ? 3 : 2, Math.round(v * 100))}%"></i>`
+      + (band ? `<b class="band" style="left:${(band.lo * 100).toFixed(1)}%;width:${((band.hi - band.lo) * 100).toFixed(1)}%"></b>` : '')
+      + `</span>${band ? `<span class="sr">${bandSaid(x.band)}</span>` : ''}</${tag}>`; }).join('') + '</div>'; };
 // The drawings. A scale: its bands as steps, the value a dot in its level's colour (Apple's UV tile,
 // stepped, since the bands are). A range: the river's usual range, today's level a dot on it.
 const scaleBar = (v, cuts, lv, label) => { const e = [0, ...cuts, 1];
