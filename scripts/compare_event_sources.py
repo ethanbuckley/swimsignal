@@ -4,9 +4,10 @@ docs/NINE-COMPANY-MODEL-TEST-2026-10.md compared United Utilities' Stream and EA
 
     uv run python scripts/compare_event_sources.py A.parquet B.parquet --year 2024 [--months 1-12] [--id-a COLUMN]
 
-Both files in the edm_events columns. Prints events and overflows in each, how many overflow ids are
-in both, and the spill-days shared, only in A and only in B, first over all ids and then over the ids
-in both (so an overflow one file lacks does not count as disagreement on days). --months limits both
+Both files in the edm_events columns. Prints the events starting in the window, the overflows with a
+spill-day in it, how many overflow ids are in both, and the spill-days shared, only in A and only in
+B, first over all ids and then over the ids in both (so an overflow one file lacks does not count as
+disagreement on days). --months limits both
 to the months one file covers; --id-a reads A's overflow id from another column (rows where it is empty
 are dropped), as for the Thames alerts' grid-only ids. No model is run.
 """
@@ -24,9 +25,11 @@ def days_of(path: str, year: int, months: tuple[int, int], id_col: str = "site_i
     ev = pd.read_parquet(path)
     if id_col != "site_id":
         ev = ev.dropna(subset=[id_col]).assign(site_id=lambda d: d[id_col])
-    ev = ev[(ev["event_start"].dt.year == year) & ev["event_start"].dt.month.between(*months)]
+    # Days from every event, then the window: an event that runs over New Year starts in December in a
+    # continuous record but on 1 January in the EA's calendar-year files.
     d = spill_days(ev)
     d = d[(d["day"].dt.year == year) & d["day"].dt.month.between(*months)]
+    ev = ev[(ev["event_start"].dt.year == year) & ev["event_start"].dt.month.between(*months)]
     return ev, d
 
 
@@ -48,7 +51,7 @@ def main() -> None:
     months = tuple(int(x) for x in args.months.split("-"))
     ev_a, a = days_of(args.a, args.year, months, args.id_a)
     ev_b, b = days_of(args.b, args.year, months)
-    ids_a, ids_b = set(ev_a["site_id"]), set(ev_b["site_id"])
+    ids_a, ids_b = set(a["site_id"]), set(b["site_id"])
     both = ids_a & ids_b
     print(f"A {args.a}: {len(ev_a):,} events, {len(ids_a):,} overflows, {len(a):,} spill-days")
     print(f"B {args.b}: {len(ev_b):,} events, {len(ids_b):,} overflows, {len(b):,} spill-days")

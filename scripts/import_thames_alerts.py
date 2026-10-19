@@ -3,7 +3,11 @@ the API gives them in data/processed/thames_alerts.parquet, and as one row per d
 data/processed/api_events_thames_water.parquet (the edm_events columns, plus location, permit, site_id_grid,
 site_id_events and id_by). Off CI, run by hand (about 1,700 requests, under an hour):
 
-    uv run python scripts/import_thames_alerts.py
+    uv run python scripts/import_thames_alerts.py [--refill]
+
+The API sometimes answers a throttled request with no items, which looks like a day with no alerts
+(thames_alerts module note). --refill asks again for every empty day of the months already cached
+before reading them; run it twice, at least 30 minutes apart, and a day still empty is taken as quiet.
 
 The API names a location by permit, name and grid reference, not by the annual returns' id. Each location
 gets that id two ways, kept apart so either can be checked against the other:
@@ -18,7 +22,9 @@ Credit: thames_alerts.CREDIT. Nothing here trains or scores the model, and nothi
 
 from __future__ import annotations
 
+import argparse
 import logging
+from datetime import UTC, date, datetime
 
 import numpy as np
 import pandas as pd
@@ -27,7 +33,13 @@ from scipy.spatial import cKDTree
 from dipcast import config
 from dipcast.ingest.common import write_parquet
 from dipcast.ingest.edm_events import COLS, crosswalk_by_events
-from dipcast.ingest.thames_alerts import alerts_to_events, fetch_alerts
+from dipcast.ingest.thames_alerts import (
+    FIRST_DAY,
+    RAW_CACHE,
+    alerts_to_events,
+    fetch_alerts,
+    refill_empty_days,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -46,6 +58,16 @@ def by_grid(locations: pd.DataFrame, ar: pd.DataFrame) -> pd.Series:
 
 
 def main() -> None:
+    p = argparse.ArgumentParser()
+    p.add_argument("--refill", action="store_true", help="ask again for the empty days of cached months first")
+    args = p.parse_args()
+    if args.refill:
+        today = datetime.now(UTC).date()
+        y, m = FIRST_DAY.year, FIRST_DAY.month
+        while date(y, m, 1) < today.replace(day=1):
+            if (RAW_CACHE / f"{y}-{m:02d}.parquet").exists():
+                refill_empty_days(y, m)
+            y, m = (y + 1, 1) if m == 12 else (y, m + 1)
     al = fetch_alerts()
     write_parquet(al.drop(columns="time"), config.PROCESSED / "thames_alerts.parquet")
     ev = alerts_to_events(al)
