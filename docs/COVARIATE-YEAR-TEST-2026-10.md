@@ -380,3 +380,12 @@ year scored. The code is `scripts/test_covariate_year.py`.
 - **The D2 check.** The largest difference between F25's A and D2's candidate, in any forecast on 2025,
   is reported.
 - **Software.** scikit-learn 1.9.1, pandas 3.0.5, SciPy 1.18.1.
+
+### Training log, pushed before any judged year was scored
+
+- All six models ran their full 300 iterations, in 6 to 18 seconds each (`-training.csv`).
+- Layer 2 gave 3,844 offsets in F24 and 13,598 in F25.
+- The models are off-repo in `swimsignal-private/baselines/covariate_year/`. Their SHA-256 prefixes:
+  - F24: A `ee0671fc8fd0`, R2 `085aa5cb7d59`, R1 `d1be3c4b53be`;
+  - F25: A `0bebcd97aef6`, R2 `b753f0b50c7b`, R1 `8123175a6e05`.
+- Question 1a had already been run, from returns and rain only (`-rain.csv`, below).
