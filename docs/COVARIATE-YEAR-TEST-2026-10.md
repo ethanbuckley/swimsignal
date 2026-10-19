@@ -389,3 +389,184 @@ year scored. The code is `scripts/test_covariate_year.py`.
   - F24: A `ee0671fc8fd0`, R2 `085aa5cb7d59`, R1 `d1be3c4b53be`;
   - F25: A `0bebcd97aef6`, R2 `b753f0b50c7b`, R1 `8123175a6e05`.
 - Question 1a had already been run, from returns and rain only (`-rain.csv`, below).
+
+### The answers
+
+1. **Do the covariates carry their return year's wetness into the forecasts? No, as stated.**
+   - 1a passes. In 17 of the 18 pairs, the change in spill hours has the sign of the change in
+     rain. Spearman's ρ is 0.95.
+   - 1b fails. The predicted sign of the forecast shift held at 7 of 9 company-folds, and 8 were
+     needed. The two misses, F25's Severn Trent (+0.31) and United Utilities (−0.26), are the two
+     smallest predicted shifts.
+2. **Does R2 fix it? No, as stated.**
+   - Conditions 1 and 2 pass. Over both folds, R2 − A is −0.00099 [−0.00137, −0.00063].
+   - Conditions 3 and 4 fail, both at Southern in 2025. There R2 − A is +0.00108 [+0.00048,
+     +0.00180], and R2's ECE is 0.0213 against A's 0.0110.
+   - R1, reported as an observation, passes all four: −0.00085 [−0.00121, −0.00052] over both folds.
+     As stated, that cannot make the answer yes.
+
+### The run
+
+Run 19 October 2026 on this Mac. The statement was pushed at `74138ab`, the script and the choices
+above at `10bc3b8`, and the training log at `d7f34df`, before either judged year was scored. The
+script did not change after `10bc3b8`. The logs are `logs/*_covyear_2026-10-19.log` in the worktree
+(not committed). No other evaluation or build ran.
+
+- **Rows.** Every count check passed, and no row lacked rain.
+
+  | Fold | Company | Training site-days | Training base rate | Judged site-days | Judged base rate |
+  |---|---|---|---|---|---|
+  | F24 | United Utilities | 691,675 | 0.119 | 804,834 | 0.096 |
+  | F24 | Northumbrian | 352,590 | 0.077 | 501,420 | 0.068 |
+  | F24 | Wessex | 358,795 | 0.092 | 472,506 | 0.094 |
+  | F25 | the nine | 4,976,868 | 0.087 | 5,077,150 | 0.057 |
+
+  - F24's training rows equal PR #259's 2023 rows at each company.
+  - F24's judged rows equal D2's 2024 rows at the three companies.
+  - F25's rows equal D2's.
+- **The context row's older return lacks many overflows.** In F24, 1,381 of 4,860 judged overflows
+  have no value for some covariate in the 2022 return. In F25, 1,110 of 13,910 lack one in the 2023
+  return. They take company medians.
+- **Question 1a** (`-rain.csv`). Mean calendar-year rain fell from 2024 to 2025 at all ten
+  companies, by 129 to 274 mm. Median spill hours fell at all ten too. The one pair that disagrees is
+  Northumbrian 2023-24: spill hours +0.02 log units, rain −17 mm.
+- **D2 check.** F25's A gives the same forecast as D2's candidate on every 2025 row: the largest
+  difference is 0.
+
+### Scores on the judged years, ERA5-Land rain
+
+Brier, with ECE in brackets for A and R2. Mean forecast is with layer 2.
+
+| Fold | Company | Rows | Base rate | Mean forecast A / R2 | A | R2 | R1 | A, training-year return |
+|---|---|---|---|---|---|---|---|---|
+| F24 | United Utilities | 804,834 | 0.0959 | 0.1279 / 0.1000 | 0.0667 (0.032) | **0.0618** (0.008) | 0.0625 | 0.0632 |
+| F24 | Northumbrian | 501,420 | 0.0677 | 0.0635 / 0.0574 | 0.0448 (0.008) | **0.0440** (0.013) | 0.0439 | 0.0499 |
+| F24 | Wessex | 472,506 | 0.0944 | 0.0857 / 0.0826 | 0.0554 (0.010) | **0.0543** (0.015) | 0.0548 | 0.0606 |
+| F24 | **the three** | 1,778,760 | 0.0876 | 0.0985 / 0.0834 | 0.0575 (0.011) | **0.0548** (0.010) | 0.0552 | 0.0588 |
+| F25 | Anglian | 512,825 | 0.0331 | 0.0438 / 0.0434 | 0.0272 (0.011) | **0.0270** (0.010) | 0.0271 | 0.0262 |
+| F25 | Northumbrian | 562,100 | 0.0505 | 0.0508 / 0.0527 | 0.0332 (0.003) | **0.0329** (0.003) | 0.0336 | 0.0348 |
+| F25 | Severn Trent | 880,380 | 0.0417 | 0.0462 / 0.0522 | 0.0284 (0.005) | **0.0284** (0.011) | 0.0282 | 0.0286 |
+| F25 | South West | 493,845 | 0.0938 | 0.1032 / 0.1022 | 0.0519 (0.009) | **0.0509** (0.008) | 0.0501 | 0.0523 |
+| F25 | Southern | 343,465 | 0.0444 | 0.0554 / 0.0658 | **0.0277** (0.011) | 0.0288 (0.021) | 0.0276 | 0.0276 |
+| F25 | Thames | 209,875 | 0.0429 | 0.0669 / 0.0520 | 0.0303 (0.024) | **0.0296** (0.009) | 0.0294 | 0.0281 |
+| F25 | United Utilities | 825,995 | 0.0746 | 0.0921 / 0.0880 | 0.0456 (0.018) | **0.0449** (0.013) | 0.0457 | 0.0459 |
+| F25 | Wessex | 467,565 | 0.0525 | 0.0661 / 0.0641 | 0.0326 (0.014) | **0.0322** (0.012) | 0.0322 | 0.0319 |
+| F25 | Yorkshire | 781,100 | 0.0667 | 0.0622 / 0.0597 | 0.0403 (0.005) | **0.0396** (0.007) | 0.0396 | 0.0403 |
+| F25 | **the nine** | 5,077,150 | 0.0573 | 0.0653 / 0.0652 | 0.0362 (0.008) | **0.0358** (0.008) | 0.0358 | 0.0362 |
+| | **both folds** | 6,855,910 | 0.0651 | 0.0739 / 0.0699 | 0.0417 (0.009) | **0.0407** (0.005) | 0.0408 | 0.0420 |
+
+Bold marks the better of A and R2 at five decimals. Paired differences in Brier, first minus second,
+with 95% week-cluster intervals (2,000 draws over 105 ISO weeks):
+
+| Fold | Company | R2 − A (deciding) | R1 − A | A, training-year return − A |
+|---|---|---|---|---|
+| F24 | United Utilities | −0.00483 [−0.00636, −0.00335] | −0.00412 [−0.00549, −0.00287] | −0.00348 [−0.00567, −0.00142] |
+| F24 | Northumbrian | −0.00086 [−0.00169, +0.00009] | −0.00096 [−0.00175, −0.00004] | +0.00512 [+0.00314, +0.00728] |
+| F24 | Wessex | −0.00108 [−0.00275, +0.00067] | −0.00055 [−0.00199, +0.00093] | +0.00526 [+0.00199, +0.00885] |
+| F24 | **the three** | −0.00272 [−0.00368, −0.00170] | −0.00228 [−0.00308, −0.00149] | +0.00127 [−0.00056, +0.00326] |
+| F25 | Anglian | −0.00026 [−0.00076, +0.00020] | −0.00013 [−0.00047, +0.00022] | −0.00107 [−0.00154, −0.00063] |
+| F25 | Northumbrian | −0.00037 [−0.00083, +0.00002] | +0.00034 [−0.00032, +0.00101] | +0.00152 [+0.00089, +0.00223] |
+| F25 | Severn Trent | −0.00005 [−0.00069, +0.00043] | −0.00018 [−0.00080, +0.00035] | +0.00014 [−0.00018, +0.00056] |
+| F25 | South West | −0.00100 [−0.00153, −0.00046] | −0.00176 [−0.00258, −0.00098] | +0.00043 [−0.00008, +0.00101] |
+| F25 | Southern | **+0.00108 [+0.00048, +0.00180]** | −0.00013 [−0.00055, +0.00033] | −0.00016 [−0.00047, +0.00016] |
+| F25 | Thames | −0.00069 [−0.00226, +0.00112] | −0.00092 [−0.00231, +0.00060] | −0.00222 [−0.00345, −0.00104] |
+| F25 | United Utilities | −0.00071 [−0.00126, −0.00019] | +0.00007 [−0.00064, +0.00081] | +0.00033 [−0.00019, +0.00097] |
+| F25 | Wessex | −0.00037 [−0.00110, +0.00029] | −0.00040 [−0.00102, +0.00016] | −0.00069 [−0.00107, −0.00036] |
+| F25 | Yorkshire | −0.00067 [−0.00113, −0.00028] | −0.00069 [−0.00132, −0.00011] | +0.00003 [−0.00032, +0.00041] |
+| F25 | **the nine** | −0.00038 [−0.00066, −0.00010] | −0.00035 [−0.00067, −0.00006] | +0.00002 [−0.00024, +0.00032] |
+| | **both folds** | −0.00099 [−0.00137, −0.00063] | −0.00085 [−0.00121, −0.00052] | +0.00034 [−0.00016, +0.00093] |
+
+Layer 1 alone, over both folds: A 0.04201, R2 0.04105, R1 0.04104. All tables are in `-scores.csv`,
+`-differences.csv`, `-reliability.csv`, `-shifts.csv`, `-rain.csv` and `-checks.json`.
+
+### Question 1: the conditions
+
+**1a. The level follows the weather: PASS.** 17 of 18 pairs agree in sign; 14 were needed.
+Spearman's ρ is 0.950 over the 18. As stated, the pairs share their weather, so this is a reading
+rule, not a significance test.
+
+**1b. The level moves the forecast: FAIL.** 7 of 9 predicted signs held; 8 were needed.
+
+| Fold | Company | Spill-hours shift | Predicted sign | s_c = mean A − mean R2 | Held |
+|---|---|---|---|---|---|
+| F24 | United Utilities | +0.832 | + | +0.0278 | yes |
+| F24 | Northumbrian | +0.899 | + | +0.0061 | yes |
+| F24 | Wessex | +0.989 | + | +0.0031 | yes |
+| F25 | Anglian | +0.929 | + | +0.0005 | yes |
+| F25 | Severn Trent | +0.308 | + | −0.0060 | **no** |
+| F25 | Southern | −0.358 | − | −0.0104 | yes |
+| F25 | Thames | +0.892 | + | +0.0149 | yes |
+| F25 | United Utilities | −0.263 | − | +0.0041 | **no** |
+| F25 | Wessex | +0.276 | + | +0.0019 | yes |
+
+No sign was predicted at F25's Northumbrian (s_c −0.0019), South West (+0.0010) or Yorkshire
+(+0.0025).
+
+**The answer to question 1 is no, as stated.** 1a holds and 1b does not.
+
+### Question 2: the conditions (R2 against A)
+
+1. **A real gain overall: PASS.** 0.04071 against 0.04169; −0.00099 [−0.00137, −0.00063].
+2. **Neither fold clearly worse: PASS.** F24 −0.00272 [−0.00368, −0.00170]; F25 −0.00038 [−0.00066,
+   −0.00010]. Both lie below zero.
+3. **No company clearly worse: FAIL** at Southern 2025, +0.00108 [+0.00048, +0.00180]. No other
+   company-fold's interval lies above zero.
+4. **Reliability: FAIL** at Southern 2025. R2's ECE is 0.0213, against A's 0.0110, and over the 0.02
+   allowance. It passes at the other 11.
+
+**The answer to question 2 is no, as stated.**
+
+**R1, the observation**, passes all four:
+1. −0.00085 [−0.00121, −0.00052];
+2. F24 −0.00228 [−0.00308, −0.00149], F25 −0.00035 [−0.00067, −0.00006];
+3. no company-fold's interval lies above zero;
+4. its ECE is no higher than A's, or at most 0.02, at all 12.
+
+The statement says R1's result cannot make the answer yes.
+
+### Observations, not tested and not grounds for any change
+
+- **Where both covariates moved the same way by a lot, A's forecast moved with them, and it was the
+  wrong way.**
+  - *Measured:*
+    - F24 United Utilities (shift +0.83): A's mean forecast was 0.128 against 0.096 observed. R2's
+      was 0.100.
+    - F25 Thames (+0.89): A 0.067, R2 0.052, observed 0.043. A's ECE there, 0.024, is the failure
+      D2 recorded.
+  - *Inferred:* this is the effect PR #259 saw on 2023, here in the other direction.
+- **Where the shift was small, the two forms differed for some other reason.** At F25's Severn Trent
+  (+0.31) and United Utilities (−0.26), s_c had the wrong sign. *Inferred:* removing company levels
+  changes the fitted function, and that change is as large as what a shift of about 0.3 log units
+  does. The 0.25 threshold was too low for 1b to read the shift alone.
+- **At Southern the raw level pointed the right way.**
+  - *Measured:*
+    - Southern's median spill hours fell 0.36 log units from the 2023 to the 2024 return.
+    - Its 2025 rain was 215 mm below 2024's (`-rain.csv`).
+    - A forecast 0.055 and R2 0.066, against 0.044 observed. A was already too high, and R2 raised
+      it further.
+    - In every reliability bin from 0.1 up, fewer of R2's site-days spilled than A's. In the 0.4 to
+      0.5 bin, 31.0% of R2's spilled against 37.2% of A's, for forecasts averaging 0.448.
+  - *Inferred:* a return's level carries its own year's wetness. When the next year moves the same
+    way, as at Southern, that carry-over helps the raw model. When it reverses, as at Thames and at
+    United Utilities in F24, it hurts. R2 assumes no carry-over. Over these 12 company-folds, R2's
+    Brier is lower at 11, but the effect is not simply an error.
+- **Using the training year's return is not a fix.** It was worse than A at F24's Northumbrian and
+  Wessex (+0.00512, +0.00526), and level over both folds (+0.00034 [−0.00016, +0.00093]). Many
+  overflows lack a value in the older return (above). So it mixes stale values with company medians.
+- **No cost of removing company levels showed in layer 1.** R2's pooled layer alone scored 0.04105
+  against A's 0.04201 over both folds. It was slightly worse than A's at Anglian, Severn Trent,
+  Southern and Thames in 2025, by 0.00014 to 0.00103.
+- **Every form forecast 2025 too high.** Over the nine, A's mean forecast was 0.0653 against 0.0573
+  observed. R2 and R1 were at 0.0652 and 0.0666. *Inferred:* this is D2's carry-over of 2024's
+  offsets, which no covariate form here touches.
+- **F24's gain is mostly United Utilities.** There R2 − A is −0.00483. At Northumbrian and Wessex
+  it is −0.00086 and −0.00108, and both intervals include zero.
+
+### What follows
+
+- Nothing is deployed. `spill_model.pkl` and `lead_calibration.json` are unchanged.
+- **F26 runs as stated** once the 2026 files are out, whatever F24 and F25 found. Its conditions are
+  for R2.
+- **R1 passed every condition of question 2.** But it was the observation, so this is not a yes.
+  Making R1 the decider would be a new test. It would have to be stated before the 2026 files are
+  read, and judged on 2026. That is Ethan's decision.
