@@ -359,3 +359,167 @@ model trained, and no 2023 score computed. The code is `scripts/train_multi_year
 - **Condition 5.** It is checked on the scored rows of the three deciding companies.
 - **Also reported, as observations.** Layer-1-only scores for every model, and each seed of B alone.
 - **Software.** PyTorch 2.14.1, from the `nn` group.
+
+### The answers
+
+1. **With more years, does the network beat the trees? No.** Over United Utilities, Northumbrian and
+   Wessex in 2023:
+   - the network's (B) Brier is 0.0624, the boosted model's (A) 0.0617;
+   - B − A is +0.00075, with a 95% interval of −0.00002 to +0.00158;
+   - conditions 1, 4 and 5 fail; condition 2 passes.
+2. **With more years, do the trees beat D2's single-year model? Yes, as stated.**
+   - A − D2 is −0.00395 [−0.00537, −0.00252], and every company's interval lies below zero.
+   - **But most of that gain does not come from the extra years.** A24, trained on 2024 alone with
+     this test's covariates, already beats D2 by −0.00329 [−0.00485, −0.00185].
+   - The extra years on their own (A − A24) give −0.00066 [−0.00149, +0.00013]. Over the three together,
+     that interval includes no gain.
+
+### The run
+
+Run 19 October 2026 on this Mac. The statement was pushed at `16e6e1c` and the choices above at
+`6c2a922`. The script did not change after that commit. The training log was pushed at `048531b`
+before 2023 was scored. The logs are in `logs/*_multi_*2026-10-19.log` in the worktree (not
+committed). No other evaluation or build ran. An iOS Simulator started during training; it is not a
+SwimSignal job.
+
+- **Rain.**
+  - 1,641 new files (3,330 calls, as planned, and one test request) went to `data/cache/rain_multi/`.
+    Every hour of every file is present.
+  - The first fetch stopped at about 15:44 UTC when DNS failed ("nodename nor servname provided"). It had
+    finished December 2019 and 2020. The restart skipped the files already saved.
+  - The caches hold 226,176 hours twice, and 0 of them disagree. That is 304 cells × 744 hours: the new
+    2023 files overlap D2's December 2023 files.
+- **Rows.**
+
+  | | 2020 | 2021 | 2022 | 2023 (test) | 2024 | 2025 |
+  |---|---|---|---|---|---|---|
+  | Site-days | 735,660 | 842,785 | 899,725 | 1,549,790 | 4,976,868 | 5,077,150 |
+  | Base rate | 0.084 | 0.070 | 0.057 | 0.100 | 0.087 | 0.057 |
+
+  - The 2024 and 2025 rows match D2's counts exactly. On 80 cells of D2's 2024 overflows (58,480
+    cell-days), every rain feature equals D2's except the antecedent index. That differs by at most
+    0.13 mm, because those series now start earlier.
+  - The 2023 rows' covariates equal D2's rule's for every overflow.
+  - The 90% rule dropped no row, in training or in 2023. Overflow-years kept and covariates filled are
+    in `-coverage.csv` and `-covariates-filled.csv`.
+- **Timing (step 4).** One epoch of seed 0 took 93 s to train (2,803 batches) and 9 s to score the
+  inner hold-out. Twenty epochs would take 34 minutes, under the 2-hour limit, so no smaller network
+  was needed.
+- **Training.**
+  - 12,532,188 training site-days. Both candidates fit the same subsample of 3,808,010: B used
+    2,869,335 of them and held out 938,675 for stopping.
+  - A and A24 each ran their full 300 iterations, as D2 did.
+  - **The network's best epoch moved later** (measured). The inner hold-out loss was lowest after epoch
+    2, 4 and 2 (seeds 0, 1, 2), against epoch 1 for every seed in PR #239. Each seed then stopped three
+    epochs later. The best losses were 0.16362, 0.16361 and 0.16369 (`-training.csv`).
+  - Swap ran almost full (7.2 of 8 GB) while B's layer 2 was fitted. That step took 35 minutes instead
+    of about 7. *Inferred:* this changes no number, since the run is on the CPU with fixed seeds.
+  - The models are off-repo in `swimsignal-private/baselines/multi_year/` (SHA-256 prefixes: A
+    `24b876016959`, A24 `f6464ee46368`, B seeds `ea8c71fdee9c`, `c44550cb2633`, `b7fa499d2078`).
+
+### Scores on 2023, ERA5-Land rain
+
+Brier, with ECE in brackets. Bold marks the better of B and A.
+
+| Company | Rows | Base rate | B (network) | A (boosted) | D2 | PR #239 network | A24 | Flat rate | AUC B / A |
+|---|---|---|---|---|---|---|---|---|---|
+| United Utilities | 691,675 | 0.119 | 0.0730 (0.018) | **0.0723** (0.012) | 0.0761 (0.024) | 0.0765 (0.017) | 0.0734 (0.012) | 0.1059 | 0.867 / 0.869 |
+| Northumbrian | 352,590 | 0.077 | 0.0496 (0.020) | **0.0490** (0.019) | 0.0529 (0.033) | 0.0515 (0.027) | 0.0498 (0.019) | 0.0711 | 0.914 / 0.918 |
+| Wessex | 358,795 | 0.092 | 0.0545 (0.020) | **0.0536** (0.016) | 0.0578 (0.029) | 0.0569 (0.022) | 0.0532 (0.009) | 0.0843 | 0.923 / 0.924 |
+| **The three** | 1,403,060 | 0.102 | 0.0624 (0.019) | **0.0617** (0.014) | 0.0656 (0.027) | 0.0652 (0.021) | 0.0623 (0.013) | 0.0916 | 0.892 / 0.894 |
+| Thames (apart) | 146,730 | 0.088 | **0.0561** (0.024) | 0.0563 (0.024) | 0.0603 (0.031) | 0.0568 (0.018) | 0.0545 (0.010) | 0.0804 | 0.908 / 0.907 |
+
+Paired differences in Brier, first minus second, with 95% week-cluster intervals:
+
+| Group | B − A | A − D2 | A − A24 (context) | A24 − D2 (context) | B − PR #239 network (context) |
+|---|---|---|---|---|---|
+| United Utilities | +0.00066 [−0.00052, +0.00192] | −0.00382 [−0.00541, −0.00229] | −0.00110 [−0.00203, −0.00023] | −0.00272 [−0.00405, −0.00143] | −0.00349 [−0.00468, −0.00240] |
+| Northumbrian | +0.00068 [−0.00072, +0.00221] | −0.00394 [−0.00601, −0.00199] | −0.00084 [−0.00213, +0.00022] | −0.00310 [−0.00513, −0.00142] | −0.00185 [−0.00285, −0.00082] |
+| Wessex | +0.00098 [−0.00003, +0.00208] | −0.00423 [−0.00643, −0.00232] | +0.00038 [−0.00072, +0.00153] | −0.00460 [−0.00740, −0.00212] | −0.00231 [−0.00352, −0.00126] |
+| **The three** | +0.00075 [−0.00002, +0.00158] | −0.00395 [−0.00537, −0.00252] | −0.00066 [−0.00149, +0.00013] | −0.00329 [−0.00485, −0.00185] | −0.00278 [−0.00360, −0.00201] |
+| Thames (apart) | −0.00013 [−0.00097, +0.00065] | −0.00399 [−0.00578, −0.00232] | +0.00172 [+0.00024, +0.00332] | −0.00571 [−0.00850, −0.00299] | −0.00064 [−0.00169, +0.00039] |
+
+Layer 1 alone, over the three: B 0.06429, A 0.06402, A24 0.06454, PR #239 network 0.06577, D2 0.06617.
+B's seeds alone scored 0.06462, 0.06459 and 0.06519. All tables are in `-scores.csv`,
+`-differences.csv`, `-reliability.csv` and `-checks.json`.
+
+### Question 1: the conditions
+
+1. **A real gain overall: FAIL.** B's Brier is higher, not lower: 0.06240 against 0.06165. The
+   difference is +0.00075 [−0.00002, +0.00158]. That interval does not lie below zero. It only just
+   reaches it.
+2. **No company clearly worse: PASS.** No company's interval lies wholly above zero. Wessex comes
+   closest, at [−0.00003, +0.00208].
+4. **Reliability: FAIL** at Northumbrian and Wessex. B's ECE is 0.0202 at both, against A's 0.0191 and
+   0.0163. Both are 0.0002 over the 0.02 allowance. It passes at United Utilities (0.0183).
+5. **More rain does not lower the risk: FAIL**, on size, not share.
+   - Adding 1 mm to every hour lowered B's probability on 72 of 1,403,060 rows (0.005%). The largest
+     drop was 0.039, and the limit is 0.01.
+   - Doubling every hour lowered it on 301 rows (0.02%), by at most 0.017.
+   - PR #239's network passed this condition on 2025.
+
+Condition 3 (forecast rain) cannot be scored on 2023. Condition 6 was not re-measured.
+
+**The network does not beat the trees with more years.** It is 1.2% worse over the three companies.
+On 2025 PR #239's network was 3% worse. Those were different years and rows, so the two gaps cannot
+be compared directly.
+
+### Question 2: the conditions
+
+1. **Lower over the three: PASS.** A 0.06165 against D2 0.06560; −0.00395 [−0.00537, −0.00252].
+2. **No company clearly worse: PASS.** All three intervals lie below zero.
+
+**The trees trained here beat D2 on 2023.** The context rows say why, and it is mostly not the extra
+years:
+- **A24 against D2** (same 2024 rows, different covariates): −0.00329. That is 83% of A's whole gain
+  over D2. Its interval lies below zero at every company.
+- **A against A24** (the extra years alone): −0.00066 over the three, with an interval that includes no
+  gain.
+  - It is clear only at United Utilities, −0.00110 [−0.00203, −0.00023]. There the only extra year is
+    2025.
+  - At Northumbrian and Wessex, which gained four years each, it is −0.00084 [−0.00213, +0.00022] and
+    +0.00038 [−0.00072, +0.00153].
+
+### Observations, not tested and not grounds for any change
+
+- **The year a covariate comes from moved the forecasts.**
+  - *Measured:*
+    - D2's 2024 training rows carry the 2023 return's covariates. Their mean `log_spill_hours` is
+      3.46. A24's same rows carry the 2022 return's: 2.84.
+    - The 2023 test rows carry the 2022 return's: 2.92.
+    - The median spill hours per overflow, over these four companies' returns, were 18.6 in 2022 and
+      41.5 in 2023.
+    - Over the three companies, D2's mean forecast on 2023 was 0.075, A24's 0.0885 and A's 0.088,
+      against 0.102 observed.
+  - *Inferred:* D2 learned the link between spill hours and spill-days from a wet year's returns. It
+    then read a dry year's returns at test time, so it rated every overflow as less spill-prone and
+    forecast too low. The same would hold in production, which also takes covariates from the
+    previous year's return. A covariate expressed relative to its own return year (a rank within the
+    year, say) might remove this. That needs its own pre-stated test.
+- **The network's gain over PR #239's network cannot be split the same way.** B beats it by −0.00278
+  [−0.00360, −0.00201]. But PR #239's network was trained on D2's covariates. For the trees, the
+  covariate change alone was worth −0.00329. No network was trained on 2024 alone with this test's
+  covariates. So this test cannot say how much of B's gain is more years. *Inferred:* much of it is
+  probably the covariates, as for the trees.
+- **More years delayed the network's overfitting by one to three passes, no more.** The best epochs
+  were 2, 4 and 2 against 1, 1 and 1 (measured). In every seed the hold-out loss then rose while the
+  training loss kept falling.
+- **The network's layer 1 nearly matches the trees'.** It scores 0.06429 against 0.06402. The gap
+  widens with layer 2: offsets improve A by 0.00237 and B by 0.00189.
+- **B forecasts too low in the middle of the range.** Over the three, its forecasts of 0.4 to 0.5
+  averaged 0.447, and 54.2% of those site-days spilled. A's averaged 0.448, and 48.1% spilled.
+- **Every model forecast 2023 too low.** Mean forecasts over the three ran from 0.075 to 0.089,
+  against 0.102 observed. 2023 has the highest base rate of any year here. *Inferred:* something about
+  2023 beyond its rain is not in the inputs, or offsets averaged over drier years pull the level down.
+  At Wessex, A24's mean forecast (0.083) is closer to the observed 0.092 than A's (0.076). Not checked
+  further.
+- **Thames (apart).** B and A are level: −0.00013 [−0.00097, +0.00065]. A24 scores best (0.0545). Adding
+  years made A worse there: A − A24 is +0.00172 [+0.00024, +0.00332]. The alert stream missed about 13% of
+  the EA's spill-days in 2024, so these labels likely count too few.
+
+### What was not done
+
+- No forecast-rain scoring. There is no lead-1 to lead-4 rain for 2023.
+- No network on 2024 alone with this test's covariates (see above). It was not in the statement, and
+  adding it now would be chosen after seeing the results.
+- Nothing is deployed. `spill_model.pkl` and `lead_calibration.json` are unchanged.
