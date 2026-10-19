@@ -75,6 +75,25 @@ EDM_EVENT_FEEDS: dict[str, str] = {
     "United Utilities 2025": f"{STREAM_BASE}/United_Utilities_Event_Duration_Monitoring_2025/FeatureServer/0",
 }
 
+# Event-level histories of other companies (review task D3; docs/EARLIER-SPILL-HISTORY-2026-10.md), each
+# written to its own data/processed/stream_events_<company>.parquet by scripts/import_stream_events.py.
+# Kept out of EDM_EVENT_FEEDS on purpose: train.py builds a year of site-days for every year it finds in
+# edm_events.parquet, and validate_ecoli.py reads the same file, so a feed added there changes the model.
+# Northumbrian's service name still says 2020_2023, but the layer runs to December 2024 (checked 19 Oct 2026).
+EDM_HISTORY_FEEDS: dict[str, str] = {
+    "Northumbrian Water 2020-2024": f"{STREAM_BASE}/EDM_Spill_Data_Northumbrian_Water_2020_2023/FeatureServer/0",
+    "Wessex Water 2020-2023": "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2020_23_view/FeatureServer/0",
+    "South West Water 2025-2026": f"{STREAM_BASE}/South_West_Water_Storm_Overflow_EDM_Monthly/FeatureServer/0",
+}
+# Wessex Water's 2020-2023 layer names overflows by the company's own ids ("17385C"), which are in neither the
+# annual returns nor the Stream ID lookup. Its 2024 layer uses the same ids, and the EA's 2024 file has the same
+# events under the annual returns' ids, so matching the two years' events gives the crosswalk
+# (edm_events.crosswalk_by_events). Read for that only.
+WESSEX_EDM_2024 = "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2024_view/FeatureServer/0"
+
+# Thames Water's discharge alert stream (review task D8): no key, from April 2022; ingest/thames_alerts.py.
+THAMES_ALERTS = "https://api.thameswater.co.uk/opendata/v2/discharge/alerts"
+
 # Environment Agency annual returns, all years, all companies: spill counts and
 # hours per overflow per calendar year, with WFD waterbody IDs. Used for priors.
 EDM_ANNUAL_RETURNS = "https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/edm_annual_returns_all_years_public/FeatureServer/0"
