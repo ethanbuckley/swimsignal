@@ -6,6 +6,11 @@ never enters training. Its credit: "Hafren Dyfrdwy Event Duration Monitoring 202
 Dyfrdwy, published on Stream, licensed under CC BY 4.0
 (https://creativecommons.org/licenses/by/4.0/).
 
+Other companies' published histories (config.EDM_HISTORY_FEEDS: Northumbrian Water 2020-2024, Wessex
+Water 2020-2023, South West Water January 2025 to May 2026) are read by fetch_history into their own
+data/processed/stream_events_<company>.parquet (scripts/import_stream_events.py), never into
+edm_events.parquet. Credits: HISTORY_CREDITS, all CC BY 4.0.
+
 The Environment Agency's start/stop files for Dŵr Cymru Welsh Water's overflows in England
 (read_ea_dcww_events) are a second Welsh-company test set, kept apart in
 data/processed/dcww_ea_events.parquet. Their credit: "© Environment Agency copyright and/or
@@ -33,6 +38,10 @@ RENAME = {
     "SiteId": "site_id", "SiteName": "site_name", "OutfallLatitude": "lat",
     "OutfallLongitude": "lon", "EventStart": "event_start", "EventEnd": "event_end",
     "ReceivingWatercourse": "receiving_watercourse",
+    # The same fields as other companies' history layers name them (HISTORY_FIELDS).
+    "SiteID": "site_id", "Monitor_Unique_ID": "site_id", "Outfall_Latitude": "lat",
+    "Outfall_Longitude": "lon", "Event_start": "event_start", "Event_end": "event_end",
+    "ReceivingWaterCourse": "receiving_watercourse",
 }
 OUT_FIELDS = "SiteId,SiteName,OutfallLatitude,OutfallLongitude,EventStart,EventEnd,ReceivingWatercourse"
 COLS = ["site_id", "site_name", "lat", "lon", "event_start", "event_end", "duration_h", "source"]
@@ -78,12 +87,36 @@ def _normalise(df: pd.DataFrame, source: str) -> pd.DataFrame:
             log.info("%s: remapped %d rows from pre-2024 IDs", source, n)
         df["site_id"] = mapped.fillna(df["site_id"])
     # Each feed has one timestamp encoding; normalise before any concatenation.
-    df["event_start"] = to_utc(df["event_start"])
-    df["event_end"] = to_utc(df["event_end"])
+    df["event_start"] = stream_times(df["event_start"])
+    df["event_end"] = stream_times(df["event_end"])
     df = df.dropna(subset=["site_id", "event_start"])
     df["duration_h"] = (df["event_end"] - df["event_start"]).dt.total_seconds() / 3600.0
     df = df[(df["duration_h"].isna()) | ((df["duration_h"] >= 0) & (df["duration_h"] < 24 * 60))]
-    return df[COLS]
+    # Northumbrian Water's layer has no site name.
+    return df.reindex(columns=COLS)
+
+
+def dmy_times(s: pd.Series) -> pd.Series:
+    """UTC timestamps from "dd/mm/yyyy hh:mm" text, as Northumbrian Water's Stream layer gives its
+    times. The text is GMT all year: every one of the EA's 106,346 Northumbrian starts for 2024 has a
+    Stream start at the same overflow 0 or 1 minute earlier (the layer drops the seconds), in the
+    summer-time months as in winter (checked 19 Oct 2026). Anything else is NaT."""
+    t = pd.to_datetime(s, format="%d/%m/%Y %H:%M", errors="coerce")
+    return t.dt.tz_localize("UTC").astype("datetime64[ns, UTC]")
+
+
+def stream_times(s: pd.Series) -> pd.Series:
+    """A Stream layer's time column as UTC: by dmy_times when most cells are day-first text, else to_utc."""
+    if s.dtype.kind not in "iufM":
+        text = s.dropna().astype(str)
+        if len(text) and text.str.match(r"\d{2}/\d{2}/\d{4} \d{2}:\d{2}$").mean() > 0.5:
+            return dmy_times(s)
+    return to_utc(s)
+
+
+def raw_cache_path(source: str) -> Path:
+    """Where fetch_events keeps the rows of `source` as the layer gave them."""
+    return RAW_CACHE / (source.replace(" ", "_") + ".parquet")
 
 
 def fetch_events(feeds: dict[str, str] | None = None, refresh: bool = False,
@@ -92,7 +125,7 @@ def fetch_events(feeds: dict[str, str] | None = None, refresh: bool = False,
     RAW_CACHE.mkdir(parents=True, exist_ok=True)
     frames = []
     for source, url in feeds.items():
-        raw_path = RAW_CACHE / (source.replace(" ", "_") + ".parquet")
+        raw_path = raw_cache_path(source)
         if raw_path.exists() and not refresh:
             raw = pd.read_parquet(raw_path)
             log.info("%s: %d events (cached)", source, len(raw))
@@ -117,6 +150,71 @@ def fetch_hd_events(refresh: bool = False) -> pd.DataFrame:
     # The layer has no ReceivingWatercourse field, and ArcGIS refuses a query that names one.
     return fetch_events({HD_SOURCE: HD_EVENTS_2025}, refresh=refresh,
                         out_fields=OUT_FIELDS.removesuffix(",ReceivingWatercourse"))
+
+
+# Other companies' event histories (config.EDM_HISTORY_FEEDS; review task D3), never in edm_events.parquet.
+# Each layer names its fields its own way; the object id is kept so a read can be checked for repeats.
+# Northumbrian Water's layer has no site name or watercourse, and its times are text (dmy_times).
+# South West Water's eventVerified is "TRUE" on every row and Wessex Water's EventVerified is empty on
+# every row (checked 19 Oct 2026); both stay in the raw cache only.
+HISTORY_FIELDS = {
+    "Northumbrian Water 2020-2024": "ObjectId,Monitor_Unique_ID,Outfall_Latitude,Outfall_Longitude,Event_start,Event_end",
+    "Wessex Water 2020-2023": "OBJECTID," + OUT_FIELDS + ",EventVerified",
+    "South West Water 2025-2026": ("ObjectId,SiteID,SiteName,OutfallLatitude,OutfallLongitude,EventStart,EventEnd,"
+                                   "ReceivingWaterCourse,eventVerified"),
+}
+HISTORY_COMPANY = {"Northumbrian Water 2020-2024": "Northumbrian Water", "Wessex Water 2020-2023": "Wessex Water",
+                   "South West Water 2025-2026": "South West Water"}
+HISTORY_CREDITS = {
+    "Northumbrian Water 2020-2024": ("EDM Spill Data Northumbrian Water, Northumbrian Water, via Stream, "
+                                     "licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)"),
+    "Wessex Water 2020-2023": ("Wessex Water Event Duration Monitoring 2020-2023 © 2025 by Wessex Water, "
+                               "licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)"),
+    "South West Water 2025-2026": ("South West Water Storm Overflow EDM Monthly © 2025 by South West Water, via Stream, "
+                                   "licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)"),
+}
+
+
+def fetch_history(source: str, refresh: bool = False) -> pd.DataFrame:
+    """One of config.EDM_HISTORY_FEEDS in the fetch_events schema (CC BY 4.0; HISTORY_CREDITS)."""
+    return fetch_events({source: config.EDM_HISTORY_FEEDS[source]}, refresh=refresh,
+                        out_fields=HISTORY_FIELDS[source])
+
+
+WESSEX_2024_SOURCE = "Wessex Water 2024"
+WESSEX_2024_CREDIT = ("Wessex Water Event Duration Monitoring 2024 © 2025 by Wessex Water, "
+                      "licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)")
+
+
+def fetch_wessex_2024(refresh: bool = False) -> pd.DataFrame:
+    """Wessex Water's own 2024 layer (config.WESSEX_EDM_2024), read only to build the id crosswalk."""
+    return fetch_events({WESSEX_2024_SOURCE: config.WESSEX_EDM_2024}, refresh=refresh,
+                        out_fields=HISTORY_FIELDS["Wessex Water 2020-2023"])
+
+
+def crosswalk_by_events(a: pd.DataFrame, b: pd.DataFrame, min_share: float = 0.8) -> pd.DataFrame:
+    """Ids of `a` -> ids of `b`, two records of the same events: each id of `a` goes to the id of `b`
+    with the most events starting in the same minute as its own, if those are at least `min_share` of
+    its events and of that id's. Both ways, because an id with one event can share its minute with a
+    storm's start anywhere (Wessex 2024: 48 such pairs, a median 40 km apart, when only one way was
+    asked). Columns: from_id, to_id, events, to_events, matched, share, to_share (one row per id of
+    `a`; to_id is empty when either share is below min_share)."""
+    def keyed(ev):
+        return pd.DataFrame({"site_id": ev["site_id"].to_numpy(),
+                             "minute": ev["event_start"].dt.floor("min").to_numpy()}).drop_duplicates()
+    ka, kb = keyed(a), keyed(b)
+    m = ka.merge(kb, on="minute", suffixes=("_a", "_b"))
+    best = (m.groupby(["site_id_a", "site_id_b"]).size().rename("matched").reset_index()
+            .sort_values("matched", ascending=False).drop_duplicates("site_id_a")
+            .rename(columns={"site_id_a": "from_id", "site_id_b": "to_id"}))
+    out = ka.groupby("site_id").size().rename("events").rename_axis("from_id").reset_index()
+    out = out.merge(best, on="from_id", how="left")
+    out["to_events"] = out["to_id"].map(kb.groupby("site_id").size())
+    out["matched"] = out["matched"].fillna(0).astype(int)
+    out["share"] = out["matched"] / out["events"]
+    out["to_share"] = out["matched"] / out["to_events"]
+    out.loc[(out["share"] < min_share) | ~(out["to_share"] >= min_share), "to_id"] = None
+    return out.sort_values("from_id").reset_index(drop=True)
 
 
 # The EA's start/stop files ("Event Duration Monitoring-Storm Overflow-Start/Stop Detailed Data"), one
