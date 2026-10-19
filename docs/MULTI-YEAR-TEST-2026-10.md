@@ -322,4 +322,40 @@ The models go off-repo to `swimsignal-private/baselines/multi_year/`. The tables
 
 ## Results
 
-Not yet run.
+### Choices the statement leaves open, fixed before any training
+
+Written 19 October 2026, while the rain was being fetched. At that point no row had been built, no
+model trained, and no 2023 score computed. The code is `scripts/train_multi_year.py`.
+
+- **Stages.** `plan`, `fetch`, `rows`, `time`, `train` and `score`.
+  - `rows` builds every year's site-days once, the 2023 rows included, and saves them with the rain
+    arrays (`data/processed/multi_year/`).
+  - Only `score` reads the 2023 rows' labels or predicts them.
+- **An id held twice in one return.** The covariates come from the last row with a position, as
+  `training.site_years` picks it.
+- **One 2023 Thames row is dropped.** `site_years` kept a return row with no id. It got a "0 spills"
+  from another row with no id in the 2023 return, because NaN matches NaN in its lookup. That row names
+  no overflow. With it gone, `plan` finds 0 overflows of 2023 whose covariates differ from D2's rule.
+  D2's 2024 and 2025 rows hold no such row.
+- **Events with no id are dropped.** There are none in these files.
+- **Rain read.** The files tagged 2019 to 2025, and the December files, from `rain/`, `rain_nine/`
+  and `rain_multi/`. No 2026 file, and nothing from `rain_w10/`.
+- **The check against D2's rain features.** 80 cells of D2's 2024 overflows, drawn with
+  `default_rng(0)`. D2's features are rebuilt from `training.load_rain`, which starts on 1 December
+  2023, and compared over 2024 and 2025. A smoke test on 6 Severn Trent cells, which have no new
+  files, gave 0 difference in every rain feature. On the same cells the network's hourly windows and
+  daily totals equalled `train_nn.RainGrid`'s.
+- **Row order, which fixes the subsample.**
+  - The years go 2020, 2021, 2022, 2024, 2025. Within a year the rows are in the order `_frame`
+    builds them.
+  - `fit_pooled` and `train_nn.subsample` draw the same mask from `default_rng(0)` over that order.
+- **PR #239's network as context.**
+  - Its static inputs are standardized with its own 2024 means and deviations (its `meta.json`).
+  - Its layer 2 is refitted on D2's 2024 rows with D2's covariates, built here. The rows are D2's (the
+    count is checked). The network's inputs come from the same hourly and daily rain, which the smoke
+    test reproduced exactly.
+- **Bootstrap.** One set of 2,000 draws over the ISO weeks of every scored 2023 row, Thames included,
+  serves every group.
+- **Condition 5.** It is checked on the scored rows of the three deciding companies.
+- **Also reported, as observations.** Layer-1-only scores for every model, and each seed of B alone.
+- **Software.** PyTorch 2.14.1, from the `nn` group.
