@@ -337,4 +337,46 @@ file: `-scores.csv`, `-differences.csv`, `-reliability.csv`, `-shifts.csv`, `-ra
 
 ## Results
 
-Not run. Waiting for Ethan's approval of the statement above.
+Ethan approved the statement on 19 October 2026: "Design approved as stated in PR #260. Write the script,
+push it before training, then run F24 and F25."
+
+### Choices the statement leaves open, fixed before any training
+
+Written 19 October 2026, after the rows were built and before any model was trained or any judged
+year scored. The code is `scripts/test_covariate_year.py`.
+
+- **Stages.** `rows`, `rain`, `train` and `score`, and `f26`, which only says what it waits for.
+  - `plan` and `rows` are one stage: the rows are counted by building them.
+  - `rows` builds the judged years' site-days with their labels and saves them, as PR #259 did. Only
+    `score` predicts a judged year or scores one.
+- **PR #259's 2023 rule is rewritten here,** because PR #259 is not merged. The events are PR #259's
+  `history_events` without Thames. The overflows are `training.site_years(returns, events, three
+  companies, 2023)`. The script stops unless it gets PR #259's 2023 site-day counts.
+- **F25's rain is D2's loader,** `training.load_rain`: `rain/` and `rain_nine/`, from 1 December 2023.
+  So F25's A should reproduce D2.
+- **F24's rain is one series per cell from 1 December 2022 to 31 December 2024,** from all three
+  folders (files tagged 2022, 2022dec, 2023, 2023dec and 2024).
+  - F24's judged rows are D2's 2024 rows at the three companies. The script stops unless their counts
+    equal D2's there.
+  - Their antecedent index can differ slightly from D2's own, because the series starts a year
+    earlier. PR #259 measured at most 0.13 mm for an earlier start.
+- **The population behind R2 and R1** is a return's rows with an id, the last row per id, with or
+  without a position. That is the rule behind the statement's medians table, and the script's shift
+  table reproduces it to three decimals.
+- **A row's own value** is the one `site_years` gives: the last row for the id with a position. Its rank
+  is placed in the population by value, on `log1p` values (the same order as the raw ones). So an id
+  held twice in a return still gets a rank.
+- **The context row's older return:** the last row per id with a position, for all three covariates.
+- **Flat rate:** each company's spill-day rate over the fold's training rows.
+- **The bootstrap.** One set of 2,000 draws over every ISO week of F24's and F25's judged rows. ISO
+  week 2025-W01 holds 30 and 31 December 2024 (F24) and 1 to 5 January 2025 (F25). Those days are drawn
+  together.
+- **Question 1a.**
+  - A cell's year is every file tagged with that year in the three folders, with repeated hours
+    dropped, cut to the calendar year in UTC.
+  - A full year is 8,760 hours, or 8,784 in a leap year.
+  - A company-year's cells are those of its return's rows with a position that year.
+  - The stage stops if any of the 18 pairs lacks rain.
+- **The D2 check.** The largest difference between F25's A and D2's candidate, in any forecast on 2025,
+  is reported.
+- **Software.** scikit-learn 1.9.1, pandas 3.0.5, SciPy 1.18.1.
