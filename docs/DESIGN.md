@@ -267,7 +267,10 @@ paper, as the site's first screen looked in the fifth round.
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
   the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
   is underlined in white.
-- **App, desktop:** the list, Saved and Plan: map left, a 460 px column right. A spot opens as a
+- **App, desktop:** the list, Saved and Plan: map left, a column right, 460 px wide and 560 px
+  from 1,200 px (20 Oct 2026), where a row's five days carry their short names ("Tue") over bars
+  32 px wide in place of the letters. On the list the day and "Low risk only" are the column's
+  alone; the map shows its own pair only on Saved and Plan, which have none. A spot opens as a
   page (20 Oct 2026): the map column goes and the map moves into the spot's own tile, 400 px tall;
   the opening spans the page over the wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`),
   and under it two columns, 5 to 7, 1,180 px at most: the five days, nearby and the water on the left,

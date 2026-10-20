@@ -133,6 +133,9 @@ test("today is at least right now's level, and says it comes from the spills und
   // The week's bars and the five days' rows go by the same rule.
   const ctx = page(['esc', 'fmt', 'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence']);
   assert.match(vm.runInContext('week', ctx)(greenholme), /^<span class="week"[^>]*><span class="wk first"><i class="veryhigh">/);
+  // Each day carries its letter and its short name; the wide list (1,200 px and up) shows the name.
+  const shortName = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
+  assert.deepEqual([...vm.runInContext('week', ctx)(greenholme).matchAll(/<span class="d3">([^<]+)<\/span>/g)].map(m => m[1]), DATES.slice(0, 5).map(shortName));
   assert.match(text(vm.runInContext('daysSentence', ctx)(greenholme)), /^1 upstream overflow is discharging now: very high risk from it right now\. /);
 });
 

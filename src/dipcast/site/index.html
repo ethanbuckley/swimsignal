@@ -303,6 +303,7 @@
   .wk i.low { background:var(--low); } .wk i.moderate { background:var(--moderate); } .wk i.high { background:var(--high); } .wk i.veryhigh { background:var(--veryhigh); }
   .wk b { font-size:var(--fs-meta); font-weight:600; line-height:1; color:var(--faint); }   /* W, the widest letter, is 10.4 px, about a bar */
   .wk.first b { color:var(--ink); }
+  .wk .d3 { display:none; }   /* the day's short name ("Tue"), for the wide list (min-width: 1200px) */
   /* Where nothing upstream can spill, the week shows the rain instead: bars by the 48-hour total. */
   .week.rain .wk { justify-content:flex-end; height:40px; }   /* the tallest bar (24 px), the gap and the letter */
   .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
@@ -710,6 +711,10 @@
     #map-wrap { min-height:0; }
     #panel { overflow:auto; padding:24px 24px 40px; border-left:1px solid var(--line); }
     .phone-only { display:none !important; }
+    /* The day and "Low risk only" once (20 Oct 2026): on the list they are the column's, beside the
+       answer they change and the list they filter, so the map's pair goes. The Saved page and Plan a
+       swim have no pair of their own, so the map keeps it there. */
+    body.view-list .low-ctl { display:none; }
     /* A spot opens as a page (20 Oct 2026): the map column goes, the map moves into the spot's own
        tile, and the page is two columns under an opening that spans it: should I go and the water on
        the left, the map and why on the right. 1,180 px at most, so a line stays readable on a wide
@@ -733,6 +738,16 @@
     body.view-spot .col-why > .spot-map-tile { order:-1; }   /* the map first, beside the five days */
     body.view-spot #spot-map { height:400px; }
     body.view-spot #spot-map .map-say { display:none; }   /* "Click any river or lake" is the full map's line; here it covered the tile's corner */
+  }
+  /* A wide desktop (20 Oct 2026, layout B's home half): the list is 560 px, and a row's five days
+     carry their short names ("Tue") over bars as wide as the names, in place of the letters. */
+  @media (min-width: 1200px) {
+    #app { grid-template-columns:minmax(0, 1fr) 560px; }
+    .week { gap:6px; }
+    .wk { width:32px; gap:4px; }
+    .wk i { width:32px; height:12px; }
+    .wk .d1 { display:none; } .wk .d3 { display:inline; }
+    .week.rain .wk { height:42px; }   /* the tallest bar (24 px), the gap and the name */
   }
   /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. */
   @media (min-width: 801px) and (max-width: 1099px) {
@@ -1649,12 +1664,14 @@ const UNLISTED_ECOLI = 'Not estimated for a point off the list: the estimate nee
 // reach the spot there is no level to colour, so the bars show the rain instead (40 mm fills one).
 const week = s => {
   if (!s.days || !s.days.length) return '';
+  // The day's letter ("T"), and its short name ("Tue") for the wide list, where there is room to read it.
+  const day = iso => `<span class="d1">${initial(iso)}</span><span class="d3">${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short'})}</span>`;
   if (!daily(s)) { if (!s.days.some(x => !nil(x.rain_48h_mm))) return '';
     return `<span class="week rain" aria-hidden="true" title="Rain in the 48 hours to midday each day">${s.days.slice(0, 5).map((x, i) =>
-      `<span class="wk${i ? '' : ' first'}"><i style="--h:${nil(x.rain_48h_mm) ? 3 : Math.round(3 + 21 * Math.min(1, x.rain_48h_mm / 40))}px"></i><b>${initial(x.date)}</b></span>`).join('')}</span>`; }
+      `<span class="wk${i ? '' : ' first'}"><i style="--h:${nil(x.rain_48h_mm) ? 3 : Math.round(3 + 21 * Math.min(1, x.rain_48h_mm / 40))}px"></i><b>${day(x.date)}</b></span>`).join('')}</span>`; }
   if (ORDER[level(s)] === undefined) return '';
   return `<span class="week" aria-hidden="true">${s.days.slice(0, 5).map((x, i) => { const lv = risk(s, x).level;
-    return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><b>${initial(x.date)}</b></span>`; }).join('')}</span>`; };
+    return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><b>${day(x.date)}</b></span>`; }).join('')}</span>`; };
 // A row's second line, where there is no level: the rain, which is what there is to go by.
 const rainMeta = s => { if (daily(s) || !s.days || !s.days.length) return '';
   const x = (VIEW.day && s.days.find(y => y.date === VIEW.day)) || s.days[0];
