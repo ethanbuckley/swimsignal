@@ -510,6 +510,19 @@ test('the comparison has a column a spot, the five days first with the day picke
   assert.doesNotMatch(html + pageDefs(['compareSection', 'compareTable', 'savedCompare', 'planCompare']), /\b(best|safest|safer)\b/i);
 });
 
+// Saved's comparison opens as the plan's does (plan.js, planCompareIds): the first three saved spots. Until
+// 20 Oct 2026 it took two, and kept what it took first, so one spot saved and then two more compared one.
+test('Saved compares the first three saved spots, and saving more fills a comparison of one', () => {
+  const ctx = pageContext(['COMPARE', 'savedCompare'], {planCompareIds: require('../src/dipcast/site/plan.js').planCompareIds,
+    fiveDays: () => ['2026-09-30'], VIEW: {day: null}});
+  const run = vm.runInContext('ids => savedCompare(ids.map(id => ({id}))).ids', ctx), pick = ids => [...run(ids)];   // an array of this realm, for deepEqual
+  assert.deepEqual(pick(['a']), ['a']);                               // one saved: the page offers no comparison
+  assert.deepEqual(pick(['a', 'b', 'c', 'd']), ['a', 'b', 'c']);      // three more saved: the first three
+  vm.runInContext('COMPARE.ids = ["d", "b"]', ctx);                   // two chosen: kept while both are saved
+  assert.deepEqual(pick(['a', 'b', 'c', 'd']), ['d', 'b']);
+  assert.deepEqual(pick(['a', 'c', 'd']), ['d', 'a', 'c']);           // one of them unsaved: filled from the top
+});
+
 // ------------------------------------------------------------------------------ Saved: day by day
 // The Saved page's grid (second outside review, 20 Oct 2026): a cell a day at each saved spot, the level with
 // its noun, "No forecast" for a missing day, and one cell for a level that does not change from day to day.
