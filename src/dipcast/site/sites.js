@@ -1,8 +1,9 @@
 // The sites view (sites.html): several listed spots on one page, for an activity centre, a club or a
 // council, to bookmark and print before a session (docs/MARKETS-2026-10.md, B2). Each spot is one row:
 // its name, its headline, the five days as the list's bars, the reason in one line, and links to the
-// spot's page and to a decision record (record.html). The forecast's issue time is said once at the top,
-// with the app's stale notice. Printed, ten rows fit one A4 page.
+// spot's page and to a decision record (record.html). The forecast's issue time and its issue id are said
+// once at the top, with the app's stale notice, and the data credits for the listed spots close the page
+// (printed.js). Printed, nine rows and the credits fit one A4 page.
 //
 // The words are the site's own: the headline and the reason are levels.js's (headParts, weekNext), and a
 // low day's clause is organisers.js's (spilling, the spot page's words), so a row never disagrees with the
@@ -15,14 +16,16 @@
 // The same file draws "Make a sites link" on the organisers' page (maker), from the spots that page has
 // already loaded into its spot list.
 //
-// A plain script, as organisers.js: the page loads levels.js, lists.js and organisers.js first, and this
-// file finds their names there; Node requires them for the tests (tests/site_sites.test.cjs).
+// A plain script, as organisers.js: the page loads levels.js, lists.js, organisers.js and printed.js first, and
+// this file finds their names there; Node requires them for the tests (tests/site_sites.test.cjs). The
+// organisers' page loads this file for the maker alone, without printed.js.
 const Sites = (() => {
   const node = typeof module === 'object' && module.exports;
   const R = node ? require('./levels.js')
     : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, headParts, weekNext, daily, walesWords, eaUnchecked };   // levels.js's globals
   const Li = node ? require('./lists.js') : { listName, listIds, sitesHash, LINK_SPOTS_MAX };
   const O = node ? require('./organisers.js') : Organisers;
+  const P = node ? require('./printed.js') : typeof Printed === 'undefined' ? null : Printed;
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DEFAULT_NAME = 'Sites view';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -99,23 +102,25 @@ const Sites = (() => {
   }
 
   // ------------------------------------------------------------------ the page
-  // The issue time once, with the app's notice when the forecast is over 8 h old (index.html, STALE_MIN).
-  function issue(data, now) {
+  // The issue time and the issue id once, with the app's notice when the forecast is over 8 h old (index.html,
+  // STALE_MIN), and where the latest is. Printed, this line stands for the foot the page had, which said the
+  // same, so the room goes to the credits (20 Oct 2026).
+  function issue(data, now, base = '') {
     const m = (now - Date.parse(data.generated_at)) / 60000;
     const at = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
     return (m > O.STALE_MIN ? `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at)}). The automatic update has not run since; treat everything below as out of date.</p>` : '')
-      + `<p class="s-issued">Forecast issued ${esc(at)}${m <= O.STALE_MIN ? ` (${ago(m)} ago)` : ''}. It is updated several times a day. A forecast, not a water test: check the signs at the water before you swim.</p>`;
+      + `<p class="s-issued">Forecast issued ${esc(at)}${m <= O.STALE_MIN ? ` (${ago(m)} ago)` : ''}, issue id <b>${esc(P.issueId(data))}</b>. It is updated several times a day${base ? ` at ${esc(base.replace(/^https?:\/\//, '').replace(/\/$/, ''))}` : ''}. A forecast, not a water test: check the signs at the water before you swim.</p>`;
   }
   function view(data, st, now = Date.now(), base = '') {
     R.setToday(String(data.generated_at).slice(0, 10));
     if (!st.ids.length) return '<p>This link has no spots in it. Make one from a named list on the <a href="saved/">Saved page</a>, or pick several spots on the <a href="organisers.html#sites-maker">organisers\' page</a>.</p>';
     const { found, missing } = pick(data, st.ids);
-    let h = issue(data, now);
+    let h = issue(data, now, base);
     if (found.length) h += `<ol class="sites">${found.map(row).join('')}</ol>`;
     if (missing.length) h += `<p class="s-missing">Not found in this forecast: ${missing.map(id => `<b>${esc(id)}</b>`).join(', ')}. ${missing.length === 1 ? 'The spot may have been renamed or removed' : 'They may have been renamed or removed'}; the link still works for the rest.</p>`;
     if (!found.length) return h;
-    return h + '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this page</button></p>'
-      + `<p class="print-only s-foot">Printed from ${esc(base)}sites.html. Look at ${esc(base)} for the latest forecast: it changes several times a day.</p>`;
+    return h + P.credits(data, found, base)
+      + '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this page</button></p>';
   }
 
   async function start() {

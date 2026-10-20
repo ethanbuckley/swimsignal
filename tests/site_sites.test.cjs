@@ -76,7 +76,7 @@ test('the issue time is said once, with the app\'s stale notice after 8 hours, a
   const ids = S.fromHash('#spots=eden-lazonby,thames-henley,buttermere');
   const h = S.view(DATA, ids, NOW, '');
   assert.equal((h.match(/Forecast issued/g) || []).length, 1);
-  assert.ok(h.includes('Forecast issued Sun 4 Oct, 00:16 (2 h ago).') && !h.includes('Stale'));
+  assert.ok(h.includes('Forecast issued Sun 4 Oct, 00:16 (2 h ago), issue id <b>nogit-20261003T2316Z</b>.') && !h.includes('Stale'));
   assert.ok(S.view(DATA, ids, Date.parse(GEN) + 9 * 3600e3, '').includes('<b>Stale.</b> This forecast is 9 h old'));
   assert.ok(h.includes('A forecast, not a water test: check the signs at the water before you swim.'));
   assert.ok(!/\bsafe\b/i.test(text(h)) && !/\bclean\b/i.test(text(h)));
@@ -86,9 +86,33 @@ test('the page, its links from the Saved page and the organisers\' page, and its
   const page = fs.readFileSync(path.join(SITE, 'sites.html'), 'utf8');
   assert.ok(page.includes('<title>Sites view · SwimSignal</title>') && page.includes('<header class="top">') && page.includes('class="site-foot"'));
   assert.ok(page.includes('@page { size:A4 portrait') && page.includes('break-inside:avoid'));
-  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="lists\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="sites\.js"><\/script>/.test(page));
+  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="lists\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="sites\.js"><\/script>/.test(page));
   const org = fs.readFileSync(path.join(SITE, 'organisers.html'), 'utf8');
   assert.ok(org.includes('id="sites-maker"') && org.includes('Make a sites link') && org.includes('<script src="sites.js"></script>'));
   const app = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8');
   assert.ok(app.includes("new URL('sites.html', ROOT).href + sitesHash(l.name") && app.includes('id="sites-link">Make a sites link</button>'));
+});
+
+// ------------------------------------------------------------------------------ OP2, OP3 (docs/ORGANISER-PIVOT-2026-10.md)
+test('the sites view carries an issue id and the credits for the listed spots alone', () => {
+  const src = (use, credit, licence) => ({use, credit, licence, changed: `SwimSignal changed ${use}.`});
+  const credits = {modified: 'None of the providers endorses SwimSignal.', full: 'https://swimsignal.co.uk/terms.html#data',
+    licences: {'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/', 'ODbL 1.0': 'https://opendatacommons.org/licenses/odbl/1-0/', 'OGL v3.0': 'https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/'},
+    companies: {'Thames Water': 'Thames Water', 'United Utilities': 'United Utilities', 'Wessex Water': 'Wessex Water (© 2024 Wessex Water)'},
+    sources: [src('overflows', 'Storm overflow status from {companies}, via the National Storm Overflow Hub', 'CC BY 4.0'), src('always', 'Contains OS data © Crown copyright and database right 2026', 'OGL v3.0'),
+      src('gauge', 'real-time data API (Beta)', 'OGL v3.0'), src('rain', 'Weather data by Open-Meteo.com', 'CC BY 4.0'), src('osm', 'Swim spot location © OpenStreetMap contributors, openstreetmap.org/copyright', 'ODbL 1.0')]};
+  const spots = [{...henley, upstream_summary: {overflows: 51, companies: ['Thames Water']}}, {...lazonby, source: 'openstreetmap', upstream_summary: {overflows: 9, companies: ['United Utilities']}}, lake];
+  const data = {...DATA, commit: '3ed1b5a', credits, spots};
+  const h = S.view(data, S.fromHash('#spots=thames-henley,eden-lazonby'), NOW, 'https://swimsignal.co.uk/');
+  const c = text(h.split('class="credits-h"')[1]);
+  assert.ok(c.includes('Storm overflow status from Thames Water and United Utilities, via the National Storm Overflow Hub, CC BY 4.0. SwimSignal changed overflows.'));
+  assert.ok(c.includes('Weather data by Open-Meteo.com, CC BY 4.0.') && c.includes('Contains OS data © Crown copyright and database right 2026, OGL v3.0.'));
+  assert.ok(c.includes('Swim spot location © OpenStreetMap contributors, openstreetmap.org/copyright, ODbL 1.0.'));
+  assert.ok(!c.includes('Wessex') && !c.includes('real-time data API'));   // not upstream of these spots; no river level on this page
+  assert.ok(!text(S.view(data, S.fromHash('#spots=thames-henley'), NOW, '')).includes('OpenStreetMap'));   // only where an OSM spot is listed
+  // The id once, at the top, with where the latest is: printed, that line is the page's foot too.
+  assert.equal((text(h).match(/issue id 3ed1b5a-20261003T2316Z/g) || []).length, 1);
+  assert.ok(h.includes('issue id <b>3ed1b5a-20261003T2316Z</b>. It is updated several times a day at swimsignal.co.uk.'));
+  // A file from before upstream_summary.companies: every company is credited, never none.
+  assert.ok(text(S.view({...DATA, credits}, S.fromHash('#spots=thames-henley'), NOW, '')).includes('from Thames Water, United Utilities and Wessex Water (© 2024 Wessex Water), via'));
 });
