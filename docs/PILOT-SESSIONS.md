@@ -18,13 +18,17 @@ the briefing and who decides) is one TOML file. Each time Ethan issues a briefin
    reads them all again. After three tries it stops and issues nothing.
 2. Keeps only the session's two spots, and keeps `verification.json` whole.
 3. Has headless Chrome draw the live decision record (`record.html`) for each spot on the session's day,
-   and the sites view (`sites.html`) for both. The pages' data requests are answered from the kept
-   files, so the PDFs show exactly the kept build even if a new build goes live meanwhile.
+   and the sites view (`sites.html`) for both, on the session's day too. The pages' data requests are
+   answered from the kept files, so the PDFs show exactly the kept build even if a new build goes live
+   meanwhile.
 4. Checks each page and PDF, and stops on any of these problems:
    - The page or the PDF's text does not show the build's issue time.
    - The page shows an issue id that is not this build's (PR #275 adds the id to the page).
    - The page asked for data the archive does not keep.
    - The record's level differs from `alerts.json`'s.
+   - The sites view does not give each spot's level on the session's day, or gives one that differs from
+     `alerts.json`'s. Without the day its rows said "today" and "tomorrow", counted from the issue, which
+     is wrong on the session's day (found 20 October 2026). The manifest's `day_shown` says it passed.
 5. Writes one folder holding the PDFs, the pages as drawn, the page code as served, the kept data, a
    copy of the session file, the email text and `manifest.json`. The manifest lists the issue id, the
    issue time, the forecast's version and commit, the source URLs and their hashes, what was missing at

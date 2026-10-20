@@ -50,19 +50,22 @@ def site(build: dict, calls: list | None = None):
 
 def fake_render(url, data, generated_at, kind):
     """The page as far as check_page looks: the issue time as record.js (`at`) and sites.js (`issue`) write
-    it, the record's level line from the data it was given, and the data it asked for."""
+    it, the record's level line from the data it was given, the sites view's rows for the link's day, and the
+    data it asked for."""
     t = B.parse_time(generated_at).astimezone(B.UK)
     expect = {"record": f"{t.day} {t:%b %Y, %H:%M}", "sites": f"{t:%a} {t.day} {t:%b, %H:%M}"}
-    level = ""
+    level, rows = "", {}
+    q = urllib.parse.parse_qs(url.split("#", 1)[1])
+    snap = B.Snapshot(json.loads(data["spots.json"]), json.loads(data["alerts.json"]))
     if kind == "record":
-        q = urllib.parse.parse_qs(url.split("#", 1)[1])
-        snap = B.Snapshot(json.loads(data["spots.json"]), json.loads(data["alerts.json"]))
         lv = B.day_words(snap, q["spot"][0], q["day"][0])[0]
         level = f"{lv.capitalize()} risk" if lv in B.ORDER else lv or ""
+    elif "day" in q:
+        rows = {i: [q["day"][0], B.day_words(snap, i, q["day"][0])[0]] for i in q["spots"][0].split(",")}
     text = f"{level}\nForecast issued {expect[kind]}."
     need = "spots.json" if kind == "record" else "spots-lite.json"
     return B.Rendered(url=url, dom=f"<!doctype html><p>{text}</p>", text=text, pdf=b"%PDF-1.4 stand-in\n", served={need: 1},
-                      page_files={f"{kind}.js": (url.split("#")[0], b"// the page's script")}, level=level, expect=expect)
+                      page_files={f"{kind}.js": (url.split("#")[0], b"// the page's script")}, level=level, expect=expect, rows=rows)
 
 
 @pytest.fixture(autouse=True)
@@ -200,6 +203,7 @@ def test_issue_keeps_a_fixed_copy_with_its_manifest(tmp_path):
     assert [x["key"] for x in m["spots"][0]["missing"]] == ["offline", "ea_advice"]
     assert [(p["kind"], p["role"]) for p in m["pages"]] == [("record", "main"), ("record", "backup"), ("sites", "both")]
     assert m["pages"][0]["issue_time_shown"] == "20 Oct 2026, 18:00" and m["pages"][2]["issue_time_shown"] == "Tue 20 Oct, 18:00"
+    assert m["pages"][2]["day_shown"] == "2026-10-22" and "day_shown" not in m["pages"][0]   # the sites view, on the session's day
     # Every file is listed with its hash, and they are as issued.
     listed = {f["path"] for f in m["files"]}
     on_disk = {str(p.relative_to(folder)) for p in folder.rglob("*") if p.is_file()} - {"manifest.json"}
@@ -273,8 +277,19 @@ def test_a_page_that_did_not_draw_the_kept_data_stops_the_issue(tmp_path):
         r.level = "Low risk"
         return r
 
+    def sites_without_day(url, data, g, kind):   # the live sites.js from before day= (20 Oct 2026)
+        r = fake_render(url, data, g, kind)
+        r.rows = {}
+        return r
+
+    def sites_other_level(url, data, g, kind):
+        r = fake_render(url, data, g, kind)
+        r.rows = {k: [d, "low"] for k, (d, _) in r.rows.items()}
+        return r
+
     for render, said in ((wrong_time, "does not show the forecast's issue time"), (live_data, "data the archive does not keep"),
-                         (other_level, "the two disagree")):
+                         (other_level, "the two disagree"), (sites_without_day, "does not give bw-uke4100-08901's level on 2026-10-22"),
+                         (sites_other_level, "the sites view says 'low' for bw-uke4100-08901 on 2026-10-22, alerts.json 'high'")):
         with pytest.raises(B.BriefingError, match=said):
             B.issue(SESSION, tmp_path, get=site(BEFORE), render=render, now=at(BEFORE))
         assert not list(tmp_path.rglob("manifest.json")) and not list(tmp_path.rglob("*.partial"))
@@ -436,7 +451,8 @@ def test_the_page_addresses():
         "https://swimsignal.co.uk/record.html#spot=bw-uke4100-08901&day=2026-10-22&org=Example%20%26%20Co"
     u = B.sites_url("https://swimsignal.co.uk/", s)
     assert u.startswith("https://swimsignal.co.uk/sites.html#spots=bw-uke4100-08901,wharfe-burnsall&name=Thu%2022%20Oct%2009%3A30%2C%20Example")
-    assert len(urllib.parse.unquote(u.split("&name=")[1])) <= 40   # lists.js, LIST_NAME_MAX
+    assert u.endswith("&day=2026-10-22")   # sites.js gives each spot's level on the session's day, by its date
+    assert len(urllib.parse.unquote(u.split("&name=")[1].split("&day=")[0])) <= 40   # lists.js, LIST_NAME_MAX
 
 
 # ------------------------------------------------------------------ the DevTools websocket

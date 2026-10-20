@@ -72,6 +72,39 @@ test('a row gives the headline and the five days by levels.js, and the reason in
   for (const m of text(h).matchAll(/\b(low|moderate|high|very high)\b(?! risk)/gi)) assert.fail(`"${m[0]}" without "risk" in: ${text(h)}`);
 });
 
+// A briefing's sheet (scripts/briefing.py, sites_url) is for its session's day, and is kept and read on later
+// days: on 20 Oct 2026 a Thursday briefing's sheet said "Very high risk tomorrow", meaning Wednesday.
+test('a link with a day gives each spot\'s level that day, named by its date, as the decision record does', () => {
+  assert.deepEqual(S.fromHash('#spots=a&day=2026-10-06'), {ids: ['a'], name: '', day: '2026-10-06'});
+  assert.deepEqual(S.fromHash('#spots=a&day=tomorrow'), {ids: ['a'], name: ''});   // not a date: no day
+  const poor = {...henley, id: 'bw-uke4100-08901', name: 'Wharfe at Cromwheel, Ilkley', source: 'designated', classification: {class: 'Poor', url: ''}};
+  const data = {...DATA, spots: [...DATA.spots, poor]};
+  const h = S.view(data, S.fromHash(`#spots=eden-lazonby,thames-henley,buttermere,bw-uke4100-08901&day=${DAYS[2]}`), NOW, '');
+  const rows = h.split('<li ').slice(1);
+  // The level and its cause are dayHeadline's, the day by its date, then that day's overflows as on the record.
+  assert.equal(L.dayHeadline(lazonby, DAYS[2]), 'Moderate risk: sewage spills');
+  assert.ok(rows[0].includes('<p class="s-head moderate">Moderate risk on Tue 6 Oct</p><p class="s-why">Sewage spills. About 3 of the 51 overflows upstream are expected to spill.</p>'));
+  assert.ok(rows[1].includes('<p class="s-head moderate">Moderate risk on Tue 6 Oct</p>'));
+  assert.ok(rows[2].includes('<p class="s-head clear">No monitored overflow found upstream</p>'));
+  assert.ok(rows[3].includes('<p class="s-head high">High risk on Tue 6 Oct</p><p class="s-why">Rated poor. About 2 of the 51 overflows upstream are expected to spill. EA advice on the day not checked: see the EA&#39;s page.</p>'));
+  // Each row says what it drew, for briefing.py to check against alerts.json.
+  assert.ok(rows[0].startsWith(`class="site" data-spot="eden-lazonby" data-day="${DAYS[2]}" data-level="moderate">`));
+  assert.ok(rows[3].includes('data-level="high"') && L.dayLevel(poor, DAYS[2]) === 'high');
+  // That day's letter is marked under the bars, not today's; the record link is for that day.
+  assert.deepEqual([...rows[0].matchAll(/<span class="wk( [a-z]+)?">/g)].map(m => m[1] || ''), ['', '', ' on', '', '']);
+  assert.ok(rows[0].includes(`href="record.html#spot=eden-lazonby&amp;day=${DAYS[2]}">Tue 6 Oct</a>`));
+  // No row says "today" or "tomorrow", and every level word carries "risk".
+  const said = text(h.slice(h.indexOf('<ol')));
+  assert.ok(!/\b(today|tomorrow)\b/i.test(said), said);
+  for (const m of said.matchAll(/\b(low|moderate|high|very high)\b(?! risk)/gi)) assert.fail(`"${m[0]}" without "risk" in: ${said}`);
+  // A day outside the forecast's five days: the usual rows, and a line saying so.
+  const late = S.view(DATA, S.fromHash('#spots=eden-lazonby&day=2026-10-20'), NOW, '');
+  assert.ok(late.includes(`<p class="s-head high">${L.headParts(lazonby)[0]}</p>`) && !late.includes('data-day'));
+  assert.ok(late.includes("Tue 20 Oct is not in this forecast's five days, so the levels above are the usual ones, from today."));
+  // Without a day the page is as it was, and the next view without one forgets the last day.
+  assert.ok(!S.view(DATA, S.fromHash('#spots=eden-lazonby'), NOW, '').includes('data-day'));
+});
+
 test('the issue time is said once, with the app\'s stale notice after 8 hours, and nothing says safe', () => {
   const ids = S.fromHash('#spots=eden-lazonby,thames-henley,buttermere');
   const h = S.view(DATA, ids, NOW, '');
