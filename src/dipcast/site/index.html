@@ -396,7 +396,7 @@
   .answer { text-align:center; padding:4px 0 0; }
   .answer .kind { margin:0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
   .answer .spot-name { margin:6px auto 0; max-width:16em; text-wrap:balance; }
-  .big { margin:12px 0 0; font:600 var(--fs-title)/1.1 var(--font-text); letter-spacing:-.01em; color:var(--k-na); }
+  .big { margin:12px auto 0; max-width:15em; font:600 var(--fs-title)/1.1 var(--font-text); letter-spacing:-.01em; color:var(--k-na); text-wrap:balance; }
   .big-head { margin:14px auto 0; max-width:12em; font:700 var(--fs-level)/1.12 var(--font-text); color:var(--k-na); text-wrap:balance; }
   .big.low, .big-head.low { color:var(--k-low); } .big.moderate, .big-head.moderate { color:var(--k-moderate); } .big.high, .big-head.high { color:var(--k-high); }
   .big.veryhigh, .big-head.veryhigh { color:var(--k-veryhigh); } .big.clear, .big-head.clear { color:var(--k-clear); }
@@ -1824,24 +1824,32 @@ const ownName = c => { const n = overflowNames(c); return n.own ? ` <span class=
 // Without a level, the headline in place of the word; under a plain level, the other risks and the rain.
 // Then what to do at that level, that day (act: levels.js, levelAction and dayAction), and what the
 // level counts and what it does not (scope: levelScope), which a plain level's own line says instead.
+// Where the spills set the level (levels.js, spillSet), the answer's noun names them, "risk from sewage
+// spills" (noun: HEAD_SCOPE, 20 Oct 2026), and its line under the level says when alone (why: "Tomorrow");
+// recent spills say so there (recent), as "Recent sewage spills" did (4 Oct 2026: "Sewage spills right
+// now" over "0 of 60 discharging" read as a contradiction). sub keeps the cause and when ("Sewage spills
+// tomorrow") for a saved card, whose level stays "Moderate risk" beside the week, as a list row's does.
 function answerParts(d, iso = null) {
+  const recent = 'Recent spills, right now';
   if (iso && daily(d)) {
-    const x = d.days.slice(0, 5).find(y => y.date === iso), r = x ? risk(d, x) : { level: null };
+    const x = d.days.slice(0, 5).find(y => y.date === iso), r = x ? risk(d, x) : { level: null }, spills = spillSet(d, r);
     const when = (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-    return { word: r.level ? cap(r.level) : null, tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(dayBecause(d, r)) : '', next: when, act: dayAction(d, iso),
+    const sub = !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(dayBecause(d, r)) : '';
+    return { word: r.level ? cap(r.level) : null, noun: spills ? HEAD_SCOPE : 'risk', tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
+      sub, why: !spills ? sub : !r.now ? '' : dayBecause(d, r).startsWith('recent ') ? recent : 'Right now', next: when, act: dayAction(d, iso),
       scope: r.level ? levelScope(d, iso) : '' };
   }
   const l = level(d), [h, w] = headParts(d);
-  if (ORDER[l] === undefined) return { word: null, tone: headTone(d), head: h,
-    sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
+  if (ORDER[l] === undefined) { const sub = plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '';
+    return { word: null, tone: headTone(d), head: h, sub, why: sub, next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) }; }
   // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
-  const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
+  const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '', spills = spillSet(d, worstNear(d)[0]);
   const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${nowUnknownWhy(d)}`   // right now not known (levels.js)
     : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
-  return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
+  const why = !spills || rank(l) === 0 ? sub : w.startsWith('recent ') ? recent : cap(when);   // the cause is in the headline
+  return { word: cap(l), noun: spills ? HEAD_SCOPE : 'risk', tone: tone(l), head: '', sub, why, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
@@ -2095,8 +2103,8 @@ function riverTile(rs) {
 // The answer's words, which a picked day fills again (showDay). What to do comes after the facts it
 // follows from, then what the level counts, before the river's separate hazard.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso);
-  return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
+  return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
+    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
     + unchecked(d, iso) + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
 // An overflow's spill under way, from its event's start (levels.js, spillStart): "since Tue 6 Oct, 11:46"
 // in UK time, and for how long.
@@ -2236,8 +2244,12 @@ async function shareImage(d) {
   g.fillStyle = v('--line'); g.fillRect(0, 148, W, 2);
   g.fillStyle = v('--ink'); g.font = `600 66px ${FD}`; let y = wrapText(g, d.name, 60, 270, W - 120, 78);
   // The headline as the list gives it, with a worse later day (levels.js, headParts), then what it cannot
-  // count or check, short: the overflows in Wales, and the EA's advice for today at a bathing water.
-  const iso = DAY, [head, why, later] = iso ? [dayHeadline(d, iso), dateLabel(iso), ''] : headParts(d);
+  // count or check, short: the overflows in Wales, and the EA's advice for today at a bathing water. Where
+  // the spills set the level, the answer's own words instead (answerParts, 20 Oct 2026): "Moderate risk
+  // from sewage spills", then when, so the picture in a chat says what the level covers, as the page does.
+  const iso = DAY, ans = answerParts(d, iso), scoped = !!ans.word && ans.noun !== 'risk';
+  const [head, why, later] = scoped ? [`${ans.word} ${ans.noun}`, iso ? dateLabel(iso) : ans.why, iso ? '' : laterWords(d)]
+    : iso ? [dayHeadline(d, iso), dateLabel(iso), ''] : headParts(d);
   const lv = iso ? dayLevel(d, iso) : level(d);
   g.fillStyle = v(`--k-${tone(lv)}`) || v('--ink'); g.font = `700 60px ${F}`; y = wrapText(g, head, 60, y + 40, W - 120, 70);
   if (why) { g.fillStyle = v('--muted'); g.font = `600 36px ${F}`; y = wrapText(g, cap(why), 60, y + 6, W - 120, 46); }

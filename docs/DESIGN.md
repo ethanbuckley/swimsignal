@@ -135,6 +135,15 @@ those sizes; they were taken off to keep the rule simple.)
   tooltips, a picked day's rows. A bare "Very high" read as very high what. The word stands alone
   only under a heading that names it: the five days ("Pollution risk, next five days"), the
   day-by-day table's "Risk" column, the map's key.
+- The answer's headline names what it covers where the spills set the level (20 October 2026, after an
+  outside review read "Moderate risk" at Long Bridges as a verdict on the water): "Moderate risk from sewage
+  spills", every word at the title's size, and the line under it says when ("Tomorrow", "Right now"), not
+  the cause again; recent spills say "Recent spills, right now". A low level reads "Low risk from sewage
+  spills" over its days. A poor rating, algae, a lab sample and the E. coli estimate are not forecasts of
+  spills: "High risk" over "Rated poor", as before. The shared picture says the same. The list, the map's
+  tooltips, Nearby, the comparison, a saved card, the embed and the alerts keep the short form, whose raised
+  rows name the cause after a colon ("Moderate risk tomorrow: sewage spills"). The words are `HEAD_SCOPE` in
+  `levels.js`; the reviewer's own, "Moderate predicted risk from monitored sewage overflows", were option A.
 - Right now raised with no overflow upstream discharging (4 October 2026): a spill counts until 48 h
   after its water has passed, so the reason is "recent sewage spills" ("Moderate risk right now: recent
   sewage spills"; the answer's line under the level is "Recent sewage spills"). "Sewage spills right now"
