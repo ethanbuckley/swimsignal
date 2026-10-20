@@ -79,7 +79,7 @@ test('no line says a spot is safe or uses a bare level word', () => {
 });
 
 test('the Method page gives each line word for word', () => {
-  const html = fs.readFileSync(path.join(__dirname, '../src/dipcast/api/static/methods.html'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/methods.html'), 'utf8');
   const sec = html.slice(html.indexOf('<h3 id="actions">'), html.indexOf('</section>', html.indexOf('<h3 id="actions">')));
   assert.ok(sec.length > 100, 'no #actions section on methods.html');
   for (const [lab, a] of [['Low risk', LOW], ['Moderate risk', MODERATE], ['High risk', HIGH], ['Very high risk', 'Avoid swimming here: choose a lower day or spot.'],

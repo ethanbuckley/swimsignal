@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
-const html = fs.readFileSync(path.join(__dirname, '../src/dipcast/api/static/verification.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/verification.html'), 'utf8');
 const src = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 
 const SPILL = {warn_at: 0.4, level: 'high', unit: 'overflow-day forecast', n: 23395, hits: 152, misses: 573, false_alarms: 211,
@@ -217,4 +217,12 @@ test('11 Oct 2026: the offline counts agree with their tables, and the reanalysi
   assert.match(o, /reanalysis \(the weather as it was\) 0\.0447/);
   assert.ok(!/upper bound/.test(o));
   assert.match(o, /\(2,165 samples\)\. The table scores the 1,750 samples at the 32 with a monitored overflow upstream\. The other 6 have none/);
+});
+
+test('In short says the spot level is not yet scored, and links the pre-registration (review A6)', async () => {
+  for (const data of [live(), live({warning_table: SPILL, overall: OVERALL})]) {
+    const els = await render(data), s = text(els.short.innerHTML);
+    assert.match(s, /The level you see on a spot's page is not yet scored; its spill part is, above\. How it will be scored from 2027 is fixed in the pre-registration ?\./);
+    assert.match(els.short.innerHTML, /PREREGISTRATION-2027\.md#amendment-1/);
+  }
 });

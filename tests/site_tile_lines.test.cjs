@@ -155,7 +155,7 @@ test('a list row gives no water figure: out of season it is untested, and it had
 });
 
 test('the Accuracy page and the scoring rules say South West Water is scored from 5 October', () => {
-  const ver = fs.readFileSync(path.join(__dirname, '../src/dipcast/api/static/verification.html'), 'utf8');
+  const ver = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/verification.html'), 'utf8');
   assert.doesNotMatch(ver, /as South West Water's, never counts as current/);
   assert.match(ver, /South West Water's records carry one, lastUpdated, but the site read it only from 4 October 2026, so its overflows are scored from 5 October/);
   const log = fs.readFileSync(path.join(__dirname, '../src/dipcast/forecast_log.py'), 'utf8');

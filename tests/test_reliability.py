@@ -508,7 +508,7 @@ def test_page_view_counter_is_off_by_default_and_disclosed_when_on():
     root = Path(__file__).resolve().parents[1]
     sys.path.insert(0, str(root / "scripts"))
     from build_site import NO_COUNTER, WITH_COUNTER, with_counter
-    privacy = (root / "src" / "dipcast" / "api" / "static" / "privacy.html").read_text()
+    privacy = (root / "src" / "dipcast" / "pages" / "privacy.html").read_text()
     assert all(s in privacy for s in NO_COUNTER)          # the swap targets still exist in the page
     assert with_counter(privacy, "") == privacy and with_counter(privacy, None) == privacy
     assert with_counter(privacy, "not-a-token'><script>") == privacy     # a malformed token cannot inject markup

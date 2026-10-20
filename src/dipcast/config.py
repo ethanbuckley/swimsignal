@@ -25,8 +25,6 @@ RIVERS_GPKG = RAW / "Data" / "oprvrs_gb.gpkg"
 # built artefacts stay read-only in PROCESSED. Reads fall back to PROCESSED.
 STATE = Path(os.environ.get("DIPCAST_STATE", PROCESSED))
 DUCKDB_PATH = STATE / "dipcast.duckdb"
-# In-process refresh of live status every N minutes; 0 disables (use scripts/refresh.py).
-REFRESH_MINUTES = int(os.environ.get("DIPCAST_REFRESH_MINUTES", "0"))
 
 
 def state_write(name: str) -> Path:

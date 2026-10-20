@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The data-quality page, quality.html: src/dipcast/quality.py fills the slots in double braces and
+     scripts/build_site.py (write_quality_page) writes it each build. A prose page with no script. -->
+<title>Overflow records to check · SwimSignal</title>
+<meta name="description" content="The storm overflow records where the water companies' live feeds and the Environment Agency's annual returns disagree or leave something out, for them to correct.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tables are page.css's. An overflow's name heads its row in ink, its id and the Tell us link
+     under it; each position has its receiving water under it. */
+  main.doc tbody th { color:var(--ink); font-weight:600; border-bottom-color:var(--line); }
+  main.doc tbody tr:last-child th { border-bottom:0; }
+  .qt .id, .qt .w { display:block; font-weight:400; font-size:var(--fs-meta); color:var(--muted); }
+  .qt .id a { color:var(--link); }
+  .qt td.rule { min-width:16em; }
+  details.fold > .tw { margin-top:0; }
+  /* On a phone the columns do not fit: each overflow is a block, its name over its fields, each with
+     its label, as on the profile and organisers' pages. */
+  @media screen and (max-width: 540px) {
+    .tw:has(.qt) { overflow:visible; border-bottom:0; }
+    .qt thead { display:none; }
+    .qt tr { display:block; padding:10px 0; border-bottom:1px solid var(--line); }
+    .qt th.ov { display:block; padding:0 0 4px; border:0; }
+    .qt td { display:block; padding:2px 0; border:0; }
+    .qt td.num { text-align:left; }
+    .qt td.rule { min-width:0; }
+    .qt td::before { content:attr(data-l) ": "; color:var(--muted); }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./">{{mark}}SwimSignal</a>
+<nav aria-label="Site"><a href="./">Explore</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+{{body}}
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>

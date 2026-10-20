@@ -96,7 +96,7 @@ test('every input has its time, its age when the page was opened, and its source
 });
 
 test('what the forecast cannot see is the About page\'s list, word for word', () => {
-  const about = fs.readFileSync(path.join(ROOT, 'src', 'dipcast', 'api', 'static', 'about.html'), 'utf8');
+  const about = fs.readFileSync(path.join(ROOT, 'src', 'dipcast', 'pages', 'about.html'), 'utf8');
   const list = about.split('<h2>What it cannot see</h2>')[1].split('</ul>')[0];
   const items = [...list.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(m => m[1].replace(/<[^>]+>/g, '').trim());
   // Every item, the overflows in Wales included: until 12 Oct 2026 the About page's said Dŵr Cymru's overflows

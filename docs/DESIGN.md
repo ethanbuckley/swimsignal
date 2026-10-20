@@ -4,7 +4,7 @@ Written 1 October 2026, when the site was redrawn to look like one product rathe
 generated pages, and revised on 2 October 2026 for the fifth round, "a field guide, not a
 dashboard", and the seventh, "the sky and the glass" (both below). This file is the reference for
 anyone changing how the site looks: what was wrong, what was decided, and the rules that keep the
-pages consistent. The stylesheet that carries the system is `src/dipcast/api/static/page.css`; the
+pages consistent. The stylesheet that carries the system is `src/dipcast/pages/page.css`; the
 app page, `src/dipcast/site/index.html`, repeats the tokens and the header inline so that it paints
 before any stylesheet arrives and works offline on its own. A token changed in one must be changed
 in the other: `tests/test_design_tokens.py` fails the build when the two sets differ, or when a rule
@@ -267,8 +267,15 @@ paper, as the site's first screen looked in the fifth round.
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
   the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
   is underlined in white.
-- **App, desktop:** map left, a 460 px column right. **App, phone:** list first, the map one tap
-  away in the bar at the bottom, a spot's page with its own small map. Unchanged.
+- **App, desktop:** the list, Saved and Plan: map left, a 460 px column right. A spot opens as a
+  page (20 Oct 2026): the map column goes and the map moves into the spot's own tile, 400 px tall;
+  the opening spans the page over the wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`),
+  and under it two columns, 5 to 7, 1,180 px at most: the five days, nearby and the water on the left,
+  the map and why on the right. From 801 to 1,099 px it is one 720 px column. Before, a spot was
+  3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to pick it.
+  **App, phone:** list first, the map one tap away in the bar at the bottom, a spot's page with its
+  own small map. Unchanged: the two columns are `display:contents` there, so the order is the one
+  stack it was.
 - **Prose pages:** one 720 px column, serif headings, 17 px text, a summary box where a page has an
   answer in a few lines, and the shared foot: one line about what the site is, then the small links.
 - **Accuracy page:** first the forecasts as warnings (4 October 2026): a plain sentence with the figures, the
@@ -301,10 +308,9 @@ Each prose page's `<head>` carries, in this order:
   `SourceSerif4-latin.woff2`, so that text swaps into them sooner. The italic is rarely used and
   is not preloaded.
 
-The pages are written for the API server, so these links start `/static/`; `scripts/build_site.py`
-rewrites each one for the static site (`REWRITES`). The API server has its own copies of the two
-icons in `src/dipcast/api/static/icons/`, taken from the site's `src/dipcast/site/icons/`, and a
-test checks that they still match. The 404 page, which the build writes, has the same head with
+The pages were written for an API server (removed 20 Oct 2026), so these links start `/static/`;
+`scripts/build_site.py` rewrites each one for the static site (`REWRITES`), and the icons are the
+site's own, `src/dipcast/site/icons/`. The 404 page, which the build writes, has the same head with
 absolute links, `noindex` and no description. The app page's head is its own, in `index.html`: it
 adds the manifest and the Home Screen tags, and asks for `data/spots-lite.json` (`FORECAST`, which
 `main()` awaits) and preloads the picture, `icons/fells.webp`. Every view's largest paint is the

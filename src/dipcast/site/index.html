@@ -375,8 +375,12 @@
   .tiles > .wide { grid-column:1 / -1; }
   #nearby-host:empty { display:none; }
   #sources-host:empty { display:none; }
-  .stack > .loc { margin:0; }
+  .stack .loc { margin:0; }
   .tile #spot-map { margin:10px 0 0; }
+  /* A spot's Upstream map: no legend, and none of the list's controls (the day, low risk only),
+     which covered the ringed spot at the top of so small a map; the tile has its own key. */
+  #spot-map .map-legend, #spot-map .low-ctl { display:none; }
+  .col-go, .col-why, .col-more { display:contents; }   /* a desktop's two columns on a spot's page; on a phone, the one stack */
   /* The answer, as Apple's opening lines: the place, its name, the level and "risk" at the title's size,
      what set it and when, where the five days go, the issue time. */
   .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -710,6 +714,37 @@
     #map-wrap { min-height:0; }
     #panel { overflow:auto; padding:24px 24px 40px; border-left:1px solid var(--line); }
     .phone-only { display:none !important; }
+    /* A spot opens as a page (20 Oct 2026): the map column goes, the map moves into the spot's own
+       tile, and the page is two columns under an opening that spans it: should I go and the water on
+       the left, the map and why on the right. 1,180 px at most, so a line stays readable on a wide
+       screen. The sky is the wide picture, so it is not stretched three times sideways. */
+    body.view-spot #app { grid-template-columns:minmax(0, 1fr); }
+    body.view-spot #map-wrap { display:none; }
+    /* The panel is the container, so the sky reaches its edges (100cqw is its width inside the padding).
+       With a scrollbar that takes room (Windows; a Mac set to show them) 100cqw still counts it, and
+       the sky hangs 8 px past the edge at 1,440 px: clipped, so there is nothing to scroll to sideways. */
+    body.view-spot #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
+    body.view-spot #result { max-width:1180px; margin:0 auto; }
+    body.view-spot .answer { margin-bottom:48px; }   /* the list's band: the first tiles start on the fells */
+    body.view-spot .answer::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
+      background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
+    /* The right column spans both rows; the second row is the flexible one, so a taller right column
+       leaves its space at the foot of the left one, not between the five days and the detail. */
+    body.view-spot .stack { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); grid-template-rows:auto 1fr;
+      grid-template-areas:"go why" "more why"; gap:8px 24px; align-items:start; }
+    body.view-spot .col-go, body.view-spot .col-why, body.view-spot .col-more { display:flex; flex-direction:column; gap:8px; min-width:0; }
+    body.view-spot .col-go { grid-area:go; } body.view-spot .col-why { grid-area:why; } body.view-spot .col-more { grid-area:more; }
+    body.view-spot .col-why > .spot-map-tile { order:-1; }   /* the map first, beside the five days */
+    body.view-spot #spot-map { height:400px; }
+    body.view-spot #spot-map .map-say { display:none; }   /* "Click any river or lake" is the full map's line; here it covered the tile's corner */
+  }
+  /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. */
+  @media (min-width: 801px) and (max-width: 1099px) {
+    body.view-spot #result { max-width:720px; }
+    body.view-spot .stack { grid-template-columns:minmax(0, 1fr); grid-template-rows:none; grid-template-areas:none; }
+    body.view-spot .col-go, body.view-spot .col-why, body.view-spot .col-more { display:contents; }
+    body.view-spot .col-why > .spot-map-tile { order:0; }
+    body.view-spot #spot-map { height:320px; }
   }
   /* Phones: the list first, the map one tap away; a spot's page carries its own small map. */
   @media (max-width: 800px) {
@@ -738,7 +773,6 @@
     .bottom-nav .n[hidden] { display:none; }
     /* A spot's Upstream map: no legend, and none of the list's controls (the day, low risk only),
        which covered the ringed spot at the top of so small a map. */
-    #spot-map .map-legend, #spot-map .low-ctl { display:none; }
     .map-legend { padding:5px 8px; }
   }
   /* Phones (the phone layout, to 800 px): titles and the answer's level at 30 px. The same step in page.css. */
@@ -894,6 +928,32 @@
   #il-form .rv-choice input:disabled { cursor:default; }
   #il-form .rv-choice input:disabled + span { opacity:.45; }
   .il-mine { margin:0 0 10px; }
+  /* Paper (review F5): the list or a spot's page, black on white in one column, with the issue time and
+     the credits. No header links, map, bottom bar or controls; the folds are opened by the script
+     (beforeprint), so what they hold prints. One column at any paper width: the desktop grid's
+     scrolling column would print one page and cut off the rest. The level marks keep their colours,
+     which are backgrounds that a browser drops by default. */
+  @media print {
+    html, body { height:auto; }
+    body { display:block; background:var(--card); color:var(--ink); }
+    #app { display:block; }
+    #panel { overflow:visible; padding:0; border:0; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    .top { position:static; padding:0 0 8px; background:var(--card); color:var(--ink); border-bottom:1px solid var(--line); }
+    .top .brand { color:var(--ink); }
+    .top nav, .skip, .bottom-nav, #map-wrap, .loc, .tile:has(#spot-map), .top-row, .actions, .below,
+      .search, .near-cta, .here-cta, .toolbar, .linkbtn, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
+      .about-line, #your-data, #home-screen, details.ea-today, details.consent, details.lists, form, .btn, .unsave,
+      .pick, details > summary::after, .quiet-btn::after { display:none !important; }
+    .answer::before, .lead::before { display:none; }
+    .answer, .lead { margin-bottom:16px; }
+    .tile, .sec, .group.tile { background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none; border:1px solid var(--line); }
+    details > summary { min-height:0; }
+    details.t-more > summary { display:none; }
+    a { color:var(--ink); text-decoration:none; }
+    footer.fine a { color:var(--muted); }
+    .drow, a.row, button.row, tr, .tiles > * { break-inside:avoid; }
+    h2, h3 { break-after:avoid; }
+  }
 </style>
 </head>
 <body class="view-list">
@@ -1123,10 +1183,21 @@ if (TOUCH) {
 }
 const spotLayer = L.layerGroup().addTo(map), contribLayer = L.layerGroup().addTo(map), ovLayer = L.layerGroup().addTo(map), selLayer = L.layerGroup().addTo(map);
 const mapMode = () => document.body.classList.contains('map-mode');
-function parkMap() { if (mapEl.parentElement !== mapWrap) mapWrap.appendChild(mapEl); }
+// A desktop's full map, as it was when a spot's page took the map into its tile: the reader never saw
+// it move, so back in its column it is where they left it, not on the spot (20 Oct 2026).
+let wideView = null;
+// Back in the desktop's map column from a spot's tile, the map takes the column's size first.
+function parkMap() {
+  if (mapEl.parentElement === mapWrap) return;
+  mapWrap.appendChild(mapEl);
+  if (PHONE.matches) return;
+  map.invalidateSize();
+  if (wideView) { map.setView(wideView[0], wideView[1], { animate: false }); wideView = null; }
+}
 function placeMap() {
-  const slot = PHONE.matches && current && !mapMode() ? document.getElementById('spot-map') : null;
+  const slot = current && !mapMode() ? document.getElementById('spot-map') : null;   // a spot's page, phone or desktop (20 Oct 2026)
   const home = slot || mapWrap;
+  if (slot && mapEl.parentElement === mapWrap && !PHONE.matches) wideView = [map.getCenter(), map.getZoom()];
   if (mapEl.parentElement !== home) home.appendChild(mapEl);
   if (TOUCH) { if (PHONE.matches && mapMode()) map.dragging.enable(); else map.dragging.disable(); }
   map.invalidateSize();
@@ -2180,7 +2251,7 @@ async function loadOverflows() {
   // Every overflow in view, when zoomed in. Not in a phone's small spot map, where the ones that
   // matter are already drawn and the layer would cost the data.
   const call = ++ovCall;
-  if (map.getZoom() < 9 || (PHONE.matches && !mapMode())) { ovLayer.clearLayers(); ovKey(false); return; }
+  if (map.getZoom() < 9 || (PHONE.matches && !mapMode()) || (current && !mapMode())) { ovLayer.clearLayers(); ovKey(false); return; }   // not on a spot's small map
   if (!OV_INDEX) { OV_INDEX = fetch('data/overflows/index.json').then(r => r.json()).then(j => ({ z: j.z, have: new Set(j.tiles) }));
     OV_INDEX.catch(() => { OV_INDEX = null; }); }
   const { z, have } = await OV_INDEX, b = map.getBounds(), keys = [];
@@ -3196,10 +3267,9 @@ function openSpot(s, fly, push, day) {
   render(s);
   selLayer.clearLayers();
   L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 3, fill: false, interactive: false }).addTo(selLayer);
-  // A phone's small map shows the spot with the overflows that matter most; a desktop's zooms in.
+  // The spot's small map, a phone's or a desktop's, shows the spot with the overflows that matter most.
   const pts = [[s.lat, s.lon], ...(s.contributors || []).slice(0, 5).map(c => [c.lat, c.lon])];
-  if (PHONE.matches) map.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 13, ...MOTION() });
-  else if (fly) map.setView([s.lat, s.lon], Math.max(map.getZoom(), 12), MOTION());
+  map.fitBounds(L.latLngBounds(pts), { padding: [24, 24], maxZoom: 13, ...MOTION() });
   scrollTop();
   // Opened from a link or a marker: the focus goes to the spot's name, not back to the top of the
   // document, so a screen reader starts at the name and the next Tab goes on from it. (Back and
@@ -3502,32 +3572,36 @@ function render(d) {
   // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
-  const tiles = `<div class="tiles">${fx.filter(o => o.icon !== ICON.rating).map(tile).join('')}</div>`
-    + (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
+  const tiles = `<div class="tiles">${fx.filter(o => o.icon !== ICON.rating).map(tile).join('')}</div>`;
+  // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
+  // is otherwise the shorter; on a phone it follows the tiles, as before.
+  const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
     + (typeof scoresHost === 'function' ? scoresHost(d) : '');   // how the forecast has done here (spotscores.js), filled when its file arrives
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="tile">${factors(d)}${check(d)}</div>${where}${atWater}${tiles}`
-      + `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div>` + actions(d);
+    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
+      + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
     setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
   }
-  h += `<div class="stack">${daysTile(d)}${where}`
-    + `<div id="nearby-host">${nearby(d)}</div>${atWater}`;   // Nearby after the answer, before the detail; showDay keeps it to the day
+  // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
+  // phone, where they are display:contents and the order is the stack's.
+  h += `<div class="stack"><div class="col-go">${daysTile(d)}${where}`
+    + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
-  if (total) h += `<div class="tile phone-only"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
+  if (total) h += `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
     + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
     + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
-  h += tiles;
+  h += tiles + `</div><div class="col-more">${more}`;
   if (d.contributors.length) h += overflowTile(d, total);
-  h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div>';
+  h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);
-  const more = document.getElementById('more-contrib');
-  if (more) more.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
-    more.setAttribute('aria-expanded', String(all)); more.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
+  const moreBtn = document.getElementById('more-contrib');
+  if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
+    moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
 }
 // Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those
@@ -3687,6 +3761,20 @@ if (document.getElementById('page-counter')) {
       : was ? 'Your visits will be counted again from the next page you open.'
       : 'Your visits from this browser are not counted from the next page you open.';
   });
+}
+// Paper (review F5): a printed page opens its folds, so what they hold is on the paper, and shuts them
+// again afterwards. Not the EA's panel (an iframe, blank on paper), nor the folds that hold only controls
+// or this browser's settings, which the print styles hide.
+const PRINT_FOLDS = 'details:not([open]):not(.ea-today):not(.consent):not(.lists):not(#your-data):not(#home-screen)';
+function openFoldsForPrint(root) {
+  const opened = [...root.querySelectorAll(PRINT_FOLDS)];
+  opened.forEach(d => { d.open = true; });
+  return () => opened.forEach(d => { d.open = false; });
+}
+if (typeof window === 'object' && window && typeof window.addEventListener === 'function') {
+  let shut = null;
+  window.addEventListener('beforeprint', () => { if (!shut) shut = openFoldsForPrint(document); });
+  window.addEventListener('afterprint', () => { if (shut) { shut(); shut = null; } });
 }
 </script>
 <script src="anypoint.js" defer></script>   <!-- a forecast for any point clicked on the map; deferred, so it runs after the script above -->
