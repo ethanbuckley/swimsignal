@@ -7,7 +7,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const PAGE = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
-const CSS = fs.readFileSync(path.join(__dirname, '../src/dipcast/api/static/page.css'), 'utf8');
+const CSS = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/page.css'), 'utf8');
 // The @media print block of a stylesheet: from its opening brace to the matching close.
 function printBlock(src) {
   const at = src.indexOf('@media print {');
