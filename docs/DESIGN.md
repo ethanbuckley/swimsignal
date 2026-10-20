@@ -963,10 +963,17 @@ gives all four navigation links a single full-width row.
   the starting place as a field with the pin icon where the search has the glass, the kinds of water
   as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
   320 px phone; the count under the chips says "within".
-- The spots come in up to three tiles, each the list's rows between hairlines with one more line in
-  ink, why the spot is there: "Nothing flagged on Saturday" (low, or a plain level), "Moderate risk or
-  higher on Saturday", "No level". A low spot and one with no monitored overflow are in one group
-  because neither is flagged that day; each row's headline still says which it is.
+- The spots come in up to four tiles, each the list's rows between hairlines with one more line in
+  ink, why the spot is there: "Low risk on Saturday", "No monitored overflow found upstream" (a plain
+  level), "Moderate risk or higher on Saturday", "No level". Until 20 October 2026 the first two were
+  one tile, "Nothing flagged on Saturday", which an outside review read as one answer: a forecast that
+  looked and found the risk low, and a spot with nothing upstream to forecast from. The plain tile says
+  so in one line under its heading, with the other risks; the foot keeps the view's one "check the
+  signs". "Share this plan" holds both tiles' spots and counts each ("14 at low risk on Saturday and 6
+  with no monitored overflow found upstream").
+- On a plan for today, a low row whose right now is not known (no overflow upstream reports live, or
+  those that matter most do not, a stale feed included) adds "Forecast only: ..." to its why line, the
+  words a saved card uses.
 - A row's distance leads its meta line ("7.7 miles away · Lake · bathing water"). Miles: travel is
   planned in miles, and Ethan's own example was "within 20 miles". Since 4 October 2026 every
   distance a swimmer travels is in miles, the list's and "Nearby" too; distances the water travels,
