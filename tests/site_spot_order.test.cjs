@@ -22,7 +22,8 @@ test('the page puts nearby, then the water, then why, in the order a swimmer ask
 });
 
 test("the EA's rating, with today's advice at its foot, leads the water, and the guide follows it", () => {
-  assert.match(render, /atWater = fx\.filter\(o => o\.icon === ICON\.rating\)\.map\(tile\)\.join\(''\)\n\s+\+ \(typeof guideTile === 'function' \? guideTile\(d, serverToday\) : ''\);/);
+  // Between them, the lab results an organisation sent (measured.js), when there are any.
+  assert.match(render, /atWater = fx\.filter\(o => o\.icon === ICON\.rating\)\.map\(tile\)\.join\(''\)\n\s+\+ \(typeof measuredTile === 'function' \? measuredTile\(d, Date\.now\(\)\) : ''\)[^\n]*\n\s+\+ \(typeof guideTile === 'function' \? guideTile\(d, serverToday\) : ''\);/);
   assert.match(render, /<div class="tiles">\$\{fx\.filter\(o => o\.icon !== ICON\.rating\)\.map\(tile\)\.join\(''\)\}<\/div>`/);
   // A spot without a forecast keeps the same order: the water before the tiles, which start the
   // desktop's second column.

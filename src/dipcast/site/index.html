@@ -1121,6 +1121,7 @@
 <script src="reviews.js"></script>   <!-- swimmers' reviews on a spot's page (reviews/ takes them in) -->
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
+<script src="measured.js"></script>   <!-- lab results an organisation sent (samples/): uses evidence.js's ages -->
 <script src="spotscores.js"></script>   <!-- how the forecast has done here: the live scores of the spot's upstream overflows -->
 <script src="eatoday.js"></script>   <!-- today's EA advice: the EA's own panel, loaded when its fold is opened -->
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
@@ -3669,6 +3670,7 @@ function render(d) {
   // advice sentence stays in view, then the practical guide (guide.js), after which the notes on a visit
   // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
+    + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
   const tiles = `<div class="tiles">${fx.filter(o => o.icon !== ICON.rating).map(tile).join('')}</div>`;
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
