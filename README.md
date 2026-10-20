@@ -1369,7 +1369,9 @@ the overflow table, forecasts every spot with `forecast_point`, scores logged
 forecasts against the accumulated polls, and writes `site/`; saves the state
 back to the cache and, when the release copy is over 12 hours old, to the
 release (GitHub runs the schedule only a few times a day, at irregular times);
-and deploys `site/` to GitHub Pages. Nothing is committed by the job except
+and deploys `site/` to GitHub Pages, or to Cloudflare Pages once the secret
+`CLOUDFLARE_API_TOKEN` is set (`docs/HOSTING-MOVE-2026-10.md`, the move for
+paid pilots). Nothing is committed by the job except
 `HEARTBEAT.md`, so the repository does not grow. The first scheduled run after
 that file is 25 days old rewrites it, because GitHub disables the schedule of
 a public repository after 60 days without activity.
@@ -1407,7 +1409,8 @@ no substitute for a solicitor before any of these happens.
   re-check the spill and E. coli models against its rainfall, or get this
   reading confirmed.
 - **Hosting.** GitHub's rules do not allow GitHub Pages to host an online
-  business, so a paid SwimSignal needs another host.
+  business, so a paid SwimSignal needs another host. The move to Cloudflare
+  Pages is prepared in `docs/HOSTING-MOVE-2026-10.md`.
 - **Rainfall API.** Open-Meteo's free API excludes sites with subscriptions or
   advertising; those need a paid plan, whose terms then apply. The ensemble and
   archive need the Professional plan. Set the repository secret
