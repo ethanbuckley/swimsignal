@@ -91,7 +91,11 @@ PLAN_DESCRIPTION = ("Pick a day, where you are starting from and how far you wil
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]+")
 PAGE_META = re.compile(r"<!-- page-meta.*?<!-- /page-meta -->", re.DOTALL)
 LOADING = '<div id="result"><p class="muted">Loading forecasts…</p></div>'
-SKY_PRELOAD = '<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high">'   # index.html's
+# index.html's, word for word: the sky for each screen (the wide one from 1,100 px, where the list,
+# Saved and Plan a swim span the page), and the same pair for a spot's page, which spans it from 801 px.
+SKY_PRELOAD = ('<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high" media="(max-width: 1099px)">\n'
+               '<link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">')
+SPOT_SKY_PRELOAD = SKY_PRELOAD.replace('1099px', '800px').replace('1100px', '801px')
 # The brand mark, inline in every page's header (the static pages carry the same markup), so it needs no path.
 MARK = ('<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/>'
         '<path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/>'
@@ -1520,7 +1524,9 @@ def home_lead(n: int) -> str:
             '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
             '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
             '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
-            f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
+            f'</div><div class="cols"><div class="col-list"><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>'
+            # The map's tile, as index.html's MAP_TILE frames it, empty until the script moves the map in.
+            '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')
 
 
 def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
@@ -1539,11 +1545,9 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
-        # A desktop's spot page spans the screen and draws the wide sky (index.html, "A spot opens as
-        # a page"), so each screen asks early for the picture it shows, and only that one.
-        page = page.replace(SKY_PRELOAD, SKY_PRELOAD.replace('as="image"', 'as="image" media="(max-width: 800px)"')
-                            + '\n' + SKY_PRELOAD.replace('fells.webp', 'fells-wide.webp')
-                            .replace('as="image"', 'as="image" media="(min-width: 801px)"'), 1)
+        # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
+        # opens as a page"), so each screen asks early for the picture it shows, and only that one.
+        page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
         return page.replace(LOADING, f'<div id="result" data-built>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
     return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'

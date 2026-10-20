@@ -273,15 +273,32 @@ paper, as the site's first screen looked in the fifth round.
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
   the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
   is underlined in white.
-- **App, desktop:** the list, Saved and Plan: map left, a column right, 460 px wide and 560 px
-  from 1,200 px (20 Oct 2026), where a row's five days carry their short names ("Tue") over bars
-  32 px wide in place of the letters. On the list the day and "Low risk only" are the column's
-  alone; the map shows its own pair only on Saved and Plan, which have none. A spot opens as a
-  page (20 Oct 2026): the map column goes and the map moves into the spot's own tile, 400 px tall;
-  the opening spans the page over the wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`),
-  and under it two columns, 5 to 7, 1,180 px at most: the five days, nearby and the water on the left,
-  the map and why on the right. From 801 to 1,099 px it is one 720 px column. Before, a spot was
-  3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to pick it.
+- **App, desktop:** every view is a page under the header from 1,100 px (20 Oct 2026). A spot opens as
+  a page: the map moves into the spot's own tile, 400 px tall; the opening spans the page over the
+  wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`), and under it two columns, 5 to 7,
+  1,180 px at most: the five days, nearby and the water on the left, the map and why on the right.
+  Before, a spot was 3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to
+  pick it. The list, Saved and Plan a swim match it (`cols`, `col-list`, `col-map`): the opening
+  (`.lead`) centred over the wide sky, 760 px at most, the back link at the left edge as on a spot;
+  on the list the search and "Show spots near me" share a row, as do the day and "Low risk only";
+  under it the view on the left (5) and the full map on the right (7), in a glass tile labelled Map
+  that is sticky under the header, the screen's height less the header and two 24 px gaps, never
+  under 480 px. It keeps its controls, its legend (wrapped to the tile, above the credit) and
+  click-anywhere. The page scrolls as one, in the panel, so the list keeps its place and the map its
+  view when a spot is opened and closed. At 1,440 x 900 the map is 646 x 735 (880 x 836 beside the
+  560 px column before); the list's opening ends 425 px down, so 427 px of the 788 px tile show on the
+  first screen, and a river picked from the search scrolls the page until the whole tile is in view
+  (`mapInView`). In the tile the map takes quarter steps of zoom (`snapMap`) and fits all the spots
+  close to their own bounds, clear of the legend (`fitAll`): zoom 6.5 there, where a whole step left
+  England under half the tile. A phone's map and the desktop's column keep whole steps and their fits. About and the foot share the 1,180 px
+  frame, About's text at 720 px.
+  From 801 to 1,099 px a spot is one 720 px column, and the list, Saved and Plan keep the old layout:
+  map left, a 460 px column right. One 720 px column would put the map between the opening and the
+  first spot: the opening ended about 520 px down at 1,440 before it was shortened, so with a 320 px map tile (a spot's at
+  this width) the first spot would start near the foot of a 900 px screen (an estimate, not built).
+  Two columns would leave the list 380 px wide, a phone's. A row's five days carry their short names ("Tue") over bars 32 px wide from
+  1,200 px. On the list the day and "Low risk only" are the opening's alone; the map shows its own
+  pair only on Saved and Plan, which have none.
   **App, phone:** list first, the map one tap away in the bar at the bottom, a spot's page with its
   own small map. Unchanged: the two columns are `display:contents` there, so the order is the one
   stack it was.
