@@ -1,0 +1,310 @@
+{
+ "rows": {
+  "F25 training 2024": {
+   "site_days": {
+    "Anglian Water": 512034,
+    "Northumbrian Water": 501420,
+    "Severn Trent Water": 871812,
+    "South West Water": 492270,
+    "Southern Water": 339282,
+    "Thames Water": 211182,
+    "United Utilities": 804834,
+    "Wessex Water": 472506,
+    "Yorkshire Water": 771528
+   },
+   "overflows": {
+    "Anglian Water": 1399,
+    "Northumbrian Water": 1370,
+    "Severn Trent Water": 2382,
+    "South West Water": 1345,
+    "Southern Water": 927,
+    "Thames Water": 577,
+    "United Utilities": 2199,
+    "Wessex Water": 1291,
+    "Yorkshire Water": 2108
+   },
+   "site_days_without_rain": {
+    "Anglian Water": 0,
+    "Northumbrian Water": 0,
+    "Severn Trent Water": 0,
+    "South West Water": 0,
+    "Southern Water": 0,
+    "Thames Water": 0,
+    "United Utilities": 0,
+    "Wessex Water": 0,
+    "Yorkshire Water": 0
+   },
+   "raw_values_missing": {
+    "Anglian Water": {
+     "lta_spills": 284,
+     "spill_hours": 8,
+     "edm_operational_pct": 1
+    },
+    "Northumbrian Water": {
+     "lta_spills": 13,
+     "spill_hours": 9,
+     "edm_operational_pct": 0
+    },
+    "Severn Trent Water": {
+     "lta_spills": 19,
+     "spill_hours": 7,
+     "edm_operational_pct": 3
+    },
+    "South West Water": {
+     "lta_spills": 38,
+     "spill_hours": 15,
+     "edm_operational_pct": 3
+    },
+    "Southern Water": {
+     "lta_spills": 13,
+     "spill_hours": 6,
+     "edm_operational_pct": 0
+    },
+    "Thames Water": {
+     "lta_spills": 113,
+     "spill_hours": 8,
+     "edm_operational_pct": 0
+    },
+    "United Utilities": {
+     "lta_spills": 245,
+     "spill_hours": 90,
+     "edm_operational_pct": 0
+    },
+    "Wessex Water": {
+     "lta_spills": 87,
+     "spill_hours": 0,
+     "edm_operational_pct": 0
+    },
+    "Yorkshire Water": {
+     "lta_spills": 16,
+     "spill_hours": 14,
+     "edm_operational_pct": 0
+    }
+   },
+   "base_rate": {
+    "Anglian Water": 0.08478733834081331,
+    "Northumbrian Water": 0.06765785170116868,
+    "Severn Trent Water": 0.06992906727597234,
+    "South West Water": 0.11226968939809454,
+    "Southern Water": 0.08425144864743782,
+    "Thames Water": 0.10639637847922645,
+    "United Utilities": 0.09591791599261462,
+    "Wessex Water": 0.09442631416320639,
+    "Yorkshire Water": 0.08706100102653436
+   }
+  },
+  "F25 judged 2025": {
+   "site_days": {
+    "Anglian Water": 512825,
+    "Northumbrian Water": 562100,
+    "Severn Trent Water": 880380,
+    "South West Water": 493845,
+    "Southern Water": 343465,
+    "Thames Water": 209875,
+    "United Utilities": 825995,
+    "Wessex Water": 467565,
+    "Yorkshire Water": 781100
+   },
+   "overflows": {
+    "Anglian Water": 1405,
+    "Northumbrian Water": 1540,
+    "Severn Trent Water": 2412,
+    "South West Water": 1353,
+    "Southern Water": 941,
+    "Thames Water": 575,
+    "United Utilities": 2263,
+    "Wessex Water": 1281,
+    "Yorkshire Water": 2140
+   },
+   "site_days_without_rain": {
+    "Anglian Water": 0,
+    "Northumbrian Water": 0,
+    "Severn Trent Water": 0,
+    "South West Water": 0,
+    "Southern Water": 0,
+    "Thames Water": 0,
+    "United Utilities": 0,
+    "Wessex Water": 0,
+    "Yorkshire Water": 0
+   },
+   "raw_values_missing": {
+    "Anglian Water": {
+     "lta_spills": 0,
+     "spill_hours": 8,
+     "edm_operational_pct": 0
+    },
+    "Northumbrian Water": {
+     "lta_spills": 0,
+     "spill_hours": 8,
+     "edm_operational_pct": 0
+    },
+    "Severn Trent Water": {
+     "lta_spills": 0,
+     "spill_hours": 2,
+     "edm_operational_pct": 0
+    },
+    "South West Water": {
+     "lta_spills": 0,
+     "spill_hours": 0,
+     "edm_operational_pct": 0
+    },
+    "Southern Water": {
+     "lta_spills": 0,
+     "spill_hours": 1,
+     "edm_operational_pct": 0
+    },
+    "Thames Water": {
+     "lta_spills": 5,
+     "spill_hours": 2,
+     "edm_operational_pct": 0
+    },
+    "United Utilities": {
+     "lta_spills": 5,
+     "spill_hours": 26,
+     "edm_operational_pct": 0
+    },
+    "Wessex Water": {
+     "lta_spills": 0,
+     "spill_hours": 0,
+     "edm_operational_pct": 0
+    },
+    "Yorkshire Water": {
+     "lta_spills": 0,
+     "spill_hours": 10,
+     "edm_operational_pct": 0
+    }
+   },
+   "base_rate": {
+    "Anglian Water": 0.03308731048603325,
+    "Northumbrian Water": 0.050517701476605587,
+    "Severn Trent Water": 0.0416592834912197,
+    "South West Water": 0.09382903542609523,
+    "Southern Water": 0.0444412094390986,
+    "Thames Water": 0.042892197736748065,
+    "United Utilities": 0.07459488253560857,
+    "Wessex Water": 0.05247612631398843,
+    "Yorkshire Water": 0.0667110485213161
+   },
+   "overflows_the_training_return_lacks": 1110
+  },
+  "F24 2023 overflows with no id, dropped": 0,
+  "F24 training 2023": {
+   "site_days": {
+    "Northumbrian Water": 352590,
+    "United Utilities": 691675,
+    "Wessex Water": 358795
+   },
+   "overflows": {
+    "Northumbrian Water": 966,
+    "United Utilities": 1895,
+    "Wessex Water": 983
+   },
+   "site_days_without_rain": {
+    "Northumbrian Water": 0,
+    "United Utilities": 0,
+    "Wessex Water": 0
+   },
+   "raw_values_missing": {
+    "Northumbrian Water": {
+     "lta_spills": 5,
+     "spill_hours": 30,
+     "edm_operational_pct": 5
+    },
+    "United Utilities": {
+     "lta_spills": 223,
+     "spill_hours": 129,
+     "edm_operational_pct": 220
+    },
+    "Wessex Water": {
+     "lta_spills": 84,
+     "spill_hours": 84,
+     "edm_operational_pct": 84
+    }
+   },
+   "base_rate": {
+    "Northumbrian Water": 0.07688249808559516,
+    "United Utilities": 0.11889398922904543,
+    "Wessex Water": 0.09239259187000934
+   }
+  },
+  "F24 judged 2024": {
+   "site_days": {
+    "Northumbrian Water": 501420,
+    "United Utilities": 804834,
+    "Wessex Water": 472506
+   },
+   "overflows": {
+    "Northumbrian Water": 1370,
+    "United Utilities": 2199,
+    "Wessex Water": 1291
+   },
+   "site_days_without_rain": {
+    "Northumbrian Water": 0,
+    "United Utilities": 0,
+    "Wessex Water": 0
+   },
+   "raw_values_missing": {
+    "Northumbrian Water": {
+     "lta_spills": 13,
+     "spill_hours": 9,
+     "edm_operational_pct": 0
+    },
+    "United Utilities": {
+     "lta_spills": 245,
+     "spill_hours": 90,
+     "edm_operational_pct": 0
+    },
+    "Wessex Water": {
+     "lta_spills": 87,
+     "spill_hours": 0,
+     "edm_operational_pct": 0
+    }
+   },
+   "base_rate": {
+    "Northumbrian Water": 0.06765785170116868,
+    "United Utilities": 0.09591791599261462,
+    "Wessex Water": 0.09442631416320639
+   },
+   "overflows_the_training_return_lacks": 1381
+  }
+ },
+ "question_1a": {
+  "pairs": 18,
+  "same_sign": 17,
+  "needed": 14,
+  "pass": true,
+  "spearman_rho": 0.9504643962848297,
+  "spearman_p": 1.5597650189845142e-09
+ },
+ "question_1b": {
+  "predictions": 9,
+  "held": 7,
+  "needed": 8,
+  "pass": false
+ },
+ "question_1_yes": false,
+ "question_2_R2": {
+  "1 real gain overall": true,
+  "2 neither fold clearly worse": true,
+  "3 no company clearly worse": false,
+  "4 reliability": false
+ },
+ "question_2_yes": false,
+ "question_2_R1_observation": {
+  "1 real gain overall": true,
+  "2 neither fold clearly worse": true,
+  "3 no company clearly worse": true,
+  "4 reliability": true
+ },
+ "F25_reproduces_D2": {
+  "largest_forecast_difference_A_vs_D2": 0.0
+ },
+ "bootstrap": {
+  "draws": 2000,
+  "weeks": 105
+ },
+ "layer_2": {
+  "prior_strength": 15.0,
+  "recency": 1.0
+ }
+}
