@@ -12,7 +12,7 @@
 // `Organisers`, so no name here can clash with one of levels.js's.
 const Organisers = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
-    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, poorAdvice,
+    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice,
       overflowNames, overflowWhere, companyName };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
@@ -85,8 +85,9 @@ const Organisers = (() => {
         rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
           + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
       const band = R.ecoliBand(s, x);
-      if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>.`
-        + (R.ecoliUntested(x) ? ' Untested from October to April, when the Environment Agency takes no samples, so it does not set the level.' : ` ${cap(band)} risk.`)));
+      // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF; 20 Oct 2026).
+      if (band && R.ecoliUntested(x)) rows.push(row('Water quality', esc(R.ECOLI_OFF_SAID)));
+      else if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>. ${cap(band)} risk.`));
       else if ((s.location || {}).mode === 'lake') rows.push(row('Water quality', 'Not estimated: the E. coli model showed no skill on lakes.'));
       if (!nil(x.rain_48h_mm)) rows.push(row('Rain here', `${Math.round(x.rain_48h_mm)} mm in the 48 hours to midday.`));
     } else if (R.daily(s)) rows.push(row('Sewage spills upstream', 'No forecast for this day in this update.'));

@@ -121,9 +121,20 @@ const isolated = s => String(s.error || '').startsWith('An isolated lake');   //
 const ecoliTested = s => daily(s) && (s.location || {}).mode !== 'lake';
 // The figure's band, for its own row and cell, in any month.
 const ecoliBand = (s, x) => ecoliTested(s) && x && !nil(x.p_ecoli_gt900) ? ECOLI_BANDS.find(([t]) => x.p_ecoli_gt900 < t)[1] : null;
-// Untested from October to April (the build marks each day): shown, but not counted in the level.
+// Untested from October to April (the build marks each day): not counted in the level, and its figure
+// stays out of the main view (ECOLI_OFF, below).
 const ecoliUntested = x => !!x && x.in_validated_season === false;
 const ecoliLevel = (s, x) => ecoliUntested(x) ? null : ecoliBand(s, x);
+// What stands in for the figure out of season (20 Oct 2026). An outside reviewer read the Thames at Long
+// Bridges as two answers to reconcile: "Moderate risk" over a tile whose figure was "56%", labelled
+// "Untested in October". A precise number gains authority whatever the words beside it say. So from
+// October to April no percentage is in a tile's figure, a row's value, a summary line, the shared picture
+// or the decision record: the tile says ECOLI_OFF, is named experimental, and keeps the daily figures under
+// a fold of that name (ECOLI_FOLD). The day-by-day numbers, a folded table, keep them marked †. On 11 Oct
+// 2026 the band had already gone ("Very high risk" under a "Low risk" answer read as a contradiction).
+const ECOLI_OFF = 'Out of season';
+const ECOLI_EXPERIMENTAL = 'Experimental E. coli estimate', ECOLI_FOLD = 'Experimental estimate';
+const ECOLI_OFF_SAID = 'Out of season. The E. coli estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental, so it is not given here and does not set the level.';
 const algaeAge = a => (Date.parse(today()) - Date.parse(a.date)) / 864e5;
 const algaeLevel = s => { const a = s.algae; if (!a || nil(a.level) || algaeAge(a) > 14) return null;
   return a.level >= 3 ? 'high' : a.level >= 2 ? 'moderate' : null; };
@@ -360,7 +371,7 @@ function dayHeadline(s, iso) {
 // 'spill', 'water', 'rating', 'algae' or 'now'. iso is a picked day, whose rows show that day's
 // figures; without it the line is for the answer (right now, today and tomorrow) and the tiles,
 // which show today's. Empty where there is nothing to say: no level above (a plain level, a failed
-// forecast), no figure, or a water figure out of season, whose † note already says it is not counted.
+// forecast), no figure, or an E. coli estimate out of season, whose tile already says it is not counted.
 function tileLine(s, kind, iso = null) {
   const x = iso ? (s.days || []).slice(0, 5).find(d => d.date === iso) : (s.days || [])[0];
   const c = classOf(s);
@@ -746,5 +757,6 @@ if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
+    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }
