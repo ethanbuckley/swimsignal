@@ -1,6 +1,6 @@
-# Derwent Water at Crow Park. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Derwent Water at Crow Park. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-20
 how = "desk"
 
 [[fact]]
@@ -30,3 +30,52 @@ text = "Public toilets at Lakeside car park, Keswick: 50p, card payment only at 
 status = "confirmed"
 source = "https://www.cumberland.gov.uk/your-environment/find-public-toilet/lakeside-car-park-keswick-public-toilets"
 source_name = "Cumberland Council"
+
+[[fact]]
+topic = "path"
+text = "The National Trust's accessible walk from Keswick Lakeside car park goes out onto Lake Road past Theatre by the Lake and down the tarmac for 150m to the lake; the route starts and ends with a 7% gradient. The page does not mention Crow Park or swimming."
+status = "confirmed"
+source = "https://static.nationaltrust.org.uk/trails/visit/lake-district/borrowdale-and-derwent-water/derwent-water-and-cockshot-wood-accessible-loop-walking.pdf"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Derwentwater, as are canoes, kayaks, paddleboards, rowing and sailing boats, and powered craft with a 10 mph speed limit. It names the National Trust (North West) as the contact. The page covers the whole lake and does not name Crow Park."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says that, as a general guide, a swimming group of more than 50 people, or one bringing infrastructure such as a gazebo, should seek advice from the landowner. The page covers all the lakes and does not name Crow Park."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Keswick Launch says its Derwentwater cruises start and end at Keswick Boat Landings, where it also hires out boats. Its page shows a launch at the landings with Crow Park in the background."
+status = "confirmed"
+source = "https://keswick-launch.co.uk/jetties/keswick/"
+source_name = "Keswick Launch"
+
+[[fact]]
+topic = "rules"
+text = "Keswick Launch's summer timetable (21 Mar to 8 Nov) has cruises leaving Keswick every half hour from 10:00, alternately clockwise and anticlockwise, with extra services every 15 minutes from 15 Jul to 31 Aug, subject to demand. The page does not mention swimmers."
+status = "confirmed"
+source = "https://keswick-launch.co.uk/cruises/summer-times/"
+source_name = "Keswick Launch"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust says an outdoor event that crosses its land in the Lake District needs its event information form, and permission from each landowner whose land the event crosses. It replies within 28 days. It charges no fee to process an event and suggests a donation of 4% of each entry fee. The page does not name Crow Park."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/outdoor-activities/active-outdoors-providers-in-the-lake-district"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust says New Zealand pigmyweed, an invasive plant, is thriving in Derwent Water. It asks everyone who swims, paddles or sails there not to take the weed with them when they go: checking, cleaning and drying kit, including wetsuits and swimming costumes, helps stop it spreading."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
+source_name = "National Trust"
