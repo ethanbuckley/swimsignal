@@ -134,7 +134,7 @@ test('a lab count says whether it is over 900, the line the E. coli estimate is 
 
 test('the Compare table gives the latest sample in the same words, or says plainly there is none', () => {
   const { evidenceRows } = require('../src/dipcast/site/experience.js');
-  const samples = s => Object.fromEntries(evidenceRows({ days: [], ...s }, '2026-10-04', '', BUILT, NOW))['Water samples'].replace(/ /g, ' ');
+  const samples = s => Object.fromEntries(evidenceRows({ days: [], ...s }, '2026-10-04', BUILT, NOW))['Water samples'].replace(/ /g, ' ');
   const cl = { class: 'poor', year: 2025, url: URL_ };
   assert.match(samples({ source: 'designated', classification: cl, lab_sample: { taken_at: '2026-09-24T10:35+01:00', ecoli: 380 } }),
     /^380 E\. coli per 100 ml, taken 24 Sept?: under 900\. Check the Environment Agency’s page for every result and current advice\.$/);
@@ -235,4 +235,42 @@ test("no other script of the page defines one of evidence.js's names", () => {
   assert.deepEqual(clash, []);
   assert.ok(mine.has('evidenceTile') && mine.size > 5);
   assert.ok(html.indexOf('src="evidence.js"') > 0 && html.indexOf('src="evidence.js"') < html.indexOf('<script>\n'), 'loaded before the page script that calls it');
+});
+
+// How much evidence sits behind the level (evidenceCoverage), Plan a swim's line under each row: the live
+// warnings' share at the company the spill model learned from, or at the others, from the Accuracy page's
+// warning table (verification.json, live.warning_table), as it stood on 20 Oct 2026.
+const W = { trained_on: 'United Utilities', first_day: '2026-09-29', last_day: '2026-10-19', by_company: [
+  { company: 'United Utilities', hits: 410, misses: 697 }, { company: 'Yorkshire Water', hits: 13, misses: 437 },
+  { company: 'Anglian Water', hits: 0, misses: 278 }, { company: 'unknown', hits: 0, misses: 70 }, { company: 'Thames Water', hits: 10, misses: 607 }] };
+const LINK = '<a href="verification.html#warnings">';
+const yorkshire = (extra = {}) => cromwheel({ contributors: [{ site_id: 'A', company: 'Yorkshire Water', weight: 0.9 }, { site_id: 'B', company: 'Yorkshire Water', weight: 0.1 }], ...extra });
+
+test('the evidence line: whose overflows, and the live warnings\' share at that company or at the others', () => {
+  assert.equal(ev.evidenceCoverage(yorkshire(), W),
+    `Yorkshire Water's overflows. The model learned from United Utilities'; since 29 Sept it has warned of ${LINK}2% of other companies' spills</a>.`);   // 23 of 1,403
+  const uu = cromwheel({ contributors: [{ company: 'United Utilities', weight: 0.7 }, { company: 'Yorkshire Water', weight: 0.3 }] });
+  assert.equal(ev.evidenceCoverage(uu, W),
+    `Mostly United Utilities' overflows, whose spills the model learned from. Since 29 Sept it has warned of ${LINK}37% of their spills</a>.`);   // 410 of 1,107
+  // Two companies with a quarter each or more are both named; the circumflex as pages write it.
+  const two = cromwheel({ contributors: [{ company: 'Dwr Cymru Welsh Water', weight: 0.5 }, { company: 'Severn Trent Water', weight: 0.5 }] });
+  assert.match(ev.evidenceCoverage(two, W), /^Dŵr Cymru Welsh Water's and Severn Trent Water's overflows\. /);
+  // The lite file's reach_by_company stands in for the contributors, which the list and the planner do not load.
+  assert.equal(ev.evidenceCoverage(cromwheel({ reach_by_company: [['Yorkshire Water', 1]] }), W), ev.evidenceCoverage(yorkshire(), W));
+  assert.deepEqual([...ev.evidenceCompanies(yorkshire()).entries()], [['Yorkshire Water', 1]]);
+});
+
+test('the evidence line: forecast only today where right now is not known, and nothing without a forecast', () => {
+  const blind = yorkshire({ now: { ...cromwheel().now, monitored_upstream: 0 } });
+  assert.match(ev.evidenceCoverage(blind, W, true), /^Forecast only: no overflow upstream reports live\. Yorkshire Water's overflows\. /);
+  assert.doesNotMatch(ev.evidenceCoverage(blind, W, false), /Forecast only/);              // another day: not a question of right now
+  assert.equal(ev.evidenceCoverage(blind, null, true), 'Forecast only: no overflow upstream reports live.');   // the table not loaded
+  assert.equal(ev.evidenceCoverage(yorkshire(), null), '');
+  assert.equal(ev.evidenceCoverage(cromwheel(), W), '');                                    // no overflows' companies to go on
+  assert.equal(ev.evidenceCoverage(yorkshire({ error: 'forecast failed: x' }), W), '');
+  assert.equal(ev.evidenceCoverage(yorkshire({ upstream_summary: { overflows: 0 } }), W), '');   // a plain level: no daily forecast
+  // Mostly another company's, with some of the model's own: the others are named, and their share given.
+  const most = cromwheel({ contributors: [{ company: 'United Utilities', weight: 0.3 }, { company: 'Yorkshire Water', weight: 0.7 }] });
+  assert.match(ev.evidenceCoverage(most, W), /^Mostly Yorkshire Water's overflows\. .*other companies' spills/);
+  assert.doesNotMatch(ev.evidenceCoverage(yorkshire(), W), /\bsafe\b|\bclean\b/);
 });

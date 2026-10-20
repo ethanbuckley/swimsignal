@@ -44,7 +44,8 @@ test('a day inside the forecast gives its level by the page rules, why, and how 
   assert.ok(h.includes('Sewage spill risk <b>20</b> of 100'));
   // The three most likely to reach the spot that day, chance times reach, by their plain names (levels.js, plainName).
   assert.match(h, /Most likely to reach the spot: Friday Street \(Henley\) pumping station overflow \(spill chance 3%, reach 100%\); Wargrave sewage works overflow \(/);
-  assert.ok(h.includes('<b>41%</b>. Untested from October to April'));   // out of season: shown, not counted
+  // Out of season no figure (20 Oct 2026, levels.js ECOLI_OFF): the words the spot's page gives in its place.
+  assert.ok(h.includes(`<dt>Water quality</dt><dd>${L.ECOLI_OFF_SAID}</dd>`) && !h.includes('41%'));
   assert.ok(h.includes('2 days. In tests on past years, spill forecasts this far ahead were about 80% as good as same-day ones, and water-quality ones about 70%.'));
   assert.ok(h.includes('6\u00a0mm in the 48 hours to midday.'));
   assert.ok(h.includes('A forecast, not a water test: check the signs at the water before you swim.'));

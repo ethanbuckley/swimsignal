@@ -604,6 +604,9 @@ const AnyPoint = (() => {
       if (iss) iss.insertAdjacentHTML('afterend', `<p class="issued">Uses rain forecasts up to ${d.rain_h} hours older than that</p>`); }
     selLayer.clearLayers();
     L.circleMarker([d.lat, d.lon], { radius: 14, color: RING(), weight: 3, fill: false, interactive: false }).addTo(selLayer);
+    // A desktop shows the point in its page's own map tile (index.html, "Where it is" or Upstream): on
+    // the point, close in, as a listed spot's is (20 Oct 2026).
+    if (!PHONE.matches && document.getElementById('spot-map')) map.setView([d.lat, d.lon], Math.max(map.getZoom(), 13), { animate: false });
     scrollTop();
     if (push) focusHeading();
   }

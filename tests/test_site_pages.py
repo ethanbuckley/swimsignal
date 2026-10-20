@@ -132,6 +132,14 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     assert "<span data-low-t>Low\u00a0risk only</span>" in body
     spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
     assert '<section class="answer"><h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in spot
+    # Under the opening, the script's two columns (cols): the list's shape, then the map's empty tile,
+    # which a wide desktop shows beside it (20 Oct 2026). The script's view uses the same frame.
+    assert body.index('</div><div class="cols"><div class="col-list">') < body.index('aria-busy="true"') < body.index('<div class="col-map"><div class="tile map-tile">')
+    # The list's own call has no class, so its frame is the built one; Saved adds 'wide-list' (20 Oct 2026).
+    assert "const cols = (h, cls = '') => `<div class=\"cols${cls ? ' ' + cls : ''}\"><div class=\"col-list\">${h}</div>${MAP_TILE}</div>`;" in page
+    assert 'const MAP_TILE = `<div class="col-map"><section class="tile map-tile"' in page and "setPanel(h + cols(v));" in page
+    # Each screen preloads the sky it draws: the wide one from 1,100 px on the app's views.
+    assert bs.SKY_PRELOAD in page and bs.SKY_PRELOAD in home
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -148,8 +156,10 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
     assert '<body class="view-spot">' in page and '<div id="result" data-built>' in page
+    # A spot's page spans the screen from 801 px, so it preloads the wide sky from there.
+    assert bs.SPOT_SKY_PRELOAD in page and bs.SKY_PRELOAD not in page and 'fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 801px)"' in page
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
-    assert '<h2 class="big low" id="risk-headline">Low risk</h2>' in page
+    assert '<h2 class="big low" id="risk-headline">Low risk from sewage spills</h2>' in page
     assert '<p class="act">Usual care: cover cuts' in page
     assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d">Today</span>' in page
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
@@ -162,7 +172,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     # The page's script draws over the build's copy without the rise it gives a new view, keeping the
     # answer's element (overBuilt, tests/site_built_opening.test.cjs).
     script = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
-    assert "if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); return; }" in script and "let h = spotTop(d);" in script and "${daysTile(d)}" in script
+    assert "if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); settleMap(); return; }" in script and "let h = spotTop(d);" in script and "${daysTile(d)}" in script
     # Without the file (or Node), the name-only opening, as before.
     (tmp_path / "data" / "spots.json").unlink()
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")

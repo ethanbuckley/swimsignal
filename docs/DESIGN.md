@@ -135,6 +135,15 @@ those sizes; they were taken off to keep the rule simple.)
   tooltips, a picked day's rows. A bare "Very high" read as very high what. The word stands alone
   only under a heading that names it: the five days ("Pollution risk, next five days"), the
   day-by-day table's "Risk" column, the map's key.
+- The answer's headline names what it covers where the spills set the level (20 October 2026, after an
+  outside review read "Moderate risk" at Long Bridges as a verdict on the water): "Moderate risk from sewage
+  spills", every word at the title's size, and the line under it says when ("Tomorrow", "Right now"), not
+  the cause again; recent spills say "Recent spills, right now". A low level reads "Low risk from sewage
+  spills" over its days. A poor rating, algae, a lab sample and the E. coli estimate are not forecasts of
+  spills: "High risk" over "Rated poor", as before. The shared picture says the same. The list, the map's
+  tooltips, Nearby, the comparison, a saved card, the embed and the alerts keep the short form, whose raised
+  rows name the cause after a colon ("Moderate risk tomorrow: sewage spills"). The words are `HEAD_SCOPE` in
+  `levels.js`; the reviewer's own, "Moderate predicted risk from monitored sewage overflows", were option A.
 - Right now raised with no overflow upstream discharging (4 October 2026): a spill counts until 48 h
   after its water has passed, so the reason is "recent sewage spills" ("Moderate risk right now: recent
   sewage spills"; the answer's line under the level is "Recent sewage spills"). "Sewage spills right now"
@@ -147,7 +156,7 @@ those sizes; they were taken off to keep the rule simple.)
   (6 October 2026, `tileLine` in `levels.js`): "This sets the level above.", "On its own: moderate
   risk. The poor rating raises the level to high risk.", "Tomorrow's spill forecast raises the level to
   high risk.", "Not counted in the level: only a poor rating is.", "Does not raise the level." A picked
-  day's rows do the same for that day. A water figure out of season keeps its † note instead. Wharfe at
+  day's rows do the same for that day. An E. coli estimate out of season has no line: its tile says so. Wharfe at
   Cromwheel read "High risk" over a spills tile at "Moderate risk" and five days at "High", with
   nothing to join them up.
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
@@ -199,8 +208,7 @@ those sizes; they were taken off to keep the rule simple.)
   the figures in view and put the rest under a fold named for its tile, "<label>: what this means"
   (one name per fold, so a screen reader's list of them tells them apart; until 2 October every
   one was "What this means"), word for word. What the strip's
-  cells show folds into the water row, or the spills row where there is no water estimate; under
-  the strip only the † sentence stays, and only while a cell carries a †. The EA rating keeps its
+  cells show folds into the water row, or the spills row where there is no water estimate. The EA rating keeps its
   advice in view and folds how it is rated and the years before. A section's note under the answer
   does the same: River level keeps "Not part of the pollution level." in view, and the definition
   of reach under the overflows folds whole.
@@ -256,7 +264,8 @@ those sizes; they were taken off to keep the rule simple.)
 
 One stroke set, 1.75 px, round caps: search, map, bookmark (Save and Saved), chevron (back links
 and folds), and since the seventh round one for each tile's label (`ICON`: the
-days, spills, water, right now, river level, rain, sun, rating, algae, map, nearby, the table).
+days, spills, water, right now, river level, rain, sun, rating, algae, map, nearby, the table, and a
+question in a circle for Not known here).
 The chevrons drawn in CSS (back links, folds, a tile's corner) and a select's arrow (`--arrow`) use
 the same 1.75 px. The search icon (`SEARCH_ICON`) was still 2.2 on 2 October.
 Inline SVG, so they inherit `currentColor` and need no file. The brand mark is inlined in every
@@ -273,15 +282,39 @@ paper, as the site's first screen looked in the fifth round.
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
   the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
   is underlined in white.
-- **App, desktop:** the list, Saved and Plan: map left, a column right, 460 px wide and 560 px
-  from 1,200 px (20 Oct 2026), where a row's five days carry their short names ("Tue") over bars
-  32 px wide in place of the letters. On the list the day and "Low risk only" are the column's
-  alone; the map shows its own pair only on Saved and Plan, which have none. A spot opens as a
-  page (20 Oct 2026): the map column goes and the map moves into the spot's own tile, 400 px tall;
-  the opening spans the page over the wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`),
-  and under it two columns, 5 to 7, 1,180 px at most: the five days, nearby and the water on the left,
-  the map and why on the right. From 801 to 1,099 px it is one 720 px column. Before, a spot was
-  3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to pick it.
+- **App, desktop:** every view is a page under the header from 1,100 px (20 Oct 2026). A spot opens as
+  a page: the map moves into the spot's own tile, 400 px tall; the opening spans the page over the
+  wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`), and under it two columns, 5 to 7,
+  1,180 px at most: the five days, nearby and the water on the left, the map and why on the right.
+  Before, a spot was 3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to
+  pick it. The list, Saved and Plan a swim match it (`cols`, `col-list`, `col-map`): the opening
+  (`.lead`) centred over the wide sky, 760 px at most, the back link at the left edge as on a spot;
+  on the list the search and "Show spots near me" share a row, as do the day and "Low risk only";
+  under it the view on the left (5) and the full map on the right (7), in a glass tile labelled Map
+  that is sticky under the header, the screen's height less the header and two 24 px gaps, never
+  under 480 px. It keeps its controls, its legend (wrapped to the tile, above the credit) and
+  click-anywhere. The page scrolls as one, in the panel, so the list keeps its place and the map its
+  view when a spot is opened and closed. At 1,440 x 900 the map is 646 x 735 (880 x 836 beside the
+  560 px column before); the list's opening ends 425 px down, so 427 px of the 788 px tile show on the
+  first screen, and a river picked from the search scrolls the page until the whole tile is in view
+  (`mapInView`). In the tile the map takes quarter steps of zoom (`snapMap`) and fits all the spots
+  close to their own bounds, clear of the legend (`fitAll`): zoom 6.5 there, where a whole step left
+  England under half the tile. A phone's map and the desktop's column keep whole steps and their fits. About and the foot share the 1,180 px
+  frame, About's text at 720 px.
+  From 801 to 1,099 px a spot is one 720 px column, and the list, Saved and Plan keep the old layout:
+  map left, a 460 px column right. One 720 px column would put the map between the opening and the
+  first spot: the opening ended about 520 px down at 1,440 before it was shortened, so with a 320 px map tile (a spot's at
+  this width) the first spot would start near the foot of a 900 px screen (an estimate, not built).
+  Two columns would leave the list 380 px wide, a phone's. A row's five days carry their short names ("Tue") over bars 32 px wide from
+  1,200 px. On the list the day and "Low risk only" are the opening's alone; the map shows its own
+  pair only on Saved and Plan, which have none.
+  Saved since the second outside review (20 Oct 2026: "give the saved forecasts more width and make
+  the map secondary... the nationwide map currently dominates even the empty Saved page"): the
+  forecasts take the wide column and the map the narrow one, 7 to 5 (`cols(v, 'wide-list')`; 674 and
+  482 px at 1,440), the map's tile 480 px tall, still sticky. With nothing saved there is no map at all
+  from 1,100 px: the page is one 720 px column (`solo`). This turns round part of the layout of 20 Oct
+  2026 for Saved alone: the list and Plan a swim keep 5 to 7. From 801 to 1,099 px Saved keeps the map
+  on the left.
   **App, phone:** list first, the map one tap away in the bar at the bottom, a spot's page with its
   own small map. Unchanged: the two columns are `display:contents` there, so the order is the one
   stack it was.
@@ -498,6 +531,17 @@ What makes Apple's page clean, and what was taken from it:
   the reader has asked for less transparency.
 - **Saved as Apple's places**: each spot's name, its level with "risk" (20 px bold), what set it
   and where the week goes, and the week as small bars. The list shows the same cards on one tile.
+- **Day by day on Saved** (second outside review, 20 Oct 2026: aligned, the weeks "would improve
+  scanning"): a tile above the cards with every saved spot's five days in line (`savedGrid`; the
+  cells are `weekCells` in `experience.js`). The names down the left, the days across the top
+  ("Today", "Wed"), each cell the day's level with its noun ("Moderate risk") in the level's text
+  colour under its 4 px rule, a link to the spot on that day. A day the forecast does not have says
+  "No forecast", in grey with no rule. A spot whose level is the same every day has one cell across
+  the five in its headline's words, with a rule only if that is a level: "No monitored overflow
+  found upstream" in the plain teal, no rule. The Saved page's own cards no longer draw the week:
+  the grid gives it once, in line, and the cards keep the answer and why. On a phone each name has
+  its own line over its five days, so the days keep the width: 61 px each at 375 px ("Moderate" is
+  53 px); the grid is never under 280 px, so a 320 px phone scrolls it sideways by about 20 px.
 - **A slate bar on top.** Shown the old teal bar, a sky with no bar and a slate bar beside the
   paper header, Ethan chose the slate: a darker shade of the picture's nearest fells, so it frames
   the sky and echoes the fells under the answer, where the old teal swallowed the mark's teal
@@ -519,7 +563,8 @@ is fine", while rain washes in runoff from grazing land and roads whatever the o
 decides whether an overflow's water reaches the shore. Nothing near the headline said what the level
 counts. So a spot with a daily level has one more line in the answer, after what to do and before the
 river line and the issue time (`levelScope` in `levels.js`, `.scope` in `index.html`): ink, the notes' size,
-centred as the answer is, no box, no bold lead. Once a page, never in a tile.
+centred as the answer is, no box, no bold lead. Once a page, never in a tile. (20 October 2026: under the
+five days, in their tile, after what to do; see "A tighter opening".)
 
 - Every spot with a daily level: "This forecast counts sewage from the monitored storm overflows upstream,
   and the rain that makes them spill. It does not count treated sewage from sewage works, runoff from
@@ -542,6 +587,32 @@ About's "What it cannot see" (which the decision record copies word for word) ad
 the wind. A record shows the lines that apply to its spot (`cannotSee` in `record.js`, 11 October 2026):
 Dŵr Cymru's only where its overflows are upstream, and the E. coli estimate's sentence only where the spot
 shows the estimate.
+
+### A tighter opening (20 October 2026)
+
+A second outside review: "Its long, centred introduction pushes the five-day forecast down", and "make
+the important missing input visible without searching through the page". On a 375 x 812 phone the five
+days began 739 px down at Long Bridges and 802 px down at Ludlow, below the screen. So:
+
+- **The answer is one block:** the place, the level, why and when, where the week goes, a long spill that
+  may be a fault, the river's separate hazard, one line on what the forecast could read, and the issue
+  time. The five days follow at once.
+- **What the forecast could read** (`coverLine`, `.cover`): ink, the notes' size, centred, just above the
+  issue time. Clauses, each only where it applies: how many overflows upstream report live ("44 of 45
+  overflows upstream report live; 1 does not", and "All 45 ..." too, so the line is there every time; on
+  today's view only, and not where the line under the level already says "Forecast only: no overflow
+  upstream reports live"); the days of the five with no forecast; "Overflows in Wales not counted (12% of
+  the river above)"; "Today's EA advice not checked: open it before you swim", linked. A missing input is
+  said as missing, never as low. The Wales and EA sentences that sat beside the level since 11 October are
+  these clauses now, shorter, in the same place.
+- **Under the five days**, in their tile (`answerAfter`, `.after`): what to do, at the sentence's size after
+  a hairline, then what the level counts, at the notes' size. A picked day fills it again.
+- **Kept:** the sky picture and its glass (seventh round), the 48 px and 128 px bands, the level's size,
+  every word of what to do and what the level counts. The answer stays the same element, so the largest
+  paint is still the picture behind it.
+- Measured on the live data of 20 October 2026, the top of the five days' rows, before and after: Long
+  Bridges 739 to 576 px at 375 x 812 and 684 to 543 px at 1440 x 900; River Dart, Spitchwick (low) 669 to
+  529 and 677 to 558; Ludlow 802 to 600 and 740 to 585.
 
 ### River high and flood alerts (3 October 2026)
 
@@ -579,7 +650,8 @@ level"): "High" in a level's colour read as a pollution level.
 NSW Beachwatch gives an action with each of its levels; SwimSignal gave a level and why, and left the
 decision to the reader. The answer now has one line on what to do, after where the five days go and
 before the river line and the issue time (`levelAction` and `dayAction` in `levels.js`, `.act` in
-`index.html`). It is a sentence in ink, centred as the answer is: never a level's colour, a box or a
+`index.html`). Since 20 October 2026 it follows the five days instead, in their tile (see "A tighter
+opening"); a spot with no five days keeps it in the answer. It is a sentence in ink, centred as the answer is: never a level's colour, a box or a
 bold lead, so it reads as following from the level rather than as a second one. A picked day gets that
 day's line, and very high names its day: "Avoid swimming here tomorrow: choose a lower day or spot." A
 water rated poor, algae at the last check and the spots without a level have lines of their own. No
@@ -725,6 +797,36 @@ thermometer from the stroke set. No report is ever shown, only counts, from five
   the onset as the notes' chips, two to a row, the doctor question as two chips, and the consent as its
   own tick with the words "information about my health". An onset that would fall after today is
   shown but cannot be chosen.
+
+### The E. coli estimate out of season, and Not known here (20 October 2026)
+
+An outside reviewer looked at the Thames at Long Bridges, Oxford, on 20 October 2026: "Moderate risk" in the
+answer, and under it an E. coli tile whose figure was "56%", labelled "Untested in October". They read two
+answers to reconcile, and wrote that publishing a precise number gives it authority whatever the text beside it
+says. They asked for observations, missing information and experimental estimates to sit apart.
+
+- **No percentage in view out of season.** From October to April (`ecoliUntested`) no E. coli percentage is in
+  a tile's figure, a picked day's row, the shared picture, the organisers' page or the decision record. The tile
+  is named "Experimental E. coli estimate"; its figure is "Out of season" (`ECOLI_OFF` in `levels.js`), with no
+  band and no scale, whose dot was the figure; its sentence is the one that said what the level counts instead.
+  The daily figures fold under "Experimental estimate", with the live record and the Welsh test. The tile goes
+  last, after the tiles of what is observed. A picked day's row does the same. The shared picture gives the rain
+  under each day unless all five are in season. The organisers' page and the record give `ECOLI_OFF_SAID` in the
+  row's place. The day-by-day numbers keep the figures, marked †, since a reader opens that table for the
+  numbers; its note says they are experimental. In season nothing changes. On 11 October the band had already
+  gone ("Very high risk" under a "Low risk" answer read as a contradiction).
+- **Not known here.** One tile straight after the five days, a row for each thing the page could not see, as a
+  picked day's rows: the label, two or three words on the right ("1 of 45 not reporting", "Not checked", "Not
+  counted", "Not confirmed"), then the sentence it had before. The rows: live readings missing (the overflows
+  that could be spilling unseen, a feed down or stale), overflows in Wales, today's EA advice at a bathing water,
+  access (the desk check; it was a paragraph under the five days), flood warnings not checked (a note under River
+  level since 16 October). No tile where there is no gap. The Right now tile keeps its count and "44 of 45 report
+  live."; which do not, and why, moved to the tile.
+- **Kept beside the answer as well:** the lines for today's EA advice and Wales (11 October: beside the level,
+  where "Low risk" and "Usual care" had stood in for them). Their rows repeat them, so the tile is whole. A long
+  spill that may be a monitor fault stays in the answer only: it is a reading, not a gap.
+- **Not done:** headings over the tiles ("Forecast", "Observed", "Experimental"), which would put words between
+  tiles; proposed in the pull request with a mock, to wait for user testing.
 
 ### What the level rests on (4 October 2026)
 
@@ -920,6 +1022,36 @@ Two other orders were shown to Ethan with this one: the same order with nothing 
 same as before), and the whole of Why under one fold (4,193 px), which hides the readings' tiles and the
 map he chose in the seventh round.
 
+### Why each nearby spot (20 October 2026)
+
+An outside review found the Nearby card around Oxford offering other places on the Thames, which can
+share pollution sources, with nothing to say so: Long Bridges, at moderate risk, offered "Lower risk
+nearby: River Thames, Hurley", 87 km of river downstream. Each row now has one more line under its meta
+line, in the planner rows' `.why` style (the note size, ink): why it is there, from how its water is joined
+to this spot's (the build's `catchment` and `linked`, `src/dipcast/spot_links.py`).
+
+- "Same river, shares overflows with this spot." ("Shares overflows with this spot." between a river and a
+  lake, or rivers of two names): at least one monitored overflow counts at both.
+- "Same river, further downstream." ("Downstream of this spot." otherwise; upstream likewise), then "The
+  forecast counts none of the same overflows." where both have overflows upstream: joined by the river,
+  but further apart along it than the 60 km the forecast traces. Hurley's row on Long Bridges says this.
+- "Same catchment, another branch.": neither's water reaches the other before the tide.
+- "Different catchment.": they reach tidal water apart. A plain fact in ink, never a level's colour or a
+  reassuring word, since a different catchment has overflows and runoff of its own. Where one is shown
+  under "Lower risk nearby", the note under the rows adds: "A different catchment or branch has overflows
+  and runoff of its own."
+- "Fewer missing upstream readings.": fewer of its overflows upstream give no current reading, and no
+  smaller a share of their weight reports.
+- No reason where either spot has no place on the network (an isolated lake).
+
+The rows keep every earlier rule: lower on the same days, never a plain level, never a water rated poor,
+a known now, within 40 km, nearest first. One rule is added: where none of the nearest three is known to
+be on other water, the third gives way to the nearest that is, if one is within 40 km. On the data of
+20 October 2026 this changed 8 of the 73 cards: Greenholme offers the Ribble at Stainforth Force in place
+of the Wharfe at Burnsall, and Hurley the Wey at Waverley in place of Wallingford. "Lower predicted spill
+influence" is not a row's reason: under "Lower risk nearby" every row is lower by the card's own rule,
+and the note under the rows says so.
+
 ### What was kept on purpose
 
 The information architecture (list → spot → day), every word of the terms and privacy notice, the
@@ -978,6 +1110,13 @@ gives all four navigation links a single full-width row.
   the starting place as a field with the pin icon where the search has the glass, the kinds of water
   as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
   320 px phone; the count under the chips says "within".
+- The day is a strip of the five days (`planStrip`; second outside review, 20 October 2026), in place
+  of a select: each day its short name over its date ("Thu", "23 Oct") in a 44 px target, the day
+  chosen filled as a chosen chip is, in a field's box. Radio buttons under it, hidden but focusable,
+  so the arrow keys move along the strip and a screen reader reads "Day" and each day. Under 600 px
+  the distance is under the strip, full width (the first spot 58 px lower at 375 px than with the
+  select); from 600 px beside it, 3 to 1. The address keeps `day=`. The list's and the map's "Today and
+  tomorrow" is not offered: a plan has always been for one day (`readPlan`).
 - The spots come in up to four tiles, each the list's rows between hairlines with one more line in
   ink, why the spot is there: "Low risk on Saturday", "No monitored overflow found upstream" (a plain
   level), "Moderate risk or higher on Saturday", "No level". Until 20 October 2026 the first two were
@@ -986,15 +1125,55 @@ gives all four navigation links a single full-width row.
   so in one line under its heading, with the other risks; the foot keeps the view's one "check the
   signs". "Share this plan" holds both tiles' spots and counts each ("14 at low risk on Saturday and 6
   with no monitored overflow found upstream").
-- On a plan for today, a low row whose right now is not known (no overflow upstream reports live, or
-  those that matter most do not, a stale feed included) adds "Forecast only: ..." to its why line, the
-  words a saved card uses.
+- Under each row with a daily forecast, one line on how much evidence sits behind its level, apart
+  from the reasons above it (20 October 2026; the outside review asked for the pollution signals and the
+  evidence coverage as two things). Muted, the meta size, outside the row's link (`.ev-line`,
+  `evidenceCoverage` in `evidence.js`):
+  - on a plan for today, a low row whose right now is not known (no overflow upstream reports live, or
+    those that matter most do not, a stale feed included): "Forecast only: ...", the words a saved card
+    uses. Until 20 October 2026 this was in the why line;
+  - whose overflows these are, by reach, and the share of spills the live warnings caught at that
+    company, or at the companies the model did not learn from: "United Utilities' overflows, whose
+    spills the model learned from. Since 29 Sept it has warned of 37% of their spills." / "Yorkshire
+    Water's overflows. The model learned from United Utilities'; since 29 Sept it has warned of 2% of
+    other companies' spills." The share links to the Accuracy page's warning table
+    (verification.html#warnings) and comes from its file (verification.json, `live.warning_table`,
+    `by_company`), fetched once when the plan opens; until it arrives, or if it fails, the rows have no
+    such sentence. "Mostly" when the companies named hold under nine tenths of the reach. The counts are
+    left to the Accuracy page: every row in a place says much the same, so the line is kept short.
+  - The list and the planner load spots-lite.json, which has no contributors; the build gives each spot
+    `reach_by_company` there for this line.
+  - Not on a plain level or a row with no level: the first has its heading's line, the second its own.
+  - Not on the spot page's answer: the answer is drawn into the built page before any script runs, the
+    figure is in a file the spot page does not load, and the line would arrive after the answer and push
+    it down. The spot's own scores are in "How the forecast has done here".
 - A row's distance leads its meta line ("7.7 miles away · Lake · bathing water"). Miles: travel is
   planned in miles, and Ethan's own example was "within 20 miles". Since 4 October 2026 every
   distance a swimmer travels is in miles, the list's and "Nearby" too; distances the water travels,
   and to a gauge or sensor, stay in km, as the model counts them.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
+- "Compare these spots" (20 October 2026; the outside review asked "which of these places should I
+  look into further for Saturday?" without leaving the plan): a fold under the groups and before "Share
+  this plan", as Compare is under the cards on the Saved page. Three selects, offered in the plan's own
+  groups, start on the first three spots shown. While it is open it is in the address
+  (`&compare=<id>,<id>,<id>`, `plan.js`), so a shared link opens on it, and the page moves to it. A spot
+  that leaves the plan (a shorter distance, another kind) drops out, and the first spots shown fill it
+  back to three.
+- Saved's "Compare your spots" and the plan's are one table (`compareTable`; the cells in
+  `experience.js`, `compareDays` and `compareRows`). A column a spot, at least 150 px, so two sit side by
+  side on a 375 px phone and three in the 1,440 px desktop's list column; a third on a phone scrolls
+  sideways. Each row's label is a band across the table, its words kept in view as it scrolls. Until 20
+  October 2026 a column of labels took a third of a phone's width and Saved compared one day at a time,
+  picked in a select of its own; now both give the five days first, each cell naming its day over the
+  level in its colour, the plan's day (or the map's on Saved, else today) shaded with a rule at its left.
+  A spot whose level is the same every day has one cell for the five. Then: Right now (what the overflows
+  upstream are doing, how many report live and why the others do not, the words of "What the level rests
+  on"), the Environment Agency rating, Today's EA advice (never read, so "could not be checked" with the
+  EA's page linked, or "None: not a designated bathing water"), water samples, algae, access (the desk
+  check's words and date, or "No access information"), local warnings and model limits. Each cell says
+  what is not known rather than stay blank. The note above the table: "A lower forecast level does not
+  mean safe water: check the signs at the water." No column is called the best.
 
 ## Since you last looked (4 October 2026)
 

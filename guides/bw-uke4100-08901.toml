@@ -1,6 +1,6 @@
-# Wharfe at Cromwheel, Ilkley. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Wharfe at Cromwheel, Ilkley. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-20
 how = "desk"
 
 [[fact]]
@@ -37,3 +37,31 @@ text = "Riverside Gardens public toilets: four unisex cubicles, one accessible b
 status = "confirmed"
 source = "https://www.ilkleytowncouncil.gov.uk/services/toilets/"
 source_name = "Ilkley Town Council"
+
+[[fact]]
+topic = "path"
+text = "Bradford Council's Riverside Gardens walk leaflet starts at a gap in the fence on New Brook Street, at the north end of the road bridge, where a ramp leads down to the Riverside path. The walk follows the river downstream and later crosses it by the suspension bridge. The leaflet does not mention the bathing site."
+status = "confirmed"
+source = "https://www.bradford.gov.uk/media/2070/riversidegardensilkley.pdf"
+source_name = "Bradford Council"
+
+[[fact]]
+topic = "toilets"
+text = "Defra's 2020 consultation on the designation says there are public toilets at the nearby Lido, an outdoor pool run by Bradford Council, open from May to early September. It does not say how far the Lido is from the bathing site."
+status = "confirmed"
+source = "https://consult.defra.gov.uk/water/bathing-water-river-wharfe-ilkley/supporting_documents/Consultation%20Document%20for%20the%20River%20Wharfe.pdf"
+source_name = "Defra"
+
+[[fact]]
+topic = "rules"
+text = "Defra's 2020 decision says that in the bathing season Bradford Council is responsible for public information on water quality and for warning signs during pollution incidents, as advised by the Environment Agency. It says managing the physical risks in rivers is outside the bathing water rules."
+status = "confirmed"
+source = "https://www.gov.uk/government/consultations/bathing-waters-designation-of-an-area-of-the-river-wharfe-ilkley/outcome/summary-of-responses-and-government-response"
+source_name = "Defra"
+
+[[fact]]
+topic = "rules"
+text = "Bradford Council's parks site says an event in its parks needs permission if more than 20 people are expected, if it is advertised or open to the public, if there is a charge, or if it is a sporting event. It asks for at least four weeks' notice. The page covers all its parks and does not name the river or the bathing site."
+status = "confirmed"
+source = "https://bradforddistrictparks.org/things-to-do/event-enquiries/"
+source_name = "Bradford Council (Bradford District Parks)"

@@ -36,7 +36,19 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: write     # release assets for state, heartbeat commit
+    outputs:
+      host: ${{ steps.host.outputs.host }}
     steps:
+      - name: Choose the host (Cloudflare Pages once its token is set, else GitHub Pages)
+        id: host
+        env:
+          # Only whether the secret is set reaches this job, never its value (docs/HOSTING-MOVE-2026-10.md).
+          HAS_CLOUDFLARE: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          if [ "$HAS_CLOUDFLARE" = true ]; then host=cloudflare; else host=github; fi
+          echo "Publishing to: $host"
+          echo "host=$host" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
         with:
           persist-credentials: false   # the heartbeat step pushes with GH_TOKEN instead
@@ -103,6 +115,9 @@ jobs:
           DIPCAST_TILE_KEY: ${{ vars.DIPCAST_TILE_KEY }}
           # Scottish Water shadow (Scotland plan S4, S5): 1 polls and scores in state only, publishes nothing; unset = off.
           DIPCAST_SCOTTISH_WATER: ${{ vars.DIPCAST_SCOTTISH_WATER }}
+          # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
+          # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
+          DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
         run: uv run python scripts/build_site.py
 
       - name: Save mutable state
@@ -187,12 +202,14 @@ jobs:
               && git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" HEAD:main
           fi
 
+      # Both hosts take this artifact: GitHub Pages directly, Cloudflare Pages unpacked (deploy-cloudflare).
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
   deploy:
     needs: build
+    if: needs.build.outputs.host == 'github'
     runs-on: ubuntu-latest
     permissions:
       pages: write        # to deploy to Pages
@@ -203,3 +220,57 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Cloudflare Pages (docs/HOSTING-MOVE-2026-10.md), once the secret CLOUDFLARE_API_TOKEN is set. GitHub's
+  # terms do not allow an online business on GitHub Pages. Its own job, so the token is never in a job
+  # that runs code from the repository: this one only unpacks the build's artifact and runs wrangler.
+  deploy-cloudflare:
+    needs: build
+    if: needs.build.outputs.host == 'cloudflare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions: {}       # the artifact comes from this run, which needs no token
+    environment:
+      name: cloudflare-pages
+      url: https://swimsignal.co.uk/
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact
+
+      - name: Unpack the site and add Cloudflare's headers file
+        run: |
+          mkdir site
+          tar -xf "$RUNNER_TEMP/artifact/artifact.tar" -C site
+          # GitHub Pages sends Access-Control-Allow-Origin: * on every file, so the data files can be
+          # read from other sites; keep that. The pages.dev copies stay out of search results.
+          cat > site/_headers <<'HEADERS'
+          /*
+            Access-Control-Allow-Origin: *
+
+          https://:project.pages.dev/*
+            X-Robots-Tag: noindex
+
+          https://:version.:project.pages.dev/*
+            X-Robots-Tag: noindex
+          HEADERS
+          echo "$(find site -type f | wc -l) files, $(du -sh site | cut -f1)"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22    # wrangler 4 needs Node 22 or later
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'swimsignal' }}
+        run: |
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error title=Cloudflare::the secret CLOUDFLARE_API_TOKEN is set but the variable CLOUDFLARE_ACCOUNT_ID is not (docs/HOSTING-MOVE-2026-10.md)"
+            exit 1
+          fi
+          # --branch=main is the project's production branch, so this replaces what swimsignal.co.uk serves.
+          npx --yes wrangler@4.146.0 pages deploy site --project-name="$PROJECT" --branch=main \
+            --commit-hash="$GITHUB_SHA" --commit-message="site.yml run $GITHUB_RUN_ID" --commit-dirty=true

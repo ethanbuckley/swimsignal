@@ -1,0 +1,53 @@
+# Ullswater, near Sandwick. Desk check of the park authority's and the steamer operator's pages, 20 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-20
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "The National Park Authority says the road from Pooley Bridge south to Howtown and beyond is a narrow dead end with a legally defined clearway, where stopping to park is an offence. Around Howtown there is only limited public parking, at The Hause and several small laybys. The page does not name Sandwick."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "Ullswater 'Steamers' sail to Howtown pier from Glenridding (35 minutes) and Pooley Bridge (25 minutes); there is no parking at Howtown. They give the Ullswater Way walk between Glenridding and Howtown pier as about 7 miles. The page does not name Sandwick."
+status = "confirmed"
+source = "https://www.ullswater-steamers.co.uk/plan-your-visit/timetable-and-fares/"
+source_name = "Ullswater 'Steamers'"
+
+[[fact]]
+topic = "toilets"
+text = "Ullswater 'Steamers' says there are no facilities at Howtown pier; its facilities are at the Glenridding and Pooley Bridge pier houses, and its boats have toilets. The page does not name Sandwick."
+status = "confirmed"
+source = "https://www.ullswater-steamers.co.uk/plan-your-visit/facilities/"
+source_name = "Ullswater 'Steamers'"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Ullswater, as are canoes, kayaks, paddleboards, rowing and sailing boats, and powered craft with a 10 mph speed limit. It names itself as the contact. The page covers the whole lake and does not name Sandwick."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "A National Park Authority document on the Ullswater valley says the Authority now owns Glenridding Common and Ullswater lake bed. It does not say whether the shore at Sandwick is included."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/wp-content/uploads/2026/01/2.c.11-Ullswater.pdf"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says that, as a general guide, a swimming group of more than 50 people, or one bringing infrastructure such as a gazebo, should seek advice from the landowner. The page covers all the lakes and does not name Sandwick."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority lists Ullswater among its busier lakes, with motorboats, sailing boats and other craft. It recommends a swim route along the shoreline, a bright hat, a tow float and a support craft such as a kayak or paddleboard. The page does not name Sandwick."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"

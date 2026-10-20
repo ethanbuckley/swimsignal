@@ -1,0 +1,19 @@
+# One planned session, for scripts/briefing.py (docs/PILOT-SESSIONS.md). A made-up example: the
+# organisation and the people do not exist, and the addresses use the reserved example.org domain.
+# Real session files name real people, so they live in swimsignal-private/briefings/sessions/, never here.
+
+organisation = "Example Outdoor Centre"
+date = 2026-10-22                     # the session's date, a TOML date (no quotes)
+time = "09:30"                        # its start, UK time
+main = "bw-uke4100-08901"             # spot ids, as in the spot's address: swimsignal.co.uk/spot/<id>/
+backup = "wharfe-burnsall"            # optional
+decision_maker = "Alex Example, centre manager"
+notes = "Juniors' open-water session, 12 swimmers."
+
+[[recipients]]
+name = "Alex Example"
+email = "alex@example.org"
+
+[[recipients]]
+name = "Sam Sample"
+email = "sam@example.org"

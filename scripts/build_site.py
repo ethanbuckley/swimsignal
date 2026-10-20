@@ -29,6 +29,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
 from dipcast.ingest.rainfall import cells_for_sites, fallback_summary, fetch_forecast
@@ -43,6 +44,7 @@ from dipcast.model.forecast import (
 )
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
+from dipcast.spot_links import attach as attach_spot_links
 from dipcast.trace import SIMPLIFY_M, spot_trace
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -92,7 +94,11 @@ PLAN_DESCRIPTION = ("Pick a day, where you are starting from and how far you wil
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]+")
 PAGE_META = re.compile(r"<!-- page-meta.*?<!-- /page-meta -->", re.DOTALL)
 LOADING = '<div id="result"><p class="muted">Loading forecasts…</p></div>'
-SKY_PRELOAD = '<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high">'   # index.html's
+# index.html's, word for word: the sky for each screen (the wide one from 1,100 px, where the list,
+# Saved and Plan a swim span the page), and the same pair for a spot's page, which spans it from 801 px.
+SKY_PRELOAD = ('<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high" media="(max-width: 1099px)">\n'
+               '<link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">')
+SPOT_SKY_PRELOAD = SKY_PRELOAD.replace('1099px', '800px').replace('1100px', '801px')
 # The brand mark, inline in every page's header (the static pages carry the same markup), so it needs no path.
 MARK = ('<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/>'
         '<path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/>'
@@ -1452,6 +1458,10 @@ VERSIONED_SCRIPTS += ('<script src="eatoday.js"></script>',)
 # The swim journal (journal.js): kept on the device, so its script is stored and versioned as the rest.
 SHELL_SOURCES.append(TEMPLATE.parent / "journal.js")
 VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
+# Lab results an organisation sent (src/dipcast/samples.py, samples/README.md): measured.js draws a spot's,
+# which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
+SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
+VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -1477,6 +1487,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "spotscores.js", site / "spotscores.js")   # how the forecast has done here
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
+    shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -1577,7 +1588,9 @@ def home_lead(n: int) -> str:
             '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
             '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
             '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
-            f'</div><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>')
+            f'</div><div class="cols"><div class="col-list"><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>'
+            # The map's tile, as index.html's MAP_TILE frames it, empty until the script moves the map in.
+            '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')
 
 
 def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
@@ -1596,11 +1609,9 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
-        # A desktop's spot page spans the screen and draws the wide sky (index.html, "A spot opens as
-        # a page"), so each screen asks early for the picture it shows, and only that one.
-        page = page.replace(SKY_PRELOAD, SKY_PRELOAD.replace('as="image"', 'as="image" media="(max-width: 800px)"')
-                            + '\n' + SKY_PRELOAD.replace('fells.webp', 'fells-wide.webp')
-                            .replace('as="image"', 'as="image" media="(min-width: 801px)"'), 1)
+        # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
+        # opens as a page"), so each screen asks early for the picture it shows, and only that one.
+        page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
         return page.replace(LOADING, f'<div id="result" data-built>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
     return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
@@ -2255,13 +2266,27 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
 # spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
-# reads it, for the organisers' page and the decision record, and for scripts/alerts.js.
-DETAIL_FIELDS = ("contributors", "guide")
+# reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
+# results an organisation sent (measured, 20 Oct 2026) are a spot page's alone too.
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
+
+
+def reach_by_company(contributors: list[dict]) -> list[list]:
+    """Whose overflows a spot's are, by their reach: [[company, share of the summed weight], ...], the largest
+    first, shares to three places. The lite file keeps this in place of the contributors, for Plan a swim's
+    evidence line (evidence.js, evidenceCoverage), which tells the company the spill model learned from apart
+    from the rest (20 Oct 2026). An overflow with no company counts as "unknown". [] with no weight."""
+    by: dict[str, float] = {}
+    for c in contributors or []:
+        by[c.get("company") or "unknown"] = by.get(c.get("company") or "unknown", 0.0) + float(c.get("weight") or 0)
+    total = sum(by.values())
+    return [] if total <= 0 else [[k, round(w / total, 3)] for k, w in sorted(by.items(), key=lambda kv: -kv[1])]
 
 
 def write_app_data(site: Path, doc: dict) -> int:
     """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
-    one file a spot. A lite spot names its file in `detail_file`, relative to data/. A spot whose id
+    one file a spot. A lite spot names its file in `detail_file`, relative to data/, and gives whose its
+    overflows are in `reach_by_company` (reach_by_company), where it has any. A spot whose id
     cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
     out = site / "data" / "spot"
     shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
@@ -2274,7 +2299,8 @@ def write_app_data(site: Path, doc: dict) -> int:
         detail = {k: s[k] for k in DETAIL_FIELDS if k in s}
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
-        lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json"})
+        lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json",
+                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {})})
     # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
     (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
                                                               separators=(",", ":"), default=str))
@@ -2516,6 +2542,7 @@ def build(refresh: bool = True) -> dict:
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
+    measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     # Network only, like the levels, and before their EA requests: one request for the national flood
@@ -2553,6 +2580,15 @@ def build(refresh: bool = True) -> dict:
             "(check where each one's stream meets the river and add it to data/raw/overflow_joins.csv): "
             + "; ".join(f"{u['site_id']} for {u['spot']}, {u['snap_m']} m off the river, {u['km']} km above, "
                         f"into {u['receiving']}" for u in unsure))
+    # How the spots are joined by water, for the reasons on the Nearby card (spot_links), from every overflow
+    # each forecast counted, not the ten a spot keeps: the catchment in the lite file, the links in each
+    # spot's own (DETAIL_FIELDS), which only its page reads.
+    # A reason beside a suggestion must never sink the site: if the links fail, the cards give none.
+    try:
+        health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
+    except Exception as e:  # noqa: BLE001
+        health["spot_links"] = 0
+        health["warnings"].append(f"Nearby reasons not made this update: {e}")
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     if n_flows.get("flood_alerts_unchecked"):
@@ -2561,6 +2597,8 @@ def build(refresh: bool = True) -> dict:
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
+    health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}
+    health["warnings"] += measured["warnings"]
     for w in health["warnings"]:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)

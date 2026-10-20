@@ -259,7 +259,7 @@ test('an empty Saved page shows the journal once a swim exists, or once asked; w
   assert.equal(shown([], { hash: '#journal' }), true, 'saved/#journal, from a link');
   assert.equal(shown([], { spots: [{ id: 'a' }] }), true, 'beside saved spots, as before');
   // The empty tile: one sentence, Find a spot, and the link while the journal is hidden.
-  const empty = page.slice(page.indexOf("  else h += `<div class=\"empty-saved tile\"><p class=\"sub\">Save a spot"), page.indexOf("  if (gone) h +="));
+  const empty = page.slice(page.indexOf("  else v += `<div class=\"empty-saved tile\"><p class=\"sub\">Save a spot"), page.indexOf("  if (gone) v +="));
   assert.match(empty, /Save a spot\$\{many \? ` to \$\{named\}` : ''\} from its page and it shows here with the days ahead\./);
   assert.match(empty, /id="find">Find a spot<\/a>/);
   assert.match(empty, /swimsShown\(spots\) \? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal<\/button><\/p>'/);

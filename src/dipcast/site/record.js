@@ -25,7 +25,7 @@
 const Record = (() => {
   const node = typeof module === 'object' && module.exports;
   const R = node ? require('./levels.js')
-    : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, nowBecause, daily, ecoliBand, ecoliUntested, poorAdvice, walesShare };   // levels.js's globals
+    : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, nowBecause, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice, walesShare };   // levels.js's globals
   const E = node ? require('./evidence.js') : { evidenceAge, evidenceOverflows, evidenceSample };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : Printed;
@@ -151,8 +151,9 @@ const Record = (() => {
       const ov = E.evidenceOverflows(s, data.generated_at);
       if (ov) rows.push(row('Discharging when the forecast was issued', ov.say));
       const band = R.ecoliBand(s, x);
-      if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>.`
-        + (R.ecoliUntested(x) ? ' Untested from October to April, when the Environment Agency takes no samples, so it does not set the level.' : ` ${cap(band)} risk.`)));
+      // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF; 20 Oct 2026).
+      if (band && R.ecoliUntested(x)) rows.push(row('Water quality', esc(R.ECOLI_OFF_SAID)));
+      else if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>. ${cap(band)} risk.`));
     } else if (R.daily(s)) rows.push(row('Sewage spills upstream', 'No forecast for this day in this update.'));
     if (x && !nil(x.rain_48h_mm)) rows.push(row('Rain here', `${Math.round(x.rain_48h_mm)} mm in the 48 hours to midday on ${esc(longDate(iso))}.`));
     if (R.daily(s)) rows.push(row('How far ahead', j === 0 ? 'The day this forecast was issued for.'
