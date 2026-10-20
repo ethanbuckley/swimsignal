@@ -491,3 +491,43 @@ test('the comparison has a column a spot, the five days first with the day picke
   // The question is which spots to look into further: no column is called the best or the safest.
   assert.doesNotMatch(html + pageDefs(['compareSection', 'compareTable', 'savedCompare', 'planCompare']), /\b(best|safest|safer)\b/i);
 });
+
+// ------------------------------------------------------------------------------ Saved: day by day
+// The Saved page's grid (second outside review, 20 Oct 2026): a cell a day at each saved spot, the level with
+// its noun, "No forecast" for a missing day, and one cell for a level that does not change from day to day.
+test('the day-by-day cells give each day its level with "risk", say "No forecast" for a missing day, and never make a plain level low', () => {
+  const {weekCells} = require('../src/dipcast/site/experience.js');
+  const four = week(['low', 'moderate', 'high', 'very high']);   // no fifth day
+  assert.deepEqual(weekCells(four, DATES).cells.map(c => [c.words, c.rule, c.said]), [
+    ['Low risk', true, 'Low risk'], ['Moderate risk', true, 'Moderate risk: sewage spills'], ['High risk', true, 'High risk: sewage spills'],
+    ['Very high risk', true, 'Very high risk: sewage spills'], ['No forecast', false, 'No forecast for this day']]);
+  assert.equal(weekCells(four, DATES).same, false);
+  // Nothing upstream: one cell for the five days, the plain level's words, no level's rule.
+  assert.deepEqual(weekCells(clearRiver, DATES), {same: true, level: 'no overflows', rule: false, words: 'No monitored overflow found upstream',
+    said: 'No monitored overflow found upstream', cells: []});
+  assert.deepEqual(weekCells(isolatedLake, DATES).words, 'No monitored overflow found upstream');
+  // A standing rating is a level on every day: one cell, with its rule. A failed forecast is not.
+  assert.deepEqual(weekCells({days: [], classification: {class: 'poor'}}, DATES), {same: true, level: 'high', rule: true,
+    words: 'High risk: rated poor, advice against bathing', said: 'High risk: rated poor, advice against bathing', cells: []});
+  const failed = weekCells({days: [], error: 'forecast failed: x', upstream_summary: {overflows: 3}}, DATES);
+  assert.deepEqual([failed.same, failed.rule, failed.words], [true, false, 'No forecast in this update']);
+});
+test('each day-by-day cell opens the spot on its day, and a spot whose level does not change opens without one', () => {
+  const ctx = pageContext(['esc', 'tone', 'dateLabel', 'PAGE_ID', 'spotPath', 'savedGrid'], {ROOT: {pathname: '/'}, fiveDays: () => DATES});
+  const a = {...week(['low', 'high', 'low', 'low']), id: 'wharfe-a', name: 'Wharfe <A>'};
+  const html = vm.runInContext('savedGrid', ctx)([a, {...clearRiver}]);
+  assert.deepEqual([...html.matchAll(/<span role="columnheader">([^<]+)<\/span>/g)].map(m => m[1]), ['Today', 'Thu', 'Fri', 'Sat', 'Sun']);
+  const cells = [...html.matchAll(/<a class="([^"]*)" href="([^"]+)" data-id="([^"]+)"(?: data-day="([^"]+)")? aria-label="([^"]+)">([^<]+)<\/a>/g)]
+    .map(m => ({cls: m[1], href: m[2], id: m[3], day: m[4], label: m[5], text: m[6]}));
+  assert.equal(cells.length, 6);
+  assert.deepEqual(cells.slice(0, 5).map(c => [c.href, c.day, c.text, c.cls]), [
+    ['/spot/wharfe-a/#day=2026-09-30', '2026-09-30', 'Low risk', 'lv low'], ['/spot/wharfe-a/#day=2026-10-01', '2026-10-01', 'High risk', 'lv high'],
+    ['/spot/wharfe-a/#day=2026-10-02', '2026-10-02', 'Low risk', 'lv low'], ['/spot/wharfe-a/#day=2026-10-03', '2026-10-03', 'Low risk', 'lv low'],
+    ['/spot/wharfe-a/#day=2026-10-04', '2026-10-04', 'No forecast', 'na']]);
+  assert.equal(cells[1].label, 'Wharfe &lt;A&gt;, Tomorrow: High risk: sewage spills');   // the visible words are in the name it is read by
+  // The river with nothing upstream: one cell across the five days, to its page with no day, in the plain words.
+  assert.deepEqual([cells[5].href, cells[5].day, cells[5].text, cells[5].cls], ['/spot/birks/', undefined, 'No monitored overflow found upstream', 'clear']);
+  assert.match(html, /<span class="wg-cell wg-all" role="cell"><a class="clear" href="\/spot\/birks\/"/);
+  assert.match(html, /<span class="wg-name" role="rowheader"><a href="\/spot\/wharfe-a\/" data-id="wharfe-a">Wharfe &lt;A&gt;<\/a><\/span>/);
+  assert.equal(vm.runInContext('savedGrid', ctx)([]), '');
+});

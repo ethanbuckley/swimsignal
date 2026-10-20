@@ -2,7 +2,7 @@
 // The level rules (levels.js): the page loads them after this file, so they are looked up when a
 // summary is made; Node requires them.
 const rules = () => typeof headParts === 'function'
-  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED } : require('./levels.js');
+  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
 // The latest lab sample in the words of a spot's "What the level rests on" (evidence.js, evidenceSample),
 // as plain text; the page loads that file before this one, and Node requires it. Where there is none, it
@@ -52,6 +52,18 @@ function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
 function compareDays(s, dates) {
   const R = rules();
   return { same: !R.daily(s), days: dates.map(iso => ({ date: iso, level: R.dayLevel(s, iso), words: R.dayHeadline(s, iso) })) };
+}
+// The Saved page's day by day (index.html, savedGrid; second outside review, 20 Oct 2026): a spot's row of
+// cells, each the day's level in two words ("Moderate risk"), with the day's headline for a screen reader
+// ("Moderate risk: sewage spills"), or "No forecast" for a day the forecast does not have. `rule`: the cell is
+// a level, so it carries the level's 4 px rule; nothing else does. A spot whose level does not change from
+// day to day has one cell for the five (same), in its headline's words: "No monitored overflow found
+// upstream" is not a level and never reads as one.
+function weekCells(s, dates) {
+  const R = rules(), d = compareDays(s, dates), lv = l => R.rank(l) >= 0;
+  if (d.same) { const x = d.days[0]; return { same: true, level: x.level, rule: lv(x.level), words: x.words, said: x.words, cells: [] }; }
+  return { same: false, cells: d.days.map(x => ({ date: x.date, level: x.level, rule: lv(x.level), said: x.words,
+    words: lv(x.level) ? `${x.level[0].toUpperCase()}${x.level.slice(1)} risk` : 'No forecast' })) };
 }
 // Right now: the overflows upstream as a spot's "What the level rests on" gives them (evidence.js,
 // evidenceOverflows): discharging, stopped lately, how many report live, and why the others do not (offline,
@@ -148,5 +160,5 @@ function comparisonIds(ids, available) {
   const valid = new Set(available.map(s => s.id));
   return [...new Set(ids.filter(id => valid.has(id)))].slice(0,3);
 }
-if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, compareDays, compareNow, compareAdvice, compareAccess, compareRows, ACCESS_WORDS,
+if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, compareDays, weekCells, compareNow, compareAdvice, compareAccess, compareRows, ACCESS_WORDS,
   comparisonIds, storedList, flowFacts, flowSentence, floodUnchecked, floodUncheckedLine};
