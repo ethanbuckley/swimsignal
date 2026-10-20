@@ -3360,6 +3360,14 @@ const planPath = () => `${ROOT.pathname}plan/`;
 const onPlanPage = () => /\/plan\/?$/.test(location.pathname);
 const PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg>';
 let PLAN = { ...PLAN_DEFAULT }, PLACES = null, planNote = '', planTyped = 0, PLAN_BOUNDS = null;
+// The plan last shown is kept in this browser as its address says it (planHash), so the header's link opens it
+// after a reload or on a later visit too, not only within one visit (post-deploy QA, 20 Oct 2026). The page's
+// first plan starts from it (plan.js, planKept). Like the address it never holds your own position, and it is
+// sent nowhere. PLAN_READ: this page has started its plan.
+const PLAN_KEY = 'dipcast.plan';
+let PLAN_READ = false;
+const planAddress = () => { const h = planHash(PLAN); history.replaceState(history.state, '', planPath() + h);
+  try { localStorage.setItem(PLAN_KEY, h); } catch (e) { /* kept for this visit only */ } };
 // The plan's reach on the map: the ring, or the start and the nearest spots at any distance. The full
 // map on a phone opens on it too (setMapMode).
 const fitPlan = () => map.fitBounds(PLAN_BOUNDS, { padding: [30, 30], ...MOTION() });
@@ -3415,6 +3423,7 @@ function renderPlan() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'plan';
   setView('plan');
   document.title = `Plan a swim · ${BRAND}`;
+  if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
   if (!PLAN.from && VIEW.here) PLAN.from = { here: true };   // "Near me" on the list has already asked
   planCompareGo = !!PLAN.compare;   // a link to a comparison opens on it (drawPlan)
@@ -3437,7 +3446,7 @@ function renderPlan() {
 // (a new start or distance), which typing the day or the kind does not.
 function drawPlan(fit = false) {
   const box = document.getElementById('plan-results'); if (!box) return;   // left the page while a place or a position was on its way
-  history.replaceState(history.state, '', planPath() + planHash(PLAN));
+  planAddress();
   if ((VIEW.day || null) !== PLAN.day) setMapDay(PLAN.day);   // the map shows the plan's day, and so does the list after it
   const from = planFrom(), sum = document.getElementById('plan-sum');
   const geo = 'geolocation' in navigator, here = `<button type="button" class="linkbtn small" data-plan-here>Use my location</button>`;
@@ -3483,7 +3492,6 @@ function drawPlan(fit = false) {
 // plan's own groups. Under the groups, as Saved's is under the cards. In the address while it is open, so a
 // link opens on it, and a link that holds one is taken to it (planCompareGo, set by renderPlan).
 let planCompareGo = false;
-const planAddress = () => history.replaceState(history.state, '', planPath() + planHash(PLAN));
 function planCompare(groups, heads) {
   const shown = groups.flat(), miles = new Map(shown.map(o => [o.s.id, o.miles]));
   const c = { title: 'Compare these spots', ids: planCompareIds(PLAN.compare, shown.map(o => o.s)), day: PLAN.day, open: !!PLAN.compare,
