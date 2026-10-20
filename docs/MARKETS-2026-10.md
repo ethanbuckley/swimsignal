@@ -21,8 +21,11 @@ The five markets, in order of priority:
 5. **Water companies and public funders.** They have money, but build their own tools. Approach them
    only after the 2027 season's scores.
 
-The plan in one line: give each group a free pilot in winter 2026–27, built from five shared pieces of
-work, and charge nobody before the 2027 season shows whether the forecast is good enough to pay for.
+The plan in one line, as changed on 20 October 2026: paid pilots this winter for activity centres and
+event organisers, built from five shared pieces of work, with the forecast's limits stated first and
+the 2027 season's scores still the test of whether it is good enough. Section 6a has the decision and
+what must be true before the first invoice. Until then the plan was free pilots and no charging before
+October 2027.
 
 Most of what they need exists already: the organisers' page, the signs, the embed, shared lists and
 click-anywhere. Five shared pieces of work (section 4) cover most of the gap. Each market then needs
@@ -126,7 +129,7 @@ use it; organisers use it to choose a venue.
   - B5 when choosing a venue.
 - **Reach.** British Triathlon's event-organiser team, Swim England, and the launch kit's event emails
   (Great North Swim, krono:sports Henley). Those are ready, and wait for the pilot season.
-- **Pilot.** Free for 3 to 5 events in the 2027 season. In return: their own lab results, which score
+- **Pilot.** Paid since 20 Oct 2026 (section 6a); first written as free for 3 to 5 events in the 2027 season. In return: their own lab results, which score
   the forecast, and a written view of whether it changed a decision.
 - **Price, later (hypothesis).** A season or per-event fee well under the cost of one lab test.
 - **Measure.** One written pilot by 30 April 2027, the launch kit's gate.
@@ -152,7 +155,7 @@ use it; organisers use it to choose a venue.
   - Ask OEAP to list SwimSignal next to SewageMap in 7.2i.
   - The Institute for Outdoor Learning, to reach centres.
   - The Scouts' and Girlguiding adventure teams.
-- **Pilot.** 3 AALA centres on rivers, winter and spring 2027.
+- **Pilot.** 3 AALA centres on rivers, winter and spring 2027, paid (section 6a).
 - **Price, later (hypothesis).** About River Truth's club and council prices, £15 to £49 a month
   [checked 3 Oct 2026: rivertruth.co.uk/business].
 - **Measure.** A centre that uses the sites view in a real decision, and says so.
@@ -220,10 +223,69 @@ use it; organisers use it to choose a venue.
 | By 15 Oct 2026 | T8 profiles for applicants; email to SAS's applicant support | Profiles sent to anyone who asks |
 | Oct–Nov 2026 | T1 plain names, T2 sites view, T3 decision record, T7 for-clubs page. Emails to OEAP, the Institute for Outdoor Learning, the Clean Water Sports Alliance, Paddle UK and British Triathlon. Terms exception for pilots | Pages live; replies logged in the kit |
 | Nov 2026 – Jan 2027 | T4 event week, T5 date alerts, T6 site profile page | Ethan deploys the Worker |
-| Dec 2026 – Apr 2027 | Free pilot offers: 3–5 events, 3 centres, 2 councils | One written pilot by 30 Apr 2027 |
-| By 1 May 2027 | Company, insurance and terms if any pilot may convert. The 2027 test is frozen | Section 2's checklist done |
+| Oct–Nov 2026 | Paid-pilot groundwork (section 6a): contract check, trading form, insurance, terms, hosting, site wording, ten buyer conversations | Section 6a's checklist done |
+| Dec 2026 – Apr 2027 | Paid pilots: 3–5 centres and organisers. Councils get free profiles | Three paying pilots by 30 Apr 2027 |
+| By 1 May 2027 | The 2027 test is frozen | Test registered |
 | May–Sep 2027 | Pilots run; organisers' own lab results collected | Results logged |
 | Oct 2027 | Season scores published. Pricing decided. Water-company offer, if the scores justify it | The launch kit's October decision |
+
+## 6a. Paid pilots, winter 2026–27 (decided 20 October 2026)
+
+Ethan decided on 20 Oct 2026 to run paid pilots this winter, after an outside review argued for
+organisation pilots before the 2027 season. Free pilots until the October 2027 scores was the earlier
+proposal. Swimmers stay free (section 2).
+
+**Who.** Commercial activity centres with several inland launch points first; event organisers beside
+them. Clubs stay free, as a channel. Councils and water companies wait.
+
+**The season problem [inferred].** Most open-water events run May to September, and many centres run
+few water sessions in winter. A winter pilot is therefore mostly a centre that runs sessions now, or an
+organiser who signs now for its 2027 dates. Expect fewer pilots in use before April.
+
+**What is sold.** The same forecast as the public page (section 2), organised for the customer's
+decision. A pilot is bounded in writing:
+- a named list of sites (B2), set up for them;
+- a briefing on the days they ask for, built from the sites view and decision record (B3), by hand at
+  first;
+- date alerts for their sessions or event (T5);
+- a copy of every briefing as issued, with its issue time;
+- a fixed end date and a short written review at the end.
+
+It is not a safety certificate, a water test or a guarantee. The pilot agreement says so in its first
+lines, with the live figures: outside United Utilities, the High line has warned of 23 of 1,402 spill
+days so far (verification page, 20 Oct 2026).
+
+**Prices to test (hypotheses, not evidence).** £49–£99 a month for a centre; £150–£300 an event. These
+come from the 20 Oct review and are unvalidated. River Truth's live dashboards sell at £15–£49 a month
+for clubs and councils [checked 3 Oct 2026]. Name the eventual price at the start of each pilot.
+
+**Before the first invoice.** Each item names who does it. None is legal or tax advice.
+
+| # | Item | Who | Notes |
+|---|---|---|---|
+| 1 | Check Ethan's employment contract for outside work, IP and conflict clauses | Ethan | First, because a no ends the plan |
+| 2 | Choose a trading form: sole trader now, or a Ltd or CIC (open question 6) | Ethan | A sole trader can invoice at once [inferred]; a company limits personal liability. Register with HMRC either way |
+| 3 | Professional indemnity and public liability insurance | Ethan | About £100–£500 a year, indicative (29 Sep notes); tell the insurer what the forecast is and is not |
+| 4 | Pilot agreement and customer terms, read by a solicitor; decision-record wording (open question 4) | Ethan, with a draft from Claude | Uses section 2's caveat and the live figures |
+| 5 | Open-Meteo paid plan, from €29 a month | Ethan pays; Claude checks the call count fits | Its free plan excludes sites with subscriptions [checked 29 Sep 2026]. Builds use about 8,600 calls a day since PR #243, inside Standard's 1M a month [inferred, recheck]. Historical API use by eval scripts needs Professional (€99) if it counts as commercial |
+| 6 | Host off GitHub Pages | Claude builds, Ethan switches DNS | GitHub's terms bar an online business on Pages. Cloudflare Pages is the obvious move, since the domain is already on Cloudflare [inferred] |
+| 7 | Change the site's own words | Claude | The terms and every footer say "free, non-commercial" and "not a company"; the embed and reuse terms allow non-commercial use only (open question 3) |
+| 8 | ICO fee and privacy notice for customer contacts | Ethan pays, Claude drafts | £52 a year (29 Sep notes); the ICO self-assessment settles whether it applies |
+| 9 | Payment: Stripe invoices or bank transfer | Ethan | Stripe 1.5% + 20p per UK card (29 Sep notes) |
+
+**First steps, in order.**
+1. Ethan checks item 1.
+2. Ten buyer conversations in two weeks: six centres, four organisers. Each walks through their last
+   water decision: what they checked, who checked it, how long it took, what they wrote down, and who
+   holds the budget. Claude drafts the script and the emails into the launch kit.
+3. Items 2–9 in parallel, done before any pilot starts.
+4. Three to five pilots, each with a written scope, end date and named price.
+5. Build only what the pilots ask for more than once. Start from scheduled briefings, delivery to a
+   team, and the archive of what was issued. No account system until pilots need one.
+6. Record per pilot: use, time saved, what was missing, delivery failures, and Ethan's support time.
+
+**Measures.** Three paying pilots by 30 April 2027. Then renewal for the 2027 season, which says more
+than a first sale. The May–September 2027 evaluation and the October 2027 scores stay as planned.
 
 ## 7. Tasks, one pull request each
 
@@ -289,7 +351,7 @@ first.
 
 ## 9. Open questions for Ethan
 
-1. **When to charge.** The proposal is free pilots until the October 2027 scores. Yes or no?
+1. **When to charge.** Answered 20 Oct 2026: paid pilots this winter (section 6a).
 2. **Applicants.** Offer profiles even though one can count against an application? The proposal is
    yes, with the caveat stated first.
 3. **Terms.** May commercial events and hire centres show the card and the signs during a free pilot?
