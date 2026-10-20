@@ -189,7 +189,7 @@ def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_ne
     assert "the spill forecast warned of 21% of spills." in page and "Loading the scores…" not in page
     assert '<dl class="stats">' in page and '<h2 id="short-h">In short</h2>' in page   # the figure tiles and the list
     assert 'href="/' not in page.split("<script>")[0]   # the links in the figures are the static site's too
-    script = (ROOT / "src" / "dipcast" / "api" / "static" / "verification.html").read_text()
+    script = (ROOT / "src" / "dipcast" / "pages" / "verification.html").read_text()
     assert "if (built && !(fresh > built)) return;" in script
     # Without the file, the page as it is, which its script fills.
     (tmp_path / "data" / "verification.json").unlink()
@@ -229,7 +229,8 @@ def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(t
     bs.write_pages(tmp_path, spots, root="https://example.org/")
     about = (tmp_path / "about.html").read_text()
     assert '<span id="n-spots">2</span> spots, <span id="n-bw">1</span> of them designated' in about
-    # The server's absolute links become the static site's relative files, on every page.
+    # The pages' absolute links (written for the FastAPI server, removed 20 Oct 2026) become the static
+    # site's relative files, on every page.
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "testing.html", "feedback.html", "methods.html", "coverage.html", "clubs.html"]:
         page = (tmp_path / name).read_text()
         assert 'href="about.html">About</a>' in page, name
@@ -238,11 +239,6 @@ def test_about_page_counts_this_builds_spots_and_links_work_on_the_static_site(t
         if 'rel="icon"' in (bs.STATIC / name).read_text():
             for ref in ("icons/icon.svg", "icons/apple-touch-icon.png", "fonts/SourceSans3-latin.woff2", "fonts/SourceSerif4-latin.woff2"):
                 assert f'href="{ref}"' in page and (tmp_path / ref).exists(), (name, ref)
-        # On the API server the same links are /static/..., which must resolve there too.
-        for ref in re.findall(r'href="/static/([^"]+)"', (bs.STATIC / name).read_text()):
-            assert (bs.STATIC / ref).exists(), (name, ref)
-    for icon in ("icon.svg", "apple-touch-icon.png"):   # the API server's copies of the site's icons
-        assert (bs.STATIC / "icons" / icon).read_bytes() == (bs.TEMPLATE.parent / "icons" / icon).read_bytes(), icon
     home = (tmp_path / "index.html").read_text()
     assert '<a href="about.html">About SwimSignal</a>' in home and '<a href="about.html" class="desk-only">About</a>' in home
 
@@ -325,7 +321,7 @@ def test_the_credits_travel_with_the_data_and_the_terms_link_every_licence(tmp_p
     bs = _build_site()
     c = bs.data_credits("https://example.org/")
     assert {"attribution", "modified", "licences", "full"} <= set(c) and c["full"] == "https://example.org/terms.html#data"
-    terms = (ROOT / "src" / "dipcast" / "api" / "static" / "terms.html").read_text()
+    terms = (ROOT / "src" / "dipcast" / "pages" / "terms.html").read_text()
     assert all(url in terms for url in c["licences"].values())
     for company in ("Anglian", "Northumbrian", "Severn Trent", "South West", "Southern", "Thames", "United Utilities", "Wessex", "Yorkshire"):
         assert company in c["attribution"] and company in terms, company
@@ -345,7 +341,7 @@ def test_the_credits_travel_with_the_data_and_the_terms_link_every_licence(tmp_p
 def test_nothing_credits_the_ea_with_advice_the_law_gives_to_the_council():
     # Bathing Water Regulations 2013 reg 13(1)(b): at a poor water the local authority that
     # controls it issues the advice against bathing, not the EA.
-    for p in [ROOT / "src" / "dipcast" / "site" / "index.html", ROOT / "src" / "dipcast" / "api" / "static" / "terms.html"]:
+    for p in [ROOT / "src" / "dipcast" / "site" / "index.html", ROOT / "src" / "dipcast" / "pages" / "terms.html"]:
         assert "advises against bathing" not in p.read_text(), p.name
 
 
@@ -546,7 +542,7 @@ def test_river_levels_are_an_observation_beside_the_forecast():
     # The EA's own attribution line travels with the data and sits on the terms page.
     line = "this uses Environment Agency flood and river level data from the real-time data API (Beta)"
     assert line in bs.data_credits("https://example.org/")["attribution"]
-    assert line in (ROOT / "src" / "dipcast" / "api" / "static" / "terms.html").read_text()
+    assert line in (ROOT / "src" / "dipcast" / "pages" / "terms.html").read_text()
     assert line in (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
 
 
@@ -575,34 +571,6 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_
         raise RuntimeError("open-meteo request failed")
     fresh = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}]
     assert bs.attach_weather(fresh, request=broken, cache=tmp_path / "none.json") == 0 and "weather" not in fresh[0]
-
-
-def test_the_api_server_sends_its_home_page_to_the_site_and_keeps_the_prose_pages(monkeypatch):
-    # The API's own map page (static/index.html) was outside the design system and is gone: the
-    # map is the static site's. Without the lifespan (no `with`), nothing is warmed up or scheduled.
-    # SITE_URL is read when the module loads, so each setting is a reload.
-    import importlib
-
-    from fastapi.testclient import TestClient
-
-    from dipcast.api import app as api
-    try:
-        for env, want in [(None, "https://swimsignal.co.uk/"), ("http://localhost:8769", "http://localhost:8769/"),
-                          ("swimsignal.co.uk", "https://swimsignal.co.uk/")]:   # no scheme: not an address
-            if env is None:
-                monkeypatch.delenv("DIPCAST_SITE_URL", raising=False)
-            else:
-                monkeypatch.setenv("DIPCAST_SITE_URL", env)
-            importlib.reload(api)
-            r = TestClient(api.app).get("/", follow_redirects=False)
-            assert r.status_code == 307 and r.headers["location"] == want, env
-        c = TestClient(api.app)
-        assert not (api.STATIC / "index.html").exists()
-        for path in ("/about", "/clubs", "/verification", "/terms", "/privacy", "/feedback", "/testing", "/methods", "/static/page.css", "/static/fonts/SourceSans3-latin.woff2"):
-            assert c.get(path).status_code == 200, path
-    finally:
-        monkeypatch.undo()
-        importlib.reload(api)   # as the environment has it, for any later test
 
 
 def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
@@ -719,14 +687,6 @@ def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_
     assert 'href="data.html"' in terms
     embed = about[about.index('<h2 id="embed">'):]
     assert "non-commercial website" in embed and "Ask first about any other use" in embed and 'href="mailto:hello@swimsignal.co.uk"' in embed
-
-
-def test_the_api_server_serves_the_data_page():
-    from fastapi.testclient import TestClient
-
-    from dipcast.api import app as api
-    r = TestClient(api.app).get("/data")
-    assert r.status_code == 200 and "<h1>Data files</h1>" in r.text
 
 
 def _modules(d: str, size: int, border: int = 4) -> list[list[int]]:

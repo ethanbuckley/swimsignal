@@ -90,7 +90,7 @@ test('comparison excludes removed spots and duplicates and never exceeds three',
 });
 const vm = require('node:vm');
 const fs = require('node:fs');
-const feedback = fs.readFileSync(require('node:path').join(__dirname,'../src/dipcast/api/static/feedback.html'),'utf8');
+const feedback = fs.readFileSync(require('node:path').join(__dirname,'../src/dipcast/pages/feedback.html'),'utf8');
 const prepareSource = feedback.slice(feedback.indexOf('function prepareEmail('),feedback.indexOf("$('feedback-form').addEventListener"));
 const context = vm.createContext({}); vm.runInContext(prepareSource,context);
 test('feedback encodes user content without changing the recipient or adding mail headers', () => {

@@ -1,6 +1,6 @@
 """Refresh live overflow status, rebuild the overflow table and score logged
-forecasts. Run on a schedule (every 15-30 min) when the API is not doing it
-in-process (DIPCAST_REFRESH_MINUTES=0). Call POST /api/reload afterwards."""
+forecasts, as each site build does first (scripts/build_site.py), without building
+the site."""
 
 import logging
 

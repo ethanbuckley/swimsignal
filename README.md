@@ -171,9 +171,9 @@ out at a time (docs/TRANSPORT-FIT-TEST-2026-10.md); until then they were 0.5 m/s
 sample days within each site, not a measured speed or die-off rate. The product is the probability that a spill
 there affects the spot. Risk = 1 - prod(1 - p_i w_i). The site runs
 `forecast_point(..., gauge=False)`, so the river level shown beside a forecast
-does not change it; the click-anywhere API (`gauge=True`) scales the velocity by
+does not change it. With `gauge=True`, the default, it scales the velocity by
 the nearest EA gauge's level index, 0.3 m/s at typical low to 1.0 m/s at typical
-high (`river_velocity`).
+high (`river_velocity`); the API server that used it was removed on 20 Oct 2026.
 
 Two options from Dr James Shucksmith's review (9 Oct 2026) are in the code, off
 by default: `DIPCAST_VELOCITY_MODE=catchment` gives each reach its own speed from
@@ -291,7 +291,7 @@ at 65%), and the model is also over-confident at the top end even with today's
 rain (an 85% forecast verifies at 82%, a 93% one at 86%), a shift between years
 that a two-parameter Platt scaling cannot remove. So an isotonic map (monotone,
 piecewise, about 50 knots) is fitted per lead on the held-out year's forecasts
-and applied in the API; `data/processed/lead_calibration.json` holds the knots,
+and applied in `forecast_point`; `data/processed/lead_calibration.json` holds the knots,
 with the Platt parameters kept alongside for comparison. After calibration every
 lead-2 bin sits on the diagonal (the 75% bin verifies at 75%, the 82% bin at
 82%) and lead-4 Brier improves from 0.0536 to 0.0522. The map is fitted on the
@@ -988,8 +988,7 @@ E. coli column withheld on lakes and flagged out of season; stale-forecast
 banner); Southern Water live feed (all nine English companies now live);
 E. coli exceedance model on the map, logged and scored live against new EA samples (15 Sep); per-lead isotonic calibration replacing Platt (15 Sep); second-pass outfall snapping (85% to 94%); shareable URLs; WFD lake polygons with a lake-size dilution term; recency
 weighting in the site calibration; production refit on all years; verification
-against archived forecasts by lead time (below); `Dockerfile`; a launchd plist
-in `deploy/` for the 20-minute live refresh (not installed automatically).
+against archived forecasts by lead time (below).
 
 Not done yet, in the order I would do them:
 
@@ -1021,14 +1020,13 @@ uv run python -m dipcast.ingest.edm_events
 uv run python scripts/fetch_rain_archive.py
 uv run python -m dipcast.overflows
 uv run python scripts/train.py 2025
-uv run uvicorn dipcast.api.app:app --port 8000
+uv run python scripts/build_site.py
 ```
 
-The API answers at http://localhost:8000/api/forecast (and /docs); its / sends you to the
-site, whose map `scripts/build_site.py` builds. Live status refreshes in-process every
-`DIPCAST_REFRESH_MINUTES` (set it, e.g. `DIPCAST_REFRESH_MINUTES=20`); with it
-unset, run `scripts/refresh.py` on a schedule and call `POST /api/reload`
-(`deploy/com.ethanbuckley.dipcast.refresh.plist` does this on macOS). Mutable
+`scripts/build_site.py` polls the live feeds, forecasts every spot and writes the
+site to `site/`, as the scheduled workflow does. `scripts/refresh.py` does the
+first part alone: it polls the feeds, rebuilds the overflow table and scores logged
+forecasts. Mutable
 files (live polls, the overflow table, the forecast log, live scores) go to
 `DIPCAST_STATE` if set, else `data/processed`. All raw pulls are cached under
 `data/cache/` so re-running the ingestion is cheap. Requests to
@@ -1341,17 +1339,16 @@ reviews sections only then.
 
 **How it looks** is set out in `docs/DESIGN.md`: two typefaces served from the
 site itself (Source Serif 4 for headings, Source Sans 3 for the rest, in
-`src/dipcast/api/static/fonts/` under the SIL Open Font License, so no third
+`src/dipcast/pages/fonts/` under the SIL Open Font License, so no third
 party sees a request), one corner radius, hairline borders, the four level
 colours as the only strong colours. The prose pages share
-`src/dipcast/api/static/page.css`; the app page repeats its tokens and header
+`src/dipcast/pages/page.css`; the app page repeats its tokens and header
 inline so that it paints before any stylesheet arrives and works offline on its
 own, and a token changed in one must be changed in the other. The prose pages'
-favicon and Home Screen icon are copies of the site's icons, kept in
-`src/dipcast/api/static/icons/` so that the API server's pages get them too.
+favicon and Home Screen icon are the site's own, in `src/dipcast/site/icons/`.
 
 **Data files and the embed** (3 Oct 2026). `data.html` lists every file under `data/`, what it
-holds, its fields and its licence. Its words are `src/dipcast/api/static/data.html`;
+holds, its fields and its licence. Its words are `src/dipcast/pages/data.html`;
 `build_site.write_data_page` fills in each file's size and adds a row, with a build warning, for any
 file in `data/` the page does not describe, so a file added to the build belongs on that page too.
 `embed.html?spot=<id>` is one spot's card (headline, five days, caveat, issue time, a link back and
@@ -1379,9 +1376,10 @@ paid pilots). Nothing is committed by the job except
 that file is 25 days old rewrites it, because GitHub disables the schedule of
 a public repository after 60 days without activity.
 
-The click-anywhere API (below) is the same code behind a FastAPI server. It
-is what to run when someone needs forecasts for arbitrary points or an API,
-and it costs about £8 a month on Fly.io; the static site costs nothing.
+The site is static and costs nothing to host. A FastAPI server for forecasts at
+arbitrary points ran on Fly.io until its trial ended on 29 Sep 2026. It was removed
+on 20 Oct 2026 (review task F7): the map's click-anywhere forecast is built into the
+static site (`anypoint.js`), and nothing else used the server.
 
 ## Before taking money or running ads
 
@@ -1482,37 +1480,3 @@ no substitute for a solicitor before any of these happens.
 - **Advertising rules.** A .uk domain or paid placement brings the site's own
   claims under the CAP Code: never "safe", and hold evidence for every factual
   claim (rules 3.7 and 3.9).
-
-## Deploy the click-anywhere API (optional)
-
-The app is one container plus a small volume for mutable state. `fly.toml` is
-set up for Fly.io in London; any host that runs a container works the same way.
-The river network needs about 1 GB of RAM at runtime, so the config asks for a
-2 GB machine (roughly £10 a month at 2026 prices; check Fly's pricing page).
-
-```bash
-brew install flyctl                 # or curl -L https://fly.io/install.sh | sh
-fly auth signup                     # or fly auth login
-fly launch --no-deploy --copy-config --name dipcast --region lhr
-fly volumes create dipcast_state --region lhr --size 1
-fly deploy                          # builds the Dockerfile remotely, ~10 min first time
-fly open /api/health
-```
-
-You will know it worked when `/api/health` returns `"refresh_minutes": 20` and
-the map loads at the app's `.fly.dev` address. The API process needs about
-1 GB; loading is serialised because two concurrent loads of the network
-exceeded a 2 GB machine. The mistake to avoid is deploying
-before `data/processed` exists locally: the Dockerfile copies it into the
-image, and an empty directory produces a container that starts and then fails
-every forecast.
-
-Custom domain and HTTPS: buy a domain at any registrar, then
-
-```bash
-fly certs add dipcast.example.com
-```
-
-and create the DNS records `fly certs show` asks for (an A and an AAAA record,
-or a CNAME to `dipcast.fly.dev`). Fly issues and renews the certificate. The
-`.fly.dev` address is HTTPS already, so a domain is cosmetic.

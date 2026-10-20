@@ -4,7 +4,7 @@ Written 1 October 2026, when the site was redrawn to look like one product rathe
 generated pages, and revised on 2 October 2026 for the fifth round, "a field guide, not a
 dashboard", and the seventh, "the sky and the glass" (both below). This file is the reference for
 anyone changing how the site looks: what was wrong, what was decided, and the rules that keep the
-pages consistent. The stylesheet that carries the system is `src/dipcast/api/static/page.css`; the
+pages consistent. The stylesheet that carries the system is `src/dipcast/pages/page.css`; the
 app page, `src/dipcast/site/index.html`, repeats the tokens and the header inline so that it paints
 before any stylesheet arrives and works offline on its own. A token changed in one must be changed
 in the other: `tests/test_design_tokens.py` fails the build when the two sets differ, or when a rule
@@ -308,10 +308,9 @@ Each prose page's `<head>` carries, in this order:
   `SourceSerif4-latin.woff2`, so that text swaps into them sooner. The italic is rarely used and
   is not preloaded.
 
-The pages are written for the API server, so these links start `/static/`; `scripts/build_site.py`
-rewrites each one for the static site (`REWRITES`). The API server has its own copies of the two
-icons in `src/dipcast/api/static/icons/`, taken from the site's `src/dipcast/site/icons/`, and a
-test checks that they still match. The 404 page, which the build writes, has the same head with
+The pages were written for an API server (removed 20 Oct 2026), so these links start `/static/`;
+`scripts/build_site.py` rewrites each one for the static site (`REWRITES`), and the icons are the
+site's own, `src/dipcast/site/icons/`. The 404 page, which the build writes, has the same head with
 absolute links, `noindex` and no description. The app page's head is its own, in `index.html`: it
 adds the manifest and the Home Screen tags, and asks for `data/spots-lite.json` (`FORECAST`, which
 `main()` awaits) and preloads the picture, `icons/fells.webp`. Every view's largest paint is the

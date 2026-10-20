@@ -39,7 +39,7 @@ from zoneinfo import ZoneInfo
 log = logging.getLogger(__name__)
 
 HERE = Path(__file__).resolve().parent
-FONTS = HERE / "api" / "static" / "fonts"
+FONTS = HERE / "pages" / "fonts"
 SERIF = FONTS / "SourceSerif4-latin.woff2"   # weight 600 only, variable optical size 8-60
 SANS = FONTS / "SourceSans3-latin.woff2"     # variable weight 200-900
 ICON_PNG = HERE / "site" / "icons" / "icon-512.png"
