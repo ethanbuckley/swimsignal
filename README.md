@@ -1409,7 +1409,13 @@ no substitute for a solicitor before any of these happens.
 - **Hosting.** GitHub's rules do not allow GitHub Pages to host an online
   business, so a paid SwimSignal needs another host.
 - **Rainfall API.** Open-Meteo's free API excludes sites with subscriptions or
-  advertising; those need a paid plan, whose terms then apply.
+  advertising; those need a paid plan, whose terms then apply. The ensemble and
+  archive need the Professional plan. Set the repository secret
+  `DIPCAST_OPEN_METEO_KEY` to the plan's key and every Open-Meteo request goes to
+  the `customer-` host (`customer-api.open-meteo.com` and so on) with `apikey=`;
+  unset, the build uses the free hosts as before. The key is kept out of logs,
+  errors, cache names and pages (`tests/test_open_meteo_key.py`). The day's
+  ration stays 9,000 calls until `DIPCAST_OPEN_METEO_DAILY_CALLS` is raised.
 - **Map tiles.** The OpenStreetMap Foundation's tile policy warns commercial
   services, and those that seek donations, that access may be withdrawn at any
   point; use a tile provider before either.

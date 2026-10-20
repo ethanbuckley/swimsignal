@@ -103,6 +103,9 @@ jobs:
           DIPCAST_TILE_KEY: ${{ vars.DIPCAST_TILE_KEY }}
           # Scottish Water shadow (Scotland plan S4, S5): 1 polls and scores in state only, publishes nothing; unset = off.
           DIPCAST_SCOTTISH_WATER: ${{ vars.DIPCAST_SCOTTISH_WATER }}
+          # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
+          # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
+          DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
         run: uv run python scripts/build_site.py
 
       - name: Save mutable state
