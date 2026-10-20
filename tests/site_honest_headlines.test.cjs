@@ -39,7 +39,7 @@ function page(names, extra = {}) {
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
 // Frensham Great Pond: "Low risk for the next five days" and "Usual care", while the EA's own panel said
@@ -54,9 +54,10 @@ test('at every designated bathing water the answer says the EA advice could not 
   assert.equal(L.eaUnchecked({ ...frensham, unlisted: true }), false);   // a point clicked on the map
   assert.equal(L.headline(frensham), 'Low risk for the next five days');   // the level itself does not pretend to know
   const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
+  // Since 20 Oct 2026 a clause of the line on what the forecast could read (coverLine), just above the issue
+  // time, short, with where to look; what to do follows the five days (answerAfter).
   const h = vm.runInContext('answerWords', ctx)(frensham);
-  assert.match(text(h), /Usual care: [^.]+\. The Environment Agency's advice for today could not be checked\. Open the EA's page before you swim: it says when bathing is not advised\./);
-  assert.ok(h.indexOf('class="act"') < h.indexOf('class="gaps"') && h.indexOf('class="gaps"') < h.indexOf('class="issued"'));
+  assert.match(h, /<p class="cover">The overflow upstream reports live\. Today's EA advice not checked: <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">see the EA's page<\/a> before you swim\.<\/p><p class="issued">/);
   // The embed card says it under what to do, and links the EA's page.
   const card = Embed.card(frensham, { generated_at: GEN }, NOW);
   assert.match(text(card), /Usual care: [^.]+\. The Environment Agency's advice for today could not be checked\. The Environment Agency’s page says when bathing is not advised\./);
@@ -378,7 +379,7 @@ test('overflows in Wales are said not to be counted, with how much of the river 
   assert.equal(L.walesWords(lazonby), '');
   assert.equal(L.walesWords({ ...hereford, upstream_summary: { overflows: 14, wales_share: 0.004 } }, true), 'Overflows in Wales not counted (1% of the river above)');
   const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
-  assert.match(text(vm.runInContext('answerWords', ctx)(hereford)), /Usual care: [^.]+\. Overflows in Wales are not counted: about 29% of the river within 60 km above this spot is in Wales\./);
+  assert.match(text(vm.runInContext('answerWords', ctx)(hereford)), /Forecast only: no overflow upstream reports live .* Overflows in Wales not counted \(29% of the river above\)\. Issued/);
   const row = page(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath', 'week', 'rainMeta', 'mapLevel', 'listHeadline', 'listPath', 'headNote', 'spotItem']);
   assert.match(vm.runInContext('spotItem', row)(hereford), /<span class="hl-note">Overflows in Wales not counted \(29% of the river above\)<\/span>/);
   assert.match(text(Embed.card(hereford, { generated_at: GEN }, NOW)), /Overflows in Wales are not counted: about 29%/);

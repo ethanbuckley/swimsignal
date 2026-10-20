@@ -144,25 +144,26 @@ function pageWith(withScript) {
   if (withScript) vm.runInContext(SRC, ctx);
   vm.runInContext(pageDefs(['esc', 'glyph', 'ICON', 'tone', 'tile', 'factorRow', 'explain', 'poorLine', 'ratingHistory',
     'riverTile', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'untestedWord', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
-    'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked']), ctx);
+    'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter']), ctx);
   return ctx;
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 const spot = frensham({ days: [{ date: '2026-10-04', risk: 0, label: 'low', rain_48h_mm: 0 }], upstream_summary: { overflows: 0 }, contributors: [],
   location: { mode: 'lake' }, assumptions: { max_upstream_km: 60 } });
 
-// Since 11 Oct 2026 the answer says, beside the level and its action, that the EA's advice for today
-// could not be checked, and opens the fold (Frensham read "Low risk" and "Usual care" while the panel said
-// bathing was not advised). The line under the five days no longer repeats it.
+// Since 11 Oct 2026 the answer says, beside the level, that the EA's advice for today could not be checked,
+// and opens the fold (Frensham read "Low risk" and "Usual care" while the panel said bathing was not
+// advised). Since 20 Oct 2026 as a clause of the line on what the forecast could read (coverLine), short,
+// above the issue time. The line under the five days no longer repeats it.
 test('beside the answer, the EA advice could not be checked: open the fold, whose link opens it; without the script, the EA page', () => {
-  const line = vm.runInContext('unchecked', pageWith(true))(spot);
-  assert.equal(line, '<p class="gaps">The Environment Agency&#39;s advice for today could not be checked. Open <a href="#ea-today">Today\'s EA advice</a> before you swim: it says when bathing is not advised.</p>');
+  const line = vm.runInContext('coverLine', pageWith(true))(spot);
+  assert.equal(line, '<p class="cover">Today\'s EA advice not checked: <a href="#ea-today">open it</a> before you swim.</p>');   // no overflow upstream: no live count
   assert.doesNotMatch(line, /widget/);
-  const without = vm.runInContext('unchecked', pageWith(false))(spot);
-  assert.match(without, new RegExp(`Open <a href="${PROFILE.replace(/[.?]/g, '\\$&')}">the EA's page</a> before you swim`));
+  const without = vm.runInContext('coverLine', pageWith(false))(spot);
+  assert.match(without, new RegExp(`Today's EA advice not checked: <a href="${PROFILE.replace(/[.?]/g, '\\$&')}">see the EA's page</a> before you swim`));
   const river = { ...spot, id: 'osm-x', source: 'curated', classification: undefined };
-  assert.equal(vm.runInContext('unchecked', pageWith(true))(river), '');   // not a bathing water: nothing to check
-  assert.equal(vm.runInContext('unchecked', pageWith(true))({ ...spot, unlisted: true, source: 'unlisted' }), '');   // a clicked point
+  assert.equal(vm.runInContext('coverLine', pageWith(true))(river), '');   // not a bathing water, nothing upstream: nothing to say
+  assert.equal(vm.runInContext('coverLine', pageWith(true))({ ...spot, unlisted: true, source: 'unlisted' }), '');   // a clicked point
   // Under the five days, the caveat alone.
   assert.equal(text(vm.runInContext('check', pageWith(true))(spot)), 'A forecast, not a water test.');
   assert.doesNotMatch(vm.runInContext('check', pageWith(true))(river), /ea-today/);

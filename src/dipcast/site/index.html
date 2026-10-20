@@ -408,8 +408,14 @@
   /* What the level counts and what it does not (levels.js, levelScope): ink, the notes' size, once a page. */
   .answer .scope { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   .answer .flow { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
-  /* What the answer could not check (unchecked): ink, after what to do, never a box. */
+  /* A long spill that may be a fault: ink, after where the week goes, never a box. */
   .answer .gaps { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
+  /* What the forecast could read (coverLine): ink, the notes' size, just above the issue time. */
+  .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
+  /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
+     level counts, at the notes' size. Left, as the tile's sentence is. */
+  .after .act { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--hair); line-height:1.4; }
+  .after .scope { margin:6px 0 0; font-size:var(--fs-note); line-height:1.4; }
   /* Every tile is built the same way: a label with its icon, one figure, one drawing, one sentence, and
      the rest of the explanation one tap away in its corner. */
   .t-lab { display:flex; align-items:center; gap:6px; margin:0; padding-right:36px; font:600 var(--fs-meta)/1.3 var(--font-text); color:var(--muted); }
@@ -2069,12 +2075,21 @@ function riverTile(rs) {
     vis: ranged ? rangeBar(rs) : '',
     say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more };
 }
-// The answer's words, which a picked day fills again (showDay). What to do comes after the facts it
-// follows from, then what the level counts, before the river's separate hazard.
-const answerWords = (d, iso = null) => { const m = answerParts(d, iso);
+// The answer's words, which a picked day fills again (showDay): the level, why and when, where the week
+// goes, a long spill that may be a fault (it sets the level), the river's separate hazard, what the
+// forecast could and could not read (coverLine), and the issue time. Then the five days, straight under it
+// (20 Oct 2026, a second outside review: "a long, centred introduction pushes the five-day forecast
+// down"). What to do and what the level counts follow the week, in its tile (answerAfter); a spot with no
+// five days (a failed forecast, an isolated lake) keeps what to do here.
+const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (m.act ? `<p class="act">${m.act}</p>` : '')
-    + unchecked(d, iso) + (m.scope ? `<p class="scope">${m.scope}</p>` : '') + flowLine(d) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
+    + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
+    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
+// Under the five days, in their tile: what to do at the level, that day, and what the level counts. Until
+// 20 Oct 2026 both sat in the answer, between the level and the week: on a 375 px phone the five days began
+// 739 px down at Long Bridges, and below the screen at Ludlow. iso as answerWords; showDay fills it again.
+const answerAfter = (d, iso = null) => { if (d.error) return ''; const m = answerParts(d, iso);
+  return (m.act ? `<p class="act">${m.act}</p>` : '') + (m.scope ? `<p class="scope">${m.scope}</p>` : ''); };
 // An overflow's spill under way, from its event's start (levels.js, spillStart): "since Tue 6 Oct, 11:46"
 // in UK time, and for how long.
 const sinceTime = ms => new Date(ms).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
@@ -2098,22 +2113,37 @@ function longSpillLine(d, nowMs = Date.now()) {
   return `${src.share >= 0.5 ? 'Most of the risk right now comes' : 'Part of the risk right now comes'} from ${overflowSaid(c)}, which has reported discharging since ${sinceTime(spillStart(c))}, `
     + `for ${spillFor((nowMs - spillStart(c)) / 36e5)}. ${LONG_SPILL}`;
 }
-// What the answer could not check, in ink beside it (11 Oct 2026): a long spill that may be a fault, the
-// overflows in Wales, and the Environment Agency's advice for today at a bathing water, which links to
-// the EA's own panel ("Today's EA advice", eatoday.js) or, without it, the EA's page. A picked later day
-// leaves out right now's spill.
-function unchecked(d, iso = null) {
-  const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
-  const ea = !eaUnchecked(d) ? '' : `${esc(EA_UNCHECKED)} ${fold ? 'Open <a href="#ea-today">Today\'s EA advice</a>'
-    : /^https:\/\//.test(url || '') ? `Open <a href="${esc(url)}">the EA's page</a>` : 'Look at the EA\'s page'} before you swim: it says when bathing is not advised.`;
-  const said = [!iso || iso === today() ? longSpillLine(d) : '', esc(walesWords(d)), ea].filter(Boolean);
-  return said.length ? `<p class="gaps">${said.join(' ')}</p>` : '';
-}
 // Under the headline, on every day's view, kept in view: the river high or rising fast at a gauge on
 // the spot's own river, and any Environment Agency flood alert in force nearby (experience.js,
 // flowFacts). A different hazard, said in ink and never in a level's colour, and not part of the level.
 const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); if (!f.length) return '';
   return `<p class="flow">${f.map(x => flowSentence(x, true)).join(' ')} A separate hazard, not part of the pollution level.</p>`; };
+// What the forecast could read, in one short line beside the issue time (20 Oct 2026, second outside
+// review: "make the important missing input visible without searching through the page"). Clauses, each
+// only where it applies:
+//  - how many overflows upstream report live, all of them said too, so the line is read every time; on
+//    today's view only, since a later day's forecast rests on the rain (nowTile counts the same, after the
+//    page has aged stale feeds: ageReadings); not where the line above already says "Forecast only: no
+//    overflow upstream reports live" (answerParts);
+//  - the days of the five with no forecast;
+//  - overflows in Wales, not counted (levels.js, walesWords, short);
+//  - today's EA advice at a bathing water, not checked, with where to look (11 Oct 2026: beside the level,
+//    where "Low risk" and "Usual care" had stood in for it; until 20 Oct a sentence of its own).
+// A missing input is said as missing, never as low.
+function coverWords(d, iso = null) {
+  const out = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
+  const said = !iso && nowUnknown(d) && rank(level(d)) === 0;   // "Forecast only: ..." under the level
+  if (daily(d) && total && !said && (!iso || iso === today())) out.push(mon >= total ? (total === 1 ? 'The overflow upstream reports live' : `All ${total} overflows upstream report live`)
+    : !mon ? (total === 1 ? 'The overflow upstream does not report live' : `None of the ${total} overflows upstream report live`)
+    : `${mon} of ${total} overflows upstream report live; ${total - mon} ${total - mon === 1 ? 'does' : 'do'} not`);
+  const gone = daily(d) && !iso ? d.days.slice(0, 5).filter(x => !hasData(x)).map(x => dayName(x.date)) : [];
+  if (gone.length && gone.length < 5) out.push(`No forecast for ${gone.length > 1 ? gone.slice(0, -1).join(', ') + ' or ' + gone[gone.length - 1] : gone[0]}`);
+  if (walesWords(d, true)) out.push(esc(walesWords(d, true)));
+  if (eaUnchecked(d)) { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
+    out.push(`Today's EA advice not checked: ${fold ? '<a href="#ea-today">open it</a>' : /^https:\/\//.test(url || '') ? `<a href="${esc(url)}">see the EA's page</a>` : "see the EA's page"} before you swim`); }
+  return out;
+}
+const coverLine = (d, iso = null) => { const w = coverWords(d, iso); return w.length ? `<p class="cover">${w.join('. ')}.</p>` : ''; };
 
 // "Lowest pollution risk this week": the day with the most low spots (levels.js, bestDay), a tap
 // away, as a phrase, on the Saved page, with how many of your spots are low. While the five days
@@ -2279,6 +2309,7 @@ function showDay(d, iso) {
   const x = iso ? d.days.slice(0, 5).find(y => y.date === iso) : null;
   DAY = x ? iso : null;
   document.getElementById('answer-words').innerHTML = answerWords(d, DAY);
+  const after = document.getElementById('answer-after'); if (after) after.innerHTML = answerAfter(d, DAY);   // what to do that day, under the week
   const addr = location.pathname + location.search + (DAY ? '#day=' + DAY : '');
   if (addr !== location.pathname + location.search + location.hash) history.replaceState(history.state, '', addr);
   // The map beside the page shows the same day: a shared link, a Saved card or the comparison can open a
@@ -3652,7 +3683,7 @@ function spotTop(d) {
     + `<div id="answer-words">${answerWords(d)}</div></section>`;
 }
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
-  + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div id="day-view"></div>${check(d)}</section>`;
+  + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
 function render(d) {
   setDays(d);
   contribLayer.clearLayers();

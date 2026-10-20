@@ -536,7 +536,8 @@ is fine", while rain washes in runoff from grazing land and roads whatever the o
 decides whether an overflow's water reaches the shore. Nothing near the headline said what the level
 counts. So a spot with a daily level has one more line in the answer, after what to do and before the
 river line and the issue time (`levelScope` in `levels.js`, `.scope` in `index.html`): ink, the notes' size,
-centred as the answer is, no box, no bold lead. Once a page, never in a tile.
+centred as the answer is, no box, no bold lead. Once a page, never in a tile. (20 October 2026: under the
+five days, in their tile, after what to do; see "A tighter opening".)
 
 - Every spot with a daily level: "This forecast counts sewage from the monitored storm overflows upstream,
   and the rain that makes them spill. It does not count treated sewage from sewage works, runoff from
@@ -559,6 +560,32 @@ About's "What it cannot see" (which the decision record copies word for word) ad
 the wind. A record shows the lines that apply to its spot (`cannotSee` in `record.js`, 11 October 2026):
 Dŵr Cymru's only where its overflows are upstream, and the E. coli estimate's sentence only where the spot
 shows the estimate.
+
+### A tighter opening (20 October 2026)
+
+A second outside review: "Its long, centred introduction pushes the five-day forecast down", and "make
+the important missing input visible without searching through the page". On a 375 x 812 phone the five
+days began 739 px down at Long Bridges and 802 px down at Ludlow, below the screen. So:
+
+- **The answer is one block:** the place, the level, why and when, where the week goes, a long spill that
+  may be a fault, the river's separate hazard, one line on what the forecast could read, and the issue
+  time. The five days follow at once.
+- **What the forecast could read** (`coverLine`, `.cover`): ink, the notes' size, centred, just above the
+  issue time. Clauses, each only where it applies: how many overflows upstream report live ("44 of 45
+  overflows upstream report live; 1 does not", and "All 45 ..." too, so the line is there every time; on
+  today's view only, and not where the line under the level already says "Forecast only: no overflow
+  upstream reports live"); the days of the five with no forecast; "Overflows in Wales not counted (12% of
+  the river above)"; "Today's EA advice not checked: open it before you swim", linked. A missing input is
+  said as missing, never as low. The Wales and EA sentences that sat beside the level since 11 October are
+  these clauses now, shorter, in the same place.
+- **Under the five days**, in their tile (`answerAfter`, `.after`): what to do, at the sentence's size after
+  a hairline, then what the level counts, at the notes' size. A picked day fills it again.
+- **Kept:** the sky picture and its glass (seventh round), the 48 px and 128 px bands, the level's size,
+  every word of what to do and what the level counts. The answer stays the same element, so the largest
+  paint is still the picture behind it.
+- Measured on the live data of 20 October 2026, the top of the five days' rows, before and after: Long
+  Bridges 739 to 576 px at 375 x 812 and 684 to 543 px at 1440 x 900; River Dart, Spitchwick (low) 669 to
+  529 and 677 to 558; Ludlow 802 to 600 and 740 to 585.
 
 ### River high and flood alerts (3 October 2026)
 
@@ -596,7 +623,8 @@ level"): "High" in a level's colour read as a pollution level.
 NSW Beachwatch gives an action with each of its levels; SwimSignal gave a level and why, and left the
 decision to the reader. The answer now has one line on what to do, after where the five days go and
 before the river line and the issue time (`levelAction` and `dayAction` in `levels.js`, `.act` in
-`index.html`). It is a sentence in ink, centred as the answer is: never a level's colour, a box or a
+`index.html`). Since 20 October 2026 it follows the five days instead, in their tile (see "A tighter
+opening"); a spot with no five days keeps it in the answer. It is a sentence in ink, centred as the answer is: never a level's colour, a box or a
 bold lead, so it reads as following from the level rather than as a second one. A picked day gets that
 day's line, and very high names its day: "Avoid swimming here tomorrow: choose a lower day or spot." A
 water rated poor, algae at the last check and the spots without a level have lines of their own. No
