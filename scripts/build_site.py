@@ -2502,7 +2502,12 @@ def build(refresh: bool = True) -> dict:
     # How the spots are joined by water, for the reasons on the Nearby card (spot_links), from every overflow
     # each forecast counted, not the ten a spot keeps: the catchment in the lite file, the links in each
     # spot's own (DETAIL_FIELDS), which only its page reads.
-    health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
+    # A reason beside a suggestion must never sink the site: if the links fail, the cards give none.
+    try:
+        health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
+    except Exception as e:  # noqa: BLE001
+        health["spot_links"] = 0
+        health["warnings"].append(f"Nearby reasons not made this update: {e}")
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     if n_flows.get("flood_alerts_unchecked"):
