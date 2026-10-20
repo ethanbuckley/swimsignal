@@ -704,8 +704,23 @@
   /* Plan a swim (plan.js): the choices on the sky, as the list's are (the day and how far, where you
      start, the kind of water), then a tile for each group of spots. A row is the list's with one more
      line, in ink: why it is there. */
-  .plan-row { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; margin:16px 0 0; }
+  .plan-row { display:grid; grid-template-columns:minmax(0, 1fr); gap:8px; margin:16px 0 0; }
   .plan-row label { min-width:0; }
+  /* The day (planStrip): the five days in one strip with the distance under it, or beside it where there is
+     room. Each day a 44 px target, its short name over its date, the chosen one filled as a chosen chip is.
+     The radio buttons are hidden but take the focus, whose ring goes round the day. */
+  @media (min-width: 600px) { .plan-row { grid-template-columns:minmax(0, 3fr) minmax(0, 1fr); } }
+  .day-strip { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:2px; min-width:0; margin:0; padding:2px;
+               border:1px solid var(--line); border-radius:var(--radius); background:var(--field); }
+  .day-strip label { position:relative; min-width:0; }
+  .day-strip input { position:absolute; inset:0; margin:0; opacity:0; cursor:pointer; }
+  .day-strip input + span { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:44px; padding:3px 2px;
+                            border-radius:var(--radius); font-size:var(--fs-note); font-weight:600; line-height:1.2; color:var(--ink); text-align:center; }
+  .day-strip .dd { font-size:var(--fs-meta); font-weight:400; color:var(--muted); }
+  @media (hover: hover) { .day-strip input:not(:checked):hover + span { background:var(--hover); } }
+  .day-strip input:checked + span { background:var(--brand); color:var(--on-fill); }
+  .day-strip input:checked + span .dd { color:var(--on-fill); }
+  .day-strip input:focus-visible + span { outline:2px solid var(--focus); outline-offset:2px; }
   .plan-from { margin-top:8px; }
   .plan-from + .planner-note { margin-bottom:8px; }
   a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
@@ -3387,7 +3402,7 @@ function renderPlan() {
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
     + `<p class="lede">Spots within reach on the day you pick, those at low risk first.</p>`
-    + `<div class="plan-row"><label><span class="sr">Day</span><select id="plan-day">${planDates().map(iso => `<option value="${iso}"${iso === PLAN.day ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></label>`
+    + `<div class="plan-row">${planStrip(planDates(), PLAN.day)}`
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from: a town or village" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p>`
@@ -3479,7 +3494,7 @@ function planShare(open, on) {
 }
 function bindPlan() {
   const $ = id => document.getElementById(id), input = $('plan-from');
-  $('plan-day').addEventListener('change', e => { PLAN.day = e.target.value; drawPlan(); });
+  document.querySelectorAll('input[name="plan-day"]').forEach(r => r.addEventListener('change', () => { PLAN.day = r.value; drawPlan(); }));
   $('plan-within').addEventListener('change', e => { PLAN.within = Number(e.target.value); drawPlan(true); });
   document.querySelectorAll('[data-plan-kind]').forEach(b => b.addEventListener('click', () => { PLAN.kind = b.dataset.planKind;
     document.querySelectorAll('[data-plan-kind]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawPlan(); }));
@@ -3496,9 +3511,17 @@ function bindPlan() {
 function planClick(e) {
   const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]');
   if (e.target.closest('[data-plan-here]')) planLocate();
-  else if (d) { PLAN.day = d.dataset.planDay; $('plan-day').value = PLAN.day; drawPlan(); $('plan-day').focus(); }
+  else if (d) { PLAN.day = d.dataset.planDay; const r = planDayInput(PLAN.day); if (r) r.checked = true; drawPlan(); if (r) r.focus(); }
   else if (w) { PLAN.within = Number(w.dataset.planWithin); $('plan-within').value = String(PLAN.within); drawPlan(true); $('plan-within').focus(); }
 }
+// The day as a strip of the five days, in place of a select (second outside review, 20 Oct 2026: a day is one
+// tap, and the days in reach are all in view). Each day its short name over its date ("Thu", "23 Oct"), the
+// day chosen filled, as a chosen chip is. Radio buttons under the strip, so the arrow keys move along it and
+// a screen reader names it ("Day", then "Thu 23 Oct, 4 of 5"). The address keeps day= as it was (planHash).
+// The list's and the map's "Today and tomorrow" is not here: a plan has always been for one day (readPlan).
+const planStrip = (dates, day) => `<fieldset class="day-strip"><legend class="sr">Day</legend>${dates.map(iso => `<label><input type="radio" name="plan-day" value="${iso}"`
+  + `${iso === day ? ' checked' : ''}><span>${shortDay(iso)} <span class="dd">${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span></span></label>`).join('')}</fieldset>`;
+const planDayInput = iso => document.querySelector(`input[name="plan-day"][value="${iso}"]`);
 // What has been typed (commit: picked, Enter or left): the places it could be, offered under the field,
 // and once committed the place, or the closest offer, or a sentence saying there is none.
 async function planType(text, commit) {

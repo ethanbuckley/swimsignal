@@ -53,6 +53,17 @@ test('a comparison shows the spots asked for that are still in the plan, else th
   assert.deepEqual(P.planCompareIds(['gone'], shown.slice(0, 2)), ['a', 'b']);     // a plan of two
   assert.deepEqual(P.planCompareIds(['a'], shown.slice(0, 1)), ['a']);              // one spot: the page offers no comparison
 });
+// The day strip (index.html, planStrip; 20 Oct 2026) writes the day it marks to the address as day= did
+// with the select, and a link opens on that day.
+test('each of the five days the strip offers survives the address', () => {
+  const plan = {from: {name: 'Oxford', lat: 51.752, lon: -1.2577}, within: 30, kind: 'all'};
+  for (const day of DATES) {
+    assert.match(P.planHash({...plan, day}), new RegExp(`^#day=${day}&`));
+    assert.equal(P.readPlan(P.planHash({...plan, day}), DATES).day, day);
+  }
+  assert.equal(P.readPlan('#day=2026-10-09&from=Oxford&at=51.752,-1.2577', DATES).day, DATES[0]);   // a day the strip does not offer: the first
+  assert.equal(P.readPlan('#from=Oxford&at=51.752,-1.2577', DATES, {day: DATES[3]}).day, DATES[3]);   // none in the link: the day last marked
+});
 test('what an address cannot mean is left at the default', () => {
   const p = P.readPlan('#day=2026-12-25&within=7&kind=sea&from=Paris&at=48.86,2.35', DATES);
   assert.deepEqual(p, {day: DATES[0], from: null, within: 20, kind: 'all'});   // a day out of the forecast, a distance not offered, a place outside Britain

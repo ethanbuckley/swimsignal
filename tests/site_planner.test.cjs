@@ -448,6 +448,19 @@ test('a plan row says what the level rests on, and why a spill expected on a low
   assert.doesNotMatch(why(high, DATES[1]), /River high/);   // not a forecast: only on a plan for today
 });
 
+// ------------------------------------------------------------------------------ the plan's day strip
+// planStrip (index.html; 20 Oct 2026): the five days as radio buttons in one strip, the plan's day checked.
+test('the day strip offers the five days as one group of radio buttons, the plan\'s day checked', () => {
+  const html = vm.runInContext('planStrip', pageContext(['planStrip']))(DATES, DATES[3]);
+  assert.match(html, /^<fieldset class="day-strip"><legend class="sr">Day<\/legend>/);
+  const radios = [...html.matchAll(/<label><input type="radio" name="plan-day" value="([\d-]+)"( checked)?><span>([^<]+)<span class="dd">([^<]+)<\/span><\/span><\/label>/g)]
+    .map(m => [m[1], !!m[2], m[3].trim(), m[4]]);
+  assert.deepEqual(radios.map(r => r.slice(0, 3)), [['2026-09-30', false, 'Today'], ['2026-10-01', false, 'Thu'], ['2026-10-02', false, 'Fri'],
+    ['2026-10-03', true, 'Sat'], ['2026-10-04', false, 'Sun']]);
+  assert.deepEqual(radios.map(r => r[3].split(' ')[0]), ['30', '1', '2', '3', '4']);   // the date under each ("1 Oct"; ICU's month)
+  assert.equal((html.match(/ checked/g) || []).length, 1);
+});
+
 // ------------------------------------------------------------------------------ right now, after the spills stop
 // A spill counts until 48 h after its water has passed, so right now can be raised with nothing upstream
 // discharging. Eden at Armathwaite, 4 Oct 2026: "Moderate risk right now: sewage spills" over "0 of 60 discharging".

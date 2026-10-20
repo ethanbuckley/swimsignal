@@ -1080,6 +1080,13 @@ gives all four navigation links a single full-width row.
   the starting place as a field with the pin icon where the search has the glass, the kinds of water
   as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
   320 px phone; the count under the chips says "within".
+- The day is a strip of the five days (`planStrip`; second outside review, 20 October 2026), in place
+  of a select: each day its short name over its date ("Thu", "23 Oct") in a 44 px target, the day
+  chosen filled as a chosen chip is, in a field's box. Radio buttons under it, hidden but focusable,
+  so the arrow keys move along the strip and a screen reader reads "Day" and each day. Under 600 px
+  the distance is under the strip, full width (the first spot 58 px lower at 375 px than with the
+  select); from 600 px beside it, 3 to 1. The address keeps `day=`. The list's and the map's "Today and
+  tomorrow" is not offered: a plan has always been for one day (`readPlan`).
 - The spots come in up to four tiles, each the list's rows between hairlines with one more line in
   ink, why the spot is there: "Low risk on Saturday", "No monitored overflow found upstream" (a plain
   level), "Moderate risk or higher on Saturday", "No level". Until 20 October 2026 the first two were
