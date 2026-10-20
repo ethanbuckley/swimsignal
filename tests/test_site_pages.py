@@ -135,7 +135,8 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # Under the opening, the script's two columns (cols): the list's shape, then the map's empty tile,
     # which a wide desktop shows beside it (20 Oct 2026). The script's view uses the same frame.
     assert body.index('</div><div class="cols"><div class="col-list">') < body.index('aria-busy="true"') < body.index('<div class="col-map"><div class="tile map-tile">')
-    assert 'const cols = h => `<div class="cols"><div class="col-list">${h}</div>${MAP_TILE}</div>`;' in page
+    # The list's own call has no class, so its frame is the built one; Saved adds 'wide-list' (20 Oct 2026).
+    assert "const cols = (h, cls = '') => `<div class=\"cols${cls ? ' ' + cls : ''}\"><div class=\"col-list\">${h}</div>${MAP_TILE}</div>`;" in page
     assert 'const MAP_TILE = `<div class="col-map"><section class="tile map-tile"' in page and "setPanel(h + cols(v));" in page
     # Each screen preloads the sky it draws: the wide one from 1,100 px on the app's views.
     assert bs.SKY_PRELOAD in page and bs.SKY_PRELOAD in home

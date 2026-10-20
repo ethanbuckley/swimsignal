@@ -656,6 +656,29 @@
   .linkbtn:not(.small) { display:inline-flex; align-items:center; min-height:44px; }   /* on its own: a 44 px target */
   .linkbtn[hidden] { display:none; }
   .linkbtn.small { font-size:inherit; padding:0; }   /* inside a sentence */
+  /* Day by day (savedGrid): a row a spot, the name then five equal day columns. Each level cell is its words
+     in the level's text colour under its 4 px rule; "No forecast" and a plain level have no rule. Each cell
+     is a link at least 44 px tall. Where the grid is narrow (a phone) the name takes its own line over the
+     five days, so the days keep the full width: 61 px each at 375 px. "Moderate" needs 53 px, so the grid is
+     never under 280 px, and on a 320 px phone it scrolls sideways by about 20 px (measured 20 Oct 2026). */
+  .wg-scroll { overflow-x:auto; }
+  .wgrid { container-type:inline-size; min-width:280px; font-size:var(--fs-meta); line-height:1.25; }
+  .wg-row { display:grid; grid-template-columns:minmax(0, 1.6fr) repeat(5, minmax(0, 1fr)); gap:4px 2px; padding:8px 0; border-top:1px solid var(--line); }
+  .wg-head { border-top:0; padding-top:0; color:var(--muted); }
+  .wg-name { align-self:center; min-width:0; font-size:var(--fs-note); font-weight:600; overflow-wrap:anywhere; }
+  .wg-name a { color:inherit; text-decoration:none; }
+  .wg-name a:hover { text-decoration:underline; }
+  .wg-all { grid-column:span 5; }
+  .wg-cell a { display:block; height:100%; min-height:44px; padding:5px 0 4px; border-top:4px solid transparent; font-weight:600; text-decoration:none; color:var(--muted); }
+  .wg-cell a.lv.low { border-top-color:var(--low); color:var(--k-low); } .wg-cell a.lv.moderate { border-top-color:var(--moderate); color:var(--k-moderate); }
+  .wg-cell a.lv.high { border-top-color:var(--high); color:var(--k-high); } .wg-cell a.lv.veryhigh { border-top-color:var(--veryhigh); color:var(--k-veryhigh); }
+  .wg-cell a.clear { color:var(--k-clear); }
+  @media (hover: hover) { .wg-cell a:hover { background:var(--hover); } }
+  @container (max-width: 479px) {
+    .wg-row { grid-template-columns:repeat(5, minmax(0, 1fr)); }
+    .wg-name { grid-column:1 / -1; }
+    .wg-head .wg-name { display:none; }
+  }
   .empty-saved { text-align:center; padding:32px 16px 24px; }
   .empty-saved.tile { padding:28px 16px 20px; }
   .empty-saved .empty-more { margin:8px 0 0; }
@@ -815,6 +838,11 @@
     .map-tile #map-wrap { flex:1; min-height:0; margin-top:10px; border-radius:var(--radius); overflow:hidden; }
     /* The legend wraps to the tile's width and sits above the map's credit, not over it. */
     .map-tile .leaflet-bottom.leaflet-left .map-legend { margin:0 10px 30px; }
+    /* Saved (second outside review, 20 Oct 2026): the forecasts take the wide column, 7 to 5, and the map a
+       smaller tile beside them, 480 px tall; with nothing saved, no map (solo), the page one 720 px column. */
+    .cols.wide-list { grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); }
+    .cols.wide-list .map-tile { height:480px; }
+    .solo { max-width:720px; margin:0 auto; }
   }
   /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. The list, Saved
      and Plan a swim keep the map column: as one 720 px column the map came between the opening and the
@@ -2685,7 +2713,9 @@ const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d
 // desktop shows beside it and the map's frame moves into (placeWrap). Elsewhere the tile is not shown
 // and the view is the one stack it was. The build writes the same frame round the list's shape (home_lead).
 const MAP_TILE = `<div class="col-map"><section class="tile map-tile" aria-labelledby="map-h"><h2 class="t-lab" id="map-h">${ICON.map}<span>Map</span></h2></section></div>`;
-const cols = h => `<div class="cols"><div class="col-list">${h}</div>${MAP_TILE}</div>`;
+const cols = (h, cls = '') => `<div class="cols${cls ? ' ' + cls : ''}"><div class="col-list">${h}</div>${MAP_TILE}</div>`;
+// A view with nothing for the map to show (an empty Saved page): one column, and no map on a wide desktop.
+const solo = h => `<div class="solo">${h}</div>`;
 // With more than one list, Save says which list it adds to: the one the Saved page shows.
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
@@ -2903,7 +2933,8 @@ function drawSpots() {
 
 // ------------------------------------------------------------------------------ the Saved page
 // saved/: a card for each spot in the list shown, in the order saved, as Apple's places: the name, the
-// level with "risk", what set it and where the week goes, the week drawn small. A spot is removed from
+// level with "risk", what set it and where the week goes, the week drawn small; on the Saved page's own list
+// (unsave) without the week, which the day-by-day grid above the cards gives (savedGrid). A spot is removed from
 // the list with its bookmark (aria-label: from, the list's name), and Undo puts it back in place. The
 // list shows the same cards, without the bookmark, on its day (iso), on one tile; a list someone shared
 // shows them without it, each a tile. With no day picked, what changed since you last looked (since.js).
@@ -2912,13 +2943,35 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
   return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
-    + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${week(s)}</div>`
+    + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
     + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
     + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 // A list's spots that the forecast has, in the list's order.
 const listSpots = (l = listNow()) => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
+// Day by day (second outside review, 20 Oct 2026: aligned, the cards' weeks "would improve scanning"): the
+// list's spots down the left, the five days across the top, each cell the day's level in its words and
+// text colour over its 4 px rule, opening the spot on that day, as a list row's day does. A day the forecast
+// does not have says "No forecast", and a spot whose level does not change from day to day has one cell for
+// the five in its headline's words, with no rule, so neither reads as low (experience.js, weekCells). Above
+// the cards, which keep the answer and why but no longer draw the week, so the five days are given once,
+// in line. A role="table" grid rather than a table, so that a narrow one puts each name on its own line
+// over its five days and needs no sideways scroll on a phone (.wgrid).
+function savedGrid(spots) {
+  if (!spots.length) return '';
+  const dates = fiveDays();
+  const cell = (s, c, iso) => `<span class="wg-cell${iso ? '' : ' wg-all'}" role="cell"><a class="${c.rule ? 'lv ' : ''}${tone(c.level)}" `
+    + `href="${esc(spotPath(s.id) + (iso ? '#day=' + iso : ''))}" data-id="${esc(s.id)}"${iso ? ` data-day="${iso}"` : ''} `
+    + `aria-label="${esc(s.name)}, ${iso ? dateLabel(iso) : 'every day'}: ${esc(c.said)}">${esc(c.words)}</a></span>`;
+  const row = s => { const w = weekCells(s, dates);
+    return `<div class="wg-row" role="row"><span class="wg-name" role="rowheader"><a href="${esc(spotPath(s.id))}" data-id="${esc(s.id)}">${esc(s.name)}</a></span>`
+      + (w.same ? cell(s, w, null) : w.cells.map(c => cell(s, c, c.date)).join('')) + '</div>'; };
+  return `<section class="sec tile wgrid-tile" aria-labelledby="wg-h"><h2 class="sec-h" id="wg-h">Day by day</h2>`
+    + `<div class="wg-scroll"><div class="wgrid" role="table" aria-labelledby="wg-h"><div class="wg-row wg-head" role="row"><span class="wg-name" role="columnheader">Spot</span>`
+    + dates.map(iso => `<span role="columnheader">${shortDay(iso)}</span>`).join('') + `</div>${spots.map(row).join('')}</div></div></section>`;
+}
+const refreshGrid = () => { const host = document.getElementById('grid-host'); if (host) host.innerHTML = savedGrid(listSpots()); };
 // ------------------------------------------------------------------------------ compare
 // Up to three spots side by side, in one table for Saved ("Compare your spots") and Plan a swim ("Compare
 // these spots", 20 Oct 2026, from an outside review that asked to compare a plan's spots over the five days
@@ -3013,7 +3066,7 @@ function renderSaved() {
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
   h += '</div>';
-  let v = '';
+  let v = spots.length ? `<div id="grid-host">${savedGrid(spots)}</div>` : '';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
     + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   // Empty: one tile, one sentence and the way to a spot (review of 16 Oct 2026, C7). The swim journal
@@ -3033,7 +3086,10 @@ function renderSaved() {
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
   v += (many || SAVED.size ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
-  setPanel(h + cols(v));
+  // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
+  // all on a wide desktop, where England's every spot said nothing about an empty list (second outside
+  // review, 20 Oct 2026: "the nationwide map currently dominates even the empty Saved page").
+  setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));
   bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
   if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
@@ -3052,15 +3108,18 @@ function bindSavedPage(l, spots) {
       li.className = 'scard removed';
       li.innerHTML = `<span>Removed <b>${esc(s.name)}</b>${manyLists() ? ` from ${esc(l.name)}` : ''}.</span><button type="button" class="linkbtn" data-undo="${esc(id)}" data-at="${at}">Undo</button>`;
       li.querySelector('[data-undo]').focus();
-      refreshComparison();
+      refreshComparison(); refreshGrid();
     } else if (undo) {
       const id = undo.dataset.undo;
       setLists(addToList(LISTS, l.id, id, +undo.dataset.at));
       const li = undo.closest('li'); li.outerHTML = savedCard(DATA.spots.find(x => x.id === id), true, null, true, from);
       const back = ul.querySelector(`[data-unsave="${CSS.escape(id)}"]`); if (back) back.focus();
-      refreshComparison();
+      refreshComparison(); refreshGrid();
     }
   });
+  const grid = $('grid-host');
+  if (grid) grid.addEventListener('click', e => { const a = e.target.closest('a[data-id]'); if (!a || !plainClick(e)) return;
+    e.preventDefault(); select(a.dataset.id, true, true, a.dataset.day || null); });
   bindFind();
   const forget = $('forget');
   if (forget) forget.addEventListener('click', () => { setLists(keepSpots(LISTS, id => DATA.spots.some(s => s.id === id))); renderSaved(); });

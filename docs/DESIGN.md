@@ -308,6 +308,13 @@ paper, as the site's first screen looked in the fifth round.
   Two columns would leave the list 380 px wide, a phone's. A row's five days carry their short names ("Tue") over bars 32 px wide from
   1,200 px. On the list the day and "Low risk only" are the opening's alone; the map shows its own
   pair only on Saved and Plan, which have none.
+  Saved since the second outside review (20 Oct 2026: "give the saved forecasts more width and make
+  the map secondary... the nationwide map currently dominates even the empty Saved page"): the
+  forecasts take the wide column and the map the narrow one, 7 to 5 (`cols(v, 'wide-list')`; 674 and
+  482 px at 1,440), the map's tile 480 px tall, still sticky. With nothing saved there is no map at all
+  from 1,100 px: the page is one 720 px column (`solo`). This turns round part of the layout of 20 Oct
+  2026 for Saved alone: the list and Plan a swim keep 5 to 7. From 801 to 1,099 px Saved keeps the map
+  on the left.
   **App, phone:** list first, the map one tap away in the bar at the bottom, a spot's page with its
   own small map. Unchanged: the two columns are `display:contents` there, so the order is the one
   stack it was.
@@ -524,6 +531,17 @@ What makes Apple's page clean, and what was taken from it:
   the reader has asked for less transparency.
 - **Saved as Apple's places**: each spot's name, its level with "risk" (20 px bold), what set it
   and where the week goes, and the week as small bars. The list shows the same cards on one tile.
+- **Day by day on Saved** (second outside review, 20 Oct 2026: aligned, the weeks "would improve
+  scanning"): a tile above the cards with every saved spot's five days in line (`savedGrid`; the
+  cells are `weekCells` in `experience.js`). The names down the left, the days across the top
+  ("Today", "Wed"), each cell the day's level with its noun ("Moderate risk") in the level's text
+  colour under its 4 px rule, a link to the spot on that day. A day the forecast does not have says
+  "No forecast", in grey with no rule. A spot whose level is the same every day has one cell across
+  the five in its headline's words, with a rule only if that is a level: "No monitored overflow
+  found upstream" in the plain teal, no rule. The Saved page's own cards no longer draw the week:
+  the grid gives it once, in line, and the cards keep the answer and why. On a phone each name has
+  its own line over its five days, so the days keep the width: 61 px each at 375 px ("Moderate" is
+  53 px); the grid is never under 280 px, so a 320 px phone scrolls it sideways by about 20 px.
 - **A slate bar on top.** Shown the old teal bar, a sky with no bar and a slate bar beside the
   paper header, Ethan chose the slate: a darker shade of the picture's nearest fells, so it frames
   the sky and echoes the fells under the answer, where the old teal swallowed the mark's teal
