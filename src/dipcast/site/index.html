@@ -3050,11 +3050,13 @@ function bindComparison() {
   document.querySelectorAll('[data-compare]').forEach(el => el.addEventListener('change', drawComparison));
   drawComparison();
 }
-// Saved's: the first two saved spots until others are chosen, the day the map shows shaded (else today).
+// Saved's: the first three saved spots until others are chosen, as the plan's comparison opens (plan.js,
+// planCompareIds), the day the map shows shaded (else today). Until 20 Oct 2026 it took the first two, and
+// what it took first was kept: one spot saved, then two more, left a comparison of one (post-deploy QA).
 // Kept while the page is open, not stored.
 const COMPARE = { ids: null, open: false };
 function savedCompare(spots) {
-  const ids = comparisonIds(COMPARE.ids || spots.slice(0, 2).map(s => s.id), spots), dates = fiveDays();
+  const ids = planCompareIds(COMPARE.ids, spots), dates = fiveDays();
   COMPARE.ids = ids;
   return { title: 'Compare your spots', sub: 'Up to three saved spots side by side: the next five days, and what each level rests on. A lower forecast level does not mean safe water.',
     groups: [['', spots]], ids, day: dates.includes(VIEW.day) ? VIEW.day : dates[0], open: COMPARE.open, meta: null,
