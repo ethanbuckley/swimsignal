@@ -158,7 +158,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     # A spot's page spans the screen from 801 px, so it preloads the wide sky from there.
     assert bs.SPOT_SKY_PRELOAD in page and bs.SKY_PRELOAD not in page and 'fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 801px)"' in page
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
-    assert '<h2 class="big low" id="risk-headline">Low risk</h2>' in page
+    assert '<h2 class="big low" id="risk-headline">Low risk from sewage spills</h2>' in page
     assert '<p class="act">Usual care: cover cuts' in page
     assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d">Today</span>' in page
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link

@@ -396,7 +396,7 @@
   .answer { text-align:center; padding:4px 0 0; }
   .answer .kind { margin:0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
   .answer .spot-name { margin:6px auto 0; max-width:16em; text-wrap:balance; }
-  .big { margin:12px 0 0; font:600 var(--fs-title)/1.1 var(--font-text); letter-spacing:-.01em; color:var(--k-na); }
+  .big { margin:12px auto 0; max-width:15em; font:600 var(--fs-title)/1.1 var(--font-text); letter-spacing:-.01em; color:var(--k-na); text-wrap:balance; }
   .big-head { margin:14px auto 0; max-width:12em; font:700 var(--fs-level)/1.12 var(--font-text); color:var(--k-na); text-wrap:balance; }
   .big.low, .big-head.low { color:var(--k-low); } .big.moderate, .big-head.moderate { color:var(--k-moderate); } .big.high, .big-head.high { color:var(--k-high); }
   .big.veryhigh, .big-head.veryhigh { color:var(--k-veryhigh); } .big.clear, .big-head.clear { color:var(--k-clear); }
@@ -429,6 +429,9 @@
   .t-key { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); }
   .t-credit { margin:6px 0 0; font-size:var(--fs-meta); } .t-credit a { color:var(--muted); }
   .t-note { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); } .t-note a { color:inherit; }
+  /* A fold at a tile's foot under a name of its own (explain): the E. coli estimate's "Experimental
+     estimate" out of season. Its text at the sentence's size, in ink: it holds the figures. */
+  .tile > details.more > p { margin:0 0 2px; font-size:var(--fs-note); line-height:1.45; }
   .t-sent { margin:8px 0 2px; padding-bottom:10px; border-bottom:1px solid var(--hair); line-height:1.4; }
   details.t-more > summary { position:absolute; top:0; right:0; width:44px; height:44px; display:flex; align-items:center; justify-content:center; list-style:none; cursor:pointer; }
   details.t-more > summary::-webkit-details-marker { display:none; }
@@ -1068,7 +1071,7 @@
         <dl>
           <dt>Sewage spill risk</dt><dd>A 0–100 score for sewage from upstream reaching the spot. Low under 15, moderate 15 to 40, high 40 to 70, very high 70 or more.</dd>
           <dt>Sewage spills right now</dt><dd>Today only: the overflows upstream discharging now, or stopped lately, from the water companies' live feeds. Today's level is at least right now's.</dd>
-          <dt>E. coli estimate</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. It is tested only for May to September, so it sets the level only then: from October to April, when the EA takes no samples, it is shown marked † but does not set the level. A spot's page says how it has done on live samples so far.</dd>
+          <dt>E. coli estimate</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. It is tested only for May to September, so it sets the level only then: from October to April, when the EA takes no samples, it does not set the level, and a spot's page says "Out of season" in its place, with the figures under "Experimental estimate". A spot's page says how it has done on live samples so far.</dd>
           <dt>Environment Agency rating</dt><dd>At a designated bathing water, the EA's yearly rating from up to four seasons of lab samples. When it is poor, advice against bathing applies through the bathing season, 15 May to 30 September, and the level is at least high risk on every day. Where there is no daily forecast, a rating of sufficient makes the level moderate risk and poor makes it high risk; excellent or good leave the plain level below.</dd>
           <dt>Algae</dt><dd>At a designated bathing water, the EA sampler's last look, if under two weeks old: enough algae to be objectionable makes the level at least high risk, some at intervals at least moderate risk.</dd>
           <dt>Lab sample</dt><dd>At a designated bathing water, the EA's latest sample, if under two weeks old and over 900 E. coli per 100 ml: the level is at least moderate risk.</dd>
@@ -1088,7 +1091,7 @@
         <dl>
           <dt>Right now</dt><dd>Which upstream storm overflows are discharging now or stopped lately, from the water companies' live feeds. A spill counts in full from its start until its water has passed the spot, then for less over the next 48 hours. Today's level is at least right now's. A spill reported running for over two days is named as possibly a monitor fault, and still counts.</dd>
           <dt id="about-exposure">Sewage spill risk (0–100)</dt><dd>A 0–100 score for sewage from upstream reaching the spot. It is built from the chance that at least one overflow upstream spills and its discharge arrives, after travel time, die-off and dilution. The spill part is verified against what the overflows did; the die-off and dilution weights are physical estimates, not calibrated against water samples, so the score is not a probability. The colour levels (low to very high) come from it.</dd>
-          <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the sewage spill risk, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the sewage spill risk is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: the figure is still shown, marked †, but it does not set the level, and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
+          <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the sewage spill risk, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the sewage spill risk is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: it does not set the level, a spot's page gives the figure only under "Experimental estimate", and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
           <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor nothing is shown; the temperature is never estimated. It is not part of the level.</dd>
           <dt>What it does not know</dt><dd>The treated sewage that sewage works let out every day, and anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled. Nor does it use the wind, which decides where river water goes in a lake. <a href="methods.html#limits">What the forecast does not count, and what you can do</a>.</dd>
@@ -1668,26 +1671,34 @@ const factors = d => `<div class="factors">${factorRow('Sewage spills', null, is
 // what it and the level each count, its tested season, how it has done on live samples and, where the
 // river runs from Wales, the Welsh test (levels.js, ecoliNotes, from the build's ecoli_check in
 // spots.json). Its own name is "E. coli estimate": "Water quality" read as a measurement. Out of season
-// its word says it is untested now, not a band: "Very high risk" under a "Low risk" answer read as a
-// contradiction.
-const untestedWord = () => `Untested in ${new Date(today() + 'T12:00:00').toLocaleDateString('en-GB', { month: 'long' })}`;
+// its word said it was untested now, not a band: "Very high risk" under a "Low risk" answer read as a
+// contradiction. Since 20 Oct 2026 the figure goes too (levels.js, ECOLI_OFF): "Out of season" in its
+// place, the tile or row named experimental, and the daily figures folded under "Experimental estimate"
+// (ecoliFold). "56%" under "Untested in October" still read as a second answer beside the level.
 const ecoliCheck = () => (typeof DATA === 'object' && DATA && DATA.ecoli_check) || null;
 const ecoliSaid = (d, x) => ecoliNotes(d, ecoliCheck(), x).join(' ');
 const ecoliMore = () => { const l = (ecoliCheck() || {}).live;
   return 'The minimum bathing-water standard lets about one sample in ten be over 900.'
     + (l && l.n_samples && !nil(l.auc) ? ` On the ${l.n_samples} live samples so far, its AUC is ${Number(l.auc).toFixed(2)}: 0.5 is chance, 1 is perfect.` : '')
     + ' <a href="#about-ecoli">What this counts</a>'; };
+const ecoliName = off => off ? ECOLI_EXPERIMENTAL.replace('E. coli', 'E.&nbsp;coli') : 'E.&nbsp;coli estimate';
+// Out of season, the daily figures one tap away under ECOLI_FOLD, then how the estimate has done on live
+// samples and in Wales (ecoliNotes past its first sentence, which stays in view), and with more, what 900
+// means (a picked day's row has no corner fold of its own).
+const ecoliFold = (d, ds, more = false) => explain(ECOLI_FOLD, `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: `
+  + `${ds.map(x => `${Math.round(x.p_ecoli_gt900 * 100)}% ${dayWord(x.date)}`).join(', ')}. ${ecoliNotes(d, ecoliCheck(), ds[0]).slice(1).join(' ')}${more ? ' ' + ecoliMore() : ''}`.trim());
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can
 // raise it when the spills are low. Rivers with overflows upstream only, the case it was tested on.
 function water(d, days) {
   if (ecoliTested(d) && d.unlisted) return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', UNLISTED_ECOLI);
   if (ecoliTested(d)) {
     // The figure's own band in season. From October to April nothing tests it and it does not set the
-    // level (levels.js, ecoliLevel), so its band is not given either. The figure stays, marked †.
+    // level (levels.js, ecoliLevel): no band, and no figure but under the fold (ECOLI_OFF).
     const ds = days.filter(x => !nil(x.p_ecoli_gt900)), off = ds.some(ecoliUntested);
     const wq = off ? null : ds.map(x => ecoliBand(d, x)).reduce(higher, null);
+    if (ds.length && off) return factorRow(ecoliName(true), null, ECOLI_OFF, ecoliNotes(d, ecoliCheck(), ds[0])[0] + ecoliFold(d, ds, true));
     // The value is a risk, said so: a bare "Very high" read as very good water.
-    return factorRow('E.&nbsp;coli estimate', wq, !ds.length ? 'No data' : off ? `${untestedWord()}†` : `${cap(wq)} risk`, !ds.length ? 'No rainfall forecast has arrived, so there is no estimate.'
+    return factorRow('E.&nbsp;coli estimate', wq, !ds.length ? 'No data' : `${cap(wq)} risk`, !ds.length ? 'No rainfall forecast has arrived, so there is no estimate.'
       : `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: ${ds.map(x => `<b>${Math.round(x.p_ecoli_gt900 * 100)}%</b> ${dayWord(x.date)}`).join(', ')}. ${ecoliSaid(d, ds[0])}`
       + explain('About this estimate', ecoliMore()),
       days.length === 1 ? tileLine(d, 'water', days[0].date) : '');
@@ -1729,18 +1740,21 @@ const check = d => { const url = (d.classification || {}).url;
     : d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
     : eaUnchecked(d) ? ''
-    : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`
-    + (d.access ? `<p class="check"><b>Access:</b> ${esc(d.access.text)}${/^https:\/\//.test(d.access.url || '') ? ` <a href="${esc(d.access.url)}">Authority guidance</a>.` : ''} Desk check ${esc(d.access.checked_at)}; current signs have not been inspected.</p>` : ''); };
+    : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`; };
+// A desk check of access (access.py), in a row of Not known here (unknowns) since 20 Oct 2026: until then
+// a paragraph under the five days. Its text says what was found and that permission is not confirmed.
+const accessSaid = a => `${esc(a.text)}${/^https:\/\//.test(a.url || '') ? ` <a href="${esc(a.url)}">Authority guidance</a>.` : ''} Desk check ${esc(a.checked_at)}; current signs have not been inspected.`;
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
 function ratingHistory(cl) {
   const h = (cl.history || []).filter(([y]) => y !== cl.year); if (!h.length) return '';
   if (h.every(([, k]) => k === cl.class)) return `; ${cl.class} every year since ${Math.min(...h.map(([y]) => y))}`;
   return '; ' + h.slice(0, 3).map(([y, k]) => `${k} in ${y}`).join(', ');
 }
-// A water-quality figure from October to April, when nothing tests it, is marked †.
+// A water-quality figure from October to April, when nothing tests it: out of the main view (ECOLI_OFF),
+// and marked † in the day-by-day numbers. The list's and the Saved page's foot explained a † until 20 Oct
+// 2026, long after the rows lost their figure (6 Oct): no † shows there now.
 const untested = x => ecoliUntested(x) && !nil(x.p_ecoli_gt900);
 const anyUntested = d => ecoliTested(d) && d.days.slice(0, 5).some(untested);
-const UNTESTED_NOTE = '† Untested outside May to September, when the Environment Agency takes no samples, so it does not set the level.';
 // A point clicked on the map (anypoint.js) has no E. coli estimate: the model needs the spot's own rain.
 const UNLISTED_ECOLI = 'Not estimated for a point off the list: the estimate needs a rain forecast for the spot itself, which only listed spots get.';
 // The week at a glance in a list row: one bar per day, coloured by level. Where no overflow can
@@ -1803,6 +1817,7 @@ const ICON = {   // the one stroke set, as the search, map, bookmark and check
   table: glyph('<path d="M4 5h16v14H4ZM4 10h16M4 14.5h16M10 5v14"/>'),
   route: glyph('<path d="M12 21V3"/><path d="M5.5 5.5h10l3 2.5-3 2.5h-10ZM18.5 13.5h-10l-3 2.5 3 2.5h10Z"/>'),   // a signpost: the practical guide
   evidence: glyph('<path d="M6 3h8.5L19 7.5V21H6Z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/>'),   // a page of records: what the level rests on
+  unknown: glyph('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 0 1 4.85.85c0 1.7-2.45 2.3-2.45 3.6"/><path d="M12 16.9v.1"/>'),   // a question: not known here
 };
 // Overflow names: levels.js's nameCase (capitals in normal case) and plainName ("Addingham sewage works
 // overflow" for "Addingham/NO 1 SPS/Preliminary Treatment-STW/6Xdwf Overflow"). A list or a popup gives
@@ -1815,24 +1830,32 @@ const ownName = c => { const n = overflowNames(c); return n.own ? ` <span class=
 // Without a level, the headline in place of the word; under a plain level, the other risks and the rain.
 // Then what to do at that level, that day (act: levels.js, levelAction and dayAction), and what the
 // level counts and what it does not (scope: levelScope), which a plain level's own line says instead.
+// Where the spills set the level (levels.js, spillSet), the answer's noun names them, "risk from sewage
+// spills" (noun: HEAD_SCOPE, 20 Oct 2026), and its line under the level says when alone (why: "Tomorrow");
+// recent spills say so there (recent), as "Recent sewage spills" did (4 Oct 2026: "Sewage spills right
+// now" over "0 of 60 discharging" read as a contradiction). sub keeps the cause and when ("Sewage spills
+// tomorrow") for a saved card, whose level stays "Moderate risk" beside the week, as a list row's does.
 function answerParts(d, iso = null) {
+  const recent = 'Recent spills, right now';
   if (iso && daily(d)) {
-    const x = d.days.slice(0, 5).find(y => y.date === iso), r = x ? risk(d, x) : { level: null };
+    const x = d.days.slice(0, 5).find(y => y.date === iso), r = x ? risk(d, x) : { level: null }, spills = spillSet(d, r);
     const when = (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-    return { word: r.level ? cap(r.level) : null, tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub: !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(dayBecause(d, r)) : '', next: when, act: dayAction(d, iso),
+    const sub = !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(dayBecause(d, r)) : '';
+    return { word: r.level ? cap(r.level) : null, noun: spills ? HEAD_SCOPE : 'risk', tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
+      sub, why: !spills ? sub : !r.now ? '' : dayBecause(d, r).startsWith('recent ') ? recent : 'Right now', next: when, act: dayAction(d, iso),
       scope: r.level ? levelScope(d, iso) : '' };
   }
   const l = level(d), [h, w] = headParts(d);
-  if (ORDER[l] === undefined) return { word: null, tone: headTone(d), head: h,
-    sub: plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '', next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) };
+  if (ORDER[l] === undefined) { const sub = plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '';
+    return { word: null, tone: headTone(d), head: h, sub, why: sub, next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) }; }
   // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
-  const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '';
+  const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '', spills = spillSet(d, worstNear(d)[0]);
   const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${nowUnknownWhy(d)}`   // right now not known (levels.js)
     : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
-  return { word: cap(l), tone: tone(l), head: '', sub, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
+  const why = !spills || rank(l) === 0 ? sub : w.startsWith('recent ') ? recent : cap(when);   // the cause is in the headline
+  return { word: cap(l), noun: spills ? HEAD_SCOPE : 'risk', tone: tone(l), head: '', sub, why, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
@@ -1951,17 +1974,18 @@ const recentSay = (rec, dis, h) => `${rec ? rec + (dis ? ' more' : '') : 'None'}
 // The Right now tile: how many overflows upstream are discharging, out of those that report live. Never
 // "0 of 14 discharging" where none of the 14 reports (11 Oct 2026: Hereford, Symonds Yat and Sandy Lane,
 // whose overflows are all Dŵr Cymru's, with no live feed SwimSignal reads): the figure is then "Unknown".
-// Where some do not report, the count alone, and the line under it says how many report (liveSay).
+// Where some do not report, the count alone, and the line under it says how many report. Which do not, and
+// that they could be spilling unseen, is said with the other gaps since 20 Oct 2026 (unknowns, liveSay):
+// the tile says what is observed.
+const noFeedSaid = d => { const feeds = [...new Set((d.contributors || []).filter(c => c.data_state === 'no_feed' || c.status === -2).map(c => companyName(c.company)).filter(Boolean))];
+  return feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : ''; };
 function nowTile(d, total) {
   const now = d.now || {}, n = now.discharging_upstream || 0, mon = Math.min(total, now.monitored_upstream ?? total);
   const base = { icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel: tileLine(d, 'now') };
-  if (!mon && !n) {
-    const feeds = [...new Set((d.contributors || []).filter(c => c.data_state === 'no_feed' || c.status === -2).map(c => companyName(c.company)).filter(Boolean))];
-    return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.`
-      + (feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : '') + feedDown(now) + feedStale(now) };
-  }
+  if (!mon && !n)
+    return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
-    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${liveSay(now, total, mon)}${clearWords(d) ? ' ' + clearWords(d) : ''}` };   // when it should clear (levels.js)
+    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}` };   // when it should clear (levels.js)
 }
 // Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
@@ -2015,20 +2039,25 @@ function facts(d) {
       vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill'),
       say: `${cap(spilling(x0, total))} today.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
-  // Out of season the figure stays but its band does not (water): it does not set the level. Its label
-  // says what it and the level each count, and how far it has been tested (ecoliSaid): the full width, as
-  // the rating's tile, since that is four sentences.
+  // Its label says what it and the level each count, and how far it has been tested (ecoliSaid): the full
+  // width, as the rating's tile, since that is four sentences. Out of season (water, levels.js ECOLI_OFF) no
+  // figure, band or scale, whose dot is the figure: "Out of season", what the level counts instead, and the
+  // figures for today and tomorrow under "Experimental estimate". It goes last, after the tiles of what is
+  // observed (late), where in season it pairs with the spills, since then it sets the level. Tomorrow's
+  // figure joins today's only while tomorrow is in season too.
   if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
-    out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: off ? untestedWord() : `${cap(b)} risk`, wordTone: off ? '' : tone(b),
-      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${off ? 'untested now' : b + ' risk'}`), rel: tileLine(d, 'water'),
-      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml today${x1 && !nil(x1.p_ecoli_gt900) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
+    if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliNotes(d, ecoliCheck(), x0)[0],
+      fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
+    else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
+      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${b} risk`), rel: tileLine(d, 'water'),
+      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml today${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
   else if (!d.error) out.push({ icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
     say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
       ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
   if (!d.error && total) out.push(nowTile(d, total));
   // The E. coli estimate's tile takes the full width: after Right now, so that the spills and Right now pair up.
-  const ec = out.findIndex(o => o.wide && o.icon === ICON.water);
+  const ec = out.findIndex(o => o.wide && o.icon === ICON.water && !o.late);
   if (ec >= 0 && out[out.length - 1].label === 'Right now') out.push(...out.splice(ec, 1));
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
@@ -2045,9 +2074,11 @@ function facts(d) {
   const wx = weatherOn(d, today());
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
-  // Flood warnings the EA did not answer for (experience.js, floodUnchecked): a quiet line under the
-  // River or Lake level tile, or under Weather at a spot with no gauge (22 lakes and a river, 16 Oct 2026).
-  if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) { const host = rt || out.find(o => o.icon === ICON.sun); if (host) host.note = floodUncheckedLine(true); }
+  // Flood warnings the EA did not answer for (experience.js, floodUnchecked) were a quiet line under the
+  // River or Lake level tile (16 Oct 2026); since 20 Oct 2026 they are a row of Not known here (unknowns).
+  // The experimental tile, out of season, last (late).
+  const late = out.findIndex(o => o.late);
+  if (late >= 0) out.push(...out.splice(late, 1));
   return out;
 }
 // The River level tile, or null without a reading. A reading the build found over a day old (stale,
@@ -2082,8 +2113,8 @@ function riverTile(rs) {
 // down"). What to do and what the level counts follow the week, in its tile (answerAfter); a spot with no
 // five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
-  return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} risk</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.sub ? `<p class="why">${m.sub}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
+  return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
+    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. Until
 // 20 Oct 2026 both sat in the answer, between the level and the week: on a 375 px phone the five days began
@@ -2113,6 +2144,37 @@ function longSpillLine(d, nowMs = Date.now()) {
   return `${src.share >= 0.5 ? 'Most of the risk right now comes' : 'Part of the risk right now comes'} from ${overflowSaid(c)}, which has reported discharging since ${sinceTime(spillStart(c))}, `
     + `for ${spillFor((nowMs - spillStart(c)) / 36e5)}. ${LONG_SPILL}`;
 }
+// Today's EA advice, as the answer's line (coverLine) and the Not known here tile say it: it links to the
+// EA's own panel ("Today's EA advice", eatoday.js) or, without it, the EA's page.
+const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
+  return `${esc(EA_UNCHECKED)} ${fold ? 'Open <a href="#ea-today">Today\'s EA advice</a>'
+    : /^https:\/\//.test(url || '') ? `Open <a href="${esc(url)}">the EA's page</a>` : 'Look at the EA\'s page'} before you swim: it says when bathing is not advised.`; };
+// Not known here: what the page could not see, in one tile, a row each (20 Oct 2026). An outside reviewer
+// asked for what is observed, what is missing and what is experimental to sit apart. Until then the gaps
+// were sentences spread over the answer, the Right now tile, a paragraph under the five days and a note
+// under River level. A row: what, how it stands in two or three words, and the sentence it had there.
+// The answer keeps its own lines for today's EA advice and Wales (11 Oct 2026: beside the level, where
+// "Low risk" and "Usual care" had stood in for them), so those two rows repeat them and the list is whole.
+// A long spill that may be a fault stays beside the answer only: it is a reading, not a gap. Rows:
+//  - Live readings: overflows upstream with no current reading, and why (liveSay, feedDown, feedStale);
+//  - Overflows in Wales: not in the data (levels.js, walesWords);
+//  - Today's EA advice: at a designated bathing water (levels.js, eaUnchecked);
+//  - Access: the desk check (accessSaid), never an inspection;
+//  - Flood warnings: the EA did not answer this build (experience.js, floodUnchecked; 16 Oct 2026 it was
+//    a quiet line under River level, kept from the answer, where in bold it read like a hazard).
+// Not on a failed forecast's live readings (no forecast, nothing to read against). Empty with no gap.
+function unknowns(d) {
+  const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
+  if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)]);
+  if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
+  if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
+  if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
+  if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
+  return rows;
+}
+const unknownTile = d => { const rows = unknowns(d); if (!rows.length) return '';
+  return `<section class="tile" id="unknowns" aria-labelledby="unknowns-h"><h2 class="t-lab" id="unknowns-h">${ICON.unknown}<span>Not known here</span></h2>`
+    + `<div class="factors">${rows.map(([l, v, say]) => factorRow(l, null, v, say)).join('')}</div></section>`; };
 // Under the headline, on every day's view, kept in view: the river high or rising fast at a gauge on
 // the spot's own river, and any Environment Agency flood alert in force nearby (experience.js,
 // flowFacts). A different hazard, said in ink and never in a level's colour, and not part of the level.
@@ -2217,15 +2279,22 @@ async function shareImage(d) {
   g.fillStyle = v('--line'); g.fillRect(0, 148, W, 2);
   g.fillStyle = v('--ink'); g.font = `600 66px ${FD}`; let y = wrapText(g, d.name, 60, 270, W - 120, 78);
   // The headline as the list gives it, with a worse later day (levels.js, headParts), then what it cannot
-  // count or check, short: the overflows in Wales, and the EA's advice for today at a bathing water.
-  const iso = DAY, [head, why, later] = iso ? [dayHeadline(d, iso), dateLabel(iso), ''] : headParts(d);
+  // count or check, short: the overflows in Wales, and the EA's advice for today at a bathing water. Where
+  // the spills set the level, the answer's own words instead (answerParts, 20 Oct 2026): "Moderate risk
+  // from sewage spills", then when, so the picture in a chat says what the level covers, as the page does.
+  const iso = DAY, ans = answerParts(d, iso), scoped = !!ans.word && ans.noun !== 'risk';
+  const [head, why, later] = scoped ? [`${ans.word} ${ans.noun}`, iso ? dateLabel(iso) : ans.why, iso ? '' : laterWords(d)]
+    : iso ? [dayHeadline(d, iso), dateLabel(iso), ''] : headParts(d);
   const lv = iso ? dayLevel(d, iso) : level(d);
   g.fillStyle = v(`--k-${tone(lv)}`) || v('--ink'); g.font = `700 60px ${F}`; y = wrapText(g, head, 60, y + 40, W - 120, 70);
   if (why) { g.fillStyle = v('--muted'); g.font = `600 36px ${F}`; y = wrapText(g, cap(why), 60, y + 6, W - 120, 46); }
   if (later) { g.fillStyle = v('--ink'); g.font = `600 36px ${F}`; y = wrapText(g, later, 60, y + 6, W - 120, 46); }
   const notes = [walesWords(d, true), eaUnchecked(d) ? "Today's EA advice not checked: see the EA's page" : ''].filter(Boolean);
   if (notes.length) { g.fillStyle = v('--ink'); g.font = `500 30px ${F}`; y = wrapText(g, notes.join('. ') + '.', 60, y + 10, W - 120, 40); }
-  const days = d.days.slice(0, 5), on = daily(d), pct = ecoliTested(d), cw = (W - 120) / 5; y += 30;
+  // Under each day, the E. coli estimate only while all five days are in its tested season (May to
+  // September), else the rain, as at a spot without the estimate: a picture in a chat is read as the
+  // answer, and out of season the figure stays out of the main view (levels.js, ECOLI_OFF; 20 Oct 2026).
+  const days = d.days.slice(0, 5), on = daily(d), pct = ecoliTested(d) && !anyUntested(d), cw = (W - 120) / 5; y += 30;
   days.forEach((x, i) => { const lx = 60 + i * cw, dl = on ? risk(d, x).level : null;
     if (i) { g.fillStyle = v('--line'); g.fillRect(lx, y, 2, 230); }
     g.fillStyle = dl ? colour(dl) : v('--unknown'); g.fillRect(lx, y, cw, 12);
@@ -2233,12 +2302,11 @@ async function shareImage(d) {
     // The level, with "risk" under it: "Very high" alone read as very high what.
     g.fillStyle = dl ? v(`--k-${tone(dl)}`) : v('--muted'); g.font = `700 32px ${F}`; g.fillText(!on ? '–' : dl ? cap(dl) : 'No data', lx + cw / 2, y + 112);
     if (dl) g.fillText('risk', lx + cw / 2, y + 150);
-    const r = pct ? (nil(x.p_ecoli_gt900) ? '–' : Math.round(x.p_ecoli_gt900 * 100) + '%' + (untested(x) ? '†' : '')) : nil(x.rain_48h_mm) ? '–' : Math.round(x.rain_48h_mm) + ' mm';
+    const r = pct ? (nil(x.p_ecoli_gt900) ? '–' : Math.round(x.p_ecoli_gt900 * 100) + '%') : nil(x.rain_48h_mm) ? '–' : Math.round(x.rain_48h_mm) + ' mm';
     g.fillStyle = v('--muted'); g.font = `600 28px ${F}`; g.fillText(r, lx + cw / 2, y + 200); g.textAlign = 'left'; });
   if (days.length) y += 230 + 40;
   g.fillStyle = v('--muted'); g.font = `500 28px ${F}`;
-  if (days.length) y = wrapText(g, (pct ? 'Pollution risk each day, and the chance a water sample would show E. coli over 900 per 100 ml' : on ? 'Pollution risk each day, and rain in the 48 h to midday' : 'Rain in the 48 h to midday')
-    + (anyUntested(d) ? '. † Untested outside May to September, so it does not set the level.' : '.'), 60, y, W - 120, 38);
+  if (days.length) y = wrapText(g, (pct ? 'Pollution risk each day, and the chance a water sample would show E. coli over 900 per 100 ml' : on ? 'Pollution risk each day, and rain in the 48 h to midday' : 'Rain in the 48 h to midday') + '.', 60, y, W - 120, 38);
   y = wrapText(g, `Forecast issued ${new Date(DATA.generated_at).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}. A pollution risk forecast, not a water test: check the signs at the water.`, 60, y + 16, W - 120, 38);
   // Cut the canvas to its content, then the address along the bottom.
   const out = document.createElement('canvas'); out.width = W; out.height = Math.min(H, Math.max(900, Math.round(y + 120)));
@@ -2901,7 +2969,7 @@ function renderSaved() {
   h += '</div>';
   let v = '';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
-    + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
+    + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   // Empty: one tile, one sentence and the way to a spot (review of 16 Oct 2026, C7). The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
   else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
@@ -3040,7 +3108,7 @@ function renderShared(sh) {
   let v = '';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
     + `<p class="small muted msg">${gone ? `${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out. ` : ''}`
-    + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
+    + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   else v += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
   setPanel(h + cols(v));
@@ -3478,7 +3546,9 @@ function tech(d) {
     ['Version', a.version]].filter(r => r[1] !== null && r[1] !== undefined && r[1] !== '');
   return rows.length ? `<details class="more small"><summary>Technical details</summary><dl class="tech">${rows.map(([k, v]) => `<dt>${k}</dt><dd${k === 'Version' ? ' class="mono"' : ''}>${esc(v)}</dd>`).join('')}</dl></details>` : '';
 }
-// Day by day, with the exposure index and the E. coli figure: folded away, one tap to open.
+// Day by day, with the exposure index and the E. coli figure: folded away, one tap to open. Out of season the
+// figures stay here, marked †, since this is the technical table a reader opens for the numbers; the main
+// view has none (levels.js, ECOLI_OFF; 20 Oct 2026), and the note says they are experimental.
 function dayTable(d, total, isLake, scope) {
   let h = `<details class="tile fold"><summary><span class="t-lab">${ICON.table}<span>Day-by-day numbers</span></span></summary>`
     + `<table><tr><th>Day</th><th class="num">Sewage spill risk</th><th>Risk</th><th class="num">E.&nbsp;coli estimate</th><th class="num">Rain 48&nbsp;h</th></tr>`;
@@ -3501,7 +3571,7 @@ function dayTable(d, total, isLake, scope) {
   const notes = [];
   if (isLake) notes.push(`<b>E. coli not shown for lakes</b>: ${esc(scope.note || 'no ranking skill on lakes in the fitting data.')}`);
   else if (!total) notes.push('<b>E. coli not shown here</b>: estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
-  if (anyOffSeason) notes.push(`<sup>†</sup>Outside May to September, when the Environment Agency takes no samples: untested. <a href="#about-ecoli">What this means</a>`);
+  if (anyOffSeason) notes.push(`<sup>†</sup>Out of season: from October to April the Environment Agency takes no samples, so the estimate is untested, experimental and not part of the level. <a href="#about-ecoli">What this means</a>`);
   if (!isLake && total) notes.push(ecoliNotes(d, ecoliCheck(), d.days[0]).slice(1).join(' '));   // how it has done on live samples, and in Wales
   if (anyNoData) notes.push(`<b>No data</b>: the rainfall forecast for that day did not arrive; no figure is shown rather than one computed as if it were dry.`);
   if (notes.length) h += `<div class="small muted msg">${notes.join(' ')}</div>`;
@@ -3709,13 +3779,14 @@ function render(d) {
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
+    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
       + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
     setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
   }
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
-  // phone, where they are display:contents and the order is the stack's.
-  h += `<div class="stack"><div class="col-go">${daysTile(d)}${where}`
+  // phone, where they are display:contents and the order is the stack's. What the page could not see
+  // (unknownTile) comes straight after the five days, as the access paragraph inside them did.
+  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${where}`
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;

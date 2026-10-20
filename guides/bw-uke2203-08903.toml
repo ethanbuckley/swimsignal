@@ -1,6 +1,6 @@
-# Nidd at the Lido, Knaresborough. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Nidd at the Lido, Knaresborough. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-20
 how = "desk"
 
 [[fact]]
@@ -9,3 +9,31 @@ text = "The bathing water is a large pool between two weirs. The EA says access 
 status = "confirmed"
 source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke2203-08903"
 source_name = "Environment Agency bathing water profile"
+
+[[fact]]
+topic = "toilets"
+text = "Defra's February 2024 consultation on the designation lists, among facilities near the site, toilets in a local business which are open to bathers, car parking, litter bins, cafés and a pub. It does not name the business or say where the parking is."
+status = "confirmed"
+source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
+source_name = "Defra"
+
+[[fact]]
+topic = "rules"
+text = "Defra's February 2024 consultation on the designation says the land at this site is owned and managed by the Lido Leisure Park, Wetherby Road, Knaresborough, HG5 8LR. It does not say whether the park lets day visitors in to swim."
+status = "confirmed"
+source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
+source_name = "Defra"
+
+[[fact]]
+topic = "rules"
+text = "Meridian Parks' page for the Lido Leisure Park says the park covers about 140 acres and borders 1 mile of the River Nidd, with fishing rights along its bank. It does not mention swimming, the bathing water or day visitors."
+status = "confirmed"
+source = "https://meridianparks.co.uk/park/lido-leisure-park/"
+source_name = "Meridian Parks (Lido Leisure Park)"
+
+[[fact]]
+topic = "rules"
+text = "Defra's 2024 decision names North Yorkshire Council as the local authority for this bathing water. In the bathing season the council is responsible for public information on water quality and for warning signs during pollution incidents, as advised by the Environment Agency."
+status = "confirmed"
+source = "https://www.gov.uk/government/consultations/bathing-waters-proposed-designation-of-27-new-bathing-waters-in-england/outcome/summary-of-responses-and-government-response"
+source_name = "Defra"

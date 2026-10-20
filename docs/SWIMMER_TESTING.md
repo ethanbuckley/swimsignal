@@ -1,5 +1,7 @@
 # SwimSignal swimmer testing
 
+For the October to November 2026 round, use `docs/COMPREHENSION-TEST-2026-10.md`: it replaces the task list below and keeps the recording rules.
+
 This is a test plan, not evidence of completed research. Run after Claude reviews the PR. Recruit 5–10 swimmers who use rivers or lakes, including some who are unfamiliar with water-quality terminology. Start with England, the app's current coverage.
 
 ## A 15-minute session

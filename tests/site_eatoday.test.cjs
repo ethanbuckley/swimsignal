@@ -143,8 +143,8 @@ function pageWith(withScript) {
   vm.runInContext(fs.readFileSync(join(SITE, 'levels.js'), 'utf8') + '\nsetToday("2026-10-04");', ctx);
   if (withScript) vm.runInContext(SRC, ctx);
   vm.runInContext(pageDefs(['esc', 'glyph', 'ICON', 'tone', 'tile', 'factorRow', 'explain', 'poorLine', 'ratingHistory',
-    'riverTile', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'untestedWord', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
-    'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter']), ctx);
+    'riverTile', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
+    'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter']), ctx);
   return ctx;
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();

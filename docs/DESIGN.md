@@ -135,6 +135,15 @@ those sizes; they were taken off to keep the rule simple.)
   tooltips, a picked day's rows. A bare "Very high" read as very high what. The word stands alone
   only under a heading that names it: the five days ("Pollution risk, next five days"), the
   day-by-day table's "Risk" column, the map's key.
+- The answer's headline names what it covers where the spills set the level (20 October 2026, after an
+  outside review read "Moderate risk" at Long Bridges as a verdict on the water): "Moderate risk from sewage
+  spills", every word at the title's size, and the line under it says when ("Tomorrow", "Right now"), not
+  the cause again; recent spills say "Recent spills, right now". A low level reads "Low risk from sewage
+  spills" over its days. A poor rating, algae, a lab sample and the E. coli estimate are not forecasts of
+  spills: "High risk" over "Rated poor", as before. The shared picture says the same. The list, the map's
+  tooltips, Nearby, the comparison, a saved card, the embed and the alerts keep the short form, whose raised
+  rows name the cause after a colon ("Moderate risk tomorrow: sewage spills"). The words are `HEAD_SCOPE` in
+  `levels.js`; the reviewer's own, "Moderate predicted risk from monitored sewage overflows", were option A.
 - Right now raised with no overflow upstream discharging (4 October 2026): a spill counts until 48 h
   after its water has passed, so the reason is "recent sewage spills" ("Moderate risk right now: recent
   sewage spills"; the answer's line under the level is "Recent sewage spills"). "Sewage spills right now"
@@ -147,7 +156,7 @@ those sizes; they were taken off to keep the rule simple.)
   (6 October 2026, `tileLine` in `levels.js`): "This sets the level above.", "On its own: moderate
   risk. The poor rating raises the level to high risk.", "Tomorrow's spill forecast raises the level to
   high risk.", "Not counted in the level: only a poor rating is.", "Does not raise the level." A picked
-  day's rows do the same for that day. A water figure out of season keeps its † note instead. Wharfe at
+  day's rows do the same for that day. An E. coli estimate out of season has no line: its tile says so. Wharfe at
   Cromwheel read "High risk" over a spills tile at "Moderate risk" and five days at "High", with
   nothing to join them up.
 - Where the model has nothing to forecast, the level is a plain one that says what is true there
@@ -199,8 +208,7 @@ those sizes; they were taken off to keep the rule simple.)
   the figures in view and put the rest under a fold named for its tile, "<label>: what this means"
   (one name per fold, so a screen reader's list of them tells them apart; until 2 October every
   one was "What this means"), word for word. What the strip's
-  cells show folds into the water row, or the spills row where there is no water estimate; under
-  the strip only the † sentence stays, and only while a cell carries a †. The EA rating keeps its
+  cells show folds into the water row, or the spills row where there is no water estimate. The EA rating keeps its
   advice in view and folds how it is rated and the years before. A section's note under the answer
   does the same: River level keeps "Not part of the pollution level." in view, and the definition
   of reach under the overflows folds whole.
@@ -256,7 +264,8 @@ those sizes; they were taken off to keep the rule simple.)
 
 One stroke set, 1.75 px, round caps: search, map, bookmark (Save and Saved), chevron (back links
 and folds), and since the seventh round one for each tile's label (`ICON`: the
-days, spills, water, right now, river level, rain, sun, rating, algae, map, nearby, the table).
+days, spills, water, right now, river level, rain, sun, rating, algae, map, nearby, the table, and a
+question in a circle for Not known here).
 The chevrons drawn in CSS (back links, folds, a tile's corner) and a select's arrow (`--arrow`) use
 the same 1.75 px. The search icon (`SEARCH_ICON`) was still 2.2 on 2 October.
 Inline SVG, so they inherit `currentColor` and need no file. The brand mark is inlined in every
@@ -770,6 +779,36 @@ thermometer from the stroke set. No report is ever shown, only counts, from five
   the onset as the notes' chips, two to a row, the doctor question as two chips, and the consent as its
   own tick with the words "information about my health". An onset that would fall after today is
   shown but cannot be chosen.
+
+### The E. coli estimate out of season, and Not known here (20 October 2026)
+
+An outside reviewer looked at the Thames at Long Bridges, Oxford, on 20 October 2026: "Moderate risk" in the
+answer, and under it an E. coli tile whose figure was "56%", labelled "Untested in October". They read two
+answers to reconcile, and wrote that publishing a precise number gives it authority whatever the text beside it
+says. They asked for observations, missing information and experimental estimates to sit apart.
+
+- **No percentage in view out of season.** From October to April (`ecoliUntested`) no E. coli percentage is in
+  a tile's figure, a picked day's row, the shared picture, the organisers' page or the decision record. The tile
+  is named "Experimental E. coli estimate"; its figure is "Out of season" (`ECOLI_OFF` in `levels.js`), with no
+  band and no scale, whose dot was the figure; its sentence is the one that said what the level counts instead.
+  The daily figures fold under "Experimental estimate", with the live record and the Welsh test. The tile goes
+  last, after the tiles of what is observed. A picked day's row does the same. The shared picture gives the rain
+  under each day unless all five are in season. The organisers' page and the record give `ECOLI_OFF_SAID` in the
+  row's place. The day-by-day numbers keep the figures, marked †, since a reader opens that table for the
+  numbers; its note says they are experimental. In season nothing changes. On 11 October the band had already
+  gone ("Very high risk" under a "Low risk" answer read as a contradiction).
+- **Not known here.** One tile straight after the five days, a row for each thing the page could not see, as a
+  picked day's rows: the label, two or three words on the right ("1 of 45 not reporting", "Not checked", "Not
+  counted", "Not confirmed"), then the sentence it had before. The rows: live readings missing (the overflows
+  that could be spilling unseen, a feed down or stale), overflows in Wales, today's EA advice at a bathing water,
+  access (the desk check; it was a paragraph under the five days), flood warnings not checked (a note under River
+  level since 16 October). No tile where there is no gap. The Right now tile keeps its count and "44 of 45 report
+  live."; which do not, and why, moved to the tile.
+- **Kept beside the answer as well:** the lines for today's EA advice and Wales (11 October: beside the level,
+  where "Low risk" and "Usual care" had stood in for them). Their rows repeat them, so the tile is whole. A long
+  spill that may be a monitor fault stays in the answer only: it is a reading, not a gap.
+- **Not done:** headings over the tiles ("Forecast", "Observed", "Experimental"), which would put words between
+  tiles; proposed in the pull request with a mock, to wait for user testing.
 
 ### What the level rests on (4 October 2026)
 
