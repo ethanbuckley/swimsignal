@@ -3517,7 +3517,8 @@ function bindPlan() {
   $('plan-within').addEventListener('change', e => { PLAN.within = Number(e.target.value); drawPlan(true); });
   document.querySelectorAll('[data-plan-kind]').forEach(b => b.addEventListener('click', () => { PLAN.kind = b.dataset.planKind;
     document.querySelectorAll('[data-plan-kind]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawPlan(); }));
-  // Typing offers places. One picked from them, Enter, or leaving the field starts the plan there.
+  // Typing offers places. One picked from them, Enter, or leaving the field starts the plan there, and the
+  // field is left (planType), so a phone's keyboard closes.
   input.addEventListener('focus', () => loadPlaces().catch(() => {}), { once: true });
   input.addEventListener('input', e => planType(input.value, e.inputType === 'insertReplacementText'));
   input.addEventListener('change', () => planType(input.value, true));
@@ -3559,6 +3560,10 @@ async function planType(text, commit) {
   const moved = !PLAN.from || PLAN.from.here || PLAN.from.name !== p.name;
   PLAN.from = { name: p.name, lat: p.lat, lon: p.lon }; planNote = '';
   drawPlan(moved);
+  // A place picked from the offers leaves the field, as Enter does, so a phone's keyboard closes over the
+  // plan it starts: on an iPhone it stayed up over the results until Done was tapped (QA, 20 Oct 2026). A
+  // place not found keeps the field, to type again.
+  if (input && document.activeElement === input) input.blur();
 }
 // Your position, for this page only, as "Near me" takes it on the list (locate). quiet: opened with
 // "from=here" (Back, a reload, a link), so asked only if this site already may: no prompt unbidden.
