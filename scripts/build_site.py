@@ -91,6 +91,7 @@ PLAN_DESCRIPTION = ("Pick a day, where you are starting from and how far you wil
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]+")
 PAGE_META = re.compile(r"<!-- page-meta.*?<!-- /page-meta -->", re.DOTALL)
 LOADING = '<div id="result"><p class="muted">Loading forecasts…</p></div>'
+SKY_PRELOAD = '<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high">'   # index.html's
 # The brand mark, inline in every page's header (the static pages carry the same markup), so it needs no path.
 MARK = ('<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/>'
         '<path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/>'
@@ -1538,6 +1539,11 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
+        # A desktop's spot page spans the screen and draws the wide sky (index.html, "A spot opens as
+        # a page"), so each screen asks early for the picture it shows, and only that one.
+        page = page.replace(SKY_PRELOAD, SKY_PRELOAD.replace('as="image"', 'as="image" media="(max-width: 800px)"')
+                            + '\n' + SKY_PRELOAD.replace('fells.webp', 'fells-wide.webp')
+                            .replace('as="image"', 'as="image" media="(min-width: 801px)"'), 1)
         return page.replace(LOADING, f'<div id="result" data-built>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
     return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'

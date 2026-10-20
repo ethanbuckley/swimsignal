@@ -16,20 +16,23 @@ test('the page puts nearby, then the water, then why, in the order a swimmer ask
   const at = s => { const i = render.indexOf(s); assert.ok(i >= 0, `render() has no ${s}`); return i; };
   // The five days are daysTile's, which the build also writes into the spot's own page (prerender_spots.js).
   assert.match(html, /\nconst daysTile = d => `<section class="tile" aria-labelledby="days-h">[^\n]*Pollution risk, next five days/);
-  const days = at('<div class="stack">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
-  const why = at('<div id="sources-host">'), map = at('<span>Upstream</span>'), tiles = at('h += tiles;'), ovs = at('overflowTile(d, total)'), table = at('dayTable(d, total');
+  const days = at('<div class="stack"><div class="col-go">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
+  const why = at('<div id="sources-host">'), map = at('<span>Upstream</span>'), tiles = at('h += tiles + `</div><div class="col-more">${more}`;'), ovs = at('overflowTile(d, total)'), table = at('dayTable(d, total');
   assert.ok(days < near && near < why && why < map && map < tiles && tiles < ovs && ovs < table);
 });
 
 test("the EA's rating, with today's advice at its foot, leads the water, and the guide follows it", () => {
   assert.match(render, /atWater = fx\.filter\(o => o\.icon === ICON\.rating\)\.map\(tile\)\.join\(''\)\n\s+\+ \(typeof guideTile === 'function' \? guideTile\(d, serverToday\) : ''\);/);
   assert.match(render, /<div class="tiles">\$\{fx\.filter\(o => o\.icon !== ICON\.rating\)\.map\(tile\)\.join\(''\)\}<\/div>`/);
-  // A spot without a forecast keeps the same order: the water before the tiles.
-  assert.match(render, /\$\{where\}\$\{atWater\}\$\{tiles\}/);
+  // A spot without a forecast keeps the same order: the water before the tiles, which start the
+  // desktop's second column.
+  assert.match(render, /\$\{where\}\$\{atWater\}<\/div><div class="col-why">\$\{tiles\}<\/div><div class="col-more">\$\{more\}/);
 });
 
-test('the notes and the reviews still find the guide to mount after: it stays a child of the stack', () => {
-  for (const f of ['visits.js', 'reviews.js']) assert.match(fs.readFileSync(join(SITE, f), 'utf8'), /#result \.stack > #guide/);
+test('the notes and the reviews still find the guide to mount after, in the stack or a desktop column', () => {
+  for (const f of ['visits.js', 'reviews.js']) assert.match(fs.readFileSync(join(SITE, f), 'utf8'), /#result \.stack #guide/);
+  // The guide is in the first column, with the water: the columns hold the stack's order, split once.
+  assert.ok(render.indexOf('${atWater}</div><div class="col-why">') > 0);
   assert.doesNotMatch(render, /<details class="why"/);   // the guide is never wrapped in a group of its own
 });
 

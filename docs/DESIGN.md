@@ -267,8 +267,15 @@ paper, as the site's first screen looked in the fifth round.
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
   the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
   is underlined in white.
-- **App, desktop:** map left, a 460 px column right. **App, phone:** list first, the map one tap
-  away in the bar at the bottom, a spot's page with its own small map. Unchanged.
+- **App, desktop:** the list, Saved and Plan: map left, a 460 px column right. A spot opens as a
+  page (20 Oct 2026): the map column goes and the map moves into the spot's own tile, 400 px tall;
+  the opening spans the page over the wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`),
+  and under it two columns, 5 to 7, 1,180 px at most: the five days, nearby and the water on the left,
+  the map and why on the right. From 801 to 1,099 px it is one 720 px column. Before, a spot was
+  3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to pick it.
+  **App, phone:** list first, the map one tap away in the bar at the bottom, a spot's page with its
+  own small map. Unchanged: the two columns are `display:contents` there, so the order is the one
+  stack it was.
 - **Prose pages:** one 720 px column, serif headings, 17 px text, a summary box where a page has an
   answer in a few lines, and the shared foot: one line about what the site is, then the small links.
 - **Accuracy page:** first the forecasts as warnings (4 October 2026): a plain sentence with the figures, the

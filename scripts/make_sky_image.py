@@ -10,6 +10,12 @@ anchors it to the bottom of a view's opening words: everything above ANCHOR is s
 the words on it, the fells rise in the band below them, and by FADE_END the picture is the paper, so
 nothing further down sits on it. Its top rows are the page's --sky, which runs on above it, and its
 last the paper. The same seed draws the same picture.
+
+--wide draws icons/fells-wide.webp, three times as wide with the same fells drawn out across it, for a
+desktop's spot page, where the opening spans the screen (20 Oct 2026): 1,500 CSS px, so the 500 px
+picture is not stretched three times sideways.
+
+    uv run --with pillow python scripts/make_sky_image.py --wide
 """
 
 from __future__ import annotations
@@ -22,6 +28,7 @@ from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "src" / "dipcast" / "site" / "icons" / "fells.webp"
+OUT_WIDE = OUT.with_name("fells-wide.webp")
 W, H = 1000, 1200
 ANCHOR = 580               # the sky ends here: the page sets a view's words above it
 SHORE = 905                # the lake's edge
@@ -55,6 +62,7 @@ def ridge(rng, base, amp, rough) -> np.ndarray:
     x = np.arange(W)
     y = np.full(W, float(base))
     for n, a in [(0.8, 1.0), (1.9, .5), (4.3, .22), (10, .07 * rough), (23, .03 * rough)]:
+        n = n * (W // 1000)   # as many fells to each 1,000 px however wide the picture
         y -= amp * a * (np.sin(2 * np.pi * n * x / W + rng.random() * 2 * np.pi) * .5 + .5)
     fine = Image.fromarray((rng.random((1, W // 5)) * 255).astype(np.uint8), "L").resize((W, 1), Image.BICUBIC)
     return y + (np.asarray(fine, float)[0] / 255 - .5) * 6 * rough
@@ -98,10 +106,15 @@ def draw(seed: int) -> Image.Image:
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--seed", type=int, default=7)
-    p.add_argument("--out", type=Path, default=OUT)
+    p.add_argument("--out", type=Path)
+    p.add_argument("--wide", action="store_true", help="three times as wide, for a desktop's spot page")
     a = p.parse_args()
-    draw(a.seed).save(a.out, quality=82, method=6)
-    print(a.out, f"{a.out.stat().st_size // 1024} KB")
+    global W
+    if a.wide:
+        W = 3 * W
+    out = a.out or (OUT_WIDE if a.wide else OUT)
+    draw(a.seed).save(out, quality=82, method=6)
+    print(out, f"{out.stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":
