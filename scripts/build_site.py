@@ -43,6 +43,7 @@ from dipcast.model.forecast import (
 )
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
+from dipcast.spot_links import attach as attach_spot_links
 from dipcast.trace import SIMPLIFY_M, spot_trace
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -2210,7 +2211,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured, 20 Oct 2026) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured")
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
 
 
 def write_app_data(site: Path, doc: dict) -> int:
@@ -2506,6 +2507,15 @@ def build(refresh: bool = True) -> dict:
             "(check where each one's stream meets the river and add it to data/raw/overflow_joins.csv): "
             + "; ".join(f"{u['site_id']} for {u['spot']}, {u['snap_m']} m off the river, {u['km']} km above, "
                         f"into {u['receiving']}" for u in unsure))
+    # How the spots are joined by water, for the reasons on the Nearby card (spot_links), from every overflow
+    # each forecast counted, not the ten a spot keeps: the catchment in the lite file, the links in each
+    # spot's own (DETAIL_FIELDS), which only its page reads.
+    # A reason beside a suggestion must never sink the site: if the links fail, the cards give none.
+    try:
+        health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
+    except Exception as e:  # noqa: BLE001
+        health["spot_links"] = 0
+        health["warnings"].append(f"Nearby reasons not made this update: {e}")
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     if n_flows.get("flood_alerts_unchecked"):
