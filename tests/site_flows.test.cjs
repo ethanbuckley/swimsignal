@@ -65,9 +65,9 @@ test('names from the feed are escaped in the page and plain in the comparison', 
   const html = flowFacts(s, NOW, BUILT).map(f => flowSentence(f, true)).join(' ');
   assert.ok(html.includes('Beck &lt;b&gt;&amp;&lt;/b&gt; &quot;Brook&quot;') && !html.includes('"onmouseover'));
   const built = new Date().toISOString();   // the comparison reads the clock
-  const rows = Object.fromEntries(evidenceRows({days: [], ...s}, '2026-10-03', '', built));
+  const rows = Object.fromEntries(evidenceRows({days: [], ...s}, '2026-10-03', built));
   assert.match(rows['Local warnings'], /^Flood alert in force nearby \(Environment Agency\): Beck <b>&<\/b> "Brook"\. Short-term pollution warnings are not fetched/);
-  assert.equal(Object.fromEntries(evidenceRows({days: []}, '2026-10-03', '', built))['Local warnings'],
+  assert.equal(Object.fromEntries(evidenceRows({days: []}, '2026-10-03', built))['Local warnings'],
     'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.');
 });
 
@@ -134,7 +134,7 @@ test('the quiet line in words: the comparison row says it plainly; a spot withou
   assert.equal(floodUnchecked({flood_alerts: null}, NOW + 26 * 36e5, BUILT), false);
   assert.equal(floodUncheckedLine(), 'Flood warnings not checked for this forecast. See the Environment Agency: https://check-for-flooding.service.gov.uk/');
   const built = new Date().toISOString();   // the comparison reads the clock
-  assert.equal(Object.fromEntries(evidenceRows({days: [], flood_alerts: null}, '2026-10-03', '', built))['Local warnings'],
+  assert.equal(Object.fromEntries(evidenceRows({days: [], flood_alerts: null}, '2026-10-03', built))['Local warnings'],
     'Flood warnings not checked for this forecast. See the Environment Agency: https://check-for-flooding.service.gov.uk/ '
     + 'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.');
 });

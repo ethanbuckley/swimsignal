@@ -93,5 +93,5 @@ function eaTodayListen(root, now = () => Date.now()) {
 if (typeof document === 'object' && document && typeof document.addEventListener === 'function') eaTodayListen(document);
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayFold, eaTodayOpen, eaTodayListen };
+  module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen };
 }

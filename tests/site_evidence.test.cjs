@@ -134,7 +134,7 @@ test('a lab count says whether it is over 900, the line the E. coli estimate is 
 
 test('the Compare table gives the latest sample in the same words, or says plainly there is none', () => {
   const { evidenceRows } = require('../src/dipcast/site/experience.js');
-  const samples = s => Object.fromEntries(evidenceRows({ days: [], ...s }, '2026-10-04', '', BUILT, NOW))['Water samples'].replace(/ /g, ' ');
+  const samples = s => Object.fromEntries(evidenceRows({ days: [], ...s }, '2026-10-04', BUILT, NOW))['Water samples'].replace(/ /g, ' ');
   const cl = { class: 'poor', year: 2025, url: URL_ };
   assert.match(samples({ source: 'designated', classification: cl, lab_sample: { taken_at: '2026-09-24T10:35+01:00', ecoli: 380 } }),
     /^380 E\. coli per 100 ml, taken 24 Sept?: under 900\. Check the Environment Agency’s page for every result and current advice\.$/);
