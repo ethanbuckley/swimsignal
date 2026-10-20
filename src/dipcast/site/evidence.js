@@ -14,7 +14,7 @@
 
 const EVIDENCE_TZ = 'Europe/London';
 // The level rules (levels.js): the page loads them before this file, Node requires them.
-const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel } : require('./levels.js');
+const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, companyName } : require('./levels.js');
 const evidenceEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const evidenceNil = v => v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v));
 const evidenceCap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
@@ -171,6 +171,57 @@ function evidenceTile(d, nowMs, generatedAt) {
     + (gaps.length ? `<div class="ev-gap">${gaps.map(g => `<p>${g}</p>`).join('')}</div>` : '') + '</details>';
 }
 
+// How much evidence sits behind a level, as one quiet line beside it (outside review, 20 Oct 2026: show the
+// pollution signals and the evidence coverage as two things). Plan a swim gives it under each row. Two parts,
+// each only where it applies:
+//  - live: on a plan for today, a low level whose right now is not known (levels.js, nowUnknown) is a forecast
+//    only, in the words a saved card uses;
+//  - the track record: whose overflows these are, by their reach (evidenceCompanies), and the share of spills
+//    the live warnings caught there, from the Accuracy page's own figures (verification.json,
+//    live.warning_table: by_company and trained_on), the share linking to its table. The spill model learned
+//    from one company's spills, United Utilities'. On 20 Oct 2026 its warnings had caught 37% of United
+//    Utilities' spills and 2% of the other companies', so the line says which side of that the spot is on. A
+//    share is of forecasts, as on the Accuracy page: each spill was forecast up to five times, from four days
+//    ahead to that morning.
+// Short, since every row in a place says much the same: the counts are a tap away. A spot with no daily
+// forecast (a plain level, a failed forecast) has no track record to give. W is the warning table, or null
+// while it loads or when it failed; the live part does not need it. Returns HTML, or ''.
+const EVIDENCE_VERIFICATION = 'data/verification.json';
+const evidencePct = p => p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%';   // as the decision record's
+const evidenceOwners = names => names.map(n => `${evidenceEsc(evidenceRules().companyName(n))}'`.replace(/([^s])'$/, "$1's")).join(' and ');   // "Yorkshire Water's", "United Utilities'", "Dŵr Cymru Welsh Water's"
+// Whose overflows a spot's are, by reach: company -> weight. From the contributors where the spot has them
+// (spots.json, a spot's own file), or from the lite file's reach_by_company (build_site.py), which the list
+// and the planner load in their place.
+function evidenceCompanies(s) {
+  const by = new Map();
+  if (s.contributors) for (const c of s.contributors) by.set(c.company || 'unknown', (by.get(c.company || 'unknown') || 0) + (Number(c.weight) || 0));
+  else for (const [n, w] of s.reach_by_company || []) by.set(n, Number(w) || 0);
+  return by;
+}
+function evidenceCoverage(s, W, isToday = false) {
+  const R = evidenceRules(), out = [];
+  if (!s || s.unlisted || s.error || !R.daily(s)) return '';
+  if (isToday && R.nowUnknown(s)) out.push(`Forecast only: ${R.nowUnknownWhy(s)}.`);
+  const by = evidenceCompanies(s), total = [...by.values()].reduce((a, b) => a + b, 0), own = W && W.trained_on;
+  if (own && total > 0 && W.first_day) {
+    const since = evidenceDate(W.first_day, Date.parse(W.last_day || W.first_day)), mine = (by.get(own) || 0) >= total / 2;
+    const rows = (W.by_company || []).filter(r => (r.company === own) === mine);
+    const hits = rows.reduce((a, r) => a + (r.hits || 0), 0), made = rows.reduce((a, r) => a + (r.hits || 0) + (r.misses || 0), 0);
+    // Whose: the company the model learned from alone, or the others holding most of the reach, at most two,
+    // each with a quarter of it or more. "Mostly" when those named hold under nine tenths of it.
+    const named = mine ? [[own, by.get(own)]] : [...by].filter(([n, w]) => n !== 'unknown' && n !== own && w >= total / 4).sort((a, b) => b[1] - a[1]).slice(0, 2);
+    const whose = named.length ? `${named.reduce((a, [, w]) => a + w, 0) < 0.9 * total ? 'Mostly ' : ''}${evidenceOwners(named.map(([n]) => n))} overflows` : '';
+    const share = `<a href="verification.html#warnings">${evidencePct(made ? hits / made : 0)} of ${mine ? 'their' : 'other companies\''} spills</a>`;
+    if (made && mine) out.push(`${evidenceCap(whose)}, whose spills the model learned from. Since ${since} it has warned of ${share}.`);
+    else if (made) out.push(`${whose ? whose + '. ' : ''}The model learned from ${evidenceOwners([own])}; since ${since} it has warned of ${share}.`);
+  }
+  return out.join(' ');
+}
+// The warning table, once a visit: a promise of it, or of null when it could not be had.
+let EVIDENCE_WARNINGS = null;
+const evidenceWarnings = () => EVIDENCE_WARNINGS || (EVIDENCE_WARNINGS = fetch(EVIDENCE_VERIFICATION, { cache: 'no-cache' })
+  .then(r => (r.ok ? r.json() : null)).then(v => ((v || {}).live || {}).warning_table || null).catch(() => null));
+
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff };
+  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies };
 }

@@ -2214,9 +2214,22 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
 
 
+def reach_by_company(contributors: list[dict]) -> list[list]:
+    """Whose overflows a spot's are, by their reach: [[company, share of the summed weight], ...], the largest
+    first, shares to three places. The lite file keeps this in place of the contributors, for Plan a swim's
+    evidence line (evidence.js, evidenceCoverage), which tells the company the spill model learned from apart
+    from the rest (20 Oct 2026). An overflow with no company counts as "unknown". [] with no weight."""
+    by: dict[str, float] = {}
+    for c in contributors or []:
+        by[c.get("company") or "unknown"] = by.get(c.get("company") or "unknown", 0.0) + float(c.get("weight") or 0)
+    total = sum(by.values())
+    return [] if total <= 0 else [[k, round(w / total, 3)] for k, w in sorted(by.items(), key=lambda kv: -kv[1])]
+
+
 def write_app_data(site: Path, doc: dict) -> int:
     """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
-    one file a spot. A lite spot names its file in `detail_file`, relative to data/. A spot whose id
+    one file a spot. A lite spot names its file in `detail_file`, relative to data/, and gives whose its
+    overflows are in `reach_by_company` (reach_by_company), where it has any. A spot whose id
     cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
     out = site / "data" / "spot"
     shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
@@ -2229,7 +2242,8 @@ def write_app_data(site: Path, doc: dict) -> int:
         detail = {k: s[k] for k in DETAIL_FIELDS if k in s}
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
-        lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json"})
+        lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json",
+                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {})})
     # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
     (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
                                                               separators=(",", ":"), default=str))

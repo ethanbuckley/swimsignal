@@ -1125,9 +1125,28 @@ gives all four navigation links a single full-width row.
   so in one line under its heading, with the other risks; the foot keeps the view's one "check the
   signs". "Share this plan" holds both tiles' spots and counts each ("14 at low risk on Saturday and 6
   with no monitored overflow found upstream").
-- On a plan for today, a low row whose right now is not known (no overflow upstream reports live, or
-  those that matter most do not, a stale feed included) adds "Forecast only: ..." to its why line, the
-  words a saved card uses.
+- Under each row with a daily forecast, one line on how much evidence sits behind its level, apart
+  from the reasons above it (20 October 2026; the outside review asked for the pollution signals and the
+  evidence coverage as two things). Muted, the meta size, outside the row's link (`.ev-line`,
+  `evidenceCoverage` in `evidence.js`):
+  - on a plan for today, a low row whose right now is not known (no overflow upstream reports live, or
+    those that matter most do not, a stale feed included): "Forecast only: ...", the words a saved card
+    uses. Until 20 October 2026 this was in the why line;
+  - whose overflows these are, by reach, and the share of spills the live warnings caught at that
+    company, or at the companies the model did not learn from: "United Utilities' overflows, whose
+    spills the model learned from. Since 29 Sept it has warned of 37% of their spills." / "Yorkshire
+    Water's overflows. The model learned from United Utilities'; since 29 Sept it has warned of 2% of
+    other companies' spills." The share links to the Accuracy page's warning table
+    (verification.html#warnings) and comes from its file (verification.json, `live.warning_table`,
+    `by_company`), fetched once when the plan opens; until it arrives, or if it fails, the rows have no
+    such sentence. "Mostly" when the companies named hold under nine tenths of the reach. The counts are
+    left to the Accuracy page: every row in a place says much the same, so the line is kept short.
+  - The list and the planner load spots-lite.json, which has no contributors; the build gives each spot
+    `reach_by_company` there for this line.
+  - Not on a plain level or a row with no level: the first has its heading's line, the second its own.
+  - Not on the spot page's answer: the answer is drawn into the built page before any script runs, the
+    figure is in a file the spot page does not load, and the line would arrive after the answer and push
+    it down. The spot's own scores are in "How the forecast has done here".
 - A row's distance leads its meta line ("7.7 miles away · Lake · bathing water"). Miles: travel is
   planned in miles, and Ethan's own example was "within 20 miles". Since 4 October 2026 every
   distance a swimmer travels is in miles, the list's and "Nearby" too; distances the water travels,

@@ -724,6 +724,10 @@
   .plan-from { margin-top:8px; }
   .plan-from + .planner-note { margin-bottom:8px; }
   a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
+  /* How much evidence sits behind the row's level (planEvidence): outside the row's link, which it would
+     otherwise sit in, so the row's padding below moves under it. Muted, the meta size. */
+  a.row:has(+ .ev-line) { padding-bottom:4px; }
+  .ev-line { margin:0; padding:0 0 12px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
   .compare-fields { display:grid; gap:10px; margin:14px 0; }
   .compare-fields label { font-size:var(--fs-note); font-weight:600; }
   .compare-fields select { margin-top:4px; }
@@ -3373,9 +3377,8 @@ function planWhy(s, day) {
   // row says why the level is low: what the exposure index measures is whether the sewage gets here.
   // Not where spills right now raised today (levels.js, risk): the row's headline then says "sewage spills
   // right now", and "unlikely to reach here" under it said the opposite (12 Oct 2026).
-  // On a plan for today, a low day whose right now is not known says so, as a saved card does: the
-  // overflows that would show a spill have no current live status (none report, or their feed is stale).
-  if (day === today() && nowUnknown(s) && dayLevel(s, day) === 'low') out.push(`Forecast only: ${nowUnknownWhy(s)}.`);
+  // What the level rests on, a forecast only today or a company the model did not learn from, is not here:
+  // it is the row's own line under it (planEvidence), so the signals and the evidence are read apart.
   if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && !risk(s, x).now && Math.round(x.expected_spilling_overflows || 0) >= 1;
     if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
     if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
@@ -3386,11 +3389,25 @@ function planWhy(s, day) {
   if (day === today()) out.push(...flowFacts(s, Date.now(), DATA.generated_at).map(f => flowSentence(f)));
   return esc(out.join(' '));
 }
+// How much evidence sits behind the row's level (evidence.js, evidenceCoverage), under the row's link since it
+// holds a link of its own: on a plan for today, a low level whose right now is not known (until 20 Oct 2026 this
+// was in the why line, "Forecast only: ..."); and whose overflows these are, with how the live warnings have done
+// at that company, from the Accuracy page's figures (data/verification.json), which the plan asks for once
+// (planLoadWarnings). Muted, the meta size: it qualifies the row, it is not another reason.
+let PLAN_WARNINGS = null;
+function planEvidence(s) {
+  const line = evidenceCoverage(s, PLAN_WARNINGS, PLAN.day === today() && dayLevel(s, PLAN.day) === 'low');
+  return line ? `<p class="ev-line">${line}</p>` : '';
+}
+function planLoadWarnings() {
+  if (PLAN_WARNINGS) return;
+  evidenceWarnings().then(W => { if (!W || PLAN_WARNINGS) return; PLAN_WARNINGS = W; if (shown === 'plan') drawPlan(); });
+}
 function planItem(o) {
-  const s = o.s, why = planWhy(s, PLAN.day);
+  const s = o.s, why = planWhy(s, PLAN.day), ev = planEvidence(s);
   const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a></li>`;
+    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>${ev}</li>`;
 }
 function renderPlan() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'plan';
@@ -3411,6 +3428,7 @@ function renderPlan() {
     + `<p class="planner-note" id="plan-sum" role="status"></p>` + notices() + '</div>'
     + cols('<div id="plan-results"></div>');
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
+  planLoadWarnings();
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
 }
 // The status under the place, the count, the groups and the map. fit: move the map to the plan's reach
