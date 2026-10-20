@@ -162,6 +162,15 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_members FLOAT[]")
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS risk_members FLOAT[]")
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS ens_issued_at TIMESTAMPTZ")
+    # Added 20 Oct 2026: the live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md, model.live_status).
+    # p_status is the forecast the shadow would publish: PR #254's candidate for the lead where the overflow's
+    # own status was known, else the production p_cal (the fallback). status_known says which. The three
+    # inputs are NULL where the status was not known. NULL throughout where the shadow was off. Never
+    # published: no page, alert or published score reads these columns.
+    con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS p_status DOUBLE")
+    con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS status_known BOOLEAN")
+    for c in ("spilling_at_issue", "spill_hours_24h", "spill_days_7d"):
+        con.execute(f"ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS {c} FLOAT")
     # Added 4 Oct 2026: the run log (log_build). `failed` holds why a build did not publish, else NULL.
     con.execute("""
         CREATE TABLE IF NOT EXISTS build_runs (
@@ -174,7 +183,8 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
 POINT_COLUMNS = ("issued_at", "lat", "lon", "mode", "watercourse", "now_risk", "target_day", "lead", "risk", "p_ecoli",
                  "rain_48h", "version", "risk_members", "ens_issued_at")
 OVERFLOW_COLUMNS = ("issued_at", "issue_day", "lat", "lon", "site_id", "has_live", "target_day", "lead", "p_raw", "p_cal",
-                    "weight", "rain_available", "version", "rain_mm", "travel_h", "p_cal_members", "rain_members")
+                    "weight", "rain_available", "version", "rain_mm", "travel_h", "p_cal_members", "rain_members",
+                    "p_status", "status_known", "spilling_at_issue", "spill_hours_24h", "spill_days_7d")
 
 
 def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, watercourse: str | None,
@@ -182,13 +192,15 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
                  ov: pd.DataFrame, p_raw: np.ndarray, p_cal: np.ndarray,
                  p_ecoli: np.ndarray | None = None, rain_48h: np.ndarray | None = None,
                  available: np.ndarray | None = None, version: str | None = None,
-                 rain_mm: np.ndarray | None = None, members: dict | None = None) -> None:
+                 rain_mm: np.ndarray | None = None, members: dict | None = None, shadow: dict | None = None) -> None:
     """Append one forecast. `days` may start before today (history for travel time);
     only leads >= 0 are logged. `p_ecoli` and `rain_48h` are aligned with `days` (NaN
     where unavailable); `available` is the (n_overflows, n_days) rain-data mask and
     `rain_mm` the day's rain at each overflow's cell, same shape. `members` is
     forecast.ensemble_members' result: its "p" and "rain" are (members, n_overflows, n_days),
-    its "risk" (members, n_days), NaN logged as NULL inside the list."""
+    its "risk" (members, n_days), NaN logged as NULL inside the list. `shadow` is
+    live_status.shadow_forecast's result: "p" (n_overflows, n_days), "known" (n_overflows,) and "inputs"
+    (n_overflows, 3); NaN logged as NULL, and every shadow column NULL without it."""
     issue_day = issued_at.tz_convert(LOCAL_TZ).date()
     pts, rows = [], []
 
@@ -204,6 +216,12 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
 
     travel = ([None if pd.isna(t) else float(t) for t in ov["travel_h"]] if len(ov) and "travel_h" in ov
               else [None] * len(ov))
+
+    def _s(i, j) -> tuple:   # p_status, status_known and the three inputs, for overflow i on day j
+        if shadow is None:
+            return (None,) * 5
+        ins = shadow["inputs"][i]
+        return (_f(shadow["p"][i], j), bool(shadow["known"][i]), *(None if np.isnan(v) else float(v) for v in ins))
     for j, d in enumerate(days):
         lead = (d.date() - issue_day).days
         if lead < 0:
@@ -218,7 +236,7 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
                 rows.append((issued_at, issue_day, lat, lon, str(sid), bool(ov["has_live"].iloc[i]),
                              d.date(), lead, float(p_raw[i, j]), float(p_cal[i, j]), float(ov["weight"].iloc[i]), ok, version, rain,
                              travel[i], _m(None if members is None else members["p"][:, i, j]),
-                             _m(None if members is None else members["rain"][:, i, j])))
+                             _m(None if members is None else members["rain"][:, i, j]), *_s(i, j)))
     # By name, so a column added later (as the members were, 18 Oct 2026) never shifts the others.
     with _LOCK:
         con = _conn()

@@ -14,7 +14,7 @@ from dipcast import config
 from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
-from dipcast.model import ecoli
+from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
     build_site_days,
@@ -160,7 +160,7 @@ def _model() -> SpillModel | None:
 def reload_caches() -> None:
     with _LOAD_LOCK:
         _overflows_uncached.cache_clear(); _model.cache_clear(); _lead_calibration.cache_clear(); ecoli.load.cache_clear()
-        model_version.cache_clear()
+        model_version.cache_clear(); live_status.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 
@@ -178,23 +178,26 @@ def _clean(v):
 
 def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
                         model: SpillModel | None, return_rain: bool = False,
-                        rain: pd.DataFrame | None = None) -> tuple[np.ndarray, ...]:
+                        rain: pd.DataFrame | None = None, return_frame: bool = False) -> tuple:
     """(n_overflows, n_days) probability each overflow spills on each day, and a
     bool mask of the same shape: True where that overflow's cell has rainfall data
     for the day. Where it has none the probability is NaN, never 0. With
     `return_rain`, also the day's rainfall (mm) at each overflow's cell that the
     probability was computed from, NaN where missing. `rain`, hourly rain as
     fetch_forecast returns it, is used instead of fetching (the click-anywhere data,
-    scripts/build_any_point.py, rations its fetches); a cell missing from it has no data."""
+    scripts/build_any_point.py, rations its fetches); a cell missing from it has no data. With
+    `return_frame`, also the site-day frame the model read (None where there was none), so the
+    live-status shadow (live_status.shadow_forecast) runs on the same rain without fetching it again."""
+    tail = (None,) if return_frame else ()
     if ov.empty:
         empty = (np.zeros((0, len(days))), np.zeros((0, len(days)), dtype=bool))
-        return (*empty, np.zeros((0, len(days)))) if return_rain else empty
+        return (*empty, np.zeros((0, len(days))), *tail) if return_rain else (*empty, *tail)
     cells = cells_for_sites(ov["lat"], ov["lon"])
     rain = fetch_forecast(cells) if rain is None else rain.copy()
     if rain.empty:   # Open-Meteo sent nothing and nothing cached is under a day old: every day unknown
         shape = (len(ov), len(days))
         none = (np.full(shape, np.nan), np.zeros(shape, dtype=bool))
-        return (*none, np.full(shape, np.nan)) if return_rain else none
+        return (*none, np.full(shape, np.nan), *tail) if return_rain else (*none, *tail)
     rain["time"] = rain["time"].dt.tz_convert(LOCAL_TZ)   # local-midnight day boundaries
     daily = daily_rain_features(rain)
     # The covariates as filled once over the whole overflow table (features.fill_covariates), not
@@ -224,8 +227,8 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
     out = (mat.to_numpy(dtype=float), okm.fillna(False).to_numpy(dtype=bool))
     if return_rain:
         rain_mm = sd.pivot(index="site_id", columns="day", values="rain_d").reindex(index=ov["site_id"], columns=days)
-        return (*out, rain_mm.to_numpy(dtype=float))
-    return out
+        out = (*out, rain_mm.to_numpy(dtype=float))
+    return (*out, sd) if return_frame else out
 
 
 def member_rain(rain: pd.DataFrame, ens: pd.DataFrame) -> list[pd.DataFrame]:
@@ -362,8 +365,16 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # With the ensemble, the single forecast's rain is fetched here (from the cache the build's prefetch
     # filled), so the members can share its past; spill_probabilities would fetch the same.
     rain = fetch_forecast(cells_for_sites(ov["lat"], ov["lon"])) if ensemble and not ov.empty else None
-    p_raw, avail, rain_mm = spill_probabilities(ov, days, model, return_rain=True, rain=rain)
+    p_raw, avail, rain_mm, frame = spill_probabilities(ov, days, model, return_rain=True, rain=rain, return_frame=True)
     p = calibrate_by_lead(p_raw, first_lead=-hist)   # column `hist` is today (lead 0)
+    # The live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md): for the forecast log only, from the
+    # same site-day frame, so it costs no rain request. Nothing below reads it but log_forecast.
+    shadow = None
+    if log_to_store and frame is not None:
+        try:
+            shadow = live_status.shadow_forecast(frame, ov, days, today_idx, now, p)
+        except Exception as e:  # noqa: BLE001 - a shadow must never fail the forecast
+            log.warning("live-status shadow skipped: %s", e)
     risk = combine_daily(p, weights, travel)
     # Which overflows each day's risk comes from (the page's "where the risk comes from"), and the
     # part of it from spills on the days after today alone: new spills, not ones under way or over,
@@ -520,7 +531,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             from dipcast.forecast_log import log_forecast
             log_forecast(now, lat, lon, pin.mode, pin.watercourse, now_risk, days, risk, ov,
                          np.nan_to_num(p_raw, nan=0.0), np.nan_to_num(p, nan=0.0), p_ecoli=p_ec, rain_48h=r48,
-                         available=avail, rain_mm=rain_mm, version=model_version(), members=members)
+                         available=avail, rain_mm=rain_mm, version=model_version(), members=members, shadow=shadow)
         except Exception as e:  # noqa: BLE001 - logging must never fail a forecast
             log.warning("forecast log failed: %s", e)
     return out
