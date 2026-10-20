@@ -681,13 +681,26 @@
   .compare-fields label { font-size:var(--fs-note); font-weight:600; }
   .compare-fields select { margin-top:4px; }
   .compare-scroll { overflow-x:auto; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-  .compare-table { width:100%; min-width:540px; border-collapse:collapse; font-size:var(--fs-note); }
-  .compare-table caption { text-align:left; padding:10px 0; color:var(--muted); }
-  .compare-table th, .compare-table td { padding:10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; min-width:150px; }
+  /* Compare (compareTable, 20 Oct 2026): a column a spot, of equal widths and at least 150 px, so that two
+     fit side by side on a 375 px phone and three in a wide desktop's list column; a third on a phone scrolls
+     sideways. Each row's label is a band across the table over its cells, its words kept in view as the table
+     scrolls (until 20 Oct 2026 a column of labels took a third of a phone's width). The five days: a cell a
+     day, its name over the level in its text colour (.hl); the day picked shaded, with a rule at its left, as
+     the open day of the five days is. A spot whose level is the same every day has one cell for the five. */
+  .compare-table { width:100%; min-width:calc(var(--cols, 2) * 150px); table-layout:fixed; border-collapse:collapse; font-size:var(--fs-note); }
+  .compare-table th, .compare-table td { padding:10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
   .compare-table th { background:var(--hover); }
   .compare-table th a { display:block; min-height:44px; padding:4px 0; }
   .compare-table td a { display:inline-block; padding:12px 0; margin:-12px 0; }   /* 44 px to tap, in the cell's padding */
-  .compare-table th[scope=row] { min-width:100px; }
+  .compare-table thead th .k { display:block; font-weight:400; margin-top:-4px; }
+  .compare-table tr.lab th { padding:6px 10px; border-bottom:0; }
+  .compare-table tr.lab th > span { display:inline-block; position:sticky; left:10px; }
+  .compare-table .day { display:block; font-size:var(--fs-meta); color:var(--muted); }
+  .compare-table tr.on > td { background:var(--active); }
+  .compare-table tr.on > td.d0 { box-shadow:inset 3px 0 0 var(--ink); }
+  .compare-table tr.on > td.same { background:none; }
+  .compare-note { margin:0; padding:0 0 10px; }
+  details.comparison { scroll-margin-top:calc(var(--header-h) + 8px); }
   .comparison > summary, .lists > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
 
   .about, .about-line { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-note); }
@@ -2807,44 +2820,77 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
 }
 // A list's spots that the forecast has, in the list's order.
 const listSpots = (l = listNow()) => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
-const COMPARE = { ids: null, day: null, open: false };
-function compareSection(spots) {
-  if (spots.length < 2) return '';   // nothing to compare until two spots are saved
-  const ids = comparisonIds(COMPARE.ids || spots.slice(0,2).map(s => s.id), spots);
-  COMPARE.ids = ids;
-  const dates = fiveDays();
-  if (!dates.includes(COMPARE.day)) COMPARE.day = VIEW.day || dates[0];
-  return `<details class="sec tile comparison"${COMPARE.open ? ' open' : ''}><summary>Compare your spots</summary><p class="sub">Choose up to three saved spots for the same day. A lower forecast level does not guarantee safe water.</p>
-    <div class="compare-fields"><label>Compare day<select id="compare-day">${dates.map(iso => `<option value="${iso}"${iso === COMPARE.day ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></label>
-    ${[0,1,2].map(i => `<label>Spot ${i+1}${i===2 ? ' (optional)' : ''}<select data-compare="${i}"><option value="">Choose a spot</option>${spots.map(s => `<option value="${esc(s.id)}"${s.id === ids[i] ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>`).join('')}</div>
-    <p class="small muted" id="compare-status" role="status"></p><div id="compare-result"></div></details>`;
+// ------------------------------------------------------------------------------ compare
+// Up to three spots side by side, in one table for Saved ("Compare your spots") and Plan a swim ("Compare
+// these spots", 20 Oct 2026, from an outside review that asked to compare a plan's spots over the five days
+// without leaving it). Until then Saved's showed one day at a time, picked in a select of its own; now
+// every comparison has the five days as rows, the day picked shaded, then what each level rests on and
+// what it leaves out (experience.js, compareDays and compareRows).
+// c, the view's own: title and sub; groups, the spots on offer as [[heading, spots]] (a heading '' for
+// none); ids, those chosen; day, the day to shade; open; meta(s), a line under a spot's name, or null;
+// chose(ids) and toggled(open), told of each change. One comparison is drawn at a time (COMPARING).
+let COMPARING = null;
+const compareOffered = c => c.groups.flatMap(([, g]) => g);
+function compareSection(c) {
+  COMPARING = null;
+  if (compareOffered(c).length < 2) return '';   // nothing to compare until there are two spots
+  COMPARING = c;
+  const opts = i => c.groups.map(([h, g]) => (h ? `<optgroup label="${esc(h)}">` : '')
+    + g.map(s => `<option value="${esc(s.id)}"${s.id === c.ids[i] ? ' selected' : ''}>${esc(s.name)}</option>`).join('') + (h ? '</optgroup>' : '')).join('');
+  return `<details class="sec tile comparison" id="compare"${c.open ? ' open' : ''}><summary>${c.title}</summary><p class="sub">${c.sub}</p>`
+    + `<div class="compare-fields">${[0, 1, 2].map(i => `<label>Spot ${i + 1}${i === 2 ? ' (optional)' : ''}<select data-compare="${i}"><option value="">Choose a spot</option>${opts(i)}</select></label>`).join('')}</div>`
+    + `<p class="small muted" id="compare-status" role="status"></p><div id="compare-result"></div></details>`;
+}
+// The table: a column a spot, so that two sit side by side on a phone; each row's label a band across it; the
+// five days first, a day's level in its colour, the day picked shaded; then the facts. The note above it says
+// what a lower level is not, outside the box that scrolls, where a phone shows all of it. No column is called
+// the best: the question is which to look into further, and the reader decides.
+function compareTable(spots, day, meta = null) {
+  const dates = fiveDays(), n = spots.length, days = spots.map(s => compareDays(s, dates)), facts = spots.map(s => compareRows(s, day, DATA.generated_at));
+  const cell = x => `<span class="hl ${tone(x.level)}">${esc(x.words)}</span>`, hd = (r, j) => ` headers="${r} cmp-s${j}"`;
+  const lab = (id, t) => `<tr class="lab"><th colspan="${n}" id="${id}"><span>${t}</span></th></tr>`;
+  return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
+    + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
+    + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
+      + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('')}</tr></thead><tbody>`
+    + lab('cmp-days', `Pollution risk, next ${dates.length === 4 ? 'four' : 'five'} days`)
+    + dates.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>` + days.map((d, j) => !d.same
+        ? `<td${j ? '' : ' class="d0"'}${hd('cmp-days', j)}><span class="day">${dateLabel(iso)}</span>${cell(d.days[i])}</td>`
+        : i ? '' : `<td class="same" rowspan="${dates.length}"${hd('cmp-days', j)}>${cell(d.days[0])}. The same on every day.</td>`).join('') + '</tr>').join('')
+    + facts[0].map(([label], k) => lab(`cmp-r${k}`, label) + `<tr>${facts.map((f, j) => `<td${hd(`cmp-r${k}`, j)}>${f[k][1]}</td>`).join('')}</tr>`).join('')
+    + '</tbody></table></div>';
 }
 function drawComparison() {
-  const box = document.getElementById('compare-result'); if (!box) return;
-  const choices = [...document.querySelectorAll('[data-compare]')].map(el => el.value);
-  const available = listSpots();   // the list shown
-  COMPARE.ids = comparisonIds(choices, available);
-  COMPARE.day = document.getElementById('compare-day').value;
-  const spots = COMPARE.ids.map(id => available.find(s => s.id === id));
-  document.getElementById('compare-status').textContent = spots.length < 2 ? 'Choose at least two different saved spots.' : `${spots.length} spots · ${dateLabel(COMPARE.day)}. Scroll sideways to compare all columns.`;
-  if (spots.length < 2) { box.innerHTML = ''; return; }
-  const rows = ['Forecast', 'Live spill feeds', 'Environment Agency rating', 'Water samples', 'Model limits', 'Algae observation', 'Local warnings'];
-  const facts = spots.map(s => Object.fromEntries(evidenceRows(s,COMPARE.day,issued(),DATA.generated_at)));
-  box.innerHTML = `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table"><caption>${dateLabel(COMPARE.day)} · issued ${issued()} (${ago(ageMin())} ago)</caption><thead><tr><th scope="col">Evidence</th>${spots.map(s => `<th scope="col"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day='+COMPARE.day : ''}">${esc(s.name)}</a></th>`).join('')}</tr></thead><tbody>
-    <tr><th scope="row">Pollution risk</th>${spots.map(s => `<td><b>${esc(dayHeadline(s,COMPARE.day))}</b></td>`).join('')}</tr>
-    ${rows.map(label => `<tr><th scope="row">${label}</th>${facts.map(f => `<td>${esc(f[label])}</td>`).join('')}</tr>`).join('')}
-    <tr><th scope="row">Official advice</th>${spots.map(s => `<td>${s.classification?.url ? `<a href="${esc(s.classification.url)}">Check Environment Agency advice</a>` : 'Check local signs and the water manager; no Environment Agency bathing-water page linked.'}</td>`).join('')}</tr></tbody></table></div>`;
-  box.querySelectorAll('[data-compare-spot]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.compareSpot,true,true,COMPARE.day); }));
+  const box = document.getElementById('compare-result'), c = COMPARING; if (!box || !c) return;
+  const offered = compareOffered(c), ids = comparisonIds([...document.querySelectorAll('[data-compare]')].map(el => el.value), offered);
+  c.chose(ids);
+  const spots = ids.map(id => offered.find(s => s.id === id));
+  box.innerHTML = spots.length < 2 ? '' : compareTable(spots, c.day, c.meta);
+  const sc = box.querySelector('.compare-scroll'), wide = sc && sc.scrollWidth > sc.clientWidth;
+  document.getElementById('compare-status').textContent = spots.length < 2 ? 'Choose at least two different spots.'
+    : `${spots.length} spots side by side.${wide ? ' Scroll sideways to see every column.' : ''}`;
+  box.querySelectorAll('[data-compare-spot]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.compareSpot, true, true, c.day); }));
+}
+function bindComparison() {
+  const details = document.querySelector('.comparison'), c = COMPARING;
+  if (!details || !c) return;
+  details.addEventListener('toggle', () => { c.toggled(details.open); if (details.open) drawComparison(); });   // drawn open, as the table needs its width
+  document.querySelectorAll('[data-compare]').forEach(el => el.addEventListener('change', drawComparison));
+  drawComparison();
+}
+// Saved's: the first two saved spots until others are chosen, the day the map shows shaded (else today).
+// Kept while the page is open, not stored.
+const COMPARE = { ids: null, open: false };
+function savedCompare(spots) {
+  const ids = comparisonIds(COMPARE.ids || spots.slice(0, 2).map(s => s.id), spots), dates = fiveDays();
+  COMPARE.ids = ids;
+  return { title: 'Compare your spots', sub: 'Up to three saved spots side by side: the next five days, and what each level rests on. A lower forecast level does not mean safe water.',
+    groups: [['', spots]], ids, day: dates.includes(VIEW.day) ? VIEW.day : dates[0], open: COMPARE.open, meta: null,
+    chose: x => { COMPARE.ids = x; }, toggled: o => { COMPARE.open = o; } };
 }
 function refreshComparison() {
   const host = document.getElementById('compare-host');
-  if (host) { const open = host.querySelector('details')?.open; host.innerHTML = compareSection(listSpots()); const details = host.querySelector('details'); if (details) details.open = Boolean(open); bindComparison(); }
-}
-function bindComparison() {
-  const details = document.querySelector('.comparison');
-  if (details) details.addEventListener('toggle', () => { COMPARE.open = details.open; });
-  document.querySelectorAll('#compare-day, [data-compare]').forEach(el => el.addEventListener('change',drawComparison));
-  drawComparison();
+  if (host) { const open = host.querySelector('details')?.open; host.innerHTML = compareSection(savedCompare(listSpots())); const details = host.querySelector('details'); if (details) details.open = Boolean(open); bindComparison(); }
 }
 // Whether "Your lists" is open, and what the opening says once after a shared list is added (said).
 const LISTS_UI = { open: false, said: '' };
@@ -2880,7 +2926,7 @@ function renderSaved() {
     + `${swimsShown(spots) ? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal</button></p>'}</div>`;
   if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
-  v += `<div id="compare-host">${compareSection(spots)}</div>`;
+  v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
   if (DATA.spots.some(s => SAVED.has(s.id))) v += alertsCard();   // alerts cover every list
   if (spots.length) v += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
     + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`
@@ -3162,7 +3208,7 @@ function planWhy(s, day) {
   else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
   if (c && !/\brated /i.test(head)) out.push(`Rated ${c} by the Environment Agency${(s.classification || {}).year ? ` for ${s.classification.year}` : ''}.`);
   if (algaeLevel(s) && !/algae/.test(head)) out.push('Algae seen at the last check.');
-  if (s.access) out.push(s.access.status === 'restricted_guidance' ? 'Swimming here is restricted: check the signs.' : 'Permission to swim at this point is not confirmed.');
+  if (s.access) out.push(ACCESS_WORDS[s.access.status] || ACCESS_WORDS.unconfirmed);   // experience.js, as the comparison's
   if (day === today()) out.push(...flowFacts(s, Date.now(), DATA.generated_at).map(f => flowSentence(f)));
   return esc(out.join(' '));
 }
@@ -3178,6 +3224,7 @@ function renderPlan() {
   document.title = `Plan a swim · ${BRAND}`;
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
   if (!PLAN.from && VIEW.here) PLAN.from = { here: true };   // "Near me" on the list has already asked
+  planCompareGo = !!PLAN.compare;   // a link to a comparison opens on it (drawPlan)
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
@@ -3226,6 +3273,7 @@ function drawPlan(fit = false) {
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
+  if (r.count) planCompare(r.groups, head);
   planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
   // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
   // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
@@ -3234,6 +3282,25 @@ function drawPlan(fit = false) {
   L.circleMarker(from, { radius: 6, color: PAPER, weight: 2, fillColor: RING(), fillOpacity: 1, interactive: false }).addTo(selLayer);
   PLAN_BOUNDS = ring ? ring.getBounds() : L.latLngBounds([from, ...r.groups.flat().slice(0, 8).map(o => [o.s.lat, o.s.lon])]);
   if (fit && !PHONE.matches) fitPlan();
+}
+// Compare these spots (20 Oct 2026, from an outside review: "which of these places should I look into further
+// for Saturday?"): up to three of the plan's spots side by side over the five days, its day shaded
+// (compareSection), the first three shown until others are chosen (plan.js, planCompareIds), offered in the
+// plan's own groups. Under the groups, as Saved's is under the cards. In the address while it is open, so a
+// link opens on it, and a link that holds one is taken to it (planCompareGo, set by renderPlan).
+let planCompareGo = false;
+const planAddress = () => history.replaceState(history.state, '', planPath() + planHash(PLAN));
+function planCompare(groups, heads) {
+  const shown = groups.flat(), miles = new Map(shown.map(o => [o.s.id, o.miles]));
+  const c = { title: 'Compare these spots', ids: planCompareIds(PLAN.compare, shown.map(o => o.s)), day: PLAN.day, open: !!PLAN.compare,
+    sub: `Up to three of these spots side by side: the five days, ${dayName(PLAN.day)} shaded, and what each level rests on, to help you choose which to look into further. A lower forecast level does not mean safe water.`,
+    groups: groups.map((g, i) => [heads[i], g.map(o => o.s)]).filter(([, g]) => g.length), meta: s => cap(milesAway(miles.get(s.id))),
+    chose: x => { c.ids = x; if (PLAN.compare) { PLAN.compare = x; planAddress(); } },
+    toggled: o => { if (o) PLAN.compare = c.ids; else delete PLAN.compare; planAddress(); } };
+  if (PLAN.compare) { PLAN.compare = c.ids; planAddress(); }
+  document.getElementById('plan-results').insertAdjacentHTML('beforeend', compareSection(c));
+  bindComparison();
+  if (planCompareGo) { planCompareGo = false; const d = document.getElementById('compare'); if (d && d.open) d.scrollIntoView({ block: 'start' }); }
 }
 // The plan as a list someone else can open and add (lists.js): the spots at low risk on its day and
 // those with no monitored overflow found upstream, nearest first, named for the day. The words count

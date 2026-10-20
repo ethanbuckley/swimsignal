@@ -1012,6 +1012,27 @@ gives all four navigation links a single full-width row.
   and to a gauge or sensor, stay in km, as the model counts them.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
+- "Compare these spots" (20 October 2026; the outside review asked "which of these places should I
+  look into further for Saturday?" without leaving the plan): a fold under the groups and before "Share
+  this plan", as Compare is under the cards on the Saved page. Three selects, offered in the plan's own
+  groups, start on the first three spots shown. While it is open it is in the address
+  (`&compare=<id>,<id>,<id>`, `plan.js`), so a shared link opens on it, and the page moves to it. A spot
+  that leaves the plan (a shorter distance, another kind) drops out, and the first spots shown fill it
+  back to three.
+- Saved's "Compare your spots" and the plan's are one table (`compareTable`; the cells in
+  `experience.js`, `compareDays` and `compareRows`). A column a spot, at least 150 px, so two sit side by
+  side on a 375 px phone and three in the 1,440 px desktop's list column; a third on a phone scrolls
+  sideways. Each row's label is a band across the table, its words kept in view as it scrolls. Until 20
+  October 2026 a column of labels took a third of a phone's width and Saved compared one day at a time,
+  picked in a select of its own; now both give the five days first, each cell naming its day over the
+  level in its colour, the plan's day (or the map's on Saved, else today) shaded with a rule at its left.
+  A spot whose level is the same every day has one cell for the five. Then: Right now (what the overflows
+  upstream are doing, how many report live and why the others do not, the words of "What the level rests
+  on"), the Environment Agency rating, Today's EA advice (never read, so "could not be checked" with the
+  EA's page linked, or "None: not a designated bathing water"), water samples, algae, access (the desk
+  check's words and date, or "No access information"), local warnings and model limits. Each cell says
+  what is not known rather than stay blank. The note above the table: "A lower forecast level does not
+  mean safe water: check the signs at the water." No column is called the best.
 
 ## Since you last looked (4 October 2026)
 

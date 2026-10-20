@@ -54,36 +54,79 @@ test('standing ratings and missing coverage are not called daily forecasts', () 
   assert.equal(dayHeadline({days:[]},'2026-10-01'),'No monitored overflow found upstream');
 });
 
-const {evidenceRows, comparisonIds} = require('../src/dipcast/site/experience.js');
+const {evidenceRows, comparisonIds, compareDays, compareNow, compareAdvice, compareAccess, compareRows} = require('../src/dipcast/site/experience.js');
 test('evidence distinguishes missing feeds, dated records, and out-of-season models', () => {
   const days = spot.days.map(x => ({...x, in_validated_season: x.date < '2026-10-01'}));   // as the build marks them
   const s = {...spot, days, now:{monitored_upstream:1},classification:{class:'poor',year:2025,url:'https://example.org'},algae:{date:'2026-09-10',phrase:'none seen'}};
-  const facts = Object.fromEntries(evidenceRows(s,'2026-10-01','Wed 00:08'));
-  assert.match(facts['Live spill feeds'], /1 of 2.*Missing reports/);
+  const facts = Object.fromEntries(evidenceRows(s,'2026-10-01'));
+  assert.equal(compareNow(s), '0 discharging. 1 of 2 report live. Not reporting: 1 offline or with no live feed. Missing reports do not mean no spills.');
   assert.match(facts['Environment Agency rating'], /2025.*not today/);
   assert.match(facts['Water samples'], /^No lab sample in this update\. Check the Environment Agency’s page/);   // tests/site_evidence.test.cjs has the rest
   assert.match(facts['Model limits'], /untested/);
   assert.match(facts['Algae observation'], /10 Sept? 2026.*not a current/);
   // The season is the build's mark on the day, as on the page, not the calendar month.
-  assert.doesNotMatch(Object.fromEntries(evidenceRows(s,'2026-09-30',''))['Model limits'], /untested/);
+  assert.doesNotMatch(Object.fromEntries(evidenceRows(s,'2026-09-30'))['Model limits'], /untested/);
   const unmarked = {...s, days: spot.days};   // no mark on the day (built before it): the calendar month decides
-  assert.match(Object.fromEntries(evidenceRows(unmarked,'2026-10-01',''))['Model limits'], /untested/);
-  assert.doesNotMatch(Object.fromEntries(evidenceRows(unmarked,'2026-09-30',''))['Model limits'], /untested/);
-  assert.match(Object.fromEntries(evidenceRows(s,'2026-10-09',''))['Model limits'], /untested/);   // a day outside the forecast
+  assert.match(Object.fromEntries(evidenceRows(unmarked,'2026-10-01'))['Model limits'], /untested/);
+  assert.doesNotMatch(Object.fromEntries(evidenceRows(unmarked,'2026-09-30'))['Model limits'], /untested/);
+  assert.match(Object.fromEntries(evidenceRows(s,'2026-10-09'))['Model limits'], /untested/);   // a day outside the forecast
 });
 test('a spot without a forecast is described in the headline’s words', () => {
+  const D = ['2026-09-30', '2026-10-01'];
   const lake = {days:[], error:'An isolated lake with no river connection', classification:{class:'excellent', year:2025}};
-  assert.equal(Object.fromEntries(evidenceRows(lake,'2026-09-30','')).Forecast, 'No monitored overflow found upstream.');
+  assert.equal(compareNow(lake), 'No monitored overflow found upstream.');
+  assert.deepEqual(compareDays(lake, D), {same: true, days: D.map(date => ({date, level: 'no river connection', words: 'No monitored overflow found upstream'}))});
   const away = {days:[], error:'No river or lake within 1.5 km of this point.'};
-  assert.equal(Object.fromEntries(evidenceRows(away,'2026-09-30','')).Forecast, 'Not covered by the forecast.');
-  const failed = {days:[], error:'forecast failed: timeout'};
-  assert.equal(Object.fromEntries(evidenceRows(failed,'2026-09-30','')).Forecast, 'No forecast in this update.');
+  assert.equal(compareNow(away), 'Not covered by the forecast.');
+  assert.equal(compareDays(away, D).days[0].words, 'Not covered by the forecast');
+  const failed = {days:[], error:'forecast failed: timeout', upstream_summary:{overflows:4}};
+  assert.equal(compareNow(failed), 'No forecast in this update.');
+  assert.equal(compareDays(failed, D).days[1].words, 'No forecast in this update');
 });
 test('missing coverage is not reported as a low risk or current test', () => {
-  const facts = Object.fromEntries(evidenceRows({days:[]},'2026-09-30',''));
-  assert.match(facts.Forecast,/^No monitored overflow found upstream within 60 km, so there is no daily sewage spill risk/);
-  assert.match(facts['Live spill feeds'], /other pollution sources/);
-  assert.match(facts['Algae observation'], /does not mean algae are absent/);
+  assert.match(compareNow({days:[]}), /^No monitored overflow found upstream, so no spills to report\. Other pollution sources may still affect this water\.$/);
+  assert.match(Object.fromEntries(evidenceRows({days:[]},'2026-09-30'))['Algae observation'], /does not mean algae are absent/);
+});
+
+// ------------------------------------------------------------------------------ the comparison
+// Saved's "Compare your spots" and the plan's "Compare these spots" (20 Oct 2026): every cell says
+// something, and where the data is missing it says it is not known, never a blank that reads as low.
+test('the comparison says a day, a live status, advice or access is not known, rather than leave a blank', () => {
+  // A day the forecast does not have: no forecast for it, not low.
+  assert.deepEqual(compareDays(spot, ['2026-09-30', '2026-10-01', '2026-10-02']).days.map(d => [d.level, d.words]),
+    [['low', 'Low risk'], ['very high', 'Very high risk: sewage spills'], ['no forecast', 'No forecast for this day']]);
+  assert.equal(compareDays(spot, ['2026-09-30']).same, false);
+  // Overflows upstream but no live status in the update; none of them reporting; the ones that matter most not reporting.
+  assert.equal(compareNow({...spot, now: {label: 'low'}}), 'Not known: this update has no live status for the 2 overflows upstream.');
+  assert.equal(compareNow({...spot, now: {label: 'low', monitored_upstream: 0, discharging_upstream: 0}}),
+    'Whether any is discharging is not known. None of 2 report live. Not reporting: 2 offline or with no live feed. Missing reports do not mean no spills.');
+  const thin = {...spot, upstream_summary: {overflows: 13}, now: {label: 'low', discharging_upstream: 0, monitored_upstream: 1, monitored_weight: 0.01, upstream_weight: 3,
+    no_feed_upstream: 0, stale_upstream: 12, feed_stale: [{company: 'United Utilities', overflows: 12, records: true}]}};
+  assert.match(compareNow(thin), /^Not known here: the overflows that matter most here do not report live\. 0 discharging\. 1 of 13 report live\. Not reporting: 12 whose records on United Utilities's feed give no update time\. Missing reports do not mean no spills\.$/);
+  assert.equal(compareNow({...spot, now: {label: 'low', monitored_upstream: 2, discharging_upstream: 1}}), '1 of 2 discharging. All 2 report live.');
+  // Today's EA advice: never read, so never said to be clear.
+  const bw = {source: 'designated', classification: {class: 'good', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947'}};
+  assert.equal(compareAdvice(bw), 'The Environment Agency&#39;s advice for today could not be checked. '
+    + '<a href="https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947">The EA\'s page</a> has any advice against bathing there today.');
+  assert.match(compareAdvice({id: 'bw-ukj1403-11947', source: 'designated', classification: {class: 'good'}}), /could not be checked\. <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj1403-11947">/);
+  assert.equal(compareAdvice({source: 'designated'}), 'Not known: this update has no Environment Agency page for this bathing water.');
+  assert.equal(compareAdvice({source: 'openstreetmap'}), 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.');
+  // Access: the desk check's own words and its date, or none.
+  assert.equal(compareAccess({}), 'No access information.');
+  assert.equal(compareAccess({access: {status: 'unconfirmed', checked_at: '2026-10-03', text: 'Check the <b>signs</b> & the bank.', url: 'https://example.org/a"b'}}),
+    'Check the &lt;b&gt;signs&lt;/b&gt; &amp; the bank. Desk check 2026-10-03; current signs not inspected. <a href="https://example.org/a&quot;b">Authority guidance</a>.');
+  assert.equal(compareAccess({access: {status: 'restricted_guidance'}}), 'Swimming here is restricted: check the signs. Not known when it was checked.');
+  assert.equal(compareAccess({access: {status: 'something new', checked_at: '2026-10-03', url: 'http://not-https.example'}}),
+    'Not known whether swimming is allowed at this point. Desk check 2026-10-03; current signs not inspected.');
+  // Every row of every column says something, and nothing calls a spot safe or the best.
+  for (const s of [spot, {days: []}, {days: [], error: 'forecast failed: x'}, {...bw, ...spot, access: {status: 'unconfirmed'}}]) {
+    const rows = compareRows(s, '2026-09-30');
+    assert.deepEqual(rows.map(r => r[0]), ['Right now', 'Environment Agency rating', "Today's EA advice", 'Water samples', 'Algae observation', 'Access', 'Local warnings', 'Model limits']);
+    for (const [label, html] of rows) {
+      assert.ok(typeof html === 'string' && html.trim().length > 10, `${label}: ${html}`);
+      assert.doesNotMatch(html, /\b(best|safest|safe to swim|clean)\b/i, label);
+    }
+  }
 });
 test('comparison excludes removed spots and duplicates and never exceeds three', () => {
   assert.deepEqual(comparisonIds(['a','a','old','b','c','d'],['a','b','c','d'].map(id=>({id}))),['a','b','c']);
@@ -416,4 +459,35 @@ test('right now raised with nothing discharging says the spills are recent', () 
   assert.equal(m.sub, 'Recent sewage spills');
   assert.equal(m.next, 'Low risk tomorrow');   // today is at least right now (11 Oct 2026): "later today" before
   assert.equal(L.dayHeadline(recent, DATES[0]), 'Moderate risk: recent sewage spills');
+});
+
+// ------------------------------------------------------------------------------ the comparison's table
+// compareTable (index.html), run beside levels.js, experience.js, evidence.js and eatoday.js, as in the page.
+test('the comparison has a column a spot, the five days first with the day picked shaded, one cell for a level that does not change, and no blank', () => {
+  const dir = require('node:path').join(__dirname, '../src/dipcast/site/');
+  const ctx = pageContext(['esc', 'tone', 'dateLabel', 'PAGE_ID', 'spotPath', 'ago', 'ageMin', 'issued', 'compareTable'],
+    {ROOT: {pathname: '/'}, DATA: {generated_at: '2026-09-30T06:00:00+01:00'}, fiveDays: () => DATES});
+  for (const f of ['evidence.js', 'eatoday.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
+  const a = {...week(['low', 'high', 'low', 'low', 'low']), id: 'a', name: 'River <A>', now: {label: 'low', monitored_upstream: 2, discharging_upstream: 0}};
+  const b = {...week(['low', 'low', 'low', 'low']), id: 'b', name: 'B'};   // no fifth day
+  const html = vm.runInContext('compareTable', ctx)([a, b, clearRiver], DATES[1], s => `${s.id} away`);
+  // Each row's label is a band across the three columns.
+  assert.deepEqual([...html.matchAll(/<tr class="lab"><th colspan="3" id="[\w-]+"><span>([^<]+)<\/span><\/th><\/tr>/g)].map(m => m[1]),
+    ['Pollution risk, next five days', 'Right now', 'Environment Agency rating', "Today's EA advice", 'Water samples', 'Algae observation', 'Access',
+      'Local warnings', 'Model limits']);
+  // The five days, each cell naming its day; the day picked (tomorrow here) shaded.
+  assert.deepEqual([...html.matchAll(/<tr( class="on" aria-current="true")?><td class="d0" headers="cmp-days cmp-s0"><span class="day">([^<]+)<\/span>/g)].map(m => [m[2], !!m[1]]),
+    [['Today', false], ['Tomorrow', true], ['Fri 2 Oct', false], ['Sat 3 Oct', false], ['Sun 4 Oct', false]]);
+  assert.match(html, /<span class="day">Tomorrow<\/span><span class="hl high">High risk: sewage spills<\/span>/);
+  // B has no fifth day: it says so, in the muted grey, not "Low risk".
+  assert.match(html, /<td headers="cmp-days cmp-s1"><span class="day">Sun 4 Oct<\/span><span class="hl na">No forecast for this day<\/span><\/td><\/tr>/);
+  // The river with nothing upstream: one cell for the five days, in the plain level's words, never "Low risk".
+  assert.equal([...html.matchAll(/rowspan="5"/g)].length, 1);
+  assert.match(html, /<td class="same" rowspan="5" headers="cmp-days cmp-s2"><span class="hl clear">No monitored overflow found upstream<\/span>\. The same on every day\.<\/td>/);
+  assert.doesNotMatch(html, /<td[^>]*>\s*<\/td>/);
+  assert.equal([...html.matchAll(/<td headers="cmp-r\d cmp-s\d">/g)].length, 8 * 3);   // every fact, every spot
+  assert.match(html, />River &lt;A&gt;<\/a><span class="k">a away<\/span>/);
+  assert.match(html, /^<p class="small muted compare-note">Issued [^<]*\. A lower forecast level does not mean safe water: check the signs at the water\.<\/p>/);
+  // The question is which spots to look into further: no column is called the best or the safest.
+  assert.doesNotMatch(html + pageDefs(['compareSection', 'compareTable', 'savedCompare', 'planCompare']), /\b(best|safest|safer)\b/i);
 });
