@@ -2937,8 +2937,8 @@ function hereForecast() {
 }
 
 // ------------------------------------------------------------------------------ plan a swim
-// plan/: the day, where you start and how far you will go, then the spots within reach that day, the
-// ones nothing flags first, nearest first, each saying why it is there (plan.js has the rules). The
+// plan/: the day, where you start and how far you will go, then the spots within reach that day, those
+// at low risk first, then those with no monitored overflow found upstream, nearest first, each saying why it is there (plan.js has the rules). The
 // choices are in the address after the # (planHash), so Back, a reload and a copied link open the same
 // plan, and nothing reaches a server. Your own location is never put there. The places are this site's
 // own file (data/places.json, from OS Open Names), fetched the first time one is typed. Distances are
@@ -2966,6 +2966,9 @@ function planWhy(s, day) {
   // row says why the level is low: what the exposure index measures is whether the sewage gets here.
   // Not where spills right now raised today (levels.js, risk): the row's headline then says "sewage spills
   // right now", and "unlikely to reach here" under it said the opposite (12 Oct 2026).
+  // On a plan for today, a low day whose right now is not known says so, as a saved card does: the
+  // overflows that would show a spill have no current live status (none report, or their feed is stale).
+  if (day === today() && nowUnknown(s) && dayLevel(s, day) === 'low') out.push(`Forecast only: ${nowUnknownWhy(s)}.`);
   if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && !risk(s, x).now && Math.round(x.expected_spilling_overflows || 0) >= 1;
     if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
     if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
@@ -2991,7 +2994,7 @@ function renderPlan() {
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
-    + `<p class="lede">Spots within reach on the day you pick. Those the forecast does not flag come first.</p>`
+    + `<p class="lede">Spots within reach on the day you pick, those at low risk first.</p>`
     + `<div class="plan-row"><label><span class="sr">Day</span><select id="plan-day">${planDates().map(iso => `<option value="${iso}"${iso === PLAN.day ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></label>`
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from: a town or village" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
@@ -3024,8 +3027,11 @@ function drawPlan(fit = false) {
   const better = r.count ? betterDay(r.groups.flat().map(o => o.s), PLAN.day, planDates()) : null;
   sum.innerHTML = !r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
     + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '');
-  const head = [`Nothing flagged ${on}`, `Moderate risk or higher ${on}`, 'No level'];
-  const sub = ['Low risk, or no monitored overflow upstream to forecast.', '', 'No forecast for the day, or out of the forecast\'s reach.'];
+  // A low risk and a plain level are told apart in the headings (20 Oct 2026): one is a forecast that
+  // looked and found the risk low, the other has nothing upstream to forecast from (levels.js, FOUND_NONE).
+  const head = [`Low risk ${on}`, FOUND_NONE, `Moderate risk or higher ${on}`, 'No level'];
+  const sub = ['', 'Nothing upstream for the forecast to work from, so these spots have no forecast level. Other risks apply: algae, wildlife, runoff and bathers.',
+    '', 'No forecast for the day, or out of the forecast\'s reach.'];
   const next = r.nearest ? reachFor(r.nearest.miles) : null;
   box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
       + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
@@ -3033,7 +3039,7 @@ function drawPlan(fit = false) {
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
-  planShare(r.groups[0], on);
+  planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
   // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
   // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
   if (PLAN.from.here) return;
@@ -3042,15 +3048,18 @@ function drawPlan(fit = false) {
   PLAN_BOUNDS = ring ? ring.getBounds() : L.latLngBounds([from, ...r.groups.flat().slice(0, 8).map(o => [o.s.lat, o.s.lon])]);
   if (fit && !PHONE.matches) fitPlan();
 }
-// The plan as a list someone else can open and add (lists.js): the spots nothing flags on its day,
-// nearest first, named for the day. The link holds that name, the day and the spots; never where the
+// The plan as a list someone else can open and add (lists.js): the spots at low risk on its day and
+// those with no monitored overflow found upstream, nearest first, named for the day. The words count
+// each, as the headings tell them apart. The link holds that name, the day and the spots; never where the
 // plan starts from, which may be your own location.
 const PLAN_SHARE_MAX = 20;
 function planShare(open, on) {
-  const pick = open.slice(0, PLAN_SHARE_MAX).map(o => o.s); if (!pick.length) return;
+  const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s); if (!pick.length) return;
   const name = planListName(PLAN.day), n = pick.length, box = document.getElementById('plan-results');
+  const low = top.filter(o => o.level === 'low').length, none = n - low;
+  const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
   box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>`
-    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`} nothing flags ${on}, as a list called “${esc(name)}”, which a friend can add to their own lists. `
+    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list called “${esc(name)}”, which a friend can add to their own lists. `
     + `It holds that name, the day and which spots are in it, nothing else: not where you start from.</p>`
     + `<button type="button" class="btn" id="plan-share">Share this plan</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
   bindShareLink(document.getElementById('plan-share'), document.getElementById('plan-share-msg'),

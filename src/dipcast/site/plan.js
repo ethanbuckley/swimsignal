@@ -1,5 +1,5 @@
-// Plan a swim (the plan/ page): the spots within a distance of where you start, on one day, the
-// ones nothing flags that day first, then the rest, nearest first. The page draws it (index.html,
+// Plan a swim (the plan/ page): the spots within a distance of where you start, on one day, those at
+// low risk that day first, then those with no monitored overflow found upstream, then the rest, nearest first. The page draws it (index.html,
 // renderPlan); the rules are here, where Node can test them.
 //
 // A plain script, as levels.js: globals in the page, exports in Node. It asks for the level rules
@@ -95,25 +95,27 @@ function waterMatches(index, text, n = 4) {
 }
 
 // ------------------------------------------------------------------------------ the spots
-// Which group a spot is in on the day: 0 when nothing flags it (low risk, or a plain level, where no
-// monitored overflow can reach it), 1 at moderate risk or higher (a rating of poor included), 2 with
-// no level (no forecast that day, out of the forecast's reach).
+// Which group a spot is in on the day: 0 at low risk, 1 at a plain level (no monitored overflow found
+// upstream, so nothing to forecast from), 2 at moderate risk or higher (a rating of poor included), 3
+// with no level (no forecast that day, out of the forecast's reach). Until 20 Oct 2026 the first two
+// were one group, "Nothing flagged", which an outside review read as the same answer: a forecast that
+// looked and found the risk low, and one with nothing to look at.
+const PLAN_GROUPS = 4;
 function planGroup(level) {
   const R = planRules();
-  return level === 'low' || R.plainLevel(level) ? 0 : R.rank(level) >= 1 ? 1 : 2;
+  return level === 'low' ? 0 : R.plainLevel(level) ? 1 : R.rank(level) >= 1 ? 2 : 3;
 }
 const kindMatch = (s, kind) => kind === 'all' || (kind === 'designated' ? s.source === 'designated' : s.kind === kind);
-// The plan's spots: those of the kind chosen within its distance, in three groups (planGroup), each
-// nearest first, the second by its level first. milesOf(s) is the spot's distance from the start.
+// The plan's spots: those of the kind chosen within its distance, in four groups (planGroup), each
+// nearest first, the moderate-or-higher one by its level first. milesOf(s) is the spot's distance from the start.
 // With none within reach, the nearest of that kind, so the page can say how far it is.
 function planSpots(spots, p, milesOf) {
   const R = planRules(), reach = p.within || Infinity;
   const all = spots.filter(s => kindMatch(s, p.kind)).map(s => ({ s, miles: milesOf(s), level: R.dayLevel(s, p.day) }));
-  const near = all.filter(o => o.miles <= reach), groups = [[], [], []];
+  const near = all.filter(o => o.miles <= reach), groups = Array.from({ length: PLAN_GROUPS }, () => []);
   for (const o of near) groups[planGroup(o.level)].push(o);
-  groups[0].sort((a, b) => a.miles - b.miles);
-  groups[1].sort((a, b) => R.rank(a.level) - R.rank(b.level) || a.miles - b.miles);
-  groups[2].sort((a, b) => a.miles - b.miles);
+  for (const g of groups) g.sort((a, b) => a.miles - b.miles);
+  groups[2].sort((a, b) => R.rank(a.level) - R.rank(b.level) || a.miles - b.miles);
   const nearest = near.length ? null : all.reduce((a, b) => !a || b.miles < a.miles ? b : a, null);
   return { groups, count: near.length, nearest };
 }
