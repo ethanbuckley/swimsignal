@@ -1269,7 +1269,7 @@ function settleMap() {
   if (PHONE.matches || mapEl.parentElement !== mapWrap || !mapWrap.offsetWidth) return;
   map.invalidateSize();
   if (wideView) { map.setView(wideView[0], wideView[1], { animate: false }); wideView = null; }
-  if (FIT_ALL) { FIT_ALL = false; fitAll(); }
+  if (FIT_ALL && !current) { FIT_ALL = false; fitAll(); }   // not under a spot or point opened before the first fit
 }
 function placeMap() {
   const slot = current && !mapMode() ? document.getElementById('spot-map') : null;   // a spot's page, phone or desktop (20 Oct 2026)
@@ -3692,6 +3692,10 @@ function render(d) {
     + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
     + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
+  // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column
+  // since 20 Oct 2026: the map goes in a tile of its own, so the spot (or a clicked point) is still
+  // shown on it. A phone has its small map of where it is (where, .loc) already.
+  else h += `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
   h += tiles + `</div><div class="col-more">${more}`;
   if (d.contributors.length) h += overflowTile(d, total);
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
