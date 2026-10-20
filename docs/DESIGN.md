@@ -1291,19 +1291,46 @@ gives all four navigation links a single full-width row.
   links to a decision record for today and tomorrow, and the five days as the list's bars (`.week`, read
   out in words). Where the headline already names the later day, the reason is today's spills in the spot
   page's words. On a phone the name goes above, the bars stay beside the headline. An id not in the
-  forecast is named under the rows as not found. Printed: A4, the meta and notes sizes, ten rows on one
-  page (measured on the live data of 5 October 2026).
+  forecast is named under the rows as not found. The issue line carries the issue id and the site's
+  address, and the data credits for the listed spots close the page. Printed: A4, the meta and notes sizes,
+  margins 9 by 11 mm, rows 4 px apart, no site foot, since the issue line says what it said. Nine rows and
+  the credits fit one page; ten rows did before the credits (5 October 2026), and now carry the credits' end
+  to a second page for 13 of 41 lists of ten (live data of 20 October 2026).
 - The link comes from "Make a sites link": under "Share this list" on the Saved page, for the list shown
   (`lists.js`, `sitesHash`), and in a fold on the organisers' page, where several spots are ticked in a box
   that scrolls on its own, in the order they were picked.
 - **The decision record**, `record.html#spot=<id>&day=YYYY-MM-DD` (`record.js`), is up to two A4 pages: first what
   it is and is not, with the live warning-table figures; the spot, the day, the level with the 4 px rule
   the organisers' page uses, and why; every input with its time, its age and its source as a ruled list;
-  the About page's "What it cannot see", word for word; then labelled lines to write on. Printed, the
+  the About page's "What it cannot see", word for word; then labelled lines to write on; then the data
+  credits. Printed, the
   rows are two columns and the limits two columns, at reading size: Ethan chose two pages over one page
   zoomed to 0.8, about 8 pt (6 Oct 2026). The decision lines are kept together on one page. Outside the five days it
   says when the day's forecast first appears and gives no record. Linked from the organisers' page for
   the picked day, from each row of the sites view, and as "Print a decision record" under a spot's day.
+- **For paid pilots** (20 October 2026, `docs/ORGANISER-PIVOT-2026-10.md`, OP2 to OP4; the wording waits for
+  Ethan's approval, then a solicitor's). The record's opening says it is one input to the organisation's own
+  risk assessment, beside lab tests, checks at the water, the EA's advice and the water companies' alerts;
+  names what it does not cover (algae, leptospirosis, farm and road runoff, outfalls no one monitors,
+  physical dangers); says missing data never means low risk; and leaves the decision to the organisation.
+  `&org=<name>` in the address names the organisation in the opening and on the first decision line.
+- **The issue id** (`printed.js`, both pages) is the build's commit and the forecast's issue time in UTC to
+  the minute, `3ed1b5a-20261020T1216Z`: under the record's day and in its printed foot, and in the sites
+  view's issue line. spots.json carries the commit as `commit`; every logged forecast's model version has
+  the same one.
+- **The data credits** (`printed.js`, both pages) are the build's (`data_credits`: `sources`, `companies`),
+  one source a line with its licence and what SwimSignal changed, for the sources the page's spots use:
+  the companies upstream by name (`upstream_summary.companies`), the EA, OS, Open-Meteo and the Met Office
+  where there is rain, Copernicus where there is a model, HydroLAKES where sewage crosses a lake, the EA's
+  flood API where the record shows a gauge or flood alerts, OpenStreetMap with its address written out for
+  an OpenStreetMap spot. Then the licences written out, since a printed link cannot be followed. On screen a
+  list at the meta size; printed, run-on text in two columns at the meta size, line height 1.3, under a
+  run-in "Data credits." (a list's items left the foot of each column short).
+- The record printed: margins 7 by 10 mm, labels 136 px, writing lines 27 px, the decision beside the
+  signature. No `break-after:avoid` on the rows' labels: a label shares its grid row with its text, so the
+  rule forbade every break in the list and left a third of page 1 empty. Measured on all 105 spots, today
+  and tomorrow, on the live data of 20 October 2026: every record on two pages, the fullest with about 66 px
+  to spare (about 107 px before the credits).
 - Neither is in the offline copy; both are in the sitemap, as the organisers' page is.
 
 ## The coverage page (3 October 2026)

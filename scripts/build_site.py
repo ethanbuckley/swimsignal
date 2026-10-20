@@ -37,6 +37,7 @@ from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
     _net,
     _overflows,
+    code_commit,
     forecast_point,
     overflows_geojson,
     reload_caches,
@@ -861,6 +862,46 @@ OSM_CREDIT = ("Swim spot locations from OpenStreetMap, © OpenStreetMap contribu
               '(https://www.openstreetmap.org/copyright): the spots whose source is "openstreetmap".')
 
 
+# Each company's name in the data (config.LIVE_FEEDS) and as its licence credits it, as the terms page names it.
+# Dwr Cymru Welsh Water is not here: SwimSignal reuses none of its data yet, only the EA's annual returns.
+CREDITED_COMPANIES = {
+    "Anglian Water": "Anglian Water Services", "Northumbrian Water": "Northumbrian Water",
+    "Severn Trent Water": "Severn Trent Water", "South West Water": "South West Water",
+    "Southern Water": "Southern Water (© 2026 Southern Water)", "Thames Water": "Thames Water",
+    "United Utilities": "United Utilities", "Wessex Water": "Wessex Water (© 2024 Wessex Water)",
+    "Yorkshire Water": "Yorkshire Water",
+}
+# The credits one source at a time, for the pages that are printed (the decision record and the sites view,
+# docs/ORGANISER-PIVOT-2026-10.md, OP2): each page shows the ones its spots use (`use`), each with its licence
+# and what SwimSignal changed, since CC BY 4.0 s.3(a)(1)(B) and OGL v3 ask a reuser to say so. "{companies}"
+# is the companies upstream of the page's spots, by their CREDITED_COMPANIES names. `use`: "overflows" where a
+# credited company's overflows are upstream, "always", "rain" where the spot has a daily rain forecast, "gauge"
+# where it shows a river level or flood alerts, "model" where any overflow is upstream (the models were trained
+# on ERA5-Land), "lake" where water crosses a lake on its way to the spot, "osm" for a spot from OpenStreetMap.
+CREDIT_SOURCES = [
+    {"use": "overflows", "credit": "Storm overflow status from {companies}, via the National Storm Overflow Hub, and "
+     "overflow identifiers from the Stream ID lookup, via Stream", "licence": "CC BY 4.0",
+     "changed": "SwimSignal combined, matched and modelled them."},
+    {"use": "always", "credit": "Environment Agency data © Environment Agency copyright and/or database right", "licence": "OGL v3.0",
+     "changed": "SwimSignal used it in its forecast."},
+    {"use": "gauge", "credit": "This uses Environment Agency flood and river level data from the real-time data API (Beta)",
+     "licence": "OGL v3.0", "changed": "SwimSignal picks the nearest gauge."},
+    {"use": "always", "credit": "Contains OS data © Crown copyright and database right 2026", "licence": "OGL v3.0",
+     "changed": "SwimSignal traced the rivers on OS Open Rivers."},
+    {"use": "rain", "credit": "Weather data by Open-Meteo.com", "licence": "CC BY 4.0",
+     "changed": "SwimSignal adds up the rain and models it."},
+    {"use": "rain", "credit": "Met Office data © Crown copyright, served by Open-Meteo", "licence": "CC BY-SA 4.0",
+     "changed": "SwimSignal models it; its rainfall figures stay under CC BY-SA 4.0."},
+    {"use": "model", "credit": "Contains modified Copernicus Climate Change Service information 2026 (ERA5-Land). "
+     "Neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains",
+     "licence": "", "changed": "SwimSignal trained its models on it."},
+    {"use": "lake", "credit": "Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature Communications 7: 13603)",
+     "licence": "CC BY 4.0", "changed": "SwimSignal matched the lakes and shortened the times for spill-day flows."},
+    {"use": "osm", "credit": "Swim spot location © OpenStreetMap contributors, openstreetmap.org/copyright", "licence": "ODbL 1.0",
+     "changed": "SwimSignal picked the spot from it."},
+]
+
+
 def data_credits(root: str) -> dict:
     return {
         "attribution": (
@@ -879,9 +920,25 @@ def data_credits(root: str) -> dict:
         "modified": ("Combined, filtered and modelled by SwimSignal. The forecasts, levels and scores are SwimSignal's own "
                      "estimates, not the data providers'. None of the providers endorses SwimSignal."),
         "spot_locations": OSM_CREDIT,
+        "sources": CREDIT_SOURCES,   # one a line, each saying what SwimSignal changed, so the printed pages close with this alone:
+        "endorsement": "None of the providers endorses SwimSignal.",
+        "companies": CREDITED_COMPANIES,
         "licences": LICENCES,
         "full": f"{root}terms.html#data",
     }
+
+
+def attach_companies(results: list[dict], upstream: dict[str, list[dict]]) -> None:
+    """The water companies with overflows upstream of each spot, all of them (upstream holds every
+    contributor, the spot only its first KEEP_CONTRIBUTORS), as upstream_summary.companies, and whether
+    any of their sewage crosses a lake on the way (through_lake: HydroLAKES' residence times). The sites
+    view reads spots-lite.json, which has no contributors, and credits each source by name (data_credits)."""
+    for r in results:
+        if not isinstance(r.get("upstream_summary"), dict):
+            continue
+        ups = upstream.get(r["id"], [])
+        r["upstream_summary"]["companies"] = sorted({str(c["company"]) for c in ups if c.get("company")})
+        r["upstream_summary"]["through_lake"] = any((c.get("lake_distance_km") or 0) > 0 for c in ups)
 
 
 def scored_csv_header(credits: dict, root: str) -> str:
@@ -2334,18 +2391,19 @@ def write_organisers(site: Path, token: str | None = None) -> str:
 # The sites view, sites.html#spots=a,b&name=...: several spots on one page, each with its five days, for a
 # centre, a club or a council to print before a session (sites.js). And the decision record,
 # record.html#spot=<id>&day=YYYY-MM-DD: one A4 page for one spot and one day, to attach to a written
-# go/no-go decision (record.js). Both reuse organisers.js's words, so they load it; neither is in the
-# offline copy, for the organisers' page's reasons, and the sitemap lists both, as it lists that page.
-SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
-RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "record.js")
+# go/no-go decision (record.js). Both reuse organisers.js's words, so they load it, and printed.js gives both
+# their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
+# the sitemap lists both, as it lists that page.
+SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.js")
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "record.js")
 
 
 def write_sites(site: Path, token: str | None = None) -> str:
-    return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "sites.js"), token)
+    return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token)
 
 
 def write_record(site: Path, token: str | None = None) -> str:
-    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "record.js"), token)
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md, T6): every monitored overflow
@@ -2479,6 +2537,7 @@ def build(refresh: bool = True) -> dict:
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
                         **({"area": r.area} if getattr(r, "area", "") else {}),   # the list's groups in A-Z
                         **({"osm_id": r.osm_id} if getattr(r, "osm_id", "") else {}), **f})
+    attach_companies(results, upstream)
     attach_access(results)
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
@@ -2583,7 +2642,7 @@ def build(refresh: bool = True) -> dict:
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
            "lead_skill": lead_skill(), "ecoli_check": ecoli_check(),
            **({"push": push} if push else {}), **({"email": email} if email else {}),
-           "credits": credits, "spots": results}
+           "commit": code_commit(), "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/

@@ -131,11 +131,22 @@ def model_version() -> str:
     and the weather source. Logged with every forecast so live scores can be split
     by version; a change to any of these starts a new row in the table."""
     import hashlib
-    import os
-    import subprocess
 
     def h(p) -> str:
         return hashlib.md5(p.read_bytes()).hexdigest()[:8] if p.exists() else "none"
+
+    from dipcast import __version__
+    return (f"spill={h(MODEL_PATH)};cal={h(config.PROCESSED / 'lead_calibration.json')};"
+            f"ecoli={h(ecoli.MODEL_PATH)};code={__version__}+{code_commit()};rain=open-meteo-forecast")
+
+
+@lru_cache(maxsize=1)
+def code_commit() -> str:
+    """The build's commit, seven characters: GitHub's GITHUB_SHA on a runner, else git, else "nogit".
+    In model_version, so in every forecast logged, and in spots.json as `commit`, which the decision
+    record and the sites view print in their issue id."""
+    import os
+    import subprocess
 
     sha = os.environ.get("GITHUB_SHA", "")[:7]
     if not sha:
@@ -144,9 +155,7 @@ def model_version() -> str:
                                  cwd=config.ROOT, timeout=5).stdout.strip() or "nogit"
         except Exception:  # noqa: BLE001 - a missing git is not an error
             sha = "nogit"
-    from dipcast import __version__
-    return (f"spill={h(MODEL_PATH)};cal={h(config.PROCESSED / 'lead_calibration.json')};"
-            f"ecoli={h(ecoli.MODEL_PATH)};code={__version__}+{sha};rain=open-meteo-forecast")
+    return sha
 
 
 @lru_cache(maxsize=1)
@@ -160,7 +169,7 @@ def _model() -> SpillModel | None:
 def reload_caches() -> None:
     with _LOAD_LOCK:
         _overflows_uncached.cache_clear(); _model.cache_clear(); _lead_calibration.cache_clear(); ecoli.load.cache_clear()
-        model_version.cache_clear(); live_status.clear_cache()
+        model_version.cache_clear(); code_commit.cache_clear(); live_status.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 

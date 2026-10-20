@@ -135,7 +135,7 @@ test('blank decision lines close a record within the five days', () => {
   const h = Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW);
   for (const l of ['Decided by', 'Role', 'Decision (circle one): go / no-go / changed plan', 'Date and time', 'Notes', 'Signature']) assert.ok(h.includes(`<span>${l}</span>`), l);
   assert.ok(h.indexOf('What the forecast cannot see') < h.indexOf('id="r-decide"'));
-  assert.ok(h.includes('Printed from https://swimsignal.co.uk/record.html#spot=bw-uke4100-08901&amp;day=2026-10-05'));
+  assert.ok(h.includes('Printed from https://swimsignal.co.uk/record.html#spot=bw-uke4100-08901&amp;day=2026-10-05, issue id '));
 });
 
 test('outside the five days it says when the forecast first appears, and gives no record', () => {
@@ -180,5 +180,78 @@ test('links to the record: the organisers\' page for the picked day, the sites v
   assert.ok(detail.includes('record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a>'));
   const page = fs.readFileSync(path.join(site, 'record.html'), 'utf8');
   assert.ok(page.includes('@page { size:A4 portrait') && page.includes('<title>Decision record · SwimSignal</title>') && page.includes('class="site-foot"'));
-  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="evidence\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="record\.js"><\/script>/.test(page));
+  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="evidence\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="record\.js"><\/script>/.test(page));
+});
+
+// ------------------------------------------------------------------------------ OP2, OP3, OP4 (docs/ORGANISER-PIVOT-2026-10.md)
+// The credits as scripts/build_site.py writes them (data_credits); tests/test_site_pages.py checks the build's side.
+const LIC = {'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/', 'CC BY-SA 4.0': 'https://creativecommons.org/licenses/by-sa/4.0/',
+  'OGL v3.0': 'https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/', 'ODbL 1.0': 'https://opendatacommons.org/licenses/odbl/1-0/'};
+const src = (use, credit, licence) => ({use, credit, licence, changed: `SwimSignal changed ${use}.`});
+const CREDITS = {modified: 'Combined, filtered and modelled by SwimSignal.', endorsement: 'None of the providers endorses SwimSignal.', full: 'https://swimsignal.co.uk/terms.html#data', licences: LIC,
+  companies: {'Yorkshire Water': 'Yorkshire Water', 'Anglian Water': 'Anglian Water Services'},
+  sources: [src('overflows', 'Storm overflow status from {companies}, via the National Storm Overflow Hub', 'CC BY 4.0'),
+    src('always', 'Environment Agency data © Environment Agency copyright and/or database right', 'OGL v3.0'),
+    src('gauge', 'This uses Environment Agency flood and river level data from the real-time data API (Beta)', 'OGL v3.0'),
+    src('always', 'Contains OS data © Crown copyright and database right 2026', 'OGL v3.0'),
+    src('rain', 'Weather data by Open-Meteo.com', 'CC BY 4.0'), src('rain', 'Met Office data © Crown copyright, served by Open-Meteo', 'CC BY-SA 4.0'),
+    src('model', 'Contains modified Copernicus Climate Change Service information 2026', ''),
+    src('lake', 'Lake residence times from HydroLAKES v1.0', 'CC BY 4.0'),
+    src('osm', 'Swim spot location © OpenStreetMap contributors, openstreetmap.org/copyright', 'ODbL 1.0')]};
+const FULL = {...DATA, commit: '3ed1b5a', credits: CREDITS};
+const credits = h => text(h.split('class="credits-h"')[1] || '');
+
+test('the record credits every source it used, each with its licence and what SwimSignal changed, and no other', () => {
+  const c = credits(Rec.view(ilkley, DAYS[1], FULL, VER, BASE, NOW));
+  for (const t of ['Storm overflow status from Yorkshire Water, via the National Storm Overflow Hub, CC BY 4.0. SwimSignal changed overflows.',
+    'Environment Agency data © Environment Agency copyright and/or database right, OGL v3.0.', 'real-time data API (Beta), OGL v3.0. SwimSignal changed gauge.',
+    'Contains OS data © Crown copyright and database right 2026', 'Weather data by Open-Meteo.com, CC BY 4.0.', 'Met Office data © Crown copyright, served by Open-Meteo, CC BY-SA 4.0.',
+    'Contains modified Copernicus'])
+    assert.ok(c.includes(t), `${t} missing from: ${c}`);
+  assert.ok(!c.includes('Anglian') && !c.includes('HydroLAKES') && !c.includes('OpenStreetMap'));   // not upstream, no lake, not an OSM spot
+  // The licences are written out, since a printed link cannot be followed; ODbL only where OSM is credited.
+  assert.ok(c.includes('Licences: CC BY 4.0, creativecommons.org/licenses/by/4.0; OGL v3.0, nationalarchives.gov.uk/doc/open-government-licence/version/3; CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0.'));
+  assert.ok(c.includes('None of the providers endorses SwimSignal. Full credits: swimsignal.co.uk/terms.html#data.'));
+  // An OpenStreetMap spot carries the OSM line with its address written out; a lake whose sewage crosses it, HydroLAKES;
+  // a spot with no river level or flood alerts shown, no flood API line.
+  const osm = credits(Rec.view({...ilkley, source: 'openstreetmap', river_state: null, flood_alerts: undefined, upstream_summary: {...ilkley.upstream_summary, through_lake: true}}, DAYS[1], FULL, VER, BASE, NOW));
+  assert.ok(osm.includes('Swim spot location © OpenStreetMap contributors, openstreetmap.org/copyright, ODbL 1.0.') && osm.includes('opendatacommons.org/licenses/odbl/1-0'));
+  assert.ok(osm.includes('HydroLAKES') && !osm.includes('real-time data API'));
+  // upstream_summary.companies, every company upstream, wins over the first few contributors.
+  const both = credits(Rec.view({...ilkley, upstream_summary: {...ilkley.upstream_summary, companies: ['Anglian Water', 'Yorkshire Water', 'Dwr Cymru Welsh Water']}}, DAYS[1], FULL, VER, BASE, NOW));
+  assert.ok(both.includes('Storm overflow status from Anglian Water Services and Yorkshire Water, via'));   // Dŵr Cymru: no data reused, so no credit
+  // A file from before the sources were written: its one-line credit.
+  assert.ok(credits(Rec.view(ilkley, DAYS[1], {...DATA, credits: {attribution: 'Old line.', modified: 'Changed.', full: CREDITS.full}}, VER, BASE, NOW)).includes('Old line. Changed. Full credits: swimsignal.co.uk/terms.html#data.'));
+});
+
+test('the issue id is the build and the issue time: the same for every copy of a build, new for the next', () => {
+  const P = require('../src/dipcast/site/printed.js');
+  assert.equal(P.issueId(FULL), '3ed1b5a-20261003T2316Z');   // 00:16 BST is 23:16 UTC the day before
+  const a = Rec.view(ilkley, DAYS[1], FULL, VER, BASE, NOW), b = Rec.view(ilkley, DAYS[1], FULL, VER, BASE, NOW + 3600e3);
+  const ids = h => [...text(h).matchAll(/Issue id ([0-9a-z]+-\d{8}T\d{4}Z)/gi)].map(m => m[1]);
+  assert.deepEqual(ids(a), ['3ed1b5a-20261003T2316Z', '3ed1b5a-20261003T2316Z']);   // at the top and in the printed foot
+  assert.deepEqual(ids(b), ids(a));   // printed an hour later from the same build
+  assert.notDeepEqual(ids(Rec.view(ilkley, DAYS[1], {...FULL, generated_at: '2026-10-04T00:46:10+01:00'}, VER, BASE, NOW)), ids(a));
+  assert.notDeepEqual(ids(Rec.view(ilkley, DAYS[1], {...FULL, commit: 'aaaaaaa'}, VER, BASE, NOW)), ids(a));
+  // Without `commit`, the code part of a spot's model version, which every logged forecast carries.
+  assert.equal(P.issueId({...DATA, spots: [ilkley]}), 'ed7c3ef-20261003T2316Z');
+});
+
+test('the record is one input to the organisation\'s own risk assessment, names what it does not cover, and leaves the decision to them', () => {
+  const h = Rec.view(ilkley, DAYS[1], FULL, VER, BASE, NOW, '', 'Lakeside Adventure Ltd');
+  const t = text(h.split('class="r-spot"')[0]);
+  assert.ok(t.includes("for one spot on one day, prepared for Lakeside Adventure Ltd , to attach to a written decision.") || t.includes('prepared for Lakeside Adventure Ltd, to attach'));
+  assert.ok(t.includes("It is one input to your own risk assessment. Use it beside lab tests, checks at the water, the Environment Agency's advice and the water companies' own spill alerts."));
+  for (const hazard of ['algae', "leptospirosis (Weil's disease)", 'runoff from farms and roads', 'outfalls no one monitors', 'physical dangers'])
+    assert.ok(t.includes(hazard), hazard);
+  assert.ok(t.includes('Missing data never means low risk: treat it as unknown.'));
+  assert.ok(t.includes('Your organisation makes the decision, and the people who sign below give the reasons.'));
+  assert.ok(text(h).includes('Organisation: Lakeside Adventure Ltd'));   // on the decision lines too
+  assert.ok(!text(Rec.view(ilkley, DAYS[1], FULL, VER, BASE, NOW)).includes('prepared for'));
+  // The organisation's name is the reader's own text: escaped, and kept in the address.
+  assert.ok(Rec.view(ilkley, DAYS[1], FULL, VER, BASE, NOW, '', '<b>x</b>').includes('&lt;b&gt;x&lt;/b&gt;'));
+  assert.deepEqual(Rec.fromHash(Rec.toHash('a', DAYS[1], 'Club & co')), {spot: 'a', day: DAYS[1], org: 'Club & co'});
+  // Never certified or verified, in any state.
+  for (const [s, d] of [[ilkley, DAYS[0]], [ilkley, DAYS[1]], [lake, DAYS[0]], [null, DAYS[0]]])
+    assert.doesNotMatch(text(Rec.view(s, d, FULL, VER, BASE, NOW, 'x', 'Org')), /\b(certif\w*|verified)\b/i);
 });

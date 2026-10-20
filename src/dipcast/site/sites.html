@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The sites view: a prose page, with the shared head, header and foot, written by scripts/build_site.py
-     (write_sites) beside the app, whose levels.js, lists.js, organisers.js and spots.json it reads.
+     (write_sites) beside the app, whose levels.js, lists.js, organisers.js and spots.json it reads, with printed.js for the issue id and the data credits.
      sites.js fills #sites from the spots after the # (docs/DESIGN.md, "The sites view and the decision record"). -->
 <title>Sites view · SwimSignal</title>
 <meta name="description" content="Several swim spots on one page: each spot's pollution risk forecast for the next five days, to bookmark and print before a session.">
@@ -36,30 +36,41 @@
   .week.rain .wk { justify-content:flex-end; height:40px; }
   .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
   .s-missing { font-size:var(--fs-note); margin:12px 0 0; }
+  /* The data credits (printed.js): one source a line, at the meta size. */
+  main.doc .credits-h { font-size:var(--fs-note); margin:24px 0 4px; }
+  main.doc .credits { font-size:var(--fs-meta); color:var(--muted); }
+  main.doc .credits ul { margin:0 0 6px; }
+  main.doc .credits li { margin:2px 0; }
+  .credits-run { display:none; }
   /* A phone: the place over the headline, the five days beside the headline. */
   @media (max-width: 600px) {
     .site { grid-template-columns:minmax(0, 1fr) 66px; }
     .s-place { grid-column:1 / -1; }
   }
   .print-only { display:none; }
-  /* Printed: ten rows to an A4 page, no controls. Each row on one line of three columns, the meta sizes. */
-  @page { size:A4 portrait; margin:12mm; }
+  /* Printed: nine rows and the credits to an A4 page, no controls. Each row on one line of three columns, the meta sizes. */
+  @page { size:A4 portrait; margin:9mm 11mm; }
   @media print {
     body { background:var(--card); }
-    .top nav, .screen-only, .site-foot p + p, noscript, p.lead { display:none; }
+    .top nav, .screen-only, .site-foot, noscript, p.lead { display:none; }   /* the issue line says what the foot's line says, as on the record */
     .top { padding:0 0 6px; background:var(--card); color:var(--ink); }
     .top .brand { color:var(--ink); }
     main.doc { max-width:none; padding:8px 0 0; }
     main.doc h1 { font-size:var(--fs-head); margin:0 0 4px; }
     .print-only { display:block; }
-    .s-issued, .s-foot { font-size:var(--fs-meta); }
-    .site { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; padding:6px 0; break-inside:avoid; }
+    .s-issued { font-size:var(--fs-meta); }
+    .site { grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; padding:4px 0; break-inside:avoid; }
     .s-place { grid-column:auto; }
     .s-name { font-size:var(--fs-note); }
     main.doc .s-why { font-size:var(--fs-meta); }
     .wk i { height:16px; } .week.rain .wk { height:32px; }
+    /* The credits run on as text in two columns, set close: a list's items left the foot of each column short (20 Oct 2026). */
+    main.doc .credits { columns:2; column-gap:24px; margin:0 0 4px; line-height:1.3; }
+    main.doc .credits ul, main.doc .credits li { display:inline; margin:0; padding:0; }
+    main.doc .credits p { margin:2px 0 0; }
+    main.doc h3.credits-h { display:none; }
+    .credits-run { display:inline; font-weight:600; color:var(--ink); }
     a { color:var(--ink); text-decoration:none; }
-    .site-foot { padding-bottom:0; }
   }
 </style>
 </head><body>
@@ -76,5 +87,6 @@
 <script src="levels.js"></script>
 <script src="lists.js"></script>
 <script src="organisers.js"></script>
+<script src="printed.js"></script>
 <script src="sites.js"></script>
 </body></html>

@@ -1,22 +1,26 @@
 // The decision record (record.html): one printable A4 page for one spot and one day, for an organiser or
 // a leader to attach to a written go/no-go decision (docs/MARKETS-2026-10.md, B3). In order:
-//  1. what it is and is not, first: a forecast, not a water test, which never says the water is safe or
-//     clean, with the live accuracy figures from data/verification.json (the warning table at the High
-//     risk line: the share of spills warned of, and the share of warnings followed by a spill);
+//  1. what it is and is not, first: one input to the organisation's own risk assessment, beside lab tests,
+//     checks at the water, the EA's advice and the water companies' alerts; a forecast, not a water test,
+//     which never says the water is safe or clean, with the live accuracy figures from data/verification.json
+//     (the warning table at the High risk line: the share of spills warned of, and the share of warnings
+//     followed by a spill); the hazards it does not cover, by name; no data is never low; the organisation
+//     decides (docs/ORGANISER-PIVOT-2026-10.md, OP4);
 //  2. the spot, the day, the level and why: the headline, the overflows that matter most with how far
 //     and how long away, what was discharging, the rain;
 //  3. every input with its time, its age and its source;
 //  4. what the forecast cannot see, in the About page's words (CANNOT_SEE; a test checks them);
-//  5. blank lines for who decided what, and when.
+//  5. blank lines for who decided what, and when;
+//  6. the credits for the data it used, and the issue id at the top and the foot (printed.js, OP2 and OP3).
 // Outside the five days it says when the forecast for the day first appears, and gives no record.
 // The wording is for Ethan's approval, and a solicitor's read before any paid use (open question 4).
 //
 // The level and its words are levels.js's, the spills' clause and how sure organisers.js's (the spot
 // page's words), the ages and the overflow counts evidence.js's: the record never disagrees with the
 // spot's page. Nothing is stored or sent: the spot and the day are after the # in the address,
-// record.html#spot=<id>&day=YYYY-MM-DD.
+// record.html#spot=<id>&day=YYYY-MM-DD, and &org=<name> for the organisation it is prepared for.
 //
-// A plain script, as organisers.js: the page loads levels.js, evidence.js and organisers.js first, and
+// A plain script, as organisers.js: the page loads levels.js, evidence.js, organisers.js and printed.js first, and
 // this file finds their names there; Node requires them for the tests (tests/site_record.test.cjs).
 const Record = (() => {
   const node = typeof module === 'object' && module.exports;
@@ -24,6 +28,7 @@ const Record = (() => {
     : { ORDER, COVER, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, nowBecause, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice, walesShare };   // levels.js's globals
   const E = node ? require('./evidence.js') : { evidenceAge, evidenceOverflows, evidenceSample };
   const O = node ? require('./organisers.js') : Organisers;
+  const P = node ? require('./printed.js') : Printed;
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
   const TZ = 'Europe/London';
@@ -94,11 +99,17 @@ const Record = (() => {
     if (W.n_days < 14) t += ` That is too few days to judge across different weather.`;
     return t;
   }
-  function opening(ver, base) {
-    return '<p class="r-first">This page records SwimSignal\'s pollution risk forecast for one spot on one day, to attach to a written decision. '
+  // The wording is for Ethan's approval, then a solicitor's (OP4). The hazards it names are the pilot
+  // agreement's out-of-scope list; "no data is never low" is the rule every page keeps (levels.js, COVER).
+  function opening(ver, base, org = '') {
+    return `<p class="r-first">This page records SwimSignal's pollution risk forecast for one spot on one day${org ? `, prepared for <b>${esc(org)}</b>` : ''}, to attach to a written decision. `
+      + 'It is one input to your own risk assessment. Use it beside lab tests, checks at the water, the Environment Agency\'s advice and the water companies\' own spill alerts. '
       + 'It is a forecast, not a water test: nothing was sampled at the water for it. It never says the water is safe or clean, and no level means that. '
-      + `${accuracy(ver, base)} The decision, and the reasons for it, are those of the people who sign below.</p>`
-      + '<p class="r-note">This page shows the latest forecast, and changes when the forecast does. Print it, or save it as a PDF, when you decide. '
+      + `${accuracy(ver, base)}</p>`
+      + '<p class="r-first">It does not cover algae, leptospirosis (Weil\'s disease), runoff from farms and roads, outfalls no one monitors, '
+      + 'or physical dangers. Missing data never means low risk: treat it as unknown. '
+      + 'Your organisation makes the decision, and the people who sign below give the reasons.</p>'
+      + '<p class="r-note"><span class="screen-only">This page shows the latest forecast, and changes when the forecast does. Print it, or save it as a PDF, when you decide. </span>'
       + 'The <a href="terms.html#responsibility">terms of use</a> say what SwimSignal takes responsibility for.</p>';
   }
 
@@ -195,13 +206,14 @@ const Record = (() => {
   }
 
   // ------------------------------------------------------------------ the page
-  const DECIDE = '<h2 id="r-decide">The decision</h2><div class="r-lines">'
-    + ['Decided by', 'Role', 'Decision (circle one): go / no-go / changed plan', 'Date and time'].map(l => `<p class="r-line"><span>${l}</span></p>`).join('')
-    + '<p class="r-line wide"><span>Notes</span></p><p class="r-line wide"></p><p class="r-line wide"><span>Signature</span></p></div>';
+  const decide = org => '<h2 id="r-decide">The decision</h2><div class="r-lines">'
+    + `<p class="r-line"><span>Organisation${org ? `: <b>${esc(org)}</b>` : ''}</span></p>`
+    + ['Decided by', 'Role', 'Date and time', 'Decision (circle one): go / no-go / changed plan', 'Signature'].map(l => `<p class="r-line${l === 'Signature' ? ' sign' : ''}"><span>${l}</span></p>`).join('')
+    + '<p class="r-line wide"><span>Notes</span></p><p class="r-line wide"></p></div>';
   // The whole record for a spot (s, or null when the id is not in the forecast) and a day.
-  function view(s, iso, data, ver, base, now = Date.now(), id = '') {
+  function view(s, iso, data, ver, base, now = Date.now(), id = '', org = '') {
     R.setToday(String(data.generated_at).slice(0, 10));
-    const first = opening(ver, base);
+    const first = opening(ver, base, org);
     if (!s) return first + `<p class="notice">${id ? `No spot with the id <b>${esc(id)}</b> is in this forecast: it may have been renamed or removed.` : 'Choose a spot.'}</p>`;
     iso = iso && ISO.test(iso) ? iso : R.today();
     const loc = s.location || {};
@@ -211,19 +223,25 @@ const Record = (() => {
     const w = O.when(s, iso);
     if (w.state === 'past') return h + '<p>That day has passed. This page shows only the latest forecast, which no longer covers it. Print the record, or save it as a PDF, on the day of the decision.</p>';
     if (w.state === 'later') return h + `<p>The forecast for ${esc(longDate(iso))} first appears on <b>${esc(longDate(w.from))}</b>, as the last of its five days, and is updated several times a day after that. Make the record then, as close to the decision as you can.</p>`;
+    const issue = P.issueId(data);
+    h += `<p class="r-meta">Issue id <b>${esc(issue)}</b>: the build and the forecast's issue time in UTC, to match this copy to SwimSignal's forecast log.</p>`;
     const m = (now - Date.parse(data.generated_at)) / 60000;
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
     return h + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
       + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`
-      + DECIDE
+      + decide(org)
+      + P.credits(data, [s], base, gauge(s) ? ['gauge'] : [])
       + '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this record</button></p>'
-      + `<p class="print-only r-foot">Printed from ${esc(base)}record.html#spot=${esc(encodeURIComponent(s.id))}&amp;day=${iso}, ${esc(at(now))}.</p>`;
+      + `<p class="print-only r-foot">Printed from ${esc(base)}record.html${esc(toHash(s.id, iso))}, issue id ${esc(issue)}.</p>`;   // when: "Ages are counted from
   }
-  // The address after the #: spot=<id>&day=<yyyy-mm-dd>.
+  // Whether the record shows a river level or the flood alerts, the EA's real-time flood API (inputs).
+  const gauge = s => !!(s.river_state && !nil(s.river_state.level_m) && s.river_state.observed_at) || Array.isArray(s.flood_alerts);
+  // The address after the #: spot=<id>&day=<yyyy-mm-dd>, and org=<name> where one is given (at most 80 characters).
   const fromHash = h => { const p = new URLSearchParams(String(h || '').replace(/^#/, ''));
-    const day = p.get('day'); return { spot: p.get('spot') || null, day: day && ISO.test(day) ? day : null }; };
-  const toHash = (id, iso) => { const p = new URLSearchParams(); if (id) p.set('spot', id); if (iso) p.set('day', iso); const q = p.toString(); return q ? '#' + q : ''; };
+    const day = p.get('day'), org = (p.get('org') || '').trim().slice(0, 80);
+    return { spot: p.get('spot') || null, day: day && ISO.test(day) ? day : null, ...(org ? { org } : {}) }; };
+  const toHash = (id, iso, org) => { const p = new URLSearchParams(); if (id) p.set('spot', id); if (iso) p.set('day', iso); if (org) p.set('org', org); const q = p.toString(); return q ? '#' + q : ''; };
 
   async function start() {
     const sel = document.getElementById('spot'), date = document.getElementById('day'), out = document.getElementById('record');
@@ -243,10 +261,10 @@ const Record = (() => {
       const st = fromHash(location.hash), s = st.spot ? spots.find(x => x.id === st.spot) || null : null, iso = st.day || R.today();
       sel.value = s ? s.id : ''; date.value = iso;
       document.title = s ? `${s.name}, ${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: decision record · SwimSignal` : 'Decision record · SwimSignal';
-      out.innerHTML = view(s, iso, data, ver, base, Date.now(), st.spot || '');
+      out.innerHTML = view(s, iso, data, ver, base, Date.now(), st.spot || '', st.org || '');
       const pr = document.getElementById('print'); if (pr) pr.addEventListener('click', () => window.print());
     };
-    const go = () => { const addr = location.pathname + location.search + toHash(sel.value || null, ISO.test(date.value) ? date.value : null);
+    const go = () => { const addr = location.pathname + location.search + toHash(sel.value || null, ISO.test(date.value) ? date.value : null, fromHash(location.hash).org);
       if (addr !== location.pathname + location.search + location.hash) { history.replaceState(null, '', addr); draw(); } };
     sel.addEventListener('change', go); date.addEventListener('change', go);
     document.getElementById('pick').addEventListener('submit', e => { e.preventDefault(); go(); });
@@ -254,7 +272,7 @@ const Record = (() => {
     draw();
   }
 
-  return { view, opening, accuracy, levelBlock, inputs, topOverflows, fromHash, toHash, start, CANNOT_SEE, cannotSee };
+  return { view, opening, accuracy, levelBlock, inputs, topOverflows, fromHash, toHash, gauge, start, CANNOT_SEE, cannotSee };
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Record;

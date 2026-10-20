@@ -325,6 +325,45 @@ def test_the_committed_ratings_cover_every_inland_bathing_water():
     assert "const CLASS_LEVEL = { excellent: 'low', good: 'low', sufficient: 'moderate', poor: 'high' };" in rules
 
 
+def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_changed():
+    # docs/ORGANISER-PIVOT-2026-10.md, OP2: the decision record and the sites view print the credits for the
+    # sources their spots use (printed.js), from data_credits' `sources`, so the words live in one place.
+    from dipcast import config
+    bs = _build_site()
+    c = bs.data_credits("https://example.org/")
+    assert set(c["companies"]) == set(config.LIVE_FEEDS)   # every feed SwimSignal reads, and no Dwr Cymru
+    for name, credited in c["companies"].items():
+        assert credited.split(" (")[0] in c["attribution"], name
+    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm"}
+    for x in c["sources"]:
+        assert x["use"] in uses and x["changed"].startswith("SwimSignal ") and x["changed"].endswith(".")
+        assert not x["licence"] or x["licence"] in c["licences"]
+    said = " ".join(x["credit"] for x in c["sources"])
+    for must in ("Weather data by Open-Meteo.com", "Met Office", "{companies}", "via the National Storm Overflow Hub",
+                 "Environment Agency data © Environment Agency copyright and/or database right",
+                 "This uses Environment Agency flood and river level data from the real-time data API (Beta)",
+                 "Contains OS data © Crown copyright and database right 2026",
+                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES"):
+        assert must in said, must
+    lic = {x["credit"].split(",")[0]: x["licence"] for x in c["sources"]}
+    assert lic["Weather data by Open-Meteo.com"] == "CC BY 4.0" and lic["Met Office data © Crown copyright"] == "CC BY-SA 4.0"
+    # The id's commit is the one in every logged forecast's version, and spots.json carries it.
+    from dipcast.model.forecast import code_commit, model_version
+    assert f"+{code_commit()};" in model_version()
+    assert '"commit": code_commit(),' in (ROOT / "scripts" / "build_site.py").read_text()
+
+
+def test_each_spot_names_every_company_upstream_and_whether_its_sewage_crosses_a_lake():
+    bs = _build_site()
+    results = [{"id": "a", "upstream_summary": {"overflows": 3}}, {"id": "b", "upstream_summary": {"overflows": 0}}, {"id": "c", "error": "x"}]
+    upstream = {"a": [{"company": "Thames Water", "lake_distance_km": 0}, {"company": "Anglian Water", "lake_distance_km": 1.2},
+                      {"company": "Thames Water"}], "b": []}
+    bs.attach_companies(results, upstream)
+    assert results[0]["upstream_summary"] == {"overflows": 3, "companies": ["Anglian Water", "Thames Water"], "through_lake": True}
+    assert results[1]["upstream_summary"] == {"overflows": 0, "companies": [], "through_lake": False}
+    assert "upstream_summary" not in results[2]
+
+
 def test_the_credits_travel_with_the_data_and_the_terms_link_every_licence(tmp_path):
     # CC BY 4.0 s.3(a) and s.4 (the water companies' feeds) and OGL v3 (EA, OS): a republished
     # data file must carry its credits, and the page they point to must link each licence.

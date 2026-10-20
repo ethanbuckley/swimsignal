@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The decision record: a prose page, with the shared head, header and foot, written by scripts/build_site.py
      (write_record) beside the app, whose levels.js, evidence.js, organisers.js, spots.json and
-     verification.json it reads. record.js fills #record from the spot and the day after the #.
+     verification.json it reads, with printed.js for the issue id and the data credits. record.js fills #record from the spot and the day after the #.
      Wording: for Ethan's approval, and a solicitor's read before any paid use (docs/MARKETS-2026-10.md, question 4). -->
 <title>Decision record · SwimSignal</title>
 <meta name="description" content="A printable record of the pollution risk forecast for one swim spot and one day, with each input's age and source, to attach to a written go or no-go decision.">
@@ -36,11 +36,16 @@
   .r-lines { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 24px; }
   main.doc .r-line { margin:0; min-height:44px; display:flex; align-items:flex-end; padding-bottom:2px; border-bottom:1px solid var(--ink); font-size:var(--fs-meta); color:var(--muted); }
   .r-line.wide { grid-column:1 / -1; }
-  @media (max-width: 540px) { .r-lines { grid-template-columns:minmax(0, 1fr); } }
+  @media (max-width: 540px) { .r-lines { grid-template-columns:minmax(0, 1fr); } .r-line.sign { order:1; } }   /* one column: the signature last */
+  /* The data credits (printed.js): one source a line, at the meta size. */
+  main.doc .credits { font-size:var(--fs-meta); color:var(--muted); }
+  main.doc .credits ul { margin:0 0 6px; }
+  main.doc .credits li { margin:2px 0; }
+  .credits-run { display:none; }
   .print-only { display:none; }
   /* Printed: up to two A4 pages at reading size, no controls. Ethan chose two pages over one page
      shrunk to about 8 pt (6 Oct 2026). The decision lines stay together on one page. */
-  @page { size:A4 portrait; margin:9mm 12mm; }
+  @page { size:A4 portrait; margin:7mm 10mm; }
   @media print {
     body { background:var(--card); font-size:var(--fs-note); line-height:1.35; }
     .top nav, .pick, .screen-only, .site-foot, noscript { display:none; }   /* the opening says what the foot's line says */
@@ -59,7 +64,7 @@
     dl.fields dt { padding-top:2px; }
     dl.fields dd { font-size:var(--fs-note); padding-bottom:2px; }
     /* The rows: what on the left, the rest beside it. */
-    dl.fields { display:grid; grid-template-columns:150px minmax(0, 1fr); border-top:1px solid var(--line); }
+    dl.fields { display:grid; grid-template-columns:136px minmax(0, 1fr); border-top:1px solid var(--line); }
     dl.fields dt, dl.fields dd { border-bottom:1px solid var(--line); padding:2px 0; margin:0; }
     dl.fields dt { padding-right:8px; }
     main.doc ul.r-ovs { margin:0; padding-left:16px; }
@@ -68,11 +73,18 @@
     code { font-size:var(--fs-meta); overflow-wrap:anywhere; }
     main.doc ul.r-cannot { columns:2; column-gap:24px; margin-top:2px; }
     main.doc ul.r-cannot li { break-inside:avoid; margin:0 0 2px; }
+    /* The credits run on as text in two columns, set close: a list's items left the foot of each column short (20 Oct 2026). */
+    main.doc .credits { columns:2; column-gap:24px; margin:0 0 4px; line-height:1.3; }
+    main.doc .credits ul, main.doc .credits li { display:inline; margin:0; padding:0; }
+    main.doc .credits p { margin:2px 0 0; }
+    main.doc h3.credits-h { display:none; }
+    .credits-run { display:inline; font-weight:600; color:var(--ink); }
     main.doc .r-spot { margin-top:8px; }
-    main.doc .r-line { min-height:30px; }
+    main.doc .r-line { min-height:27px; }
     #r-decide { break-after:avoid; }
     .r-lines { break-inside:avoid; }
-    dl.fields dt { break-after:avoid; }
+    /* No break-after:avoid on the rows' labels: a label shares its grid row with its text, so it forbade
+       every break in the list, which then left a third of page 1 empty (20 Oct 2026). */
     .print-only { display:block; }
     a { color:var(--ink); text-decoration:none; }
   }
@@ -96,5 +108,6 @@
 <script src="levels.js"></script>
 <script src="evidence.js"></script>
 <script src="organisers.js"></script>
+<script src="printed.js"></script>
 <script src="record.js"></script>
 </body></html>
