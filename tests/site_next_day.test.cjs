@@ -67,7 +67,7 @@ const page = (nowMs, spots) => {
   const ctx = vm.createContext({Date: FixedDate, navigator: {onLine: true}});
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
   vm.runInContext(`let DATA = ${JSON.stringify({generated_at: BUILT, spots})}, VIEW = {day: null};\n`
-    + pageDefs(['esc', 'tone', 'dateLabel', 'setDays', 'fiveDays', 'nextDay', 'yesterdayLine', 'bestDayNote', 'lowAnswer', 'answerLines',
+    + pageDefs(['esc', 'tone', 'dateLabel', 'setDays', 'fiveDays', 'nextDay', 'yesterdayLine', 'mostLine', 'lowAnswer', 'answerLines',
       'inBand', 'levelPlace', 'BAND_FROM', 'SPILL_EDGES', 'bandPlace', 'spillWord', 'bandSaid', 'dayRows', 'STALE_MIN', 'ageMin', 'ago', 'issued', 'freshness']), ctx);
   for (const f of ['experience.js', 'since.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
   vm.runInContext('setDays()', ctx);
@@ -94,7 +94,7 @@ test('at 00:30 the day after the build, a spot\'s second row is Today, and one l
   // Sunday, the weekend's better day, is tomorrow; on the build's days it would read "Sunday", and Saturday "Tomorrow".
   assert.equal(text(run('answerLines()')).replace(/ · Show$/, ''), 'Tomorrow: 2 of 2 spots at low risk');
   run('VIEW.day = "2026-10-17"');
-  assert.match(text(run('answerLines()')), /^Today: 1 of 2 spots at low risk · Show Lowest pollution risk this week: tomorrow · Show$/);
+  assert.match(text(run('answerLines()')), /^Today: 1 of 2 spots at low risk · Show Tomorrow ?: 2 of 2, the most this week · Show$/);
   assert.match(run('answerLines()'), /<p class="low-answer">.*<span class="pick" hidden>/);   // the day shown: its own Show is hidden
   assert.equal(run('dayWord("2026-10-18")'), 'tomorrow');
   // Since you last looked: a look at 23:50 on Friday was yesterday's, not "today".

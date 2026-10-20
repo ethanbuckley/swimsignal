@@ -148,7 +148,7 @@ test('the answer line follows the picked day, and keeps the weekend rule with no
                  spot(['high', 'high', 'high', 'low', 'high']), {days: [], upstream_summary: {overflows: 0}}];
   const ctx = vm.createContext({});
   vm.runInContext(fs.readFileSync(dir + 'levels.js', 'utf8') + `\nsetToday("${fri}");`, ctx);
-  vm.runInContext(`let VIEW = {day: null}; const DATA = {generated_at: '2026-10-16T09:12:00+01:00', spots: ${JSON.stringify(spots)}};\n` + defs(['esc', 'dateLabel', 'fiveDays', 'bestDayNote', 'lowAnswer', 'answerLines']), ctx);
+  vm.runInContext(`let VIEW = {day: null}; const DATA = {generated_at: '2026-10-16T09:12:00+01:00', spots: ${JSON.stringify(spots)}};\n` + defs(['esc', 'dateLabel', 'fiveDays', 'mostLine', 'lowAnswer', 'answerLines']), ctx);
   const line = day => { vm.runInContext(`VIEW.day = ${JSON.stringify(day)}`, ctx);
     return vm.runInContext('answerLines()', ctx).match(/<p class="low-answer">(.*?)<span class="pick"/)[1].replace(/<[^>]+>/g, ''); };
   assert.equal(line(null), 'Tomorrow: 1 of 4 spots at low risk');   // the weekend's better day: Saturday and Sunday tie, so the earlier
@@ -156,9 +156,12 @@ test('the answer line follows the picked day, and keeps the weekend rule with no
   assert.equal(line('2026-10-20'), 'Tuesday: none of 4 spots at low risk');
   assert.equal(line(fri), 'Today: 2 of 4 spots at low risk');
   assert.equal(line('2026-10-18'), 'Sunday: 1 of 4 spots at low risk');
-  // A picked day worse than the week's best keeps the best-day line under it.
+  // A picked day worse than the week's best keeps the best-day line under it, in the answer's form.
   vm.runInContext('VIEW.day = "2026-10-20"', ctx);
-  assert.match(vm.runInContext('answerLines()', ctx), /Lowest pollution risk this week: <b>Monday<\/b>/);
+  assert.match(vm.runInContext('answerLines()', ctx), /<p class="planner-note best-day"><b>Monday<\/b>: 3 of 4, the most this week<span class="pick"> · <button[^>]* data-pick-day="2026-10-19"/);
+  // The week's best day itself: no second line.
+  vm.runInContext('VIEW.day = "2026-10-19"', ctx);
+  assert.doesNotMatch(vm.runInContext('answerLines()', ctx), /best-day/);
   // The rule itself (levels.js), and a picked day outside the five read as none picked.
   const L = require('../src/dipcast/site/levels.js');
   L.setToday(fri);

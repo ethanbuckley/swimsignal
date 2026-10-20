@@ -186,6 +186,12 @@ those sizes; they were taken off to keep the rule simple.)
   so there is no "best": "This weekend: 64 spots at low risk on Saturday." Equal days are said
   together. Nothing is added on a Sunday, when the weekend is today and the list shows it, or when
   the week's best day is itself a weekend day, which the line then names once.
+- The list's two opening lines (20 October 2026, Ethan's pick, option B): the answer names the
+  weekend's better day while the five days reach one, "Saturday: 19 of 105 spots at low risk · Show".
+  When another of the five days has more spots at low risk, the line under it says so in the same
+  form, the day in bold: "Today: 43 of 105, the most this week · Show". Until then the second line was
+  "Lowest pollution risk this week: today", with no count, and read as contradicting the first, which
+  never says it is the weekend's day. The Saved page keeps its own best-day line, above.
 - One caveat per view, in the place it is read: the intro says "Forecasts, not water tests" once;
   the hero's last line says to check the signs at the water. The rest of the explanation lives
   under "About these forecasts" and on the About and Accuracy pages.

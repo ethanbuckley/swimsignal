@@ -2039,27 +2039,33 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
   return `<p class="flow">${f.map(x => flowSentence(x, true)).join(' ')} A separate hazard, not part of the pollution level.</p>`; };
 
 // "Lowest pollution risk this week": the day with the most low spots (levels.js, bestDay), a tap
-// away, as a phrase. The list puts it after its caveat, and leaves it out when no spot is low on any
-// day, since without the count "lowest" would claim more than it means; the Saved page gives it a
-// line of its own, with how many of your spots are low. While the five days reach a weekend, how it
-// looks comes first (levels.js, weekendWords), so the Show button stays last, beside its day. The day
-// is in words, as in a sentence ("tomorrow", "Friday"); the button's label keeps the picker's name.
-function bestDayNote(spots, yours = false, weekend = true) {
-  const dates = fiveDays(), b = bestDay(spots, dates), wk = weekend ? weekendWords(spots, dates, yours) : '';
+// away, as a phrase, on the Saved page, with how many of your spots are low. While the five days
+// reach a weekend, how it looks comes first (levels.js, weekendWords), so the Show button stays last,
+// beside its day. The day is in words, as in a sentence ("tomorrow", "Friday"); the button's label
+// keeps the picker's name. The list says the week's best day in its answer's form instead (mostLine).
+function bestDayNote(spots, yours = false) {
+  const dates = fiveDays(), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
   return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
 }
-// The list's answer line (levels.js, lowAnswerDay): "Saturday: 64 of 105 spots at low risk", with the
-// same Show button as the best-day line. That line then follows only when the week's best day is
-// another day with more spots at low risk, and without the weekend's words, which the answer says.
-// With a day picked the answer is that day's, and setMapDay redraws both lines (answerLines).
+// The list's second line (levels.js, mostWords): the week's best day in the answer's form, "Today: 43
+// of 105, the most this week", the day in bold and a Show button. Empty when no spot is low on any day.
+function mostLine(spots) {
+  const b = bestDay(spots, fiveDays()); if (!b || !b.low) return '';
+  return mostWords({ ...b, n: spots.length }).replace(/^([^:]+)/, '<b>$1</b>')
+    + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
+}
+// The list's answer line (levels.js, lowAnswerDay): "Saturday: 64 of 105 spots at low risk", with a
+// Show button. The week's best day follows it (mostLine) only when that is another day with more
+// spots at low risk. With a day picked the answer is that day's, and setMapDay redraws both lines
+// (answerLines).
 function lowAnswer(spots) {
   const dates = fiveDays(), a = lowAnswerDay(spots, dates, VIEW.day);
-  if (!a) return { html: '', note: bestDayNote(spots, false, false) };
+  if (!a) return { html: '', note: mostLine(spots) };
   const w = bestDay(spots, dates), words = lowAnswerWords(a).replace(/: (\S+ of \d+)/, ': <span class="n">$1</span>');
   return { html: `<p class="low-answer">${words}<span class="pick"${VIEW.day === a.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${a.date}" aria-label="Show ${dateLabel(a.date)}">Show</button></span></p>`,
-           note: w && w.date !== a.date && w.low > a.low ? bestDayNote(spots, false, false) : '' };
+           note: w && w.date !== a.date && w.low > a.low ? mostLine(spots) : '' };
 }
 const answerLines = () => { const a = lowAnswer(DATA.spots); return a.html + (a.note ? `<p class="planner-note best-day">${a.note}</p>` : ''); };
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.

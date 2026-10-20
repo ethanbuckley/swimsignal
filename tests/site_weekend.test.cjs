@@ -154,6 +154,10 @@ test("the list's answer line names the weekend's better day while the week reach
     const a = L.lowAnswerDay(spots, dates);
     assert.equal(a.date, '2026-10-10');   // Saturday, though Monday has more
     assert.equal(L.lowAnswerWords(a), 'Saturday: 2 of 4 spots at low risk');   // every listed spot, as the lede
+    // The line under it: the week's best day in the same form, counted against the same spots (Ethan, option B).
+    const w = L.bestDay(spots, dates);
+    assert.equal(w.date, '2026-10-12');
+    assert.equal(L.mostWords({ ...w, n: spots.length }), 'Monday: 3 of 4, the most this week');
   });
   const mon = '2026-10-12';   // Mon to Fri: no weekend day
   at(mon, dates => {
