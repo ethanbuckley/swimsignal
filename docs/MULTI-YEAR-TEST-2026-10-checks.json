@@ -1,0 +1,75 @@
+{
+ "rain_cells": 1623,
+ "hours_held_twice": 226176,
+ "hours_disagreeing": 0,
+ "rows": {
+  "2020": 735660,
+  "2021": 842785,
+  "2022": 899725,
+  "2023": 1549790,
+  "2024": 4976868,
+  "2025": 5077150
+ },
+ "rain_feature_gap_vs_d2": {
+  "cells": 80,
+  "cell_days": 58480,
+  "rain_d": 0.0,
+  "rain_d1": 0.0,
+  "rain_d2": 0.0,
+  "rain_3d": 0.0,
+  "rain_7d": 0.0,
+  "rain_30d": 0.0,
+  "api": 0.1300196166214107,
+  "max1h_d": 0.0,
+  "max3h_d": 0.0,
+  "max6h_d": 0.0,
+  "doy_sin": 0.0,
+  "doy_cos": 0.0
+ },
+ "2024 overflows with no id, kept as D2 kept them": 0,
+ "2025 overflows with no id, kept as D2 kept them": 0,
+ "2023 overflows with no id, dropped": 1,
+ "2023 overflows whose lta_spills differs from D2's rule": 0,
+ "2023 overflows whose spill_hours differs from D2's rule": 0,
+ "2023 overflows whose edm_operational_pct differs from D2's rule": 0,
+ "dropped_by_90pct_rule": {
+  "total": 0
+ },
+ "rows_scored": 1549790,
+ "condition_5": {
+  "plus 1 mm every hour": {
+   "rows": 1403060,
+   "lowered": 72,
+   "lowered_share": 5.1316408421592805e-05,
+   "largest_drop": 0.03879939963657461,
+   "pass": false
+  },
+  "double every hour": {
+   "rows": 1403060,
+   "lowered": 301,
+   "lowered_share": 0.0002145310963180477,
+   "largest_drop": 0.017188573648743155,
+   "pass": false
+  }
+ },
+ "question_1": {
+  "1 real gain overall": false,
+  "2 no company clearly worse": true,
+  "4 reliability": false,
+  "5 more rain does not lower the risk": false
+ },
+ "question_2": {
+  "1 lower over the three": true,
+  "2 no company clearly worse": true
+ },
+ "question_1_yes": false,
+ "question_2_yes": true,
+ "layer_2": {
+  "prior_strength": 15.0,
+  "recency": 1.0,
+  "A": 14084,
+  "B": 14084,
+  "A24": 13598,
+  "PR239": 13598
+ }
+}
