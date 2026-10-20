@@ -1,0 +1,1965 @@
+{
+ "spots.json": {
+  "generated_at": "2026-10-20T23:00:37.619741+01:00",
+  "version": "0.1.0",
+  "n": 105,
+  "build": {
+   "spots": 105,
+   "forecast_ok": 105,
+   "forecast_failed": 0,
+   "no_forecast_possible": 3,
+   "today_rain_unavailable": 0,
+   "failed_spots": [],
+   "warnings": [],
+   "river_levels_stale": 1,
+   "duplicate_overflow_ids": 0,
+   "live_feeds": {
+    "polled_at": "2026-10-20 16:57:35.096729+00:00",
+    "rows": {
+     "Anglian Water": 1438,
+     "Northumbrian Water": 1575,
+     "Severn Trent Water": 2416,
+     "South West Water": 1342,
+     "Southern Water": 996,
+     "Thames Water": 573,
+     "United Utilities": 2255,
+     "Wessex Water": 1427,
+     "Yorkshire Water": 2177
+    },
+    "previous_rows": {
+     "Anglian Water": 1438,
+     "Northumbrian Water": 1575,
+     "Severn Trent Water": 2416,
+     "South West Water": 1342,
+     "Southern Water": 996,
+     "Thames Water": 573,
+     "United Utilities": 2255,
+     "Wessex Water": 1427,
+     "Yorkshire Water": 2177
+    },
+    "down": [],
+    "short": {}
+   },
+   "ecoli_samples": {
+    "checked_at": "2026-10-20T16:32:14+01:00",
+    "n_sites": 38,
+    "n_failed": 0,
+    "last_ok_at": "2026-10-20T16:32:14+01:00",
+    "sources": {
+     "bathing_water": {
+      "answered": 0,
+      "errors": {
+       "HTTP 403": 1
+      },
+      "refused": true
+     },
+     "archive": {
+      "answered": 38,
+      "error": null,
+      "n_samples": 712
+     }
+    }
+   },
+   "algae_checks": 38,
+   "classifications": 32,
+   "lab_samples": 38,
+   "water_bodies": 91,
+   "river_levels": 81,
+   "weather": 105,
+   "river_high": 0,
+   "river_rising_fast": 0,
+   "flood_alerts": 2,
+   "flood_alerts_unchecked": 0,
+   "water_temperature": 3,
+   "guides": 45,
+   "anypoint": {
+    "cache": "warm",
+    "traced_links": 0,
+    "links_indexed": 92553,
+    "links_traced": 23080,
+    "entries": 26565,
+    "arms": 13528,
+    "rows": 450044,
+    "lakes_reached": 1172,
+    "wfd_lakes": 564,
+    "wfd_no_centreline": 202,
+    "tiles": 334,
+    "overflows": 13806,
+    "days": 19,
+    "rain": {
+     "cells": 1588,
+     "due": 0,
+     "fetched": 0,
+     "usable": 1588,
+     "calls": 0.0
+    },
+    "rain_unavailable_share": 0.0,
+    "outside_england": true,
+    "bytes": 26730131,
+    "table_s": 1.0,
+    "files_s": 109.9,
+    "days_s": 9.5,
+    "seconds": 120.4
+   },
+   "guide_photos": 0,
+   "coastal": {
+    "status": "advice_unavailable",
+    "sites": 426,
+    "samples": "ok",
+    "with_sample": 346
+   },
+   "wales": {
+    "state": "cached",
+    "sites": 114,
+    "fetched_at": "2026-10-03T22:33:27+01:00",
+    "error": "HTTP 403"
+   },
+   "scotland": {
+    "state": "live",
+    "sites": 90
+   },
+   "ireland": {
+    "state": "live",
+    "sites": 243,
+    "restrictions": 0
+   },
+   "northern_ireland": {
+    "state": "live",
+    "sites": 33
+   }
+  },
+  "lead_skill": {
+   "spill": [
+    1.0,
+    0.84,
+    0.79,
+    0.7,
+    0.59
+   ],
+   "water": [
+    1.0,
+    0.84,
+    0.77,
+    0.62,
+    0.62
+   ]
+  },
+  "ecoli_check": {
+   "wales": {
+    "n_samples": 185,
+    "mean": 0.324,
+    "observed": 0.059,
+    "run": "2026-10-10",
+    "source": "docs/WALES-PLAN-2026-10.md, W10"
+   },
+   "live": {
+    "n_samples": 39,
+    "n_sites": 27,
+    "auc": 0.51,
+    "brier": 0.104,
+    "climatology_brier": 0.1,
+    "skill": false
+   }
+  },
+  "push": {
+   "url": "https://swimsignal-push.swimsignal-push.workers.dev/",
+   "key": "BGaPAD3oYd4cJ3jJPMF9b8gyImfQ1H7Xtw5nOfSuYx7vLeIjmqlQ9wmcPqXlwMRRx-yzPeNmKs4H3RhDSjgb3OY"
+  },
+  "credits": {
+   "attribution": "Storm overflow status from Anglian Water Services, Northumbrian Water, Severn Trent Water, South West Water, Southern Water (© 2026), Thames Water, United Utilities, Wessex Water (© 2024) and Yorkshire Water, via the National Storm Overflow Hub, CC BY 4.0; overflow identifiers matched with the Stream ID lookup, via Stream, CC BY 4.0. Environment Agency data © Environment Agency copyright and/or database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures stay under CC BY-SA 4.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): contains modified Copernicus Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.",
+   "modified": "Combined, filtered and modelled by SwimSignal. The forecasts, levels and scores are SwimSignal's own estimates, not the data providers'. None of the providers endorses SwimSignal.",
+   "spot_locations": "Swim spot locations from OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright): the spots whose source is \"openstreetmap\".",
+   "licences": {
+    "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "OGL v3.0": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "ODbL 1.0": "https://opendatacommons.org/licenses/odbl/1-0/"
+   },
+   "full": "https://swimsignal.co.uk/terms.html#data"
+  },
+  "spots": [
+   {
+    "id": "bw-uke4100-08901",
+    "name": "Wharfe at Cromwheel, Ilkley",
+    "kind": "river",
+    "river": "River Wharfe",
+    "source": "designated",
+    "notes": "Environment Agency designated bathing water",
+    "location": {
+     "mode": "river",
+     "watercourse": "River Wharfe",
+     "snap_distance_m": 3,
+     "form": "inlandRiver",
+     "lake_area_km2": null,
+     "lake_source": null,
+     "adopted_main_channel": false,
+     "placement": "on river",
+     "snapped": {
+      "lat": 53.93189,
+      "lon": -1.81614
+     }
+    },
+    "river_state": {
+     "station": "Ilkley",
+     "river": "River Wharfe",
+     "level_m": 0.184,
+     "typical_low_m": 0.09,
+     "typical_high_m": 1.8,
+     "index": 0.05,
+     "label": "low",
+     "observed_at": "2026-10-20T16:15:00Z",
+     "age_hours": 0.7,
+     "stale": false,
+     "rloi": "8106",
+     "measure": "F1902-level-stage-i-15_min-m",
+     "distance_km": 1.0,
+     "same_river": true
+    },
+    "assumptions": {
+     "river_velocity_ms": 0.2,
+     "lake_velocity_ms": 0.05,
+     "t90_hours": 72.0,
+     "max_upstream_km": 60.0,
+     "recent_spill_hours": 48.0,
+     "model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+     "lead_calibration": true,
+     "version": "spill=808da63d;cal=9b3cc24c;ecoli=e601ea37;code=0.1.0+2dba49e;rain=open-meteo-forecast",
+     "rain_ensemble": {
+      "model": "ukmo_uk_ensemble_2km",
+      "members": 3,
+      "issued_at": "2026-10-20T05:37:00+00:00"
+     },
+     "ecoli_model": {
+      "target": "E. coli > 900 cfu/100 ml",
+      "fitted_on": "EA inland designated bathing waters with monitored overflows upstream",
+      "n_samples": 1502,
+      "loyo_brier": 0.0919
+     }
+    },
+    "now": {
+     "risk": 0.0,
+     "label": "low",
+     "clears_at": null,
+     "clears_by": null,
+     "discharging_upstream": 1,
+     "recent_upstream": 0,
+     "monitored_upstream": 14,
+     "feed_down_upstream": 0,
+     "feed_down": [],
+     "stale_upstream": 1,
+     "feed_stale": [
+      {
+       "company": "Yorkshire Water",
+       "overflows": 1,
+       "since": "2026-10-20T19:00:00+00:00",
+       "records": true
+      }
+     ],
+     "no_feed_upstream": 0,
+     "quiet_by_feed": [
+      {
+       "company": "Yorkshire Water",
+       "overflows": 15,
+       "updated_at": "2026-10-20T16:40:23+00:00",
+       "weight": 6.6568
+      }
+     ],
+     "monitored_weight": 6.6568,
+     "upstream_weight": 6.764
+    },
+    "days": [
+     {
+      "date": "2026-10-20",
+      "risk": 0.461,
+      "label": "high",
+      "expected_spilling_overflows": 1.5,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.0,
+      "band": {
+       "low": 0.404,
+       "high": 0.462
+      },
+      "source": {
+       "site_id": "YWS00674",
+       "site_name": "RIVADALE VIEW/CSO",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 0.5,
+       "lake_distance_km": 0.0,
+       "travel_h": 0.6,
+       "share": 0.276,
+       "spread_over": 7
+      },
+      "rain_48h_mm": 11.6,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.71
+     },
+     {
+      "date": "2026-10-21",
+      "risk": 0.866,
+      "label": "very high",
+      "expected_spilling_overflows": 3.6,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.835,
+      "band": {
+       "low": 0.465,
+       "high": 0.587
+      },
+      "source": {
+       "site_id": "YWS00176",
+       "site_name": "ILKLEY MIDDLETON/CSO",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 0.0,
+       "lake_distance_km": 0.0,
+       "travel_h": 0.0,
+       "share": 0.278,
+       "spread_over": 5
+      },
+      "rain_48h_mm": 9.6,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.832
+     },
+     {
+      "date": "2026-10-22",
+      "risk": 0.469,
+      "label": "high",
+      "expected_spilling_overflows": 0.7,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.44,
+      "band": {
+       "low": 0.273,
+       "high": 0.396
+      },
+      "source": {
+       "site_id": "YWS00144",
+       "site_name": "ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/3XDWF OVERFLOW",
+       "receiving_watercourse": "Low Mills Mill Race",
+       "status": 0,
+       "distance_km": 4.1,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.7,
+       "share": 0.179,
+       "spread_over": 9
+      },
+      "rain_48h_mm": 25.1,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.76
+     },
+     {
+      "date": "2026-10-23",
+      "risk": 0.886,
+      "label": "very high",
+      "expected_spilling_overflows": 5.9,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.886,
+      "band": {
+       "low": 0.399,
+       "high": 0.922
+      },
+      "source": {
+       "site_id": "YWS00176",
+       "site_name": "ILKLEY MIDDLETON/CSO",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 0.0,
+       "lake_distance_km": 0.0,
+       "travel_h": 0.0,
+       "share": 0.304,
+       "spread_over": 5
+      },
+      "rain_48h_mm": 33.3,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.903
+     },
+     {
+      "date": "2026-10-24",
+      "risk": 0.794,
+      "label": "very high",
+      "expected_spilling_overflows": 4.3,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.794,
+      "band": {
+       "low": 0.775,
+       "high": 0.816
+      },
+      "source": {
+       "site_id": "YWS00144",
+       "site_name": "ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/3XDWF OVERFLOW",
+       "receiving_watercourse": "Low Mills Mill Race",
+       "status": 0,
+       "distance_km": 4.1,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.7,
+       "share": 0.181,
+       "spread_over": 8
+      },
+      "rain_48h_mm": 18.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.851
+     }
+    ],
+    "upstream_summary": {
+     "overflows": 16,
+     "with_live_feed": 15,
+     "without_live_feed": 1,
+     "sum_weight": 6.764,
+     "history_days": 4,
+     "max_travel_h": 52.0
+    },
+    "contributors": [
+     {
+      "site_id": "YWS00176",
+      "company": "Yorkshire Water",
+      "site_name": "ILKLEY MIDDLETON/CSO",
+      "receiving_watercourse": "River Wharfe",
+      "lat": 53.931779,
+      "lon": -1.816162,
+      "status": 1,
+      "has_live": true,
+      "data_state": "live",
+      "feed_updated_at": "2026-10-20T16:40:23+00:00",
+      "latest_event_start": "2026-03-31T03:49:56+00:00",
+      "latest_event_end": "2026-03-31T04:18:39+00:00",
+      "lta_spills": 36.0,
+      "spill_hours": 214.5,
+      "snap_confidence": "high",
+      "position_source": "join",
+      "on_named": true,
+      "snap_m": 0,
+      "distance_km": 0.0,
+      "lake_distance_km": 0.0,
+      "travel_h": 0.0,
+      "weight": 0.998,
+      "p_spill_today": 0.136,
+      "p_spill_tomorrow": 0.428,
+      "p_spill_days": [
+       0.136,
+       0.428,
+       0.067,
+       0.484,
+       0.223
+      ],
+      "now_contribution": 0.0
+     },
+     {
+      "site_id": "YWS00674",
+      "company": "Yorkshire Water",
+      "site_name": "RIVADALE VIEW/CSO",
+      "receiving_watercourse": "River Wharfe",
+      "lat": 53.928606,
+      "lon": -1.819894,
+      "status": 0,
+      "has_live": true,
+      "data_state": "live",
+      "feed_updated_at": "2026-10-20T16:40:23+00:00",
+      "latest_event_start": "2026-05-08T15:36:24+00:00",
+      "latest_event_end": "2026-05-08T15:39:23+00:00",
+      "lta_spills": 48.5,
+      "spill_hours": 48.25,
+      "snap_confidence": "high",
+      "position_source": "live",
+      "on_named": true,
+      "snap_m": 22,
+      "distance_km": 0.5,
+      "lake_distance_km": 0.0,
+      "travel_h": 0.6,
+      "weight": 0.979,
+      "p_spill_today": 0.159,
+      "p_spill_tomorrow": 0.443,
+      "p_spill_days": [
+       0.159,
+       0.443,
+       0.07,
+       0.425,
+       0.233
+      ],
+      "now_contribution": 0.0
+     },
+     {
+      "site_id": "YWS00144",
+      "company": "Yorkshire Water",
+      "site_name": "ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/3XDWF OVERFLOW",
+      "receiving_watercourse": "Low Mills Mill Race",
+      "lat": 53.937041,
+      "lon": -1.864397,
+      "status": 0,
+      "has_live": true,
+      "data_state": "live",
+      "feed_updated_at": "2026-10-20T16:40:23+00:00",
+      "latest_event_start": "2026-05-22T11:00:00+00:00",
+      "latest_event_end": "2026-05-22T12:27:05+00:00",
+      "lta_spills": 55.0,
+      "spill_hours": 370.75,
+      "snap_confidence": "high",
+      "position_source": "live",
+      "on_named": false,
+      "snap_m": 118,
+      "distance_km": 4.1,
+      "lake_distance_km": 0.0,
+      "travel_h": 5.7,
+      "weight": 0.812,
+      "p_spill_today": 0.087,
+      "p_spill_tomorrow": 0.427,
+      "p_spill_days": [
+       0.087,
+       0.427,
+       0.041,
+       0.507,
+       0.244
+      ],
+      "now_contribution": 0.0
+     }
+    ],
+    "algae": {
+     "date": "2026-09-24",
+     "level": 0,
+     "phrase": "none seen",
+     "result": "No material present",
+     "n_checks": 22,
+     "n_seen": 0,
+     "n_objectionable": 0,
+     "season": 2026
+    },
+    "lab_sample": {
+     "taken_at": "2026-10-20T11:15+01:00",
+     "ecoli": 1200
+    },
+    "classification": {
+     "class": "poor",
+     "year": 2025,
+     "history": [
+      [
+       2025,
+       "poor"
+      ],
+      [
+       2024,
+       "poor"
+      ],
+      [
+       2023,
+       "poor"
+      ],
+      [
+       2022,
+       "poor"
+      ],
+      [
+       2021,
+       "poor"
+      ]
+     ],
+     "url": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901"
+    },
+    "flood_alerts": []
+   },
+   {
+    "id": "wharfe-burnsall",
+    "name": "River Wharfe, Burnsall",
+    "kind": "river",
+    "river": "River Wharfe",
+    "source": "curated",
+    "notes": "",
+    "location": {
+     "mode": "river",
+     "watercourse": "River Wharfe",
+     "snap_distance_m": 155,
+     "form": "inlandRiver",
+     "lake_area_km2": null,
+     "lake_source": null,
+     "adopted_main_channel": true,
+     "placement": "on river",
+     "snapped": {
+      "lat": 54.04569,
+      "lon": -1.95223
+     }
+    },
+    "river_state": {
+     "station": "Netherside Hall",
+     "river": "River Wharfe",
+     "level_m": 0.441,
+     "typical_low_m": 0.3,
+     "typical_high_m": 2.2,
+     "index": 0.07,
+     "label": "low",
+     "observed_at": "2026-10-20T16:30:00Z",
+     "age_hours": 0.5,
+     "stale": false,
+     "rloi": "8276",
+     "measure": "F1906-level-stage-i-15_min-m",
+     "distance_km": 6.0,
+     "same_river": true
+    },
+    "assumptions": {
+     "river_velocity_ms": 0.2,
+     "lake_velocity_ms": 0.05,
+     "t90_hours": 72.0,
+     "max_upstream_km": 60.0,
+     "recent_spill_hours": 48.0,
+     "model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+     "lead_calibration": true,
+     "version": "spill=808da63d;cal=9b3cc24c;ecoli=e601ea37;code=0.1.0+2dba49e;rain=open-meteo-forecast",
+     "rain_ensemble": {
+      "model": "ukmo_uk_ensemble_2km",
+      "members": 3,
+      "issued_at": "2026-10-20T05:37:00+00:00"
+     },
+     "ecoli_model": {
+      "target": "E. coli > 900 cfu/100 ml",
+      "fitted_on": "EA inland designated bathing waters with monitored overflows upstream",
+      "n_samples": 1502,
+      "loyo_brier": 0.0919
+     }
+    },
+    "now": {
+     "risk": 0.0,
+     "label": "low",
+     "clears_at": null,
+     "clears_by": null,
+     "discharging_upstream": 0,
+     "recent_upstream": 0,
+     "monitored_upstream": 5,
+     "feed_down_upstream": 0,
+     "feed_down": [],
+     "stale_upstream": 0,
+     "feed_stale": [],
+     "no_feed_upstream": 0,
+     "quiet_by_feed": [
+      {
+       "company": "Yorkshire Water",
+       "overflows": 5,
+       "updated_at": "2026-10-20T16:40:23+00:00",
+       "weight": 3.0957
+      }
+     ],
+     "monitored_weight": 3.0957,
+     "upstream_weight": 3.0957
+    },
+    "days": [
+     {
+      "date": "2026-10-20",
+      "risk": 0.242,
+      "label": "moderate",
+      "expected_spilling_overflows": 0.5,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.0,
+      "band": {
+       "low": 0.256,
+       "high": 0.266
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.4,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 6.8,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.562
+     },
+     {
+      "date": "2026-10-21",
+      "risk": 0.329,
+      "label": "moderate",
+      "expected_spilling_overflows": 0.8,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.254,
+      "band": {
+       "low": 0.173,
+       "high": 0.277
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.412,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 5.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.587
+     },
+     {
+      "date": "2026-10-22",
+      "risk": 0.236,
+      "label": "moderate",
+      "expected_spilling_overflows": 0.3,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.236,
+      "band": {
+       "low": 0.064,
+       "high": 0.275
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.348,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 13.1,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.61
+     },
+     {
+      "date": "2026-10-23",
+      "risk": 0.599,
+      "label": "high",
+      "expected_spilling_overflows": 2.1,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.599,
+      "band": {
+       "low": 0.265,
+       "high": 0.685
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.472,
+       "spread_over": 3
+      },
+      "rain_48h_mm": 25.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.802
+     },
+     {
+      "date": "2026-10-24",
+      "risk": 0.718,
+      "label": "very high",
+      "expected_spilling_overflows": 1.8,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.718,
+      "band": {
+       "low": 0.528,
+       "high": 0.713
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.381,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 18.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.832
+     }
+    ],
+    "upstream_summary": {
+     "overflows": 5,
+     "with_live_feed": 5,
+     "without_live_feed": 0,
+     "sum_weight": 3.096,
+     "history_days": 2,
+     "max_travel_h": 21.5
+    },
+    "contributors": [
+     {
+      "site_id": "YWS00185",
+      "company": "Yorkshire Water",
+      "site_name": "GRASSINGTON/STW",
+      "receiving_watercourse": "River Wharfe",
+      "lat": 54.062414,
+      "lon": -1.99173,
+      "status": 0,
+      "has_live": true,
+      "data_state": "live",
+      "feed_updated_at": "2026-10-20T16:40:23+00:00",
+      "latest_event_start": "2026-09-17T04:30:52+00:00",
+      "latest_event_end": "2026-09-17T04:45:49+00:00",
+      "lta_spills": 62.5,
+      "spill_hours": 55.0,
+      "snap_confidence": "high",
+      "position_source": "live",
+      "on_named": true,
+      "snap_m": 11,
+      "distance_km": 3.8,
+      "lake_distance_km": 0.0,
+      "travel_h": 5.3,
+      "weight": 0.791,
+      "p_spill_today": 0.129,
+      "p_spill_tomorrow": 0.21,
+      "p_spill_days": [
+       0.129,
+       0.21,
+       0.086,
+       0.546,
+       0.466
+      ],
+      "now_contribution": 0.0
+     },
+     {
+      "site_id": "YWS01311",
+      "company": "Yorkshire Water",
+      "site_name": "LINTON/CSO",
+      "receiving_watercourse": "River Wharfe",
+      "lat": 54.064985,
+      "lon": -1.995977,
+      "status": 0,
+      "has_live": true,
+      "data_state": "live",
+      "feed_updated_at": "2026-10-20T16:40:23+00:00",
+      "latest_event_start": "2026-08-20T00:08:00+00:00",
+      "latest_event_end": "2026-08-20T00:30:00+00:00",
+      "lta_spills": 30.670000076293945,
+      "spill_hours": 71.5,
+      "snap_confidence": "high",
+      "position_source": "live",
+      "on_named": true,
+      "snap_m": 23,
+      "distance_km": 4.5,
+      "lake_distance_km": 0.0,
+      "travel_h": 6.2,
+      "weight": 0.768,
+      "p_spill_today": 0.077,
+      "p_spill_tomorrow": 0.136,
+      "p_spill_days": [
+       0.077,
+       0.136,
+       0.039,
+       0.4,
+       0.32
+      ],
+      "now_contribution": 0.0
+     },
+     {
+      "site_id": "YWS00187",
+      "company": "Yorkshire Water",
+      "site_name": "KETTLEWELL/STW",
+      "receiving_watercourse": "River Wharfe",
+      "lat": 54.144271,
+      "lon": -2.049104,
+      "status": 0,
+      "has_live": true,
+      "data_state": "live",
+      "feed_updated_at": "2026-10-20T16:40:23+00:00",
+      "latest_event_start": "2026-10-13T13:35:27+00:00",
+      "latest_event_end": "2026-10-13T13:52:38+00:00",
+      "lta_spills": 61.83000183105469,
+      "spill_hours": 98.75,
+      "snap_confidence": "high",
+      "position_source": "live",
+      "on_named": true,
+      "snap_m": 30,
+      "distance_km": 15.5,
+      "lake_distance_km": 0.0,
+      "travel_h": 21.5,
+      "weight": 0.307,
+      "p_spill_today": 0.147,
+      "p_spill_tomorrow": 0.237,
+      "p_spill_days": [
+       0.147,
+       0.237,
+       0.091,
+       0.608,
+       0.593
+      ],
+      "now_contribution": 0.0
+     }
+    ],
+    "flood_alerts": []
+   }
+  ],
+  "commit": "f00d123"
+ },
+ "spots-lite.json": {
+  "generated_at": "2026-10-20T23:00:37.619741+01:00",
+  "version": "0.1.0",
+  "n": 105,
+  "build": {
+   "spots": 105,
+   "forecast_ok": 105,
+   "forecast_failed": 0,
+   "no_forecast_possible": 3,
+   "today_rain_unavailable": 0,
+   "failed_spots": [],
+   "warnings": [],
+   "river_levels_stale": 1,
+   "duplicate_overflow_ids": 0,
+   "live_feeds": {
+    "polled_at": "2026-10-20 16:57:35.096729+00:00",
+    "rows": {
+     "Anglian Water": 1438,
+     "Northumbrian Water": 1575,
+     "Severn Trent Water": 2416,
+     "South West Water": 1342,
+     "Southern Water": 996,
+     "Thames Water": 573,
+     "United Utilities": 2255,
+     "Wessex Water": 1427,
+     "Yorkshire Water": 2177
+    },
+    "previous_rows": {
+     "Anglian Water": 1438,
+     "Northumbrian Water": 1575,
+     "Severn Trent Water": 2416,
+     "South West Water": 1342,
+     "Southern Water": 996,
+     "Thames Water": 573,
+     "United Utilities": 2255,
+     "Wessex Water": 1427,
+     "Yorkshire Water": 2177
+    },
+    "down": [],
+    "short": {}
+   },
+   "ecoli_samples": {
+    "checked_at": "2026-10-20T16:32:14+01:00",
+    "n_sites": 38,
+    "n_failed": 0,
+    "last_ok_at": "2026-10-20T16:32:14+01:00",
+    "sources": {
+     "bathing_water": {
+      "answered": 0,
+      "errors": {
+       "HTTP 403": 1
+      },
+      "refused": true
+     },
+     "archive": {
+      "answered": 38,
+      "error": null,
+      "n_samples": 712
+     }
+    }
+   },
+   "algae_checks": 38,
+   "classifications": 32,
+   "lab_samples": 38,
+   "water_bodies": 91,
+   "river_levels": 81,
+   "weather": 105,
+   "river_high": 0,
+   "river_rising_fast": 0,
+   "flood_alerts": 2,
+   "flood_alerts_unchecked": 0,
+   "water_temperature": 3,
+   "guides": 45,
+   "anypoint": {
+    "cache": "warm",
+    "traced_links": 0,
+    "links_indexed": 92553,
+    "links_traced": 23080,
+    "entries": 26565,
+    "arms": 13528,
+    "rows": 450044,
+    "lakes_reached": 1172,
+    "wfd_lakes": 564,
+    "wfd_no_centreline": 202,
+    "tiles": 334,
+    "overflows": 13806,
+    "days": 19,
+    "rain": {
+     "cells": 1588,
+     "due": 0,
+     "fetched": 0,
+     "usable": 1588,
+     "calls": 0.0
+    },
+    "rain_unavailable_share": 0.0,
+    "outside_england": true,
+    "bytes": 26730131,
+    "table_s": 1.0,
+    "files_s": 109.9,
+    "days_s": 9.5,
+    "seconds": 120.4
+   },
+   "guide_photos": 0,
+   "coastal": {
+    "status": "advice_unavailable",
+    "sites": 426,
+    "samples": "ok",
+    "with_sample": 346
+   },
+   "wales": {
+    "state": "cached",
+    "sites": 114,
+    "fetched_at": "2026-10-03T22:33:27+01:00",
+    "error": "HTTP 403"
+   },
+   "scotland": {
+    "state": "live",
+    "sites": 90
+   },
+   "ireland": {
+    "state": "live",
+    "sites": 243,
+    "restrictions": 0
+   },
+   "northern_ireland": {
+    "state": "live",
+    "sites": 33
+   }
+  },
+  "lead_skill": {
+   "spill": [
+    1.0,
+    0.84,
+    0.79,
+    0.7,
+    0.59
+   ],
+   "water": [
+    1.0,
+    0.84,
+    0.77,
+    0.62,
+    0.62
+   ]
+  },
+  "ecoli_check": {
+   "wales": {
+    "n_samples": 185,
+    "mean": 0.324,
+    "observed": 0.059,
+    "run": "2026-10-10",
+    "source": "docs/WALES-PLAN-2026-10.md, W10"
+   },
+   "live": {
+    "n_samples": 39,
+    "n_sites": 27,
+    "auc": 0.51,
+    "brier": 0.104,
+    "climatology_brier": 0.1,
+    "skill": false
+   }
+  },
+  "push": {
+   "url": "https://swimsignal-push.swimsignal-push.workers.dev/",
+   "key": "BGaPAD3oYd4cJ3jJPMF9b8gyImfQ1H7Xtw5nOfSuYx7vLeIjmqlQ9wmcPqXlwMRRx-yzPeNmKs4H3RhDSjgb3OY"
+  },
+  "credits": {
+   "attribution": "Storm overflow status from Anglian Water Services, Northumbrian Water, Severn Trent Water, South West Water, Southern Water (© 2026), Thames Water, United Utilities, Wessex Water (© 2024) and Yorkshire Water, via the National Storm Overflow Hub, CC BY 4.0; overflow identifiers matched with the Stream ID lookup, via Stream, CC BY 4.0. Environment Agency data © Environment Agency copyright and/or database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures stay under CC BY-SA 4.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): contains modified Copernicus Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.",
+   "modified": "Combined, filtered and modelled by SwimSignal. The forecasts, levels and scores are SwimSignal's own estimates, not the data providers'. None of the providers endorses SwimSignal.",
+   "spot_locations": "Swim spot locations from OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright): the spots whose source is \"openstreetmap\".",
+   "licences": {
+    "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "OGL v3.0": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "ODbL 1.0": "https://opendatacommons.org/licenses/odbl/1-0/"
+   },
+   "full": "https://swimsignal.co.uk/terms.html#data"
+  },
+  "spots": [
+   {
+    "id": "bw-uke4100-08901",
+    "name": "Wharfe at Cromwheel, Ilkley",
+    "kind": "river",
+    "river": "River Wharfe",
+    "source": "designated",
+    "notes": "Environment Agency designated bathing water",
+    "location": {
+     "mode": "river",
+     "watercourse": "River Wharfe",
+     "snap_distance_m": 3,
+     "form": "inlandRiver",
+     "lake_area_km2": null,
+     "lake_source": null,
+     "adopted_main_channel": false,
+     "placement": "on river",
+     "snapped": {
+      "lat": 53.93189,
+      "lon": -1.81614
+     }
+    },
+    "river_state": {
+     "station": "Ilkley",
+     "river": "River Wharfe",
+     "level_m": 0.184,
+     "typical_low_m": 0.09,
+     "typical_high_m": 1.8,
+     "index": 0.05,
+     "label": "low",
+     "observed_at": "2026-10-20T16:15:00Z",
+     "age_hours": 0.7,
+     "stale": false,
+     "rloi": "8106",
+     "measure": "F1902-level-stage-i-15_min-m",
+     "distance_km": 1.0,
+     "same_river": true
+    },
+    "assumptions": {
+     "river_velocity_ms": 0.2,
+     "lake_velocity_ms": 0.05,
+     "t90_hours": 72.0,
+     "max_upstream_km": 60.0,
+     "recent_spill_hours": 48.0,
+     "model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+     "lead_calibration": true,
+     "version": "spill=808da63d;cal=9b3cc24c;ecoli=e601ea37;code=0.1.0+2dba49e;rain=open-meteo-forecast",
+     "rain_ensemble": {
+      "model": "ukmo_uk_ensemble_2km",
+      "members": 3,
+      "issued_at": "2026-10-20T05:37:00+00:00"
+     },
+     "ecoli_model": {
+      "target": "E. coli > 900 cfu/100 ml",
+      "fitted_on": "EA inland designated bathing waters with monitored overflows upstream",
+      "n_samples": 1502,
+      "loyo_brier": 0.0919
+     }
+    },
+    "now": {
+     "risk": 0.0,
+     "label": "low",
+     "clears_at": null,
+     "clears_by": null,
+     "discharging_upstream": 0,
+     "recent_upstream": 0,
+     "monitored_upstream": 15,
+     "feed_down_upstream": 0,
+     "feed_down": [],
+     "stale_upstream": 0,
+     "feed_stale": [],
+     "no_feed_upstream": 0,
+     "quiet_by_feed": [
+      {
+       "company": "Yorkshire Water",
+       "overflows": 15,
+       "updated_at": "2026-10-20T16:40:23+00:00",
+       "weight": 6.6568
+      }
+     ],
+     "monitored_weight": 6.6568,
+     "upstream_weight": 6.764
+    },
+    "days": [
+     {
+      "date": "2026-10-20",
+      "risk": 0.461,
+      "label": "high",
+      "expected_spilling_overflows": 1.5,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.0,
+      "band": {
+       "low": 0.404,
+       "high": 0.462
+      },
+      "source": {
+       "site_id": "YWS00674",
+       "site_name": "RIVADALE VIEW/CSO",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 0.5,
+       "lake_distance_km": 0.0,
+       "travel_h": 0.6,
+       "share": 0.276,
+       "spread_over": 7
+      },
+      "rain_48h_mm": 11.6,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.71
+     },
+     {
+      "date": "2026-10-21",
+      "risk": 0.866,
+      "label": "very high",
+      "expected_spilling_overflows": 3.6,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.835,
+      "band": {
+       "low": 0.465,
+       "high": 0.587
+      },
+      "source": {
+       "site_id": "YWS00176",
+       "site_name": "ILKLEY MIDDLETON/CSO",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 0.0,
+       "lake_distance_km": 0.0,
+       "travel_h": 0.0,
+       "share": 0.278,
+       "spread_over": 5
+      },
+      "rain_48h_mm": 9.6,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.832
+     },
+     {
+      "date": "2026-10-22",
+      "risk": 0.469,
+      "label": "high",
+      "expected_spilling_overflows": 0.7,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.44,
+      "band": {
+       "low": 0.273,
+       "high": 0.396
+      },
+      "source": {
+       "site_id": "YWS00144",
+       "site_name": "ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/3XDWF OVERFLOW",
+       "receiving_watercourse": "Low Mills Mill Race",
+       "status": 0,
+       "distance_km": 4.1,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.7,
+       "share": 0.179,
+       "spread_over": 9
+      },
+      "rain_48h_mm": 25.1,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.76
+     },
+     {
+      "date": "2026-10-23",
+      "risk": 0.886,
+      "label": "very high",
+      "expected_spilling_overflows": 5.9,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.886,
+      "band": {
+       "low": 0.399,
+       "high": 0.922
+      },
+      "source": {
+       "site_id": "YWS00176",
+       "site_name": "ILKLEY MIDDLETON/CSO",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 0.0,
+       "lake_distance_km": 0.0,
+       "travel_h": 0.0,
+       "share": 0.304,
+       "spread_over": 5
+      },
+      "rain_48h_mm": 33.3,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.903
+     },
+     {
+      "date": "2026-10-24",
+      "risk": 0.794,
+      "label": "very high",
+      "expected_spilling_overflows": 4.3,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.794,
+      "band": {
+       "low": 0.775,
+       "high": 0.816
+      },
+      "source": {
+       "site_id": "YWS00144",
+       "site_name": "ADDINGHAM/NO 1 SPS/PRELIMINARY TREATMENT-STW/3XDWF OVERFLOW",
+       "receiving_watercourse": "Low Mills Mill Race",
+       "status": 0,
+       "distance_km": 4.1,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.7,
+       "share": 0.181,
+       "spread_over": 8
+      },
+      "rain_48h_mm": 18.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.851
+     }
+    ],
+    "upstream_summary": {
+     "overflows": 16,
+     "with_live_feed": 15,
+     "without_live_feed": 1,
+     "sum_weight": 6.764,
+     "history_days": 4,
+     "max_travel_h": 52.0
+    },
+    "algae": {
+     "date": "2026-09-24",
+     "level": 0,
+     "phrase": "none seen",
+     "result": "No material present",
+     "n_checks": 22,
+     "n_seen": 0,
+     "n_objectionable": 0,
+     "season": 2026
+    },
+    "lab_sample": {
+     "taken_at": "2026-09-24T13:02+01:00",
+     "ecoli": 380
+    },
+    "classification": {
+     "class": "poor",
+     "year": 2025,
+     "history": [
+      [
+       2025,
+       "poor"
+      ],
+      [
+       2024,
+       "poor"
+      ],
+      [
+       2023,
+       "poor"
+      ],
+      [
+       2022,
+       "poor"
+      ],
+      [
+       2021,
+       "poor"
+      ]
+     ],
+     "url": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901"
+    },
+    "flood_alerts": [],
+    "detail_file": "spot/bw-uke4100-08901.json"
+   },
+   {
+    "id": "wharfe-burnsall",
+    "name": "River Wharfe, Burnsall",
+    "kind": "river",
+    "river": "River Wharfe",
+    "source": "curated",
+    "notes": "",
+    "location": {
+     "mode": "river",
+     "watercourse": "River Wharfe",
+     "snap_distance_m": 155,
+     "form": "inlandRiver",
+     "lake_area_km2": null,
+     "lake_source": null,
+     "adopted_main_channel": true,
+     "placement": "on river",
+     "snapped": {
+      "lat": 54.04569,
+      "lon": -1.95223
+     }
+    },
+    "river_state": {
+     "station": "Netherside Hall",
+     "river": "River Wharfe",
+     "level_m": 0.441,
+     "typical_low_m": 0.3,
+     "typical_high_m": 2.2,
+     "index": 0.07,
+     "label": "low",
+     "observed_at": "2026-10-20T16:30:00Z",
+     "age_hours": 0.5,
+     "stale": false,
+     "rloi": "8276",
+     "measure": "F1906-level-stage-i-15_min-m",
+     "distance_km": 6.0,
+     "same_river": true
+    },
+    "assumptions": {
+     "river_velocity_ms": 0.2,
+     "lake_velocity_ms": 0.05,
+     "t90_hours": 72.0,
+     "max_upstream_km": 60.0,
+     "recent_spill_hours": 48.0,
+     "model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+     "lead_calibration": true,
+     "version": "spill=808da63d;cal=9b3cc24c;ecoli=e601ea37;code=0.1.0+2dba49e;rain=open-meteo-forecast",
+     "rain_ensemble": {
+      "model": "ukmo_uk_ensemble_2km",
+      "members": 3,
+      "issued_at": "2026-10-20T05:37:00+00:00"
+     },
+     "ecoli_model": {
+      "target": "E. coli > 900 cfu/100 ml",
+      "fitted_on": "EA inland designated bathing waters with monitored overflows upstream",
+      "n_samples": 1502,
+      "loyo_brier": 0.0919
+     }
+    },
+    "now": {
+     "risk": 0.0,
+     "label": "low",
+     "clears_at": null,
+     "clears_by": null,
+     "discharging_upstream": 0,
+     "recent_upstream": 0,
+     "monitored_upstream": 5,
+     "feed_down_upstream": 0,
+     "feed_down": [],
+     "stale_upstream": 0,
+     "feed_stale": [],
+     "no_feed_upstream": 0,
+     "quiet_by_feed": [
+      {
+       "company": "Yorkshire Water",
+       "overflows": 5,
+       "updated_at": "2026-10-20T16:40:23+00:00",
+       "weight": 3.0957
+      }
+     ],
+     "monitored_weight": 3.0957,
+     "upstream_weight": 3.0957
+    },
+    "days": [
+     {
+      "date": "2026-10-20",
+      "risk": 0.242,
+      "label": "moderate",
+      "expected_spilling_overflows": 0.5,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.0,
+      "band": {
+       "low": 0.256,
+       "high": 0.266
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.4,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 6.8,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.562
+     },
+     {
+      "date": "2026-10-21",
+      "risk": 0.329,
+      "label": "moderate",
+      "expected_spilling_overflows": 0.8,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.254,
+      "band": {
+       "low": 0.173,
+       "high": 0.277
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.412,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 5.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.587
+     },
+     {
+      "date": "2026-10-22",
+      "risk": 0.236,
+      "label": "moderate",
+      "expected_spilling_overflows": 0.3,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.236,
+      "band": {
+       "low": 0.064,
+       "high": 0.275
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.348,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 13.1,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.61
+     },
+     {
+      "date": "2026-10-23",
+      "risk": 0.599,
+      "label": "high",
+      "expected_spilling_overflows": 2.1,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.599,
+      "band": {
+       "low": 0.265,
+       "high": 0.685
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.472,
+       "spread_over": 3
+      },
+      "rain_48h_mm": 25.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.802
+     },
+     {
+      "date": "2026-10-24",
+      "risk": 0.718,
+      "label": "very high",
+      "expected_spilling_overflows": 1.8,
+      "data_status": "ok",
+      "rain_missing_share": 0.0,
+      "in_validated_season": false,
+      "risk_from_later_spills": 0.718,
+      "band": {
+       "low": 0.528,
+       "high": 0.713
+      },
+      "source": {
+       "site_id": "YWS00185",
+       "site_name": "GRASSINGTON/STW",
+       "receiving_watercourse": "River Wharfe",
+       "status": 0,
+       "distance_km": 3.8,
+       "lake_distance_km": 0.0,
+       "travel_h": 5.3,
+       "share": 0.381,
+       "spread_over": 4
+      },
+      "rain_48h_mm": 18.9,
+      "rain_48h_coverage": 1.0,
+      "p_ecoli_gt900": 0.832
+     }
+    ],
+    "upstream_summary": {
+     "overflows": 5,
+     "with_live_feed": 5,
+     "without_live_feed": 0,
+     "sum_weight": 3.096,
+     "history_days": 2,
+     "max_travel_h": 21.5
+    },
+    "flood_alerts": [],
+    "detail_file": "spot/wharfe-burnsall.json"
+   }
+  ]
+ },
+ "verification.json": {
+  "live": {
+   "generated_at": "2026-10-20T17:57:50.588520+01:00",
+   "warning_table": {
+    "warn_at": 0.4,
+    "level": "high",
+    "unit": "overflow-day forecast",
+    "n": 95199,
+    "hits": 433,
+    "misses": 2076,
+    "false_alarms": 703,
+    "quiet_correct": 91987,
+    "hit_rate": 0.1725787166201674,
+    "warnings_true": 0.38116197183098594,
+    "share_correct": 0.9708085168961859,
+    "always_no_correct": 0.9736446811416086,
+    "base_rate": 0.02635531885839137,
+    "warning_lift": 14.462430672115595,
+    "n_overflow_days": 19337,
+    "n_spill_overflow_days": 507,
+    "n_days": 19,
+    "first_day": "2026-09-29",
+    "last_day": "2026-10-19",
+    "by_lead": [
+     {
+      "lead": 0,
+      "n": 19275,
+      "hits": 107,
+      "misses": 399,
+      "false_alarms": 144,
+      "quiet_correct": 18625,
+      "hit_rate": 0.21146245059288538,
+      "warnings_true": 0.4262948207171315,
+      "share_correct": 0.9718287937743191,
+      "always_no_correct": 0.9737483787289235,
+      "base_rate": 0.026251621271076525,
+      "warning_lift": 16.238799741744483
+     },
+     {
+      "lead": 1,
+      "n": 19166,
+      "hits": 128,
+      "misses": 376,
+      "false_alarms": 172,
+      "quiet_correct": 18490,
+      "hit_rate": 0.25396825396825395,
+      "warnings_true": 0.4266666666666667,
+      "share_correct": 0.9714077011374309,
+      "always_no_correct": 0.9737034331628927,
+      "base_rate": 0.026296566837107377,
+      "warning_lift": 16.225185185185186
+     },
+     {
+      "lead": 2,
+      "n": 19042,
+      "hits": 88,
+      "misses": 418,
+      "false_alarms": 162,
+      "quiet_correct": 18374,
+      "hit_rate": 0.17391304347826086,
+      "warnings_true": 0.352,
+      "share_correct": 0.9695410145993067,
+      "always_no_correct": 0.9734271610124987,
+      "base_rate": 0.02657283898750131,
+      "warning_lift": 13.246608695652174
+     },
+     {
+      "lead": 3,
+      "n": 18930,
+      "hits": 69,
+      "misses": 432,
+      "false_alarms": 165,
+      "quiet_correct": 18264,
+      "hit_rate": 0.1377245508982036,
+      "warnings_true": 0.2948717948717949,
+      "share_correct": 0.9684627575277338,
+      "always_no_correct": 0.9735340729001585,
+      "base_rate": 0.02646592709984152,
+      "warning_lift": 11.141563027790573
+     },
+     {
+      "lead": 4,
+      "n": 18786,
+      "hits": 41,
+      "misses": 451,
+      "false_alarms": 60,
+      "quiet_correct": 18234,
+      "hit_rate": 0.08333333333333333,
+      "warnings_true": 0.40594059405940597,
+      "share_correct": 0.9727988927925051,
+      "always_no_correct": 0.9738102842542319,
+      "base_rate": 0.026189715745768127,
+      "warning_lift": 15.5
+     }
+    ],
+    "trained_on": "United Utilities",
+    "by_company": [
+     {
+      "company": "United Utilities",
+      "n": 11765,
+      "hits": 410,
+      "misses": 697,
+      "false_alarms": 578,
+      "quiet_correct": 10080,
+      "hit_rate": 0.37037037037037035,
+      "warnings_true": 0.4149797570850202,
+      "share_correct": 0.8916277093072673,
+      "always_no_correct": 0.9059073523161921,
+      "base_rate": 0.0940926476838079,
+      "warning_lift": 4.410331384015595
+     },
+     {
+      "company": "Yorkshire Water",
+      "n": 11130,
+      "hits": 13,
+      "misses": 437,
+      "false_alarms": 30,
+      "quiet_correct": 10650,
+      "hit_rate": 0.028888888888888888,
+      "warnings_true": 0.3023255813953488,
+      "share_correct": 0.9580413297394429,
+      "always_no_correct": 0.9595687331536388,
+      "base_rate": 0.04043126684636118,
+      "warning_lift": 7.477519379844962
+     },
+     {
+      "company": "Anglian Water",
+      "n": 12954,
+      "hits": 0,
+      "misses": 278,
+      "false_alarms": 11,
+      "quiet_correct": 12665,
+      "hit_rate": 0.0,
+      "warnings_true": 0.0,
+      "share_correct": 0.9776902887139107,
+      "always_no_correct": 0.978539447274973,
+      "base_rate": 0.02146055272502702,
+      "warning_lift": 0.0
+     },
+     {
+      "company": "Severn Trent Water",
+      "n": 9855,
+      "hits": 1,
+      "misses": 198,
+      "false_alarms": 17,
+      "quiet_correct": 9639,
+      "hit_rate": 0.005025125628140704,
+      "warnings_true": 0.05555555555555555,
+      "share_correct": 0.9781836631151699,
+      "always_no_correct": 0.9798072044647387,
+      "base_rate": 0.02019279553526129,
+      "warning_lift": 2.7512562814070347
+     },
+     {
+      "company": "Wessex Water",
+      "n": 23154,
+      "hits": 7,
+      "misses": 121,
+      "false_alarms": 17,
+      "quiet_correct": 23009,
+      "hit_rate": 0.0546875,
+      "warnings_true": 0.2916666666666667,
+      "share_correct": 0.9940399067115833,
+      "always_no_correct": 0.9944717975295845,
+      "base_rate": 0.0055282024704154786,
+      "warning_lift": 52.75976562500001
+     },
+     {
+      "company": "South West Water",
+      "n": 1765,
+      "hits": 1,
+      "misses": 87,
+      "false_alarms": 21,
+      "quiet_correct": 1656,
+      "hit_rate": 0.011363636363636364,
+      "warnings_true": 0.045454545454545456,
+      "share_correct": 0.9388101983002833,
+      "always_no_correct": 0.9501416430594901,
+      "base_rate": 0.04985835694050991,
+      "warning_lift": 0.9116735537190084
+     },
+     {
+      "company": "Thames Water",
+      "n": 17078,
+      "hits": 0,
+      "misses": 85,
+      "false_alarms": 11,
+      "quiet_correct": 16982,
+      "hit_rate": 0.0,
+      "warnings_true": 0.0,
+      "share_correct": 0.9943787328727017,
+      "always_no_correct": 0.9950228363977046,
+      "base_rate": 0.0049771636022953505,
+      "warning_lift": 0.0
+     },
+     {
+      "company": "unknown",
+      "n": 80,
+      "hits": 0,
+      "misses": 70,
+      "false_alarms": 0,
+      "quiet_correct": 10,
+      "hit_rate": 0.0,
+      "warnings_true": null,
+      "share_correct": 0.125,
+      "always_no_correct": 0.125,
+      "base_rate": 0.875,
+      "warning_lift": null
+     },
+     {
+      "company": "Northumbrian Water",
+      "n": 1118,
+      "hits": 1,
+      "misses": 52,
+      "false_alarms": 2,
+      "quiet_correct": 1063,
+      "hit_rate": 0.018867924528301886,
+      "warnings_true": 0.3333333333333333,
+      "share_correct": 0.9516994633273703,
+      "always_no_correct": 0.9525939177101967,
+      "base_rate": 0.04740608228980322,
+      "warning_lift": 7.031446540880503
+     },
+     {
+      "company": "Southern Water",
+      "n": 6300,
+      "hits": 0,
+      "misses": 51,
+      "false_alarms": 16,
+      "quiet_correct": 6233,
+      "hit_rate": 0.0,
+      "warnings_true": 0.0,
+      "share_correct": 0.9893650793650793,
+      "always_no_correct": 0.991904761904762,
+      "base_rate": 0.008095238095238095,
+      "warning_lift": 0.0
+     }
+    ]
+   }
+  }
+ },
+ "alerts.json": {
+  "generated_at": "2026-10-20T23:00:37.619741+01:00",
+  "credits": {
+   "attribution": "Storm overflow status from Anglian Water Services, Northumbrian Water, Severn Trent Water, South West Water, Southern Water (© 2026), Thames Water, United Utilities, Wessex Water (© 2024) and Yorkshire Water, via the National Storm Overflow Hub, CC BY 4.0; overflow identifiers matched with the Stream ID lookup, via Stream, CC BY 4.0. Environment Agency data © Environment Agency copyright and/or database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures stay under CC BY-SA 4.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): contains modified Copernicus Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.",
+   "modified": "Combined, filtered and modelled by SwimSignal. The forecasts, levels and scores are SwimSignal's own estimates, not the data providers'. None of the providers endorses SwimSignal.",
+   "spot_locations": "Swim spot locations from OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright): the spots whose source is \"openstreetmap\".",
+   "licences": {
+    "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "OGL v3.0": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "ODbL 1.0": "https://opendatacommons.org/licenses/odbl/1-0/"
+   },
+   "full": "https://swimsignal.co.uk/terms.html#data"
+  },
+  "dates": [
+   "2026-10-20",
+   "2026-10-21",
+   "2026-10-22",
+   "2026-10-23",
+   "2026-10-24"
+  ],
+  "words": [
+   "High risk: rated poor",
+   "Choose a spot with a better rating if you can.",
+   "Very high risk: sewage spills",
+   "Avoid swimming here tomorrow: choose a lower day or spot.",
+   "Avoid swimming here on Friday: choose a lower day or spot.",
+   "Avoid swimming here on Saturday: choose a lower day or spot.",
+   "Avoid swimming here on Thursday: choose a lower day or spot.",
+   "Very high risk: recent sewage spills",
+   "Avoid swimming here today: choose a lower day or spot.",
+   "Moderate risk: sewage spills",
+   "Take more care: young children, older people and anyone with a weakened immune system may want a lower day or spot.",
+   "High risk: sewage spills",
+   "Better to choose a lower day or spot. If you do swim, try not to swallow any water.",
+   "Low risk",
+   "Usual care: cover cuts, try not to swallow water and wash your hands before eating.",
+   "Moderate risk: recent sewage spills",
+   "Very high risk: sewage spills right now",
+   "Moderate risk: sewage spills right now"
+  ],
+  "spots": {
+   "bw-uke4100-08901": {
+    "name": "Wharfe at Cromwheel, Ilkley",
+    "rank": 3,
+    "level": "very high",
+    "headline": "Very high risk tomorrow: sewage spills",
+    "action": "Avoid swimming here tomorrow: choose a lower day or spot.",
+    "url": "https://swimsignal.co.uk/spot/bw-uke4100-08901/",
+    "best": {
+     "date": "2026-10-22",
+     "level": "high",
+     "words": "at least high risk every day"
+    },
+    "days": [
+     [
+      "high",
+      0,
+      1
+     ],
+     [
+      "very high",
+      2,
+      3
+     ],
+     [
+      "very high",
+      2,
+      1
+     ],
+     [
+      "very high",
+      2,
+      4
+     ],
+     [
+      "very high",
+      2,
+      5
+     ]
+    ]
+   },
+   "wharfe-burnsall": {
+    "name": "River Wharfe, Burnsall",
+    "rank": 1,
+    "level": "moderate",
+    "headline": "Moderate risk today: sewage spills · Very high risk on Saturday",
+    "action": "Take more care: young children, older people and anyone with a weakened immune system may want a lower day or spot.",
+    "url": "https://swimsignal.co.uk/spot/wharfe-burnsall/",
+    "best": {
+     "date": "2026-10-21",
+     "level": "moderate",
+     "words": "tomorrow and Thursday, moderate risk"
+    },
+    "days": [
+     [
+      "moderate",
+      9,
+      10
+     ],
+     [
+      "moderate",
+      9,
+      10
+     ],
+     [
+      "moderate",
+      9,
+      10
+     ],
+     [
+      "high",
+      11,
+      12
+     ],
+     [
+      "very high",
+      2,
+      5
+     ]
+    ]
+   }
+  }
+ }
+}

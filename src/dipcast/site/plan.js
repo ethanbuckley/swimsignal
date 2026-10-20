@@ -18,7 +18,11 @@ const PLAN_DEFAULT = { day: null, from: null, within: 20, kind: 'all' };
 // "from=here" asks again on the device that opens it. An address without a plan (the header's link)
 // keeps the plan last shown (was); one with a plan is read on its own, so what it leaves out is the
 // default, not what happened to be chosen before.
+// An open comparison (Compare these spots, 20 Oct 2026) is in it too, as the spots it shows:
+// &compare=thames-port-meadow,bw-ukj1403-11947. `compare` is there only while it is open; empty, it is
+// open on the first spots shown (planCompareIds).
 const inGB = (lat, lon) => lat > 49.8 && lat < 61 && lon > -8.7 && lon < 2;
+const COMPARE_MAX = 3;
 function readPlan(hash, dates, was = PLAN_DEFAULT) {
   const q = new URLSearchParams(String(hash || '').replace(/^#/, ''));
   const p = { ...PLAN_DEFAULT, ...([...q.keys()].length ? { day: was.day } : was) };
@@ -30,6 +34,8 @@ function readPlan(hash, dates, was = PLAN_DEFAULT) {
   const from = q.get('from'), at = String(q.get('at') || '').split(',').map(Number);
   if (from === 'here') p.from = { here: true };
   else if (from && at.length === 2 && inGB(at[0], at[1])) p.from = { name: from.slice(0, 80), lat: at[0], lon: at[1] };
+  // Ids as lists.js reads a link's (listIds: text of a sane length, each once), at most three.
+  if (q.has('compare')) p.compare = [...new Set(q.get('compare').split(',').filter(id => id && id.length <= 100))].slice(0, COMPARE_MAX);
   return p;
 }
 function planHash(p) {
@@ -39,7 +45,18 @@ function planHash(p) {
   else if (p.from) { q.set('from', p.from.name); q.set('at', `${p.from.lat},${p.from.lon}`); }
   q.set('within', String(p.within));
   if (p.kind !== 'all') q.set('kind', p.kind);
+  if (Array.isArray(p.compare)) q.set('compare', p.compare.join(','));
   return '#' + q.toString();
+}
+// The spots a comparison shows, as ids: those asked for (the address, or the choices made) that the plan
+// still shows, in the order asked; with fewer than two of those, the first spots shown fill it to three,
+// as many as there are. shown: the plan's spots in the order on the page. So a link opens on the same
+// spots while they are within reach, and a wider or narrower plan never leaves an empty table.
+function planCompareIds(asked, shown) {
+  const ids = shown.map(s => s.id), keep = [...new Set(asked || [])].filter(id => ids.includes(id)).slice(0, COMPARE_MAX);
+  if (keep.length >= 2) return keep;
+  for (const id of ids) { if (keep.length >= COMPARE_MAX) break; if (!keep.includes(id)) keep.push(id); }
+  return keep;
 }
 
 // ------------------------------------------------------------------------------ places
@@ -134,6 +151,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, readPlan, planHash, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, readPlan, planHash, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway };
 }

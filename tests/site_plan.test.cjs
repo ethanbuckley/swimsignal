@@ -23,6 +23,47 @@ test('an address with a plan is read on its own; one without keeps the plan last
   assert.deepEqual(P.readPlan('#from=Ilkley&at=53.92,-1.82&within=30', DATES, was),
     {day: '2026-10-02', from: {name: 'Ilkley', lat: 53.92, lon: -1.82}, within: 30, kind: 'all'});
 });
+// Compare these spots (20 Oct 2026): an open comparison is in the address, so a shared link opens on it.
+test('a comparison survives the address, and is there only while it is open', () => {
+  const plan = {day: '2026-10-03', from: {name: 'Oxford', lat: 51.752, lon: -1.2577}, within: 30, kind: 'all',
+    compare: ['osm-thames-long-bridges', 'bw-ukj1403-11947', 'thames-port-meadow']};
+  const hash = P.planHash(plan);
+  assert.equal(hash, '#day=2026-10-03&from=Oxford&at=51.752%2C-1.2577&within=30&compare=osm-thames-long-bridges%2Cbw-ukj1403-11947%2Cthames-port-meadow');
+  assert.deepEqual(P.readPlan(hash, DATES), plan);
+  // Closed: no compare in the address, and none read from it.
+  const {compare, ...closed} = plan;
+  assert.doesNotMatch(P.planHash(closed), /compare/);
+  assert.deepEqual(P.readPlan(P.planHash(closed), DATES), closed);
+  // Open with nothing chosen yet: open, on the first spots shown (planCompareIds).
+  assert.deepEqual(P.readPlan('#from=Oxford&at=51.752,-1.2577&compare=', DATES).compare, []);
+  // At most three, each once, none empty or absurdly long.
+  assert.deepEqual(P.readPlan('#compare=a,,a,b,' + 'x'.repeat(101) + ',c,d', DATES).compare, ['a', 'b', 'c']);
+  // The header's link (no plan in the address) keeps the comparison last shown, as it keeps the rest.
+  assert.deepEqual(P.readPlan('', DATES, plan).compare, plan.compare);
+  // A plan's link without one is read on its own: the comparison open a moment ago is not carried over.
+  assert.equal('compare' in P.readPlan('#from=Ilkley&at=53.92,-1.82&within=30', DATES, plan), false);
+});
+test('a comparison shows the spots asked for that are still in the plan, else the first three shown', () => {
+  const shown = ['a', 'b', 'c', 'd', 'e'].map(id => ({id}));
+  assert.deepEqual(P.planCompareIds(undefined, shown), ['a', 'b', 'c']);           // the default: the first three shown
+  assert.deepEqual(P.planCompareIds([], shown), ['a', 'b', 'c']);
+  assert.deepEqual(P.planCompareIds(['e', 'b'], shown), ['e', 'b']);               // two chosen, in the order chosen
+  assert.deepEqual(P.planCompareIds(['d', 'gone', 'd', 'a', 'c'], shown), ['d', 'a', 'c']);   // out of reach, or twice: dropped
+  assert.deepEqual(P.planCompareIds(['e', 'gone'], shown), ['e', 'a', 'b']);       // one left: filled from the top to three
+  assert.deepEqual(P.planCompareIds(['gone'], shown.slice(0, 2)), ['a', 'b']);     // a plan of two
+  assert.deepEqual(P.planCompareIds(['a'], shown.slice(0, 1)), ['a']);              // one spot: the page offers no comparison
+});
+// The day strip (index.html, planStrip; 20 Oct 2026) writes the day it marks to the address as day= did
+// with the select, and a link opens on that day.
+test('each of the five days the strip offers survives the address', () => {
+  const plan = {from: {name: 'Oxford', lat: 51.752, lon: -1.2577}, within: 30, kind: 'all'};
+  for (const day of DATES) {
+    assert.match(P.planHash({...plan, day}), new RegExp(`^#day=${day}&`));
+    assert.equal(P.readPlan(P.planHash({...plan, day}), DATES).day, day);
+  }
+  assert.equal(P.readPlan('#day=2026-10-09&from=Oxford&at=51.752,-1.2577', DATES).day, DATES[0]);   // a day the strip does not offer: the first
+  assert.equal(P.readPlan('#from=Oxford&at=51.752,-1.2577', DATES, {day: DATES[3]}).day, DATES[3]);   // none in the link: the day last marked
+});
 test('what an address cannot mean is left at the default', () => {
   const p = P.readPlan('#day=2026-12-25&within=7&kind=sea&from=Paris&at=48.86,2.35', DATES);
   assert.deepEqual(p, {day: DATES[0], from: null, within: 20, kind: 'all'});   // a day out of the forecast, a distance not offered, a place outside Britain

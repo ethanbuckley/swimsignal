@@ -1,0 +1,67 @@
+# Derwent Water, Calfclose Bay. Desk check of the National Trust's, the park authority's and the launch operator's pages, 20 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-20
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "The National Trust's Great Wood car park (CA12 5UP), 1.8 miles outside Keswick on the B5289, has Calfclose Bay lakeshore 250m away across the road. Parking costs £7 up to 2 hours, £8 up to 4 hours or £9.50 all day, charged at all times; members park free. You can pay by phone there."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/car-parks-in-borrowdale-and-derwent-water"
+source_name = "National Trust"
+
+[[fact]]
+topic = "parking"
+text = "The National Trust says not to turn into the first National Trust entrance on the left, where you may be locked in, but to keep going about another 100m to the Great Wood entrance, marked by a roadside sign. It does not allow overnight parking."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/car-parks-in-borrowdale-and-derwent-water"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "The National Trust says the path that continues around Calf Close Bay from the end of its Broomhill Point accessible walk is badly eroded by winter storms, with deep muddy patches, deep shingle and gravel, tree roots and debris and a 40% gradient."
+status = "confirmed"
+source = "https://static.nationaltrust.org.uk/trails/visit/lake-district/borrowdale-and-derwent-water/accessible-trail-to-broomhill-point-viewpoint-walking.pdf"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "Keswick Launch says Calfclose Bay is a 15-minute walk from its Ashness Gate jetty and a 30-minute walk from Keswick Boat Landings."
+status = "confirmed"
+source = "https://keswick-launch.co.uk/explore/listing/calfclose-bay/"
+source_name = "Keswick Launch"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Derwentwater, as are canoes, kayaks, paddleboards, rowing and sailing boats, and powered craft with a 10 mph speed limit. It names the National Trust (North West) as the contact. The page covers the whole lake and does not name Calfclose Bay."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says that, as a general guide, a swimming group of more than 50 people, or one bringing infrastructure such as a gazebo, should seek advice from the landowner. The page covers all the lakes and does not name Calfclose Bay."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority lists Derwentwater among its busier lakes, with motorboats, sailing boats and other craft. It recommends a swim route along the shoreline, a bright hat, a tow float and a support craft such as a kayak or paddleboard. The page does not name Calfclose Bay."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust says an outdoor event that crosses its land in the Lake District needs its event information form, and permission from each landowner whose land the event crosses. It replies within 28 days. It charges no fee to process an event and suggests a donation of 4% of each entry fee. The page does not name Calfclose Bay."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/outdoor-activities/active-outdoors-providers-in-the-lake-district"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust says New Zealand pigmyweed, an invasive plant, is thriving in Derwent Water. It asks everyone who swims, paddles or sails there not to take the weed with them when they go: checking, cleaning and drying kit, including wetsuits and swimming costumes, helps stop it spreading."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
+source_name = "National Trust"

@@ -1,0 +1,74 @@
+# Windermere, Waterhead, Ambleside. Desk check of the park authority's, the council's and the pier operator's pages, 20 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-20
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Waterhead car park, Ambleside, is pay and display, taking coins, cards or RingGo (car park ID 37320). It has coach parking, EV chargers and toilets, including disabled. The page does not mention the swimming point."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "Windermere Lake Cruises says its customers' car park at Ambleside (Waterhead) Pier (LA22 0EY) has 21 spaces at £6.00 all day and fills up fast. It says there are also 200 spaces in a public pay and display car park close to the pier. The page does not mention swimming."
+status = "confirmed"
+source = "https://www.windermere-lakecruises.co.uk/find-us"
+source_name = "Windermere Lake Cruises"
+
+[[fact]]
+topic = "toilets"
+text = "The National Park Authority lists public toilets at Waterhead Car Park, Ambleside. The page gives no opening times and does not mention the swimming point."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/visitor-facilities/public-toilets/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says swimming is allowed on Windermere. Powered craft must be registered, and there is a 10 nautical mph speed limit, or 6 in some places. The page is about the whole lake and does not name Waterhead."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Westmorland and Furness Council says it owns the bed of Windermere, which is subject to a public right of navigation, speed limits and boat registration. Its Lake Wardens, based at Ferry Nab, Bowness, patrol the lake, run a rescue service and also help with events. The page does not name Waterhead."
+status = "confirmed"
+source = "https://www.westmorlandandfurness.gov.uk/parks-culture-and-leisure/windermere-lake/lake-wardens"
+source_name = "Westmorland and Furness Council"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says that, as a general guide, a swimming group of more than 50 people, or one bringing infrastructure such as a gazebo, should seek advice from the landowner. It names the Great North Swim in Windermere as one of the commercial swimming events in the Lake District. The page covers all the lakes and does not name Waterhead."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority lists Windermere among its busier lakes, with motorboats, sailing boats and other craft. It recommends a swim route along the shoreline, a bright hat, a tow float and a support craft such as a kayak or paddleboard. The page does not name Waterhead."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Windermere byelaw 26 says no one may, without lawful authority, launch or retrieve a powered boat from the beach at Waterhead between the Windermere Lake Cruises pier and the Wateredge Hotel boundary, except as South Lakeland District Council lays down. The byelaw does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lake-byelaw-enforcement/windermere-byelaws/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "Windermere Lake Cruises runs cruises from Ambleside (Waterhead) Pier and has a boat hire point at Waterhead; its self-drive boats are motor boats and rowing boats. The page does not mention swimming."
+status = "confirmed"
+source = "https://www.windermere-lakecruises.co.uk/find-us"
+source_name = "Windermere Lake Cruises"
+
+[[fact]]
+topic = "rules"
+text = "On Windermere the National Park Authority offers a short-term event registration, so an event can take place on the lake without each participant registering individually with the Authority. Organisers must meet the criteria in its guidance and use its event application form; the contact is the Ranger Team Leader, Northern Area. The page does not mention swimming."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lake-byelaw-enforcement/windermere-byelaws/windermere-byelaws-exemption-process/"
+source_name = "Lake District National Park Authority"

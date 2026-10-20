@@ -1,7 +1,8 @@
 // Plain, testable evidence summaries. No invented measurements or confidence scores.
 // The level rules (levels.js): the page loads them after this file, so they are looked up when a
 // summary is made; Node requires them.
-const rules = () => typeof headParts === 'function' ? { coverage, COVER, NO_OVERFLOWS } : require('./levels.js');
+const rules = () => typeof headParts === 'function'
+  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
 // The latest lab sample in the words of a spot's "What the level rests on" (evidence.js, evidenceSample),
 // as plain text; the page loads that file before this one, and Node requires it. Where there is none, it
@@ -14,20 +15,17 @@ function waterSamples(s, now = Date.now()) {
   if (s.source !== 'designated' && !cl) return 'No lab samples here.';   // the rating row says it is not a bathing water
   return (s.lab_sample === null ? 'No lab sample this season.' : 'No lab sample in this update.') + page;
 }
-function evidenceRows(s, iso, issued, generatedAt = null, now = Date.now()) {
-  const total = s.upstream_summary?.overflows || 0, monitored = s.now?.monitored_upstream;
+// The comparison's rows in plain text, for one spot on one day (iso), each a fact or what is not known.
+// Until 20 Oct 2026 they began with "Forecast" and "Live spill feeds": the five days and Right now
+// (compareRows) say both, and more.
+function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
+  const total = s.upstream_summary?.overflows || 0;
   const day = (s.days || []).find(x => x.date === iso), cl = s.classification;
   // The build's mark on the day, as the page goes by (ecoliUntested); a day without one (no forecast
   // that day, or one built before the mark) goes by the calendar month, May to September.
   const offSeason = day && typeof day.in_validated_season === 'boolean' ? !day.in_validated_season
     : ![5, 6, 7, 8, 9].includes(Number(iso.slice(5, 7)));
-  const model = s.error ? `${rules().coverage(s)}.` : !total ? `${rules().COVER[rules().NO_OVERFLOWS]} within 60 km, so there is no daily sewage spill risk.`
-    : !day || day.risk == null ? 'No sewage spill risk for this day.' : 'Model prediction, not a water sample.';
   return [
-    ['Forecast', model + (issued ? ` Issued ${issued}.` : '')],
-    ['Live spill feeds', !total ? 'Nothing to report: no monitored overflow is within reach upstream; other pollution sources may still affect this water.'
-      : monitored == null ? `Live reporting coverage unavailable for ${total} upstream overflows.`
-      : `${monitored} of ${total} upstream overflows report live in this update.${monitored < total ? ' Missing reports do not mean no spills.' : ''}`],
     ['Environment Agency rating', cl?.class ? `${cl.class.charAt(0).toUpperCase() + cl.class.slice(1)}${cl.year ? ' · ' + cl.year : ''}. Based on up to four seasons of samples; not today’s water quality.`
       : s.source === 'designated' ? 'Designated bathing water; no rating available in this update.' : 'Not an Environment Agency designated bathing water. No bathing-water rating shown.'],
     ['Water samples', waterSamples(s, now)],
@@ -39,6 +37,79 @@ function evidenceRows(s, iso, issued, generatedAt = null, now = Date.now()) {
       floodUnchecked(s, Date.now(), generatedAt) ? floodUncheckedLine() : '',
       'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.'].filter(Boolean).join(' ')]
   ];
+}
+
+// ------------------------------------------------------------------------------ the comparison
+// Compare (Saved's "Compare your spots" and, since 20 Oct 2026, Plan a swim's "Compare these spots", which an
+// outside review asked for: "which of these places should I look into further for Saturday?"). Up to three
+// spots side by side (index.html, compareTable): the five days, then what each level rests on and what it
+// leaves out. Every cell says something; where the data is missing it says it is not known, never nothing,
+// which a reader takes for nothing wrong.
+//
+// The five days, a cell each, in the words a row of the list gives the day (levels.js, dayHeadline): a day
+// without a forecast says so. A spot whose level is the same every day (no monitored overflow upstream, a
+// forecast that failed, a standing rating) is `same`, and the table gives it one cell for the five.
+function compareDays(s, dates) {
+  const R = rules();
+  return { same: !R.daily(s), days: dates.map(iso => ({ date: iso, level: R.dayLevel(s, iso), words: R.dayHeadline(s, iso) })) };
+}
+// The Saved page's day by day (index.html, savedGrid; second outside review, 20 Oct 2026): a spot's row of
+// cells, each the day's level in two words ("Moderate risk"), with the day's headline for a screen reader
+// ("Moderate risk: sewage spills"), or "No forecast" for a day the forecast does not have. `rule`: the cell is
+// a level, so it carries the level's 4 px rule; nothing else does. A spot whose level does not change from
+// day to day has one cell for the five (same), in its headline's words: "No monitored overflow found
+// upstream" is not a level and never reads as one.
+function weekCells(s, dates) {
+  const R = rules(), d = compareDays(s, dates), lv = l => R.rank(l) >= 0;
+  if (d.same) { const x = d.days[0]; return { same: true, level: x.level, rule: lv(x.level), words: x.words, said: x.words, cells: [] }; }
+  return { same: false, cells: d.days.map(x => ({ date: x.date, level: x.level, rule: lv(x.level), said: x.words,
+    words: lv(x.level) ? `${x.level[0].toUpperCase()}${x.level.slice(1)} risk` : 'No forecast' })) };
+}
+// Right now: the overflows upstream as a spot's "What the level rests on" gives them (evidence.js,
+// evidenceOverflows): discharging, stopped lately, how many report live, and why the others do not (offline,
+// no live feed, a feed down or not updated). The page loads evidence.js first; Node requires it. Where right
+// now is not known (levels.js, nowUnknown), it says so first, in the headline's words.
+const overflowWords = () => typeof evidenceOverflows === 'function' ? evidenceOverflows : require('./evidence.js').evidenceOverflows;
+function compareNow(s, generatedAt = null) {
+  const R = rules(), total = s.upstream_summary?.overflows || 0, n = s.now || {};
+  if (s.error) return htmlText(`${R.coverage(s)}.`);
+  if (!total) return `${R.FOUND_NONE}, so no spills to report. Other pollution sources may still affect this water.`;
+  if (n.monitored_upstream == null) return `Not known: this update has no live status for the ${total} overflow${total === 1 ? '' : 's'} upstream.`;
+  const mon = Math.min(total, n.monitored_upstream);
+  return (R.nowUnknown(s) && mon ? `Not known here: ${R.nowUnknownWhy(s)}. ` : '') + overflowWords()(s, generatedAt).say
+    + (mon < total ? ' Missing reports do not mean no spills.' : '');
+}
+// Today's advice from the Environment Agency, against bathing after pollution or algae: the build and the
+// page cannot read it (eatoday.js), so at a designated bathing water the cell says it was not checked and
+// links to the EA's page, which has it. The EA gives none elsewhere.
+const eaPageFor = () => typeof eaTodayPage === 'function' ? { eaTodayPage, eaTodayId } : require('./eatoday.js');
+function compareAdvice(s) {
+  const R = rules();
+  if (R.eaUnchecked(s)) {
+    const E = eaPageFor(), id = E.eaTodayId(s), url = /^https:\/\//.test(s.classification.url || '') ? s.classification.url : id ? E.eaTodayPage('', id) : '';
+    return htmlText(R.EA_UNCHECKED) + (url ? ` <a href="${htmlText(url)}">The EA's page</a> has any advice against bathing there today.` : '');
+  }
+  if (s.source === 'designated') return 'Not known: this update has no Environment Agency page for this bathing water.';
+  return 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.';
+}
+// Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap):
+// what it found, in its own words, and when. A plan's row gives the status in a few words (ACCESS_WORDS,
+// index.html's planWhy). A spot without a check says so.
+const ACCESS_WORDS = { restricted_guidance: 'Swimming here is restricted: check the signs.', unconfirmed: 'Permission to swim at this point is not confirmed.' };
+function compareAccess(s) {
+  const a = s.access;
+  if (!a) return 'No access information.';
+  return htmlText(a.text || ACCESS_WORDS[a.status] || 'Not known whether swimming is allowed at this point.') + ' '
+    + htmlText(a.checked_at ? `Desk check ${a.checked_at}; current signs not inspected.` : 'Not known when it was checked.')
+    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>.` : '');
+}
+// The rows under the five days, as [label, HTML], for one spot; iso is the day picked, whose E. coli
+// model limits the last row gives.
+function compareRows(s, iso, generatedAt = null, now = Date.now()) {
+  const f = Object.fromEntries(evidenceRows(s, iso, generatedAt, now)), t = k => htmlText(f[k]);
+  return [['Right now', compareNow(s, generatedAt)], ['Environment Agency rating', t('Environment Agency rating')],
+    ["Today's EA advice", compareAdvice(s)], ['Water samples', t('Water samples')], ['Algae observation', t('Algae observation')],
+    ['Access', compareAccess(s)], ['Local warnings', t('Local warnings')], ['Model limits', t('Model limits')]];
 }
 // "Too high to swim" (build_site.attach_flow_state): the river high or rising fast at a gauge on the
 // spot's own river, and the Environment Agency's flood alerts and warnings in force within 10 km, the
@@ -89,4 +160,5 @@ function comparisonIds(ids, available) {
   const valid = new Set(available.map(s => s.id));
   return [...new Set(ids.filter(id => valid.has(id)))].slice(0,3);
 }
-if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, comparisonIds, storedList, flowFacts, flowSentence, floodUnchecked, floodUncheckedLine};
+if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, compareDays, weekCells, compareNow, compareAdvice, compareAccess, compareRows, ACCESS_WORDS,
+  comparisonIds, storedList, flowFacts, flowSentence, floodUnchecked, floodUncheckedLine};

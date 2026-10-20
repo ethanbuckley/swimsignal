@@ -29,6 +29,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
 from dipcast.ingest.rainfall import cells_for_sites, fallback_summary, fetch_forecast
@@ -1400,6 +1401,10 @@ VERSIONED_SCRIPTS += ('<script src="eatoday.js"></script>',)
 # The swim journal (journal.js): kept on the device, so its script is stored and versioned as the rest.
 SHELL_SOURCES.append(TEMPLATE.parent / "journal.js")
 VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
+# Lab results an organisation sent (src/dipcast/samples.py, samples/README.md): measured.js draws a spot's,
+# which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
+SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
+VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -1425,6 +1430,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "spotscores.js", site / "spotscores.js")   # how the forecast has done here
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
+    shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -2203,8 +2209,9 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
 # spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
-# reads it, for the organisers' page and the decision record, and for scripts/alerts.js.
-DETAIL_FIELDS = ("contributors", "guide", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
+# reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
+# results an organisation sent (measured, 20 Oct 2026) are a spot page's alone too.
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
 
 
 def write_app_data(site: Path, doc: dict) -> int:
@@ -2462,6 +2469,7 @@ def build(refresh: bool = True) -> dict:
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
+    measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     # Network only, like the levels, and before their EA requests: one request for the national flood
@@ -2516,6 +2524,8 @@ def build(refresh: bool = True) -> dict:
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
+    health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}
+    health["warnings"] += measured["warnings"]
     for w in health["warnings"]:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)

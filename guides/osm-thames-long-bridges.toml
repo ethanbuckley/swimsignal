@@ -1,0 +1,74 @@
+# River Thames, Long Bridges, Oxford. Desk check of Oxford City Council's and the Environment Agency's pages, 20 October 2026.
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-20
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Oxford City Council says the nearest car park to Longbridges is off Meadow Lane. The page gives no charges, hours or number of spaces."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/680/longbridges-nature-park"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "parking"
+text = "The council's page for Meadow Lane Nature Park, which it says is close to Longbridges, says parking is off the northern stretch of Meadow Lane, behind the Sea Cadet Riverside Centre. It gives no charges, hours or number of spaces."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/676/meadow-lane-nature-park"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "path"
+text = "Oxford City Council says Longbridges, once an open-air river bathing place on a backwater of the Thames, is now a nature reserve where two small backwaters join. Access is on foot or by cycle along the Thames Path or from Weirs Lane; the postcode is OX4 4AX."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/680/longbridges-nature-park"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "rules"
+text = "Oxford City Council says swimming is not advised at Longbridges: it is not a designated bathing area, and the council does not recommend swimming there because of water quality risks, hidden depths and submerged objects."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/directory-record/680/longbridges-nature-park"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "rules"
+text = "In June 2026 Oxford City Council said Longbridges is one of six council-owned places on its waterways to get new signs and public rescue equipment, after a review by the Royal Life Saving Society. It expected the signs to be in by the end of June."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/news/article/1860/new-signage-to-be-installed-to-improve-water-safety-in-oxford"
+source_name = "Oxford City Council"
+
+[[fact]]
+topic = "rules"
+text = "To hold an event on the River Thames, the Environment Agency asks organisers to email enquiries_thm@environment-agency.gov.uk at least 10 weeks ahead to agree details and charges. Its written consent is needed to put marker buoys, floating notices or other temporary works in the river. The page covers the whole river and does not name Longbridges."
+status = "confirmed"
+source = "https://www.gov.uk/guidance/inland-waterways-get-permission-to-hold-an-event"
+source_name = "Environment Agency"
+
+[[fact]]
+topic = "rules"
+text = "Under Thames byelaw 63 no one may knowingly bathe where the Environment Agency has prohibited bathing by a publicly displayed notice, or jump, dive, swim or bathe so as to cause obstruction, nuisance, annoyance or risk of danger or injury. The byelaws cover the whole river and do not name Longbridges."
+status = "confirmed"
+source = "https://www.gov.uk/government/publications/river-thames-navigation-licensing-and-general-byelaws-1993/the-thames-navigation-licensing-and-general-byelaws-1993"
+source_name = "Environment Agency"
+
+[[fact]]
+topic = "rules"
+text = "The Environment Agency's notice for Rowing On and Summer Eights, 23 to 30 May 2026, covered the Iffley reach, Folly Bridge to Iffley Lock, with racing every half hour and no mooring between the Isis pub and Long Bridges. Swimming was not allowed on or near the course at the stated times. The notice was withdrawn on 1 June 2026."
+status = "confirmed"
+source = "https://www.gov.uk/government/publications/rowing-on-and-summer-eights-2026-river-restriction-notice/rowing-on-and-summer-eights-2026-river-restriction-notice"
+source_name = "Environment Agency"
+
+[[fact]]
+topic = "rules"
+text = "For the Oxford City Regatta on 22 and 23 August 2026 the Environment Agency set a buoyed racing channel between Christchurch Meadow and Longbridges, with racing from 8am to 6pm. Swimming was not allowed on or near the course at the stated times. The notice was withdrawn on 24 August 2026."
+status = "confirmed"
+source = "https://www.gov.uk/government/publications/oxford-city-regatta-2026-river-restriction-notice/oxford-city-regatta-2026-river-restriction-notice"
+source_name = "Environment Agency"
+
+[[fact]]
+topic = "rules"
+text = "To hold an event on its land, Oxford City Council asks for an event management plan, £5 million public liability insurance, a site-specific risk assessment and a site plan, with a non-refundable £20 application fee plus hire and deposit fees. Applications go to a 14 day consultation. The page does not name Longbridges."
+status = "confirmed"
+source = "https://www.oxford.gov.uk/organising-event-land/apply-host-event-land"
+source_name = "Oxford City Council"
