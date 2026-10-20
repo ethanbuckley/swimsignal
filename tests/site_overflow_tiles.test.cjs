@@ -20,7 +20,7 @@ function page_(files, view, z = 12) {
   const [s, w, n, e] = view;
   const ctx = vm.createContext({
     asked, drawn, Promise, Map, Set, Math, Error,
-    PHONE: { matches: false }, mapMode: () => true, ovKey: () => {},
+    PHONE: { matches: false }, mapMode: () => true, current: null, ovKey: () => {},
     map: { getZoom: () => z, getBounds: () => ({ getNorth: () => n, getSouth: () => s, getWest: () => w, getEast: () => e,
       contains: ([lat, lon]) => lat >= s && lat <= n && lon >= w && lon <= e }) },
     ovLayer: { clearLayers: () => { drawn.length = 0; } },
