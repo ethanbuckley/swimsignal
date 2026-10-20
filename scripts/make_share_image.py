@@ -4,7 +4,7 @@ and social sites show for a shared link. Rerun after a change of name or tagline
     uv run --with pillow python scripts/make_share_image.py --name SwimSignal
 
 The site's own typefaces (docs/DESIGN.md): the name in Source Serif 4, the rest in Source Sans 3.
-The repository holds them as web fonts only (src/dipcast/api/static/fonts/, WOFF2, which Pillow
+The repository holds them as web fonts only (src/dipcast/pages/fonts/, WOFF2, which Pillow
 cannot read), so pass the TTFs with --display and --font, downloaded from Google Fonts or
 github.com/adobe-fonts; without them the image falls back to the system's Georgia and Arial.
 A variable font is set to the weight asked for; a static one is used as it is. For the name, use

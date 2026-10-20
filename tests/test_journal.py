@@ -31,7 +31,7 @@ def test_the_page_loads_the_journal_from_its_build(tmp_path):
 
 
 def test_the_privacy_notice_describes_the_journal():
-    notice = (ROOT / "src" / "dipcast" / "api" / "static" / "privacy.html").read_text()
+    notice = (ROOT / "src" / "dipcast" / "pages" / "privacy.html").read_text()
     assert '"Log a swim"' in notice and "IndexedDB" in notice and "Save a copy" in notice
     assert "I swam here today" not in notice
 

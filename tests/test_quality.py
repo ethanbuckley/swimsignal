@@ -94,4 +94,4 @@ def test_the_build_writes_the_page_lists_it_and_about_links_it(tmp_path):
     assert "<title>Overflow records to check · SwimSignal</title>" in page and "the build of 20 Oct 2026, 06:39" in text(page)
     assert "51.89384, 0.89496" in page
     assert f"{'https://example.org/'}quality.html" in bs.sitemap("https://example.org/", [], "2026-10-20")
-    assert 'href="quality.html">Overflow records to check</a>' in (ROOT / "src/dipcast/api/static/about.html").read_text()
+    assert 'href="quality.html">Overflow records to check</a>' in (ROOT / "src/dipcast/pages/about.html").read_text()

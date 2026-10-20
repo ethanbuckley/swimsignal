@@ -2,7 +2,7 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
-const script = fs.readFileSync('src/dipcast/api/static/coverage.html', 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+const script = fs.readFileSync('src/dipcast/pages/coverage.html', 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
 
 test('coastal search matches site names and reports the visible count', () => {
   let search;
