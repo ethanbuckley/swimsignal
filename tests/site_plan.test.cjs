@@ -92,6 +92,16 @@ test('postcodes are recognised, so the page can say they do not work yet', () =>
   for (const pc of ['LA22 9', 'la22', 'SW1A 1AA', 'M1', 'B33 8TH']) assert.equal(P.looksLikePostcode(pc), true, pc);
   for (const name of ['Bath', 'Ely', 'Kendal', 'A1 road']) assert.equal(P.looksLikePostcode(name), false, name);
 });
+// The page's own handling of the field (index.html, planType). On an iPhone a place picked from the offers
+// started the plan but left the keyboard up over it (QA, 20 Oct 2026): a place found now leaves the field,
+// after the plan is drawn, as Enter does; one not found keeps it, to type again.
+test('a place found leaves the field, so a phone keyboard closes over the plan; one not found keeps it', () => {
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
+  const at = app.indexOf('async function planType('), body = app.slice(at, app.indexOf('\n}\n', at));
+  const blur = body.indexOf('if (input && document.activeElement === input) input.blur();');
+  assert.ok(at > 0 && blur > body.indexOf('drawPlan(moved);') && blur > body.indexOf('No town, village or district called'));
+  assert.ok(app.includes("input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });"));
+});
 
 // Spots on a line north of the start, a mile apart, with the levels given for 1 October.
 const spot = (id, miles, l, extra = {}) => ({id, name: id, kind: 'river', source: 'curated', miles, upstream_summary: {overflows: 3},
