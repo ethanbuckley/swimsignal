@@ -184,3 +184,25 @@ details.ea-today > summary::after { content: ""; flex: none; width: 9px; height:
 details.ea-today[open] > summary::after { transform: rotate(-135deg); }
 details.ea-today > p:first-of-type { margin-top: 0; }
 details.ea-today iframe { display: block; width: 100%; max-width: 343px; height: 280px; border: 0; }
+
+/* Paper (review F5): every prose page black on white at the paper's width, without the header links,
+   with the folds open (where the browser lets CSS open them: ::details-content) and nothing cut off in
+   a scrolling box. The pages made to be printed (sign, sites, organisers, record, profile) add their own. */
+@media print {
+  body { background: var(--card); }
+  .top { padding: 0 0 8px; background: var(--card); color: var(--ink); border-bottom: 1px solid var(--line); }
+  .top .brand { color: var(--ink); }
+  .top nav { display: none; }
+  main.doc { max-width: none; padding: 16px 0 0; }
+  .site-foot { max-width: none; padding: 0; }
+  .summary, .panel { padding-left: 0; padding-right: 0; }
+  a { color: var(--ink); text-decoration: none; }
+  .site-foot a { color: var(--muted); }
+  .tw, #coastal-sites, #wales-sites, #scotland-sites, #ireland-sites, #ni-sites { overflow: visible; max-height: none; }
+  details::details-content { content-visibility: visible; display: block; }
+  details > summary::after { display: none; }
+  details.ea-today { display: none; }   /* the EA's panel is an iframe, blank on paper */
+  .week, .wk { print-color-adjust: exact; -webkit-print-color-adjust: exact; }   /* a five-day strip's marks are backgrounds, which a browser drops on paper */
+  tr, li, dl.fields dd { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
