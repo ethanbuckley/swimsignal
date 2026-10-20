@@ -31,8 +31,11 @@
      2026). main() takes the answer from FORECAST; the catch only stops an early failure being
      reported before main() gets to it, and main() still gets the error. The forecast is
      spots-lite.json, without each spot's overflows and guide; a spot's page asks for its own here
-     too (DETAIL, data/spot/<id>.json), so the two arrive together. -->
-<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high">
+     too (DETAIL, data/spot/<id>.json), so the two arrive together. Each screen asks for the picture
+     it shows, and only that one: a wide desktop's views draw the wide sky (build_site.SKY_PRELOAD;
+     a spot's page draws it from 801 px). -->
+<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high" media="(max-width: 1099px)">
+<link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">
 <script>window.FORECAST = fetch('data/spots-lite.json', { cache: 'no-cache' }); FORECAST.catch(() => {});
   { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
     if (m) { window.DETAIL = { id: m[1], res: fetch(`data/spot/${m[1]}.json`, { cache: 'no-cache' }) }; DETAIL.res.catch(() => {}); } }</script>
@@ -382,6 +385,10 @@
      which covered the ringed spot at the top of so small a map; the tile has its own key. */
   #spot-map .map-legend, #spot-map .low-ctl { display:none; }
   .col-go, .col-why, .col-more { display:contents; }   /* a desktop's two columns on a spot's page; on a phone, the one stack */
+  /* The same on the list, Saved and Plan a swim (cols): the view, then the full map's tile, which only a
+     wide desktop shows (min-width: 1100px). Elsewhere the view is the one stack it was. */
+  .cols, .col-list { display:contents; }
+  .col-map { display:none; }
   /* The answer, as Apple's opening lines: the place, its name, the level and "risk" at the title's size,
      what set it and when, where the five days go, the issue time. */
   .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -631,7 +638,7 @@
   /* What changed since you last looked (since.js): history, so muted, and never a level's colour. */
   .place-since { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; color:var(--muted); }
   .group.tile { margin-top:8px; padding:12px 16px 4px; }
-  .lead + .group.tile, .lead + .save-hint.tile { margin-top:0; }
+  .col-list > .group.tile:first-child, .col-list > .save-hint.tile:first-child { margin-top:0; }   /* the first tile under the opening */
   .group.tile ul.places { gap:0; }
   .group.tile .place { padding:12px 0 14px; border-top:1px solid var(--hair); }
   .save-hint.tile { margin:0 0 8px; padding:12px 16px; }
@@ -702,7 +709,8 @@
   #panel:focus { outline:none; border-radius:0; }
   .bottom-nav { display:none; }
 
-  /* Desktop: the map fills the left, the list or the spot scrolls on the right. */
+  /* Desktop, to 1,099 px: the map fills the left, the list, Saved or Plan a swim scrolls on the right.
+     From 1,100 px every view is a page under the header (below). */
   @media (min-width: 801px) {
     html, body { height:100%; }
     body { display:flex; flex-direction:column; }
@@ -739,17 +747,45 @@
     body.view-spot #spot-map { height:400px; }
     body.view-spot #spot-map .map-say { display:none; }   /* "Click any river or lake" is the full map's line; here it covered the tile's corner */
   }
-  /* A wide desktop (20 Oct 2026, layout B's home half): the list is 560 px, and a row's five days
-     carry their short names ("Tue") over bars as wide as the names, in place of the letters. */
+  /* A wide desktop (20 Oct 2026, layout B's home half): a row's five days carry their short names
+     ("Tue") over bars as wide as the names, in place of the letters. */
   @media (min-width: 1200px) {
-    #app { grid-template-columns:minmax(0, 1fr) 560px; }
     .week { gap:6px; }
     .wk { width:32px; gap:4px; }
     .wk i { width:32px; height:12px; }
     .wk .d1 { display:none; } .wk .d3 { display:inline; }
     .week.rain .wk { height:42px; }   /* the tallest bar (24 px), the gap and the name */
   }
-  /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. */
+  /* A wide desktop: the list, Saved and Plan a swim open as pages, as a spot does (20 Oct 2026). The map
+     column goes; the opening spans the page, centred over the wide sky; under it two columns, 5 to 7,
+     1,180 px at most: the view on the left, the full map on the right in a tile of its own, which stays
+     in view under the header as the page scrolls (sticky), the height of the screen less the header
+     and the gaps, and never under 480 px. The map's frame moves into that tile (placeWrap). The panel
+     still scrolls, under the header, so the list keeps its place as before (scrollTop, keepPlace). */
+  @media (min-width: 1100px) {
+    #app { grid-template-columns:minmax(0, 1fr); }
+    #app > #map-wrap { display:none; }   /* between views, and on a page with no map tile (a point loading) */
+    #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
+    #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1180px; margin-left:auto; margin-right:auto; }
+    .about > * { max-width:720px; }   /* a prose column, as the prose pages' */
+    .lead { text-align:center; }
+    .lead > * { max-width:640px; margin-left:auto; margin-right:auto; }
+    .lead > .back { display:flex; width:max-content; max-width:none; margin-left:0; }   /* the way back keeps the left edge, as on a spot */
+    .lead .notice { text-align:left; }
+    .lead .chips-row { justify-content:center; }
+    .lead::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
+      background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
+    .cols { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); gap:24px; align-items:start; }
+    .col-list { display:block; min-width:0; }
+    .col-map { display:block; position:sticky; top:0; min-width:0; }   /* 0 is the panel's 24 px padding: a sticky box keeps inside it */
+    .map-tile { display:flex; flex-direction:column; height:max(480px, calc(100vh - var(--header-h) - 48px)); }
+    .map-tile #map-wrap { flex:1; min-height:0; margin-top:10px; border-radius:var(--radius); overflow:hidden; }
+    /* The legend wraps to the tile's width and sits above the map's credit, not over it. */
+    .map-tile .leaflet-bottom.leaflet-left .map-legend { margin:0 10px 30px; }
+  }
+  /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. The list, Saved
+     and Plan a swim keep the map column: as one 720 px column the map came between the opening and the
+     first spot (layout of 20 Oct 2026, docs/DESIGN.md). */
   @media (min-width: 801px) and (max-width: 1099px) {
     body.view-spot #result { max-width:720px; }
     body.view-spot .stack { grid-template-columns:minmax(0, 1fr); grid-template-rows:none; grid-template-areas:none; }
@@ -1104,12 +1140,13 @@ const onSavedPage = () => /\/saved\/?$/.test(location.pathname);
 const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);   // not a new tab or window
 
 // ------------------------------------------------------------------------------ the one map
-// On a desktop the map fills the left column. On a phone the list comes first: the map opens full
-// screen from Map in the bar at the bottom, and a spot's page shows it in a card. The same Leaflet
-// map moves between those places (placeMap), and is parked in its column before the panel is
-// redrawn, or innerHTML would destroy it.
-const PHONE = matchMedia('(max-width: 800px)');
-const mapEl = document.getElementById('map'), mapWrap = document.getElementById('map-wrap');
+// On a desktop to 1,099 px the map fills the left column; on a wider one (WIDE) the list, Saved and Plan
+// a swim each show it in a tile of their own, beside the view (placeWrap). On a phone the list comes
+// first: the map opens full screen from Map in the bar at the bottom. A spot's page shows it in a card,
+// on any screen. The same Leaflet map moves between those places (placeMap), and is parked before the
+// panel is redrawn (parkMap), or innerHTML would destroy it.
+const PHONE = matchMedia('(max-width: 800px)'), WIDE = matchMedia('(min-width: 1100px)');
+const mapEl = document.getElementById('map'), mapWrap = document.getElementById('map-wrap'), app = document.getElementById('app');
 // Touch screens: one finger scrolls the page and two move the map (Leaflet's pinch pans as well as
 // zooms). With one-finger dragging on, a phone's map took the scroll. Full screen, there is no page
 // to scroll, so one finger moves the map there.
@@ -1195,20 +1232,39 @@ if (TOUCH) {
 const spotLayer = L.layerGroup().addTo(map), contribLayer = L.layerGroup().addTo(map), ovLayer = L.layerGroup().addTo(map), selLayer = L.layerGroup().addTo(map);
 const mapMode = () => document.body.classList.contains('map-mode');
 // A desktop's full map, as it was when a spot's page took the map into its tile: the reader never saw
-// it move, so back in its column it is where they left it, not on the spot (20 Oct 2026).
+// it move, so back in its column or its tile it is where they left it, not on the spot (20 Oct 2026).
+// Kept from the first spot opened until the full map is on screen again (settleMap), so a second spot
+// opened from the first does not take its place.
 let wideView = null;
-// Back in the desktop's map column from a spot's tile, the map takes the column's size first.
+// The full map's frame: in the view's map tile on a wide desktop, else before the panel, where the
+// desktop's column, the phone's full screen (map-mode, position:fixed, which a tile's backdrop-filter
+// would confine to the tile) and a spot's page (which hides it) want it.
+function placeWrap() {
+  const tile = WIDE.matches ? document.querySelector('#result .map-tile') : null;
+  if (tile) { if (mapWrap.parentElement !== tile) tile.appendChild(mapWrap); }
+  else if (mapWrap.parentElement !== app) app.prepend(mapWrap);
+}
+// Before a redraw: the frame out of the view's tile and the map out of a spot's, both into safe keeping.
 function parkMap() {
-  if (mapEl.parentElement === mapWrap) return;
-  mapWrap.appendChild(mapEl);
-  if (PHONE.matches) return;
+  if (mapWrap.parentElement !== app) app.prepend(mapWrap);
+  if (mapEl.parentElement !== mapWrap) mapWrap.appendChild(mapEl);
+}
+// After it: the frame into the new view's tile, then, where the full map shows, the map takes its size
+// and the view it had (wideView), or all the spots the first time (FIT_ALL). Where it does not show (a
+// spot's page) it keeps its last size until placeMap moves it: a map sized 0 by 0 drops its tiles.
+let FIT_ALL = false;
+function settleMap() {
+  placeWrap();
+  if (PHONE.matches || mapEl.parentElement !== mapWrap || !mapWrap.offsetWidth) return;
   map.invalidateSize();
   if (wideView) { map.setView(wideView[0], wideView[1], { animate: false }); wideView = null; }
+  if (FIT_ALL) { FIT_ALL = false; fitAll(); }
 }
 function placeMap() {
   const slot = current && !mapMode() ? document.getElementById('spot-map') : null;   // a spot's page, phone or desktop (20 Oct 2026)
+  placeWrap();
   const home = slot || mapWrap;
-  if (slot && mapEl.parentElement === mapWrap && !PHONE.matches) wideView = [map.getCenter(), map.getZoom()];
+  if (slot && mapEl.parentElement === mapWrap && !PHONE.matches && !wideView) wideView = [map.getCenter(), map.getZoom()];
   if (mapEl.parentElement !== home) home.appendChild(mapEl);
   if (TOUCH) { if (PHONE.matches && mapMode()) map.dragging.enable(); else map.dragging.disable(); }
   map.invalidateSize();
@@ -2220,7 +2276,8 @@ function bindDays(d) {
   if (DAY && days.length) showDay(d, DAY);
   else if (DAY) showDay(d, null);   // no day to pick here (nothing upstream to forecast): the summary, and a plain address
 }
-// A phone scrolls the window; a desktop scrolls the column beside the map.
+// A phone scrolls the window; a desktop scrolls the panel: the column beside the map, or on a wide
+// desktop the whole page under the header (the map's tile is sticky in it).
 const scrollTop = (y = 0) => { if (PHONE.matches) window.scrollTo(0, y); else document.getElementById('panel').scrollTop = y; };
 const scrollPos = () => PHONE.matches ? window.scrollY : document.getElementById('panel').scrollTop;
 // Where the list and the Saved page were when last left (for a spot, for each other, or by Back or
@@ -2454,8 +2511,8 @@ setInterval(refreshNotices, 60 * 1000);
 function setPanel(h) { parkMap(); if (MINI) { MINI.remove(); MINI = null; }
   const box = document.getElementById('result');
   box.classList.remove('fresh');
-  if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); return; }
-  box.innerHTML = h; void box.offsetWidth; box.classList.add('fresh'); }
+  if (box.hasAttribute('data-built')) { box.removeAttribute('data-built'); overBuilt(box, h); settleMap(); return; }
+  box.innerHTML = h; settleMap(); void box.offsetWidth; box.classList.add('fresh'); }
 // The built opening stays the same element, changed only where the script's words differ ("Issued 08:00"
 // gains "2 min ago"), and the rest of the view goes in around it. Replaced, its picture (the sky, .lead
 // and .answer's ::before) was painted a second time, later, and page-speed tests time the load by that
@@ -2491,6 +2548,11 @@ function patchNode(old, neu) {
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };
 const SORTS = { risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
 const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>';
+// Under the opening of the list, Saved and Plan a swim: the view, then the full map's tile, which a wide
+// desktop shows beside it and the map's frame moves into (placeWrap). Elsewhere the tile is not shown
+// and the view is the one stack it was. The build writes the same frame round the list's shape (home_lead).
+const MAP_TILE = `<div class="col-map"><section class="tile map-tile" aria-labelledby="map-h"><h2 class="t-lab" id="map-h">${ICON.map}<span>Map</span></h2></section></div>`;
+const cols = h => `<div class="cols"><div class="col-list">${h}</div>${MAP_TILE}</div>`;
 // With more than one list, Save says which list it adds to: the one the Saved page shows.
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
@@ -2566,22 +2628,22 @@ function renderList() {
     + `<div id="answer-lines">${answerLines()}</div>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
-  h += saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
+  let v = saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
-  h += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
+  v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
-  h += `<section class="group tile" id="all-group" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
+  v += `<section class="group tile" id="all-group" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
     + `<div class="sortseg" role="group" aria-label="Sort">${sorts.map(([k, t]) => `<button type="button" data-sort="${k}" aria-pressed="${VIEW.sort === k}">${t}</button>`).join('')}</div></div>`
     // Under the sort buttons, where the eye is after pressing Near me: below the overview it was off a
     // phone's screen, so a declined or failed location changed nothing you could see.
     + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
     + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="count" id="count" role="status"></p></section>`;
-  h += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
+  v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot since 14 Oct 2026: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
     + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`;
-  setPanel(h);
+  setPanel(h + cols(v));
   if (saved.length) bindItems(document.getElementById('saved-list'));
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
   bindBestDay();
@@ -2785,26 +2847,27 @@ function renderSaved() {
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
   h += '</div>';
-  if (spots.length) h += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
+  let v = '';
+  if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
     + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
   // Empty: one tile, one sentence and the way to a spot (review of 16 Oct 2026, C7). The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
-  else h += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
+  else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
     + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
     + `${navigator.standalone ? ' Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here.' : ''}</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
     + `${swimsShown(spots) ? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal</button></p>'}</div>`;
-  if (gone) h += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
+  if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
-  h += `<div id="compare-host">${compareSection(spots)}</div>`;
-  if (DATA.spots.some(s => SAVED.has(s.id))) h += alertsCard();   // alerts cover every list
-  if (spots.length) h += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
+  v += `<div id="compare-host">${compareSection(spots)}</div>`;
+  if (DATA.spots.some(s => SAVED.has(s.id))) v += alertsCard();   // alerts cover every list
+  if (spots.length) v += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
     + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`
     + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p>`
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
-  h += (many || SAVED.size ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
-  setPanel(h);
+  v += (many || SAVED.size ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
+  setPanel(h + cols(v));
   bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
   if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
@@ -2922,12 +2985,13 @@ function renderShared(sh) {
   if (have) h += `<p class="planner-note" role="status">It is in your lists already, as ${esc(have.name)}. <button type="button" class="linkbtn small" id="sh-show">Show it</button></p>`;
   else if (spots.length) h += `<p class="sh-act"><button type="button" class="btn primary" id="sh-add">Add to my lists</button></p>`;
   h += notices() + '</div>';
-  if (spots.length) h += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
+  let v = '';
+  if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
     + `<p class="small muted msg">${gone ? `${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out. ` : ''}`
     + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.${spots.some(anyUntested) ? ' ' + UNTESTED_NOTE : ''}</p>`;
-  else h += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
+  else v += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
-  setPanel(h);
+  setPanel(h + cols(v));
   const $ = id => document.getElementById(id), mine = () => { history.replaceState(history.state, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); };
   $('back-lists').addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
     keepPlace(); history.pushState({ view: 'saved', from: 'saved' }, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); });
@@ -2998,8 +3062,16 @@ async function offerOnMap() {
 // Kennet's box opened at zoom 9 among unnamed tiles), or a place. On a phone the full map opens over the
 // list; on a wider screen the map is already beside it.
 const WATER_ZOOM = 11, PLACE_ZOOM = 12;
+// On a wide desktop the map's tile starts under the opening, and on the first screen only its top shows:
+// a move asked for from the list (a river from the search, where you are) scrolls the page until the
+// whole tile is in view, where it then stays (sticky). Nothing moves if it is in view already.
+function mapInView() {
+  const tile = mapWrap.closest('.map-tile'); if (!tile) return;
+  const p = document.getElementById('panel'), dy = tile.getBoundingClientRect().bottom - p.getBoundingClientRect().bottom + 24;
+  if (dy > 0) p.scrollBy({ top: dy, behavior: SCROLL() });
+}
 function showOnMap(at, zoom, say, name = null) {
-  if (PHONE.matches) setMapMode(true, [at[0], at[1], zoom]); else map.setView(at, zoom, MOTION());
+  if (PHONE.matches) setMapMode(true, [at[0], at[1], zoom]); else { map.setView(at, zoom, MOTION()); mapInView(); }
   selLayer.clearLayers();
   if (name) L.circleMarker(at, { radius: 14, color: RING(), weight: 3, fill: false, interactive: false })
     .bindTooltip(esc(name), { permanent: true, direction: 'top', offset: [0, -14] }).addTo(selLayer);
@@ -3017,7 +3089,7 @@ function hereForecast() {
     let d = null;
     try { d = await AnyPoint.point(at[0], at[1]); } catch (e) { /* open() says what went wrong */ }
     if (d && d.mode === 'none' && !d.outside) {
-      if (PHONE.matches) setMapMode(true, [at[0], at[1], PLACE_ZOOM]); else map.setView(at, PLACE_ZOOM, MOTION());
+      if (PHONE.matches) setMapMode(true, [at[0], at[1], PLACE_ZOOM]); else { map.setView(at, PLACE_ZOOM, MOTION()); mapInView(); }
       selLayer.clearLayers();   // where you are, as a dot: the water to tap is at least 1.5 km from it
       L.circleMarker(at, { radius: 6, color: '#fff', weight: 2, fillColor: RING(), fillOpacity: 1, interactive: false }).addTo(selLayer);
       mapSay(`No river or lake within 1.5 km of you. ${TAP()} the nearest one on the map.`);
@@ -3095,7 +3167,7 @@ function renderPlan() {
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p>`
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
     + `<p class="planner-note" id="plan-sum" role="status"></p>` + notices() + '</div>'
-    + `<div id="plan-results"></div>`;
+    + cols('<div id="plan-results"></div>');
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
 }
@@ -3636,6 +3708,7 @@ document.addEventListener('keydown', e => {
   e.preventDefault(); q.focus(); });
 // A phone turned or a window resized across the breakpoint: put the map where that layout wants it.
 PHONE.addEventListener('change', () => { if (!PHONE.matches && mapMode()) setMapMode(false); setHeaderHeight(); placeMap(); });
+WIDE.addEventListener('change', placeMap);   // into the view's tile, or back to the column
 
 // While the forecast loads, the shape of the list in its place, so the page does not jump when it
 // comes; the words are for screen readers. Only over the bare placeholder: the built home page
@@ -3668,7 +3741,9 @@ async function main() {
     if (!location.pathname.includes('/spot/')) history.replaceState(history.state, '', spotPath(q));
     select(q, true, false, day);
   } else {
-    if (!PHONE.matches) fitAll();   // a phone's map is hidden (0 x 0) until Map is pressed, and fits then
+    // All the spots, once the view has put the map where it shows (settleMap). A phone's map is hidden
+    // (0 x 0) until Map is pressed, and fits then.
+    FIT_ALL = !PHONE.matches;
     if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y);
       if (typing) { const box = document.getElementById('q'); box.focus(); box.setSelectionRange(box.value.length, box.value.length); } }
   }
