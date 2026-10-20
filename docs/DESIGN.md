@@ -279,18 +279,22 @@ paper, as the site's first screen looked in the fifth round.
   1,180 px at most: the five days, nearby and the water on the left, the map and why on the right.
   Before, a spot was 3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to
   pick it. The list, Saved and Plan a swim match it (`cols`, `col-list`, `col-map`): the opening
-  (`.lead`) centred over the wide sky, 640 px at most, the back link at the left edge as on a spot;
+  (`.lead`) centred over the wide sky, 760 px at most, the back link at the left edge as on a spot;
+  on the list the search and "Show spots near me" share a row, as do the day and "Low risk only";
   under it the view on the left (5) and the full map on the right (7), in a glass tile labelled Map
   that is sticky under the header, the screen's height less the header and two 24 px gaps, never
   under 480 px. It keeps its controls, its legend (wrapped to the tile, above the credit) and
   click-anywhere. The page scrolls as one, in the panel, so the list keeps its place and the map its
   view when a spot is opened and closed. At 1,440 x 900 the map is 646 x 735 (880 x 836 beside the
-  560 px column before); on the first screen its top 335 px show, and a river picked from the search
-  scrolls the page until the whole tile is in view (`mapInView`). About and the foot share the 1,180 px
+  560 px column before); the list's opening ends 425 px down, so 427 px of the 788 px tile show on the
+  first screen, and a river picked from the search scrolls the page until the whole tile is in view
+  (`mapInView`). In the tile the map takes quarter steps of zoom (`snapMap`) and fits all the spots
+  close to their own bounds, clear of the legend (`fitAll`): zoom 6.5 there, where a whole step left
+  England under half the tile. A phone's map and the desktop's column keep whole steps and their fits. About and the foot share the 1,180 px
   frame, About's text at 720 px.
   From 801 to 1,099 px a spot is one 720 px column, and the list, Saved and Plan keep the old layout:
   map left, a 460 px column right. One 720 px column would put the map between the opening and the
-  first spot: the opening ends about 520 px down at 1,440, so with a 320 px map tile (a spot's at
+  first spot: the opening ended about 520 px down at 1,440 before it was shortened, so with a 320 px map tile (a spot's at
   this width) the first spot would start near the foot of a 900 px screen (an estimate, not built).
   Two columns would leave the list 380 px wide, a phone's. A row's five days carry their short names ("Tue") over bars 32 px wide from
   1,200 px. On the list the day and "Low risk only" are the opening's alone; the map shows its own

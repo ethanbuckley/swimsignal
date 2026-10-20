@@ -769,7 +769,18 @@
     #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1180px; margin-left:auto; margin-right:auto; }
     .about > * { max-width:720px; }   /* a prose column, as the prose pages' */
     .lead { text-align:center; }
-    .lead > * { max-width:640px; margin-left:auto; margin-right:auto; }
+    .lead > * { max-width:760px; margin-left:auto; margin-right:auto; }
+    /* A shorter opening (Ethan, 20 Oct 2026), so the first spots and most of the map's tile are on a
+       1,440 x 900 screen: the search and Near me share a row, as do the day and "Low risk only". */
+    .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
+    .intro > * { grid-column:1 / -1; }
+    .intro > .search { grid-column:1; }
+    .intro > .search input { min-height:48px; }   /* Near me's height */
+    .intro > .near-cta { grid-column:2; width:auto; margin-top:16px; padding:8px 18px; }
+    .intro > .here-cta { justify-self:center; }
+    .lead .lede { text-wrap:balance; }
+    .lead .toolbar { justify-content:center; }
+    .lead .toolbar select { flex:0 1 320px; }
     .lead > .back { display:flex; width:max-content; max-width:none; margin-left:0; }   /* the way back keeps the left edge, as on a spot */
     .lead .notice { text-align:left; }
     .lead .chips-row { justify-content:center; }
@@ -1254,7 +1265,7 @@ function parkMap() {
 // spot's page) it keeps its last size until placeMap moves it: a map sized 0 by 0 drops its tiles.
 let FIT_ALL = false;
 function settleMap() {
-  placeWrap();
+  placeWrap(); snapMap();
   if (PHONE.matches || mapEl.parentElement !== mapWrap || !mapWrap.offsetWidth) return;
   map.invalidateSize();
   if (wideView) { map.setView(wideView[0], wideView[1], { animate: false }); wideView = null; }
@@ -1266,6 +1277,7 @@ function placeMap() {
   const home = slot || mapWrap;
   if (slot && mapEl.parentElement === mapWrap && !PHONE.matches && !wideView) wideView = [map.getCenter(), map.getZoom()];
   if (mapEl.parentElement !== home) home.appendChild(mapEl);
+  snapMap();
   if (TOUCH) { if (PHONE.matches && mapMode()) map.dragging.enable(); else map.dragging.disable(); }
   map.invalidateSize();
 }
@@ -1340,7 +1352,16 @@ function miniMap(s) {
   const open = () => { setMapMode(true); map.setView([s.lat, s.lon], 13, MOTION()); };
   MINI.on('click', open); document.getElementById('loc-open').addEventListener('click', open);
 }
-const fitAll = () => map.fitBounds(L.latLngBounds(DATA.spots.map(s => [s.lat, s.lon])), { padding: [18, 18], ...MOTION() });
+// All the spots. In a wide desktop's tile, close to their own bounds, in quarter steps of zoom (snapMap) and
+// clear of the legend and the line over it at the foot: at a whole step England took under half the tile,
+// between Scotland and France (20 Oct 2026). Elsewhere (a phone's full map, the desktop's column) as before.
+const fitAll = () => { const b = L.latLngBounds(DATA.spots.map(s => [s.lat, s.lon]));
+  if (!mapWrap.closest('.map-tile')) { map.fitBounds(b, { padding: [18, 18], ...MOTION() }); return; }
+  const foot = mapEl.querySelector('.leaflet-bottom.leaflet-left');
+  map.fitBounds(b, { paddingTopLeft: [16, 16], paddingBottomRight: [16, 16 + (foot ? foot.offsetHeight : 0)], ...MOTION() }); };
+// The map takes quarter steps of zoom in a wide desktop's tile, whole ones everywhere else, so a spot's
+// map and the phone's fit as they did. Set wherever the map moves (settleMap, placeMap).
+const snapMap = () => { map.options.zoomSnap = mapEl.parentElement === mapWrap && mapWrap.closest('.map-tile') ? 0.25 : 1; };
 window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
