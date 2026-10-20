@@ -103,7 +103,8 @@ SCOTTISH_WATER_API = "https://api.scottishwater.co.uk/overflow-event-monitoring/
 SCOTTISH_WATER = os.environ.get("DIPCAST_SCOTTISH_WATER", "") == "1"
 
 # ---------------------------------------------------------------------------
-# Rainfall: Open-Meteo (no key). Archive is ERA5-Land reanalysis at ~0.1 deg.
+# Rainfall: Open-Meteo. Archive is ERA5-Land reanalysis at ~0.1 deg. No key: the free hosts below;
+# with DIPCAST_OPEN_METEO_KEY set, the paid plan's customer- hosts (rainfall.customer).
 # Sites are snapped to a RAIN_GRID_DEG grid so one call serves many overflows.
 # ---------------------------------------------------------------------------
 OPEN_METEO_ARCHIVE = "https://archive-api.open-meteo.com/v1/archive"

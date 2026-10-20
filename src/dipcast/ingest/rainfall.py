@@ -25,7 +25,7 @@ set by the floors, not by how many builds run. The ledger (calls_today, spend) a
 asked for since 00:00 UTC, when Open-Meteo starts its count again, and a request that would take
 the day over DAILY_CALLS is not made: its cells get their cached forecast, as after a failure.
 Every request this process sends, retries included, is counted by host (requests_made), for the
-build log.
+build log. A paid plan's key (KEY_ENV) moves every request to Open-Meteo's customer hosts (customer).
 """
 
 from __future__ import annotations
@@ -76,6 +76,14 @@ OUTAGE_COOLOFF_S = 600
 # request that timed out after Open-Meteo had counted it).
 DAILY_CALLS = float(os.environ.get("DIPCAST_OPEN_METEO_DAILY_CALLS", "9000"))
 LEDGER_NAME = "open_meteo_calls.json"
+# A paid plan (OP1, docs/ORGANISER-PIVOT-2026-10.md): the free API is for non-commercial use only.
+# With KEY_ENV set, every request goes to the same path on the host with "customer-" in front
+# (api. -> customer-api., archive-api. -> customer-archive-api., and so on) and carries &apikey=.
+# Open-Meteo's docs, the apikey row of each API's parameters: "The server URL requires the prefix
+# customer-"; its pricing page: "requests include &apikey=abc123". Unset, nothing changes. The key
+# goes into the request and nowhere else: not a log line, an error, a cache name or the build
+# summary (redact, _KeyFilter; tests/test_open_meteo_key.py).
+KEY_ENV = "DIPCAST_OPEN_METEO_KEY"
 
 _sleep = time.sleep      # replaced in tests
 _random = random.random  # replaced in tests
@@ -161,6 +169,44 @@ def may_spend(weight: float, what: str, now: float | None = None) -> bool:
     return False
 
 
+def api_key() -> str:
+    """The paid plan's key from KEY_ENV, "" when unset. Read at each request, not at import."""
+    return os.environ.get(KEY_ENV, "").strip()
+
+
+def customer(url: str, params: dict) -> tuple[str, dict]:
+    """`url` and `params` as a paid plan sends them: the open-meteo.com host with "customer-" in
+    front and the key as apikey. Without a key, or for a host that is not Open-Meteo's, unchanged."""
+    key = api_key()
+    u = httpx.URL(url)
+    if not key or not u.host.endswith(".open-meteo.com") or u.host.startswith("customer-"):
+        return url, params
+    return str(u.copy_with(host="customer-" + u.host)), {**params, "apikey": key}
+
+
+def redact(text: str) -> str:
+    """`text` with the key, if any, replaced by "[key]"."""
+    key = api_key()
+    return text.replace(key, "[key]") if key else text
+
+
+class _KeyFilter(logging.Filter):
+    """Takes the key out of a log record. On the httpx logger, whose INFO line for each request
+    prints the full URL, query and all (build_site sets that logger to WARNING; other scripts may not)."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if api_key():
+            msg = record.getMessage()
+            clean = redact(msg)
+            if clean != msg:
+                record.msg, record.args = clean, None
+        return True
+
+
+logging.getLogger("httpx").addFilter(_KeyFilter())
+log.addFilter(_KeyFilter())
+
+
 def _http_get(url: str, params: dict, timeout: float) -> httpx.Response:
     """The one place a request leaves; tests replace it with an httpx.MockTransport client."""
     return httpx.get(url, params=params, timeout=httpx.Timeout(timeout, connect=CONNECT_TIMEOUT_S))
@@ -211,8 +257,10 @@ def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5,
     OpenMeteoError when they run out, at once for any other 4xx. A Retry-After over
     MAX_RETRY_AFTER_S ends the retries. Each request is one API call to Open-Meteo, so retries
     are the only calls added, and only after a failure. `retry_429=False` raises at the first 429:
-    the off-CI archive fetchers stop at a refusal rather than ask again."""
+    the off-CI archive fetchers stop at a refusal rather than ask again. With a key (KEY_ENV) the
+    request goes to the customer host (customer); counted under that host, so the build log shows it."""
     waited, why = 0.0, "no attempt made"
+    url, params = customer(url, params)
     host = httpx.URL(url).host
     for attempt in range(attempts):
         hint = None
@@ -221,7 +269,13 @@ def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5,
             r = _http_get(url, params, timeout)
         except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError) as e:
             # TLS handshake and connect timeouts are common from shared CI runners and clear on retry.
-            why = str(e) or type(e).__name__
+            why = redact(str(e) or type(e).__name__)
+        except Exception as e:
+            if not api_key():
+                raise
+            # An httpx error keeps the request, key and all, and may print its URL: replaced by one
+            # that has neither, and `from None` keeps the original out of a traceback.
+            raise OpenMeteoError(f"open-meteo request failed: {redact(str(e) or type(e).__name__)}") from None
         else:
             if r.is_success:
                 try:
@@ -433,7 +487,7 @@ def fetch_forecast(cells: list[tuple[float, float]],
             except Exception as e:  # noqa: BLE001 - OpenMeteoError, or anything else a request raises
                 if isinstance(e, OpenMeteoBadBody):
                     spend(weight, what)   # answered, so counted, though not readable
-                why = str(e) or type(e).__name__
+                why = redact(str(e) or type(e).__name__)
                 _errors.append(why)
                 _outage["run"] += 1
                 if _outage["run"] >= OUTAGE_AFTER:
@@ -594,7 +648,7 @@ def fetch_ensemble(cells: list[tuple[float, float]], forecast_days: int = config
             except Exception as e:  # noqa: BLE001 - the band is optional: no ensemble, no band
                 if isinstance(e, OpenMeteoBadBody):
                     spend(weight, "ensemble")
-                why = str(e) or type(e).__name__
+                why = redact(str(e) or type(e).__name__)
                 _ens["down"] = True
                 _ens.setdefault("errors", []).append(why)
             else:
