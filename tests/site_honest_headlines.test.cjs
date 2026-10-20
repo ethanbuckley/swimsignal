@@ -38,6 +38,8 @@ function page(names, extra = {}) {
   return ctx;
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+// The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
+const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
   'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked'];
 
@@ -254,7 +256,7 @@ test('"Lower risk nearby" does not count a day with no forecast as no higher, no
   const gaps = near('gaps', ['low', 'low', 'low', 'low', 'low']); gaps.days[3] = { date: DATES[3], label: 'unknown', risk: null }; gaps.days[4] = { date: DATES[4], label: 'unknown', risk: null };
   const unknownNow = near('dark', ['low', 'low', 'low', 'low', 'low'], { now: { label: 'low', risk: 0, discharging_upstream: 0, monitored_upstream: 0 } });
   const fine = near('fine', ['low', 'low', 'low', 'low', 'low']);
-  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter', 'nearby'],
+  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter', ...NEAR_REASONS, 'nearby'],
     { DATA: { spots: [here, gaps, unknownNow, fine] } });
   vm.runInContext('var DAY = null;', ctx);
   const h = vm.runInContext('nearby', ctx)(here);
@@ -333,7 +335,7 @@ test('"Lower risk nearby" compares the same days, and at a water rated poor offe
   const burnsall = near('burnsall', ['low', 'low', 'moderate', 'low', 'very high']);   // low until then, very high on Thursday
   const rated = near('rated', ['low', 'low', 'low', 'low', 'low'], { source: 'designated', classification: { class: 'good', year: 2025 } });
   const unrated = near('calfclose', ['low', 'low', 'low', 'low', 'low']);
-  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter', 'nearby'],
+  const ctx = page(['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter', ...NEAR_REASONS, 'nearby'],
     { DATA: { spots: [ilkley, burnsall, rated, unrated] } });
   vm.runInContext('var DAY = null;', ctx);
   const h = vm.runInContext('nearby', ctx)(ilkley);

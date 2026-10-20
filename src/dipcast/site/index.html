@@ -3610,24 +3610,69 @@ function overflowTile(d, total) {
 // higher (12 Oct 2026: a day with no forecast at the alternative passed, so a spot with two days missing
 // was offered as "no higher on any of the five days"). And "lower now" needs a known now: not a spot
 // whose right now is not known (levels.js, nowUnknown).
+// Each row says why it is there in words, from how its water is joined to this spot's (20 Oct 2026, the
+// outside review: Long Bridges, moderate, offered "Lower risk nearby: River Thames, Hurley", downstream on
+// the same river, with nothing to say so). And where none of the nearest three is known to be on other
+// water, the third gives way to the nearest that is, so another catchment or branch is in view when one
+// is within reach (otherAsWell).
 const NEAR_KM = 40;
 const notHigherAnyDay = (s, d) => (d.days || []).slice(0, 5).every(x => { const a = rank(dayLevel(s, x.date)), b = rank(dayLevel(d, x.date));
   return b < 0 || (a >= 0 && a <= b); });
 const allFiveDays = d => (d.days || []).slice(0, 5).length === 5 && d.days.slice(0, 5).every(x => rank(dayLevel(d, x.date)) >= 0);
 const ratedBetter = s => ['excellent', 'good', 'sufficient'].includes(classOf(s));
+// How spot s's water is joined to spot d's, from the build (src/dipcast/spot_links.py): each spot's
+// `catchment`, where its water reaches the tide, and the spots it is `linked` to. "s": at least one
+// monitored overflow counts at both, from the forecast's full upstream sets, not the ten a spot keeps.
+// "d" downstream of d and "u" upstream, joined by the river with no overflow counted at both (further
+// apart along it than the forecast's 60 km reaches). Not linked: "branch", the same catchment with
+// neither's water reaching the other (the Swale and the Ure meet below both spots); "apart", a different
+// catchment. Null where either has no place on the network (an isolated lake) or the forecast is older
+// than these fields: then no reason is given.
+const joined = (d, s) => { if (!d.catchment || !s.catchment) return null;
+  return (d.linked || {})[s.id] || (d.catchment === s.catchment ? 'branch' : 'apart'); };
+const otherWater = (d, s) => ['branch', 'apart'].includes(joined(d, s));
+// "Fewer missing upstream readings": fewer of its overflows upstream give no current reading (offline,
+// no live feed, a feed down or stale), and no smaller a share of their weight reports (levels.js, nowWatched).
+const unread = s => { const t = overflows(s); return t - Math.min(t, (s.now || {}).monitored_upstream ?? t); };
+const fewerUnread = (d, s) => overflows(s) > 0 && unread(d) > 0 && unread(s) < unread(d) && nowWatched(s) >= nowWatched(d);
+// Why a row is there, in sentences. A different catchment gets a plain fact, never a reassuring word: it
+// has overflows and runoff of its own, which its own level counts. "Same river" where both are river spots
+// on a river of one name; the forecast's counting is said only where both have overflows upstream.
+function nearWhy(d, s) {
+  const j = joined(d, s), out = [], river = d.kind === 'river' && s.kind === 'river' && !!d.river && d.river === s.river;
+  if (j === 's') out.push(river ? 'Same river, shares overflows with this spot' : 'Shares overflows with this spot');
+  else if (j === 'd' || j === 'u') { const way = j === 'd' ? 'downstream' : 'upstream';
+    out.push(river ? `Same river, further ${way}` : `${cap(way)} of this spot`);
+    if (overflows(d) && overflows(s)) out.push('The forecast counts none of the same overflows'); }
+  else if (j === 'branch') out.push('Same catchment, another branch');
+  else if (j === 'apart') out.push('Different catchment');
+  if (fewerUnread(d, s)) out.push('Fewer missing upstream readings');
+  return out.map(t => t + '.').join(' ');
+}
+// The nearest three, nearest first; where none of them is known to be on other water (a different
+// catchment, or another branch of this one) and one is within reach, the nearest such in place of the
+// third. Windermere at Millerground: the two other Windermere spots, then Coniston Water at Monk Coniston
+// in place of Loughrigg Tarn, which is on no river the network links.
+const otherAsWell = (d, near) => { const three = near.slice(0, 3);
+  if (three.some(([s]) => otherWater(d, s))) return three;
+  const o = near.find(([s]) => otherWater(d, s));
+  return o ? [...three.slice(0, 2), o] : three; };
 function nearby(d) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
-  const alts = DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
+  const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
-    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]).slice(0, 3);
+    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]));
   if (!alts.length) return '';
   const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day'
     : `now, and no higher on ${allFiveDays(d) ? 'any of the five days' : 'any day with a forecast here'}`}.`;
   return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
-    + alts.map(([s, k]) => `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
-      + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`
-      + `<span class="k">${[away(k), cap(s.kind), s.source === 'designated' ? (classOf(s) ? `bathing water rated ${classOf(s)}` : 'bathing water') : null].filter(Boolean).join(' · ')}</span></span></a></li>`).join('')
-    + `</ul>${lower ? `<p class="sub">${claim} A lower forecast level, not clean water: check the signs there too.</p>` : ''}</section>`;
+    + alts.map(([s, k]) => { const why = nearWhy(d, s);
+      return `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
+        + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`
+        + `<span class="k">${[away(k), cap(s.kind), s.source === 'designated' ? (classOf(s) ? `bathing water rated ${classOf(s)}` : 'bathing water') : null].filter(Boolean).join(' · ')}</span>`
+        + `${why ? `<span class="why">${why}</span>` : ''}</span></a></li>`; }).join('')
+    + `</ul>${lower ? `<p class="sub">${claim} A lower forecast level, not clean water: check the signs there too.`
+      + `${alts.some(([s]) => otherWater(d, s)) ? ' A different catchment or branch has overflows and runoff of its own.' : ''}</p>` : ''}</section>`;
 }
 // The rows open their spot on the same day. One listener on the box, which showDay refills.
 const bindNearby = () => { const box = document.getElementById('nearby-host'); if (!box) return;

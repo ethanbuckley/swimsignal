@@ -937,6 +937,36 @@ Two other orders were shown to Ethan with this one: the same order with nothing 
 same as before), and the whole of Why under one fold (4,193 px), which hides the readings' tiles and the
 map he chose in the seventh round.
 
+### Why each nearby spot (20 October 2026)
+
+An outside review found the Nearby card around Oxford offering other places on the Thames, which can
+share pollution sources, with nothing to say so: Long Bridges, at moderate risk, offered "Lower risk
+nearby: River Thames, Hurley", 87 km of river downstream. Each row now has one more line under its meta
+line, in the planner rows' `.why` style (the note size, ink): why it is there, from how its water is joined
+to this spot's (the build's `catchment` and `linked`, `src/dipcast/spot_links.py`).
+
+- "Same river, shares overflows with this spot." ("Shares overflows with this spot." between a river and a
+  lake, or rivers of two names): at least one monitored overflow counts at both.
+- "Same river, further downstream." ("Downstream of this spot." otherwise; upstream likewise), then "The
+  forecast counts none of the same overflows." where both have overflows upstream: joined by the river,
+  but further apart along it than the 60 km the forecast traces. Hurley's row on Long Bridges says this.
+- "Same catchment, another branch.": neither's water reaches the other before the tide.
+- "Different catchment.": they reach tidal water apart. A plain fact in ink, never a level's colour or a
+  reassuring word, since a different catchment has overflows and runoff of its own. Where one is shown
+  under "Lower risk nearby", the note under the rows adds: "A different catchment or branch has overflows
+  and runoff of its own."
+- "Fewer missing upstream readings.": fewer of its overflows upstream give no current reading, and no
+  smaller a share of their weight reports.
+- No reason where either spot has no place on the network (an isolated lake).
+
+The rows keep every earlier rule: lower on the same days, never a plain level, never a water rated poor,
+a known now, within 40 km, nearest first. One rule is added: where none of the nearest three is known to
+be on other water, the third gives way to the nearest that is, if one is within 40 km. On the data of
+20 October 2026 this changed 8 of the 73 cards: Greenholme offers the Ribble at Stainforth Force in place
+of the Wharfe at Burnsall, and Hurley the Wey at Waverley in place of Wallingford. "Lower predicted spill
+influence" is not a row's reason: under "Lower risk nearby" every row is lower by the card's own rule,
+and the note under the rows says so.
+
 ### What was kept on purpose
 
 The information architecture (list → spot → day), every word of the terms and privacy notice, the

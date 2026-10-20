@@ -42,6 +42,7 @@ from dipcast.model.forecast import (
 )
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
+from dipcast.spot_links import attach as attach_spot_links
 from dipcast.trace import SIMPLIFY_M, spot_trace
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -2202,8 +2203,10 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
 # spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
-# reads it, for the organisers' page and the decision record, and for scripts/alerts.js.
-DETAIL_FIELDS = ("contributors", "guide")
+# reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The spots a
+# spot's water is linked to (spot_links) go there too (20 Oct 2026): only its own Nearby card reads them,
+# and in the lite file they were 1.6 kB gzipped of the 2.1 kB the Nearby reasons added.
+DETAIL_FIELDS = ("contributors", "guide", "linked")
 
 
 def write_app_data(site: Path, doc: dict) -> int:
@@ -2506,6 +2509,9 @@ def build(refresh: bool = True) -> dict:
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
+    # How the spots are joined by water, for the reasons on the Nearby card (spot_links): from every overflow
+    # each forecast counted, not the ten a spot keeps, so in spots.json and the lite file alike.
+    health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
     for w in health["warnings"]:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)
