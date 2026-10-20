@@ -244,7 +244,10 @@ test('the day table’s † note shows only while a cell carries a †', () => {
   const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'dayTable']);
   const off = week(['low', 'low', 'low', 'low', 'low']);   // every day out of season, with a figure
   const river = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)(off);
-  assert.match(river, /<sup>†<\/sup>Outside May to September, when the Environment Agency takes no samples/);
+  // The figures stay in this folded table out of season, marked †, and the note says they are experimental
+  // (20 Oct 2026: the main view has none; levels.js, ECOLI_OFF).
+  assert.match(river, /<sup>†<\/sup>Out of season: from October to April the Environment Agency takes no samples, so the estimate is untested, experimental and not part of the level\./);
+  assert.match(river, /<td class="num">2%<sup>†<\/sup><\/td>/);
   const lake = vm.runInContext('d => dayTable(d, 2, true, {})', ctx)(off);   // the lake's cells read n/a
   assert.doesNotMatch(lake, /†/);
   const blank = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)({days: off.days.map(x => ({...x, p_ecoli_gt900: null}))});
