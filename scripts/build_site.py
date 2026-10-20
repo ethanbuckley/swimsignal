@@ -2203,10 +2203,8 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # shows: its overflows (contributors) and its practical guide. On 6 Oct 2026 they were 52% of
 # spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
-# reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The spots a
-# spot's water is linked to (spot_links) go there too (20 Oct 2026): only its own Nearby card reads them,
-# and in the lite file they were 1.6 kB gzipped of the 2.1 kB the Nearby reasons added.
-DETAIL_FIELDS = ("contributors", "guide", "linked")
+# reads it, for the organisers' page and the decision record, and for scripts/alerts.js.
+DETAIL_FIELDS = ("contributors", "guide", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
 
 
 def write_app_data(site: Path, doc: dict) -> int:
@@ -2501,6 +2499,10 @@ def build(refresh: bool = True) -> dict:
             "(check where each one's stream meets the river and add it to data/raw/overflow_joins.csv): "
             + "; ".join(f"{u['site_id']} for {u['spot']}, {u['snap_m']} m off the river, {u['km']} km above, "
                         f"into {u['receiving']}" for u in unsure))
+    # How the spots are joined by water, for the reasons on the Nearby card (spot_links), from every overflow
+    # each forecast counted, not the ten a spot keeps: the catchment in the lite file, the links in each
+    # spot's own (DETAIL_FIELDS), which only its page reads.
+    health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     if n_flows.get("flood_alerts_unchecked"):
@@ -2509,9 +2511,6 @@ def build(refresh: bool = True) -> dict:
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
-    # How the spots are joined by water, for the reasons on the Nearby card (spot_links): from every overflow
-    # each forecast counted, not the ten a spot keeps, so in spots.json and the lite file alike.
-    health["spot_links"] = attach_spot_links(results, spots, upstream, _net())
     for w in health["warnings"]:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)

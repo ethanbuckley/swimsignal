@@ -15,7 +15,8 @@ each spot two fields in spots.json:
   every overflow within 60 km of river, not the ten a spot keeps). "d" downstream of it and "u" upstream,
   joined by the river with no overflow counted at both: further apart along the river than the forecast
   traces (Hurley is 87 km of river below Long Bridges), or with no overflow above the higher one. Only
-  the spot's own page reads it, so it goes in data/spot/<id>.json (build_site.DETAIL_FIELDS).
+  the spot's own page reads it, so it goes in data/spot/<id>.json (build_site.DETAIL_FIELDS): in the
+  lite file it was 1.6 kB gzipped on the data of 20 Oct 2026, the catchment 0.55 kB.
 
 A spot with no place on the network (an isolated lake) has neither field, and the page says nothing of its
 catchment. Down the river means down OS Open Rivers' links in the direction of flow, as the forecast's
