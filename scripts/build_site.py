@@ -1712,7 +1712,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -1934,13 +1934,15 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 day: str | None = None, push: bool = False, coastal: dict | None = None, wales: dict | None = None,
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
-                push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "") -> int:
+                push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
+                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
     provider (tile_config), or None for OpenStreetMap's. spot_cards: {id: alt} for the spots with a share
     card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
-    gets this build's card rather than a cached one."""
+    gets this build's card rather than a cached one. overflows: this build's overflow table, for the
+    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
@@ -2020,6 +2022,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_data_page(site, token)   # lists what is in data/, so build() writes the data files first
+    write_quality_page(site, overflows, generated, token)
     write_embed(site)
     write_organisers(site, token)
     write_sites(site, token)
@@ -2322,6 +2325,34 @@ def write_record(site: Path, token: str | None = None) -> str:
 REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, centres and leaders (About links it)
 
 
+def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
+                       token: str | None = None, live: Path | None = None, returns: Path | None = None) -> None:
+    """quality.html (review task G12): the overflow records to correct, from the position conflicts' cases
+    file, the live snapshot's positions, the annual returns' outlets and this build's overflow table
+    (src/dipcast/quality.py). A missing input leaves its part of the page saying so; nothing here stops
+    the build."""
+    from dipcast import quality
+    try:
+        cases = quality.load_cases()
+    except Exception as e:  # noqa: BLE001 - a page of corrections must not stop the forecast publishing
+        announce(f"quality.html without the position conflicts ({quality.CASES}): {e}")
+        cases = pd.DataFrame(columns=["site_id", "company", "site_name", "gap_m", "rw_live", "rw_ar", "outcome", "reason"])
+    empty = pd.DataFrame(columns=["lat", "lon"])
+    try:
+        snap = pd.read_parquet(live or config.state_read("live_latest.parquet"), columns=["site_id", "lat", "lon"])
+        positions = snap.dropna(subset=["site_id"]).drop_duplicates("site_id", keep="last").set_index("site_id")
+    except Exception as e:  # noqa: BLE001
+        announce(f"quality.html without the live positions: {e}")
+        positions = empty
+    try:
+        outlets = quality.latest_outlets(pd.read_parquet(returns or quality.RETURNS, columns=["site_id", "year", "lat", "lon"]))
+    except Exception as e:  # noqa: BLE001
+        announce(f"quality.html without the annual returns' outlets: {e}")
+        outlets = empty
+    when = (generated or pd.Timestamp.now(tz="UTC")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    (site / "quality.html").write_text(with_counter(quality.site_page(cases, positions, outlets, overflows, when, MARK), token))
+
+
 def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None) -> int:
     """spot/<id>/profile/index.html for each spot (each with a page), joining its data/upstream/<id>.json
     to the annual returns. A spot with no file gets a short page saying why. Returns the number of pages
@@ -2533,7 +2564,8 @@ def build(refresh: bool = True) -> dict:
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
                                        push_dates=bool(push and push.get("dates")),
-                                       spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"))
+                                       spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
+                                       overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
