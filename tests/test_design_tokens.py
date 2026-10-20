@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "src" / "dipcast" / "site" / "index.html"
-CSS = ROOT / "src" / "dipcast" / "api" / "static" / "page.css"
+CSS = ROOT / "src" / "dipcast" / "pages" / "page.css"
 STATIC = CSS.parent
 # The app's own layout and its SVG filter, which only index.html has.
 APP_ONLY = {"--header-h", "--nav-h"}

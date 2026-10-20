@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SHIPPED = [
     *sorted((ROOT / "src/dipcast/site").glob("*.js")),
     *sorted((ROOT / "src/dipcast/site").glob("*.html")),
-    *sorted((ROOT / "src/dipcast/api/static").glob("*.html")),
+    *sorted((ROOT / "src/dipcast/pages").glob("*.html")),
     *sorted((ROOT / "push/src").glob("*.js")),
     *sorted((ROOT / "reviews/src").glob("*.js")),
     ROOT / "scripts/alerts.js",

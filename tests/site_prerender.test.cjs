@@ -11,7 +11,7 @@ const spots = require('../scripts/prerender_spots.js');
 const accuracy = require('../scripts/prerender_verification.js');
 
 const PAGE = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
-const VER = fs.readFileSync(path.join(__dirname, '../src/dipcast/api/static/verification.html'), 'utf8');
+const VER = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/verification.html'), 'utf8');
 
 test('a name used only in words, comments or a regular expression is not a use of it', () => {
   const c = spots.codeOnly("const a = x => `Open map at ${esc(x.name)}` + 'the map' + \"map\"; // map\n/* map */ const r = /map[/]x/g.test(s) ? map2 : y;");

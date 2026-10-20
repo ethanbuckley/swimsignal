@@ -50,7 +50,7 @@ log = logging.getLogger("build_site")
 
 ROOT = config.ROOT
 SITE = ROOT / "site"
-STATIC = ROOT / "src" / "dipcast" / "api" / "static"
+STATIC = ROOT / "src" / "dipcast" / "pages"
 TEMPLATE = ROOT / "src" / "dipcast" / "site" / "index.html"
 KEEP_CONTRIBUTORS = 10
 # Open-Meteo requests a build may send, retries included, before the log warns (review task D4). On
@@ -63,9 +63,9 @@ UPSTREAM_FIELDS = ("site_id", "site_name", "company", "receiving_watercourse", "
                    "travel_h", "weight", "lta_spills", "spill_hours", "has_live", "lat", "lon")
 MIN_OK_SHARE = 0.8        # fewer spots with a forecast than this and the build fails (no publish)
 MAX_NO_DATA_SHARE = 0.5   # more of today's forecasts without rainfall data than this: fail
-# The pages were written for the FastAPI routes; rewrite them for flat files. Their icons are
-# /static/icons/ on the API server, which keeps copies of the site's own (src/dipcast/site/icons/)
-# so that its pages get a favicon too; the static site has the originals at icons/ (copy_app_files).
+# The pages were written for the routes of a FastAPI server (removed 20 Oct 2026, review F7: it had
+# not run since its host's trial ended on 29 Sep); rewrite them for flat files. Their /static/icons/
+# are the site's own icons at icons/ (copy_app_files), their /static/fonts/ the fonts at fonts/.
 REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type=spot"', 'href="feedback.html?type=spot"'), ('href="/verification"', 'href="verification.html"'), ('href="/terms"', 'href="terms.html"'),
             ('href="/about"', 'href="about.html"'), ('href="/testing"', 'href="testing.html"'),
             ('href="/privacy"', 'href="privacy.html"'), ('href="/terms#data"', 'href="terms.html#data"'), ('href="/"', 'href="index.html"'),
@@ -2057,7 +2057,7 @@ def announce(warning: str) -> None:
 
 
 # The data page, data.html: every file under data/, what it holds, its fields and its licence. The
-# words are the page's (src/dipcast/api/static/data.html), one table row and one section a file. The
+# words are the page's (src/dipcast/pages/data.html), one table row and one section a file. The
 # build fills in each file's size, marks a described file this build did not write, and adds a row
 # for any file in data/ the page does not describe, with a build warning, so the list is always
 # every file published. REWRITES gains the links to it, to About's embed section and to About's
@@ -2224,7 +2224,7 @@ def write_data_page(site: Path, token: str | None = None) -> list[str]:
     page = with_feed_list(page, site)
     if extra:
         announce(f"data.html does not describe {', '.join(extra)}: listed without a description. "
-                 "Add a row and a section for each to src/dipcast/api/static/data.html")
+                 "Add a row and a section for each to src/dipcast/pages/data.html")
     (site / "data.html").write_text(with_counter(page, token))
     return extra
 

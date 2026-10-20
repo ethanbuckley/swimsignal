@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import threading
 import time
 
 from dipcast import config
@@ -39,22 +38,3 @@ def refresh_all(net=None) -> dict:
         log.warning("live verification failed: %s", e)
     log.info("refresh done: %s", summary)
     return summary
-
-
-def start_scheduler(interval_minutes: int, net_getter, on_done) -> threading.Event:
-    """Run refresh_all every `interval_minutes` in a daemon thread. Returns a stop event."""
-    stop = threading.Event()
-
-    def loop() -> None:
-        stop.wait(60)  # let the app finish warming up first
-        while not stop.is_set():
-            try:
-                refresh_all(net_getter())
-                on_done()
-            except Exception as e:  # noqa: BLE001 - keep the loop alive
-                log.error("scheduled refresh failed: %s", e)
-            stop.wait(max(60, interval_minutes * 60))
-
-    threading.Thread(target=loop, name="dipcast-refresh", daemon=True).start()
-    log.info("in-process refresh every %d min (DIPCAST_REFRESH_MINUTES)", interval_minutes)
-    return stop

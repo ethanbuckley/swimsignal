@@ -73,7 +73,7 @@ def test_openstreetmap_is_credited_in_the_data_and_on_the_terms_page():
     line = "Swim spot locations from OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0"
     assert c["spot_locations"].startswith(line) and "https://www.openstreetmap.org/copyright" in c["spot_locations"]
     assert c["licences"]["ODbL 1.0"] == "https://opendatacommons.org/licenses/odbl/1-0/"
-    terms = (ROOT / "src" / "dipcast" / "api" / "static" / "terms.html").read_text()
+    terms = (ROOT / "src" / "dipcast" / "pages" / "terms.html").read_text()
     assert line in re.sub(r"<[^>]+>", "", terms)
     assert '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a>' in terms
     note = (ROOT / "LICENSE-DATA.md").read_text()

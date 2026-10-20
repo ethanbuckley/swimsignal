@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
-const html = fs.readFileSync(path.join(__dirname, '../src/dipcast/api/static/verification.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/verification.html'), 'utf8');
 const src = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 
 const SPILL = {warn_at: 0.4, level: 'high', unit: 'overflow-day forecast', n: 23395, hits: 152, misses: 573, false_alarms: 211,
