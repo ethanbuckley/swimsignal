@@ -531,11 +531,13 @@ def record_url(site: str, sid: str, iso: str, org: str = "") -> str:
 
 
 def sites_url(site: str, s: Session) -> str:
-    # sites.html#spots=a,b&name=... (lists.js, sitesHash). The name is cut at 40 characters, so the
-    # session's day and time come first.
+    # sites.html#spots=a,b&name=...&day=YYYY-MM-DD (lists.js, sitesHash; sites.js reads day=). The name is
+    # cut at 40 characters, so the session's day and time come first. With day=, each row gives the level on
+    # the session's day, by its date: without it the rows said "today" and "tomorrow", counted from the
+    # issue, in a sheet read on the day itself (20 Oct 2026).
     name = f"{s.day:%a} {s.day.day} {s.day:%b} {s.time}, {s.organisation}"[:40].strip()
     ids = ",".join(urllib.parse.quote(i, safe="") for _, i in s.spots)
-    return f"{site}sites.html#spots={ids}&name={urllib.parse.quote(name, safe='')}"
+    return f"{site}sites.html#spots={ids}&name={urllib.parse.quote(name, safe='')}&day={s.day.isoformat()}"
 
 
 def briefing_text(snap: Snapshot, s: Session, site: str, files: list[str], prev: dict | None, changes: list[Change]) -> str:
@@ -682,6 +684,7 @@ class Rendered:
     exceptions: list[str] = field(default_factory=list)
     level: str = ""          # the record's level line, .r-level
     expect: dict = field(default_factory=dict)   # the issue times as the browser formats them
+    rows: dict = field(default_factory=dict)     # the sites view's rows drawn for a day: spot id -> (day, level)
 
 
 class Chrome:
@@ -784,6 +787,8 @@ class Chrome:
         out.dom = "<!doctype html>\n" + c.evaluate("document.documentElement.outerHTML")
         out.text = c.evaluate("document.body.innerText")
         out.level = c.evaluate("(document.querySelector('#record .r-level') || {}).textContent || ''")
+        out.rows = c.evaluate("Object.fromEntries([...document.querySelectorAll('#sites li.site[data-day]')]"
+                              ".map(li => [li.dataset.spot, [li.dataset.day, li.dataset.level]]))") or {}
         pdf = c.call("Page.printToPDF", {"printBackground": True, "preferCSSPageSize": True, "paperWidth": 8.27, "paperHeight": 11.69})
         out.pdf = base64.b64decode(pdf["data"])
         for rid, (u, _) in responses.items():
@@ -807,10 +812,13 @@ def pdf_text(pdf: Path) -> str | None:
     return re.sub(r"-\s+", "-", re.sub(r"\s+", " ", t))
 
 
-def check_page(r: Rendered, kind: str, iid: str, want_level: str | None, pdf: Path) -> dict:
+def check_page(r: Rendered, kind: str, iid: str, want_level: str | None, pdf: Path,
+               day: str | None = None, want_rows: dict | None = None) -> dict:
     """That the page drew the archived build and nothing else, and the PDF says so: the issue time (and
     the issue id, where the page prints one, PR #275) in the page and in the PDF's text, every data
-    request answered from the archive, and the record's level the same as alerts.json's."""
+    request answered from the archive, and the record's level the same as alerts.json's. The sites view,
+    given the session's day, must draw every spot on that day (want_rows: spot id -> alerts.json's level)
+    at alerts.json's level."""
     fail = []
     need = "spots.json" if kind == "record" else "spots-lite.json"
     if not r.served.get(need):
@@ -826,6 +834,14 @@ def check_page(r: Rendered, kind: str, iid: str, want_level: str | None, pdf: Pa
         fail.append(f"the page shows an issue id, but not {iid}")
     if kind == "record" and want_level in ORDER and not r.level.lower().startswith(f"{want_level} risk"):
         fail.append(f"the record says {r.level!r}, alerts.json {want_level!r} risk: the two disagree")
+    if kind == "sites" and day:
+        for sid, want in (want_rows or {}).items():
+            got_day, got = (r.rows.get(sid) or [None, None])[:2]
+            if got_day != day:
+                fail.append(f"the sites view does not give {sid}'s level on {day}, so its rows would say "
+                            "'today' and 'tomorrow' (is sites.js with day= live yet?)")
+            elif want in ORDER and got != want:
+                fail.append(f"the sites view says {got!r} for {sid} on {day}, alerts.json {want!r}: the two disagree")
     pt = pdf_text(pdf)
     if pt is not None:
         if t not in pt:
@@ -834,7 +850,8 @@ def check_page(r: Rendered, kind: str, iid: str, want_level: str | None, pdf: Pa
             fail.append(f"the PDF's text does not show the issue id {iid}")
     if fail:
         raise BriefingError(f"{r.url}: " + "; ".join(fail) + ". Nothing was issued.")
-    return {"issue_time_shown": t, "issue_id_shown": shows_id, "pdf_text": "checked" if pt is not None else "not checked: pdftotext not found",
+    return {"issue_time_shown": t, "issue_id_shown": shows_id, **({"day_shown": day} if kind == "sites" and day else {}),
+            "pdf_text": "checked" if pt is not None else "not checked: pdftotext not found",
             "data_served": r.served, "blocked": len(r.blocked), "page_exceptions": r.exceptions}
 
 
@@ -930,8 +947,9 @@ def issue(session_path: Path, root: Path, site: str = SITE, get=None, render=Non
                 (work / pdf_name).write_bytes(r.pdf)
                 (work / dom_name).write_text(r.dom)
                 want = day_words(snap, sid, iso)[0] if sid else None
+                rows = {i: day_words(snap, i, iso)[0] for _, i in s.spots} if kind == "sites" else None
                 checks.append({"kind": kind, "role": role, "spot": sid, "url": url, "pdf": pdf_name, "dom": dom_name,
-                               **check_page(r, kind, iid, want, work / pdf_name)})
+                               **check_page(r, kind, iid, want, work / pdf_name, iso if kind == "sites" else None, rows)})
                 page_files.update(r.page_files)
         for name, (url, body) in sorted(page_files.items()):
             (work / "page" / name).write_bytes(body)

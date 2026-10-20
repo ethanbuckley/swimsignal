@@ -32,7 +32,8 @@
   .wk i { display:block; width:10px; height:22px; background:var(--unknown); }
   .wk i.low { background:var(--low); } .wk i.moderate { background:var(--moderate); } .wk i.high { background:var(--high); } .wk i.veryhigh { background:var(--veryhigh); }
   .wk b { font-size:var(--fs-meta); font-weight:600; line-height:1; color:var(--faint); }
-  .wk.first b { color:var(--ink); }
+  .wk.first b, .wk.on b { color:var(--ink); }
+  .wk.on b { text-decoration:underline; text-underline-offset:2px; }   /* the day a briefing is for (sites.js, mark) */
   .week.rain .wk { justify-content:flex-end; height:40px; }
   .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
   .s-missing { font-size:var(--fs-note); margin:12px 0 0; }
