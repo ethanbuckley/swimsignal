@@ -48,6 +48,15 @@ function planHash(p) {
   if (Array.isArray(p.compare)) q.set('compare', p.compare.join(','));
   return '#' + q.toString();
 }
+// The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the first
+// plan a page shows. Until 20 Oct 2026 the plan last shown lived only in the page, so after a reload or on a
+// later visit the header's link opened an empty plan (post-deploy QA). It is read as an address is, so it never
+// holds your own position. Its day only while it is one of the five, and a day picked on the list in this visit
+// (listDay) before it; else none, which readPlan makes the first day.
+function planKept(hash, dates, listDay = null) {
+  const p = readPlan(hash || '', dates), d = new URLSearchParams(String(hash || '').replace(/^#/, '')).get('day');
+  return { ...p, day: dates.includes(listDay) ? listDay : dates.includes(d) ? d : null };
+}
 // The spots a comparison shows, as ids: those asked for (the address, or the choices made) that the plan
 // still shows, in the order asked; with fewer than two of those, the first spots shown fill it to three,
 // as many as there are. shown: the plan's spots in the order on the page. So a link opens on the same
@@ -151,6 +160,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, readPlan, planHash, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway };
 }

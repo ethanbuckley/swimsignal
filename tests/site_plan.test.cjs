@@ -71,6 +71,29 @@ test('what an address cannot mean is left at the default', () => {
   assert.equal(P.readPlan('#within=0', DATES).within, 0);   // any distance
   assert.equal(P.readPlan('#from=' + 'x'.repeat(200) + '&at=54,-2', DATES).from.name.length, 80);
 });
+// The plan last shown, kept in this browser (index.html, PLAN_KEY), opens again after a reload or on a later
+// visit: until 20 Oct 2026 the header's link then opened an empty plan (post-deploy QA).
+test('the plan kept in this browser opens again: a day gone by is left for today, and a day picked on the list comes first', () => {
+  const plan = {day: DATES[2], from: {name: 'Kendal', lat: 54.33, lon: -2.75}, within: 10, kind: 'lake', compare: ['a', 'b']};
+  const kept = P.planHash(plan);
+  assert.deepEqual(P.planKept(kept, DATES), plan);
+  assert.equal(P.planKept(kept, DATES, DATES[4]).day, DATES[4]);   // the day picked on the list in this visit
+  assert.equal(P.planKept(kept, DATES, null).day, DATES[2]);       // "Today and tomorrow" on the list: the plan's own day
+  const later = DATES.slice(3);                                    // a later visit, the plan's day gone by
+  assert.equal(P.planKept(kept, later).day, null);
+  assert.equal(P.readPlan('', later, P.planKept(kept, later)).day, later[0]);   // the header's link: the first day, the rest kept
+  assert.deepEqual(P.readPlan('', later, P.planKept(kept, later)).from, plan.from);
+  // Your own location is never kept: "here" asks again (index.html, planLocate).
+  assert.deepEqual(P.planKept(P.planHash({...P.PLAN_DEFAULT, from: {here: true}}), DATES).from, {here: true});
+  // Nothing kept, storage refused, or something no address could mean: the empty plan.
+  assert.deepEqual(P.planKept(null, DATES), P.PLAN_DEFAULT);
+  assert.deepEqual(P.planKept('#from=Paris&at=48.86,2.35&day=x', DATES), P.PLAN_DEFAULT);
+  // The page starts its first plan from the kept one, and writes each plan shown back, with the address.
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
+  assert.ok(app.includes("if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }"));
+  assert.ok(app.includes('try { localStorage.setItem(PLAN_KEY, h); }') && app.includes("const PLAN_KEY = 'dipcast.plan';"));
+  assert.ok(!app.includes("history.replaceState(history.state, '', planPath() + planHash(PLAN))"));   // every write goes through planAddress
+});
 
 const index = P.placeIndex({places: [['Newport', 51.59, -3.0], ['Kendal', 54.33, -2.75], ['Ambleside', 54.43, -2.96],
   ['Pooley Bridge', 54.61, -2.82], ['Ynys Môn', 53.27, -4.33], ['Newport, Isle of Wight', 50.7, -1.29], ['Nowhere', 10, 10], 'junk']});

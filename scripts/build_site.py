@@ -112,8 +112,8 @@ SITE_URL_ENV = "DIPCAST_SITE_URL"
 # string is the privacy notice's own lead, so the terms page's date is not touched.
 COUNTER_TOKEN_ENV = "DIPCAST_CF_BEACON_TOKEN"
 COUNTER_JS = TEMPLATE.parent / "counter.js"
-NO_COUNTER = ("and what it does not. Last updated 4 October 2026.", "There is no analytics script and no third-party tracking.")
-WITH_COUNTER = ("and what it does not. Last updated 4 October 2026 (page-view counter).",
+NO_COUNTER = ("and what it does not. Last updated 20 October 2026.", "There is no analytics script and no third-party tracking.")
+WITH_COUNTER = ("and what it does not. Last updated 20 October 2026 (page-view counter).",
                 ("Page views are counted with Cloudflare Web Analytics. Cloudflare states that it sets no cookies, "
                  "uses no local storage and does not fingerprint visitors. It sees your IP address when the counter "
                  "loads, as any web server would, and its "
@@ -288,8 +288,8 @@ PUSH_DATES_ENV = "DIPCAST_PUSH_DATES"
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
 PUSH_SWAPS = [
-    ("<li>Your saved spots, your swim journal and your location stay on your device.</li>",
-     "<li>Your location and your swim journal stay on your device. So do your saved spots, unless you turn on alerts.</li>"),
+    ("<li>Your saved spots, your last plan, your swim journal and your location stay on your device.</li>",
+     "<li>Your location, your last plan and your swim journal stay on your device. So do your saved spots, unless you turn on alerts.</li>"),
     ("It stays on your device: it is not sent to SwimSignal or to anyone else.",
      "It stays on your device: it is not sent to SwimSignal or to anyone else, unless you turn on alerts (below)."),
     ("SwimSignal holds none, as described above;",
@@ -524,7 +524,7 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
 
 
 def privacy_updated(html: str, what: str) -> str:
-    """Say after the privacy notice's date what a setting added: "Last updated 4 October 2026
+    """Say after the privacy notice's date what a setting added: "Last updated 20 October 2026
     (page-view counter, tips)"."""
     return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
                   html, count=1)
