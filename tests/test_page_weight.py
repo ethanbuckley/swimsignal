@@ -58,10 +58,24 @@ def test_the_lite_file_and_the_spot_files_together_are_spots_json(tmp_path):
     whole = []
     for s in lite["spots"]:
         if "detail_file" in s:
+            s.pop("reach_by_company", None)                      # made from the contributors (test below)
             extra = json.loads((tmp_path / "data" / s.pop("detail_file")).read_text())
             s.update({k: v for k, v in extra.items() if k not in ("id", "generated_at", "credits")})
         whole.append(s)
     assert whole == json.loads(json.dumps(doc["spots"]))
+
+
+def test_the_lite_file_says_whose_overflows_a_spot_has_by_reach(tmp_path):
+    doc = _doc()
+    doc["spots"][0]["contributors"] = [{"site_id": "A", "company": "Yorkshire Water", "weight": 0.6},
+                                       {"site_id": "B", "company": "United Utilities", "weight": 0.2},
+                                       {"site_id": "C", "weight": 0.1}, {"site_id": "D", "company": "Yorkshire Water", "weight": 0.1}]
+    bs.write_app_data(tmp_path, doc)
+    by = {s["id"]: s for s in json.loads((tmp_path / "data" / "spots-lite.json").read_text())["spots"]}
+    assert by["thames-henley"]["reach_by_company"] == [["Yorkshire Water", 0.7], ["United Utilities", 0.2], ["unknown", 0.1]]
+    assert "reach_by_company" not in by["henleaze-lake"]            # no overflows
+    assert "reach_by_company" not in by["osm-great-ouse-overcote"]  # no contributors at all
+    assert bs.reach_by_company([{"company": "X", "weight": 0}]) == []
 
 
 def test_the_data_page_describes_the_new_files(tmp_path):
