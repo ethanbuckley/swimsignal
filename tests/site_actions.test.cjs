@@ -111,25 +111,37 @@ function pageContext(names, extra = {}) {
   return ctx;
 }
 const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'unchecked'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter'];
 
 test('the answer puts the line under where the week goes, for today and for a picked day', () => {
   const ctx = pageContext(PAGE, {DATA: {generated_at: '2026-09-30T08:00:00+01:00'}});
+  // Since 20 Oct 2026 (a second outside review) the line follows the five days, in their tile
+  // (answerAfter): the answer is the level, why, where the week goes, what was read, and the issue time.
   const words = (d, iso = null) => vm.runInContext('answerWords', ctx)(d, iso);
+  const after = (d, iso = null) => vm.runInContext('answerAfter', ctx)(d, iso);
   const s = week(['high', 'very high', 'low', 'low', 'low']);
   const h = words(s);
   // The spills set it, so the headline names them and the line says when (20 Oct 2026, levels.js HEAD_SCOPE).
-  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><p class="act">Avoid swimming here tomorrow: choose a lower day or spot\.<\/p>/);
-  assert.match(words(s, DATES[0]), /<p class="next">Today, Wednesday 30 September<\/p><p class="act">Better to choose a lower day or spot\. If you do swim, try not to swallow any water\.<\/p>/);
-  assert.match(words(s, DATES[3]), /<h2 class="big low"[^>]*>Low risk from sewage spills<\/h2><p class="next">Saturday 3 October<\/p><p class="act">Usual care: cover cuts/);
+  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><p class="cover">All 3 overflows upstream report live\.<\/p><p class="issued">/);
+  assert.doesNotMatch(h, /class="act"|class="scope"/);
+  assert.match(after(s), /^<p class="act">Avoid swimming here tomorrow: choose a lower day or spot\.<\/p><p class="scope">/);
+  assert.match(words(s, DATES[0]), /<p class="next">Today, Wednesday 30 September<\/p><p class="cover">/);
+  assert.match(after(s, DATES[0]), /^<p class="act">Better to choose a lower day or spot\. If you do swim, try not to swallow any water\.<\/p>/);
+  assert.match(words(s, DATES[3]), /<h2 class="big low"[^>]*>Low risk from sewage spills<\/h2><p class="next">Saturday 3 October<\/p><p class="issued">/);   // a later day: no live count
+  assert.match(after(s, DATES[3]), /^<p class="act">Usual care: cover cuts/);
   // Under a plain level: the other risks, the rain, then the line.
   const clear = {...week(['low', 'low', 'low', 'low', 'low']), upstream_summary: {overflows: 0}};
   clear.days[0].rain_48h_mm = 12;
-  assert.match(words(clear), /<p class="why">Other risks apply: [^<]+<\/p><p class="next">12&nbsp;mm of rain in the last two days<\/p><p class="act">After heavy rain, wait a couple of days before swimming if you can\.<\/p>/);
-  // Then what the level counts, once; the issue time stays the answer's last line.
-  assert.match(h, /<p class="act">[^<]+<\/p><p class="scope">This forecast counts [^<]+<\/p><p class="issued">Issued /);
-  assert.equal((h.match(/class="scope"/g) || []).length, 1);
-  assert.doesNotMatch(words(clear), /class="scope"/);   // a plain level says it in its own line
+  assert.match(words(clear), /<p class="why">Other risks apply: [^<]+<\/p><p class="next">12&nbsp;mm of rain in the last two days<\/p><p class="issued">/);
+  assert.equal(after(clear), '<p class="act">After heavy rain, wait a couple of days before swimming if you can.</p>');
+  // Then what the level counts, once, under what to do; the issue time stays the answer's last line.
+  assert.match(after(s), /<p class="act">[^<]+<\/p><p class="scope">This forecast counts [^<]+<\/p>$/);
+  assert.equal((after(s).match(/class="scope"/g) || []).length, 1);
+  assert.doesNotMatch(after(clear), /class="scope"/);   // a plain level says it in its own line
+  // A spot with no five days (a failed forecast) keeps what to do in the answer, and nothing under a week it has not got.
+  const failed = {...s, error: 'forecast failed: open-meteo request failed', days: []};
+  assert.match(words(failed), /<p class="act">[^<]+<\/p><p class="issued">/);
+  assert.equal(after(failed), '');
 });
 
 // What the level counts and what it does not (levels.js, levelScope), under the answer on a spot's page.
@@ -166,11 +178,12 @@ test('the answer says what the level counts: the overflows and their rain, not r
     for (const s of t.split(/(?<=\.) /)) assert.ok(s.split(' ').length <= 25, s);
   }
 });
-test('the scope line follows a picked day, and sits once in the answer', () => {
+test('the scope line follows a picked day, and sits once, under the five days', () => {
   const ctx = pageContext(PAGE, {DATA: {generated_at: '2026-09-30T08:00:00+01:00'}});
-  const words = (d, iso = null) => vm.runInContext('answerWords', ctx)(d, iso);
+  const words = (d, iso = null) => vm.runInContext('answerAfter', ctx)(d, iso);
   const lake = week(['low', 'moderate', 'low', 'low', 'low'], {kind: 'lake', location: {mode: 'lake'}});
   for (const iso of [null, DATES[1], DATES[3]]) {
+    assert.doesNotMatch(vm.runInContext('answerWords', ctx)(lake, iso), /class="scope"/);
     const h = words(lake, iso);
     assert.equal((h.match(/<p class="scope">/g) || []).length, 1, String(iso));
     assert.ok(h.includes(`<p class="scope">${COUNTS} ${NOT_COUNTED} ${WIND}</p>`), String(iso));

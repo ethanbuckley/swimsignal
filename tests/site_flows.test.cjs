@@ -57,7 +57,7 @@ test('a spot with a live flood alert in the fixture shows the sentence, and the 
   assert.equal(ctx.flowLine({flow_state: 'high', river_state: gauge(), flood_alerts: [ALERT]}).match(/<b>/g).length, 2);   // both, river first
   assert.equal(ctx.flowLine({flow_state: null, flood_alerts: []}), '');
   assert.equal(ctx.flowLine({flow_state: null, flood_alerts: null}), '');   // no bold line in the answer for a check that failed
-  assert.ok(page.includes('flowLine(d) + `<p class="issued">'), 'the line sits in the answer, before the issue time');
+  assert.ok(page.includes('flowLine(d) + coverLine(d, iso) + `<p class="issued">'), 'the line sits in the answer, before the issue time');
 });
 
 test('names from the feed are escaped in the page and plain in the comparison', () => {
