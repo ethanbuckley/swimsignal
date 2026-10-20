@@ -1,6 +1,6 @@
-# Windermere, Lakeside YMCA. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Windermere, Lakeside YMCA. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-20
 how = "desk"
 
 [[fact]]
@@ -15,4 +15,39 @@ topic = "rules"
 text = "The National Park Authority says swimming is allowed on Windermere. Powered craft must be registered, and there is a 10 nautical mph speed limit, or 6 in some places. The page is about the whole lake and does not name the bathing site."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "YMCA Lakeside gives directions to its South Camp entrance (LA12 8BD): from the A590 roundabout at Newby Bridge, turn first right over a bridge and past the Swan Hotel; Lakeside is signposted three and a half miles along on the right. The page does not mention public parking or the shore."
+status = "confirmed"
+source = "https://lakesideymca.co.uk/about-ymca-lakeside/how-to-find-us/"
+source_name = "YMCA Lakeside"
+
+[[fact]]
+topic = "rules"
+text = "YMCA Lakeside, part of Fylde Coast YMCA, says its site has half a mile of shoreline along Lake Windermere and 100 acres of private woodland. It works with schools, colleges, youth groups and families booking day camps. The page does not mention public access to the shore or swimming by visitors."
+status = "confirmed"
+source = "https://lakesideymca.co.uk/about-ymca-lakeside/"
+source_name = "YMCA Lakeside"
+
+[[fact]]
+topic = "rules"
+text = "Westmorland and Furness Council says it owns the bed of Windermere, which is subject to a public right of navigation, speed limits and boat registration. Its Lake Wardens, based at Ferry Nab, Bowness, patrol the lake, run a rescue service and also help with events. The page does not name the bathing site."
+status = "confirmed"
+source = "https://www.westmorlandandfurness.gov.uk/parks-culture-and-leisure/windermere-lake/lake-wardens"
+source_name = "Westmorland and Furness Council"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says that, as a general guide, a swimming group of more than 50 people, or one bringing infrastructure such as a gazebo, should seek advice from the landowner. The page covers all the lakes and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority lists Windermere among its busier lakes, with motorboats, sailing boats and other craft. It recommends a swim route along the shoreline, a bright hat, a tow float and a support craft such as a kayak or paddleboard. The page does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
 source_name = "Lake District National Park Authority"

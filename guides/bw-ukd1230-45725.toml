@@ -1,6 +1,6 @@
-# Coniston Water, Brown Howe. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Coniston Water, Brown Howe. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-20
 how = "desk"
 
 [[fact]]
@@ -29,4 +29,32 @@ topic = "rules"
 text = "The National Park Authority says swimming is allowed on Coniston Water, and powered craft are allowed with a 10mph speed limit. The page is about the whole lake and does not name the bathing site."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The Charity Commission's register says the Rawdon-Smith Trust for the Bed of Coniston Water holds the bed of Coniston lake, to be kept in perpetuity under local control to give the public facilities for recreation. The page does not name Brown Howe."
+status = "confirmed"
+source = "https://register-of-charities.charitycommission.gov.uk/charity-search/-/charity-details/500355/governing-document"
+source_name = "Charity Commission for England and Wales"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority's list of the land it holds includes Brown Howe car park and toilets, Coniston (LA12 8DW), freehold, 1.592 hectares. The list does not say whether the shore is included."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/wp-content/uploads/2026/02/Lake-District-National-Park-Property-Holding-Land-Ownership-Dataset-2026.csv"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority says that, as a general guide, a swimming group of more than 50 people, or one bringing infrastructure such as a gazebo, should seek advice from the landowner. The page covers all the lakes and does not name Brown Howe."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "rules"
+text = "The National Park Authority lists Coniston among its busier lakes, with motorboats, sailing boats and other craft. It recommends a swim route along the shoreline, a bright hat, a tow float and a support craft such as a kayak or paddleboard. The page does not name Brown Howe."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
 source_name = "Lake District National Park Authority"
