@@ -118,9 +118,10 @@ test('the answer puts the line under where the week goes, for today and for a pi
   const words = (d, iso = null) => vm.runInContext('answerWords', ctx)(d, iso);
   const s = week(['high', 'very high', 'low', 'low', 'low']);
   const h = words(s);
-  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk<\/h2><p class="why">Sewage spills tomorrow<\/p><p class="next">Low risk by Friday<\/p><p class="act">Avoid swimming here tomorrow: choose a lower day or spot\.<\/p>/);
+  // The spills set it, so the headline names them and the line says when (20 Oct 2026, levels.js HEAD_SCOPE).
+  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><p class="act">Avoid swimming here tomorrow: choose a lower day or spot\.<\/p>/);
   assert.match(words(s, DATES[0]), /<p class="next">Today, Wednesday 30 September<\/p><p class="act">Better to choose a lower day or spot\. If you do swim, try not to swallow any water\.<\/p>/);
-  assert.match(words(s, DATES[3]), /<h2 class="big low"[^>]*>Low risk<\/h2><p class="next">Saturday 3 October<\/p><p class="act">Usual care: cover cuts/);
+  assert.match(words(s, DATES[3]), /<h2 class="big low"[^>]*>Low risk from sewage spills<\/h2><p class="next">Saturday 3 October<\/p><p class="act">Usual care: cover cuts/);
   // Under a plain level: the other risks, the rain, then the line.
   const clear = {...week(['low', 'low', 'low', 'low', 'low']), upstream_summary: {overflows: 0}};
   clear.days[0].rain_48h_mm = 12;

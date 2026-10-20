@@ -413,7 +413,9 @@ test('right now raised with nothing discharging says the spills are recent', () 
   assert.equal(L.headline(week(['moderate', 'low', 'low', 'low', 'low'], {now: {label: 'low', discharging_upstream: 0}})),
     'Moderate risk today: sewage spills');   // a day's forecast is about spills to come, not recent ones
   const m = vm.runInContext('answerParts', plainCtx())(recent);
-  assert.equal(m.sub, 'Recent sewage spills');
+  assert.equal(m.sub, 'Recent sewage spills');   // a saved card's line, under "Moderate risk"
+  // The answer names the spills in its headline (20 Oct 2026), so its line says they are recent, and when.
+  assert.deepEqual([m.noun, m.why], ['risk from sewage spills', 'Recent spills, right now']);
   assert.equal(m.next, 'Low risk tomorrow');   // today is at least right now (11 Oct 2026): "later today" before
   assert.equal(L.dayHeadline(recent, DATES[0]), 'Moderate risk: recent sewage spills');
 });

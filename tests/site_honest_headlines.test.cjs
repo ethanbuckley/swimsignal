@@ -179,8 +179,48 @@ test('a later day worse than the headline is named after it, wherever the headli
   assert.equal((card.match(/Very high risk on Tuesday/g) || []).length, 1);
   L.setToday(DATES[0]);
   assert.match(Sites.words(lazonby).why, /^Sewage spills\. Very high risk on Tuesday\./);
-  // The shared picture draws the third part.
-  assert.match(html, /\[head, why, later\] = iso \? \[dayHeadline\(d, iso\), dateLabel\(iso\), ''\] : headParts\(d\)/);
+  // The shared picture draws the third part: the list's, or with the answer's scoped words, laterWords.
+  assert.match(html, /\[head, why, later\] = scoped \? \[`\$\{ans\.word\} \$\{ans\.noun\}`, iso \? dateLabel\(iso\) : ans\.why, iso \? '' : laterWords\(d\)\]\n\s+: iso \? \[dayHeadline\(d, iso\), dateLabel\(iso\), ''\] : headParts\(d\)/);
+});
+
+// ------------------------------------------------------------------------------ the headline's scope
+// An outside review (20 Oct 2026) read "Moderate risk" at Long Bridges, Oxford, as a verdict on the water and
+// asked for a headline that says what it covers. Where the spills set the level, the answer's noun names
+// them (levels.js, HEAD_SCOPE) and the line under it says when. Where something else set it (a poor
+// rating, algae, the E. coli estimate), "<Level> risk" over its cause, as before. Every level keeps its noun.
+const J = x => JSON.parse(JSON.stringify(x));   // out of the page's realm
+test('the answer names what its level covers where the spills set it, and every level keeps its noun', () => {
+  const parts = vm.runInContext('answerParts', page(ANSWER, { DATA: { generated_at: GEN } }));
+  const head = (s, iso = null) => { const m = parts(s, iso); return J([m.word ? `${m.word} ${m.noun}` : m.head, m.why]); };
+  const spill = week(['low', 'high', 'low', 'low', 'low']);
+  const recent = week(['low', 'low', 'low', 'low', 'low'], { now: { label: 'moderate', risk: 0.2, discharging_upstream: 0, recent_upstream: 2, monitored_upstream: 3 } });
+  const poor = { ...week(['low', 'low', 'low', 'low', 'low']), source: 'designated', classification: { class: 'poor', year: 2025 } };
+  const algae = week(['low', 'low', 'low', 'low', 'low'], { algae: { level: 3, date: DATES[0], phrase: 'algae present' } });
+  const summer = week(['low', 'low', 'low', 'low', 'low']);
+  summer.days = summer.days.map(x => ({ ...x, p_ecoli_gt900: 0.6, in_validated_season: true }));
+  const cases = [
+    [spill, null, ['High risk from sewage spills', 'Tomorrow']],
+    [greenholme, null, ['Very high risk from sewage spills', 'Right now']],
+    [recent, null, ['Moderate risk from sewage spills', 'Recent spills, right now']],
+    [week(['low', 'low', 'low', 'low', 'low']), null, ['Low risk from sewage spills', 'For the next five days']],
+    [spill, DATES[1], ['High risk from sewage spills', '']],   // a picked day: its date follows
+    [poor, null, ['High risk', 'Rated poor']],
+    [algae, null, ['High risk', 'Algae at the last check right now']],   // as on main
+    [summer, null, ['Very high risk', 'High E. coli likely today']]];
+  for (const [s, iso, want] of cases) {
+    assert.deepEqual(head(s, iso), want);
+    assert.match(want[0], /^(Low|Moderate|High|Very high) risk( from sewage spills)?$/);   // the level word keeps its noun
+  }
+  // The rendered answer: one heading, every word at one size (the .big class), then when.
+  const h = vm.runInContext('answerWords', page(ANSWER, { DATA: { generated_at: GEN } }))(spill);
+  assert.match(h, /^<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><p class="why">Tomorrow<\/p>/);
+  // A saved card keeps "High risk" beside the week, with the cause in its line, as a list row does.
+  assert.equal(parts(spill).sub, 'Sewage spills tomorrow');
+  // The list, the map's tooltips, Nearby and the alerts keep headline(): the cause after a colon.
+  assert.equal(L.headline(spill), 'High risk tomorrow: sewage spills');
+  // Plain levels do not change.
+  const clear = { ...week(['low', 'low', 'low', 'low', 'low']), upstream_summary: { overflows: 0 } };
+  assert.equal(head(clear)[0], 'No monitored overflow found upstream');
 });
 
 // ------------------------------------------------------------------------------ 5. none of the overflows reports
@@ -241,7 +281,7 @@ test('where no overflow upstream reports live, the headline does not claim a low
   // The spot's page: the level, then that it is the forecast alone.
   const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
   const h = text(vm.runInContext('answerWords', ctx)(quiet));
-  assert.match(h, /Low risk Forecast only: no overflow upstream reports live/);
+  assert.match(h, /Low risk from sewage spills Forecast only: no overflow upstream reports live/);
   // The embed and the sites page give the same headline.
   assert.match(text(Embed.card(quiet, { generated_at: GEN }, NOW)), /Low risk forecast: no overflow upstream reports live/);
   assert.match(Sites.words(quiet).head, /^Low risk forecast$/);
