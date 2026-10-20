@@ -57,15 +57,16 @@ const spot = (id, miles, l, extra = {}) => ({id, name: id, kind: 'river', source
   location: {mode: 'river'}, now: {label: 'low'}, ...extra,
   days: DATES.map(date => ({date, label: date === '2026-10-01' ? l : 'low', risk: {low: 0.05, moderate: 0.2, high: 0.5, 'very high': 0.8}[date === '2026-10-01' ? l : 'low']}))});
 const milesOf = s => s.miles;
-test('the spots nothing flags come first, nearest first, then the rest by level and distance', () => {
+test('low risk first, then no monitored overflow found upstream, nearest first, then the rest by level and distance', () => {
   const spots = [spot('far-low', 15, 'low'), spot('high', 3, 'high'), spot('near-low', 4, 'low'), spot('moderate', 9, 'moderate'),
     spot('clear', 6, 'low', {upstream_summary: {overflows: 0}}), spot('away', 40, 'low'), spot('failed', 2, 'low', {error: 'forecast failed: no rain'}),
     spot('poor', 1, 'low', {classification: {class: 'poor'}})];
   const r = P.planSpots(spots, {day: '2026-10-01', within: 20, kind: 'all'}, milesOf);
-  assert.deepEqual(r.groups.map(g => g.map(o => o.s.id)), [['near-low', 'clear', 'far-low'], ['moderate', 'poor', 'high'], ['failed']]);
+  assert.deepEqual(r.groups.map(g => g.map(o => o.s.id)), [['near-low', 'far-low'], ['clear'], ['moderate', 'poor', 'high'], ['failed']]);
   assert.equal(r.count, 7);
   assert.equal(r.nearest, null);
-  assert.deepEqual(r.groups[0].map(o => o.level), ['low', L.NO_OVERFLOWS, 'low']);
+  assert.deepEqual(r.groups[0].map(o => o.level), ['low', 'low']);
+  assert.deepEqual(r.groups[1].map(o => o.level), [L.NO_OVERFLOWS]);   // never under a "low" heading (20 Oct 2026)
   assert.equal(P.planSpots(spots, {day: '2026-10-01', within: 0, kind: 'all'}, milesOf).count, 8);   // any distance
 });
 test('the kind narrows the plan; with nothing in reach, the nearest of that kind is named', () => {

@@ -490,7 +490,10 @@ function inShort(d) {
   const P = d.prf && d.prf.both;
   if (P && P.n_samples && P.ea && P.swimsignal) { const ssBetter = P.swimsignal.brier < P.ea.brier;
     pts.push(`<b>Beside the Environment Agency's daily risk prediction</b> at the inland bathing waters: ${ssBetter ? "SwimSignal's E. coli estimate" : "the Agency's prediction"} scored better on ${P.n_samples} samples, ${P.n_over_threshold} of them over 900${P.n_over_threshold && !P.ea.hits && !P.swimsignal.hits ? ', which neither warned of' : ''}.${P.n_samples < 100 || P.n_over_threshold < 10 ? ' Too few to judge.' : ''} <a href="#prf">Details</a>`); }
+  // The level itself (review A6, 16 Oct 2026): every score above is an overflow-day, while the page and its alerts
+  // speak per spot. Removed when the spot level is scored (A5, pre-registration Amendment 1).
   pts.push(`<b>The sewage spill risk</b> is a 0–100 score for sewage from upstream reaching the spot. It is a score, not a probability. Its spill part is scored above against what the overflows did; its die-off and dilution steps are physical estimates, not checked against water samples.`);
+  pts.push(`<b>The level you see on a spot's page is not yet scored;</b> its spill part is, above. How it will be scored from 2027 is fixed in the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md#amendment-1-12-october-2026-a-score-for-a-spots-level">pre-registration</a>.`);
   return `<dl class="stats">${tiles}</dl><section class="summary" aria-labelledby="short-h"><h2 id="short-h">In short</h2><ul>${pts.map(x => `<li>${x}</li>`).join('')}</ul></section>`;
 }
 // The contents, from the sections the data produced.

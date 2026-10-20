@@ -218,3 +218,11 @@ test('11 Oct 2026: the offline counts agree with their tables, and the reanalysi
   assert.ok(!/upper bound/.test(o));
   assert.match(o, /\(2,165 samples\)\. The table scores the 1,750 samples at the 32 with a monitored overflow upstream\. The other 6 have none/);
 });
+
+test('In short says the spot level is not yet scored, and links the pre-registration (review A6)', async () => {
+  for (const data of [live(), live({warning_table: SPILL, overall: OVERALL})]) {
+    const els = await render(data), s = text(els.short.innerHTML);
+    assert.match(s, /The level you see on a spot's page is not yet scored; its spill part is, above\. How it will be scored from 2027 is fixed in the pre-registration ?\./);
+    assert.match(els.short.innerHTML, /PREREGISTRATION-2027\.md#amendment-1/);
+  }
+});

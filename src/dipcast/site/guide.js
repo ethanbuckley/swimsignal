@@ -167,9 +167,9 @@ function guideTile(d, today) {
 // there is none; `open` runs on its button. False where the page has no place for it.
 function knowAdd(kind, d, open) {
   const stack = document.querySelector('#result .stack'); if (!stack) return false;
-  let tile = stack.querySelector(':scope > .know');
+  let tile = stack.querySelector('.know');   // in the stack or in one of a desktop's columns
   if (!tile) {
-    const after = ['#reviews', '#visits', '#guide', '.tiles'].map(q => stack.querySelector(`:scope > ${q}`)).find(Boolean);
+    const after = ['#reviews', '#visits', '#guide', '.tiles'].map(q => stack.querySelector(q)).find(Boolean);
     if (!after) return false;
     after.insertAdjacentHTML('afterend', knowTile(d, [])); tile = after.nextElementSibling;
   }
