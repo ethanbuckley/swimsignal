@@ -129,12 +129,14 @@ const Sites = (() => {
   // ------------------------------------------------------------------ the page
   // The issue time and the issue id once, with the app's notice when the forecast is over 8 h old (index.html,
   // STALE_MIN), and where the latest is. Printed, this line stands for the foot the page had, which said the
-  // same, so the room goes to the credits (20 Oct 2026).
+  // same, so the room goes to the credits (20 Oct 2026). How long ago is said on the screen only: a printed
+  // sheet is kept and read later, when "(31 min ago)" no longer is, and nothing on it says when it was printed
+  // (post-deploy QA, 20 Oct 2026; the decision record counts its ages from "when this page was opened").
   function issue(data, now, base = '') {
     const m = (now - Date.parse(data.generated_at)) / 60000;
     const at = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
     return (m > O.STALE_MIN ? `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at)}). The automatic update has not run since; treat everything below as out of date.</p>` : '')
-      + `<p class="s-issued">Forecast issued ${esc(at)}${m <= O.STALE_MIN ? ` (${ago(m)} ago)` : ''}, issue id <b>${esc(P.issueId(data))}</b>. It is updated several times a day${base ? ` at ${esc(base.replace(/^https?:\/\//, '').replace(/\/$/, ''))}` : ''}. A forecast, not a water test: check the signs at the water before you swim.</p>`;
+      + `<p class="s-issued">Forecast issued ${esc(at)}${m <= O.STALE_MIN ? `<span class="screen-only"> (${ago(m)} ago)</span>` : ''}, issue id <b>${esc(P.issueId(data))}</b>. It is updated several times a day${base ? ` at ${esc(base.replace(/^https?:\/\//, '').replace(/\/$/, ''))}` : ''}. A forecast, not a water test: check the signs at the water before you swim.</p>`;
   }
   function view(data, st, now = Date.now(), base = '') {
     R.setToday(String(data.generated_at).slice(0, 10));
