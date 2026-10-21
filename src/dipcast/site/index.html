@@ -3287,7 +3287,14 @@ async function offerOnMap() {
   if (call !== onMapTyped || !box) return;   // a later letter, or another page, has taken over
   if (!waters.length && !places.length) { hide(); return; }
   const where = w => `${cap(w.kind)} near ${esc(w.near)}${w.alt ? ` · also called ${esc(w.alt)}` : ''}`;
-  box.innerHTML = `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
+  // A town is also where a plan can start (20 Oct 2026): first, a plan from each place offered, with the
+  // distance and day of the plan last shown, a day picked on the list first, and the list's chip as its kind
+  // (plan.js, planFromPlace). A link, so it can be opened in a new tab or copied.
+  const base = PLAN_READ ? { ...PLAN, day: VIEW.day || PLAN.day } : planKept(stored(PLAN_KEY), planDates(), VIEW.day);
+  const reach = `The spots ${base.within ? `within ${base.within} miles` : 'at any distance'} ${base.day ? dayWord(base.day) : 'today'}, those at low risk first`;
+  const plans = !places.length ? '' : `<li class="area-head"><h3>Plan a swim <span>· from a town</span></h3></li>`
+    + places.map(p => `<li><a class="row" href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place><span class="row-main"><span class="nm">From ${esc(p.name)}</span><span class="k">${reach}</span></span></a></li>`).join('');
+  box.innerHTML = plans + `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
     + waters.map((w, i) => `<li><button type="button" class="row" data-water="${i}"><span class="row-main"><span class="nm">${esc(w.name)}</span><span class="k">${where(w)}</span></span>${GO}</button></li>`).join('')
     + places.map((p, i) => `<li><button type="button" class="row" data-place="${i}"><span class="row-main"><span class="nm">Rivers and lakes near ${esc(p.name)}</span><span class="k">Show on the map</span></span>${GO}</button></li>`).join('');
   box.hidden = false;
@@ -3295,7 +3302,7 @@ async function offerOnMap() {
   // No spot matches: say so above the offers, and put the request and the clear button after them.
   const empty = document.querySelector('#spots li.empty');
   if (empty) {
-    empty.innerHTML = '<p class="below">No listed spot matches. Any river or lake has a forecast on the map:</p>';
+    empty.innerHTML = `<p class="below">No listed spot matches.${places.length ? '' : ' Any river or lake has a forecast on the map:'}</p>`;   // a plan comes first, under its own heading
     box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
     bindClear();
   }
@@ -3303,6 +3310,7 @@ async function offerOnMap() {
     showOnMap([w.lat, w.lon], WATER_ZOOM, `The ring is on ${w.kind === 'river' ? 'the ' : ''}${w.name}. ${TAP()} the ${w.kind} where you swim, for its forecast.`, w.name); }));
   box.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { const p = places[+b.dataset.place];
     showOnMap([p.lat, p.lon], PLACE_ZOOM, `${TAP()} a river or lake near ${p.name} for its forecast.`); }));
+  box.querySelectorAll('[data-plan-place]').forEach(a => a.addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(new URL(a.href).hash); }));
 }
 // The map on what was picked, ready for a tap, at a zoom where the tiles draw rivers: a river or lake
 // centred on a point on it, ringed and named (the whole of a long river is too far out to see it: the
@@ -3586,10 +3594,12 @@ function planLocate(quiet = false) {
   if (!quiet) return go();
   if (navigator.permissions) navigator.permissions.query({ name: 'geolocation' }).then(s => { if (s.state === 'granted') go(); }).catch(() => {});
 }
-function openPlan() {
+// hash: a plan to open, as its address says it (a town from the list's search, planFromPlace); without one,
+// the plan last shown.
+function openPlan(hash = '') {
   if (mapMode()) setMapMode(false);
   const push = !onPlanPage();
-  if (push) { keepPlace(); history.pushState({ view: 'plan', from: shown }, '', planPath()); }
+  if (push) { keepPlace(); history.pushState({ view: 'plan', from: shown }, '', planPath() + hash); }
   renderPlan(); scrollTop();
   if (push) focusHeading();
 }
