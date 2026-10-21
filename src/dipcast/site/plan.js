@@ -57,6 +57,14 @@ function planKept(hash, dates, listDay = null) {
   const p = readPlan(hash || '', dates), d = new URLSearchParams(String(hash || '').replace(/^#/, '')).get('day');
   return { ...p, day: dates.includes(listDay) ? listDay : dates.includes(d) ? d : null };
 }
+// A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it. On 20 Oct
+// 2026 a search for "Ilkley" listed the one spot named for it, and Plan a swim then wanted the town typed again
+// (post-deploy QA). base: the plan to start from (the one shown last, or planKept), for how far and its day;
+// kind: the list's chip, as the plan's kinds are the same. A comparison was of other spots, so it is left out.
+function planFromPlace(place, base, kind = 'all') {
+  return planHash({ ...PLAN_DEFAULT, day: base.day, within: base.within, kind: PLAN_KINDS.includes(kind) ? kind : 'all',
+    from: { name: place.name, lat: place.lat, lon: place.lon } });
+}
 // The spots a comparison shows, as ids: those asked for (the address, or the choices made) that the plan
 // still shows, in the order asked; with fewer than two of those, the first spots shown fill it to three,
 // as many as there are. shown: the plan's spots in the order on the page. So a link opens on the same
@@ -160,6 +168,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway };
 }

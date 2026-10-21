@@ -94,6 +94,21 @@ test('the plan kept in this browser opens again: a day gone by is left for today
   assert.ok(app.includes('try { localStorage.setItem(PLAN_KEY, h); }') && app.includes("const PLAN_KEY = 'dipcast.plan';"));
   assert.ok(!app.includes("history.replaceState(history.state, '', planPath() + planHash(PLAN))"));   // every write goes through planAddress
 });
+// A town typed in the list's search offers a plan from it (index.html, offerOnMap): until 20 Oct 2026 "Ilkley"
+// listed the one spot named for it, and Plan a swim then wanted the town typed again (post-deploy QA).
+test('a town from the list\'s search opens a plan from it, with the reach and day of the plan last shown', () => {
+  const ilkley = {name: 'Ilkley', lat: 53.92, lon: -1.82};
+  const last = {day: DATES[3], from: {name: 'Kendal', lat: 54.33, lon: -2.75}, within: 10, kind: 'lake', compare: ['a', 'b']};
+  const h = P.planFromPlace(ilkley, last, 'river');
+  assert.equal(h, `#day=${DATES[3]}&from=Ilkley&at=53.92%2C-1.82&within=10&kind=river`);
+  assert.deepEqual(P.readPlan(h, DATES), {day: DATES[3], from: ilkley, within: 10, kind: 'river'});   // the list's kind; no comparison of other spots
+  // Nothing shown before: the first day, 20 miles, every kind; a chip that is not a kind is every kind.
+  assert.deepEqual(P.readPlan(P.planFromPlace(ilkley, P.PLAN_DEFAULT, 'sea'), DATES), {day: DATES[0], from: ilkley, within: 20, kind: 'all'});
+  // The page: a plan from each place offered, before the map's offers, and a link that opens the plan it names.
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
+  assert.ok(app.includes('href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place>') && app.includes('box.innerHTML = plans + `<li class="area-head"><h3>On the map'));
+  assert.ok(app.includes('openPlan(new URL(a.href).hash)') && app.includes("history.pushState({ view: 'plan', from: shown }, '', planPath() + hash)"));
+});
 
 const index = P.placeIndex({places: [['Newport', 51.59, -3.0], ['Kendal', 54.33, -2.75], ['Ambleside', 54.43, -2.96],
   ['Pooley Bridge', 54.61, -2.82], ['Ynys Môn', 53.27, -4.33], ['Newport, Isle of Wight', 50.7, -1.29], ['Nowhere', 10, 10], 'junk']});
