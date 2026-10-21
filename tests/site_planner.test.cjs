@@ -508,6 +508,14 @@ test('the comparison has a column a spot, the five days first with the day picke
   assert.match(html, /^<p class="small muted compare-note">Issued [^<]*\. A lower forecast level does not mean safe water: check the signs at the water\.<\/p>/);
   // The question is which spots to look into further: no column is called the best or the safest.
   assert.doesNotMatch(html + pageDefs(['compareSection', 'compareTable', 'savedCompare', 'planCompare']), /\b(best|safest|safer)\b/i);
+  // The names again, to pin under the header on a phone (comparePin; post-deploy QA, 20 Oct 2026): before the
+  // box that scrolls, hidden from screen readers, with no links to tab to, a head for each column in order.
+  const pin = html.slice(html.indexOf('<div class="compare-pin" aria-hidden="true">'), html.indexOf('<div class="compare-scroll"'));
+  assert.ok(pin.length > 0 && !pin.includes('<a ') && !pin.includes(' id='));
+  assert.deepEqual([...pin.matchAll(/<th>([^<]+)<span class="k">/g)].map(m => m[1]), ['River &lt;A&gt;', 'B', 'River Duddon, Birks Bridge']);
+  const page = fs.readFileSync(require('node:path').join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  assert.ok(page.includes(".compare-pin { display:block; position:sticky; top:var(--header-h); z-index:3; height:0; }"));
+  assert.ok(page.includes("document.addEventListener('scroll', comparePin, { capture: true, passive: true });") && pageDefs(['drawComparison']).includes('comparePin();'));
 });
 
 // Saved's comparison opens as the plan's does (plan.js, planCompareIds): the first three saved spots. Until
