@@ -274,7 +274,23 @@ The check:
 
 ## Results
 
-None yet. The window has not opened.
+None yet. The window is open.
+
+### The window's dates (written 21 Oct 2026, before any member was scored)
+
+Read from the forecast log in the `state` release of 21 Oct 2026 10:33 UTC (`forecast_overflows`, opened
+read-only). Only whether `p_cal_members` was present in each build was counted. No member was joined to a
+scored row or compared with anything that happened.
+- **Live.** PR #257 merged 18 Oct 2026 19:18 UTC (`42ab3ea`). The first build to log members was issued at
+  19:22 UTC that evening. Every build from then to 21 Oct 10:26 UTC logged `p_cal_members` on every overflow
+  row. The builds earlier on 18 Oct logged none.
+- **First issue day with members by 08:00 local.** 19 Oct: builds issued at 00:22 and 05:02 UTC (01:22 and
+  06:02 BST). The 08:00 forecasts of 20 Oct (00:52 and 05:36 UTC) and 21 Oct (01:13 and 06:14 UTC) carried
+  them too.
+- **Opens** on target day 23 Oct 2026. Its forecasts at leads 4, 3 and 2 are the 08:00 forecasts of 19, 20
+  and 21 Oct, so this date is fixed.
+- **Runs** 28 target days, 23 Oct to 19 Nov 2026. **Read** on or after 21 Nov 2026.
+- **If the minimum data falls short**, the 14-day extension runs to 3 Dec 2026, read on or after 5 Dec.
 
 ### Seen after the statement, before the window (18 Oct 2026)
 

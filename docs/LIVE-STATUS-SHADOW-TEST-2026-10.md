@@ -227,4 +227,21 @@ before. If that leaves fewer than 14 days, it restarts.
 
 ## Results
 
-Not yet run. The window's dates are written here once the code is live.
+Not yet run.
+
+### The window's dates (written 21 Oct 2026, before any shadow row was read)
+
+Read from the forecast log in the `state` release of 21 Oct 2026 10:33 UTC (`forecast_overflows`, opened
+read-only). Only whether `p_status` was present in each build was counted. No shadow value was looked at.
+- **Live.** PR #262 merged 20 Oct 2026 12:20 UTC (`9a5f13b`). The first build to log the shadow was issued
+  at 12:24 UTC (13:24 BST), after that day's 08:00 forecast. Every build from then to 21 Oct 10:26 UTC logged
+  `p_status` on every overflow row. The builds earlier on 20 Oct logged none.
+- **First issue day with the shadow by 08:00 local.** 21 Oct: builds issued at 01:13 and 06:14 UTC (02:13
+  and 07:14 BST).
+- **Opens** on target day 25 Oct 2026, whose lead-4 forecast is the 08:00 forecast of 21 Oct. This holds if
+  the 08:00 forecasts of 22 to 25 Oct carry the shadow at leads 0 to 3, as every build since the merge has.
+  The check confirms it from the log before it scores anything.
+- **Runs** 28 target days, 25 Oct to 21 Nov 2026. **Read** on or after 23 Nov 2026.
+- **If the minimum data falls short**, the 14-day extension runs to 5 Dec 2026, read on or after 7 Dec.
+- 25 Oct is the day the clocks go back, so that day's stretches can read up to an hour short (see "When the
+  status is known, and when it is stale").
