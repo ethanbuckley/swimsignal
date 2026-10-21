@@ -109,7 +109,9 @@ test('the issue time is said once, with the app\'s stale notice after 8 hours, a
   const ids = S.fromHash('#spots=eden-lazonby,thames-henley,buttermere');
   const h = S.view(DATA, ids, NOW, '');
   assert.equal((h.match(/Forecast issued/g) || []).length, 1);
-  assert.ok(h.includes('Forecast issued Sun 4 Oct, 00:16 (2 h ago), issue id <b>nogit-20261003T2316Z</b>.') && !h.includes('Stale'));
+  // How long ago on the screen only: a printed sheet is read later, when it no longer is (20 Oct 2026).
+  assert.ok(h.includes('Forecast issued Sun 4 Oct, 00:16<span class="screen-only"> (2 h ago)</span>, issue id <b>nogit-20261003T2316Z</b>.') && !h.includes('Stale'));
+  assert.ok(fs.readFileSync(path.join(SITE, 'sites.html'), 'utf8').includes('.screen-only'));   // hidden in print (sites.html, @media print)
   assert.ok(S.view(DATA, ids, Date.parse(GEN) + 9 * 3600e3, '').includes('<b>Stale.</b> This forecast is 9 h old'));
   assert.ok(h.includes('A forecast, not a water test: check the signs at the water before you swim.'));
   assert.ok(!/\bsafe\b/i.test(text(h)) && !/\bclean\b/i.test(text(h)));
