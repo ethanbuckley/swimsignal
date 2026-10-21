@@ -1,0 +1,61 @@
+source,scenario,day,risk,level,p_middleton
+fresh forecast,live,2026-10-21,0.271,moderate,0.039
+fresh forecast,live,2026-10-22,0.262,moderate,0.053
+fresh forecast,live,2026-10-23,0.789,very high,0.352
+fresh forecast,live,2026-10-24,0.95,very high,0.515
+fresh forecast,live,2026-10-25,0.801,very high,0.153
+fresh forecast,middleton_10,2026-10-21,0.25,moderate,0.01
+fresh forecast,middleton_10,2026-10-22,0.237,moderate,0.021
+fresh forecast,middleton_10,2026-10-23,0.75,very high,0.233
+fresh forecast,middleton_10,2026-10-24,0.933,very high,0.346
+fresh forecast,middleton_10,2026-10-25,0.783,very high,0.075
+fresh forecast,middleton_10_hours,2026-10-21,0.249,moderate,0.009
+fresh forecast,middleton_10_hours,2026-10-22,0.237,moderate,0.021
+fresh forecast,middleton_10_hours,2026-10-23,0.741,very high,0.206
+fresh forecast,middleton_10_hours,2026-10-24,0.927,very high,0.297
+fresh forecast,middleton_10_hours,2026-10-25,0.778,very high,0.053
+fresh forecast,middleton_1,2026-10-21,0.245,moderate,0.004
+fresh forecast,middleton_1,2026-10-22,0.226,moderate,0.007
+fresh forecast,middleton_1,2026-10-23,0.716,very high,0.127
+fresh forecast,middleton_1,2026-10-24,0.917,very high,0.199
+fresh forecast,middleton_1,2026-10-25,0.773,very high,0.032
+fresh forecast,csos_10,2026-10-21,0.223,moderate,0.01
+fresh forecast,csos_10,2026-10-22,0.212,moderate,0.021
+fresh forecast,csos_10,2026-10-23,0.692,high,0.233
+fresh forecast,csos_10,2026-10-24,0.912,very high,0.346
+fresh forecast,csos_10,2026-10-25,0.763,very high,0.075
+fresh forecast,csos_1,2026-10-21,0.214,moderate,0.004
+fresh forecast,csos_1,2026-10-22,0.184,moderate,0.007
+fresh forecast,csos_1,2026-10-23,0.605,high,0.127
+fresh forecast,csos_1,2026-10-24,0.868,very high,0.199
+fresh forecast,csos_1,2026-10-25,0.74,very high,0.032
+fresh forecast,csos_addingham_10,2026-10-21,0.174,moderate,0.01
+fresh forecast,csos_addingham_10,2026-10-22,0.173,moderate,0.021
+fresh forecast,csos_addingham_10,2026-10-23,0.625,high,0.233
+fresh forecast,csos_addingham_10,2026-10-24,0.844,very high,0.346
+fresh forecast,csos_addingham_10,2026-10-25,0.683,high,0.075
+fresh forecast,csos_addingham_1,2026-10-21,0.151,moderate,0.004
+fresh forecast,csos_addingham_1,2026-10-22,0.129,low,0.007
+fresh forecast,csos_addingham_1,2026-10-23,0.446,high,0.127
+fresh forecast,csos_addingham_1,2026-10-24,0.7,high,0.199
+fresh forecast,csos_addingham_1,2026-10-25,0.612,high,0.032
+"published build, Middleton swapped",live,2026-10-21,0.272,moderate,0.039
+"published build, Middleton swapped",live,2026-10-22,0.245,moderate,0.046
+"published build, Middleton swapped",live,2026-10-23,0.652,high,0.212
+"published build, Middleton swapped",live,2026-10-24,0.915,very high,0.416
+"published build, Middleton swapped",live,2026-10-25,0.779,very high,0.153
+"published build, Middleton swapped",middleton_10,2026-10-21,0.25,moderate,0.01
+"published build, Middleton swapped",middleton_10,2026-10-22,0.223,moderate,0.018
+"published build, Middleton swapped",middleton_10,2026-10-23,0.62,high,0.14
+"published build, Middleton swapped",middleton_10,2026-10-24,0.895,very high,0.28
+"published build, Middleton swapped",middleton_10,2026-10-25,0.759,very high,0.076
+"published build, Middleton swapped",middleton_10_hours,2026-10-21,0.25,moderate,0.009
+"published build, Middleton swapped",middleton_10_hours,2026-10-22,0.223,moderate,0.018
+"published build, Middleton swapped",middleton_10_hours,2026-10-23,0.613,high,0.124
+"published build, Middleton swapped",middleton_10_hours,2026-10-24,0.889,very high,0.24
+"published build, Middleton swapped",middleton_10_hours,2026-10-25,0.753,very high,0.053
+"published build, Middleton swapped",middleton_1,2026-10-21,0.246,moderate,0.004
+"published build, Middleton swapped",middleton_1,2026-10-22,0.214,moderate,0.006
+"published build, Middleton swapped",middleton_1,2026-10-23,0.592,high,0.076
+"published build, Middleton swapped",middleton_1,2026-10-24,0.878,very high,0.161
+"published build, Middleton swapped",middleton_1,2026-10-25,0.747,very high,0.032
