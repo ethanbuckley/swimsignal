@@ -750,6 +750,15 @@
   .compare-table tr.on > td { background:var(--active); }
   .compare-table tr.on > td.d0 { box-shadow:inset 3px 0 0 var(--ink); }
   .compare-table tr.on > td.same { background:none; }
+  /* The spots' names pinned under the header while a phone reads the table down (comparePin). Its own heads
+     scrolled away with it, and a sticky head cannot hold to the page from inside a box that scrolls sideways
+     (post-deploy QA, 20 Oct 2026). A copy, of no height so nothing moves, shown once the heads have gone. */
+  .compare-pin { display:none; }
+  @media (max-width: 800px) {
+    .compare-pin { display:block; position:sticky; top:var(--header-h); z-index:3; height:0; }
+    .compare-pin > div { overflow:hidden; visibility:hidden; box-shadow:0 1px 0 var(--line); }
+    .compare-pin.on > div { visibility:visible; }
+  }
   .compare-note { margin:0; padding:0 0 10px; }
   details.comparison { scroll-margin-top:calc(var(--header-h) + 8px); }
   .comparison > summary, .lists > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
@@ -3021,8 +3030,11 @@ function compareTable(spots, day, meta = null) {
   const dates = fiveDays(), n = spots.length, days = spots.map(s => compareDays(s, dates)), facts = spots.map(s => compareRows(s, day, DATA.generated_at));
   const cell = x => `<span class="hl ${tone(x.level)}">${esc(x.words)}</span>`, hd = (r, j) => ` headers="${r} cmp-s${j}"`;
   const lab = (id, t) => `<tr class="lab"><th colspan="${n}" id="${id}"><span>${t}</span></th></tr>`;
+  // The names again, for the pin (comparePin): hidden from screen readers, which have the table's own heads.
+  const pin = `<div class="compare-pin" aria-hidden="true"><div><table class="compare-table" style="--cols:${n}"><thead><tr>`
+    + spots.map(s => `<th>${esc(s.name)}${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('') + '</tr></thead></table></div></div>';
   return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
-    + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
+    + pin + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
     + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
       + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('')}</tr></thead><tbody>`
     + lab('cmp-days', `Pollution risk, next ${dates.length === 4 ? 'four' : 'five'} days`)
@@ -3042,7 +3054,19 @@ function drawComparison() {
   document.getElementById('compare-status').textContent = spots.length < 2 ? 'Choose at least two different spots.'
     : `${spots.length} spots side by side.${wide ? ' Scroll sideways to see every column.' : ''}`;
   box.querySelectorAll('[data-compare-spot]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.compareSpot, true, true, c.day); }));
+  comparePin();
 }
+// The pinned names (.compare-pin): on a phone, shown while the table's own heads are above the header and the
+// table is still below it, and moved sideways with the table. One listener for the page's scrolling and the
+// table's (scroll does not bubble, so it listens as the event goes down), finding whatever comparison is drawn.
+function comparePin() {
+  const pin = document.querySelector('.compare-pin'), sc = pin && pin.nextElementSibling, head = sc && sc.querySelector('thead');
+  if (!head || !PHONE.matches) return;
+  const top = document.querySelector('.top').getBoundingClientRect().bottom, h = head.getBoundingClientRect(), t = sc.getBoundingClientRect();
+  pin.classList.toggle('on', h.bottom <= top && t.bottom > top + h.height);
+  pin.firstElementChild.scrollLeft = sc.scrollLeft;
+}
+document.addEventListener('scroll', comparePin, { capture: true, passive: true });
 function bindComparison() {
   const details = document.querySelector('.comparison'), c = COMPARING;
   if (!details || !c) return;
