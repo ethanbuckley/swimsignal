@@ -3561,7 +3561,8 @@ const planStrip = (dates, day) => `<fieldset class="day-strip"><legend class="sr
   + `${iso === day ? ' checked' : ''}><span>${shortDay(iso)} <span class="dd">${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span></span></label>`).join('')}</fieldset>`;
 const planDayInput = iso => document.querySelector(`input[name="plan-day"][value="${iso}"]`);
 // What has been typed (commit: picked, Enter or left): the places it could be, offered under the field,
-// and once committed the place, or the closest offer, or a sentence saying there is none.
+// and once committed the place, or the closest offer, or a sentence saying there is none. A place typed in
+// full that is the only one offered commits as a pick does (plan.js, placeOnly).
 async function planType(text, commit) {
   const call = ++planTyped, t = text.trim();
   if (!t) { if (commit && PLAN.from && !PLAN.from.here) { PLAN.from = null; planNote = ''; drawPlan(); } return; }
@@ -3571,7 +3572,7 @@ async function planType(text, commit) {
   if (call !== planTyped || !onPlanPage()) return;   // a later key, or another page, has taken over
   const offers = placeMatches(index, t), list = document.getElementById('plan-places');
   if (list) list.innerHTML = offers.map(p => `<option value="${esc(p.name)}"></option>`).join('');
-  if (!commit) return;
+  if (!commit && !placeOnly(offers, t)) return;
   const p = placeNamed(index, t) || offers[0];
   if (!p) { planNote = `No town, village or district called “${esc(t)}” in England or Wales.`; drawPlan(); return; }
   const input = document.getElementById('plan-from'); if (input && input.value !== p.name) input.value = p.name;

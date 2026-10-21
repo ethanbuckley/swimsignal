@@ -126,6 +126,22 @@ test('a name on its own is the biggest place of that name; a name as offered is 
   assert.equal(P.placeNamed(index, 'Kendle'), null);
   assert.equal(P.placeNamed(index, ''), null);
 });
+// A place typed in full, the only one offered, starts the plan as a pick does (index.html, planType): on an
+// iPhone, tapping the one offer after typing it whole changed nothing, so nothing started (QA, 20 Oct 2026).
+test('a place typed in full that is the only one offered is the place; while another begins with it, none yet', () => {
+  const only = t => (P.placeOnly(P.placeMatches(index, t), t) || {}).name || null;
+  assert.equal(only('Kendal'), 'Kendal');
+  assert.equal(only('kendal '), 'Kendal');                                 // case and spaces do not count
+  assert.equal(only('Ynys Mon'), 'Ynys Môn');                              // nor accents
+  assert.equal(only('Newport, Isle of Wight'), 'Newport, Isle of Wight');
+  assert.equal(only('Kend'), null);                                        // not in full
+  assert.equal(only('Newport'), null);                                     // two Newports: still a choice
+  assert.equal(only('Bridge'), null);                                      // "Pooley Bridge" only has it as a later word
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
+  const at = app.indexOf('async function planType('), body = app.slice(at, app.indexOf('\n}\n', at));
+  assert.ok(body.includes('if (!commit && !placeOnly(offers, t)) return;'));
+  assert.ok(body.indexOf('placeOnly(offers, t)') < body.indexOf('input.blur()'));   // and leaves the field, so the keyboard closes
+});
 test('postcodes are recognised, so the page can say they do not work yet', () => {
   for (const pc of ['LA22 9', 'la22', 'SW1A 1AA', 'M1', 'B33 8TH']) assert.equal(P.looksLikePostcode(pc), true, pc);
   for (const name of ['Bath', 'Ely', 'Kendal', 'A1 road']) assert.equal(P.looksLikePostcode(name), false, name);

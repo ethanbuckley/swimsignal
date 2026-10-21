@@ -103,6 +103,11 @@ function placeNamed(index, text) {
 }
 // "LA22 9", "SW1A": OS Open Names has postcodes, but not in the file the page fetches.
 const looksLikePostcode = text => /^[a-z]{1,2}[0-9][0-9a-z]?(\s*[0-9][a-z]{0,2})?$/i.test(String(text).trim());
+// The place typed in full when it is the only one offered (offers: placeMatches's): there is nothing left to
+// choose, so the plan can start as if it had been picked (index.html, planType). Typing "Ilkley" whole left
+// one offer, "Ilkley", and on an iPhone tapping it changed nothing in the field, so no plan started until
+// Search was pressed (post-deploy QA, 20 Oct 2026). Null while another place begins with what is typed.
+const placeOnly = (offers, text) => offers.length === 1 && offers[0].key === placeKey(text) ? offers[0] : null;
 
 // ------------------------------------------------------------------------------ rivers and lakes
 // data/waters.json (scripts/make_waters.py): OS Open Rivers' named rivers and the WFD lakes in England,
@@ -168,6 +173,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway };
 }
