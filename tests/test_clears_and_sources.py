@@ -239,8 +239,9 @@ class _Steady:
         return np.where(sd["site_id"] == "A1", self.a1, self.b2)
 
 
-def _forecast(monkeypatch, ov: pd.DataFrame, model: _Steady) -> dict:
-    """forecast_point for a river spot with `ov` upstream, offline: no network, rain or calibration."""
+def _forecast(monkeypatch, ov: pd.DataFrame, model: _Steady, **patches) -> dict:
+    """forecast_point for a river spot with `ov` upstream, offline: no network, rain or calibration.
+    `patches` replace more of forecast's names, last."""
     from dipcast.model import forecast
     from dipcast.model.transport import PinLocation
 
@@ -260,6 +261,8 @@ def _forecast(monkeypatch, ov: pd.DataFrame, model: _Steady) -> dict:
     monkeypatch.setattr(forecast.ecoli, "load", lambda: None)
     monkeypatch.setattr(forecast, "live_now_risk", live_now_risk)
     monkeypatch.setattr(forecast, "clear_time", clear_time)
+    for name, value in patches.items():
+        monkeypatch.setattr(forecast, name, value)
     return forecast.forecast_point(53.92, -1.70, days_ahead=4, gauge=False, log_to_store=False)
 
 
@@ -308,6 +311,34 @@ def test_forecast_point_says_when_water_still_on_its_way_arrives(monkeypatch):
     assert "arriving" not in out["now"]
     far = _upstream().assign(weight=[0.1, 0.6], latest_event_start=[start, pd.NaT])
     assert "arriving" not in _forecast(monkeypatch, far, _Steady())["now"]
+
+
+# The hour the clocks go back happens twice: 01:25 on 25 Oct 2026 is first BST, then GMT an hour later.
+# The minute they go forward is skipped: 00:59:40 GMT on 28 Mar 2027 is a breath before 02:00 BST.
+FIRST_0125 = pd.Timestamp("2026-10-25 00:25:17", tz="UTC").tz_convert("Europe/London")
+SECOND_0125 = pd.Timestamp("2026-10-25 01:25:17", tz="UTC").tz_convert("Europe/London")
+SPRING = pd.Timestamp("2027-03-28 00:59:40", tz="UTC").tz_convert("Europe/London")
+
+
+def test_times_round_to_the_minute_across_both_clock_changes():
+    from dipcast.model.forecast import to_minute
+    assert to_minute(FIRST_0125) == "2026-10-25T01:25:00+01:00"
+    assert to_minute(SECOND_0125) == "2026-10-25T01:25:00+00:00"
+    assert to_minute(SPRING) == "2027-03-28T02:00:00+01:00"
+    assert to_minute(pd.Timestamp("2026-10-22 09:12:31", tz="Europe/London")) == "2026-10-22T09:13:00+01:00"
+
+
+def test_a_clear_time_or_arrival_at_a_clock_change_does_not_fail_the_forecast(monkeypatch):
+    """Warleigh Weir's forecast failed on 21 Oct 2026 and Tellisford's on 22 Oct: each clear time fell in the
+    hour 25 Oct repeats, and rounding it to the minute raised. The build published without them."""
+    from dipcast.model import forecast
+    for at in (FIRST_0125, SECOND_0125, SPRING):
+        # A1's water is still on its way and arrives at `at`; B2's has passed.
+        out = _forecast(monkeypatch, _upstream(), _Steady(),
+                        clear_time=lambda ov, now, at=at: (at, "die-off", None),
+                        still_coming=lambda ov, now, contrib, at=at: np.array([(at - now) / pd.Timedelta(hours=1), np.nan]))
+        assert out["now"]["clears_at"] == forecast.to_minute(at)
+        assert out["now"]["arriving"]["arrives_at"] == forecast.to_minute(at)
 
 
 def test_a_quiet_low_spot_gets_no_clear_time_and_no_sources(monkeypatch):

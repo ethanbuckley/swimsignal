@@ -209,6 +209,27 @@ def test_build_health_counts_repeated_overflow_ids():
     assert h["duplicate_overflow_ids"] == 1 and len(h["warnings"]) == 1 and "AWS00528" in h["warnings"][0]
 
 
+def test_build_health_warns_on_a_spot_published_with_no_forecast():
+    """A spot whose forecast raised still publishes, and the run page says so: Warleigh Weir (21 Oct 2026)
+    and Tellisford (22 Oct) failed at the clock change, and their runs showed green with nothing to see."""
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    import build_site
+
+    good = {"name": "ok", "days": [{"data_status": "ok"}]}
+    bad = {"name": "River Frome, Tellisford Weir", "error": "forecast failed: Cannot infer dst time from 2026-10-25 01:25:00"}
+    h = build_site.build_health([good] * 19 + [bad])
+    assert h["forecast_failed"] == 1 and len(h["warnings"]) == 1
+    assert h["warnings"][0] == ("1 spot published with no forecast: River Frome, Tellisford Weir "
+                                "(forecast failed: Cannot infer dst time from 2026-10-25 01:25:00)")
+    # An isolated lake's empty day list is an answer, not a failure.
+    assert build_site.build_health([good] * 5 + [{"name": "tarn", "days": []}])["warnings"] == []
+    h = build_site.build_health([good] * 40 + [{"name": f"s{i}", "error": "x"} for i in range(7)])
+    assert h["warnings"][0].startswith("7 spots published with no forecast: s0 (x); s1 (x)")
+    assert h["warnings"][0].endswith("s4 (x); and 2 more")
+
+
 def test_a_cached_overflow_table_with_a_repeated_id_loads_one_row_each(tmp_path, monkeypatch):
     """--no-refresh reads the cached overflow table. One written before build_overflows dropped repeats
     (the 3 Oct 2026 02:59 state lists AWS00528 twice) must not count that overflow twice."""
