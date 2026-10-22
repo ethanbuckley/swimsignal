@@ -259,6 +259,11 @@ those sizes; they were taken off to keep the rule simple.)
 - A part that cannot be used yet is not shown: Compare appears on the Saved page once two spots
   are saved. A picked day's details begin with its rows, because the hero's headline already
   gives that day's level and why.
+- One date on a spot's page (22 October 2026). A picked day moves every forecast tile with it:
+  Sewage spills, the E. coli estimate, Rain here and Weather sit under "Forecast for Saturday 24
+  October" (or "Forecast for today"). The readings, Right now, River level, Water temperature and the
+  algae check, sit apart under "Latest readings", which says they do not change with the day. An
+  outside review had picked Saturday at Long Bridges and found the tiles below still on today.
 
 ### Icons
 
