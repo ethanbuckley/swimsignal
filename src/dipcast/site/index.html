@@ -225,10 +225,10 @@
   .search input { width:100%; font:inherit; font-size:var(--fs-body); color:var(--ink); padding:10px 12px 10px 38px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); -webkit-appearance:none; appearance:none; }
   .search input::placeholder { color:var(--faint); }
   .toolbar { display:flex; align-items:center; gap:8px; margin:8px 0 0; }
-  .toolbar select, .compare-fields select, .plan-row select { display:block; width:100%; min-height:44px; padding:8px 36px 8px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field) var(--arrow) no-repeat right 12px center;
+  .toolbar select, .compare-fields select, .plan-go select { display:block; width:100%; min-height:44px; padding:8px 36px 8px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field) var(--arrow) no-repeat right 12px center;
                     border:1px solid var(--line); border-radius:var(--radius); -webkit-appearance:none; appearance:none; }
   .toolbar select { flex:1 1 0; min-width:0; font-weight:600; }
-  .plan-row select { font-weight:600; }
+  .plan-go select { font-weight:600; }
   .planner-note { margin:8px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .best-day b { color:var(--k-low); }
   /* The list's answer (option B, 13 Oct 2026): how many spots are at low risk on the weekend's better day,
@@ -241,6 +241,28 @@
   .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
   .near-cta svg { width:18px; height:18px; flex:none; }
   .here-cta { margin-top:4px; }   /* under Near me: the forecast for the water where you are (hereForecast) */
+  .near-cta .cta-s { display:none; }
+  /* A phone's opening, shorter (22 Oct 2026, an outside review: the introduction and controls filled the
+     first screen, and the first spot began at 759 px on a 375 x 812 phone, under the tab bar). Near me
+     beside the search as "Near me", as a desktop's shares its row, and the lede without the map's clause:
+     "Or check the river or lake where you are" says it under them. */
+  @media (max-width: 800px) {
+    .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
+    .intro > * { grid-column:1 / -1; }
+    .intro > .search { grid-column:1; }
+    .intro > .search input { min-height:48px; }   /* Near me's height */
+    .intro > .near-cta { grid-column:2; width:auto; margin-top:16px; padding:8px 14px; }
+    .intro > .here-cta { justify-self:start; }
+    .near-cta .cta-l, .lede-map { display:none; }
+    .near-cta .cta-s { display:inline; }
+  }
+  /* The smallest phones: no room for both, so Near me keeps its own row, and its full words. */
+  @media (max-width: 360px) {
+    .intro > .search, .intro > .near-cta { grid-column:1 / -1; }
+    .intro > .near-cta { width:100%; margin-top:10px; }
+    .near-cta .cta-l { display:inline; }
+    .near-cta .cta-s { display:none; }
+  }
   .intro .geo { margin:8px 0 0; }
   .save-hint .ic { margin-top:3px; }   /* centred on the first line (22.5 px) when the text wraps */
   /* The padding is room for a focus ring, which the scrolling row would otherwise clip; the margin
@@ -709,7 +731,9 @@
   /* The day (planStrip): the five days in one strip with the distance under it, or beside it where there is
      room. Each day a 44 px target, its short name over its date, the chosen one filled as a chosen chip is.
      The radio buttons are hidden but take the focus, whose ring goes round the day. */
-  @media (min-width: 600px) { .plan-row { grid-template-columns:minmax(0, 3fr) minmax(0, 1fr); } }
+  .plan-go { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:8px; align-items:start; margin:8px 0 0; }
+  .plan-go select { min-height:48px; }   /* the start's height */
+  @media (max-width: 360px) { .plan-go { grid-template-columns:minmax(0, 1fr); } }   /* the smallest phones: a place name needs the width */
   .day-strip { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:2px; min-width:0; margin:0; padding:2px;
                border:1px solid var(--line); border-radius:var(--radius); background:var(--field); }
   .day-strip label { position:relative; min-width:0; }
@@ -721,8 +745,9 @@
   .day-strip input:checked + span { background:var(--brand); color:var(--on-fill); }
   .day-strip input:checked + span .dd { color:var(--on-fill); }
   .day-strip input:focus-visible + span { outline:2px solid var(--focus); outline-offset:2px; }
-  .plan-from { margin-top:8px; }
-  .plan-from + .planner-note { margin-bottom:8px; }
+  .plan-go .plan-from { margin:0; }
+  .plan-go + .planner-note { margin-bottom:8px; }
+  #plan-sum + .chips-row { margin-top:4px; }
   a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
   /* How much evidence sits behind the row's level (planEvidence): outside the row's link, which it would
      otherwise sit in, so the row's padding below moves under it. Muted, the meta size. */
@@ -2756,7 +2781,8 @@ const solo = h => `<div class="solo">${h}</div>`;
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
 // Near me under the search: the way most people come in (14 Oct 2026). Also in the built page (home_lead).
-const NEAR_CTA = '<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Show spots near me</span></button>';
+// On a phone it sits beside the search as "Near me" (cta-s), so the first spots reach the first screen.
+const NEAR_CTA = '<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span class="cta-l">Show spots near me</span><span class="cta-s">Near me</span></button>';
 // Under it, the forecast for the water where you are (hereForecast, 17 Oct 2026). Also in home_lead.
 const HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>';
 const NEAR_N = 3;   // the nearest spots shown as cards once a place is given
@@ -2817,8 +2843,8 @@ function renderList() {
   // level in words. Everything down to the caveat's line is also in the built home page, so it and the
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
-  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map. <a href="#about">How it works</a></p>`
-    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="Find a river, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
+  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class="lede-map">, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
+    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
     // Until a place is given, Near me; then the nearest spots, as cards above the list (drawSpots).
     + (offerNear() ? NEAR_CTA : '') + ('geolocation' in navigator ? HERE_CTA : '')
     + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
@@ -3479,14 +3505,15 @@ function renderPlan() {
   planCompareGo = !!PLAN.compare;   // a link to a comparison opens on it (drawPlan)
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
+  // The day, then where from and how far on one row (22 Oct 2026: on a 375 px phone the first result began
+  // at 707 px, under a lede and the distance on a row of its own; the headings say low risk comes first).
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
-    + `<p class="lede">Spots within reach on the day you pick, those at low risk first.</p>`
-    + `<div class="plan-row">${planStrip(planDates(), PLAN.day)}`
+    + `<div class="plan-row">${planStrip(planDates(), PLAN.day)}</div><div class="plan-go">`
+    + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
-    + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from: a town or village" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
-    + `<p class="planner-note" id="plan-where" aria-live="polite"></p>`
+    + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
-    + `<p class="planner-note" id="plan-sum" role="status"></p><p class="planner-note" id="plan-basis"></p>` + notices() + '</div>'
+    + `<p class="planner-note" id="plan-basis"></p>` + notices() + '</div>'
     + cols('<div id="plan-results"></div>');
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();

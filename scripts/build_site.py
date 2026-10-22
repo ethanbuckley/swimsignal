@@ -1573,7 +1573,7 @@ SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
                'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
 # Near me, under the search (index.html's NEAR_CTA, word for word). The line for groups moved to the
 # foot of the list on 14 Oct 2026, so the opening ends with the row of controls.
-NEAR_CTA = ('<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span>Show spots near me</span></button>')
+NEAR_CTA = ('<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span class="cta-l">Show spots near me</span><span class="cta-s">Near me</span></button>')
 # Under it, the forecast for the water where you are (index.html's HERE_CTA, word for word; 17 Oct 2026).
 HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>'
 # Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
@@ -1588,10 +1588,10 @@ def home_lead(n: int) -> str:
     data-built: the script updates this .lead where it stands rather than replacing it (index.html,
     overBuilt), so its picture is painted once, at the first paint."""
     return ('<div id="result" data-built><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
-            f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England, and for any river or lake you '
-            '<span class="w-touch">tap</span><span class="w-click">click</span> on the map. <a href="#about">How it works</a></p>'
+            f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England<span class="lede-map">, and for any river or lake you '
+            '<span class="w-touch">tap</span><span class="w-click">click</span> on the map</span>. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
-            'placeholder="Find a river, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
+            'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
             f'{NEAR_CTA}{HERE_CTA}</section>'
             '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
             '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
