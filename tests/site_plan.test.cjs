@@ -223,3 +223,24 @@ test('the search finds a river or lake by its name, its other name or the town i
   assert.equal(P.waterMatches(ix, 'derwent', 1).length, 1);
   assert.deepEqual(P.waterIndex(null), []);
 });
+// The line under each row that every Oxford row repeated (outside review, 22 Oct 2026): said once under the
+// count where two or more rows share it (index.html, planBasis), and kept under a row whose line differs.
+test('a line most rows share is said once, and who it is said of', () => {
+  const tw = "Thames Water's overflows.", uu = "United Utilities' overflows.";
+  assert.deepEqual(P.planShared([tw, tw, tw, tw, tw, tw, tw, tw]), {line: tw, n: 8, m: 8});
+  assert.deepEqual(P.planShared([uu, tw, tw, '', tw]), {line: tw, n: 3, m: 4});
+  assert.deepEqual(P.planShared([uu, tw, uu, tw]), {line: uu, n: 2, m: 4});   // a tie: the earlier row's
+  assert.deepEqual(P.planShared([uu, tw, '']), {line: '', n: 0, m: 2});         // none shared: each row keeps its own
+  assert.deepEqual(P.planShared([]), {line: '', n: 0, m: 0});
+  // Oxford, Skipton, Bath, Kendal and Exeter's plans for Saturday 24 Oct 2026, as the live data had them on 22 Oct.
+  assert.equal(P.planSharedWho(8, 8, 8), 'All 8 spots');
+  assert.equal(P.planSharedWho(9, 12, 14), '9 of the 12 spots with a forecast');
+  assert.equal(P.planSharedWho(2, 2, 5), 'Both spots with a forecast');
+  assert.equal(P.planSharedWho(20, 20, 27), 'All 20 spots with a forecast');
+  assert.equal(P.planSharedWho(2, 2, 2), 'Both spots');
+  assert.equal(P.planSharedWho(3, 5, 5), '3 of these 5 spots');
+  // The page asks for it in the order the rows are drawn, and says it in the line under the count.
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
+  assert.match(app, /getElementById\('plan-basis'\)\.innerHTML = r\.count \? planBasis\(r\.groups\.flat\(\)\)/);
+  assert.match(app, /own === PLAN_SHARED \? '' : own/);
+});

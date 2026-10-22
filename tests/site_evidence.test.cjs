@@ -274,3 +274,18 @@ test('the evidence line: forecast only today where right now is not known, and n
   assert.match(ev.evidenceCoverage(most, W), /^Mostly Yorkshire Water's overflows\. .*other companies' spills/);
   assert.doesNotMatch(ev.evidenceCoverage(yorkshire(), W), /\bsafe\b|\bclean\b/);
 });
+
+// The line's two parts (22 Oct 2026), since a plan says the company part once where its rows share it
+// (index.html, planBasis): the row's own forecast-only part, and whose overflows with the warnings' share.
+test('the evidence line in its two parts', () => {
+  const blind = yorkshire({ now: { ...cromwheel().now, monitored_upstream: 0 } });
+  assert.equal(ev.evidenceNowGap(blind, true), 'Forecast only: no overflow upstream reports live.');
+  assert.equal(ev.evidenceNowGap(blind, false), '');
+  assert.equal(ev.evidenceCompanyLine(blind, W), ev.evidenceCompanyLine(yorkshire(), W));   // not the row's own
+  assert.equal(ev.evidenceCoverage(blind, W, true), `${ev.evidenceNowGap(blind, true)} ${ev.evidenceCompanyLine(blind, W)}`);
+  assert.match(ev.evidenceCompanyLine(yorkshire(), W), /^Yorkshire Water's overflows\. /);
+  for (const f of [ev.evidenceNowGap, ev.evidenceCompanyLine]) {
+    assert.equal(f(yorkshire({ error: 'forecast failed: x' }), W, true), '');
+    assert.equal(f(yorkshire({ upstream_summary: { overflows: 0 } }), W, true), '');
+  }
+});

@@ -1141,6 +1141,13 @@ gives all four navigation links a single full-width row.
     `by_company`), fetched once when the plan opens; until it arrives, or if it fails, the rows have no
     such sentence. "Mostly" when the companies named hold under nine tenths of the reach. The counts are
     left to the Accuracy page: every row in a place says much the same, so the line is kept short.
+  - Said once where rows share it (22 October 2026: an outside review found the same sentence under all
+    eight Oxford rows, which made them harder to compare). The company sentence most rows share, if two
+    or more do, is the line under the count instead (`#plan-basis`; `planShared` and `planSharedWho` in
+    `plan.js`): "All 8 spots: Thames Water's overflows. ...", "9 of the 12 spots with a forecast:
+    Yorkshire Water's overflows. ...". Counted among the spots with a forecast where some have none, so
+    the reader is not left to work out which ones are meant. A row keeps its own company sentence only
+    where it differs (Skipton's three United Utilities rows), and its "Forecast only" part always.
   - The list and the planner load spots-lite.json, which has no contributors; the build gives each spot
     `reach_by_company` there for this line.
   - Not on a plain level or a row with no level: the first has its heading's line, the second its own.
@@ -1160,6 +1167,13 @@ gives all four navigation links a single full-width row.
   (`&compare=<id>,<id>,<id>`, `plan.js`), so a shared link opens on it, and the page moves to it. A spot
   that leaves the plan (a shorter distance, another kind) drops out, and the first spots shown fill it
   back to three.
+  - Found from the count (22 October 2026: an outside review found it worked once opened but was easy to
+    miss under the results). The count line ends "Compare spots", which opens the fold and goes to it,
+    and reads "Go to the comparison" while it is open. The fold stays under the groups: open, it is about
+    2,800 px tall on a 375 px phone, and above the groups it pushed them almost three screens down.
+  - While it is open each row has a "Compare" tick at the right of its name (`.cmp-pick`, outside the row's
+    link), the first three ticked. A tick adds or removes that spot and the selects follow; with three
+    ticked, the others are greyed until one is unticked. Shut, the ticks are hidden.
 - Saved's "Compare your spots" and the plan's are one table (`compareTable`; the cells in
   `experience.js`, `compareDays` and `compareRows`). A column a spot, at least 150 px, so two sit side by
   side on a 375 px phone and three in the 1,440 px desktop's list column; a third on a phone scrolls
