@@ -674,6 +674,14 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
     health = {"spots": n, "forecast_ok": len(ok), "forecast_failed": n - len(ok),
               "no_forecast_possible": len(ok) - len(with_days), "today_rain_unavailable": today_no_data,
               "failed_spots": [r["name"] for r in results if "days" not in r][:20], "warnings": []}
+    # One failed spot publishes without its forecast, and until 22 Oct 2026 said so only in the log: Warleigh
+    # Weir (21 Oct) and Tellisford (22 Oct) failed at the clock change with green runs. Now an annotation too.
+    failed = [r for r in results if "days" not in r]
+    if failed:
+        more = f"; and {len(failed) - 5} more" if len(failed) > 5 else ""
+        health["warnings"].append(
+            f"{len(failed)} spot{'' if len(failed) == 1 else 's'} published with no forecast: "
+            + "; ".join(f"{r['name']} ({r.get('error', 'no days')})" for r in failed[:5]) + more)
     # Spots on the wrong water, and gauges whose latest reading is old: reported, never a reason not to publish.
     health["river_levels_stale"] = sum(bool((r.get("river_state") or {}).get("stale")) for r in results)
     misplaced = placement_check(results)

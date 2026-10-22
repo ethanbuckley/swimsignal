@@ -185,6 +185,14 @@ def _clean(v):
     return v
 
 
+def to_minute(t: pd.Timestamp) -> str:
+    """`t` to the nearest minute, as ISO text in its own zone. Rounded in UTC: pandas rounds the wall clock
+    and will not guess at a clock change, so 01:25 on 25 Oct 2026 (an hour that happens twice) raised and
+    failed Warleigh Weir's forecast on 21 Oct and Tellisford's on 22 Oct, and 00:59:40 GMT on 28 Mar 2027
+    would round to 01:00, a time that never happens."""
+    return t.tz_convert("UTC").round("min").tz_convert(t.tz).isoformat()
+
+
 def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
                         model: SpillModel | None, return_rain: bool = False,
                         rain: pd.DataFrame | None = None, return_frame: bool = False) -> tuple:
@@ -479,7 +487,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     spilling = bool(len(ov)) and bool(running(ov).any())
     said = now_risk >= LOW_CUT or (spilling and now_risk > 0)
     arriving = arriving_of(ov, now, now_contrib) if said else None
-    clearing = {"clears_at": None if clears_at is None else clears_at.round("min").isoformat(), "clears_by": clears_by,
+    clearing = {"clears_at": None if clears_at is None else to_minute(clears_at), "clears_by": clears_by,
                 # The overflow whose travel time holds the risk up most as it clears, when travel does ('travel').
                 **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}
                     | {"travel_h": round(float(ov.loc[last_water, "travel_h"]), 1)}} if clears_by == "travel" else {}),
@@ -592,7 +600,7 @@ def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> 
         "distance_km": round(float(r["distance_m"]) / 1000, 1),
         "lake_distance_km": round(float(r["lake_distance_m"]) / 1000, 1),
         "travel_h": round(float(r["travel_h"]), 1),
-        "arrives_at": (now + pd.Timedelta(hours=float(left[k]))).round("min").isoformat(),
+        "arrives_at": to_minute(now + pd.Timedelta(hours=float(left[k]))),
         "share": round(float(share[coming].sum()), 3),
     } | carried_fields(r)
 
