@@ -728,6 +728,13 @@
      otherwise sit in, so the row's padding below moves under it. Muted, the meta size. */
   a.row:has(+ .ev-line) { padding-bottom:4px; }
   .ev-line { margin:0; padding:0 0 12px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  /* A plan row's Compare tick (planCompare), at the right of its name while the comparison is open. */
+  #plan-results ul.spots li { position:relative; }
+  .cmp-pick { display:none; }
+  .comparing .cmp-pick { display:flex; align-items:center; gap:8px; position:absolute; top:2px; right:0; min-height:44px; padding-left:12px; font-size:var(--fs-note); cursor:pointer; }
+  .comparing .cmp-pick input { flex:none; width:22px; height:22px; margin:0; accent-color:var(--brand); cursor:inherit; }
+  .comparing .cmp-pick:has(input:disabled) { color:var(--muted); cursor:default; }
+  .comparing a.row .nm { padding-right:104px; }
   .compare-fields { display:grid; gap:10px; margin:14px 0; }
   .compare-fields label { font-size:var(--fs-note); font-weight:600; }
   .compare-fields select { margin-top:4px; }
@@ -1077,7 +1084,7 @@
     .top { position:static; padding:0 0 8px; background:var(--card); color:var(--ink); border-bottom:1px solid var(--line); }
     .top .brand { color:var(--ink); }
     .top nav, .skip, .bottom-nav, #map-wrap, .loc, .tile:has(#spot-map), .top-row, .actions, .below,
-      .search, .near-cta, .here-cta, .toolbar, .linkbtn, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
+      .search, .near-cta, .here-cta, .toolbar, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
       .about-line, #your-data, #home-screen, details.ea-today, details.consent, details.lists, form, .btn, .unsave,
       .pick, details > summary::after, .quiet-btn::after { display:none !important; }
     .answer::before, .lead::before { display:none; }
@@ -3436,9 +3443,19 @@ function planWhy(s, day) {
 // was in the why line, "Forecast only: ..."); and whose overflows these are, with how the live warnings have done
 // at that company, from the Accuracy page's figures (data/verification.json), which the plan asks for once
 // (planLoadWarnings). Muted, the meta size: it qualifies the row, it is not another reason.
-let PLAN_WARNINGS = null;
+// The company part most rows share, if two or more do, is said once under the count instead (planBasis, with
+// plan.js's planShared): an outside review on 22 Oct 2026 found the same sentence under all eight Oxford rows,
+// which made them harder to compare. A row keeps its own company part only where it differs, and its
+// forecast-only part always.
+let PLAN_WARNINGS = null, PLAN_SHARED = '';
+function planBasis(shown) {
+  const { line, n, m } = planShared(shown.map(o => evidenceCompanyLine(o.s, PLAN_WARNINGS)));
+  PLAN_SHARED = line;
+  return line ? `${planSharedWho(n, m, shown.length)}: ${line}` : '';
+}
 function planEvidence(s) {
-  const line = evidenceCoverage(s, PLAN_WARNINGS, PLAN.day === today() && dayLevel(s, PLAN.day) === 'low');
+  const own = evidenceCompanyLine(s, PLAN_WARNINGS);
+  const line = [evidenceNowGap(s, PLAN.day === today() && dayLevel(s, PLAN.day) === 'low'), own === PLAN_SHARED ? '' : own].filter(Boolean).join(' ');
   return line ? `<p class="ev-line">${line}</p>` : '';
 }
 function planLoadWarnings() {
@@ -3449,7 +3466,8 @@ function planItem(o) {
   const s = o.s, why = planWhy(s, PLAN.day), ev = planEvidence(s);
   const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>${ev}</li>`;
+    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
+    + `<label class="cmp-pick"><input type="checkbox" data-compare-pick="${esc(s.id)}"><span>Compare<span class="sr"> ${esc(s.name)}</span></span></label>${ev}</li>`;
 }
 function renderPlan() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'plan';
@@ -3468,7 +3486,7 @@ function renderPlan() {
     + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from: a town or village" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p>`
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
-    + `<p class="planner-note" id="plan-sum" role="status"></p>` + notices() + '</div>'
+    + `<p class="planner-note" id="plan-sum" role="status"></p><p class="planner-note" id="plan-basis"></p>` + notices() + '</div>'
     + cols('<div id="plan-results"></div>');
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();
@@ -3495,6 +3513,7 @@ function drawPlan(fit = false) {
   const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
   const better = r.count ? betterDay(r.groups.flat().map(o => o.s), PLAN.day, planDates()) : null;
   sum.innerHTML = !r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
+    + (r.count >= 2 ? ` <button type="button" class="linkbtn small" data-plan-compare>${planCompareWord(!!PLAN.compare)}</button>` : '')
     + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '');
   // A low risk and a plain level are told apart in the headings (20 Oct 2026): one is a forecast that
   // looked and found the risk low, the other has nothing upstream to forecast from (levels.js, FOUND_NONE).
@@ -3502,6 +3521,7 @@ function drawPlan(fit = false) {
   const sub = ['', 'Nothing upstream for the forecast to work from, so these spots have no forecast level. Other risks apply: algae, wildlife, runoff and bathers.',
     '', 'No forecast for the day, or out of the forecast\'s reach.'];
   const next = r.nearest ? reachFor(r.nearest.miles) : null;
+  document.getElementById('plan-basis').innerHTML = r.count ? planBasis(r.groups.flat()) : '';
   box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
       + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
     : `<div class="empty-saved tile"><h2 class="sec-h">No ${planNoun(2)} ${reach}</h2>`
@@ -3521,18 +3541,33 @@ function drawPlan(fit = false) {
 // Compare these spots (20 Oct 2026, from an outside review: "which of these places should I look into further
 // for Saturday?"): up to three of the plan's spots side by side over the five days, its day shaded
 // (compareSection), the first three shown until others are chosen (plan.js, planCompareIds), offered in the
-// plan's own groups. Under the groups, as Saved's is under the cards. In the address while it is open, so a
-// link opens on it, and a link that holds one is taken to it (planCompareGo, set by renderPlan).
+// plan's own groups. In the address while it is open, so a link opens on it, and a link that holds one is taken
+// to it (planCompareGo, set by renderPlan). Under the groups, as Saved's is under the cards: open, a phone's
+// comparison is about 2,800 px tall, and above the groups it pushed them out of reach. Until 22 Oct 2026 it was
+// found only there and chosen in its selects; an outside review found it worked once opened but was easy to miss.
+// Now the count says "Compare spots", which opens it and goes to it ("Go to the comparison" while it is open),
+// and while it is open each row has a Compare tick (.cmp-pick) that adds or removes that spot, the selects following.
+// Three ticked, the others wait until one is unticked.
 let planCompareGo = false;
+const planCompareWord = open => open ? 'Go to the comparison' : 'Compare spots';
+const planPicks = ids => document.querySelectorAll('[data-compare-pick]').forEach(b => {
+  b.checked = ids.includes(b.dataset.comparePick); b.disabled = !b.checked && ids.length >= COMPARE_MAX; });
 function planCompare(groups, heads) {
-  const shown = groups.flat(), miles = new Map(shown.map(o => [o.s.id, o.miles]));
+  const shown = groups.flat(), miles = new Map(shown.map(o => [o.s.id, o.miles])), box = document.getElementById('plan-results');
   const c = { title: 'Compare these spots', ids: planCompareIds(PLAN.compare, shown.map(o => o.s)), day: PLAN.day, open: !!PLAN.compare,
-    sub: `Up to three of these spots side by side: the five days, ${dayName(PLAN.day)} shaded, and what each level rests on, to help you choose which to look into further. A lower forecast level does not mean safe water.`,
+    sub: `Up to three of these spots side by side: the five days, ${dayName(PLAN.day)} shaded, and what each level rests on. Tick them in the list, or choose them here. A lower forecast level does not mean safe water.`,
     groups: groups.map((g, i) => [heads[i], g.map(o => o.s)]).filter(([, g]) => g.length), meta: s => cap(milesAway(miles.get(s.id))),
-    chose: x => { c.ids = x; if (PLAN.compare) { PLAN.compare = x; planAddress(); } },
-    toggled: o => { if (o) PLAN.compare = c.ids; else delete PLAN.compare; planAddress(); } };
+    chose: x => { c.ids = x; planPicks(x); if (PLAN.compare) { PLAN.compare = x; planAddress(); } },
+    toggled: o => { box.classList.toggle('comparing', o); if (o) PLAN.compare = c.ids; else delete PLAN.compare; planAddress();
+      const b = document.querySelector('[data-plan-compare]'); if (b) b.textContent = planCompareWord(o); } };
   if (PLAN.compare) { PLAN.compare = c.ids; planAddress(); }
-  document.getElementById('plan-results').insertAdjacentHTML('beforeend', compareSection(c));
+  box.classList.toggle('comparing', !!PLAN.compare && shown.length >= 2);
+  box.insertAdjacentHTML('beforeend', compareSection(c));
+  box.querySelectorAll('[data-compare-pick]').forEach(b => b.addEventListener('change', () => {
+    const id = b.dataset.comparePick, ids = b.checked ? [...c.ids, id].slice(0, COMPARE_MAX) : c.ids.filter(x => x !== id);
+    document.querySelectorAll('[data-compare]').forEach((el, i) => { el.value = ids[i] || ''; });
+    drawComparison();
+  }));
   bindComparison();
   if (planCompareGo) { planCompareGo = false; const d = document.getElementById('compare'); if (d && d.open) d.scrollIntoView({ block: 'start' }); }
 }
@@ -3573,6 +3608,8 @@ function bindPlan() {
 function planClick(e) {
   const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]');
   if (e.target.closest('[data-plan-here]')) planLocate();
+  else if (e.target.closest('[data-plan-compare]')) { const c = $('compare'); if (!c) return;
+    c.open = true; c.scrollIntoView({ block: 'start' }); c.querySelector('summary').focus({ preventScroll: true }); }
   else if (d) { PLAN.day = d.dataset.planDay; const r = planDayInput(PLAN.day); if (r) r.checked = true; drawPlan(); if (r) r.focus(); }
   else if (w) { PLAN.within = Number(w.dataset.planWithin); $('plan-within').value = String(PLAN.within); drawPlan(true); $('plan-within').focus(); }
 }

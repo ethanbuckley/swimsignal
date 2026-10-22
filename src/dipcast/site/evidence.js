@@ -198,30 +198,38 @@ function evidenceCompanies(s) {
   else for (const [n, w] of s.reach_by_company || []) by.set(n, Number(w) || 0);
   return by;
 }
-function evidenceCoverage(s, W, isToday = false) {
-  const R = evidenceRules(), out = [];
-  if (!s || s.unlisted || s.error || !R.daily(s)) return '';
-  if (isToday && R.nowUnknown(s)) out.push(`Forecast only: ${R.nowUnknownWhy(s)}.`);
-  const by = evidenceCompanies(s), total = [...by.values()].reduce((a, b) => a + b, 0), own = W && W.trained_on;
-  if (own && total > 0 && W.first_day) {
-    const since = evidenceDate(W.first_day, Date.parse(W.last_day || W.first_day)), mine = (by.get(own) || 0) >= total / 2;
-    const rows = (W.by_company || []).filter(r => (r.company === own) === mine);
-    const hits = rows.reduce((a, r) => a + (r.hits || 0), 0), made = rows.reduce((a, r) => a + (r.hits || 0) + (r.misses || 0), 0);
-    // Whose: the company the model learned from alone, or the others holding most of the reach, at most two,
-    // each with a quarter of it or more. "Mostly" when those named hold under nine tenths of it.
-    const named = mine ? [[own, by.get(own)]] : [...by].filter(([n, w]) => n !== 'unknown' && n !== own && w >= total / 4).sort((a, b) => b[1] - a[1]).slice(0, 2);
-    const whose = named.length ? `${named.reduce((a, [, w]) => a + w, 0) < 0.9 * total ? 'Mostly ' : ''}${evidenceOwners(named.map(([n]) => n))} overflows` : '';
-    const share = `<a href="verification.html#warnings">${evidencePct(made ? hits / made : 0)} of ${mine ? 'their' : 'other companies\''} spills</a>`;
-    if (made && mine) out.push(`${evidenceCap(whose)}, whose spills the model learned from. Since ${since} it has warned of ${share}.`);
-    else if (made) out.push(`${whose ? whose + '. ' : ''}The model learned from ${evidenceOwners([own])}; since ${since} it has warned of ${share}.`);
-  }
-  return out.join(' ');
+// The line in two parts, since a plan says the second once where its spots share it (index.html, planBasis;
+// outside review, 22 Oct 2026: eight Oxford rows carried the same sentence). The first is the row's own: on a
+// plan for today, a low level whose right now is not known. The second is whose overflows these are, with how
+// the live warnings have done at that company, which is often the same for every spot near one place.
+const evidenceForecasts = s => Boolean(s && !s.unlisted && !s.error && evidenceRules().daily(s));
+function evidenceNowGap(s, isToday = false) {
+  const R = evidenceRules();
+  return evidenceForecasts(s) && isToday && R.nowUnknown(s) ? `Forecast only: ${R.nowUnknownWhy(s)}.` : '';
 }
+function evidenceCompanyLine(s, W) {
+  if (!evidenceForecasts(s)) return '';
+  const by = evidenceCompanies(s), total = [...by.values()].reduce((a, b) => a + b, 0), own = W && W.trained_on;
+  if (!own || !(total > 0) || !W.first_day) return '';
+  const since = evidenceDate(W.first_day, Date.parse(W.last_day || W.first_day)), mine = (by.get(own) || 0) >= total / 2;
+  const rows = (W.by_company || []).filter(r => (r.company === own) === mine);
+  const hits = rows.reduce((a, r) => a + (r.hits || 0), 0), made = rows.reduce((a, r) => a + (r.hits || 0) + (r.misses || 0), 0);
+  // Whose: the company the model learned from alone, or the others holding most of the reach, at most two,
+  // each with a quarter of it or more. "Mostly" when those named hold under nine tenths of it.
+  const named = mine ? [[own, by.get(own)]] : [...by].filter(([n, w]) => n !== 'unknown' && n !== own && w >= total / 4).sort((a, b) => b[1] - a[1]).slice(0, 2);
+  const whose = named.length ? `${named.reduce((a, [, w]) => a + w, 0) < 0.9 * total ? 'Mostly ' : ''}${evidenceOwners(named.map(([n]) => n))} overflows` : '';
+  const share = `<a href="verification.html#warnings">${evidencePct(made ? hits / made : 0)} of ${mine ? 'their' : 'other companies\''} spills</a>`;
+  if (made && mine) return `${evidenceCap(whose)}, whose spills the model learned from. Since ${since} it has warned of ${share}.`;
+  if (made) return `${whose ? whose + '. ' : ''}The model learned from ${evidenceOwners([own])}; since ${since} it has warned of ${share}.`;
+  return '';
+}
+const evidenceCoverage = (s, W, isToday = false) => [evidenceNowGap(s, isToday), evidenceCompanyLine(s, W)].filter(Boolean).join(' ');
 // The warning table, once a visit: a promise of it, or of null when it could not be had.
 let EVIDENCE_WARNINGS = null;
 const evidenceWarnings = () => EVIDENCE_WARNINGS || (EVIDENCE_WARNINGS = fetch(EVIDENCE_VERIFICATION, { cache: 'no-cache' })
   .then(r => (r.ok ? r.json() : null)).then(v => ((v || {}).live || {}).warning_table || null).catch(() => null));
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies };
+  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
+    evidenceNowGap, evidenceCompanyLine };
 }

@@ -75,6 +75,23 @@ function planCompareIds(asked, shown) {
   for (const id of ids) { if (keep.length >= COMPARE_MAX) break; if (!keep.includes(id)) keep.push(id); }
   return keep;
 }
+// The line most of a plan's rows share, if two or more do, said once under the count (index.html, planBasis)
+// rather than under each row: on 22 Oct 2026 an outside review found the same sentence under all eight Oxford
+// rows. lines: one a row, in the page's order, '' for a row with none (no forecast). A tie goes to the earlier
+// row's line. n: the rows that share it; m: the rows with a line at all.
+function planShared(lines) {
+  const tally = new Map(), m = lines.filter(Boolean).length;
+  for (const l of lines) if (l) tally.set(l, (tally.get(l) || 0) + 1);
+  const [line, n] = [...tally].sort((x, y) => y[1] - x[1])[0] || ['', 0];
+  return n >= 2 ? { line, n, m } : { line: '', n: 0, m };
+}
+// Who it is said of, of the `of` rows shown. Counted among the rows with a forecast where some have none, so
+// that "2 of these 5 spots" does not leave the reader to work out which two (Bath, 22 Oct 2026: three of its
+// five had no forecast, and those rows' headings say so).
+function planSharedWho(n, m, of) {
+  const spots = m === of ? 'spots' : 'spots with a forecast';
+  return n < m ? `${n} of ${m === of ? 'these' : 'the'} ${m} ${spots}` : n === 2 ? `Both ${spots}` : `All ${n} ${spots}`;
+}
 
 // ------------------------------------------------------------------------------ places
 // data/places.json (scripts/make_places.py): England's and Wales's cities, towns, districts and
@@ -173,6 +190,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway };
 }
