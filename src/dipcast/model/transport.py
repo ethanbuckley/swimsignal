@@ -61,7 +61,14 @@ enters the lake to the spot:
                         A lake with no WFD polygon (a centreline lake) keeps the straight line.
 * lake distance "line"  the rule before: the straight line. In a lake that bends it crosses land.
 
-scripts/build_any_point.py and site/anypoint.js (click anywhere) follow all four.
+Within the spot's own lake (config.LAKE_DIRECTION_MODE), which way the water must go:
+
+* lake direction "down" the default (docs/LAKE-DIRECTION-TEST-2026-10.md): an overflow whose water enters the spot's
+                        lake more than LAKE_DOWN_MARGIN_M nearer the lake's outlet than the spot is left out
+                        (down_lake_m).
+* lake direction "any"  the rule before: it counts whichever way it must go.
+
+scripts/build_any_point.py and site/anypoint.js (click anywhere) follow all five.
 """
 
 from __future__ import annotations

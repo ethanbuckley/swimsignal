@@ -181,10 +181,10 @@ LAKE_DISTANCE_MODE = os.environ.get("DIPCAST_LAKE_DISTANCE_MODE", "water")
 LAKE_DISTANCE_MODES = ("line", "water")
 
 # Which way water must go across a lake spot's own lake (a Lake District water-quality group, 23 Oct 2026: Glebe
-# Road PS at Bowness counted at Waterhead, 7 km up Windermere from it). Pre-stated in
-# docs/LAKE-DIRECTION-TEST-2026-10.md.
+# Road PS at Bowness counted at Waterhead, 7 km up Windermere from it). "down" is the default after
+# docs/LAKE-DIRECTION-TEST-2026-10.md (all seven stated conditions held, 23 Oct 2026; read its record table).
 # LAKE_DIRECTION_MODE "any"   water that enters the spot's lake counts whichever way it must go to the spot
 #                     "down"  it does not count when it enters nearer the lake's outlet than the spot, by more
 #                             than transport.LAKE_DOWN_MARGIN_M through the water
-LAKE_DIRECTION_MODE = os.environ.get("DIPCAST_LAKE_DIRECTION_MODE", "any")
+LAKE_DIRECTION_MODE = os.environ.get("DIPCAST_LAKE_DIRECTION_MODE", "down")
 LAKE_DIRECTION_MODES = ("any", "down")
