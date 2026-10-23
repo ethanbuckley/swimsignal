@@ -377,6 +377,9 @@
   .stack { display:flex; flex-direction:column; gap:8px; }
   .tiles { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; }
   .tiles > .wide { grid-column:1 / -1; }
+  /* The two groups of tiles on a spot's page: the open day's forecast, then the latest readings. */
+  .tiles > .grp-h { grid-column:1 / -1; margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }
+  .tiles > .grp-sub { grid-column:1 / -1; margin:-4px 2px 0; color:var(--muted); font-size:var(--fs-note); }
   #nearby-host:empty { display:none; }
   #sources-host:empty { display:none; }
   .stack .loc { margin:0; }
@@ -478,7 +481,7 @@
   .rcols span { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; height:100%; }
   .rcols i { width:12px; background:var(--rain); opacity:.85; }
   .rcols b { font-size:var(--fs-meta); font-weight:600; line-height:1; color:var(--faint); }
-  .rcols span:first-child b { color:var(--ink); }
+  .rcols span.on b { color:var(--ink); }
   .sun { display:block; width:100%; height:auto; margin:12px 0 0; overflow:visible; }
   .sun .dark { fill:none; stroke:var(--track); stroke-width:1.75; }
   .sun .lit { fill:none; stroke:var(--ink); stroke-width:1.75; stroke-linecap:round; }
@@ -1868,7 +1871,7 @@ const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
 function waterTile(w) {
   const t = w ? Date.parse(w.observed_at) : NaN;
   if (!w || nil(w.temp_c) || isNaN(t) || nil(w.river_km) || !['upstream', 'downstream'].includes(w.direction)) return null;
-  return { icon: glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>'), label: 'Water temperature',
+  return { live: true, icon: glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>'), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.`,
     more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}` };
@@ -2058,7 +2061,7 @@ const noFeedSaid = d => { const feeds = [...new Set((d.contributors || []).filte
   return feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : ''; };
 function nowTile(d, total) {
   const now = d.now || {}, n = now.discharging_upstream || 0, mon = Math.min(total, now.monitored_upstream ?? total);
-  const base = { icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel: tileLine(d, 'now') };
+  const base = { live: true, icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel: tileLine(d, 'now') };
   if (!mon && !n)
     return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
@@ -2069,12 +2072,13 @@ const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = M
   const quiet = Math.max(0, Math.min(total, n.monitored_upstream ?? total) - dis - rec), off = Math.max(0, total - dis - rec - quiet);
   return `<div class="odots" style="--sz:${total <= 70 ? 7 : total <= 130 ? 5 : 4}px" role="img" aria-label="${dis} discharging, ${rec} stopped lately, ${quiet} quiet, ${off} not reporting">`
     + '<i class="dis"></i>'.repeat(dis) + '<i class="rec"></i>'.repeat(rec) + '<i></i>'.repeat(quiet) + '<i class="off"></i>'.repeat(off) + '</div>'; };
-// Rain in the 48 h to midday on each of the five days (40 mm fills a column, as the list's week).
-const rainCols = d => `<div class="rcols" aria-hidden="true">${d.days.slice(0, 5).map(x =>
-  `<span><i style="height:${nil(x.rain_48h_mm) ? 2 : Math.max(2, Math.round(36 * Math.min(1, x.rain_48h_mm / 40)))}px"></i><b>${initial(x.date)}</b></span>`).join('')}</div>`;
+// Rain in the 48 h to midday on each of the five days (40 mm fills a column, as the list's week); the
+// open day's initial (iso, else today's) in ink.
+const rainCols = (d, iso = null) => `<div class="rcols" aria-hidden="true">${d.days.slice(0, 5).map((x, j) =>
+  `<span${(iso ? x.date === iso : !j) ? ' class="on"' : ''}><i style="height:${nil(x.rain_48h_mm) ? 2 : Math.max(2, Math.round(36 * Math.min(1, x.rain_48h_mm / 40)))}px"></i><b>${initial(x.date)}</b></span>`).join('')}</div>`;
 // The sun over the day, as Apple's sunset tile: a curve that crosses the horizon at sunrise and sunset,
-// and a dot where the sun is now, hollow below the horizon.
-const sunPath = w => { const m = s => { const [h, mm] = String(s).split(':').map(Number); return h * 60 + mm; };
+// and on today (dot) a dot where the sun is now, hollow below the horizon.
+const sunPath = (w, dot = true) => { const m = s => { const [h, mm] = String(s).split(':').map(Number); return h * 60 + mm; };
   const rise = m(w.sunrise), set = m(w.sunset); if (!(set > rise)) return '';
   const noon = (rise + set) / 2, W = 200, base = 44, f = t => Math.cos(2 * Math.PI * (t - noon) / 1440) - Math.cos(2 * Math.PI * (rise - noon) / 1440);
   const k = (base - 8) / f(noon), x = t => (t / 1440 * W).toFixed(1), y = t => (base - f(t) * k).toFixed(1);
@@ -2082,7 +2086,7 @@ const sunPath = w => { const m = s => { const [h, mm] = String(s).split(':').map
   const now = new Date(), tn = now.getHours() * 60 + now.getMinutes();
   return `<svg class="sun" viewBox="0 0 ${W} ${Math.ceil(low) + 6}" aria-hidden="true"><clipPath id="sun-up"><rect width="${W}" height="${base}"/></clipPath>`
     + `<path class="dark" d="${path}"/><path class="lit" d="${path}" clip-path="url(#sun-up)"/><line x1="0" x2="${W}" y1="${base}" y2="${base}"/>`
-    + `<circle${tn > rise && tn < set ? '' : ' class="down"'} cx="${x(tn)}" cy="${y(tn)}" r="4.5"/></svg>`; };
+    + (dot ? `<circle${tn > rise && tn < set ? '' : ' class="down"'} cx="${x(tn)}" cy="${y(tn)}" r="4.5"/>` : '') + '</svg>'; };
 // A tile: the label with its icon, the figure (with its unit, and a level word under it), the drawing,
 // how the figure stands to the level above (rel: levels.js, tileLine), the sentence, the weather's credit where its figures are, and the rest folded in the corner.
 const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
@@ -2096,9 +2100,14 @@ const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">$
 const bandWords = (c, f) => `Low under ${f(c[0])}, moderate ${f(c[0])} to ${f(c[1])}, high ${f(c[1])} to ${f(c[2])}, very high ${f(c[2])} or more`;
 // What the level rests on, and what else a swimmer asks: the EA's rating first where there is one,
 // then the spills and the water (the pair the level comes from), right now, the algae, the river, the
-// rain and the weather. Today's figures; a picked day's are under the five days (dayDetail).
-function facts(d) {
-  const out = [], total = overflows(d), x0 = (d.days || [])[0], x1 = (d.days || [])[1], now = d.now || {}, cl = d.classification || {}, c = classOf(d);
+// rain and the weather. The forecast's tiles (spills, E. coli, rain, weather) give the day open in the
+// five days (iso), or today; the readings (right now, algae, river level, water temperature) are marked
+// `live` and stay on now, whichever day is open (22 Oct 2026: an outside review picked Saturday at Long
+// Bridges and found the page's spills, rain and weather tiles still on today, under Saturday's level).
+function facts(d, iso = null) {
+  const days = d.days || [], x0 = (iso && days.slice(0, 5).find(y => y.date === iso)) || days[0], first = x0 === days[0];
+  const x1 = first ? days[1] : null, when = first || !x0 ? 'today' : dayWord(x0.date);
+  const out = [], total = overflows(d), now = d.now || {}, cl = d.classification || {}, c = classOf(d);
   const pct = p => Math.round(p * 100);
   // At its foot, "Today's EA advice" (eatoday.js): the EA's own panel of today's advice, loaded when opened.
   const fold = typeof eaTodayFold === 'function' ? eaTodayFold(d) : '';
@@ -2113,43 +2122,40 @@ function facts(d) {
     say: `None monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream.`, more: 'Risk from farms, wildlife and unmonitored sources is not modelled.' });
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
-      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill'),
-      say: `${cap(spilling(x0, total))} today.`,
+      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
+      say: `${cap(spilling(x0, total))} ${when}.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   // Its label says what it and the level each count, and how far it has been tested (ecoliSaid): the full
   // width, as the rating's tile, since that is four sentences. Out of season (water, levels.js ECOLI_OFF) no
   // figure, band or scale, whose dot is the figure: "Out of season", what the level counts instead, and the
-  // figures for today and tomorrow under "Experimental estimate". It goes last, after the tiles of what is
+  // open day's figure (and tomorrow's, on today) under "Experimental estimate". It goes last, after the tiles of what is
   // observed (late), where in season it pairs with the spills, since then it sets the level. Tomorrow's
   // figure joins today's only while tomorrow is in season too.
   if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
     if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliNotes(d, ecoliCheck(), x0)[0],
       fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
     else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
-      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${b} risk`), rel: tileLine(d, 'water'),
-      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml today${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
+      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${b} risk`), rel: tileLine(d, 'water', iso),
+      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
   else if (!d.error) out.push({ icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
     say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
       ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
   if (!d.error && total) out.push(nowTile(d, total));
-  // The E. coli estimate's tile takes the full width: after Right now, so that the spills and Right now pair up.
-  const ec = out.findIndex(o => o.wide && o.icon === ICON.water && !o.late);
-  if (ec >= 0 && out[out.length - 1].label === 'Right now') out.push(...out.splice(ec, 1));
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
     const when = new Date(a.date + 'T12:00:00').toLocaleDateString('en-GB', a.season === thisYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
-    out.push({ icon: ICON.algae, label: 'Algae at the last check', fig: cap(a.phrase), figTone: algaeLevel(d) ? tone(algaeLevel(d)) : '', rel: tileLine(d, 'algae'),
+    out.push({ live: true, icon: ICON.algae, label: 'Algae at the last check', fig: cap(a.phrase), figTone: algaeLevel(d) ? tone(algaeLevel(d)) : '', rel: tileLine(d, 'algae'),
       say: `The EA sampler's look, ${when}. ${a.n_seen ? `Seen at ${a.n_seen} of ${a.n_checks} checks ${season}${a.n_objectionable ? `, ${a.n_objectionable} of them enough to be objectionable` : ''}.`
         : `None seen at any of ${a.n_checks} check${a.n_checks === 1 ? '' : 's'} ${season}.`} It cannot tell blue-green algae, which can be toxic, from harmless kinds.`,
       more: `${age > 14 ? 'No check since: the EA checks bathing waters from May to September, and results take about a week to be published. ' : ''}A look at the water, not a lab test.` }); }
   const rt = riverTile(d.river_state); if (rt) out.push(rt);
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
-    out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d),
-      say: `In the 48&nbsp;h to midday today.${wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
+    out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
+      say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
   const wt = waterTile(d.water_temp); if (wt) out.push(wt);
-  const wx = weatherOn(d, today());
-  if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx),
+  const wx = weatherOn(d, first || !x0 ? today() : x0.date);
+  if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx, first),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
   // Flood warnings the EA did not answer for (experience.js, floodUnchecked) were a quiet line under the
   // River or Lake level tile (16 Oct 2026); since 20 Oct 2026 they are a row of Not known here (unknowns).
@@ -2173,13 +2179,13 @@ function riverTile(rs) {
   const page = rs.rloi ? ` <a href="https://check-for-flooding.service.gov.uk/station/${encodeURIComponent(rs.rloi)}">The Environment Agency's page for this gauge</a> has the last five days.` : '';
   const more = (lake ? 'The level of the lake at the gauge. After heavy rain a lake rises slowly and falls slowly.' : 'A high river runs faster and colder, and after rain it can rise quickly.') + page;
   if (rs.stale) { const h = rs.age_hours, n = nil(h) ? null : h <= 24 ? Math.round(h) : Math.round(h / 24), unit = nil(h) ? '' : h <= 24 ? 'hour' : 'day';
-    return { icon: ICON.level, label, fig: '–', unit: 'no current reading',
+    return { live: true, icon: ICON.level, label, fig: '–', unit: 'no current reading',
       say: `${n === null ? 'The last reading is old' : `Last reading ${n} ${unit}${n === 1 ? '' : 's'} ago`}, not shown as current. Not part of the pollution level. ${gauge}.`, more }; }
   const lo = rs.typical_low_m, hi = rs.typical_high_m, ranged = !nil(lo) && !nil(hi) && hi > lo;
   // Words of its own, in ink: "High" in a level's colour, on a page of pollution levels, read as one.
   const word = lake ? (!ranged ? '' : rs.level_m < lo ? 'Below its usual range' : rs.level_m > hi ? 'Above its usual range' : 'In its usual range')
     : ({ low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || '') + (rs.label === 'very high' ? ', above its usual range' : '');
-  return { icon: ICON.level, label, fig: fmt(rs.level_m, 2), unit: 'm', wordTone: 'plain', word,
+  return { live: true, icon: ICON.level, label, fig: fmt(rs.level_m, 2), unit: 'm', wordTone: 'plain', word,
     vis: ranged ? rangeBar(rs) : '',
     say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more };
 }
@@ -2463,6 +2469,7 @@ function showDay(d, iso) {
   document.getElementById('day-view').innerHTML = x ? dayDetail(d, x) : '';
   const alt = document.getElementById('nearby-host'); if (alt) alt.innerHTML = nearby(d);   // the spots nearby, on this day
   const src = document.getElementById('sources-host'); if (src) src.innerHTML = whereFrom(d);   // where that day's risk comes from
+  const fc = document.getElementById('day-tiles'); if (fc) fc.outerHTML = dayTiles(d, DAY);   // the forecast's tiles, on that day
   document.querySelectorAll('#day-strip [data-day]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.day === DAY)));
   const close = document.getElementById('day-close');
   if (close) close.addEventListener('click', () => { showDay(d, null); document.querySelector(`#day-strip [data-day="${iso}"]`).focus(); });
@@ -4052,6 +4059,17 @@ function spotTop(d) {
   return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
     + `<div id="answer-words">${answerWords(d)}</div></section>`;
 }
+// The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
+// the page has one date; showDay draws them again. Then the readings, which no day changes, under a
+// heading of their own (nowTiles). The full-width tiles go after the half ones, which then pair up.
+const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5).find(y => y.date === iso) : null;
+  const on = x && x.date !== today() ? new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : 'today';
+  const fx = facts(d, x ? x.date : null).filter(o => o.icon !== ICON.rating && !o.live);
+  return `<section class="tiles" id="day-tiles" aria-labelledby="day-tiles-h"><h2 class="grp-h" id="day-tiles-h">Forecast for ${on}</h2>`
+    + [...fx.filter(o => !o.wide), ...fx.filter(o => o.wide)].map(tile).join('') + '</section>'; };
+const nowTiles = d => { const fx = facts(d).filter(o => o.live); if (!fx.length) return '';
+  return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
+    + `<p class="grp-sub">Measured, not forecast: they stay the same whichever day you pick.</p>${fx.map(tile).join('')}</section>`; };
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
 function render(d) {
@@ -4072,7 +4090,7 @@ function render(d) {
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
-  const tiles = `<div class="tiles">${fx.filter(o => o.icon !== ICON.rating).map(tile).join('')}</div>`;
+  const tiles = dayTiles(d, DAY) + nowTiles(d);   // the open day's forecast, then the readings
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles, as before.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
