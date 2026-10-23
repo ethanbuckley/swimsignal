@@ -108,12 +108,23 @@ function fromDay(s, iso, built) {
 // The cut-offs between the four levels, as fractions: the spill exposure's (transport.risk_label,
 // whose labels arrive in spots.json) and the E. coli estimate's. The page draws its scales from these.
 const SPILL_CUTS = [0.15, 0.40, 0.70], ECOLI_CUTS = [0.10, 0.25, 0.50];
+// A risk's level from the score shown, Math.round(100 x risk), as transport.risk_label has it since 23 Oct
+// 2026: 0.149 shows as 15, so it is moderate, not low.
+const spillLevel = v => ['low', 'moderate', 'high', 'very high'][SPILL_CUTS.filter(c => Math.round(v * 100) >= Math.round(c * 100)).length];
+const shownRisk = v => Math.round(v * 100) / 100;   // the risk as shown, for a bar to agree with the word beside it
 const ECOLI_BANDS = [...ECOLI_CUTS, Infinity].map((t, i) => [t, ['low', 'moderate', 'high', 'very high'][i]]);
 const CLASS_LEVEL = { excellent: 'low', good: 'low', sufficient: 'moderate', poor: 'high' };
 const rank = l => ORDER[l] ?? -1;
 const higher = (a, b) => rank(b) > rank(a) ? b : a;
 const nil = v => v === null || v === undefined;
 const overflows = s => (s.upstream_summary || {}).overflows || 0;
+// The overflows upstream that carry no weight here (forecast.py, weighted_here; 23 Oct 2026): a reach that
+// shows as 0%. `overflows` and every count leave them out; this says once that they are there.
+const tooFar = s => (s.upstream_summary || {}).too_far || 0;
+const allUpstream = s => overflows(s) + tooFar(s);
+const tooFarSaid = s => { const n = tooFar(s), o = (s.upstream_summary || {}).too_far_overflow;
+  return !n ? '' : n > 1 ? `${n} more overflows are upstream but too far away to count here.`
+    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but too far away to count here.`; };
 const classOf = s => s.classification && s.classification.class ? String(s.classification.class).toLowerCase() : null;
 const advisedAgainst = s => classOf(s) === 'poor';
 const daily = s => !s.error && overflows(s) > 0;   // a forecast that changes from day to day
@@ -767,7 +778,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, backToLow,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,

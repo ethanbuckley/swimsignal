@@ -1246,6 +1246,11 @@ def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.
 
 
 LOW_CUT = 0.15   # risk_label: a risk under this is low
+# The levels' cut-offs on the 0-100 score the page shows (site/levels.js SPILL_CUTS): 15, 40 and 70.
+SCORE_CUTS = (15, 40, 70)
+# An overflow whose weight here is under this shows as "0% reach" on the page, and is not counted in the
+# page's counts (forecast.py, counted_here). Its spills still go into the risk, where they add almost nothing.
+COUNT_WEIGHT = 0.005
 
 
 def running(ov: pd.DataFrame) -> np.ndarray:
@@ -1362,11 +1367,20 @@ def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
     return at, "window" if jumped else "die-off", None
 
 
+def shown_score(r: float) -> int:
+    """The 0-100 score the page shows for risk r: the 3 dp figure in spots.json times 100, rounded half up
+    as JavaScript's Math.round does it."""
+    return math.floor(round(r, 3) * 100 + 0.5)
+
+
 def risk_label(r: float) -> str:
-    if r < LOW_CUT:
+    """The level for risk r, from the score the page shows (23 Oct 2026). Until then it was from the
+    unrounded risk, so 0.1497 was "low" beside a shown 15, which the level key calls moderate."""
+    s = shown_score(r)
+    if s < SCORE_CUTS[0]:
         return "low"
-    if r < 0.4:
+    if s < SCORE_CUTS[1]:
         return "moderate"
-    if r < 0.7:
+    if s < SCORE_CUTS[2]:
         return "high"
     return "very high"

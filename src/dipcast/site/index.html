@@ -1970,8 +1970,9 @@ function answerParts(d, iso = null) {
 // day back at low (G7), which the rows show only as a colour.
 function daysSentence(d) {
   const total = overflows(d), known = d.days.slice(0, 5).filter(hasData), back = backToLow(d) ? ' ' + backToLow(d) : '';   // the first day back at low (levels.js)
+  const far = tooFarSaid(d) ? ' ' + esc(tooFarSaid(d)) : '';   // overflows too far away to count (levels.js), said once, here
   if (!total) return summary(d).join(' ');
-  if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ') + back;
+  if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ') + back + far;
   const e = known.map(x => x.expected_spilling_overflows ?? 0), most = Math.max(...e), peak = known[e.indexOf(most)];
   const down = e.every((v, i) => !i || v <= e[i - 1] + .05), up = e.every((v, i) => !i || v >= e[i - 1] - .05);
   const trend = most < 1 || e.length < 2 ? '' : down ? ', fewer each day after' : up ? ', more each day after'
@@ -1980,7 +1981,7 @@ function daysSentence(d) {
     : `. About ${Math.round(most)} of the ${total} ${Math.round(most) === 1 ? 'is' : 'are'} expected to spill ${dayWord(peak.date)}`;
   return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. ` : '')
     + ((d.now || {}).discharging_upstream ? summary(d)[0] + ' ' : '')
-    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}`;
+    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}${far}`;
 }
 // A day's place on its bar, 0 to 1: four equal bands, the day in its level's band, placed in it by
 // what set the level: the exposure index (bands at SPILL_CUTS, 15, 40 and 70 of 100), the E. coli estimate
@@ -1989,7 +1990,7 @@ function daysSentence(d) {
 const inBand = (v, cuts) => { for (let i = 0; i < 4; i++) if (v < cuts[i + 1] || i === 3) return Math.min(1, (i + Math.max(0, Math.min(1, (v - cuts[i]) / (cuts[i + 1] - cuts[i])))) / 4); };
 function levelPlace(d, x) {
   if (!hasData(x)) return 0;
-  let p = inBand(x.risk, [0, ...SPILL_CUTS, 1]);
+  let p = inBand(shownRisk(x.risk), [0, ...SPILL_CUTS, 1]);
   if (ecoliLevel(d, x)) p = Math.max(p, inBand(x.p_ecoli_gt900, [0, ...ECOLI_CUTS, 1]));
   if (advisedAgainst(d)) p = Math.max(p, .5);
   const al = algaeLevel(d); if (al) p = Math.max(p, ORDER[al] / 4);
@@ -2004,10 +2005,10 @@ function levelPlace(d, x) {
 const BAND_FROM = 2;   // the first two rows are today and tomorrow
 const SPILL_EDGES = [0, ...SPILL_CUTS, 1];
 const bandPlace = (d, x, i) => { const b = x.band;
-  if (i < BAND_FROM || !b || !hasData(x) || nil(b.low) || nil(b.high) || levelPlace(d, x) !== inBand(x.risk, SPILL_EDGES)) return null;
+  if (i < BAND_FROM || !b || !hasData(x) || nil(b.low) || nil(b.high) || levelPlace(d, x) !== inBand(shownRisk(x.risk), SPILL_EDGES)) return null;
   const lo = inBand(b.low, SPILL_EDGES), hi = inBand(b.high, SPILL_EDGES);
   return hi - lo >= 0.02 ? { lo, hi } : null; };
-const spillWord = v => ['low', 'moderate', 'high', 'very high'][SPILL_CUTS.filter(c => v >= c).length];
+const spillWord = spillLevel;   // from the score shown (levels.js)
 const bandSaid = b => { const a = spillWord(b.low), z = spillWord(b.high);
   return `Three Met Office rain forecasts give ${a === z ? `${a} risk` : `${a} to ${z} risk`}.`; };
 // The five days as Apple's ten-day rows: the day, its level, its bar. Where nothing upstream can spill,
@@ -2147,7 +2148,7 @@ function facts(d, iso = null) {
     say: `None monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream.`, more: 'Risk from farms, wildlife and unmonitored sources is not modelled.' });
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
-      vis: scaleBar(x0.risk, SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
+      vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
       say: `${cap(spilling(x0, total))} ${when}.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   // Its label says what it and the level each count, and how far it has been tested (ecoliSaid): the full
@@ -3916,7 +3917,7 @@ function clearSentence(d) {
   const n = d.now || {};
   if (!n.clears_at || rank(n.label) < 1 || Date.parse(n.clears_at) <= Date.now()) return '';
   const k = n.discharging_upstream || 0, last = n.clears_after || {}, h = Math.round(last.travel_h);
-  const later = d.days.slice(1, 5).find(x => hasData(x) && (x.risk_from_later_spills ?? 0) >= SPILL_CUTS[0]);
+  const later = d.days.slice(1, 5).find(x => hasData(x) && spillLevel(x.risk_from_later_spills ?? 0) !== 'low');
   const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after its water has passed`
     : n.clears_by === 'travel' && (last.site_name || last.site_id) && h >= 1
       ? `, allowing for travel time: water from ${esc(overflowNames(last).plain)} takes about ${h} hour${h === 1 ? '' : 's'} to get here` : '';
@@ -3972,7 +3973,7 @@ function overflowTile(d, total) {
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div></div>`
-      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
+      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too far to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
   return `<details class="tile fold" id="overflows"><summary><span class="t-lab">${ICON.spills}<span>Overflows that matter most</span></span></summary><ul class="ovs" id="contrib">${rows}</ul>`
@@ -4145,7 +4146,7 @@ function render(d) {
   // shown on it. A phone has its small map of where it is (where, .loc) already.
   else h += `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
   h += tiles + `</div><div class="col-more">${more}`;
-  if (d.contributors.length) h += overflowTile(d, total);
+  if (d.contributors.length) h += overflowTile(d, allUpstream(d));   // the list has any too far away to count (levels.js)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);

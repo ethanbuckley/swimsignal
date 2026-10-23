@@ -24,7 +24,7 @@ from dipcast.model.features import (
 from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.transport import (
     ARRIVING_SAYS,
-    LOW_CUT,
+    COUNT_WEIGHT,
     clear_time,
     combine_daily,
     daily_effects,
@@ -367,7 +367,8 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     out["assumptions"]["river_velocity_ms"] = round(v, 2)
     ov = with_data_states(upstream_overflows(net, pin, ov_all, velocity_ms=v, max_km=max_km))
     now_risk, now_contrib = live_now_risk(ov, now)
-    counts = live_counts(ov, now_contrib)
+    here = weighted_here(ov)
+    counts = live_counts(ov[here], now_contrib[here])
     on_change = feeds_on_change(ov)
     if on_change:
         counts["feeds_on_change"] = on_change   # for the page's own ageing of quiet readings (index.html, ageReadings)
@@ -403,8 +404,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # Share of today's transport weight that comes from days with no rainfall data.
     missing = missing_share(avail, weights, travel)
     risk = np.where(missing > MAX_MISSING_SHARE, np.nan, risk)
-    # Expected number of spilling upstream overflows per day (unweighted), for context.
-    exp_spills = np.nansum(p, axis=0) if len(p) else np.zeros(len(days))
+    # Expected number of spilling upstream overflows per day (unweighted), for context: of those that
+    # carry weight here (weighted_here), as the counts are.
+    exp_spills = np.nansum(p[here], axis=0) if len(p) else np.zeros(len(days))
     members = None
     if ensemble:
         try:
@@ -441,7 +443,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             **({"risk_from_later_spills": round(float(risk_later[j]), 3)} if known else {}),
             **(_band(j) if known else {}),
             # Only where the page says it, moderate or worse, to keep spots.json small.
-            **({"source": source_of(ov, shares[:, j])} if known and risk[j] >= LOW_CUT else {}),
+            **({"source": source_of(ov, shares[:, j])} if known and risk_label(float(risk[j])) != "low" else {}),
         })
 
     # E. coli exceedance: rain at the spot itself (not at the overflows) plus the day's exposure.
@@ -485,7 +487,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # them, moderate or worse, or while an overflow upstream is discharging.
     clears_at, clears_by, last_water = clear_time(ov, now)
     spilling = bool(len(ov)) and bool(running(ov).any())
-    said = now_risk >= LOW_CUT or (spilling and now_risk > 0)
+    said = risk_label(now_risk) != "low" or (spilling and now_risk > 0)
     arriving = arriving_of(ov, now, now_contrib) if said else None
     clearing = {"clears_at": None if clears_at is None else to_minute(clears_at), "clears_by": clears_by,
                 # The overflow whose travel time holds the risk up most as it clears, when travel does ('travel').
@@ -498,8 +500,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                   **{k: counts[k] for k in NOW_KEYS if k in counts}}
     out["days"] = day_rows
     out["upstream_summary"] = {
-        "overflows": len(ov), "with_live_feed": counts["monitored_upstream"],
-        "without_live_feed": int(len(ov) - counts["monitored_upstream"]),
+        "overflows": int(here.sum()), "with_live_feed": counts["monitored_upstream"],
+        "without_live_feed": int(here.sum() - counts["monitored_upstream"]),
+        **too_far(ov, here),
         "sum_weight": round(float(weights.sum()), 3),
         "history_days": int(hist), "max_travel_h": round(float(travel.max()), 1) if len(travel) else 0.0,
         **_in_wales(net, pin, max_km),
@@ -603,6 +606,29 @@ def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> 
         "arrives_at": to_minute(now + pd.Timedelta(hours=float(left[k]))),
         "share": round(float(share[coming].sum()), 3),
     } | carried_fields(r)
+
+
+def weighted_here(ov: pd.DataFrame) -> np.ndarray:
+    """Which upstream overflows the counts count (23 Oct 2026): those whose weight here, rounded to the
+    3 dp spots.json gives, is transport.COUNT_WEIGHT or more. Under it the page shows "0% reach". At
+    Windermere, Waterhead, Grasmere WwTW's weight is 0.00045 (its water crosses two lakes), yet the page
+    said "About 2 of the 4 overflows upstream are expected to spill today", counting its spill chance.
+    Where none carries that much, all count, as before: what to say there is not settled (review task G2)."""
+    if ov.empty or "weight" not in ov:
+        return np.ones(len(ov), dtype=bool)
+    w = pd.to_numeric(ov["weight"], errors="coerce").fillna(0.0).to_numpy(dtype=float)
+    here = np.round(w, 3) >= COUNT_WEIGHT
+    return here if here.any() else np.ones(len(ov), dtype=bool)
+
+
+def too_far(ov: pd.DataFrame, here: np.ndarray) -> dict:
+    """upstream_summary's `too_far`, how many overflows upstream weighted_here leaves out, and with one,
+    `too_far_overflow`, which, so the page can name it."""
+    n = int((~here).sum())
+    if not n:
+        return {}
+    one = ov[~here].iloc[0]
+    return {"too_far": n, **({"too_far_overflow": {k: _clean(one.get(k)) for k in ("site_id", "site_name", "company")}} if n == 1 else {})}
 
 
 # What forecast_point copies from live_counts (and feeds_on_change) into a spot's `now`. Until 12 Oct 2026 the
