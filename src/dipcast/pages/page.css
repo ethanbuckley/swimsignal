@@ -185,7 +185,7 @@ details.ea-today[open] > summary::after { transform: rotate(-135deg); }
 details.ea-today > p:first-of-type { margin-top: 0; }
 details.ea-today iframe { display: block; width: 100%; max-width: 343px; height: 280px; border: 0; }
 
-/* Paper (review F5): every prose page black on white at the paper's width, without the header links,
+/* Paper: every prose page black on white at the paper's width, without the header links,
    with the folds open (where the browser lets CSS open them: ::details-content) and nothing cut off in
    a scrolling box. The pages made to be printed (sign, sites, organisers, record, profile) add their own. */
 @media print {
