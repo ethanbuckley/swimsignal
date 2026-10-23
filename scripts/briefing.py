@@ -1,15 +1,14 @@
-"""Pilot briefings, run by hand (docs/PILOT-SESSIONS.md; review ideas 4 and 5, 20 Oct 2026). A group
-leader's planned session is one TOML file. Each briefing issued for it is kept as a fixed copy, apart
-from the live pages, which go on updating: the data the pages were given, the PDFs, the pages as drawn,
-the page code, what was missing, and the issue id. So the briefing a decision rested on can be found
-again, and shown as it was.
+"""Pilot briefings, run by hand (docs/PILOT-SESSIONS.md). A group leader's planned session is one TOML
+file. Each briefing issued for it is kept as a fixed copy, apart from the live pages, which go on
+updating: the data the pages were given, the PDFs, the pages as drawn, the page code, what was missing,
+and the issue id. So the briefing a decision rested on can be found again, and shown as it was.
 
     uv run python scripts/briefing.py issue   SESSION.toml
     uv run python scripts/briefing.py changes SESSION.toml
     uv run python scripts/briefing.py decide  SESSION.toml --decision go --by "Name" --note "Why"
     uv run python scripts/briefing.py find    --org "Name" [--date YYYY-MM-DD] [--issue ID] [--csv]
 
-No accounts, no server: Ethan sends what `issue` and `changes` print, by his own email. Session files
+No accounts, no server: the operator emails what `issue` and `changes` print, by hand. Session files
 hold the recipients, who are personal data, so they and the archive live outside this public
 repository, under ~/Documents/GitHub/swimsignal-private/briefings/ unless SWIMSIGNAL_BRIEFINGS or
 --root says otherwise. The script refuses to write inside this repository.
@@ -72,9 +71,9 @@ READY = "document.querySelector('#record, #sites') && document.querySelector('#r
 RESERVED = re.compile(r"@(example\.(org|com|net)|[^@\s]+\.(example|invalid|test))$", re.IGNORECASE)
 
 # The words a briefing opens with: what the forecast is and is not, then who decides. Close to the decision
-# record's own opening (record.js, OP4 in docs/ORGANISER-PIVOT-2026-10.md, PR #275), so the email and the
-# PDF say the same. For Ethan's approval, then a solicitor's, before any paid use. Watson v BBBC is why
-# the customer is named as the decision maker in every briefing (the plan's section 8).
+# record's own opening (record.js), so the email and the PDF say the same. The wording needs the
+# operator's approval, then a solicitor's, before any paid use. Watson v BBBC is why the customer is
+# named as the decision maker in every briefing (docs/ORGANISER-PIVOT-2026-10.md, section 8).
 LIMITS = ("This is SwimSignal's pollution risk forecast for your planned session. It is one input to your own "
           "risk assessment. It is a forecast, not a water test: nothing was sampled at the water for it. It never "
           "says the water is safe or clean, and no level means that. It counts sewage from the monitored storm "
@@ -91,7 +90,7 @@ PLAIN = ("no overflows", "no river connection")   # levels.js, NO_OVERFLOWS and 
 
 
 class BriefingError(Exception):
-    """A problem Ethan has to fix before anything is sent: said in one plain message."""
+    """A problem the operator has to fix before anything is sent: said in one plain message."""
 
 
 # ------------------------------------------------------------------ the session file
@@ -212,7 +211,7 @@ def session_dir(root: Path, s: Session) -> Path:
 # ------------------------------------------------------------------ the live data
 def issue_id(doc: dict) -> str:
     """The build's commit and the forecast's issue time in UTC, to the minute: 3ed1b5a-20261020T1216Z, as
-    the record and the sites view print it (PR #275, printed.js, issueId). The commit is spots.json's
+    the record and the sites view print it (printed.js, issueId). The commit is spots.json's
     `commit`, else the code part of a spot's model version ("code=0.1.0+3ed1b5a"), from files written
     before `commit` was, else "nogit"."""
     return f"{commit_of(doc)[0]}" + (f"-{t:%Y%m%dT%H%MZ}" if (t := parse_time(doc.get("generated_at"))) else "")
@@ -498,7 +497,7 @@ def compare(old: Snapshot, new: Snapshot, s: Session) -> list[Change]:
     return out
 
 
-# ------------------------------------------------------------------ the words Ethan sends
+# ------------------------------------------------------------------ the words the operator sends
 def spot_lines(snap: Snapshot, sid: str, iso: str, role: str) -> list[str]:
     s = snap.spot(sid) or {}
     lv, head = day_words(snap, sid, iso)
@@ -525,7 +524,7 @@ def change_lines(changes: list[Change], snap: Snapshot, s: Session) -> list[str]
 
 
 def record_url(site: str, sid: str, iso: str, org: str = "") -> str:
-    # record.html#spot=<id>&day=YYYY-MM-DD, and &org=<name>, which PR #275 adds (main ignores it).
+    # record.html#spot=<id>&day=YYYY-MM-DD, and &org=<name> for the organisation (record.js).
     q = {"spot": sid, "day": iso, **({"org": org} if org else {})}
     return f"{site}record.html#" + urllib.parse.urlencode(q, quote_via=urllib.parse.quote)
 
@@ -533,8 +532,8 @@ def record_url(site: str, sid: str, iso: str, org: str = "") -> str:
 def sites_url(site: str, s: Session) -> str:
     # sites.html#spots=a,b&name=...&day=YYYY-MM-DD (lists.js, sitesHash; sites.js reads day=). The name is
     # cut at 40 characters, so the session's day and time come first. With day=, each row gives the level on
-    # the session's day, by its date: without it the rows said "today" and "tomorrow", counted from the
-    # issue, in a sheet read on the day itself (20 Oct 2026).
+    # the session's day, by its date: without it the rows say "today" and "tomorrow", counted from the
+    # issue, in a sheet read on the day itself.
     name = f"{s.day:%a} {s.day.day} {s.day:%b} {s.time}, {s.organisation}"[:40].strip()
     ids = ",".join(urllib.parse.quote(i, safe="") for _, i in s.spots)
     return f"{site}sites.html#spots={ids}&name={urllib.parse.quote(name, safe='')}&day={s.day.isoformat()}"
@@ -815,7 +814,7 @@ def pdf_text(pdf: Path) -> str | None:
 def check_page(r: Rendered, kind: str, iid: str, want_level: str | None, pdf: Path,
                day: str | None = None, want_rows: dict | None = None) -> dict:
     """That the page drew the archived build and nothing else, and the PDF says so: the issue time (and
-    the issue id, where the page prints one, PR #275) in the page and in the PDF's text, every data
+    the issue id, where the page prints one) in the page and in the PDF's text, every data
     request answered from the archive, and the record's level the same as alerts.json's. The sites view,
     given the session's day, must draw every spot on that day (want_rows: spot id -> alerts.json's level)
     at alerts.json's level."""
