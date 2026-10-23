@@ -3,8 +3,9 @@
 
 The feature test (docs/LIVE-STATUS-FEATURE-TEST-2026-10.md) fitted one candidate per lead 0 to 4:
 the nine-company model with three status inputs added, fitted on the EA's 2024 start/stop events. On
-2025 it beat the same model without the inputs at every lead. It is not deployed: it needs a confirmation on status read from SwimSignal's own polls, and a rule for an overflow whose
-status is missing.
+2025 it beat the same model without the inputs at every lead. It is not deployed: it needs a
+confirmation on status read from SwimSignal's own polls, and a rule for an overflow whose status is
+missing.
 
 This module gives both, for the forecast log only:
 - `status_table` reads the three inputs from the poller's files (live_history.parquet,

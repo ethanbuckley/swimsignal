@@ -11,8 +11,8 @@ it on only after Dŵr Cymru agrees. Even then this module writes only its own tw
 site.yml publishes a fixed list of state files to the public `state` release, and these two are not
 on it (a test checks). Nothing here feeds the map.
 
-The layer (checked on 4 Oct 2026): `Spill_Prod__view`, the layer Dŵr Cymru's map draws. Two pages of at most 2,000
-rows (2,362 rows, one per `GlobalID`), no asset id field. Status is text. One discharge per overflow:
+The layer (checked on 4 Oct 2026): `Spill_Prod__view`, the layer Dŵr Cymru's map draws. Two pages
+of at most 2,000 rows (2,362 rows, one per `GlobalID`), no asset id field. Status is text. One discharge per overflow:
 start and stop as text with no time zone ("2026-10-04T10:15:00"), duration in hours as text. Each
 row has an `EditDate`, but the plan found it marks a change, not a check, so it is kept
 (`row_edited_at`) and not used for the data state.

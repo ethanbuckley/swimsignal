@@ -220,9 +220,10 @@ def grid_cell(lat: float | np.ndarray, lon: float | np.ndarray) -> tuple:
 
 
 def cell_key(cell_lat: float, cell_lon: float) -> str:
-    """The cache name of a cell. -0.0 and 0.0 are the same cell and get the same name, so a cell
-    the prefetch saved under "-0.000" is not fetched again under "0.000" (River Great Ouse,
-    Overcote, lon -0.004, is in one)."""
+    """The cache name of a cell. -0.0 and 0.0 are the same cell and get the same name: with two
+    names for one file, a cell the prefetch saved under one is fetched again under the other, and
+    that second request failed River Great Ouse, Overcote (lon -0.004) in most builds of 3 to 6
+    Oct 2026."""
     return f"{cell_lat + 0.0:.3f}_{cell_lon + 0.0:.3f}"
 
 
@@ -516,8 +517,8 @@ def fetch_forecast(cells: list[tuple[float, float]],
 
 
 # ------------------------------------------------------------------ ensemble
-# The ensemble members (docs/ENSEMBLE-RAIN-TEST-2026-11.md). Open-Meteo weighs an ensemble request by its variables
-# times the model's members (ForecastapiController.swift, 13 Oct 2026), so one variable from three members
+# The ensemble members (docs/ENSEMBLE-RAIN-TEST-2026-11.md). Open-Meteo weighs an ensemble request by its
+# variables times the model's members (ForecastapiController.swift, 13 Oct 2026), so one variable from three members
 # over six days is max(1, 0.3, 0.3 x 6/14) = 1 call a cell, as a forecast cell is. The 332 spot cells are
 # 7 requests and 332 calls a refresh. Three rules keep that out of the way of everything else:
 #   * a cell is asked for again only when its cached members are ENSEMBLE_TTL_S old, or no longer reach far

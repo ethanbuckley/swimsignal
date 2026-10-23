@@ -8,7 +8,8 @@ everything it publishes is written. Each run:
    Scotland's marine rule (overflows.marine_scotland) in both passes, so an outfall on a sea loch, a
    firth or the open sea is not placed on a burn or a lochan beside it. Emergency overflows (EO, alone
    or in a mixed type) get no spill forecast: they "should only operate in the event of sewer system
-   failure" (plan section 5.2); their live status stays in ingest.scottish_water's snapshot. Written to OVERFLOWS_FILE.
+   failure" (plan section 5.2); their live status stays in ingest.scottish_water's snapshot. Written
+   to OVERFLOWS_FILE.
 2. Rain. The Open-Meteo forecast for the cells of the overflows forecast, rationed as the
    click-anywhere data's is (scripts/build_any_point.py, any_point_rain): at most RAIN_CELLS_PER_BUILD
    of the oldest cells are asked for, and only cells whose cached forecast is RAIN_REFRESH_H old. The

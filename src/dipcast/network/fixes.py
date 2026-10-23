@@ -3,8 +3,9 @@
 A dead end is a node with no link out of it that is not at the sea. Water reaching one goes no
 further, so an overflow above it is never counted for a spot below it. Checks against the
 Environment Agency's bathing water profiles and the site (11 Oct 2026) found dead ends on the
-Hampshire Avon at Ratfyn, the Windrush, the Thame, the Perry and the Test at Whitchurch: the upper Avon's overflows were missed at Salisbury, Burford STW at Wolvercote,
-Cuddington STW at Wallingford, Gobowen and Oswestry at Shrewsbury, Overton at Chilbolton.
+Hampshire Avon at Ratfyn, the Windrush, the Thame, the Perry and the Test at Whitchurch: the upper
+Avon's overflows were missed at Salisbury, Burford STW at Wolvercote, Cuddington STW at Wallingford,
+Gobowen and Oswestry at Shrewsbury, Overton at Chilbolton.
 
 At the sea means a dead end with a tidal link flowing into it, or one within COAST_M of a tidal
 link (a short river that meets the sea with no tidal reach). A node drains when a path leads from
