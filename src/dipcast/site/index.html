@@ -66,8 +66,8 @@
      typefaces served from this site (fonts/): Source Serif 4 for place names and headings,
      Source Sans 3 for everything else, declared over its whole weight axis (200 to 900, which the
      file carries) for the tiles' figures in Light. A warm paper page; a picture of fells
-     behind the opening of each view, with the tiles under it frosted (the sky and the glass, seventh
-     round); hairlines inside them. One corner radius, no shadows, six type sizes. Light only: the
+     behind the opening of each view, with the tiles under it frosted (the sky and the glass);
+     hairlines inside them. One corner radius, no shadows, six type sizes. Light only: the
      page is read outdoors, where this contrast is what counts. Every colour is a variable. Level
      text uses the "k" shades, which pass WCAG AA (4.5:1) on the paper, on white and on the glass. */
   @font-face { font-family:"Source Sans 3"; font-style:normal; font-weight:200 900; font-display:swap; src:url(fonts/SourceSans3-latin.woff2) format("woff2"); }
@@ -231,19 +231,19 @@
   .plan-go select { font-weight:600; }
   .planner-note { margin:8px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .best-day b { color:var(--k-low); }
-  /* The list's answer (option B, 13 Oct 2026): how many spots are at low risk on the weekend's better day,
+  /* The list's answer: how many spots are at low risk on the weekend's better day,
      or the week's best, in the display face at the heading size, the count in the low colour. */
   .low-answer { font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); margin:12px 0 0; }
   .low-answer .n { color:var(--k-low); }
   .low-answer .pick { font:400 var(--fs-note) var(--font-text); white-space:nowrap; }
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
-  /* Near me, the way most people come in: one full-width button under the search (14 Oct 2026). */
+  /* Near me, the way most people come in: one full-width button under the search. */
   .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
   .near-cta svg { width:18px; height:18px; flex:none; }
   .here-cta { margin-top:4px; }   /* under Near me: the forecast for the water where you are (hereForecast) */
   .near-cta .cta-s { display:none; }
-  /* A phone's opening, shorter (22 Oct 2026, an outside review: the introduction and controls filled the
-     first screen, and the first spot began at 759 px on a 375 x 812 phone, under the tab bar). Near me
+  /* A phone's opening, shorter: with the introduction and controls in full, the first spot began at
+     759 px on a 375 x 812 phone, under the tab bar. Near me
      beside the search as "Near me", as a desktop's shares its row, and the lede without the map's clause:
      "Or check the river or lake where you are" says it under them. */
   @media (max-width: 800px) {
@@ -281,7 +281,7 @@
   .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
   /* Hover only where there is a pointer, here and on every hover in this page bar the map's own controls: on
      a phone a tapped button kept its hover shade, so after Near me failed it looked pressed beside A–Z
-     (15 Oct 2026, iOS Safari). */
+     (iOS Safari). */
   @media (hover: hover) { .sortseg button:hover { background:var(--hover); color:var(--ink); } }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
@@ -369,7 +369,7 @@
   .issued { font-size:var(--fs-note); line-height:1.45; color:var(--muted); margin:0 0 12px; }
   .check { font-size:var(--fs-note); line-height:1.45; margin:8px 0 0; padding-top:8px; border-top:1px solid var(--hair); }
 
-  /* The sky and the glass (seventh round, docs/DESIGN.md), after Apple Weather: a picture of fells and
+  /* The sky and the glass (docs/DESIGN.md), after Apple Weather: a picture of fells and
      a lake (icons/fells.webp, drawn by scripts/make_sky_image.py) behind the opening of each view,
      and the tiles under it frosted, so that it shows through them. Light, since the page is read
      outdoors: the picture is pale sky wherever words sit on it, and a tile is three-quarters white,
@@ -380,11 +380,11 @@
      colour runs up to the header. Every view puts a tile first after the band. The picture is 500 by
      600 CSS px; a view wider than that (a phone on its side, a small tablet) stretches it sideways to
      the edges and keeps its height, so the sky still ends at the words and nothing moves up or down.
-     On a phone the band is 48 px, not 128 (6 Oct 2026): the first tile then starts on the fells, which show
+     On a phone the band is 48 px, not 128: the first tile then starts on the fells, which show
      through its glass, and the first saved spot fits on a 375 x 812 screen. */
   #panel { isolation:isolate; }
   .answer, .lead { position:relative; margin-bottom:128px; }
-  /* The list's band, 48 px on a wider screen since 15 Oct 2026: at 128 the fells were an empty band
+  /* The list's band, 48 px on a wider screen too: at 128 the fells were an empty band
      between the opening and the list, and the first spot sat at the foot of a 1440 x 900 screen. The
      picture still runs 310 px below the opening, so its fells show through the list's glass. */
   .lead { margin-bottom:48px; }
@@ -767,10 +767,10 @@
   .compare-fields label { font-size:var(--fs-note); font-weight:600; }
   .compare-fields select { margin-top:4px; }
   .compare-scroll { overflow-x:auto; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-  /* Compare (compareTable, 20 Oct 2026): a column a spot, of equal widths and at least 150 px, so that two
+  /* Compare (compareTable): a column a spot, of equal widths and at least 150 px, so that two
      fit side by side on a 375 px phone and three in a wide desktop's list column; a third on a phone scrolls
      sideways. Each row's label is a band across the table over its cells, its words kept in view as the table
-     scrolls (until 20 Oct 2026 a column of labels took a third of a phone's width). The five days: a cell a
+     scrolls (a column of labels would take a third of a phone's width). The five days: a cell a
      day, its name over the level in its text colour (.hl); the day picked shaded, with a rule at its left, as
      the open day of the five days is. A spot whose level is the same every day has one cell for the five. */
   .compare-table { width:100%; min-width:calc(var(--cols, 2) * 150px); table-layout:fixed; border-collapse:collapse; font-size:var(--fs-note); }
@@ -786,8 +786,8 @@
   .compare-table tr.on > td.d0 { box-shadow:inset 3px 0 0 var(--ink); }
   .compare-table tr.on > td.same { background:none; }
   /* The spots' names pinned under the header while a phone reads the table down (comparePin). Its own heads
-     scrolled away with it, and a sticky head cannot hold to the page from inside a box that scrolls sideways
-     (post-deploy QA, 20 Oct 2026). A copy, of no height so nothing moves, shown once the heads have gone. */
+     scrolled away with it, and a sticky head cannot hold to the page from inside a box that scrolls sideways.
+     A copy, of no height so nothing moves, shown once the heads have gone. */
   .compare-pin { display:none; }
   @media (max-width: 800px) {
     .compare-pin { display:block; position:sticky; top:var(--header-h); z-index:3; height:0; }
@@ -827,11 +827,11 @@
     #map-wrap { min-height:0; }
     #panel { overflow:auto; padding:24px 24px 40px; border-left:1px solid var(--line); }
     .phone-only { display:none !important; }
-    /* The day and "Low risk only" once (20 Oct 2026): on the list they are the column's, beside the
+    /* The day and "Low risk only" once: on the list they are the column's, beside the
        answer they change and the list they filter, so the map's pair goes. The Saved page and Plan a
        swim have no pair of their own, so the map keeps it there. */
     body.view-list .low-ctl { display:none; }
-    /* A spot opens as a page (20 Oct 2026): the map column goes, the map moves into the spot's own
+    /* A spot opens as a page: the map column goes, the map moves into the spot's own
        tile, and the page is two columns under an opening that spans it: should I go and the water on
        the left, the map and why on the right. 1,180 px at most, so a line stays readable on a wide
        screen. The sky is the wide picture, so it is not stretched three times sideways. */
@@ -855,7 +855,7 @@
     body.view-spot #spot-map { height:400px; }
     body.view-spot #spot-map .map-say { display:none; }   /* "Click any river or lake" is the full map's line; here it covered the tile's corner */
   }
-  /* A wide desktop (20 Oct 2026, layout B's home half): a row's five days carry their short names
+  /* A wide desktop: a row's five days carry their short names
      ("Tue") over bars as wide as the names, in place of the letters. */
   @media (min-width: 1200px) {
     .week { gap:6px; }
@@ -864,12 +864,12 @@
     .wk .d1 { display:none; } .wk .d3 { display:inline; }
     .week.rain .wk { height:42px; }   /* the tallest bar (24 px), the gap and the name */
   }
-  /* A wide desktop: the list, Saved and Plan a swim open as pages, as a spot does (20 Oct 2026). The map
+  /* A wide desktop: the list, Saved and Plan a swim open as pages, as a spot does. The map
      column goes; the opening spans the page, centred over the wide sky; under it two columns, 5 to 7,
      1,180 px at most: the view on the left, the full map on the right in a tile of its own, which stays
      in view under the header as the page scrolls (sticky), the height of the screen less the header
      and the gaps, and never under 480 px. The map's frame moves into that tile (placeWrap). The panel
-     still scrolls, under the header, so the list keeps its place as before (scrollTop, keepPlace). */
+     still scrolls, under the header, so the list keeps its place (scrollTop, keepPlace). */
   @media (min-width: 1100px) {
     #app { grid-template-columns:minmax(0, 1fr); }
     #app > #map-wrap { display:none; }   /* between views, and on a page with no map tile (a point loading) */
@@ -878,7 +878,7 @@
     .about > * { max-width:720px; }   /* a prose column, as the prose pages' */
     .lead { text-align:center; }
     .lead > * { max-width:760px; margin-left:auto; margin-right:auto; }
-    /* A shorter opening (Ethan, 20 Oct 2026), so the first spots and most of the map's tile are on a
+    /* A shorter opening, so the first spots and most of the map's tile are on a
        1,440 x 900 screen: the search and Near me share a row, as do the day and "Low risk only". */
     .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
     .intro > * { grid-column:1 / -1; }
@@ -901,7 +901,7 @@
     .map-tile #map-wrap { flex:1; min-height:0; margin-top:10px; border-radius:var(--radius); overflow:hidden; }
     /* The legend wraps to the tile's width and sits above the map's credit, not over it. */
     .map-tile .leaflet-bottom.leaflet-left .map-legend { margin:0 10px 30px; }
-    /* Saved (second outside review, 20 Oct 2026): the forecasts take the wide column, 7 to 5, and the map a
+    /* Saved: the forecasts take the wide column, 7 to 5, and the map a
        smaller tile beside them, 480 px tall; with nothing saved, no map (solo), the page one 720 px column. */
     .cols.wide-list { grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); }
     .cols.wide-list .map-tile { height:480px; }
@@ -909,7 +909,7 @@
   }
   /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. The list, Saved
      and Plan a swim keep the map column: as one 720 px column the map came between the opening and the
-     first spot (layout of 20 Oct 2026, docs/DESIGN.md). */
+     first spot (docs/DESIGN.md). */
   @media (min-width: 801px) and (max-width: 1099px) {
     body.view-spot #result { max-width:720px; }
     body.view-spot .stack { grid-template-columns:minmax(0, 1fr); grid-template-rows:none; grid-template-areas:none; }
@@ -922,7 +922,7 @@
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
-    .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen (14 Oct 2026) */
+    .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
     .low-answer { font-size:var(--fs-body); margin-top:10px; }   /* one line on a 375 px phone, so the first spot still shows */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
@@ -1099,7 +1099,7 @@
   #il-form .rv-choice input:disabled { cursor:default; }
   #il-form .rv-choice input:disabled + span { opacity:.45; }
   .il-mine { margin:0 0 10px; }
-  /* Paper (review F5): the list or a spot's page, black on white in one column, with the issue time and
+  /* Paper: the list or a spot's page, black on white in one column, with the issue time and
      the credits. No header links, map, bottom bar or controls; the folds are opened by the script
      (beforeprint), so what they hold prints. One column at any paper width: the desktop grid's
      scrolling column would print one page and cut off the rest. The level marks keep their colours,
