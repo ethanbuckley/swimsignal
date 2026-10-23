@@ -160,4 +160,77 @@ Whatever the verdict:
 
 ## Results
 
-Not yet run.
+Added 23 October 2026, after the runs. Everything above the line is as committed in f6808d5 (16:54:30 BST), pushed
+before the first run started (16:55:14). 8e5be62 (16:54:50) changed lint in the test file only; the runs used an
+archive of 8e5be62. The option, the placebo files and the harness were not changed after any result was seen.
+
+**Verdict: all seven conditions hold. By the rule above, `down` becomes the default, in the final commit of this PR,
+after click-anywhere follows it (0561076).** As in the earlier lake tests, the samples show no harm by the stated
+conditions and cannot show a gain. The record table below points the other way at the sites that change: read it
+before merging the final commit.
+
+### How it was run
+
+- 12 runs, 16:55 to 19:12 BST, one at a time, offline. 0 network attempts in all 12; 0 placebo misses in all 10
+  placebo runs.
+- One operational change, stated: the queue waited for 5 GB of free plus inactive memory by `vm_stat`, which read 2 to
+  4 GB while `memory_pressure` read 36% free. A copy of `queue.sh` waiting for 2 GB was used instead. It changes no
+  figure.
+- **Check:** `any` gives 1,502 samples and LOYO Brier 0.0921, as the die-off test's reference arm on the same folder.
+- `down` keeps 1,445 samples: Monk Coniston's 57 leave the scored set, as stated. Paired comparisons use the 1,445.
+
+### Conditions 1 to 5, `down` against `any`, paired (1,445 samples)
+
+| measure | change, `down` minus `any` | 95% interval | limit | holds |
+|---|---|---|---|---|
+| LOYO Brier | −0.000115 | upper +0.000031 | ≤ +0.0005 | yes |
+| LOSO Brier | −0.000026 | upper +0.000088 | ≤ +0.0005 | yes |
+| Forward Brier (960) | −0.000076 | upper −0.000019 | ≤ +0.0005 | yes |
+| LOYO AUC, all (0.8132 → 0.8130) | −0.0003 | lower −0.0017 | ≥ −0.005 | yes |
+| LOYO AUC, rivers (0.7565 → 0.7568) | +0.0003 | lower −0.0007 | ≥ −0.005 | yes |
+| Cross-site rho (30 sites; 0.775 → 0.800) | +0.024 | lower −0.007 | ≥ −0.05 | yes |
+| Within-site rho, exposure, all sites (0.3705 → 0.3621) | −0.0084 | | ≥ −0.01 | yes, by 0.0016 |
+| LOYO within-site rho, rain + risk + season | 0.000 | | ≥ −0.01 | yes |
+| LOYO Brier, lakes (538) | +0.000043 | upper +0.00018 | ≤ +0.0005 | yes |
+| Within-site rho, lakes (reported only) | 0.290 → 0.245 | | | |
+
+### Condition 6: placebos. Holds.
+
+| measure | `down` | `any` | 10 placebos: lowest, median, highest | at least as bad | at least as good |
+|---|---|---|---|---|---|
+| LOYO Brier | 0.0950 | 0.0921 | 0.0876, 0.0944, 0.0960 | 4 | 7 |
+| LOYO AUC | 0.8130 | 0.8164 | 0.8071, 0.8131, 0.8498 | 5 | 5 |
+| LOYO AUC, rivers | 0.7568 | 0.7565 | 0.7550, 0.7566, 0.7569 | 8 | 2 |
+| Cross-site rho | 0.7998 | 0.7637 | 0.7620, 0.7781, 0.8056 | 8 | 2 |
+
+These are each run's own figures on its own samples, as `summary.py` gives them. `down` and some placebos score
+fewer samples than `any` (a site that loses every overflow leaves), so the `any` column is not paired with them. The
+unrounded counts agree (4/6, 5/5, 8/2, 8/2).
+
+### Condition 7: face check. Holds. `tests/test_lake_direction.py`: 7 passed.
+
+### The record: lake bathing waters
+
+| site | samples (over 900) | within-site rho, `any` → `down` | mean exposure, `any` → `down` | LOYO Brier, `any` → `down` |
+|---|---|---|---|---|
+| Monk Coniston | 57 (1) | 0.573 → left the set | 0.068 → none | 0.0180 → left |
+| Coniston Boating Centre | 57 (2) | 0.385 → 0.372 | 0.084 → 0.072 | 0.0321 → 0.0319 |
+| Millerground Landing | 59 (0) | 0.485 → 0.448 | 0.023 → 0.011 | 0.00072 → 0.00055 |
+| Rayrigg Meadow | 57 (0) | 0.212 → 0.178 | 0.023 → 0.010 | 0.00077 → 0.00057 |
+| Brown Howe, Lakeside YMCA, Fellfoot, Crow Park, both Rutland | unchanged exposure | unchanged | unchanged | each moves by 0.0005 or less, from the shared refit |
+
+What this says (inferred, not tested):
+- At every site whose exposure changes and that stays in the set, the within-site rho falls. At Monk Coniston the
+  overflow the rule drops, Coniston WwTW 1.1 km down the lake, gave the best within-site match of any lake site
+  (0.573). That is what a pathway against the through-flow would look like: wind or mixing carrying water from the
+  works up to the head of the lake.
+- The Brier gains at Millerground and Rayrigg are the arithmetic stated beforehand: no sample over 900, so a lower
+  prediction always scores better.
+- The conditions guard against harm to the pooled scores, which barely move. They were not written to catch a
+  change that makes four sites' own day-to-day match worse. So the rule passes as stated, and the record is a reason
+  for Ethan to weigh before merging the final commit, which can be left out on its own.
+
+### Lake spots on the site
+
+As above under "Seen before writing": Waterhead, Millerground Landing, Rayrigg Meadow and Coniston Boating Centre lose
+one overflow each; Monk Coniston loses both of its and reads "No monitored overflow found upstream".
