@@ -1,19 +1,19 @@
 // The decision record (record.html): one printable A4 page for one spot and one day, for an organiser or
-// a leader to attach to a written go/no-go decision (docs/MARKETS-2026-10.md, B3). In order:
+// a leader to attach to a written go/no-go decision (docs/MARKETS-2026-10.md). In order:
 //  1. what it is and is not, first: one input to the organisation's own risk assessment, beside lab tests,
 //     checks at the water, the EA's advice and the water companies' alerts; a forecast, not a water test,
 //     which never says the water is safe or clean, with the live accuracy figures from data/verification.json
 //     (the warning table at the High risk line: the share of spills warned of, and the share of warnings
 //     followed by a spill); the hazards it does not cover, by name; no data is never low; the organisation
-//     decides (docs/ORGANISER-PIVOT-2026-10.md, OP4);
+//     decides (docs/ORGANISER-PIVOT-2026-10.md);
 //  2. the spot, the day, the level and why: the headline, the overflows that matter most with how far
 //     and how long away, what was discharging, the rain;
 //  3. every input with its time, its age and its source;
 //  4. what the forecast cannot see, in the About page's words (CANNOT_SEE; a test checks them);
 //  5. blank lines for who decided what, and when;
-//  6. the credits for the data it used, and the issue id at the top and the foot (printed.js, OP2 and OP3).
+//  6. the credits for the data it used, and the issue id at the top and the foot (printed.js).
 // Outside the five days it says when the forecast for the day first appears, and gives no record.
-// The wording is for Ethan's approval, and a solicitor's read before any paid use (open question 4).
+// The wording awaits approval, and a solicitor's read before any paid use (open question 4).
 //
 // The level and its words are levels.js's, the spills' clause and how sure organisers.js's (the spot
 // page's words), the ages and the overflow counts evidence.js's: the record never disagrees with the
@@ -48,11 +48,9 @@ const Record = (() => {
   // What the forecast cannot see: the About page's list, word for word (about.html, "What it cannot see").
   // tests/site_record.test.cjs fails when the two differ. A record shows the lines that apply to its spot
   // (cannotSee).
-  // The overflows in Wales (11 Oct 2026). The About page's item said Dŵr Cymru's overflows "which matter at
-  // the spots on the Dee and on the Wye in Herefordshire, are forecast from rain and their yearly spill
-  // record": true of its overflows in England, but its overflows in Wales are not in the data at all, and
-  // those are most of what lies above Sandy Lane, Chester (77% of the river within 60 km). Both say it
-  // this way since 12 Oct 2026.
+  // The overflows in Wales. Dŵr Cymru's overflows in England are forecast from rain and their yearly spill
+  // record, but its overflows in Wales are not in the data at all, and those are most of what lies above
+  // Sandy Lane, Chester (77% of the river within 60 km). The About page says it the same way.
   const WALES_CANNOT_SEE = 'Dŵr Cymru Welsh Water\'s overflows in Wales are not in SwimSignal\'s data: there is no licence to reuse them yet, and SwimSignal is waiting for Dŵr Cymru\'s terms. '
     + 'Where a spot\'s river runs from Wales, its page says how much of the river above it is in Wales. Dŵr Cymru\'s overflows in England are forecast from rain and their yearly spill record, with no "right now".';
   const CANNOT_SEE = [
@@ -65,9 +63,10 @@ const Record = (() => {
     'A "low" reading means nothing the site looks at flags the day. It does not mean the water is clean, or that it is safe to swim there.',
   ];
 
-  // The lines of CANNOT_SEE for spot s (11 Oct 2026). Dŵr Cymru's line only where its overflows are upstream: Chee
-  // Dale, on the Derbyshire Wye, carried it. The E. coli estimate's sentence only where the spot shows the estimate,
-  // a river with a daily forecast (levels.js, ecoliBand): a lake's record described an estimate its page never shows.
+  // The lines of CANNOT_SEE for spot s. Dŵr Cymru's line only where its overflows are upstream, so not at Chee
+  // Dale, on the Derbyshire Wye. The E. coli estimate's sentence only where the spot shows the estimate, a river
+  // with a daily forecast (levels.js, ecoliBand): a lake's record must not describe an estimate its page never
+  // shows.
   const ECOLI_SENTENCE = / On rivers, the E\. coli estimate [^.]*\./;
   function cannotSee(s) {
     const welsh = (s.contributors || []).some(c => /Cymru/i.test(String(c.company || ''))) || R.walesShare(s) > 0;   // or its river runs from Wales
@@ -83,7 +82,7 @@ const Record = (() => {
     if (!W || !W.n || nil(W.hit_rate) || nil(W.warnings_true) || !W.first_day || !W.last_day)
       return `The live accuracy figures could not be loaded. They are on ${esc(base)}verification.html.`;
     const sameYear = W.first_day.slice(0, 4) === W.last_day.slice(0, 4);
-    // "On 10 days of live scoring between 29 September and 10 October" (11 Oct 2026): "from ... to" read as an
+    // "On 10 days of live scoring between 29 September and 10 October": "from ... to" would read as an
     // unbroken run, and 8 and 9 October had nothing scored.
     const span = `${shortDate(W.first_day, !sameYear)} and ${shortDate(W.last_day)}`;
     let t = `${W.n_days ? `On ${W.n_days} day${W.n_days === 1 ? '' : 's'} of live scoring between ${span}` : `In live scoring between ${span}`}, it warned of ${pct(W.hit_rate)} of the spills at the storm overflows it scores, `
@@ -99,7 +98,7 @@ const Record = (() => {
     if (W.n_days < 14) t += ` That is too few days to judge across different weather.`;
     return t;
   }
-  // The wording is for Ethan's approval, then a solicitor's (OP4). The hazards it names are the pilot
+  // The wording awaits approval, then a solicitor's read. The hazards it names are the pilot
   // agreement's out-of-scope list; "no data is never low" is the rule every page keeps (levels.js, COVER).
   function opening(ver, base, org = '') {
     return `<p class="r-first">This page records SwimSignal's pollution risk forecast for one spot on one day${org ? `, prepared for <b>${esc(org)}</b>` : ''}, to attach to a written decision. `
@@ -137,8 +136,8 @@ const Record = (() => {
     if (reason) h += `<p class="r-why">${esc(reason)}</p>`;
     if (lv === R.NO_OVERFLOWS || lv === R.NO_RIVER) h += `<p class="r-why">${esc(R.OTHER_RISKS)}</p>`;
     const rows = [];
-    // Right now, on the day itself, where the live feeds put it higher than the day's forecast; since 11 Oct
-    // 2026 they raise the day's level too (levels.js, risk), and this row says where that came from.
+    // Right now, on the day itself, where the live feeds put it higher than the day's forecast; they raise
+    // the day's level too (levels.js, risk), and this row says where that came from.
     if (iso === R.today() && R.daily(s) && s.now) {
       const n = R.risk(s, s.now, true);
       if (R.rank(n.level) > R.rank(lv) || (x && R.risk(s, x).now)) rows.push(row('Right now', `${cap(n.level)} risk: ${esc(R.nowBecause(s, n))}, from the live feeds when the forecast was issued.`));
@@ -151,7 +150,7 @@ const Record = (() => {
       const ov = E.evidenceOverflows(s, data.generated_at);
       if (ov) rows.push(row('Discharging when the forecast was issued', ov.say));
       const band = R.ecoliBand(s, x);
-      // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF; 20 Oct 2026).
+      // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF).
       if (band && R.ecoliUntested(x)) rows.push(row('Water quality', esc(R.ECOLI_OFF_SAID)));
       else if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>. ${cap(band)} risk.`));
     } else if (R.daily(s)) rows.push(row('Sewage spills upstream', 'No forecast for this day in this update.'));

@@ -18,7 +18,7 @@ const PLAN_DEFAULT = { day: null, from: null, within: 20, kind: 'all' };
 // "from=here" asks again on the device that opens it. An address without a plan (the header's link)
 // keeps the plan last shown (was); one with a plan is read on its own, so what it leaves out is the
 // default, not what happened to be chosen before.
-// An open comparison (Compare these spots, 20 Oct 2026) is in it too, as the spots it shows:
+// An open comparison (Compare these spots) is in it too, as the spots it shows:
 // &compare=thames-port-meadow,bw-ukj1403-11947. `compare` is there only while it is open; empty, it is
 // open on the first spots shown (planCompareIds).
 const inGB = (lat, lon) => lat > 49.8 && lat < 61 && lon > -8.7 && lon < 2;
@@ -48,19 +48,19 @@ function planHash(p) {
   if (Array.isArray(p.compare)) q.set('compare', p.compare.join(','));
   return '#' + q.toString();
 }
-// The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the first
-// plan a page shows. Until 20 Oct 2026 the plan last shown lived only in the page, so after a reload or on a
-// later visit the header's link opened an empty plan (post-deploy QA). It is read as an address is, so it never
-// holds your own position. Its day only while it is one of the five, and a day picked on the list in this visit
-// (listDay) before it; else none, which readPlan makes the first day.
+// The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the
+// first plan a page shows, so after a reload or on a later visit the header's link does not open an empty
+// plan. It is read as an address is, so it never holds your own position. Its day only while it is one of the
+// five, and a day picked on the list in this visit (listDay) before it; else none, which readPlan makes the
+// first day.
 function planKept(hash, dates, listDay = null) {
   const p = readPlan(hash || '', dates), d = new URLSearchParams(String(hash || '').replace(/^#/, '')).get('day');
   return { ...p, day: dates.includes(listDay) ? listDay : dates.includes(d) ? d : null };
 }
-// A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it. On 20 Oct
-// 2026 a search for "Ilkley" listed the one spot named for it, and Plan a swim then wanted the town typed again
-// (post-deploy QA). base: the plan to start from (the one shown last, or planKept), for how far and its day;
-// kind: the list's chip, as the plan's kinds are the same. A comparison was of other spots, so it is left out.
+// A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it: a search
+// for "Ilkley" lists the one spot named for it, and Plan a swim should not want the town typed again. base:
+// the plan to start from (the one shown last, or planKept), for how far and its day; kind: the list's chip,
+// as the plan's kinds are the same. A comparison was of other spots, so it is left out.
 function planFromPlace(place, base, kind = 'all') {
   return planHash({ ...PLAN_DEFAULT, day: base.day, within: base.within, kind: PLAN_KINDS.includes(kind) ? kind : 'all',
     from: { name: place.name, lat: place.lat, lon: place.lon } });
@@ -76,9 +76,9 @@ function planCompareIds(asked, shown) {
   return keep;
 }
 // The line most of a plan's rows share, if two or more do, said once under the count (index.html, planBasis)
-// rather than under each row: on 22 Oct 2026 an outside review found the same sentence under all eight Oxford
-// rows. lines: one a row, in the page's order, '' for a row with none (no forecast). A tie goes to the earlier
-// row's line. n: the rows that share it; m: the rows with a line at all.
+// rather than the same sentence under each of eight Oxford rows. lines: one a row, in the page's order, ''
+// for a row with none (no forecast). A tie goes to the earlier row's line. n: the rows that share it; m: the
+// rows with a line at all.
 function planShared(lines) {
   const tally = new Map(), m = lines.filter(Boolean).length;
   for (const l of lines) if (l) tally.set(l, (tally.get(l) || 0) + 1);
@@ -86,8 +86,7 @@ function planShared(lines) {
   return n >= 2 ? { line, n, m } : { line: '', n: 0, m };
 }
 // Who it is said of, of the `of` rows shown. Counted among the rows with a forecast where some have none, so
-// that "2 of these 5 spots" does not leave the reader to work out which two (Bath, 22 Oct 2026: three of its
-// five had no forecast, and those rows' headings say so).
+// that "2 of these 5 spots" does not leave the reader to work out which two.
 function planSharedWho(n, m, of) {
   const spots = m === of ? 'spots' : 'spots with a forecast';
   return n < m ? `${n} of ${m === of ? 'these' : 'the'} ${m} ${spots}` : n === 2 ? `Both ${spots}` : `All ${n} ${spots}`;
@@ -121,9 +120,9 @@ function placeNamed(index, text) {
 // "LA22 9", "SW1A": OS Open Names has postcodes, but not in the file the page fetches.
 const looksLikePostcode = text => /^[a-z]{1,2}[0-9][0-9a-z]?(\s*[0-9][a-z]{0,2})?$/i.test(String(text).trim());
 // The place typed in full when it is the only one offered (offers: placeMatches's): there is nothing left to
-// choose, so the plan can start as if it had been picked (index.html, planType). Typing "Ilkley" whole left
-// one offer, "Ilkley", and on an iPhone tapping it changed nothing in the field, so no plan started until
-// Search was pressed (post-deploy QA, 20 Oct 2026). Null while another place begins with what is typed.
+// choose, so the plan can start as if it had been picked (index.html, planType). Typing "Ilkley" whole leaves
+// one offer, "Ilkley", and on an iPhone tapping it changes nothing in the field, so no plan would start until
+// Search was pressed. Null while another place begins with what is typed.
 const placeOnly = (offers, text) => offers.length === 1 && offers[0].key === placeKey(text) ? offers[0] : null;
 
 // ------------------------------------------------------------------------------ rivers and lakes
@@ -153,9 +152,9 @@ function waterMatches(index, text, n = 4) {
 // ------------------------------------------------------------------------------ the spots
 // Which group a spot is in on the day: 0 at low risk, 1 at a plain level (no monitored overflow found
 // upstream, so nothing to forecast from), 2 at moderate risk or higher (a rating of poor included), 3
-// with no level (no forecast that day, out of the forecast's reach). Until 20 Oct 2026 the first two
-// were one group, "Nothing flagged", which an outside review read as the same answer: a forecast that
-// looked and found the risk low, and one with nothing to look at.
+// with no level (no forecast that day, out of the forecast's reach). The first two are apart: as one
+// group, "Nothing flagged", they read as the same answer, a forecast that looked and found the risk low
+// and one with nothing to look at.
 const PLAN_GROUPS = 4;
 function planGroup(level) {
   const R = planRules();

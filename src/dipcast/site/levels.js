@@ -55,7 +55,7 @@ function fromDay(s, iso, built) {
 }
 // ------------------------------------------------------------------------------ risk
 // A day's level is the worse of two forecasts and one record, because sewage from overflows is
-// only part of what makes river water dirty: before this, every Thames spot read "low".
+// only part of what makes river water dirty: from spills alone, every Thames spot would read "low".
 //  - Sewage spills: the exposure index's level, where monitored overflows are upstream.
 //  - Water quality: the E. coli estimate, the calibrated chance a sample would be over 900 per 100 ml,
 //    where it was tested (rivers with overflows upstream). Low under 10%: the minimum inland

@@ -1,5 +1,5 @@
 // What the two pages made to be printed carry, the decision record (record.js) and the sites view (sites.js):
-// an issue id, and the credits for the data their spots use (docs/ORGANISER-PIVOT-2026-10.md, OP2 and OP3).
+// an issue id, and the credits for the data their spots use (docs/ORGANISER-PIVOT-2026-10.md).
 //
 // The issue id is the build's commit and the forecast's issue time in UTC, to the minute: 3ed1b5a-20261020T1216Z.
 // Every page from one build carries the same id, and the next build a new one, so a printed copy can be

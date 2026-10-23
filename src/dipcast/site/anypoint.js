@@ -265,11 +265,11 @@ const AnyPoint = (() => {
       rain_h: Math.max(0, ...rows.map((r, k) => w[k] >= 0.001 && od.rain_h && od.rain_h[r.i] !== null ? od.rain_h[r.i] : 0)) };
   }
 
-  // Rain at a point with no overflow upstream, whose day rows show rain alone (index.html, dayRows; review
-  // of 16 Oct 2026, C8): the 48 h to midday on each day from today, from overflow_days.json's rain_48h,
-  // which has the build's rain squares (0.1 degrees; those with an overflow in them). The point's own
-  // square; else the nearest of the eight around it with a forecast, with how far its centre is (km),
-  // since the uplands' squares often have no overflow; else null. A file from before 17 Oct 2026 has none.
+  // Rain at a point with no overflow upstream, whose day rows show rain alone (index.html, dayRows): the
+  // 48 h to midday on each day from today, from overflow_days.json's rain_48h, which has the build's rain
+  // squares (0.1 degrees; those with an overflow in them). The point's own square; else the nearest of
+  // the eight around it with a forecast, with how far its centre is (km), since the uplands' squares
+  // often have no overflow; else null. A file from before 17 Oct 2026 has none.
   function rainAt(od, lat, lon) {
     const cells = od && od.rain_48h; if (!cells) return null;
     const snap = v => Math.round(v * 10) / 10, key = (a, b) => `${(a + 0).toFixed(1)},${(b + 0).toFixed(1)}`;
@@ -494,7 +494,7 @@ const AnyPoint = (() => {
     const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
     // A WFD lake with no lake centreline inside takes the one nearest the click within 1.5 km
     // (transport._in_polygon). With none, a click on its water is the isolated lake, and one on its
-    // shore is placed as if the lake were not there (transport._locate; Ethan's option C, 16 Oct 2026).
+    // shore is placed as if the lake were not there (transport._locate).
     const p = poly && poly.poly, link = p && p.lake === -1
       ? candidates(lat, lon, tiles).filter(c => c.form === LAKE && c.d <= cfg.lake_snap_m).reduce((x, y) => !x || y.d < x.d ? y : x, null) : null;
     if (p && p.lake === -1 && !link && poly.d === 0) return { mode: 'isolated', kind: 'lake', name: p.name || 'Unnamed lake', error: ISOLATED,
@@ -507,7 +507,7 @@ const AnyPoint = (() => {
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
     // A square has files where an overflow is, or a link with one upstream. In England, then, no square
-    // near means no monitored overflow upstream of any water here; without the shape, the old answer.
+    // near means no monitored overflow upstream of any water here; without the shape, ENGLAND_ONLY.
     if (!Object.keys(tiles).length) return { mode: 'none', kind: '', name: 'This point', error: !outside ? ENGLAND_ONLY
       : `No river or lake near this point has a monitored storm overflow within ${a.max_upstream_km} km upstream, so SwimSignal has no sewage spills to forecast here.` };
     const at = locate(candidates(lat, lon, tiles), cfg);
@@ -605,7 +605,7 @@ const AnyPoint = (() => {
     selLayer.clearLayers();
     L.circleMarker([d.lat, d.lon], { radius: 14, color: RING(), weight: 3, fill: false, interactive: false }).addTo(selLayer);
     // A desktop shows the point in its page's own map tile (index.html, "Where it is" or Upstream): on
-    // the point, close in, as a listed spot's is (20 Oct 2026).
+    // the point, close in, as a listed spot's is.
     if (!PHONE.matches && document.getElementById('spot-map')) map.setView([d.lat, d.lon], Math.max(map.getZoom(), 13), { animate: false });
     scrollTop();
     if (push) focusHeading();
@@ -636,8 +636,8 @@ const AnyPoint = (() => {
   // A click on the map away from a listed spot. On a phone only the full map takes one: the small
   // maps on a spot's page are for looking. Further out than POINT_ZOOM a pixel is half a kilometre or
   // more and the tiles draw only the big rivers, so a click there zooms in on itself instead, and the
-  // line over the map says to tap the water (17 Oct 2026): on the opening view of England a click
-  // landed in the sea and answered "Not covered by the forecast".
+  // line over the map says to tap the water: on the opening view of England a click can land in the
+  // sea and answer "Not covered by the forecast".
   const POINT_ZOOM = 9, CLOSER = 2;
   function onMapClick(e) {
     if (typeof DATA === 'undefined' || !DATA || (PHONE.matches && !mapMode())) return;
