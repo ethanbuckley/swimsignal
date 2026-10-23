@@ -1,7 +1,6 @@
 """Write one parquet of discharges per company, data/processed/ea_events_<company>.parquet (the
 edm_events columns), from the Environment Agency's start/stop files for the companies that operate
-in England, 2024 and 2025. Review task D2 (docs/REVIEW-2026-10-16.md); the test it feeds is stated in
-docs/NINE-COMPANY-MODEL-TEST-2026-10.md. Off CI, run by hand:
+in England, 2024 and 2025. The test it feeds is stated in docs/NINE-COMPANY-MODEL-TEST-2026-10.md. Off CI, run by hand:
 
     uv run python scripts/import_ea_events.py
 

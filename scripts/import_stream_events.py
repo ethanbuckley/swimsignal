@@ -1,8 +1,8 @@
 """Write one parquet of discharges per company, data/processed/stream_events_<company>.parquet (the
 edm_events columns), from the event histories the companies publish as ArcGIS layers
 (config.EDM_HISTORY_FEEDS): Northumbrian Water 2020-2024, Wessex Water 2020-2023 and South West Water
-January 2025 to May 2026. Review task D3 (docs/REVIEW-2026-10-16.md); what they hold and how they agree
-with the EA's files is in docs/EARLIER-SPILL-HISTORY-2026-10.md. Off CI, run by hand:
+January 2025 to May 2026. What they hold and how they agree with the EA's files is in
+docs/EARLIER-SPILL-HISTORY-2026-10.md. Off CI, run by hand:
 
     uv run python scripts/import_stream_events.py [--refresh]
 

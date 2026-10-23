@@ -1,6 +1,6 @@
-"""Publish the data a page needs to forecast any clicked point, with no server (roadmap task 3).
+"""Publish the data a page needs to forecast any clicked point, with no server.
 
-The API forecasts a clicked point by loading the river network (113 MB on disk, about 900 MB in
+forecast_point forecasts a point by loading the river network (113 MB on disk, about 900 MB in
 memory) and tracing upstream. GitHub Pages cannot run that, so the build does the tracing here,
 once per network release, and publishes what is left for the page: snap the click to a link, read
 that link's upstream overflows, and do the transport arithmetic of model/transport.py with the
@@ -47,11 +47,11 @@ cannot walk the network). River distances and dilutions then follow upstream_ove
 the click's position along the link. A WFD lake between an overflow and the click is crossed as
 upstream_overflows crosses it in config.LAKE_PATH_MODE "lake": its metres at the lake velocity, and the
 dilution times 1 / (1 + area / 5 km2) for each such lake (lake_crossings). In lake paths "residence"
-(docs/LAKE-RESIDENCE-TEST-2026-10.md) and "residence_spill" (the default since #213,
+(docs/LAKE-RESIDENCE-TEST-2026-10.md) and "residence_spill" (the default,
 docs/LAKE-RESIDENCE-SPILL-2026-10.md: the residence time at spill-day flow) a lake with a residence time is
 crossed as a well-mixed lake instead: the records carry, per overflow, its metres, the survivors' hours
 in it and the share that leaves it alive ("h"), and its area factor is left out of the path factor.
-In lake distance "water" (the default since docs/LAKE-DISTANCE-2026-10.md) a lake click's distance from each inlet
+In lake distance "water" (the default, docs/LAKE-DISTANCE-2026-10.md) a lake click's distance from each inlet
 is the shortest way through the lake's water (model/lake_water.py): lake_water/<n>.json carries the lake's water (its
 reflex corners and outlines) and, per inlet, where it enters the water and the metres on to every corner (ways), and
 the lake in lakes.json says it has one (water: true). Lake distance "line" writes none.
@@ -131,8 +131,8 @@ INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
 CACHE_VERSION = 8         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
-                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key; 11 Oct 2026;
-                          # 8: no centreline for a WFD lake with none inside, 16 Oct 2026)
+                          # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key;
+                          # 8: no centreline for a WFD lake with none inside)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
@@ -205,11 +205,11 @@ def link_names(net: RiverNetwork, lids) -> dict[str, str | None]:
 
 def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap | None]]:
     """transport._click_at_head for every click the page can make, as the page cannot walk the
-    network: small river link (the arm) -> {main channel the old rule could choose -> where the click
-    goes, or None where it stays}. Only arms with a channel big enough for the old rule within
-    ADOPT_RADIUS_M of their head can move, and only to a channel the old rule could choose for a click
+    network: small river link (the arm) -> {main channel _adopt_main_channel could choose -> where the
+    click goes, or None where it stays}. Only arms with a channel big enough for _adopt_main_channel
+    within ADOPT_RADIUS_M of their head can move, and only to a channel it could choose for a click
     on them: within PIN_SNAP_M + ADOPT_RADIUS_M of the arm, and big enough. Each is asked with that
-    channel's own name, as the API asks (transport.channel_words), and kept only above the floor
+    channel's own name, as _click_at_head asks (transport.channel_words), and kept only above the floor
     against that channel (transport.keeps_river). Arms with no move are left out."""
     links = net.links
     up = links["start_node"].map(net.upstream_m).fillna(0.0)
@@ -326,7 +326,7 @@ class Tracer:
     (upstream_lengths). L_up(overflow) is part of L_up(root), so the dilution is
     r x (L_up(root) + L0) / (L_up(root) + L0 + offset) with r = (L_up(overflow) + L0) / (L_up(root) + L0),
     at most 1. A link's record is its length, L_up(root), and per overflow either (base distance,
-    r) or its position along T; `rows_at` turns that into the API's rows for any f. One search per
+    r) or its position along T; `rows_at` turns that into upstream_overflows' rows for any f. One search per
     root, and L_up only for the nodes a dilution needs: calling upstream_overflows per link would
     take over 12 minutes (measured on 3 Oct 2026).
 
@@ -435,8 +435,7 @@ def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, froz
     lakes {id: links}, lake link -> centreline lake id). A WFD lake's links are the lake-form links
     crossing its polygon, else none. With none, transport._in_polygon takes the centreline lake
     nearest the click within 1.5 km, which the page finds in the link index (lake -1 in lakes.json).
-    Until 16 Oct 2026 the build took the one nearest the lake's middle, which is not the API's
-    (docs/ANYPOINT-LAKES-2026-10.md)."""
+    The one nearest the lake's middle would not be _in_polygon's (docs/ANYPOINT-LAKES-2026-10.md)."""
     links = net.links
     lake_links = links.index[links["form"] == "lake"]
     # Centreline lakes: lake links joined through shared nodes (RiverNetwork.lake_component).
@@ -762,11 +761,11 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     entry_links = set(records) | {l for l, c in table["link_comp"].items() if c in lake_pos}
     covered |= set(home.loc[list(entry_links)])
 
-    # Lines in lon/lat, every vertex the network has, and every square each line's box touches. Until
-    # 16 Oct 2026 they were simplified to 30 m. The page then measured a click against lines up to 30 m
-    # from the API's: a click on a short side link 0.001 m from it was 24 m from its simplified line, so
-    # the page took a lake centreline 35 m away and found no river, where the API traced the River Stor
-    # (docs/ANYPOINT-LINES-2026-10.md). The full lines add about 5.7 MB, most of it link_index/.
+    # Lines in lon/lat, every vertex the network has, and every square each line's box touches. Lines
+    # simplified to 30 m sit up to 30 m from the network's own: a click on a short side link 0.001 m from
+    # it was 24 m from its simplified line, so the page took a lake centreline 35 m away and found no
+    # river, where forecast_point traced the River Stor (docs/ANYPOINT-LINES-2026-10.md). The full lines
+    # add about 5.7 MB, most of it link_index/.
     coords, which = shapely.get_coordinates(links.geometry.values, return_index=True)
     lon, lat = _to_lonlat(coords[:, 0], coords[:, 1])
     lonlat = np.column_stack([lon, lat])
@@ -995,8 +994,8 @@ def any_point_rain(sub: pd.DataFrame, budget: int = RAIN_CELLS_PER_BUILD,
     if take:
         seen = len(rainfall.fetch_errors())
         try:
-            # One retry, after 1-2 s or a Retry-After of up to a minute. A failed request no longer
-            # raises or stops the later ones; its cells keep their cached forecast, read below.
+            # One retry, after 1-2 s or a Retry-After of up to a minute. A failed request does not
+            # raise or stop the later ones; its cells keep their cached forecast, read below.
             rainfall.fetch_forecast(take, attempts=2, what="anypoint")
         except Exception as e:  # noqa: BLE001 - what was fetched before the failure is kept
             error = str(e)
@@ -1086,7 +1085,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
     last_running = [int(i) for i in np.flatnonzero(running(sub) & (sub["status"] == FEED_DOWN).to_numpy())]
     no_feed = sorted(str(c) for c in st.loc[st["data_state"] == NO_FEED, "company"].fillna("unknown").unique())
     # Each current feed's last update, so the page can age its quiet readings where it is read, as a spot's
-    # page does (index.html, ageReadings): until 12 Oct 2026 a click hours after the build counted them live.
+    # page does (index.html, ageReadings): otherwise a click hours after the build would count them live.
     from dipcast.ingest.live import LIVE
     feed_updated = {}
     for c, g in st[st["data_state"] == LIVE].groupby(st["company"].fillna("unknown")):

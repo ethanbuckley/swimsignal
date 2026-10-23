@@ -1,7 +1,6 @@
 """Write data/processed/dcww_ea_events.parquet (one row per discharge, the edm_events columns) from
-the Environment Agency's start/stop files for Dwr Cymru Welsh Water's overflows in England. Wales
-plan task W3, corrected 4 Oct 2026 (docs/WALES-PLAN-2026-10.md, section 2.2): the files are under
-the Open Government Licence, so the hindcast (scripts/hindcast_wales.py, set A2) can use them.
+the Environment Agency's start/stop files for Dwr Cymru Welsh Water's overflows in England. The
+files are under the Open Government Licence (docs/WALES-PLAN-2026-10.md, section 2.2), so the hindcast (scripts/hindcast_wales.py, set A2) can use them.
 Nothing here reaches the site. Off CI, run by hand:
 
     uv run python scripts/import_ea_welsh_water.py
