@@ -3973,7 +3973,7 @@ function overflowTile(d, total) {
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div></div>`
-      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too far to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
+      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too little reaches here to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
   return `<details class="tile fold" id="overflows"><summary><span class="t-lab">${ICON.spills}<span>Overflows that matter most</span></span></summary><ul class="ovs" id="contrib">${rows}</ul>`

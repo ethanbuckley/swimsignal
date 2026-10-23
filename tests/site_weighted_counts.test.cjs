@@ -49,15 +49,15 @@ const waterhead = (summary = {overflows: 3, too_far: 1, too_far_overflow: {site_
   days: DAYS.map((date, i) => ({date, risk: [0.133, 0.191, 0.158, 0.165, 0.149][i], label: ['low', 'moderate', 'moderate', 'moderate', 'moderate'][i],
     expected_spilling_overflows: [1.4, 1.9, 0.9, 1.4, 1.2][i]}))});
 
-test('the counts leave out an overflow too far away to count, and the page says once that it is there', () => {
+test('the counts leave out an overflow that carries too little weight to count, and the page says once that it is there', () => {
   const ctx = page();
   ctx.S = waterhead();
   ctx.DATA_IN = {generated_at: BUILT, spots: [ctx.S]};
   vm.runInContext('DATA = DATA_IN;', ctx);
   const days = text(vm.runInContext('daysTile(S)', ctx)), tiles = text(vm.runInContext('dayTiles(S) + nowTiles(S)', ctx));
-  assert.match(days, /About 1 of the 3 overflows upstream is expected to spill today, about 2 tomorrow\. Grasmere sewage works overflow is upstream too, but too far away to count here\./);
+  assert.match(days, /About 1 of the 3 overflows upstream is expected to spill today, about 2 tomorrow\. Grasmere sewage works overflow is upstream too, but too little of its water would reach here to count\./);
   assert.doesNotMatch(days + tiles, /of the 4 overflows|0 of 4|4 of 4/);
-  assert.equal((days + tiles).split('too far away to count').length - 1, 1);   // once
+  assert.equal((days + tiles).split('would reach here to count').length - 1, 1);   // once
   assert.match(tiles, /0 of 3 discharging/);
   assert.match(tiles, /3 of 3 report live\./);
 });
@@ -66,7 +66,7 @@ test('the overflow list keeps every row, and one with no reach says it does not 
   const ctx = page();
   ctx.S = waterhead();
   const ov = text(vm.runInContext('overflowTile(S, allUpstream(S))', ctx));
-  assert.match(ov, /Grasmere sewage works overflow .* 0% reach too far to count/);
+  assert.match(ov, /Grasmere sewage works overflow .* 0% reach too little reaches here to count/);
   assert.doesNotMatch(ov, /0% reach spill 82% today/);
   assert.match(ov, /18% reach spill 61% today/);
   assert.match(ov, /The 4 overflows upstream, most first/);
@@ -75,10 +75,10 @@ test('the overflow list keeps every row, and one with no reach says it does not 
   assert.match(text(vm.runInContext('overflowTile(S, allUpstream(S))', ctx)), /The 4 of the 60 overflows upstream that matter most this week/);
 });
 
-test('more than one too far away to count: a number, not names', () => {
-  assert.equal(R.tooFarSaid(waterhead({overflows: 2, too_far: 4})), '4 more overflows are upstream but too far away to count here.');
+test('more than one left out: a number, not names', () => {
+  assert.equal(R.tooFarSaid(waterhead({overflows: 2, too_far: 4})), '4 more overflows are upstream, but too little of their water would reach here to count.');
   assert.equal(R.tooFarSaid(waterhead({overflows: 2, too_far: 1, too_far_overflow: {site_id: 'X1', site_name: null}})),
-    'One more overflow is upstream too, but too far away to count here.');
+    'One more overflow is upstream too, but too little of its water would reach here to count.');
   assert.equal(R.tooFarSaid(waterhead({overflows: 4})), '');
   assert.equal(R.allUpstream(waterhead({overflows: 2, too_far: 4})), 6);
 });

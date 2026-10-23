@@ -123,8 +123,8 @@ const overflows = s => (s.upstream_summary || {}).overflows || 0;
 const tooFar = s => (s.upstream_summary || {}).too_far || 0;
 const allUpstream = s => overflows(s) + tooFar(s);
 const tooFarSaid = s => { const n = tooFar(s), o = (s.upstream_summary || {}).too_far_overflow;
-  return !n ? '' : n > 1 ? `${n} more overflows are upstream but too far away to count here.`
-    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but too far away to count here.`; };
+  return !n ? '' : n > 1 ? `${n} more overflows are upstream, but too little of their water would reach here to count.`
+    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but too little of its water would reach here to count.`; };
 const classOf = s => s.classification && s.classification.class ? String(s.classification.class).toLowerCase() : null;
 const advisedAgainst = s => classOf(s) === 'poor';
 const daily = s => !s.error && overflows(s) > 0;   // a forecast that changes from day to day

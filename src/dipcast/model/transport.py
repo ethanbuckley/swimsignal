@@ -1246,6 +1246,9 @@ def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.
 
 
 LOW_CUT = 0.15   # risk_label: a risk under this is low
+# clear_time's cut. risk_label reads the shown score (round(r, 3) * 100, half up), so a low risk is one that rounds
+# under 0.145: under 0.1445, not 0.15, or a time said to be low could show 15, which is moderate.
+CLEAR_CUT = 0.1445
 # The levels' cut-offs on the 0-100 score the page shows (site/levels.js SPILL_CUTS): 15, 40 and 70.
 SCORE_CUTS = (15, 40, 70)
 # An overflow whose weight here is under this shows as "0% reach" on the page, and is not counted in the
@@ -1332,7 +1335,7 @@ def _first_under(w: np.ndarray, passed: np.ndarray, cut: float, recent_h: float,
 TRAVEL_SAYS = 0.5   # the part of the risk, as it clears, that travel time must hold for 'travel'
 
 
-def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = LOW_CUT,
+def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = CLEAR_CUT,
                recent_h: float = config.RECENT_SPILL_HOURS,
                t90_h: float = config.T90_HOURS) -> tuple[pd.Timestamp | None, str | None, object]:
     """The time to tell a swimmer right now's risk should be back to low: live_now_risk run forward
