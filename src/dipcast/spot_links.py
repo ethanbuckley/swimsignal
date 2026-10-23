@@ -1,10 +1,9 @@
-"""How the listed spots are joined by water, for the spot page's "Nearby" card (outside review, 20 Oct 2026).
+"""How the listed spots are joined by water, for the spot page's "Nearby" card.
 
-The reviewer found that around Oxford the card offers other places on the Thames, which can share
-pollution sources: River Thames, Long Bridges, at moderate risk, offered "Lower risk nearby: River Thames,
-Hurley, 23 miles away", downstream on the same river, with nothing to say so. They asked for each
-suggestion's reason in words, and that a different catchment get no reassuring label. The build gives
-each spot two fields in spots.json:
+Around Oxford the card can offer other places on the Thames, which can share pollution sources: River
+Thames, Long Bridges, at moderate risk, offered "Lower risk nearby: River Thames, Hurley, 23 miles away",
+downstream on the same river, with nothing to say so. So each suggestion's reason is given in words, and
+a different catchment gets no reassuring label. The build gives each spot two fields in spots.json:
 
 - `catchment`: a short id of where its water reaches tidal water, or the end of the network (catchment_end).
   Spots with different ids drain apart: water from one never reaches the other above an estuary. The

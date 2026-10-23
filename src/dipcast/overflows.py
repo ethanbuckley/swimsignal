@@ -25,11 +25,11 @@ NAME = "overflows.parquet"
 MARINE = re.compile(r"\b(?:sea|channel|solent|estuary|estuarine|harbour|harbor|firth|bay|the wash|coast|coastal|"
                     r"marine|ocean|sound|beach|foreshore|mudflat|saltmarsh|creek|haven|offshore)\b", re.IGNORECASE)
 
-# Scotland (plan section 5.2 and task S5, written 11 Oct 2026). "Loch" names freshwater lochs (Lomond,
+# Scotland (docs/SCOTLAND-PLAN-2026-10.md, section 5.2). "Loch" names freshwater lochs (Lomond,
 # Ness, Leven at Kinross) and sea lochs (Fyne, Long, Ryan) alike, so MARINE leaves it out, and OS Open
 # Rivers has no sea: an outfall on a sea loch snaps to the nearest burn, tidal reach or lochan as if it
 # discharged inland. SEPA's water-body polygons would settle each one; their licence is not yet
-# checked (plan, task S6). Until then marine_scotland reads a receiving water as marine when
+# checked. Until it is, marine_scotland reads a receiving water as marine when
 #   1. it matches MARINE, or names a kyle, voe, the Minch or a sea loch in so many words, or
 #   2. it is one of SEA_LOCHS, or Loch Leven (both a sea loch and a freshwater loch) and the outfall's
 #      first snap is a tidal river,
@@ -76,8 +76,8 @@ def _tokens(name) -> set[str]:
 
 # Outfalls to the ground: an infiltration system, a soakaway, land. Their water does not run in a river,
 # so they stay off the network. Morestead Road, Winchester ("SEWAGE FARM" live, "GROUNDWATERS VIA 2
-# INFILT SYST" in the return) was snapped 1.2 km to the Itchen Navigation and counted for Compton Lock
-# until 11 Oct 2026. Only when every name given says so: "RIVER WEY AND GROUNDWATER" reaches the Wey,
+# INFILT SYST" in the return) would otherwise snap 1.2 km to the Itchen Navigation and count for Compton
+# Lock. Only when every name given says so: "RIVER WEY AND GROUNDWATER" reaches the Wey,
 # and the Land Yeo is a river.
 GROUND = re.compile(r"ground ?waters?|underground|strata|soak ?away|infiltrat|borehole|aquifer|percolat|"
                     r"sewage farm|\b(?:onto|into|to|via)\s+land\b|^\s*land\s*$|land treatment", re.IGNORECASE)
@@ -155,9 +155,9 @@ def _named_within(net: RiverNetwork, x: float, y: float, want: set[str]) -> bool
 def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     """Where an overflow's live position and its annual-return outlet (the EA consent's grid
     reference) are over POSITION_GAP_M apart, use the outlet when it alone has a link carrying the
-    receiving water's name within NAMED_NEAR_M. The live position is kept otherwise, as before.
+    receiving water's name within NAMED_NEAR_M. The live position is kept otherwise.
 
-    Until 11 Oct 2026 the live position always won. Of the 420 overflows whose two positions
+    Of the 420 overflows whose two positions
     disagree and whose receiving water has a name, the outlet alone matched it at 40: Buxton STW,
     on the Derbyshire Wye, was live 45 km away; Earl Sterndale STW sits by Hartington in the live
     feed, 6.7 km from the village. The live position alone matched at 55, both at 159, neither at
@@ -168,7 +168,7 @@ def choose_positions(net: RiverNetwork, df: pd.DataFrame) -> pd.DataFrame:
     the WFD water body's name, and a place the overflow's name gives (OS Open Names). The outlet is
     used when some evidence points to it and none to the live position, provided the two receiving
     waters agree (or one is generic), so both rows describe the same asset, and do not put it in the
-    ground. Until 13 Oct 2026 only the place counted (#179). Earl Sterndale STW (Glutton Brook, 35%
+    ground. Earl Sterndale STW (Glutton Brook, 35%
     of Dovedale's weight) and Hazeldene Lane, Newick (above Barcombe Mills, live 61 km away) move;
     Holy Island STW does not ("Birkley Burn" live, "NORTH SEA" in the return: two assets under one
     id). KEEP_LIVE lists any move a check contradicts (docs/OVERFLOW-POSITIONS-2026-10.md), and
@@ -261,7 +261,7 @@ KEEP_LIVE: dict[str, str] = {
     "TWL00743": "South Lane, Ash: OS OpenMap Local's South Lane is 2 m from the live position and none is within "
                 "500 m of the outlet, 9 km east; no Blackwater label points to the outlet "
                 "(docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md)",
-    # A judgment on evidence seen after #221's rule had run, not a stated test: it moves nothing.
+    # A judgment on evidence seen after the rule had run, not a stated test: it moves nothing.
     "TWL00418": "Trumps Green Road (Virginia Water) SPS: OS OpenMap Local's Trumpsgreen Road is 85 m from the live "
                 "position; the return's 'River Bulborne' outlet is 42 km away in Hertfordshire, and the Bourne runs "
                 "2.5 km from the live position (docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md, 'Seen after the rule ran')",
@@ -374,9 +374,9 @@ def duplicate_site_ids(df: pd.DataFrame) -> list[str]:
 def one_row_per_overflow(live: pd.DataFrame) -> pd.DataFrame:
     """The live snapshot with one row per site_id: the row with the latest `fetched_at`, then the
     latest `last_updated`, then the last listed. The table keys on site_id, and a repeated id
-    upstream of a spot failed its forecast in the 3 Oct 2026 12:06 UTC build. The 02:59 poll
-    that day listed Anglian Water's AWS00528 twice. fetch_live has dropped repeats since PR #57,
-    so this guards snapshots and cached tables written before that."""
+    upstream of a spot fails its forecast. fetch_live drops repeats, so this guards snapshots and
+    cached tables written before it did (the 3 Oct 2026 02:59 poll listed Anglian Water's
+    AWS00528 twice)."""
     dups = duplicate_site_ids(live)
     if not dups:
         return live
@@ -432,8 +432,8 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
 
 
 # The network a table was built on (RiverNetwork.topology_key): each overflow's link, frac and start node
-# are measured on it. Since 11 Oct 2026 the network is mended as it loads, and 59 links are turned round,
-# so a table cached before then, or built with other fixes, places some overflows from the wrong end of
+# are measured on it. The network is mended as it loads, and 59 links are turned round, so a table
+# built on an unmended network, or with other fixes, places some overflows from the wrong end of
 # their link. The live pipeline rebuilds the table on every run; offline scripts read the cache.
 NETWORK_KEY = "network_key"
 
