@@ -1,9 +1,10 @@
 """More years of training for the spill model's layer 1 (docs/MULTI-YEAR-TEST-2026-10.md).
 
-The boosted trees (A) and scripts/train_nn.py's network (B) are trained on the same rows: every year held but 2023
-(2020-2022 at Northumbrian and Wessex, 2024-2025 at the nine English companies), and scored on 2023 at
-United Utilities, Northumbrian and Wessex, with Thames 2023 reported apart. Off CI, by hand, with the
-main checkout's event files linked into data/processed/ and DIPCAST_CACHE at its data/cache/:
+The boosted trees (A) and scripts/train_nn.py's network (B) are trained on the same rows: every year
+held but 2023 (2020-2022 at Northumbrian and Wessex, 2024-2025 at the nine English companies), and
+scored on 2023 at United Utilities, Northumbrian and Wessex, with Thames 2023 reported apart. Off CI,
+by hand, with the main checkout's event files linked into data/processed/ and DIPCAST_CACHE at its
+data/cache/:
 
     uv run python scripts/train_multi_year.py plan     # overflows per year, rain cells, what is missing, its cost
     uv run python scripts/train_multi_year.py fetch    # the missing ERA5-Land, paced -> data/cache/rain_multi/
@@ -83,9 +84,9 @@ def step(msg: str) -> None:
 
 # ------------------------------------------------------------------ events and overflow-years
 def history_events() -> pd.DataFrame:
-    """Events before 2024: Northumbrian and Wessex from their own layers (import_stream_events.py), United
-    Utilities from its Stream 2023 layer (edm_events.parquet), Thames from the alert stream. December 2022 is kept only
-    so that an event running over New Year labels the 2023 days it touches."""
+    """Events before 2024: Northumbrian and Wessex from their own layers (import_stream_events.py),
+    United Utilities from its Stream 2023 layer (edm_events.parquet), Thames from the alert stream.
+    December 2022 is kept only so that an event running over New Year labels the 2023 days it touches."""
     p = config.PROCESSED
     uu = pd.read_parquet(p / "edm_events.parquet")
     parts = [

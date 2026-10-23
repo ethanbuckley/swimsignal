@@ -691,7 +691,8 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
         raise BuildUnhealthy(f"only {len(ok)}/{n} spots got a forecast; not publishing")
     if with_days and today_no_data > MAX_NO_DATA_SHARE * len(with_days):
         raise BuildUnhealthy(f"{today_no_data}/{len(ok)} forecasts have no rainfall data for today; not publishing")
-    # An overflow listed twice failed four forecasts on 3 Oct 2026; build_overflows drops it, and it is counted here.
+    # An overflow listed twice failed four forecasts on 3 Oct 2026; build_overflows drops it, and it is
+    # counted here.
     dups = list(duplicate_overflow_ids or [])
     health["duplicate_overflow_ids"] = len(dups)
     if dups:
@@ -1721,7 +1722,8 @@ FRACTIONS = sorted({(n, d) for d in (2, 3, 4, 5, 6, 10) for n in range(1, d) if 
 def share_words(p: float) -> str:
     """A share as words a reader can picture: "about one in five". The nearest of the fractions with 2, 3, 4,
     5, 6 or 10 below the line (the smaller denominator on a tie); below 1 in 20 and above 19 in 20 it says so.
-    Sixths are there because 16.7% of spills warned of would read "about one in five", the nearest of the others."""
+    Sixths are there because 16.7% of spills warned of would read "about one in five", the nearest of
+    the others."""
     if p < 0.05:
         return "fewer than one in twenty"
     if p > 0.95:
@@ -1751,8 +1753,8 @@ def with_warning_words(html: str, verification: Path) -> str:
             if isinstance(n, int) and n > 0 else f"ran from {day_words(a, b)}")
     said = (f"{lead} Its live scores {when}. At the {escape(str(w.get('level') or 'high'))} risk line, "
             f"it warned of {share_words(hit)} spills. {share_words(true).capitalize()} of its warnings were followed by a spill.")
-    # Whose spills: on 11 Oct 2026, 208 of the 223 hits were at United Utilities, the one company the spill model
-    # learned from; elsewhere it warned of 15 of 638 (forecast_log: warning_table.by_company).
+    # Whose spills: on 11 Oct 2026, 208 of the 223 hits were at United Utilities, the one company the
+    # spill model learned from; elsewhere it warned of 15 of 638 (forecast_log: warning_table.by_company).
     rows = w.get("by_company") or []
     own = next((r for r in rows if r.get("company") == w.get("trained_on")), None)
     rest = [r for r in rows if r is not own]

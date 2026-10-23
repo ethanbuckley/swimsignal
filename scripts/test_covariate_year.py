@@ -241,7 +241,8 @@ def stage_rows() -> None:
     del f, daily
     step("F25 rows saved")
 
-    # F24: train_multi_year.py's 2023 rows at the three companies, then D2's 2024 rows there; one rain series from Dec 2022.
+    # F24: train_multi_year.py's 2023 rows at the three companies, then D2's 2024 rows there; one rain
+    # series from Dec 2022.
     ev_h = history_events()
     s23, _ = site_years(ar, ev_h, THREE, 2023)
     checks["F24 2023 overflows with no id, dropped"] = int(s23["site_id"].isna().sum())
