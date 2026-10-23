@@ -109,13 +109,13 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
     body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
-    assert "Five-day pollution risk forecasts for 3 swim spots in England, and for any river or lake you " in body and 'aria-busy="true"' in body
+    assert "Five-day pollution risk forecasts for 3 swim spots in England<span class=\"lede-map\">, and for any river or lake you " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
-    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England, and for any river or lake you ",
-                 " on the map. <a href=\"#about\">How it works</a></p>",
-                 'placeholder="Find a river, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
+    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class=\"lede-map\">, and for any river or lake you ",
+                 " on the map</span>. <a href=\"#about\">How it works</a></p>",
+                 'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
                  '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>',
                  '<button type="button" class="chip-btn low" data-low aria-pressed="']:
         assert part in lead and part.split("${")[0] in body, part
