@@ -1,6 +1,6 @@
 """More years of training for the spill model's layer 1 (docs/MULTI-YEAR-TEST-2026-10.md).
 
-The boosted trees (A) and the PR #239 network (B) are trained on the same rows: every year held but 2023
+The boosted trees (A) and scripts/train_nn.py's network (B) are trained on the same rows: every year held but 2023
 (2020-2022 at Northumbrian and Wessex, 2024-2025 at the nine English companies), and scored on 2023 at
 United Utilities, Northumbrian and Wessex, with Thames 2023 reported apart. Off CI, by hand, with the
 main checkout's event files linked into data/processed/ and DIPCAST_CACHE at its data/cache/:
@@ -12,8 +12,8 @@ main checkout's event files linked into data/processed/ and DIPCAST_CACHE at its
     uv run python scripts/train_multi_year.py train    # A, A24 and B's three seeds -> data/processed/multi_year/
     uv run python scripts/train_multi_year.py score    # 2023: every predictor, the bootstrap, the conditions
 
-`plan`, `fetch`, `time` and `train` score nothing on 2023. `score` needs D2's candidate and PR #239's
-networks from swimsignal-private/baselines/ (their SHA-256 prefixes are checked).
+`plan`, `fetch`, `time` and `train` score nothing on 2023. `score` needs D2's candidate and the
+networks train_nn.py trained, from swimsignal-private/baselines/ (their SHA-256 prefixes are checked).
 """
 
 from __future__ import annotations
@@ -83,8 +83,8 @@ def step(msg: str) -> None:
 
 # ------------------------------------------------------------------ events and overflow-years
 def history_events() -> pd.DataFrame:
-    """Events before 2024: Northumbrian and Wessex from their own layers (PR #258), United Utilities from
-    its Stream 2023 layer (edm_events.parquet), Thames from the alert stream. December 2022 is kept only
+    """Events before 2024: Northumbrian and Wessex from their own layers (import_stream_events.py), United
+    Utilities from its Stream 2023 layer (edm_events.parquet), Thames from the alert stream. December 2022 is kept only
     so that an event running over New Year labels the 2023 days it touches."""
     p = config.PROCESSED
     uu = pd.read_parquet(p / "edm_events.parquet")
@@ -139,7 +139,7 @@ def with_covariates(ar: pd.DataFrame, sites: pd.DataFrame, year: int) -> pd.Data
 
 def all_site_years(ar: pd.DataFrame) -> tuple[dict, dict, pd.DataFrame, pd.DataFrame]:
     """{year: sites with this test's covariates} for the training years and 2023 (Thames included),
-    D2's own 2024 sites with D2's covariates (for PR #239's layer 2), the coverage counts and the counts
+    D2's own 2024 sites with D2's covariates (for train_nn.py's layer 2), the coverage counts and the counts
     of covariates each year's return lacks."""
     ev_h = history_events()
     ev_n = load_events(NINE)
@@ -360,7 +360,7 @@ def stage_rows() -> None:
         f = _frame(st, y, rain.daily, lab_n if y in (2024, 2025) else lab_h)[KEEP_COLS].reset_index(drop=True)
         if y in D2_ROWS:
             assert len(f) == D2_ROWS[y], f"{y}: {len(f)} rows, not D2's {D2_ROWS[y]}"
-        if y == 2024:   # D2's own covariates beside this test's, for PR #239's layer 2
+        if y == 2024:   # D2's own covariates beside this test's, for train_nn.py's layer 2
             d2 = _frame(extra["d2_2024"], 2024, rain.daily, lab_n).reset_index(drop=True)
             assert (d2["site_id"].to_numpy() == f["site_id"].to_numpy()).all() and (d2["day"] == f["day"]).all()
             for c in D2_COV:
@@ -387,9 +387,9 @@ def load_rows(years=None) -> pd.DataFrame:
     return rows
 
 
-# ------------------------------------------------------------------ the network (PR #239's, imported)
+# ------------------------------------------------------------------ the network (train_nn.py's, imported)
 def _nn():
-    import train_nn  # PyTorch (the optional nn group): PR #239's network, fit and helpers
+    import train_nn  # PyTorch (the optional nn group): the network, its fit and helpers
     return train_nn
 
 
@@ -455,7 +455,7 @@ def stage_train() -> None:
     step(f"A24: {a24.clf.n_iter_} iterations")
     del t24
 
-    # (B): PR #239's network on the same rows.
+    # (B): train_nn.py's network on the same rows.
     rain = Rain.load(RAIN)
     rows, y, w, fit_idx, val_idx = training_rows(train)
     mean, std = nn.standardize(rows, fit_idx)
@@ -483,7 +483,7 @@ def stage_train() -> None:
     b.save(OUT / "B_layer2.pkl")
     step("B: layer 2")
 
-    # PR #239's networks: layer 2 refitted as PR #239 did, on D2's 2024 rows with D2's covariates.
+    # The networks train_nn.py trained: layer 2 refitted as it does, on D2's 2024 rows with D2's covariates.
     nets239, meta239 = load_nn239()
     d2_24 = train[train["year"] == 2024].copy()
     for c in D2_COV:

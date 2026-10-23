@@ -51,7 +51,7 @@ FOLDS = {"F24": (2023, 2024, THREE), "F25": (2024, 2025, NINE)}   # (training ye
 FORMS = ("A", "R2", "R1")
 RELATIVE = {"lta_spills": "log_lta_spills", "spill_hours": "log_spill_hours"}   # what R2 and R1 change
 CONTEXT = "CTX"   # A, with the judged rows' covariates from the training year's return
-PR259_2023 = {UU: 691_675, NW: 352_590, WX: 358_795}   # PR #259's 2023 site-days at the three companies
+PR259_2023 = {UU: 691_675, NW: 352_590, WX: 358_795}   # train_multi_year.py's 2023 site-days at the three companies
 D2_ROWS = {2024: 4_976_868, 2025: 5_077_150}
 D2_SHA = "1603678923cc"
 SHIFT_MIN = 0.25          # |spill-hours shift| from which question 1b predicts a sign
@@ -147,9 +147,9 @@ def with_form(frame: pd.DataFrame, form: str) -> pd.DataFrame:
 
 # ------------------------------------------------------------------ events and rain
 def history_events() -> pd.DataFrame:
-    """2023 events at the three companies, as PR #259 read them (docs/MULTI-YEAR-TEST-2026-10.md): Northumbrian
-    and Wessex from their own layers (PR #258), United Utilities from its Stream 2023 layer. December 2022 is
-    kept so that an event running over New Year labels the 2023 days it touches."""
+    """2023 events at the three companies, as train_multi_year.py reads them (docs/MULTI-YEAR-TEST-2026-10.md):
+    Northumbrian and Wessex from their own layers (import_stream_events.py), United Utilities from its Stream
+    2023 layer. December 2022 is kept so that an event running over New Year labels the 2023 days it touches."""
     p = config.PROCESSED
     uu = pd.read_parquet(p / "edm_events.parquet")
     parts = [
@@ -241,7 +241,7 @@ def stage_rows() -> None:
     del f, daily
     step("F25 rows saved")
 
-    # F24: PR #259's 2023 rows at the three companies, then D2's 2024 rows there; one rain series from Dec 2022.
+    # F24: train_multi_year.py's 2023 rows at the three companies, then D2's 2024 rows there; one rain series from Dec 2022.
     ev_h = history_events()
     s23, _ = site_years(ar, ev_h, THREE, 2023)
     checks["F24 2023 overflows with no id, dropped"] = int(s23["site_id"].isna().sum())
