@@ -1512,8 +1512,8 @@ const yesterdayLine = () => `Issued yesterday at ${new Date(DATA.generated_at).t
 // frozen feed would go on saying that. One missing from its company's live feed says so.
 const feedTime = iso => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 // When an overflow's last spill ended, in the page's own words for a date: "2 Oct", or "8 May 2025" from
-// another year; the map's pop-up adds the time. Not the locale's "02/10/2026, 14:33:00": every
-// other date on the page is written out.
+// another year; the map's pop-up adds the time. Written out, as every other date on the page is, not
+// as the locale's "02/10/2026, 14:33:00".
 const endedOn = (iso, time = false) => { const d = new Date(iso);
   return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', ...(d.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' }),
     ...(time ? { hour: '2-digit', minute: '2-digit' } : {}) }); };
@@ -1834,8 +1834,8 @@ function standing(d, iso) {
 // that, read as a whole, tells people to check for themselves owes them less (Patchett v SPATA [2009]).
 // The EA is the one source of advice against bathing that starts mid-season (after pollution, or
 // algae). The answer says, beside the level, that it could not be checked, and links to the rating
-// tile's "Today's EA advice" or the EA's page (unchecked): this line alone, under the five days, sat
-// below "Low risk" and "Usual care". Said once: a spot without the answer's line
+// tile's "Today's EA advice" or the EA's page (unchecked), since this line alone, under the five days,
+// comes after "Low risk" and "Usual care". Said once: a spot without the answer's line
 // keeps it here. Under a plain level the answer's own line already says to check the signs (OTHER_RISKS).
 const check = d => { const url = (d.classification || {}).url;
   // A point off the list (anypoint.js, source 'unlisted') may well be a bathing water: a click on Brighton
@@ -1845,7 +1845,8 @@ const check = d => { const url = (d.classification || {}).url;
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
     : eaUnchecked(d) ? ''
     : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`; };
-// A desk check of access (access.py), in a row of Not known here (unknowns). Its text says what was found and that permission is not confirmed.
+// A desk check of access (access.py), in a row of Not known here (unknowns). Its text says what was found and
+// that permission is not confirmed.
 const accessSaid = a => `${esc(a.text)}${/^https:\/\//.test(a.url || '') ? ` <a href="${esc(a.url)}">Authority guidance</a>.` : ''} Desk check ${esc(a.checked_at)}; current signs have not been inspected.`;
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
 function ratingHistory(cl) {
@@ -2215,8 +2216,8 @@ function riverTile(rs) {
 // The answer's words, which a picked day fills again (showDay): the level, why and when, where the week
 // goes, a long spill that may be a fault (it sets the level), the river's separate hazard, what the
 // forecast could and could not read (coverLine), and the issue time. Then the five days, straight under it:
-// a long introduction pushed them down. What to do and what the level counts follow the week, in its tile (answerAfter); a spot with no
-// five days (a failed forecast, an isolated lake) keeps what to do here.
+// a long introduction pushed them down. What to do and what the level counts follow the week, in its tile
+// (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
@@ -2597,8 +2598,9 @@ function mapSay(text, stay = false) {
   if (text && !stay) sayTimer = setTimeout(() => mapSay(''), SAY_MS);
 }
 const TAP = () => TOUCH ? 'Tap' : 'Click';
-// Until the first tap on the map, the same line says that any river or lake has a forecast. A tap on the map (anypoint.js, onMapClick) puts it away for good
-// on this device; with no storage it comes back on the next visit, which does no harm.
+// Until the first tap on the map, the same line says that any river or lake has a forecast. A tap on the map
+// (anypoint.js, onMapClick) puts it away for good on this device; with no storage it comes back on the next
+// visit, which does no harm.
 const TAPPED_KEY = 'dipcast.tapped';
 const mapTapped = () => { try { localStorage.setItem(TAPPED_KEY, '1'); } catch (e) { /* asked again next visit */ } };
 if (stored(TAPPED_KEY) !== '1') mapSay(`${TAP()} any river or lake for its forecast.`, true);
@@ -2704,8 +2706,8 @@ function freshness(spot = false) {
 }
 // What this update lacks, said once where it matters. On the list (list), the spots with no
 // rainfall data for today; the ones whose forecast failed are in the overview's count of spots without
-// a level, by their rows' words. On a spot's page (d), only that spot's own gap. Said apart, "1 of 105 spots
-// have no forecast in this build" sat on the list beside "3 without a level", and above every spot's name.
+// a level, by their rows' words. On a spot's page (d), only that spot's own gap. Said separately, a count
+// of spots with no forecast would sit on the list beside "3 without a level", and above every spot's name.
 function gaps(d, list) {
   const note = t => `<p class="small muted">${t}</p>`;
   if (d) return String(d.error || '').startsWith('forecast failed') ? note("This spot's forecast failed in this update, so it has no level.")
@@ -2810,7 +2812,8 @@ const listPath = s => spotPath(s.id) + (VIEW.day && daily(s) ? '#day=' + VIEW.da
 const dist = s => VIEW.here ? km(VIEW.here, [s.lat, s.lon]) : null;
 const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as in Plan a swim (DESIGN.md, Words)
 // No water-quality figure in a row. Out of season, as "E. coli estimate 43%†", it is untested and does
-// not set the level: a percentage with no unit, beside a level it does not count in. The spot's page keeps it, marked †, with its unit.
+// not set the level: a percentage with no unit, beside a level it does not count in. The spot's page keeps
+// it, marked †, with its unit.
 // Under a row's headline, what it cannot count, short: the overflows in Wales (levels.js, walesWords).
 const headNote = s => walesWords(s, true) ? `<span class="hl-note">${esc(walesWords(s, true))}</span>` : '';
 function spotItem(s) {
@@ -3463,11 +3466,12 @@ function planWhy(s, day) {
 }
 // How much evidence sits behind the row's level (evidence.js, evidenceCoverage), under the row's link since it
 // holds a link of its own: on a plan for today, a low level whose right now is not known; and whose overflows
-// these are, with how the live warnings have done at that company, from the Accuracy page's figures (data/verification.json), which the plan asks for once
-// (planLoadWarnings). Muted, the meta size: it qualifies the row, it is not another reason.
+// these are, with how the live warnings have done at that company, from the Accuracy page's figures
+// (data/verification.json), which the plan asks for once (planLoadWarnings). Muted, the meta size: it
+// qualifies the row, it is not another reason.
 // The company part most rows share, if two or more do, is said once under the count instead (planBasis, with
-// plan.js's planShared): the same sentence under all eight Oxford rows made them harder to compare. A row keeps its own company part only where it differs, and its
-// forecast-only part always.
+// plan.js's planShared): the same sentence under all eight Oxford rows made them harder to compare. A row
+// keeps its own company part only where it differs, and its forecast-only part always.
 let PLAN_WARNINGS = null, PLAN_SHARED = '';
 function planBasis(shown) {
   const { line, n, m } = planShared(shown.map(o => evidenceCompanyLine(o.s, PLAN_WARNINGS)));
@@ -3560,14 +3564,15 @@ function drawPlan(fit = false) {
   PLAN_BOUNDS = ring ? ring.getBounds() : L.latLngBounds([from, ...r.groups.flat().slice(0, 8).map(o => [o.s.lat, o.s.lon])]);
   if (fit && !PHONE.matches) fitPlan();
 }
-// Compare these spots ("which of these places should I look into further for Saturday?"): up to three of the plan's spots side by side over the five days, its day shaded
-// (compareSection), the first three shown until others are chosen (plan.js, planCompareIds), offered in the
-// plan's own groups. In the address while it is open, so a link opens on it, and a link that holds one is taken
-// to it (planCompareGo, set by renderPlan). Under the groups, as Saved's is under the cards: open, a phone's
-// comparison is about 2,800 px tall, and above the groups it pushed them out of reach. Found only there and
-// chosen in its selects, it was easy to miss, so the count says "Compare spots", which opens it and goes to it ("Go to the comparison" while it is open),
-// and while it is open each row has a Compare tick (.cmp-pick) that adds or removes that spot, the selects following.
-// Three ticked, the others wait until one is unticked.
+// Compare these spots ("which of these places should I look into further for Saturday?"): up to three of the
+// plan's spots side by side over the five days, its day shaded (compareSection), the first three shown until
+// others are chosen (plan.js, planCompareIds), offered in the plan's own groups. In the address while it is
+// open, so a link opens on it, and a link that holds one is taken to it (planCompareGo, set by renderPlan).
+// Under the groups, as Saved's is under the cards: open, a phone's comparison is about 2,800 px tall, and
+// above the groups it pushed them out of reach. Found only there and chosen in its selects, it was easy to
+// miss, so the count says "Compare spots", which opens it and goes to it ("Go to the comparison" while it is
+// open), and while it is open each row has a Compare tick (.cmp-pick) that adds or removes that spot, the
+// selects following. Three ticked, the others wait until one is unticked.
 let planCompareGo = false;
 const planCompareWord = open => open ? 'Go to the comparison' : 'Compare spots';
 const planPicks = ids => document.querySelectorAll('[data-compare-pick]').forEach(b => {
@@ -4127,7 +4132,8 @@ function render(d) {
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
     + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
   // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column:
-  // the map goes in a tile of its own, so the spot (or a clicked point) is still shown on it. A phone has its small map of where it is (where, .loc) already.
+  // the map goes in a tile of its own, so the spot (or a clicked point) is still shown on it. A phone has its
+  // small map of where it is (where, .loc) already.
   else h += `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
   h += tiles + `</div><div class="col-more">${more}`;
   if (d.contributors.length) h += overflowTile(d, total);
