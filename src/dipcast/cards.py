@@ -270,10 +270,6 @@ def storm_count(r: StormRow) -> str:
 
 
 # ------------------------------------------------------------------------------ captions
-def spot_url(root: str, sid: str) -> str:
-    return f"{root}spot/{sid}/" if re.fullmatch(r"[A-Za-z0-9_-]+", sid) else f"{root}?spot={quote(sid)}"
-
-
 def list_url(root: str, name: str, ids: list[str], day: str | None = None) -> str:
     """A shared list's link, as lists.js shareHash makes it: the spots open together on the Saved
     page, read only, on the day if it is still in the forecast."""

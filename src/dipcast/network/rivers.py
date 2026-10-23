@@ -180,11 +180,6 @@ class RiverNetwork:
 
     # ------------------------------------------------------------------ build
     @classmethod
-    def from_gpkg(cls, path: Path = config.RIVERS_GPKG, fix: bool = True) -> RiverNetwork:
-        log.info("reading %s ...", path)
-        return cls.from_links(gpd.read_file(path, layer="watercourse_link"), fix=fix)
-
-    @classmethod
     def from_links(cls, links: gpd.GeoDataFrame, fix: bool = True) -> RiverNetwork:
         """The network from OS Open Rivers' watercourse_link layer (or a small frame with the
         same columns, as the tests build)."""
@@ -351,10 +346,6 @@ class RiverNetwork:
                     if nb not in seen and nb in self.links.index and self.links.loc[nb, "form"] == "lake":
                         frontier.append(nb)
         return seen
-
-
-def load_network() -> RiverNetwork:
-    return RiverNetwork.load()
 
 
 if __name__ == "__main__":
