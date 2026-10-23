@@ -245,7 +245,10 @@ def test_the_bands_and_warning_lines_are_the_sites_own():
     cuts = lambda name: tuple(float(x) for x in re.search(rf"{name} = \[([^\]]+)\]", rules).group(1).split(","))
     assert E.SPILL_CUTS == cuts("SPILL_CUTS") and E.ECOLI_CUTS == cuts("ECOLI_CUTS")
     assert transport.LOW_CUT == E.SPILL_CUTS[0]
-    edges = [0.1499, 0.15, 0.3999, 0.40, 0.6999, 0.70]
+    # Away from the rounding edge. From 23 Oct 2026 the site's label goes by the score it shows, so from
+    # 0.1455 to 0.15 (and 0.395 to 0.40, 0.695 to 0.70) it takes the band above; the registered bands here
+    # are of overflow-day chances, which no page labels, and keep the cut itself.
+    edges = [0.144, 0.15, 0.394, 0.40, 0.694, 0.70]
     assert [transport.risk_label(x) for x in edges] == [E.BANDS[i] for i in E.band_index(edges, E.SPILL_CUTS)]
     assert list(E.band_index([0.0999, 0.10, 0.2499, 0.25, 0.4999, 0.50], E.ECOLI_CUTS)) == [0, 1, 1, 2, 2, 3]
     assert (E.SPILL_WARN_AT, E.ECOLI_WARN_AT) == (forecast_log.SPILL_WARN_AT, forecast_log.ECOLI_WARN_AT)

@@ -30,7 +30,8 @@ def _mask(hours):
 def test_the_warning_lines_are_the_sites_own_high_risk_lines():
     from dipcast import forecast_log as fl
     from dipcast.model.transport import risk_label
-    assert risk_label(fl.SPILL_WARN_AT) == "high" and risk_label(fl.SPILL_WARN_AT - 1e-9) == "moderate"
+    # The label goes by the score shown (23 Oct 2026): 0.396 shows as 40, high; 0.394 as 39.
+    assert risk_label(fl.SPILL_WARN_AT) == "high" and risk_label(fl.SPILL_WARN_AT - 0.006) == "moderate"
     levels = (ROOT / "src/dipcast/site/levels.js").read_text()
     cuts = lambda name: [float(x) for x in re.search(rf"{name} = \[([^\]]+)\]", levels).group(1).split(",")]
     assert cuts("SPILL_CUTS")[1] == fl.SPILL_WARN_AT     # moderate | high
