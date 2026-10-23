@@ -49,32 +49,62 @@ def path(cache: Path, cell: tuple[float, float], year: int) -> Path:
     return cache / f"weather_leads_{cell_key(*cell)}_{year}.parquet"
 
 
+def _spans(start: pd.Timestamp, end: pd.Timestamp, freq: str) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+    edges = list(pd.date_range(start, end, freq=freq)) or [start]
+    if edges[0] != start:
+        edges = [start, *edges]
+    return [(a, min(b - pd.Timedelta(days=1), end)) for a, b in zip(edges, [*edges[1:], end + pd.Timedelta(days=1)], strict=True)]
+
+
 def fetch(out_dir: str) -> None:
+    """By quarter, not by year: on 23 Oct 2026 the API answered a year of 2023 shortwave_radiation with
+    "timeoutReached" (a 200 whose body is not JSON), while a quarter for four cells came back whole in 4 s.
+    A quarter that still fails is asked for again month by month. The cost is about the same: a quarter of
+    2 variables weighs 0.2 x 92 / 14 = 1.3 per cell, against 5.2 for a year."""
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     cs = cells()
-    spent, requests = 0.0, 0
+    spent, requests, bad = 0.0, 0, 0
     last = pd.Timestamp.now("UTC").tz_localize(None).normalize() - pd.Timedelta(days=2)
+
+    def ask(chunk, a, b) -> list[dict]:
+        nonlocal spent, requests
+        params = {"latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
+                  "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
+                  "start_date": a.strftime("%Y-%m-%d"), "end_date": b.strftime("%Y-%m-%d"),
+                  "hourly": ",".join(VARS), "timezone": "UTC"}
+        requests += 1
+        spent += rainfall.call_weight(len(chunk), (b - a).days + 1, len(VARS))   # a bad body is counted too
+        res = rainfall._request(PREVIOUS_RUNS, params, retry_429=False)          # raises at a refusal: stop
+        time.sleep(1.0)
+        return res if isinstance(res, list) else [res]
+
     for year in YEARS:
         todo = [c for c in cs if not path(out, c, year).exists()]
         end = min(pd.Timestamp(f"{year}-12-31"), last)
-        days = (end - pd.Timestamp(f"{year}-01-01")).days + 1
         for i in range(0, len(todo), BATCH):
             chunk = todo[i:i + BATCH]
-            params = {"latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
-                      "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
-                      "start_date": f"{year}-01-01", "end_date": end.strftime("%Y-%m-%d"),
-                      "hourly": ",".join(VARS), "timezone": "UTC"}
-            res = rainfall._request(PREVIOUS_RUNS, params, retry_429=False)   # raises at a refusal: stop
-            requests += 1
-            spent += rainfall.call_weight(len(chunk), days, len(VARS))
-            for c, r in zip(chunk, res if isinstance(res, list) else [res], strict=True):
-                h = r["hourly"]
-                df = pd.DataFrame({"cell_lat": c[0], "cell_lon": c[1], "time": pd.to_datetime(h["time"], utc=True),
-                                   **{v: np.asarray(h[v], dtype=float) for v in VARS}})
-                df.to_parquet(path(out, c, year), index=False)
+            parts: list[list[pd.DataFrame]] = [[] for _ in chunk]
+            for a, b in _spans(pd.Timestamp(f"{year}-01-01"), end, "QS"):
+                try:
+                    pieces = [[r] for r in ask(chunk, a, b)]
+                except rainfall.OpenMeteoBadBody:
+                    bad += 1
+                    log.warning("%s..%s: not JSON; asking month by month", a.date(), b.date())
+                    pieces = [[] for _ in chunk]
+                    for ma, mb in _spans(a, b, "MS"):
+                        for j, r in enumerate(ask(chunk, ma, mb)):
+                            pieces[j].append(r)
+                for j, rs in enumerate(pieces):
+                    for r in rs:
+                        h = r["hourly"]
+                        parts[j].append(pd.DataFrame({"cell_lat": chunk[j][0], "cell_lon": chunk[j][1],
+                                                      "time": pd.to_datetime(h["time"], utc=True),
+                                                      **{v: np.asarray(h[v], dtype=float) for v in VARS}}))
+            for c, ps in zip(chunk, parts, strict=True):
+                pd.concat(ps, ignore_index=True).drop_duplicates("time").sort_values("time").to_parquet(
+                    path(out, c, year), index=False)
             log.info("%d: %d/%d cells, %.1f calls so far", year, min(i + BATCH, len(todo)), len(todo), spent)
-            time.sleep(1.0)
-    print(json.dumps({"cells": len(cs), "years": list(YEARS), "requests": requests, "calls_by_open_meteo_rule": round(spent, 1),
+    print(json.dumps({"cells": len(cs), "years": list(YEARS), "requests": requests, "not_json": bad, "calls_by_open_meteo_rule": round(spent, 1),
                       "requests_made_by_host": rainfall.requests_made()}))
 
 
