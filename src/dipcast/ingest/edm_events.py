@@ -152,7 +152,7 @@ def fetch_hd_events(refresh: bool = False) -> pd.DataFrame:
                         out_fields=OUT_FIELDS.removesuffix(",ReceivingWatercourse"))
 
 
-# Other companies' event histories (config.EDM_HISTORY_FEEDS; review task D3), never in edm_events.parquet.
+# Other companies' event histories (config.EDM_HISTORY_FEEDS), never in edm_events.parquet.
 # Each layer names its fields its own way; the object id is kept so a read can be checked for repeats.
 # Northumbrian Water's layer has no site name or watercourse, and its times are text (dmy_times).
 # South West Water's eventVerified is "TRUE" on every row and Wessex Water's EventVerified is empty on

@@ -220,10 +220,9 @@ def grid_cell(lat: float | np.ndarray, lon: float | np.ndarray) -> tuple:
 
 
 def cell_key(cell_lat: float, cell_lon: float) -> str:
-    """The cache name of a cell. -0.0 and 0.0 are the same cell and get the same name: "-0.000"
-    and "0.000" were two names for one file, so a cell the prefetch had saved under one was
-    fetched again under the other. That second request failed River Great Ouse, Overcote
-    (lon -0.004) in most scheduled builds from 3 to 6 Oct 2026."""
+    """The cache name of a cell. -0.0 and 0.0 are the same cell and get the same name, so a cell
+    the prefetch saved under "-0.000" is not fetched again under "0.000" (River Great Ouse,
+    Overcote, lon -0.004, is in one)."""
     return f"{cell_lat + 0.0:.3f}_{cell_lon + 0.0:.3f}"
 
 
@@ -308,7 +307,7 @@ def _request(url: str, params: dict, timeout: float = 120, attempts: int = 5,
 
 def requests_made() -> dict:
     """The Open-Meteo requests this process has sent, retries included: {"total", "by_host": {host: n}}.
-    The build log shows it (D4's acceptance: under 40 a build)."""
+    The build log shows it, so a build that asks for more than 40 stands out."""
     return {"total": sum(_requests.values()), "by_host": dict(sorted(_requests.items()))}
 
 
@@ -477,8 +476,8 @@ def fetch_forecast(cells: list[tuple[float, float]],
                 "past_days": past_days,
                 # One UTC day more than the local days shown. In summer time, from 23:00 UTC the
                 # local date is a day ahead of the UTC one, so the fifth local day ends an hour into
-                # a UTC day not asked for. With forecast_days alone it had one hour of rain, and every
-                # build issued from 23:00 to 00:00 UTC showed no figure for it (16 Sep-12 Oct 2026).
+                # a UTC day not asked for. With forecast_days alone that day has one hour of rain, and a
+                # build issued from 23:00 to 00:00 UTC shows no figure for it.
                 "forecast_days": forecast_days + 1,
                 "timezone": "UTC",
             }
@@ -517,7 +516,7 @@ def fetch_forecast(cells: list[tuple[float, float]],
 
 
 # ------------------------------------------------------------------ ensemble
-# Review task D4 (docs/ENSEMBLE-RAIN-TEST-2026-11.md). Open-Meteo weighs an ensemble request by its variables
+# The ensemble members (docs/ENSEMBLE-RAIN-TEST-2026-11.md). Open-Meteo weighs an ensemble request by its variables
 # times the model's members (ForecastapiController.swift, 13 Oct 2026), so one variable from three members
 # over six days is max(1, 0.3, 0.3 x 6/14) = 1 call a cell, as a forecast cell is. The 332 spot cells are
 # 7 requests and 332 calls a refresh. Three rules keep that out of the way of everything else:

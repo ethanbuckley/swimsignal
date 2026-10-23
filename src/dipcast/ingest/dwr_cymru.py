@@ -1,4 +1,4 @@
-"""Dŵr Cymru Welsh Water's live overflow layer (Wales plan, task W5). Off by default.
+"""Dŵr Cymru Welsh Water's live overflow layer (docs/WALES-PLAN-2026-10.md). Off by default.
 
 Off unless DIPCAST_DWR_CYMRU=1 (config.DWR_CYMRU). The layer has no licence, and Dŵr Cymru's site
 asks for written permission before reuse (Wales plan, sections 2.1 and 2.2). So while the setting is
@@ -9,11 +9,9 @@ it on only after Dŵr Cymru agrees. Even then this module writes only its own tw
   dwr_cymru_history.parquet  one row per discharge, keyed by (site_id, latest_event_start)
 
 site.yml publishes a fixed list of state files to the public `state` release, and these two are not
-on it (a test checks). Feeding Dŵr Cymru's rows to the map is task W6, which starts with its 140
-overflows in England.
+on it (a test checks). Nothing here feeds the map.
 
-The layer (checked, plain requests on 4 Oct 2026; Wales plan 2.1 at 15:05 UTC, and again for this
-module at 18:26 UTC): `Spill_Prod__view`, the layer Dŵr Cymru's map draws. Two pages of at most 2,000
+The layer (checked on 4 Oct 2026): `Spill_Prod__view`, the layer Dŵr Cymru's map draws. Two pages of at most 2,000
 rows (2,362 rows, one per `GlobalID`), no asset id field. Status is text. One discharge per overflow:
 start and stop as text with no time zone ("2026-10-04T10:15:00"), duration in hours as text. Each
 row has an `EditDate`, but the plan found it marks a change, not a check, so it is kept
@@ -35,10 +33,10 @@ may be frozen is. Its last discharge and its times are kept, so the row can show
 <time>". It is never read as "not discharging". This is the one row type with status -1 and data
 state stale; England has none.
 
-Times. The layer gives none a zone. *Inferred* UK local time, from the plan's check and mine: at
-18:26 UTC on 4 Oct 2026 the 11 open discharges' start plus duration ran to 17:19-17:21, which is
-about 16:20 UTC, 2 minutes before the layer's last data edit (16:22:25 UTC). Read as UTC they would end after
-it. Question 8.1.5 asks Dŵr Cymru. In the hour the clocks go back, a local time happens twice: a
+Times. The layer gives none a zone. *Inferred* UK local time: at 18:26 UTC on 4 Oct 2026 the 11
+open discharges' start plus duration ran to 17:19-17:21, which is about 16:20 UTC, 2 minutes before
+the layer's last data edit (16:22:25 UTC). Read as UTC they would end after it. Question 8.1.5 asks
+Dŵr Cymru. In the hour the clocks go back, a local time happens twice: a
 start is read as the earlier of the two and a stop as the later, so a discharge is never shortened.
 A time in the hour the clocks go forward does not exist and is moved to the end of the gap. A time
 that does carry a zone (none on 4 Oct 2026) is read with it.
@@ -67,7 +65,7 @@ from dipcast.ingest.live import LOCAL_TZ, STALE, data_states
 
 log = logging.getLogger(__name__)
 
-COMPANY = "Dwr Cymru Welsh Water"   # the Environment Agency's spelling in annual_returns.parquet, for W6
+COMPANY = "Dwr Cymru Welsh Water"   # the Environment Agency's spelling in annual_returns.parquet
 LATEST_FILE = "dwr_cymru_latest.parquet"
 HISTORY_FILE = "dwr_cymru_history.parquet"
 UNDER_INVESTIGATION = "Under Investigation"
@@ -135,8 +133,8 @@ def parse(rows: list[dict], fetched_at: pd.Timestamp, layer_edited_at: pd.Timest
         "duration_7d_h": pd.to_numeric(raw["discharge_duration_last_7_daysH"], errors="coerce"),
         "lat": pd.to_numeric(raw["_y"], errors="coerce"),
         "lon": pd.to_numeric(raw["_x"], errors="coerce"),
-        "easting": pd.to_numeric(raw["discharge_x_location"], errors="coerce"),    # outlet, BNG; W2 and W6
-        "northing": pd.to_numeric(raw["discharge_y_location"], errors="coerce"),   # match by it
+        "easting": pd.to_numeric(raw["discharge_x_location"], errors="coerce"),    # outlet, BNG; the annual
+        "northing": pd.to_numeric(raw["discharge_y_location"], errors="coerce"),   # returns match by it
         "receiving_watercourse": _text(raw["Receiving_Water"]),
         "bathing_water": _text(raw["Linked_Bathing_Water"]),
         "row_edited_at": pd.to_datetime(pd.to_numeric(raw["EditDate"], errors="coerce"), unit="ms", utc=True),

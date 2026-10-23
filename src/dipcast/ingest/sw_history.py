@@ -1,4 +1,4 @@
-"""Scottish Water's published overflow event history, one row per event (Scotland plan task S1).
+"""Scottish Water's published overflow event history, one row per event.
 
 Two spreadsheets from Scottish Water's document hub, both under the Open Government Licence v3.0:
 
@@ -324,7 +324,7 @@ def load(paths: dict[str, Path]) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
 
 
 def report(ev: pd.DataFrame, yr: pd.DataFrame, rows: pd.DataFrame, api_ids: set[str] | None = None) -> pd.DataFrame:
-    """Overflows and events by workbook and year: the numbers the S1 PR reports. Short events are
+    """Overflows and events by workbook and year. Short events are
     counted on the published duration (computed where none is published)."""
     dur = ev["duration_published_h"].fillna(ev["duration_h"]) * 3600
     ev = ev.assign(short=dur.round() <= SHORT_S, day=ev["event_end"].isna())
