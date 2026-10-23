@@ -231,4 +231,141 @@ Whatever the verdict:
 
 ## Results
 
-Not yet run.
+Added 23 October 2026, after the run. Everything above the line is as committed in 58a389c (23 October 2026, 09:40
+BST) and pushed before any weather was fetched. The harness came in 2cf2eef (10:05) and the fetch change in 37e539c,
+both before the fetch. Neither changed anything above the line.
+
+**Verdict: both questions fail. Nothing is adopted.** Question 1 fails condition 1. Question 2 fails conditions 1, 3
+and 4. This PR is a record: this file, the harness, the fetch script, and the transport additions at their defaults
+(`keep_parts=False`, no `weather_decay` call anywhere in the site).
+
+### How it was run
+
+- **The fetch.** 32 cells, 2023-01-01 to 2026-10-21, 128 requests, 657.8 calls by Open-Meteo's rule. Every hour has
+  both variables (0 missing in any year). The first attempt asked for whole years and stopped at its first request:
+  the API answered a year of 2023 `shortwave_radiation` with "timeoutReached", a 200 whose body is not JSON. Nothing
+  was saved. A few single-cell requests then found that a quarter works (one cell for 2024 also worked as a whole
+  year). With the failed request and those checks, the fetch cost about 710 calls, against about 670 stated. The cache
+  hashes to `a43ef06e` (SHA-256 of the per-file SHA-256 list).
+- **The run.** From an archive of 37e539c, offline, 10:12:50 to 10:20:03 BST. `memory_pressure` read 47% free and
+  nothing else ran. 0 network attempts in all seven steps. Peak memory 3.7 GB (`replay_ecoli_leads`).
+- **The data folder: one deviation.** The transport tests' overflow table (`e6ef0459`) is no longer on this machine.
+  This run used the table another session built on 22 October on the same network (`b5724303`): `ebc96774`, 14,630
+  overflows against 14,631. The other inputs match the transport tests': network `fc66101d`, `bwq_samples.parquet`
+  `26f5f646`, `network_fixes.csv` `7ff7af1a`, `spill_model.pkl` `faa7917e`, `lead_calibration.json` `734202bc`,
+  `lakes.parquet` `f54113b7`, 3,658 rain files. Tracked files of `data/raw` and `data/processed` are main bfe47f2's.
+  Every comparison is between two arms run in the same root, so the conditions do not depend on this. But the
+  reference figures differ a little from the published ones: `train_ecoli` LOYO Brier 0.0921 here against 0.0919,
+  LOSO 0.0912 against 0.0909, forward 0.0824 against 0.0823; river within-site Spearman 0.4719 against 0.4706.
+- **Season means** from the weather alone, May to September 2023–26, all 32 cells: Ī = 169.7 W/m², T̄ = 15.6 °C.
+
+### Face checks. All hold.
+
+- **Question 1.** The `const` column equals `validate_ecoli.py`'s `risk_model`, run in the same root, on all 2,165
+  rows: largest difference 3.3e-16, missing on the same rows (0 mismatches), none unmatched. The weather path at
+  s = 0, θ = 1 equals `upstream_overflows`' decay to 1.1e-16 (this is `10^(−travel_h / 72)` where no residence lake is
+  on the way, and that times `lake_pass` where one is). Its risk equals `const` to 2.2e-16. The numpy rewrite equals
+  `transport.combine_daily` (with fixed and with by-day weights) and `missing_share`: largest difference 0.0.
+- **Question 2.** Its reference arm gives `train_ecoli.py`'s own scores in the same root: LOYO 0.0921, LOSO 0.0912,
+  forward 0.0824, on the same 1,502 rows.
+- **Rows.** No row was dropped for missing weather in either question. Question 1 scored all 1,685 samples with
+  overflows upstream (rivers 947 at 20 waters, lakes 738 at 11). Question 2 scored all 1,502 of `train_ecoli`'s rows
+  (212 over 900).
+
+### Question 1: die-off on the way. Fails condition 1.
+
+Leave one year out, rivers:
+
+| held-out year | samples | pick (from the other three years) | its score on them | held-out rho, pick | held-out rho, reference |
+|---|---|---|---|---|---|
+| 2023 | 40 | s 0.75, θ 1.07 | 0.478 | 0.624 | 0.616 |
+| 2024 | 290 | s 0.75, θ 1.07 | 0.480 | 0.456 | 0.440 |
+| 2025 | 281 | s 0.75, θ 1.07 | 0.464 | 0.550 | 0.545 |
+| 2026 | 336 | s 0, θ 1.07 | 0.508 | 0.380 | 0.377 |
+
+Pooled held-out rows; change is pick minus reference, with its 95% calendar-week cluster bootstrap interval:
+
+| measure | n | weeks | pick | reference | change [95% CI] |
+|---|---|---|---|---|---|
+| Rivers, within-site rho | 947 | 83 | 0.4799 | 0.4733 | +0.0066 [−0.0011, +0.0157] |
+| Rivers, AUC over 900 (202 over) | 947 | 83 | 0.7744 | 0.7672 | +0.0072 [+0.0032, +0.0110] |
+| Lakes, within-site rho, river picks | 738 | 79 | 0.2954 | 0.3044 | −0.0090 [−0.0189, +0.0085] |
+| Lakes, AUC over 900 (16 over), river picks; reported only | 738 | 79 | 0.6101 | 0.6131 | −0.0029 [−0.0185, +0.0149] |
+| All, within-site rho; reported only | 1,685 | 85 | 0.3825 | 0.3813 | +0.0012 [−0.0032, +0.0110] |
+
+1. Rivers, rho: +0.0066, but the lower end of the interval is −0.0011, not above zero. **Fails.**
+2. Rivers, AUC: +0.0072, at least −0.005; upper end +0.0110, above zero. **Holds.**
+3. Lakes, rho: −0.0090, at least −0.02; upper end +0.0085, above zero. **Holds.**
+4. Face check. **Holds** (above).
+
+In-sample within-site rho (and AUC over 900) on all four years. Rows s, columns θ. The reference is s 0, θ 1.
+
+Rivers:
+
+| s | θ 1.00 | θ 1.04 | θ 1.07 |
+|---|---|---|---|
+| 0 | *0.472* (0.767) | 0.477 (0.770) | 0.479 (0.772) |
+| 0.25 | 0.476 (0.770) | 0.480 (0.772) | 0.482 (0.774) |
+| 0.5 | 0.479 (0.772) | 0.481 (0.773) | 0.482 (0.774) |
+| 0.75 | 0.483 (0.774) | 0.483 (0.774) | **0.484** (0.775) |
+
+Lakes:
+
+| s | θ 1.00 | θ 1.04 | θ 1.07 |
+|---|---|---|---|
+| 0 | **0.290** (0.613) | 0.279 (0.612) | 0.272 (0.611) |
+| 0.25 | 0.289 (0.613) | 0.282 (0.611) | 0.276 (0.610) |
+| 0.5 | 0.285 (0.612) | 0.281 (0.610) | 0.277 (0.610) |
+| 0.75 | 0.283 (0.610) | 0.280 (0.609) | 0.278 (0.609) |
+
+**Lake-only selection, for the record:** the reference (s 0, θ 1) in every year.
+
+### Question 2: the E. coli model at the spot. Fails conditions 1, 3 and 4.
+
+| held-out Brier | today's 7 inputs | plus sun24 and temp48 | change |
+|---|---|---|---|
+| Leave one year out, all (1,502) | 0.09215 | 0.09360 | +0.00145 |
+| Leave one year out, rivers (907) | 0.13537 | 0.13779 | +0.00242 |
+| Leave one year out, lakes (595) | 0.02625 | 0.02624 | −0.00001 |
+| Leave one site out, all | 0.09119 | 0.09154 | +0.00035 |
+| Forward, 2024 to 2025–26 (997) | 0.08240 | 0.08570 | +0.00330 |
+
+LOYO AUC falls from 0.816 to 0.812. The site-week cluster bootstrap of the LOYO gain (reference minus new) is
+−0.00145 [−0.00234, −0.00060]; on rivers −0.00242 [−0.00384, −0.00106]. Both intervals lie wholly below zero: the
+two inputs make held-out predictions worse.
+
+1. LOYO gain at least 0.0005 with the interval above zero: the gain is −0.00145. **Fails.**
+2. LOSO no worse by more than 0.0005: +0.00035. **Holds.**
+3. Forward no worse by more than 0.0005: +0.00330. **Fails.**
+4. Rivers and lakes no worse by more than 0.0005: rivers +0.00242. **Fails.**
+5. sun24's coefficient below zero: −0.114 per SD. **Holds.** temp48's is −0.027.
+
+The inputs over the 1,502 samples: sun24 mean 175 W/m² (SD 75, 19 to 334); temp48 mean 15.5 °C (SD 3.8, 4.4 to 27.7).
+sun24 correlates −0.56 with the 48-hour rain term.
+
+### What this shows
+
+Established:
+- Neither weather input improves the model by the stated rules. Question 2's inputs make held-out predictions worse,
+  with intervals that exclude zero, most on rivers and in the forward test.
+- In Question 1, every river fold but one picked the strongest weather setting tried (s 0.75, θ 1.07). River rho and
+  AUC rise steadily toward that corner of the grid. The held-out AUC gain (+0.0072) has an interval above zero; the
+  rho gain (+0.0066) does not, and rho is the deciding score.
+- On lakes, more weather in the die-off rate does worse, at every setting.
+- Sunlight's coefficient has the die-off sign, but it is small (−0.114 per SD against 0.65 for 48-hour rain).
+
+Inferred, not tested:
+- Sunny days are dry days (correlation −0.56). Much of what sunlight could tell the model, rain already tells it. What
+  is left is too small to beat the extra noise of two more fitted terms on 212 exceedances.
+- Question 1's small river gain may come from day-to-day weather changing which days a spill arrives at full
+  strength, or from temperature standing in for flow (warm spells are low-flow spells). The test cannot tell these
+  apart.
+- Water temperature and turbidity were not measured. A better stand-in than air temperature, or a turbidity
+  measure, could change the answer. Nothing here tests that.
+
+Not licensed by this test: a wider grid past s 0.75 or θ 1.07. The pick sits at a corner, as in the transport fit.
+Looking further would need its own test, stated before it runs.
+
+### What follows
+
+As stated for a failure: nothing changes in the model or on the site. The transport additions stay at their defaults.
