@@ -876,7 +876,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         # metres to there (through the water, else the straight line), as transport.down_lake_m measures them.
         out_xy = transport.lake_outlet_xy(net, set(comp)) if comp else None
 
-        def to_outlet(x: float, y: float) -> float:
+        def to_outlet(x: float, y: float, water=water, out_xy=out_xy) -> float:
             d = lake_water.water_distance(water, x, y, *out_xy) if water is not None else math.inf
             return d if math.isfinite(d) else math.hypot(x - out_xy[0], y - out_xy[1])
 
