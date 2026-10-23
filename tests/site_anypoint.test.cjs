@@ -349,6 +349,23 @@ test('in lake distance "water" a lake click goes round the bend, as the API does
   assert.ok(rows >= 8 && longer >= 3, `${rows} rows, ${longer} round the bend`);
 });
 
+// Lake direction "down" (docs/LAKE-DIRECTION-TEST-2026-10.md): the page leaves out the inlets the API leaves out, from
+// lakes.json's outlet and each inlet's metres to it (tests/test_anypoint_water.py, clicks_down).
+test('in lake direction "down" a lake click leaves out water entering down the lake, as the API does', () => {
+  const W = fixture('anypoint_water.json'), files = filesOf(W);
+  const od = { ...files.od, assumptions: { ...files.od.assumptions, lake_direction: 'down', lake_down_margin_m: W.down_margin_m } };
+  const place = placeIn({ ...files, od, waters: W.files.waters });
+  for (const c of W.clicks_down) {
+    const got = place(c);
+    assert.deepEqual([...new Set(got.rows.map(r => W.files.ids[r.i]))].sort(), c.rows.map(r => r.site_id).sort(), c.what);
+  }
+  // With the default, "any", the head of the first arm keeps both; so does "down" without the lake's water file,
+  // whose metres to the outlet are through the water.
+  const head = W.clicks_down.find(c => c.what === 'at the head of the first arm');
+  assert.equal(new Set(placeIn({ ...files, waters: W.files.waters })(head).rows.map(r => r.i)).size, 2);
+  assert.equal(new Set(placeIn({ ...files, od, waters: {} })(head).rows.map(r => r.i)).size, 2);
+});
+
 // What point() does first: place the click without the water, read which lake it is on, and fetch that lake's
 // lake_water/<n>.json only if lakes.json says it has one. Without the file the page keeps the straight line.
 test('a lake click says which lake it is on, and without its water file keeps the straight line', () => {

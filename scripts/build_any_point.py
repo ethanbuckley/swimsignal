@@ -872,6 +872,14 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         water = transport.links_water(net, comp) if config.LAKE_DISTANCE_MODE == "water" and comp else None
         far_via = 0.0
         inlets, ways = [], []
+        # Lake direction (docs/LAKE-DIRECTION-TEST-2026-10.md): where the lake's water leaves it, and each inlet's
+        # metres to there (through the water, else the straight line), as transport.down_lake_m measures them.
+        out_xy = transport.lake_outlet_xy(net, set(comp)) if comp else None
+
+        def to_outlet(x: float, y: float) -> float:
+            d = lake_water.water_distance(water, x, y, *out_xy) if water is not None else math.inf
+            return d if math.isfinite(d) else math.hypot(x - out_xy[0], y - out_xy[1])
+
         for (a, b), g in r.groupby(["lon", "lat"], sort=True):
             flat, cross, mix = [], [], []
             for s, d, w, m, f, rm, hh, ps in zip(g["site_id"], g["distance_m"], g["dilution"], g["lake_m"], g["factor"],
@@ -889,7 +897,9 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
                        *[round(float(v)) if np.isfinite(v) else -1 for v in via]]
                 far_via = max(far_via, float(np.max(via[np.isfinite(via)], initial=0.0)))
             ways.append(way)
-            inlets.append({"at": [float(a), float(b)], "o": flat, **({"k": cross} if cross else {}), **({"h": mix} if mix else {})})
+            dn = {"dn": round(to_outlet(float(g["entry_x"].iloc[0]), float(g["entry_y"].iloc[0])))} if out_xy else {}
+            inlets.append({"at": [float(a), float(b)], "o": flat, **({"k": cross} if cross else {}), **({"h": mix} if mix else {}),
+                           **dn})
         # The furthest a click in this lake can be from an inlet: across the lake's box, plus the
         # shore rule (WFD lakes) or the snap radius (centreline lakes). It sets how many past days
         # of spill probabilities the page may need (transport.history_days).
@@ -911,10 +921,19 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         if k.startswith("c"):
             own = [own_name[j] for j in sorted(links.index.get_indexer(list(comp)))]
             name = next((n for n in own if isinstance(n, str) and n), None)
-        lakes_json.append({"id": k, "name": name, "inlets": inlets, **({"water": True} if water is not None else {})})
+        outlet, out_way = {}, {}
+        if out_xy:
+            (olon,), (olat,) = _to_lonlat(np.array([out_xy[0]]), np.array([out_xy[1]]))
+            outlet = {"out": [round(float(olon), 6), round(float(olat), 6)]}
+            if water is not None:
+                px, py, leg, via = lake_water.from_point(water, *out_xy)
+                (plon,), (plat,) = _to_lonlat(np.array([px]), np.array([py]))
+                out_way = {"outlet": [round(float(plon), 6), round(float(plat), 6), round(leg, 1),
+                                      *[round(float(v)) if np.isfinite(v) else -1 for v in via]]}
+        lakes_json.append({"id": k, "name": name, "inlets": inlets, **({"water": True} if water is not None else {}), **outlet})
         if water is not None:
             (out / "lake_water" / f"{lake_pos[k]}.json").write_text(json.dumps(
-                {"ids": idv, **_water_json(water), "ways": ways}, separators=(",", ":")))
+                {"ids": idv, **_water_json(water), "ways": ways, **out_way}, separators=(",", ":")))
     # WFD lake outlines (exterior rings: no island has a point more than 150 m from its water). lakes.json has
     # them simplified to LAKE_SIMPLIFY_M, with err, the most they are off by; lake_outlines/<n>.json has the real ones.
     def rings_of(g, dp: int) -> list:
@@ -1110,6 +1129,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,
                         "recent_spill_hours": config.RECENT_SPILL_HOURS, "l0_m": L0_M, "dilution_power": transport.DILUTION_POWER,
                         "lake_area_halving_km2": LAKE_A0_KM2,
+                        "lake_direction": config.LAKE_DIRECTION_MODE, "lake_down_margin_m": transport.LAKE_DOWN_MARGIN_M,
                         "low_confidence_factor": LOW_CONFIDENCE_FACTOR, "max_missing_share": 0.1,
                         "rain_max_age_h": RAIN_MAX_AGE_H},
         "note": ("p: per overflow, spill probability per day in thousandths, before the lead calibration; null where "

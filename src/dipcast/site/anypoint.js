@@ -150,8 +150,7 @@ const AnyPoint = (() => {
     const inWater = inside.reduce((odd, r, k) => odd !== inRing(at[1], at[0], water.inside[k]), false);
     const near = inWater ? { d: 0, x: 0, y: 0 } : nearestPoint(local(water.shore)), q = [near.x, near.y];
     const seen = corners.map(c => !crossesAny(q, c, inside));
-    return j => {
-      const w = (water.ways || [])[j];
+    const along = w => {
       if (!w) return null;
       const a = xy(w[1], w[0]);
       if (!crossesAny(a, q, inside)) return w[2] + Math.hypot(a[0] - q[0], a[1] - q[1]) + near.d;
@@ -162,14 +161,27 @@ const AnyPoint = (() => {
       });
       return Number.isFinite(best) ? best + near.d : null;
     };
+    const way = j => along((water.ways || [])[j]);
+    way.outlet = () => along(water.outlet);   // lake direction: the click's metres to the outlet
+    return way;
   }
   // A lake's inlets (lakes.json) for a click: the distance to the inlet, then the straight line
   // across (or the way through the water, waterWay); a WFD lake's area divides the dilution by
   // 1 + area / 5 km2. Another WFD lake crossed before the inlet moves its metres to the lake distance
   // and multiplies the dilution by its factor. `p` as in rowsAt.
-  function lakeRows(lake, at, area, a0, water = null, p = 1) {
+  // `down` (lake direction "down", docs/LAKE-DIRECTION-TEST-2026-10.md): the margin in metres. An inlet whose
+  // water enters more than that nearer the lake's outlet than the click (inlet.dn, the click's own metres to
+  // lake.out, through the water where the lake has it) is down the lake, and its overflows do not count.
+  function lakeRows(lake, at, area, a0, water = null, p = 1, down = null) {
     const out = [], xy = frame(at[0], at[1]), div = area ? 1 + area / a0 : 1, way = waterWay(water, at, xy);
+    let toOut = null;
+    // inlet.dn is through the water where the lake has it; without its water file the rule is not applied.
+    if (down !== null && lake.out && (!lake.water || way)) {
+      const [ox, oy] = xy(lake.out[1], lake.out[0]);
+      toOut = (way && way.outlet()) ?? Math.hypot(ox, oy);
+    }
     for (const [j, inlet] of lake.inlets.entries()) {
+      if (toOut !== null && inlet.dn !== undefined && toOut - inlet.dn > down) continue;
       const [x, y] = xy(inlet.at[1], inlet.at[0]), path = crossings(inlet.k), mixed = holds(inlet.h);
       const across = (way && way(j)) ?? Math.hypot(x, y);
       for (let k = 0; k < inlet.o.length; k += 3) {
@@ -502,7 +514,8 @@ const AnyPoint = (() => {
     if (p && (p.lake !== -1 || link)) {
       const entry = link && tiles[link.tile].links[String(link.lno)];
       const lake = !link ? p.lake : entry && entry.lake !== undefined ? entry.lake : null;
-      return { mode: 'lake', kind: 'lake', name: p.name || 'Unnamed lake', rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, waters[lake], a.dilution_power ?? 1),
+      return { mode: 'lake', kind: 'lake', name: p.name || 'Unnamed lake', rows: lake === null ? [] : lakeRows(lakes.lakes[lake], [lat, lon], p.area_km2, a.lake_area_halving_km2, waters[lake], a.dilution_power ?? 1,
+        a.lake_direction === 'down' ? a.lake_down_margin_m : null),
         ...(link ? { link } : {}), ...(lake === null ? {} : { lake }),
         location: { mode: 'lake', watercourse: p.name, lake_area_km2: Math.round(p.area_km2 * 10) / 10, lake_source: 'polygon', form: 'lake' } };
     }
@@ -519,7 +532,8 @@ const AnyPoint = (() => {
       at.link = move;
     }
     const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
-    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake], a.dilution_power ?? 1))
+    const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake], a.dilution_power ?? 1,
+      a.lake_direction === 'down' ? a.lake_down_margin_m : null))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m, a.dilution_power ?? 1);
     return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
       ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
