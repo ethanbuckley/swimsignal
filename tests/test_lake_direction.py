@@ -1,3 +1,4 @@
+# ruff: noqa: F811  (pytest fixtures imported from test_lake_distance)
 """Lake direction (docs/LAKE-DIRECTION-TEST-2026-10.md): with "down", an overflow whose water enters a lake spot's
 own lake more than transport.LAKE_DOWN_MARGIN_M nearer the lake's outlet than the spot does not count there.
 Network-free: the L-shaped lake of tests/test_lake_distance.py. A beck enters at the far end of the first arm, the
@@ -7,10 +8,10 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from test_lake_distance import LAKES, PIN, _pin, lakes, net  # noqa: F401  (fixtures)
 
 from dipcast import config
 from dipcast.model import transport
-from test_lake_distance import LAKES, PIN, _pin, lakes, net  # noqa: F401  (fixtures)
 
 
 def _overflows(net) -> pd.DataFrame:
