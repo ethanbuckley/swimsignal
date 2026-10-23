@@ -57,7 +57,7 @@ class RiverNetwork:
                  repairs: dict[str, float] | None = None, fix: bool = True):
         """With `repairs` None the network is mended as it loads: the override list, the gap repairs
         and the rules in dipcast.network.fixes (`self.fixes` lists what each changed). `fix=False`
-        makes the gap repairs alone, as before 11 Oct 2026, loops and all (scripts/check_network.py
+        makes the gap repairs alone, loops and all (scripts/check_network.py
         compares the two)."""
         self.links = links            # indexed by link id, EPSG:27700
         self.graph = graph
@@ -110,9 +110,9 @@ class RiverNetwork:
         form 'repair' and no geometry; returns {edge_id: length_m}.
 
         A headwater whose own water already reaches that dead end is not joined to it (`no_loops`):
-        the join would make a loop. Until 11 Oct 2026 62 of the 653 joins were such loops, among them
-        the Hampshire Avon at Ratfyn, where a 42 m stub flows into the dead end its head was joined
-        from, and the loop drained nowhere. Each one left out is added to `skipped` as (dead end,
+        the join would make a loop. 62 of the 653 joins would be such loops, among them the
+        Hampshire Avon at Ratfyn, where a 42 m stub flows into the dead end its head would be joined
+        from, and the loop drains nowhere. Each one left out is added to `skipped` as (dead end,
         headwater, length): dipcast.network.fixes.restore_loop_repairs puts it back after the rules
         when the dead end still has no outlet and the loop has a way out to the sea."""
         g = self.graph

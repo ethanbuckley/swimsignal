@@ -92,11 +92,10 @@ def fill_covariates(table: pd.DataFrame) -> pd.DataFrame:
     as they are, so the pages never show a filled count as the overflow's own; `covariates_filled`
     says which rows had any value filled.
 
-    Until 11 Oct 2026 the fill happened in site_static_features, over the overflows upstream of one
-    spot at a time, so a missing count took the median of whatever else of its company was upstream:
-    16.0 to 41.0 spills a year at the 10 spots with one, against company-wide medians of 11.2 to 25.4,
-    and YWS02298 had 34.3 at one spot and 41.0 at another. The accuracy baseline filled the same
-    gaps with 20 (forecast_log._site_climatology); it reads these columns now."""
+    The fill is over the whole table, not over the overflows upstream of one spot: a median of
+    whatever else of its company was upstream gave 16.0 to 41.0 spills a year at the 10 spots with a
+    gap, against company-wide medians of 11.2 to 25.4, and YWS02298 34.3 at one spot and 41.0 at
+    another. The accuracy baseline (forecast_log._site_climatology) reads these columns too."""
     t = table.copy()
     missing = pd.Series(False, index=t.index)
     for c in COVARIATES:
