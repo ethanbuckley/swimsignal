@@ -2,8 +2,7 @@
 layer, the verification data and the pages, written to ./site for GitHub Pages.
 
 Also refreshes live status, rebuilds the overflow table and scores logged
-forecasts (the same work the API's in-process scheduler does), so one scheduled
-run of this script is the whole back end.
+forecasts, so one scheduled run of this script is the whole back end.
 """
 
 from __future__ import annotations
@@ -56,8 +55,8 @@ SITE = ROOT / "site"
 STATIC = ROOT / "src" / "dipcast" / "pages"
 TEMPLATE = ROOT / "src" / "dipcast" / "site" / "index.html"
 KEEP_CONTRIBUTORS = 10
-# Open-Meteo requests a build may send, retries included, before the log warns (review task D4). On
-# 18 Oct 2026 a build sent 19 and retried 5; the ensemble adds 7 when it refreshes.
+# Open-Meteo requests a build may send, retries included, before the log warns. On 18 Oct 2026
+# a build sent 19 and retried 5; the ensemble adds 7 when it refreshes.
 MAX_OPEN_METEO_REQUESTS = 40
 # Every overflow upstream, for data/upstream/<id>.json (write_upstream): the most within 60 km of a
 # listed spot was 185 on 4 Oct 2026, at Warleigh Weir.
@@ -66,9 +65,9 @@ UPSTREAM_FIELDS = ("site_id", "site_name", "company", "receiving_watercourse", "
                    "travel_h", "weight", "lta_spills", "spill_hours", "has_live", "lat", "lon")
 MIN_OK_SHARE = 0.8        # fewer spots with a forecast than this and the build fails (no publish)
 MAX_NO_DATA_SHARE = 0.5   # more of today's forecasts without rainfall data than this: fail
-# The pages were written for the routes of a FastAPI server (removed 20 Oct 2026, review F7: it had
-# not run since its host's trial ended on 29 Sep); rewrite them for flat files. Their /static/icons/
-# are the site's own icons at icons/ (copy_app_files), their /static/fonts/ the fonts at fonts/.
+# The pages link to server-style routes (/about, /static/...); rewrite them for flat files. Their
+# /static/icons/ are the site's own icons at icons/ (copy_app_files), their /static/fonts/ the fonts
+# at fonts/.
 REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type=spot"', 'href="feedback.html?type=spot"'), ('href="/verification"', 'href="verification.html"'), ('href="/terms"', 'href="terms.html"'),
             ('href="/about"', 'href="about.html"'), ('href="/testing"', 'href="testing.html"'),
             ('href="/privacy"', 'href="privacy.html"'), ('href="/terms#data"', 'href="terms.html#data"'), ('href="/"', 'href="index.html"'),
@@ -177,8 +176,8 @@ def tile_filter(r1: str, r2: str, land: str, tint: tuple[str, str, str]) -> str:
 # Voyager land (251,248,243), water (213,232,235), parks (226,237,215); Positron land (250,250,248),
 # water (212,218,220). OpenStreetMap's filter tinted Voyager's sea a third of the way and Positron's
 # not at all, and left both lands white. These take each land to grey 235 and each water to the
-# muted blue OpenStreetMap's water becomes, #bccfd8 (188,207,216): Ethan's grey land and blue water
-# (2 Oct 2026). Water is where blue and green are both above red by about 10/255 (Voyager) or
+# muted blue OpenStreetMap's water becomes, #bccfd8 (188,207,216): the grey land and blue water of
+# docs/DESIGN.md. Water is where blue and green are both above red by about 10/255 (Voyager) or
 # 5/255 (Positron); land, parks, roads and labels are not.
 CARTO_FILTERS = {
     "voyager": tile_filter("-25 0 25 0 -1", "-30 30 0 0 -1", "-.04", ("-.147", "-.072", "-.037")),
@@ -253,8 +252,8 @@ LIVE_SKILL_AUC = 0.6
 
 
 def ecoli_check(live: dict | None = None) -> dict:
-    """What a spot's page says about the E. coli estimate beside it (levels.js, ecoliNotes; Ethan, 11 Oct
-    2026: shown all year, labelled with what is true today), for spots.json's `ecoli_check`. `live` is
+    """What a spot's page says about the E. coli estimate beside it (levels.js, ecoliNotes: shown all
+    year, labelled with what is true today), for spots.json's `ecoli_check`. `live` is
     verification_live.json, as the scoring in refresh_all wrote it this build; its ecoli_live is each EA
     sample since the forecast began against the latest forecast issued before it (forecast_log.verify_ecoli).
     On 11 Oct 2026: 37 samples at 26 spots, AUC 0.52, Brier 0.107 against 0.104 for the samples' own rate,
@@ -371,7 +370,6 @@ PUSH_PRIVACY = (
 # Alerts for a date (push/README.md, "Alerts for a date"), once DIPCAST_PUSH_DATES is set: the record
 # can also hold up to 10 pairs of a spot and a date, for one more use, and is kept while it has any.
 # Each "before" is in PUSH_PRIVACY (a test checks), so a rewrite cannot leave one unswapped.
-# Wording for the operator's approval (PR body).
 PUSH_DATES_SWAPS = [
     ("saved spots and, if you tick the weekly note, that you asked for it, and nothing else",
      "saved spots, if you tick the weekly note, that you asked for it, and, if you ask on the organisers' page "
@@ -392,8 +390,7 @@ PUSH_DATES_SWAPS = [
 
 # With email alerts on, the privacy notice gains this section under Alerts, a line in its short
 # version, and, with browser alerts on too, an offline-copy sentence that names browser alerts only.
-# What the law asks, and where this section answers it (checked 4 Oct 2026; flagged for the
-# operator's approval in the PR, not checked by a lawyer):
+# What the law asks, and where this section answers it (checked 4 Oct 2026, not by a lawyer):
 # - UK GDPR Article 6(1)(a) and Article 7: consent as the basis, given by a clear act (the sign-up and
 #   the confirmation), shown by a record (the time of confirming), and as easy to withdraw as to give
 #   (one click in every email). ICO, "What is valid consent?":
@@ -590,10 +587,10 @@ def _river_of(row) -> str | None:
 
 def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     """One pass over every spot's upstream overflows to collect the rainfall cells,
-    then a handful of 50-cell requests. Per-spot fetching meant up to one request
-    per spot, and each one risked a slow TLS handshake on shared CI runners. A request
-    that fails its retries no longer stops the build (a 503 did at 00:29 UTC on 6 Oct
-    2026): fetch_forecast serves those cells' cached forecast up to a day old, or leaves
+    then a handful of 50-cell requests. Per-spot fetching would mean up to one request
+    per spot, each risking a slow TLS handshake on shared CI runners. A request that
+    fails its retries does not stop the build (a 503 at 00:29 UTC on 6 Oct 2026 would
+    have): fetch_forecast serves those cells' cached forecast up to a day old, or leaves
     them without rain data, and build_health reports it (fallback_summary)."""
     net, ov = _net(), _overflows()
     lat, lon = list(spots["lat"]), list(spots["lon"])
@@ -611,7 +608,7 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     fb = fallback_summary()
     log.info("rainfall prefetched: %d cells, %d rows, %.0fs%s", len(cells), len(df), time.time() - t0,
              f"; not fetched: {fb['stale']} from the cache, {fb['missing']} with no rain data" if fb else "")
-    # The ensemble's members for the same cells (review task D4), after the spots' own rain and by the
+    # The ensemble's members for the same cells, after the spots' own rain and by the
     # ensemble's own floor, cap and spare-calls rule (rainfall, "ensemble"): each spot's forecast reads them
     # from the cache, and none asks again in this build.
     if ensemble:
@@ -663,7 +660,7 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
     `duplicate_overflow_ids` (snapshot_duplicates) is counted, and any goes in `warnings`.
     `rain_fallback` (rainfall.fallback_summary) is the rain cells Open-Meteo did not send after its
     retries: kept as `rain_fallback` and said in `warnings`. Spots whose rain it left out show
-    "rain unavailable" and count in today_rain_unavailable, under the same limit as before."""
+    "rain unavailable" and count in today_rain_unavailable, under MAX_NO_DATA_SHARE."""
     n = len(results)
     # A spot the model cannot say anything about (an isolated lake, no river within
     # reach) returns an explanation with an empty day list; that is an answer, not a
@@ -674,8 +671,8 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
     health = {"spots": n, "forecast_ok": len(ok), "forecast_failed": n - len(ok),
               "no_forecast_possible": len(ok) - len(with_days), "today_rain_unavailable": today_no_data,
               "failed_spots": [r["name"] for r in results if "days" not in r][:20], "warnings": []}
-    # One failed spot publishes without its forecast, and until 22 Oct 2026 said so only in the log: Warleigh
-    # Weir (21 Oct) and Tellisford (22 Oct) failed at the clock change with green runs. Now an annotation too.
+    # One failed spot publishes without its forecast, so it goes in `warnings` as well as the log: Warleigh
+    # Weir (21 Oct 2026) and Tellisford (22 Oct) failed at the clock change with green runs.
     failed = [r for r in results if "days" not in r]
     if failed:
         more = f"; and {len(failed) - 5} more" if len(failed) > 5 else ""
@@ -694,7 +691,7 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
         raise BuildUnhealthy(f"only {len(ok)}/{n} spots got a forecast; not publishing")
     if with_days and today_no_data > MAX_NO_DATA_SHARE * len(with_days):
         raise BuildUnhealthy(f"{today_no_data}/{len(ok)} forecasts have no rainfall data for today; not publishing")
-    # An overflow listed twice failed four forecasts on 3 Oct 2026; now it is dropped, and counted here.
+    # An overflow listed twice failed four forecasts on 3 Oct 2026; build_overflows drops it, and it is counted here.
     dups = list(duplicate_overflow_ids or [])
     health["duplicate_overflow_ids"] = len(dups)
     if dups:
@@ -749,7 +746,7 @@ def near_uncounted(results: list[dict], upstream: dict[str, list[dict]], ov: pd.
     Wilderness Carpark bathing water, snapped onto a stub joining 43 m below it (11 Oct 2026).
     Settle each one in data/raw/overflow_joins.csv. A row there is settled either way, so it is not
     listed: Knaresborough's Abbey Mill CSO is placed 29 m below the Lido and kept uncounted, per the
-    EA's profile, and was listed on every build from 11 Oct until 12 Oct 2026."""
+    EA's profile."""
     from dipcast.network.rivers import lonlat_to_bng
     if ov is None or ov.empty:
         return []
@@ -880,7 +877,7 @@ CREDITED_COMPANIES = {
     "Yorkshire Water": "Yorkshire Water",
 }
 # The credits one source at a time, for the pages that are printed (the decision record and the sites view,
-# docs/ORGANISER-PIVOT-2026-10.md, OP2): each page shows the ones its spots use (`use`), each with its licence
+# docs/ORGANISER-PIVOT-2026-10.md): each page shows the ones its spots use (`use`), each with its licence
 # and what SwimSignal changed, since CC BY 4.0 s.3(a)(1)(B) and OGL v3 ask a reuser to say so. "{companies}"
 # is the companies upstream of the page's spots, by their CREDITED_COMPANIES names. `use`: "overflows" where a
 # credited company's overflows are upstream, "always", "rain" where the spot has a daily rain forecast, "gauge"
@@ -1081,7 +1078,7 @@ def lake_gauge(r: dict, state: dict | None) -> dict | None:
     river runs faster": a river's level says nothing about a lake's water, and the river words do not fit
     a lake's own. On the lake: its name shares a word with the lake's, as same_river reads them, and has
     no river word (the River Derwent at Portinscale shares "Derwent" with Derwent Water but is the river
-    below it). A river spot keeps its gauge as before."""
+    below it). A river spot keeps its gauge."""
     if state is None or not (r.get("kind") == "lake" or (r.get("location") or {}).get("mode") in ("lake", "isolated")):
         return state
     from dipcast.network.names import same_river
@@ -1096,7 +1093,7 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
     """The Environment Agency's nearest level gauge, on the spot's own river where it has one, as
     an observation beside the forecast: the latest level, the gauge's usual range and a word for
     where the level sits. The forecast itself is unchanged (forecast_point runs with gauge=False):
-    the API version scales travel speed by the level; the site only shows it. By default the readings
+    gauge=True would scale travel speed by the level; the site only shows it. By default the readings
     come in one request for every gauge and each spot's gauge is kept for a week (flows.level_lookup),
     so the build asks the EA a few times rather than three times a spot. The spot's own river
     is spots.csv's `river`, else the snapped watercourse. A "latest" reading over
@@ -1273,7 +1270,7 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
 
 
 WEATHER_CREDIT = "Weather data by Open-Meteo.com"
-# The weather's refresh floor. Asked for in every build, it was 105 calls a build, 5,040 a day at a
+# The weather's refresh floor. Asked for in every build, it would be 105 calls a build, 5,040 a day at a
 # build every 30 minutes. A daily high, sunrise and sunset change little in 3 hours.
 WEATHER_REFRESH_H = 3.0
 WEATHER_CACHE = "weather.json"
@@ -1555,7 +1552,7 @@ def spot_blurb(spot: dict) -> str:
     n = (spot.get("upstream_summary") or {}).get("overflows")
     if spot.get("error") and not str(spot["error"]).startswith("forecast failed"):
         return f"{name}: no monitored storm overflow found upstream of this {kind} on the river network, so {BRAND} has no spill forecast for it."
-    if n == 0:   # "no sewage risk" until 11 Oct 2026, which read as no risk at all
+    if n == 0:   # not "no sewage risk", which reads as no risk at all
         return (f"{name}: no monitored storm overflow found within {config.MAX_UPSTREAM_KM:g} km upstream, so {BRAND} has no spill "
                 "forecast for it. Other risks apply: algae, wildlife, runoff and bathers.")
     upstream = f" from the {n} monitored storm overflow{'' if n == 1 else 's'} upstream," if n else ""
@@ -1571,10 +1568,10 @@ def spot_blurb(spot: dict) -> str:
 # later paint would count instead; so it holds only what does not depend on the forecast.
 SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
                'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
-# Near me, under the search (index.html's NEAR_CTA, word for word). The line for groups moved to the
-# foot of the list on 14 Oct 2026, so the opening ends with the row of controls.
+# Near me, under the search (index.html's NEAR_CTA, word for word). The line for groups is at the
+# foot of the list, so the opening ends with the row of controls.
 NEAR_CTA = ('<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span class="cta-l">Show spots near me</span><span class="cta-s">Near me</span></button>')
-# Under it, the forecast for the water where you are (index.html's HERE_CTA, word for word; 17 Oct 2026).
+# Under it, the forecast for the water where you are (index.html's HERE_CTA, word for word).
 HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>'
 # Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
 # sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
@@ -1724,7 +1721,7 @@ FRACTIONS = sorted({(n, d) for d in (2, 3, 4, 5, 6, 10) for n in range(1, d) if 
 def share_words(p: float) -> str:
     """A share as words a reader can picture: "about one in five". The nearest of the fractions with 2, 3, 4,
     5, 6 or 10 below the line (the smaller denominator on a tie); below 1 in 20 and above 19 in 20 it says so.
-    Sixths since 11 Oct 2026: 16.7% of spills warned of read "about one in five", the nearest of the others."""
+    Sixths are there because 16.7% of spills warned of would read "about one in five", the nearest of the others."""
     if p < 0.05:
         return "fewer than one in twenty"
     if p > 0.95:
@@ -1747,14 +1744,14 @@ def with_warning_words(html: str, verification: Path) -> str:
     except (OSError, ValueError, KeyError, TypeError):
         return html   # the hand-written figures stay
     lead = "It misses most spills." if hit < 0.45 else "It misses about half of all spills." if hit <= 0.55 else "It misses some spills."
-    # A count of days where the scorer gives one (11 Oct 2026): "ran from 29 September to 10 October" read as an
+    # A count of days where the scorer gives one: "ran from 29 September to 10 October" read as an
     # unbroken run, and 8 and 9 October had nothing scored.
     n = w.get("n_days")
     when = (f"cover {n} day{'' if n == 1 else 's'} between {day_words(a, b).replace(' to ', ' and ', 1)}"
             if isinstance(n, int) and n > 0 else f"ran from {day_words(a, b)}")
     said = (f"{lead} Its live scores {when}. At the {escape(str(w.get('level') or 'high'))} risk line, "
             f"it warned of {share_words(hit)} spills. {share_words(true).capitalize()} of its warnings were followed by a spill.")
-    # Whose spills (11 Oct 2026): 208 of the 223 hits were at United Utilities, the one company the spill model
+    # Whose spills: on 11 Oct 2026, 208 of the 223 hits were at United Utilities, the one company the spill model
     # learned from; elsewhere it warned of 15 of 638 (forecast_log: warning_table.by_company).
     rows = w.get("by_company") or []
     own = next((r for r in rows if r.get("company") == w.get("trained_on")), None)
@@ -1769,7 +1766,7 @@ def with_warning_words(html: str, verification: Path) -> str:
 
 def not_found_page(root: str) -> str:
     """404.html: GitHub Pages serves it for any missing address, at any depth, so every link in it
-    is absolute. Before this, a mistyped or outdated link got GitHub's own page, with no way back."""
+    is absolute. Without it, a mistyped or outdated link gets GitHub's own page, with no way back."""
     r = escape(root)
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n'
@@ -1799,7 +1796,7 @@ def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = 
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
 
-# Atom feeds (docs/REVIEW-2026-10-16.md, G8), from this build's alerts.json: feed.xml for every spot,
+# Atom feeds, from this build's alerts.json: feed.xml for every spot,
 # feed/<area>.xml for each of the list's areas, spot/<id>/feed.xml for each spot with a page. Each
 # build adds one entry a spot, its headline and what to do, with the build's time as `updated`, so a
 # reader (Slack's RSS app, Feedly, IFTTT, a Discord bot) gets every new forecast. The entry's id has
@@ -1993,7 +1990,7 @@ def lean_page(html: str) -> str:
     return INLINE_SCRIPT.sub(lambda m: m.group(1) + js_without_comment_lines(m.group(2)) + m.group(3), html)
 
 
-# The app page's scripts, none of them blocking the first paint (docs/REVIEW-2026-10-16.md, F2: they
+# The app page's scripts, none of them blocking the first paint (blocking, they
 # held it back 850 ms on 16 Oct 2026). In the built page every <script src> is deferred and the page's
 # own script, inline in the source, is app.js?v=<stamp>, deferred too, which the offline copy stores
 # as it does the others. Deferred scripts run in the order of their tags once the page is parsed, so
@@ -2183,7 +2180,7 @@ def with_data_files(html: str, data: Path) -> tuple[str, list[str]]:
     return html.replace(MORE_FILES, rows, 1), extra
 
 
-# The overflow layer cut into map tiles (docs/REVIEW-2026-10-16.md, C4): data/overflows/<x>-<y>.json, and
+# The overflow layer cut into map tiles: data/overflows/<x>-<y>.json, and
 # index.json naming the tiles that have any. The map asks for the tiles in view (index.html, loadOverflows)
 # rather than the whole 6.3 MB overflows.geojson, which stays for the data page and the download. Zoom 10:
 # on 16 Oct 2026 293 tiles, and a spot's view at zoom 12 needed at most 38 kB of them gzipped (the
@@ -2242,7 +2239,7 @@ def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Ti
 # The river each spot's forecast traced upstream (src/dipcast/trace.py), drawn on its map at zoom 10 or
 # more: data/spot/<id>-trace.json, beside the spot's own file, which sw.js stores it with. `lines` are
 # encoded polylines (trace.encode); `overflows` the monitored overflows counted on them, [site_id, lat, lon].
-TRACE_MAX_BYTES = 50_000   # the review's bound (G6); Warleigh Weir, with the most overflows, is the largest
+TRACE_MAX_BYTES = 50_000   # a trace file's limit; Warleigh Weir's, with the most overflows, is the largest
 
 
 def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, list[dict]], generated: pd.Timestamp,
@@ -2275,15 +2272,15 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spots.json (39% and 13%), and taking them out cut the file from 115 kB to 36 kB gzipped. The
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
-# results an organisation sent (measured, 20 Oct 2026) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's (20 Oct 2026)
+# results an organisation sent (measured) are a spot page's alone too.
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
     """Whose overflows a spot's are, by their reach: [[company, share of the summed weight], ...], the largest
     first, shares to three places. The lite file keeps this in place of the contributors, for Plan a swim's
     evidence line (evidence.js, evidenceCoverage), which tells the company the spill model learned from apart
-    from the rest (20 Oct 2026). An overflow with no company counts as "unknown". [] with no weight."""
+    from the rest. An overflow with no company counts as "unknown". [] with no weight."""
     by: dict[str, float] = {}
     for c in contributors or []:
         by[c.get("company") or "unknown"] = by.get(c.get("company") or "unknown", 0.0) + float(c.get("weight") or 0)
@@ -2414,7 +2411,7 @@ def write_record(site: Path, token: str | None = None) -> str:
     return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token)
 
 
-# A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md, T6): every monitored overflow
+# A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
 # upstream with its spills and spill hours each year 2021-2025, from the Environment Agency's annual returns
 # (data/processed/annual_returns.parquet, OGL v3, credited in the terms). The list is the spot's
 # data/upstream/<id>.json, which build() writes (write_upstream) before the pages, so the pages can be
@@ -2425,7 +2422,7 @@ REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, cen
 
 def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
                        token: str | None = None, live: Path | None = None, returns: Path | None = None) -> None:
-    """quality.html (review task G12): the overflow records to correct, from the position conflicts' cases
+    """quality.html: the overflow records to correct, from the position conflicts' cases
     file, the live snapshot's positions, the annual returns' outlets and this build's overflow table
     (src/dipcast/quality.py). A missing input leaves its part of the page saying so; nothing here stops
     the build."""
@@ -2690,15 +2687,15 @@ def build(refresh: bool = True) -> dict:
     summary = {**health, "seconds": round(time.time() - t0, 1), "generated_at": generated.isoformat()}
     summary.pop("failed_spots", None)
     if refresh and config.SCOTTISH_WATER:
-        # Shadow only (Scotland plan, task S5): after everything the site publishes is written, so it can
+        # Shadow only (docs/SCOTLAND-PLAN-2026-10.md, S5): after everything the site publishes is written, so it can
         # change none of it, and last, away from the spots' and click-anywhere's rain requests. It writes
         # to the state directory alone; the build log gets counts and costs, no scores.
         from dipcast.scottish_shadow import run as scottish_shadow
         summary["scottish_water_shadow"] = scottish_shadow(_net())
     if refresh:
         # Open-Meteo calls since 00:00 UTC by every build that day, and what the ration held back; the
-        # requests this build sent, retries included, and what the ensemble's did (review task D4: under
-        # MAX_OPEN_METEO_REQUESTS a build).
+        # requests this build sent, retries included, and what the ensemble's did. Over
+        # MAX_OPEN_METEO_REQUESTS, the build warns.
         summary["open_meteo"] = rainfall.calls_today()
         summary["open_meteo_requests"] = rainfall.requests_made()
         summary["rain_ensemble"] = rainfall.ensemble_summary()
