@@ -5,7 +5,7 @@ build does not need this file.
     uv run python scripts/make_overflow_urban_area.py              # downloads the boundaries (about 100 MB)
     uv run python scripts/make_overflow_urban_area.py bua.geojson  # or reads them already downloaded
 
-Why: Dr James Shucksmith's review (9 Oct 2026) said dilution needs a spill size, and suggested the
+Why: an outside review of the method (9 Oct 2026) said dilution needs a spill size, and suggested the
 urban area that drains to each overflow. We have no sewer catchments, so the urban area is
 apportioned by a fixed rule, stated in docs/URBAN-DILUTION-TEST-2026-10.md before any evaluation:
 

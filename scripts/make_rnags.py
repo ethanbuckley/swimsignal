@@ -7,7 +7,7 @@ confirmed or probable reason (evidence.js, evidenceRunoff).
     uv run python scripts/make_rnags.py                         # downloads the CSV (16 MB) and ten GeoJSONs (85 MB)
     uv run python scripts/make_rnags.py rnags.csv geojson_dir/  # or reads them already downloaded
 
-Off CI, by hand: when the Environment Agency updates the file (the review of 16 Oct 2026 says
+Off CI, by hand: when the Environment Agency updates the file (docs/REVIEW-2026-10-16.md says
 quarterly; the publisher's page gives no date), and when a spot is added to spots.csv or
 spots-osm.csv (the build warns of a spot the file does not place). The build reads only the JSON.
 

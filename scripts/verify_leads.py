@@ -10,7 +10,7 @@ intensity features and the two previous days use lead-appropriate forecasts
 use reanalysis, because on the issue day those windows are almost entirely
 observed history.
 
-Which model and rows (docs/NINE-COMPANY-MODEL-TEST-2026-10.md, review task A1, 16 Oct 2026): the
+Which model and rows (docs/NINE-COMPANY-MODEL-TEST-2026-10.md, 16 Oct 2026): the
 map is fitted for the model named by --model (default: the production model, spill_model.pkl), and
 lead_calibration.json records that model's trained_on, so the map and the model it corrects cannot
 drift apart again (until then a 2023-24 hold-out's map was applied to a 2023-25 refit). Rows: the

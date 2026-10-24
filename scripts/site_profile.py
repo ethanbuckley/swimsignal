@@ -1,5 +1,5 @@
 """A profile of the storm overflows upstream of one point, for a group applying for bathing-water
-status (docs/MARKETS-2026-10.md, task T8; Defra's deadline for 2026 applications is 15 Oct 2026).
+status (docs/MARKETS-2026-10.md).
 
     uv run python scripts/site_profile.py 53.93189 -1.81618 --name "Wharfe at Cromwheel, Ilkley" --river "River Wharfe"
 

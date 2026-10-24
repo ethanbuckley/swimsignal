@@ -11,9 +11,9 @@ A variable font is set to the weight asked for; a static one is used as it is. F
 Source Serif 4's text cut, TTF/SourceSerif4-Semibold.ttf at github.com/adobe-fonts/source-serif:
 the card is mostly seen at a third of its size, where the Display cut's thin strokes fade.
 
-The card is the site's own page since the fifth round (docs/DESIGN.md): the paper, the mark, the
-name in teal with the river line under it, as the list's heading has, and the words in ink and
-the muted grey.
+The card is the site's first screen as it looked in the fifth round (docs/DESIGN.md, Icons): the
+paper, the mark, the name in teal with the river line under it, and the words in ink and the
+muted grey. The pages themselves do not draw the river line.
 """
 
 from __future__ import annotations

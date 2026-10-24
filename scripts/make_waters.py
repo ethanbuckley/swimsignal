@@ -6,8 +6,8 @@ search, so what is typed never leaves the device (as data/places.json for Plan a
     uv run python scripts/make_waters.py                       # config.RIVERS_GPKG and ingest/lakes.RAW
     uv run python scripts/make_waters.py RIVERS.gpkg LAKES.geojson
 
-A search for a river with no listed spot ("River Kennet") used to end at "No spots match", although
-a click on the map forecasts any point on it (17 Oct 2026). With this file the page offers the river,
+Without this file a search for a river with no listed spot ("River Kennet") ends at "No spots match",
+although a click on the map forecasts any point on it. With this file the page offers the river,
 and a press fits the map to it, ready for a tap.
 
 Rivers: one entry per river of one name. Its links (watercourse_name; forms inlandRiver and

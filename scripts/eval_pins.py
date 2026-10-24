@@ -6,13 +6,13 @@ place each inland bathing water with bathing_water_pin. It reads the bathing wat
 (transport.spot_hints: the kind, the river for a river spot, the name). The E. coli model the site
 serves is fitted on these exposures, so they must come from the pins the site uses.
 
-Until 12 Oct 2026 the four scripts called locate_pin with no hints. Three of the 38 bathing waters then
-landed on other water than the site's pin (docs/EVAL-PINS-TEST-2026-10.md): Colwick West Lake on the
-River Trent (357 overflows; the site counts none), Queen Elizabeth Gardens, Salisbury, below the Nadder
-(32 overflows; the site counts 16) and Wolvercote Mill Stream (29; the site counts 31).
+With no hints, three of the 38 bathing waters land on other water than the site's pin
+(docs/EVAL-PINS-TEST-2026-10.md): Colwick West Lake on the River Trent (357 overflows; the site counts
+none), Queen Elizabeth Gardens, Salisbury, below the Nadder (32 overflows; the site counts 16) and
+Wolvercote Mill Stream (29; the site counts 31).
 
-DIPCAST_EVAL_PINS=bare places them the old way, with no hints, for the paired test and to reproduce
-numbers published before the change. Any other value is an error.
+DIPCAST_EVAL_PINS=bare places them with no hints, for the paired test and to reproduce numbers
+published before 12 Oct 2026, which were made that way. Any other value is an error.
 """
 
 from __future__ import annotations

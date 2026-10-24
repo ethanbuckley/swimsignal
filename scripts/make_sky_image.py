@@ -12,7 +12,7 @@ nothing further down sits on it. Its top rows are the page's --sky, which runs o
 last the paper. The same seed draws the same picture.
 
 --wide draws icons/fells-wide.webp, three times as wide with the same fells drawn out across it, for a
-desktop's spot page, where the opening spans the screen (20 Oct 2026): 1,500 CSS px, so the 500 px
+desktop's spot page, where the opening spans the screen: 1,500 CSS px, so the 500 px
 picture is not stretched three times sideways.
 
     uv run --with pillow python scripts/make_sky_image.py --wide

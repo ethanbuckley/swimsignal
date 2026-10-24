@@ -1,5 +1,5 @@
 // The Accuracy page's figures, tables and lists, written into verification.html at build from this
-// build's data/verification.json (docs/REVIEW-2026-10-16.md, task F3). Drawn only by the page's
+// build's data/verification.json. Drawn only by the page's
 // script, they came in above the page's last paragraph after the file arrived, and the page moved by
 // thousands of pixels (CLS 0.45). This runs the page's own script in Node, with a document that only
 // keeps what the script writes, so the words and figures are the page's.

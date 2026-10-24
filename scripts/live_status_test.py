@@ -9,8 +9,7 @@ status inputs added, each known at the issue time, 00:00 UTC of day d-k for lead
 spill_model_nine_2024.pkl (SHA-256 begins 1603678923cc), kept off-repo: put it in data/processed/ first.
 
 The rain helpers (RainGrid, the lead window, boosted_features, the week bootstrap) are copied from
-scripts/train_nn.py on PR #239's branch (claude/neural-challenger-test), which main does not have, so the lead rows
-and the forecast-rain features are built as that test built them.
+scripts/train_nn.py, so the lead rows and the forecast-rain features are built as that test built them.
 """
 
 from __future__ import annotations
@@ -65,7 +64,7 @@ LEADS = [0, 1, 2, 3, 4]
 NEG_FRAC, PRIOR_STRENGTH, RECENCY = 0.25, 15.0, 1.0
 N_BOOT = 2000
 HOURS = 72
-MIN_FINITE = int(np.ceil(0.9 * HOURS))     # PR #239's 90% rule: at least 65 of the 72 hours finite
+MIN_FINITE = int(np.ceil(0.9 * HOURS))     # train_nn.py's 90% rule: at least 65 of the 72 hours finite
 DAY0 = pd.Timestamp("2024-01-01", tz="UTC")
 N_DAYS = 731                               # 2024-01-01 .. 2025-12-31
 DAYS_2024 = 366
@@ -274,7 +273,7 @@ def stage_describe() -> None:
     step("2024 tables written")
 
 
-# ------------------------------------------------------------------ rain (copied from PR #239's train_nn.py)
+# ------------------------------------------------------------------ rain (copied from scripts/train_nn.py)
 def _key(lat, lon) -> np.ndarray:
     """One integer per 0.1-degree cell."""
     return (np.round(np.asarray(lat, float) * 10).astype(np.int64) * 100_000
@@ -329,7 +328,7 @@ def nansum_or_nan(a: np.ndarray) -> np.ndarray:
 
 def rain_features(grid: RainGrid, win: np.ndarray, ci: np.ndarray, di: np.ndarray) -> pd.DataFrame:
     """The ten rain features for day d from the 72-hour window `win` (days d-2..d) and the ERA5-Land daily totals and
-    antecedent index before it, as daily_rain_features would compute them from one hourly series (PR #239's
+    antecedent index before it, as daily_rain_features would compute them from one hourly series (train_nn.py's
     boosted_features, without the static columns)."""
     d2, d1, d0 = day_total(win[:, :24]), day_total(win[:, 24:48]), day_total(win[:, 48:])
     short = np.isnan(d0)
@@ -484,7 +483,7 @@ def stage_run() -> None:
     print(sub_t.to_string(index=False, float_format=lambda v: f"{v:.5f}"))
 
     # ---- 2025, forecast rain: days d, d-1, d-2 from the forecasts issued k, k-1, k-2 days ahead (floored at 0),
-    # every earlier day from ERA5-Land; the same series feeds both models (PR #239's rule)
+    # every earlier day from ERA5-Land; the same series feeds both models (train_nn.py's rule)
     lead_files = sorted(f for d in RAIN_DIRS for f in (config.CACHE / d).glob("leads_*_2025.parquet"))
     lf = pd.concat((pd.read_parquet(f) for f in lead_files), ignore_index=True)
     lf = lf.sort_values(["cell_lat", "cell_lon", "lead", "time"])

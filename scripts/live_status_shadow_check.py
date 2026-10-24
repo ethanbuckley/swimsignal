@@ -31,11 +31,11 @@ from dipcast.model.training import ece
 CSV_URL = "https://swimsignal.co.uk/data/verification_live.csv"
 LEADS = (0, 1, 2, 3, 4)
 STATUS = ["spilling_at_issue", "spill_hours_24h", "spill_days_7d"]
-N_BOOT = 2000              # PR #254's bootstrap: 2,000 draws from default_rng(0), clusters drawn whole,
+N_BOOT = 2000              # live_status_test.py's bootstrap: 2,000 draws from default_rng(0), clusters drawn whole,
 SEED = 0                   # one set of draws for every lead, company and subset
 MIN_SPILLS = 200           # rows with a spill and a known status, at each lead
 MIN_COMPANY_SPILLS = 50    # conditions 2 and 3 apply to a company with at least this many at the lead
-ECE_OK = 0.02              # condition 4 of #254: no higher than production's, or at most this
+ECE_OK = 0.02              # live_status_test.py's condition 4: no higher than production's, or at most this
 SANITY_MAE = 0.0001        # the published CSV rounds to 4 decimals
 MIN_SHADOW_SHARE = 0.99    # scored rows in the window with a logged shadow
 
@@ -84,7 +84,7 @@ def brier(p: np.ndarray, y: np.ndarray) -> float:
 
 
 def week_codes(day: pd.Series) -> np.ndarray:
-    """PR #254's cluster: the ISO week of the (target) day."""
+    """live_status_test.py's cluster: the ISO week of the (target) day."""
     iso = pd.to_datetime(day).dt.isocalendar()
     return pd.factorize(iso["year"].astype(int) * 100 + iso["week"].astype(int), sort=True)[0]
 
@@ -99,8 +99,8 @@ def draws_for(codes: np.ndarray, n_boot: int = N_BOOT, seed: int = SEED) -> np.n
 
 
 def boot_interval(diff: np.ndarray, codes: np.ndarray, draws: np.ndarray) -> tuple[float, float]:
-    """PR #254's boot_interval: the mean difference over clusters drawn with replacement, 2.5th and 97.5th
-    percentiles. A draw that holds no row of the subset is left out (#254 reported those as NaN)."""
+    """live_status_test.py's boot_interval: the mean difference over clusters drawn with replacement, 2.5th
+    and 97.5th percentiles. A draw that holds no row of the subset is left out (that one gives NaN)."""
     w = draws.shape[1]
     s = np.bincount(codes, weights=diff, minlength=w)
     n = np.bincount(codes, minlength=w).astype(float)
