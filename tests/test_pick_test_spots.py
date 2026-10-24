@@ -86,3 +86,21 @@ def test_report_and_main_from_a_local_build(tmp_path, capsys):
     # An unknown area lists the known ones and fails.
     assert pick.main(["--area", "Atlantis", "--spots", str(tmp_path / "spots.json"), "--pages", str(tmp_path / "spot")]) == 2
     assert AREA in capsys.readouterr().err
+
+
+def test_a_page_without_a_readable_headline_is_no_candidate(tmp_path, capsys):
+    """A failed page read (or a page with no headline) leaves a spot out of both tasks, with a warning."""
+    gapped = spot("broken-page", no_live=2, source="designated", classification={"class": "poor"})
+    low = spot("broken-low")
+    got = pick.candidates([gapped, low], {"broken-page": None, "broken-low": ""}, AREA)
+    assert got["task2"] == [] and got["task3"] == []
+    assert [r["id"] for r in got["unreadable"]] == ["broken-page", "broken-low"] and got["spots"] == 2
+    assert "Warning: these pages could not be read" in pick.report(got, None)
+    # Through main: one page missing from a local build is skipped and named on stderr.
+    (tmp_path / "spots.json").write_text(json.dumps({"generated_at": "2026-10-25T08:00:00+00:00", "spots": [gapped, low]}))
+    (tmp_path / "spot" / "broken-low").mkdir(parents=True)
+    (tmp_path / "spot" / "broken-low" / "index.html").write_text('<h2 id="risk-headline">Low risk from sewage spills</h2>')
+    assert pick.main(["--area", AREA, "--spots", str(tmp_path / "spots.json"), "--pages", str(tmp_path / "spot")]) == 0
+    cap = capsys.readouterr()
+    assert "broken-page" in cap.err and "left out of both lists" in cap.err
+    assert "| Broken Low |" in cap.out and "| Broken Page |" not in cap.out

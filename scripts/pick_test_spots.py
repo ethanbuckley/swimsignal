@@ -69,17 +69,22 @@ def gaps(spot: dict) -> list[str]:
 def candidates(spots: list[dict], headlines: dict[str, str | None], area: str) -> dict:
     """The area's spots for each task. Task 2: a headline starting "Low risk" and at least one monitored
     overflow upstream, fewest gaps first, so the page's answer is the thing tested. Task 3: at least one
-    gap other than the lake's missing estimate (every lake has that one), most gaps first."""
-    rows = []
+    gap other than the lake's missing estimate (every lake has that one), most gaps first. A spot whose
+    page could not be read, or has no headline, is in neither list: a participant would meet a broken
+    page. It is named under "unreadable" instead."""
+    rows, unreadable = [], []
     for s in spots:
         if s.get("area") != area:
             continue
+        if not headlines.get(s["id"]):
+            unreadable.append({"id": s["id"], "name": s["name"]})
+            continue
         up = (s.get("upstream_summary") or {}).get("overflows") or 0
-        rows.append({"id": s["id"], "name": s["name"], "kind": s.get("kind"), "headline": headlines.get(s["id"]),
+        rows.append({"id": s["id"], "name": s["name"], "kind": s.get("kind"), "headline": headlines[s["id"]],
                      "overflows": up, "gaps": gaps(s)})
-    low = [r for r in rows if (r["headline"] or "").startswith("Low risk") and r["overflows"] > 0]
+    low = [r for r in rows if r["headline"].startswith("Low risk") and r["overflows"] > 0]
     gapped = [r for r in rows if set(r["gaps"]) - {"lake_no_ecoli"}]
-    return {"area": area, "spots": len(rows),
+    return {"area": area, "spots": len(rows) + len(unreadable), "unreadable": unreadable,
             "task2": sorted(low, key=lambda r: (len(r["gaps"]), r["name"])),
             "task3": sorted(gapped, key=lambda r: (-len(r["gaps"]), r["name"]))}
 
@@ -89,6 +94,10 @@ def report(picked: dict, generated_at: str | None) -> str:
     lines = [f"# Test spots, {picked['area']}", "",
              f"Forecast issued {generated_at or 'unknown'}. {picked['spots']} spots in the area. "
              "Check the spot pages again just before the session: a build may have changed a level.", ""]
+    if picked["unreadable"]:
+        lines += ["**Warning: these pages could not be read or have no headline, so they are left out of both "
+                  "lists. Open each one before the session; do not use it until it shows its answer:** "
+                  + ", ".join(f"{r['name']} ({SITE}spot/{r['id']}/)" for r in picked["unreadable"]), ""]
     for task, title in (("task2", "Task 2: low risk with overflows upstream"), ("task3", "Task 3: a page with gaps")):
         lines += [f"## {title}", ""]
         if not picked[task]:
@@ -130,7 +139,11 @@ def main(argv: list[str] | None = None) -> int:
         except OSError:
             page = ""
         heads[s["id"]] = headline(page)
-    print(report(candidates(spots, heads, a.area), data.get("generated_at")))
+    picked = candidates(spots, heads, a.area)
+    if picked["unreadable"]:
+        print("warning: no readable headline for " + ", ".join(r["id"] for r in picked["unreadable"])
+              + "; left out of both lists", file=sys.stderr)
+    print(report(picked, data.get("generated_at")))
     return 0
 
 
