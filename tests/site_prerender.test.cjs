@@ -73,18 +73,18 @@ async function draw(data, built) {
 const DATA = {live: {generated_at: '2026-10-04T00:15:52+01:00', n_scored: 0}};
 
 test('the Accuracy page draws again only from scores newer than the ones the build wrote in', async () => {
-  assert.ok((await draw(DATA)).short.innerHTML.includes('<dl class="stats">'));   // no copy from the build: it draws
-  assert.ok((await draw(DATA, '2026-10-03T23:00:00+01:00')).short.innerHTML.includes('<dl class="stats">'));   // newer scores
-  assert.equal((await draw(DATA, '2026-10-04T00:15:52+01:00')).short, undefined);   // the same: left as the build wrote it
-  assert.equal((await draw(DATA, '2026-10-05T00:00:00+01:00')).short, undefined);   // older (a stored copy offline): left too
+  assert.ok((await draw(DATA)).top.innerHTML.includes('<dl class="stats">'));   // no copy from the build: it draws
+  assert.ok((await draw(DATA, '2026-10-03T23:00:00+01:00')).top.innerHTML.includes('<dl class="stats">'));   // newer scores
+  assert.equal((await draw(DATA, '2026-10-04T00:15:52+01:00')).top, undefined);   // the same: left as the build wrote it
+  assert.equal((await draw(DATA, '2026-10-05T00:00:00+01:00')).top, undefined);   // older (a stored copy offline): left too
 });
 
-test("the build's copy of the Accuracy page: its four boxes and when its scores were made, with the contents list", async () => {
+test("the build's copy of the Accuracy page: its five boxes and when its scores were made, with the contents list", async () => {
   const data = {...DATA, holdout: [{auc: 0.93, brier_skill_vs_clim: 0.4, n: 826000, model: 'dipcast'}]};
   const out = await accuracy.prerender(VER, data);
   assert.equal(out.built, '2026-10-04T00:15:52+01:00');
-  assert.ok(out.short.includes('<dd class="v">93 in 100</dd>') && out.short.includes('<h2 id="short-h">In short</h2>'));
+  assert.ok(out.top.includes('<dd class="v">93 in 100</dd>') && out.short.includes('<h2 id="short-h">In short</h2>'));
   assert.ok(out.offline.includes('<section id="holdout"><h2>Offline test: held-out year</h2>'));
-  assert.ok(out.short.includes('<li><a href="#holdout">Offline test: held-out year</a></li>'), out.short);   // contents(), from the sections
+  assert.ok(out.top.includes('<li><a href="#holdout">Offline test: held-out year</a></li>'), out.top);   // contents(), from the sections
   await assert.rejects(accuracy.prerender(VER.replace(/main\(\)\.catch/, 'go().catch'), data), /no longer ends with main\(\)\.catch/);
 });

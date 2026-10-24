@@ -1674,8 +1674,9 @@ def plan_page(template: str, root: str) -> str:
                                  f'<p class="muted">{escape(PLAN_DESCRIPTION)} Loading the forecasts…</p></div>', 1)
 
 
-# The Accuracy page's four boxes, which its script fills from data/verification.json.
-VERIFICATION_BOXES = {"answer": '<div id="answer"></div>', "short": '<div id="short"><p class="muted">Loading the scores…</p></div>',
+# The Accuracy page's five boxes, which its script fills from data/verification.json.
+VERIFICATION_BOXES = {"top": '<div id="top"><p class="muted">Loading the scores…</p></div>', "answer": '<div id="answer"></div>',
+                      "short": '<div id="short"></div>',
                       "live": '<div id="live"></div>', "offline": '<div id="offline"></div>'}
 
 
