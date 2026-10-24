@@ -51,6 +51,8 @@ data/raw/*
 !data/raw/outside_england.json
 # Checked joins of outfalls on streams OS Open Rivers does not draw (overflows.apply_joins).
 !data/raw/overflow_joins.csv
+# Overflow upgrades their company has announced, with the page that says so: read by the page's note only, never the model (build_site.attach_upgrades).
+!data/raw/overflow_upgrades.csv
 # Fixes to the river network that the load-time rules do not make (dipcast.network.fixes).
 !data/raw/network_fixes.csv
 # Residence times of WFD lakes from HydroLAKES v1.0 (CC BY 4.0), for lake path 'residence' (scripts/make_lake_residence.py).

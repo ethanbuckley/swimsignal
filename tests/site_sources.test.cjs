@@ -203,7 +203,7 @@ test('the overflow list says "at the spot" under 0.1 km and "under half an hour"
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + '\nsetToday("2026-10-16");', c);
   vm.runInContext(`const L = {circleMarker: () => ({bindTooltip: () => ({addTo() {}})})}, contribLayer = null, PAGE_ID = /^$/;
     const colourFor = () => '#000', drawnStatus = x => x.status, statusSaid = () => 'not discharging', endedOn = () => '16 Feb';\n`
-    + pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'overflowTile']), c);
+    + pageDefs(['esc', 'fmt', 'glyph', 'ICON', 'upgradeDay', 'upgradeNote', 'overflowTile']), c);
   const culham = {site_id: 'TWL00147', company: 'Thames Water', site_name: 'Culham STW', receiving_watercourse: 'Clifton Hampton Ditch',
     lat: 51.65378, lon: -1.21059, status: 0, has_live: true, data_state: 'live', latest_event_start: '2026-02-23T00:30:00+00:00',
     latest_event_end: '2026-02-23T01:00:00+00:00', lta_spills: 25.29, spill_hours: 378.0, snap_confidence: 'high', position_source: 'join',

@@ -1,0 +1,21 @@
+# Overflows their company says it has upgraded or is upgrading, each with the page that says so.
+# Read only by scripts/build_site.py (attach_upgrades), which puts a note beside the overflow on a spot's
+# page. The spill model never reads this file: it goes on using the overflow's annual-return counts, and
+# the note says so (docs/UPGRADED-OVERFLOWS-2026-10.md, option C).
+# One row per overflow, added only after reading the source on the date in `checked`.
+# stage: upgraded (the source says the work is finished) or upgrading (it says the work is under way or
+# to come). The page says "has upgraded" or "is upgrading" by this, so choose it from the quote.
+# completed: the completion date the source gives, YYYY-MM-DD; blank when it gives none (a planned
+# "Summer 2026" is not one).
+# match: name (the source's name fits this overflow alone) or shared name (it also fits another overflow
+# nearby, so the page says the match is by name).
+# quote: the source's own words, exactly; "[list]" marks an item of a bulleted list under the words before it.
+# The page says the forecast uses the overflow's counts from 2020: the EA's long-term average is a running
+# mean from 2020 for every row here (checked in the doc above). Check that holds before adding another.
+site_id,company,source_name,match,stage,what_changed,completed,source_url,quote,checked
+YWS00176,Yorkshire Water,Middleton SPS CSO,name,upgrading,920 m3 storage tank,,https://www.yorkshirewater.com/about-us/what-we-do/making-yorkshire-brilliant/addingham-and-ilkley,We’re investing £7.9m to install a 920m³ storage tank near Olicanian Cricket Club to help reduce discharges to one per bathing season.,2026-10-24
+YWS00674,Yorkshire Water,Rivadale CSO,name,upgrading,storage (not described for this site),,https://www.yorkshirewater.com/about-us/what-we-do/making-yorkshire-brilliant/addingham-and-ilkley,The sites we’re upgrading include: [list] Rivadale CSO,2026-10-24
+YWS00179,Yorkshire Water,Bridge Lane CSO,name,upgrading,new culverts and chambers for storm water storage,,https://www.yorkshirewater.com/about-us/what-we-do/making-yorkshire-brilliant/addingham-and-ilkley,"from 17 November 2025 until Summer 2026. These works will enhance storm water storage and improve water quality in the River Wharfe.",2026-10-24
+YWS00191,Yorkshire Water,Low Mill Lane CSO,shared name,upgrading,storage (not described for this site),,https://www.yorkshirewater.com/about-us/what-we-do/making-yorkshire-brilliant/addingham-and-ilkley,The sites we’re upgrading include: [list] Low Mill Lane CSO,2026-10-24
+YWS00144,Yorkshire Water,Addingham SPS CSO,shared name,upgrading,"3,900 m3 underground storage",,https://www.yorkshirewater.com/about-us/what-we-do/making-yorkshire-brilliant/addingham-and-ilkley,"We’re continuing to make progress on building 3,900m³ of underground storage at our Combined Sewer Overflow (CSO) site in Addingham.",2026-10-24
+YWS00145,Yorkshire Water,Addingham SPS CSO,shared name,upgrading,"3,900 m3 underground storage",,https://www.yorkshirewater.com/about-us/what-we-do/making-yorkshire-brilliant/addingham-and-ilkley,"We’re continuing to make progress on building 3,900m³ of underground storage at our Combined Sewer Overflow (CSO) site in Addingham.",2026-10-24

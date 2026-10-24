@@ -3973,6 +3973,26 @@ function whereFrom(d) {
 // of right now's share, reach times the week's highest spill chance, and a tenth of the reach), most
 // first. The caption says what the order is: "the 10 with the most reach" sat over a list where 80%
 // came above 98% (Ilkley).
+// Under an overflow its company says it has upgraded or is upgrading (data/raw/overflow_upgrades.csv,
+// build_site.attach_upgrades): what the company says, with its page and the day it was read; that the
+// monitor has shown no discharge since its last one, only while the live feed says "not discharging"
+// now (an offline or stale monitor shows nothing, which is not the same); and that the forecast still
+// counts its spills from before the work. The verb follows the source's tense, since a page in the
+// future tense is a plan, not a finished upgrade. Where the company's name for it could mean another
+// overflow nearby, the note says the match is by name. '' for an overflow with no upgrade listed.
+const upgradeDay = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+function upgradeNote(c) {
+  const u = c.upgrade;
+  if (!u || !/^https:\/\/[^\s<>"']+$/.test(String(u.url || ''))) return '';
+  const did = u.stage === 'upgraded' ? 'has upgraded' : 'is upgrading';
+  const done = u.stage === 'upgraded' && u.completed ? `, finished ${upgradeDay(u.completed)}` : '';
+  const what = u.match === 'shared name' ? `its ${esc(u.source_name)}, a name that could also mean another overflow nearby` : 'this overflow';
+  const said = [`${esc(companyName(u.company))} says it ${did} ${what}${done} (<a href="${esc(u.url)}">its page</a>, read ${upgradeDay(u.checked)}).`];
+  const a = Date.parse(c.latest_event_start), b = Date.parse(c.latest_event_end);
+  if (drawnStatus(c) === 0 && !Number.isNaN(b) && !(a > b)) said.push(`Its monitor has shown no discharge since ${endedOn(c.latest_event_end)}.`);
+  said.push(`The forecast still uses its ${u.returns_to ? `spill counts for 2020 to ${u.returns_to}` : 'past spill counts'}, so it may overstate the risk from it.`);
+  return `<div class="ov-meta">${said.join(' ')}</div>`;
+}
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
@@ -3980,7 +4000,7 @@ function overflowTile(d, total) {
       .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
-      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div></div>`
+      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}</div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too little reaches here to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
