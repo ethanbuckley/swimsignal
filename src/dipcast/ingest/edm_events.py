@@ -21,10 +21,14 @@ Monitoring-Storm Overflow-Start/Stop Detailed Data".
 from __future__ import annotations
 
 import io
+import json
 import logging
 import re
+import zipfile
 from pathlib import Path
+from urllib.parse import quote
 
+import httpx
 import numpy as np
 import pandas as pd
 
@@ -227,6 +231,10 @@ def crosswalk_by_events(a: pd.DataFrame, b: pd.DataFrame, min_share: float = 0.8
 # Excel serial numbers or text ("2024-01-01T20:14:32Z", "2024/01/01T20:14:32.000Z",
 # "01/01/2024 20:14"). The files give no position; it comes from the annual returns.
 # Dwr Cymru Welsh Water's files (overflows in England only) are a Welsh test set and never train.
+# The EA publishes the files inside one zip per year ("2025 Detailed EDM Start-Stop Data.zip",
+# "2026 year to August Detailed EDM Start-Stop Data.zip"); the per-company files are not published
+# on their own any more. The year-to-date zip changes name as months are added, so its name is read
+# from the dataset page's file list rather than written here.
 EA_SOURCE = "EA"
 EA_DATASET = "https://environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7"
 EA_CREDIT = ("© Environment Agency copyright and/or database right. Licensed under the Open "
@@ -240,9 +248,95 @@ EA_COMPANIES = {
     "Anglian": "Anglian Water", "Northumbrian": "Northumbrian Water", "Severn Trent": "Severn Trent Water",
     "South West": "South West Water", "Southern": "Southern Water", "Thames": "Thames Water",
     "United Utilities": "United Utilities", "Wessex": "Wessex Water", "Yorkshire": "Yorkshire Water",
-    "Welsh": "Dwr Cymru Welsh Water",
+    "Welsh": "Dwr Cymru Welsh Water", "Dwr Cymru": "Dwr Cymru Welsh Water",
 }
 EA_TEST_ONLY = {"Dwr Cymru Welsh Water"}
+# The platform's download route: a request that returns a short-lived signed link to the file.
+EA_FILE_API = ("https://environment.data.gov.uk/file-management-open/data-sets/"
+               "c95ecc47-fa70-4a24-b8cc-098232987526/files/{name}/download-url")
+_EA_ZIP = re.compile(r"^(\d{4})\b.*Detailed EDM Start-Stop Data\.zip$", re.IGNORECASE)
+
+
+def ea_zip_year(name: str) -> int | None:
+    """The year of an EA yearly start/stop zip, from its name; None for any other file."""
+    m = _EA_ZIP.match(Path(name).name)
+    return int(m.group(1)) if m else None
+
+
+def ea_zip_names() -> dict[int, str]:
+    """Year -> name of each yearly start/stop zip in the dataset page's file list."""
+    with httpx.Client(headers=config.EA_HEADERS, timeout=60, follow_redirects=True) as c:
+        r = c.get(EA_DATASET)
+        r.raise_for_status()
+    m = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', r.text, re.S)
+    if not m:
+        raise RuntimeError(f"no file list on {EA_DATASET}; the page layout has changed")
+    files = json.loads(m.group(1)).get("props", {}).get("pageProps", {}).get("files", [])
+    out: dict[int, str] = {}
+    for f in files:
+        year = ea_zip_year(f.get("name", ""))
+        if year is not None:
+            if year in out:
+                raise RuntimeError(f"two zips for {year}: {out[year]!r} and {f['name']!r}")
+            out[year] = f["name"]
+    return out
+
+
+def download_ea_file(name: str, dest: Path) -> Path:
+    """Download `name` from the EA dataset into the folder `dest` through the signed-link route."""
+    if name != Path(name).name or "\\" in name:   # the name comes from a web page; keep it in `dest`
+        raise ValueError(f"not a plain file name: {name!r}")
+    with httpx.Client(headers=config.EA_HEADERS, timeout=600, follow_redirects=True) as c:
+        r = c.get(EA_FILE_API.format(name=quote(name)))
+        r.raise_for_status()
+        f = c.get(r.json()["url"])
+        f.raise_for_status()
+    dest.mkdir(parents=True, exist_ok=True)
+    (dest / name).write_bytes(f.content)
+    log.info("downloaded %s (%d bytes)", name, len(f.content))
+    return dest / name
+
+
+def ea_yearly_zips(years, raw: Path, refresh: bool = False) -> dict[int, Path]:
+    """Year -> local path of the EA's start/stop zip for each of `years`, kept in `raw`. A zip already
+    there is used without asking the platform. Otherwise, or with `refresh`, the dataset's current
+    list is read and its zips are downloaded (again, with `refresh`: the EA revises files in place
+    under the same name). When a year has more than one
+    local zip (a year-to-date zip renamed as months were added), the newest file is used."""
+    years = sorted(set(years))
+    local: dict[int, Path] = {}
+    for p in sorted(raw.glob("*.zip"), key=lambda p: p.stat().st_mtime):
+        y = ea_zip_year(p.name)
+        if y in years:
+            local[y] = p
+    if refresh or set(local) != set(years):
+        listed = ea_zip_names()
+        missing = [y for y in years if y not in listed]
+        if missing:
+            raise RuntimeError(f"the EA dataset lists no start/stop zip for {missing}; it lists {listed}")
+        for y in years:
+            p = raw / listed[y]
+            local[y] = p if p.exists() and not refresh else download_ea_file(listed[y], raw)
+    return local
+
+
+def ea_zip_members(zip_path) -> dict[str, list[tuple[Path, str]]]:
+    """Company -> (zip, member) for every start/stop file inside a yearly zip. A data file whose
+    name gives no known company stops the import: it would otherwise be dropped without notice."""
+    zip_path = Path(zip_path)
+    out: dict[str, list[tuple[Path, str]]] = {}
+    with zipfile.ZipFile(zip_path) as zf:
+        for info in zf.infolist():
+            base = Path(info.filename).name
+            if info.is_dir() or info.filename.startswith("__MACOSX/") or base.startswith((".", "~$")):
+                continue
+            if Path(base).suffix.lower() not in (".csv", ".xlsx"):
+                continue
+            company = ea_company(base)
+            if company is None:
+                raise ValueError(f"{zip_path.name}: no company for member {info.filename!r}")
+            out.setdefault(company, []).append((zip_path, info.filename))
+    return out
 
 
 def ea_company(name: str) -> str | None:
@@ -253,29 +347,58 @@ def ea_company(name: str) -> str | None:
     return None
 
 
-def _ea_rows(path) -> list[tuple]:
-    """The first four cells of every row of every sheet of `path` (XLSX by its bytes, else CSV)."""
-    path = Path(path)
-    with open(path, "rb") as f:
-        head = f.read(4)
-    if head == b"PK\x03\x04":
+def _ea_name(src) -> str:
+    """A start/stop file's own name, from a path or a (zip, member) pair."""
+    return Path(src[1] if isinstance(src, tuple) else src).name
+
+
+def _ea_bytes(src) -> bytes:
+    """A start/stop file's bytes, from a path or a (zip, member) pair."""
+    if isinstance(src, tuple):
+        with zipfile.ZipFile(src[0]) as zf:
+            return zf.read(src[1])
+    return Path(src).read_bytes()
+
+
+def _ea_offset(header) -> int:
+    """Where the id column sits in a heading row: two columns before the first heading that names
+    the start ("Discharge Start", or Thames's "Discharge Strat"). Some sheets put a permit number
+    before the id; most begin with the id."""
+    for i, cell in enumerate(header):
+        s = str(cell or "").lower()
+        if "start" in s or "strat" in s:
+            return max(i - 2, 0)
+    return 0
+
+
+def _ea_rows(src) -> list[tuple]:
+    """The id, name, start and stop cells of every row of every sheet of a start/stop file (XLSX by
+    its bytes, else CSV), from a path or a (zip, member) pair."""
+    raw = _ea_bytes(src)
+    if raw[:4] == b"PK\x03\x04":
         from openpyxl import load_workbook  # dev dependency; only the off-CI import needs it
         # A file object, not the path: openpyxl refuses a workbook whose name ends ".csv".
-        with open(path, "rb") as f:
-            wb = load_workbook(f, read_only=True, data_only=True)
-            rows = [tuple(r[:4]) for ws in wb.worksheets for r in ws.iter_rows(values_only=True)
-                    if r and len(r) >= 4]
-            wb.close()
+        wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+        rows = []
+        for ws in wb.worksheets:
+            off = None
+            for r in ws.iter_rows(values_only=True):
+                if off is None:
+                    off = _ea_offset(r or ())
+                if r and len(r) >= off + 4:
+                    rows.append(tuple(r[off:off + 4]))
+        wb.close()
         return rows
-    raw = path.read_bytes()
     for enc in ("utf-8-sig", "cp1252"):
         try:
             text = raw.decode(enc)
             break
         except UnicodeDecodeError:
             continue
+    head = pd.read_csv(io.StringIO(text), header=None, dtype=str, keep_default_na=False, nrows=1)
+    off = _ea_offset(head.iloc[0].tolist()) if len(head) else 0
     df = pd.read_csv(io.StringIO(text), header=None, dtype=str, keep_default_na=False,
-                     usecols=range(4), skip_blank_lines=True)
+                     usecols=range(off, off + 4), skip_blank_lines=True)
     return list(df.itertuples(index=False, name=None))
 
 
@@ -317,16 +440,16 @@ def ea_times(values) -> pd.Series:
 
 def read_ea_events(paths, positions: pd.DataFrame | None = None, source: str = EA_SOURCE,
                    remap_ids: bool = True) -> pd.DataFrame:
-    """The EA start/stop files `paths` (any company, CSV or XLSX, every sheet) in the fetch_events
-    schema. Header rows and rows whose start is not a time are dropped; repeated rows (same id, start
+    """The EA start/stop files `paths` (any company, CSV or XLSX, every sheet; each a path or a
+    (zip, member) pair from ea_zip_members) in the fetch_events schema. Header rows and rows whose start is not a time are dropped; repeated rows (same id, start
     and stop) are kept once. Old ids are mapped to current ones (`_id_map`) when `remap_ids`.
     `positions` (site_id, lat, lon) defaults to the newest position of each id in
     annual_returns.parquet."""
     frames = []
-    for path in paths:
-        rows = [r for r in _ea_rows(path) if r[0] not in (None, "")]
+    for src in paths:
+        rows = [r for r in _ea_rows(src) if r[0] not in (None, "")]
         df = pd.DataFrame(rows, columns=["site_id", "site_name", "event_start", "event_end"])
-        df["source"] = f"{source} ({Path(path).name})"
+        df["source"] = f"{source} ({_ea_name(src)})"
         frames.append(df)
     df = pd.concat(frames, ignore_index=True)
     df["site_id"] = df["site_id"].astype(str).str.strip()
