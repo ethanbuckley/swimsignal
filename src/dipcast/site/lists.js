@@ -10,7 +10,7 @@
 // "current" is the list the Saved page shows, and the one Save on a spot's page adds to. Before
 // lists (October 2026) the saved spots were one list of ids under 'dipcast.saved'. The page still
 // writes that key, as every spot in every list, so that a page from an older build (a tab left open,
-// or the offline copy before it updates) and a rollback of this change still see every saved spot.
+// or the offline copy before it updates) and a rolled-back build still see every saved spot.
 const listsRules = () => typeof storedList === 'function' ? { storedList } : require('./experience.js');
 
 const LISTS_KEY = 'dipcast.lists';

@@ -28,12 +28,11 @@ const shortDay = iso => iso === today() ? 'Today' : new Date(iso + 'T12:00:00').
 const dayWord = iso => iso === today() ? 'today' : iso === addDays(today(), 1) ? 'tomorrow'
   : 'on ' + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'long'});
 const dayName = iso => dayWord(iso).replace(/^on /, '');
-// The reader's day (16 Oct 2026, G1). The build's date was "today" everywhere, and builds come up to
-// 7.7 h apart, so between midnight and the next build the page said "Today" for yesterday and
-// "Tomorrow: 67 of 105 spots at low risk" about today. While the forecast is no more than `freshMin`
-// minutes old (the page's stale notice comes after that) the page's day is the device's, if later;
-// fromDay then moves the rows before it out of each spot's five days. The alerts, the organisers' record
-// and the other pages keep the build's day (setToday with the build's date).
+// The reader's day. Builds come up to 7.7 h apart, so with the build's date as "today" everywhere,
+// between midnight and the next build the page would call yesterday "Today". While the forecast is no
+// more than `freshMin` minutes old (the page's stale notice comes after that) the page's day is the
+// device's, if later; fromDay then moves the rows before it out of each spot's five days. The alerts,
+// the organisers' record and the other pages keep the build's day (setToday with the build's date).
 function readerDay(generatedAt, nowMs, freshMin) {
   const built = String(generatedAt).slice(0, 10), mine = localISO(new Date(nowMs));
   return mine > built && nowMs - Date.parse(generatedAt) <= freshMin * 6e4 ? mine : built;
@@ -56,7 +55,7 @@ function fromDay(s, iso, built) {
 }
 // ------------------------------------------------------------------------------ risk
 // A day's level is the worse of two forecasts and one record, because sewage from overflows is
-// only part of what makes river water dirty: before this, every Thames spot read "low".
+// only part of what makes river water dirty: from spills alone, every Thames spot would read "low".
 //  - Sewage spills: the exposure index's level, where monitored overflows are upstream.
 //  - Water quality: the E. coli estimate, the calibrated chance a sample would be over 900 per 100 ml,
 //    where it was tested (rivers with overflows upstream). Low under 10%: the minimum inland
@@ -85,19 +84,16 @@ function fromDay(s, iso, built) {
 //  - The EA's latest lab sample at a bathing water, from the same visit, if under 14 days old and over
 //    900 E. coli per 100 ml: the day is at least moderate (sampleLevel, below).
 //  - Today only: right now's spills (the live status). The days come from the rain model alone
-//    (forecast.py), so on 11 Oct 2026 Greenholme read "Very high risk right now" over a five days whose
-//    "Today" said moderate, with an overflow discharging since 6 Oct. Today is now at least right now.
+//    (forecast.py), so a day can read moderate while an overflow upstream is discharging now. Today is
+//    at least right now.
 // Where there is no daily forecast (nothing monitored upstream, or an isolated lake) a rating, an algae
 // check or a sample sets the level only where it raises it: sufficient moderate, poor high, algae
 // moderate or high, a sample moderate. Otherwise the level is a plain one of its own: "No monitored
 // overflow found upstream", the same words whether the trace found none within its 60 km or the
-// river network draws nothing into the lake (an isolated lake; the spot's page says which). Until 11
-// Oct 2026 these were "No sewage risk from monitored overflows", which a red-team review read as "no
-// risk", and "No monitored overflow drains into this lake", which only 3 of the 12 lakes with nothing
-// upstream got (Buttermere and the Hampstead ponds read the first), and before that "No river
-// connection: overflows cannot reach this lake", false at a fell tarn with becks in and out that the
-// river network does not draw (Loughrigg Tarn). Before 3 Oct 2026 an excellent or good rating made
-// such a spot "low", the same word as a forecast that had looked and found nothing.
+// river network draws nothing into the lake (an isolated lake; the spot's page says which). The words
+// claim no more than that: not "no risk", and not "no river connection", which is false at a fell tarn
+// with becks in and out that the river network does not draw (Loughrigg Tarn). Nor "low", whatever the
+// rating: that is the word for a forecast that had looked and found nothing.
 // Not included: the EA's short-term advice against bathing after an incident (Frensham Great Pond's
 // harmful-algae warning since 19 Jun 2026, say). Its service refuses the build's machines (HTTP 403
 // in every build since 28 Sep 2026) and sends no access-control-allow-origin, so the page cannot read
@@ -125,29 +121,27 @@ const ecoliBand = (s, x) => ecoliTested(s) && x && !nil(x.p_ecoli_gt900) ? ECOLI
 // stays out of the main view (ECOLI_OFF, below).
 const ecoliUntested = x => !!x && x.in_validated_season === false;
 const ecoliLevel = (s, x) => ecoliUntested(x) ? null : ecoliBand(s, x);
-// What stands in for the figure out of season (20 Oct 2026). An outside reviewer read the Thames at Long
-// Bridges as two answers to reconcile: "Moderate risk" over a tile whose figure was "56%", labelled
-// "Untested in October". A precise number gains authority whatever the words beside it say. So from
-// October to April no percentage is in a tile's figure, a row's value, a summary line, the shared picture
-// or the decision record: the tile says ECOLI_OFF, is named experimental, and keeps the daily figures under
-// a fold of that name (ECOLI_FOLD). The day-by-day numbers, a folded table, keep them marked †. On 11 Oct
-// 2026 the band had already gone ("Very high risk" under a "Low risk" answer read as a contradiction).
+// What stands in for the figure out of season. "Moderate risk" over a tile whose figure is "56%",
+// labelled "Untested in October", reads as two answers to reconcile: a precise number gains authority
+// whatever the words beside it say. So from October to April no percentage is in a tile's figure, a
+// row's value, a summary line, the shared picture or the decision record: the tile says ECOLI_OFF, is
+// named experimental, and keeps the daily figures under a fold of that name (ECOLI_FOLD). The
+// day-by-day numbers, a folded table, keep them marked †. The band is out of the main view too ("Very
+// high risk" under a "Low risk" answer read as a contradiction).
 const ECOLI_OFF = 'Out of season';
 const ECOLI_EXPERIMENTAL = 'Experimental E. coli estimate', ECOLI_FOLD = 'Experimental estimate';
 const ECOLI_OFF_SAID = 'Out of season. The E. coli estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental, so it is not given here and does not set the level.';
 const algaeAge = a => (Date.parse(today()) - Date.parse(a.date)) / 864e5;
 const algaeLevel = s => { const a = s.algae; if (!a || nil(a.level) || algaeAge(a) > 14) return null;
   return a.level >= 3 ? 'high' : a.level >= 2 ? 'moderate' : null; };
-// A lab sample over the line, recent enough to count (11 Oct 2026). Rutland Water Sykes Lane showed
-// "3,800 E. coli per 100 ml" and the Avon at Queen Elizabeth Gardens 1,400 under "Low risk for the next
-// five days", with nothing joining the two. The rule:
+// A lab sample over the line, recent enough to count. Without it a page could show "3,800 E. coli per
+// 100 ml" under "Low risk for the next five days", with nothing joining the two. The rule:
 //  - The line is 900 per 100 ml, the one the E. coli estimate and the page's sample row already use (the
 //    inland "sufficient" standard's, Bathing Water Regulations 2013, schedule 5). One sample sets no
 //    rating, but a count over it is a measured failure of the water the level is about.
 //  - It counts for 14 days from the day it was taken, as the algae check from the same EA visit does:
 //    the EA samples about weekly in season, so that is the latest sample and one missed visit. Older,
-//    one sample says little about the water now. Both samples above were 17 and 19 days old on 11 Oct
-//    2026, so neither counts that day; on 6 Oct both did.
+//    one sample says little about the water now.
 //  - It makes every day at least moderate, the level whose line says to take more care, as algae
 //    "some at intervals" does. Not high: a single count, days old, is not a forecast that the water is
 //    poor now. The headline names it ("a recent EA sample over 900 E. coli").
@@ -161,19 +155,18 @@ const sampleLevel = s => sampleOver(s.lab_sample) && sampleAge(s.lab_sample) <= 
 // and which set it ('rating', 'sample' or 'algae'). A tie goes to the rating, then the sample.
 const standingLevel = s => { const c = CLASS_LEVEL[classOf(s)] ?? null, a = algaeLevel(s), m = sampleLevel(s), l = [c, a, m].reduce(higher, null);
   return { level: l, by: !l ? null : rank(c) >= rank(l) ? 'rating' : rank(m) >= rank(l) ? 'sample' : 'algae' }; };
-// Right now not known (12 Oct 2026): overflows upstream, none of them reporting live and none
-// discharging, the Right now tile's "Unknown" (index.html, nowTile). forecast.py still sends right now
-// as low, risk 0, from no readings at all, and the headline took that as a real low: Sandy Lane,
-// Hereford and Symonds Yat (Dŵr Cymru's overflows, with no live feed SwimSignal reads) and the Coquet
-// at Rothbury and the Allen at Plankey Mill (Northumbrian's feed over six hours old) read "Low risk on
-// every day with a forecast" beside a tile saying no overflow there reported. So a low right now with
-// no reading behind it is no level at all: it sets nothing, and the headline does not claim it.
+// Right now not known: overflows upstream, none of them reporting live and none discharging, the Right
+// now tile's "Unknown" (index.html, nowTile). forecast.py sends right now as low, risk 0, even from no
+// readings at all: Dŵr Cymru's overflows have no live feed SwimSignal reads, and a company's feed can
+// be over six hours old. Taken as a real low, that would put "Low risk on every day with a forecast"
+// beside a tile saying no overflow there reported. So a low right now with no reading behind it is no
+// level at all: it sets nothing, and the headline does not claim it.
 // A raised right now (spills that stopped lately, from the records the feeds last gave) still counts.
 // What is watched is judged by weight where the build gives it (forecast.live_counts): right now is
 // known when the overflows reporting live carry at least half the weight upstream. Sandy Lane, Chester,
-// after its Caldy Brook overflows were joined (12 Oct 2026): 1 of its 13 reports live, with 0.3% of the
-// weight, and the headline went back to "Low risk for the next five days". On the live data of that day
-// the rule changed Sandy Lane alone: the next lowest share is the Medway at Tonbridge, 66%, then 92%.
+// with its Caldy Brook overflows joined (12 Oct 2026): 1 of its 13 reports live, with 0.3% of the
+// weight. On the live data of that day the rule changed Sandy Lane alone: the next lowest share is the
+// Medway at Tonbridge, 66%, then 92%.
 const NOW_WATCHED_SHARE = 0.5;
 const nowWatched = s => { const n = s.now || {}, total = overflows(s), mon = Math.min(total, n.monitored_upstream ?? total);
   if (!mon) return 0;
@@ -208,7 +201,7 @@ const worst = s => worstNear(s)[0].level;
 const level = s => {
   if (s.error && String(s.error).startsWith('forecast failed')) return NO_FORECAST;
   if (!daily(s)) { const raised = standingLevel(s).level;
-    if (s.error && !isolated(s)) return raised || NOT_COVERED;   // no water within reach: the old rule
+    if (s.error && !isolated(s)) return raised || NOT_COVERED;   // no water within reach: not covered
     return rank(raised) >= 1 ? raised : isolated(s) ? NO_RIVER : NO_OVERFLOWS; }
   return worst(s) ?? NO_FORECAST;
 };
@@ -225,10 +218,10 @@ const because = r => r.by === 'spill' ? (r.now ? 'sewage spills right now' : 'se
   : r.by === 'water' ? (r.level === 'moderate' ? 'E.\u00a0coli may be raised' : r.level === 'very high' ? 'high E.\u00a0coli likely' : 'raised E.\u00a0coli likely')
   : r.by === 'sample' ? 'a recent EA sample over 900 E.\u00a0coli'
   : r.by === 'algae' ? 'algae at the last check' : 'rated poor';
-// What set right now's level. A spill counts until 48 h after its water has passed the spot, so right now
-// can be raised with no overflow upstream discharging: then the spills are recent ones, not running now.
-// Before, Eden at Armathwaite (4 Oct 2026) read "Moderate risk right now: sewage spills" over a tile
-// saying "0 of 60 discharging". Where the count is not known, the words stay as they were.
+// What set right now's level. A spill counts until 48 h after its water has passed the spot, so right
+// now can be raised with no overflow upstream discharging: then the spills are recent ones, not running
+// now, as a tile saying "0 of 60 discharging" beside them shows. Where the count is not known,
+// because()'s words.
 const nowBecause = (s, r) => r.by === 'spill' && (s.now || {}).discharging_upstream === 0 ? 'recent sewage spills' : because(r);
 // What set a day's level: right now's words where right now raised today.
 const dayBecause = (s, r) => r.now ? nowBecause(s, r) : because(r);
@@ -238,9 +231,8 @@ const dayBecause = (s, r) => r.now ? nowBecause(s, r) : because(r);
 // why the level is high and when the advice applies: "advice against bathing" beside a sentence
 // saying it applies only in summer read as a contradiction in October. One wording for the
 // headline's reason, the rating's sentence, the days' sentence and the alerts.
-// The reason follows the level and its noun ("High risk: rated poor"). Until 6 Oct 2026 it replaced
-// them ("Rated poor: advice against bathing from 15 May"), so 13 rows on the list never said "High
-// risk", and in October "from 15 May" read as though the advice started on that date.
+// The reason follows the level and its noun ("High risk: rated poor"), never replaces them, so every
+// row on the list at a water rated poor says "High risk".
 const inBathingSeason = iso => { const md = String(iso).slice(5, 10); return md >= '05-15' && md <= '09-30'; };
 const poorReason = iso => inBathingSeason(iso) ? 'rated poor, advice against bathing' : 'rated poor';
 const poorAdvice = iso => inBathingSeason(iso)
@@ -248,9 +240,9 @@ const poorAdvice = iso => inBathingSeason(iso)
   : 'The rating is poor, so the spot stays at high risk or worse; advice against bathing applies 15 May to 30 September.';   // the council's, not the EA's (above)
 // The words for a spot without a risk level, the same wherever it is described (the headline, so the
 // list row, the map's tooltip, the saved card and the alerts; the page's spills row; the comparison).
-// The two plain levels share their words (11 Oct 2026): what is true at both is that no monitored
-// overflow was found upstream, and neither says there is no risk. Where an isolated lake's own reason
-// adds something, ISOLATED_WHY says it (the spot's spills row, the organisers' page).
+// The two plain levels share their words: what is true at both is that no monitored overflow was found
+// upstream, and neither says there is no risk. Where an isolated lake's own reason adds something,
+// ISOLATED_WHY says it (the spot's spills row, the organisers' page).
 const FOUND_NONE = 'No monitored overflow found upstream';
 const COVER = { [NO_FORECAST]: 'No forecast in this update', [NOT_COVERED]: 'Not covered by the forecast',
   [NO_OVERFLOWS]: FOUND_NONE, [NO_RIVER]: FOUND_NONE };
@@ -258,16 +250,16 @@ const ISOLATED_WHY = 'The river network draws no river or beck into this lake, s
 // The two plain levels, where the model has nothing to forecast: under the level, one line kept in view.
 const plainLevel = l => l === NO_OVERFLOWS || l === NO_RIVER;
 const OTHER_RISKS = 'Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water.';
-// The Environment Agency's advice for today, at a designated bathing water (11 Oct 2026). On that day
-// Frensham Great Pond read "Low risk for the next five days" and "Usual care" while the EA's own panel,
-// a fold further down, said "Bathing is not advised today due to pollution from harmful algae". Neither
-// the build nor the page can read that advice (the list above), so where the EA gives it, the answer
-// says it could not be checked and where to look, beside the level and its action: on the spot's page,
-// the embed and the shared picture. A clicked point off the list is not checked against the bathing waters.
+// The Environment Agency's advice for today, at a designated bathing water. The EA's own panel can say
+// "Bathing is not advised today due to pollution from harmful algae" (Frensham Great Pond, 11 Oct 2026)
+// on a day the forecast reads "Low risk for the next five days" and "Usual care". Neither the build nor
+// the page can read that advice (the list above), so where the EA gives it, the answer says it could
+// not be checked and where to look, beside the level and its action: on the spot's page, the embed and
+// the shared picture. A clicked point off the list is not checked against the bathing waters.
 const eaUnchecked = s => !!s && !s.unlisted && s.source === 'designated' && !!s.classification;
 const EA_UNCHECKED = "The Environment Agency's advice for today could not be checked.";
-// Overflows in Wales (Ethan, 11 Oct 2026): Dŵr Cymru Welsh Water's overflows in Wales are not in the
-// data (no licence to reuse them yet), so at a spot whose traced river runs partly through Wales the
+// Overflows in Wales: Dŵr Cymru Welsh Water's overflows in Wales are not in the data (no licence to
+// reuse them yet), so at a spot whose traced river runs partly through Wales the
 // forecast misses whatever they do. The build measures how much of the river the trace walks (within
 // its 60 km) is in Wales (forecast.py, upstream_summary.wales_share; network/nations.py): on 11 Oct
 // 2026 Sandy Lane, Chester 73%, Shrewsbury 44%, Hereford 29%, Ludlow 12%; Symonds Yat and Ironbridge
@@ -280,10 +272,10 @@ function walesWords(s, short = false) {
   if (short) return `Overflows in Wales not counted (${walesPct(s)}% of the river above)`;
   return `Overflows in Wales are not counted: about ${walesPct(s)}% of the river within ${((s.assumptions || {}).max_upstream_km) ?? 60} km above this spot is in Wales.`;
 }
-// What the E. coli estimate is, said wherever it shows on a spot's page (Ethan, 11 Oct 2026: keep it all
-// year, labelled with what is true today). check is spots.json's ecoli_check (build_site.ecoli_check):
-// its record on live samples, read from the scores in each build, and the test on Welsh river samples
-// (docs/WALES-PLAN-2026-10.md, W10). x is the day shown. Sentences, in order: what the level and the
+// What the E. coli estimate is, said wherever it shows on a spot's page (all year, labelled with what
+// is true today). check is spots.json's ecoli_check (build_site.ecoli_check): its record on live
+// samples, read from the scores in each build, and the test on Welsh river samples
+// (docs/WALES-PLAN-2026-10.md). x is the day shown. Sentences, in order: what the level and the
 // estimate each count, so that "Low risk" and "Usual care" over a high estimate do not read as a
 // contradiction; its tested season; how it has done on live samples; and, where the river runs from
 // Wales, the Welsh test.
@@ -300,10 +292,9 @@ function ecoliNotes(s, check, x) {
   return out;
 }
 // What a daily level counts and what it does not, said once on a spot's page, under the answer; a plain
-// level says it in its own line, OTHER_RISKS. Until 11 Oct 2026 nothing near the headline said it, so
-// "Low risk" read as "the water is fine". A Lake District water-quality group (11 Oct 2026) pointed out
-// that rain washes in runoff from grazing land and roads whatever the overflows do, and that at a lake
-// the wind decides whether an overflow's water reaches the shore. The forecast takes in neither: lake
+// level says it in its own line, OTHER_RISKS. Without it "Low risk" reads as "the water is fine". Rain
+// washes in runoff from grazing land and roads whatever the overflows do, and at a lake the wind
+// decides whether an overflow's water reaches the shore. The forecast takes in neither: lake
 // water drifts at one fixed speed (config.LAKE_VELOCITY_MS). On rivers from May to September the E. coli
 // estimate does count the other sources, as an average from the rain at the spot and the time of year,
 // so that day says so. iso is a picked day; without it, today. methods.html#limits has each limit and
@@ -326,9 +317,8 @@ const coverage = s => COVER[String(s.error).startsWith('forecast failed') ? NO_F
 // [the level and when, what set it, the worse later day or '']; the list joins them, a spot's page puts
 // the first two on two lines and the third under them (weekNext).
 // A level always says "risk": a bare "Very high today" read as very high what.
-// Until 11 Oct 2026 a later day was named only when now, today and tomorrow were all low: the Eden at
-// Lazonby read "Moderate risk today" while Tuesday and Thursday were very high, and nothing above the
-// five days said so.
+// A worse later day is named whatever now, today and tomorrow are: "Moderate risk today" over a very
+// high Tuesday would otherwise leave nothing above the five days to say so.
 function headParts(s) {
   const l = level(s);
   if (COVER[l]) return [COVER[l], '', ''];
@@ -347,16 +337,14 @@ function headParts(s) {
 }
 // "Moderate risk today: sewage spills · Very high risk on Tuesday".
 const headline = s => { const [h, w, later] = headParts(s); return [h, w].filter(Boolean).join(': ') + (later ? ` · ${later}` : ''); };
-// The answer's headline names what it covers (20 Oct 2026). An outside reviewer read "Moderate risk" at
-// Long Bridges, Oxford, as a verdict on the water, beside an E. coli tile that seemed to say something else,
-// and asked for a headline scoped to what it forecasts. Where the sewage spill forecast or right now's spills
-// set the level, and at low risk (the forecast looked and found little), the level's noun says so: "Moderate
-// risk from sewage spills", the words all one size (Ethan, 2 Oct 2026), and the line under it gives when
-// ("Tomorrow"), not the cause again (spillSet). A poor rating, algae at the last check, a lab sample and the
-// E. coli estimate are not forecasts of sewage spills: there the headline stays "High risk" over its cause.
-// The list, the map's tooltips, Nearby, the comparison and the alerts keep headline(), whose raised rows
-// already name the cause after a colon. The reviewer's own words, "predicted risk from monitored sewage
-// overflows", were option A in the pull request; this, shorter, is B.
+// The answer's headline names what it covers: a bare "Moderate risk" reads as a verdict on the water,
+// beside an E. coli tile that may seem to say something else. Where the sewage spill forecast or right
+// now's spills set the level, and at low risk (the forecast looked and found little), the level's noun
+// says so: "Moderate risk from sewage spills", the words all one size, and the line under it gives when
+// ("Tomorrow"), not the cause again (spillSet). A poor rating, algae at the last check, a lab sample
+// and the E. coli estimate are not forecasts of sewage spills: there the headline stays "High risk"
+// over its cause. The list, the map's tooltips, Nearby, the comparison and the alerts keep headline(),
+// whose raised rows already name the cause after a colon.
 const HEAD_SCOPE = 'risk from sewage spills';
 // Whether a level was set by the spills: r is a day's or right now's risk (risk()), at a spot with a daily forecast.
 const spillSet = (s, r) => daily(s) && !!r && !!r.level && (r.by === 'spill' || rank(r.level) === 0);
@@ -379,9 +367,9 @@ function dayHeadline(s, iso) {
   return `${cap(r.level)} risk${rank(r.level) > 0 ? ': ' + dayBecause(s, r) : ''}`;
 }
 // One line on a tile of what the level rests on, saying how the tile's own figure stands to the level
-// above. On 6 Oct 2026 Wharfe at Cromwheel read "High risk" over a spills tile at "Moderate risk", a
-// water tile marked out of season and five days at "High", with nothing to join them up. kind is
-// 'spill', 'water', 'rating', 'algae' or 'now'. iso is a picked day, whose rows show that day's
+// above: "High risk" over a spills tile at "Moderate risk" and a water tile marked out of season needs
+// something to join them up. kind is 'spill', 'water', 'rating', 'algae' or 'now'. iso is a picked day,
+// whose rows show that day's
 // figures; without it the line is for the answer (right now, today and tomorrow) and the tiles,
 // which show today's. Empty where there is nothing to say: no level above (a plain level, a failed
 // forecast), no figure, or an E. coli estimate out of season, whose tile already says it is not counted.
@@ -429,16 +417,16 @@ function tileLine(s, kind, iso = null) {
   return (kind === 'spill' && by === 'spill' ? '' : `On its own: ${t} risk. `) + raiser;
 }
 // ------------------------------------------------------------------------------ when it clears
-// "When will it clear?" (docs/REVIEW-2026-10-16.md, G7): forecast.py's now.clears_at, the time right
-// now's raised level should be back to low if no new spill starts (transport.clear_time: the spills
-// running now stop now, and each spill's water passes the spot and dies off). Said as a clock time in
+// "When will it clear?": forecast.py's now.clears_at, the time right now's raised level should be back
+// to low if no new spill starts (transport.clear_time: the spills running now stop now, and each
+// spill's water passes the spot and dies off). Said as a clock time in
 // UK time on the Right now tile and in the alerts (scripts/alerts.js writes it as `clears`): "The
 // spills upstream should have passed and died off by Saturday 22:47." Only while right now is raised
 // (moderate or worse, and known: nowSpill), and never a time already past (an old page, a late alert).
 // The page's "where the risk comes from" says the same time as a part of the day, with its reason.
 const UK_CLOCK = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', weekday: 'long', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 // "Saturday 22:47", the weekday even when it is today or tomorrow: an alert or a page read after midnight
-// would make "tomorrow" wrong (the forecast's today, as in REVIEW G1), and the weekday never is.
+// would make "tomorrow" wrong (the forecast's today, as in readerDay), and the weekday never is.
 function clockWords(iso) {
   const p = Object.fromEntries(UK_CLOCK.formatToParts(new Date(iso)).map(x => [x.type, x.value]));
   return `${p.weekday} ${p.hour}:${p.minute}`;
@@ -523,11 +511,9 @@ function dayAction(s, iso) {
 // (or to its lowest), or the later day a low one rises. The search starts after where the level came
 // from (worstNear's right now, today or tomorrow), not after the first day with the same level: a level
 // set by right now (an overflow discharging) is on none of the days, so the search then starts at
-// today, "Low risk later today", even when a later day happens to share it (Greenholme, 4 Oct 2026:
-// right now moderate, Thursday moderate, and the line was blank).
-// A later day worse than the answer's level comes first (11 Oct 2026): "Very high risk on Tuesday" under
-// "Moderate risk today" matters more than where the level falls, and until then the line was empty at
-// the Eden at Lazonby, whose Tuesday and Thursday were very high.
+// today, "Low risk later today", even when a later day happens to share it.
+// A later day worse than the answer's level comes first: "Very high risk on Tuesday" under
+// "Moderate risk today" matters more than where the level falls.
 function weekNext(s) {
   if (advisedAgainst(s)) return 'At least high risk every day' + (laterWords(s) ? `; ${laterWords(s).charAt(0).toLowerCase()}${laterWords(s).slice(1)}` : '');
   if (!daily(s)) return '';
@@ -560,22 +546,21 @@ function bestDay(spots, dates) {
   }
   return best;
 }
-// The list's answer line (option B of the 13 Oct 2026 mock-ups, "Saturday: 64 of 105 spots at low
-// risk"): the weekend's better day while the five days reach a Saturday or a Sunday, since that is
-// when most people swim, and otherwise the week's best day. `n` is every listed spot, as the lede
-// counts them ("forecasts for 105 spots"); a spot with no daily level is never counted low, so the
-// line claims only what it counts. Null when no day has a level (bestDay). With a day picked (one of
-// `dates`), that day's (16 Oct 2026, G4): the list said "On Monday" under "Tomorrow: 67 of 105 spots".
+// The list's answer line ("Saturday: 64 of 105 spots at low risk"): the weekend's better day while the
+// five days reach a Saturday or a Sunday, since that is when most people swim, and otherwise the week's
+// best day. `n` is every listed spot, as the lede counts them ("forecasts for 105 spots"); a spot with
+// no daily level is never counted low, so the line claims only what it counts. Null when no day has a
+// level (bestDay). With a day picked (one of `dates`), that day's, so the line under "On Monday" is
+// Monday's count.
 function lowAnswerDay(spots, dates, picked = null) {
   const weekend = dates.filter(iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay()));
   const b = bestDay(spots, picked && dates.includes(picked) ? [picked] : weekend.length ? weekend : dates);
   return b && { ...b, n: spots.length };
 }
 const lowAnswerWords = a => `${cap(dayName(a.date))}: ${a.low || 'none'} of ${a.n} spot${a.n === 1 ? '' : 's'} at low risk`;
-// The line under it, when another of the five days has more spots at low risk (Ethan, 20 Oct 2026,
-// option B): the same form, "Today: 43 of 105, the most this week". Until then it read "Lowest
-// pollution risk this week: today" with no count, under "Saturday: 19 of 105 spots at low risk",
-// which never says it is the weekend's day, so the two lines looked to disagree.
+// The line under it, when another of the five days has more spots at low risk: the same form, "Today:
+// 43 of 105, the most this week". Without the count, under "Saturday: 19 of 105 spots at low risk",
+// which never says it is the weekend's day, the two lines look to disagree.
 const mostWords = a => `${cap(dayName(a.date))}: ${a.low} of ${a.n}, the most this week`;
 
 // Saved spots with nothing upstream have no daily level, so a count of levelled spots can be lower
@@ -584,10 +569,10 @@ const yoursLevelled = (d, spots) => d.known < spots.length ? ' with a daily leve
 // How the weekend looks, beside the week's best day, while the five days reach a Saturday or a
 // Sunday: "Best this weekend: Saturday, 64 spots at low risk." On a Saturday the weekend is today
 // and tomorrow. On a Tuesday Saturday is the fifth day and alone, so no "best": "This weekend: 64
-// spots at low risk on Saturday." Equal days are said together. Empty on a Sunday, when the weekend
-// is today and the list already shows it (Ethan, 4 Oct 2026); without a weekend day that has a
-// level; and when the week's best day is itself a weekend day: the best-day sentence names it
-// already, and the line names a day once. `yours` counts the saved spots.
+// spots at low risk on Saturday." Equal days are said together. Empty on a Sunday, when the weekend is
+// today and the list already shows it; without a weekend day that has a level; and when the week's best
+// day is itself a weekend day: the best-day sentence names it already, and the line names a day once.
+// `yours` counts the saved spots.
 function weekendWords(spots, dates, yours = false) {
   const week = bestDay(spots, dates), weekend = iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay());
   const days = dates.filter(weekend).map(iso => bestDay(spots, [iso])).filter(Boolean);
@@ -600,9 +585,8 @@ function weekendWords(spots, dates, yours = false) {
 
 // ------------------------------------------------------------------------------ overflow names
 // Overflow names that arrive in capitals ("LITTLE SALKELD WwTW") in normal case: words of four or more
-// capitals, and of three in a name all in capitals ("BEN RHYDDING/STW" is "Ben Rhydding/STW"; until
-// 11 Oct 2026 it was "BEN Rhydding/STW"). Codes (KEEP_CAPS) and a reference that runs into a number
-// ("DER096") stay as written.
+// capitals, and of three in a name all in capitals ("BEN RHYDDING/STW" is "Ben Rhydding/STW", not "BEN
+// Rhydding/STW"). Codes (KEEP_CAPS) and a reference that runs into a number ("DER096") stay as written.
 const KEEP_CAPS = new Set(('STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO CSO CSOEO SO OV EO FEEO '
   + 'DWF XDWF FFT OOS NWL ESO EMO SWO HLR SCC SDC ICI RAF IOW').split(' '));
 const nameCase = s => {
@@ -610,9 +594,9 @@ const nameCase = s => {
   return t.replace(/[A-Za-z']+/g, (w, i) => !/^[A-Z']+$/.test(w) || KEEP_CAPS.has(w) || /[0-9]/.test(t.charAt(i + w.length)) ? w
     : w.length >= 4 || (shouty && w.length === 3) ? w[0] + w.slice(1).toLowerCase() : w);
 };
-// An overflow's name in plain words, from the company's own (markets plan B1, 5 Oct 2026): the place,
-// then what the overflow is at. "Addingham/NO 1 SPS/Preliminary Treatment-STW/6Xdwf Overflow" is
-// "Addingham sewage works overflow", "RIVADALE VIEW/CSO" "Rivadale View storm overflow". Pages show
+// An overflow's name in plain words, from the company's own: the place, then what the overflow is at.
+// "Addingham/NO 1 SPS/Preliminary Treatment-STW/6Xdwf Overflow" is "Addingham sewage works overflow",
+// "RIVADALE VIEW/CSO" "Rivadale View storm overflow". Pages show
 // the company's name beside it (overflowNames), since that is the name to look it up by.
 //  - The place is the first part, before "/", "_" or " - ", with the codes taken out; later parts are
 //    added when they say something new: South West Water's town ("59 Barton Drive, Newton Abbot"),
@@ -726,17 +710,17 @@ const overflowNames = c => {
 };
 // A water company's name as a page writes it. The EA's annual returns spell Dŵr Cymru without its
 // circumflex ("Dwr Cymru Welsh Water"), and the data keeps that spelling, which the build matches on;
-// the pages wrote it both ways until 11 Oct 2026.
+// a page writes it through companyName, with the circumflex.
 const companyName = name => String(name ?? '').replace(/\bDwr Cymru\b/g, 'Dŵr Cymru');
 // Where an overflow is from the spot, along the water, in words: "6.0 km upstream". One that drains
-// into the same lake is "across the lake" (11 Oct 2026): Glebe Road PS, in Bowness, read "2.6 km
-// upstream" of Millerground and "7.0 km upstream" of Waterhead, though Windermere drains south and
-// Bowness is down the lake from both. The trace carries lake water at one slow speed whichever way it
+// into the same lake is "across the lake": Glebe Road PS, in Bowness, would read "2.6 km upstream" of
+// Millerground and "7.0 km upstream" of Waterhead, though Windermere drains south and Bowness is down
+// the lake from both. The trace carries lake water at one slow speed whichever way it
 // goes (config.LAKE_VELOCITY_MS), so the words say how far, not which way. One placed where its stream
 // meets the river by a checked join (data/raw/overflow_joins.csv) says so, and one that joins at the
-// spot says it is there to within the map's precision: Culham STW read "0.0 km upstream" with 100%
-// reach at Clifton Hampden, with nothing to say why. Any other under 0.1 km is "at the spot" (16 Oct 2026,
-// G5): Friday Street SPS read "0.0 km upstream" at Henley. Plain text, its spaces before "km" unbroken.
+// spot says it is there to within the map's precision: Culham STW would read "0.0 km upstream" with 100%
+// reach at Clifton Hampden, with nothing to say why. Any other under 0.1 km is "at the spot", not
+// "0.0 km upstream". Plain text, its spaces before "km" unbroken.
 const atSpot = c => (Number(c.distance_km) || 0) + (Number(c.lake_distance_km) || 0) < 0.1;
 function overflowWhere(c) {
   const r = Number(c.distance_km) || 0, l = Number(c.lake_distance_km) || 0, k = `${(r + l).toFixed(1)} km`;
@@ -746,17 +730,16 @@ function overflowWhere(c) {
   return join ? `${where}, where its stream joins the river (checked on a map)` : where;
 }
 // How long its water takes to get here, said after overflowWhere's words: ", about 5 hours away", with
-// a longer time in its page's own words (`hours`). Under half an hour says so (16 Oct 2026, G5): Rivadale
-// View CSO, 0.3 h above Ilkley, read "under an hour". One at the spot says nothing: its travel is 0.0 h,
-// and Culham STW read "at the spot ..., under an hour away".
+// a longer time in its page's own words (`hours`). Under half an hour says so: Rivadale View CSO is
+// 0.3 h above Ilkley, which "under an hour" overstates. One at the spot says nothing: its travel is 0.0 h.
 const travelSaid = (c, hours) => atSpot(c) ? ''
   : `, ${c.travel_h < 0.5 ? 'under half an hour' : c.travel_h < 1 ? 'under an hour' : hours(c.travel_h)} away`;
-// An overflow discharging without a break for longer than this is named as possibly a fault (11 Oct
-// 2026). YWS02298, with no name, no receiving water ("#N/A") and no annual return, had reported
-// discharging since 6 Oct 10:46 UTC and set Greenholme's "Very high risk right now", the site's top
-// alarm, while the page named it by its code and never said since when. A storm overflow spills while
-// its sewer is overloaded; days on end in drying weather is more often a stuck sensor. It is not left
-// out of the risk: the page cannot tell which it is, so it says both.
+// An overflow discharging without a break for longer than this is named as possibly a fault. YWS02298,
+// with no name, no receiving water ("#N/A") and no annual return, reported discharging without a break
+// from 6 Oct 2026 10:46 UTC to at least 11 Oct and set Greenholme's "Very high risk right now", the
+// site's top alarm. A storm overflow spills while its sewer is overloaded; days on end in drying
+// weather is more often a stuck sensor. It is not left out of the risk: the page cannot tell which it
+// is, so it says both.
 const SPILL_LONG_H = 48;
 // The start of the spill an overflow is in now, as a time in ms, or null: its latest event has started
 // and not ended.

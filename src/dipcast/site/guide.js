@@ -130,8 +130,8 @@ function guidePhoto(p, i, g) {
 const guideAsk = d => '<p class="g-ask">Something here wrong or out of date, or missing? '
   + `<a href="feedback.html?type=guide&amp;spot=${encodeURIComponent(d.name || '')}">Tell us</a>; photos are welcome.</p>`;
 
-// One tile for what swimmers have not added yet (review of 16 Oct 2026, C1): with no guide, no recent
-// notes and no reviews, three tiles each said so, on nearly every page. "Know this spot?" holds a line
+// One tile for what swimmers have not added yet: with no guide, no recent notes and no reviews, three
+// tiles would each say so, on nearly every page. "Know this spot?" holds a line
 // for each section with nothing in it, in the order the tiles come; a section with something keeps its
 // own tile. The guide's line is written with the page; the notes' and the reviews' join once their file
 // says they have none (visits.js, reviews.js, knowAdd), and their button opens that section's form.

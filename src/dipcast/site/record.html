@@ -2,7 +2,7 @@
 <!-- The decision record: a prose page, with the shared head, header and foot, written by scripts/build_site.py
      (write_record) beside the app, whose levels.js, evidence.js, organisers.js, spots.json and
      verification.json it reads, with printed.js for the issue id and the data credits. record.js fills #record from the spot and the day after the #.
-     Wording: for Ethan's approval, and a solicitor's read before any paid use (docs/MARKETS-2026-10.md, question 4). -->
+     Wording: awaits approval, and a solicitor's read before any paid use (docs/MARKETS-2026-10.md, question 4). -->
 <title>Decision record · SwimSignal</title>
 <meta name="description" content="A printable record of the pollution risk forecast for one swim spot and one day, with each input's age and source, to attach to a written go or no-go decision.">
 <meta name="theme-color" content="#3d5b5d">
@@ -43,8 +43,8 @@
   main.doc .credits li { margin:2px 0; }
   .credits-run { display:none; }
   .print-only { display:none; }
-  /* Printed: up to two A4 pages at reading size, no controls. Ethan chose two pages over one page
-     shrunk to about 8 pt (6 Oct 2026). The decision lines stay together on one page. */
+  /* Printed: up to two A4 pages at reading size, no controls, not one page shrunk to about 8 pt.
+     The decision lines stay together on one page. */
   @page { size:A4 portrait; margin:7mm 10mm; }
   @media print {
     body { background:var(--card); font-size:var(--fs-note); line-height:1.35; }
@@ -73,7 +73,7 @@
     code { font-size:var(--fs-meta); overflow-wrap:anywhere; }
     main.doc ul.r-cannot { columns:2; column-gap:24px; margin-top:2px; }
     main.doc ul.r-cannot li { break-inside:avoid; margin:0 0 2px; }
-    /* The credits run on as text in two columns, set close: a list's items left the foot of each column short (20 Oct 2026). */
+    /* The credits run on as text in two columns, set close: a list's items leave the foot of each column short. */
     main.doc .credits { columns:2; column-gap:24px; margin:0 0 4px; line-height:1.3; }
     main.doc .credits ul, main.doc .credits li { display:inline; margin:0; padding:0; }
     main.doc .credits p { margin:2px 0 0; }
@@ -83,8 +83,8 @@
     main.doc .r-line { min-height:27px; }
     #r-decide { break-after:avoid; }
     .r-lines { break-inside:avoid; }
-    /* No break-after:avoid on the rows' labels: a label shares its grid row with its text, so it forbade
-       every break in the list, which then left a third of page 1 empty (20 Oct 2026). */
+    /* No break-after:avoid on the rows' labels: a label shares its grid row with its text, so it would forbid
+       every break in the list and leave a third of page 1 empty. */
     .print-only { display:block; }
     a { color:var(--ink); text-decoration:none; }
   }

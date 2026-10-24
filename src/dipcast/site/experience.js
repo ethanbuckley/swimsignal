@@ -16,8 +16,7 @@ function waterSamples(s, now = Date.now()) {
   return (s.lab_sample === null ? 'No lab sample this season.' : 'No lab sample in this update.') + page;
 }
 // The comparison's rows in plain text, for one spot on one day (iso), each a fact or what is not known.
-// Until 20 Oct 2026 they began with "Forecast" and "Live spill feeds": the five days and Right now
-// (compareRows) say both, and more.
+// No "Forecast" or "Live spill feeds" row: the five days and Right now (compareRows) say both, and more.
 function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
   const total = s.upstream_summary?.overflows || 0;
   const day = (s.days || []).find(x => x.date === iso), cl = s.classification;
@@ -40,8 +39,8 @@ function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
 }
 
 // ------------------------------------------------------------------------------ the comparison
-// Compare (Saved's "Compare your spots" and, since 20 Oct 2026, Plan a swim's "Compare these spots", which an
-// outside review asked for: "which of these places should I look into further for Saturday?"). Up to three
+// Compare (Saved's "Compare your spots" and Plan a swim's "Compare these spots", for "which of these
+// places should I look into further for Saturday?"). Up to three
 // spots side by side (index.html, compareTable): the five days, then what each level rests on and what it
 // leaves out. Every cell says something; where the data is missing it says it is not known, never nothing,
 // which a reader takes for nothing wrong.
@@ -53,8 +52,8 @@ function compareDays(s, dates) {
   const R = rules();
   return { same: !R.daily(s), days: dates.map(iso => ({ date: iso, level: R.dayLevel(s, iso), words: R.dayHeadline(s, iso) })) };
 }
-// The Saved page's day by day (index.html, savedGrid; second outside review, 20 Oct 2026): a spot's row of
-// cells, each the day's level in two words ("Moderate risk"), with the day's headline for a screen reader
+// The Saved page's day by day (index.html, savedGrid): a spot's row of cells, each the day's level in two
+// words ("Moderate risk"), with the day's headline for a screen reader
 // ("Moderate risk: sewage spills"), or "No forecast" for a day the forecast does not have. `rule`: the cell is
 // a level, so it carries the level's 4 px rule; nothing else does. A spot whose level does not change from
 // day to day has one cell for the five (same), in its headline's words: "No monitored overflow found
