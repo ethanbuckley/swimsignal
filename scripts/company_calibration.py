@@ -219,6 +219,8 @@ def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0
     which = which[which >= 0]
     w["candidate"] = candidate(w, offsets, maps, which)
     w["offset"] = w["overflow_id"].map(offsets).fillna(0.0)
+    # A row with no company in the file belongs to no company's conditions: counted, not judged.
+    out["rows_no_company"] = int(w["company"].isna().sum())
     # Face check: with every offset 0 the candidate rebuilds the published forecast.
     zero = candidate(w, {}, maps, which)
     out["face_mae"] = float(np.abs(zero - w["forecast_calibrated"].to_numpy(dtype=float)).mean()) if len(w) else None

@@ -207,4 +207,81 @@ one. If B's map is adopted inside this window, the per-issue-day map match above
 
 ## Results
 
+### Step 3: the offsets (24 Oct 2026, after `e534684` and `aae8612` were pushed)
+
+The statement was pushed as `e534684` at 21:26 UTC, and the harness as `aae8612`. Then the data was downloaded and the
+offsets fitted. No score of any kind was computed.
+
+- **Command:**
+
+      uv run python scripts/company_calibration.py fit --scored verification_live.csv \
+          --db dipcast.duckdb --out docs/COMPANY-CALIBRATION-TEST-2026-11-offsets.json
+
+- **Scored rows:** `data/verification_live.csv` as published 24 Oct 2026 19:43 UTC, 9,726,357 bytes, SHA-256
+  `434f910aa0170ec59bba08eaf5f038b423caae0209b4c89ac75891de786eb598`.
+- **Forecast log:** the `state` release's `dipcast.duckdb`, asset updated 24 Oct 2026 09:51 UTC, 133,705,728 bytes,
+  SHA-256 `8544507fda525c3cb7f3cb3e246d57728e911cbf54dbe6b9e35d519313aed4e7`. Read only for version stamps.
+- **Fitting rows:** 20,783 lead-0 rows, target days 29 Sep to 23 Oct 2026, 1,010 overflows. Every one carries the
+  spill model stamp `spill=808da63d`. That is the MD5 prefix of the main checkout's `data/processed/spill_model.pkl`,
+  checked. The window is checked against this stamp.
+- **The frozen offsets:** `docs/COMPANY-CALIBRATION-TEST-2026-11-offsets.json`, SHA-256
+  **`2662dcfa592d6e36c7d9e3322a273c3058ea8854dedae414392f022dd5e42e1b`**.
+
+The fit's inputs and the offsets, per company. n and e are what the offsets are made of, not a score. Ratio is
+exp(offset), the multiplier on the odds.
+
+| Company | Overflows | Fitting days | n | e | Ratio min | Median | Max | \|offset\| ≥ 0.05 | ≥ 0.2 |
+|---|---|---|---|---|---|---|---|---|---|
+| Anglian | 159 | 3,266 | 118 | 107.2 | 0.82 | 0.99 | 1.66 | 46 | 7 |
+| Northumbrian | 14 | 291 | 16 | 13.2 | 0.93 | 0.99 | 1.28 | 4 | 1 |
+| Severn Trent | 111 | 2,431 | 100 | 115.3 | 0.80 | 0.99 | 1.35 | 57 | 4 |
+| South West | 29 | 493 | 63 | 62.0 | 0.81 | 0.98 | 1.61 | 16 | 3 |
+| Southern | 120 | 1,733 | 77 | 121.0 | 0.86 | 0.98 | 1.33 | 39 | 1 |
+| Thames | 194 | 4,228 | 94 | 251.8 | 0.77 | 0.96 | 1.27 | 97 | 3 |
+| Wessex | 262 | 5,634 | 209 | 320.2 | 0.73 | 0.98 | 1.23 | 123 | 7 |
+| Yorkshire | 120 | 2,691 | 158 | 132.4 | 0.78 | 0.99 | 1.41 | 68 | 7 |
+| No company in the file | 1 | 16 | 14 | 0.6 | 1.86 | 1.86 | 1.86 | 1 | 1 |
+
+**Against the expectation stated above.** e per overflow has median 0.91 (quartiles 0.34 and 1.59), close to the
+stated 0.3 to 1.5, but with a tail to 5.6 at wet Wessex and Thames overflows. So 602 overflows that never spilled get
+ratios down to 0.73, not 0.91. The median ratio at every company is still 0.96 to 0.99.
+
+**Expected moves, from the saved offsets.** The mean forecast, all leads, on the 102,929 non-United-Utilities scored
+rows of the fitting days. Today's map matched every issue day (mean absolute difference 0.00003). B's map was never the
+closer one, as expected while it is not deployed. No outcome is compared.
+
+| Company | Rows | Mean forecast today | With the offsets | Change |
+|---|---|---|---|---|
+| Anglian | 16,004 | 0.0274 | 0.0273 | −0.6% |
+| Northumbrian | 1,398 | 0.0367 | 0.0367 | 0.0% |
+| Severn Trent | 12,055 | 0.0444 | 0.0437 | −1.6% |
+| South West | 2,345 | 0.1177 | 0.1168 | −0.8% |
+| Southern | 8,635 | 0.0675 | 0.0661 | −2.0% |
+| Thames | 20,863 | 0.0553 | 0.0528 | −4.5% |
+| Wessex | 28,104 | 0.0538 | 0.0525 | −2.4% |
+| Yorkshire | 13,445 | 0.0511 | 0.0508 | −0.6% |
+
+By bin of today's forecast, the offsets lower every bin by 1% to 3% (0.0 bin 0.0165 to 0.0162; 0.4 bin 0.445 to
+0.433; 0.7 bin 0.746 to 0.732). The largest move on any one row is 0.11.
+
+So the inference above holds: the offsets move each company's mean by under 5%. Condition 2 is likely to fail
+wherever the current forecast sits well above the window's flat rate.
+
+**One overflow has no company in the file:** YWS02298 (a Yorkshire Water id), 16 fitting days, n 14, e 0.60, ratio
+1.86. The rule as written fits it, so it is in the frozen file. It belongs to no company's conditions, so the check
+counts its rows (`rows_no_company`) and judges them nowhere. Its rows' mean forecast on the fitting days moves from
+0.050 to 0.083. If the candidate is adopted, this overflow is left out unless the overflow table gives it a company by
+then. The reporting line was added to the harness after the fit and before any score, in the same commit as this
+section. Nothing in the fit or the conditions changed.
+
+### Step 4: the check
+
+**Read on or after Wednesday 25 November 2026.** Download the published file and the `state` release's
+`dipcast.duckdb` the same day, then:
+
+    uv run python scripts/company_calibration.py check --scored verification_live.csv \
+        --db dipcast.duckdb --out company-calibration-check.json
+
+It prints the verdict. If it says to extend, rerun with `--end 2026-12-06` on or after 9 December.
+
 Not yet run.

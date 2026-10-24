@@ -1,0 +1,7097 @@
+{
+ "test": "docs/COMPANY-CALIBRATION-TEST-2026-11.md",
+ "source": "https://swimsignal.co.uk/data/verification_live.csv",
+ "source_sha256": "434f910aa0170ec59bba08eaf5f038b423caae0209b4c89ac75891de786eb598",
+ "first_day": "2026-09-29",
+ "last_day": "2026-10-23",
+ "prior_strength": 15.0,
+ "recency": 1.0,
+ "spill_stamps": [
+  "808da63d"
+ ],
+ "offsets": {
+  "AWS00007": {
+   "company": "Anglian Water",
+   "offset": -0.036023,
+   "n": 0,
+   "e": 0.5502,
+   "days": 23
+  },
+  "AWS00022": {
+   "company": "Anglian Water",
+   "offset": 0.03388,
+   "n": 1,
+   "e": 0.467,
+   "days": 23
+  },
+  "AWS00030": {
+   "company": "Anglian Water",
+   "offset": 0.198445,
+   "n": 4,
+   "e": 0.5801,
+   "days": 23
+  },
+  "AWS00040": {
+   "company": "Anglian Water",
+   "offset": 0.007906,
+   "n": 1,
+   "e": 0.874,
+   "days": 23
+  },
+  "AWS00050": {
+   "company": "Anglian Water",
+   "offset": 0.23607,
+   "n": 5,
+   "e": 0.7945,
+   "days": 23
+  },
+  "AWS00056": {
+   "company": "Anglian Water",
+   "offset": 0.168537,
+   "n": 4,
+   "e": 1.0531,
+   "days": 23
+  },
+  "AWS00070": {
+   "company": "Anglian Water",
+   "offset": -0.110294,
+   "n": 0,
+   "e": 1.7491,
+   "days": 23
+  },
+  "AWS00073": {
+   "company": "Anglian Water",
+   "offset": -0.084862,
+   "n": 0,
+   "e": 1.3285,
+   "days": 23
+  },
+  "AWS00085": {
+   "company": "Anglian Water",
+   "offset": -0.010313,
+   "n": 0,
+   "e": 0.1555,
+   "days": 12
+  },
+  "AWS00086": {
+   "company": "Anglian Water",
+   "offset": -0.010973,
+   "n": 0,
+   "e": 0.1655,
+   "days": 12
+  },
+  "AWS00087": {
+   "company": "Anglian Water",
+   "offset": 0.060334,
+   "n": 1,
+   "e": 0.0632,
+   "days": 10
+  },
+  "AWS00096": {
+   "company": "Anglian Water",
+   "offset": -0.079969,
+   "n": 0,
+   "e": 1.2488,
+   "days": 22
+  },
+  "AWS00109": {
+   "company": "Anglian Water",
+   "offset": -0.053427,
+   "n": 0,
+   "e": 0.8232,
+   "days": 23
+  },
+  "AWS00124": {
+   "company": "Anglian Water",
+   "offset": -0.005783,
+   "n": 0,
+   "e": 0.087,
+   "days": 23
+  },
+  "AWS00125": {
+   "company": "Anglian Water",
+   "offset": 0.014105,
+   "n": 1,
+   "e": 0.7759,
+   "days": 23
+  },
+  "AWS00131": {
+   "company": "Anglian Water",
+   "offset": -0.064988,
+   "n": 0,
+   "e": 1.0072,
+   "days": 23
+  },
+  "AWS00135": {
+   "company": "Anglian Water",
+   "offset": -0.025635,
+   "n": 0,
+   "e": 0.3895,
+   "days": 23
+  },
+  "AWS00164": {
+   "company": "Anglian Water",
+   "offset": -0.033776,
+   "n": 2,
+   "e": 2.584,
+   "days": 23
+  },
+  "AWS00173": {
+   "company": "Anglian Water",
+   "offset": -0.023033,
+   "n": 0,
+   "e": 0.3495,
+   "days": 23
+  },
+  "AWS00178": {
+   "company": "Anglian Water",
+   "offset": -0.012574,
+   "n": 0,
+   "e": 0.1898,
+   "days": 23
+  },
+  "AWS00207": {
+   "company": "Anglian Water",
+   "offset": -0.073021,
+   "n": 0,
+   "e": 1.1363,
+   "days": 23
+  },
+  "AWS00209": {
+   "company": "Anglian Water",
+   "offset": -0.004948,
+   "n": 0,
+   "e": 0.0744,
+   "days": 23
+  },
+  "AWS00210": {
+   "company": "Anglian Water",
+   "offset": -0.045228,
+   "n": 0,
+   "e": 0.694,
+   "days": 22
+  },
+  "AWS00223": {
+   "company": "Anglian Water",
+   "offset": 0.045763,
+   "n": 1,
+   "e": 0.2843,
+   "days": 23
+  },
+  "AWS00245": {
+   "company": "Anglian Water",
+   "offset": 0.31245,
+   "n": 6,
+   "e": 0.3647,
+   "days": 12
+  },
+  "AWS00249": {
+   "company": "Anglian Water",
+   "offset": -0.033886,
+   "n": 0,
+   "e": 0.517,
+   "days": 12
+  },
+  "AWS00275": {
+   "company": "Anglian Water",
+   "offset": -0.018658,
+   "n": 0,
+   "e": 0.2825,
+   "days": 17
+  },
+  "AWS00285": {
+   "company": "Anglian Water",
+   "offset": 0.020222,
+   "n": 1,
+   "e": 0.6797,
+   "days": 23
+  },
+  "AWS00305": {
+   "company": "Anglian Water",
+   "offset": -0.014698,
+   "n": 0,
+   "e": 0.2221,
+   "days": 12
+  },
+  "AWS00323": {
+   "company": "Anglian Water",
+   "offset": -0.001624,
+   "n": 1,
+   "e": 1.026,
+   "days": 23
+  },
+  "AWS00337": {
+   "company": "Anglian Water",
+   "offset": -0.115362,
+   "n": 0,
+   "e": 1.8342,
+   "days": 23
+  },
+  "AWS00339": {
+   "company": "Anglian Water",
+   "offset": -0.068643,
+   "n": 0,
+   "e": 1.0658,
+   "days": 23
+  },
+  "AWS00340": {
+   "company": "Anglian Water",
+   "offset": -0.07693,
+   "n": 0,
+   "e": 1.1995,
+   "days": 23
+  },
+  "AWS00373": {
+   "company": "Anglian Water",
+   "offset": -0.017611,
+   "n": 0,
+   "e": 0.2665,
+   "days": 23
+  },
+  "AWS00397": {
+   "company": "Anglian Water",
+   "offset": -0.012712,
+   "n": 0,
+   "e": 0.1919,
+   "days": 23
+  },
+  "AWS00404": {
+   "company": "Anglian Water",
+   "offset": -0.051941,
+   "n": 0,
+   "e": 0.7997,
+   "days": 17
+  },
+  "AWS00419": {
+   "company": "Anglian Water",
+   "offset": -0.005114,
+   "n": 0,
+   "e": 0.0769,
+   "days": 23
+  },
+  "AWS00421": {
+   "company": "Anglian Water",
+   "offset": -0.015105,
+   "n": 0,
+   "e": 0.2283,
+   "days": 23
+  },
+  "AWS00423": {
+   "company": "Anglian Water",
+   "offset": -0.067254,
+   "n": 0,
+   "e": 1.0435,
+   "days": 23
+  },
+  "AWS00469": {
+   "company": "Anglian Water",
+   "offset": -0.040041,
+   "n": 0,
+   "e": 0.6128,
+   "days": 23
+  },
+  "AWS00489": {
+   "company": "Anglian Water",
+   "offset": -0.004158,
+   "n": 0,
+   "e": 0.0625,
+   "days": 23
+  },
+  "AWS00491": {
+   "company": "Anglian Water",
+   "offset": -0.010247,
+   "n": 0,
+   "e": 0.1545,
+   "days": 23
+  },
+  "AWS00498": {
+   "company": "Anglian Water",
+   "offset": -0.065488,
+   "n": 0,
+   "e": 1.0152,
+   "days": 23
+  },
+  "AWS00500": {
+   "company": "Anglian Water",
+   "offset": 0.010852,
+   "n": 1,
+   "e": 0.8273,
+   "days": 23
+  },
+  "AWS00509": {
+   "company": "Anglian Water",
+   "offset": -0.018789,
+   "n": 0,
+   "e": 0.2845,
+   "days": 23
+  },
+  "AWS00514": {
+   "company": "Anglian Water",
+   "offset": -0.09755,
+   "n": 0,
+   "e": 1.537,
+   "days": 23
+  },
+  "AWS00522": {
+   "company": "Anglian Water",
+   "offset": -0.009653,
+   "n": 0,
+   "e": 0.1455,
+   "days": 17
+  },
+  "AWS00538": {
+   "company": "Anglian Water",
+   "offset": -0.035811,
+   "n": 0,
+   "e": 0.5469,
+   "days": 23
+  },
+  "AWS00544": {
+   "company": "Anglian Water",
+   "offset": -0.027978,
+   "n": 0,
+   "e": 0.4256,
+   "days": 22
+  },
+  "AWS00547": {
+   "company": "Anglian Water",
+   "offset": -0.025102,
+   "n": 0,
+   "e": 0.3813,
+   "days": 22
+  },
+  "AWS00560": {
+   "company": "Anglian Water",
+   "offset": -0.015125,
+   "n": 0,
+   "e": 0.2286,
+   "days": 22
+  },
+  "AWS00561": {
+   "company": "Anglian Water",
+   "offset": 0.04537,
+   "n": 1,
+   "e": 0.2903,
+   "days": 22
+  },
+  "AWS00564": {
+   "company": "Anglian Water",
+   "offset": -0.010142,
+   "n": 1,
+   "e": 1.1631,
+   "days": 22
+  },
+  "AWS00569": {
+   "company": "Anglian Water",
+   "offset": -0.016655,
+   "n": 2,
+   "e": 2.2855,
+   "days": 23
+  },
+  "AWS00572": {
+   "company": "Anglian Water",
+   "offset": 0.042934,
+   "n": 1,
+   "e": 0.3276,
+   "days": 12
+  },
+  "AWS00574": {
+   "company": "Anglian Water",
+   "offset": 0.037085,
+   "n": 1,
+   "e": 0.4175,
+   "days": 23
+  },
+  "AWS00601": {
+   "company": "Anglian Water",
+   "offset": 0.052267,
+   "n": 1,
+   "e": 0.1852,
+   "days": 12
+  },
+  "AWS00602": {
+   "company": "Anglian Water",
+   "offset": -0.079175,
+   "n": 0,
+   "e": 1.2359,
+   "days": 12
+  },
+  "AWS00615": {
+   "company": "Anglian Water",
+   "offset": -0.014363,
+   "n": 0,
+   "e": 0.217,
+   "days": 23
+  },
+  "AWS00628": {
+   "company": "Anglian Water",
+   "offset": -0.039834,
+   "n": 1,
+   "e": 1.6502,
+   "days": 23
+  },
+  "AWS00631": {
+   "company": "Anglian Water",
+   "offset": -0.042887,
+   "n": 0,
+   "e": 0.6573,
+   "days": 23
+  },
+  "AWS00634": {
+   "company": "Anglian Water",
+   "offset": -0.015821,
+   "n": 0,
+   "e": 0.2392,
+   "days": 23
+  },
+  "AWS00635": {
+   "company": "Anglian Water",
+   "offset": -0.008596,
+   "n": 0,
+   "e": 0.1295,
+   "days": 14
+  },
+  "AWS00669": {
+   "company": "Anglian Water",
+   "offset": -0.005432,
+   "n": 0,
+   "e": 0.0817,
+   "days": 22
+  },
+  "AWS00677": {
+   "company": "Anglian Water",
+   "offset": -0.013837,
+   "n": 0,
+   "e": 0.209,
+   "days": 23
+  },
+  "AWS00678": {
+   "company": "Anglian Water",
+   "offset": -0.151215,
+   "n": 0,
+   "e": 2.4487,
+   "days": 22
+  },
+  "AWS00705": {
+   "company": "Anglian Water",
+   "offset": -0.038733,
+   "n": 0,
+   "e": 0.5924,
+   "days": 17
+  },
+  "AWS00706": {
+   "company": "Anglian Water",
+   "offset": 0.306179,
+   "n": 7,
+   "e": 1.1976,
+   "days": 23
+  },
+  "AWS00712": {
+   "company": "Anglian Water",
+   "offset": -0.02816,
+   "n": 0,
+   "e": 0.4284,
+   "days": 23
+  },
+  "AWS00713": {
+   "company": "Anglian Water",
+   "offset": 0.01531,
+   "n": 1,
+   "e": 0.7569,
+   "days": 23
+  },
+  "AWS00733": {
+   "company": "Anglian Water",
+   "offset": -0.010795,
+   "n": 0,
+   "e": 0.1628,
+   "days": 12
+  },
+  "AWS00734": {
+   "company": "Anglian Water",
+   "offset": 0.102593,
+   "n": 2,
+   "e": 0.3424,
+   "days": 12
+  },
+  "AWS00738": {
+   "company": "Anglian Water",
+   "offset": -0.004623,
+   "n": 0,
+   "e": 0.0695,
+   "days": 23
+  },
+  "AWS00739": {
+   "company": "Anglian Water",
+   "offset": 0.033053,
+   "n": 1,
+   "e": 0.4798,
+   "days": 23
+  },
+  "AWS00753": {
+   "company": "Anglian Water",
+   "offset": -0.048111,
+   "n": 1,
+   "e": 1.7886,
+   "days": 23
+  },
+  "AWS00754": {
+   "company": "Anglian Water",
+   "offset": -0.036763,
+   "n": 0,
+   "e": 0.5617,
+   "days": 23
+  },
+  "AWS00823": {
+   "company": "Anglian Water",
+   "offset": -0.04418,
+   "n": 2,
+   "e": 2.7679,
+   "days": 23
+  },
+  "AWS00824": {
+   "company": "Anglian Water",
+   "offset": -0.008272,
+   "n": 0,
+   "e": 0.1246,
+   "days": 23
+  },
+  "AWS00830": {
+   "company": "Anglian Water",
+   "offset": -0.053471,
+   "n": 0,
+   "e": 0.8239,
+   "days": 23
+  },
+  "AWS00833": {
+   "company": "Anglian Water",
+   "offset": 0.505643,
+   "n": 13,
+   "e": 1.8873,
+   "days": 23
+  },
+  "AWS00835": {
+   "company": "Anglian Water",
+   "offset": -0.073269,
+   "n": 0,
+   "e": 1.1403,
+   "days": 23
+  },
+  "AWS00846": {
+   "company": "Anglian Water",
+   "offset": -0.032958,
+   "n": 0,
+   "e": 0.5026,
+   "days": 12
+  },
+  "AWS00851": {
+   "company": "Anglian Water",
+   "offset": -0.055517,
+   "n": 0,
+   "e": 0.8563,
+   "days": 10
+  },
+  "AWS00852": {
+   "company": "Anglian Water",
+   "offset": -0.036673,
+   "n": 0,
+   "e": 0.5603,
+   "days": 23
+  },
+  "AWS00872": {
+   "company": "Anglian Water",
+   "offset": 0.026517,
+   "n": 1,
+   "e": 0.5813,
+   "days": 23
+  },
+  "AWS00920": {
+   "company": "Anglian Water",
+   "offset": -0.033931,
+   "n": 0,
+   "e": 0.5177,
+   "days": 12
+  },
+  "AWS00947": {
+   "company": "Anglian Water",
+   "offset": -0.092658,
+   "n": 0,
+   "e": 1.4563,
+   "days": 23
+  },
+  "AWS00948": {
+   "company": "Anglian Water",
+   "offset": -0.100696,
+   "n": 0,
+   "e": 1.5891,
+   "days": 23
+  },
+  "AWS00949": {
+   "company": "Anglian Water",
+   "offset": -0.041052,
+   "n": 0,
+   "e": 0.6286,
+   "days": 23
+  },
+  "AWS00951": {
+   "company": "Anglian Water",
+   "offset": -0.039836,
+   "n": 0,
+   "e": 0.6096,
+   "days": 23
+  },
+  "AWS00971": {
+   "company": "Anglian Water",
+   "offset": -0.030232,
+   "n": 0,
+   "e": 0.4604,
+   "days": 15
+  },
+  "AWS00979": {
+   "company": "Anglian Water",
+   "offset": -0.047659,
+   "n": 0,
+   "e": 0.7322,
+   "days": 23
+  },
+  "AWS00980": {
+   "company": "Anglian Water",
+   "offset": 0.039097,
+   "n": 4,
+   "e": 3.2715,
+   "days": 23
+  },
+  "AWS01002": {
+   "company": "Anglian Water",
+   "offset": -0.014067,
+   "n": 0,
+   "e": 0.2125,
+   "days": 12
+  },
+  "AWS01003": {
+   "company": "Anglian Water",
+   "offset": -0.013561,
+   "n": 0,
+   "e": 0.2048,
+   "days": 12
+  },
+  "AWS01007": {
+   "company": "Anglian Water",
+   "offset": 0.044259,
+   "n": 1,
+   "e": 0.3073,
+   "days": 12
+  },
+  "AWS01015": {
+   "company": "Anglian Water",
+   "offset": -0.006007,
+   "n": 1,
+   "e": 1.0964,
+   "days": 23
+  },
+  "AWS01052": {
+   "company": "Anglian Water",
+   "offset": 0.036936,
+   "n": 1,
+   "e": 0.4198,
+   "days": 21
+  },
+  "AWS01069": {
+   "company": "Anglian Water",
+   "offset": 0.038825,
+   "n": 1,
+   "e": 0.3907,
+   "days": 21
+  },
+  "AWS01072": {
+   "company": "Anglian Water",
+   "offset": -0.004915,
+   "n": 0,
+   "e": 0.0739,
+   "days": 23
+  },
+  "AWS01086": {
+   "company": "Anglian Water",
+   "offset": -0.017113,
+   "n": 0,
+   "e": 0.2589,
+   "days": 23
+  },
+  "AWS01087": {
+   "company": "Anglian Water",
+   "offset": 0.035834,
+   "n": 1,
+   "e": 0.4368,
+   "days": 23
+  },
+  "AWS01088": {
+   "company": "Anglian Water",
+   "offset": -0.010023,
+   "n": 0,
+   "e": 0.1511,
+   "days": 11
+  },
+  "AWS01092": {
+   "company": "Anglian Water",
+   "offset": 0.153883,
+   "n": 3,
+   "e": 0.4327,
+   "days": 12
+  },
+  "AWS01093": {
+   "company": "Anglian Water",
+   "offset": -0.029785,
+   "n": 0,
+   "e": 0.4535,
+   "days": 12
+  },
+  "AWS01094": {
+   "company": "Anglian Water",
+   "offset": -0.026902,
+   "n": 0,
+   "e": 0.409,
+   "days": 12
+  },
+  "AWS01095": {
+   "company": "Anglian Water",
+   "offset": -0.01096,
+   "n": 0,
+   "e": 0.1653,
+   "days": 23
+  },
+  "AWS01096": {
+   "company": "Anglian Water",
+   "offset": -0.012791,
+   "n": 0,
+   "e": 0.1931,
+   "days": 23
+  },
+  "AWS01116": {
+   "company": "Anglian Water",
+   "offset": -0.023235,
+   "n": 0,
+   "e": 0.3526,
+   "days": 23
+  },
+  "AWS01126": {
+   "company": "Anglian Water",
+   "offset": 0.060825,
+   "n": 2,
+   "e": 0.9968,
+   "days": 11
+  },
+  "AWS01135": {
+   "company": "Anglian Water",
+   "offset": 0.056527,
+   "n": 2,
+   "e": 1.0657,
+   "days": 12
+  },
+  "AWS01138": {
+   "company": "Anglian Water",
+   "offset": -0.017814,
+   "n": 0,
+   "e": 0.2696,
+   "days": 23
+  },
+  "AWS01208": {
+   "company": "Anglian Water",
+   "offset": -0.047183,
+   "n": 0,
+   "e": 0.7247,
+   "days": 23
+  },
+  "AWS01253": {
+   "company": "Anglian Water",
+   "offset": 0.010025,
+   "n": 1,
+   "e": 0.8404,
+   "days": 17
+  },
+  "AWS01254": {
+   "company": "Anglian Water",
+   "offset": -0.015079,
+   "n": 0,
+   "e": 0.2279,
+   "days": 17
+  },
+  "AWS01255": {
+   "company": "Anglian Water",
+   "offset": 0.040295,
+   "n": 1,
+   "e": 0.3681,
+   "days": 17
+  },
+  "AWS01256": {
+   "company": "Anglian Water",
+   "offset": -0.034292,
+   "n": 0,
+   "e": 0.5233,
+   "days": 17
+  },
+  "AWS01258": {
+   "company": "Anglian Water",
+   "offset": 0.038455,
+   "n": 1,
+   "e": 0.3964,
+   "days": 20
+  },
+  "AWS01259": {
+   "company": "Anglian Water",
+   "offset": -0.014738,
+   "n": 0,
+   "e": 0.2227,
+   "days": 23
+  },
+  "AWS01267": {
+   "company": "Anglian Water",
+   "offset": 0.013383,
+   "n": 1,
+   "e": 0.7873,
+   "days": 17
+  },
+  "AWS01288": {
+   "company": "Anglian Water",
+   "offset": -0.029928,
+   "n": 0,
+   "e": 0.4557,
+   "days": 23
+  },
+  "AWS01290": {
+   "company": "Anglian Water",
+   "offset": -0.034453,
+   "n": 0,
+   "e": 0.5258,
+   "days": 23
+  },
+  "AWS01291": {
+   "company": "Anglian Water",
+   "offset": -0.002035,
+   "n": 1,
+   "e": 1.0326,
+   "days": 23
+  },
+  "AWS01306": {
+   "company": "Anglian Water",
+   "offset": -0.002896,
+   "n": 0,
+   "e": 0.0435,
+   "days": 23
+  },
+  "AWS01307": {
+   "company": "Anglian Water",
+   "offset": -0.01246,
+   "n": 1,
+   "e": 1.2006,
+   "days": 23
+  },
+  "AWS01309": {
+   "company": "Anglian Water",
+   "offset": 0.047419,
+   "n": 1,
+   "e": 0.259,
+   "days": 23
+  },
+  "AWS01310": {
+   "company": "Anglian Water",
+   "offset": -0.042766,
+   "n": 0,
+   "e": 0.6554,
+   "days": 23
+  },
+  "AWS01316": {
+   "company": "Anglian Water",
+   "offset": 0.222926,
+   "n": 4,
+   "e": 0.2033,
+   "days": 23
+  },
+  "AWS01318": {
+   "company": "Anglian Water",
+   "offset": 0.049453,
+   "n": 1,
+   "e": 0.228,
+   "days": 12
+  },
+  "AWS01322": {
+   "company": "Anglian Water",
+   "offset": -0.024608,
+   "n": 0,
+   "e": 0.3737,
+   "days": 23
+  },
+  "AWS01327": {
+   "company": "Anglian Water",
+   "offset": 0.019147,
+   "n": 2,
+   "e": 1.6776,
+   "days": 23
+  },
+  "AWS01330": {
+   "company": "Anglian Water",
+   "offset": -0.015795,
+   "n": 0,
+   "e": 0.2388,
+   "days": 23
+  },
+  "AWS01331": {
+   "company": "Anglian Water",
+   "offset": 0.136004,
+   "n": 3,
+   "e": 0.7111,
+   "days": 23
+  },
+  "AWS01332": {
+   "company": "Anglian Water",
+   "offset": 0.460674,
+   "n": 9,
+   "e": 0.1406,
+   "days": 23
+  },
+  "AWS01333": {
+   "company": "Anglian Water",
+   "offset": 0.04607,
+   "n": 1,
+   "e": 0.2796,
+   "days": 23
+  },
+  "AWS01334": {
+   "company": "Anglian Water",
+   "offset": -0.065288,
+   "n": 0,
+   "e": 1.012,
+   "days": 23
+  },
+  "AWS01338": {
+   "company": "Anglian Water",
+   "offset": -0.01708,
+   "n": 0,
+   "e": 0.2584,
+   "days": 23
+  },
+  "AWS01344": {
+   "company": "Anglian Water",
+   "offset": 0.058961,
+   "n": 1,
+   "e": 0.0839,
+   "days": 23
+  },
+  "AWS01352": {
+   "company": "Anglian Water",
+   "offset": 0.158743,
+   "n": 4,
+   "e": 1.2111,
+   "days": 22
+  },
+  "AWS01355": {
+   "company": "Anglian Water",
+   "offset": 0.06048,
+   "n": 1,
+   "e": 0.061,
+   "days": 23
+  },
+  "AWS01359": {
+   "company": "Anglian Water",
+   "offset": -0.046442,
+   "n": 1,
+   "e": 1.7606,
+   "days": 23
+  },
+  "AWS01369": {
+   "company": "Anglian Water",
+   "offset": -0.068377,
+   "n": 1,
+   "e": 2.1323,
+   "days": 23
+  },
+  "AWS01370": {
+   "company": "Anglian Water",
+   "offset": 0.02123,
+   "n": 1,
+   "e": 0.6639,
+   "days": 23
+  },
+  "AWS01378": {
+   "company": "Anglian Water",
+   "offset": 0.050057,
+   "n": 1,
+   "e": 0.2188,
+   "days": 22
+  },
+  "AWS01379": {
+   "company": "Anglian Water",
+   "offset": -0.012969,
+   "n": 0,
+   "e": 0.1958,
+   "days": 22
+  },
+  "AWS01421": {
+   "company": "Anglian Water",
+   "offset": -0.055851,
+   "n": 0,
+   "e": 0.8616,
+   "days": 17
+  },
+  "AWS01423": {
+   "company": "Anglian Water",
+   "offset": -0.003819,
+   "n": 0,
+   "e": 0.0574,
+   "days": 23
+  },
+  "AWS01424": {
+   "company": "Anglian Water",
+   "offset": -0.012179,
+   "n": 0,
+   "e": 0.1838,
+   "days": 23
+  },
+  "AWS01438": {
+   "company": "Anglian Water",
+   "offset": -0.073622,
+   "n": 0,
+   "e": 1.146,
+   "days": 22
+  },
+  "AWS01488": {
+   "company": "Anglian Water",
+   "offset": -0.013528,
+   "n": 0,
+   "e": 0.2043,
+   "days": 20
+  },
+  "AWS01494": {
+   "company": "Anglian Water",
+   "offset": -0.044323,
+   "n": 0,
+   "e": 0.6798,
+   "days": 23
+  },
+  "AWS01499": {
+   "company": "Anglian Water",
+   "offset": -0.006413,
+   "n": 0,
+   "e": 0.0965,
+   "days": 20
+  },
+  "AWS01500": {
+   "company": "Anglian Water",
+   "offset": -0.003806,
+   "n": 0,
+   "e": 0.0572,
+   "days": 11
+  },
+  "AWS01507": {
+   "company": "Anglian Water",
+   "offset": -0.073436,
+   "n": 0,
+   "e": 1.143,
+   "days": 23
+  },
+  "AWS01548": {
+   "company": "Anglian Water",
+   "offset": -0.099151,
+   "n": 0,
+   "e": 1.5635,
+   "days": 17
+  },
+  "AWS01556": {
+   "company": "Anglian Water",
+   "offset": -0.009891,
+   "n": 0,
+   "e": 0.1491,
+   "days": 23
+  },
+  "AWS01557": {
+   "company": "Anglian Water",
+   "offset": -0.202168,
+   "n": 0,
+   "e": 3.3608,
+   "days": 23
+  },
+  "AWS01573": {
+   "company": "Anglian Water",
+   "offset": -0.010155,
+   "n": 0,
+   "e": 0.1531,
+   "days": 23
+  },
+  "AWS01575": {
+   "company": "Anglian Water",
+   "offset": -0.006505,
+   "n": 0,
+   "e": 0.0979,
+   "days": 23
+  },
+  "NWL00034": {
+   "company": "Northumbrian Water",
+   "offset": -0.020908,
+   "n": 3,
+   "e": 3.3803,
+   "days": 18
+  },
+  "NWL00261": {
+   "company": "Northumbrian Water",
+   "offset": -0.007472,
+   "n": 0,
+   "e": 0.1125,
+   "days": 18
+  },
+  "NWL00285": {
+   "company": "Northumbrian Water",
+   "offset": 0.091719,
+   "n": 3,
+   "e": 1.4225,
+   "days": 17
+  },
+  "NWL00645": {
+   "company": "Northumbrian Water",
+   "offset": -0.075739,
+   "n": 1,
+   "e": 2.2589,
+   "days": 23
+  },
+  "NWL00667": {
+   "company": "Northumbrian Water",
+   "offset": 0.249642,
+   "n": 5,
+   "e": 0.5816,
+   "days": 23
+  },
+  "NWL00883": {
+   "company": "Northumbrian Water",
+   "offset": -0.013278,
+   "n": 0,
+   "e": 0.2005,
+   "days": 18
+  },
+  "NWL00927": {
+   "company": "Northumbrian Water",
+   "offset": 0.022987,
+   "n": 1,
+   "e": 0.6364,
+   "days": 23
+  },
+  "NWL00929": {
+   "company": "Northumbrian Water",
+   "offset": 0.033163,
+   "n": 1,
+   "e": 0.4781,
+   "days": 23
+  },
+  "NWL01031": {
+   "company": "Northumbrian Water",
+   "offset": 0.014492,
+   "n": 1,
+   "e": 0.7698,
+   "days": 18
+  },
+  "NWL01373": {
+   "company": "Northumbrian Water",
+   "offset": -0.004656,
+   "n": 0,
+   "e": 0.07,
+   "days": 18
+  },
+  "NWL01381": {
+   "company": "Northumbrian Water",
+   "offset": -0.049248,
+   "n": 1,
+   "e": 1.8077,
+   "days": 23
+  },
+  "NWL01382": {
+   "company": "Northumbrian Water",
+   "offset": -0.059702,
+   "n": 0,
+   "e": 0.9228,
+   "days": 23
+  },
+  "NWL01576": {
+   "company": "Northumbrian Water",
+   "offset": -0.012732,
+   "n": 0,
+   "e": 0.1922,
+   "days": 23
+  },
+  "NWL01577": {
+   "company": "Northumbrian Water",
+   "offset": -0.020952,
+   "n": 0,
+   "e": 0.3176,
+   "days": 23
+  },
+  "SBB00046": {
+   "company": "South West Water",
+   "offset": -0.004928,
+   "n": 0,
+   "e": 0.0741,
+   "days": 17
+  },
+  "SBB00119": {
+   "company": "South West Water",
+   "offset": -0.016184,
+   "n": 4,
+   "e": 4.31,
+   "days": 17
+  },
+  "SBB00178": {
+   "company": "South West Water",
+   "offset": -0.204686,
+   "n": 0,
+   "e": 3.4071,
+   "days": 17
+  },
+  "SBB00179": {
+   "company": "South West Water",
+   "offset": -0.069603,
+   "n": 2,
+   "e": 3.2254,
+   "days": 17
+  },
+  "SBB00225": {
+   "company": "South West Water",
+   "offset": 0.073031,
+   "n": 3,
+   "e": 1.7323,
+   "days": 17
+  },
+  "SBB00226": {
+   "company": "South West Water",
+   "offset": 0.05616,
+   "n": 2,
+   "e": 1.0716,
+   "days": 17
+  },
+  "SBB00227": {
+   "company": "South West Water",
+   "offset": -0.012271,
+   "n": 2,
+   "e": 2.2099,
+   "days": 17
+  },
+  "SBB00349": {
+   "company": "South West Water",
+   "offset": -0.093382,
+   "n": 1,
+   "e": 2.5661,
+   "days": 17
+  },
+  "SBB00350": {
+   "company": "South West Water",
+   "offset": -0.123332,
+   "n": 0,
+   "e": 1.9689,
+   "days": 17
+  },
+  "SBB00376": {
+   "company": "South West Water",
+   "offset": 0.477602,
+   "n": 14,
+   "e": 2.9878,
+   "days": 17
+  },
+  "SBB00517": {
+   "company": "South West Water",
+   "offset": 0.281141,
+   "n": 8,
+   "e": 2.3632,
+   "days": 17
+  },
+  "SBB00581": {
+   "company": "South West Water",
+   "offset": -0.01748,
+   "n": 3,
+   "e": 3.3174,
+   "days": 17
+  },
+  "SBB00759": {
+   "company": "South West Water",
+   "offset": 0.096317,
+   "n": 2,
+   "e": 0.439,
+   "days": 17
+  },
+  "SBB00830": {
+   "company": "South West Water",
+   "offset": 0.023102,
+   "n": 1,
+   "e": 0.6346,
+   "days": 17
+  },
+  "SBB00885": {
+   "company": "South West Water",
+   "offset": -0.067783,
+   "n": 0,
+   "e": 1.052,
+   "days": 17
+  },
+  "SBB00917": {
+   "company": "South West Water",
+   "offset": -0.078522,
+   "n": 1,
+   "e": 2.307,
+   "days": 17
+  },
+  "SBB00985": {
+   "company": "South West Water",
+   "offset": -0.193,
+   "n": 2,
+   "e": 5.619,
+   "days": 17
+  },
+  "SBB00986": {
+   "company": "South West Water",
+   "offset": -0.049496,
+   "n": 2,
+   "e": 2.8626,
+   "days": 17
+  },
+  "SBB01016": {
+   "company": "South West Water",
+   "offset": -0.083941,
+   "n": 2,
+   "e": 3.4886,
+   "days": 17
+  },
+  "SBB01058": {
+   "company": "South West Water",
+   "offset": -0.037483,
+   "n": 3,
+   "e": 3.6875,
+   "days": 17
+  },
+  "SBB01082": {
+   "company": "South West Water",
+   "offset": -0.029322,
+   "n": 1,
+   "e": 1.4761,
+   "days": 17
+  },
+  "SBB01145": {
+   "company": "South West Water",
+   "offset": -0.018521,
+   "n": 1,
+   "e": 1.2991,
+   "days": 17
+  },
+  "SBB01166": {
+   "company": "South West Water",
+   "offset": -0.086722,
+   "n": 0,
+   "e": 1.3589,
+   "days": 17
+  },
+  "SBB01186": {
+   "company": "South West Water",
+   "offset": -0.018441,
+   "n": 2,
+   "e": 2.3164,
+   "days": 17
+  },
+  "SBB01219": {
+   "company": "South West Water",
+   "offset": 0.018002,
+   "n": 2,
+   "e": 1.6967,
+   "days": 17
+  },
+  "SBB01243": {
+   "company": "South West Water",
+   "offset": -0.052314,
+   "n": 1,
+   "e": 1.8593,
+   "days": 17
+  },
+  "SBB01359": {
+   "company": "South West Water",
+   "offset": 0.123512,
+   "n": 3,
+   "e": 0.9086,
+   "days": 17
+  },
+  "SBB01408": {
+   "company": "South West Water",
+   "offset": -0.040716,
+   "n": 1,
+   "e": 1.6649,
+   "days": 17
+  },
+  "SBB01410": {
+   "company": "South West Water",
+   "offset": -0.008021,
+   "n": 0,
+   "e": 0.1208,
+   "days": 17
+  },
+  "SVT00001": {
+   "company": "Severn Trent Water",
+   "offset": 0.030083,
+   "n": 2,
+   "e": 1.4962,
+   "days": 23
+  },
+  "SVT00006": {
+   "company": "Severn Trent Water",
+   "offset": -0.018436,
+   "n": 0,
+   "e": 0.2791,
+   "days": 23
+  },
+  "SVT00007": {
+   "company": "Severn Trent Water",
+   "offset": 0.059956,
+   "n": 3,
+   "e": 1.9525,
+   "days": 23
+  },
+  "SVT00016": {
+   "company": "Severn Trent Water",
+   "offset": 0.104318,
+   "n": 3,
+   "e": 1.2169,
+   "days": 23
+  },
+  "SVT00031": {
+   "company": "Severn Trent Water",
+   "offset": 0.105904,
+   "n": 3,
+   "e": 1.1912,
+   "days": 23
+  },
+  "SVT00304": {
+   "company": "Severn Trent Water",
+   "offset": -0.135725,
+   "n": 0,
+   "e": 2.1805,
+   "days": 23
+  },
+  "SVT00400": {
+   "company": "Severn Trent Water",
+   "offset": -0.037964,
+   "n": 0,
+   "e": 0.5804,
+   "days": 23
+  },
+  "SVT00401": {
+   "company": "Severn Trent Water",
+   "offset": -0.051054,
+   "n": 0,
+   "e": 0.7857,
+   "days": 23
+  },
+  "SVT00402": {
+   "company": "Severn Trent Water",
+   "offset": -0.005518,
+   "n": 0,
+   "e": 0.083,
+   "days": 23
+  },
+  "SVT00403": {
+   "company": "Severn Trent Water",
+   "offset": -0.003706,
+   "n": 0,
+   "e": 0.0557,
+   "days": 23
+  },
+  "SVT00435": {
+   "company": "Severn Trent Water",
+   "offset": -0.120322,
+   "n": 0,
+   "e": 1.9179,
+   "days": 23
+  },
+  "SVT00444": {
+   "company": "Severn Trent Water",
+   "offset": -0.024563,
+   "n": 0,
+   "e": 0.373,
+   "days": 18
+  },
+  "SVT00446": {
+   "company": "Severn Trent Water",
+   "offset": -0.1182,
+   "n": 1,
+   "e": 3.0075,
+   "days": 12
+  },
+  "SVT00447": {
+   "company": "Severn Trent Water",
+   "offset": -0.050604,
+   "n": 1,
+   "e": 1.8305,
+   "days": 12
+  },
+  "SVT00450": {
+   "company": "Severn Trent Water",
+   "offset": -0.011672,
+   "n": 0,
+   "e": 0.1761,
+   "days": 23
+  },
+  "SVT00475": {
+   "company": "Severn Trent Water",
+   "offset": -0.040169,
+   "n": 0,
+   "e": 0.6148,
+   "days": 23
+  },
+  "SVT00490": {
+   "company": "Severn Trent Water",
+   "offset": -0.11773,
+   "n": 0,
+   "e": 1.8741,
+   "days": 23
+  },
+  "SVT00516": {
+   "company": "Severn Trent Water",
+   "offset": -0.090687,
+   "n": 0,
+   "e": 1.4239,
+   "days": 23
+  },
+  "SVT00558": {
+   "company": "Severn Trent Water",
+   "offset": -0.191242,
+   "n": 2,
+   "e": 5.5828,
+   "days": 23
+  },
+  "SVT00583": {
+   "company": "Severn Trent Water",
+   "offset": 0.187469,
+   "n": 5,
+   "e": 1.5811,
+   "days": 23
+  },
+  "SVT00629": {
+   "company": "Severn Trent Water",
+   "offset": -0.030432,
+   "n": 0,
+   "e": 0.4635,
+   "days": 23
+  },
+  "SVT00643": {
+   "company": "Severn Trent Water",
+   "offset": -0.072854,
+   "n": 0,
+   "e": 1.1336,
+   "days": 23
+  },
+  "SVT00674": {
+   "company": "Severn Trent Water",
+   "offset": -0.006545,
+   "n": 0,
+   "e": 0.0985,
+   "days": 23
+  },
+  "SVT00688": {
+   "company": "Severn Trent Water",
+   "offset": -0.014777,
+   "n": 0,
+   "e": 0.2233,
+   "days": 23
+  },
+  "SVT00692": {
+   "company": "Severn Trent Water",
+   "offset": -0.023612,
+   "n": 0,
+   "e": 0.3584,
+   "days": 23
+  },
+  "SVT00699": {
+   "company": "Severn Trent Water",
+   "offset": -0.005863,
+   "n": 0,
+   "e": 0.0882,
+   "days": 23
+  },
+  "SVT00706": {
+   "company": "Severn Trent Water",
+   "offset": -0.093782,
+   "n": 0,
+   "e": 1.4748,
+   "days": 23
+  },
+  "SVT00719": {
+   "company": "Severn Trent Water",
+   "offset": -0.047233,
+   "n": 0,
+   "e": 0.7255,
+   "days": 23
+  },
+  "SVT00725": {
+   "company": "Severn Trent Water",
+   "offset": -0.140955,
+   "n": 0,
+   "e": 2.2706,
+   "days": 23
+  },
+  "SVT00773": {
+   "company": "Severn Trent Water",
+   "offset": 0.066989,
+   "n": 2,
+   "e": 0.8985,
+   "days": 23
+  },
+  "SVT00783": {
+   "company": "Severn Trent Water",
+   "offset": 0.146597,
+   "n": 4,
+   "e": 1.4092,
+   "days": 21
+  },
+  "SVT00844": {
+   "company": "Severn Trent Water",
+   "offset": 0.002058,
+   "n": 1,
+   "e": 0.9671,
+   "days": 23
+  },
+  "SVT00856": {
+   "company": "Severn Trent Water",
+   "offset": -0.01032,
+   "n": 0,
+   "e": 0.1556,
+   "days": 23
+  },
+  "SVT00916": {
+   "company": "Severn Trent Water",
+   "offset": -0.004755,
+   "n": 0,
+   "e": 0.0715,
+   "days": 23
+  },
+  "SVT00967": {
+   "company": "Severn Trent Water",
+   "offset": -0.018573,
+   "n": 0,
+   "e": 0.2812,
+   "days": 12
+  },
+  "SVT00968": {
+   "company": "Severn Trent Water",
+   "offset": -0.007029,
+   "n": 0,
+   "e": 0.1058,
+   "days": 12
+  },
+  "SVT00969": {
+   "company": "Severn Trent Water",
+   "offset": 0.051747,
+   "n": 1,
+   "e": 0.1931,
+   "days": 12
+  },
+  "SVT00990": {
+   "company": "Severn Trent Water",
+   "offset": -0.207794,
+   "n": 0,
+   "e": 3.4644,
+   "days": 23
+  },
+  "SVT01014": {
+   "company": "Severn Trent Water",
+   "offset": -0.087907,
+   "n": 0,
+   "e": 1.3783,
+   "days": 23
+  },
+  "SVT01071": {
+   "company": "Severn Trent Water",
+   "offset": -0.219671,
+   "n": 0,
+   "e": 3.685,
+   "days": 23
+  },
+  "SVT01115": {
+   "company": "Severn Trent Water",
+   "offset": -0.04785,
+   "n": 0,
+   "e": 0.7352,
+   "days": 23
+  },
+  "SVT01116": {
+   "company": "Severn Trent Water",
+   "offset": -0.035702,
+   "n": 0,
+   "e": 0.5452,
+   "days": 23
+  },
+  "SVT01125": {
+   "company": "Severn Trent Water",
+   "offset": 0.14859,
+   "n": 3,
+   "e": 0.5146,
+   "days": 23
+  },
+  "SVT01175": {
+   "company": "Severn Trent Water",
+   "offset": -0.080467,
+   "n": 0,
+   "e": 1.2569,
+   "days": 23
+  },
+  "SVT01303": {
+   "company": "Severn Trent Water",
+   "offset": 0.302488,
+   "n": 7,
+   "e": 1.2575,
+   "days": 23
+  },
+  "SVT01440": {
+   "company": "Severn Trent Water",
+   "offset": -0.008695,
+   "n": 0,
+   "e": 0.131,
+   "days": 21
+  },
+  "SVT01442": {
+   "company": "Severn Trent Water",
+   "offset": -0.008358,
+   "n": 0,
+   "e": 0.1259,
+   "days": 23
+  },
+  "SVT01446": {
+   "company": "Severn Trent Water",
+   "offset": -0.00896,
+   "n": 0,
+   "e": 0.135,
+   "days": 23
+  },
+  "SVT01452": {
+   "company": "Severn Trent Water",
+   "offset": 0.035554,
+   "n": 2,
+   "e": 1.4062,
+   "days": 23
+  },
+  "SVT01493": {
+   "company": "Severn Trent Water",
+   "offset": -0.008206,
+   "n": 0,
+   "e": 0.1236,
+   "days": 23
+  },
+  "SVT01569": {
+   "company": "Severn Trent Water",
+   "offset": -0.054204,
+   "n": 1,
+   "e": 1.8912,
+   "days": 23
+  },
+  "SVT01592": {
+   "company": "Severn Trent Water",
+   "offset": -0.13156,
+   "n": 0,
+   "e": 2.1091,
+   "days": 23
+  },
+  "SVT01619": {
+   "company": "Severn Trent Water",
+   "offset": -0.05752,
+   "n": 0,
+   "e": 0.8881,
+   "days": 23
+  },
+  "SVT01621": {
+   "company": "Severn Trent Water",
+   "offset": -0.008087,
+   "n": 0,
+   "e": 0.1218,
+   "days": 23
+  },
+  "SVT01712": {
+   "company": "Severn Trent Water",
+   "offset": 0.096609,
+   "n": 3,
+   "e": 1.3424,
+   "days": 21
+  },
+  "SVT01713": {
+   "company": "Severn Trent Water",
+   "offset": 0.102728,
+   "n": 3,
+   "e": 1.2427,
+   "days": 23
+  },
+  "SVT01735": {
+   "company": "Severn Trent Water",
+   "offset": -0.075664,
+   "n": 0,
+   "e": 1.179,
+   "days": 12
+  },
+  "SVT01736": {
+   "company": "Severn Trent Water",
+   "offset": -0.010491,
+   "n": 0,
+   "e": 0.1582,
+   "days": 12
+  },
+  "SVT01737": {
+   "company": "Severn Trent Water",
+   "offset": -0.086843,
+   "n": 1,
+   "e": 2.4516,
+   "days": 22
+  },
+  "SVT01754": {
+   "company": "Severn Trent Water",
+   "offset": -0.071595,
+   "n": 0,
+   "e": 1.1133,
+   "days": 23
+  },
+  "SVT01763": {
+   "company": "Severn Trent Water",
+   "offset": -0.012376,
+   "n": 0,
+   "e": 0.1868,
+   "days": 23
+  },
+  "SVT01767": {
+   "company": "Severn Trent Water",
+   "offset": -0.007373,
+   "n": 0,
+   "e": 0.111,
+   "days": 18
+  },
+  "SVT01808": {
+   "company": "Severn Trent Water",
+   "offset": 0.021067,
+   "n": 2,
+   "e": 1.6456,
+   "days": 23
+  },
+  "SVT01809": {
+   "company": "Severn Trent Water",
+   "offset": 0.023997,
+   "n": 3,
+   "e": 2.5732,
+   "days": 23
+  },
+  "SVT01813": {
+   "company": "Severn Trent Water",
+   "offset": 0.026877,
+   "n": 1,
+   "e": 0.5757,
+   "days": 23
+  },
+  "SVT01837": {
+   "company": "Severn Trent Water",
+   "offset": 0.09768,
+   "n": 3,
+   "e": 1.3249,
+   "days": 23
+  },
+  "SVT01894": {
+   "company": "Severn Trent Water",
+   "offset": 0.052452,
+   "n": 3,
+   "e": 2.0802,
+   "days": 23
+  },
+  "SVT01902": {
+   "company": "Severn Trent Water",
+   "offset": -0.014932,
+   "n": 1,
+   "e": 1.2407,
+   "days": 23
+  },
+  "SVT01929": {
+   "company": "Severn Trent Water",
+   "offset": -0.134018,
+   "n": 0,
+   "e": 2.1512,
+   "days": 23
+  },
+  "SVT01930": {
+   "company": "Severn Trent Water",
+   "offset": 0.080228,
+   "n": 3,
+   "e": 1.6123,
+   "days": 23
+  },
+  "SVT01931": {
+   "company": "Severn Trent Water",
+   "offset": -0.029015,
+   "n": 0,
+   "e": 0.4416,
+   "days": 17
+  },
+  "SVT01955": {
+   "company": "Severn Trent Water",
+   "offset": -0.008609,
+   "n": 0,
+   "e": 0.1297,
+   "days": 23
+  },
+  "SVT01986": {
+   "company": "Severn Trent Water",
+   "offset": 0.086353,
+   "n": 2,
+   "e": 0.5936,
+   "days": 18
+  },
+  "SVT02031": {
+   "company": "Severn Trent Water",
+   "offset": -0.075509,
+   "n": 0,
+   "e": 1.1765,
+   "days": 23
+  },
+  "SVT02032": {
+   "company": "Severn Trent Water",
+   "offset": 0.119572,
+   "n": 3,
+   "e": 0.9714,
+   "days": 23
+  },
+  "SVT02033": {
+   "company": "Severn Trent Water",
+   "offset": -0.009006,
+   "n": 0,
+   "e": 0.1357,
+   "days": 23
+  },
+  "SVT02035": {
+   "company": "Severn Trent Water",
+   "offset": -0.003394,
+   "n": 0,
+   "e": 0.051,
+   "days": 23
+  },
+  "SVT02037": {
+   "company": "Severn Trent Water",
+   "offset": -0.00449,
+   "n": 0,
+   "e": 0.0675,
+   "days": 23
+  },
+  "SVT02038": {
+   "company": "Severn Trent Water",
+   "offset": -0.061691,
+   "n": 0,
+   "e": 0.9545,
+   "days": 23
+  },
+  "SVT02039": {
+   "company": "Severn Trent Water",
+   "offset": -0.150691,
+   "n": 1,
+   "e": 3.6022,
+   "days": 23
+  },
+  "SVT02073": {
+   "company": "Severn Trent Water",
+   "offset": -0.050066,
+   "n": 0,
+   "e": 0.7701,
+   "days": 23
+  },
+  "SVT02098": {
+   "company": "Severn Trent Water",
+   "offset": -0.053932,
+   "n": 0,
+   "e": 0.8312,
+   "days": 23
+  },
+  "SVT02143": {
+   "company": "Severn Trent Water",
+   "offset": -0.013265,
+   "n": 0,
+   "e": 0.2003,
+   "days": 23
+  },
+  "SVT02154": {
+   "company": "Severn Trent Water",
+   "offset": 0.034311,
+   "n": 2,
+   "e": 1.4266,
+   "days": 23
+  },
+  "SVT02206": {
+   "company": "Severn Trent Water",
+   "offset": -0.035193,
+   "n": 0,
+   "e": 0.5373,
+   "days": 21
+  },
+  "SVT02219": {
+   "company": "Severn Trent Water",
+   "offset": -0.073907,
+   "n": 0,
+   "e": 1.1506,
+   "days": 23
+  },
+  "SVT02282": {
+   "company": "Severn Trent Water",
+   "offset": -0.022309,
+   "n": 0,
+   "e": 0.3384,
+   "days": 23
+  },
+  "SVT02289": {
+   "company": "Severn Trent Water",
+   "offset": 0.086821,
+   "n": 2,
+   "e": 0.5863,
+   "days": 23
+  },
+  "SVT02299": {
+   "company": "Severn Trent Water",
+   "offset": 0.056259,
+   "n": 2,
+   "e": 1.07,
+   "days": 23
+  },
+  "SVT02302": {
+   "company": "Severn Trent Water",
+   "offset": -0.047488,
+   "n": 0,
+   "e": 0.7295,
+   "days": 23
+  },
+  "SVT02306": {
+   "company": "Severn Trent Water",
+   "offset": 0.017918,
+   "n": 2,
+   "e": 1.6981,
+   "days": 23
+  },
+  "SVT02314": {
+   "company": "Severn Trent Water",
+   "offset": -0.064113,
+   "n": 0,
+   "e": 0.9932,
+   "days": 23
+  },
+  "SVT02364": {
+   "company": "Severn Trent Water",
+   "offset": -0.017362,
+   "n": 0,
+   "e": 0.2627,
+   "days": 23
+  },
+  "SVT02413": {
+   "company": "Severn Trent Water",
+   "offset": 0.070518,
+   "n": 3,
+   "e": 1.7744,
+   "days": 23
+  },
+  "SVT02414": {
+   "company": "Severn Trent Water",
+   "offset": 0.108662,
+   "n": 3,
+   "e": 1.1466,
+   "days": 23
+  },
+  "SVT02424": {
+   "company": "Severn Trent Water",
+   "offset": -0.051276,
+   "n": 0,
+   "e": 0.7892,
+   "days": 23
+  },
+  "SVT02473": {
+   "company": "Severn Trent Water",
+   "offset": 0.086321,
+   "n": 2,
+   "e": 0.5941,
+   "days": 23
+  },
+  "SVT02481": {
+   "company": "Severn Trent Water",
+   "offset": -0.048777,
+   "n": 0,
+   "e": 0.7498,
+   "days": 23
+  },
+  "SVT02488": {
+   "company": "Severn Trent Water",
+   "offset": 0.082995,
+   "n": 3,
+   "e": 1.5664,
+   "days": 23
+  },
+  "SVT02489": {
+   "company": "Severn Trent Water",
+   "offset": -0.009917,
+   "n": 0,
+   "e": 0.1495,
+   "days": 23
+  },
+  "SVT02490": {
+   "company": "Severn Trent Water",
+   "offset": 0.01585,
+   "n": 1,
+   "e": 0.7484,
+   "days": 23
+  },
+  "SVT02496": {
+   "company": "Severn Trent Water",
+   "offset": -0.036178,
+   "n": 0,
+   "e": 0.5526,
+   "days": 23
+  },
+  "SVT02498": {
+   "company": "Severn Trent Water",
+   "offset": -0.199124,
+   "n": 0,
+   "e": 3.305,
+   "days": 23
+  },
+  "SVT02510": {
+   "company": "Severn Trent Water",
+   "offset": -0.018324,
+   "n": 0,
+   "e": 0.2774,
+   "days": 19
+  },
+  "SVT02521": {
+   "company": "Severn Trent Water",
+   "offset": 0.023525,
+   "n": 1,
+   "e": 0.628,
+   "days": 23
+  },
+  "SVT02540": {
+   "company": "Severn Trent Water",
+   "offset": -0.011738,
+   "n": 0,
+   "e": 0.1771,
+   "days": 23
+  },
+  "SVT02544": {
+   "company": "Severn Trent Water",
+   "offset": -0.078719,
+   "n": 0,
+   "e": 1.2285,
+   "days": 12
+  },
+  "SVT02677": {
+   "company": "Severn Trent Water",
+   "offset": 0.149364,
+   "n": 3,
+   "e": 0.5026,
+   "days": 23
+  },
+  "SVT02699": {
+   "company": "Severn Trent Water",
+   "offset": -0.067166,
+   "n": 0,
+   "e": 1.0421,
+   "days": 23
+  },
+  "SVT02723": {
+   "company": "Severn Trent Water",
+   "offset": 0.234312,
+   "n": 5,
+   "e": 0.8223,
+   "days": 23
+  },
+  "SVT02727": {
+   "company": "Severn Trent Water",
+   "offset": 0.023755,
+   "n": 1,
+   "e": 0.6244,
+   "days": 23
+  },
+  "SWS00002": {
+   "company": "Southern Water",
+   "offset": -0.069458,
+   "n": 0,
+   "e": 1.0789,
+   "days": 14
+  },
+  "SWS00009": {
+   "company": "Southern Water",
+   "offset": -0.029869,
+   "n": 0,
+   "e": 0.4548,
+   "days": 15
+  },
+  "SWS00010": {
+   "company": "Southern Water",
+   "offset": -0.017964,
+   "n": 0,
+   "e": 0.2719,
+   "days": 15
+  },
+  "SWS00021": {
+   "company": "Southern Water",
+   "offset": -0.094898,
+   "n": 0,
+   "e": 1.4932,
+   "days": 15
+  },
+  "SWS00022": {
+   "company": "Southern Water",
+   "offset": -0.010643,
+   "n": 0,
+   "e": 0.1605,
+   "days": 15
+  },
+  "SWS00034": {
+   "company": "Southern Water",
+   "offset": 0.033906,
+   "n": 1,
+   "e": 0.4666,
+   "days": 15
+  },
+  "SWS00035": {
+   "company": "Southern Water",
+   "offset": -0.027895,
+   "n": 1,
+   "e": 1.4526,
+   "days": 15
+  },
+  "SWS00036": {
+   "company": "Southern Water",
+   "offset": -0.01381,
+   "n": 1,
+   "e": 1.2225,
+   "days": 15
+  },
+  "SWS00039": {
+   "company": "Southern Water",
+   "offset": -0.074539,
+   "n": 1,
+   "e": 2.2382,
+   "days": 15
+  },
+  "SWS00054": {
+   "company": "Southern Water",
+   "offset": -0.018671,
+   "n": 0,
+   "e": 0.2827,
+   "days": 15
+  },
+  "SWS00063": {
+   "company": "Southern Water",
+   "offset": -0.008669,
+   "n": 1,
+   "e": 1.1393,
+   "days": 15
+  },
+  "SWS00069": {
+   "company": "Southern Water",
+   "offset": -0.048362,
+   "n": 1,
+   "e": 1.7928,
+   "days": 15
+  },
+  "SWS00131": {
+   "company": "Southern Water",
+   "offset": -0.14417,
+   "n": 0,
+   "e": 2.3262,
+   "days": 15
+  },
+  "SWS00153": {
+   "company": "Southern Water",
+   "offset": -0.008021,
+   "n": 0,
+   "e": 0.1208,
+   "days": 14
+  },
+  "SWS00161": {
+   "company": "Southern Water",
+   "offset": -0.041187,
+   "n": 0,
+   "e": 0.6307,
+   "days": 15
+  },
+  "SWS00164": {
+   "company": "Southern Water",
+   "offset": -0.009171,
+   "n": 0,
+   "e": 0.1382,
+   "days": 15
+  },
+  "SWS00176": {
+   "company": "Southern Water",
+   "offset": -0.041391,
+   "n": 0,
+   "e": 0.6339,
+   "days": 15
+  },
+  "SWS00189": {
+   "company": "Southern Water",
+   "offset": 0.284487,
+   "n": 6,
+   "e": 0.8004,
+   "days": 15
+  },
+  "SWS00190": {
+   "company": "Southern Water",
+   "offset": -0.111327,
+   "n": 0,
+   "e": 1.7664,
+   "days": 15
+  },
+  "SWS00201": {
+   "company": "Southern Water",
+   "offset": -0.042325,
+   "n": 0,
+   "e": 0.6485,
+   "days": 15
+  },
+  "SWS00213": {
+   "company": "Southern Water",
+   "offset": 0.044684,
+   "n": 2,
+   "e": 1.2571,
+   "days": 15
+  },
+  "SWS00229": {
+   "company": "Southern Water",
+   "offset": -0.001911,
+   "n": 1,
+   "e": 1.0306,
+   "days": 15
+  },
+  "SWS00236": {
+   "company": "Southern Water",
+   "offset": -0.087437,
+   "n": 0,
+   "e": 1.3706,
+   "days": 15
+  },
+  "SWS00238": {
+   "company": "Southern Water",
+   "offset": -0.006896,
+   "n": 0,
+   "e": 0.1038,
+   "days": 15
+  },
+  "SWS00243": {
+   "company": "Southern Water",
+   "offset": -0.03612,
+   "n": 0,
+   "e": 0.5517,
+   "days": 15
+  },
+  "SWS00245": {
+   "company": "Southern Water",
+   "offset": -0.046585,
+   "n": 1,
+   "e": 1.763,
+   "days": 15
+  },
+  "SWS00251": {
+   "company": "Southern Water",
+   "offset": -0.050816,
+   "n": 2,
+   "e": 2.8862,
+   "days": 15
+  },
+  "SWS00258": {
+   "company": "Southern Water",
+   "offset": -0.004372,
+   "n": 1,
+   "e": 1.0701,
+   "days": 15
+  },
+  "SWS00280": {
+   "company": "Southern Water",
+   "offset": -0.016187,
+   "n": 1,
+   "e": 1.2611,
+   "days": 15
+  },
+  "SWS00281": {
+   "company": "Southern Water",
+   "offset": -0.034595,
+   "n": 1,
+   "e": 1.5632,
+   "days": 15
+  },
+  "SWS00282": {
+   "company": "Southern Water",
+   "offset": -0.055864,
+   "n": 0,
+   "e": 0.8618,
+   "days": 15
+  },
+  "SWS00299": {
+   "company": "Southern Water",
+   "offset": -0.06845,
+   "n": 0,
+   "e": 1.0627,
+   "days": 15
+  },
+  "SWS00304": {
+   "company": "Southern Water",
+   "offset": 0.069767,
+   "n": 3,
+   "e": 1.787,
+   "days": 15
+  },
+  "SWS00307": {
+   "company": "Southern Water",
+   "offset": 0.042673,
+   "n": 1,
+   "e": 0.3316,
+   "days": 15
+  },
+  "SWS00322": {
+   "company": "Southern Water",
+   "offset": -0.036922,
+   "n": 1,
+   "e": 1.6018,
+   "days": 15
+  },
+  "SWS00324": {
+   "company": "Southern Water",
+   "offset": -0.020825,
+   "n": 1,
+   "e": 1.3367,
+   "days": 15
+  },
+  "SWS00330": {
+   "company": "Southern Water",
+   "offset": -0.042407,
+   "n": 1,
+   "e": 1.6931,
+   "days": 15
+  },
+  "SWS00331": {
+   "company": "Southern Water",
+   "offset": -0.011606,
+   "n": 0,
+   "e": 0.1751,
+   "days": 15
+  },
+  "SWS00344": {
+   "company": "Southern Water",
+   "offset": -0.020234,
+   "n": 0,
+   "e": 0.3066,
+   "days": 12
+  },
+  "SWS00348": {
+   "company": "Southern Water",
+   "offset": -0.014613,
+   "n": 0,
+   "e": 0.2208,
+   "days": 15
+  },
+  "SWS00357": {
+   "company": "Southern Water",
+   "offset": 0.04214,
+   "n": 2,
+   "e": 1.2985,
+   "days": 15
+  },
+  "SWS00370": {
+   "company": "Southern Water",
+   "offset": -0.092968,
+   "n": 0,
+   "e": 1.4614,
+   "days": 15
+  },
+  "SWS00387": {
+   "company": "Southern Water",
+   "offset": -0.118372,
+   "n": 1,
+   "e": 3.0106,
+   "days": 15
+  },
+  "SWS00396": {
+   "company": "Southern Water",
+   "offset": -0.12542,
+   "n": 1,
+   "e": 3.138,
+   "days": 15
+  },
+  "SWS00399": {
+   "company": "Southern Water",
+   "offset": -0.088109,
+   "n": 0,
+   "e": 1.3816,
+   "days": 12
+  },
+  "SWS00402": {
+   "company": "Southern Water",
+   "offset": 0.027873,
+   "n": 2,
+   "e": 1.5327,
+   "days": 15
+  },
+  "SWS00403": {
+   "company": "Southern Water",
+   "offset": -0.020103,
+   "n": 1,
+   "e": 1.3249,
+   "days": 15
+  },
+  "SWS00407": {
+   "company": "Southern Water",
+   "offset": -0.056954,
+   "n": 0,
+   "e": 0.8791,
+   "days": 15
+  },
+  "SWS00412": {
+   "company": "Southern Water",
+   "offset": 0.004479,
+   "n": 1,
+   "e": 0.9285,
+   "days": 15
+  },
+  "SWS00413": {
+   "company": "Southern Water",
+   "offset": -0.066605,
+   "n": 0,
+   "e": 1.0331,
+   "days": 9
+  },
+  "SWS00431": {
+   "company": "Southern Water",
+   "offset": -0.007788,
+   "n": 1,
+   "e": 1.1251,
+   "days": 15
+  },
+  "SWS00433": {
+   "company": "Southern Water",
+   "offset": -0.033538,
+   "n": 0,
+   "e": 0.5116,
+   "days": 15
+  },
+  "SWS00434": {
+   "company": "Southern Water",
+   "offset": 0.048363,
+   "n": 2,
+   "e": 1.1974,
+   "days": 15
+  },
+  "SWS00440": {
+   "company": "Southern Water",
+   "offset": 0.132662,
+   "n": 3,
+   "e": 0.7637,
+   "days": 15
+  },
+  "SWS00451": {
+   "company": "Southern Water",
+   "offset": -0.002803,
+   "n": 0,
+   "e": 0.0421,
+   "days": 15
+  },
+  "SWS00452": {
+   "company": "Southern Water",
+   "offset": -0.14823,
+   "n": 0,
+   "e": 2.3967,
+   "days": 15
+  },
+  "SWS00467": {
+   "company": "Southern Water",
+   "offset": -0.082231,
+   "n": 0,
+   "e": 1.2856,
+   "days": 15
+  },
+  "SWS00468": {
+   "company": "Southern Water",
+   "offset": -0.02026,
+   "n": 0,
+   "e": 0.307,
+   "days": 15
+  },
+  "SWS00487": {
+   "company": "Southern Water",
+   "offset": -0.036319,
+   "n": 0,
+   "e": 0.5548,
+   "days": 15
+  },
+  "SWS00493": {
+   "company": "Southern Water",
+   "offset": -0.013383,
+   "n": 0,
+   "e": 0.2021,
+   "days": 15
+  },
+  "SWS00502": {
+   "company": "Southern Water",
+   "offset": 0.084306,
+   "n": 3,
+   "e": 1.5447,
+   "days": 15
+  },
+  "SWS00504": {
+   "company": "Southern Water",
+   "offset": -0.011935,
+   "n": 0,
+   "e": 0.1801,
+   "days": 15
+  },
+  "SWS00505": {
+   "company": "Southern Water",
+   "offset": -0.094185,
+   "n": 1,
+   "e": 2.5802,
+   "days": 15
+  },
+  "SWS00529": {
+   "company": "Southern Water",
+   "offset": 0.026549,
+   "n": 1,
+   "e": 0.5808,
+   "days": 15
+  },
+  "SWS00548": {
+   "company": "Southern Water",
+   "offset": -0.069209,
+   "n": 0,
+   "e": 1.0749,
+   "days": 15
+  },
+  "SWS00569": {
+   "company": "Southern Water",
+   "offset": -0.013594,
+   "n": 0,
+   "e": 0.2053,
+   "days": 15
+  },
+  "SWS00577": {
+   "company": "Southern Water",
+   "offset": -0.037154,
+   "n": 0,
+   "e": 0.5678,
+   "days": 15
+  },
+  "SWS00585": {
+   "company": "Southern Water",
+   "offset": -0.001019,
+   "n": 0,
+   "e": 0.0153,
+   "days": 3
+  },
+  "SWS00588": {
+   "company": "Southern Water",
+   "offset": -0.007048,
+   "n": 0,
+   "e": 0.1061,
+   "days": 15
+  },
+  "SWS00592": {
+   "company": "Southern Water",
+   "offset": -0.0606,
+   "n": 0,
+   "e": 0.9371,
+   "days": 15
+  },
+  "SWS00593": {
+   "company": "Southern Water",
+   "offset": -0.000473,
+   "n": 0,
+   "e": 0.0071,
+   "days": 3
+  },
+  "SWS00601": {
+   "company": "Southern Water",
+   "offset": 0.015882,
+   "n": 1,
+   "e": 0.7479,
+   "days": 15
+  },
+  "SWS00602": {
+   "company": "Southern Water",
+   "offset": -0.057155,
+   "n": 0,
+   "e": 0.8823,
+   "days": 15
+  },
+  "SWS00606": {
+   "company": "Southern Water",
+   "offset": -0.009574,
+   "n": 0,
+   "e": 0.1443,
+   "days": 15
+  },
+  "SWS00624": {
+   "company": "Southern Water",
+   "offset": -0.043002,
+   "n": 0,
+   "e": 0.6591,
+   "days": 15
+  },
+  "SWS00625": {
+   "company": "Southern Water",
+   "offset": -0.073969,
+   "n": 0,
+   "e": 1.1516,
+   "days": 15
+  },
+  "SWS00633": {
+   "company": "Southern Water",
+   "offset": -0.101937,
+   "n": 0,
+   "e": 1.6097,
+   "days": 9
+  },
+  "SWS00636": {
+   "company": "Southern Water",
+   "offset": 0.057193,
+   "n": 2,
+   "e": 1.055,
+   "days": 15
+  },
+  "SWS00637": {
+   "company": "Southern Water",
+   "offset": -0.094685,
+   "n": 1,
+   "e": 2.589,
+   "days": 15
+  },
+  "SWS00645": {
+   "company": "Southern Water",
+   "offset": 0.008418,
+   "n": 2,
+   "e": 1.8575,
+   "days": 15
+  },
+  "SWS00646": {
+   "company": "Southern Water",
+   "offset": -0.045343,
+   "n": 0,
+   "e": 0.6958,
+   "days": 15
+  },
+  "SWS00653": {
+   "company": "Southern Water",
+   "offset": -0.007578,
+   "n": 0,
+   "e": 0.1141,
+   "days": 15
+  },
+  "SWS00657": {
+   "company": "Southern Water",
+   "offset": 0.053079,
+   "n": 3,
+   "e": 2.0695,
+   "days": 15
+  },
+  "SWS00673": {
+   "company": "Southern Water",
+   "offset": -0.011223,
+   "n": 0,
+   "e": 0.1693,
+   "days": 15
+  },
+  "SWS00698": {
+   "company": "Southern Water",
+   "offset": 0.018305,
+   "n": 3,
+   "e": 2.6735,
+   "days": 15
+  },
+  "SWS00700": {
+   "company": "Southern Water",
+   "offset": -0.006009,
+   "n": 0,
+   "e": 0.0904,
+   "days": 15
+  },
+  "SWS00701": {
+   "company": "Southern Water",
+   "offset": -0.059553,
+   "n": 1,
+   "e": 1.9818,
+   "days": 15
+  },
+  "SWS00708": {
+   "company": "Southern Water",
+   "offset": -0.019051,
+   "n": 0,
+   "e": 0.2885,
+   "days": 15
+  },
+  "SWS00745": {
+   "company": "Southern Water",
+   "offset": -0.003999,
+   "n": 0,
+   "e": 0.0601,
+   "days": 15
+  },
+  "SWS00746": {
+   "company": "Southern Water",
+   "offset": -0.016113,
+   "n": 1,
+   "e": 1.2599,
+   "days": 15
+  },
+  "SWS00749": {
+   "company": "Southern Water",
+   "offset": -0.010425,
+   "n": 0,
+   "e": 0.1572,
+   "days": 15
+  },
+  "SWS00766": {
+   "company": "Southern Water",
+   "offset": -0.001468,
+   "n": 1,
+   "e": 1.0235,
+   "days": 13
+  },
+  "SWS00791": {
+   "company": "Southern Water",
+   "offset": -0.01525,
+   "n": 0,
+   "e": 0.2305,
+   "days": 15
+  },
+  "SWS00797": {
+   "company": "Southern Water",
+   "offset": -0.005454,
+   "n": 1,
+   "e": 1.0875,
+   "days": 15
+  },
+  "SWS00804": {
+   "company": "Southern Water",
+   "offset": -0.005883,
+   "n": 0,
+   "e": 0.0885,
+   "days": 12
+  },
+  "SWS00812": {
+   "company": "Southern Water",
+   "offset": -0.045789,
+   "n": 0,
+   "e": 0.7028,
+   "days": 15
+  },
+  "SWS00821": {
+   "company": "Southern Water",
+   "offset": -0.037982,
+   "n": 1,
+   "e": 1.6194,
+   "days": 15
+  },
+  "SWS00823": {
+   "company": "Southern Water",
+   "offset": 0.005232,
+   "n": 1,
+   "e": 0.9165,
+   "days": 15
+  },
+  "SWS00837": {
+   "company": "Southern Water",
+   "offset": -0.064395,
+   "n": 0,
+   "e": 0.9977,
+   "days": 15
+  },
+  "SWS00849": {
+   "company": "Southern Water",
+   "offset": -0.004616,
+   "n": 0,
+   "e": 0.0694,
+   "days": 15
+  },
+  "SWS00852": {
+   "company": "Southern Water",
+   "offset": -0.065076,
+   "n": 0,
+   "e": 1.0086,
+   "days": 15
+  },
+  "SWS00882": {
+   "company": "Southern Water",
+   "offset": -0.04826,
+   "n": 1,
+   "e": 1.7911,
+   "days": 15
+  },
+  "SWS00883": {
+   "company": "Southern Water",
+   "offset": -0.050192,
+   "n": 0,
+   "e": 0.7721,
+   "days": 15
+  },
+  "SWS00887": {
+   "company": "Southern Water",
+   "offset": -0.002931,
+   "n": 2,
+   "e": 2.0499,
+   "days": 15
+  },
+  "SWS00888": {
+   "company": "Southern Water",
+   "offset": -0.090783,
+   "n": 1,
+   "e": 2.5205,
+   "days": 15
+  },
+  "SWS00892": {
+   "company": "Southern Water",
+   "offset": -0.044055,
+   "n": 0,
+   "e": 0.6756,
+   "days": 15
+  },
+  "SWS00913": {
+   "company": "Southern Water",
+   "offset": 0.01486,
+   "n": 1,
+   "e": 0.764,
+   "days": 15
+  },
+  "SWS00920": {
+   "company": "Southern Water",
+   "offset": 0.015526,
+   "n": 1,
+   "e": 0.7535,
+   "days": 15
+  },
+  "SWS00922": {
+   "company": "Southern Water",
+   "offset": -0.055126,
+   "n": 0,
+   "e": 0.8501,
+   "days": 15
+  },
+  "SWS00923": {
+   "company": "Southern Water",
+   "offset": -0.034854,
+   "n": 1,
+   "e": 1.5675,
+   "days": 15
+  },
+  "SWS00931": {
+   "company": "Southern Water",
+   "offset": -0.017001,
+   "n": 0,
+   "e": 0.2572,
+   "days": 15
+  },
+  "SWS00948": {
+   "company": "Southern Water",
+   "offset": 0.02239,
+   "n": 2,
+   "e": 1.6236,
+   "days": 15
+  },
+  "SWS00960": {
+   "company": "Southern Water",
+   "offset": -0.089883,
+   "n": 0,
+   "e": 1.4107,
+   "days": 15
+  },
+  "SWS00962": {
+   "company": "Southern Water",
+   "offset": -0.053869,
+   "n": 0,
+   "e": 0.8302,
+   "days": 15
+  },
+  "SWS00965": {
+   "company": "Southern Water",
+   "offset": 0.056297,
+   "n": 2,
+   "e": 1.0694,
+   "days": 15
+  },
+  "SWS00983": {
+   "company": "Southern Water",
+   "offset": -0.00522,
+   "n": 0,
+   "e": 0.0785,
+   "days": 3
+  },
+  "SWS90018": {
+   "company": "Southern Water",
+   "offset": -0.039586,
+   "n": 0,
+   "e": 0.6057,
+   "days": 15
+  },
+  "SWS90060": {
+   "company": "Southern Water",
+   "offset": 0.022847,
+   "n": 1,
+   "e": 0.6386,
+   "days": 9
+  },
+  "SWS90105": {
+   "company": "Southern Water",
+   "offset": -0.035065,
+   "n": 0,
+   "e": 0.5353,
+   "days": 15
+  },
+  "SWS90148": {
+   "company": "Southern Water",
+   "offset": -0.043519,
+   "n": 0,
+   "e": 0.6672,
+   "days": 15
+  },
+  "TWL00004": {
+   "company": "Thames Water",
+   "offset": -0.004639,
+   "n": 1,
+   "e": 1.0744,
+   "days": 23
+  },
+  "TWL00006": {
+   "company": "Thames Water",
+   "offset": -0.028529,
+   "n": 0,
+   "e": 0.4341,
+   "days": 11
+  },
+  "TWL00007": {
+   "company": "Thames Water",
+   "offset": -0.07157,
+   "n": 0,
+   "e": 1.1129,
+   "days": 23
+  },
+  "TWL00010": {
+   "company": "Thames Water",
+   "offset": -0.112514,
+   "n": 1,
+   "e": 2.9054,
+   "days": 23
+  },
+  "TWL00011": {
+   "company": "Thames Water",
+   "offset": -0.074429,
+   "n": 1,
+   "e": 2.2363,
+   "days": 12
+  },
+  "TWL00013": {
+   "company": "Thames Water",
+   "offset": -0.180041,
+   "n": 0,
+   "e": 2.959,
+   "days": 23
+  },
+  "TWL00014": {
+   "company": "Thames Water",
+   "offset": 0.081487,
+   "n": 3,
+   "e": 1.5914,
+   "days": 23
+  },
+  "TWL00017": {
+   "company": "Thames Water",
+   "offset": -0.060116,
+   "n": 0,
+   "e": 0.9294,
+   "days": 23
+  },
+  "TWL00021": {
+   "company": "Thames Water",
+   "offset": -0.003799,
+   "n": 0,
+   "e": 0.0571,
+   "days": 21
+  },
+  "TWL00024": {
+   "company": "Thames Water",
+   "offset": 0.035886,
+   "n": 3,
+   "e": 2.3655,
+   "days": 23
+  },
+  "TWL00025": {
+   "company": "Thames Water",
+   "offset": -0.08685,
+   "n": 0,
+   "e": 1.361,
+   "days": 18
+  },
+  "TWL00028": {
+   "company": "Thames Water",
+   "offset": -0.086104,
+   "n": 0,
+   "e": 1.3488,
+   "days": 23
+  },
+  "TWL00031": {
+   "company": "Thames Water",
+   "offset": -0.134776,
+   "n": 0,
+   "e": 2.1642,
+   "days": 23
+  },
+  "TWL00034": {
+   "company": "Thames Water",
+   "offset": -0.091126,
+   "n": 0,
+   "e": 1.4311,
+   "days": 23
+  },
+  "TWL00035": {
+   "company": "Thames Water",
+   "offset": -0.128651,
+   "n": 0,
+   "e": 2.0594,
+   "days": 18
+  },
+  "TWL00038": {
+   "company": "Thames Water",
+   "offset": -0.030499,
+   "n": 1,
+   "e": 1.4955,
+   "days": 23
+  },
+  "TWL00041": {
+   "company": "Thames Water",
+   "offset": 0.237896,
+   "n": 5,
+   "e": 0.7657,
+   "days": 23
+  },
+  "TWL00042": {
+   "company": "Thames Water",
+   "offset": -0.150372,
+   "n": 0,
+   "e": 2.434,
+   "days": 23
+  },
+  "TWL00043": {
+   "company": "Thames Water",
+   "offset": -0.182505,
+   "n": 0,
+   "e": 3.0033,
+   "days": 23
+  },
+  "TWL00044": {
+   "company": "Thames Water",
+   "offset": -0.112042,
+   "n": 0,
+   "e": 1.7784,
+   "days": 23
+  },
+  "TWL00045": {
+   "company": "Thames Water",
+   "offset": -0.106407,
+   "n": 1,
+   "e": 2.7964,
+   "days": 18
+  },
+  "TWL00046": {
+   "company": "Thames Water",
+   "offset": -0.025564,
+   "n": 0,
+   "e": 0.3884,
+   "days": 23
+  },
+  "TWL00052": {
+   "company": "Thames Water",
+   "offset": 0.001783,
+   "n": 1,
+   "e": 0.9715,
+   "days": 23
+  },
+  "TWL00057": {
+   "company": "Thames Water",
+   "offset": -0.071638,
+   "n": 0,
+   "e": 1.114,
+   "days": 12
+  },
+  "TWL00058": {
+   "company": "Thames Water",
+   "offset": -0.038207,
+   "n": 0,
+   "e": 0.5842,
+   "days": 23
+  },
+  "TWL00061": {
+   "company": "Thames Water",
+   "offset": -0.125257,
+   "n": 0,
+   "e": 2.0016,
+   "days": 23
+  },
+  "TWL00063": {
+   "company": "Thames Water",
+   "offset": -0.035792,
+   "n": 0,
+   "e": 0.5466,
+   "days": 12
+  },
+  "TWL00064": {
+   "company": "Thames Water",
+   "offset": -0.185788,
+   "n": 0,
+   "e": 3.0625,
+   "days": 23
+  },
+  "TWL00070": {
+   "company": "Thames Water",
+   "offset": -0.075293,
+   "n": 0,
+   "e": 1.173,
+   "days": 23
+  },
+  "TWL00074": {
+   "company": "Thames Water",
+   "offset": -0.005336,
+   "n": 1,
+   "e": 1.0856,
+   "days": 23
+  },
+  "TWL00075": {
+   "company": "Thames Water",
+   "offset": -0.028231,
+   "n": 0,
+   "e": 0.4295,
+   "days": 23
+  },
+  "TWL00077": {
+   "company": "Thames Water",
+   "offset": 0.089841,
+   "n": 2,
+   "e": 0.5393,
+   "days": 23
+  },
+  "TWL00079": {
+   "company": "Thames Water",
+   "offset": -0.077282,
+   "n": 0,
+   "e": 1.2052,
+   "days": 23
+  },
+  "TWL00080": {
+   "company": "Thames Water",
+   "offset": -0.103453,
+   "n": 0,
+   "e": 1.6349,
+   "days": 23
+  },
+  "TWL00081": {
+   "company": "Thames Water",
+   "offset": -0.133266,
+   "n": 0,
+   "e": 2.1383,
+   "days": 23
+  },
+  "TWL00083": {
+   "company": "Thames Water",
+   "offset": -0.042868,
+   "n": 0,
+   "e": 0.657,
+   "days": 23
+  },
+  "TWL00085": {
+   "company": "Thames Water",
+   "offset": -0.091713,
+   "n": 1,
+   "e": 2.5368,
+   "days": 23
+  },
+  "TWL00088": {
+   "company": "Thames Water",
+   "offset": -0.105692,
+   "n": 0,
+   "e": 1.6722,
+   "days": 23
+  },
+  "TWL00093": {
+   "company": "Thames Water",
+   "offset": -0.139431,
+   "n": 0,
+   "e": 2.2443,
+   "days": 12
+  },
+  "TWL00094": {
+   "company": "Thames Water",
+   "offset": -0.066399,
+   "n": 0,
+   "e": 1.0298,
+   "days": 23
+  },
+  "TWL00096": {
+   "company": "Thames Water",
+   "offset": -0.084669,
+   "n": 1,
+   "e": 2.4137,
+   "days": 23
+  },
+  "TWL00097": {
+   "company": "Thames Water",
+   "offset": -0.034569,
+   "n": 0,
+   "e": 0.5276,
+   "days": 23
+  },
+  "TWL00098": {
+   "company": "Thames Water",
+   "offset": 0.066185,
+   "n": 4,
+   "e": 2.7832,
+   "days": 23
+  },
+  "TWL00101": {
+   "company": "Thames Water",
+   "offset": 0.036567,
+   "n": 1,
+   "e": 0.4255,
+   "days": 23
+  },
+  "TWL00102": {
+   "company": "Thames Water",
+   "offset": -0.069795,
+   "n": 2,
+   "e": 3.2289,
+   "days": 23
+  },
+  "TWL00103": {
+   "company": "Thames Water",
+   "offset": -0.167479,
+   "n": 0,
+   "e": 2.7348,
+   "days": 23
+  },
+  "TWL00105": {
+   "company": "Thames Water",
+   "offset": -0.044151,
+   "n": 0,
+   "e": 0.6771,
+   "days": 18
+  },
+  "TWL00106": {
+   "company": "Thames Water",
+   "offset": -0.006752,
+   "n": 1,
+   "e": 1.1084,
+   "days": 23
+  },
+  "TWL00107": {
+   "company": "Thames Water",
+   "offset": -0.003594,
+   "n": 1,
+   "e": 1.0576,
+   "days": 23
+  },
+  "TWL00110": {
+   "company": "Thames Water",
+   "offset": -0.147874,
+   "n": 0,
+   "e": 2.3905,
+   "days": 23
+  },
+  "TWL00111": {
+   "company": "Thames Water",
+   "offset": -0.014159,
+   "n": 0,
+   "e": 0.2139,
+   "days": 23
+  },
+  "TWL00113": {
+   "company": "Thames Water",
+   "offset": -0.032899,
+   "n": 0,
+   "e": 0.5017,
+   "days": 23
+  },
+  "TWL00119": {
+   "company": "Thames Water",
+   "offset": 0.044069,
+   "n": 2,
+   "e": 1.2671,
+   "days": 21
+  },
+  "TWL00121": {
+   "company": "Thames Water",
+   "offset": -0.036865,
+   "n": 0,
+   "e": 0.5633,
+   "days": 23
+  },
+  "TWL00130": {
+   "company": "Thames Water",
+   "offset": -0.023065,
+   "n": 0,
+   "e": 0.35,
+   "days": 21
+  },
+  "TWL00135": {
+   "company": "Thames Water",
+   "offset": -0.007882,
+   "n": 0,
+   "e": 0.1187,
+   "days": 23
+  },
+  "TWL00140": {
+   "company": "Thames Water",
+   "offset": -0.009878,
+   "n": 0,
+   "e": 0.1489,
+   "days": 15
+  },
+  "TWL00142": {
+   "company": "Thames Water",
+   "offset": -0.006028,
+   "n": 0,
+   "e": 0.0907,
+   "days": 23
+  },
+  "TWL00146": {
+   "company": "Thames Water",
+   "offset": -0.089518,
+   "n": 0,
+   "e": 1.4047,
+   "days": 12
+  },
+  "TWL00147": {
+   "company": "Thames Water",
+   "offset": 0.013769,
+   "n": 1,
+   "e": 0.7812,
+   "days": 23
+  },
+  "TWL00155": {
+   "company": "Thames Water",
+   "offset": 0.032049,
+   "n": 2,
+   "e": 1.4638,
+   "days": 19
+  },
+  "TWL00157": {
+   "company": "Thames Water",
+   "offset": -0.048327,
+   "n": 0,
+   "e": 0.7427,
+   "days": 23
+  },
+  "TWL00159": {
+   "company": "Thames Water",
+   "offset": -0.134035,
+   "n": 0,
+   "e": 2.1515,
+   "days": 23
+  },
+  "TWL00160": {
+   "company": "Thames Water",
+   "offset": -0.064132,
+   "n": 0,
+   "e": 0.9935,
+   "days": 23
+  },
+  "TWL00162": {
+   "company": "Thames Water",
+   "offset": -0.139582,
+   "n": 0,
+   "e": 2.2469,
+   "days": 23
+  },
+  "TWL00169": {
+   "company": "Thames Water",
+   "offset": -0.020654,
+   "n": 1,
+   "e": 1.3339,
+   "days": 23
+  },
+  "TWL00171": {
+   "company": "Thames Water",
+   "offset": -0.018252,
+   "n": 0,
+   "e": 0.2763,
+   "days": 23
+  },
+  "TWL00174": {
+   "company": "Thames Water",
+   "offset": -0.025656,
+   "n": 1,
+   "e": 1.4158,
+   "days": 23
+  },
+  "TWL00176": {
+   "company": "Thames Water",
+   "offset": -0.114792,
+   "n": 0,
+   "e": 1.8246,
+   "days": 23
+  },
+  "TWL00178": {
+   "company": "Thames Water",
+   "offset": -0.147673,
+   "n": 0,
+   "e": 2.387,
+   "days": 23
+  },
+  "TWL00180": {
+   "company": "Thames Water",
+   "offset": -0.065675,
+   "n": 0,
+   "e": 1.0182,
+   "days": 19
+  },
+  "TWL00182": {
+   "company": "Thames Water",
+   "offset": -0.037681,
+   "n": 1,
+   "e": 1.6144,
+   "days": 18
+  },
+  "TWL00184": {
+   "company": "Thames Water",
+   "offset": -0.07439,
+   "n": 0,
+   "e": 1.1584,
+   "days": 23
+  },
+  "TWL00186": {
+   "company": "Thames Water",
+   "offset": -0.058663,
+   "n": 2,
+   "e": 3.0271,
+   "days": 23
+  },
+  "TWL00188": {
+   "company": "Thames Water",
+   "offset": 0.051464,
+   "n": 1,
+   "e": 0.1974,
+   "days": 23
+  },
+  "TWL00191": {
+   "company": "Thames Water",
+   "offset": -0.03157,
+   "n": 0,
+   "e": 0.4811,
+   "days": 23
+  },
+  "TWL00196": {
+   "company": "Thames Water",
+   "offset": -0.088955,
+   "n": 1,
+   "e": 2.4885,
+   "days": 23
+  },
+  "TWL00197": {
+   "company": "Thames Water",
+   "offset": -0.011385,
+   "n": 1,
+   "e": 1.1832,
+   "days": 23
+  },
+  "TWL00199": {
+   "company": "Thames Water",
+   "offset": -0.007591,
+   "n": 0,
+   "e": 0.1143,
+   "days": 23
+  },
+  "TWL00204": {
+   "company": "Thames Water",
+   "offset": 0.028514,
+   "n": 3,
+   "e": 2.494,
+   "days": 23
+  },
+  "TWL00206": {
+   "company": "Thames Water",
+   "offset": -0.06802,
+   "n": 0,
+   "e": 1.0558,
+   "days": 23
+  },
+  "TWL00207": {
+   "company": "Thames Water",
+   "offset": -0.129794,
+   "n": 0,
+   "e": 2.0789,
+   "days": 23
+  },
+  "TWL00209": {
+   "company": "Thames Water",
+   "offset": -0.007393,
+   "n": 0,
+   "e": 0.1113,
+   "days": 23
+  },
+  "TWL00211": {
+   "company": "Thames Water",
+   "offset": -0.12531,
+   "n": 0,
+   "e": 2.0025,
+   "days": 23
+  },
+  "TWL00212": {
+   "company": "Thames Water",
+   "offset": -0.153488,
+   "n": 0,
+   "e": 2.4884,
+   "days": 23
+  },
+  "TWL00216": {
+   "company": "Thames Water",
+   "offset": -0.051038,
+   "n": 1,
+   "e": 1.8378,
+   "days": 21
+  },
+  "TWL00222": {
+   "company": "Thames Water",
+   "offset": -0.023117,
+   "n": 0,
+   "e": 0.3508,
+   "days": 23
+  },
+  "TWL00223": {
+   "company": "Thames Water",
+   "offset": -0.076905,
+   "n": 0,
+   "e": 1.1991,
+   "days": 23
+  },
+  "TWL00226": {
+   "company": "Thames Water",
+   "offset": -0.002723,
+   "n": 0,
+   "e": 0.0409,
+   "days": 6
+  },
+  "TWL00227": {
+   "company": "Thames Water",
+   "offset": -0.012805,
+   "n": 1,
+   "e": 1.2062,
+   "days": 23
+  },
+  "TWL00229": {
+   "company": "Thames Water",
+   "offset": 0.025363,
+   "n": 1,
+   "e": 0.5993,
+   "days": 23
+  },
+  "TWL00232": {
+   "company": "Thames Water",
+   "offset": -0.070297,
+   "n": 0,
+   "e": 1.0924,
+   "days": 18
+  },
+  "TWL00238": {
+   "company": "Thames Water",
+   "offset": -0.000653,
+   "n": 2,
+   "e": 2.0111,
+   "days": 23
+  },
+  "TWL00242": {
+   "company": "Thames Water",
+   "offset": -0.047106,
+   "n": 0,
+   "e": 0.7235,
+   "days": 23
+  },
+  "TWL00244": {
+   "company": "Thames Water",
+   "offset": -0.060336,
+   "n": 1,
+   "e": 1.9951,
+   "days": 23
+  },
+  "TWL00245": {
+   "company": "Thames Water",
+   "offset": -0.006883,
+   "n": 0,
+   "e": 0.1036,
+   "days": 12
+  },
+  "TWL00246": {
+   "company": "Thames Water",
+   "offset": -0.004377,
+   "n": 0,
+   "e": 0.0658,
+   "days": 23
+  },
+  "TWL00249": {
+   "company": "Thames Water",
+   "offset": -0.002084,
+   "n": 0,
+   "e": 0.0313,
+   "days": 23
+  },
+  "TWL00252": {
+   "company": "Thames Water",
+   "offset": -0.047303,
+   "n": 0,
+   "e": 0.7266,
+   "days": 23
+  },
+  "TWL00255": {
+   "company": "Thames Water",
+   "offset": -0.036615,
+   "n": 0,
+   "e": 0.5594,
+   "days": 18
+  },
+  "TWL00256": {
+   "company": "Thames Water",
+   "offset": -0.212172,
+   "n": 0,
+   "e": 3.5454,
+   "days": 23
+  },
+  "TWL00257": {
+   "company": "Thames Water",
+   "offset": -0.089414,
+   "n": 0,
+   "e": 1.403,
+   "days": 23
+  },
+  "TWL00258": {
+   "company": "Thames Water",
+   "offset": -0.004045,
+   "n": 0,
+   "e": 0.0608,
+   "days": 23
+  },
+  "TWL00259": {
+   "company": "Thames Water",
+   "offset": -0.125193,
+   "n": 0,
+   "e": 2.0005,
+   "days": 23
+  },
+  "TWL00260": {
+   "company": "Thames Water",
+   "offset": -0.111577,
+   "n": 0,
+   "e": 1.7706,
+   "days": 23
+  },
+  "TWL00262": {
+   "company": "Thames Water",
+   "offset": -0.068266,
+   "n": 1,
+   "e": 2.1304,
+   "days": 23
+  },
+  "TWL00263": {
+   "company": "Thames Water",
+   "offset": -0.077387,
+   "n": 0,
+   "e": 1.2069,
+   "days": 23
+  },
+  "TWL00266": {
+   "company": "Thames Water",
+   "offset": -0.06159,
+   "n": 0,
+   "e": 0.9529,
+   "days": 23
+  },
+  "TWL00271": {
+   "company": "Thames Water",
+   "offset": -0.132407,
+   "n": 0,
+   "e": 2.1236,
+   "days": 23
+  },
+  "TWL00273": {
+   "company": "Thames Water",
+   "offset": -0.017899,
+   "n": 0,
+   "e": 0.2709,
+   "days": 23
+  },
+  "TWL00276": {
+   "company": "Thames Water",
+   "offset": -0.008781,
+   "n": 0,
+   "e": 0.1323,
+   "days": 23
+  },
+  "TWL00281": {
+   "company": "Thames Water",
+   "offset": -0.011757,
+   "n": 0,
+   "e": 0.1774,
+   "days": 18
+  },
+  "TWL00283": {
+   "company": "Thames Water",
+   "offset": 0.004138,
+   "n": 2,
+   "e": 1.9298,
+   "days": 23
+  },
+  "TWL00287": {
+   "company": "Thames Water",
+   "offset": -0.006572,
+   "n": 0,
+   "e": 0.0989,
+   "days": 23
+  },
+  "TWL00288": {
+   "company": "Thames Water",
+   "offset": 0.044605,
+   "n": 1,
+   "e": 0.302,
+   "days": 23
+  },
+  "TWL00289": {
+   "company": "Thames Water",
+   "offset": -0.011434,
+   "n": 0,
+   "e": 0.1725,
+   "days": 23
+  },
+  "TWL00290": {
+   "company": "Thames Water",
+   "offset": -0.092889,
+   "n": 0,
+   "e": 1.4601,
+   "days": 12
+  },
+  "TWL00294": {
+   "company": "Thames Water",
+   "offset": -0.16736,
+   "n": 0,
+   "e": 2.7327,
+   "days": 23
+  },
+  "TWL00298": {
+   "company": "Thames Water",
+   "offset": -0.090091,
+   "n": 0,
+   "e": 1.4141,
+   "days": 23
+  },
+  "TWL00299": {
+   "company": "Thames Water",
+   "offset": -0.000987,
+   "n": 1,
+   "e": 1.0158,
+   "days": 18
+  },
+  "TWL00300": {
+   "company": "Thames Water",
+   "offset": -0.060643,
+   "n": 0,
+   "e": 0.9378,
+   "days": 23
+  },
+  "TWL00301": {
+   "company": "Thames Water",
+   "offset": -0.020828,
+   "n": 0,
+   "e": 0.3157,
+   "days": 23
+  },
+  "TWL00303": {
+   "company": "Thames Water",
+   "offset": -0.109197,
+   "n": 2,
+   "e": 3.9615,
+   "days": 23
+  },
+  "TWL00306": {
+   "company": "Thames Water",
+   "offset": -0.167591,
+   "n": 0,
+   "e": 2.7368,
+   "days": 23
+  },
+  "TWL00309": {
+   "company": "Thames Water",
+   "offset": -0.125534,
+   "n": 0,
+   "e": 2.0063,
+   "days": 23
+  },
+  "TWL00310": {
+   "company": "Thames Water",
+   "offset": -0.027492,
+   "n": 0,
+   "e": 0.4181,
+   "days": 18
+  },
+  "TWL00314": {
+   "company": "Thames Water",
+   "offset": -0.033319,
+   "n": 0,
+   "e": 0.5082,
+   "days": 12
+  },
+  "TWL00319": {
+   "company": "Thames Water",
+   "offset": -0.114394,
+   "n": 0,
+   "e": 1.8179,
+   "days": 23
+  },
+  "TWL00323": {
+   "company": "Thames Water",
+   "offset": -0.076371,
+   "n": 1,
+   "e": 2.2698,
+   "days": 23
+  },
+  "TWL00324": {
+   "company": "Thames Water",
+   "offset": -0.088664,
+   "n": 0,
+   "e": 1.3907,
+   "days": 23
+  },
+  "TWL00331": {
+   "company": "Thames Water",
+   "offset": -0.026788,
+   "n": 1,
+   "e": 1.4344,
+   "days": 23
+  },
+  "TWL00333": {
+   "company": "Thames Water",
+   "offset": -0.13211,
+   "n": 0,
+   "e": 2.1185,
+   "days": 12
+  },
+  "TWL00337": {
+   "company": "Thames Water",
+   "offset": -0.070744,
+   "n": 0,
+   "e": 1.0996,
+   "days": 23
+  },
+  "TWL00343": {
+   "company": "Thames Water",
+   "offset": -0.085774,
+   "n": 0,
+   "e": 1.3434,
+   "days": 23
+  },
+  "TWL00345": {
+   "company": "Thames Water",
+   "offset": -0.003142,
+   "n": 0,
+   "e": 0.0472,
+   "days": 23
+  },
+  "TWL00348": {
+   "company": "Thames Water",
+   "offset": -0.008501,
+   "n": 1,
+   "e": 1.1366,
+   "days": 23
+  },
+  "TWL00349": {
+   "company": "Thames Water",
+   "offset": -0.013699,
+   "n": 0,
+   "e": 0.2069,
+   "days": 23
+  },
+  "TWL00354": {
+   "company": "Thames Water",
+   "offset": -0.049349,
+   "n": 0,
+   "e": 0.7588,
+   "days": 23
+  },
+  "TWL00359": {
+   "company": "Thames Water",
+   "offset": -0.024558,
+   "n": 1,
+   "e": 1.3978,
+   "days": 23
+  },
+  "TWL00362": {
+   "company": "Thames Water",
+   "offset": -0.151507,
+   "n": 0,
+   "e": 2.4538,
+   "days": 23
+  },
+  "TWL00363": {
+   "company": "Thames Water",
+   "offset": -0.002665,
+   "n": 1,
+   "e": 1.0427,
+   "days": 23
+  },
+  "TWL00365": {
+   "company": "Thames Water",
+   "offset": -0.020502,
+   "n": 0,
+   "e": 0.3107,
+   "days": 23
+  },
+  "TWL00366": {
+   "company": "Thames Water",
+   "offset": -0.123438,
+   "n": 0,
+   "e": 1.9707,
+   "days": 23
+  },
+  "TWL00368": {
+   "company": "Thames Water",
+   "offset": -0.104636,
+   "n": 0,
+   "e": 1.6546,
+   "days": 23
+  },
+  "TWL00370": {
+   "company": "Thames Water",
+   "offset": -0.191265,
+   "n": 0,
+   "e": 3.1617,
+   "days": 23
+  },
+  "TWL00377": {
+   "company": "Thames Water",
+   "offset": -0.175286,
+   "n": 0,
+   "e": 2.8738,
+   "days": 23
+  },
+  "TWL00378": {
+   "company": "Thames Water",
+   "offset": -0.050925,
+   "n": 1,
+   "e": 1.8359,
+   "days": 15
+  },
+  "TWL00381": {
+   "company": "Thames Water",
+   "offset": -0.021331,
+   "n": 0,
+   "e": 0.3234,
+   "days": 23
+  },
+  "TWL00385": {
+   "company": "Thames Water",
+   "offset": -0.259216,
+   "n": 0,
+   "e": 4.4387,
+   "days": 23
+  },
+  "TWL00387": {
+   "company": "Thames Water",
+   "offset": -0.010089,
+   "n": 0,
+   "e": 0.1521,
+   "days": 23
+  },
+  "TWL00389": {
+   "company": "Thames Water",
+   "offset": -0.171643,
+   "n": 0,
+   "e": 2.8088,
+   "days": 23
+  },
+  "TWL00392": {
+   "company": "Thames Water",
+   "offset": -0.190152,
+   "n": 0,
+   "e": 3.1415,
+   "days": 23
+  },
+  "TWL00397": {
+   "company": "Thames Water",
+   "offset": -0.070384,
+   "n": 0,
+   "e": 1.0938,
+   "days": 23
+  },
+  "TWL00401": {
+   "company": "Thames Water",
+   "offset": -0.057357,
+   "n": 0,
+   "e": 0.8855,
+   "days": 23
+  },
+  "TWL00402": {
+   "company": "Thames Water",
+   "offset": 0.050006,
+   "n": 2,
+   "e": 1.1708,
+   "days": 23
+  },
+  "TWL00403": {
+   "company": "Thames Water",
+   "offset": -0.02781,
+   "n": 0,
+   "e": 0.423,
+   "days": 23
+  },
+  "TWL00408": {
+   "company": "Thames Water",
+   "offset": 0.189314,
+   "n": 4,
+   "e": 0.723,
+   "days": 23
+  },
+  "TWL00409": {
+   "company": "Thames Water",
+   "offset": 0.050427,
+   "n": 2,
+   "e": 1.164,
+   "days": 23
+  },
+  "TWL00411": {
+   "company": "Thames Water",
+   "offset": -0.032532,
+   "n": 0,
+   "e": 0.496,
+   "days": 23
+  },
+  "TWL00418": {
+   "company": "Thames Water",
+   "offset": -0.003965,
+   "n": 0,
+   "e": 0.0596,
+   "days": 23
+  },
+  "TWL00419": {
+   "company": "Thames Water",
+   "offset": -0.044531,
+   "n": 1,
+   "e": 1.7286,
+   "days": 23
+  },
+  "TWL00422": {
+   "company": "Thames Water",
+   "offset": -0.013131,
+   "n": 2,
+   "e": 2.2247,
+   "days": 23
+  },
+  "TWL00425": {
+   "company": "Thames Water",
+   "offset": -0.014038,
+   "n": 1,
+   "e": 1.2262,
+   "days": 23
+  },
+  "TWL00428": {
+   "company": "Thames Water",
+   "offset": -0.085841,
+   "n": 0,
+   "e": 1.3445,
+   "days": 23
+  },
+  "TWL00430": {
+   "company": "Thames Water",
+   "offset": -0.147431,
+   "n": 0,
+   "e": 2.3828,
+   "days": 23
+  },
+  "TWL00431": {
+   "company": "Thames Water",
+   "offset": -0.014159,
+   "n": 0,
+   "e": 0.2139,
+   "days": 23
+  },
+  "TWL00433": {
+   "company": "Thames Water",
+   "offset": -0.075689,
+   "n": 0,
+   "e": 1.1794,
+   "days": 23
+  },
+  "TWL00434": {
+   "company": "Thames Water",
+   "offset": 0.064231,
+   "n": 2,
+   "e": 0.9424,
+   "days": 18
+  },
+  "TWL00437": {
+   "company": "Thames Water",
+   "offset": -0.029771,
+   "n": 1,
+   "e": 1.4835,
+   "days": 18
+  },
+  "TWL00439": {
+   "company": "Thames Water",
+   "offset": 0.021977,
+   "n": 1,
+   "e": 0.6522,
+   "days": 23
+  },
+  "TWL00442": {
+   "company": "Thames Water",
+   "offset": 0.0312,
+   "n": 1,
+   "e": 0.5085,
+   "days": 23
+  },
+  "TWL00443": {
+   "company": "Thames Water",
+   "offset": -0.049808,
+   "n": 1,
+   "e": 1.8171,
+   "days": 23
+  },
+  "TWL00445": {
+   "company": "Thames Water",
+   "offset": 0.024709,
+   "n": 2,
+   "e": 1.5851,
+   "days": 23
+  },
+  "TWL00446": {
+   "company": "Thames Water",
+   "offset": -0.019128,
+   "n": 1,
+   "e": 1.309,
+   "days": 23
+  },
+  "TWL00448": {
+   "company": "Thames Water",
+   "offset": -0.028069,
+   "n": 0,
+   "e": 0.427,
+   "days": 20
+  },
+  "TWL00452": {
+   "company": "Thames Water",
+   "offset": -0.04017,
+   "n": 2,
+   "e": 2.6968,
+   "days": 23
+  },
+  "TWL00457": {
+   "company": "Thames Water",
+   "offset": -0.14888,
+   "n": 0,
+   "e": 2.408,
+   "days": 23
+  },
+  "TWL00458": {
+   "company": "Thames Water",
+   "offset": 7.5e-05,
+   "n": 1,
+   "e": 0.9988,
+   "days": 23
+  },
+  "TWL00459": {
+   "company": "Thames Water",
+   "offset": -0.115974,
+   "n": 0,
+   "e": 1.8445,
+   "days": 23
+  },
+  "TWL00462": {
+   "company": "Thames Water",
+   "offset": -0.086361,
+   "n": 0,
+   "e": 1.353,
+   "days": 23
+  },
+  "TWL00464": {
+   "company": "Thames Water",
+   "offset": -0.086765,
+   "n": 0,
+   "e": 1.3596,
+   "days": 23
+  },
+  "TWL00472": {
+   "company": "Thames Water",
+   "offset": -0.04696,
+   "n": 0,
+   "e": 0.7212,
+   "days": 23
+  },
+  "TWL00498": {
+   "company": "Thames Water",
+   "offset": -0.003295,
+   "n": 0,
+   "e": 0.0495,
+   "days": 23
+  },
+  "TWL00566": {
+   "company": "Thames Water",
+   "offset": -0.007115,
+   "n": 0,
+   "e": 0.1071,
+   "days": 23
+  },
+  "TWL00600": {
+   "company": "Thames Water",
+   "offset": 0.046457,
+   "n": 2,
+   "e": 1.2283,
+   "days": 23
+  },
+  "TWL00627": {
+   "company": "Thames Water",
+   "offset": -0.002537,
+   "n": 0,
+   "e": 0.0381,
+   "days": 23
+  },
+  "TWL00723": {
+   "company": "Thames Water",
+   "offset": -0.011256,
+   "n": 0,
+   "e": 0.1698,
+   "days": 23
+  },
+  "TWL00738": {
+   "company": "Thames Water",
+   "offset": -0.00445,
+   "n": 0,
+   "e": 0.0669,
+   "days": 23
+  },
+  "TWL00743": {
+   "company": "Thames Water",
+   "offset": -0.082851,
+   "n": 0,
+   "e": 1.2957,
+   "days": 23
+  },
+  "TWL00744": {
+   "company": "Thames Water",
+   "offset": -0.02572,
+   "n": 0,
+   "e": 0.3908,
+   "days": 23
+  },
+  "TWL00756": {
+   "company": "Thames Water",
+   "offset": -0.061064,
+   "n": 0,
+   "e": 0.9445,
+   "days": 23
+  },
+  "TWL00790": {
+   "company": "Thames Water",
+   "offset": 0.030595,
+   "n": 1,
+   "e": 0.5179,
+   "days": 23
+  },
+  "TWL00799": {
+   "company": "Thames Water",
+   "offset": 0.029622,
+   "n": 1,
+   "e": 0.533,
+   "days": 12
+  },
+  "TWL00806": {
+   "company": "Thames Water",
+   "offset": -0.006936,
+   "n": 0,
+   "e": 0.1044,
+   "days": 23
+  },
+  "WSX10000": {
+   "company": "Wessex Water",
+   "offset": -0.017008,
+   "n": 0,
+   "e": 0.2573,
+   "days": 11
+  },
+  "WSX10004": {
+   "company": "Wessex Water",
+   "offset": -0.04978,
+   "n": 0,
+   "e": 0.7656,
+   "days": 23
+  },
+  "WSX10008": {
+   "company": "Wessex Water",
+   "offset": -0.05587,
+   "n": 0,
+   "e": 0.8619,
+   "days": 23
+  },
+  "WSX10016": {
+   "company": "Wessex Water",
+   "offset": -0.040643,
+   "n": 0,
+   "e": 0.6222,
+   "days": 11
+  },
+  "WSX10026": {
+   "company": "Wessex Water",
+   "offset": -0.067571,
+   "n": 0,
+   "e": 1.0486,
+   "days": 23
+  },
+  "WSX10031": {
+   "company": "Wessex Water",
+   "offset": -0.055353,
+   "n": 0,
+   "e": 0.8537,
+   "days": 23
+  },
+  "WSX10034": {
+   "company": "Wessex Water",
+   "offset": -0.046572,
+   "n": 0,
+   "e": 0.7151,
+   "days": 23
+  },
+  "WSX10035": {
+   "company": "Wessex Water",
+   "offset": -0.067571,
+   "n": 0,
+   "e": 1.0486,
+   "days": 23
+  },
+  "WSX10043": {
+   "company": "Wessex Water",
+   "offset": -0.05587,
+   "n": 0,
+   "e": 0.8619,
+   "days": 23
+  },
+  "WSX10046": {
+   "company": "Wessex Water",
+   "offset": -0.041807,
+   "n": 0,
+   "e": 0.6404,
+   "days": 23
+  },
+  "WSX10048": {
+   "company": "Wessex Water",
+   "offset": -0.003874,
+   "n": 1,
+   "e": 1.0621,
+   "days": 22
+  },
+  "WSX10053": {
+   "company": "Wessex Water",
+   "offset": -0.072147,
+   "n": 0,
+   "e": 1.1222,
+   "days": 22
+  },
+  "WSX10063": {
+   "company": "Wessex Water",
+   "offset": -0.04799,
+   "n": 0,
+   "e": 0.7374,
+   "days": 23
+  },
+  "WSX10070": {
+   "company": "Wessex Water",
+   "offset": -0.070465,
+   "n": 0,
+   "e": 1.0951,
+   "days": 23
+  },
+  "WSX10083": {
+   "company": "Wessex Water",
+   "offset": -0.055353,
+   "n": 0,
+   "e": 0.8537,
+   "days": 23
+  },
+  "WSX10086": {
+   "company": "Wessex Water",
+   "offset": -0.018841,
+   "n": 0,
+   "e": 0.2853,
+   "days": 11
+  },
+  "WSX10088": {
+   "company": "Wessex Water",
+   "offset": -0.05563,
+   "n": 0,
+   "e": 0.8581,
+   "days": 22
+  },
+  "WSX10090": {
+   "company": "Wessex Water",
+   "offset": -0.046114,
+   "n": 0,
+   "e": 0.7079,
+   "days": 23
+  },
+  "WSX10094": {
+   "company": "Wessex Water",
+   "offset": -0.05587,
+   "n": 0,
+   "e": 0.8619,
+   "days": 23
+  },
+  "WSX10095": {
+   "company": "Wessex Water",
+   "offset": -0.070465,
+   "n": 0,
+   "e": 1.0951,
+   "days": 23
+  },
+  "WSX10101": {
+   "company": "Wessex Water",
+   "offset": -0.04978,
+   "n": 0,
+   "e": 0.7656,
+   "days": 12
+  },
+  "WSX10111": {
+   "company": "Wessex Water",
+   "offset": -0.070465,
+   "n": 0,
+   "e": 1.0951,
+   "days": 23
+  },
+  "WSX10115": {
+   "company": "Wessex Water",
+   "offset": -0.070465,
+   "n": 0,
+   "e": 1.0951,
+   "days": 23
+  },
+  "WSX10119": {
+   "company": "Wessex Water",
+   "offset": 0.140514,
+   "n": 3,
+   "e": 0.6404,
+   "days": 23
+  },
+  "WSX10122": {
+   "company": "Wessex Water",
+   "offset": -0.070465,
+   "n": 0,
+   "e": 1.0951,
+   "days": 23
+  },
+  "WSX10129": {
+   "company": "Wessex Water",
+   "offset": -0.04978,
+   "n": 0,
+   "e": 0.7656,
+   "days": 23
+  },
+  "WSX10136": {
+   "company": "Wessex Water",
+   "offset": -0.046572,
+   "n": 0,
+   "e": 0.7151,
+   "days": 23
+  },
+  "WSX10149": {
+   "company": "Wessex Water",
+   "offset": -0.041807,
+   "n": 0,
+   "e": 0.6404,
+   "days": 23
+  },
+  "WSX10153": {
+   "company": "Wessex Water",
+   "offset": -0.011777,
+   "n": 0,
+   "e": 0.1777,
+   "days": 11
+  },
+  "WSX10156": {
+   "company": "Wessex Water",
+   "offset": -0.07175,
+   "n": 0,
+   "e": 1.1158,
+   "days": 23
+  },
+  "WSX10159": {
+   "company": "Wessex Water",
+   "offset": -0.04978,
+   "n": 0,
+   "e": 0.7656,
+   "days": 12
+  },
+  "WSX10174": {
+   "company": "Wessex Water",
+   "offset": -0.013936,
+   "n": 0,
+   "e": 0.2105,
+   "days": 11
+  },
+  "WXW00014": {
+   "company": "Wessex Water",
+   "offset": -0.003348,
+   "n": 0,
+   "e": 0.0503,
+   "days": 11
+  },
+  "WXW00028": {
+   "company": "Wessex Water",
+   "offset": 0.152838,
+   "n": 4,
+   "e": 1.3071,
+   "days": 23
+  },
+  "WXW00046": {
+   "company": "Wessex Water",
+   "offset": -0.004523,
+   "n": 0,
+   "e": 0.068,
+   "days": 23
+  },
+  "WXW00051": {
+   "company": "Wessex Water",
+   "offset": -0.000633,
+   "n": 0,
+   "e": 0.0095,
+   "days": 4
+  },
+  "WXW00062": {
+   "company": "Wessex Water",
+   "offset": 0.003166,
+   "n": 3,
+   "e": 2.9431,
+   "days": 23
+  },
+  "WXW00072": {
+   "company": "Wessex Water",
+   "offset": -0.050433,
+   "n": 0,
+   "e": 0.7759,
+   "days": 11
+  },
+  "WXW00075": {
+   "company": "Wessex Water",
+   "offset": -0.253344,
+   "n": 0,
+   "e": 4.3249,
+   "days": 23
+  },
+  "WXW00081": {
+   "company": "Wessex Water",
+   "offset": -0.012291,
+   "n": 0,
+   "e": 0.1855,
+   "days": 23
+  },
+  "WXW00103": {
+   "company": "Wessex Water",
+   "offset": -0.062443,
+   "n": 0,
+   "e": 0.9665,
+   "days": 23
+  },
+  "WXW00104": {
+   "company": "Wessex Water",
+   "offset": -0.223325,
+   "n": 0,
+   "e": 3.7534,
+   "days": 23
+  },
+  "WXW00105": {
+   "company": "Wessex Water",
+   "offset": -0.027907,
+   "n": 0,
+   "e": 0.4245,
+   "days": 23
+  },
+  "WXW00120": {
+   "company": "Wessex Water",
+   "offset": -0.083649,
+   "n": 0,
+   "e": 1.3087,
+   "days": 22
+  },
+  "WXW00129": {
+   "company": "Wessex Water",
+   "offset": 0.181252,
+   "n": 5,
+   "e": 1.6845,
+   "days": 23
+  },
+  "WXW00137": {
+   "company": "Wessex Water",
+   "offset": -0.09862,
+   "n": 0,
+   "e": 1.5547,
+   "days": 23
+  },
+  "WXW00159": {
+   "company": "Wessex Water",
+   "offset": -0.050471,
+   "n": 0,
+   "e": 0.7765,
+   "days": 23
+  },
+  "WXW00160": {
+   "company": "Wessex Water",
+   "offset": 0.017697,
+   "n": 2,
+   "e": 1.7018,
+   "days": 23
+  },
+  "WXW00164": {
+   "company": "Wessex Water",
+   "offset": -0.068719,
+   "n": 2,
+   "e": 3.2093,
+   "days": 23
+  },
+  "WXW00174": {
+   "company": "Wessex Water",
+   "offset": -0.028121,
+   "n": 0,
+   "e": 0.4278,
+   "days": 23
+  },
+  "WXW00184": {
+   "company": "Wessex Water",
+   "offset": 0.053342,
+   "n": 3,
+   "e": 2.065,
+   "days": 23
+  },
+  "WXW00186": {
+   "company": "Wessex Water",
+   "offset": 0.033764,
+   "n": 2,
+   "e": 1.4356,
+   "days": 23
+  },
+  "WXW00195": {
+   "company": "Wessex Water",
+   "offset": -0.126774,
+   "n": 0,
+   "e": 2.0274,
+   "days": 23
+  },
+  "WXW00203": {
+   "company": "Wessex Water",
+   "offset": -0.050699,
+   "n": 0,
+   "e": 0.7801,
+   "days": 22
+  },
+  "WXW00221": {
+   "company": "Wessex Water",
+   "offset": -0.108944,
+   "n": 0,
+   "e": 1.7265,
+   "days": 23
+  },
+  "WXW00222": {
+   "company": "Wessex Water",
+   "offset": 0.053339,
+   "n": 2,
+   "e": 1.117,
+   "days": 23
+  },
+  "WXW00223": {
+   "company": "Wessex Water",
+   "offset": -0.035548,
+   "n": 1,
+   "e": 1.579,
+   "days": 23
+  },
+  "WXW00224": {
+   "company": "Wessex Water",
+   "offset": -0.024589,
+   "n": 0,
+   "e": 0.3734,
+   "days": 10
+  },
+  "WXW00225": {
+   "company": "Wessex Water",
+   "offset": 0.073431,
+   "n": 3,
+   "e": 1.7256,
+   "days": 21
+  },
+  "WXW00234": {
+   "company": "Wessex Water",
+   "offset": -0.006956,
+   "n": 0,
+   "e": 0.1047,
+   "days": 23
+  },
+  "WXW00238": {
+   "company": "Wessex Water",
+   "offset": -0.069184,
+   "n": 0,
+   "e": 1.0745,
+   "days": 23
+  },
+  "WXW00246": {
+   "company": "Wessex Water",
+   "offset": -0.079113,
+   "n": 0,
+   "e": 1.2349,
+   "days": 23
+  },
+  "WXW00258": {
+   "company": "Wessex Water",
+   "offset": -0.008999,
+   "n": 0,
+   "e": 0.1356,
+   "days": 23
+  },
+  "WXW00273": {
+   "company": "Wessex Water",
+   "offset": -0.075058,
+   "n": 0,
+   "e": 1.1692,
+   "days": 23
+  },
+  "WXW00277": {
+   "company": "Wessex Water",
+   "offset": -0.043404,
+   "n": 0,
+   "e": 0.6654,
+   "days": 23
+  },
+  "WXW00278": {
+   "company": "Wessex Water",
+   "offset": -0.075936,
+   "n": 1,
+   "e": 2.2623,
+   "days": 23
+  },
+  "WXW00282": {
+   "company": "Wessex Water",
+   "offset": -0.140098,
+   "n": 0,
+   "e": 2.2558,
+   "days": 23
+  },
+  "WXW00287": {
+   "company": "Wessex Water",
+   "offset": -0.002617,
+   "n": 0,
+   "e": 0.0393,
+   "days": 23
+  },
+  "WXW00288": {
+   "company": "Wessex Water",
+   "offset": -0.008385,
+   "n": 0,
+   "e": 0.1263,
+   "days": 23
+  },
+  "WXW00293": {
+   "company": "Wessex Water",
+   "offset": -0.016195,
+   "n": 0,
+   "e": 0.2449,
+   "days": 23
+  },
+  "WXW00304": {
+   "company": "Wessex Water",
+   "offset": 0.018973,
+   "n": 2,
+   "e": 1.6805,
+   "days": 23
+  },
+  "WXW00307": {
+   "company": "Wessex Water",
+   "offset": 0.078094,
+   "n": 3,
+   "e": 1.6478,
+   "days": 23
+  },
+  "WXW00308": {
+   "company": "Wessex Water",
+   "offset": 0.029841,
+   "n": 4,
+   "e": 3.4414,
+   "days": 23
+  },
+  "WXW00310": {
+   "company": "Wessex Water",
+   "offset": 0.057629,
+   "n": 1,
+   "e": 0.104,
+   "days": 23
+  },
+  "WXW00313": {
+   "company": "Wessex Water",
+   "offset": -0.091904,
+   "n": 0,
+   "e": 1.4439,
+   "days": 23
+  },
+  "WXW00317": {
+   "company": "Wessex Water",
+   "offset": -0.071967,
+   "n": 0,
+   "e": 1.1193,
+   "days": 23
+  },
+  "WXW00333": {
+   "company": "Wessex Water",
+   "offset": -0.004471,
+   "n": 1,
+   "e": 1.0717,
+   "days": 23
+  },
+  "WXW00340": {
+   "company": "Wessex Water",
+   "offset": -0.150481,
+   "n": 0,
+   "e": 2.4359,
+   "days": 23
+  },
+  "WXW00355": {
+   "company": "Wessex Water",
+   "offset": 0.161919,
+   "n": 5,
+   "e": 2.0102,
+   "days": 23
+  },
+  "WXW00359": {
+   "company": "Wessex Water",
+   "offset": -0.056733,
+   "n": 0,
+   "e": 0.8756,
+   "days": 23
+  },
+  "WXW00360": {
+   "company": "Wessex Water",
+   "offset": -0.011922,
+   "n": 0,
+   "e": 0.1799,
+   "days": 23
+  },
+  "WXW00366": {
+   "company": "Wessex Water",
+   "offset": -0.023472,
+   "n": 1,
+   "e": 1.38,
+   "days": 23
+  },
+  "WXW00367": {
+   "company": "Wessex Water",
+   "offset": -0.105244,
+   "n": 1,
+   "e": 2.7757,
+   "days": 23
+  },
+  "WXW00369": {
+   "company": "Wessex Water",
+   "offset": -0.04682,
+   "n": 0,
+   "e": 0.719,
+   "days": 23
+  },
+  "WXW00379": {
+   "company": "Wessex Water",
+   "offset": -0.130184,
+   "n": 1,
+   "e": 3.2246,
+   "days": 23
+  },
+  "WXW00401": {
+   "company": "Wessex Water",
+   "offset": 0.051637,
+   "n": 4,
+   "e": 3.0438,
+   "days": 23
+  },
+  "WXW00402": {
+   "company": "Wessex Water",
+   "offset": -0.025029,
+   "n": 3,
+   "e": 3.4562,
+   "days": 23
+  },
+  "WXW00420": {
+   "company": "Wessex Water",
+   "offset": 0.101753,
+   "n": 2,
+   "e": 0.3553,
+   "days": 23
+  },
+  "WXW00433": {
+   "company": "Wessex Water",
+   "offset": -0.070446,
+   "n": 0,
+   "e": 1.0948,
+   "days": 23
+  },
+  "WXW00434": {
+   "company": "Wessex Water",
+   "offset": -0.01362,
+   "n": 0,
+   "e": 0.2057,
+   "days": 23
+  },
+  "WXW00437": {
+   "company": "Wessex Water",
+   "offset": -0.074545,
+   "n": 1,
+   "e": 2.2383,
+   "days": 23
+  },
+  "WXW00443": {
+   "company": "Wessex Water",
+   "offset": -0.173128,
+   "n": 1,
+   "e": 4.0243,
+   "days": 23
+  },
+  "WXW00449": {
+   "company": "Wessex Water",
+   "offset": 0.095355,
+   "n": 3,
+   "e": 1.3629,
+   "days": 23
+  },
+  "WXW00452": {
+   "company": "Wessex Water",
+   "offset": -0.005545,
+   "n": 0,
+   "e": 0.0834,
+   "days": 23
+  },
+  "WXW00453": {
+   "company": "Wessex Water",
+   "offset": -0.017224,
+   "n": 0,
+   "e": 0.2606,
+   "days": 19
+  },
+  "WXW00454": {
+   "company": "Wessex Water",
+   "offset": -0.095825,
+   "n": 0,
+   "e": 1.5085,
+   "days": 19
+  },
+  "WXW00458": {
+   "company": "Wessex Water",
+   "offset": 0.092866,
+   "n": 4,
+   "e": 2.315,
+   "days": 23
+  },
+  "WXW00460": {
+   "company": "Wessex Water",
+   "offset": -0.006128,
+   "n": 0,
+   "e": 0.0922,
+   "days": 11
+  },
+  "WXW00473": {
+   "company": "Wessex Water",
+   "offset": -0.073413,
+   "n": 1,
+   "e": 2.2188,
+   "days": 23
+  },
+  "WXW00480": {
+   "company": "Wessex Water",
+   "offset": -0.062118,
+   "n": 1,
+   "e": 2.0254,
+   "days": 23
+  },
+  "WXW00481": {
+   "company": "Wessex Water",
+   "offset": -0.155401,
+   "n": 0,
+   "e": 2.5219,
+   "days": 23
+  },
+  "WXW00490": {
+   "company": "Wessex Water",
+   "offset": -0.073597,
+   "n": 0,
+   "e": 1.1456,
+   "days": 22
+  },
+  "WXW00492": {
+   "company": "Wessex Water",
+   "offset": -0.049596,
+   "n": 0,
+   "e": 0.7627,
+   "days": 23
+  },
+  "WXW00493": {
+   "company": "Wessex Water",
+   "offset": -0.0034,
+   "n": 1,
+   "e": 1.0545,
+   "days": 23
+  },
+  "WXW00498": {
+   "company": "Wessex Water",
+   "offset": -0.171143,
+   "n": 0,
+   "e": 2.7999,
+   "days": 23
+  },
+  "WXW00500": {
+   "company": "Wessex Water",
+   "offset": -0.113233,
+   "n": 0,
+   "e": 1.7984,
+   "days": 23
+  },
+  "WXW00532": {
+   "company": "Wessex Water",
+   "offset": -0.016851,
+   "n": 0,
+   "e": 0.2549,
+   "days": 12
+  },
+  "WXW00533": {
+   "company": "Wessex Water",
+   "offset": -0.001349,
+   "n": 1,
+   "e": 1.0216,
+   "days": 23
+  },
+  "WXW00539": {
+   "company": "Wessex Water",
+   "offset": -0.043111,
+   "n": 0,
+   "e": 0.6608,
+   "days": 23
+  },
+  "WXW00541": {
+   "company": "Wessex Water",
+   "offset": 0.031633,
+   "n": 1,
+   "e": 0.5018,
+   "days": 23
+  },
+  "WXW00542": {
+   "company": "Wessex Water",
+   "offset": -0.043353,
+   "n": 1,
+   "e": 1.7089,
+   "days": 23
+  },
+  "WXW00544": {
+   "company": "Wessex Water",
+   "offset": -0.042088,
+   "n": 0,
+   "e": 0.6448,
+   "days": 23
+  },
+  "WXW00545": {
+   "company": "Wessex Water",
+   "offset": 0.078808,
+   "n": 2,
+   "e": 0.7117,
+   "days": 11
+  },
+  "WXW00546": {
+   "company": "Wessex Water",
+   "offset": -0.114923,
+   "n": 0,
+   "e": 1.8268,
+   "days": 23
+  },
+  "WXW00550": {
+   "company": "Wessex Water",
+   "offset": 0.006007,
+   "n": 4,
+   "e": 3.8862,
+   "days": 23
+  },
+  "WXW00559": {
+   "company": "Wessex Water",
+   "offset": 0.171994,
+   "n": 4,
+   "e": 0.9977,
+   "days": 23
+  },
+  "WXW00562": {
+   "company": "Wessex Water",
+   "offset": -0.186551,
+   "n": 0,
+   "e": 3.0763,
+   "days": 12
+  },
+  "WXW00564": {
+   "company": "Wessex Water",
+   "offset": -0.031085,
+   "n": 0,
+   "e": 0.4736,
+   "days": 23
+  },
+  "WXW00570": {
+   "company": "Wessex Water",
+   "offset": -0.033525,
+   "n": 0,
+   "e": 0.5114,
+   "days": 23
+  },
+  "WXW00571": {
+   "company": "Wessex Water",
+   "offset": -0.30917,
+   "n": 0,
+   "e": 5.4344,
+   "days": 23
+  },
+  "WXW00574": {
+   "company": "Wessex Water",
+   "offset": -0.004105,
+   "n": 0,
+   "e": 0.0617,
+   "days": 21
+  },
+  "WXW00592": {
+   "company": "Wessex Water",
+   "offset": 0.017409,
+   "n": 2,
+   "e": 1.7066,
+   "days": 23
+  },
+  "WXW00593": {
+   "company": "Wessex Water",
+   "offset": 0.066567,
+   "n": 2,
+   "e": 0.9052,
+   "days": 23
+  },
+  "WXW00596": {
+   "company": "Wessex Water",
+   "offset": 0.066775,
+   "n": 3,
+   "e": 1.8373,
+   "days": 23
+  },
+  "WXW00601": {
+   "company": "Wessex Water",
+   "offset": -0.092099,
+   "n": 0,
+   "e": 1.4471,
+   "days": 13
+  },
+  "WXW00606": {
+   "company": "Wessex Water",
+   "offset": -0.102899,
+   "n": 0,
+   "e": 1.6257,
+   "days": 23
+  },
+  "WXW00607": {
+   "company": "Wessex Water",
+   "offset": 0.011751,
+   "n": 2,
+   "e": 1.8014,
+   "days": 23
+  },
+  "WXW00610": {
+   "company": "Wessex Water",
+   "offset": -0.044789,
+   "n": 0,
+   "e": 0.6871,
+   "days": 11
+  },
+  "WXW00615": {
+   "company": "Wessex Water",
+   "offset": -0.141748,
+   "n": 0,
+   "e": 2.2843,
+   "days": 23
+  },
+  "WXW00627": {
+   "company": "Wessex Water",
+   "offset": -0.096176,
+   "n": 0,
+   "e": 1.5143,
+   "days": 23
+  },
+  "WXW00654": {
+   "company": "Wessex Water",
+   "offset": 0.009646,
+   "n": 3,
+   "e": 2.8272,
+   "days": 23
+  },
+  "WXW00679": {
+   "company": "Wessex Water",
+   "offset": -0.109863,
+   "n": 1,
+   "e": 2.858,
+   "days": 23
+  },
+  "WXW00685": {
+   "company": "Wessex Water",
+   "offset": -0.004065,
+   "n": 0,
+   "e": 0.0611,
+   "days": 23
+  },
+  "WXW00686": {
+   "company": "Wessex Water",
+   "offset": 0.065327,
+   "n": 3,
+   "e": 1.8617,
+   "days": 23
+  },
+  "WXW00693": {
+   "company": "Wessex Water",
+   "offset": -0.014199,
+   "n": 0,
+   "e": 0.2145,
+   "days": 23
+  },
+  "WXW00698": {
+   "company": "Wessex Water",
+   "offset": -0.003992,
+   "n": 0,
+   "e": 0.06,
+   "days": 23
+  },
+  "WXW00699": {
+   "company": "Wessex Water",
+   "offset": -0.054797,
+   "n": 0,
+   "e": 0.8449,
+   "days": 23
+  },
+  "WXW00707": {
+   "company": "Wessex Water",
+   "offset": 0.031261,
+   "n": 3,
+   "e": 2.446,
+   "days": 23
+  },
+  "WXW00708": {
+   "company": "Wessex Water",
+   "offset": -0.095795,
+   "n": 0,
+   "e": 1.508,
+   "days": 23
+  },
+  "WXW00709": {
+   "company": "Wessex Water",
+   "offset": -0.005975,
+   "n": 0,
+   "e": 0.0899,
+   "days": 23
+  },
+  "WXW00710": {
+   "company": "Wessex Water",
+   "offset": -0.023658,
+   "n": 0,
+   "e": 0.3591,
+   "days": 23
+  },
+  "WXW00711": {
+   "company": "Wessex Water",
+   "offset": 0.020777,
+   "n": 1,
+   "e": 0.671,
+   "days": 23
+  },
+  "WXW00719": {
+   "company": "Wessex Water",
+   "offset": -0.004616,
+   "n": 0,
+   "e": 0.0694,
+   "days": 23
+  },
+  "WXW00720": {
+   "company": "Wessex Water",
+   "offset": 0.042852,
+   "n": 2,
+   "e": 1.2869,
+   "days": 23
+  },
+  "WXW00722": {
+   "company": "Wessex Water",
+   "offset": 0.051931,
+   "n": 2,
+   "e": 1.1397,
+   "days": 23
+  },
+  "WXW00727": {
+   "company": "Wessex Water",
+   "offset": -0.004078,
+   "n": 0,
+   "e": 0.0613,
+   "days": 23
+  },
+  "WXW00729": {
+   "company": "Wessex Water",
+   "offset": -0.118476,
+   "n": 0,
+   "e": 1.8867,
+   "days": 23
+  },
+  "WXW00742": {
+   "company": "Wessex Water",
+   "offset": -0.090709,
+   "n": 1,
+   "e": 2.5192,
+   "days": 23
+  },
+  "WXW00746": {
+   "company": "Wessex Water",
+   "offset": -0.112412,
+   "n": 0,
+   "e": 1.7846,
+   "days": 23
+  },
+  "WXW00748": {
+   "company": "Wessex Water",
+   "offset": -0.002962,
+   "n": 0,
+   "e": 0.0445,
+   "days": 11
+  },
+  "WXW00749": {
+   "company": "Wessex Water",
+   "offset": -0.044113,
+   "n": 0,
+   "e": 0.6765,
+   "days": 23
+  },
+  "WXW00757": {
+   "company": "Wessex Water",
+   "offset": -0.004158,
+   "n": 0,
+   "e": 0.0625,
+   "days": 23
+  },
+  "WXW00758": {
+   "company": "Wessex Water",
+   "offset": -0.074603,
+   "n": 1,
+   "e": 2.2393,
+   "days": 23
+  },
+  "WXW00761": {
+   "company": "Wessex Water",
+   "offset": -0.045196,
+   "n": 0,
+   "e": 0.6935,
+   "days": 23
+  },
+  "WXW00772": {
+   "company": "Wessex Water",
+   "offset": 0.116028,
+   "n": 3,
+   "e": 1.0281,
+   "days": 23
+  },
+  "WXW00778": {
+   "company": "Wessex Water",
+   "offset": -0.069713,
+   "n": 0,
+   "e": 1.083,
+   "days": 23
+  },
+  "WXW00784": {
+   "company": "Wessex Water",
+   "offset": -0.040944,
+   "n": 0,
+   "e": 0.6269,
+   "days": 23
+  },
+  "WXW00785": {
+   "company": "Wessex Water",
+   "offset": -0.007472,
+   "n": 1,
+   "e": 1.12,
+   "days": 23
+  },
+  "WXW00788": {
+   "company": "Wessex Water",
+   "offset": -0.021598,
+   "n": 0,
+   "e": 0.3275,
+   "days": 23
+  },
+  "WXW00803": {
+   "company": "Wessex Water",
+   "offset": -0.072438,
+   "n": 0,
+   "e": 1.1269,
+   "days": 12
+  },
+  "WXW00805": {
+   "company": "Wessex Water",
+   "offset": 0.047406,
+   "n": 1,
+   "e": 0.2592,
+   "days": 23
+  },
+  "WXW00812": {
+   "company": "Wessex Water",
+   "offset": -0.021215,
+   "n": 2,
+   "e": 2.3645,
+   "days": 23
+  },
+  "WXW00814": {
+   "company": "Wessex Water",
+   "offset": -0.004822,
+   "n": 0,
+   "e": 0.0725,
+   "days": 23
+  },
+  "WXW00816": {
+   "company": "Wessex Water",
+   "offset": -0.206873,
+   "n": 0,
+   "e": 3.4474,
+   "days": 23
+  },
+  "WXW00818": {
+   "company": "Wessex Water",
+   "offset": -0.055542,
+   "n": 0,
+   "e": 0.8567,
+   "days": 23
+  },
+  "WXW00846": {
+   "company": "Wessex Water",
+   "offset": 0.008707,
+   "n": 1,
+   "e": 0.8613,
+   "days": 23
+  },
+  "WXW00847": {
+   "company": "Wessex Water",
+   "offset": -0.021331,
+   "n": 0,
+   "e": 0.3234,
+   "days": 12
+  },
+  "WXW00848": {
+   "company": "Wessex Water",
+   "offset": -0.000183,
+   "n": 3,
+   "e": 3.0033,
+   "days": 23
+  },
+  "WXW00853": {
+   "company": "Wessex Water",
+   "offset": -0.011441,
+   "n": 0,
+   "e": 0.1726,
+   "days": 23
+  },
+  "WXW00856": {
+   "company": "Wessex Water",
+   "offset": -0.051447,
+   "n": 1,
+   "e": 1.8447,
+   "days": 12
+  },
+  "WXW00860": {
+   "company": "Wessex Water",
+   "offset": 0.085257,
+   "n": 2,
+   "e": 0.6107,
+   "days": 23
+  },
+  "WXW00863": {
+   "company": "Wessex Water",
+   "offset": -0.005717,
+   "n": 0,
+   "e": 0.086,
+   "days": 23
+  },
+  "WXW00880": {
+   "company": "Wessex Water",
+   "offset": 0.03142,
+   "n": 1,
+   "e": 0.5051,
+   "days": 23
+  },
+  "WXW00884": {
+   "company": "Wessex Water",
+   "offset": -0.092336,
+   "n": 0,
+   "e": 1.451,
+   "days": 23
+  },
+  "WXW00908": {
+   "company": "Wessex Water",
+   "offset": -0.027682,
+   "n": 1,
+   "e": 1.4491,
+   "days": 23
+  },
+  "WXW00909": {
+   "company": "Wessex Water",
+   "offset": 0.071156,
+   "n": 3,
+   "e": 1.7637,
+   "days": 23
+  },
+  "WXW00911": {
+   "company": "Wessex Water",
+   "offset": 0.120011,
+   "n": 3,
+   "e": 0.9644,
+   "days": 23
+  },
+  "WXW00912": {
+   "company": "Wessex Water",
+   "offset": 0.179983,
+   "n": 4,
+   "e": 0.8704,
+   "days": 23
+  },
+  "WXW00913": {
+   "company": "Wessex Water",
+   "offset": -0.036808,
+   "n": 2,
+   "e": 2.6374,
+   "days": 23
+  },
+  "WXW00915": {
+   "company": "Wessex Water",
+   "offset": -0.068275,
+   "n": 0,
+   "e": 1.0599,
+   "days": 23
+  },
+  "WXW00919": {
+   "company": "Wessex Water",
+   "offset": -0.011243,
+   "n": 0,
+   "e": 0.1696,
+   "days": 12
+  },
+  "WXW00930": {
+   "company": "Wessex Water",
+   "offset": -0.001798,
+   "n": 0,
+   "e": 0.027,
+   "days": 8
+  },
+  "WXW00934": {
+   "company": "Wessex Water",
+   "offset": -0.03157,
+   "n": 0,
+   "e": 0.4811,
+   "days": 23
+  },
+  "WXW00935": {
+   "company": "Wessex Water",
+   "offset": -0.036261,
+   "n": 0,
+   "e": 0.5539,
+   "days": 23
+  },
+  "WXW00936": {
+   "company": "Wessex Water",
+   "offset": 0.043023,
+   "n": 3,
+   "e": 2.242,
+   "days": 23
+  },
+  "WXW00943": {
+   "company": "Wessex Water",
+   "offset": -0.016208,
+   "n": 0,
+   "e": 0.2451,
+   "days": 23
+  },
+  "WXW00949": {
+   "company": "Wessex Water",
+   "offset": -0.125161,
+   "n": 1,
+   "e": 3.1333,
+   "days": 22
+  },
+  "WXW00951": {
+   "company": "Wessex Water",
+   "offset": -0.003952,
+   "n": 0,
+   "e": 0.0594,
+   "days": 12
+  },
+  "WXW00960": {
+   "company": "Wessex Water",
+   "offset": -0.151868,
+   "n": 0,
+   "e": 2.4601,
+   "days": 23
+  },
+  "WXW00964": {
+   "company": "Wessex Water",
+   "offset": 0.098873,
+   "n": 4,
+   "e": 2.2113,
+   "days": 23
+  },
+  "WXW00971": {
+   "company": "Wessex Water",
+   "offset": 0.024232,
+   "n": 2,
+   "e": 1.593,
+   "days": 23
+  },
+  "WXW00972": {
+   "company": "Wessex Water",
+   "offset": -0.050839,
+   "n": 0,
+   "e": 0.7823,
+   "days": 23
+  },
+  "WXW00973": {
+   "company": "Wessex Water",
+   "offset": -0.022133,
+   "n": 0,
+   "e": 0.3357,
+   "days": 23
+  },
+  "WXW00974": {
+   "company": "Wessex Water",
+   "offset": -0.010472,
+   "n": 0,
+   "e": 0.1579,
+   "days": 11
+  },
+  "WXW00979": {
+   "company": "Wessex Water",
+   "offset": 0.009439,
+   "n": 2,
+   "e": 1.8403,
+   "days": 23
+  },
+  "WXW00980": {
+   "company": "Wessex Water",
+   "offset": 0.037858,
+   "n": 3,
+   "e": 2.3313,
+   "days": 23
+  },
+  "WXW00990": {
+   "company": "Wessex Water",
+   "offset": -0.008048,
+   "n": 0,
+   "e": 0.1212,
+   "days": 23
+  },
+  "WXW00992": {
+   "company": "Wessex Water",
+   "offset": -0.024107,
+   "n": 1,
+   "e": 1.3904,
+   "days": 23
+  },
+  "WXW00993": {
+   "company": "Wessex Water",
+   "offset": -0.31906,
+   "n": 0,
+   "e": 5.6375,
+   "days": 23
+  },
+  "WXW00996": {
+   "company": "Wessex Water",
+   "offset": -0.042721,
+   "n": 0,
+   "e": 0.6547,
+   "days": 23
+  },
+  "WXW00997": {
+   "company": "Wessex Water",
+   "offset": -0.004112,
+   "n": 0,
+   "e": 0.0618,
+   "days": 23
+  },
+  "WXW01002": {
+   "company": "Wessex Water",
+   "offset": -0.039721,
+   "n": 0,
+   "e": 0.6078,
+   "days": 12
+  },
+  "WXW01008": {
+   "company": "Wessex Water",
+   "offset": 0.057164,
+   "n": 3,
+   "e": 1.9999,
+   "days": 23
+  },
+  "WXW01017": {
+   "company": "Wessex Water",
+   "offset": -0.100557,
+   "n": 0,
+   "e": 1.5868,
+   "days": 23
+  },
+  "WXW01024": {
+   "company": "Wessex Water",
+   "offset": -0.216181,
+   "n": 0,
+   "e": 3.6199,
+   "days": 12
+  },
+  "WXW01029": {
+   "company": "Wessex Water",
+   "offset": -0.008061,
+   "n": 0,
+   "e": 0.1214,
+   "days": 23
+  },
+  "WXW01047": {
+   "company": "Wessex Water",
+   "offset": -0.005432,
+   "n": 0,
+   "e": 0.0817,
+   "days": 23
+  },
+  "WXW01054": {
+   "company": "Wessex Water",
+   "offset": -0.017434,
+   "n": 0,
+   "e": 0.2638,
+   "days": 23
+  },
+  "WXW01061": {
+   "company": "Wessex Water",
+   "offset": 0.034799,
+   "n": 2,
+   "e": 1.4186,
+   "days": 22
+  },
+  "WXW01068": {
+   "company": "Wessex Water",
+   "offset": -0.027862,
+   "n": 0,
+   "e": 0.4238,
+   "days": 23
+  },
+  "WXW01073": {
+   "company": "Wessex Water",
+   "offset": 0.031782,
+   "n": 2,
+   "e": 1.4682,
+   "days": 23
+  },
+  "WXW01079": {
+   "company": "Wessex Water",
+   "offset": -0.004563,
+   "n": 0,
+   "e": 0.0686,
+   "days": 23
+  },
+  "WXW01085": {
+   "company": "Wessex Water",
+   "offset": 0.103369,
+   "n": 3,
+   "e": 1.2323,
+   "days": 23
+  },
+  "WXW01089": {
+   "company": "Wessex Water",
+   "offset": -0.004735,
+   "n": 0,
+   "e": 0.0712,
+   "days": 23
+  },
+  "WXW01090": {
+   "company": "Wessex Water",
+   "offset": -0.13874,
+   "n": 1,
+   "e": 3.3812,
+   "days": 23
+  },
+  "WXW01093": {
+   "company": "Wessex Water",
+   "offset": -0.099181,
+   "n": 0,
+   "e": 1.564,
+   "days": 23
+  },
+  "WXW01094": {
+   "company": "Wessex Water",
+   "offset": 0.050662,
+   "n": 1,
+   "e": 0.2096,
+   "days": 12
+  },
+  "WXW01107": {
+   "company": "Wessex Water",
+   "offset": -0.12174,
+   "n": 0,
+   "e": 1.9419,
+   "days": 23
+  },
+  "WXW01110": {
+   "company": "Wessex Water",
+   "offset": 0.078092,
+   "n": 4,
+   "e": 2.5727,
+   "days": 23
+  },
+  "WXW01115": {
+   "company": "Wessex Water",
+   "offset": -0.009706,
+   "n": 0,
+   "e": 0.1463,
+   "days": 23
+  },
+  "WXW01120": {
+   "company": "Wessex Water",
+   "offset": -0.065376,
+   "n": 0,
+   "e": 1.0134,
+   "days": 22
+  },
+  "WXW01121": {
+   "company": "Wessex Water",
+   "offset": -0.089975,
+   "n": 0,
+   "e": 1.4122,
+   "days": 23
+  },
+  "WXW01125": {
+   "company": "Wessex Water",
+   "offset": -0.146677,
+   "n": 0,
+   "e": 2.3697,
+   "days": 14
+  },
+  "WXW01127": {
+   "company": "Wessex Water",
+   "offset": 0.094369,
+   "n": 4,
+   "e": 2.289,
+   "days": 23
+  },
+  "WXW01128": {
+   "company": "Wessex Water",
+   "offset": -0.029028,
+   "n": 0,
+   "e": 0.4418,
+   "days": 23
+  },
+  "WXW01132": {
+   "company": "Wessex Water",
+   "offset": -0.014731,
+   "n": 0,
+   "e": 0.2226,
+   "days": 23
+  },
+  "WXW01133": {
+   "company": "Wessex Water",
+   "offset": -0.0091,
+   "n": 2,
+   "e": 2.1554,
+   "days": 23
+  },
+  "WXW01139": {
+   "company": "Wessex Water",
+   "offset": 0.120712,
+   "n": 4,
+   "e": 1.8395,
+   "days": 23
+  },
+  "WXW01141": {
+   "company": "Wessex Water",
+   "offset": 0.067448,
+   "n": 2,
+   "e": 0.8912,
+   "days": 20
+  },
+  "WXW01144": {
+   "company": "Wessex Water",
+   "offset": -0.098348,
+   "n": 0,
+   "e": 1.5502,
+   "days": 23
+  },
+  "WXW01155": {
+   "company": "Wessex Water",
+   "offset": -0.076554,
+   "n": 0,
+   "e": 1.1934,
+   "days": 23
+  },
+  "WXW01156": {
+   "company": "Wessex Water",
+   "offset": 0.02999,
+   "n": 3,
+   "e": 2.4682,
+   "days": 23
+  },
+  "WXW01162": {
+   "company": "Wessex Water",
+   "offset": -0.003162,
+   "n": 0,
+   "e": 0.0475,
+   "days": 23
+  },
+  "WXW01184": {
+   "company": "Wessex Water",
+   "offset": -0.011889,
+   "n": 0,
+   "e": 0.1794,
+   "days": 23
+  },
+  "WXW01185": {
+   "company": "Wessex Water",
+   "offset": -0.028367,
+   "n": 0,
+   "e": 0.4316,
+   "days": 23
+  },
+  "WXW01187": {
+   "company": "Wessex Water",
+   "offset": -0.08379,
+   "n": 0,
+   "e": 1.311,
+   "days": 23
+  },
+  "WXW01192": {
+   "company": "Wessex Water",
+   "offset": -0.019378,
+   "n": 0,
+   "e": 0.2935,
+   "days": 11
+  },
+  "WXW01197": {
+   "company": "Wessex Water",
+   "offset": 0.025632,
+   "n": 1,
+   "e": 0.5951,
+   "days": 23
+  },
+  "WXW01204": {
+   "company": "Wessex Water",
+   "offset": -0.005421,
+   "n": 2,
+   "e": 2.0924,
+   "days": 23
+  },
+  "WXW01205": {
+   "company": "Wessex Water",
+   "offset": -0.009455,
+   "n": 0,
+   "e": 0.1425,
+   "days": 22
+  },
+  "WXW01206": {
+   "company": "Wessex Water",
+   "offset": -0.061032,
+   "n": 0,
+   "e": 0.944,
+   "days": 23
+  },
+  "WXW01212": {
+   "company": "Wessex Water",
+   "offset": 0.060405,
+   "n": 3,
+   "e": 1.9449,
+   "days": 23
+  },
+  "WXW01213": {
+   "company": "Wessex Water",
+   "offset": -0.018226,
+   "n": 0,
+   "e": 0.2759,
+   "days": 23
+  },
+  "WXW01215": {
+   "company": "Wessex Water",
+   "offset": -0.166215,
+   "n": 0,
+   "e": 2.7124,
+   "days": 23
+  },
+  "WXW01220": {
+   "company": "Wessex Water",
+   "offset": -0.069246,
+   "n": 0,
+   "e": 1.0755,
+   "days": 23
+  },
+  "WXW01221": {
+   "company": "Wessex Water",
+   "offset": -0.003985,
+   "n": 0,
+   "e": 0.0599,
+   "days": 23
+  },
+  "WXW01234": {
+   "company": "Wessex Water",
+   "offset": 0.047301,
+   "n": 1,
+   "e": 0.2608,
+   "days": 23
+  },
+  "WXW01235": {
+   "company": "Wessex Water",
+   "offset": -0.081205,
+   "n": 1,
+   "e": 2.3535,
+   "days": 23
+  },
+  "WXW01236": {
+   "company": "Wessex Water",
+   "offset": -0.019953,
+   "n": 0,
+   "e": 0.3023,
+   "days": 22
+  },
+  "WXW01237": {
+   "company": "Wessex Water",
+   "offset": 0.017731,
+   "n": 1,
+   "e": 0.7188,
+   "days": 23
+  },
+  "WXW01242": {
+   "company": "Wessex Water",
+   "offset": 0.040868,
+   "n": 1,
+   "e": 0.3593,
+   "days": 23
+  },
+  "WXW01243": {
+   "company": "Wessex Water",
+   "offset": -0.074105,
+   "n": 0,
+   "e": 1.1538,
+   "days": 22
+  },
+  "WXW01245": {
+   "company": "Wessex Water",
+   "offset": -0.016433,
+   "n": 1,
+   "e": 1.2651,
+   "days": 23
+  },
+  "WXW01259": {
+   "company": "Wessex Water",
+   "offset": -0.040611,
+   "n": 0,
+   "e": 0.6217,
+   "days": 12
+  },
+  "WXW01270": {
+   "company": "Wessex Water",
+   "offset": -0.040982,
+   "n": 0,
+   "e": 0.6275,
+   "days": 23
+  },
+  "WXW01272": {
+   "company": "Wessex Water",
+   "offset": -0.091333,
+   "n": 0,
+   "e": 1.4345,
+   "days": 23
+  },
+  "WXW01273": {
+   "company": "Wessex Water",
+   "offset": 0.206387,
+   "n": 7,
+   "e": 2.8974,
+   "days": 23
+  },
+  "WXW01274": {
+   "company": "Wessex Water",
+   "offset": -0.022229,
+   "n": 3,
+   "e": 3.4046,
+   "days": 23
+  },
+  "WXW01275": {
+   "company": "Wessex Water",
+   "offset": -0.018639,
+   "n": 0,
+   "e": 0.2822,
+   "days": 23
+  },
+  "WXW01278": {
+   "company": "Wessex Water",
+   "offset": -0.004072,
+   "n": 0,
+   "e": 0.0612,
+   "days": 23
+  },
+  "WXW01283": {
+   "company": "Wessex Water",
+   "offset": 0.010922,
+   "n": 1,
+   "e": 0.8262,
+   "days": 23
+  },
+  "WXW01297": {
+   "company": "Wessex Water",
+   "offset": -0.004863,
+   "n": 1,
+   "e": 1.078,
+   "days": 23
+  },
+  "YWS00002": {
+   "company": "Yorkshire Water",
+   "offset": -0.004609,
+   "n": 0,
+   "e": 0.0693,
+   "days": 6
+  },
+  "YWS00021": {
+   "company": "Yorkshire Water",
+   "offset": -0.012245,
+   "n": 0,
+   "e": 0.1848,
+   "days": 23
+  },
+  "YWS00033": {
+   "company": "Yorkshire Water",
+   "offset": -0.003221,
+   "n": 0,
+   "e": 0.0484,
+   "days": 12
+  },
+  "YWS00114": {
+   "company": "Yorkshire Water",
+   "offset": -0.054482,
+   "n": 1,
+   "e": 1.8959,
+   "days": 23
+  },
+  "YWS00115": {
+   "company": "Yorkshire Water",
+   "offset": -0.070278,
+   "n": 0,
+   "e": 1.0921,
+   "days": 23
+  },
+  "YWS00144": {
+   "company": "Yorkshire Water",
+   "offset": -0.046661,
+   "n": 0,
+   "e": 0.7165,
+   "days": 20
+  },
+  "YWS00145": {
+   "company": "Yorkshire Water",
+   "offset": -0.054084,
+   "n": 0,
+   "e": 0.8336,
+   "days": 20
+  },
+  "YWS00171": {
+   "company": "Yorkshire Water",
+   "offset": 0.12651,
+   "n": 5,
+   "e": 2.6233,
+   "days": 23
+  },
+  "YWS00172": {
+   "company": "Yorkshire Water",
+   "offset": -0.004198,
+   "n": 0,
+   "e": 0.0631,
+   "days": 23
+  },
+  "YWS00173": {
+   "company": "Yorkshire Water",
+   "offset": 0.043243,
+   "n": 4,
+   "e": 3.1959,
+   "days": 23
+  },
+  "YWS00174": {
+   "company": "Yorkshire Water",
+   "offset": -0.1612,
+   "n": 0,
+   "e": 2.6238,
+   "days": 23
+  },
+  "YWS00176": {
+   "company": "Yorkshire Water",
+   "offset": -0.091874,
+   "n": 0,
+   "e": 1.4434,
+   "days": 23
+  },
+  "YWS00177": {
+   "company": "Yorkshire Water",
+   "offset": -0.033882,
+   "n": 1,
+   "e": 1.5514,
+   "days": 23
+  },
+  "YWS00178": {
+   "company": "Yorkshire Water",
+   "offset": -0.09363,
+   "n": 0,
+   "e": 1.4723,
+   "days": 23
+  },
+  "YWS00179": {
+   "company": "Yorkshire Water",
+   "offset": -0.005193,
+   "n": 0,
+   "e": 0.0781,
+   "days": 23
+  },
+  "YWS00180": {
+   "company": "Yorkshire Water",
+   "offset": 0.171188,
+   "n": 4,
+   "e": 1.0106,
+   "days": 23
+  },
+  "YWS00181": {
+   "company": "Yorkshire Water",
+   "offset": 0.10906,
+   "n": 2,
+   "e": 0.2435,
+   "days": 23
+  },
+  "YWS00182": {
+   "company": "Yorkshire Water",
+   "offset": 0.180497,
+   "n": 3,
+   "e": 0.0274,
+   "days": 23
+  },
+  "YWS00183": {
+   "company": "Yorkshire Water",
+   "offset": 0.059063,
+   "n": 2,
+   "e": 1.025,
+   "days": 23
+  },
+  "YWS00184": {
+   "company": "Yorkshire Water",
+   "offset": 0.041571,
+   "n": 1,
+   "e": 0.3485,
+   "days": 23
+  },
+  "YWS00185": {
+   "company": "Yorkshire Water",
+   "offset": -0.150865,
+   "n": 0,
+   "e": 2.4426,
+   "days": 23
+  },
+  "YWS00186": {
+   "company": "Yorkshire Water",
+   "offset": -0.084819,
+   "n": 0,
+   "e": 1.3278,
+   "days": 23
+  },
+  "YWS00187": {
+   "company": "Yorkshire Water",
+   "offset": 0.016186,
+   "n": 3,
+   "e": 2.711,
+   "days": 23
+  },
+  "YWS00188": {
+   "company": "Yorkshire Water",
+   "offset": -0.005797,
+   "n": 0,
+   "e": 0.0872,
+   "days": 9
+  },
+  "YWS00189": {
+   "company": "Yorkshire Water",
+   "offset": -0.064076,
+   "n": 0,
+   "e": 0.9926,
+   "days": 23
+  },
+  "YWS00190": {
+   "company": "Yorkshire Water",
+   "offset": -0.043857,
+   "n": 0,
+   "e": 0.6725,
+   "days": 23
+  },
+  "YWS00191": {
+   "company": "Yorkshire Water",
+   "offset": -0.020508,
+   "n": 0,
+   "e": 0.3108,
+   "days": 23
+  },
+  "YWS00192": {
+   "company": "Yorkshire Water",
+   "offset": -0.022037,
+   "n": 1,
+   "e": 1.3565,
+   "days": 23
+  },
+  "YWS00193": {
+   "company": "Yorkshire Water",
+   "offset": -0.01926,
+   "n": 0,
+   "e": 0.2917,
+   "days": 23
+  },
+  "YWS00197": {
+   "company": "Yorkshire Water",
+   "offset": 0.095367,
+   "n": 3,
+   "e": 1.3627,
+   "days": 23
+  },
+  "YWS00199": {
+   "company": "Yorkshire Water",
+   "offset": -0.067986,
+   "n": 1,
+   "e": 2.1256,
+   "days": 23
+  },
+  "YWS00200": {
+   "company": "Yorkshire Water",
+   "offset": -0.062612,
+   "n": 0,
+   "e": 0.9692,
+   "days": 23
+  },
+  "YWS00202": {
+   "company": "Yorkshire Water",
+   "offset": 0.344413,
+   "n": 7,
+   "e": 0.59,
+   "days": 23
+  },
+  "YWS00203": {
+   "company": "Yorkshire Water",
+   "offset": 0.107431,
+   "n": 3,
+   "e": 1.1665,
+   "days": 23
+  },
+  "YWS00204": {
+   "company": "Yorkshire Water",
+   "offset": -0.006009,
+   "n": 0,
+   "e": 0.0904,
+   "days": 23
+  },
+  "YWS00205": {
+   "company": "Yorkshire Water",
+   "offset": 0.046999,
+   "n": 2,
+   "e": 1.2195,
+   "days": 23
+  },
+  "YWS00206": {
+   "company": "Yorkshire Water",
+   "offset": 0.07106,
+   "n": 2,
+   "e": 0.8339,
+   "days": 23
+  },
+  "YWS00210": {
+   "company": "Yorkshire Water",
+   "offset": 0.044324,
+   "n": 1,
+   "e": 0.3063,
+   "days": 23
+  },
+  "YWS00211": {
+   "company": "Yorkshire Water",
+   "offset": -0.123155,
+   "n": 0,
+   "e": 1.9659,
+   "days": 23
+  },
+  "YWS00212": {
+   "company": "Yorkshire Water",
+   "offset": 0.118327,
+   "n": 3,
+   "e": 0.9913,
+   "days": 21
+  },
+  "YWS00213": {
+   "company": "Yorkshire Water",
+   "offset": 0.000825,
+   "n": 1,
+   "e": 0.9868,
+   "days": 23
+  },
+  "YWS00214": {
+   "company": "Yorkshire Water",
+   "offset": -0.139466,
+   "n": 0,
+   "e": 2.2449,
+   "days": 23
+  },
+  "YWS00215": {
+   "company": "Yorkshire Water",
+   "offset": 0.132522,
+   "n": 3,
+   "e": 0.7659,
+   "days": 23
+  },
+  "YWS00218": {
+   "company": "Yorkshire Water",
+   "offset": -0.009468,
+   "n": 0,
+   "e": 0.1427,
+   "days": 19
+  },
+  "YWS00222": {
+   "company": "Yorkshire Water",
+   "offset": 0.075421,
+   "n": 2,
+   "e": 0.765,
+   "days": 23
+  },
+  "YWS00223": {
+   "company": "Yorkshire Water",
+   "offset": -0.05641,
+   "n": 1,
+   "e": 1.9285,
+   "days": 23
+  },
+  "YWS00224": {
+   "company": "Yorkshire Water",
+   "offset": -0.067042,
+   "n": 0,
+   "e": 1.0401,
+   "days": 23
+  },
+  "YWS00225": {
+   "company": "Yorkshire Water",
+   "offset": -0.120884,
+   "n": 1,
+   "e": 3.0559,
+   "days": 23
+  },
+  "YWS00226": {
+   "company": "Yorkshire Water",
+   "offset": -0.08881,
+   "n": 0,
+   "e": 1.3931,
+   "days": 23
+  },
+  "YWS00227": {
+   "company": "Yorkshire Water",
+   "offset": -0.059,
+   "n": 1,
+   "e": 1.9724,
+   "days": 23
+  },
+  "YWS00228": {
+   "company": "Yorkshire Water",
+   "offset": -0.053754,
+   "n": 1,
+   "e": 1.8836,
+   "days": 23
+  },
+  "YWS00231": {
+   "company": "Yorkshire Water",
+   "offset": -0.024458,
+   "n": 0,
+   "e": 0.3714,
+   "days": 19
+  },
+  "YWS00247": {
+   "company": "Yorkshire Water",
+   "offset": 0.055103,
+   "n": 1,
+   "e": 0.1422,
+   "days": 23
+  },
+  "YWS00248": {
+   "company": "Yorkshire Water",
+   "offset": 0.010095,
+   "n": 1,
+   "e": 0.8393,
+   "days": 23
+  },
+  "YWS00249": {
+   "company": "Yorkshire Water",
+   "offset": -0.137863,
+   "n": 1,
+   "e": 3.3651,
+   "days": 21
+  },
+  "YWS00250": {
+   "company": "Yorkshire Water",
+   "offset": -0.045308,
+   "n": 1,
+   "e": 1.7416,
+   "days": 21
+  },
+  "YWS00251": {
+   "company": "Yorkshire Water",
+   "offset": -0.019763,
+   "n": 0,
+   "e": 0.2994,
+   "days": 23
+  },
+  "YWS00252": {
+   "company": "Yorkshire Water",
+   "offset": 0.049775,
+   "n": 1,
+   "e": 0.2231,
+   "days": 23
+  },
+  "YWS00253": {
+   "company": "Yorkshire Water",
+   "offset": 0.221783,
+   "n": 4,
+   "e": 0.2207,
+   "days": 23
+  },
+  "YWS00254": {
+   "company": "Yorkshire Water",
+   "offset": -0.004351,
+   "n": 0,
+   "e": 0.0654,
+   "days": 23
+  },
+  "YWS00255": {
+   "company": "Yorkshire Water",
+   "offset": 0.041571,
+   "n": 1,
+   "e": 0.3485,
+   "days": 23
+  },
+  "YWS00256": {
+   "company": "Yorkshire Water",
+   "offset": 0.087829,
+   "n": 2,
+   "e": 0.5706,
+   "days": 23
+  },
+  "YWS00257": {
+   "company": "Yorkshire Water",
+   "offset": 0.096543,
+   "n": 2,
+   "e": 0.4355,
+   "days": 23
+  },
+  "YWS00258": {
+   "company": "Yorkshire Water",
+   "offset": 0.067341,
+   "n": 2,
+   "e": 0.8929,
+   "days": 16
+  },
+  "YWS00259": {
+   "company": "Yorkshire Water",
+   "offset": 0.158515,
+   "n": 5,
+   "e": 2.0682,
+   "days": 23
+  },
+  "YWS00260": {
+   "company": "Yorkshire Water",
+   "offset": 0.095223,
+   "n": 2,
+   "e": 0.4559,
+   "days": 23
+  },
+  "YWS00261": {
+   "company": "Yorkshire Water",
+   "offset": 0.041564,
+   "n": 1,
+   "e": 0.3486,
+   "days": 23
+  },
+  "YWS00262": {
+   "company": "Yorkshire Water",
+   "offset": -0.001858,
+   "n": 0,
+   "e": 0.0279,
+   "days": 23
+  },
+  "YWS00264": {
+   "company": "Yorkshire Water",
+   "offset": 0.113024,
+   "n": 2,
+   "e": 0.1832,
+   "days": 23
+  },
+  "YWS00265": {
+   "company": "Yorkshire Water",
+   "offset": 0.054714,
+   "n": 1,
+   "e": 0.1481,
+   "days": 23
+  },
+  "YWS00266": {
+   "company": "Yorkshire Water",
+   "offset": -0.027518,
+   "n": 0,
+   "e": 0.4185,
+   "days": 23
+  },
+  "YWS00267": {
+   "company": "Yorkshire Water",
+   "offset": -0.006486,
+   "n": 0,
+   "e": 0.0976,
+   "days": 23
+  },
+  "YWS00268": {
+   "company": "Yorkshire Water",
+   "offset": -0.007658,
+   "n": 1,
+   "e": 1.123,
+   "days": 23
+  },
+  "YWS00269": {
+   "company": "Yorkshire Water",
+   "offset": 0.06294,
+   "n": 2,
+   "e": 0.963,
+   "days": 23
+  },
+  "YWS00270": {
+   "company": "Yorkshire Water",
+   "offset": 0.040074,
+   "n": 1,
+   "e": 0.3715,
+   "days": 23
+  },
+  "YWS00273": {
+   "company": "Yorkshire Water",
+   "offset": 0.201369,
+   "n": 4,
+   "e": 0.5346,
+   "days": 23
+  },
+  "YWS00274": {
+   "company": "Yorkshire Water",
+   "offset": 0.081357,
+   "n": 2,
+   "e": 0.6717,
+   "days": 23
+  },
+  "YWS00275": {
+   "company": "Yorkshire Water",
+   "offset": 0.042849,
+   "n": 1,
+   "e": 0.3289,
+   "days": 23
+  },
+  "YWS00276": {
+   "company": "Yorkshire Water",
+   "offset": -0.012251,
+   "n": 0,
+   "e": 0.1849,
+   "days": 23
+  },
+  "YWS00277": {
+   "company": "Yorkshire Water",
+   "offset": -0.033609,
+   "n": 0,
+   "e": 0.5127,
+   "days": 23
+  },
+  "YWS00279": {
+   "company": "Yorkshire Water",
+   "offset": -0.047952,
+   "n": 0,
+   "e": 0.7368,
+   "days": 23
+  },
+  "YWS00286": {
+   "company": "Yorkshire Water",
+   "offset": -0.051732,
+   "n": 0,
+   "e": 0.7964,
+   "days": 23
+  },
+  "YWS00300": {
+   "company": "Yorkshire Water",
+   "offset": -0.028636,
+   "n": 5,
+   "e": 5.581,
+   "days": 23
+  },
+  "YWS00306": {
+   "company": "Yorkshire Water",
+   "offset": -0.091692,
+   "n": 0,
+   "e": 1.4404,
+   "days": 23
+  },
+  "YWS00311": {
+   "company": "Yorkshire Water",
+   "offset": -0.246704,
+   "n": 0,
+   "e": 4.197,
+   "days": 23
+  },
+  "YWS00316": {
+   "company": "Yorkshire Water",
+   "offset": -0.00896,
+   "n": 0,
+   "e": 0.135,
+   "days": 23
+  },
+  "YWS00328": {
+   "company": "Yorkshire Water",
+   "offset": -0.115303,
+   "n": 0,
+   "e": 1.8332,
+   "days": 23
+  },
+  "YWS00349": {
+   "company": "Yorkshire Water",
+   "offset": 0.068273,
+   "n": 4,
+   "e": 2.7461,
+   "days": 23
+  },
+  "YWS00352": {
+   "company": "Yorkshire Water",
+   "offset": 0.062182,
+   "n": 2,
+   "e": 0.9751,
+   "days": 23
+  },
+  "YWS00356": {
+   "company": "Yorkshire Water",
+   "offset": 0.057093,
+   "n": 1,
+   "e": 0.1121,
+   "days": 23
+  },
+  "YWS00357": {
+   "company": "Yorkshire Water",
+   "offset": 0.151527,
+   "n": 4,
+   "e": 1.3285,
+   "days": 23
+  },
+  "YWS00674": {
+   "company": "Yorkshire Water",
+   "offset": -0.108615,
+   "n": 0,
+   "e": 1.721,
+   "days": 23
+  },
+  "YWS00677": {
+   "company": "Yorkshire Water",
+   "offset": 0.040657,
+   "n": 2,
+   "e": 1.3227,
+   "days": 23
+  },
+  "YWS00715": {
+   "company": "Yorkshire Water",
+   "offset": -0.05869,
+   "n": 0,
+   "e": 0.9067,
+   "days": 23
+  },
+  "YWS00716": {
+   "company": "Yorkshire Water",
+   "offset": -0.095534,
+   "n": 0,
+   "e": 1.5037,
+   "days": 23
+  },
+  "YWS00728": {
+   "company": "Yorkshire Water",
+   "offset": 0.196309,
+   "n": 4,
+   "e": 0.6134,
+   "days": 23
+  },
+  "YWS00828": {
+   "company": "Yorkshire Water",
+   "offset": -0.031466,
+   "n": 0,
+   "e": 0.4795,
+   "days": 23
+  },
+  "YWS00863": {
+   "company": "Yorkshire Water",
+   "offset": 0.001531,
+   "n": 2,
+   "e": 1.974,
+   "days": 23
+  },
+  "YWS00893": {
+   "company": "Yorkshire Water",
+   "offset": 0.203185,
+   "n": 7,
+   "e": 2.9548,
+   "days": 23
+  },
+  "YWS00979": {
+   "company": "Yorkshire Water",
+   "offset": -0.015151,
+   "n": 0,
+   "e": 0.229,
+   "days": 23
+  },
+  "YWS01032": {
+   "company": "Yorkshire Water",
+   "offset": -0.003318,
+   "n": 2,
+   "e": 2.0565,
+   "days": 23
+  },
+  "YWS01033": {
+   "company": "Yorkshire Water",
+   "offset": -0.004589,
+   "n": 0,
+   "e": 0.069,
+   "days": 23
+  },
+  "YWS01035": {
+   "company": "Yorkshire Water",
+   "offset": -0.00892,
+   "n": 0,
+   "e": 0.1344,
+   "days": 23
+  },
+  "YWS01039": {
+   "company": "Yorkshire Water",
+   "offset": -0.034051,
+   "n": 1,
+   "e": 1.5542,
+   "days": 23
+  },
+  "YWS01040": {
+   "company": "Yorkshire Water",
+   "offset": 0.057174,
+   "n": 2,
+   "e": 1.0553,
+   "days": 23
+  },
+  "YWS01067": {
+   "company": "Yorkshire Water",
+   "offset": -0.004669,
+   "n": 0,
+   "e": 0.0702,
+   "days": 23
+  },
+  "YWS01117": {
+   "company": "Yorkshire Water",
+   "offset": 0.080343,
+   "n": 4,
+   "e": 2.5332,
+   "days": 23
+  },
+  "YWS01121": {
+   "company": "Yorkshire Water",
+   "offset": 0.03828,
+   "n": 1,
+   "e": 0.3991,
+   "days": 23
+  },
+  "YWS01155": {
+   "company": "Yorkshire Water",
+   "offset": -0.149666,
+   "n": 0,
+   "e": 2.4217,
+   "days": 23
+  },
+  "YWS01159": {
+   "company": "Yorkshire Water",
+   "offset": -0.05633,
+   "n": 0,
+   "e": 0.8692,
+   "days": 23
+  },
+  "YWS01160": {
+   "company": "Yorkshire Water",
+   "offset": 0.225146,
+   "n": 5,
+   "e": 0.968,
+   "days": 23
+  },
+  "YWS01175": {
+   "company": "Yorkshire Water",
+   "offset": 0.091412,
+   "n": 2,
+   "e": 0.5149,
+   "days": 23
+  },
+  "YWS01270": {
+   "company": "Yorkshire Water",
+   "offset": -0.006591,
+   "n": 1,
+   "e": 1.1058,
+   "days": 23
+  },
+  "YWS01280": {
+   "company": "Yorkshire Water",
+   "offset": 0.120498,
+   "n": 4,
+   "e": 1.8431,
+   "days": 23
+  },
+  "YWS01289": {
+   "company": "Yorkshire Water",
+   "offset": -0.04143,
+   "n": 0,
+   "e": 0.6345,
+   "days": 23
+  },
+  "YWS01304": {
+   "company": "Yorkshire Water",
+   "offset": 0.341701,
+   "n": 8,
+   "e": 1.3429,
+   "days": 23
+  },
+  "YWS01311": {
+   "company": "Yorkshire Water",
+   "offset": -0.088786,
+   "n": 0,
+   "e": 1.3927,
+   "days": 23
+  },
+  "YWS01333": {
+   "company": "Yorkshire Water",
+   "offset": -0.102256,
+   "n": 0,
+   "e": 1.615,
+   "days": 23
+  },
+  "YWS01338": {
+   "company": "Yorkshire Water",
+   "offset": -0.029021,
+   "n": 0,
+   "e": 0.4417,
+   "days": 23
+  },
+  "YWS01340": {
+   "company": "Yorkshire Water",
+   "offset": -0.197473,
+   "n": 0,
+   "e": 3.2748,
+   "days": 23
+  },
+  "YWS02298": {
+   "company": NaN,
+   "offset": 0.619954,
+   "n": 14,
+   "e": 0.6011,
+   "days": 16
+  }
+ },
+ "spill_stamp_rows": {
+  "808da63d": 20783
+ },
+ "fair_flat": {
+  "Anglian Water": 0.03613,
+  "Northumbrian Water": 0.054983,
+  "Severn Trent Water": 0.041135,
+  "South West Water": 0.127789,
+  "Southern Water": 0.044432,
+  "Thames Water": 0.022233,
+  "Wessex Water": 0.037096,
+  "Yorkshire Water": 0.058714
+ }
+}

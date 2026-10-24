@@ -120,7 +120,7 @@ def test_offsets_that_follow_each_overflow_pass():
     assert t["brier_candidate"] < t["brier_flat"] < t["brier_current"]
     assert t["interval_candidate_minus_current"][1] < 0
     assert res["united_utilities_rows"] == 40 * 28 * 2 and "United Utilities" not in res["by_company"]
-    assert res["face_mae"] == pytest.approx(0.0)
+    assert res["face_mae"] == pytest.approx(0.0) and res["rows_no_company"] == 0
     assert "brier_fair_flat" in t and "brier_fair_flat" not in res["by_company"]["Severn Trent Water"]
 
 
@@ -181,3 +181,11 @@ def test_stamps_join_the_decision_forecast_of_each_scored_row(tmp_path):
     r = pd.DataFrame({"overflow_id": ["T1", "T1", "T2"], "day": ["2026-10-27"] * 3, "lead": [0, 1, 0]})
     got = attach_stamps(r, str(db), "2026-10-26", "2026-10-28")
     assert list(got["spill"]) == ["bbb", "unstamped", NOT_IN_LOG]
+
+
+def test_a_row_with_no_company_is_counted_and_not_judged():
+    r = window_rows(lambda i: 0.6 if i < 10 else 0.0)
+    r.loc[r["overflow_id"] == "Tha0", "company"] = np.nan
+    res = check(r, doc_for({"Tha0": 3.0}), [IDENTITY], n_boot=50)
+    assert res["rows_no_company"] == 28 * 2
+    assert res["changed"] == []
