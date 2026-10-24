@@ -1881,7 +1881,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2183,7 +2183,9 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
-    write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/
+    paged = [r for r in results if r["id"] in set(ids)]
+    write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
+    write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
                                               extra=["support.html"] if support else []))
@@ -2538,11 +2540,13 @@ def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd
     (site / "quality.html").write_text(with_counter(quality.site_page(cases, positions, outlets, overflows, when, MARK), token))
 
 
-def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None) -> int:
+def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None,
+                   root: str | None = None) -> int:
     """spot/<id>/profile/index.html for each spot (each with a page), joining its data/upstream/<id>.json
     to the annual returns. A spot with no file gets a short page saying why. Returns the number of pages
-    with overflows listed."""
+    with overflows listed. root: the published address, for each page's canonical link (site_url)."""
     from dipcast import profile
+    root = root or site_url()
     lists = {}
     for r in spots:
         f = site / "data" / "upstream" / f"{r['id']}.json"
@@ -2563,8 +2567,52 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         t = profile.with_returns(t, wide=wide) if t is not None and len(t) else None
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
-        (site / "spot" / r["id"] / "profile" / "index.html").write_text(with_counter(profile.site_page(r, t, MARK), token))
+        (site / "spot" / r["id"] / "profile" / "index.html").write_text(
+            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/"), token))
     return n
+
+
+# Every spot, spots.html: the spots with a page of their own, each an ordinary link to it, by area
+# (spots.csv's `area`) A-Z and A-Z within each. The home list and the map are drawn by the page's script,
+# so until 24 Oct 2026 no page linked a spot's page in its HTML; search engines had the sitemap alone, and
+# Google listed the home page alone. The app's foot links it, on the home page and every spot's page. A
+# prose page with no script, in the sitemap; not in the offline copy. It gives no counts or levels, which
+# would go stale between builds.
+EVERY_SPOT = TEMPLATE.parent / "spots.html"
+EVERY_SPOT_DESCRIPTION = ("Every river and lake swim spot in England that SwimSignal forecasts, by area, each linked "
+                          "to its five-day pollution risk forecast.")
+NO_AREA = "Other spots"   # a spot with no area in spots.csv: last, so no group is without a name
+
+
+def every_spot_body(spots: list[dict]) -> str:
+    """The page's <main>: the opening, the areas as a contents list, then each area's spots."""
+    by: dict[str, list[dict]] = {}
+    for s in spots:
+        by.setdefault(str(s.get("area") or "").strip() or NO_AREA, []).append(s)
+    areas = sorted(by, key=lambda a: (a == NO_AREA, a.casefold()))
+    out = ['<h1>Every spot</h1>',
+           '<p class="lead">These are the river and lake swim spots SwimSignal forecasts, by area. Each has its own page, '
+           'with the pollution risk for the next five days. It is a forecast, not a water test.</p>',
+           '<nav class="toc" aria-labelledby="toc-h"><h2 id="toc-h">Areas</h2><ol>'
+           + "".join(f'<li><a href="#{area_slug(a)}">{escape(a)}</a></li>' for a in areas) + '</ol></nav>']
+    for a in areas:
+        rows = sorted(by[a], key=lambda s: str(s["name"]).casefold())
+        out.append(f'<h2 id="{area_slug(a)}">{escape(a)}</h2>')
+        out.append('<ul class="spots">' + "".join(f'<li><a href="spot/{escape(str(s["id"]))}/">{escape(str(s["name"]))}</a></li>'
+                                                   for s in rows) + '</ul>')
+    out.append('<p>A spot missing? <a href="feedback.html?type=spot">Ask for it to be added</a>.</p>')
+    return "\n".join(out)
+
+
+def write_every_spot(site: Path, spots: list[dict], root: str, token: str | None = None) -> None:
+    """spots.html, from the spots with a page of their own (write_pages passes the ones it wrote)."""
+    slots = {"mark": MARK, "body": every_spot_body(spots), "description": escape(EVERY_SPOT_DESCRIPTION),
+             "url": escape(f"{root}spots.html")}
+    page = EVERY_SPOT.read_text()
+    missing = set(re.findall(r"\{\{(\w+)\}\}", page)) - slots.keys()
+    if missing:
+        raise ValueError(f"spots.html has slots this build does not fill: {sorted(missing)}")
+    (site / "spots.html").write_text(with_counter(re.sub(r"\{\{(\w+)\}\}", lambda m: slots[m.group(1)], page), token))
 
 
 def write_cards(site: Path, results: list[dict], generated_at: str, root: str, alerts_ok: bool = True) -> dict:
