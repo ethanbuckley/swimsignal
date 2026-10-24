@@ -3501,7 +3501,7 @@ function renderPlan() {
   document.title = `Plan a swim · ${BRAND}`;
   if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
-  if (!PLAN.from && VIEW.here) PLAN.from = { here: true };   // "Near me" on the list has already asked
+  PLAN.from = planStart(PLAN.from, VIEW.here);   // "Near me" on the list has already asked; else areas are suggested
   planCompareGo = !!PLAN.compare;   // a link to a comparison opens on it (drawPlan)
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
@@ -3519,6 +3519,18 @@ function renderPlan() {
   planLoadWarnings();
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
 }
+// With no place to start from: the three areas with the most spots at low risk on the plan's day, each a link to
+// a plan from its middle (plan.js, planAreas), under the tile that asks for a place. The page does not ask for
+// your position to fill this: it waits for "Use my location", as the privacy notice says.
+function planSuggest() {
+  const areas = planAreas(DATA.spots, PLAN, (a, b) => km(a, b) / MILE_KM), on = dayWord(PLAN.day);
+  if (!areas.length) return '';
+  return `<section class="group tile" aria-labelledby="plan-areas-h"><h2 class="group-head" id="plan-areas-h">Most ${planNoun(2)} at low risk ${on}</h2>`
+    + `<p class="sub">Or start from the middle of one of these areas.</p><ul class="spots">`
+    + areas.map(a => `<li><a class="row" href="${esc(planPath() + planFromArea(a, PLAN))}" data-plan-area><span class="row-main"><span class="nm">${esc(a.area)}</span>`
+      + `<span class="k">${a.low} of ${a.total} ${planNoun(a.total)} at low risk ${on}, within ${a.within} miles</span></span></a></li>`).join('')
+    + '</ul></section>';
+}
 // The status under the place, the count, the groups and the map. fit: move the map to the plan's reach
 // (a new start or distance), which typing the day or the kind does not.
 function drawPlan(fit = false) {
@@ -3534,7 +3546,7 @@ function drawPlan(fit = false) {
   selLayer.clearLayers(); PLAN_BOUNDS = null;
   if (!from) { sum.textContent = '';
     box.innerHTML = `<div class="empty-saved tile"><h2 class="sec-h">Where are you starting from?</h2><p class="sub">Type a town, a village or a district of a city in England or Wales${geo ? ', or use your location, which stays on this device' : ''}.</p>`
-      + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>';
+      + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>' + planSuggest();
     return; }
   const r = planSpots(DATA.spots, PLAN, s => km(from, [s.lat, s.lon]) / MILE_KM), on = dayWord(PLAN.day);
   const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
@@ -3632,8 +3644,11 @@ function bindPlan() {
   $('plan-results').addEventListener('click', planClick);
 }
 function planClick(e) {
-  const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]');
-  if (e.target.closest('[data-plan-here]')) planLocate();
+  const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]'), a = e.target.closest('[data-plan-area]');
+  if (a) { if (!plainClick(e)) return; e.preventDefault();   // the area's middle and distance, as its link says them
+    PLAN = readPlan(new URL(a.href).hash, planDates(), PLAN); planNote = '';
+    $('plan-from').value = PLAN.from ? PLAN.from.name : ''; $('plan-within').value = String(PLAN.within); drawPlan(true); }
+  else if (e.target.closest('[data-plan-here]')) planLocate();
   else if (e.target.closest('[data-plan-compare]')) { const c = $('compare'); if (!c) return;
     c.open = true; c.scrollIntoView({ block: 'start' }); c.querySelector('summary').focus({ preventScroll: true }); }
   else if (d) { PLAN.day = d.dataset.planDay; const r = planDayInput(PLAN.day); if (r) r.checked = true; drawPlan(); if (r) r.focus(); }
