@@ -32,6 +32,9 @@ data/processed/*
 !data/processed/ecoli_validation_per_site.csv
 !data/processed/validation_sites.csv
 !data/processed/prf_comparison.json
+!data/processed/sampling_plan_test.json
+# Live scores withdrawn when the coverage rule changed, kept because README and the Method page cite them.
+!data/processed/verification_live_oldrule_2026-09-28.json
 # Scottish covariates (Scotland plan S2). Contains Scottish Water data licensed under the Open Government Licence v3.0.
 !data/processed/sw_covariates.parquet
 !data/raw/
