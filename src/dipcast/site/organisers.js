@@ -13,7 +13,7 @@
 const Organisers = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
     : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice,
-      overflowNames, overflowWhere, companyName };   // levels.js's globals
+      overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
   const STALE_MIN = 8 * 60;              // the app's "Stale" notice waits as long (index.html, STALE_MIN)
@@ -197,7 +197,7 @@ const Organisers = (() => {
     if (isolated(s)) rows.push(row('Storm overflows', `The river network links no monitored storm overflow to this lake, so there will be no sewage spill risk here. ${esc(R.OTHER_RISKS)}`));
     else if (s.error) rows.push(row('Forecast', esc(R.COVER[R.level(s)] || 'No forecast in this update')));
     else if (!total) rows.push(row('Storm overflows', `None monitored within ${km} km upstream, so there will be no sewage spill risk here. ${esc(R.OTHER_RISKS)}`));
-    else rows.push(row('Storm overflows', `${total} monitored upstream, listed below with how often each spills in a year.`));
+    else rows.push(row('Storm overflows', `${total} monitored upstream, listed below with how often each spills in a year.${R.tooFarSaid(s) ? ' ' + esc(R.tooFarSaid(s)) : ''}`));
     rows.push(rating(s, iso));
     return h + `<p class="ev-say">What is known now:</p><dl class="fields">${rows.join('')}</dl>`;
   }
@@ -236,7 +236,7 @@ const Organisers = (() => {
   // "North_CSO_Princetown" and "WEIR BROOK&TRIB OF WEIR BROOK" widened the table past its column.
   const brk = s => esc(s).replace(/(_|\/|&amp;)(?=\S)/g, '$1<wbr>');
   function overflows(s, full) {
-    const u = s.upstream_summary || {}, total = u.overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60, list = overflowRows(s, full);
+    const u = s.upstream_summary || {}, total = u.overflows || 0, all = R.allUpstream(s), km = (s.assumptions || {}).max_upstream_km || 60, list = overflowRows(s, full);
     let h = '<h3 id="ov-h">Storm overflows upstream</h3>';
     if (isolated(s)) return h + '<p>The river network links no monitored storm overflow to this lake.</p>';
     if (s.error) return h + '<p>This spot has no forecast in this update, so its overflows are not listed.</p>';
@@ -244,9 +244,9 @@ const Organisers = (() => {
     h += `<p>${total === 1 ? 'One monitored storm overflow is' : `${total} monitored storm overflows are`} within ${km} km upstream along the river network`
       + (u.without_live_feed ? `: ${u.with_live_feed} report their status live, and ${u.without_live_feed} ${u.without_live_feed === 1 ? 'has' : 'have'} no live feed, so SwimSignal forecasts ${u.without_live_feed === 1 ? 'it' : 'them'} from rain and their yearly record alone`
         : total === 1 ? ', with a live feed' : ', all with a live feed') + '.'
-      + (u.max_travel_h ? ` Sewage from the farthest takes ${hoursAway(u.max_travel_h)} to arrive.` : '') + '</p>';
-    if (list.length < total) h += full === 'loading' ? `<p>The table lists the ${list.length} that matter most in the current forecast while the other ${total - list.length} load.</p>`
-      : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${total} could not be loaded. Try again later.</p>`;
+      + (u.max_travel_h ? ` Sewage from the farthest takes ${hoursAway(u.max_travel_h)} to arrive.` : '') + (R.tooFarSaid(s) ? ' ' + esc(R.tooFarSaid(s)) : '') + '</p>';
+    if (list.length < all) h += full === 'loading' ? `<p>The table lists the ${list.length} that matter most in the current forecast while the other ${all - list.length} load.</p>`
+      : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${all} could not be loaded. Try again later.</p>`;
     const cell = (l, v, cls = '') => `<td${cls ? ` class="${cls}"` : ''} data-l="${l}">${v}</td>`;
     h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
       + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
@@ -369,7 +369,7 @@ const Organisers = (() => {
     // file lists, then the page is drawn again.
     const FULL = {};
     const fullOf = s => {
-      if (!s || s.error || !PAGE_ID.test(s.id) || ((s.upstream_summary || {}).overflows || 0) <= (s.contributors || []).length) return undefined;
+      if (!s || s.error || !PAGE_ID.test(s.id) || R.allUpstream(s) <= (s.contributors || []).length) return undefined;
       if (FULL[s.id] === undefined) {
         FULL[s.id] = 'loading';
         fetch(`data/upstream/${encodeURIComponent(s.id)}.json`, { cache: 'no-cache' })

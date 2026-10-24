@@ -285,8 +285,10 @@ def test_the_page_draws_the_spill_levels_at_the_cut_offs_the_build_labels_them_b
     rules = (ROOT / "src" / "dipcast" / "site" / "levels.js").read_text()
     cuts = [float(x) for x in re.search(r"const SPILL_CUTS = \[([^\]]+)\]", rules).group(1).split(",")]
     levels = ["low", "moderate", "high", "very high"]
+    # Since 23 Oct 2026 the label goes by the score shown, the 3 dp risk times 100 rounded, so the step is
+    # just under each cut: 0.146 shows as 15 (moderate), 0.144 as 14 (low).
     for i, c in enumerate(cuts):
-        assert risk_label(c - 1e-9) == levels[i] and risk_label(c) == levels[i + 1], c
+        assert risk_label(c - 0.006) == levels[i] and risk_label(c - 0.004) == levels[i + 1] and risk_label(c) == levels[i + 1], c
 
 
 def test_the_page_and_the_build_use_one_id_rule():

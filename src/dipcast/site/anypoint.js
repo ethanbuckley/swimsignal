@@ -78,7 +78,9 @@ const AnyPoint = (() => {
     const miss = shiftByTravel(avail.map(row => row.map(ok => ok ? 0 : 1)), travel);
     return miss[0].map((_, j) => Math.min(1, Math.max(0, miss.reduce((a, row, i) => a + row[j] * w[i], 0) / tot)));
   }
-  const riskLabel = r => r < 0.15 ? 'low' : r < 0.4 ? 'moderate' : r < 0.7 ? 'high' : 'very high';   // transport.risk_label
+  // transport.risk_label: from the score the page shows, the 3 dp risk times 100, rounded.
+  const riskLabel = r => { const v = Math.round(r3(r) * 100); return v < 15 ? 'low' : v < 40 ? 'moderate' : v < 70 ? 'high' : 'very high'; };
+  const COUNT_WEIGHT = 0.005;   // transport.COUNT_WEIGHT: a weight under it shows as 0% reach and is not counted
   const r3 = x => Math.round(x * 1000) / 1000, r1 = x => Math.round(x * 10) / 10;
 
   // WFD lakes crossed on the way (transport.upstream_overflows, lake path "lake"): k = flat triples
@@ -188,6 +190,9 @@ const AnyPoint = (() => {
     const a = od.assumptions, low = new Set(od.low), n = rows.length;
     const tr = rows.map(r => transportOf(r, a)), travel = tr.map(t => t.travel);
     const w = rows.map((r, k) => tr[k].decay * r.dil * (low.has(r.i) ? a.low_confidence_factor : 1));
+    // The overflows the counts count (forecast.weighted_here): weight COUNT_WEIGHT or more, or all where none has it.
+    const weighted = w.map(x => r3(x) >= COUNT_WEIGHT), here = weighted.some(Boolean) ? weighted : w.map(() => true);
+    const nHere = here.filter(Boolean).length, counted = xs => xs.filter((x, k) => x && here[k]).length;
     const hist = historyDays(travel), nd = hist + DAYS_AHEAD + 1, t0 = od.today;
     const P = rows.map(r => Array.from({ length: nd }, (_, j) => {
       const v = od.p[r.i][t0 - hist + j]; return v === null || v === undefined ? NaN : v / od.scale; }));
@@ -198,7 +203,7 @@ const AnyPoint = (() => {
     const days = [];
     for (let j = hist; j < nd; j++) {
       const known = !(miss[j] > a.max_missing_share), date = od.days[t0 + j - hist];
-      const exp = Pc.reduce((s, row) => s + (Number.isNaN(row[j]) ? 0 : row[j]), 0);
+      const exp = Pc.reduce((s, row, k) => s + (!here[k] || Number.isNaN(row[j]) ? 0 : row[j]), 0);
       days.push({ date, risk: known ? r3(risk[j]) : null, label: known ? riskLabel(risk[j]) : 'unknown',
         expected_spilling_overflows: known ? r1(exp) : null,
         data_status: !known ? 'rain unavailable' : miss[j] > 0 ? 'partial' : 'ok', rain_missing_share: r3(miss[j]),
@@ -233,17 +238,18 @@ const AnyPoint = (() => {
     const recent = contrib.map((c, k) => c > 0 && !run[k] && status[k] !== -3);
     const quiet = state.map((st, k) => st === 'live' && status[k] === 0 && !recent[k]);
     const stale = state.map((st, k) => st === 'stale' && !run[k] && !recent[k]);
-    const monitored = run.filter((x, k) => x || recent[k] || quiet[k]).length, fd = {}, fs = {}, fr = {}, frSince = {};
+    const monitored = counted(run.map((x, k) => x || recent[k] || quiet[k])), fd = {}, fs = {}, fr = {}, frSince = {};
     rows.forEach((r, k) => {
+      if (!here[k]) return;
       if (down[k]) fd[company[k]] = (fd[company[k]] || 0) + 1;
       if (stale[k] && !ownStale[k]) fs[company[k]] = (fs[company[k]] || 0) + 1;
       if (stale[k] && ownStale[k]) { const c = company[k], t = staleRows[String(r.i)];
         fr[c] = (fr[c] || 0) + 1; if (t && (!frSince[c] || Date.parse(t) > Date.parse(frSince[c]))) frSince[c] = t; } });
-    const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: run.filter(Boolean).length,
-      recent_upstream: recent.filter(Boolean).length, monitored_upstream: monitored,
-      feed_down_upstream: down.filter(Boolean).length,
+    const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: counted(run),
+      recent_upstream: counted(recent), monitored_upstream: monitored,
+      feed_down_upstream: counted(down),
       feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
-      stale_upstream: stale.filter(Boolean).length,
+      stale_upstream: counted(stale),
       feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null }))
         .concat(Object.keys(fr).sort().map(c => ({ company: c, overflows: fr[c], since: frSince[c] ?? null, records: true }))) };
     // The overflows that matter most: forecast_point's relevance, the build's ten.
@@ -259,7 +265,11 @@ const AnyPoint = (() => {
         travel_h: r1(travel[k]), weight: r3(w[k]), p_spill_today: r3(Number.isNaN(pd[0]) ? 0 : pd[0]),
         p_spill_tomorrow: r3(Number.isNaN(pd[1]) ? 0 : pd[1]), p_spill_days: pd.map(x => Number.isNaN(x) ? null : r3(x)),
         now_contribution: r3(contrib[k]), rain_h: od.rain_h ? od.rain_h[i] : null }; });
-    return { now, days, contributors, upstream_summary: { overflows: n, with_live_feed: monitored, without_live_feed: n - monitored,
+    const far = rows.map((r, k) => k).filter(k => !here[k]), one = far.length === 1 ? far[0] : null;
+    return { now, days, contributors, upstream_summary: { overflows: nHere, with_live_feed: monitored, without_live_feed: nHere - monitored,
+      ...(far.length ? { too_far: far.length } : {}),
+      ...(one !== null ? { too_far_overflow: { site_id: names ? names.ids[rows[one].i] : String(rows[one].i), site_name: names ? names.name[rows[one].i] : null,
+        company: od.companies[od.company[rows[one].i]] } } : {}),
       sum_weight: r3(w.reduce((s, x) => s + x, 0)), history_days: hist, max_travel_h: n ? r1(Math.max(...travel)) : 0 },
       // The oldest rain forecast behind a weight that counts, in hours (a cell is fetched on a rota).
       rain_h: Math.max(0, ...rows.map((r, k) => w[k] >= 0.001 && od.rain_h && od.rain_h[r.i] !== null ? od.rain_h[r.i] : 0)) };

@@ -11,6 +11,7 @@ import pandas as pd
 
 from dipcast.model import transport
 from dipcast.model.transport import (
+    CLEAR_CUT,
     LOW_CUT,
     daily_effects,
     risk_shares,
@@ -90,7 +91,7 @@ def _risk_at(ov: pd.DataFrame, t: pd.Timestamp) -> float:
 
 def test_one_running_spill_falls_to_low_by_die_off():
     at, by, who = clear_time(_ov([1.0], [1], [None]), NOW)
-    want = T90 * math.log10(1.0 / LOW_CUT)   # weight x 10^(-t / T90) = cut, with T90 = 30 h
+    want = T90 * math.log10(1.0 / CLEAR_CUT)   # weight x 10^(-t / T90) = cut, with T90 = 30 h
     assert (by, who) == ("die-off", None)
     assert abs((at - NOW) / pd.Timedelta(hours=1) - want) < 1 / 600   # within six seconds
 
@@ -103,9 +104,9 @@ def test_the_clear_time_is_live_now_risk_run_forward():
     minute = pd.Timedelta(minutes=1)
     for travel in ([0.0] * 6, [2.0, 30.0, 5.0, 20.0, 1.0, 9.0]):
         o = ov.assign(travel_h=travel)
-        assert live_now_risk(o, NOW)[0] >= LOW_CUT
+        assert live_now_risk(o, NOW)[0] >= CLEAR_CUT
         at, _, _ = clear_time(o, NOW)
-        assert _risk_at(o, at - minute) >= LOW_CUT > _risk_at(o, at + minute)
+        assert _risk_at(o, at - minute) >= CLEAR_CUT > _risk_at(o, at + minute)
         assert NOW < at < NOW + pd.Timedelta(hours=100)
     assert clear_time(ov, NOW)[1] == "die-off"
 
@@ -114,11 +115,11 @@ def test_the_48_hour_window_can_set_the_time():
     """Ten full-weight spills that ended 47 h ago add up to moderate (each 10^(-47/30), about 0.027),
     and stop counting together an hour from now: the window, not die-off, brings it to low."""
     ov = _ov([1.0] * 10, [0] * 10, [47.0] * 10)
-    assert live_now_risk(ov, NOW)[0] >= LOW_CUT
+    assert live_now_risk(ov, NOW)[0] >= CLEAR_CUT
     at, by, _ = clear_time(ov, NOW)
     assert by == "window"
     assert abs((at - NOW) / pd.Timedelta(hours=1) - 1.0) < 1e-6
-    assert _risk_at(ov, at - pd.Timedelta(minutes=1)) >= LOW_CUT > _risk_at(ov, at + pd.Timedelta(minutes=1))
+    assert _risk_at(ov, at - pd.Timedelta(minutes=1)) >= CLEAR_CUT > _risk_at(ov, at + pd.Timedelta(minutes=1))
 
 
 def test_no_clear_time_when_already_low():
@@ -154,9 +155,9 @@ def test_a_tiny_far_spill_barely_moves_the_time_and_is_not_named():
     model, _, _ = clear_time(_no_travel(ov), NOW)
     at, by, who = clear_time(ov, NOW)
     assert (by, who) == ("die-off", None)
-    want = 30 * math.log10(0.5 / (1 - (1 - LOW_CUT) / 0.99)) - 0.5   # near alone under 1 - 0.85 / 0.99
+    want = 30 * math.log10(0.5 / (1 - (1 - CLEAR_CUT) / 0.99)) - 0.5   # near alone under 1 - 0.85 / 0.99
     assert abs(_hours(at) - want) < 1 / 600 and 0 < _hours(at) - _hours(model) < 1.5 and _hours(at) < 20
-    assert _held_risk(ov, _hours(at) - 1 / 60) >= LOW_CUT > _held_risk(ov, _hours(at) + 1 / 60)
+    assert _held_risk(ov, _hours(at) - 1 / 60) >= CLEAR_CUT > _held_risk(ov, _hours(at) + 1 / 60)
 
 
 def test_a_big_far_spill_holds_the_time_up_and_is_named():
@@ -169,7 +170,7 @@ def test_a_big_far_spill_holds_the_time_up_and_is_named():
     assert by == "die-off" and 20 < _hours(model) < 22
     at, by, who = clear_time(ov, NOW)
     assert (by, who) == ("travel", 1) and 40 < _hours(at) < 42
-    assert _held_risk(ov, _hours(at) - 1 / 60) >= LOW_CUT > _held_risk(ov, _hours(at) + 1 / 60)
+    assert _held_risk(ov, _hours(at) - 1 / 60) >= CLEAR_CUT > _held_risk(ov, _hours(at) + 1 / 60)
     # The headline's risk holds each spill until its water has passed too: the near one's passed half an hour ago.
     assert abs(live_now_risk(ov, NOW)[0] - (1 - (1 - 0.5 * 10 ** (-0.5 / 30)) * (1 - 0.3))) < 1e-12
 
@@ -190,7 +191,7 @@ def test_the_time_said_is_never_before_the_models():
     assert live_now_risk(ov, NOW)[1][2] > 0
     at, by, who = clear_time(ov, NOW)
     assert (by, who) == ("travel", 1) and _hours(at) > 20
-    assert _held_risk(ov, _hours(at) - 1 / 60) >= LOW_CUT > _held_risk(ov, _hours(at) + 1 / 60)
+    assert _held_risk(ov, _hours(at) - 1 / 60) >= CLEAR_CUT > _held_risk(ov, _hours(at) + 1 / 60)
     # Low now: nothing to say, however far away the spill.
     assert clear_time(_ov([0.1], [1], [None], travel_h=[30.0]), NOW) == (None, None, None)
     assert clear_time(_ov([], [], [], travel_h=[]), NOW) == (None, None, None)

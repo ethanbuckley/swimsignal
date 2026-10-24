@@ -188,7 +188,7 @@ test('an overflow in the same lake is across it, a spill under way says since wh
 
 test('the page draws the tile before the overflows and fills it again for a picked day', () => {
   const at = s => { const i = html.indexOf(s); assert.ok(i >= 0, s); return i; };
-  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('if (d.contributors.length) h += overflowTile(d, total);'));
+  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('if (d.contributors.length) h += overflowTile(d, allUpstream(d));'));
   assert.ok(at("if (src) src.innerHTML = whereFrom(d);") > at('function showDay(d, iso) {'));
   assert.ok(at('#sources-host:empty { display:none; }') > 0);
   assert.ok(at('function whereFrom(d) {') < at('function overflowTile(d, total) {'));
