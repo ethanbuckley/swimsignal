@@ -945,6 +945,7 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
+                       keep_parts: bool = False,
                        dilution_mode: str | None = None, lake_path_mode: str | None = None,
                        lake_distance_mode: str | None = None,
                        dilution_power: float = DILUTION_POWER,
@@ -961,6 +962,9 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     as a well-mixed lake instead: its metres still move to lake_distance_m, but travel_h counts
     lake_hold_h for it in place of its metres at LAKE_VELOCITY_MS, decay is the die-off of the rest of
     the journey times lake_pass, and its area factor is dropped. Other lakes are crossed as in 'lake'.
+    `keep_parts` keeps two more columns for weather_decay: moving_h, the hours of the journey that decay at
+    T90 (travel_h less the survivors' hours in residence lakes), and lake_pass, the share that leaves those
+    lakes alive (1 with none); decay is 10 ** (-moving_h / t90_h) * lake_pass.
     `lake_distance_mode` (default config.LAKE_DISTANCE_MODE) sets, for a lake spot, the distance from where
     each overflow's water enters the spot's lake to the spot (spot_lake_m).
     `dilution_power` raises dilution 'length''s ratio, after its cap at 1, to that power (1 leaves it as it is).
@@ -983,7 +987,8 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     on_lakes = lake_path_mode in ("lake", *config.RESIDENCE_MODES)
     residence = lake_path_mode in config.RESIDENCE_MODES
     scale = velocity_ms / config.RIVER_VELOCITY_MS
-    cols = list(overflows.columns) + ["distance_m", "lake_distance_m", "travel_h", "decay", "dilution", "weight"]
+    cols = (list(overflows.columns) + ["distance_m", "lake_distance_m", "travel_h", "decay", "dilution", "weight"]
+            + (["moving_h", "lake_pass"] if keep_parts else []))
     if pin.mode == "none" or pin.trace_node is None:
         return pd.DataFrame(columns=cols)
     cap = max_km * 1000.0
@@ -1087,10 +1092,14 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         ov["travel_h"] = moving_h + ov["_res_hold_h"]
         ov["decay"] = np.power(10.0, -moving_h / t90_h) * ov["_res_pass"]
         ov["_lake_div"] = ov["_lake_div"] / ov["_res_div"]   # no area factor for those lakes
+        ov["_moving_h"], ov["_lake_pass"] = moving_h, ov["_res_pass"]
     else:
         ov["travel_h"] = (river_s + ov["lake_distance_m"] / config.LAKE_VELOCITY_MS) / 3600.0
         ov["decay"] = np.power(10.0, -ov["travel_h"] / t90_h)
+        ov["_moving_h"], ov["_lake_pass"] = ov["travel_h"], 1.0
     ov = ov.drop(columns="river_s", errors="ignore")
+    ov = (ov.rename(columns={"_moving_h": "moving_h", "_lake_pass": "lake_pass"}) if keep_parts
+          else ov.drop(columns=["_moving_h", "_lake_pass"]))
     if dilution_mode == "flow":
         # The whole catchment's network, not the traced 60 km: flow comes from all of it.
         ov["dilution"] = float(flow_dilution(spot_up_full))
@@ -1228,8 +1237,10 @@ def shift_by_travel(p: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
 def daily_effects(p: np.ndarray, weights: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
     """(n_overflows, n_days): each overflow's chance of affecting the spot on each arrival day,
     its spill probability moved later by its travel time, times its weight. These are the terms
-    combine_daily multiplies, kept apart so the page can say which overflows a day's risk comes from."""
-    return np.clip(shift_by_travel(np.nan_to_num(p, nan=0.0), travel_h), 0, 1) * weights[:, None]
+    combine_daily multiplies, kept apart so the page can say which overflows a day's risk comes from.
+    `weights` is (n_overflows,), or (n_overflows, n_days) by arrival day (weather_decay)."""
+    w = np.asarray(weights, dtype=float)
+    return np.clip(shift_by_travel(np.nan_to_num(p, nan=0.0), travel_h), 0, 1) * (w[:, None] if w.ndim == 1 else w)
 
 
 def combine_daily(p: np.ndarray, weights: np.ndarray, travel_h: np.ndarray) -> np.ndarray:
@@ -1239,6 +1250,38 @@ def combine_daily(p: np.ndarray, weights: np.ndarray, travel_h: np.ndarray) -> n
     if n == 0:
         return np.zeros(d)
     return 1.0 - np.prod(1.0 - daily_effects(p, weights, travel_h), axis=0)
+
+
+def weather_decay(moving_h: np.ndarray, lake_pass: np.ndarray, travel_h: np.ndarray, rate_h: pd.Series,
+                  arrivals: pd.DatetimeIndex) -> np.ndarray:
+    """(n_overflows, n_arrivals): the share of each overflow's bacteria alive at the spot when the water
+    arrives at each of `arrivals`, with a die-off rate that changes by the hour (docs/DIEOFF-WEATHER-TEST-2026-10.md).
+
+    rate_h: per hour (ln units), indexed by tz-aware hourly stamps; a value stamped H is the rate over the hour
+    ending at H. The journey ends at the arrival time and starts travel_h earlier. Its mean rate, the integral
+    of rate_h over that window (linear within an hour) over travel_h, applies to the moving_h hours that
+    decay; residence lakes keep their lake_pass. So a constant rate ln 10 / T90 gives
+    10 ** (-moving_h / T90) * lake_pass, upstream_overflows' decay. NaN where the window has a missing hour
+    or runs outside rate_h. Not used by the site: weights stay fixed unless the test above adopts it."""
+    moving_h, lake_pass, travel_h = (np.asarray(a, dtype=float) for a in (moving_h, lake_pass, travel_h))
+    s = rate_h.sort_index()
+    x = (s.index.tz_convert("UTC") - pd.Timestamp("1970-01-01", tz="UTC")) / pd.Timedelta(hours=1)
+    x0 = float(x[0]) - 1.0    # hours from just before the first stamp: small numbers, so interp keeps its precision
+    x = np.concatenate([[0.0], np.asarray(x, dtype=float) - x0])
+    r = s.to_numpy(dtype=float)
+    # The running sum is of the rate less its mean c, added back as c x hours: the same integral, but a constant
+    # rate sums to exactly 0, so it gives the fixed decay to rounding, not to a year's accumulated error.
+    c = float(np.nanmean(r)) if np.isfinite(r).any() else 0.0
+    cum = np.concatenate([[0.0], np.cumsum(np.nan_to_num(r - c, nan=0.0))])
+    bad = np.concatenate([[0.0], np.cumsum(np.isnan(r).astype(float))])
+    t1 = np.asarray((pd.DatetimeIndex(arrivals).tz_convert("UTC") - pd.Timestamp("1970-01-01", tz="UTC"))
+                    / pd.Timedelta(hours=1), dtype=float)[None, :] - x0
+    t0 = t1 - travel_h[:, None]
+    integral = np.interp(t1, x, cum) - np.interp(t0, x, cum) + c * travel_h[:, None]
+    gap = (np.interp(t1, x, bad) - np.interp(t0, x, bad) > 0) | (t0 < x[0]) | (t1 > x[-1])
+    mean_rate = np.divide(integral, travel_h[:, None], out=np.zeros_like(integral), where=travel_h[:, None] > 0)
+    out = np.exp(-mean_rate * moving_h[:, None]) * lake_pass[:, None]
+    return np.where(gap, np.nan, out)
 
 
 def risk_shares(eff: np.ndarray) -> np.ndarray:
