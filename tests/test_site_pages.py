@@ -107,7 +107,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     home = (tmp_path / "index.html").read_text()
     # data-built: the script updates this opening where it stands (index.html, overBuilt), so its
     # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
-    body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
+    body = home.split('<div id="result" data-built data-nosnippet>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
     assert "Five-day pollution risk forecasts for 3 swim spots in England<span class=\"lede-map\">, and for any river or lake you " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
@@ -155,7 +155,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river, SPOTS[1]]}))
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
-    assert '<body class="view-spot">' in page and '<div id="result" data-built>' in page
+    assert '<body class="view-spot">' in page and '<div id="result" data-built data-nosnippet>' in page
     # A spot's page spans the screen from 801 px, so it preloads the wide sky from there.
     assert bs.SPOT_SKY_PRELOAD in page and bs.SKY_PRELOAD not in page and 'fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 801px)"' in page
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
@@ -177,7 +177,8 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     (tmp_path / "data" / "spots.json").unlink()
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
-    assert '<body class="view-list">' in page and '<div id="result" data-built>' not in page and '<h2 class="spot-name">A river</h2>' in page
+    assert '<body class="view-list">' in page and '<div id="result" data-built data-nosnippet>' not in page and '<h2 class="spot-name">A river</h2>' in page
+    assert '<div id="result" data-nosnippet>' in page   # a level drawn here later is not quoted in search results either
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")

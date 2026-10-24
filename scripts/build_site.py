@@ -1671,8 +1671,10 @@ def home_lead(n: int) -> str:
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
     typed carries over. The day picker has only its first choice until the forecast's dates are known.
     data-built: the script updates this .lead where it stands rather than replacing it (index.html,
-    overBuilt), so its picture is painted once, at the first paint."""
-    return ('<div id="result" data-built><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
+    overBuilt), so its picture is painted once, at the first paint. data-nosnippet: search engines may index
+    what is in #result but not quote it in a result, where a level would outlive its forecast; they quote
+    the page's description instead, which gives none (the script keeps #result, so the mark stays)."""
+    return ('<div id="result" data-built data-nosnippet><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
             f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England<span class="lede-map">, and for any river or lake you '
             '<span class="w-touch">tap</span><span class="w-click">click</span> on the map</span>. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
@@ -1705,8 +1707,8 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
         # opens as a page"), so each screen asks early for the picture it shows, and only that one.
         page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
-        return page.replace(LOADING, f'<div id="result" data-built>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
-    return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
+        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
+    return page.replace(LOADING, '<div id="result" data-nosnippet><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
                                  f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
 
