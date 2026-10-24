@@ -21,9 +21,11 @@ forecast cut the day at different moments.
 
 In winter the two are the same. In British Summer Time, from the last Sunday in March to the last Sunday
 in October, a local day runs from 23:00 UTC the day before to 23:00 UTC. So for seven months the model
-is fed features whose day is an hour earlier than the days it was fitted on. The hour 23:00 to 00:00 UTC
-falls in the next day's rain in the forecast and in the same day's rain in training. The same holds for
-`max1h_d` to `max6h_d`, the lags, the rolling sums and the antecedent index.
+is fed features whose day is an hour earlier than the days it was fitted on. A day holds the hourly
+stamps 00:00 to 23:00, each the rain of the hour ending then. The stamp 23:00 UTC (rain from 22:00 to
+23:00 UTC) falls in the next day's rain in the forecast and in the same day's rain in training. The same
+holds for `max1h_d` to `max6h_d`, the lags, the rolling sums and the antecedent index. A spill from 23:00
+to 00:00 UTC is on the next local day, and on the same UTC day in training's labels.
 
 **The E. coli path is already on local days.** `ecoli.rain_windows` sums the 48 h and 24 h before a time
 (noon on the sample or target day), so it has no day boundary of its own. `train_ecoli.py` converts the
@@ -74,13 +76,15 @@ and would be scored against local-day labels. It is not tested here.
 
 Not changed: `scripts/train_nn.py`, `scripts/live_status_test.py` and `scripts/train_multi_year.py` build
 their own day indices on UTC (`DAY0`, `T0`). They are the records of finished tests, run from their own
-commits, and their results stand as written. Rerunning one on the new model would need the same change.
+commits, and their results stand as written. Fed local days, their `(day - T0) // 1 day` would put every
+summer day one index early, without an error. So at this commit they refuse to run and say to use the
+commit their record names. Rerunning one on the new model would need the same change as here.
 The live-status shadow's candidates (`data/processed/live_status/`) were trained by `live_status_test.py`
 on UTC days and are fed local days in the shadow, the same mismatch as production's. They are not touched
 while their window runs.
 
 **Tests.**
-- **The acceptance test.** One hourly series spanning a BST day, with rain in the hour 23:00 to 00:00 UTC.
+- **The acceptance test.** One hourly series spanning a BST day, with rain stamped 23:00 UTC.
   `daily_rain_features` gives the same `rain_d`, `max1h_d` to `max6h_d` and lags for that day by the
   training path (UTC timestamps, as `train.py` passes them) and by the forecast path (converted to
   Europe/London, as `spill_probabilities` passes them). The hour counts in the local day it belongs to.

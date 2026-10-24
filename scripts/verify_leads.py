@@ -31,7 +31,7 @@ import pandas as pd
 
 from dipcast import config
 from dipcast.ingest.rainfall import grid_cell
-from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features, spill_days
+from dipcast.model.features import ALL_FEATURES, LOCAL_TZ, build_site_days, daily_rain_features, spill_days
 from dipcast.model.spill_model import SpillModel
 from dipcast.model.training import NINE, RAIN_DIRS, load_events, load_rain, site_years
 from dipcast.model.verify import reliability_table, scores
@@ -85,7 +85,7 @@ def main() -> None:
     sites = sites[~sites["company"].isin(excluded)]
     sites = sites[[c in cells_with_leads for c in zip(*grid_cell(sites["lat"].to_numpy(), sites["lon"].to_numpy()), strict=True)]]
     print("\noverflows per company:", sites["company"].value_counts().to_dict())
-    days = pd.date_range(f"{YEAR}-01-01", f"{YEAR}-12-31", freq="D", tz="UTC")
+    days = pd.date_range(f"{YEAR}-01-01", f"{YEAR}-12-31", freq="D", tz=LOCAL_TZ)
     base = build_site_days(sites, daily_era, days, labels)
     base = base[base["rain_d"].notna()].copy()
     y = base["y"].to_numpy()
@@ -106,7 +106,7 @@ def main() -> None:
         df = df.drop(columns=["rain_d", "max1h_d", "max3h_d", "max6h_d"]).merge(same, on=key, how="left")
         for shift, col in ((1, "rain_d1"), (2, "rain_d2")):
             src = daily_lead[max(k - shift, 0)][key + ["rain_d"]].copy()
-            src["day"] = src["day"] + pd.Timedelta(days=shift)
+            src["day"] = src["day"] + pd.DateOffset(days=shift)   # calendar days: 24 h misses a clock change
             df = df.drop(columns=[col]).merge(src.rename(columns={"rain_d": col}), on=key, how="left")
         df["rain_3d"] = df["rain_d"].fillna(0) + df["rain_d1"].fillna(0) + df["rain_d2"].fillna(0)
         return df
