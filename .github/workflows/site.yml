@@ -49,11 +49,11 @@ jobs:
           echo "Publishing to: $host"
           echo "host=$host" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false   # the heartbeat step pushes with GH_TOKEN instead
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Restore mutable state (live history, forecast log)
         id: state-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: state
           key: dipcast-state-${{ github.run_id }}
@@ -121,7 +121,7 @@ jobs:
         run: uv run python scripts/build_site.py
 
       - name: Save mutable state
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         if: always()
         with:
           path: state
@@ -203,7 +203,7 @@ jobs:
           fi
 
       # Both hosts take this artifact: GitHub Pages directly, Cloudflare Pages unpacked (deploy-cloudflare).
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -219,7 +219,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   # Cloudflare Pages (docs/HOSTING-MOVE-2026-10.md), once the secret CLOUDFLARE_API_TOKEN is set. GitHub's
   # terms do not allow an online business on GitHub Pages. Its own job, so the token is never in a job
@@ -234,7 +234,7 @@ jobs:
       name: cloudflare-pages
       url: https://swimsignal.co.uk/
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: github-pages
           path: ${{ runner.temp }}/artifact
@@ -257,7 +257,7 @@ jobs:
           HEADERS
           echo "$(find site -type f | wc -l) files, $(du -sh site | cut -f1)"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22    # wrangler 4 needs Node 22 or later
 
