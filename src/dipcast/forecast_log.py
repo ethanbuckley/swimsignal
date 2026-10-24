@@ -968,8 +968,11 @@ def verify_spots(as_of: date | None = None, spots: pd.DataFrame | None = None, o
                 pts["spot_id"] = key.map(sk.drop_duplicates("k").set_index("k")["id"])
                 pts = pts.dropna(subset=["spot_id"])
             if pts is not None and len(pts):
-                chosen = (pts[pts["before_cutoff"]].sort_values("issued_ms")
-                          .groupby(["spot_id", "target_day", "lead"], as_index=False).last())
+                # The latest forecast by 08:00 as one whole row: groupby().last() takes each column's last non-null
+                # value apart, so a later forecast with no logged risk would carry an earlier one's. A missing risk
+                # stays missing (section 9: never imputed); the row is then neither a forecast nor scored.
+                chosen = (pts[pts["before_cutoff"]].sort_values("issued_ms", kind="mergesort")
+                          .drop_duplicates(["spot_id", "target_day", "lead"], keep="last").reset_index(drop=True))
                 issues = chosen[["issued_ms", "lat", "lon"]].drop_duplicates()
                 con.register("issues", issues)
                 links = con.execute("""

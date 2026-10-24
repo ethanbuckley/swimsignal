@@ -181,3 +181,42 @@ def test_the_published_spot_csv_carries_the_credits_and_only_rows_that_match(tmp
     ver.write_text(json.dumps({"live": {"n_scored": 2}}))
     assert bs.publish_spots_csv(site, credits, "https://example.org/") is None
     assert 'health["spot_rows_published"] = publish_spots_csv(SITE, credits, site_url())' in Path(bs.__file__).read_text()
+
+
+def test_the_latest_decision_forecast_is_taken_whole_and_a_missing_value_is_not_scored(tmp_path, monkeypatch):
+    """The decision forecast is the latest issued by 08:00, as one row. Here the 07:30 forecast logged no risk
+    (log_forecast allows NULL): its issue time and version stand, its forecast is empty, and it is neither a forecast
+    nor scored. The 07:00 risk must not be carried into it (pandas' groupby().last() takes each column's last
+    non-null value separately, which did that)."""
+    _state(tmp_path, monkeypatch)
+    from dipcast import forecast_log as fl
+    ov = pd.DataFrame({"site_id": ["A"], "has_live": [True], "weight": [0.5], "travel_h": [0.0]})
+    days = pd.date_range("2026-10-12", periods=7, freq="D", tz=TZ)
+    zeros = np.zeros((1, len(days)))
+
+    def log(at, risk, version):
+        fl.log_forecast(pd.Timestamp(at, tz=TZ), 54.0, -2.0, "river", "R", 0.0, days, np.full(len(days), risk), ov,
+                        zeros, zeros, version=version)
+    log("2026-10-14 07:00", 0.45, "v-old")
+    log("2026-10-14 07:30", np.nan, "v-new")
+    hist = pd.DataFrame({"site_id": ["A"], "company": ["X Water"], "status": [0],
+                         "latest_event_start": pd.to_datetime(["2026-10-14 10:00"], utc=True),
+                         "latest_event_end": pd.to_datetime(["2026-10-14 11:00"], utc=True),
+                         "fetched_at": pd.to_datetime(["2026-10-15 12:00"], utc=True)})
+    hist.to_parquet(tmp_path / "live_history.parquet", index=False)
+    cov = pd.DataFrame([{"site_id": "A", "day": d, "n_known": 12, "n_unknown": 0, "n_stale": 0, "slots": _mask(range(0, 24, 2))}
+                        for d in pd.date_range("2026-10-12", "2026-10-16", freq="D")])
+    cov.to_parquet(tmp_path / fl.COVERAGE_FILE, index=False)
+    pd.DataFrame({"site_id": ["A"], "company": ["X Water"], "lta_spills": [36.5]}).to_parquet(
+        tmp_path / "overflows.parquet", index=False)
+    spots = pd.DataFrame({"id": ["s1"], "name": ["Spot one"], "lat": [54.00001], "lon": [-2.00002], "kind": ["river"]})
+    out = fl.verify_spots(as_of=date(2026, 10, 16), spots=spots)
+    r = pd.read_csv(tmp_path / fl.SPOTS_CSV, dtype={"spot_id": str}).set_index(["day", "lead"])
+    for cell in (("2026-10-14", 0), ("2026-10-15", 1)):    # both from the 07:30 forecast
+        row = r.loc[cell]
+        assert row["issued_at"] == "2026-10-14T07:30+01:00" and row["version"] == "v-new"
+        assert pd.isna(row["forecast"])                    # not 0.45 from the 07:00 row
+    # The spot-day is still observed (A spilled on the 14th: o = 0.5); only the forecast is missing.
+    assert r.loc[("2026-10-14", 0), "observed"] == 0.5 and pd.isna(r.loc[("2026-10-14", 0), "reason"])
+    # Missing forecasts are counted as neither a forecast nor a scored cell.
+    assert out["n_forecast"] == 0 and out["n_scored"] == 0 and out["n_observed"] >= 1
