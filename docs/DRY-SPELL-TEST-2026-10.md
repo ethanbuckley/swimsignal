@@ -141,4 +141,104 @@ Whatever the verdict:
 
 ## Results
 
-Not yet run.
+Added 24 October 2026, after the run. Everything above the line is as committed in eb63bc5 (24 October 2026, 18:36
+BST) and pushed before the run. The harness came in 4e4c1e8 (18:38). It changed nothing above the line.
+
+**Verdict: both questions fail. Nothing is adopted.** Question 1 fails conditions 1, 3 and 5. Question 2 fails
+condition 1 only, narrowly: its gain is 0.00049 against a margin of 0.0005, and the interval includes zero. This PR is
+a record: this file, `DRY-SPELL-TEST-2026-10-score.json` and the harness.
+
+### How it was run
+
+- From a `git archive` of 4e4c1e8, offline, with `scripts/dry_spell_eval/run.sh`. Zero network attempts in each of
+  the four steps.
+- The data folder was the frozen copy the die-off test ran on (23 October). A first try on the main checkout's data
+  folder stopped at `validate_ecoli.py`: its overflow table predates the 12 October network key and the code refuses
+  it (`StaleOverflowTable`). Nothing was scored in that try. The frozen copy's overflow table carries key b5724303.
+  SHA-256 of its processed and raw files (river network excepted): `6e13bee2…2070545`.
+- Main's defaults: velocity 0.2 m/s, T90 72 h, dilution power 0.5, lake path `residence_spill`.
+- Run time: `validate_ecoli` 172 s, `replay_ecoli_leads` 99 s, `train_ecoli` 100 s, `score.py` 21 s. Peak memory
+  3.1 GB.
+
+### Face check. Holds.
+
+The reference arm's scores equal those `train_ecoli.py` wrote in the same root: LOYO 0.0921, LOSO 0.0912, forward
+0.0824, 1,502 rows. No row was dropped for a missing new input. 212 of the 1,502 are over 900; 31 sites.
+
+### The inputs
+
+| `dry_run` | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| All rows | 35.9% | 14.2% | 6.5% | 43.4% |
+| Rivers | 28.2% | 12.3% | 6.6% | 52.8% |
+
+Correlation of `lrain72` with `lrain48`: 0.909. Of `dry3` with `lrain48`: −0.434.
+
+### Brier scores
+
+| Evaluation | Reference | Q1 dry spell | Q2 72 h |
+|---|---|---|---|
+| LOYO, all | 0.09215 | 0.09239 | 0.09165 |
+| LOYO, rivers | 0.13537 | 0.13578 | 0.13448 |
+| LOYO, lakes | 0.02625 | 0.02624 | 0.02636 |
+| LOSO, all | 0.09119 | 0.09107 | 0.09100 |
+| Forward (997 rows), all | 0.08240 | 0.08629 | 0.08207 |
+| LOYO AUC | 0.8164 | 0.8144 | 0.8174 |
+
+LOYO gain over the reference, (site, ISO week) cluster bootstrap, 1,325 clusters:
+
+| | Gain | 95% interval |
+|---|---|---|
+| Q1, all | −0.00024 | −0.00136 to +0.00080 |
+| Q1, rivers | −0.00040 | −0.00219 to +0.00133 |
+| Q2, all | +0.00049 | −0.00014 to +0.00113 |
+| Q2, rivers | +0.00089 | −0.00016 to +0.00196 |
+
+### Question 1: dry spell. Fails conditions 1, 3 and 5.
+
+1. LOYO gain −0.00024. Fails.
+2. LOSO 0.00012 better. Holds.
+3. Forward 0.00389 worse. Fails.
+4. Rivers 0.00041 worse, lakes 0.00001 better: both inside the margin. Holds.
+5. `dry3_x_lrain48` is −0.212 per SD. Fails. In these samples, rain after a dry spell gives *fewer* exceedances than the
+   same rain after wet days, not more. `dry3` alone is +0.049.
+
+### Question 2: 72-hour rain. Fails condition 1.
+
+1. LOYO gain +0.00049, below the 0.0005 margin, and the interval includes zero. Fails.
+2. LOSO 0.00019 better. Holds.
+3. Forward 0.00033 better. Holds.
+4. Rivers 0.00089 better; lakes 0.00011 worse, inside the margin. Holds.
+5. `lrain72` is +0.334 per SD, and `lrain48` falls from 0.651 to 0.418. Holds.
+
+### The per-site lag (description only)
+
+25 bathing waters have 30 or more samples. The window with the highest Spearman rho against log E. coli:
+
+| Window | Sites | Rivers (14) | Lakes (11) |
+|---|---|---|---|
+| 24 h | 6 | 1 | 5 |
+| 48 h | 6 | 3 | 3 |
+| 72 h | 13 | 10 | 3 |
+
+The statement expected 48 hours at most sites. That was wrong: 10 of the 14 rivers rank best on 72 hours. Two
+examples: Severn at Ironbridge 0.114 (24 h), 0.555 (48 h), 0.597 (72 h); Wharfe at Wilderness Carpark 0.445, 0.532,
+0.659. At the Windermere sites the picks scatter: Lakeside YMCA 72 h (0.045, 0.256, 0.340), Millerground 24 h (0.538,
+0.534, 0.517), Rayrigg 24 h, Fellfoot 72 h with all three near zero. The full table is in the JSON.
+
+### What this shows
+
+- **Tim's dry-day multiplier does not carry over to this model.** The sign is the opposite of his. One reading: after
+  a dry spell, soil soaks up the first rain, so less runs off; after wet days, the same rain runs straight in. Another:
+  `dry3` and `lrain48` are correlated (−0.43), so the product partly re-describes rain the model already has. This
+  test cannot tell which. His multiplier was fitted to Waterhead's small streams, which are not in these samples.
+- **A longer window helps rivers, by a little, but not enough to clear the bar.** The 72-hour arm improved every
+  evaluation except lakes, and 10 of 14 rivers prefer it. But the gain is inside the noise for all rows, so by the
+  rule stated above nothing changes.
+- The per-site table was read after the run. Any rule built from it, such as "72 hours on rivers only", would be fitted
+  to these samples. It needs its own statement and data this test has not seen: the 2027 season's EA samples, or
+  Tim's Waterhead and Lakeside counts.
+
+### What follows
+
+Nothing is adopted. The harness stays for the next test of the same kind.
