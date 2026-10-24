@@ -325,7 +325,14 @@ paper, as the site's first screen looked in the fifth round.
   stack it was.
 - **Prose pages:** one 720 px column, serif headings, 17 px text, a summary box where a page has an
   answer in a few lines, and the shared foot: one line about what the site is, then the small links.
-- **Accuracy page:** first the forecasts as warnings (4 October 2026): a plain sentence with the figures, the
+- **Accuracy page:** since 24 October 2026 (review C5), a one-screen summary opens it, under the lede: four
+  figures in the ruled definition list, one sentence each (spills warned of, warnings that came true, pairs ranked
+  the right way round, lower error live), then the warnings by company in one line, computed from the scorer's rows
+  (the share warned of at the company the model learned from, the other companies together, and the range among
+  those with 100 spill forecasts or more), then the contents list, which now starts with the warnings and In short.
+  Every figure comes from `verification.json`; none is written in. The held-out year's lower error and the count of
+  lab samples, tiles until then, are in In short. The rest below keeps its order. Before that the page opened with
+  the forecasts as warnings (4 October 2026): a plain sentence with the figures, the
   share right always beside what saying "no" every time gets right, then a two-by-two table of hits, misses,
   false alarms and correct quiet days, each count over its name so it fits a 320 px phone. Under it (11 October
   2026) the warnings by company, a sentence and a table, since most hits were at the one company the model
@@ -1165,6 +1172,14 @@ gives all four navigation links a single full-width row.
   and to a gauge or sensor, stay in km, as the model counts them.
 - Before a starting place is chosen, a tile asks for one, with "Use my location" as its button, so no
   words sit on the picture below the band.
+- Under that tile since 24 October 2026 (review C6, "the page is empty until a place is typed"): "Most spots at
+  low risk today", the three areas with the most spots of the chosen kind at low risk on the day, each a row
+  that starts the plan from the middle of the area's spots, at the distance that reaches them all (50 miles at
+  most): "Cumbria and the Lake District / 8 of 25 spots at low risk today, within 30 miles" (`planAreas` in
+  `plan.js`). Where "Near me" on the list has already taken your position on this page, the plan starts from
+  it at once, as before. The page never asks for a position to fill this, and the position is still kept in no
+  storage: the privacy notice says it "is not stored, and it is gone when you close the page", so a new page
+  load suggests areas instead.
 - "Compare these spots" (20 October 2026; the outside review asked "which of these places should I
   look into further for Saturday?" without leaving the plan): a fold under the groups and before "Share
   this plan", as Compare is under the cards on the Saved page. Three selects, offered in the plan's own

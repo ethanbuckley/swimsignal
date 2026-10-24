@@ -102,8 +102,10 @@ test('shares that round alike get a second decimal place', async () => {
 test('the held-out ranking is pairs, never a percentage that reads as a share of forecasts right', async () => {
   // The 2025 test as verification.json carries it: AUC 0.93, 33% lower error.
   const ho = {model: 'dipcast', n: 826725, brier: 0.0661, log_loss: 0.24, auc: 0.9312, brier_skill_vs_clim: 0.331};
-  const t = text((await render({...live({warning_table: SPILL, overall: OVERALL}), holdout: [ho]})).short.innerHTML);
-  assert.match(t, /Pairs ranked the right way round 93 in 100 Given one overflow-day that spilled and one that did not, the forecast gave the spill the higher chance 93 times in 100\. A ranking, not a share of forecasts right\./);
+  const els = await render({...live({warning_table: SPILL, overall: OVERALL}), holdout: [ho]});
+  const top = text(els.top.innerHTML), t = text(els.short.innerHTML);
+  assert.match(top, /Pairs ranked the right way round 93 in 100 A ranking of spill days above dry days, not a share of forecasts right: United Utilities, 2025, a year the model never saw\./);
+  assert.ok(!/93%/.test(top), top);
   assert.match(t, /the error was 33% lower than always forecasting each overflow's long-run rate\. Given one day that spilled and one that did not, it gave the spill the higher chance 93 times in 100\./);
   assert.ok(!/93%/.test(t) && !/ranked above/.test(t), t);
 });
@@ -182,7 +184,7 @@ test('11 Oct 2026: the climatology row has its own AUC, and the error is said ag
   assert.ok(!/Climatology [^)]*\) 0\.0349 0\.500/.test(l));
   assert.match(a, /Read as a chance, its error is 29% lower than each overflow's long-run rate\. That rate is an easy test here: it averaged 9\.7% a day, against 2\.8% observed\. A flat forecast at the period's own rate, 2\.8% every day, is harder to beat\. Against it the error is 7\.6% lower\./);
   assert.match(a, /At 5 of the 9 companies, that flat forecast scored better than SwimSignal\./);
-  assert.match(s, /Lower error, live 29% Against each overflow's long-run rate\. Against a flat forecast at this period's own rate, 7\.6% lower\./);
+  assert.match(text(els.top.innerHTML), /Lower error, live 29% Read as a chance, against each overflow's long-run rate, and 7\.6% lower against a flat forecast at this period's own rate\./);
   assert.match(s, /which ran high: 9\.7% a day against 2\.8% observed\. It is 7\.6% lower than a flat forecast at this period's own rate\./);
 });
 
@@ -192,7 +194,9 @@ test('11 Oct 2026: the warnings by company, and plainly that outside United Util
   assert.match(a, /208 of the 223 warnings that came true were at United Utilities, the one company the spill model learned from\. At the other 8 companies, 638 forecasts were for a day with a spill, and 15 of them were warnings\. So outside United Utilities, the High risk line has caught few spills so far\. At 5 of them, every warning it gave was a false alarm\./);
   assert.match(a, /Company Spill days Warned of Warnings False alarms United Utilities 697 208 474 266 Yorkshire Water 220 8 23 15 Anglian Water 127 0 8 8/);
   assert.match(a, /Southern Water 10 0 16 16/);
-  assert.match(s, /208 of the 223 warnings that came true were at United Utilities, where the spill model was trained\. At the other companies, 15 of 638 forecasts for a day with a spill were warnings\./);
+  assert.match(s, /Live warnings, mostly at one company: 208 of the 223 warnings that came true were at United Utilities, where the spill model was trained\. At the other companies, 15 of 638 forecasts for a day with a spill were warnings\./);
+  // The summary's one line: shares warned of, and the range among companies with 100 or more spill forecasts.
+  assert.match(text(els.top.innerHTML), /By company, it warned of 30% of spills at United Utilities, the one company the spill model learned from, and 2% at the other 8 companies, from 0% at Anglian Water to 4% at Yorkshire Water\./);
   // Without the by-company rows (a file from before 11 Oct 2026) the section renders as before.
   const old = text((await render({live: {...OCT11, warning_table: {...OCT11.warning_table, by_company: undefined}}})).answer.innerHTML);
   assert.ok(!/came true were at/.test(old) && /warned of 17% of spills/.test(old));
@@ -225,4 +229,50 @@ test('In short says the spot level is not yet scored, and links the pre-registra
     assert.match(s, /The level you see on a spot's page is not yet scored; its spill part is, above\. How it will be scored from 2027 is fixed in the pre-registration ?\./);
     assert.match(els.short.innerHTML, /PREREGISTRATION-2027\.md#amendment-1/);
   }
+});
+
+// The data of 24 Oct 2026, in short: the hits had spread beyond United Utilities, and the scorer had a row for
+// overflows with no company. The by-company words follow the data, and that row is not a company.
+const OCT24 = {...OCT11, warning_table: {...OCT11.warning_table, n: 117324, hits: 1602, misses: 3902, false_alarms: 2238,
+  hit_rate: 1602 / 5504, warnings_true: 1602 / 3840, base_rate: 5504 / 117324,
+  by_company: [wc('United Utilities', 1272, 507, 1325), wc('Wessex Water', 1048, 410, 854), wc('Yorkshire Water', 790, 126, 272),
+    wc('Anglian Water', 583, 31, 99), wc('Severn Trent Water', 499, 29, 113), wc('Thames Water', 470, 184, 648),
+    wc('Southern Water', 381, 169, 288), wc('South West Water', 313, 134, 219), wc('Northumbrian Water', 78, 12, 22), wc('unknown', 70, 0, 0)]}};
+
+test('24 Oct 2026: by company says what the data says, and the row with no company is not counted as one', async () => {
+  const els = await render({live: OCT24});
+  const top = text(els.top.innerHTML), a = text(els.answer.innerHTML), s = text(els.short.innerHTML);
+  assert.match(top, /Spills warned of 29% Since 29 Sept? 2026, 1,602 of 5,504 forecasts for a day with a spill gave a High risk warning\./);
+  assert.match(top, /Warnings that came true 42% 1,602 of 3,840 warnings were followed by a spill, against 4\.7% of all forecasts\./);
+  assert.match(top, /By company, it warned of 40% of spills at United Utilities, the one company the spill model learned from, and 26% at the other 8 companies, from 5% at Anglian Water to 44% at Southern Water\./);
+  assert.match(a, /At the other 8 companies, 4,162 forecasts were for a day with a spill, and 1,095 of them were warnings\./);
+  assert.ok(!/caught few spills/.test(a), a);
+  assert.match(s, /Live warnings, by company: 507 of the 1,602/);
+  assert.ok(!/mostly at one company/.test(s), s);
+});
+
+test('a live error above the long-run rate is said as higher, never as a negative lower', async () => {
+  const top = text((await render({live: {...OCT11, overall: {...OCT11.overall, calibrated: {...OCT11.overall.calibrated, brier: 0.05}}}})).top.innerHTML);
+  assert.match(top, /Higher error, live 43% Read as a chance/);
+  assert.ok(!/-\d+%/.test(top), top);
+});
+
+// The page as the build writes it: the boxes filled in place, in the page's own order.
+test('the four figure tiles come first, before any h2, then the by-company line, then the contents (review C5)', async () => {
+  const prerender = require('../scripts/prerender_verification.js').prerender;
+  const out = await prerender(html, {live: OCT24, holdout: [{model: 'dipcast', n: 826725, auc: 0.9296, brier_skill_vs_clim: 0.3347}]});
+  let page = html;
+  for (const id of ['top', 'answer', 'short', 'live', 'offline']) page = page.replace(new RegExp(`<div id="${id}">[\\s\\S]*?</div>`), () => `<div id="${id}">${out[id]}</div>`);
+  const body = page.slice(page.indexOf('<main'), page.indexOf('<script>'));
+  const firstH2 = body.indexOf('<h2'), tiles = [...body.matchAll(/<div class="stat">/g)].map(m => m.index);
+  assert.equal(tiles.length, 4);
+  assert.ok(tiles.every(i => i < firstH2), 'a tile after the first h2');
+  assert.ok(body.indexOf('<p>By company,') > tiles[3] && body.indexOf('<p>By company,') < firstH2);
+  assert.match(body.slice(firstH2), /^<h2 id="toc-h">On this page<\/h2>/);
+  // Then everything else in the order it had: the warnings, In short, how to read the numbers, live, offline.
+  const at = s => body.indexOf(s);
+  assert.ok(at('id="warnings-h"') < at('id="short-h"') && at('id="short-h"') < at('id="reading"') && at('id="reading"') < at('id="live-scoring"')
+    && at('id="live-scoring"') < at('id="holdout"'), 'order');
+  assert.match(out.top, /<li><a href="#warnings">Warnings, misses and false alarms<\/a><\/li><li><a href="#in-short">In short<\/a><\/li>/);
+  assert.ok(out.short.includes('<section class="summary" id="in-short"'));
 });

@@ -264,12 +264,12 @@ decision. A pilot is bounded in writing:
 - a fixed end date and a short written review at the end.
 
 It is not a safety certificate, a water test or a guarantee. The pilot agreement says so in its first
-lines, with the live figures: outside United Utilities, the High line has warned of about 2% of spills
-so far, 23 of 1,402 forecasts made for a day with a spill (verification page, 20 Oct 2026). Those are
-forecasts, counted at each of up to five lead times, not spill days (PR #269). By 23 Oct, after a wet
-week, it was 1,095 of 4,232, about a quarter, but still under 6% in Anglian Water's and Severn Trent's
-areas (verification page, read 24 Oct 2026). The figure moves fast, so any document quotes it with its
-date and by company.
+lines, with the live figures: outside United Utilities, the High line has warned of about 26% of spills
+so far, 1,095 of 4,162 forecasts made for a day with a spill, and 29% overall (1,602 of 5,504; verification
+page built 24 Oct 2026 19:52 BST, target days 29 Sep to 23 Oct). Those are forecasts, counted at each of
+up to five lead times, not spill days (PR #269). The figure moves with the weather: on 20 Oct it was about
+2% (23 of 1,402). The week from 19 Oct had spills on 11% of overflow-days against about 3% in each week
+before, and it brought most of both counts. Read it again on the day an agreement is signed.
 
 **Prices to test (hypotheses, not evidence).** £49–£99 a month for a centre; £150–£300 an event. These
 come from the 20 Oct review and are unvalidated. River Truth's live dashboards sell at £15–£49 a month

@@ -185,10 +185,38 @@ function betterDay(spots, day, dates) {
 }
 // The next distance that reaches a spot this far away, or 0 (any distance).
 const reachFor = miles => RADII.find(r => r >= miles) || 0;
+
+// ------------------------------------------------------------------------------ where a plan starts
+// Where a plan starts when neither its address nor the plan kept in this browser names a place: your position
+// if this page already has it, because "Near me" on the list took it (here); else nowhere, and the page
+// suggests areas (planAreas). The page never asks for a position to start a plan: a prompt nobody asked for is
+// hostile, and the privacy notice promises it only on "Near me" or "Use my location". The position is kept
+// in no storage, as the notice says, so a new page load starts without it.
+const planStart = (from, here) => from || (Array.isArray(here) && here.length === 2 ? { here: true } : null);
+// The areas (spots.csv's `area`) with the most spots of the plan's kind at low risk on its day, most first, then
+// by name: at most n, and only those with one or more at low risk. Each as a place to start a plan from: the
+// middle of its spots (mean position, rounded for the address), and the distance that reaches all of them,
+// at most the longest offered so a plan from the middle of a wide area still has a ring. None while any spot
+// has no area, as the list's A-Z groups. milesBetween(a, b): straight-line miles between [lat, lon] pairs.
+function planAreas(spots, p, milesBetween, n = 3) {
+  const R = planRules(), xs = spots.filter(s => kindMatch(s, p.kind));
+  if (!xs.length || spots.some(s => !s.area)) return [];
+  const by = new Map();
+  for (const s of xs) { if (!by.has(s.area)) by.set(s.area, []); by.get(s.area).push(s); }
+  const mean = v => v.reduce((a, b) => a + b, 0) / v.length, round = x => Math.round(x * 1e4) / 1e4;
+  return [...by].map(([area, ys]) => {
+    const lat = round(mean(ys.map(s => s.lat))), lon = round(mean(ys.map(s => s.lon)));
+    const far = Math.max(...ys.map(s => milesBetween([lat, lon], [s.lat, s.lon])));
+    return { area, lat, lon, total: ys.length, low: ys.filter(s => R.dayLevel(s, p.day) === 'low').length,
+      within: reachFor(far) || RADII[RADII.length - 1] };
+  }).filter(a => a.low > 0).sort((a, b) => b.low - a.low || a.area.localeCompare(b.area)).slice(0, n);
+}
+// The address of a plan from one of those areas: the plan as it stands, from the area's middle, at its distance.
+const planFromArea = (a, p) => planHash({ day: p.day, kind: p.kind, within: a.within, from: { name: a.area, lat: a.lat, lon: a.lon } });
 const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10 ? Math.round(m * 10) / 10 : Math.round(m);
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
-    planGroup, planSpots, betterDay, reachFor, milesAway };
+    planGroup, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
 }

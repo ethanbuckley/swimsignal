@@ -191,12 +191,12 @@ figures. OP5 and the switch-over in OP7 wait for a written commitment.
 - **Insurance gaps.** Standard wordings exclude advice from public liability and may exclude
   technology errors, data-feed failures and communicable disease from professional indemnity [agent].
   Buy through a broker who has read the agreement.
-- **The forecast's record outside United Utilities.** About 2% of spills warned so far: 23
-  of 1,402 forecasts made for a day with a spill, counted at each lead time, not spill days
-  (verification page, 20 Oct 2026; PR #269). Say so in the agreement and before any price is named.
-  By 23 Oct, after a wet week, it was 1,095 of 4,232, about a quarter, but still under 6% in Anglian
-  Water's and Severn Trent's areas (verification page, read 24 Oct 2026). Quote it with its date and by
-  company: it moves fast.
+- **The forecast's record outside United Utilities.** About 26% of spills warned so far: 1,095
+  of 4,162 forecasts made for a day with a spill, counted at each lead time, not spill days; 29%
+  overall (verification page built 24 Oct 2026 19:52 BST, target days 29 Sep to 23 Oct; PR #269).
+  On 20 Oct it was about 2% (23 of 1,402): one wet week from 19 Oct brought most of both counts.
+  The figure moves with the weather, so read it on the day and say so in the agreement before any
+  price is named.
 - **Met Office share-alike.** If a briefing counts as Adapted Material of the Met Office's rainfall,
   it goes out under CC BY-SA 4.0 and the agreement cannot forbid passing it on [agent: CC BY-SA s.3(b)].
   The draft lets customers share briefings whole; Open-Meteo or the Met Office can settle it in writing.

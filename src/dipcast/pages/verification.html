@@ -52,8 +52,9 @@ td.bars { width:38%; padding-top:10px; }
 <h1>How good is the forecast?</h1>
 <p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did. This page updates itself. It also shows the offline tests the model was built on. How the forecast is made is on the <a href="/methods">method page</a>.</p>
 
+<div id="top"><p class="muted">Loading the scores…</p></div>
 <div id="answer"></div>
-<div id="short"><p class="muted">Loading the scores…</p></div>
+<div id="short"></div>
 
 <details class="fold" id="reading"><summary>How to read the numbers</summary>
 <p>The Brier score is the mean squared difference between a probability and what happened (0 or 1). Lower is better; 0 is perfect. Climatology means always forecasting the long-run average. Skill is how far below climatology's Brier score the forecast gets, as a fraction: 0 is no better than the average, 1 is perfect. AUC is how well the forecast ranks spill days above dry days: 0.5 is random, 1 is perfect. A reliability table checks that days forecast at 30% happen about 30% of the time.</p>
@@ -294,7 +295,8 @@ async function main() {
   }
   document.getElementById('offline').innerHTML = scrolling(o);
   document.getElementById('answer').innerHTML = answer(d);
-  document.getElementById('short').innerHTML = inShort(d) + contents();
+  document.getElementById('short').innerHTML = inShort(d);
+  document.getElementById('top').innerHTML = summary(d) + contents();
   // The sections exist only now, so a link to one (#reliability, the In short list's #live-scoring) scrolls here.
   if (location.hash) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
 }
@@ -354,10 +356,12 @@ function grid(T, label, yes, no, quiet) {
 // The warnings by company (forecast_log: warning_table.by_company), computed by the scorer (11 Oct 2026). The
 // headline figures are mostly one company's: 208 of the 223 hits were at United Utilities, the one company the
 // spill model learned from. Said in a sentence, with the table under it.
+// The scorer's row for overflows it could not tie to a company: counted in the table, never as one of the companies.
+const NO_COMPANY = 'unknown';
 function companyWarnings(W) {
   const C = W.by_company;
   if (!C || !C.length) return '';
-  const own = C.find(r => r.company === W.trained_on), rest = C.filter(r => r !== own);
+  const own = C.find(r => r.company === W.trained_on), rest = C.filter(r => r !== own && r.company !== NO_COMPANY);
   const sum = k => rest.reduce((a, r) => a + r[k], 0), spills = sum('hits') + sum('misses'), hits = sum('hits');
   const allFalse = rest.filter(r => r.false_alarms && !r.hits).length;
   let s = '';
@@ -444,44 +448,74 @@ function serviceSection(S) {
   t += `<p class="small muted">The schedule asks GitHub for a run every 30 minutes, ${S.scheduled_per_day} a day. GitHub starts scheduled runs when it has capacity, and a change to the site's code starts one too; both count here, as does a run that failed after polling the feeds. The live scores use the forecast out by 08:00 each day. A company feed that returns nothing leaves its overflows on their last status, shown as not reporting.</p>`;
   return t;
 }
-// The page's answer: the four figures that matter as tiles, then a few plain lines, from the same
-// data as the tables below.
+// The live error read as a chance: how much lower than each overflow's long-run rate (null with nothing scored),
+// and against a flat forecast at the period's own rate, in words ('' without that baseline).
+function liveError(L) {
+  const O = L.overall || {};
+  const skill = L.n_scored && L.overall ? Math.round(100 * (1 - O.calibrated.brier / O.climatology_brier)) : null;
+  const flat = O.period_base_rate_brier ? 1 - O.calibrated.brier / O.period_base_rate_brier : null;
+  return {skill, flatBy: flat === null ? '' : `${(100 * Math.abs(flat)).toFixed(1)}% ${flat > 0 ? 'lower' : 'higher'}`};
+}
+// The page's one-screen answer: the four figures that matter as tiles, one sentence each, then the warnings by
+// company in one line. Fourteen sections follow, and the figures used to sit under two paragraphs and a table.
+// Every figure is computed from the same data as the sections below, never written in.
+function summary(d) {
+  const L = d.live || {}, W = L.warning_table || {}, ho = (d.holdout || [])[0], {skill, flatBy} = liveError(L);
+  const tile = (v, l, dd) => `<div class="stat"><dt class="l">${l}</dt><dd class="v">${v}</dd><dd class="d">${dd}</dd></div>`;
+  const live = !!W.n, spills = W.hits + W.misses, warnings = W.hits + W.false_alarms;
+  const tiles = [
+    tile(live && W.hit_rate !== null ? p0(W.hit_rate) : '–', 'Spills warned of', !live ? 'Nothing scored yet.' : !spills ? 'No spill to warn of yet.'
+      : `Since ${day(W.first_day)}, ${n0(W.hits)} of ${n0(spills)} forecasts for a day with a spill gave a High risk warning.`),
+    tile(live && W.warnings_true !== null ? p0(W.warnings_true) : '–', 'Warnings that came true', !live ? 'Nothing scored yet.' : !warnings ? 'It gave no warnings.'
+      : `${n0(W.hits)} of ${n0(warnings)} warnings were followed by a spill, against ${pLow(W.base_rate)} of all forecasts.`),
+    // The AUC as pairs, not a percentage: "93%" beside a share of spills warned of read as the share of forecasts
+    // right, and 93% is also NSW Beachwatch's headline accuracy, a different measure.
+    tile(ho ? `${Math.round(100 * ho.auc)} in 100` : '–', 'Pairs ranked the right way round', ho ? 'A ranking of spill days above dry days, not a share of forecasts right: United Utilities, 2025, a year the model never saw.' : 'No offline test loaded.'),
+    // A live error above the long-run rate is said as higher, never as a negative "lower".
+    tile(skill === null ? '–' : `${Math.abs(skill)}%`, skill !== null && skill < 0 ? 'Higher error, live' : 'Lower error, live', skill === null ? 'Nothing scored yet.'
+      : `Read as a chance, against each overflow's long-run rate${flatBy ? `, and ${flatBy} against a flat forecast at this period's own rate` : ''}.`),
+  ].join('');
+  return `<dl class="stats">${tiles}</dl>${companyLine(W)}`;
+}
+// The warnings by company in one line: the share of spills warned of at the company the spill model learned from,
+// against the other companies together, and the range among those with enough spills for a share to mean
+// something. Computed from the scorer's rows, because the balance between the companies moves as days are added.
+function companyLine(W) {
+  const C = (W.by_company || []).filter(r => r.company !== NO_COMPANY), own = C.find(r => r.company === W.trained_on);
+  const spills = r => r.hits + r.misses, rest = C.filter(r => r !== own);
+  const rs = rest.reduce((a, r) => a + spills(r), 0), rh = rest.reduce((a, r) => a + r.hits, 0);
+  if (!own || !spills(own) || !rs) return '';
+  const big = rest.filter(r => spills(r) >= 100).map(r => ({...r, rate: r.hits / spills(r)})).sort((a, b) => a.rate - b.rate);
+  const range = big.length >= 2 ? `, from ${p0(big[0].rate)} at ${big[0].company} to ${p0(big[big.length - 1].rate)} at ${big[big.length - 1].company}` : '';
+  return `<p>By company, it warned of ${p0(own.hits / spills(own))} of spills at ${own.company}, the one company the spill model learned from, and ${p0(rh / rs)} at the other ${rest.length} compan${rest.length === 1 ? 'y' : 'ies'}${range}. <a href="#warnings">Warnings by company</a></p>`;
+}
+// A few plain lines under the warnings, from the same data as the tables below.
 function inShort(d) {
   const L = d.live || {}, ho = (d.holdout || [])[0], hi = (d.reliability || []).find(r => r.lo === 0.8), E = L.ecoli_live || {}, pts = [];
-  const liveSkill = L.n_scored && L.overall ? Math.round(100 * (1 - L.overall.calibrated.brier / L.overall.climatology_brier)) : null;
+  const {skill: liveSkill, flatBy} = liveError(L);
   // Live calibration, said plainly: the bin with at least 200 days whose forecast is furthest above what happened,
   // when it ran at least half again too high; and whether the flat hindsight forecast beat the live Brier.
   const runsHigh = (L.reliability || []).filter(r => r.n >= 200 && r.forecast >= 1.5 * r.observed && r.forecast - r.observed >= 0.05)
     .sort((a, b) => (b.forecast - b.observed) - (a.forecast - a.observed))[0];
   const flatWins = L.overall && L.overall.period_base_rate_brier !== undefined && L.overall.period_base_rate_brier < L.overall.calibrated.brier;
-  // Target days with scores, counted by the scorer (11 Oct 2026: this was the span from the first scored day to
-  // the last, "12 target days", while the answer above said 10: 8 and 9 Oct had nothing scored). Without the
-  // count, from coverage_from to the day before the scores were computed, as before.
+  // Target days with scores, counted by the scorer, not the span from the first scored day to the last, which
+  // can have days with nothing scored. Without the count, from coverage_from to the day before the scores were
+  // computed.
   const n = scoredDays(L) ?? (L.coverage_from && L.generated_at ? Math.floor((new Date(L.generated_at) - new Date(L.coverage_from + 'T00:00:00')) / 864e5) : null);
   const short = n !== null && n >= 1 && n < 14 ? n : 0;
-  const O = L.overall || {}, flatSkill = O.period_base_rate_brier ? 1 - O.calibrated.brier / O.period_base_rate_brier : null;
-  const flatBy = flatSkill === null ? '' : `${(100 * Math.abs(flatSkill)).toFixed(1)}% ${flatSkill > 0 ? 'lower' : 'higher'}`;
+  const O = L.overall || {};
   const flatWords = flatBy && `${flatBy} than a flat forecast at this period's own rate`;
   const WT = L.warning_table || {}, own = (WT.by_company || []).find(r => r.company === WT.trained_on);
   const eo = E.overall, eSkill = eo && eo.climatology_brier > 0 ? 1 - eo.brier / eo.climatology_brier : null;
   const ecoliVerdict = eSkill === null ? 'scored' : eSkill <= 0 ? 'no better than the average rate' : eSkill < 0.05 ? 'about the same as the average rate' : `${Math.round(100 * eSkill)}% lower error than the average rate`;
-  const tile = (v, l, dd) => `<div class="stat"><dt class="l">${l}</dt><dd class="v">${v}</dd><dd class="d">${dd}</dd></div>`;
-  // The AUC as pairs, not a percentage (4 Oct 2026): "93%" under "warned of 21% of spills" read as the share of
-  // forecasts right, and 93% is also NSW Beachwatch's headline accuracy, a different measure.
   const pairs = ho ? `${Math.round(100 * ho.auc)} times in 100` : '';
-  const tiles = [
-    ho ? tile(`${Math.round(100 * ho.auc)} in 100`, 'Pairs ranked the right way round', `Given one overflow-day that spilled and one that did not, the forecast gave the spill the higher chance ${pairs}. A ranking, not a share of forecasts right. On a year the model never saw: ${ho.n.toLocaleString()} overflow-days, United Utilities, 2025.`) : '',
-    ho ? tile(`${Math.round(100 * ho.brier_skill_vs_clim)}%`, 'Lower error than the long-run rate', 'Same test. The long-run rate is each overflow\'s own average spill rate.') : '',
-    tile(liveSkill === null ? '–' : `${liveSkill}%`, 'Lower error, live', liveSkill === null ? 'Nothing scored yet.' : `Against each overflow's long-run rate.${flatBy ? ` Against a flat forecast at this period's own rate, ${flatBy}.` : ''} ${scoredWords(L)}.`),
-    tile(E.n_samples ? E.n_samples.toLocaleString() : '0', 'Lab samples scored', E.n_samples ? `Environment Agency E. coli samples at ${E.n_sites} site${E.n_sites === 1 ? '' : 's'} so far.` : 'No Environment Agency E. coli samples scored yet.'),
-  ].join('');
   if (ho) pts.push(`<b>Spill forecasts, on a year the model never saw</b> (${ho.n.toLocaleString()} overflow-days at United Utilities in 2025): the error was ${Math.round(100 * ho.brier_skill_vs_clim)}% lower than always forecasting each overflow's long-run rate. Given one day that spilled and one that did not, it gave the spill the higher chance ${pairs}.`);
   if (hi) pts.push(`<b>Offline, over-confident at the top end:</b> days forecast at about ${Math.round(100 * hi.forecast)}% had a spill ${Math.round(100 * hi.observed)}% of the time.`);
   if (L.n_scored && L.overall) {
     pts.push(`<b>Live, against what the overflows then did:</b> ${scoredWords(L)}. The error is ${liveSkill}% lower than each overflow's long-run rate${O.climatology_mean !== undefined ? `, which ran high: ${pct(O.climatology_mean)} a day against ${pct(O.calibrated.base_rate)} observed` : ''}.${flatWords ? ` It is ${flatWords}.` : ''}${short ? ` ${short} day${short === 1 ? ' is' : 's are'} too few to judge across different weather.` : ''} <a href="#live-scoring">Details</a>`);
     // Whose spills the warnings caught (11 Oct 2026): the headline figures are mostly the training company's.
-    if (own && WT.hits) { const rest = WT.by_company.filter(r => r !== own), sp = rest.reduce((a, r) => a + r.hits + r.misses, 0), h = rest.reduce((a, r) => a + r.hits, 0);
-      pts.push(`<b>Live warnings, mostly at one company:</b> ${n0(own.hits)} of the ${n0(WT.hits)} warnings that came true were at ${own.company}, where the spill model was trained.${sp ? ` At the other companies, ${n0(h)} of ${n0(sp)} forecasts for a day with a spill were warnings.` : ''} <a href="#warnings">Warnings by company</a>`); }
+    if (own && WT.hits) { const rest = WT.by_company.filter(r => r !== own && r.company !== NO_COMPANY), sp = rest.reduce((a, r) => a + r.hits + r.misses, 0), h = rest.reduce((a, r) => a + r.hits, 0);
+      pts.push(`<b>Live warnings${own.hits > WT.hits / 2 ? ', mostly at one company' : ', by company'}:</b> ${n0(own.hits)} of the ${n0(WT.hits)} warnings that came true were at ${own.company}, where the spill model was trained.${sp ? ` At the other companies, ${n0(h)} of ${n0(sp)} forecasts for a day with a spill were warnings.` : ''} <a href="#warnings">Warnings by company</a>`); }
     const flat = `a flat forecast at this period's own spill rate scored better (Brier ${f(L.overall.period_base_rate_brier)} against ${f(L.overall.calibrated.brier)})`;
     if (runsHigh) pts.push(`<b>Live, the forecast runs high:</b> days forecast at ${Math.round(100 * runsHigh.lo)}–${Math.round(100 * runsHigh.hi)}% had a spill ${Math.round(100 * runsHigh.observed)}% of the time${flatWins ? `, and ${flat}` : ''}. <a href="#reliability">Reliability</a>`);
     else if (flatWins) pts.push(`<b>Live, the forecast is pitched at the wrong level:</b> ${flat}. <a href="#live-scoring">Details</a>`);
@@ -494,12 +528,15 @@ function inShort(d) {
   // speak per spot. Removed when the spot level is scored (A5, pre-registration Amendment 1).
   pts.push(`<b>The sewage spill risk</b> is a 0–100 score for sewage from upstream reaching the spot. It is a score, not a probability. Its spill part is scored above against what the overflows did; its travel speed, die-off and dilution were fitted to Environment Agency water samples on 17 October 2026, not measured (<a href="/methods#rough">how</a>). The samples could not show whether its lake steps help.`);
   pts.push(`<b>The level you see on a spot's page is not yet scored;</b> its spill part is, above. How it will be scored from 2027 is fixed in the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md#amendment-1-12-october-2026-a-score-for-a-spots-level">pre-registration</a>.`);
-  return `<dl class="stats">${tiles}</dl><section class="summary" aria-labelledby="short-h"><h2 id="short-h">In short</h2><ul>${pts.map(x => `<li>${x}</li>`).join('')}</ul></section>`;
+  return `<section class="summary" id="in-short" aria-labelledby="short-h"><h2 id="short-h">In short</h2><ul>${pts.map(x => `<li>${x}</li>`).join('')}</ul></section>`;
 }
-// The contents, from the sections the data produced.
+// The contents, from the sections the data produced. It sits above them all, so it starts with the warnings and
+// In short.
 function contents() {
-  const items = [...document.querySelectorAll('#live section[id] > h2, #offline section[id] > h2')].map(h => `<li><a href="#${h.parentElement.id}">${h.textContent}</a></li>`);
+  const first = [document.getElementById('answer').innerHTML ? ['warnings', 'Warnings, misses and false alarms'] : null, ['in-short', 'In short']].filter(Boolean);
+  const items = [...first.map(([id, h]) => `<li><a href="#${id}">${h}</a></li>`),
+    ...[...document.querySelectorAll('#live section[id] > h2, #offline section[id] > h2')].map(h => `<li><a href="#${h.parentElement.id}">${h.textContent}</a></li>`)];
   return items.length ? `<nav class="toc" aria-labelledby="toc-h"><h2 id="toc-h">On this page</h2><ol>${items.join('')}</ol></nav>` : '';
 }
-main().catch(e => { document.getElementById('short').innerHTML = ''; document.getElementById('live').innerHTML = `<p class="muted">Could not load verification data: ${e.message}</p>`; });
+main().catch(e => { document.getElementById('top').innerHTML = ''; document.getElementById('live').innerHTML = `<p class="muted">Could not load verification data: ${e.message}</p>`; });
 </script></body></html>

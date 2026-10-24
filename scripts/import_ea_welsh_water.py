@@ -4,12 +4,12 @@ files are under the Open Government Licence (docs/WALES-PLAN-2026-10.md, section
 hindcast (scripts/hindcast_wales.py, set A2) can use them.
 Nothing here reaches the site. Off CI, run by hand:
 
-    uv run python scripts/import_ea_welsh_water.py
+    uv run python scripts/import_ea_welsh_water.py [--years 2024 2025 2026] [--refresh]
 
-It reads the three workbooks from data/raw/ea_welsh_water/. If they are missing, it downloads them
-through the EA platform's own route (a download-url request that returns a signed link), as the
-dataset page's Download buttons do. The page's older file links, on api.agrimetrics.co.uk, did not
-resolve on 4 Oct 2026.
+The EA publishes the files as one zip per year, shared with scripts/import_ea_events.py and kept in
+data/raw/ea_events/. Any year missing there is found in the dataset page's file list and downloaded
+through the EA platform's signed-link route (edm_events.ea_yearly_zips); --refresh downloads them
+again. Only the Welsh Water member of each zip is read.
 
 Contains Environment Agency data: © Environment Agency copyright and/or database right, licensed
 under the Open Government Licence v3.0.
@@ -17,42 +17,36 @@ under the Open Government Licence v3.0.
 
 from __future__ import annotations
 
+import argparse
 import logging
-from urllib.parse import quote
 
-import httpx
 import pandas as pd
 
 from dipcast import config
 from dipcast.ingest.common import write_parquet
-from dipcast.ingest.edm_events import read_ea_dcww_events
+from dipcast.ingest.edm_events import ea_yearly_zips, ea_zip_members, read_ea_dcww_events
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("import_ea_welsh_water")
 
-FILES = ["Welsh 2024 Detailed EDM Data.xlsx", "Welsh Water 2025 Detailed EDM Data.xlsx",
-         "Welsh Water Detailed Data 2026.xlsx"]
-FILE_API = ("https://environment.data.gov.uk/file-management-open/data-sets/"
-            "c95ecc47-fa70-4a24-b8cc-098232987526/files/{name}/download-url")
-RAW = config.RAW / "ea_welsh_water"
-
-
-def download(name: str) -> None:
-    with httpx.Client(headers=config.EA_HEADERS, timeout=60, follow_redirects=True) as c:
-        r = c.get(FILE_API.format(name=quote(name)))
-        r.raise_for_status()
-        f = c.get(r.json()["url"])
-        f.raise_for_status()
-    (RAW / name).write_bytes(f.content)
-    log.info("downloaded %s (%d bytes)", name, len(f.content))
+RAW = config.RAW / "ea_events"
+YEARS = [2024, 2025, 2026]
+WELSH = "Dwr Cymru Welsh Water"
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--years", type=int, nargs="+", default=YEARS)
+    ap.add_argument("--refresh", action="store_true", help="download the listed zips again")
+    args = ap.parse_args()
     RAW.mkdir(parents=True, exist_ok=True)
-    for name in FILES:
-        if not (RAW / name).exists():
-            download(name)
-    ev = read_ea_dcww_events([RAW / n for n in FILES])
+    files = []
+    for year, zp in sorted(ea_yearly_zips(args.years, RAW, refresh=args.refresh).items()):
+        members = ea_zip_members(zp).get(WELSH, [])
+        if not members:
+            raise SystemExit(f"{zp.name} holds no Welsh Water file ({year})")
+        files.extend(members)
+    ev = read_ea_dcww_events(files)
     write_parquet(ev, config.PROCESSED / "dcww_ea_events.parquet")
 
     ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet", columns=["site_id", "company", "year"])

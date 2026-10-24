@@ -7,12 +7,12 @@
 //   node scripts/prerender_verification.js site/verification.html site/data/verification.json
 //
 // The page may come on stdin, as -.
-// Prints {built, answer, short, live, offline}: built is when the live scores were made (live.generated_at,
-// or null), the rest the HTML of the page's four boxes. The page draws them again only from newer scores.
+// Prints {built, top, answer, short, live, offline}: built is when the live scores were made (live.generated_at,
+// or null), the rest the HTML of the page's five boxes. The page draws them again only from newer scores.
 const fs = require('fs');
 const vm = require('vm');
 
-const BOXES = ['answer', 'short', 'live', 'offline'];
+const BOXES = ['top', 'answer', 'short', 'live', 'offline'];
 // The text of a heading, as textContent gives it (the contents list puts it back into HTML as it is).
 const text = h => h.replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
 

@@ -15,8 +15,8 @@ it happens, meaningfully affects water quality at the spot. Risk is then
 1 - prod(1 - p_i * w_i) over upstream overflows: the chance at least one spill
 reaches the swimmer.
 
-Two options, off by default (config.VELOCITY_MODE, config.DILUTION_MODE), follow
-Dr James Shucksmith's review of 9 Oct 2026:
+Two options, off by default (config.VELOCITY_MODE, config.DILUTION_MODE), take
+speed and dilution from estimated flow:
 
 * velocity "catchment"  each reach moves at its own speed, a power law in its
                         catchment area (reach_velocity). The catchment area is
@@ -31,16 +31,15 @@ Dr James Shucksmith's review of 9 Oct 2026:
                         (urban_spill_m3s). Pre-stated in
                         docs/URBAN-DILUTION-TEST-2026-10.md.
 
-Lakes on the way (config.LAKE_PATH_MODE) follow a note on lakes from a Lake District water-quality
-group (11 Oct 2026). "residence_spill" is the default after the test pre-stated in
-docs/LAKE-RESIDENCE-SPILL-2026-10.md; "lake" was the default from 11 Oct 2026, after the test pre-stated in
-docs/LAKE-PATH-TEST-2026-10.md:
+Lakes on the way (config.LAKE_PATH_MODE): a spill into Grasmere has dissipated by the time the water
+leaves Rydal Water. "residence_spill" is the default after the test pre-stated in
+docs/LAKE-RESIDENCE-SPILL-2026-10.md; "lake" passed the test pre-stated in docs/LAKE-PATH-TEST-2026-10.md:
 
 * lake path "lake"      a WFD lake crossed between an overflow and the spot is treated as the
                         spot's own lake is: its centreline length at LAKE_VELOCITY_MS, and the
                         dilution times 1 / (1 + A / LAKE_A0_KM2) for its area A. Lake-form links
                         outside every WFD polygon (mill ponds, weir pools) stay river.
-* lake path "river"     the rule before: such a lake is walked at river speed, with no lake
+* lake path "river"     such a lake is walked at river speed, with no lake
                         dilution.
 * lake path "residence" passed docs/LAKE-RESIDENCE-TEST-2026-10.md. A WFD lake
                         crossed on the way that has a residence time tau in config.LAKE_RESIDENCE_FILE
@@ -59,7 +58,7 @@ enters the lake to the spot:
 * lake distance "water" the default: the shortest path inside the WFD lake polygons the spot's lake
                         links lie in (model/lake_water.py). It passed docs/LAKE-DISTANCE-2026-10.md.
                         A lake with no WFD polygon (a centreline lake) keeps the straight line.
-* lake distance "line"  the rule before: the straight line. In a lake that bends it crosses land.
+* lake distance "line"  the straight line. In a lake that bends it crosses land.
 
 Within the spot's own lake (config.LAKE_DIRECTION_MODE), which way the water must go:
 
@@ -93,7 +92,7 @@ from dipcast.network.rivers import RiverNetwork, Snap, lonlat_to_bng
 log = logging.getLogger(__name__)
 
 L0_M = 5_000.0          # dilution smoothing length
-DILUTION_POWER = 0.5    # exponent on the length ratio (dilution "length"); fitted, was 1 (docs/TRANSPORT-FIT-TEST-2026-10.md)
+DILUTION_POWER = 0.5    # exponent on the length ratio (dilution "length"); fitted (docs/TRANSPORT-FIT-TEST-2026-10.md)
 LAKE_SNAP_M = 1_500.0   # fallback: a pin this close to a lake centreline is 'in the lake'
 LAKE_SHORE_M = 150.0    # a click this close to a WFD lake polygon counts as in that lake
 LAKE_NAMED_M = 1_000.0  # a lake spot named after a WFD lake this close is in that lake
@@ -145,8 +144,8 @@ def _names_match(cand: pd.DataFrame, want: frozenset[str]) -> pd.Series:
     (Welsh links often have the English name there)."""
     def matches(col: pd.Series) -> pd.Series:
         # A list, not .map: on an empty frame pandas 3 kept the str dtype through .map, and OR-ing two
-        # empty str Series raised (Shilley Pool, 3 Oct 2026); and .map on an arrow string column cost
-        # about 9 ms a call, which the click-anywhere build makes tens of thousands of (13 Oct 2026).
+        # empty str Series raised (Shilley Pool); and .map on an arrow string column cost about 9 ms a
+        # call, which the click-anywhere build makes tens of thousands of.
         return pd.Series([bool(river_words(n) & want) if isinstance(n, str) else False for n in col],
                          index=col.index, dtype=bool)
     alt = cand.get("watercourse_name_alternative", pd.Series(None, index=cand.index, dtype=object))
@@ -237,7 +236,7 @@ def _in_mapped_lake(net: RiverNetwork, links: set[str]) -> bool:
 def _snap_to_links(net: RiverNetwork, x: float, y: float, link_ids: set[str]) -> Snap | None:
     """The nearest of these links; of links equally near, the first by id. A pin nearest a node
     where lake links meet is equally near all of them: Windermere, Lakeside YMCA is 466.6 m from
-    a node three meet at. Taken in set order, the link changed with PYTHONHASHSEED (16 Oct 2026)."""
+    a node three meet at. Taken in set order, the link changed with PYTHONHASHSEED."""
     if not link_ids:
         return None
     pt = Point(x, y)
@@ -262,8 +261,8 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
     `river_hint` is the river the spot is on (spots.csv's `river` column). The pin
     goes to the nearest link carrying that name (or OS's alternative name, so
     "River Wye" finds "Afon Gwy") within HINT_SNAP_M, even when a link of another
-    name is nearer: Crook o' Lune sat 262 m from Escow Beck and 672 m from the Lune
-    and was traced up the beck, finding no overflows (2 Oct 2026). With no such link
+    name is nearer: Crook o' Lune sits 262 m from Escow Beck and 672 m from the Lune,
+    and traced up the beck it finds no overflows. With no such link
     the nearest is kept, with a warning. Ignored for lakes."""
     x, y = lonlat_to_bng(lon, lat)
     pin = _locate(net, x, y, kind_hint, name)
@@ -277,9 +276,9 @@ def locate_pin(net: RiverNetwork, lon: float, lat: float, kind_hint: str | None 
 def spot_hints(kind, river) -> tuple[str | None, str | None]:
     """locate_pin's `kind_hint` and `river_hint` for a listed spot, from its spots.csv `kind` and `river`:
     the kind only when it is 'lake' or 'river', the river only for a spot that is not a lake. The site
-    build and the E. coli evaluation (scripts/eval_pins.py) both place spots with it. Until 12 Oct 2026
-    the evaluation passed no hints, and put Colwick West Lake on the River Trent, 357 overflows that the
-    site does not count (docs/EVAL-PINS-TEST-2026-10.md)."""
+    build and the E. coli evaluation (scripts/eval_pins.py) both place spots with it. With no hints
+    the evaluation put Colwick West Lake on the River Trent, with 357 overflows that the site does not
+    count (docs/EVAL-PINS-TEST-2026-10.md)."""
     kind = kind if kind in ("lake", "river") else None
     river = river.strip() if isinstance(river, str) else ""
     return kind, (river if river and kind != "lake" else None)
@@ -324,7 +323,7 @@ def _adopt_at_head(net: RiverNetwork, x: float, y: float, want: frozenset[str], 
     mill stream beside its river but not where the arm passes a confluence: at Queen Elizabeth Gardens,
     Salisbury, the sampling point is 1 m from an arm of the Avon that OS draws with nothing above it,
     and the Avon link with the most network was the one below the Nadder, so the Nadder and the Wylye
-    were counted, which the EA's zone of influence leaves out (11 Oct 2026)."""
+    were counted, which the EA's zone of influence leaves out."""
     river = net.snap_xy(x, y, max_m=PIN_SNAP_M)
     if river is None or river.form not in RIVER_FORMS:
         return None
@@ -336,8 +335,8 @@ def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str], spot: boo
     click-anywhere build (scripts/build_any_point.py, arm_heads) calls it for every small link, as
     the page cannot walk the network.
 
-    Two rules (docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md). A listed spot (`spot`) keeps the rule it
-    has had since #179: the nearest channel, with no limit on the arm. A map click takes the channel
+    Two rules (docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md). A listed spot (`spot`) takes the nearest
+    channel, with no limit on the arm. A map click takes the channel
     with the most network, from an arm no longer than ARM_MAX_M (and _click_at_head adds the floor,
     keeps_river). The click rule moved Wolvercote Mill Stream and Hurley when spots used it too."""
     own = net.link_upstream_m(link_id)
@@ -355,7 +354,7 @@ def head_of_arm(net: RiverNetwork, link_id: str, want: frozenset[str], spot: boo
     keep = ups >= max(ADOPT_MIN_M, ADOPT_RATIO * own)
     if not keep.any():
         return None
-    if spot:   # main's rule: the nearest that qualifies (candidates_xy sorts nearest first)
+    if spot:   # a listed spot's rule: the nearest that qualifies (candidates_xy sorts nearest first)
         return _snap_to_links(net, hx, hy, {ups[keep].index[0]})
     # The one with the most network, not the nearest: OS draws braided channels of a big river under its
     # name, disconnected above, and the nearest of those took a click on the Medway from 420 km of network
@@ -384,7 +383,7 @@ def channel_words(net: RiverNetwork, link_id: str) -> frozenset[str]:
     return words
 
 
-HEAD_FLOOR_SHARE = 0.10   # a side-arm head move keeps at least this share of the old rule's channel's network
+HEAD_FLOOR_SHARE = 0.10   # a side-arm head move keeps at least this share of the network of _adopt_main_channel's channel
 
 
 def keeps_river(net: RiverNetwork, head: Snap | None, old_link: str) -> Snap | None:
@@ -400,10 +399,10 @@ def keeps_river(net: RiverNetwork, head: Snap | None, old_link: str) -> Snap | N
 
 
 def _click_at_head(net: RiverNetwork, pin: PinLocation) -> PinLocation:
-    """A click, with no river named, that the old rule moved from a side channel to a main channel
-    takes the side-arm head rule too, the wanted river being the channel the old rule chose. Until
-    13 Oct 2026 only listed spots did: a click at Queen Elizabeth Gardens, Salisbury, counted the
-    Nadder and the Wylye, which the spot leaves out (docs/ANYPOINT-SIDE-ARM-2026-10.md)."""
+    """A click, with no river named, that _adopt_main_channel moved from a side channel to a main
+    channel takes the side-arm head rule too, the wanted river being the channel _adopt_main_channel
+    chose. Without it, a click at Queen Elizabeth Gardens, Salisbury, counted the Nadder and the
+    Wylye, which the spot leaves out (docs/ANYPOINT-SIDE-ARM-2026-10.md)."""
     want = channel_words(net, pin.snap.link_id)
     if not want:
         return pin
@@ -417,7 +416,7 @@ def _apply_river_hint(net: RiverNetwork, pin: PinLocation, hint: str) -> PinLoca
     if not want:
         return pin
     if pin.mode == "river" and pin.adopted_main_channel:
-        head = _adopt_at_head(net, pin.x, pin.y, want, spot=True)   # main's rule for listed spots: no floor
+        head = _adopt_at_head(net, pin.x, pin.y, want, spot=True)   # the listed-spot rule: no floor
         if head is not None:
             log.info("placed on %s where the side arm leaves it, %.0f m from the arm's head", hint, head.dist_m)
             return _at_head(net, pin, head, prefer=shown)
@@ -482,10 +481,9 @@ def _locate_lake(net: RiverNetwork, x: float, y: float, name: str | None) -> Pin
        is that lake's, not this one's.
     3. Otherwise it is isolated: no overflow reaches it by water.
 
-    Until 11 Oct 2026 any lake centreline within LAKE_SNAP_M counted. Loughrigg Tarn then
-    took Grasmere's centreline, 883 m away, and with it Grasmere WwTW as an overflow upstream,
-    though no water flows from Grasmere into the tarn (reported by a Lake District water-quality
-    group, 11 Oct 2026)."""
+    Any lake centreline within LAKE_SNAP_M is too wide a test: Loughrigg Tarn takes Grasmere's
+    centreline, 883 m away, and with it Grasmere WwTW as an overflow upstream, though no water
+    flows from Grasmere into the tarn."""
     poly = _named_lake_polygon(x, y, name)
     if poly is not None:
         pin = _in_polygon(net, x, y, poly)
@@ -520,8 +518,8 @@ def _locate(net: RiverNetwork, x: float, y: float, kind_hint: str | None, name: 
         # No lake centreline within LAKE_SNAP_M: the network draws nothing into this lake. A click on its
         # water is that lake, isolated. A click on its shore is placed as if the lake were not there, so a
         # river beside it keeps its overflows. A spot known to be a lake goes on to step 2 as before.
-        # Ethan's option C, 16 Oct 2026 (docs/ANYPOINT-LAKES-2026-10.md); until then every such click
-        # fell through to step 3, and the map page said "isolated lake" for all of them.
+        # Option C of docs/ANYPOINT-LAKES-2026-10.md. Sent on to step 3, every such click took the nearest
+        # river while the map page said "isolated lake".
         if kind_hint != "lake" and _on_water(poly, x, y):
             own = poly.get("lake_name")
             return PinLocation("isolated", x, y, None, watercourse=str(own) if isinstance(own, str) else None,
@@ -1209,8 +1207,8 @@ def history_days(travel_h: np.ndarray | pd.Series | None) -> int:
     """How many days before the first day of interest the spill grid must start so
     that every upstream overflow's travel time is covered: ceil(max travel / 24 h) + 1.
     Shared by the hindcast (validate_ecoli.py) and the live forecast so the two
-    cannot drift apart. (The live forecast started only at yesterday until
-    16 Sep 2026, so a 48 h travel time contributed nothing to today.)"""
+    cannot drift apart. (A grid that starts only at yesterday leaves a 48 h travel
+    time nothing to contribute to today.)"""
     if travel_h is None or len(travel_h) == 0:
         return 1
     mx = float(np.nanmax(np.asarray(travel_h, dtype=float)))
@@ -1320,13 +1318,13 @@ def live_now_risk(ov: pd.DataFrame, now: pd.Timestamp, recent_h: float = config.
     water has passed the spot: its end plus its travel time, or, while it runs, its travel time from
     now. Then it dies off with T90, and it stops counting recent_h after its water passed.
 
-    Until 4 Oct 2026 a finished spill died off from its end and left the count recent_h after it,
-    whatever its travel time, so a spill 20 h upstream was let go while its water was still arriving,
-    and the headline eased before clear_time's "should clear by" did. A spill whose water has not
-    reached the spot yet still counts in full from its start: still_coming says when it arrives, and
-    the level does not wait for it. On 4 Oct 2026 Ethan chose this over also waiting for the water,
-    which in the 13 Sep to 4 Oct builds would have dropped 15 headlines while sewage was on its way,
-    one to "Low risk for the next five days" with the water 20 minutes off."""
+    Dying off from its end and leaving the count recent_h after it, whatever its travel time, a
+    spill 20 h upstream would be let go while its water was still arriving, and the headline would
+    ease before clear_time's "should clear by" did. A spill whose water has not reached the spot yet
+    still counts in full from its start: still_coming says when it arrives, and the level does not
+    wait for it. Waiting for the water as well would, in the 13 Sep to 4 Oct 2026 builds, have
+    dropped 15 headlines while sewage was on its way, one to "Low risk for the next five days" with
+    the water 20 minutes off."""
     if ov.empty:
         return 0.0, pd.Series(dtype=float)
     counted, w, to_end, travel = _counted(ov, now, recent_h)
@@ -1349,9 +1347,9 @@ COUNT_WEIGHT = 0.005
 def running(ov: pd.DataFrame) -> np.ndarray:
     """Whether each overflow's spill is running, as far as the live feeds last said: status 1, or a row
     carried through its company's feed outage (ingest.live.carry_forward, status FEED_DOWN) whose
-    last status read was 1. Until 11 Oct 2026 only status 1 counted, and as every discharging row has
-    an empty event end, a spill running when its company's feed failed (or a short read missed it)
-    left the right-now risk and the count of what is discharging until the feed answered again."""
+    last status read was 1. Status 1 alone is not enough: every discharging row has an empty event
+    end, so a spill running when its company's feed failed (or a short read missed it) would leave
+    the right-now risk and the count of what is discharging until the feed answered again."""
     from dipcast.ingest.live import FEED_DOWN
     status = pd.to_numeric(ov["status"], errors="coerce")
     last = pd.to_numeric(ov["last_status"], errors="coerce") if "last_status" in ov else pd.Series(np.nan, index=ov.index)
@@ -1378,7 +1376,7 @@ def _contributions(t: float, w: np.ndarray, passed: np.ndarray, recent_h: float,
     `passed` hours from now: its full weight until then, then dying off with T90, and nothing once it
     passed more than recent_h ago. With `passed` its end plus its travel time, this is live_now_risk
     run forward (a spill running now taken to end now); with its end alone, the same as if its water
-    had passed the moment it stopped (the rule before 4 Oct 2026, which clear_time compares against)."""
+    had passed the moment it stopped (which clear_time compares against)."""
     age = t - passed
     return np.where(age <= 0, w, np.where(age <= recent_h, w * np.power(10.0, -np.maximum(age, 0.0) / t90_h), 0.0))
 
@@ -1433,8 +1431,7 @@ def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = CLEAR_CUT,
     and no new spill starts. Each spill is held at its full weight until its water has passed the spot
     (its end, or now for one running, plus its travel time), then dies off with T90, and leaves the
     count recent_h after its water passed. A small far spill then barely moves the time; a big one
-    holds it up. Until 4 Oct 2026 this alone allowed for travel time and the headline's risk did not;
-    both now follow one rule (live_now_risk).
+    holds it up. The headline's risk follows the same rule (live_now_risk).
 
     Returns (time, what set it, the index label in `ov` of the overflow named with 'travel').
     'travel' when, as it clears, travel time holds at least half the risk: the risk over and above

@@ -67,7 +67,7 @@ def candidates() -> dict[int, SpillModel]:
             return {}
         sha = hashlib.sha256(p.read_bytes()).hexdigest()
         if not sha.startswith(CANDIDATE_SHA[k]):
-            log.warning("live-status shadow off: %s is %s, not PR #254's %s", p.name, sha[:12], CANDIDATE_SHA[k])
+            log.warning("live-status shadow off: %s is %s, not the feature test's %s", p.name, sha[:12], CANDIDATE_SHA[k])
             return {}
         m = SpillModel.load(p)
         if list(m.features) != [*ALL_FEATURES, *STATUS]:

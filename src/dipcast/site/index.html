@@ -2216,13 +2216,15 @@ function riverTile(rs) {
 }
 // The answer's words, which a picked day fills again (showDay): the level, why and when, where the week
 // goes, a long spill that may be a fault (it sets the level), the river's separate hazard, what the
-// forecast could and could not read (coverLine), and the issue time. Then the five days, straight under it:
+// forecast could and could not read (coverLine), the issue time, and under it the rain's own time where
+// that is old (rainAgeLine, levels.js). Then the five days, straight under it:
 // a long introduction pushed them down. What to do and what the level counts follow the week, in its tile
 // (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
-    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
+    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`
+    + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
 // and below the screen at Ludlow. iso as answerWords; showDay fills it again.
@@ -3501,7 +3503,7 @@ function renderPlan() {
   document.title = `Plan a swim · ${BRAND}`;
   if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
-  if (!PLAN.from && VIEW.here) PLAN.from = { here: true };   // "Near me" on the list has already asked
+  PLAN.from = planStart(PLAN.from, VIEW.here);   // "Near me" on the list has already asked; else areas are suggested
   planCompareGo = !!PLAN.compare;   // a link to a comparison opens on it (drawPlan)
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';
   // The opening, under the sky (.lead): the choices, as the list's controls are, then the groups on the glass.
@@ -3519,6 +3521,18 @@ function renderPlan() {
   planLoadWarnings();
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
 }
+// With no place to start from: the three areas with the most spots at low risk on the plan's day, each a link to
+// a plan from its middle (plan.js, planAreas), under the tile that asks for a place. The page does not ask for
+// your position to fill this: it waits for "Use my location", as the privacy notice says.
+function planSuggest() {
+  const areas = planAreas(DATA.spots, PLAN, (a, b) => km(a, b) / MILE_KM), on = dayWord(PLAN.day);
+  if (!areas.length) return '';
+  return `<section class="group tile" aria-labelledby="plan-areas-h"><h2 class="group-head" id="plan-areas-h">Most ${planNoun(2)} at low risk ${on}</h2>`
+    + `<p class="sub">Or start from the middle of one of these areas.</p><ul class="spots">`
+    + areas.map(a => `<li><a class="row" href="${esc(planPath() + planFromArea(a, PLAN))}" data-plan-area><span class="row-main"><span class="nm">${esc(a.area)}</span>`
+      + `<span class="k">${a.low} of ${a.total} ${planNoun(a.total)} at low risk ${on}, within ${a.within} miles</span></span></a></li>`).join('')
+    + '</ul></section>';
+}
 // The status under the place, the count, the groups and the map. fit: move the map to the plan's reach
 // (a new start or distance), which typing the day or the kind does not.
 function drawPlan(fit = false) {
@@ -3534,7 +3548,7 @@ function drawPlan(fit = false) {
   selLayer.clearLayers(); PLAN_BOUNDS = null;
   if (!from) { sum.textContent = '';
     box.innerHTML = `<div class="empty-saved tile"><h2 class="sec-h">Where are you starting from?</h2><p class="sub">Type a town, a village or a district of a city in England or Wales${geo ? ', or use your location, which stays on this device' : ''}.</p>`
-      + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>';
+      + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>' + planSuggest();
     return; }
   const r = planSpots(DATA.spots, PLAN, s => km(from, [s.lat, s.lon]) / MILE_KM), on = dayWord(PLAN.day);
   const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
@@ -3632,8 +3646,11 @@ function bindPlan() {
   $('plan-results').addEventListener('click', planClick);
 }
 function planClick(e) {
-  const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]');
-  if (e.target.closest('[data-plan-here]')) planLocate();
+  const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]'), a = e.target.closest('[data-plan-area]');
+  if (a) { if (!plainClick(e)) return; e.preventDefault();   // the area's middle and distance, as its link says them
+    PLAN = readPlan(new URL(a.href).hash, planDates(), PLAN); planNote = '';
+    $('plan-from').value = PLAN.from ? PLAN.from.name : ''; $('plan-within').value = String(PLAN.within); drawPlan(true); }
+  else if (e.target.closest('[data-plan-here]')) planLocate();
   else if (e.target.closest('[data-plan-compare]')) { const c = $('compare'); if (!c) return;
     c.open = true; c.scrollIntoView({ block: 'start' }); c.querySelector('summary').focus({ preventScroll: true }); }
   else if (d) { PLAN.day = d.dataset.planDay; const r = planDayInput(PLAN.day); if (r) r.checked = true; drawPlan(); if (r) r.focus(); }
@@ -3956,6 +3973,26 @@ function whereFrom(d) {
 // of right now's share, reach times the week's highest spill chance, and a tenth of the reach), most
 // first. The caption says what the order is: "the 10 with the most reach" sat over a list where 80%
 // came above 98% (Ilkley).
+// Under an overflow its company says it has upgraded or is upgrading (data/raw/overflow_upgrades.csv,
+// build_site.attach_upgrades): what the company says, with its page and the day it was read; that the
+// monitor has shown no discharge since its last one, only while the live feed says "not discharging"
+// now (an offline or stale monitor shows nothing, which is not the same); and that the forecast still
+// counts its spills from before the work. The verb follows the source's tense, since a page in the
+// future tense is a plan, not a finished upgrade. Where the company's name for it could mean another
+// overflow nearby, the note says the match is by name. '' for an overflow with no upgrade listed.
+const upgradeDay = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+function upgradeNote(c) {
+  const u = c.upgrade;
+  if (!u || !/^https:\/\/[^\s<>"']+$/.test(String(u.url || ''))) return '';
+  const did = u.stage === 'upgraded' ? 'has upgraded' : 'is upgrading';
+  const done = u.stage === 'upgraded' && u.completed ? `, finished ${upgradeDay(u.completed)}` : '';
+  const what = u.match === 'shared name' ? `its ${esc(u.source_name)}, a name that could also mean another overflow nearby` : 'this overflow';
+  const said = [`${esc(companyName(u.company))} says it ${did} ${what}${done} (<a href="${esc(u.url)}">its page</a>, read ${upgradeDay(u.checked)}).`];
+  const a = Date.parse(c.latest_event_start), b = Date.parse(c.latest_event_end);
+  if (drawnStatus(c) === 0 && !Number.isNaN(b) && !(a > b)) said.push(`Its monitor has shown no discharge since ${endedOn(c.latest_event_end)}.`);
+  said.push(`The forecast still uses its ${u.returns_to ? `spill counts for 2020 to ${u.returns_to}` : 'past spill counts'}, so it may overstate the risk from it.`);
+  return `<div class="ov-meta">${said.join(' ')}</div>`;
+}
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
@@ -3963,7 +4000,7 @@ function overflowTile(d, total) {
       .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
-      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div></div>`
+      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}</div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too little reaches here to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.

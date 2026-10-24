@@ -244,3 +244,56 @@ test('a line most rows share is said once, and who it is said of', () => {
   assert.match(app, /getElementById\('plan-basis'\)\.innerHTML = r\.count \? planBasis\(r\.groups\.flat\(\)\)/);
   assert.match(app, /own === PLAN_SHARED \? '' : own/);
 });
+
+// Where a plan starts (review C6). With a position "Near me" took on this page, the plan lists the nearest spots
+// at once; without one it suggests the areas with the most spots at low risk. The page never asks for a position
+// itself, and the position is kept in no storage: the privacy notice says it "is not stored, and it is gone when
+// you close the page".
+test('a plan starts from your position only if this page already has it, else from nowhere', () => {
+  const kendal = {name: 'Kendal', lat: 54.33, lon: -2.75};
+  assert.deepEqual(P.planStart(null, [54.4, -2.9]), {here: true});   // "Near me" on the list has asked
+  assert.equal(P.planStart(null, null), null);                       // no position: the areas are suggested
+  assert.equal(P.planStart(null, undefined), null);
+  assert.deepEqual(P.planStart(kendal, [54.4, -2.9]), kendal);         // a place in the address or kept plan wins
+  assert.deepEqual(P.planStart({here: true}, null), {here: true});     // "from=here": asked only if already allowed
+});
+const at = (id, area, lat, l, extra = {}) => ({...spot(id, 0, l, extra), area, lat, lon: -2});
+const flatMiles = (a, b) => Math.hypot(a[0] - b[0], (a[1] - b[1]) * 0.6) * 69;
+test('the areas suggested are those with the most spots at low risk on the day, each from its middle', () => {
+  const spots = [at('l1', 'Lakes', 54.4, 'low'), at('l2', 'Lakes', 54.5, 'low'), at('l3', 'Lakes', 54.6, 'high'),
+    at('d1', 'Dales', 54.0, 'low'), at('d2', 'Dales', 54.1, 'low'),
+    at('c1', 'Coast', 50.0, 'low'), at('c2', 'Coast', 52.0, 'moderate'),
+    at('f1', 'Fens', 52.5, 'low', {kind: 'lake'}), at('m1', 'Moors', 54.3, 'high')];
+  const a = P.planAreas(spots, {day: '2026-10-01', kind: 'all'}, flatMiles);
+  // Most at low risk first; equal counts by name; three at most; none with nothing at low risk.
+  assert.deepEqual(a.map(x => [x.area, x.low, x.total]), [['Dales', 2, 2], ['Lakes', 2, 3], ['Coast', 1, 2]]);
+  assert.deepEqual([a[1].lat, a[1].lon], [54.5, -2]);   // the middle of the Lakes spots
+  assert.equal(a[1].within, 10);                          // 6.9 miles to the farthest
+  assert.equal(a[2].within, 50);                          // 69 miles: the longest distance offered, not any distance
+  // Another day counts that day's levels: on 30 September every spot is low.
+  assert.deepEqual(P.planAreas(spots, {day: '2026-09-30', kind: 'all'}, flatMiles).map(x => x.area), ['Lakes', 'Coast', 'Dales']);
+  // The kind chosen narrows the count, as it narrows the plan.
+  assert.deepEqual(P.planAreas(spots, {day: '2026-10-01', kind: 'lake'}, flatMiles).map(x => x.area), ['Fens']);
+  // A forecast built before spots had areas: nothing suggested, rather than a group with no name.
+  assert.deepEqual(P.planAreas([...spots, at('x', undefined, 53, 'low')], {day: '2026-10-01', kind: 'all'}, flatMiles), []);
+  assert.deepEqual(P.planAreas([], {day: '2026-10-01', kind: 'all'}, flatMiles), []);
+  // Each is a plan's address: the area's middle and distance, the day and kind as they stand, no comparison.
+  const hash = P.planFromArea(a[0], {day: '2026-10-01', kind: 'all', within: 5, compare: ['l1']});
+  assert.deepEqual(P.readPlan(hash, DATES), {day: '2026-10-01', from: {name: 'Dales', lat: 54.05, lon: -2}, within: 5, kind: 'all'});
+});
+test('the page starts the plan from a position it has, suggests areas without one, and never asks or stores', () => {
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
+  const body = name => { const i = app.indexOf(`function ${name}(`); return app.slice(i, app.indexOf('\n}\n', i)); };
+  const render = body('renderPlan'), draw = body('drawPlan'), suggest = body('planSuggest');
+  assert.ok(render.includes('PLAN.from = planStart(PLAN.from, VIEW.here);'));
+  // The one call that may reach for a position on opening is the quiet one, for a plan that says "from=here".
+  assert.ok(!/geolocation/.test(render) && render.includes('if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);'));
+  assert.match(body('planLocate'), /if \(!quiet\) return go\(\);\n {2}if \(navigator\.permissions\) navigator\.permissions\.query\(\{ name: 'geolocation' \}\)\.then\(s => \{ if \(s\.state === 'granted'\) go\(\); \}\)/);
+  // Without a place: the tile that asks for one, then the areas.
+  assert.match(draw, /if \(!from\) \{[^}]*Where are you starting from\?[\s\S]*?\+ planSuggest\(\);\n {4}return; \}/);
+  assert.ok(suggest.includes('planAreas(DATA.spots, PLAN,') && !/geolocation|Storage/.test(suggest));
+  assert.match(suggest, /Most \$\{planNoun\(2\)\} at low risk \$\{on\}/);
+  // A reload keeps the list's view in session storage, never your position.
+  assert.ok(app.includes('const { here, geoMsg, ...rest } = VIEW;'));
+  assert.equal((app.match(/sessionStorage\.setItem\(/g) || []).length, 1);
+});

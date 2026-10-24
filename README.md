@@ -94,6 +94,7 @@ The other tools were checked on their own pages on 3 Oct 2026.
 | EA flood-monitoring API | Near-real-time river levels and typical ranges; the API version only | OGL v3 |
 | EA Hydrology API | Water temperature from water-quality sensors that reported in the last day, beside the forecast | OGL v3 |
 | EA Catchment Data Explorer | Reasons for not achieving good status per water body, and the water bodies' river lines and catchments: the water body each spot is in, and where agriculture and rural land management is a confirmed or probable reason, a line on its page (`data/raw/rnags.json`, `scripts/make_rnags.py`, off CI) | OGL v3 |
+| Water companies' own pages on overflow upgrades | One row per overflow a company says it has upgraded or is upgrading, with the page, a short quote and the day it was read (`data/raw/overflow_upgrades.csv`; six Yorkshire Water overflows above Ilkley). A note beside the overflow on a spot's page; the forecast never reads it (`docs/UPGRADED-OVERFLOWS-2026-10.md`, option C) | Short quotations, each linked to its source; nothing republished |
 | EA Water Quality Archive (Water Quality Explorer) | E. coli results and the sampler's visual algae check at the 38 inland bathing waters | OGL v3 |
 | OpenStreetMap (Overpass API) | 16 river and lake swim spots chosen one by one from 115 candidates (`spots-osm.csv`) | ODbL 1.0, © OpenStreetMap contributors |
 

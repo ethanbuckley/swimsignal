@@ -14,7 +14,7 @@ import pandas as pd
 from dipcast import config
 from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
-from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast
+from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
@@ -157,12 +157,18 @@ def code_commit() -> str:
     return sha
 
 
+class MissingSpillModel(FileNotFoundError):
+    """The trained spill model file is not there. Raised, never worked around: a forecast from
+    climatology alone ignores the rain, and the page would show it as if it were the model's."""
+
+
 @lru_cache(maxsize=1)
-def _model() -> SpillModel | None:
-    if MODEL_PATH.exists():
-        return SpillModel.load()
-    log.warning("no trained spill model at %s; forecasts use climatology only", MODEL_PATH)
-    return None
+def _model() -> SpillModel:
+    """The trained spill model. Code that means to forecast from climatology passes model=None to
+    spill_probabilities itself; a missing file is an error, not a quiet switch to climatology."""
+    if not MODEL_PATH.exists():
+        raise MissingSpillModel(f"no trained spill model at {MODEL_PATH}")
+    return SpillModel.load(MODEL_PATH)
 
 
 def reload_caches() -> None:
@@ -379,9 +385,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     hist = history_days(travel)
     days = pd.date_range(now.floor("D") - pd.Timedelta(days=hist), periods=hist + days_ahead + 1, freq="D")
     today_idx = hist
-    # With the ensemble, the single forecast's rain is fetched here (from the cache the build's prefetch
-    # filled), so the members can share its past; spill_probabilities would fetch the same.
-    rain = fetch_forecast(cells_for_sites(ov["lat"], ov["lon"])) if ensemble and not ov.empty else None
+    # The rain is fetched here (from the cache the build's prefetch filled), not in spill_probabilities, so
+    # the ensemble's members can share its past and the spot can say how old it is (forecast_age).
+    rain = fetch_forecast(cells_for_sites(ov["lat"], ov["lon"])) if not ov.empty else None
     p_raw, avail, rain_mm, frame = spill_probabilities(ov, days, model, return_rain=True, rain=rain, return_frame=True)
     p = calibrate_by_lead(p_raw, first_lead=-hist)   # column `hist` is today (lead 0)
     # The live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md): for the forecast log only, from the
@@ -447,7 +453,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
 
     # E. coli exceedance: rain at the spot itself (not at the overflows) plus the day's exposure.
     em = ecoli.load()
-    p_ec = r48 = None
+    p_ec = r48 = spot_rain = None
     if em is not None:
         try:
             spot_rain = fetch_forecast(cells_for_sites(pd.Series([lat]), pd.Series([lon])))
@@ -480,6 +486,12 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             }
         except Exception as e:  # noqa: BLE001 - an optional layer must not fail the forecast
             log.warning("E. coli model skipped: %s", e)
+    # How old the rain behind this spot is, from its oldest cell: a cell not fetched afresh (Open-Meteo did
+    # not answer, or the day's limit held the request back) is served from the cache up to a day old, and
+    # only the build's warnings said so.
+    age = forecast_age([rain, spot_rain], now)
+    if age:
+        out["assumptions"].update(age, rain_issued_at=to_minute(age["rain_issued_at"].tz_convert(LOCAL_TZ)))
 
     # When right now's risk should be back to low if the spills stop now, allowing for the water still
     # on its way (transport.clear_time), and which overflows it comes from: written where the page says

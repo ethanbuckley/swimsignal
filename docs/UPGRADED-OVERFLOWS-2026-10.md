@@ -234,6 +234,7 @@ the week's forecast from one more. The script's docstring gives every input.
 - **The EA import route has broken.** The per-company files that `scripts/import_ea_events.py` downloads are gone.
   On 22 Oct 2026, "Yorkshire 2025 Detailed EDM Data.xlsx" returned ResourceNotFound; that route worked on 16-17 Oct.
   The dataset was revised on 20 Oct. The data now comes as one zip per year ("2025 Detailed EDM Start-Stop
-  Data.zip", 27,970,711 bytes), through the same signed-link route.
+  Data.zip", 27,970,711 bytes), through the same signed-link route. Since fixed: both EA importers now read
+  the yearly zips (`edm_events.ea_yearly_zips`, `ea_zip_members`).
 - **The EA revised the annual returns in August 2026** (Anglian Water; one Northumbrian site), per data.gov.uk.
   Whether the committed `annual_returns.parquet` includes the revision was not checked.

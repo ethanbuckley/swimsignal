@@ -1,14 +1,16 @@
 """Write one parquet of discharges per company, data/processed/ea_events_<company>.parquet (the
 edm_events columns), from the Environment Agency's start/stop files for the companies that operate
-in England, 2024 and 2025. The test it feeds is stated in docs/NINE-COMPANY-MODEL-TEST-2026-10.md.
+in England, 2024 and 2025 by default. The test it feeds is stated in docs/NINE-COMPANY-MODEL-TEST-2026-10.md.
 Off CI, run by hand:
 
-    uv run python scripts/import_ea_events.py
+    uv run python scripts/import_ea_events.py [--years 2024 2025] [--refresh]
 
-It reads the files from data/raw/ea_events/ and downloads any that are missing through the EA
-platform's signed-link route (import_ea_welsh_water.download; a runner was not refused, 16 Oct 2026,
-run 38964387549). Dwr Cymru Welsh Water's files stay with scripts/import_ea_welsh_water.py and
-dcww_ea_events.parquet: a test set, never training.
+The EA publishes the files as one zip per year ("2025 Detailed EDM Start-Stop Data.zip"). The zips
+are kept in data/raw/ea_events/; any year missing there is found in the dataset page's file list
+and downloaded through the EA platform's signed-link route (edm_events.ea_yearly_zips). --refresh
+reads the list and downloads the zips again, for a revised file or a year-to-date zip that has
+grown. Each company's files are read straight from the zips. Dwr Cymru Welsh Water's files stay
+with scripts/import_ea_welsh_water.py and dcww_ea_events.parquet: a test set, never training.
 
 Then it prints, per company and year, the measured signs of how each company defines an event (the
 DSP note gives one definition for all): events, overflows, the share of ids in the annual returns,
@@ -21,35 +23,22 @@ under the Open Government Licence v3.0.
 
 from __future__ import annotations
 
+import argparse
 import logging
 import re
-from urllib.parse import quote
 
-import httpx
 import numpy as np
 import pandas as pd
 
 from dipcast import config
 from dipcast.ingest.common import write_parquet
-from dipcast.ingest.edm_events import EA_TEST_ONLY, ea_company, read_ea_events
+from dipcast.ingest.edm_events import EA_TEST_ONLY, ea_yearly_zips, ea_zip_members, read_ea_events
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("import_ea_events")
 
-FILES = [
-    "Anglian 2024 Detailed EDM Data.xlsx", "Anglian Water Detailed Data 2025.csv",
-    "Northumbrian 2024 Detailed EDM Data.csv", "Northumbrian 2025 Detailed EDM Data.csv",
-    "Severn Trent 2024 Detailed EDM Data.xlsx", "Severn Trent 2025 Detailed EDM Data.csv",
-    "South West 2024 Detailed EDM Data.xlsx", "South West Water 2025 Detailed EDM Data.csv",
-    "Southern 2024 Detailed EDM Data.csv", "Southern Water 2025 EDM Detailed Data.xlsx",
-    "Thames 2024 Detailed EDM Data.csv", "Thames Water 2025 EDM Detailed Data.xlsx",
-    "United Utilities 2024 Detailed EDM Data.csv", "United Utilities 2025 Detailed EDM Data.csv",
-    "Wessex 2024 Detailed EDM Data.csv", "Wessex 2025 Detailed EDM Data.xlsx",
-    "Yorkshire 2024 Detailed EDM Data.csv", "Yorkshire 2025 Detailed EDM Data.xlsx",
-]
-FILE_API = ("https://environment.data.gov.uk/file-management-open/data-sets/"
-            "c95ecc47-fa70-4a24-b8cc-098232987526/files/{name}/download-url")
 RAW = config.RAW / "ea_events"
+YEARS = [2024, 2025]   # the years the nine-company test was stated on
 
 
 def slug(company: str) -> str:
@@ -60,14 +49,14 @@ def events_path(company: str):
     return config.PROCESSED / f"ea_events_{slug(company)}.parquet"
 
 
-def download(name: str) -> None:
-    with httpx.Client(headers=config.EA_HEADERS, timeout=120, follow_redirects=True) as c:
-        r = c.get(FILE_API.format(name=quote(name)))
-        r.raise_for_status()
-        f = c.get(r.json()["url"])
-        f.raise_for_status()
-    (RAW / name).write_bytes(f.content)
-    log.info("downloaded %s (%d bytes)", name, len(f.content))
+def company_files(years, refresh: bool = False) -> dict[str, list]:
+    """Company -> its (zip, member) files for `years`, Dwr Cymru Welsh Water left out."""
+    by_company: dict[str, list] = {}
+    for _, zp in sorted(ea_yearly_zips(years, RAW, refresh=refresh).items()):
+        for company, members in ea_zip_members(zp).items():
+            if company not in EA_TEST_ONLY:
+                by_company.setdefault(company, []).extend(members)
+    return by_company
 
 
 def event_signs(ev: pd.DataFrame) -> dict:
@@ -83,19 +72,15 @@ def event_signs(ev: pd.DataFrame) -> dict:
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--years", type=int, nargs="+", default=YEARS)
+    ap.add_argument("--refresh", action="store_true", help="download the listed zips again")
+    args = ap.parse_args()
     RAW.mkdir(parents=True, exist_ok=True)
-    for name in FILES:
-        if not (RAW / name).exists():
-            download(name)
     ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet", columns=["site_id", "company", "year"])
-    by_company: dict[str, list] = {}
-    for name in FILES:
-        company = ea_company(name)
-        assert company and company not in EA_TEST_ONLY, name
-        by_company.setdefault(company, []).append(RAW / name)
     rows = []
-    for company, paths in by_company.items():
-        ev = read_ea_events(paths)
+    for company, files in sorted(company_files(args.years, args.refresh).items()):
+        ev = read_ea_events(files)
         write_parquet(ev, events_path(company))
         known = set(ar.loc[ar["company"] == company, "site_id"].dropna())
         ev["year"] = ev["event_start"].dt.year
@@ -106,8 +91,8 @@ def main() -> None:
             rows.append({"company": company, "year": int(y), **event_signs(d),
                          "ids_in_returns": len(ids & known) / len(ids),
                          "positioned": float(d["lat"].notna().mean())})
-        outside = ev[~ev["year"].isin([2024, 2025])]
-        log.info("%s: %d events, %d dated outside 2024-25", company, len(ev), len(outside))
+        outside = ev[~ev["year"].isin(args.years)]
+        log.info("%s: %d events, %d dated outside %s", company, len(ev), len(outside), args.years)
     t = pd.DataFrame(rows)
     pd.set_option("display.width", 200)
     print(t.round(3).to_string(index=False))

@@ -1,0 +1,526 @@
+{
+ "rows_train_ecoli": 1502,
+ "rows_scored": 1502,
+ "rows_dropped_missing_input": 0,
+ "over_900": 212,
+ "sites": 31,
+ "inputs": {
+  "dry_run_share": {
+   "0": 0.3588548601864181,
+   "1": 0.14247669773635152,
+   "2": 0.06458055925432757,
+   "3": 0.4340878828229028
+  },
+  "dry_run_share_rivers": {
+   "0": 0.2822491730981257,
+   "1": 0.12348401323042998,
+   "2": 0.06615214994487321,
+   "3": 0.5281146637265711
+  },
+  "corr_lrain72_lrain48": 0.9093443737478124,
+  "corr_dry3_lrain48": -0.43413038207395943
+ },
+ "loyo": {
+  "reference": {
+   "all": 0.0921453084682313,
+   "rivers": 0.13537252924008752,
+   "lakes": 0.026251040837855476,
+   "scores": {
+    "brier": 0.0921453084682313,
+    "log_loss": 0.31334480020282457,
+    "auc": 0.8163814538540295,
+    "n": 1502
+   }
+  },
+  "q1_dry_spell": {
+   "all": 0.09238639527562606,
+   "rivers": 0.13577739422269913,
+   "lakes": 0.026242469149583596,
+   "scores": {
+    "brier": 0.09238639527562606,
+    "log_loss": 0.31488911961324084,
+    "auc": 0.8144251864853006,
+    "n": 1502
+   }
+  },
+  "q2_rain72": {
+   "all": 0.09165277068284507,
+   "rivers": 0.13448460646093832,
+   "lakes": 0.026361215975734813,
+   "scores": {
+    "brier": 0.09165277068284507,
+    "log_loss": 0.31211276939580224,
+    "auc": 0.8174455170396373,
+    "n": 1502
+   }
+  }
+ },
+ "loso": {
+  "reference": {
+   "all": 0.09118782059521043,
+   "rivers": 0.1333506632629965,
+   "lakes": 0.026916058747005416,
+   "scores": {
+    "brier": 0.09118782059521043,
+    "log_loss": 0.320568979065107,
+    "auc": 0.8108051777095218,
+    "n": 1502
+   }
+  },
+  "q1_dry_spell": {
+   "all": 0.09106597133579718,
+   "rivers": 0.13311510044800787,
+   "lakes": 0.026967550991637362,
+   "scores": {
+    "brier": 0.09106597133579718,
+    "log_loss": 0.3210941483757977,
+    "auc": 0.8091487494515137,
+    "n": 1502
+   }
+  },
+  "q2_rain72": {
+   "all": 0.09099892537143238,
+   "rivers": 0.13294952595403017,
+   "lakes": 0.027050698937119456,
+   "scores": {
+    "brier": 0.09099892537143238,
+    "log_loss": 0.3205025115622092,
+    "auc": 0.8092035980693286,
+    "n": 1502
+   }
+  }
+ },
+ "forward": {
+  "reference": {
+   "all": 0.08240330222533926,
+   "rivers": 0.11263716282232687,
+   "lakes": 0.03331306015075673,
+   "scores": {
+    "brier": 0.08240330222533926,
+    "log_loss": 0.29444225867455764,
+    "auc": 0.808327207812664,
+    "n": 997
+   }
+  },
+  "q1_dry_spell": {
+   "all": 0.0862923008586377,
+   "rivers": 0.1189819408964233,
+   "lakes": 0.033214648481496384,
+   "scores": {
+    "brier": 0.0862923008586377,
+    "log_loss": 0.30548733896765634,
+    "auc": 0.8031082642024571,
+    "n": 997
+   }
+  },
+  "q2_rain72": {
+   "all": 0.08207451447242188,
+   "rivers": 0.11209712092368466,
+   "lakes": 0.03332728241866097,
+   "scores": {
+    "brier": 0.0820745144724219,
+    "log_loss": 0.2927430005074289,
+    "auc": 0.8076236480100808,
+    "n": 997
+   }
+  }
+ },
+ "coef_per_sd": {
+  "reference": {
+   "lrain48": 0.6506952686451277,
+   "lrain24": -0.10168909905924428,
+   "logit_risk": 0.7811008444414489,
+   "lake": -0.18107054131051778,
+   "lake_x_lrain48": -1.057183228342525,
+   "doy_sin": -0.09737473871566853,
+   "doy_cos": 0.08584037408959946
+  },
+  "q1_dry_spell": {
+   "lrain48": 0.7624218765456604,
+   "lrain24": -0.026799413337827725,
+   "logit_risk": 0.7494060603719465,
+   "lake": -0.17957093580189928,
+   "lake_x_lrain48": -1.1477212990236787,
+   "doy_sin": -0.10584089666616103,
+   "doy_cos": 0.0903447385981938,
+   "dry3": 0.048627746224211586,
+   "dry3_x_lrain48": -0.21154419328907206
+  },
+  "q2_rain72": {
+   "lrain48": 0.4175555561568783,
+   "lrain24": -0.06208457423604837,
+   "logit_risk": 0.6816886347644618,
+   "lake": -0.2517871146527011,
+   "lake_x_lrain48": -1.0702454333011433,
+   "doy_sin": -0.11520138820918227,
+   "doy_cos": 0.06931783749350141,
+   "lrain72": 0.3343856403554123
+  }
+ },
+ "conditions": {
+  "q1_dry_spell": {
+   "1_loyo_gain": false,
+   "2_loso_not_worse": true,
+   "3_forward_not_worse": false,
+   "4_rivers_lakes_not_worse": true,
+   "5_sign_positive": false,
+   "loyo_gain": -0.00024108680739476362,
+   "passes": false
+  },
+  "q2_rain72": {
+   "1_loyo_gain": false,
+   "2_loso_not_worse": true,
+   "3_forward_not_worse": true,
+   "4_rivers_lakes_not_worse": true,
+   "5_sign_positive": true,
+   "loyo_gain": 0.0004925377853862295,
+   "passes": false
+  }
+ },
+ "bootstrap_loyo_site_week_q1_dry_spell": {
+  "n": 1502,
+  "clusters": 1325,
+  "brier_ref": 0.0921453084682313,
+  "brier_new": 0.09238639527562606,
+  "brier_gain": -0.00024108680739476362,
+  "brier_gain_ci": [
+   -0.0013649682239218175,
+   0.0008044469825083062
+  ],
+  "p_gain_le_0": 0.688,
+  "auc_ref": 0.8163814538540295,
+  "auc_new": 0.8144251864853006,
+  "auc_gain_ci": [
+   -0.005176993301837335,
+   0.0010477426643718893
+  ]
+ },
+ "bootstrap_loyo_rivers_site_week_q1_dry_spell": {
+  "n": 907,
+  "clusters": 805,
+  "brier_ref": 0.13537252924008752,
+  "brier_new": 0.13577739422269913,
+  "brier_gain": -0.00040486498261160797,
+  "brier_gain_ci": [
+   -0.0021871668609716338,
+   0.0013324591574672782
+  ],
+  "p_gain_le_0": 0.6665,
+  "auc_ref": 0.7564654553804645,
+  "auc_new": 0.7528918740491978,
+  "auc_gain_ci": [
+   -0.008550358842434228,
+   0.0013179175184121418
+  ]
+ },
+ "bootstrap_loyo_site_week_q2_rain72": {
+  "n": 1502,
+  "clusters": 1325,
+  "brier_ref": 0.0921453084682313,
+  "brier_new": 0.09165277068284507,
+  "brier_gain": 0.0004925377853862295,
+  "brier_gain_ci": [
+   -0.0001360541223389914,
+   0.0011316316740751754
+  ],
+  "p_gain_le_0": 0.0615,
+  "auc_ref": 0.8163814538540295,
+  "auc_new": 0.8174455170396373,
+  "auc_gain_ci": [
+   -0.001874575191352179,
+   0.004094826130744748
+  ]
+ },
+ "bootstrap_loyo_rivers_site_week_q2_rain72": {
+  "n": 907,
+  "clusters": 805,
+  "brier_ref": 0.13537252924008752,
+  "brier_new": 0.13448460646093832,
+  "brier_gain": 0.0008879227791492028,
+  "brier_gain_ci": [
+   -0.0001577750987749208,
+   0.0019628955300223902
+  ],
+  "p_gain_le_0": 0.046,
+  "auc_ref": 0.7564654553804645,
+  "auc_new": 0.7599959815149688,
+  "auc_gain_ci": [
+   -0.001082302406069277,
+   0.00869723336330578
+  ]
+ },
+ "site_lags": {
+  "sites": [
+   {
+    "bw_id": "ukd1101-45800",
+    "name": "Derwent Water at Crow Park",
+    "kind": "lake",
+    "n": 58,
+    "rho_24h": 0.144,
+    "rho_48h": 0.037,
+    "rho_72h": 0.035,
+    "best": "24 h"
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "name": "Windermere, Lakeside YMCA",
+    "kind": "lake",
+    "n": 57,
+    "rho_24h": 0.045,
+    "rho_48h": 0.256,
+    "rho_72h": 0.34,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "name": "Windermere, Millerground Landing",
+    "kind": "lake",
+    "n": 59,
+    "rho_24h": 0.538,
+    "rho_48h": 0.534,
+    "rho_72h": 0.517,
+    "best": "24 h"
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "name": "Windermere, Rayrigg Meadow",
+    "kind": "lake",
+    "n": 57,
+    "rho_24h": 0.223,
+    "rho_48h": 0.162,
+    "rho_72h": 0.151,
+    "best": "24 h"
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "name": "Windermere, Fellfoot",
+    "kind": "lake",
+    "n": 59,
+    "rho_24h": -0.095,
+    "rho_48h": -0.007,
+    "rho_72h": 0.035,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "name": "Coniston Water, Brown Howe",
+    "kind": "lake",
+    "n": 57,
+    "rho_24h": 0.552,
+    "rho_48h": 0.598,
+    "rho_72h": 0.502,
+    "best": "48 h"
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "name": "Coniston Water, Boating Centre",
+    "kind": "lake",
+    "n": 57,
+    "rho_24h": 0.333,
+    "rho_48h": 0.308,
+    "rho_72h": 0.202,
+    "best": "24 h"
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "name": "Coniston Water, Monk Coniston",
+    "kind": "lake",
+    "n": 57,
+    "rho_24h": 0.391,
+    "rho_48h": 0.459,
+    "rho_72h": 0.448,
+    "best": "48 h"
+   },
+   {
+    "bw_id": "ukd4308-46501",
+    "name": "River Ribble at Edisford Bridge",
+    "kind": "river",
+    "n": 59,
+    "rho_24h": 0.732,
+    "rho_48h": 0.81,
+    "rho_72h": 0.803,
+    "best": "48 h"
+   },
+   {
+    "bw_id": "uke2203-08903",
+    "name": "Nidd at the Lido, Knaresborough",
+    "kind": "river",
+    "n": 57,
+    "rho_24h": 0.216,
+    "rho_48h": 0.439,
+    "rho_72h": 0.573,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "uke4100-08901",
+    "name": "Wharfe at Cromwheel, Ilkley",
+    "kind": "river",
+    "n": 57,
+    "rho_24h": 0.57,
+    "rho_48h": 0.621,
+    "rho_72h": 0.641,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "uke4200-08904",
+    "name": "Wharfe at Wilderness Carpark",
+    "kind": "river",
+    "n": 56,
+    "rho_24h": 0.445,
+    "rho_48h": 0.532,
+    "rho_72h": 0.659,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "name": "Rutland Water Whitwell Creek",
+    "kind": "lake",
+    "n": 52,
+    "rho_24h": -0.21,
+    "rho_48h": 0.003,
+    "rho_72h": 0.136,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "name": "Rutland Water Sykes Lane",
+    "kind": "lake",
+    "n": 48,
+    "rho_24h": 0.167,
+    "rho_48h": 0.248,
+    "rho_72h": 0.194,
+    "best": "48 h"
+   },
+   {
+    "bw_id": "ukg2100-36070",
+    "name": "River Severn at Ironbridge",
+    "kind": "river",
+    "n": 59,
+    "rho_24h": 0.114,
+    "rho_48h": 0.555,
+    "rho_72h": 0.597,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukg2200-36060",
+    "name": "River Teme in Ludlow",
+    "kind": "river",
+    "n": 59,
+    "rho_24h": 0.432,
+    "rho_48h": 0.514,
+    "rho_72h": 0.559,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukg2200-36071",
+    "name": "River Severn in Shrewsbury",
+    "kind": "river",
+    "n": 57,
+    "rho_24h": 0.278,
+    "rho_48h": 0.332,
+    "rho_72h": 0.47,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukh1201-09801",
+    "name": "Sheep's Green, River Cam",
+    "kind": "river",
+    "n": 58,
+    "rho_24h": 0.283,
+    "rho_48h": 0.518,
+    "rho_72h": 0.522,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukh1401-11051",
+    "name": "Friars Meadow, River Stour",
+    "kind": "river",
+    "n": 59,
+    "rho_24h": 0.308,
+    "rho_48h": 0.403,
+    "rho_72h": 0.443,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukj1402-11946",
+    "name": "Wolvercote Mill Stream",
+    "kind": "river",
+    "n": 55,
+    "rho_24h": 0.199,
+    "rho_48h": 0.215,
+    "rho_72h": 0.109,
+    "best": "48 h"
+   },
+   {
+    "bw_id": "ukj1403-11947",
+    "name": "Wallingford Beach, River Thames",
+    "kind": "river",
+    "n": 57,
+    "rho_24h": 0.298,
+    "rho_48h": 0.418,
+    "rho_72h": 0.429,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "name": "Frensham Great Pond",
+    "kind": "lake",
+    "n": 34,
+    "rho_24h": -0.095,
+    "rho_48h": -0.175,
+    "rho_72h": -0.121,
+    "best": "24 h"
+   },
+   {
+    "bw_id": "ukj3308-19001",
+    "name": "River Avon at Fordingbridge",
+    "kind": "river",
+    "n": 57,
+    "rho_24h": 0.255,
+    "rho_48h": 0.332,
+    "rho_72h": 0.416,
+    "best": "72 h"
+   },
+   {
+    "bw_id": "ukk2301-36051",
+    "name": "River Frome at Farleigh Hungerford",
+    "kind": "river",
+    "n": 56,
+    "rho_24h": 0.481,
+    "rho_48h": 0.579,
+    "rho_72h": 0.55,
+    "best": "48 h"
+   },
+   {
+    "bw_id": "ukk2304-35201",
+    "name": "River Tone at French Weir Park",
+    "kind": "river",
+    "n": 59,
+    "rho_24h": 0.477,
+    "rho_48h": 0.452,
+    "rho_72h": 0.418,
+    "best": "24 h"
+   }
+  ],
+  "picks": {
+   "24": 6,
+   "48": 6,
+   "72": 13
+  },
+  "min_samples": 30
+ },
+ "face_check": {
+  "train_ecoli": {
+   "loyo": 0.0921,
+   "loso": 0.0912,
+   "forward": 0.0824,
+   "n": 1502
+  },
+  "here_reference": {
+   "loyo": 0.0921,
+   "loso": 0.0912,
+   "forward": 0.0824,
+   "n": 1502
+  }
+ }
+}
