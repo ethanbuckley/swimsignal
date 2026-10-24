@@ -213,7 +213,8 @@ docs/LAKE-RESIDENCE-SPILL-2026-10.md; 10 lakes gauged, the rest take their media
 1.88). Then a share 1 / (1 + ln 10 · τ/R / T90) of a spill's bacteria leaves the lake
 alive, after about 13 hours. So Grasmere (τ 39 days, R 2.24) passes 3%, and Grasmere
 WwTW counts at Rydal Water at 0.0022, not 0.040. (Those figures are at T90 = 30 h; at
-72 h, from 17 Oct 2026, Grasmere passes 7%, after about 29 hours.) A lake with no τ (Elter Water, most
+72 h, from 17 Oct 2026, Grasmere passes 7%, after about 29 hours, and Grasmere WwTW counts
+at Rydal Water at 0.018: 0.19 under lake path `lake`, 0.25 under `river`, 0.31 at Grasmere itself.) A lake with no τ (Elter Water, most
 under 10 ha) is crossed at 0.05 m/s with its own area term, as from 11 Oct 2026 (lake
 path `lake`). A lake-form link outside every WFD polygon (a mill pond, a weir pool)
 stays river. The spot's own lake keeps the fixed drift and the area term, and there
@@ -943,8 +944,10 @@ time contributes to today (it started at yesterday before, and did not).
   samples rank within a site (17 Oct 2026), not measured, and it treats upstream spills as independent when they
   share the same rain. The site labels it an exposure index for that reason;
   the E. coli column is the calibrated quantity.
-- Dilution uses network length as a proxy for flow. Lake volume is not modelled;
-  lake crossing uses a fixed slow advection speed.
+- Dilution uses network length as a proxy for flow. Lake volume enters only through
+  the HydroLAKES residence time of a lake on the way (volumes mostly modelled); the
+  spot's own lake, and a lake on the way with no τ, use a fixed slow drift and an
+  area term. No lake has wind or summer layering.
 - Daily resolution. Sub-daily timing of a plume is not resolved.
 - Annual returns before 2024 carry old or no overflow IDs; `dipcast/ids.py` resolves 93% of rows (100% of UU 2023, 92% of UU 2021-22) via the Hub lookup, then site name and grid reference.
 - The spill model and its site calibration layer were trained on United
