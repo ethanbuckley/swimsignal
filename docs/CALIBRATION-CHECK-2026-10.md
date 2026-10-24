@@ -123,6 +123,10 @@ are met for all companies together, same day and in advance:
 | Same day (lead 0) | 0.063 | 0.047 | 0.74 (0.65 to 0.87) | 4 of 4 | 0.74 (0.63 to 0.81) |
 | In advance (leads 1–4) | 0.059 | 0.047 | 0.80 (0.62 to 0.91) | 4 of 4 | 0.74 (0.60 to 0.80) |
 
+O/E 0.74 means the observed rate is about 26% below the mean forecast (0.047 against 0.063); the
+forecast is about 34% above what was observed. In advance, 0.047 against 0.059: observed 20% below,
+forecast 26% above.
+
 The same holds on #338's common rows: O/E 0.74 and 0.81, slope 0.75 and 0.74, both rules met.
 
 **It is not true everywhere.** By company, with at least 50 overflow-days with a spill:
@@ -165,7 +169,9 @@ intervals resample them together.
 What the bands show:
 
 - Below 0.01 the forecast is slightly too **low**: 0.003 against 0.006, interval above the forecast.
-- From 0.07 up it is too **high**, by about a third in each band.
+- From 0.07 up it is too **high**: the observed rate is 30% to 38% below the mean forecast in each band
+  (0.104 forecast against 0.069 observed; 0.249 against 0.154; 0.527 against 0.363; 0.785 against 0.548).
+  Put the other way, the forecast is 43% to 62% above what was observed.
 - Within 0.03–0.07 it is about right.
 - This is the shape a slope below 1 describes: chances too spread out, high ones too high and the lowest
   slightly too low. The overall O/E is pulled below 1 by the upper bands.
