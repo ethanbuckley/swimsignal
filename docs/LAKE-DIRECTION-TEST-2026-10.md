@@ -234,3 +234,15 @@ What this says (inferred, not tested):
 
 As above under "Seen before writing": Waterhead, Millerground Landing, Rayrigg Meadow and Coniston Boating Centre lose
 one overflow each; Monk Coniston loses both of its and reads "No monitored overflow found upstream".
+
+### Decision: the default stays `any`
+
+Added 24 October 2026, before merging. This departs from "What follows" above, which made `down` the default when
+all seven conditions held. The final commit (0fc6664) is reverted in this PR, so `down` stays an option, off.
+
+The reason is the record table. At every sampled lake water whose exposure changes, the within-site rho falls, and
+Monk Coniston, the best-matched lake site (0.573), leaves the scored set. The lake within-site rho falls from 0.290
+to 0.245. The seven conditions guard the pooled scores against harm; they do not show a gain, and the per-site
+record points the other way. The samples are few (about 57 a site, 0 to 2 over 900), so this is not proof that the
+rule is wrong either. A new test on more samples at these lakes, stated before it is run, decides whether `down` is
+turned on.
