@@ -1,4 +1,4 @@
-"""Scottish Water's near-real-time overflow API, polled in shadow (Scotland plan, task S4).
+"""Scottish Water's near-real-time overflow API, polled in shadow.
 
 Off unless DIPCAST_SCOTTISH_WATER=1 (config.SCOTTISH_WATER). When on, jobs.refresh_all calls poll()
 after the English feeds, and poll() keeps two files in STATE:
@@ -8,16 +8,15 @@ after the English feeds, and poll() keeps two files in STATE:
 
 Nothing here writes live_latest.parquet, live_history.parquet, the coverage file or the overflow table,
 so no Scottish row reaches the site, the scorer or the English history. site.yml publishes a fixed list
-of state files to the `state` release, and these two are not on it. Decided on 4 Oct 2026 (plan,
-section 10): "right now" for Scotland goes live with the forecast, after the outside review.
+of state files to the `state` release, and these two are not on it. Scotland's "right now" goes live
+with its forecast (docs/SCOTLAND-PLAN-2026-10.md, section 10).
 
-What the API gives (checked: one request each on 4 Oct 2026, from a Mac at 14:37 and 18:19 UTC and
-from a GitHub runner in a throwaway workflow, run 37223860337): HTTP 200, about 2.96 MB of JSON, no
-key, no compression. `{"results": [...], "last_updated": <epoch ms>}`, one row per asset (2,074 rows
-at 14:37 and at 18:19), every value a string, times in UTC with a Z. Each row carries its latest event and the
-one before it: start, end, minutes and a discharge id. The API page asks users to "respect rate
-limits and cache data where possible" (no rate given) and to "cite Scottish Water as the data
-source" (CREDIT). It says the monitors "do not confirm overflow events, they only indicate them".
+The API (docs/SOURCE-SCOTTISH-WATER-2026-10.md): no key, about 3 MB of JSON,
+`{"results": [...], "last_updated": <epoch ms>}`, one row per asset, every value a string, times in
+UTC with a Z. Each row carries its latest event and the one before it: start, end, minutes and a
+discharge id. The API page asks users to "respect rate limits and cache data where possible" and to
+"cite Scottish Water as the data source" (CREDIT). It says the monitors "do not confirm overflow
+events, they only indicate them".
 
 Status (plan section 5.1; the codes and their meanings are from the API page, read 4 Oct 2026):
 
@@ -28,48 +27,39 @@ Status (plan section 5.1; the codes and their meanings are from the API page, re
 
 Any other code reads as -1, as ingest.live reads a Status it cannot parse.
 
-Data state per asset (ingest.live's LIVE, STALE, OFFLINE). Unlike the English feeds, each asset has
-its own transmit times, so a stale monitor is marked one by one, not by company. An asset is live
-when its status is 1 or 0 and the older of its two transmit times (`transmitted_at`) is within
-live.FEED_CURRENT_H of the poll; stale when its status is 1 or 0 but either time is older or missing;
-offline when its status is -1. The older time is used because the two can disagree: on 4 Oct 2026 at
-18:19 UTC, CSO003333 read "No valid data received in the past 48 hours" with
-DEVICE_LAST_TRANSMITTED_DATETIME 2.2 hours old and LAST_TRANSMITTED_DATETIME 54.1 hours old
-(checked). *Inferred* from that row: the device time is a heartbeat and the other the last data.
-The API page defines neither field. In that answer LAST_TRANSMITTED_DATETIME was never the later
-of the two (1,800 of 1,834 rows earlier, the rest equal).
+Data state per asset (ingest.live's LIVE, STALE, OFFLINE). Each asset has its own transmit times, so
+a stale monitor is marked one by one, not by company. An asset is live when its status is 1 or 0 and
+the older of its two transmit times (`transmitted_at`) is within live.FEED_CURRENT_H of the poll;
+stale when its status is 1 or 0 but either time is older or missing; offline when its status is -1.
+The older time is used because the two can disagree: on 4 Oct 2026, CSO003333 read "No valid data
+received in the past 48 hours" with DEVICE_LAST_TRANSMITTED_DATETIME 2.2 hours old and
+LAST_TRANSMITTED_DATETIME 54.1 hours old. *Inferred*: the device time is a heartbeat and the other
+the last data. The API page defines neither field.
 
 Stuck monitors (plan section 5.2). An asset that has read Overflowing for more than STUCK_H hours is
 marked `stuck`, and its data state is stale: the reading may be frozen. Its status stays 1, so it is
 never read as "not discharging", and its events stay in the history with the same flag, so a scorer
 can leave them out. The rule flags and never drops, because a long discharge can be real (*inferred*:
-groundwater keeps some overflows running for weeks in a wet winter). At 18:19 UTC on 4 Oct 2026, 2
-of 37 Overflowing assets passed 168 hours (223.6 and 687.7 hours); the next longest was 52.3
-(checked). England's live feeds have the same risk and no rule yet (plan section 5.2 asks for one
-rule for both); the English snapshot of 11:48 UTC that day had 6 discharging overflows, the longest
-at 145.6 hours, so the same rule would have marked none.
+groundwater keeps some overflows running for weeks in a wet winter). On 4 Oct 2026, 2 of 37
+Overflowing assets passed 168 hours (223.6 and 687.7); the next longest was 52.3.
 
 Events. Both events of every asset go to the history, keyed by discharge id, so an event that moves
-from `latest` to `previous` between two polls is kept once, with its end. Checked on two answers an
-hour apart (feed times 18:01 and 19:03 UTC on 4 Oct 2026): of the 2,866 events in both, none changed
-its discharge id, including the 3 that ended between them, and 11 moved from latest to previous. A
-third event between polls is still lost: the feed keeps two. 242 assets at 14:37 and 243 at 18:19
-had both starts within 3 hours, and in that one hour 4 assets had two new events, so the latest of
-the first answer was in neither slot of the second (checked). If that event was open, the history
-keeps it open from its last sighting, which observed_spill_days ends at that poll.
-The column names `status`, `latest_event_start` and `latest_event_end` are those
-forecast_log.observed_spill_days reads, so task S5 can score from this file as it is.
+from `latest` to `previous` between two polls is kept once, with its end. On two answers an hour
+apart (4 Oct 2026), none of the 2,866 events in both changed its discharge id. A third event between
+polls is still lost: the feed keeps two, and in that hour 4 assets had two new events. If the lost
+event was open, the history keeps it open from its last sighting, which observed_spill_days ends at
+that poll. The column names `status`, `latest_event_start` and `latest_event_end` are those
+forecast_log.observed_spill_days reads.
 
-Coverage (task S5, 11 Oct 2026). Each saved poll also adds a row per asset to COVERAGE_FILE, in the
-schema of England's live_coverage.parquet (ingest.live.merge_coverage): known when the status is 1
-or 0, stale when known but the asset's own data state is not live (a stale transmit time or a stuck
-monitor), and the half-hour slot as a bit. The shadow scorer (scottish_shadow) applies England's
-coverage rules to it, so a day scores as "no spill" only on the same evidence as in England.
+Coverage. Each saved poll also adds a row per asset to COVERAGE_FILE, in the schema of England's
+live_coverage.parquet (ingest.live.merge_coverage): known when the status is 1 or 0, stale when
+known but the asset's own data state is not live (a stale transmit time or a stuck monitor), and the
+half-hour slot as a bit. The shadow scorer (scottish_shadow) applies England's coverage rules to it,
+so a day scores as "no spill" only on the same evidence as in England.
 
-How often it asks (task S5, 11 Oct 2026). On 4 Oct 2026 Ethan told Scottish Water
-(opendata@scottishwater.co.uk) that SwimSignal would make about one request every three hours and
-never more than one an hour. site.yml asks for a build every 30 minutes (in practice a median 2.9
-hours apart), so poll() makes no request when the last saved answer was fetched under
+How often it asks. SwimSignal told Scottish Water (opendata@scottishwater.co.uk) on 4 Oct 2026 that
+it would make about one request every three hours and never more than one an hour. Builds can start
+every 30 minutes, so poll() makes no request when the last saved answer was fetched under
 MIN_POLL_GAP_MIN minutes ago, by the `fetched_at` stored in LATEST_FILE. The shadow forecasts then
 use that stored answer. A failed poll saves nothing, so the next build may ask again.
 """

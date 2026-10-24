@@ -390,8 +390,8 @@ def with_reviews(html: str, page: str) -> str:
 # With reports of illness on, the privacy notice gains a section after Reviews, a line in its short
 # version and the reports in "SwimSignal holds none"; the terms gain a paragraph after the notes on a
 # visit; the data page gains a row and a section for data/illness.json. While reports are off but some
-# are still held, the privacy notice keeps its section and the rest goes. Health and legal wording, for
-# Ethan to approve before reports are switched on. Its sources, read on 4 Oct 2026:
+# are still held, the privacy notice keeps its section and the rest goes. Health and legal wording, to be
+# approved before reports are switched on. Its sources, read on 4 Oct 2026:
 # - Explicit consent, UK GDPR Article 9(2)(a), with consent under Article 6(1)(a): the ICO says special
 #   category data needs both an Article 6 basis and an Article 9 condition ("What are the rules on special
 #   category data?"), and that explicit consent "must be confirmed in a clear statement", which may be "a

@@ -271,7 +271,7 @@ def member_rain(rain: pd.DataFrame, ens: pd.DataFrame) -> list[pd.DataFrame]:
 
 def ensemble_members(ov: pd.DataFrame, days: pd.DatetimeIndex, model: SpillModel | None, rain: pd.DataFrame,
                      hist: int, weights: np.ndarray, travel: np.ndarray) -> dict | None:
-    """Review task D4 (docs/ENSEMBLE-RAIN-TEST-2026-11.md): the spill model and the lead calibration run
+    """The ensemble members (docs/ENSEMBLE-RAIN-TEST-2026-11.md): the spill model and the lead calibration run
     once per member of the ensemble rain, exactly as for the single forecast. `p` and `rain` are
     (members, overflows, days): each overflow's calibrated chance and the day's rain at its cell, NaN where
     that member has no rain; `risk` is (members, days), the spot's risk per member, NaN where more than
@@ -473,7 +473,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 "water_body_validated": pin.mode == "river",
                 "season_validated_months": [int(m) for m in ECOLI_SEASON_MONTHS],
                 # 641 lake samples in the fitting data, 2024-26 (ecoli_model.json: 1,548 x the lake share 0.414),
-                # 16 of them over 900. Until 11 Oct 2026 this said 803, the validation set's lake samples (2023-26).
+                # 16 of them over 900.
                 "note": ("Not validated on lakes: no ranking skill in the fitting data (16 exceedances in 641 lake samples, 2024 to 2026)."
                          if pin.mode == "lake" else
                          "Validated on Environment Agency river bathing waters, May-September; other sites and months are extrapolation."),
@@ -630,10 +630,10 @@ def arriving_of(ov: pd.DataFrame, now: pd.Timestamp, now_contrib: pd.Series) -> 
     } | carried_fields(r)
 
 
-# What forecast_point copies from live_counts (and feeds_on_change) into a spot's `now`. Until 12 Oct 2026 the
-# list was written out where it is used and missed the keys added that night: monitored_weight and
-# upstream_weight (levels.js, nowWatched) and feeds_on_change (index.html, ageReadings), so neither rule
-# reached a page. tests/test_feed_freshness.py checks that every key live_counts gives is here.
+# What forecast_point copies from live_counts (and feeds_on_change) into a spot's `now`. One list, so a key
+# the pages read cannot be left out where it is copied: monitored_weight and upstream_weight (levels.js,
+# nowWatched), feeds_on_change (index.html, ageReadings). tests/test_feed_freshness.py checks that every key
+# live_counts gives is here.
 NOW_KEYS = ("discharging_upstream", "recent_upstream", "monitored_upstream", "feed_down_upstream", "feed_down",
             "stale_upstream", "feed_stale", "no_feed_upstream", "quiet_by_feed", "monitored_weight", "upstream_weight",
             "feeds_on_change")
@@ -651,16 +651,15 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     discharging" that is not current is unknown, not quiet: the monitor is offline (-1), or the
     company's feed has not updated within ingest.live.FEED_CURRENT_H (stale). The stale ones
     are counted in `stale_upstream` and named by company in `feed_stale`, as a feed that is
-    down is. Until 4 Oct 2026 every overflow in a live feed counted as reporting, so an
-    offline monitor read as quiet. A discharge counts whatever the state: it was the feed's
-    last word. live_now_risk is unchanged: an overflow it cannot see adds nothing, as before.
+    down is. A discharge counts whatever the state: it was the feed's last word. In
+    live_now_risk an overflow it cannot see adds nothing.
 
     `no_feed_upstream` counts those not reporting because their company has no live feed SwimSignal reads
     (data_state no_feed), so the page can tell them from monitors that are offline: what is not
     reporting is then stale_upstream + no_feed_upstream + the rest, which are offline (feed_down_upstream
     among them).
 
-    11 Oct 2026. A spill running at the last poll before its company's feed failed (transport.running)
+    A spill running at the last poll before its company's feed failed (transport.running)
     counts as discharging, as a stale feed's discharge does, and not as feed down. A record that has
     stopped updating in a feed that has not (data_states' `record_stale`) is stale like a stale
     feed's, and named in `feed_stale` with "records": True and the newest of those records' own
@@ -668,7 +667,7 @@ def live_counts(ov: pd.DataFrame, now_contrib: pd.Series) -> dict:
     their feed last updated, so the page can stop counting them once that is over
     ingest.live.FEED_CURRENT_H old where it is read (a page open hours after the build).
 
-    12 Oct 2026. `monitored_weight` and `upstream_weight`: the transport weight of the overflows that
+    `monitored_weight` and `upstream_weight`: the transport weight of the overflows that
     report live, and of all of them, so the page can tell how much of what matters here is watched
     (levels.js, nowUnknown). Sandy Lane, Chester: 1 of its 13 overflows reports live, and it carries
     0.3% of the weight. Each `quiet_by_feed` entry gives its overflows' weight, for the page's ageing."""

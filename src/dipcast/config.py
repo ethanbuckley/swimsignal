@@ -43,8 +43,8 @@ def state_read(name: str) -> Path:
 # Status: 1 = discharging, 0 = not discharging, -1 = monitor offline.
 # Dwr Cymru (Wales) is not read live. Its map uses a public ArcGIS layer
 # (Spill_Prod__view) with another schema and no licence, and its site asks for
-# written permission before reuse. SwimSignal emailed it on 1 Oct 2026 and waits
-# for its terms (docs/WALES-PLAN-2026-10.md). Hafren Dyfrdwy is not in Severn
+# written permission before reuse. Terms were asked for on 1 Oct 2026
+# (docs/WALES-PLAN-2026-10.md). Hafren Dyfrdwy is not in Severn
 # Trent's layer.
 # ---------------------------------------------------------------------------
 LIVE_FEEDS: dict[str, str] = {
@@ -59,7 +59,7 @@ LIVE_FEEDS: dict[str, str] = {
     "Southern Water": "https://services-eu1.arcgis.com/6qJmARkS2dt2IjVA/arcgis/rest/services/SouthernWater_StormOverflowActivity_PROD_view/FeatureServer/0",
 }
 
-# Dwr Cymru's own layer, with its own schema (Wales plan, task W5). Read only when
+# Dwr Cymru's own layer, with its own schema. Read only when
 # DIPCAST_DWR_CYMRU=1, which stays off until Dwr Cymru gives reuse terms; ingest/dwr_cymru.py
 # says what it keeps. Nothing from it is shown on the site or published.
 DWR_CYMRU_LIVE = "https://services3.arcgis.com/KLNF7YxtENPLYVey/arcgis/rest/services/Spill_Prod__view/FeatureServer/0"
@@ -73,7 +73,7 @@ EDM_EVENT_FEEDS: dict[str, str] = {
     "United Utilities 2025": f"{STREAM_BASE}/United_Utilities_Event_Duration_Monitoring_2025/FeatureServer/0",
 }
 
-# Event-level histories of other companies (review task D3; docs/EARLIER-SPILL-HISTORY-2026-10.md), each
+# Event-level histories of other companies (docs/EARLIER-SPILL-HISTORY-2026-10.md), each
 # written to its own data/processed/stream_events_<company>.parquet by scripts/import_stream_events.py.
 # Kept out of EDM_EVENT_FEEDS on purpose: train.py builds a year of site-days for every year it finds in
 # edm_events.parquet, and validate_ecoli.py reads the same file, so a feed added there changes the model.
@@ -89,14 +89,14 @@ EDM_HISTORY_FEEDS: dict[str, str] = {
 # (edm_events.crosswalk_by_events). Read for that only.
 WESSEX_EDM_2024 = "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2024_view/FeatureServer/0"
 
-# Thames Water's discharge alert stream (review task D8): no key, from April 2022; ingest/thames_alerts.py.
+# Thames Water's discharge alert stream: no key, from April 2022; ingest/thames_alerts.py.
 THAMES_ALERTS = "https://api.thameswater.co.uk/opendata/v2/discharge/alerts"
 
 # Environment Agency annual returns, all years, all companies: spill counts and
 # hours per overflow per calendar year, with WFD waterbody IDs. Used for priors.
 EDM_ANNUAL_RETURNS = "https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/services/edm_annual_returns_all_years_public/FeatureServer/0"
 
-# Scottish Water's near-real-time overflow API (Scotland plan, task S4): not ArcGIS, its own schema.
+# Scottish Water's near-real-time overflow API: not ArcGIS, its own schema.
 # Polled in shadow only, and only when DIPCAST_SCOTTISH_WATER=1; ingest/scottish_water.py says what it
 # keeps. Nothing from it is shown on the site or published.
 SCOTTISH_WATER_API = "https://api.scottishwater.co.uk/overflow-event-monitoring/v1/near-real-time"
@@ -112,7 +112,7 @@ OPEN_METEO_FORECAST = "https://api.open-meteo.com/v1/forecast"
 RAIN_GRID_DEG = 0.1
 FORECAST_DAYS = 5
 FORECAST_PAST_DAYS = 31   # enough history for the 30-day and API features
-# Ensemble rain for the listed spots (review task D4, docs/ENSEMBLE-RAIN-TEST-2026-11.md): the Met Office's
+# Ensemble rain for the listed spots (docs/ENSEMBLE-RAIN-TEST-2026-11.md): the Met Office's
 # MOGREPS-UK at 2 km, as Open-Meteo serves it, the control and two perturbed members, to 126 hours.
 OPEN_METEO_ENSEMBLE = "https://ensemble-api.open-meteo.com/v1/ensemble"
 ENSEMBLE_MODEL = "ukmo_uk_ensemble_2km"
@@ -135,14 +135,14 @@ EA_HEADERS = {"User-Agent": USER_AGENT}
 # Physics defaults for transport. See model/transport.py for how they are used.
 # ---------------------------------------------------------------------------
 SNAP_MAX_M = 750.0            # max distance to snap an outfall to a river link
-RIVER_VELOCITY_MS = 0.2       # reach-averaged velocity when no gauge; fitted, was 0.5 (docs/TRANSPORT-FIT-TEST-2026-10.md)
+RIVER_VELOCITY_MS = 0.2       # reach-averaged velocity when no gauge; fitted (docs/TRANSPORT-FIT-TEST-2026-10.md)
 LAKE_VELOCITY_MS = 0.05       # effective advection across a lake: ~1% of a 5 m/s wind
-T90_HOURS = 72.0              # time for 90% die-off of faecal indicator bacteria; fitted, was 30 (the same doc)
+T90_HOURS = 72.0              # time for 90% die-off of faecal indicator bacteria; fitted (the same doc)
 RECENT_SPILL_HOURS = 48.0     # how long a finished spill keeps contributing
 MAX_UPSTREAM_KM = 60.0        # do not trace further than this upstream
 
-# Two options from Dr James Shucksmith's review of the method (9 Oct 2026). Both default to the
-# rule in use before it; model/transport.py says what each one does. Not switched on in production.
+# Two options for testing other transport rules. Both default to the production rule;
+# model/transport.py says what each one does. Not switched on in production.
 # VELOCITY_MODE  "fixed"      RIVER_VELOCITY_MS on every reach
 #                "catchment"  each reach's own speed from its catchment area (reach_velocity)
 # DILUTION_MODE  "length"     upstream network length at the overflow over that at the spot
@@ -151,10 +151,9 @@ MAX_UPSTREAM_KM = 60.0        # do not trace further than this upstream
 VELOCITY_MODE = os.environ.get("DIPCAST_VELOCITY_MODE", "fixed")
 DILUTION_MODE = os.environ.get("DIPCAST_DILUTION_MODE", "length")
 
-# A lake on the way from an overflow to a spot (a Lake District water-quality group, 11 Oct 2026: a
-# spill into Grasmere has dissipated by the time the water leaves Rydal Water). "residence_spill" is the
-# default after docs/LAKE-RESIDENCE-SPILL-2026-10.md (all seven stated conditions held, 14 Oct 2026); "lake"
-# was the default from 11 Oct 2026 (docs/LAKE-PATH-TEST-2026-10.md); "river" is the rule before that.
+# A lake on the way from an overflow to a spot: a spill into Grasmere has dissipated by the time the water
+# leaves Rydal Water. "residence_spill" is the default after docs/LAKE-RESIDENCE-SPILL-2026-10.md (all seven
+# stated conditions held); "lake" passed docs/LAKE-PATH-TEST-2026-10.md.
 # LAKE_PATH_MODE "residence_spill"  as "residence", with tau divided by the lake's spill-time flow ratio R >= 1
 #                         (LAKE_RESIDENCE_SPILL_FILE, scripts/make_lake_spill_ratio.py, EA Hydrology daily mean
 #                         flows, OGL v3.0)
@@ -171,12 +170,12 @@ LAKE_RESIDENCE_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_FILE", RAW / "
 LAKE_RESIDENCE_SPILL_FILE = Path(os.environ.get("DIPCAST_LAKE_RESIDENCE_SPILL_FILE", RAW / "lake_residence_spill.csv"))
 RESIDENCE_MODES = ("residence", "residence_spill")
 
-# A lake spot's distance from where an overflow's water enters its lake to the spot (outside review, 12 Oct
-# 2026: Pooley Bridge's straight line from Glenridding runs 6.7 of 10.9 km over land). "water" is the default
-# after docs/LAKE-DISTANCE-2026-10.md (all seven stated conditions held, 16 Oct 2026).
+# A lake spot's distance from where an overflow's water enters its lake to the spot. Pooley Bridge's straight
+# line from Glenridding runs 6.7 of 10.9 km over land. "water" is the default after docs/LAKE-DISTANCE-2026-10.md
+# (all seven stated conditions held).
 # LAKE_DISTANCE_MODE "water"  the shortest path inside the WFD lake polygons the spot's lake is made of
 #                             (model/lake_water.py); the straight line where it stays in the water
-#                    "line"   the straight line (the rule before)
+#                    "line"   the straight line
 LAKE_DISTANCE_MODE = os.environ.get("DIPCAST_LAKE_DISTANCE_MODE", "water")
 LAKE_DISTANCE_MODES = ("line", "water")
 

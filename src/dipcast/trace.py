@@ -1,7 +1,7 @@
-"""The river a spot's forecast traces upstream, drawn on the spot's map (docs/REVIEW-2026-10-16.md, G6).
+"""The river a spot's forecast traces upstream, drawn on the spot's map (docs/REVIEW-2026-10-16.md).
 
 The forecast counts every monitored overflow on the river network within 60 km upstream of a spot
-(transport.upstream_overflows). Reviewers asked why an overflow 40 km away counts, and a wrong trace
+(transport.upstream_overflows). Drawn, it shows why an overflow 40 km away counts, and a wrong trace
 (Loughrigg Tarn's, say) is plain once it is drawn. So the build writes, for each spot, the lines of that
 network (transport.traced_lines), joined where one runs into the next, simplified to SIMPLIFY_M and
 written as Google encoded polylines (precision 5, about a metre) to keep the largest file small: on

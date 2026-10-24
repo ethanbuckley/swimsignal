@@ -110,9 +110,9 @@ def rain_windows(hourly: pd.Series, ends: pd.DatetimeIndex, min_coverage: float 
     read as dry weather. An accepted window with a few missing hours sums only the
     hours it has, which understates rain if the missing hours were wet; with
     `return_coverage=True` the finite fraction of each window comes back too, so a
-    caller can require complete windows or report the sensitivity. (Before 16 Sep
-    2026 this counted stamps rather than finite values and pandas summed an all-NaN
-    window to 0.0; until 17 Sep it summed 49 stamps for 48 h.)"""
+    caller can require complete windows or report the sensitivity. (rain_48h logged
+    before 17 Sep 2026 came from an older sum: an all-NaN window read 0.0, and 48 h
+    could take 49 stamps.)"""
     s = hourly.astype(float)
     s = s[np.isfinite(s.to_numpy())]
     s = s[~s.index.duplicated(keep="last")].sort_index()

@@ -468,7 +468,7 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     draw.rectangle((M, y, w - M, y + 1), fill=LINE)
 
     name_f, cell_f, note_f = font("serif", st.name), font("sans", st.cell, 700), font("sans", 30, 600)
-    plain = ("no overflows", "no river connection")   # the two plain levels, one colour as on the site (11 Oct 2026)
+    plain = ("no overflows", "no river connection")   # the two plain levels, one colour as on the site
     notes = [(CLEAR_MARK if lv in plain else NA_MARK, CLEAR_TEXT if lv in plain else NA_TEXT,
               f"{headline} at {and_list(names)}.") for headline, lv, names in card.plain]
     poor = [r.label for r in card.rows if r.poor]
@@ -568,7 +568,7 @@ def draw_storm(rows: list[StormRow], generated_at: str, size: str):
 # ------------------------------------------------------------------------------ a spot's share card
 # The picture a link to a spot's page shows in a messaging app or a feed (its og:image), at the size those
 # expect. It carries the level, which a cached preview keeps for days, so when the forecast was issued
-# sits right under it, in ink, not in the grey foot (Ethan, 16 Oct 2026). Remade with each build.
+# sits right under it, in ink, not in the grey foot. Remade with each build.
 SHARE_SIZE = (1200, 630)
 PLAIN = ("no overflows", "no river connection")   # the two plain levels, one colour as on the site
 

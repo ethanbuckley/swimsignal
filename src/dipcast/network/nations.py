@@ -1,4 +1,4 @@
-"""How much of the river network the trace walks above a spot lies in Wales (11 Oct 2026).
+"""How much of the river network the trace walks above a spot lies in Wales.
 
 Dŵr Cymru Welsh Water's overflows in Wales are not in SwimSignal's data: its live layer has no reuse
 licence yet (config.DWR_CYMRU, docs/WALES-PLAN-2026-10.md), and the Environment Agency's returns cover

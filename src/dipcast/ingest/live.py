@@ -61,9 +61,8 @@ RENAME = {
 
 
 def hub_names(df: pd.DataFrame) -> pd.DataFrame:
-    """Field names in the hub's spelling, whatever their case. Until 4 Oct 2026 the names were
-    matched exactly, so South West Water's statusStart, latestEventStart, latestEventEnd,
-    lastUpdated, receivingWaterCourse, latitude and longitude were never read, whatever they held.
+    """Field names in the hub's spelling, whatever their case: South West Water spells statusStart,
+    latestEventStart, latestEventEnd, lastUpdated, receivingWaterCourse, latitude and longitude so.
     A name already in the hub's spelling is left alone."""
     want = {k.lower(): k for k in RENAME}
     return df.rename(columns={c: want[c.lower()] for c in df.columns
@@ -142,7 +141,7 @@ def _read_feed(company: str, url: str, expected: dict[str, float] | None) -> lis
 
 def fetch_live(companies: dict[str, str] | None = None, expected: dict[str, float] | None = None) -> pd.DataFrame:
     """This poll's rows from every company feed. `expected` (expected_rows) turns on the
-    short-read check; without it each feed is read once, as before 6 Oct 2026."""
+    short-read check; without it each feed is read once."""
     feeds = companies or config.LIVE_FEEDS
     frames = []
     for company, url in feeds.items():
@@ -215,7 +214,7 @@ def feed_age_hours(df: pd.DataFrame) -> pd.Series:
     return age.groupby(df["company"]).min()
 
 
-# Records that stop updating in a feed that does (11 Oct 2026). The company test above looks at a
+# Records that stop updating in a feed that does. The company test above looks at a
 # feed's freshest stamp, so one record can stop updating while the rest of its feed goes on, and it
 # read as "not discharging" for months: Wessex Water's WSX10153 last stamped on 22 Jul 2025 and
 # WXW00014 on 31 Mar 2026, both counted at spots and scored as dry days. A record's own stamp says
@@ -302,7 +301,7 @@ def data_states(ov: pd.DataFrame) -> pd.DataFrame:
     record last updated, not when its feed did. A table without the poll's times (a test's) gets its
     states from the status alone.
 
-    `feed_on_change` (12 Oct 2026): the company stamps its records, but only when one changes: some of
+    `feed_on_change`: the company stamps its records, but only when one changes: some of
     them, and under EVERY_RECORD_SHARE, stamped within the day. Its feed time is then its last change anywhere, and a
     quiet spell reads as a stale feed: Southern Water's was over six hours old at 20 of 173 polls from
     28 Sep to 11 Oct 2026. The layer's own last edit is the same time, and the services have no other
@@ -432,9 +431,9 @@ def carry_forward(df: pd.DataFrame, previous: pd.DataFrame | None,
 
     `last_status` is the status the last poll that read the overflow saw: its status on a fresh
     row, and on a carried row the status before it was carried (kept through every poll the feed
-    stays down). Until 11 Oct 2026 a carried row kept only FEED_DOWN, and every discharging row
-    has an empty event end, so a spill running when its company's feed failed dropped out of the
-    right-now risk (transport.running counts it now). NaN on a row carried before the column."""
+    stays down). Every discharging row has an empty event end, so without it a spill running when
+    its company's feed failed would drop out of the right-now risk (transport.running counts it).
+    NaN on a row carried before the column existed."""
     out = df.copy()
     out["feed_down_since"] = pd.Series(pd.NaT, index=out.index, dtype="datetime64[ns, UTC]")
     out["last_status"] = pd.to_numeric(out["status"], errors="coerce").astype(float)

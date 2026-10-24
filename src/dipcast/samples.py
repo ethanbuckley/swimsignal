@@ -1,10 +1,9 @@
 """Lab results an organisation sends: water samples it had taken at a spot and tested by a lab, kept
 apart from every forecast and estimate (samples/README.md has the format and how to add them).
 
-An outside review of 20 Oct 2026 asked for it for the paid pilots: where an organiser already pays
-for lab tests, a way to attach its results to the right spot and sampling time, measured results kept
-distinct from predictions, who supplied them kept with them, and permission to use them for testing
-the forecast agreed separately from permission to publish them.
+It serves the paid pilots: where an organiser already pays for lab tests, its results are attached to
+the right spot and sampling time, kept distinct from predictions, with who supplied them, and
+permission to use them for testing the forecast is agreed separately from permission to publish them.
 
 One row a sample, in two places:
 

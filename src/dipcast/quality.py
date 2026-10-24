@@ -1,4 +1,4 @@
-"""The data-quality page, quality.html (review task G12): the overflow records SwimSignal has had to
+"""The data-quality page, quality.html: the overflow records SwimSignal has had to
 pick between or guess at, listed for the water companies and the Environment Agency to correct.
 
 Three lists. The position conflicts checked on 13 October 2026 (docs/OVERFLOW-POSITIONS-2026-10.md),

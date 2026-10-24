@@ -1,6 +1,6 @@
 """Welsh storm overflow annual returns (EDM), per overflow and year, for the Wales hindcast.
 
-Task W2 of docs/WALES-PLAN-2026-10.md. Off CI and unpublished: Dŵr Cymru Welsh Water's layers
+See docs/WALES-PLAN-2026-10.md. Off CI and unpublished: Dŵr Cymru Welsh Water's layers
 carry no licence, so the output, data/processed/wales_annual.parquet, stays out of git and off the
 site until Dŵr Cymru answers question 8.1.7 of the plan.
 
@@ -137,7 +137,7 @@ YEAR_COLUMNS = ["site_name", "permit", "asset_type", "receiving_water", "spills"
                 "edm_operational_pct", "uptime_source", "source"]
 SITE_COLUMNS = ["lat", "lon", "easting", "northing", "pos_source", "outlet_asset_m", "country", "emergency",
                 "live_global_id", "live_dcww_id", "live_name", "live_dist_m"]
-# What the hindcast (task W4) reads: the names and units model/features.site_static_features expects.
+# What the hindcast reads: the names and units model/features.site_static_features expects.
 MODEL_COLUMNS = ["site_id", "lat", "lon", "company", "lta_spills", "spill_hours", "edm_operational_pct"]
 
 _TO_BNG = Transformer.from_crs(4326, 27700, always_xy=True)

@@ -1,15 +1,15 @@
 """The overflow's own spill status as an input to the spill model, run in shadow
 (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md).
 
-PR #254 (docs/LIVE-STATUS-FEATURE-TEST-2026-10.md) fitted one candidate per lead 0 to 4: the
-nine-company model with three status inputs added, fitted on the EA's 2024 start/stop events. On
-2025 it beat D2's model, the same model without the inputs, at every lead. Nothing was deployed: it
-needs a confirmation on status read from SwimSignal's own polls, and a rule for an overflow whose
-status is missing.
+The feature test (docs/LIVE-STATUS-FEATURE-TEST-2026-10.md) fitted one candidate per lead 0 to 4:
+the nine-company model with three status inputs added, fitted on the EA's 2024 start/stop events. On
+2025 it beat the same model without the inputs at every lead. It is not deployed: it needs a
+confirmation on status read from SwimSignal's own polls, and a rule for an overflow whose status is
+missing.
 
 This module gives both, for the forecast log only:
 - `status_table` reads the three inputs from the poller's files (live_history.parquet,
-  live_coverage.parquet), as the #254 statement said production would compute them;
+  live_coverage.parquet), as the feature test's statement said production would compute them;
 - `status_known` says, per overflow, whether its status is current and its last seven days were
   watched closely enough to trust the counts (MAX_GAP_H, from the poller's cadence);
 - `shadow_forecast` runs the candidate of each lead where the status is known, and gives the
@@ -39,8 +39,8 @@ LOCAL_TZ = "Europe/London"
 STATUS = ["spilling_at_issue", "spill_hours_24h", "spill_days_7d"]
 LEADS = range(5)
 CANDIDATE_DIR = config.PROCESSED / "live_status"
-# The five candidates PR #254 scored (its results, "Checks of the code"): SHA-256 prefixes, leads 0 to 4.
-# A file that does not match is not run: the shadow would test something other than what #254 judged.
+# The five candidates the feature test scored (its results, "Checks of the code"): SHA-256 prefixes, leads 0
+# to 4. A file that does not match is not run: the shadow would test something other than what the test judged.
 CANDIDATE_SHA = {0: "deb5e1e5ee64", 1: "e0756b1e9748", 2: "ed5bb2b9a39e", 3: "5180de7086c6", 4: "ecc835c96d70"}
 WINDOW_DAYS = 7          # spill_days_7d reads the seven local days before the issue day
 # The longest stretch without a current reading of an overflow, over its seven-day window and up to the
@@ -49,8 +49,8 @@ WINDOW_DAYS = 7          # spill_days_7d reads the seven local days before the i
 # of 20 Oct 05:44 UTC) the gap was a median 1.05 h, 6.43 h at the 95th percentile, 7.30 h at the 99th
 # and 7.71 h at most. 8 h is the first whole hour above every gap seen, so the poller's own timetable
 # never makes a status stale; a feed that stops, a frozen record, an offline monitor or a poll that
-# missed the overflow does. It is the scorer's MAX_GAP_H (forecast_log), set on 1 Oct from the same
-# cadence, so the inputs and the labels they are scored against trust the same polls.
+# missed the overflow does. It is the scorer's MAX_GAP_H (forecast_log), set from the same cadence,
+# so the inputs and the labels they are scored against trust the same polls.
 MAX_GAP_H = 8.0
 SLOT_H = 0.5             # live_coverage.parquet keeps one bit per half-hour slot of a local day
 
@@ -58,7 +58,7 @@ SLOT_H = 0.5             # live_coverage.parquet keeps one bit per half-hour slo
 # ------------------------------------------------------------------ candidates
 @lru_cache(maxsize=1)
 def candidates() -> dict[int, SpillModel]:
-    """The five candidates by lead, or {} (the shadow is off) if any is missing or not #254's file."""
+    """The five candidates by lead, or {} (the shadow is off) if any is missing or not the tested file."""
     out = {}
     for k in LEADS:
         p = CANDIDATE_DIR / f"candidate_lead{k}.pkl"
@@ -150,7 +150,7 @@ def status_table(issue_day: date, history: pd.DataFrame, cov: pd.DataFrame) -> p
     The status at issue (spilling_at_issue) comes from the overflow table at forecast time, as do the
     data state and the stretch from last_reading to the issue time (status_known).
 
-    The #254 statement fixed these. Its candidates were trained at 00:00 UTC of the issue day with EA
+    The feature test's statement fixed these. Its candidates were trained at 00:00 UTC of the issue day with EA
     events; here the days are local, the status is the build's poll, and hours an event that started
     and ended between two polls without being the latest at the second are lost. That difference is
     what the shadow test measures."""

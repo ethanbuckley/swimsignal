@@ -2,7 +2,7 @@
 Environment Agency's annual returns (event duration monitoring, OGL v3; data/processed/annual_returns.parquet).
 
 Shared by scripts/site_profile.py, which traces any point for a bathing-water applicant
-(docs/MARKETS-2026-10.md, T8), and the site's profile pages, spot/<id>/profile/ (T6), which the build
+(docs/MARKETS-2026-10.md), and the site's profile pages, spot/<id>/profile/, which the build
 writes from each spot's data/upstream/<id>.json (scripts/build_site.py, write_profiles). Both take the
 overflows as rows with site_id, site_name, company, weight (reach), travel_h, has_live and a distance:
 distance_km and lake_distance_km as the site's files have them, or the trace's distance_m and
@@ -96,7 +96,7 @@ def summary(t: pd.DataFrame) -> list[dict]:
 
 
 def in_lake(t: pd.DataFrame) -> pd.Series:
-    """Overflows in the spot's own lake: some lake on the way and no river (11 Oct 2026). They are across the
+    """Overflows in the spot's own lake: some lake on the way and no river. They are across the
     lake, not upstream: Glebe Road PS in Bowness read "2.6 km upstream" of Millerground, though Windermere
     drains south. The site's pages say it the same way (levels.js, overflowWhere)."""
     if "distance_km" in t:
