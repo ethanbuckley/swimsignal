@@ -937,9 +937,10 @@ def _walk_to_lake(net: RiverNetwork, link_id: str, frac: float, comp: set[str], 
 def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFrame,
                        velocity_ms: float, max_km: float = config.MAX_UPSTREAM_KM,
                        t90_h: float = config.T90_HOURS, velocity_mode: str | None = None,
+                       keep_parts: bool = False,
                        dilution_mode: str | None = None, lake_path_mode: str | None = None,
                        lake_distance_mode: str | None = None,
-                       dilution_power: float = DILUTION_POWER, keep_parts: bool = False) -> pd.DataFrame:
+                       dilution_power: float = DILUTION_POWER) -> pd.DataFrame:
     """Overflows upstream of the pin with distance, travel time and transport weight.
     `velocity_mode`, `dilution_mode` and `lake_path_mode` default to config.VELOCITY_MODE,
     config.DILUTION_MODE and config.LAKE_PATH_MODE.
@@ -952,12 +953,12 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
     as a well-mixed lake instead: its metres still move to lake_distance_m, but travel_h counts
     lake_hold_h for it in place of its metres at LAKE_VELOCITY_MS, decay is the die-off of the rest of
     the journey times lake_pass, and its area factor is dropped. Other lakes are crossed as in 'lake'.
-    `lake_distance_mode` (default config.LAKE_DISTANCE_MODE) sets, for a lake spot, the distance from where
-    each overflow's water enters the spot's lake to the spot (spot_lake_m).
-    `dilution_power` raises dilution 'length''s ratio, after its cap at 1, to that power (1 leaves it as it is).
     `keep_parts` keeps two more columns for weather_decay: moving_h, the hours of the journey that decay at
     T90 (travel_h less the survivors' hours in residence lakes), and lake_pass, the share that leaves those
-    lakes alive (1 with none); decay is 10 ** (-moving_h / t90_h) * lake_pass."""
+    lakes alive (1 with none); decay is 10 ** (-moving_h / t90_h) * lake_pass.
+    `lake_distance_mode` (default config.LAKE_DISTANCE_MODE) sets, for a lake spot, the distance from where
+    each overflow's water enters the spot's lake to the spot (spot_lake_m).
+    `dilution_power` raises dilution 'length''s ratio, after its cap at 1, to that power (1 leaves it as it is)."""
     velocity_mode = velocity_mode or config.VELOCITY_MODE
     dilution_mode = dilution_mode or config.DILUTION_MODE
     lake_path_mode = lake_path_mode or config.LAKE_PATH_MODE
