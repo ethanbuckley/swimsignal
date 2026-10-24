@@ -2216,13 +2216,15 @@ function riverTile(rs) {
 }
 // The answer's words, which a picked day fills again (showDay): the level, why and when, where the week
 // goes, a long spill that may be a fault (it sets the level), the river's separate hazard, what the
-// forecast could and could not read (coverLine), and the issue time. Then the five days, straight under it:
+// forecast could and could not read (coverLine), the issue time, and under it the rain's own time where
+// that is old (rainAgeLine, levels.js). Then the five days, straight under it:
 // a long introduction pushed them down. What to do and what the level counts follow the week, in its tile
 // (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
-    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`; };
+    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`
+    + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
 // and below the screen at Ludlow. iso as answerWords; showDay fills it again.

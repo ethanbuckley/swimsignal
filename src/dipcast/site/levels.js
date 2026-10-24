@@ -450,6 +450,25 @@ function clearWords(s, nowMs = Date.now()) {
   if (!k) return `The spill${one ? '' : 's'} upstream ${by}.`;
   return `If ${k === 1 ? 'the overflow discharging upstream stops' : `the ${k} overflows discharging upstream stop`} now, ${k === 1 && one ? 'its spill' : `the spill${one ? '' : 's'}`} ${by}.`;
 }
+// ------------------------------------------------------------------------------ how old the rain is
+// forecast.py's assumptions.rain_issued_at and rain_age_h: when the oldest rain forecast behind the spot
+// was fetched, and how long before the forecast's issue. Open-Meteo is asked every 2 hours; a cell it did
+// not send, or one the day's limit of requests left out, is served from the cache up to a day old, and
+// the level then rests on old rain. Over RAIN_OLD_H the answer says so under "Issued", in UK time, with
+// the day by the forecast's today. Only a failed request blames Open-Meteo (rain_fallback "no answer");
+// the daily limit is the site's own. rain_mixed: other cells are newer, so only part of the rain is old.
+const RAIN_OLD_H = 6;
+const UK_DATE = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' });
+const UK_HM = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+const UK_WEEKDAY = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', weekday: 'long' });
+function rainAgeLine(s) {
+  const a = (s && s.assumptions) || {}, t = new Date(a.rain_issued_at);
+  if (!a.rain_issued_at || !(a.rain_age_h > RAIN_OLD_H) || Number.isNaN(t.getTime())) return '';
+  const iso = UK_DATE.format(t);
+  const day = iso === today() ? 'today' : iso === addDays(today(), -1) ? 'yesterday' : `on ${UK_WEEKDAY.format(t)}`;
+  const what = `${a.rain_mixed ? 'Part of the rain forecast is' : 'Rain forecast'} from ${UK_HM.format(t)} ${day}`;
+  return `${what}: ${a.rain_fallback === 'no answer' ? 'Open-Meteo did not send a newer one' : 'this update had none newer'}.`;
+}
 // The first day back at low after a raised day in the five days, for the sentence over them: "Back to
 // low risk on Saturday." Raised is the day's own level (risk: a day's spills, its E. coli, a rating,
 // algae, and today's right now). Empty where no day is raised, or none after the first raised day is low
@@ -761,7 +780,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, backToLow,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,

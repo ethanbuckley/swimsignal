@@ -14,7 +14,8 @@ Transient failures (a 429, a 5xx, a connect, TLS or read timeout) are retried a 
 times with a jittered, growing wait (`_request`). If the forecast still does not come,
 fetch_forecast uses the cell's cached forecast up to STALE_MAX_AGE_S old and leaves a
 cell with nothing that fresh out, so its overflows have no rain data: the build goes on
-and the page says "no data" for them. `fallback_summary` reports what was served stale.
+and the page says "no data" for them. `fallback_summary` reports what was served stale, for the
+build's warnings, and `forecast_age` how old the rain behind one spot is, for its page.
 
 Open-Meteo's free API allows 10,000 calls a day. It weighs a request by its own rule
 (call_weight): one variable over up to 140 days is one call per location, so a forecast cell
@@ -371,6 +372,10 @@ def fetch_archive(cells: list[tuple[float, float]], year: int, strict: bool = Fa
 # fetch would otherwise retry it, one spot at a time.
 _failed_at: dict[tuple[float, float], float] = {}
 _stale: dict[tuple[float, float], float] = {}   # cell -> age (s) of the cached forecast served instead
+# cell -> why it was served from the cache past FORECAST_TTL_S: "no answer" (the request failed, or
+# Open-Meteo was taken as down) or "daily limit" (the ration had no room, so no request was made). The
+# spot's page words the two differently (forecast_age): only the first is Open-Meteo's doing.
+_why: dict[tuple[float, float], str] = {}
 _missing: set[tuple[float, float]] = set()       # cells with no cached forecast young enough
 _errors: list[str] = []
 _outage = {"run": 0, "until": 0.0}   # failed requests in a row; no requests before `until`
@@ -380,6 +385,7 @@ def reset_fallbacks() -> None:
     """Forget failed cells and any outage (tests; a long-running process may call it too)."""
     _failed_at.clear()
     _stale.clear()
+    _why.clear()
     _missing.clear()
     _errors.clear()
     _outage.update(run=0, until=0.0)
@@ -397,6 +403,30 @@ def fallback_summary() -> dict | None:
     return {"cells": len(_stale) + len(_missing), "stale": len(_stale), "missing": len(_missing),
             "oldest_stale_h": round(max(_stale.values(), default=0.0) / 3600, 1),
             "errors": list(dict.fromkeys(_errors))[:3]}
+
+
+def forecast_age(frames: list[pd.DataFrame], now: pd.Timestamp) -> dict:
+    """How old the rain forecast in `frames` (fetch_forecast's) is, from the oldest cell in them:
+    `rain_issued_at`, when it was fetched; `rain_age_h`, hours from then to `now`; `rain_fallback`, why
+    that cell was not fetched afresh (_why), where it was served from the cache past FORECAST_TTL_S;
+    and `rain_mixed`, true where other cells were fetched more than an hour later, so only part of the
+    rain is that old. {} where no frame has an issue time."""
+    issued = [f[["cell_lat", "cell_lon", "issued_at"]] for f in frames if f is not None and len(f) and "issued_at" in f]
+    if not issued:
+        return {}
+    cells = pd.concat(issued, ignore_index=True)
+    cells["issued_at"] = pd.to_datetime(cells["issued_at"], utc=True)
+    cells = cells.dropna(subset=["issued_at"]).groupby(["cell_lat", "cell_lon"])["issued_at"].min()
+    if cells.empty:
+        return {}
+    oldest, newest = cells.min(), cells.max()
+    out = {"rain_issued_at": oldest, "rain_age_h": round(max(0.0, (now - oldest).total_seconds()) / 3600, 1)}
+    why = _why.get(cells.idxmin())
+    if why:
+        out["rain_fallback"] = why
+    if newest - oldest > pd.Timedelta(hours=1):
+        out["rain_mixed"] = True
+    return out
 
 
 def fetch_errors() -> list[str]:
@@ -465,10 +495,11 @@ def fetch_forecast(cells: list[tuple[float, float]],
     for i in range(0, len(todo), FORECAST_BATCH):
         chunk = todo[i:i + FORECAST_BATCH]
         weight = forecast_weight(len(chunk), past_days, forecast_days)
+        cause = "no answer"
         if time.time() < _outage["until"]:
             why = "open-meteo taken as down after repeated failures"
         elif not may_spend(weight, what):
-            why = "the day's Open-Meteo ration is spent"
+            why, cause = "the day's Open-Meteo ration is spent", "daily limit"
         else:
             params = {
                 "latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
@@ -505,10 +536,12 @@ def fetch_forecast(cells: list[tuple[float, float]],
                     frames.append(df)
                     _failed_at.pop((cl, cn), None)
                     _stale.pop((cl, cn), None)
+                    _why.pop((cl, cn), None)
                     _missing.discard((cl, cn))
                 continue
         t = time.time()
         _failed_at.update({c: t for c in chunk})
+        _why.update({c: cause for c in chunk})
         got = _cached_instead(chunk, stale_max_age_s)
         frames += got
         log.warning("rain forecast: %d cells not fetched (%s): %d from a cached forecast at most %.0f h old, "
