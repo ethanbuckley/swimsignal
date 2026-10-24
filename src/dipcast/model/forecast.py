@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import math
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 
@@ -51,8 +52,6 @@ LOCAL_TZ = "Europe/London"   # swimmers think in local days, not UTC days
 MAX_MISSING_SHARE = 0.1      # more transport weight than this from days without rain data: no figure
 ECOLI_SEASON_MONTHS = range(5, 10)   # the EA samples the model was fitted on run May-September
 
-
-import threading
 
 _LOAD_LOCK = threading.RLock()  # one loader at a time: two concurrent unpickles of the
                                 # 900 MB network would exceed a 2 GB machine

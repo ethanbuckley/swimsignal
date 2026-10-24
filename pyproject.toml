@@ -37,5 +37,16 @@ packages = ["src/dipcast"]
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint]
+# pyflakes and the pycodestyle errors, named so that ruff releases with wider defaults check the same.
+select = ["E4", "E7", "E9", "F"]
+# House style: short one-line helpers (`f = lambda ...`, `a; b`) and `l` for a list or line.
+ignore = ["E702", "E731", "E741"]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts and their tests put scripts/ on sys.path, or load a script by path, before importing it.
+"scripts/**" = ["E402"]
+"tests/**" = ["E402"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
