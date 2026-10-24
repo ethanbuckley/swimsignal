@@ -1,6 +1,7 @@
 # Running a pilot's sessions by hand
 
-How Ethan runs the paid pilots' briefings this winter with `scripts/briefing.py`. Written 20 October
+How Ethan runs a paid pilot's briefings with `scripts/briefing.py`, once a customer has committed in writing
+(the order was revised on 24 October 2026; see `docs/ORGANISER-PIVOT-2026-10.md`). Written 20 October
 2026, from the organiser plan (`docs/ORGANISER-PIVOT-2026-10.md`, sections 7 and 8, PR #272) and an
 outside review's ideas 4 and 5 of the same day.
 

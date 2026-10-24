@@ -21,11 +21,12 @@ The five markets, in order of priority:
 5. **Water companies and public funders.** They have money, but build their own tools. Approach them
    only after the 2027 season's scores.
 
-The plan in one line, as changed on 20 October 2026: paid pilots this winter for activity centres and
-event organisers, built from five shared pieces of work, with the forecast's limits stated first and
-the 2027 season's scores still the test of whether it is good enough. Section 6a has the decision and
-what must be true before the first invoice. Until then the plan was free pilots and no charging before
-October 2027.
+The plan in one line, as revised on 24 October 2026: exploratory interviews with activity centres and
+event organisers this winter, no money spent on charging until one of them commits in writing, and a
+sponsorship test once the 2027 season has a measured swimmer audience. The forecast's limits are stated
+first, and the 2027 season's scores are still the test of whether it is good enough. Section 6a has the
+revision. Before it, on 20 October, the plan was paid pilots this winter; before that, free pilots and
+no charging before October 2027.
 
 Most of what they need exists already: the organisers' page, the signs, the embed, shared lists and
 click-anywhere. Five shared pieces of work (section 4) cover most of the gap. Each market then needs
@@ -223,13 +224,24 @@ use it; organisers use it to choose a venue.
 | By 15 Oct 2026 | T8 profiles for applicants; email to SAS's applicant support | Profiles sent to anyone who asks |
 | Oct–Nov 2026 | T1 plain names, T2 sites view, T3 decision record, T7 for-clubs page. Emails to OEAP, the Institute for Outdoor Learning, the Clean Water Sports Alliance, Paddle UK and British Triathlon. Terms exception for pilots | Pages live; replies logged in the kit |
 | Nov 2026 – Jan 2027 | T4 event week, T5 date alerts, T6 site profile page | Ethan deploys the Worker |
-| Oct–Nov 2026 | Paid-pilot groundwork (section 6a): contract check, trading form, insurance, terms, hosting, site wording, ten buyer conversations | Section 6a's checklist done |
-| Dec 2026 – Apr 2027 | Paid pilots: 3–5 centres and organisers. Councils get free profiles | Three paying pilots by 30 Apr 2027 |
+| Now | Employment contract check (section 6a item 1) | Written confirmation from the employer |
+| Nov 2026 – Jan 2027 | Ten exploratory interviews: six centres, four organisers (section 6a). Councils get free profiles | Ten notes written up by 31 Jan 2027 |
+| After a written commitment | Section 6a items 2–9, then that customer's pilot | Every item done before the first invoice |
+| 15 May – 30 Jun 2027 | Swimmer use measured by region | Six weeks of figures |
+| From Jul 2027 | Sponsorship test, if the figures support it | One sponsor pays, or the test ends |
 | By 1 May 2027 | The 2027 test is frozen | Test registered |
 | May–Sep 2027 | Pilots run; organisers' own lab results collected | Results logged |
 | Oct 2027 | Season scores published. Pricing decided. Water-company offer, if the scores justify it | The launch kit's October decision |
 
-## 6a. Paid pilots, winter 2026–27 (decided 20 October 2026)
+## 6a. Paid pilots, winter 2026–27 (decided 20 October 2026, revised 24 October 2026)
+
+**Revised 24 October 2026.** Interviews come first, and they are exploratory: about the centre's or
+organiser's water-quality routine as it is now, not a pitch for the briefing. Nothing in the table below
+that costs money is bought until a customer commits in writing to a named price and scope. Item 1, the
+employment contract, still goes first because it costs nothing and a no ends the plan. Sponsorship is
+tested from July 2027, once six weeks of the season's swimmer use have been measured by region.
+`docs/ORGANISER-PIVOT-2026-10.md` ("Revised 24 October 2026") has the reasons and the phases. The rest of
+this section is the 20 October plan, kept as the reference for what a pilot would be.
 
 Ethan decided on 20 Oct 2026 to run paid pilots this winter, after an outside review argued for
 organisation pilots before the 2027 season. Free pilots until the October 2027 scores was the earlier
@@ -277,19 +289,20 @@ for clubs and councils [checked 3 Oct 2026]. Name the eventual price at the star
 | 8 | ICO fee and privacy notice for customer contacts | Ethan pays, Claude drafts | £52 a year (29 Sep notes); the ICO self-assessment settles whether it applies |
 | 9 | Payment: Stripe invoices or bank transfer | Ethan | Stripe 1.5% + 20p per UK card (29 Sep notes) |
 
-**First steps, in order.**
+**First steps, in order** (revised 24 October 2026).
 1. Ethan checks item 1.
-2. Ten buyer conversations in two weeks: six centres, four organisers. Each walks through their last
-   water decision: what they checked, who checked it, how long it took, what they wrote down, and who
-   holds the budget. Claude drafts the script and the emails into the launch kit.
-3. Items 2–9 in parallel, done before any pilot starts.
-4. Three to five pilots, each with a written scope, end date and named price.
+2. Ten exploratory conversations by 31 January 2027: six centres, four organisers. Each walks through
+   their last water decision: what they checked, who checked it, how long it took, what they wrote down,
+   what it cost them and who holds the budget. The briefing is not pitched. The script and the emails
+   are in the launch kit.
+3. Items 2–9 only after a customer commits in writing, and only for the scope they named.
+4. A pilot for each customer who commits, with a written scope, end date and named price.
 5. Build only what the pilots ask for more than once. Start from scheduled briefings, delivery to a
    team, and the archive of what was issued. No account system until pilots need one.
 6. Record per pilot: use, time saved, what was missing, delivery failures, and Ethan's support time.
 
-**Measures.** Three paying pilots by 30 April 2027. Then renewal for the 2027 season, which says more
-than a first sale. The May–September 2027 evaluation and the October 2027 scores stay as planned.
+**Measures** (revised 24 October 2026). Ten interviews written up by 31 January 2027, and whether any
+interviewee commits to pay. Then renewal for the 2027 season, which says more than a first sale. The May–September 2027 evaluation and the October 2027 scores stay as planned.
 
 ## 7. Tasks, one pull request each
 
@@ -355,7 +368,7 @@ first.
 
 ## 9. Open questions for Ethan
 
-1. **When to charge.** Answered 20 Oct 2026: paid pilots this winter (section 6a).
+1. **When to charge.** Answered 20 Oct 2026: paid pilots this winter. Revised 24 Oct 2026: interviews first, no spending until someone commits, sponsorship tested once the 2027 audience is measured (section 6a).
 2. **Applicants.** Offer profiles even though one can count against an application? The proposal is
    yes, with the caveat stated first.
 3. **Terms.** May commercial events and hire centres show the card and the signs during a free pilot?

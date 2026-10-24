@@ -11,6 +11,40 @@ The legal pass itself, with the draft pilot agreement and the questions for a so
 kept private: it is a private page (link in Claude's memory) and a copy in `swimsignal-private/legal-2026-10-20/`. It is
 research by an AI assistant, not legal advice.
 
+## Revised 24 October 2026: interviews first
+
+Ethan changed the order on 24 Oct 2026. Nobody has yet said they would pay for the briefing in §2, and an
+organiser can get most of it from the free site. The sections below are kept as the reference for what a
+pilot would be and what it would need, but the order is now this:
+
+1. **Interviews first, and exploratory.** Centres and organisers are asked about their water-quality
+   routine as it is now: what they check before a session, who checks it, how long it takes, what they
+   write down, what it costs them and what has gone wrong. The briefing is not pitched. It comes up only if
+   they ask what SwimSignal could do for them, and their reaction is noted with everything else. Centres
+   that run water sessions every week come first: a decision made every week is more likely to be worth
+   paying for than one event's [inferred].
+2. **No pre-invoice spending until someone commits.** The paid items in §3 and §5 wait until one customer
+   says in writing that they will pay a named price for a named scope: insurance, the solicitor, a
+   company, Open-Meteo Professional, CARTO's commercial key, the ICO fee and card payments. Two items go
+   ahead now because they cost nothing: the employer check (§5 item 1), which can still stop the plan, and
+   the outreach rules (§5 item 10), which the interview emails must follow.
+3. **Sponsorship is tested once there is a measured spring audience.** From the season's opening on
+   15 May 2027, swimmer use is measured by region: visits a week, spot pages viewed, and push
+   subscriptions. Web Analytics cannot tell a returning visitor, so push subscriptions are the repeat-use
+   signal [inferred]. A sponsor is approached only with those figures, for one clearly labelled placement
+   that has no say in any forecast. Open-Meteo's free API excludes sites with advertising (README,
+   "Before taking money or running ads"), so a sponsor brings the paid plan into the numbers; ask
+   Open-Meteo first whether a sponsor's placement counts.
+4. **Swimmers stay free, and tips stay on.** Open-Meteo said on 15 Oct 2026 that a tip jar is fine.
+
+This replaces the 20 October order, which set the paid service up by 20 Nov 2026 and aimed at three
+paying pilots by 30 Apr 2027.
+
+**Why.** From 1 to 24 Oct 2026 the site had about 420 visits and 900 page loads (Cloudflare Web Analytics,
+sampled 1 in 10, checked 24 Oct). The busiest days match Ethan's own checks, so many are likely his
+[inferred]. About 20 visits came from Facebook and 20 from Google. Neither a buyer nor an audience exists
+yet, and looking for each costs nothing. The money in §3 is better spent after one of them is found.
+
 ## 1. What changes, in one paragraph
 
 SwimSignal sells one thing to organisations: the same forecast as the public page, organised for the
@@ -70,17 +104,22 @@ month at £200, cover it.
 
 ## 4. Phases
 
+As revised on 24 Oct 2026. The dates are proposals.
+
 | Phase | When | Who | What | Gate |
 |---|---|---|---|---|
-| 0. Go or stop | This week | Ethan | Read the employment contract: IP assignment, outside work, conflicts, confidentiality, equipment. Ask the employer to confirm in writing that SwimSignal is outside the job and they claim no rights in it | Written confirmation. A no stops the plan |
-| 1. Set up | By 20 Nov 2026 | Ethan, with Claude's drafts | Trading form; broker (questions in the legal pass); solicitor review of the pilot agreement and new site terms; Open-Meteo Professional; CARTO key changed to commercial and its tile count read; ICO fee; Stripe or bank invoices; the write-up to Open-Meteo on the Met Office share-alike question | Every item in §5 done |
-| 1, alongside | Oct–Nov 2026 | Ethan | Ten buyer conversations: six centres, four organisers. Drafts in the launch kit | Ten notes written up |
-| 2. Pilots | Dec 2026 – Apr 2027 | Ethan runs, Claude builds what repeats | Three to five pilots under the signed agreement, briefings by hand, every issue logged | Three paying pilots by 30 Apr 2027 |
-| 3. Season | May – Sep 2027 | Both | Renewals for the season; the prospective evaluation as planned | Renewals; October 2027 scores |
+| 0. Go or stop | Now | Ethan | Read the employment contract: IP assignment, outside work, conflicts, confidentiality, equipment. Ask the employer to confirm in writing that SwimSignal is outside the job and they claim no rights in it | Written confirmation. A no stops the plan |
+| 1. Interviews | Nov 2026 – Jan 2027 | Ethan, from the launch kit | Ten exploratory conversations: six centres, four organisers. About their routine now, not about the briefing | Ten notes written up by 31 Jan 2027 |
+| 2. Set up | Only after a written commitment | Ethan, with Claude's drafts | The §5 items, for the scope the customer named | Every item in §5 done before the first invoice |
+| 3. Pilots | After set-up | Ethan runs, Claude builds what repeats | Pilots under the signed agreement, every issue logged | Each pilot logged; renewal for the season |
+| 4. Audience | 15 May – 30 Jun 2027 | Both | Swimmer use measured by region: visits a week, spot pages viewed, push subscriptions | Six weeks of figures |
+| 5. Sponsorship test | From Jul 2027, if the figures support it | Ethan | One sponsor approached for one labelled placement, after asking Open-Meteo whether it counts as advertising | A sponsor pays, or the test ends |
+| 6. Season | May – Sep 2027 | Both | The prospective evaluation as planned | October 2027 scores |
 
 ## 5. Before the first invoice
 
-Each item is from the legal pass. None is legal or tax advice.
+Each item is from the legal pass. None is legal or tax advice. Since 24 Oct 2026, items 2 to 9 wait until a
+customer commits in writing. Items 1 and 10 go ahead now.
 
 1. **Employer confirmation** (phase 0).
 2. **Trading form.** A sole trader trading as "SwimSignal" must put their name and a service address
@@ -108,7 +147,9 @@ Each item is from the legal pass. None is legal or tax advice.
 
 ## 6. What Claude builds, one PR each
 
-Only what the pilots need before they start. Anything else waits for a pilot to ask for it twice.
+Only what the pilots need before they start. Anything else waits for a pilot to ask for it twice. Since
+24 Oct 2026: OP1 to OP4 are merged (#273, #275). OP6 goes ahead, because the interview emails quote
+figures. OP5 and the switch-over in OP7 wait for a written commitment.
 
 - **OP1. Paid Open-Meteo endpoint.** The build reads `DIPCAST_OPEN_METEO_KEY`; when set, every call goes
   to the customer endpoint with the key; unset, nothing changes. Done when a dry run shows the URLs
