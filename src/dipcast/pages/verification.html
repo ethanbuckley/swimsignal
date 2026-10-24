@@ -194,6 +194,7 @@ async function main() {
       h += section('by-rain', 'By forecast rain', t + '</table>'); }
     if (L.reliability) h += section('reliability', 'Reliability', relTable(L.reliability));
   }
+  if (L && L.spots_live && L.spots_live.n_cells) h += section('spot-level', 'How the level itself has done', spotLevel(L.spots_live, d.credits));
   const E = L && L.ecoli_live;
   // The last attempt to fetch EA samples. No source answering is a broken feed, not "nothing to score yet".
   const S = E && E.samples;
@@ -348,10 +349,10 @@ const likelier = (lift, what) => lift >= 2 ? `A warning made ${what} about ${Mat
 // warned or nothing happened.
 const afterWarning = (T, event, across, what) => T.warnings_true === null || !T.base_rate ? null
   : `When it warned, ${event} ${p0(T.warnings_true)} of the time, against ${pLow(T.base_rate)} ${across}. ${likelier(T.warning_lift, what)}`;
-function grid(T, label, yes, no, quiet) {
+function grid(T, label, yes, no, quiet, [warning, none] = [`Warning (${Math.round(100 * T.warn_at)}% or more)`, 'No warning']) {
   return `<table class="grid" aria-label="${label}"><tr><th></th><th class="num">${yes}</th><th class="num">${no}</th></tr>`
-    + `<tr><th scope="row">Warning (${Math.round(100 * T.warn_at)}% or more)</th><td class="num">${n0(T.hits)}<span>hits</span></td><td class="num">${n0(T.false_alarms)}<span>false alarms</span></td></tr>`
-    + `<tr><th scope="row">No warning</th><td class="num">${n0(T.misses)}<span>misses</span></td><td class="num">${n0(T.quiet_correct)}<span>${quiet}</span></td></tr></table>`;
+    + `<tr><th scope="row">${warning}</th><td class="num">${n0(T.hits)}<span>hits</span></td><td class="num">${n0(T.false_alarms)}<span>false alarms</span></td></tr>`
+    + `<tr><th scope="row">${none}</th><td class="num">${n0(T.misses)}<span>misses</span></td><td class="num">${n0(T.quiet_correct)}<span>${quiet}</span></td></tr></table>`;
 }
 // The warnings by company (forecast_log: warning_table.by_company), computed by the scorer (11 Oct 2026). The
 // headline figures are mostly one company's: 208 of the 223 hits were at United Utilities, the one company the
@@ -424,6 +425,60 @@ function answer(d) {
     t += `<p class="small muted">A warning is an estimate of ${Math.round(100 * E.warn_at)}% or more, its High risk level. Each sample is matched with the latest estimate issued before it was taken.${E.n_lake_samples_left_out ? ` ${E.n_lake_samples_left_out} lake sample${E.n_lake_samples_left_out === 1 ? ' is' : 's are'} left out: the site does not show the estimate on lakes.` : ''} <a href="#ecoli-live">The full scores</a>.</p>`;
   }
   return t ? `<section id="warnings" aria-labelledby="warnings-h"><h2 id="warnings-h">Warnings, misses and false alarms</h2>${t}</section>` : '';
+}
+// The level a spot's page shows, scored (forecast_log.verify_spots; pre-registration amendment 1, S1): each morning's
+// sewage spill risk for a spot against the same score built from the spills that happened, with the forecast's own
+// weights and travel times. Every figure is from the scorer's summary (live.spots_live).
+const LEVELS = ['Low risk', 'Moderate risk', 'High risk', 'Very high risk'];
+// Why a spot-day could not be checked, in words: the spot's own reasons, then the overflows' (NOT_SCORED).
+const SPOT_WHY = {no_forecast: 'no forecast was logged', missed_deadline: 'no forecast was out by 08:00',
+  no_travel_time: 'the forecast was made before travel times were logged', no_overflows: 'no monitored overflow was upstream in that forecast',
+  no_live_feed: "overflows with no live feed carry over 5% of the spot's weight",
+  before_observations: 'the overflows were not yet observed half-hourly', max_gap: 'some overflows went unobserved for too long that day',
+  min_known_polls: 'there were too few runs to observe the overflows six times a day'};
+const score = x => (100 * x).toFixed(1);
+function spotLevel(S, credits) {
+  const O = S.overall, cells = n0(S.n_cells);
+  const why = Object.entries(S.not_observed || {}).sort((a, b) => b[1] - a[1])
+    .map(([r, n]) => `${n0(n)} because ${SPOT_WHY[r] || NOT_SCORED[r] || r.replace(/_/g, ' ')}`);
+  const list = xs => xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join('; ')}; and ${xs[xs.length - 1]}`;
+  let t = `<p>The scores above are for each overflow. A spot's page shows one level, from all the overflows upstream together, and a saved spot at High risk sends an alert. Here that level is checked. Each morning's sewage spill risk for a spot is set beside the same score built from the spills that then happened, with the same weights and travel times. A level comes from the score: Low risk under 15, Moderate risk from 15, High risk from 40 and Very high risk from 70. Only the spill part is checked here: the rating, samples, algae and the E. coli estimate can also set a page's level.</p>`;
+  t += `<p class="small muted">${n0(S.n_observed)} of the ${cells} spot-day forecasts${S.first_day ? ` for days from ${day(S.first_day)}` : ''} could be checked${why.length ? `. The others could not: ${list(why)}` : ''}. A spot-day is checked only when the overflows carrying 95% of its weight were each observed on every day whose spills reach it.</p>`;
+  const never = S.never_observed || [];
+  if (never.length) t += `<p class="small muted">${never.length === 1 ? 'One spot is' : `${never.length} spots are`} never checked, because overflows with no live feed carry over 5% of ${never.length === 1 ? 'its' : 'their'} weight: ${never.map(s => s.name).join('; ')}.</p>`;
+  if (!O) return t + `<p class="muted">Nothing checked yet.</p>`;
+  const events = O.hits + O.misses, warned = O.hits + O.false_alarms, n = S.n_days;
+  const few = n < 14 ? ` ${n} day${n === 1 ? ' is' : 's are'} too few to judge across different weather.` : '';
+  t += `<p>Since ${day(S.first_scored_day)}, on ${n0(S.n_spot_days)} spot-days at ${O.n_spots} spots, the spills that happened would have put the spot at High risk or above on ${n0(S.n_event_spot_days)}. `
+    + (events ? `Of the ${n0(events)} forecasts for those spot-days, ${n0(O.hits)} (${p0(O.hit_rate)}) were at High risk or above. ` : 'No forecast was for such a day. ')
+    + (warned ? `Of the ${n0(warned)} forecasts at High risk or above, ${n0(O.hits)} (${p0(O.warnings_true)}) were for such a day, against ${pLow(O.base_rate)} of all forecasts.` : 'No forecast was at High risk or above.')
+    + `${few}</p>`;
+  t += grid(O, "Spot levels against the level from the spills that happened", 'High risk from the spills', 'Lower', 'correct quiet days',
+    ['Forecast High risk or above', 'Forecast lower']);
+  t += `<p class="small muted">Each count is one forecast: one spot on one day, made from four days ahead to the morning itself.</p>`;
+  const C = O.climatology;
+  if (O.auc !== null && O.auc !== undefined) t += `<p>Given one spot-day the spills would have put at High risk and one they would not, the forecast gave the first the higher score ${Math.round(100 * O.auc)} times in 100.${C && C.auc !== null && C.auc !== undefined ? ` Each overflow's long-run spill rate for the month, combined the same way, did so ${Math.round(100 * C.auc)} times in 100${events ? `, and reached High risk or above on ${n0(C.hits)} of the ${n0(events)} forecasts for a spot-day the spills put at High risk` : ''}.` : ''} The score is not a chance of reaching High risk, so it gets no Brier score here.</p>`;
+  if (S.levels) {
+    const L = S.levels.counts;
+    t += `<h3>Forecast level against the level from the spills</h3><table><tr><th>Forecast</th>${LEVELS.map(l => `<th class="num">${l}</th>`).join('')}</tr>`
+      + L.map((row, i) => `<tr><td>${LEVELS[i]}</td>${row.map(c => `<td class="num">${n0(c)}</td>`).join('')}</tr>`).join('') + '</table>';
+    const diag = L.reduce((a, row, i) => a + row[i], 0), all = L.flat().reduce((a, c) => a + c, 0);
+    t += `<p class="small muted">Rows: the level forecast. Columns: the level the spills that happened would have given. ${n0(diag)} of ${n0(all)} forecasts had the same level.</p>`;
+  }
+  const rec = r => `<td class="num">${n0(r.n)}</td><td class="num">${n0(r.hits + r.misses)}</td><td class="num">${n0(r.hits)}</td><td class="num">${n0(r.false_alarms)}</td><td class="num">${r.auc === null || r.auc === undefined ? '–' : Math.round(100 * r.auc)}</td>`;
+  const head = first => `<table><tr><th>${first}</th><th class="num">Forecasts</th><th class="num">High risk from the spills</th><th class="num">Warned of</th><th class="num">False alarms</th><th class="num">Ranked right, in 100</th></tr>`;
+  if (S.by_lead) t += `<h3>By lead time</h3>${head('Lead')}${S.by_lead.map(r => `<tr><td>${r.lead === 0 ? 'Same day, as of 08:00' : r.lead === 1 ? 'Tomorrow' : `${r.lead} days ahead`}</td>${rec(r)}</tr>`).join('')}</table>`;
+  const W = S.by_water || [], CO = S.by_company || [];
+  const waterName = w => w === 'river' ? 'River spots' : w === 'lake' ? 'Lake spots' : 'Other spots';
+  if (W.length || CO.length) t += `<h3>By kind of water and by company</h3>${head('Spots')}${W.map(r => `<tr><td>${waterName(r.water)}</td>${rec(r)}</tr>`).join('')}`
+    + `${CO.map(r => `<tr><td>${r.company === NO_COMPANY ? 'Company not known' : r.company}</td>${rec(r)}</tr>`).join('')}</table>`
+    + `<p class="small muted">Warned of: forecasts at High risk or above for a spot-day the spills put at High risk. False alarms: forecasts at High risk or above for any other. A spot's company is the company of its overflow with the largest weight. "Ranked right" is the ranking above, where both outcomes occur.</p>`;
+  if (S.by_week) t += `<h3>The score's level, week by week</h3><table><tr><th>Week starting</th><th class="num">Forecasts</th><th class="num">Mean score, forecast</th><th class="num">Mean score, from the spills</th></tr>`
+    + S.by_week.map(r => `<tr><td>${day(r.week)}</td><td class="num">${n0(r.n)}</td><td class="num">${score(r.mean_forecast)}</td><td class="num">${score(r.mean_observed)}</td></tr>`).join('') + '</table>'
+    + `<p class="small muted">Scores from 0 to 100. Where the forecast's mean runs above the spills' mean, the forecast set spots higher than the spills that happened.</p>`;
+  if (S.csv && credits) t += `<p class="small muted"><a href="data/verification_spots_live.csv" download>Download every spot-day forecast</a> (CSV, ${n0(S.csv.rows)} rows, one per spot, day and lead: the forecast score, the score from the spills, how much of the spot's weight was observed, and why a day could not be checked).</p>`;
+  t += `<p class="small muted">The rules come from the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md#amendment-1-12-october-2026-a-score-for-a-spots-level">pre-registration</a>, written before any of these scores were seen. The weights, travel times, die-off and dilution are the same on both sides, so this checks the spill forecasts as a spot's level combines them, not whether sewage reaches a spot as the model says.</p>`;
+  return t;
 }
 // Whether the forecast was made: runs against the schedule, the longest wait, the morning forecast, the company
 // feeds and the spots, from the pipeline's own logs (forecast_log.service_record).
@@ -524,10 +579,12 @@ function inShort(d) {
   const P = d.prf && d.prf.both;
   if (P && P.n_samples && P.ea && P.swimsignal) { const ssBetter = P.swimsignal.brier < P.ea.brier;
     pts.push(`<b>Beside the Environment Agency's daily risk prediction</b> at the inland bathing waters: ${ssBetter ? "SwimSignal's E. coli estimate" : "the Agency's prediction"} scored better on ${P.n_samples} samples, ${P.n_over_threshold} of them over 900${P.n_over_threshold && !P.ea.hits && !P.swimsignal.hits ? ', which neither warned of' : ''}.${P.n_samples < 100 || P.n_over_threshold < 10 ? ' Too few to judge.' : ''} <a href="#prf">Details</a>`); }
-  // The level itself (review A6, 16 Oct 2026): every score above is an overflow-day, while the page and its alerts
-  // speak per spot. Removed when the spot level is scored (A5, pre-registration Amendment 1).
   pts.push(`<b>The sewage spill risk</b> is a 0–100 score for sewage from upstream reaching the spot. It is a score, not a probability. Its spill part is scored above against what the overflows did; its travel speed, die-off and dilution were fitted to Environment Agency water samples on 17 October 2026, not measured (<a href="/methods#rough">how</a>). The samples could not show whether its lake steps help.`);
-  pts.push(`<b>The level you see on a spot's page is not yet scored;</b> its spill part is, above. How it will be scored from 2027 is fixed in the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md#amendment-1-12-october-2026-a-score-for-a-spots-level">pre-registration</a>.`);
+  // The level itself: every score above is an overflow-day, while a spot's page and its alerts speak per spot
+  // (forecast_log.verify_spots).
+  const SL = L.spots_live || {}, SO = SL.overall;
+  if (SO && SO.hits + SO.misses) pts.push(`<b>The level a spot's page shows, against the spills that happened:</b> ${p0(SO.hit_rate)} of forecasts for a spot-day the spills would have put at High risk were at High risk or above.${SO.hits + SO.false_alarms ? ` ${p0(SO.warnings_true)} of forecasts at High risk or above were for such a day.` : ''}${SL.n_days < 14 ? ` ${SL.n_days} day${SL.n_days === 1 ? ' is' : 's are'} too few to judge.` : ''} <a href="#spot-level">Details</a>`);
+  else pts.push(`<b>The level a spot's page shows</b> is checked against the spills that happened${SL.first_day ? ` from ${day(SL.first_day)}` : ''}; nothing has been checked yet. How it is scored is fixed in the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md#amendment-1-12-october-2026-a-score-for-a-spots-level">pre-registration</a>.${SL.n_cells ? ' <a href="#spot-level">Details</a>' : ''}`);
   return `<section class="summary" id="in-short" aria-labelledby="short-h"><h2 id="short-h">In short</h2><ul>${pts.map(x => `<li>${x}</li>`).join('')}</ul></section>`;
 }
 // The contents, from the sections the data produced. It sits above them all, so it starts with the warnings and

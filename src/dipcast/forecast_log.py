@@ -14,6 +14,9 @@ Three DuckDB tables in the state directory:
 
 `verify_live()` scores overflow-day forecasts whose target day has passed,
 using the accumulated live history, and writes verification_live.json.
+`verify_spots()` scores the level a spot's page shows, its logged exposure index,
+against the same index built from the spills that happened, and writes
+verification_spots_live.csv (docs/PREREGISTRATION-2027.md, amendment 1).
 
 Scoring rules:
 
@@ -499,10 +502,8 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
     obs_from = observations_from(cov_all)
     out["observations_from"] = obs_from
     # Feeds that stamp no record are never current (see unstamped_feed_days).
-    site_company = hist.drop_duplicates("site_id", keep="last").set_index("site_id")["company"]
-    sites = pd.DataFrame({"site_id": site_company.index.astype(str), "company": site_company.to_numpy()})
     poll_log = load_poll_log() if store is None else (load_poll_log(store.poll_log) if store.poll_log else None)
-    not_current = sites.merge(unstamped_feed_days(poll_log), on="company")[["site_id", "day"]]
+    not_current = not_current_days(hist, poll_log)
     keys = fc[["site_id", "target_day"]].rename(columns={"target_day": "day"})
     fc["reason"] = uncovered_reasons(keys, coverage_checks(cov_all), not_current, obs_from).to_numpy()
     cov = covered_site_days(cov_all).merge(not_current.assign(nc=True), on=["site_id", "day"], how="left")
@@ -710,6 +711,10 @@ def _finish(out: dict, as_of: date, scored: pd.DataFrame | None = None, store: L
             out["ecoli_live"] = verify_ecoli(as_of)
         except Exception as e:  # noqa: BLE001 - an optional layer must not block the spill scores
             log.warning("E. coli live scoring failed: %s", e)
+        try:
+            out["spots_live"] = verify_spots(as_of)
+        except Exception as e:  # noqa: BLE001 - the spot level is scored beside the spill scores, never in their way
+            log.warning("spot-level scoring failed: %s", e)
     rows = scored_rows(scored, None if store is None else store.overflows)
     if store is None:
         rows.to_csv(config.state_write(SCORED_CSV), index=False, float_format="%.4f")
@@ -749,6 +754,342 @@ def scored_rows(fc: pd.DataFrame | None, overflows_path: Path | None = None) -> 
         "climatology": fc["p_clim"].astype(float).to_numpy(),
         "observed": fc["y"].astype(int).to_numpy()})
     return out.sort_values(["day", "overflow_id", "lead"], kind="stable").reset_index(drop=True)
+
+
+# --- The spot level: the exposure index a swimmer sees, against the spills that happened -------
+#
+# docs/PREREGISTRATION-2027.md, amendment 1, score S1. The forecast is the spot's logged risk (forecast_points),
+# the latest issued by DECISION_HOUR on the issue day. The observation is the same index with what happened in
+# place of what was forecast: o = 1 - prod(1 - w_i * e_i), with each overflow's weight from that logged forecast
+# and its observed spill days (1 or 0, under verify_live's rules) moved later by its logged travel time, as
+# transport.shift_by_travel moves a chance. So both sides share the forecast's transport.
+
+SPOTS_CSV = "verification_spots_live.csv"
+SPOT_COLUMNS = ["spot_id", "day", "lead", "issued_at", "forecast", "observed", "covered", "reason", "version"]
+SPOT_LEADS = (0, 1, 2, 3, 4)
+# A spot-day is observed only when the overflows carrying at least this share of its summed weight each have an
+# observation on every source day that reaches it.
+SPOT_OBSERVED_SHARE = 0.95
+# The event: the spot would have read High risk had the spills been known. The bands are the site's (SPILL_CUTS
+# in site/levels.js), a value on a cut in the band above it.
+SPOT_EVENT_AT = SPILL_WARN_AT
+SPOT_CUTS = (0.15, 0.40, 0.70)
+SPOT_BANDS = ("low", "moderate", "high", "very high")
+# Why a spot-day has no observation, in the order checked: no forecast that issue day; none by the decision hour;
+# a forecast from before travel times were logged (12 Oct 2026); none of its overflows carries weight; overflows
+# with no live feed over 5% of its weight (never observable); else the coverage rule that leaves out the most
+# weight (UNCOVERED_REASONS, as verify_live names them).
+SPOT_REASONS = ["no_forecast", "missed_deadline", "no_travel_time", "no_overflows", "no_live_feed", *UNCOVERED_REASONS]
+SPOT_FILES = ("spots.csv", "spots-osm.csv")
+# The spill model's month factors (United Utilities 2023-25), for the S1 reference: the climatology index.
+EVAL_CLIMATOLOGY = Path("data") / "eval2027" / "climatology.json"
+
+
+def spot_list() -> pd.DataFrame:
+    """id, name, lat, lon and kind of every spot in spots.csv and spots-osm.csv, as build_site.load_spots reads
+    them: the first row with an id wins."""
+    frames = [pd.read_csv(config.ROOT / f, usecols=["id", "name", "lat", "lon", "kind"])
+              for f in SPOT_FILES if (config.ROOT / f).exists()]
+    if not frames:
+        return pd.DataFrame(columns=["id", "name", "lat", "lon", "kind"])
+    return pd.concat(frames, ignore_index=True).drop_duplicates("id").reset_index(drop=True)
+
+
+def not_current_days(hist: pd.DataFrame, poll_log: pd.DataFrame | None) -> pd.DataFrame:
+    """(site_id, day) pairs whose company's feed stamped no record that day (unstamped_feed_days), for the
+    overflows in the live history."""
+    site_company = hist.drop_duplicates("site_id", keep="last").set_index("site_id")["company"]
+    sites = pd.DataFrame({"site_id": site_company.index.astype(str), "company": site_company.to_numpy()})
+    return sites.merge(unstamped_feed_days(poll_log), on="company")[["site_id", "day"]]
+
+
+def source_days(travel_h: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """For each travel time, the days back to its two source days and the share each carries, exactly as
+    transport.shift_by_travel splits a day: k = floor(t / 24) days back with share 1 - a, and k + 1 with share a.
+    A whole number of days has a = 0, so its second source day carries nothing and is not a source day."""
+    shift = np.asarray(travel_h, dtype=float) / 24.0
+    k = np.floor(shift).astype(int)
+    return k, shift - k
+
+
+def spot_exposure(cells: pd.DataFrame, links: pd.DataFrame, status: pd.DataFrame) -> pd.DataFrame:
+    """The observed exposure of each spot-day.
+
+    cells: one row per spot-day forecast, with `cell` (any key) and `day` (the target day, a date).
+    links: the overflows in each cell's logged forecast: cell, site_id, weight, travel_h, has_live.
+    status: (site_id, day, e, reason) for overflow-days: e is 1 for a spill and 0 for none; reason is None where
+    the day has an observation and else why not (UNCOVERED_REASONS). An overflow-day missing from it is
+    unobserved, under the gap rule, as verify_live counts a day with no coverage row.
+
+    Returns one row per cell: weight (the summed weight), covered (the share of it whose overflows have an
+    observation on every source day), observed (o, or NaN when the cell is not observed) and reason (None when
+    observed). An overflow without a live feed is never observed. Unobserved overflows are left out of o, as if
+    they had not spilled: o is computed only when they carry under 5% of the weight."""
+    out = cells[["cell"]].copy()
+    if links.empty:
+        return out.assign(weight=0.0, covered=np.nan, observed=np.nan, reason="no_overflows")
+    lk = links.merge(cells[["cell", "day"]], on="cell")
+    lk["weight"] = lk["weight"].astype(float)
+    no_travel = lk.groupby("cell")["travel_h"].apply(lambda t: bool(t.isna().any()))
+    lk = lk[lk["travel_h"].notna()].reset_index(drop=True)
+    k, a = source_days(lk["travel_h"].to_numpy(dtype=float))
+    lk["link"] = np.arange(len(lk))
+    day = pd.to_datetime(lk["day"])
+    first = lk.assign(src=(day - pd.to_timedelta(k, unit="D")).dt.date, share=1 - a)
+    second = lk.assign(src=(day - pd.to_timedelta(k + 1, unit="D")).dt.date, share=a)[a > 0]
+    src = pd.concat([first, second], ignore_index=True)
+    st = status.rename(columns={"day": "src"})[["site_id", "src", "e", "reason"]]
+    src = src.merge(st, on=["site_id", "src"], how="left", indicator=True)
+    # An overflow-day with no status row was never observed: the gap rule, as uncovered_reasons counts it.
+    src["reason"] = src["reason"].where(src["_merge"] == "both", "max_gap")
+    src["reason"] = src["reason"].where(src["has_live"].astype(bool), "no_live_feed")
+    rank = {r: i for i, r in enumerate(SPOT_REASONS)}
+    seen_rank = len(SPOT_REASONS)   # an observed source day: above every reason, so min() finds the first rule broken
+    src["rank"] = src["reason"].map(rank).fillna(seen_rank).astype(int)
+    src["x"] = src["share"] * src["e"].fillna(0).astype(float)
+    per = src.groupby("link").agg(rank=("rank", "min"), x=("x", "sum"))
+    lk["ok"] = per["rank"].reindex(lk["link"]).to_numpy() == seen_rank
+    lk["why"] = [SPOT_REASONS[r] if r < seen_rank else None for r in per["rank"].reindex(lk["link"]).to_numpy()]
+    lk["x"] = np.clip(per["x"].reindex(lk["link"]).to_numpy(), 0, 1)
+    lk["log_keep"] = np.where(lk["ok"], np.log1p(-np.minimum(lk["weight"] * lk["x"], 1 - 1e-15)), 0.0)
+    total = links.assign(weight=links["weight"].astype(float)).groupby("cell")["weight"].sum()
+    no_live = links.assign(w=links["weight"].astype(float) * ~links["has_live"].astype(bool)).groupby("cell")["w"].sum()
+    seen = lk[lk["ok"]].groupby("cell")["weight"].sum()
+    keep = lk.groupby("cell")["log_keep"].sum()
+    missing = lk[~lk["ok"]].groupby(["cell", "why"])["weight"].sum().reset_index()
+    # The reason that leaves out the most weight; on a tie, the earlier in SPOT_REASONS.
+    missing["rank"] = missing["why"].map(rank)
+    top = missing.sort_values(["cell", "weight", "rank"], ascending=[True, False, True]).drop_duplicates("cell").set_index("cell")["why"]
+    out["weight"] = out["cell"].map(total).fillna(0.0).to_numpy()
+    w = out["weight"].to_numpy()
+    with np.errstate(invalid="ignore", divide="ignore"):
+        out["covered"] = np.where(w > 0, out["cell"].map(seen).fillna(0.0).to_numpy() / w, np.nan)
+        share_no_live = np.where(w > 0, out["cell"].map(no_live).fillna(0.0).to_numpy() / w, np.nan)
+    o = 1 - np.exp(out["cell"].map(keep).fillna(0.0).to_numpy())
+    travel_missing = out["cell"].map(no_travel).fillna(False).astype(bool).to_numpy()
+    # Float sums of the same weights can land a hair under the share: a cell observed at exactly 95% stays observed.
+    observed = (w > 0) & ~travel_missing & (out["covered"].to_numpy() + 1e-12 >= SPOT_OBSERVED_SHARE)
+    reason = np.select([w <= 0, travel_missing, share_no_live > 1 - SPOT_OBSERVED_SHARE + 1e-12, ~observed],
+                       ["no_overflows", "no_travel_time", "no_live_feed", out["cell"].map(top).fillna("max_gap").to_numpy()],
+                       default="")
+    out["covered"] = np.where(travel_missing, np.nan, out["covered"])
+    out["observed"] = np.where(observed, o, np.nan)
+    out["reason"] = np.where(reason == "", None, reason)
+    return out
+
+
+def _overflow_day_status(site_ids: pd.Series, first: date, last: date, hist: pd.DataFrame, cov_all: pd.DataFrame,
+                         poll_log: pd.DataFrame | None) -> pd.DataFrame:
+    """(site_id, day, e, reason) for every overflow in `site_ids` on every day first..last, under verify_live's
+    rules: reason is None where the day can be scored (uncovered_reasons), and e is 1 where a poll saw a spill
+    touch the day (observed_spill_days), else 0."""
+    days = pd.date_range(first, last, freq="D").date
+    ids = pd.Series(sorted(set(site_ids.astype(str))), dtype=object)
+    keys = pd.DataFrame({"site_id": np.repeat(ids.to_numpy(), len(days)), "day": np.tile(days, len(ids))})
+    if keys.empty:
+        return keys.assign(e=pd.Series(dtype=int), reason=pd.Series(dtype=object))
+    keys["reason"] = uncovered_reasons(keys, coverage_checks(cov_all), not_current_days(hist, poll_log),
+                                       observations_from(cov_all)).to_numpy()
+    spills = observed_spill_days(hist).assign(e=1)
+    spills["site_id"] = spills["site_id"].astype(str)
+    keys = keys.merge(spills, on=["site_id", "day"], how="left")
+    keys["e"] = keys["e"].fillna(0).astype(int)
+    return keys
+
+
+def _month_factors() -> dict[int, float] | None:
+    p = config.ROOT / EVAL_CLIMATOLOGY
+    try:
+        return {int(k): float(v) for k, v in json.loads(p.read_text())["spill_month"]["factor"].items()}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def climatology_index(cells: pd.DataFrame, links: pd.DataFrame, overflows_path: Path | None = None) -> pd.Series:
+    """S1's reference, by cell: the same combination with each overflow's season/site climatology,
+    clip(c x f, 0.001, 0.95), in place of its chance (the 2027 protocol's primary reference, section 7; c is
+    _site_climatology, f the month factor of the source day). Every overflow in the forecast counts, as in the
+    forecast itself. NaN without the month factors or a travel time."""
+    f = _month_factors()
+    if f is None or links.empty:
+        return pd.Series(np.nan, index=cells["cell"])
+    lk = links.merge(cells[["cell", "day"]], on="cell")
+    lk["c"] = _site_climatology(lk["site_id"].astype(str), overflows_path)
+    ok = lk["travel_h"].notna().to_numpy()
+    k, a = source_days(lk["travel_h"].fillna(0).to_numpy(dtype=float))
+    day = pd.to_datetime(lk["day"])
+
+    def ref(back):
+        m = (day - pd.to_timedelta(back, unit="D")).dt.month.map(f).to_numpy(dtype=float)
+        return np.clip(lk["c"].to_numpy() * m, 0.001, 0.95)
+    x = np.clip((1 - a) * ref(k) + a * ref(k + 1), 0, 1)
+    lk["log_keep"] = np.log1p(-np.minimum(lk["weight"].astype(float).to_numpy() * x, 1 - 1e-15))
+    lk["bad"] = ~ok
+    g = lk.groupby("cell").agg(log_keep=("log_keep", "sum"), bad=("bad", "any"))
+    r = (1 - np.exp(g["log_keep"])).where(~g["bad"])
+    return r.reindex(cells["cell"])
+
+
+def _decision_points(con: duckdb.DuckDBPyConnection, first: date, last: date) -> pd.DataFrame:
+    """Every logged spot forecast for target days first..last at leads 0-4, with its issue day and whether it was
+    issued by DECISION_HOUR local time on that day."""
+    pts = con.execute(f"""
+        SELECT epoch_ms(issued_at) AS issued_ms, lat, lon, target_day, lead, risk, version,
+               (issued_at AT TIME ZONE '{LOCAL_TZ}') <= (CAST(issued_at AT TIME ZONE '{LOCAL_TZ}' AS DATE)::TIMESTAMP
+                                                        + INTERVAL {int(DECISION_HOUR)} HOUR) AS before_cutoff
+        FROM forecast_points WHERE target_day BETWEEN ? AND ? AND lead BETWEEN ? AND ?
+    """, [first, last, min(SPOT_LEADS), max(SPOT_LEADS)]).df()
+    pts["target_day"] = pd.to_datetime(pts["target_day"]).dt.date
+    return pts
+
+
+def verify_spots(as_of: date | None = None, spots: pd.DataFrame | None = None, overflows_path: Path | None = None) -> dict:
+    """Score each spot's logged exposure index against the observed one (amendment 1, S1), and write SPOTS_CSV:
+    one row per spot with an overflow upstream, target day and lead 0-4, from the first day with travel times
+    logged to yesterday. `spots` has id, lat, lon and kind (spot_list() by default); a logged forecast belongs to a
+    spot when its coordinates round to the spot's at 4 decimal places. Returns the summary the Accuracy page reads."""
+    as_of = as_of or pd.Timestamp.now(tz=LOCAL_TZ).date()
+    cutoff = as_of - timedelta(days=1)
+    spots = spot_list() if spots is None else spots
+    empty = {"n_cells": 0, "n_scored": 0, "event_at": SPOT_EVENT_AT, "observed_share": SPOT_OBSERVED_SHARE,
+             "unit": "spot-day forecast: one spot, one target day, one lead"}
+
+    def write(rows: pd.DataFrame) -> dict:
+        rows.to_csv(config.state_write(SPOTS_CSV), index=False, float_format="%.4f")
+        return {"file": SPOTS_CSV, "rows": len(rows), "columns": SPOT_COLUMNS}
+    with _LOCK:
+        con = _conn()
+        try:
+            first = con.execute("SELECT min(issue_day) FROM forecast_overflows WHERE travel_h IS NOT NULL").fetchone()[0]
+            pts = _decision_points(con, first, cutoff) if first is not None and first <= cutoff else None
+            if pts is not None and len(pts):
+                key = (pts["lat"].round(4).astype(str) + "," + pts["lon"].round(4).astype(str))
+                sk = spots.assign(k=spots["lat"].round(4).astype(str) + "," + spots["lon"].round(4).astype(str))
+                pts["spot_id"] = key.map(sk.drop_duplicates("k").set_index("k")["id"])
+                pts = pts.dropna(subset=["spot_id"])
+            if pts is not None and len(pts):
+                chosen = (pts[pts["before_cutoff"]].sort_values("issued_ms")
+                          .groupby(["spot_id", "target_day", "lead"], as_index=False).last())
+                issues = chosen[["issued_ms", "lat", "lon"]].drop_duplicates()
+                con.register("issues", issues)
+                links = con.execute("""
+                    SELECT k.issued_ms, k.lat, k.lon, o.site_id, any_value(o.weight) AS weight,
+                           CASE WHEN bool_and(o.travel_h IS NOT NULL) THEN max(o.travel_h) END AS travel_h,
+                           bool_or(o.has_live) AS has_live
+                    FROM issues k JOIN forecast_overflows o
+                      ON epoch_ms(o.issued_at) = k.issued_ms AND o.lat = k.lat AND o.lon = k.lon
+                    GROUP BY ALL""").df()
+                con.unregister("issues")
+        finally:
+            con.close()
+    if pts is None or pts.empty:
+        return {**empty, "csv": write(pd.DataFrame(columns=SPOT_COLUMNS))}
+    # Eligible: the spots with an overflow upstream in a logged forecast that carries travel times. Before travel
+    # times were logged no cell can be observed, and a spot's overflows can change between builds.
+    timed = links[links["travel_h"].notna()]
+    chosen = chosen.merge(timed.groupby(["issued_ms", "lat", "lon"]).size().rename("n_links").reset_index(),
+                          on=["issued_ms", "lat", "lon"], how="left")
+    eligible = sorted(set(chosen.loc[chosen["n_links"].fillna(0) > 0, "spot_id"]))
+    left_out = sorted(set(pts["spot_id"]) - set(eligible))
+    if not eligible:
+        return {**empty, "spots_without_overflows": len(left_out), "csv": write(pd.DataFrame(columns=SPOT_COLUMNS))}
+    days = pd.date_range(first, cutoff, freq="D").date
+    grid = pd.DataFrame([(s, d, ld) for s in eligible for d in days for ld in SPOT_LEADS], columns=["spot_id", "day", "lead"])
+    g = grid.merge(chosen.rename(columns={"target_day": "day"}), on=["spot_id", "day", "lead"], how="left")
+    late = pts[~pts["before_cutoff"]][["spot_id", "target_day", "lead"]].drop_duplicates().rename(columns={"target_day": "day"})
+    g = g.merge(late.assign(late=True), on=["spot_id", "day", "lead"], how="left")
+    g["cell"] = np.arange(len(g))
+    has = g["issued_ms"].notna()
+    cl = g.loc[has, ["cell", "day", "issued_ms", "lat", "lon"]].merge(links, on=["issued_ms", "lat", "lon"])
+    lk = cl[["cell", "site_id", "weight", "travel_h", "has_live"]]
+    hist_path = config.state_read("live_history.parquet")
+    if hist_path.exists() and len(lk):
+        k, a = source_days(lk["travel_h"].fillna(0).to_numpy(dtype=float))
+        hist = pd.read_parquet(hist_path)
+        status = _overflow_day_status(lk["site_id"], first - timedelta(days=int(k.max()) + 1), cutoff, hist,
+                                      load_coverage(), load_poll_log())
+    else:
+        status = pd.DataFrame(columns=["site_id", "day", "e", "reason"])
+    obs = spot_exposure(g.loc[has, ["cell", "day"]], lk, status).set_index("cell")
+    g = g.join(obs[["covered", "observed", "reason"]], on="cell")
+    g["reason"] = np.where(has, g["reason"], np.where(g["late"].fillna(False).astype(bool), "missed_deadline", "no_forecast"))
+    g["climatology"] = climatology_index(g.loc[has, ["cell", "day"]], lk, overflows_path).reindex(g["cell"]).to_numpy()
+    issued = pd.to_datetime(g["issued_ms"], unit="ms", utc=True).dt.tz_convert(LOCAL_TZ)
+    rows = pd.DataFrame({
+        "spot_id": g["spot_id"].astype(str), "day": pd.to_datetime(g["day"]).dt.strftime("%Y-%m-%d"),
+        "lead": g["lead"].astype(int), "issued_at": issued.dt.strftime("%Y-%m-%dT%H:%M%:z").where(has, None),
+        "forecast": g["risk"].astype(float), "observed": g["observed"].astype(float), "covered": g["covered"].astype(float),
+        "reason": g["reason"], "version": g["version"].where(has, None)})
+    rows = rows.sort_values(["day", "spot_id", "lead"], kind="stable").reset_index(drop=True)
+    out = {**empty, **spot_summary(g, spots, links_by_cell=lk, overflows_path=overflows_path),
+           "first_day": str(first), "last_day": str(cutoff), "n_spots": len(eligible),
+           "spots_without_overflows": len(left_out)}
+    out["csv"] = write(rows)
+    return out
+
+
+def _auc(y, p) -> float | None:
+    y = np.asarray(y).astype(int)
+    return float(roc_auc_score(y, p)) if len(y) and 0 < y.mean() < 1 else None
+
+
+def spot_summary(g: pd.DataFrame, spots: pd.DataFrame, links_by_cell: pd.DataFrame,
+                 overflows_path: Path | None = None) -> dict:
+    """The figures the Accuracy page shows for the level, from verify_spots' cells (forecast as `risk`, observed,
+    climatology, reason, lead, day, spot_id, cell): the cells and why each without an observation has none; on
+    cells with both a forecast and an observation, the alert's record at the High line (warning_counts, with
+    the event o >= SPOT_EVENT_AT), the AUC, the four-by-four table of forecast level against observed level, and
+    the mean forecast against the mean observed by week. By lead, same day and in advance, river and lake spots,
+    and the company of the overflow with the largest weight. The climatology index's record and AUC beside."""
+    n_cells = len(g)
+    scored = g[g["risk"].notna() & g["observed"].notna()].copy()
+    out: dict = {"n_cells": n_cells, "n_forecast": int(g["risk"].notna().sum()), "n_observed": int(g["observed"].notna().sum()),
+                 "n_scored": len(scored), "not_observed": {r: int((g["reason"] == r).sum()) for r in SPOT_REASONS if (g["reason"] == r).any()}}
+    # Spots never observed: every cell with a forecast and travel times is left out for the overflows without a
+    # live feed.
+    fc = g[g["issued_ms"].notna() & (g["reason"] != "no_travel_time")]
+    nl = fc.groupby("spot_id")["reason"].apply(lambda r: bool((r == "no_live_feed").all())) if len(fc) else pd.Series(dtype=bool)
+    names = spots.drop_duplicates("id").set_index("id")
+    out["never_observed"] = [{"spot_id": s, "name": str(names["name"].get(s, s)) if "name" in names else s}
+                             for s in nl.index[nl]]
+    if scored.empty:
+        return out
+    scored["y"] = (scored["observed"] >= SPOT_EVENT_AT).astype(int)
+    kind = names["kind"] if "kind" in names else pd.Series(dtype=object)
+    scored["water"] = scored["spot_id"].map(kind).fillna("unknown")
+    comp = _site_companies(overflows_path)
+    top = links_by_cell.sort_values(["cell", "weight"], ascending=[True, False]).drop_duplicates("cell").set_index("cell")["site_id"]
+    scored["company"] = scored["cell"].map(top).map(comp).fillna("unknown") if comp is not None else "unknown"
+
+    def record(s: pd.DataFrame) -> dict:
+        r = {**warning_counts(s["y"], s["risk"], SPOT_EVENT_AT), "auc": _auc(s["y"], s["risk"]),
+             "mean_forecast": float(s["risk"].mean()), "mean_observed": float(s["observed"].mean()),
+             "n_spots": int(s["spot_id"].nunique())}
+        c = s.dropna(subset=["climatology"])
+        if len(c):
+            r["climatology"] = {**warning_counts(c["y"], c["climatology"], SPOT_EVENT_AT), "auc": _auc(c["y"], c["climatology"]),
+                                "mean": float(c["climatology"].mean())}
+        return r
+    out["overall"] = record(scored)
+    out["n_spot_days"] = int(scored[["spot_id", "day"]].drop_duplicates().shape[0])
+    out["n_event_spot_days"] = int(scored.loc[scored["y"] == 1, ["spot_id", "day"]].drop_duplicates().shape[0])
+    out["n_days"] = int(scored["day"].nunique())
+    out["first_scored_day"], out["last_scored_day"] = str(scored["day"].min()), str(scored["day"].max())
+    out["same_day"] = record(scored[scored["lead"] == 0]) if (scored["lead"] == 0).any() else None
+    adv = scored[scored["lead"] >= 1]
+    out["in_advance"] = record(adv) if len(adv) else None
+    out["by_lead"] = [{"lead": int(k), **record(s)} for k, s in scored.groupby("lead")]
+    out["by_water"] = [{"water": str(k), **record(s)} for k, s in scored.groupby("water")]
+    out["by_company"] = sorted(({"company": str(k), **record(s)} for k, s in scored.groupby("company")),
+                               key=lambda r: (-r["n"], r["company"]))
+    fb = np.searchsorted(SPOT_CUTS, scored["risk"].to_numpy(dtype=float), side="right")
+    ob = np.searchsorted(SPOT_CUTS, scored["observed"].to_numpy(dtype=float), side="right")
+    out["levels"] = {"bands": list(SPOT_BANDS), "cuts": list(SPOT_CUTS), "rows": "forecast level", "columns": "observed level",
+                     "counts": [[int(((fb == i) & (ob == j)).sum()) for j in range(len(SPOT_BANDS))] for i in range(len(SPOT_BANDS))]}
+    scored["week"] = pd.to_datetime(scored["day"]).dt.to_period("W").dt.start_time.dt.date.astype(str)
+    out["by_week"] = [{"week": w, "n": len(s), "mean_forecast": float(s["risk"].mean()), "mean_observed": float(s["observed"].mean())}
+                      for w, s in scored.groupby("week")]
+    return out
 
 
 # --- E. coli: score the map's exceedance forecast against new EA lab samples ----------------

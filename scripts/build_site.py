@@ -1013,6 +1013,63 @@ def publish_scored_csv(site: Path, credits: dict, root: str) -> int | None:
     return n
 
 
+def spots_csv_header(credits: dict, root: str) -> str:
+    """The comment lines above data/verification_spots_live.csv (docs/PREREGISTRATION-2027.md, amendment 1, file D):
+    what a row is, the columns, and the credits, since the observed column is built from the water companies' data."""
+    lic = "; ".join(f"{k} {v}" for k, v in credits["licences"].items())
+    lines = [
+        "SwimSignal live verification of the spot level: one row per spot with a monitored overflow upstream, target day and lead",
+        f"0-4, the rows behind \"How the level itself has done\" on the Accuracy page ({root}verification.html#spot-level).",
+        "Columns: spot_id, the spot's id on the site; day, the target day (Europe/London); lead, days from the issue day to the",
+        "target day (0 is the same day); issued_at, when the forecast was issued (the latest by 08:00 local time on the issue",
+        "day); forecast, the spot's sewage spill exposure index as logged (its level: Low under 0.15, Moderate to under 0.40,",
+        "High to under 0.70, Very high above); observed, the same index with the spills that happened in place of the",
+        "forecast ones: 1 - prod(1 - w x e) over the overflows, w each overflow's weight in that forecast and e its observed",
+        "spill days moved later by its logged travel time, empty when not observed; covered, the share of the spot's weight",
+        "whose overflows were observed on every day that reaches the target day (observed needs 0.95); reason, why there is",
+        "no observation, else empty; version, the forecast's model stamp. Empty issued_at, forecast and version: no forecast",
+        "by 08:00 on the issue day.",
+        f"Pre-registered rules: https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md (amendment 1). Method: {root}methods.html",
+        "Lines that start with # are notes: skip them when reading (pandas: comment='#'; R: comment.char='#').",
+        f"Credits: {credits['attribution']}",
+        credits["modified"],
+        f"Licences: {lic}. Full credits: {credits['full']}",
+    ]
+    return "".join(f"# {x}\n" for x in lines)
+
+
+def publish_spots_csv(site: Path, credits: dict, root: str) -> int | None:
+    """data/verification_spots_live.csv: the spot-level rows (forecast_log.SPOTS_CSV in the state directory) under a
+    header comment with the credits. Published only when its row count equals live.spots_live.csv.rows in the
+    verification.json this build has just written; otherwise any old copy is removed and the page's link with it,
+    as publish_scored_csv does. Returns the number of rows published, or None."""
+    from dipcast.forecast_log import SPOTS_CSV
+    dst = site / "data" / SPOTS_CSV
+    ver = site / "data" / "verification.json"
+    spots = (json.loads(ver.read_text()).get("live") or {}).get("spots_live") or {}
+    src = config.state_read(SPOTS_CSV)
+
+    def withdraw():
+        dst.unlink(missing_ok=True)
+        if spots.get("csv"):
+            d = json.loads(ver.read_text())
+            d["live"]["spots_live"].pop("csv", None)
+            ver.write_text(json.dumps(d, default=str))
+
+    if not spots.get("csv") or not src.exists():
+        withdraw()
+        log.info("no spot-level rows to publish: the live scorer has not written %s yet", SPOTS_CSV)
+        return None
+    body = src.read_text()
+    n = max(body.count("\n") - 1, 0)   # rows after the column names; no field holds a line break
+    if n != spots["csv"].get("rows"):
+        withdraw()
+        announce(f"{SPOTS_CSV} has {n} rows but the spot-level scores count {spots['csv'].get('rows')}: not published")
+        return None
+    dst.write_text(spots_csv_header(credits, root) + body)
+    return n
+
+
 CLASSIFICATIONS = config.RAW / "bathing_water_classifications.json"
 
 
@@ -2758,6 +2815,7 @@ def build(refresh: bool = True) -> dict:
         log_build(health, generated)
     (SITE / "data" / "verification.json").write_text(json.dumps({**load_verification(), "credits": credits}, default=str))
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
+    health["spot_rows_published"] = publish_spots_csv(SITE, credits, site_url())
     # How the forecast has done at each spot's upstream overflows, from that CSV: before the pages, for data.html.
     from dipcast import spot_scores
     health["spot_scores"] = spot_scores.write(SITE, upstream, generated, credits)
