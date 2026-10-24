@@ -107,8 +107,9 @@ only and no interval.
 
 ## Results
 
-Run on 24 Oct 2026 at about 22:40 UTC with `scripts/calibration_check.py` at this branch's results
-commit. Output: `docs/CALIBRATION-CHECK-2026-10.json`. All five input hashes matched; the rows matched
+Run on 24 Oct 2026 with `scripts/calibration_check.py` at this branch's results commit: the 20-draw trial
+finished at 22:33:59 UTC and the full run at 22:35:51 UTC (95.6 s), after the statement was pushed at
+22:32:34 UTC (commit `c745c48`). Output: `docs/CALIBRATION-CHECK-2026-10.json`. All five input hashes matched; the rows matched
 #338's exactly (117,324 scored, 91,391 common, 1,145 overflows, 4 blocks). Before the full run, a
 20-draw trial ran once to time the script and catch errors; its figures are not used.
 
@@ -195,22 +196,44 @@ four blocks both times. So the overall overprediction is not only the wet spell.
 with lead time: O/E 0.69 at lead 1, 0.74 at 2, 0.83 at 3 (interval 0.58 to 1.00) and 0.99 at 4 (0.67 to
 1.22, below 1 in one block). The slope stays below 1 at every lead (0.68 to 0.81).
 
-### Sensitivity: persistence as it was known at issue time
+### Sensitivity: persistence as it was known at issue time (as stated), and a correction to its reading
 
-On the rows where the shadow logged `spilling_at_issue`: same day 2,872 rows, 21–23 Oct; in advance
-2,855 rows, 22–23 Oct. That is one wet spell, so point estimates only.
+The stated sensitivity ran as written. On the rows where the shadow logged `spilling_at_issue` (same day
+2,872 rows, 21–23 Oct; in advance 2,855 rows, 22–23 Oct; one wet spell, so point estimates only):
 
-| Leads | Forecast Brier | Persistence, as logged at issue | Persistence, rebuilt as in #338 | Skill vs as-logged | Skill vs rebuilt |
+| Leads | Forecast Brier | Logged status at issue (spilling now) | #338's rebuilt "active" (now or within 48 h) | Skill vs logged | Skill vs rebuilt active |
 |---|---|---|---|---|---|
 | Same day | 0.125 | 0.121 | 0.098 | −0.04 | −0.28 |
 | In advance | 0.142 | 0.163 | 0.143 | 0.13 | 0.01 |
 
-The rebuilt reference does markedly better than the status a swimmer could have seen. The cause is the
-backdated starts #338 disclosed: event times published after the issue time and dated back. #338 said
-this flatters persistence "slightly". In this window it is larger than that. The forecast's deficit
-same day shrinks from −0.28 to −0.04, and in advance its margin grows from 0.01 to 0.13. This is one
-window of a few days with a fitted reference, so it does not overturn #338's verdict. It does mean
-#338's comparisons against persistence lean against the forecast by more than #338 stated.
+**These two columns are two different prediction rules**, not two reconstructions of one rule. The
+shadow logs `status == 1` at issue (`model/live_status.py` line 217): spilling now. #338's "active" also
+counts a spill that ended in the `RECENT_SPILL_HOURS` (48 h) before the issue. The rows are the same
+(2,872 and 2,855 in both). So the gap between them cannot be put down to backdated starts. A first draft
+of this section did that; it is withdrawn (correction 3 below).
+
+### Exploratory: the same rule, rebuilt and as logged
+
+Added after the run and not part of the stated test. `scripts/persistence_like_for_like.py`, on the same
+fixed record (hashes checked), output `docs/CALIBRATION-CHECK-2026-10-persistence.json`, run at 22:40 UTC.
+It holds the rule fixed, spilling now, and compares #338's rebuilt `spilling_now` with the shadow's
+logged `spilling_at_issue`. Exactly the same 5,727 rows (logged, status known to the rebuild, issue time
+matched), each turned into a chance the same way (`fit_two_sided`, by lead, on those rows):
+
+| Leads | Rows | Forecast Brier | Spilling now, logged | Spilling now, rebuilt | Skill vs logged | Skill vs rebuilt |
+|---|---|---|---|---|---|---|
+| Same day | 2,872 | 0.1251 | 0.1207 | 0.1215 | −0.036 | −0.030 |
+| In advance | 2,855 | 0.1419 | 0.1631 | 0.1628 | 0.130 | 0.128 |
+
+The two flag different rows: 43 both, 36 logged only, 50 rebuilt only, 5,598 neither. These are #338's
+cross-check counts, now on the full shadow window. Scored here, the differences nearly cancel: the
+rebuilt "spilling now" scores within 0.001 of the logged one. In this window, then, the hindsight in the
+rebuild moves a spilling-now reference very little. The large gap in the first table comes from the rule:
+"spilling now or in the last 48 hours" predicts better than "spilling now". So #338's reference is a
+stronger rule than a swimmer's "is it spilling now?", and that is the main reason it is hard to beat.
+#338's own word for the hindsight bias, "slightly", is consistent with this. The size of that bias for
+the 48-hour rule itself is not measured here: the shadow logs no 48-hour status to compare with. This is
+one wet window of a few days, with references fitted on the same rows.
 
 ### Corrections to the stated text, made after the run
 
@@ -227,7 +250,12 @@ Kept visible, not rewritten into the statement above:
    nine: Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and
    Yorkshire. All nine were analysed, as the strata rule intends. Northumbrian Water has 16 spill
    overflow-days, so it is reported, not judged.
-3. **The statement's date was corrected before any result existed.** The first commit said "25 October
+3. **The sensitivity's first reading is withdrawn.** A first draft of the results, written before review
+   and never published, said the sensitivity showed backdated starts flatter #338's persistence by more
+   than #338 stated. That held the rule fixed only in name: the logged status is spilling now, the rebuilt
+   one is spilling now or within 48 h. The section above labels the two as different rules, and an
+   exploratory like-for-like comparison, marked as added after the run, replaces the causal claim.
+4. **The statement's date was corrected before any result existed.** The first commit said "25 October
    2026 (UTC)". It was amended to "24 October 2026 at about 22:30 UTC" before the script was written, and
    then pushed (commit `c745c48`).
 
