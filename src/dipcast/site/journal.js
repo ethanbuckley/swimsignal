@@ -110,8 +110,8 @@ function journalSeen(d, date, today, issued, time) {
   const rs = d.river_state || {}, wt = d.water_temp || {};
   const temp = typeof wt.temp_c === 'number' && !Number.isNaN(Date.parse(wt.observed_at)) && typeof wt.river_km === 'number'
     && ['upstream', 'downstream'].includes(wt.direction) ? { c: wt.temp_c } : null;
-  // The overflows only where some report live: "none of the 14 discharging" was not known at Hereford,
-  // whose 14 have no live feed (11 Oct 2026). A lake's own gauge (river_state.water "lake") is not a river
+  // The overflows only where some report live: "none of the 14 discharging" is not known at Hereford,
+  // whose 14 have no live feed. A lake's own gauge (river_state.water "lake") is not a river
   // level, and its words are not these: kept out.
   const known = !!total && ((now.monitored_upstream ?? total) > 0 || (now.discharging_upstream || 0) > 0);
   return jnSeenOk({ head, level, issued, rain: x && typeof x.rain_48h_mm === 'number' ? Math.round(x.rain_48h_mm * 10) / 10 : null,

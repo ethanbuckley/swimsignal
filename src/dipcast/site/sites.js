@@ -1,5 +1,5 @@
 // The sites view (sites.html): several listed spots on one page, for an activity centre, a club or a
-// council, to bookmark and print before a session (docs/MARKETS-2026-10.md, B2). Each spot is one row:
+// council, to bookmark and print before a session (docs/MARKETS-2026-10.md). Each spot is one row:
 // its name, its headline, the five days as the list's bars, the reason in one line, and links to the
 // spot's page and to a decision record (record.html). The forecast's issue time and its issue id are said
 // once at the top, with the app's stale notice, and the data credits for the listed spots close the page
@@ -99,10 +99,9 @@ const Sites = (() => {
     return { head, tone: tone(lv), why: [parts.length ? parts.join('. ') + '.' : '', g].filter(Boolean).join(' ') };
   }
   // One day's level, for a briefing (scripts/briefing.py adds the session's day to the link): the day named
-  // by its date, never "today" or "tomorrow", since the printed copy is kept and read on later days. On 20 Oct
-  // 2026 a Thursday briefing's sheet said "Very high risk tomorrow", meaning Wednesday, beside an email and a
-  // decision record that gave Thursday's "High risk". The level and its cause are dayHeadline's, which the
-  // record and alerts.json use, then how many overflows are expected to spill that day, as on the record.
+  // by its date, never "today" or "tomorrow", since the printed copy is kept and read on later days. The
+  // level and its cause are dayHeadline's, which the record and alerts.json use, then how many overflows are
+  // expected to spill that day, as on the record.
   function dayWords(s, iso) {
     const lv = R.dayLevel(s, iso), g = gaps(s, true);
     if (lv === R.NO_FORECAST && R.daily(s)) return { head: `No forecast for ${dated(iso)}`, lv, tone: 'na', why: ['Treat it as unknown, never as low.', g].filter(Boolean).join(' ') };
@@ -128,10 +127,10 @@ const Sites = (() => {
 
   // ------------------------------------------------------------------ the page
   // The issue time and the issue id once, with the app's notice when the forecast is over 8 h old (index.html,
-  // STALE_MIN), and where the latest is. Printed, this line stands for the foot the page had, which said the
-  // same, so the room goes to the credits (20 Oct 2026). How long ago is said on the screen only: a printed
-  // sheet is kept and read later, when "(31 min ago)" no longer is, and nothing on it says when it was printed
-  // (post-deploy QA, 20 Oct 2026; the decision record counts its ages from "when this page was opened").
+  // STALE_MIN), and where the latest is. Printed, this line stands in for a foot that would say the same, so
+  // the room goes to the credits. How long ago is said on the screen only: a printed sheet is kept and read
+  // later, when "(31 min ago)" no longer is, and nothing on it says when it was printed (the decision record
+  // counts its ages from "when this page was opened").
   function issue(data, now, base = '') {
     const m = (now - Date.parse(data.generated_at)) / 60000;
     const at = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });

@@ -67,8 +67,8 @@ const Embed = (() => {
     const issued = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     let h = `<h1 class="name">${out(page, esc(s.name))}</h1>`;
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: ${offline ? 'this screen has not been able to fetch a newer one' : 'the automatic update has not run since'}. Treat it as out of date.</p>`;
-    // Where the week goes, unless the headline already says it: "Low risk now · Very high risk on Thursday" was
-    // followed by "Very high risk on Thursday" (11 Oct 2026). A worse later day is in both (levels.js, headParts).
+    // Where the week goes, unless the headline already says it, so "Very high risk on Thursday" is said
+    // once. A worse later day is in both (levels.js, headParts).
     const head = R.headline(s);
     h += `<p class="hl ${tone(R.level(s))}">${esc(head)}</p>` + (next && !head.includes(next) ? `<p class="next">${esc(next)}</p>` : '');
     h += `<p class="act">${esc(R.levelAction(s))}</p>` + gaps(s);   // what to do, as under the spot page's answer

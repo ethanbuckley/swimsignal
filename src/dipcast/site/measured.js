@@ -1,8 +1,7 @@
 // Lab results an organisation sent: water samples it had taken at the spot and tested by a lab
 // (samples/README.md, src/dipcast/samples.py). The build puts a spot's published ones from the last 30
 // days in spots.json as `measured`, and this draws them in a tile of their own on the spot's page,
-// apart from every forecast and estimate (outside review, 20 Oct 2026: measured results kept distinct
-// from predictions, and who supplied them kept with them).
+// apart from every forecast and estimate, and with who supplied them.
 //
 // What the tile says and does not. Each result: when it was taken (UK time), how long ago, the count
 // per 100 ml, who sent it, and the lab and its method as the sender gives them; whether the lab is

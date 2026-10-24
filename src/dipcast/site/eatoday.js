@@ -1,5 +1,5 @@
 // Today's EA advice on a designated bathing water's page: a fold at the foot of the Environment Agency
-// rating tile that loads the EA's own panel for the site, as the coverage page does for the coast (#116).
+// rating tile that loads the EA's own panel for the site, as the coverage page does for the coast.
 //
 // The EA's short-term advice against bathing, after a pollution incident or an algal bloom, never
 // reaches spots.json: the EA's bathing-water service refuses the build's machines (since 28 Sep 2026),

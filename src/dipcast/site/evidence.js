@@ -46,7 +46,7 @@ function evidenceAgeDays(a, b) {
 }
 
 // The overflows upstream: discharging and stopped lately, as Right now counts them, then which report
-// live and why the others do not, in #98's data states (forecast.live_counts): offline, a feed that is
+// live and why the others do not, in the data states of forecast.live_counts: offline, a feed that is
 // down, a feed not updated within six hours (stale), or a company with no live feed. A forecast from
 // before no_feed_upstream existed cannot tell an offline monitor from no feed, and says "offline or with no
 // live feed" rather than guess.
@@ -69,8 +69,8 @@ function evidenceOverflows(d, generatedAt) {
     : `${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
   const live = mon >= total ? (total === 1 ? 'It reports live.' : `All ${total} report live.`)
     : `${mon || 'None'} of ${total} report live.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`;
-  // Never "0 of 14 discharging" where none of the 14 reports (11 Oct 2026, Hereford): out of all of them
-  // only where all report; where some do not, the count alone, beside how many report; with none, not known.
+  // Never "0 of 14 discharging" where none of the 14 reports: out of all of them only where all report;
+  // where some do not, the count alone, beside how many report; with none, not known.
   const count = !mon && !dis ? 'Whether any is discharging is not known' : mon >= total ? `${dis} of ${total} discharging` : `${dis} discharging`;
   return { what: 'Overflows upstream', at: generatedAt,
     say: `${count}${rec ? `, ${rec} stopped lately` : ''}. ${live}`,
@@ -79,8 +79,7 @@ function evidenceOverflows(d, generatedAt) {
 
 // The rain in the 48 h to midday on the first day, and the most ahead, from the rainfall forecast read
 // with the forecast; a day with no rain figure is named among the gaps. Every figure is a 48 h total to
-// midday: until 12 Oct 2026 the most ahead read "The wettest day ahead is Tuesday, with 7 mm", as if it
-// were that day's rain (red-team review, 11 Oct).
+// midday, and says so: "The wettest day ahead is Tuesday, with 7 mm" would read as that day's rain.
 function evidenceRain(d, nowMs, generatedAt) {
   const days = (d.days || []).slice(0, 5), x0 = days[0];
   if (!x0 || evidenceNil(x0.rain_48h_mm)) return null;
@@ -171,9 +170,9 @@ function evidenceTile(d, nowMs, generatedAt) {
     + (gaps.length ? `<div class="ev-gap">${gaps.map(g => `<p>${g}</p>`).join('')}</div>` : '') + '</details>';
 }
 
-// How much evidence sits behind a level, as one quiet line beside it (outside review, 20 Oct 2026: show the
-// pollution signals and the evidence coverage as two things). Plan a swim gives it under each row. Two parts,
-// each only where it applies:
+// How much evidence sits behind a level, as one quiet line beside it: the pollution signals and the
+// evidence coverage are two things. Plan a swim gives it under each row. Two parts, each only where it
+// applies:
 //  - live: on a plan for today, a low level whose right now is not known (levels.js, nowUnknown) is a forecast
 //    only, in the words a saved card uses;
 //  - the track record: whose overflows these are, by their reach (evidenceCompanies), and the share of spills
@@ -198,10 +197,10 @@ function evidenceCompanies(s) {
   else for (const [n, w] of s.reach_by_company || []) by.set(n, Number(w) || 0);
   return by;
 }
-// The line in two parts, since a plan says the second once where its spots share it (index.html, planBasis;
-// outside review, 22 Oct 2026: eight Oxford rows carried the same sentence). The first is the row's own: on a
-// plan for today, a low level whose right now is not known. The second is whose overflows these are, with how
-// the live warnings have done at that company, which is often the same for every spot near one place.
+// The line in two parts, since a plan says the second once where its spots share it (index.html, planBasis),
+// not the same sentence under each of eight Oxford rows. The first is the row's own: on a plan for today, a
+// low level whose right now is not known. The second is whose overflows these are, with how the live warnings
+// have done at that company, which is often the same for every spot near one place.
 const evidenceForecasts = s => Boolean(s && !s.unlisted && !s.error && evidenceRules().daily(s));
 function evidenceNowGap(s, isToday = false) {
   const R = evidenceRules();

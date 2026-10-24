@@ -85,7 +85,7 @@ const Organisers = (() => {
         rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
           + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
       const band = R.ecoliBand(s, x);
-      // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF; 20 Oct 2026).
+      // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF).
       if (band && R.ecoliUntested(x)) rows.push(row('Water quality', esc(R.ECOLI_OFF_SAID)));
       else if (band) rows.push(row('Water quality', `Chance a water sample would show E. coli over 900 per 100 ml: <b>${Math.round(x.p_ecoli_gt900 * 100)}%</b>. ${cap(band)} risk.`));
       else if ((s.location || {}).mode === 'lake') rows.push(row('Water quality', 'Not estimated: the E. coli model showed no skill on lakes.'));
@@ -160,7 +160,7 @@ const Organisers = (() => {
   // "Alert me about this date" (push/README.md, "Alerts for a date"): the push Worker tells this
   // browser when the day's forecast first appears and again each time its level changes. Shown only
   // where the site's alerts are on and the build says the Worker takes dates (spots.json's
-  // push.dates, set by the repository variable DIPCAST_PUSH_DATES once the new Worker is deployed),
+  // push.dates, set by the repository variable DIPCAST_PUSH_DATES),
   // and only in a browser that has alerts on already: turning them on, and its consent, is the Saved
   // page's. The page sends the whole list each time, as the app sends its saved spots, and keeps it
   // here to know what is on; the Worker keeps the saved spots and the weekly note as they were.
