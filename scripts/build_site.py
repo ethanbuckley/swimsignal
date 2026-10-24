@@ -1061,6 +1061,84 @@ def attach_water_body(results: list[dict], path: Path = RNAGS) -> tuple[int, lis
     return n, unknown
 
 
+UPGRADES = config.RAW / "overflow_upgrades.csv"
+UPGRADE_STAGES = ("upgraded", "upgrading")
+UPGRADE_MATCHES = ("name", "shared name")
+
+
+def read_upgrades(path: Path = UPGRADES) -> dict[str, dict]:
+    """data/raw/overflow_upgrades.csv by site id: the upgrades a company says it has made or is making,
+    each with its source. Raises ValueError on a row the page could not word truthfully: an unknown stage
+    or match, a source that is not https, no quote, a date not YYYY-MM-DD, or an overflow listed twice."""
+    import csv
+    rows = list(csv.DictReader(line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")))
+    out: dict[str, dict] = {}
+    day = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+    for r in rows:
+        sid = (r.get("site_id") or "").strip()
+        bad = ("no site_id" if not sid else "listed twice" if sid in out
+               else f"stage {r.get('stage')!r}" if r.get("stage") not in UPGRADE_STAGES
+               else f"match {r.get('match')!r}" if r.get("match") not in UPGRADE_MATCHES
+               else "source_url not https" if not re.fullmatch(r"https://[^\s<>\"']+", r.get("source_url") or "")
+               else "no quote" if not (r.get("quote") or "").strip()
+               else "no company" if not (r.get("company") or "").strip()
+               else "checked not YYYY-MM-DD" if not day.match(r.get("checked") or "")
+               else "completed not YYYY-MM-DD" if r.get("completed") and not day.match(r["completed"])
+               else "")
+        if bad:
+            raise ValueError(f"{path.name}: {sid or 'a row'}: {bad}")
+        out[sid] = r
+    return out
+
+
+def latest_return_years(path: Path = config.PROCESSED / "annual_returns.parquet") -> dict[str, int]:
+    """Each overflow's annual-return year whose counts the forecast reads, by the forecast's own rule
+    (overflows.latest_annual_returns), for the note's "spill counts for 2020 to ..."."""
+    from dipcast.overflows import latest_annual_returns
+    a = latest_annual_returns(pd.read_parquet(path))
+    return {str(s): int(y) for s, y in zip(a["site_id"], a["ar_year"]) if pd.notna(y)}
+
+
+def attach_upgrades(results: list[dict], path: Path = UPGRADES, years: dict[str, int] | None = None) -> dict:
+    """A note's facts on each listed overflow in a spot's list, as `upgrade` on its row in contributors:
+    the company's words (has upgraded / is upgrading), the source and the day it was read, and the last
+    return year the forecast still counts. Runs after the forecasts, and the spill model never reads the
+    file: an announced upgrade is a target, not a measurement, and the model's response to its count
+    covariate is not monotone, so the page says what the company says and leaves the forecast as it is.
+    A row whose company is not the overflow's is passed over and named in the warnings, as a wrong
+    site id would be. Never stops the build: a bad file leaves every page without the note."""
+    try:
+        listed = read_upgrades(path)
+    except Exception as e:  # noqa: BLE001 - a note beside the forecast must not sink the build
+        return {"overflows": 0, "spots": 0, "warnings": [f"overflow upgrades not shown: {e}"]}
+    if years is None:
+        try:
+            years = latest_return_years()
+        except Exception as e:  # noqa: BLE001 - without the year the note says "past spill counts"
+            log.warning("annual-return years for the upgrade notes: %s", e)
+            years = {}
+    seen, spots, warnings = set(), 0, []
+    for r in results:
+        hit = False
+        for c in r.get("contributors") or []:
+            u = listed.get(c.get("site_id"))
+            if u is None:
+                continue
+            if u["company"] != c.get("company"):
+                msg = f"{u['site_id']} is {c.get('company')}'s, not {u['company']}'s: no upgrade note for it ({path.name})"
+                if msg not in warnings:
+                    warnings.append(msg)
+                continue
+            c["upgrade"] = {"company": u["company"], "stage": u["stage"], "match": u["match"], "source_name": u["source_name"],
+                            "url": u["source_url"], "checked": u["checked"],
+                            **({"completed": u["completed"]} if u.get("completed") else {}),
+                            **({"returns_to": years[u["site_id"]]} if u["site_id"] in years else {})}
+            seen.add(u["site_id"])
+            hit = True
+        spots += hit
+    return {"overflows": len(seen), "spots": spots, "warnings": warnings}
+
+
 def _km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     import math
     r = math.pi / 180
@@ -2552,6 +2630,7 @@ def build(refresh: bool = True) -> dict:
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
+    upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -2564,6 +2643,8 @@ def build(refresh: bool = True) -> dict:
     health = build_health(results, samples_status(), load_poll_log() if refresh else None,
                           duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
     health["algae_checks"], health["classifications"] = n_algae, n_classified
+    health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
+    health["warnings"] += upgrades["warnings"]
     health["lab_samples"] = n_lab
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
