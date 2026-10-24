@@ -1,4 +1,4 @@
-"""Shadow forecasts and live scores for Scottish Water's overflows (Scotland plan, task S5, Stage B).
+"""Shadow forecasts and live scores for Scottish Water's overflows (docs/SCOTLAND-PLAN-2026-10.md).
 
 Off unless DIPCAST_SCOTTISH_WATER=1 (config.SCOTTISH_WATER). When on, the site build calls run() after
 everything it publishes is written. Each run:
@@ -8,15 +8,16 @@ everything it publishes is written. Each run:
    Scotland's marine rule (overflows.marine_scotland) in both passes, so an outfall on a sea loch, a
    firth or the open sea is not placed on a burn or a lochan beside it. Emergency overflows (EO, alone
    or in a mixed type) get no spill forecast: they "should only operate in the event of sewer system
-   failure" (plan section 5.2); their live status stays in the S4 snapshot. Written to OVERFLOWS_FILE.
+   failure" (plan section 5.2); their live status stays in ingest.scottish_water's snapshot. Written
+   to OVERFLOWS_FILE.
 2. Rain. The Open-Meteo forecast for the cells of the overflows forecast, rationed as the
    click-anywhere data's is (scripts/build_any_point.py, any_point_rain): at most RAIN_CELLS_PER_BUILD
    of the oldest cells are asked for, and only cells whose cached forecast is RAIN_REFRESH_H old. The
    rest come from the shared rain cache if under RAIN_MAX_AGE_H old, and a cell with neither has no
    rain data (its forecast is logged with rain_available false and never scored, as in England).
-   Builds ran 4 to 35 times a day from 1 to 10 Oct 2026 (poll log; pushes start builds too), so the
-   refresh floor, not the build count, sets the cost: each of the 320 cells (4 Oct answer) at most 4
-   times a day, 1,280 locations, 1,280 Open-Meteo calls (forecast_calls) of the 10,000 a day. The
+   Builds ran 4 to 35 times a day over 1 to 10 Oct 2026, so the refresh floor, not the build count,
+   sets the cost: each of the 320 cells at most 4 times a day, 1,280 Open-Meteo calls
+   (forecast_calls) of the 10,000 a day. The
    requests are booked in the build's Open-Meteo ledger (rainfall.calls_today) as "scotland", and
    they come last in a build, so a spent ration holds them back before the spots'.
    Each row logs how old its rain forecast was (`rain_age_h`).
@@ -33,8 +34,8 @@ everything it publishes is written. Each run:
    (forecast_log.DECISION_HOUR, 08:00 local), or the first of their issue day. verify_live scores the
    latest issued by 08:00, or, when there is none, the first of the day, so the rows left out are
    never selected (forecast_log.select_decision_forecasts).
-5. Score. forecast_log.verify_live on a LiveStore of Scotland's files: the S4 history, the S4
-   coverage (England's coverage rules, each asset by its own transmit time) less every site-day an
+5. Score. forecast_log.verify_live on a LiveStore of Scotland's files: ingest.scottish_water's history
+   and coverage (England's coverage rules, each asset by its own transmit time) less every site-day an
    event flagged stuck touches (a monitor reading Overflowing for over a week may be frozen, so those
    days are neither spill nor no spill), and OVERFLOWS_FILE for the climatology baseline (lta_spills x
    spill-days per spill / 365, England's baseline, 20 a year where no Scottish count exists). Written
@@ -45,8 +46,8 @@ state release lists its files by name and none of these is among them; no page o
 them. The live feed's licence is unconfirmed (plan section 1, point 2), so this must stay so until
 Scottish Water confirms it. The build log gets counts and costs only, no scores.
 
-Gate B (plan section 6, proposed there on 4 Oct 2026; the computation fixed here on 11 Oct 2026,
-before any Scottish forecast was logged): over scored overflow-days at leads 1 to 3, Brier skill of
+Gate B (plan section 6; the computation fixed here on 11 Oct 2026, before any Scottish forecast
+was logged): over scored overflow-days at leads 1 to 3, Brier skill of
 the calibrated forecast against the climatology baseline, 1 - Brier / Brier_clim. Its 95% interval is
 the 2.5th and 97.5th percentiles of 2,000 resamples of target days (all overflows of a day together:
 they share the day's rain), seed 0. It is computed per arm: the version stamp less the code version,
@@ -147,8 +148,7 @@ def overflow_table(net, snap: pd.DataFrame | None = None, year: int | None = Non
 # ------------------------------------------------------------------ 2. rain
 def forecast_calls(n_cells: int) -> float:
     """Open-Meteo's count for forecasts of n_cells cells (rainfall.forecast_weight): one variable over
-    FORECAST_PAST_DAYS + FORECAST_DAYS + 1 days is 1 a location. Until 17 Oct 2026 this took
-    locations x days/14, 2.64 a cell, which left out Open-Meteo's variables/10 factor."""
+    FORECAST_PAST_DAYS + FORECAST_DAYS + 1 days is 1 a location."""
     from dipcast.ingest import rainfall
     return rainfall.forecast_weight(n_cells)
 
@@ -269,7 +269,7 @@ def store() -> forecast_log.LiveStore:
 
 
 def scored_coverage(cov: pd.DataFrame, hist: pd.DataFrame) -> tuple[pd.DataFrame, int]:
-    """The S4 coverage less every (site_id, day) an event flagged stuck touches, and how many such
+    """The asset coverage less every (site_id, day) an event flagged stuck touches, and how many such
     site-days were removed."""
     stuck = hist[hist["stuck"].astype(bool)] if "stuck" in hist and len(hist) else hist.iloc[0:0]
     if stuck.empty or cov.empty:

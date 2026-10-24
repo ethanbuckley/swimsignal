@@ -1,11 +1,11 @@
 """Breaks in OS Open Rivers' network, found and mended when the network loads.
 
 A dead end is a node with no link out of it that is not at the sea. Water reaching one goes no
-further, so an overflow above it is never counted for a spot below it. A cross-check against the
-Environment Agency's bathing water profiles (11 Oct 2026) found dead ends on the Hampshire Avon at
-Ratfyn, the Windrush, the Thame and the Perry, and a review of the site found one on the Test at
-Whitchurch: the upper Avon's overflows were missed at Salisbury, Burford STW at Wolvercote,
-Cuddington STW at Wallingford, Gobowen and Oswestry at Shrewsbury, Overton at Chilbolton.
+further, so an overflow above it is never counted for a spot below it. Checks against the
+Environment Agency's bathing water profiles and the site (11 Oct 2026) found dead ends on the
+Hampshire Avon at Ratfyn, the Windrush, the Thame, the Perry and the Test at Whitchurch: the upper
+Avon's overflows were missed at Salisbury, Burford STW at Wolvercote, Cuddington STW at Wallingford,
+Gobowen and Oswestry at Shrewsbury, Overton at Chilbolton.
 
 At the sea means a dead end with a tidal link flowing into it, or one within COAST_M of a tidal
 link (a short river that meets the sea with no tidal reach). A node drains when a path leads from
@@ -16,10 +16,10 @@ RiverNetwork applies, in this order:
 1. The override list, data/raw/network_fixes.csv: links to reverse and joins to add, each with a
    reason, for what the rules below leave alone.
 2. The gap repairs (RiverNetwork._repair_gaps): a dead end within 60 m of a headwater is joined to
-   it. Until 11 Oct 2026 the headwater could be the start of a link flowing into that same dead
-   end, which made a loop (62 of the 653 joins); at Ratfyn the loop drained nowhere. Those joins
-   are left out here, and put back after the rules (restore_loop_repairs) only where the dead end
-   still has no outlet and the loop has a way out to the sea, as it had before.
+   it. Where the headwater starts a link flowing into that same dead end, the join makes a loop
+   (62 of the 653 joins); at Ratfyn the loop drains nowhere. Those joins are left out here, and
+   put back after the rules (restore_loop_repairs) only where the dead end still has no outlet and
+   the loop has a way out to the sea.
 3. These rules, pass after pass until neither changes anything, so that a break downstream mended
    in one pass lets a break above it be mended in the next. Reversals are repeated until they find
    no more before each pass of joins: turning a link round keeps OS's geometry, a join has none.
@@ -111,7 +111,7 @@ def link_words(links: pd.DataFrame, lid: str) -> frozenset[str]:
 def _canal(links: pd.DataFrame, lid: str) -> bool:
     """A canal by name, "Canal" or "Navigation", not by OS's form. Some navigations carry their river
     (the Weaver Navigation) and some are cuts (the Aire and Calder's Knottingley and Goole Canal), and
-    the name cannot tell which. Measured on 12 Oct 2026 (review of #184): counting "Navigation" as a
+    the name cannot tell which. Measured on 12 Oct 2026: counting "Navigation" as a
     river made one more fix in the whole network, a named join from a dead end into the Knottingley
     and Goole Canal, and changed no spot's overflows. So a navigation stays a canal here."""
     n = _name(links, lid)
@@ -319,8 +319,8 @@ def apply_rules(net, pts: pd.Series) -> list[Fix]:
 def restore_loop_repairs(net, pts: pd.Series, skipped: list[tuple[str, str, float]]) -> dict[str, float]:
     """The gap repairs left out because they make a loop (RiverNetwork._repair_gaps), put back where
     the dead end still has no outlet after the rules and the headwater drains: the loop then has a way
-    out, and the dead end's water reached the sea through it before 11 Oct 2026 (the Blackbrook River
-    on Dartmoor through the Devonport Leat). A loop with no way out (Ratfyn) stays out."""
+    out, and the dead end's water reaches the sea through it (the Blackbrook River on Dartmoor
+    through the Devonport Leat). A loop with no way out (Ratfyn) stays out."""
     g = net.graph
     sea = sea_ends(net, pts)
     out: dict[str, float] = {}

@@ -15,7 +15,7 @@ Three DuckDB tables in the state directory:
 `verify_live()` scores overflow-day forecasts whose target day has passed,
 using the accumulated live history, and writes verification_live.json.
 
-Scoring rules (16 Sep 2026):
+Scoring rules:
 
 * Decision time. For each (overflow, issue day, target day) the forecast scored is
   the latest one issued by DECISION_HOUR local time on the issue day: what a
@@ -28,9 +28,9 @@ Scoring rules (16 Sep 2026):
   and at least once the next day (live_coverage.parquet, written by
   ingest.live.save_live). A poll gap, an offline monitor, a stale or dead company
   feed is a missing observation, not a dry day. A feed that stamps no record is
-  never current, so its overflows are not scored that day. South West Water's
-  records carry a lastUpdated stamp, which the site read only from 4 Oct 2026
-  (ingest.live.hub_names), so its overflows are scored from 5 Oct. Days from before the observation masks existed
+  never current, so its overflows are not scored that day. Polls before 4 Oct 2026
+  did not read South West Water's lastUpdated stamp (ingest.live.hub_names), so
+  its overflows are scored from 5 Oct. Days from before the observation masks existed
   (observations_from) are not scored and are left out of the scoring window.
   Scores under a stricter gap rule are reported alongside.
 * Spills. An overflow-day is a spill if a poll saw an event that touched that day
@@ -45,7 +45,7 @@ Scoring rules (16 Sep 2026):
 * E. coli. A point forecast is compared with a sample only if it was issued
   before the sample was taken; lead 0 ("same day") is reported separately from
   leads 1-4 ("in advance").
-* Warnings (4 Oct 2026). Both forecasts are also counted as a warning system at
+* Warnings. Both forecasts are also counted as a warning system at
   the site's own high-risk line (SPILL_WARN_AT, ECOLI_WARN_AT): hits, misses, false
   alarms and correct quiet days, with the share a forecast of "no" every time would
   get right beside the share correct (warning_table).
@@ -80,7 +80,7 @@ MIN_KNOWN_POLLS = 6       # known-status polls on the target day needed to score
 # nothing was scored (0 of 80,753 candidates on 1 Oct). Over 17-30 Sep the longest gap was
 # under 6 h on 10 days of 14 and under 8 h on all 14. At 8 h the rule still guards against a
 # second event starting and ending unseen inside one stretch; the next-day rule catches a single
-# late one. The stricter rule reported alongside is the old 6 h, so the change itself is visible.
+# late one. STRICT_GAP_H keeps 6 h alongside, so the effect of the wider gap stays visible.
 MAX_GAP_H = 8.0
 STRICT_GAP_H = 6.0        # the stricter rule reported alongside, for sensitivity
 COVERAGE_FILE = "live_coverage.parquet"
@@ -111,10 +111,10 @@ ECOLI_MIN_EXCEEDANCES = 10
 @dataclass(frozen=True)
 class LiveStore:
     """Another set of files for verify_live to score, beside England's: Scottish Water's shadow scores
-    (scottish_shadow, Scotland plan task S5). `db` holds a forecast_overflows table; `history`,
+    (scottish_shadow). `db` holds a forecast_overflows table; `history`,
     `coverage` and `overflows` have the columns of live_history.parquet, live_coverage.parquet and
     overflows.parquet that verify_live reads; the scores go to `out_json` and `out_csv`. A store has
-    no poll log unless given one and no E. coli scores. verify_live(store=None) is England's, as before."""
+    no poll log unless given one and no E. coli scores. verify_live(store=None) is England's."""
     db: Path
     history: Path
     coverage: Path
@@ -140,30 +140,30 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
         CREATE TABLE IF NOT EXISTS forecast_points (
             issued_at TIMESTAMPTZ, lat DOUBLE, lon DOUBLE, mode VARCHAR, watercourse VARCHAR,
             now_risk DOUBLE, target_day DATE, lead INTEGER, risk DOUBLE)""")
-    # Added 15 Sep 2026: the E. coli exceedance forecast and the rain it used.
+    # The E. coli exceedance forecast and the rain it used (NULL before 15 Sep 2026).
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS p_ecoli DOUBLE")
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS rain_48h DOUBLE")
-    # Added 16 Sep 2026: whether the overflow's cell had rainfall data for the day.
+    # Whether the overflow's cell had rainfall data for the day (TRUE before 16 Sep 2026).
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_available BOOLEAN DEFAULT TRUE")
-    # Added 17 Sep 2026: which models and code produced the forecast.
+    # Which models and code produced the forecast (NULL before 17 Sep 2026).
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS version VARCHAR")
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS version VARCHAR")
-    # Added 28 Sep 2026: the target day's rain (mm) at the overflow's cell that the forecast used.
+    # The target day's rain (mm) at the overflow's cell that the forecast used (NULL before 28 Sep 2026).
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_mm DOUBLE")
-    # Added 12 Oct 2026: the overflow's travel time to the point, in hours, so the 2027 spot-level score
+    # The overflow's travel time to the point, in hours (NULL before 12 Oct 2026), so the 2027 spot-level score
     # can shift each overflow's observed spill days as the forecast shifted its chances
     # (docs/PREREGISTRATION-2027.md, amendment 1; transport.shift_by_travel).
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS travel_h DOUBLE")
-    # Added 18 Oct 2026: the ensemble rain's members (review task D4, docs/ENSEMBLE-RAIN-TEST-2026-11.md), one
-    # value a member: each overflow's calibrated spill chance and the day's rain at its cell, and the spot's
+    # The ensemble rain's members (docs/ENSEMBLE-RAIN-TEST-2026-11.md; NULL before 18 Oct 2026), one value
+    # a member: each overflow's calibrated spill chance and the day's rain at its cell, and the spot's
     # risk; when the members were fetched. NULL where the build had no members. 4-byte floats, to keep the
     # log small: the test's sanity check allows for it.
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS p_cal_members FLOAT[]")
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS rain_members FLOAT[]")
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS risk_members FLOAT[]")
     con.execute("ALTER TABLE forecast_points ADD COLUMN IF NOT EXISTS ens_issued_at TIMESTAMPTZ")
-    # Added 20 Oct 2026: the live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md, model.live_status).
-    # p_status is the forecast the shadow would publish: PR #254's candidate for the lead where the overflow's
+    # The live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md, model.live_status; NULL before 20 Oct
+    # 2026). p_status is the forecast the shadow would publish: the candidate for the lead where the overflow's
     # own status was known, else the production p_cal (the fallback). status_known says which. The three
     # inputs are NULL where the status was not known. NULL throughout where the shadow was off. Never
     # published: no page, alert or published score reads these columns.
@@ -171,7 +171,7 @@ def _conn(path: Path | None = None) -> duckdb.DuckDBPyConnection:
     con.execute("ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS status_known BOOLEAN")
     for c in ("spilling_at_issue", "spill_hours_24h", "spill_days_7d"):
         con.execute(f"ALTER TABLE forecast_overflows ADD COLUMN IF NOT EXISTS {c} FLOAT")
-    # Added 4 Oct 2026: the run log (log_build). `failed` holds why a build did not publish, else NULL.
+    # The run log (log_build), from 4 Oct 2026. `failed` holds why a build did not publish, else NULL.
     con.execute("""
         CREATE TABLE IF NOT EXISTS build_runs (
             built_at TIMESTAMPTZ, event VARCHAR, run_id VARCHAR, spots INTEGER, forecast_ok INTEGER,
@@ -237,7 +237,7 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
                              d.date(), lead, float(p_raw[i, j]), float(p_cal[i, j]), float(ov["weight"].iloc[i]), ok, version, rain,
                              travel[i], _m(None if members is None else members["p"][:, i, j]),
                              _m(None if members is None else members["rain"][:, i, j]), *_s(i, j)))
-    # By name, so a column added later (as the members were, 18 Oct 2026) never shifts the others.
+    # By name, so a column added later never shifts the others.
     with _LOCK:
         con = _conn()
         try:
@@ -346,8 +346,8 @@ def slot_stats(slots: np.ndarray, slots_per_day: int = SLOTS_PER_DAY) -> pd.Data
 def observations_from(cov: pd.DataFrame) -> str | None:
     """The first day on which any overflow carries a half-hour observation mask. The coverage
     rule needs the mask, so no earlier day can be scored. Rows written before the masks
-    existed read as 0. The mask code was written on 16 Sep 2026 but reached the live site on
-    28 Sep, so the page must not imply scoring could have started earlier."""
+    existed read as 0. In the live data the masks start on 28 Sep 2026, so the page must not
+    imply scoring could have started earlier."""
     if cov.empty or "slots" not in cov:
         return None
     masked = cov.loc[cov["slots"].astype("int64") != 0, "day"]
@@ -400,8 +400,8 @@ UNCOVERED_REASONS = ["before_observations", "feed_not_current", "max_gap", "min_
 def unstamped_feed_days(poll_log: pd.DataFrame | None) -> pd.DataFrame:
     """(company, day) pairs, local days, on which a company's feed returned rows but no
     poll carried a record stamp (feed_age_h NaN): nothing showed the feed was current.
-    Until 4 Oct 2026 the site did not read South West Water's lastUpdated or its event
-    times (its fields are camelCase), so its polls saw only what was discharging at that
+    Polls before 4 Oct 2026 did not read South West Water's lastUpdated or its event
+    times (its fields are camelCase), so they saw only what was discharging at that
     moment. The coverage file marks such polls stale from 2 Oct 2026; this applies the
     same rule to the days polled before then.
 
@@ -478,7 +478,7 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
                                  f"{_spill_days_per_spill():.2f} pooled over United Utilities 2023-25; not checked per overflow or company)"},
            # A scored row is one forecast: one overflow, one target day, one lead (issue day). An overflow-day
            # is scored once per lead, up to five times, so the forecasts outnumber the overflow-days about five
-           # to one: warning_table.n_overflow_days counts those. Until 11 Oct 2026 these said "overflow-days".
+           # to one: warning_table.n_overflow_days counts those.
            "units": {"n_point_forecasts": "rows in the spot forecast log: one per spot, issue and target day (not overflow-days)",
                      "n_candidates": "forecasts: one monitored overflow, one past target day and one lead, with rainfall data",
                      "n_scored": "forecasts (one per overflow, target day and lead); warning_table.n_overflow_days is the overflow-days"}}
@@ -535,7 +535,7 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
     out["overall"] = {"raw": scores(y, fc["p_raw"].to_numpy()), "calibrated": scores(y, fc["p_cal"].to_numpy())}
     out["overall"]["climatology_brier"] = float(np.mean((fc["p_clim"].to_numpy() - y) ** 2))
     # Climatology ranks too: an overflow that spills more often in a year gets a higher rate, so its AUC
-    # is not 0.5 (the page printed 0.500 until 11 Oct 2026). Its mean against the spill rate says how
+    # is not 0.5. Its mean against the spill rate says how
     # high the long-run rates sit for the period, which the skill against it depends on.
     out["overall"]["climatology_auc"] = float(roc_auc_score(y, fc["p_clim"])) if 0 < y.mean() < 1 else None
     out["overall"]["climatology_mean"] = float(fc["p_clim"].mean())
@@ -564,7 +564,7 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
     st = fc[fc["strict"]]
     out["coverage_sensitivity"] = {"default": {"max_gap_h": MAX_GAP_H, **_brier_block(fc)},
                                    "strict": {"max_gap_h": STRICT_GAP_H, **_brier_block(st)} if len(st) else None}
-    # By version stamp, so a model or code change is not averaged into the old table.
+    # By version stamp, so forecasts from before and after a model or code change are not averaged together.
     fc["version"] = fc["version"].fillna(unstamped_label(first_stamped))
     out["by_version"] = [{"version": v, **_brier_block(g), "first_day": str(g["issue_day"].min()), "last_day": str(g["issue_day"].max())}
                          for v, g in fc.groupby("version")]
@@ -664,7 +664,7 @@ def ecoli_warning_table(m: pd.DataFrame) -> dict:
 
 def unstamped_label(first_stamped) -> str:
     """The version label for forecasts logged without a stamp, from the first stamped issue
-    day in the log. Stamping was written on 17 Sep 2026 but reached the live site on 28 Sep."""
+    day in the log. In the live log, stamps begin on 28 Sep 2026."""
     return f"unstamped (stamps begin {first_stamped})" if first_stamped else "unstamped"
 
 
@@ -782,8 +782,8 @@ def _local_times(s: pd.Series) -> pd.Series:
 
 def _from_bathing_water_service(sites: pd.DataFrame, since: str) -> tuple[pd.DataFrame, set, dict]:
     """One request per site: (samples, sites that answered, errors by kind). Stops at the
-    first HTTP 403, which is the service's gateway refusing this machine (GitHub's runners
-    since 28 Sep 2026); the other sites would be refused too."""
+    first HTTP 403, which is the service's gateway refusing this machine (GitHub's runners,
+    from 28 Sep 2026); the other sites would be refused too."""
     from dipcast.ingest.bwq import fetch_point
     frames, answered, errors = [], set(), {}
     for s in sites.itertuples(index=False):
@@ -1022,7 +1022,7 @@ def _site_climatology(site_ids: pd.Series, path: Path | None = None) -> np.ndarr
     as the offline tests. `path`: another overflow table with site_id and lta_spills.
     An overflow with no count of its own takes the count the forecast was given for it
     (`lta_spills_filled`, features.fill_covariates), so forecast and baseline fill a gap
-    alike; until 11 Oct 2026 the baseline took 20. An id not in the table still takes 20."""
+    alike. An id not in the table takes 20."""
     p = config.state_read("overflows.parquet") if path is None else path
     default = 20.0 / 365.0
     ratio = _spill_days_per_spill()

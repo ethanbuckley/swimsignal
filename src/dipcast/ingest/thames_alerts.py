@@ -1,4 +1,4 @@
-"""Thames Water's discharge alert stream (review task D8; docs/EARLIER-SPILL-HISTORY-2026-10.md).
+"""Thames Water's discharge alert stream (docs/EARLIER-SPILL-HISTORY-2026-10.md).
 
 GET config.THAMES_ALERTS with no key (19 Oct 2026: HTTP 200 without credentials). The portal
 (docs.api.thameswater.co.uk) says the stream "provides historical event data from April 2022", with

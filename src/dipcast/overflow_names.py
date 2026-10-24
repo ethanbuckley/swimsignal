@@ -55,7 +55,7 @@ SHOUTY = re.compile(r"\b(?:WwTW|Wwtw|STWs|CSOs)\b", A)
 def name_case(s) -> str:
     """Overflow names that arrive in capitals ("GRASSINGTON/STW") in normal case, as the site shows them:
     a word of four or more capitals, and of three in a name all in capitals ("BEN RHYDDING/STW" is
-    "Ben Rhydding/STW"; until 11 Oct 2026 it was "BEN Rhydding/STW"), unless it is a code (KEEP) or a
+    "Ben Rhydding/STW"), unless it is a code (KEEP) or a
     reference that runs into a number ("DER096")."""
     t = "" if s is None else str(s)
     shouty = not re.search(r"[a-z]", SHOUTY.sub("", t))
