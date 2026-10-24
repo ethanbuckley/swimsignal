@@ -63,10 +63,10 @@ enters the lake to the spot:
 
 Within the spot's own lake (config.LAKE_DIRECTION_MODE), which way the water must go:
 
-* lake direction "down" the default (docs/LAKE-DIRECTION-TEST-2026-10.md): an overflow whose water enters the spot's
+* lake direction "any"  the default: it counts whichever way it must go.
+* lake direction "down" an option (docs/LAKE-DIRECTION-TEST-2026-10.md): an overflow whose water enters the spot's
                         lake more than LAKE_DOWN_MARGIN_M nearer the lake's outlet than the spot is left out
-                        (down_lake_m).
-* lake direction "any"  the rule before: it counts whichever way it must go.
+                        (down_lake_m). Off: at every sampled lake water it changes, the within-site match fell.
 
 scripts/build_any_point.py and site/anypoint.js (click anywhere) follow all five.
 """

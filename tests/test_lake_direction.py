@@ -29,8 +29,8 @@ def _trace(net, pin, mode: str) -> pd.DataFrame:
                                         lake_direction_mode=mode).set_index("site_id")
 
 
-def test_the_default_is_down_since_the_test():
-    assert config.LAKE_DIRECTION_MODE == "down"
+def test_the_default_counts_either_way():
+    assert config.LAKE_DIRECTION_MODE == "any"
 
 
 def test_the_outlet_is_the_end_of_the_second_arm(net):
