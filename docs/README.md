@@ -123,6 +123,14 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [OVERFLOW-SPOT-CONFLICTS-2026-10.md](OVERFLOW-SPOT-CONFLICTS-2026-10.md): the three open conflicts that change a
   listed spot. **1 of 3 settled** (South Lane, Ash stays at its live position); nothing moves.
 
+### The coast
+
+- [SEA-CURRENTS-SCOPING-2026-10.md](SEA-CURRENTS-SCOPING-2026-10.md): whether sea currents carrying an overflow's
+  water towards a beach can be tested. **Not yet:** 32,874 coastal samples exist, but there is no coastal model to
+  add currents to. A staged plan, if the coast becomes a priority.
+- [UKMCAS-ORDER-DRAFT-2026-10.md](UKMCAS-ORDER-DRAFT-2026-10.md): the Met Office marine data order form and email,
+  drafted for Ethan. **Not sent;** wait unless the coast becomes a priority.
+
 ### The 2027 season
 
 - [PREREGISTRATION-2027.md](PREREGISTRATION-2027.md): how the May to September 2027 forecasts will be scored,
