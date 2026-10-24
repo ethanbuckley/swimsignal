@@ -104,3 +104,141 @@ only and no interval.
 
 `scripts/calibration_check.py`, reusing #338's `scripts/interim_usefulness.py` for the rows and
 `scripts/evaluate_2027.py` for the bootstrap.
+
+## Results
+
+Run on 24 Oct 2026 at about 22:40 UTC with `scripts/calibration_check.py` at this branch's results
+commit. Output: `docs/CALIBRATION-CHECK-2026-10.json`. All five input hashes matched; the rows matched
+#338's exactly (117,324 scored, 91,391 common, 1,145 overflows, 4 blocks). Before the full run, a
+20-draw trial ran once to time the script and catch errors; its figures are not used.
+
+### Verdict
+
+**Overall, the forecast's chances run too high, and the higher chances run highest.** Both stated rules
+are met for all companies together, same day and in advance:
+
+| All companies | Mean forecast | Observed rate | O/E (95% interval) | Blocks with O/E below 1 | Slope b (95% interval) |
+|---|---|---|---|---|---|
+| Same day (lead 0) | 0.063 | 0.047 | 0.74 (0.65 to 0.87) | 4 of 4 | 0.74 (0.63 to 0.81) |
+| In advance (leads 1–4) | 0.059 | 0.047 | 0.80 (0.62 to 0.91) | 4 of 4 | 0.74 (0.60 to 0.80) |
+
+The same holds on #338's common rows: O/E 0.74 and 0.81, slope 0.75 and 0.74, both rules met.
+
+**It is not true everywhere.** By company, with at least 50 overflow-days with a spill:
+
+| Company | Same day: O/E (interval); judged | In advance: O/E (interval); judged |
+|---|---|---|
+| Thames Water | 0.38 (0.11 to 0.51); too high on average, and too extreme | 0.42 (0.09 to 0.57); too high on average |
+| United Utilities | 0.66 (0.39 to 0.94); too high on average | 0.73 (0.47 to 1.05); no clear evidence |
+| Wessex Water | 0.66 (0.13 to 0.85); too high on average | 0.70 (0.11 to 1.00); too high on average |
+| Southern Water | 0.64 (0.09 to 0.93); too high on average | 0.66 (0.06 to 0.96); too high on average |
+| Anglian Water | 1.12 (0.69 to 2.18); too extreme, not too high on average | 1.39 (0.81 to 2.15); too extreme, not too high on average |
+| Yorkshire Water | 1.21 (0.83 to 1.86); no clear evidence | 1.14 (0.66 to 1.71); too extreme |
+| Severn Trent Water | 0.87 (0.30 to 1.65); no clear evidence | 0.95 (0.35 to 1.42); no clear evidence |
+| South West Water | 1.04 (0.24 to 1.96); no clear evidence | 1.16 (0.16 to 1.88); no clear evidence |
+| Northumbrian Water | 16 spill overflow-days: not judged | not judged |
+
+"Too extreme" means the slope's interval is below 1 and every counted band from 0.15 up has an observed
+rate below its mean forecast (rule 2 as stated). Each judgement is the stated rule applied mechanically;
+the JSON holds every interval.
+
+### Across the range of chances
+
+All companies, same day. Rows equal overflow-days at lead 0. Observed rate with its 95% interval:
+
+| Band | Rows | Overflow-days with a spill | Mean forecast | Observed (interval) |
+|---|---|---|---|---|
+| under 0.01 | 13,301 | 84 | 0.003 | 0.006 (0.004 to 0.011) |
+| 0.01–0.03 | 2,992 | 72 | 0.017 | 0.024 (0.014 to 0.035) |
+| 0.03–0.07 | 2,377 | 99 | 0.048 | 0.042 (0.027 to 0.060) |
+| 0.07–0.15 | 1,927 | 133 | 0.104 | 0.069 (0.044 to 0.093) |
+| 0.15–0.40 | 2,140 | 329 | 0.249 | 0.154 (0.105 to 0.188) |
+| 0.40–0.70 | 753 | 273 | 0.527 | 0.363 (0.302 to 0.458) |
+| 0.70 or more | 210 | 115 | 0.785 | 0.548 (0.411 to 0.743) |
+
+In advance (leads 1–4 pooled) the pattern is the same: 0.240 forecast against 0.154 observed in the
+0.15–0.40 band, 0.537 against 0.389 in 0.40–0.70, 0.766 against 0.559 at 0.70 or more. Its rows repeat
+overflow-days across leads (for example 7,683 rows on 4,510 overflow-days in 0.15–0.40), and the
+intervals resample them together.
+
+What the bands show:
+
+- Below 0.01 the forecast is slightly too **low**: 0.003 against 0.006, interval above the forecast.
+- From 0.07 up it is too **high**, by about a third in each band.
+- Within 0.03–0.07 it is about right.
+- This is the shape a slope below 1 describes: chances too spread out, high ones too high and the lowest
+  slightly too low. The overall O/E is pulled below 1 by the upper bands.
+- The 0.40 line is the High warning. Forecasts at 0.40–0.70 came true about 36% of the time same day.
+  Of the High warnings (0.40 and up), 388 of 963 came true (40%), close to the Accuracy page's 42% over all leads.
+
+By company, the upper bands are too high at Thames Water, United Utilities, Wessex Water, Anglian Water
+and, below 0.40, Southern Water. They are close to their observed rate at Yorkshire Water (0.15–0.40:
+0.235 against 0.232 same day), Severn Trent Water (0.231 against 0.221) and South West Water.
+
+### Calibration loss and ranking (Brier decomposition, seven bands)
+
+| All companies | Brier | Reliability (calibration loss) | Resolution | Uncertainty |
+|---|---|---|---|---|
+| Same day | 0.0390 | 0.0023 | 0.0075 | 0.0445 |
+| In advance | 0.0397 | 0.0015 | 0.0064 | 0.0448 |
+
+The calibration loss is about a third of the resolution same day. It is large enough to matter beside
+#338's small margins against the simple rules (Brier differences of a few thousandths). But this check
+fits nothing and scores nothing, so it does not show how much of that loss a correction would remove.
+A correction fitted here and scored here would gain by construction.
+
+### Stability across blocks
+
+All companies, O/E per 7-day block, same day: 0.87, 0.67, 0.79 and 0.71 (the last block, 20–23 Oct,
+holds 599 of the 1,105 overflow-days with a spill). In advance: 0.74, 0.80, 0.65, 0.89. Below 1 in all
+four blocks both times. So the overall overprediction is not only the wet spell. By lead, it weakens
+with lead time: O/E 0.69 at lead 1, 0.74 at 2, 0.83 at 3 (interval 0.58 to 1.00) and 0.99 at 4 (0.67 to
+1.22, below 1 in one block). The slope stays below 1 at every lead (0.68 to 0.81).
+
+### Sensitivity: persistence as it was known at issue time
+
+On the rows where the shadow logged `spilling_at_issue`: same day 2,872 rows, 21–23 Oct; in advance
+2,855 rows, 22–23 Oct. That is one wet spell, so point estimates only.
+
+| Leads | Forecast Brier | Persistence, as logged at issue | Persistence, rebuilt as in #338 | Skill vs as-logged | Skill vs rebuilt |
+|---|---|---|---|---|---|
+| Same day | 0.125 | 0.121 | 0.098 | −0.04 | −0.28 |
+| In advance | 0.142 | 0.163 | 0.143 | 0.13 | 0.01 |
+
+The rebuilt reference does markedly better than the status a swimmer could have seen. The cause is the
+backdated starts #338 disclosed: event times published after the issue time and dated back. #338 said
+this flatters persistence "slightly". In this window it is larger than that. The forecast's deficit
+same day shrinks from −0.28 to −0.04, and in advance its margin grows from 0.01 to 0.13. This is one
+window of a few days with a fitted reference, so it does not overturn #338's verdict. It does mean
+#338's comparisons against persistence lean against the forecast by more than #338 stated.
+
+### Corrections to the stated text, made after the run
+
+Kept visible, not rewritten into the statement above:
+
+1. **The "too timid" reading is withdrawn.** The statement says a slope interval above 1 "contradicts
+   overprediction (too timid)". That is wrong. With a free intercept, a slope above 1 does not say the
+   high chances are too low. Example from review: α = −2 and b = 1.5 give observed rates 0.005, 0.119
+   and 0.785 for forecasts 0.1, 0.5 and 0.9: all below the forecast, though b is above 1. Calibration in
+   the large (O/E, the intercept a) and the slope are separate dimensions. Any claim about over- or
+   underprediction at high chances rests on the reliability bands above, as rule 2 already requires.
+   This reading fired in no stratum, so no judgement changes. The script's label is left as run.
+2. **Nine named companies, not eight.** The statement says "the eight named companies". The file has
+   nine: Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and
+   Yorkshire. All nine were analysed, as the strata rule intends. Northumbrian Water has 16 spill
+   overflow-days, so it is reported, not judged.
+3. **The statement's date was corrected before any result existed.** The first commit said "25 October
+   2026 (UTC)". It was amended to "24 October 2026 at about 22:30 UTC" before the script was written, and
+   then pushed (commit `c745c48`).
+
+### Limits
+
+- Four blocks, one of four days holding 54% of the spill overflow-days. The intervals are crude.
+- Only scored rows. The 23,841 unscored cells are not imputed, so these rates describe the conditions
+  under which scoring succeeded.
+- Leads repeat the same overflow-days. The lead-group intervals account for this through the shared
+  draws. The per-lead rows are not independent evidence and are not combined.
+- October is outside the May–September season the spill model's month factors were fitted for. Whether
+  the same bias holds in summer is not tested.
+- A diagnostic only: nothing is refitted, and no correction is made or scored. Any recalibration needs
+  its own stated test on data it was not fitted to.
