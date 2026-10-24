@@ -274,6 +274,37 @@ counts its rows (`rows_no_company`) and judges them nowhere. Its rows' mean fore
 then. The reporting line was added to the harness after the fit and before any score, in the same commit as this
 section. Nothing in the fit or the conditions changed.
 
+### Amendment 1 (24 Oct 2026, about 23:10 UTC, before the window opens)
+
+Filed before the window's first target day (26 Oct) and before any window data was read or scored. The
+statement above the line is unchanged. The frozen offsets are unchanged: same file, same SHA-256
+(`2662dcfa…e42e1b`). Found in review.
+
+1. **Only forecasts issued after the freeze count.** As written, the check took window rows by target day alone.
+   But the forecasts for 26 Oct at leads 2 to 4, 27 Oct at leads 3 and 4, and 28 Oct at lead 4 were issued on
+   22 to 24 Oct, before the offsets existed. The frozen file was pushed in `2986f6b` at 24 Oct 2026 22:31:41 BST
+   (21:31:41 UTC). Scoring the candidate on those rows would apply offsets fitted on labels through 23 Oct to
+   forecasts made before then, which a live candidate could never have done. From now:
+   - **Cutoff:** a window row counts only if its `issued_at` is after 2026-10-24T21:31:41Z
+     (`CANDIDATE_FROZEN_AT`). A row issued at or before it, or with no readable issue time, is left out.
+   - **Order:** the cutoff applies first, before the spill-model cut, the minimum-data gate, map matching and every
+     score (`available()` in the harness).
+   - **Reported:** the check's output gives `issued_before_freeze`: the cutoff, the rows left out, and the count by
+     lead.
+   - **Tests:** a synthetic window of 2 overflows × 28 days × 5 leads gives 280 rows, of which 12 were issued before
+     the freeze (2 at lead 2, 4 at lead 3, 6 at lead 4). Before this amendment the check scored all 280; it now
+     scores 268. A boundary test checks that a forecast issued at the freeze to the second is out, and one issued
+     a second later is in.
+2. **The fitting days, stated once.** The fitting rule says target days on or before 25 Oct, and "The window" says 24
+   and 25 Oct are in neither the fitting rows nor the window. They do not conflict in practice: the published file
+   held target days only to 23 Oct, so the frozen offsets were fitted on 29 Sep to 23 Oct (`first_day` and
+   `last_day` in the offsets file; Step 3 above). So 24 and 25 Oct are in neither, as "The window" says. The
+   harness keeps `LAST_FIT_DAY = "2026-10-25"` because it only bounds a fit that has already run. Any refit would
+   need a new statement.
+
+Nothing else changes: the window (26 Oct to 22 Nov), the conditions, the minimum data and the read date
+(on or after 25 Nov) stand as written.
+
 ### Step 4: the check
 
 **Read on or after Wednesday 25 November 2026.** Download the published file and the `state` release's

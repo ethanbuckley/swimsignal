@@ -39,6 +39,11 @@ EXCLUDED = "United Utilities"        # its offsets stay production's
 LAST_FIT_DAY = "2026-10-25"          # every fitting day is before the window
 WINDOW = ("2026-10-26", "2026-11-22")
 EXTENDED_END = "2026-12-06"          # the one 14-day extension
+# Amendment 1 (docs/COMPANY-CALIBRATION-TEST-2026-11.md, under the line): a window row counts only if its forecast was
+# issued after the offsets existed, the push of the frozen file (2986f6b, 24 Oct 2026 22:31:41 BST). Earlier issues
+# (target 26 Oct at leads 2-4, 27 Oct at 3-4, 28 Oct at 4) could not have used them, and their labels fed the fit's
+# neighbours. A row with no readable issue time is left out too.
+CANDIDATE_FROZEN_AT = "2026-10-24T21:31:41Z"
 MAP_MAE = 0.001                      # a lead map matches an issue day if it rebuilds forecast_calibrated this closely
 MAX_UNMATCHED = 0.10                 # share of window rows on unmatched issue days at which the check stops
 CHANGED_AT = 0.0001                  # the published file's rounding
@@ -189,6 +194,18 @@ def score_block(g: pd.DataFrame) -> dict:
             "brier_current": brier(pc, y), "brier_candidate": brier(pq, y), "brier_flat": brier(flat, y)}
 
 
+def available(rows: pd.DataFrame, start: str, end: str, frozen_at: str = CANDIDATE_FROZEN_AT) -> tuple[pd.DataFrame, dict]:
+    """The rows whose forecast was issued after the offsets were frozen (Amendment 1), and what was left out of the
+    window for being issued at or before then, by lead. Applied before every other step of the check, so the
+    spill-model cut, the minimum-data gate and every score see only these rows."""
+    issued = pd.to_datetime(rows["issued_at"], utc=True, errors="coerce")
+    in_window = (rows["day"] >= start) & (rows["day"] <= end)
+    early = in_window & ~(issued > pd.Timestamp(frozen_at))
+    left_out = {"cutoff": frozen_at, "rows": int(early.sum()),
+                "by_lead": {int(k): int(v) for k, v in rows.loc[early, "lead"].value_counts().sort_index().items()}}
+    return rows[~early].reset_index(drop=True), left_out
+
+
 def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0], end: str = WINDOW[1],
           n_boot: int = N_BOOT) -> dict:
     """The face checks, then conditions 1 and 2 at every changed company, and what is reported beside them.
@@ -196,6 +213,7 @@ def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0
     offsets = {k: v["offset"] for k, v in doc["offsets"].items()}
     fair = {c: v for c, v in doc.get("fair_flat", {}).items()}
     out: dict = {"window": [start, end]}
+    rows, out["issued_before_freeze"] = available(rows, start, end)
     fit_spill = doc["spill_stamps"][-1]
     cut = window_end(rows, fit_spill, start, end)
     out["window_end_used"] = cut

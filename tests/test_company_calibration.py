@@ -10,8 +10,8 @@ import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from company_calibration import (NOT_IN_LOG, attach_stamps, candidate, check, fit_offsets, match_maps,
-                                 offsets_document, window_end)
+from company_calibration import (CANDIDATE_FROZEN_AT, NOT_IN_LOG, attach_stamps, available, candidate, check,
+                                 fit_offsets, match_maps, offsets_document, window_end)
 
 IDENTITY = {"leads": {str(k): {"iso_x": [0.0, 1.0], "iso_y": [0.0, 1.0]} for k in range(5)}}
 HALF = {"leads": {str(k): {"iso_x": [0.0, 1.0], "iso_y": [0.0, 0.5]} for k in range(5)}}
@@ -189,3 +189,28 @@ def test_a_row_with_no_company_is_counted_and_not_judged():
     res = check(r, doc_for({"Tha0": 3.0}), [IDENTITY], n_boot=50)
     assert res["rows_no_company"] == 28 * 2
     assert res["changed"] == []
+
+
+def test_forecasts_issued_before_the_freeze_are_left_out_of_the_window():
+    """Amendment 1. Two overflows, the 28 window days, leads 0-4, each issued at 07:00 BST lead days before its
+    target day: 280 rows, of which 12 were issued before the offsets were frozen (24 Oct 22:31:41 BST): target
+    26 Oct at leads 2-4, 27 Oct at 3-4, 28 Oct at 4, for each overflow. The check scores the other 268."""
+    r = rows_of("Thames Water", ["T1", "T2"], days("2026-10-26", 28), [0, 1, 2, 3, 4], 0.1, [0, 1])
+    r["spill"] = "m1"
+    res = check(r, doc_for({"T1": -1.0, "T2": 1.0}), [IDENTITY], n_boot=20)
+    assert res["issued_before_freeze"] == {"cutoff": CANDIDATE_FROZEN_AT, "rows": 12, "by_lead": {2: 2, 3: 4, 4: 6}}
+    assert res["by_company"]["Thames Water"]["rows"] == 268
+    assert res["by_company"]["Thames Water"]["by_lead"][4]["rows"] == 2 * 28 - 6
+
+
+def test_the_freeze_cutoff_is_strict_and_a_missing_issue_time_is_left_out():
+    """At the cutoff to the second: issued at the freeze is out, a second later is in. Rows outside the window are
+    never touched, and a row with no readable issue time counts as issued too early."""
+    base = rows_of("Severn Trent Water", ["S1"], ["2026-10-27"], [3], 0.1, [0])
+    at = base.assign(issued_at="2026-10-24T22:31:41+01:00")
+    after = base.assign(issued_at="2026-10-24T22:31:42+01:00")
+    blank = base.assign(issued_at="")
+    before_window = rows_of("Severn Trent Water", ["S1"], ["2026-10-20"], [3], 0.1, [0])
+    kept, left = available(pd.concat([at, after, blank, before_window], ignore_index=True), "2026-10-26", "2026-11-22")
+    assert left == {"cutoff": CANDIDATE_FROZEN_AT, "rows": 2, "by_lead": {3: 2}}
+    assert sorted(kept["issued_at"]) == sorted([after["issued_at"].iloc[0], before_window["issued_at"].iloc[0]])
