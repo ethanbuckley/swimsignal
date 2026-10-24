@@ -41,6 +41,7 @@ from dipcast.model.forecast import (
     overflows_geojson,
     reload_caches,
 )
+from dipcast.model.spill_model import MODEL_PATH
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
@@ -622,6 +623,14 @@ class BuildUnhealthy(RuntimeError):
     """Raised instead of publishing when most forecasts failed or lack data. The
     workflow's deploy job depends on the build job, so this keeps the previous
     site up rather than replacing it with a page of blanks."""
+
+
+def require_spill_model(path: Path | None = None) -> None:
+    """Raises BuildUnhealthy when the trained spill model file is missing. Checked before anything is
+    fetched, so a build that cannot forecast spends no API calls and keeps the previous site up."""
+    path = MODEL_PATH if path is None else path
+    if not path.exists():
+        raise BuildUnhealthy(f"no trained spill model at {path}; not publishing climatology as a forecast")
 
 
 def live_feed_health(poll_log: pd.DataFrame | None) -> dict | None:
@@ -2520,6 +2529,7 @@ def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> N
 
 def build(refresh: bool = True) -> dict:
     t0 = time.time()
+    require_spill_model()
     if refresh:
         refresh_all(_net())
         reload_caches()

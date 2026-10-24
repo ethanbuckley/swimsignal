@@ -157,12 +157,18 @@ def code_commit() -> str:
     return sha
 
 
+class MissingSpillModel(FileNotFoundError):
+    """The trained spill model file is not there. Raised, never worked around: a forecast from
+    climatology alone ignores the rain, and the page would show it as if it were the model's."""
+
+
 @lru_cache(maxsize=1)
-def _model() -> SpillModel | None:
-    if MODEL_PATH.exists():
-        return SpillModel.load()
-    log.warning("no trained spill model at %s; forecasts use climatology only", MODEL_PATH)
-    return None
+def _model() -> SpillModel:
+    """The trained spill model. Code that means to forecast from climatology passes model=None to
+    spill_probabilities itself; a missing file is an error, not a quiet switch to climatology."""
+    if not MODEL_PATH.exists():
+        raise MissingSpillModel(f"no trained spill model at {MODEL_PATH}")
+    return SpillModel.load(MODEL_PATH)
 
 
 def reload_caches() -> None:
