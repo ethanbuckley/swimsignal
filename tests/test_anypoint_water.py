@@ -33,6 +33,11 @@ OVERFLOWS = [("A1", "R1", 0.5, "high"), ("A2", "K1", 0.3, "high")]
 CLICKS = [("up the second arm", (423750, 453800)), ("in the first arm", (421500, 450100)),
           ("round the corner", (423600, 451000)), ("on the shore beyond the end", (423750, 454100)),
           ("off the second arm, by its centreline", (424500, 452000))]
+# Lake direction "down" (docs/LAKE-DIRECTION-TEST-2026-10.md): the lake drains out of the top of the second arm. At the
+# head of the first arm A2's water enters about 1,075 m nearer the outlet, so it is down the lake and does not count;
+# in the first arm past A2 and up the second arm both count.
+CLICKS_DOWN = [("at the head of the first arm", (420050, 450000)), ("in the first arm", (421500, 450100)),
+               ("up the second arm", (423750, 453800))]
 
 
 @pytest.fixture
@@ -72,7 +77,19 @@ def _made(world, tmp_path) -> dict:
                        "rows": [{"site_id": r.site_id, "lake_distance_m": round(float(r.lake_distance_m), 2),
                                  "line_m": round(float(line.loc[r.site_id, "lake_distance_m"]), 2),
                                  "travel_h": round(float(r.travel_h), 4)} for r in up.itertuples()]})
-    return {"note": "Made by tests/test_anypoint_water.py; UPDATE_FIXTURES=1 writes it again.", "files": files, "clicks": clicks}
+    clicks_down, was = [], config.LAKE_DIRECTION_MODE
+    try:
+        config.LAKE_DIRECTION_MODE = "down"
+        for what, (x, y) in CLICKS_DOWN:
+            lon, lat = bng_to_lonlat(x, y)
+            pin, up = _api(net, ov, lon, lat)
+            clicks_down.append({"what": what, "lat": round(lat, 7), "lon": round(lon, 7), "mode": pin.mode,
+                                "rows": [{"site_id": r.site_id, "lake_distance_m": round(float(r.lake_distance_m), 2)}
+                                         for r in up.itertuples()]})
+    finally:
+        config.LAKE_DIRECTION_MODE = was
+    return {"note": "Made by tests/test_anypoint_water.py; UPDATE_FIXTURES=1 writes it again.", "files": files, "clicks": clicks,
+            "clicks_down": clicks_down, "down_margin_m": transport.LAKE_DOWN_MARGIN_M}
 
 
 def test_the_lake_files_carry_the_water_and_the_clicks_go_round_the_corner(world, tmp_path):
@@ -112,6 +129,14 @@ def test_the_page_fixture_still_says_what_the_api_says(world, tmp_path):
         assert k["mode"] == m["mode"] and [r["site_id"] for r in k["rows"]] == [r["site_id"] for r in m["rows"]]
         for a, b in zip(k["rows"], m["rows"], strict=True):
             assert a["lake_distance_m"] == pytest.approx(b["lake_distance_m"], abs=0.1), k["what"]
+    assert kept["clicks_down"] == made["clicks_down"]
+
+
+def test_in_lake_direction_down_the_api_leaves_out_water_entering_down_the_lake(world, tmp_path):
+    by = {c["what"]: [r["site_id"] for r in c["rows"]] for c in _made(world, tmp_path)["clicks_down"]}
+    assert by == {"at the head of the first arm": ["A1"], "in the first arm": ["A1", "A2"], "up the second arm": ["A1", "A2"]}
+    lakes = _made(world, tmp_path)["files"]["lakes"]["lakes"]
+    assert all("out" in k and all("dn" in i for i in k["inlets"]) for k in lakes)
 
 
 def test_in_lake_distance_line_the_files_carry_no_water(world, tmp_path, monkeypatch):
