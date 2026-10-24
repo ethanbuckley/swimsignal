@@ -23,8 +23,10 @@ Each one costs one extra round trip until a follow-up changes the links.
 
 GitHub's Pages limits page says Pages is "not intended for or allowed to be used as a free web-hosting
 service to run your online business", e-commerce, or commercial software as a service **[checked]**
-(https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits). Paid pilots
-from December 2026 make SwimSignal a business, so it must be hosted elsewhere first.
+(https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits). A paid
+pilot or a sponsor makes SwimSignal a business, so it must be hosted elsewhere first. Since 24 Oct 2026
+the switch waits until a customer commits in writing (`docs/ORGANISER-PIVOT-2026-10.md`, "Revised 24
+October 2026").
 
 Cloudflare's Service-Specific Terms for the Developer Platform cover Pages. They say the platform "can be
 used to host content", ban phishing and volumetric attacks, and set no rule against commercial or
