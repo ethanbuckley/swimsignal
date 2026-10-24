@@ -43,8 +43,8 @@ MIN_DECIMALS = 3           # 0.001 degrees is about 110 m of latitude: the form 
 MIN_GRID_DIGITS = 3        # per axis: 100 m squares
 NEARBY_M = 300.0           # an existing spot this close is probably the same place
 # Great Britain and the island of Ireland, as a rough check that two numbers are a point here at all and
-# which way round they are. outside_england.json says which country a point is in: until 4 Oct 2026 the box
-# alone stood for Great Britain, and it held Belfast and Dublin, so a request there was placed as if in England.
+# which way round they are. outside_england.json says which country a point is in: the box alone holds
+# Belfast and Dublin, so it cannot stand for Great Britain, or a request there is placed as if in England.
 BOX = {"lat": (49.8, 60.95), "lon": (-10.7, 1.8)}
 OUTSIDE_ENGLAND = ROOT / "data" / "raw" / "outside_england.json"   # scripts/make_outside_england.py
 W3W_URL = "https://api.what3words.com/v3/convert-to-coordinates"

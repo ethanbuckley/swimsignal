@@ -1,5 +1,5 @@
 // The top of each spot's page and its five days, written into spot/<id>/index.html at build so the
-// answer shows before the forecast arrives (docs/REVIEW-2026-10-16.md, task F4). The words are the
+// answer shows before the forecast arrives. The words are the
 // page's own: this runs index.html's spotTop and daysTile, with levels.js and the other page scripts
 // they use, in Node, on this build's spots.json, as at the moment the forecast was issued. The page's
 // script then draws the same markup in the same place, so nothing moves.

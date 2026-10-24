@@ -1,4 +1,4 @@
-"""Thames Water's discharge alerts from April 2022 (review task D8; docs/EARLIER-SPILL-HISTORY-2026-10.md), as
+"""Thames Water's discharge alerts from April 2022 (docs/EARLIER-SPILL-HISTORY-2026-10.md), as
 the API gives them in data/processed/thames_alerts.parquet, and as one row per discharge in
 data/processed/api_events_thames_water.parquet (the edm_events columns, plus location, permit, site_id_grid,
 site_id_events and id_by). Off CI, run by hand (about 1,700 requests, under an hour):
