@@ -1377,8 +1377,8 @@ def shown_score(r: float) -> int:
 
 
 def risk_label(r: float) -> str:
-    """The level for risk r, from the score the page shows (23 Oct 2026). Until then it was from the
-    unrounded risk, so 0.1497 was "low" beside a shown 15, which the level key calls moderate."""
+    """The level for risk r, from the score the page shows. From the unrounded risk, 0.1497 would be "low"
+    beside a shown 15, which the level key calls moderate."""
     s = shown_score(r)
     if s < SCORE_CUTS[0]:
         return "low"

@@ -108,8 +108,8 @@ function fromDay(s, iso, built) {
 // The cut-offs between the four levels, as fractions: the spill exposure's (transport.risk_label,
 // whose labels arrive in spots.json) and the E. coli estimate's. The page draws its scales from these.
 const SPILL_CUTS = [0.15, 0.40, 0.70], ECOLI_CUTS = [0.10, 0.25, 0.50];
-// A risk's level from the score shown, Math.round(100 x risk), as transport.risk_label has it since 23 Oct
-// 2026: 0.149 shows as 15, so it is moderate, not low.
+// A risk's level from the score shown, Math.round(100 x risk), as transport.risk_label has it: 0.149 shows
+// as 15, so it is moderate, not low.
 const spillLevel = v => ['low', 'moderate', 'high', 'very high'][SPILL_CUTS.filter(c => Math.round(v * 100) >= Math.round(c * 100)).length];
 const shownRisk = v => Math.round(v * 100) / 100;   // the risk as shown, for a bar to agree with the word beside it
 const ECOLI_BANDS = [...ECOLI_CUTS, Infinity].map((t, i) => [t, ['low', 'moderate', 'high', 'very high'][i]]);
@@ -118,7 +118,7 @@ const rank = l => ORDER[l] ?? -1;
 const higher = (a, b) => rank(b) > rank(a) ? b : a;
 const nil = v => v === null || v === undefined;
 const overflows = s => (s.upstream_summary || {}).overflows || 0;
-// The overflows upstream that carry no weight here (forecast.py, weighted_here; 23 Oct 2026): a reach that
+// The overflows upstream that carry no weight here (forecast.py, weighted_here): a reach that
 // shows as 0%. `overflows` and every count leave them out; this says once that they are there.
 const tooFar = s => (s.upstream_summary || {}).too_far || 0;
 const allUpstream = s => overflows(s) + tooFar(s);

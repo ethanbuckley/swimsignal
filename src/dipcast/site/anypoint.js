@@ -78,7 +78,7 @@ const AnyPoint = (() => {
     const miss = shiftByTravel(avail.map(row => row.map(ok => ok ? 0 : 1)), travel);
     return miss[0].map((_, j) => Math.min(1, Math.max(0, miss.reduce((a, row, i) => a + row[j] * w[i], 0) / tot)));
   }
-  // transport.risk_label: from the score the page shows, the 3 dp risk times 100, rounded (23 Oct 2026).
+  // transport.risk_label: from the score the page shows, the 3 dp risk times 100, rounded.
   const riskLabel = r => { const v = Math.round(r3(r) * 100); return v < 15 ? 'low' : v < 40 ? 'moderate' : v < 70 ? 'high' : 'very high'; };
   const COUNT_WEIGHT = 0.005;   // transport.COUNT_WEIGHT: a weight under it shows as 0% reach and is not counted
   const r3 = x => Math.round(x * 1000) / 1000, r1 = x => Math.round(x * 10) / 10;
