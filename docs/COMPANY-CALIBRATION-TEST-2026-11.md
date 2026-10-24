@@ -1,0 +1,210 @@
+# Company calibration (review task A8): the test, stated before any fit
+
+Written 24 October 2026. It is committed and pushed before two things:
+- any per-overflow offset is fitted;
+- any row of the published scored live forecasts (`data/verification_live.csv`) is read.
+
+Results go below the line at the end. Nothing above that line changes after a result is seen. Review task A8
+(`docs/REVIEW-2026-10-16.md`).
+
+## Why
+
+Layer 2 of the spill model (`src/dipcast/model/spill_model.py`, `fit_site_offsets`) gives each overflow a
+log-odds offset, log((n + 15) / (e + 15)). Here n is the overflow's observed spill-days, e the spill-days layer 1
+expected on the same days, and 15 the prior's pseudo spill-days (`PRIOR_STRENGTH`). Production's offsets are all
+United Utilities overflows. Every other company's overflows have an offset of 0, so they get layer 1 alone.
+
+The live record now holds about four weeks of observed spill-days for the other eight companies. The review asked
+whether those days, fitted into layer 2 the same way, improve the next four weeks.
+
+## Seen before writing
+
+- **Two failed live corrections** (`docs/LIVE-RECALIBRATION-TEST-2026-10.md`). Company intercepts (its candidate
+  B) brought Southern's Brier from 0.0091 to 0.0030 and Thames's from 0.0051 to 0.0023, but made Severn Trent and
+  United Utilities slightly worse. Pooled, they missed the 5% bar (4.3%). The lesson taken here: a correction that
+  helps the two driest companies can hurt the others, so this test decides company by company.
+- **Lead calibration B's secondary check** (`docs/LEAD-CALIBRATION-B-TEST-2026-10.md`), scored live rows 29 Sep to
+  16 Oct. Per company: rows, spill rows, observed rate, mean calibrated forecast and Brier of today's forecast.
+  The mean forecast was above the observed rate at Severn Trent, South West, Southern, Thames and Wessex, and below
+  it at Anglian, Northumbrian and Yorkshire.
+- **The task's brief:** on 24 Oct, 26% of spill forecasts outside United Utilities were warned, up from 2% on
+  20 Oct after one wet week.
+- **Option B's statement** (`docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`) in full, and lead calibration B's in
+  full.
+- **Code:** `spill_model.py` in full; in `forecast_log.py` the module notes, `observed_spill_days`,
+  `select_decision_forecasts`, `verify_live` and `scored_rows`; `forecast.calibrate_by_lead`, `_apply` and
+  `model_version`; `scripts/lead_calibration_b_check.py` in full.
+- **The published file's size** from a HEAD request: 9,726,357 bytes, last modified 24 Oct 2026 19:43 UTC.
+
+Not opened: `data/verification_live.csv`, `verification.json`, the forecast log, the `state` release. No offset has
+been fitted.
+
+## The candidate
+
+**Model.** Production's layer 1 and lead calibration map, unchanged. Only offsets are added.
+
+**Which overflows.** Every overflow of the eight English companies other than United Utilities that has at least
+one fitting row (below). United Utilities' offsets stay production's. An overflow with no fitting row keeps 0.
+
+**Fitting rows.** `data/verification_live.csv` as published when the fit runs, downloaded after this file is pushed,
+with its SHA-256 recorded under the line. Of its rows, those with:
+- `company` not United Utilities;
+- `lead` 0;
+- `day` (the target day) on or before 25 Oct 2026. The file cannot hold a later day yet. This rule keeps every
+  fitting day before the window.
+
+These are the live labels `forecast_log.verify_live` gives: `observed` is 1 if `observed_spill_days` found a
+discharge that touched the local day, and a 0 counts only on a covered day (at least 6 known polls, no gap over
+8 hours, the feed current, seen again the next day). Rows with no rain data are already out.
+
+**n and e.** For each overflow, n is the sum of `observed` over its fitting rows. e is the sum of `forecast_raw`
+over the same rows, clipped to [0.0001, 0.9999] as `predict_pooled` clips. `forecast_raw` is `SpillModel.predict`,
+the model's chance before the lead map. Outside United Utilities it is layer 1 alone, because those overflows have
+no offset.
+
+*Why lead 0 only.* Each overflow-day then counts once, so 15 pseudo spill-days mean what they mean in production.
+Lead 0 is the forecast made by 08:00 on the day, the closest the log has to the day's real rain.
+
+*Why the logged forecast and not an ERA5 hindcast.* The offset will correct forecasts made from forecast rain. Fitting
+on the logged forecast lets it absorb that rain forecast's bias at the overflow too. It also needs no rain fetch. The
+cost: an offset fitted this way carries some of these four weeks' rain forecast errors. The prior limits that.
+
+**The prior.** Prior mean ratio 1 (the pooled model), strength 15 pseudo spill-days, recency 1. Exactly as
+`fit_site_offsets` does for United Utilities. Nothing is tuned.
+
+**The offset.** ln((n + 15) / (e + 15)), keyed by `overflow_id`.
+
+**Saved as** `docs/COMPANY-CALIBRATION-TEST-2026-11-offsets.json`: the source file's SHA-256 and first and last
+fitting day, the prior, and per overflow its company, offset, n, e and fitting days. Its own SHA-256 goes under the
+line, with the fitted spill model's version stamp read from the forecast log.
+
+## The forecast to score
+
+For a scored row with `forecast_raw` p, lead k and overflow i:
+
+    candidate = map_k( 1 / (1 + exp(-(logit(clip(p, 0.0001, 0.9999)) + offset_i))) )
+
+`map_k` is the lead map that made that row's `forecast_calibrated`, with the lead clamped to 0 to 4 as
+`forecast.calibrate_by_lead` does. It is found per issue day (the local date of `issued_at`): each map on hand is
+applied to that day's `forecast_raw`, and the one whose mean absolute difference from `forecast_calibrated` is
+smallest is used, if that difference is under 0.001. The maps on hand are `data/processed/lead_calibration.json`
+as on main on 24 Oct 2026 (SHA-256 beginning `734202bc7f22af38`) and lead calibration B's map
+(`docs/LEAD-CALIBRATION-B-TEST-2026-10-map.json`). So if B is adopted inside the window, rows after that take B's map
+in both forecasts. An issue day that no map matches is dropped and counted. If more than 10% of the window's rows are
+dropped this way, the check stops and reports.
+
+**Current** is `forecast_calibrated` as published: what the site showed.
+
+**Flat** is, per company, that company's own observed rate over its window rows, given to every row. It is the
+Accuracy page's `flat_brier`. It uses hindsight, so it is the strictest constant forecast there is: a forecast that
+beats it beats every flat rate.
+
+## The window
+
+- **Target days 26 October to 22 November 2026.** The four whole ISO weeks, Monday to Sunday, after this file's
+  commit.
+- **Leads 0 to 4,** every scored row of the eight companies.
+- **Read on or after 25 November 2026**, from the file published then. A day's label needs a poll on the next day,
+  and 25 Nov leaves a day's margin.
+- **24 and 25 October** are in neither the fitting rows nor the window.
+
+**If the spill model changes.** The check reads the `spill=` part of each row's version stamp from the forecast log
+(the `state` release's `dipcast.duckdb`, downloaded read-only). If any scored row in the window carries a different
+`spill=` than the fitting rows, the window ends the day before the first target day with such a row. If that leaves
+fewer than 14 days, the check stops: the offsets were fitted for a different layer 1, and a refit needs a new
+statement.
+
+**Minimum data.** Every changed company (below) needs at least 50 window rows with `observed` = 1, over all leads.
+If any falls short, the window extends by 14 days, once, to 6 December, read on or after 9 December. A company still
+short is inconclusive, and the candidate is not adopted.
+
+## Conditions
+
+A company is **changed** if at least one of its window rows has a candidate that differs from `forecast_calibrated`
+by more than 0.0001 (the published file's rounding).
+
+The candidate is **adopted only if both hold at every changed company:**
+
+1. **Beats the current forecast.** Brier(candidate) < Brier(current) over the company's window rows, leads pooled.
+2. **Beats the flat rate.** Brier(candidate) < Brier(flat) over the same rows.
+
+No in-sample score is computed or reported, at any point. The fitting rows are never scored.
+
+## Reported, not deciding
+
+- Per company and per lead: rows, spill rows, observed rate, mean forecast and Brier for candidate, current and flat.
+- Per company, the 95% interval of Brier(candidate) − Brier(current): ISO week of the target day as the cluster,
+  every row of a week drawn together, 2,000 draws from `numpy.random.default_rng(20261026)`, one set of draws for
+  every company. With four weeks this interval is wide. It is reported so a pass on a hair is read as one.
+- A fair flat rate: each company's observed rate on its fitting rows, given to every window row. It uses no
+  hindsight.
+- How many rows, overflows and spill rows fall in bands of |offset|: under 0.05, 0.05 to 0.2, 0.2 and over.
+- United Utilities' window rows: counted, and checked unchanged.
+
+## What follows
+
+**Both conditions hold at every changed company.** Adoption is a separate PR and Ethan's call. It writes the offsets
+into the model's `site_offset`, which changes the `spill=` stamp, and the Accuracy page's by-company table gains a
+"since" column for the change. It is **not deployed before option B's run** (below). If option B passes, it supersedes
+this candidate.
+
+**Either fails at any changed company, or the data is short.** Nothing changes. This file is the record. Its result
+is evidence for option B's condition 5.
+
+## Option B and lead calibration B
+
+**Option B** (`docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, merged in PR #325) also extends layer 2 to every company.
+The two tests differ in four ways:
+
+| | This test (A8) | Option B |
+|---|---|---|
+| Fitting record | 29 Sep to about 23 Oct 2026, SwimSignal's polls only | EA start/stop files 2024 to Aug 2026, then the polls |
+| Expected, e | The logged forecast `forecast_raw`, lead 0 | A layer-1 hindcast on ERA5-Land rain |
+| Start dates | None | A change-point rule per overflow, with a dead-monitor check |
+| United Utilities | Production's offsets kept | Refitted like every other company |
+
+Both use prior strength 15 and recency 1, and both leave layer 1 alone. This window (26 Oct to 22 Nov) lies inside
+option B's window L (29 Sep to 30 Nov).
+
+**They are compatible if this candidate is not deployed before option B runs.** Option B rebuilds its arms from each
+logged `p_raw` minus production's offset. Deploying these offsets inside its window L would change `p_raw` mid-window
+for every non-United-Utilities overflow. So:
+- **This test reads first** (25 Nov). Option B runs on or after 2 Dec.
+- **Even if this passes, nothing deploys until option B's result is in.** If option B passes, it supersedes this
+  candidate: it fits every company on up to 32 months, not four weeks. If option B fails and this passed, Ethan may
+  adopt this.
+- This test's frozen offsets could be scored as a reported arm in option B's run. That changes option B's statement,
+  so it is Ethan's decision. This file does not assume it.
+
+**Lead calibration B** (`docs/LEAD-CALIBRATION-B-TEST-2026-10.md`) has its live window from 18 Oct to 14 Nov, read on
+or after 16 Nov. This test deploys nothing, so it cannot touch production in that window. Its window overlaps this
+one. If B's map is adopted inside this window, the per-issue-day map match above keeps both forecasts on the same map.
+
+## Expected, stated now (inferred, not conditions)
+
+- **The offsets will be small.** About 25 lead-0 days per overflow, at mean forecasts of 0.01 to 0.06 outside United
+  Utilities, give e of about 0.3 to 1.5. Against 15 pseudo spill-days, an overflow that never spilled gets a ratio of
+  about 0.91 to 0.98. Only overflows with several spill-days move much. One with 5 spill-days and e of 1 gets
+  (5 + 15) / (1 + 15) = 1.25.
+- **So condition 2 will likely fail** at Thames, Southern and Wessex. On 29 Sep to 16 Oct the current forecast's Brier
+  there was 0.0066, 0.0138 and 0.0075, against observed rates of 0.0042, 0.0099 and 0.0061, so the flat rate's Brier
+  sat 20% to 40% lower. A 2% to 9% cut in the odds cannot close that.
+- **Condition 1 is open.** Brier differences will be under 1% at most companies. Their sign will depend on a few
+  overflows that spill often, and on whether the window's weather looks like the fitting weeks'.
+- **My prediction: not adopted.** The test is still worth its cost, which is small: no rain fetch, no model refit. It
+  measures, on four fresh weeks, whether per-overflow offsets help or hurt each company when fitted on the live
+  labels. That is the question option B's condition 5 asks.
+
+## Order
+
+1. Push this statement.
+2. Commit the harness (`scripts/company_calibration.py`) and its tests (`tests/test_company_calibration.py`).
+3. Download `data/verification_live.csv` and the `state` release's `dipcast.duckdb` read-only into scratch. Fit the
+   offsets. Commit them with their SHA-256 and the spill model stamp under the line. No score.
+4. On or after 25 Nov 2026, run the check once and write the result under the line.
+
+---
+
+## Results
+
+Not yet run.

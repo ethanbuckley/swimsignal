@@ -58,6 +58,9 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   16 November. The map: `-map.json`.
 - [LIVE-RECALIBRATION-TEST-2026-10.md](LIVE-RECALIBRATION-TEST-2026-10.md): two corrections for live
   over-forecasting. **Neither passes,** in the first run and the rerun.
+- [COMPANY-CALIBRATION-TEST-2026-11.md](COMPANY-CALIBRATION-TEST-2026-11.md): per-overflow offsets for the eight
+  companies outside United Utilities, fitted on the live labels (review task A8). **No result yet:** the window is
+  26 October to 22 November 2026, read on or after 25 November. The offsets: `-offsets.json`.
 - [ENSEMBLE-RAIN-TEST-2026-11.md](ENSEMBLE-RAIN-TEST-2026-11.md): ensemble rain for the listed spots. **No
   result yet:** the window runs 23 October to 19 November 2026, read on or after 21 November.
 
