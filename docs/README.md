@@ -147,8 +147,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [PREREGISTRATION-2027.md](PREREGISTRATION-2027.md): how the May to September 2027 forecasts will be scored,
   fixed before the season. **No result until after the season.**
 - [SPOT-SCORING-RULINGS-2026-10.md](SPOT-SCORING-RULINGS-2026-10.md): the eleven points amendment 1 left open in the
-  spot-level score, each with options, a recommendation and its measured effect, and a draft amendment 2.
-  **Draft: not in force until Ethan signs it.**
+  spot-level score, each with options, a recommendation and its measured effect. **Signed 25 Oct 2026:** all
+  eleven accepted, in force as amendment 2 of the pre-registration.
 
 ## Checks and records
 

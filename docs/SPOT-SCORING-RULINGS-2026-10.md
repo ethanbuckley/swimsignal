@@ -1,13 +1,16 @@
-# Spot-level scoring: the open points, for Ethan to rule on
+# Spot-level scoring: the open points, ruled on by Ethan
 
-**Status: draft. Nothing here is in force.** Pull request #335 builds score S1 of `docs/PREREGISTRATION-2027.md`,
+**Signed by Ethan Buckley on 25 October 2026: all eleven recommendations accepted.** His words: "353 - i agree
+with recomendations." They are in force as amendment 2 of `docs/PREREGISTRATION-2027.md`.
+
+Pull request #335 builds score S1 of `docs/PREREGISTRATION-2027.md`,
 amendment 1: the file `verification_spots_live.csv` (file D) and the Accuracy page's section "How the level itself
 has done". Amendment 1 leaves ten points open, and an eleventh came up while the options were being measured.
 They are definitions of the score, so they are Ethan's to sign.
 
-For each point: the options, the recommended answer, why, and what it changes. The last part is a draft
-amendment 2. It would be needed before `scripts/evaluate_2027.py` gains S1 and S2, because changing that file
-changes the SHA-256 that section 13 records.
+For each point: the options, the recommended answer, why, and what it changes. The last part is the draft
+amendment 2 as Ethan read it. It was needed before `scripts/evaluate_2027.py` could gain S1 and S2, because
+changing that file changes the SHA-256 that section 13 records.
 
 **Where the figures come from.** The `state` release of 24 October 2026 (09:51 UTC), read only. Target days 12 to
 23 October. #335's code at `b79a23d`, with a frozen copy of `overflows.parquet` for companies and the climatology
@@ -226,10 +229,18 @@ gains two digits in four columns.
 
 ---
 
-## Draft amendment 2, not in force until Ethan signs it
+## The draft amendment 2, as Ethan read it
 
-*To go in `docs/PREREGISTRATION-2027.md` after amendment 1, in its own pull request, once signed. The text assumes
-the recommended answers above. A different ruling changes the matching item.*
+*Kept as the record of what was signed. The amendment in force is in `docs/PREREGISTRATION-2027.md`. Its
+definitions are these. It differs from this draft in four details of how it is carried out:*
+
+- *The `--spots` flag named here for `make_eval2027.py` already names that script's spots.json input, so the mode
+  is `--spot-list`.*
+- *File D carries no company, so S1's company stratum takes the spot's company from the frozen list.*
+- *The changes to file D and S1 and S2 come in one pull request, #335, not two.*
+- *The new hashes are added as rows at the end of the amendment, not written over section 13's rows. That
+  leaves every earlier line of the protocol unchanged. `make_eval2027.py`'s hash is recorded too, since it
+  gains `--spot-list`. Item 11's reading rule (nearest double to the 6-place text) is spelled out.*
 
 ### Amendment 2, [date of signing]: the spot-level score made exact, and S1 and S2 in the evaluation script
 
@@ -315,4 +326,4 @@ spots with an overflow upstream on 24 October 2026, less the 8 never observed.
   their tests.
 - Until both are merged, section 13's hashes stand.
 
-**Signed:** ______________________ (Ethan Buckley)  **Date:** ____________
+**Signed:** Ethan Buckley, 25 October 2026 (his words are at the top of this file).
