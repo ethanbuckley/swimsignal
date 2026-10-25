@@ -254,3 +254,126 @@ the description table; rows dropped for missing wind; calls spent; run time, pea
 ---
 
 ## Results
+
+Added 25 October 2026, after the run. Everything above the line is as committed in 5546b2c (24 October 2026, 22:20
+BST) and pushed before any wind was fetched. The harness came in f866088 (22:24 BST), also before the fetch. It
+changed nothing above the line. The full output is `LAKE-WIND-TEST-2026-10-score.json`.
+
+**Verdict: the test fails. Nothing is adopted.** Conditions 1, 2 and 3 fail. Conditions 4, 5 and 6 hold. Once rain,
+overflow exposure and season are allowed for, wind towards the bathing water shows no link with E. coli at these 9
+lake sites: the partial rho is +0.004, with an interval from −0.071 to +0.083.
+
+### How it was run
+
+- **The fetch.** 24 October, 22:24 to 22:25 BST. 7 cells, 2023-01-01 to 2026-10-22, 32 requests, 143.9 calls by
+  Open-Meteo's rule. 0 bodies that were not JSON. Every hour of both variables came back (0 missing). The cache hashes
+  to `bcc472a9` (SHA-256 of the per-file SHA-256 list). The soil-moisture test fetched about 2,050 calls from this
+  machine the same day, so the day's total was about 2,190, a little over the 2,000 guide.
+- **The run.** From a `git archive` of f866088, offline, with `scripts/lake_wind_eval/run.sh`, 25 October 12:06 to
+  12:13 GMT. It waited for the radar backfill and radar test to finish and for 10 quiet minutes, then took the
+  group's heavy-run lock. `memory_pressure` read 67% free at the start. 0 network attempts in each of the four steps.
+  Run time: `validate_ecoli` 180 s, `replay_ecoli_leads` 74 s, `train_ecoli` 92 s, `score.py` 52 s. Peak memory
+  3.8 GB (`replay_ecoli_leads`).
+- **The data folder.** A copy of the die-off test's frozen folder. Copy and original hash the same, `ce6cb41f` (SHA-256
+  of the sorted per-file SHA-256 list over processed, raw and cache, 3,760 files, river network excepted), and the copy
+  was unchanged after the run. River network `fc66101d`, overflow table `ebc96774` (key b5724303), `bwq_samples.parquet`
+  `26f5f646`, 3,658 rain files. The same as the die-off and dry-spell tests.
+- Main's defaults: velocity 0.2 m/s, T90 72 h, dilution power 0.5, lake path `residence_spill`.
+- **Geometry.** `score.py` rebuilt the inflows in the run's root. It found the same 11 lake waters and the same inflows
+  and bearings as the table above.
+
+### Face checks. All hold.
+
+- The reference arm equals `train_ecoli.py`'s own scores in the same root: LOYO 0.0921, LOSO 0.0912, forward 0.0824,
+  1,502 rows.
+- The projection: along +5.0, against −5.0, across −9e-16. The mean of the hourly projection equals the mean of the
+  components projected, to 1e-9, at every site.
+- No row was dropped for missing wind. 595 lake rows at 11 sites; 504 of them at the 9 sites with a bearing, with 14
+  over 900.
+
+### The conditions
+
+| | condition | figure | holds |
+|---|---|---|---|
+| 1 | Partial rho, 24 h, 504 samples, 9 sites, 56 weeks | +0.0038 [−0.0711, +0.0834] | no |
+| 2 | Placebo bearings: share of 1,000 at least as high | 0.441 (limit 0.05) | no |
+| 3 | Lake within-site rho of the LOYO prediction, 595 samples | −0.0295 → −0.0366, change −0.0071 [−0.0190, +0.0056] | no |
+| 4 | Brier worse by at most 0.0005 | largest +0.00008 (LOSO) | yes |
+| 5 | `lake_x_wind24` coefficient above zero | +0.0096 per SD | yes |
+| 6 | Face checks, 0 network attempts | as above | yes |
+
+The placebo scores ran from −0.128 to +0.139, median −0.002, 95th percentile +0.084. The real score sits in the middle.
+
+### Brier scores (condition 4)
+
+| evaluation | today's 7 inputs | plus `lake_x_wind24` | change |
+|---|---|---|---|
+| LOYO, all (1,502) | 0.09215 | 0.09215 | +0.000008 |
+| LOYO, rivers (907) | 0.13537 | 0.13537 | +0.0000001 |
+| LOYO, lakes (595) | 0.02625 | 0.02627 | +0.000019 |
+| LOSO, all | 0.09119 | 0.09127 | +0.000079 |
+| Forward, all (997) | 0.08240 | 0.08241 | +0.000007 |
+
+The (site, ISO week) bootstrap of the LOYO Brier gain: −0.000008 [−0.000025, +0.000007] on all rows, −0.000019
+[−0.000058, +0.000013] on lakes. The new coefficient is +0.0096 per SD, against 0.65 for 48-hour rain. The other
+coefficients move by less than 0.004. In effect the model leaves the wind out.
+
+### Reported, deciding nothing
+
+| measure | figure |
+|---|---|
+| Partial rho, 6 h mean | −0.0134 [−0.0874, +0.0644] |
+| Partial rho, 48 h mean | +0.0016 [−0.0654, +0.0794] |
+| Partial rho, wind speed alone (24 h) | −0.0368 [−0.1354, +0.0628] |
+| Partial rho, exposure above its median (252) | +0.0170 |
+| Partial rho, exposure at or below its median (252) | −0.0312 |
+| Lake LOYO AUC over 900 | 0.537 → 0.527 |
+| Correlation of `wind24_to` with `lrain48` | 0.095 |
+
+### Per-lake description (description only)
+
+Raw within-site Spearman rho of `wind24_to` against log10 E. coli, with no controls. Geometric means are cfu/100 ml.
+
+| bathing water | samples (over 900) | inflow used, distance, bearing | mean `wind24_to`, m/s | share towards | raw rho | geometric mean, towards / away |
+|---|---|---|---|---|---|---|
+| Windermere, Millerground Landing | 59 (0) | Glebe Road PS, 2.6 km, 17° | +0.72 | 64% | +0.507 | 27 / 13 |
+| Windermere, Rayrigg Meadow | 57 (0) | Glebe Road PS, 2.3 km, 19° | +0.71 | 63% | +0.310 | 29 / 15 |
+| Coniston Water, Monk Coniston | 57 (1) | Coniston WwTW, 1.2 km, 40° | +2.98 | 82% | +0.334 | 48 / 36 |
+| Derwent Water at Crow Park | 58 (12) | Borrowdale inflow, 3.5 km, 359° | +0.71 | 60% | +0.200 | 317 / 202 |
+| Rutland Water Sykes Lane | 48 (0) | Oakham STW, 5.6 km, 97° | +1.39 | 71% | −0.055 | 20 / 22 |
+| Rutland Water Whitwell Creek | 52 (0) | Oakham STW, 4.4 km, 98° | +1.40 | 71% | −0.219 | 17 / 37 |
+| Windermere, Fellfoot | 59 (0) | Glebe Road PS, 9.4 km, 188° | −0.73 | 34% | −0.063 | 36 / 38 |
+| Windermere, Lakeside YMCA | 57 (0) | Glebe Road PS, 6.7 km, 195° | −0.92 | 37% | −0.269 | 14 / 19 |
+| Coniston Water, Brown Howe | 57 (1) | Torver WwTW, 1.1 km, 187° | −1.02 | 37% | −0.386 | 33 / 68 |
+| Coniston Water, Boating Centre | 57 (2) | Coniston WwTW, 84 m | near field | | | |
+| Frensham Great Pond | 34 (0) | Churt SPS, 495 m | near field | | | |
+
+### What this shows
+
+Established:
+- With rain, exposure and season allowed for, the wind along the inflow's bearing has no measurable link with E. coli
+  at these sites. The point is near zero and the interval is about ±0.08. By the power statement above, an effect of
+  about 0.10 or more would most likely have shown. A smaller one could still be there.
+- Random bearings do as well as the real ones. 44% of the placebos score at least as high.
+- Added to the model, the wind gets a coefficient near zero and changes every Brier score by less than 0.0001.
+- In the raw description, the sign of the rho follows the bearing's direction, not the geometry. It is positive at
+  every site whose bearing points north (Millerground, Rayrigg, Monk Coniston, Crow Park). It is negative at every
+  site whose bearing points south (Lakeside YMCA, Fellfoot, Brown Howe) and at both Rutland sites (bearing east).
+
+Inferred, not tested:
+- The raw pattern reads as "southerly winds go with higher E. coli everywhere". That is weather type: in summer,
+  southerly and south-westerly winds bring rain and mild, cloudy air. Condition 2 was written for this. Once the
+  model's rain and exposure are allowed for, the pattern goes, which suggests the rain terms already carry it.
+- So this test gives no support to wind as the carrier behind the lake direction test's Monk Coniston finding. Its
+  raw rho is positive, but so is every north-pointing site's, whatever its geometry.
+- A wind effect could still hide below the cell's resolution: valley winds along a lake, gusts, or the hours just
+  before a 10:00 sample. These data cannot see it. Tim Boden's Waterhead plates, or in-lake sensors, would be the next
+  place to look.
+
+Not licensed by this test: picking a different window, inflow or near-field rule after seeing these figures. The 6-
+and 48-hour means, reported above, do no better.
+
+### What follows
+
+As stated for a failure: nothing changes in the model or on the site. The site's line, "The forecast does not use
+wind", stays true. The harness, the geometry script and the fetch options stay for the next test of this kind.

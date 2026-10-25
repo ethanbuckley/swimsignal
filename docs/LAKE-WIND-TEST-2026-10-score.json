@@ -1,0 +1,508 @@
+{
+ "projection_check": {
+  "along": 5.0,
+  "against": -5.0,
+  "across": -9.184850993605148e-16
+ },
+ "inflows_used": [
+  {
+   "bw_id": "ukf2208-09701",
+   "bw_name": "Rutland Water Whitwell Creek",
+   "names": "OAKHAM STW",
+   "share": 0.4980159384018256,
+   "line_m": 4386.578934505891,
+   "lake_distance_m": 4912.168530005413,
+   "bearing_deg": 98.2606996820752,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukf2208-09702",
+   "bw_name": "Rutland Water Sykes Lane",
+   "names": "OAKHAM STW",
+   "share": 0.47980074232301007,
+   "line_m": 5646.309736175373,
+   "lake_distance_m": 5739.205895221225,
+   "bearing_deg": 96.73654766467344,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "bw_name": "Frensham Great Pond",
+   "names": "Churt SPS",
+   "share": 1.0,
+   "line_m": 495.0482113086473,
+   "lake_distance_m": 495.0482113086473,
+   "bearing_deg": 11.864941188452919,
+   "has_bearing": false
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "bw_name": "Windermere, Lakeside YMCA",
+   "names": "Glebe Road PS",
+   "share": 0.6642010001670856,
+   "line_m": 6718.504666525783,
+   "lake_distance_m": 6785.719564035185,
+   "bearing_deg": 195.41647995228303,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "bw_name": "Windermere, Millerground Landing",
+   "names": "Glebe Road PS",
+   "share": 0.6595266377741504,
+   "line_m": 2569.9717249186097,
+   "lake_distance_m": 2575.6629412714656,
+   "bearing_deg": 16.8632745901222,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "bw_name": "Windermere, Rayrigg Meadow",
+   "names": "Glebe Road PS",
+   "share": 0.6790077693346039,
+   "line_m": 2300.7523776389116,
+   "lake_distance_m": 2303.323703291129,
+   "bearing_deg": 18.976638717192,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "bw_name": "Windermere, Fellfoot",
+   "names": "Glebe Road PS",
+   "share": 0.6650074961873771,
+   "line_m": 9444.716049670602,
+   "lake_distance_m": 9507.591533925935,
+   "bearing_deg": 187.8277734419416,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukd1230-45725",
+   "bw_name": "Coniston Water, Brown Howe",
+   "names": "TORVER WwTW",
+   "share": 0.5777272902422625,
+   "line_m": 1113.7306303181754,
+   "lake_distance_m": 1113.7306303181756,
+   "bearing_deg": 186.46030058720316,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukd1230-45750",
+   "bw_name": "Coniston Water, Boating Centre",
+   "names": "Coniston WwTW",
+   "share": 0.806161571631717,
+   "line_m": 83.90157607012922,
+   "lake_distance_m": 83.90157607012922,
+   "bearing_deg": 15.263492135341027,
+   "has_bearing": false
+  },
+  {
+   "bw_id": "ukd1230-45775",
+   "bw_name": "Coniston Water, Monk Coniston",
+   "names": "Coniston WwTW",
+   "share": 0.8034855716855909,
+   "line_m": 1233.624316611063,
+   "lake_distance_m": 1254.4398120931858,
+   "bearing_deg": 39.46976721717648,
+   "has_bearing": true
+  },
+  {
+   "bw_id": "ukd1101-45800",
+   "bw_name": "Derwent Water at Crow Park",
+   "names": "Grange Bridge (200mtrs downstream); ROSTHWAITE WwTW; STONETHWAITE WwTW",
+   "share": 1.0,
+   "line_m": 3469.757082471168,
+   "lake_distance_m": 3470.095768528099,
+   "bearing_deg": 358.7447430053703,
+   "has_bearing": true
+  }
+ ],
+ "rows": {
+  "train_ecoli": 1502,
+  "dropped_no_wind": 0,
+  "scored": 1502
+ },
+ "loyo": {
+  "reference": {
+   "all": 0.09214530846823131,
+   "rivers": 0.13537252924008758,
+   "lakes": 0.02625104083785548,
+   "scores": {
+    "brier": 0.09214530846823131,
+    "log_loss": 0.3133448002028246,
+    "auc": 0.8163814538540295,
+    "n": 1502
+   }
+  },
+  "with_wind": {
+   "all": 0.09215308196761215,
+   "rivers": 0.13537262703665623,
+   "lakes": 0.026270514946397056,
+   "scores": {
+    "brier": 0.09215308196761215,
+    "log_loss": 0.31350428656728235,
+    "auc": 0.8160852713178295,
+    "n": 1502
+   }
+  }
+ },
+ "loso": {
+  "reference": {
+   "all": 0.09118782059521034,
+   "rivers": 0.1333506632629964,
+   "lakes": 0.02691605874700539,
+   "scores": {
+    "brier": 0.09118782059521034,
+    "log_loss": 0.32056897906510684,
+    "auc": 0.8108051777095218,
+    "n": 1502
+   }
+  },
+  "with_wind": {
+   "all": 0.09126708763730888,
+   "rivers": 0.1333458250947001,
+   "lakes": 0.0271235332274705,
+   "scores": {
+    "brier": 0.0912670876373089,
+    "log_loss": 0.32313954735788225,
+    "auc": 0.8084795963141729,
+    "n": 1502
+   }
+  }
+ },
+ "forward": {
+  "reference": {
+   "all": 0.0824033022253388,
+   "rivers": 0.11263716282232611,
+   "lakes": 0.033313060150756725,
+   "scores": {
+    "brier": 0.0824033022253388,
+    "log_loss": 0.2944422586745562,
+    "auc": 0.808327207812664,
+    "n": 997
+   }
+  },
+  "with_wind": {
+   "all": 0.08241005220055501,
+   "rivers": 0.11264890679286807,
+   "lakes": 0.033311701454615185,
+   "scores": {
+    "brier": 0.08241005220055501,
+    "log_loss": 0.2945024446826756,
+    "auc": 0.8075081381917464,
+    "n": 997
+   }
+  }
+ },
+ "bootstrap_loyo_site_week": {
+  "n": 1502,
+  "clusters": 1325,
+  "brier_ref": 0.09214530846823131,
+  "brier_new": 0.09215308196761215,
+  "brier_gain": -7.773499380844817e-06,
+  "brier_gain_ci": [
+   -2.4816763774524604e-05,
+   7.073299859078686e-06
+  ],
+  "p_gain_le_0": 0.815,
+  "auc_ref": 0.8163814538540295,
+  "auc_new": 0.8160852713178295,
+  "auc_gain_ci": [
+   -0.0008991414731901126,
+   0.0002551535561879839
+  ]
+ },
+ "bootstrap_loyo_lakes_site_week": {
+  "n": 595,
+  "clusters": 520,
+  "brier_ref": 0.02625104083785548,
+  "brier_new": 0.026270514946397056,
+  "brier_gain": -1.9474108541576995e-05,
+  "brier_gain_ci": [
+   -5.848457516565934e-05,
+   1.3431023363279748e-05
+  ],
+  "p_gain_le_0": 0.852,
+  "auc_ref": 0.5365932642487047,
+  "auc_new": 0.5267702936096718,
+  "auc_gain_ci": [
+   -0.02562506264692969,
+   0.006918106588922773
+  ]
+ },
+ "coef_per_sd": {
+  "reference": {
+   "lrain48": 0.6506952686451279,
+   "lrain24": -0.10168909905924411,
+   "logit_risk": 0.7811008444414484,
+   "lake": -0.1810705413105178,
+   "lake_x_lrain48": -1.0571832283425258,
+   "doy_sin": -0.09737473871566846,
+   "doy_cos": 0.08584037408959953
+  },
+  "with_wind": {
+   "lrain48": 0.6495170079227941,
+   "lrain24": -0.10115590802991618,
+   "logit_risk": 0.7813046070362488,
+   "lake": -0.17994735151288493,
+   "lake_x_lrain48": -1.0603499152270344,
+   "doy_sin": -0.09711167880203597,
+   "doy_cos": 0.08589305785920082,
+   "lake_x_wind24": 0.009579637130226118
+  }
+ },
+ "condition_1": {
+  "n": 504,
+  "sites": 9,
+  "weeks": 56,
+  "over_900": 14,
+  "partial_rho": 0.003827534175632026,
+  "ci": [
+   -0.07108165999393676,
+   0.08338594586841097
+  ]
+ },
+ "condition_2": {
+  "placebos": 1000,
+  "share_at_least_as_high": 0.441,
+  "lowest": -0.12820273125456327,
+  "median": -0.002230275994409314,
+  "p95": 0.08377799657623931,
+  "highest": 0.1391768967162639
+ },
+ "condition_3": {
+  "n": 595,
+  "sites": 11,
+  "rho_reference": -0.029512659535953133,
+  "rho_with_wind": -0.036596822796990995,
+  "change": -0.007084163261037862,
+  "change_ci": [
+   -0.018967042204381536,
+   0.005640944543907468
+  ]
+ },
+ "condition_4_worse_by": {
+  "loyo_all": 7.773499380844817e-06,
+  "loyo_rivers": 9.779656864883357e-08,
+  "loyo_lakes": 1.9474108541576995e-05,
+  "loso_all": 7.926704209854085e-05,
+  "forward_all": 6.749975216213677e-06
+ },
+ "face_check": {
+  "train_ecoli": {
+   "loyo": 0.0921,
+   "loso": 0.0912,
+   "forward": 0.0824,
+   "n": 1502
+  },
+  "here_reference": {
+   "loyo": 0.0921,
+   "loso": 0.0912,
+   "forward": 0.0824,
+   "n": 1502
+  },
+  "matches": true,
+  "rows_dropped_no_wind": 0
+ },
+ "conditions": {
+  "1_partial_rho_above_zero": false,
+  "2_placebos": false,
+  "3_lake_ranking_rises": false,
+  "4_no_harm": true,
+  "5_sign_positive": true,
+  "6_face_check": true,
+  "passes": false
+ },
+ "reported_only": {
+  "partial_rho_6h": {
+   "rho": -0.013390935848442913,
+   "ci": [
+    -0.08735783202193176,
+    0.06443312281420333
+   ]
+  },
+  "partial_rho_48h": {
+   "rho": 0.0016216159077374571,
+   "ci": [
+    -0.06540828408446221,
+    0.07938957774881006
+   ]
+  },
+  "partial_rho_speed24": {
+   "rho": -0.03684622486697877,
+   "ci": [
+    -0.13540935024475387,
+    0.06283967693652913
+   ]
+  },
+  "partial_rho_exposure_above_median": {
+   "n": 252,
+   "rho": 0.01697950483030491
+  },
+  "partial_rho_exposure_at_or_below_median": {
+   "n": 252,
+   "rho": -0.031168931063168655
+  },
+  "lake_loyo_auc": {
+   "reference": 0.5365932642487047,
+   "with_wind": 0.5267702936096718
+  },
+  "corr_wind24_lrain48": 0.09547508197427028,
+  "description_only": [
+   {
+    "bw_id": "ukd1230-45750",
+    "name": "Coniston Water, Boating Centre",
+    "samples": 57,
+    "over_900": 2,
+    "inflow": "Coniston WwTW",
+    "line_m": 84,
+    "bearing_deg": 15.3,
+    "has_bearing": false
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "name": "Coniston Water, Brown Howe",
+    "samples": 57,
+    "over_900": 1,
+    "inflow": "TORVER WwTW",
+    "line_m": 1114,
+    "bearing_deg": 186.5,
+    "has_bearing": true,
+    "mean_wind24_to": -1.023040427744956,
+    "share_towards": 0.3684210526315789,
+    "rho_raw": -0.38596959904900735,
+    "gmean_towards": 33.03412343178327,
+    "gmean_away": 68.12066935837555
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "name": "Coniston Water, Monk Coniston",
+    "samples": 57,
+    "over_900": 1,
+    "inflow": "Coniston WwTW",
+    "line_m": 1234,
+    "bearing_deg": 39.5,
+    "has_bearing": true,
+    "mean_wind24_to": 2.9773947123576447,
+    "share_towards": 0.8245614035087719,
+    "rho_raw": 0.3343732079977897,
+    "gmean_towards": 48.07811162480312,
+    "gmean_away": 36.44358136262367
+   },
+   {
+    "bw_id": "ukd1101-45800",
+    "name": "Derwent Water at Crow Park",
+    "samples": 58,
+    "over_900": 12,
+    "inflow": "Grange Bridge (200mtrs downstream); ROSTHWAITE WwTW; STONETHWAITE WwTW",
+    "line_m": 3470,
+    "bearing_deg": 358.7,
+    "has_bearing": true,
+    "mean_wind24_to": 0.7112468378802009,
+    "share_towards": 0.603448275862069,
+    "rho_raw": 0.2002461615242317,
+    "gmean_towards": 317.10546930272903,
+    "gmean_away": 202.2925117448833
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "name": "Frensham Great Pond",
+    "samples": 34,
+    "over_900": 0,
+    "inflow": "Churt SPS",
+    "line_m": 495,
+    "bearing_deg": 11.9,
+    "has_bearing": false
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "name": "Rutland Water Sykes Lane",
+    "samples": 48,
+    "over_900": 0,
+    "inflow": "OAKHAM STW",
+    "line_m": 5646,
+    "bearing_deg": 96.7,
+    "has_bearing": true,
+    "mean_wind24_to": 1.3852680124914638,
+    "share_towards": 0.7083333333333334,
+    "rho_raw": -0.05489195085681824,
+    "gmean_towards": 20.419298847778418,
+    "gmean_away": 21.639842485189096
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "name": "Rutland Water Whitwell Creek",
+    "samples": 52,
+    "over_900": 0,
+    "inflow": "OAKHAM STW",
+    "line_m": 4387,
+    "bearing_deg": 98.3,
+    "has_bearing": true,
+    "mean_wind24_to": 1.3987772955560223,
+    "share_towards": 0.7115384615384616,
+    "rho_raw": -0.21901791703613885,
+    "gmean_towards": 17.156555943960814,
+    "gmean_away": 36.73042695669623
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "name": "Windermere, Fellfoot",
+    "samples": 59,
+    "over_900": 0,
+    "inflow": "Glebe Road PS",
+    "line_m": 9445,
+    "bearing_deg": 187.8,
+    "has_bearing": true,
+    "mean_wind24_to": -0.7264905466775681,
+    "share_towards": 0.3389830508474576,
+    "rho_raw": -0.06291181199931954,
+    "gmean_towards": 35.68763227149876,
+    "gmean_away": 38.017134348640155
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "name": "Windermere, Lakeside YMCA",
+    "samples": 57,
+    "over_900": 0,
+    "inflow": "Glebe Road PS",
+    "line_m": 6719,
+    "bearing_deg": 195.4,
+    "has_bearing": true,
+    "mean_wind24_to": -0.9179076496903397,
+    "share_towards": 0.3684210526315789,
+    "rho_raw": -0.26908712868614876,
+    "gmean_towards": 14.447494113894926,
+    "gmean_away": 18.55661581159083
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "name": "Windermere, Millerground Landing",
+    "samples": 59,
+    "over_900": 0,
+    "inflow": "Glebe Road PS",
+    "line_m": 2570,
+    "bearing_deg": 16.9,
+    "has_bearing": true,
+    "mean_wind24_to": 0.7242049732508657,
+    "share_towards": 0.6440677966101694,
+    "rho_raw": 0.5066698932702014,
+    "gmean_towards": 26.61434844230957,
+    "gmean_away": 13.141967122366191
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "name": "Windermere, Rayrigg Meadow",
+    "samples": 57,
+    "over_900": 0,
+    "inflow": "Glebe Road PS",
+    "line_m": 2301,
+    "bearing_deg": 19.0,
+    "has_bearing": true,
+    "mean_wind24_to": 0.7144857448607004,
+    "share_towards": 0.631578947368421,
+    "rho_raw": 0.3103003193524383,
+    "gmean_towards": 28.788557629044515,
+    "gmean_away": 15.36509678399849
+   }
+  ]
+ }
+}
