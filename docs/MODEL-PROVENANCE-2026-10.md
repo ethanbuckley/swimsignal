@@ -53,10 +53,11 @@ are not the cause.
 
 ## Where this matters next
 
-- **Day boundary (#334).** Both of its arms were fitted at recency 1, so the test still isolates the day boundary.
-  But its "old" arm is not production, and a model fitted from that branch at the old default would also move
-  layer 2 from 0.25 to 1. A deployable refit should use 0.25. Whether the day-boundary pass holds at 0.25 has not
-  been run.
+- **Day boundary (#334).** Its first run fitted both arms at recency 1, so its "old" arm was not production. It was
+  rerun on 25 October with both arms at 0.25, after a dated addendum and with the same conditions and frozen
+  inputs. The old arm then reproduced main's files exactly (every offset and layer 1 to 0.0), and the test passed
+  again: N1 ΔBrier +0.000066 (interval −0.000090 to +0.000219, limit 0.000445), N2 at leads 0 to 4 within their
+  limits. A pass is not a deployment: the lead maps, the live windows and the 2027 stamp still come first (#334).
 - **Option B (`docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, merged, not yet approved).** It says its offsets use
   "recency 1, as now". Production is 0.25. Arm B also refits United Utilities over several years, so B against
   production would mix the start-date rule with a change of recency. This is for Ethan to settle before approving
@@ -64,6 +65,24 @@ are not the cause.
 - **Company calibration (#333).** Its statement says recency 1 is "exactly as `fit_site_offsets` does for United
   Utilities". That is not what production did. It does not matter there: its offsets are fitted on one four-week
   window, where recency has no effect, and production's United Utilities offsets are kept.
+
+## The check after a change of day boundary
+
+`features.py` cuts days for new models. PR #334 moves it to UK local days, and its `build_site_days` refuses a UTC
+grid. The check must still rebuild the rows the 13 September files saw, which were UTC days. So
+`check_model_provenance.py` no longer calls `features.daily_rain_features`, `spill_days` or `build_site_days`. It
+uses frozen copies in `scripts/legacy_utc_days.py`: the three functions as they stood when every offset was
+reproduced, with their constants fixed. Switching the check to local days instead would compare the old files with
+rows they were never fitted on.
+
+Checked on 25 October:
+- On #334's branch with the old check (`da2b383`): `build_site_days: days in different zones {'days': 'UTC',
+  'rain': 'Europe/London', 'labels': 'Europe/London'}`, before anything was checked.
+- On #334's branch merged with this one: the check rebuilds the same rows as on main (1,577,907 hold-out, 2,404,632
+  production), reproduces every stored offset at 0.25 and exits 0. The full suite passes there (1,024 passed).
+- `tests/test_model_provenance_legacy.py`: the copies give UTC days, checked against values worked out by hand
+  around a BST midnight; the check's rows do not touch `features.py`'s day functions; while `features.py` still cuts
+  UTC days, the copies equal it frame for frame.
 
 ## How to rerun
 
