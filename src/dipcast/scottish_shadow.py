@@ -240,7 +240,7 @@ def could_be_scored(con, issued_at: pd.Timestamp) -> bool:
     cutoff = local.normalize().tz_localize(None) + pd.Timedelta(hours=forecast_log.DECISION_HOUR)
     if local.tz_localize(None) <= cutoff:
         return True
-    n = con.execute("SELECT count(*) FROM forecast_overflows WHERE issue_day = ?", [local.date()]).fetchone()[0]
+    n = con.execute("SELECT count(*) FROM forecast_overflows WHERE issue_day = ?", [local.date()]).fetchall()[0][0]
     return n == 0
 
 
@@ -254,7 +254,8 @@ def log_rows(rows: pd.DataFrame) -> int:
             if not could_be_scored(con, rows["issued_at"].iloc[0]):
                 return 0
             con.register("new_rows", rows)
-            con.execute("INSERT INTO forecast_overflows BY NAME SELECT * FROM new_rows")
+            # Fetch the insert's count row: duckdb 2 refuses unregister while a result is unread.
+            con.execute("INSERT INTO forecast_overflows BY NAME SELECT * FROM new_rows").fetchall()
             con.unregister("new_rows")
         finally:
             con.close()

@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 17 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html and two profiles
+    assert sm.count("<url>") == 18 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -107,7 +107,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     home = (tmp_path / "index.html").read_text()
     # data-built: the script updates this opening where it stands (index.html, overBuilt), so its
     # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
-    body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
+    body = home.split('<div id="result" data-built data-nosnippet>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
     assert "Five-day pollution risk forecasts for 3 swim spots in England<span class=\"lede-map\">, and for any river or lake you " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
@@ -155,7 +155,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river, SPOTS[1]]}))
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
-    assert '<body class="view-spot">' in page and '<div id="result" data-built>' in page
+    assert '<body class="view-spot">' in page and '<div id="result" data-built data-nosnippet>' in page
     # A spot's page spans the screen from 801 px, so it preloads the wide sky from there.
     assert bs.SPOT_SKY_PRELOAD in page and bs.SKY_PRELOAD not in page and 'fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 801px)"' in page
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
@@ -177,7 +177,8 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     (tmp_path / "data" / "spots.json").unlink()
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
-    assert '<body class="view-list">' in page and '<div id="result" data-built>' not in page and '<h2 class="spot-name">A river</h2>' in page
+    assert '<body class="view-list">' in page and '<div id="result" data-built data-nosnippet>' not in page and '<h2 class="spot-name">A river</h2>' in page
+    assert '<div id="result" data-nosnippet>' in page   # a level drawn here later is not quoted in search results either
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -1044,3 +1045,38 @@ def test_the_overflow_layer_is_cut_into_the_tiles_the_map_asks_for(tmp_path):
     london = json.loads((out / "511-340.json").read_text())
     assert london["type"] == "FeatureCollection" and [f["properties"]["site_id"] for f in london["features"]] == ["A", "B"]
     assert london["features"][0] == feats[0]   # each overflow as the whole file has it
+
+
+def test_every_spot_with_a_page_is_linked_from_a_page_search_engines_can_read(tmp_path):
+    # Google listed the home page alone on 24 Oct 2026: the list and the map are drawn by the script, so no
+    # page linked a spot's page in its HTML. spots.html links each one, and the app's foot links spots.html.
+    bs = _build_site()
+    spots = [{**SPOTS[0], "area": "Yorkshire"}, {**SPOTS[1], "area": "Cumbria and the Lake District"},
+             {"id": "beck", "name": "A Beck & Pool", "kind": "river", "area": "Yorkshire", "days": []},
+             {"id": "no-area", "name": "Somewhere", "kind": "lake", "days": []}, {**SPOTS[2], "area": "Yorkshire"}]
+    assert bs.write_pages(tmp_path, spots, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-24") == 4
+    page = (tmp_path / "spots.html").read_text()
+    head = page.split("</head>")[0]
+    assert "<title>Every spot · SwimSignal</title>" in head and '<link rel="canonical" href="https://example.org/swim/spots.html">' in head
+    assert f'<meta name="description" content="{bs.EVERY_SPOT_DESCRIPTION}">' in head and "noindex" not in head
+    assert '<header class="top">' in page and 'class="site-foot"' in page and "cloudflareinsights" in page
+    assert "{{" not in page and 'href="/' not in page and "<script src=" not in page   # no script: the links are in the HTML
+    main = page.split("<main", 1)[1].split("</main>")[0]
+    links = re.findall(r'<a href="spot/([^"/]+)/">', main)
+    assert sorted(links) == sorted(p.name for p in (tmp_path / "spot").iterdir())   # every spot with a page, once
+    assert "Bad Id" not in main and "Odd" not in main   # no page of its own, so no link
+    # Areas A-Z, a spot with none last; names A-Z within each, escaped.
+    heads = re.findall(r'<h2 id="([^"]+)">([^<]+)</h2>', main.split("</nav>")[1])   # after the contents list
+    assert heads == [("cumbria-and-the-lake-district", "Cumbria and the Lake District"), ("yorkshire", "Yorkshire"), ("other-spots", "Other spots")]
+    york = main.split('<h2 id="yorkshire">')[1].split("<h2")[0]
+    assert york.index("A Beck &amp; Pool") < york.index("Wharfe at &quot;Cromwheel&quot; &amp; Ilkley")
+    assert '<a href="#yorkshire">Yorkshire</a>' in main and 'href="feedback.html?type=spot"' in main
+    words = re.sub(r"<[^>]+>", " ", main).lower()
+    assert "forecast, not a water test" in words and not re.search(r"\b(safe|clean)\b", words) and not re.search(r"\d", words)
+    # Linked from the app's foot, which the home page and every spot's page carry; in the sitemap.
+    for f in ("index.html", "spot/wharfe-ilkley/index.html", "spot/no-area/index.html"):
+        assert '<a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · ' in (tmp_path / f).read_text(), f
+    assert "<loc>https://example.org/swim/spots.html</loc>" in (tmp_path / "sitemap.xml").read_text()
+    # Each spot's overflow history names its own address as canonical.
+    prof = (tmp_path / "spot" / "tarn" / "profile" / "index.html").read_text().split("</head>")[0]
+    assert '<link rel="canonical" href="https://example.org/swim/spot/tarn/profile/">' in prof and '<meta name="description" content="The' in prof

@@ -1205,6 +1205,65 @@ def attach_upgrades(results: list[dict], path: Path = UPGRADES, years: dict[str,
     return {"overflows": len(seen), "spots": spots, "warnings": warnings}
 
 
+DRY_WEATHER = config.RAW / "dry_weather_spills.csv"
+
+
+def read_dry_weather(path: Path = DRY_WEATHER) -> dict[str, dict]:
+    """data/raw/dry_weather_spills.csv (scripts/make_dry_weather_spills.py) by site id: each overflow's dry
+    spill-days and dry days in one year. Raises ValueError on a file the note could not word truthfully: more
+    than one year, a count that is not a whole number, more dry spill-days than dry days, or an overflow listed
+    twice."""
+    import csv
+    rows = list(csv.DictReader(line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")))
+    out: dict[str, dict] = {}
+    years = {r.get("year") for r in rows}
+    if len(years) > 1:
+        raise ValueError(f"{path.name}: more than one year ({', '.join(sorted(map(str, years)))})")
+    for r in rows:
+        sid = (r.get("site_id") or "").strip()
+        try:
+            year, k, n = int(r["year"]), int(r["dry_spill_days"]), int(r["dry_days"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError(f"{path.name}: {sid or 'a row'}: a count or the year is not a whole number") from None
+        bad = ("no site_id" if not sid else "listed twice" if sid in out else "no company" if not (r.get("company") or "").strip()
+               else "more dry spill-days than dry days" if not 0 <= k <= n else "")
+        if bad:
+            raise ValueError(f"{path.name}: {sid or 'a row'}: {bad}")
+        out[sid] = {"company": r["company"], "year": year, "days": k, "dry_days": n}
+    return out
+
+
+def attach_dry_weather(results: list[dict], path: Path = DRY_WEATHER) -> dict:
+    """`dry_weather` ({year, days, dry_days}) on each overflow in a spot's list that spilled on many of its dry days
+    in the file's year, by the rule tested in docs/DRY-WEATHER-SPILLS-TEST-2026-10.md (dry_weather.noted). The page
+    says it beside the overflow in the test's wording (index.html, dryWeatherNote). Runs after the forecasts, and the
+    spill model never reads the file: the test found the history adds nothing to the forecast, so it is a record of
+    the past, not a risk. A row whose company is not the overflow's is passed over and named in the warnings, as a
+    wrong site id would be. Never stops the build: a bad file leaves every page without the note."""
+    from dipcast.dry_weather import noted
+    try:
+        listed = read_dry_weather(path)
+    except Exception as e:  # noqa: BLE001 - a note beside the forecast must not sink the build
+        return {"overflows": 0, "spots": 0, "warnings": [f"dry-weather spills not shown: {e}"]}
+    seen, spots, warnings = set(), 0, []
+    for r in results:
+        hit = False
+        for c in r.get("contributors") or []:
+            d = listed.get(c.get("site_id"))
+            if d is None or not noted(d["days"], d["dry_days"]):
+                continue
+            if d["company"] != c.get("company"):
+                msg = f"{c['site_id']} is {c.get('company')}'s, not {d['company']}'s: no dry-weather note for it ({path.name})"
+                if msg not in warnings:
+                    warnings.append(msg)
+                continue
+            c["dry_weather"] = {"year": d["year"], "days": d["days"], "dry_days": d["dry_days"]}
+            seen.add(c["site_id"])
+            hit = True
+        spots += hit
+    return {"overflows": len(seen), "spots": spots, "warnings": warnings}
+
+
 def _km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     import math
     r = math.pi / 180
@@ -1728,8 +1787,10 @@ def home_lead(n: int) -> str:
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
     typed carries over. The day picker has only its first choice until the forecast's dates are known.
     data-built: the script updates this .lead where it stands rather than replacing it (index.html,
-    overBuilt), so its picture is painted once, at the first paint."""
-    return ('<div id="result" data-built><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
+    overBuilt), so its picture is painted once, at the first paint. data-nosnippet: search engines may index
+    what is in #result but not quote it in a result, where a level would outlive its forecast; they quote
+    the page's description instead, which gives none (the script keeps #result, so the mark stays)."""
+    return ('<div id="result" data-built data-nosnippet><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
             f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England<span class="lede-map">, and for any river or lake you '
             '<span class="w-touch">tap</span><span class="w-click">click</span> on the map</span>. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
@@ -1762,8 +1823,8 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
         # opens as a page"), so each screen asks early for the picture it shows, and only that one.
         page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
-        return page.replace(LOADING, f'<div id="result" data-built>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
-    return page.replace(LOADING, '<div id="result"><div class="top-row"><a href="./" class="back">All spots</a></div>'
+        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
+    return page.replace(LOADING, '<div id="result" data-nosnippet><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
                                  f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
 
@@ -1938,7 +1999,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html"] + [f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2240,7 +2301,9 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
-    write_profiles(site, [r for r in results if r["id"] in set(ids)], token)   # spot/<id>/profile/, from data/upstream/
+    paged = [r for r in results if r["id"] in set(ids)]
+    write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
+    write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
                                               extra=["support.html"] if support else []))
@@ -2595,11 +2658,13 @@ def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd
     (site / "quality.html").write_text(with_counter(quality.site_page(cases, positions, outlets, overflows, when, MARK), token))
 
 
-def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None) -> int:
+def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None,
+                   root: str | None = None) -> int:
     """spot/<id>/profile/index.html for each spot (each with a page), joining its data/upstream/<id>.json
     to the annual returns. A spot with no file gets a short page saying why. Returns the number of pages
-    with overflows listed."""
+    with overflows listed. root: the published address, for each page's canonical link (site_url)."""
     from dipcast import profile
+    root = root or site_url()
     lists = {}
     for r in spots:
         f = site / "data" / "upstream" / f"{r['id']}.json"
@@ -2620,8 +2685,52 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         t = profile.with_returns(t, wide=wide) if t is not None and len(t) else None
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
-        (site / "spot" / r["id"] / "profile" / "index.html").write_text(with_counter(profile.site_page(r, t, MARK), token))
+        (site / "spot" / r["id"] / "profile" / "index.html").write_text(
+            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/"), token))
     return n
+
+
+# Every spot, spots.html: the spots with a page of their own, each an ordinary link to it, by area
+# (spots.csv's `area`) A-Z and A-Z within each. The home list and the map are drawn by the page's script,
+# so until 24 Oct 2026 no page linked a spot's page in its HTML; search engines had the sitemap alone, and
+# Google listed the home page alone. The app's foot links it, on the home page and every spot's page. A
+# prose page with no script, in the sitemap; not in the offline copy. It gives no counts or levels, which
+# would go stale between builds.
+EVERY_SPOT = TEMPLATE.parent / "spots.html"
+EVERY_SPOT_DESCRIPTION = ("Every river and lake swim spot in England that SwimSignal forecasts, by area, each linked "
+                          "to its five-day pollution risk forecast.")
+NO_AREA = "Other spots"   # a spot with no area in spots.csv: last, so no group is without a name
+
+
+def every_spot_body(spots: list[dict]) -> str:
+    """The page's <main>: the opening, the areas as a contents list, then each area's spots."""
+    by: dict[str, list[dict]] = {}
+    for s in spots:
+        by.setdefault(str(s.get("area") or "").strip() or NO_AREA, []).append(s)
+    areas = sorted(by, key=lambda a: (a == NO_AREA, a.casefold()))
+    out = ['<h1>Every spot</h1>',
+           '<p class="lead">These are the river and lake swim spots SwimSignal forecasts, by area. Each has its own page, '
+           'with the pollution risk for the next five days. It is a forecast, not a water test.</p>',
+           '<nav class="toc" aria-labelledby="toc-h"><h2 id="toc-h">Areas</h2><ol>'
+           + "".join(f'<li><a href="#{area_slug(a)}">{escape(a)}</a></li>' for a in areas) + '</ol></nav>']
+    for a in areas:
+        rows = sorted(by[a], key=lambda s: str(s["name"]).casefold())
+        out.append(f'<h2 id="{area_slug(a)}">{escape(a)}</h2>')
+        out.append('<ul class="spots">' + "".join(f'<li><a href="spot/{escape(str(s["id"]))}/">{escape(str(s["name"]))}</a></li>'
+                                                   for s in rows) + '</ul>')
+    out.append('<p>A spot missing? <a href="feedback.html?type=spot">Ask for it to be added</a>.</p>')
+    return "\n".join(out)
+
+
+def write_every_spot(site: Path, spots: list[dict], root: str, token: str | None = None) -> None:
+    """spots.html, from the spots with a page of their own (write_pages passes the ones it wrote)."""
+    slots = {"mark": MARK, "body": every_spot_body(spots), "description": escape(EVERY_SPOT_DESCRIPTION),
+             "url": escape(f"{root}spots.html")}
+    page = EVERY_SPOT.read_text()
+    missing = set(re.findall(r"\{\{(\w+)\}\}", page)) - slots.keys()
+    if missing:
+        raise ValueError(f"spots.html has slots this build does not fill: {sorted(missing)}")
+    (site / "spots.html").write_text(with_counter(re.sub(r"\{\{(\w+)\}\}", lambda m: slots[m.group(1)], page), token))
 
 
 def write_cards(site: Path, results: list[dict], generated_at: str, root: str, alerts_ok: bool = True) -> dict:
@@ -2699,6 +2808,7 @@ def build(refresh: bool = True) -> dict:
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
+    dry = attach_dry_weather(results)   # notes on past dry-weather spills, from a file: the model never reads them
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -2713,6 +2823,8 @@ def build(refresh: bool = True) -> dict:
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
     health["warnings"] += upgrades["warnings"]
+    health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}
+    health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")

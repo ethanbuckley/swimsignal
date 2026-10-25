@@ -418,6 +418,7 @@
      what set it and when, where the five days go, the issue time. */
   .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .top-row .save { margin-top:0; }
+  .save-msg { margin:8px 0 4px; } .save-msg:empty { margin:0; }   /* what Save did, under it; empty, no room */
   .answer { text-align:center; padding:4px 0 0; }
   .answer .kind { margin:0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
   .answer .spot-name { margin:6px auto 0; max-width:16em; text-wrap:balance; }
@@ -559,6 +560,7 @@
      (.rv), the day and time as the headline, then the spot, what the forecast showed (the level in its
      text colour, never a filled label), the note and the photos; on a spot's page, the reviews' form
      in a tile under the buttons. */
+  #alerts-h { scroll-margin-top:calc(var(--header-h) + 24px); } #alerts-h:focus { outline:none; }   /* "Go to alerts" after a shared list is added */
   #journal { scroll-margin-top:calc(var(--header-h) + 8px); } #journal:focus, #jn-box-h:focus { outline:none; }
   .jn-where { margin:2px 0 0; font-size:var(--fs-note); line-height:1.4; overflow-wrap:anywhere; }
   .jn-where a { font-weight:600; }
@@ -1218,7 +1220,7 @@
       </details>
     </section>
     <footer class="fine">
-      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
       <p>Data: storm overflow status from Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and Yorkshire Water via the National Storm Overflow Hub (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; combined and modelled by SwimSignal) · Environment Agency data © Environment Agency copyright and/or database right (<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>); river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), from Met Office forecasts © Crown copyright (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>) · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
     </footer>
   </main>
@@ -1593,6 +1595,11 @@ const spilling = (x, total) => { const e = x.expected_spilling_overflows; if (ni
 const PUSH_KEY = 'dipcast.push';   // what was last sent, so an unchanged list is not re-sent
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = navigator.standalone || matchMedia('(display-mode: standalone)').matches;   // opened from the Home Screen
+// Facebook's or Instagram's own browser, which a link tapped in either app opens in (their user agents
+// name them). It has no push, and what a page keeps there stays in that app, apart from Safari or
+// Chrome, and has no Add to Home Screen; the shared list and the alerts tile say so.
+const IN_APP = /FBAN|FBAV|FB_IAB|FBIOS/.test(navigator.userAgent) ? 'Facebook' : /Instagram/.test(navigator.userAgent) ? 'Instagram' : '';
+const OWN_BROWSER = IOS ? 'Safari' : 'your own browser, such as Chrome';
 const canPush = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 const b64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 async function pushReg() {   // the service worker, or null if it is not running within 5 s
@@ -1656,6 +1663,7 @@ function alertsCard() {
       : canPush() ? `<button type="button" class="btn" id="alerts-btn" disabled>Turn on alerts</button>`
         // Shown once alerts are on, since it needs them.
         + '<label class="rv-consent" id="alerts-week" hidden><input type="checkbox"><span>Also a weekly note on Thursday evenings: the days with the lowest pollution risk, Friday to Monday, at each saved spot.</span></label>'
+      : IN_APP ? `<p class="small tight">Alerts cannot be turned on in the ${IN_APP} app's browser. Open this page in ${OWN_BROWSER} (the ${IN_APP} app's menu has an option for it)${IOS ? ', then tap <b>Share</b>, then <b>Add to Home Screen</b>, open SwimSignal from there and save your spots in it' : ' and save your spots there'}.${DATA.email ? ' Or have them by email.' : ''}</p>`
       : IOS && !navigator.standalone ? `<p class="small tight">On iPhone and iPad, ${DATA.email ? 'notifications' : 'alerts'} work only in the Home Screen app: tap <b>Share</b>, then <b>Add to Home Screen</b>, open SwimSignal from there and save your spots in it.${DATA.email ? ' Or have them by email.' : ''}</p>`
       : `<p class="small tight">This browser cannot show notifications from websites.${DATA.email ? ' You can have alerts by email.' : ''}</p>`;
     h += `<details class="more consent"><summary>What turning alerts on sends</summary><p class="small">${sends}</p></details>${body}<p class="small muted msg" id="alerts-msg" aria-live="polite"></p>`;
@@ -3172,11 +3180,17 @@ function renderSaved() {
   // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
   // all on a wide desktop, where England's every spot said nothing about an empty list.
   setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));
-  bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims();
+  bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims(); bindToAlerts();
   if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
   if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
   placeMap();
+}
+// "Go to alerts", in the note after a shared list is added: the alerts tile into view, its heading focused.
+function bindToAlerts() {
+  const b = document.getElementById('to-alerts'), h = document.getElementById('alerts-h'); if (!b) return;
+  if (!h) { b.remove(); return; }
+  b.addEventListener('click', () => { h.tabIndex = -1; h.scrollIntoView({ block: 'start' }); h.focus({ preventScroll: true }); });
 }
 function bindSavedPage(l, spots) {
   const ul = document.getElementById('scards'), $ = id => document.getElementById(id), from = manyLists() ? l.name : 'saved spots';
@@ -3287,8 +3301,13 @@ function renderShared(sh) {
   const spots = sh.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean), gone = sh.spots.length - spots.length;
   const have = spots.length ? sameList(LISTS, sh.name, spots.map(s => s.id)) : null;
   let h = `<div class="lead"><a href="${esc(savedPath())}" class="back" id="back-lists">Saved spots</a><h1 class="page-h" tabindex="-1">${esc(sh.name)}</h1>`
-    + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}</p>`;
+    + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}`
+    + `${spots.length && !have && (DATA.push || DATA.email) ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p>`;
   if (sh.day && spots.length) h += `<p class="planner-note">Levels for ${dayName(sh.day)}, the day of the plan.</p>`;
+  // A link tapped in Facebook opens in Facebook's own browser: a list added there is not in Safari or
+  // Chrome afterwards, and alerts cannot be had there at all. Said before the button, not after.
+  if (IN_APP && spots.length && !have) h += `<p class="planner-note">You are in the ${IN_APP} app's browser. A list added here stays in the ${IN_APP} app, not in ${IOS ? 'Safari' : 'your own browser'}, and alerts cannot be turned on here. `
+    + `To keep it in ${IOS ? 'Safari' : 'your own browser'}, open this page there: the ${IN_APP} app's menu has an option for it.</p>`;
   if (have) h += `<p class="planner-note" role="status">It is in your lists already, as ${esc(have.name)}. <button type="button" class="linkbtn small" id="sh-show">Show it</button></p>`;
   else if (spots.length) h += `<p class="sh-act"><button type="button" class="btn primary" id="sh-add">Add to my lists</button></p>`;
   h += notices() + '</div>';
@@ -3304,7 +3323,10 @@ function renderShared(sh) {
     keepPlace(); history.pushState({ view: 'saved', from: 'saved' }, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); });
   if ($('sh-add')) $('sh-add').addEventListener('click', () => {
     const kept = setLists(makeList(LISTS, sh.name, spots.map(s => s.id)));
-    LISTS_UI.said = kept ? `Added to your lists as ${esc(listNow().name)}.` : 'This browser is not keeping site data, so this list is kept only for this visit.';
+    // The alerts tile is some two screens down on a phone, under the days, the cards and Compare: the
+    // note that says the list was added points to it.
+    LISTS_UI.said = (kept ? `Added to your lists as ${esc(listNow().name)}.` : 'This browser is not keeping site data, so this list is kept only for this visit.')
+      + (kept && (DATA.push || DATA.email) ? ' To hear when one of its spots reaches high or very high risk: <button type="button" class="linkbtn small" id="to-alerts">Go to alerts</button>' : '');
     mine(); });
   if ($('sh-show')) $('sh-show').addEventListener('click', () => { setLists(pickList(LISTS, have.id)); mine(); });
   const ul = $('scards');
@@ -3799,12 +3821,17 @@ function bindSave(d) {
   b.addEventListener('click', () => {
     const l = listNow(), on = !l.spots.includes(d.id), kept = setLists(on ? addToList(LISTS, l.id, d.id) : removeFromList(LISTS, l.id, d.id));
     b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on);
-    const m = document.getElementById('share-msg'), where = PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page';
+    // Said under the button, where the eye is: at the foot of the page (share-msg) it was some
+    // 6,700 px below a phone's first screen, so a first save said nothing of where the spot went.
+    const m = document.getElementById('save-msg') || document.getElementById('share-msg'), where = PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page';
     const also = LISTS.lists.filter(x => x.id !== l.id && x.spots.includes(d.id)).map(x => x.name);
-    if (m) m.textContent = !kept ? 'This browser is not keeping site data, so this spot stays saved only for this visit.'
-      : !manyLists() ? (on ? `Saved on this device. Your saved spots are under Saved, ${where}.` : 'Removed from your saved spots.')
-      : on ? `Saved to ${l.name} on this device. Your lists are under Saved, ${where}.`
-      : `Removed from ${l.name}.${also.length ? ` Still in ${also.join(' and ')}.` : ''}`;
+    const go = `<a href="${esc(savedPath())}" id="save-go">Saved</a>`, alerts = DATA && (DATA.push || DATA.email) ? ' There you can also set up alerts for them.' : '';
+    if (m) m.innerHTML = !kept ? 'This browser is not keeping site data, so this spot stays saved only for this visit.'
+      : !manyLists() ? (on ? `Saved on this device. Your saved spots are under ${go}, ${where}.${alerts}` : 'Removed from your saved spots.')
+      : on ? `Saved to ${esc(l.name)} on this device. Your lists are under ${go}, ${where}.${alerts}`
+      : `Removed from ${esc(l.name)}.${also.length ? ` Still in ${esc(also.join(' and '))}.` : ''}`;
+    const a = document.getElementById('save-go');
+    if (a) a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved(); });
   });
 }
 function actions(d) {
@@ -3993,6 +4020,18 @@ function upgradeNote(c) {
   said.push(`The forecast still uses its ${u.returns_to ? `spill counts for 2020 to ${u.returns_to}` : 'past spill counts'}, so it may overstate the risk from it.`);
   return `<div class="ov-meta">${said.join(' ')}</div>`;
 }
+// Under an overflow that spilled on many of its dry days in the last full year of the EA's start/stop records
+// (data/raw/dry_weather_spills.csv, build_site.attach_dry_weather, which applies the rule): the count, in the
+// words the stated test proposed (docs/DRY-WEATHER-SPILLS-TEST-2026-10.md). It names no cause, since a blockage, a
+// failed pump and groundwater in the sewer look alike in the records, and is not a forecast: the test found the
+// history adds nothing to the spill model. "dry days" links to the method's definition, "EA records" to the data.
+// '' for an overflow without one, or with counts the page could not say truthfully.
+const EA_EVENTS = 'https://environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7';
+function dryWeatherNote(c) {
+  const d = c.dry_weather;
+  if (!d || ![d.year, d.days, d.dry_days].every(Number.isInteger) || !(d.days > 0 && d.days <= d.dry_days)) return '';
+  return `<div class="ov-meta">Spilled on ${d.days} of ${d.dry_days} <a href="methods.html#dry-weather">dry days</a> in ${d.year} (<a href="${EA_EVENTS}">EA records</a>).</div>`;
+}
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
@@ -4000,7 +4039,7 @@ function overflowTile(d, total) {
       .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
-      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}</div>`
+      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}${dryWeatherNote(c)}</div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too little reaches here to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
@@ -4110,6 +4149,8 @@ function spotTop(d) {
   // goes back to any of them), or all the spots. Save sits opposite it.
   const from = (history.state || {}).from;
   let h = `<div class="top-row"><a href="${esc(from === 'saved' ? savedPath() : from === 'plan' ? planPath() : ROOT.pathname)}" class="back" id="back">${from === 'saved' ? 'Saved spots' : from === 'plan' ? 'Plan a swim' : from === 'map' ? 'Map' : 'All spots'}</a>${saveButton(d)}</div>`;
+  // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
+  h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
   h += notices(d);
   // The answer, under the sky: the place, its name, then its words (answerWords).
   return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`

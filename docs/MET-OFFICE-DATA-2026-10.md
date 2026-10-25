@@ -201,6 +201,13 @@ forecast. That could be real hill rain the model missed, or radar error. A gauge
 - The exact deletion rule (two years to the day, or by month) is not stated. Run the backfill
   oldest first, which the script does.
 - Whether radar helps D6 or forecast-rain checks needs its own pre-stated test.
+- **Rain at each overflow, not each cell (deadline about 20 Nov 2026).** The fetcher averages the 1 km radar into
+  0.1° rain cells (about 10 km), so the backfill keeps the measured rain but loses where in the cell it fell. A storm
+  over one town and not the next is averaged out. Keeping it means a second output: the radar at each overflow's own
+  position (its pixel and the eight around it), for the ~14,600 overflows, tens of MB rather than the 34 GB of raw
+  files. Then the backfill runs once more, before the bucket deletes Nov 2024 (about 21 Nov 2026). Using it in the
+  model needs a retrain on local rain (the model learned rain at ERA5-Land's ~9 km) and its own pre-stated test.
+  It would help the "right now" level most; forecasts for the days ahead cannot be that local.
 
 Sources read on 24 Oct 2026: the AWS registry pages for radar, UKV, MOGREPS-UK, land and marine
 observations, NWS ocean and the retired uk-met-office listing; the Met Office radar factsheet
