@@ -1245,6 +1245,18 @@ gives all four navigation links a single full-width row.
   someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
   tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
   added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- The next step after saving (25 October 2026, a 375 px walk through the Facebook post's link). Save on a
+  spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
+  room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts
+  for them." It said it at the foot of the page, about 6,700 px below a phone's first screen. Where the
+  site has alerts, a shared list's lede adds "Added, it stays under Saved, where you can set up alerts for
+  its spots.", and the note after "Add to my lists" ends "To hear when one of its spots reaches high or
+  very high risk: Go to alerts", which brings the Alerts tile (about two screens down) into view.
+- Facebook's and Instagram's own browsers (`IN_APP`, by their user agents), where a tapped link opens: a
+  shared list says, before its button, that a list added there stays in that app and that alerts cannot be
+  turned on there, and to open the page in Safari (or the reader's own browser) from the app's menu. The
+  Alerts tile there says the same, then, on an iPhone, the Home Screen steps. "Tap Share, then Add to Home
+  Screen" was wrong inside the app, which has no Add to Home Screen.
 - What a link holds is said beside its button, once: "It holds the list's name, Weekend, and which spots
   are in it, nothing else." A plan's adds the day and "not where you start from".
 
