@@ -9,7 +9,7 @@ const source = page.slice(page.indexOf('function alertsCard() {'), page.indexOf(
 
 const PUSH = {url: 'https://push.example/', key: 'k'}, EMAIL = {url: 'https://push.example/'};
 function card(data, {ios = false, standalone = false, push = true} = {}) {
-  const ctx = vm.createContext({DATA: {spots: [{id: 'a'}], ...data}, canPush: () => push, offlineOff: () => false, IOS: ios, navigator: {standalone}});
+  const ctx = vm.createContext({DATA: {spots: [{id: 'a'}], ...data}, canPush: () => push, offlineOff: () => false, IOS: ios, IN_APP: '', OWN_BROWSER: 'Safari', navigator: {standalone}});
   vm.runInContext(source + ';this.card = alertsCard;', ctx);
   return ctx.card();
 }

@@ -462,9 +462,9 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
         con = _conn(None if store is None else store.db)
         try:
             fc = select_decision_forecasts(con, cutoff)
-            first_issue = con.execute("SELECT min(issue_day) FROM forecast_overflows").fetchone()[0]
-            first_stamped = con.execute("SELECT min(issue_day) FROM forecast_overflows WHERE version IS NOT NULL").fetchone()[0]
-            n_points = con.execute("SELECT count(*) FROM forecast_points").fetchone()[0]
+            first_issue = con.execute("SELECT min(issue_day) FROM forecast_overflows").fetchall()[0][0]
+            first_stamped = con.execute("SELECT min(issue_day) FROM forecast_overflows WHERE version IS NOT NULL").fetchall()[0][0]
+            n_points = con.execute("SELECT count(*) FROM forecast_points").fetchall()[0][0]
         finally:
             con.close()
     out = {"generated_at": pd.Timestamp.now(tz=LOCAL_TZ).isoformat(), "first_forecast_day": str(first_issue) if first_issue else None,
@@ -942,7 +942,7 @@ def verify_ecoli(as_of: date | None = None) -> dict:
                 SELECT epoch_ms(issued_at) AS issued_ms, lat, lon, target_day, lead, p_ecoli, rain_48h, risk, version
                 FROM forecast_points WHERE p_ecoli IS NOT NULL AND target_day <= ?
             """, [as_of]).df()
-            ms = con.execute("SELECT min(epoch_ms(issued_at)) FROM forecast_points WHERE version IS NOT NULL").fetchone()[0]
+            ms = con.execute("SELECT min(epoch_ms(issued_at)) FROM forecast_points WHERE version IS NOT NULL").fetchall()[0][0]
         finally:
             con.close()
     first_stamped = pd.Timestamp(ms, unit="ms", tz="UTC").tz_convert(LOCAL_TZ).date() if ms is not None else None
@@ -1161,7 +1161,7 @@ def service_record(as_of: date | None = None) -> dict | None:
                     WHERE (issued_at AT TIME ZONE '{LOCAL_TZ}')
                           <= CAST(issued_at AT TIME ZONE '{LOCAL_TZ}' AS DATE)::TIMESTAMP + INTERVAL {int(DECISION_HOUR)} HOUR
                 """).fetchall()}
-                logged = con.execute(f"SELECT min(strftime(issued_at AT TIME ZONE '{LOCAL_TZ}', '%Y-%m-%d')) FROM forecast_points").fetchone()[0]
+                logged = con.execute(f"SELECT min(strftime(issued_at AT TIME ZONE '{LOCAL_TZ}', '%Y-%m-%d')) FROM forecast_points").fetchall()[0][0]
                 builds = con.execute("""SELECT epoch_ms(built_at) AS ms, event, spots, forecast_ok, forecast_failed, failed
                                         FROM build_runs ORDER BY built_at""").df()
             finally:
