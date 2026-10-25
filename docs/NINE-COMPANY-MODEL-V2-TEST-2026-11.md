@@ -1,7 +1,8 @@
 # A spill model trained on nine companies, second try (v2): the test, stated before any run
 
-Written 25 October 2026. Nothing for v2 has been fetched, fitted or scored. This file is committed and pushed before
-any of that. Results go below the line at the end. Nothing above that line changes after a result is seen.
+Written 25 October 2026 and first pushed in `68f80a9`. Revised the same evening, before any fetch, fit or score, to
+make the conditions allow for noise and to fit the approved fetch and run date; "Revision of 25 October" below lists
+every change. Results go below the line at the end. Nothing above that line changes after a result is seen.
 
 ## Why
 
@@ -41,6 +42,15 @@ All of `docs/NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md`, written today for thi
 - **The dead-monitor check** (option B's), previewed on 20 of its 28 reference days: 13,474 of 13,988 overflows pass.
 - **Dŵr Cymru 2026:** 5,353 events at 112 overflows, January to August; 99 of them in England in the 2025 return.
 - **Rain cached:** ERA5-Land 2024 and 2025 for every cell; 2026 for 200 of 1,622 cells.
+
+**PR #251's per-company results are known**, and the revised conditions were written knowing them. Against the
+hold-out, its candidate's Brier was 1.14% higher at Anglian (0.02722 against 0.02691; 2.6% above production) and 2.33%
+higher at United Utilities (0.04561 against 0.04457). Its Welsh pooled Brier was 0.91% higher (0.04206 against
+0.04168). Its ECE at Thames was 0.0240. Over the nine it was 3.9% lower than the hold-out. **The margins below are
+taken from house rules, not chosen to make that result pass:** the form "interval not wholly above zero, and no more
+than 1% above" is option B's conditions 2 and 5, the 1% is PR #334's margin, and the interval is option B's and the
+2027 protocol's. Applied to PR #251's point estimates, they would still fail it at Anglian and United Utilities (both
+above 1%) and at Thames (ECE). Only the Welsh set would move, from a fail to a pass on its point estimate.
 
 Also read: PR #251's statement and results in full; `docs/MODEL-PROVENANCE-2026-10.md`; the day-boundary test
 (PR #334, branch `claude/day-boundary-a11-a793d8`); option B's statement, its recency note and its addendum P1;
@@ -105,17 +115,24 @@ would not have been tested, and its lead map would be fitted on its own training
 The same rows as option B's window E, so the two tests score the same overflow-days.
 - **Days.** UK local days, 1 January to 31 August 2026. No month is excluded (the data check gives why).
 - **Overflows.** The nine English companies' overflows with a position and covariates in the 2025 return, EDM
-  operation of at least 50% in 2025, and a monitor that passes option B's dead-monitor check: over 5 October to
-  1 November 2026, at least 80% of polls with a known status; at most 20% of known polls stale at a company that
-  stamps every record (not applied to Northumbrian and Southern); a known poll on at least 20 of the 28 days. Read
-  from one `state` release made on or after 2 November 2026, downloaded read-only, hashes recorded. If option B's
-  harness exists when this harness is written, its function is used.
+  operation of at least 50% in 2025, and a monitor that passes option B's dead-monitor check, with its reference
+  period cut short (below): at least 80% of polls with a known status; at most 20% of known polls stale at a company
+  that stamps every record (not applied to Northumbrian and Southern); a known poll on at least round(20 × n / 28) of
+  the n reference days.
+- **The reference period.** From 5 October 2026 to the last complete local day in the `state` release downloaded,
+  read-only, just before the run (its newest day, still being polled, is left out). Its hashes and n are recorded.
+  Option B reads 5 October to 1 November. The run was approved for now, and 1 November is a week away; the check
+  counts polls, not discharges, and the data check's preview on 20 days passed 13,474 of 13,988 overflows. So the
+  rows may differ from option B's final window E by a few overflows. The count is reported.
 - **Left out:** the 16 overflows upstream of Cromwheel in `docs/UPGRADED-OVERFLOWS-2026-10-upstream.csv` (YWS00176,
   YWS00674, YWS00179, YWS00144, YWS00145, YWS00191, YWS01340, YWS00828, YWS00188, YWS00189, YWS00177, YWS00190,
   YWS00185, YWS01311, YWS00186, YWS00187). PR #298 published their 2026 outcome, so a test that counted them would be
   partly chosen on it. Option B leaves out the same 16.
-- **Rain.** ERA5-Land, finite for the day. 2026 is read from `data/cache/rain_nine/` only (the fetch below), so every
-  2026 cell has one fetch date and none is read twice.
+- **Rain.** ERA5-Land, finite for the day. For 2026: the 200 cells already cached in `data/cache/rain/`
+  (`archive_<cell>_2026.parquet`, fetched 6 September or 6 October), and the 1,422 others from the fetch below
+  (`data/cache/rain_nine/archive_<cell>_2026a.parquet`). Each cell is read from one file only, and 2026 is cut at
+  31 August. ERA5-Land's preliminary days can be revised slightly in the months after; both fetches are after the
+  last day used.
 - **Labels.** A local day is a spill-day if a 2026 EA event touches it.
 
 **The Welsh test set.** Dŵr Cymru's overflows in England with a position and covariates in the 2025 return and EDM
@@ -134,28 +151,62 @@ operation of at least 50% in 2025, 1 January to 31 August 2026, labels from the 
 
 The harness stops if production's hash differs.
 
-**Scores**, per company and for the nine together: rows, base rate, Brier, AUC, Brier skill against each baseline,
-a 10-bin reliability table, and ECE (the mean absolute gap between forecast and observed rate over 10 equal-width
-bins, weighted by rows).
+**Scores**, per company and for the nine together: rows, base rate, Brier, AUC, log loss, Brier skill against each
+baseline, a 10-bin reliability table, and ECE (the mean absolute gap between forecast and observed rate over 10
+equal-width bins, weighted by rows).
+
+**The interval.** Option B's, which is the 2027 protocol's two-way cluster bootstrap (`docs/PREREGISTRATION-2027.md`,
+section 10), applied to the difference in Brier, row by row:
+- each draw resamples overflows with replacement and, independently, ISO weeks of the target day with replacement;
+  a row counts (times its overflow was drawn) × (times its week was drawn);
+- 2,000 draws from `numpy.random.default_rng(20261025)`, made once, overflows first, then weeks; every company, arm
+  and subset uses the same draws;
+- the 95% interval runs from the 2.5th to the 97.5th percentile.
+
+Two-way because both kinds of shared error are here: v2 changes every overflow's level, so its errors are shared
+across an overflow's days, and one storm's are shared across overflows. The week-only interval is reported beside it.
+The Welsh set gets its own draws of its overflows and weeks from the same generator, after the English ones.
 
 ## Conditions for adopting an arm, all required
 
-Each arm is checked on its own.
+Each arm is checked on its own. "Arm − production" is the difference in Brier on the same rows.
 
-1. **No company worse than production.** At each of the nine companies, the arm's Brier is no higher than
-   production's.
-2. **Skill against the simple baselines.** At each of the nine, the arm's Brier is lower than both the company flat
+1. **A gain over the nine.** Nine together, the arm's Brier is lower than production's, and the 95% interval of
+   arm − production lies wholly below zero. (Option B's condition 1.)
+2. **No company clearly worse.** At each of the nine companies, the interval of arm − production does not lie wholly
+   above zero, and the arm's Brier is no more than 1% above production's. (Option B's conditions 2 and 5.)
+3. **Skill against the simple baselines.** At each of the nine, the arm's Brier is lower than both the company flat
    rate and the overflow climatology.
-3. **Reliability.** At each of the nine, the arm's ECE is no higher than production's, or it is at most 0.02.
-4. **The Welsh set is not worse.** On the Welsh rows, v2's pooled Brier is no higher than production's pooled Brier.
-   Neither model has offsets there, so this condition is the same for both arms.
+4. **Reliability.** At each of the nine, the arm's ECE is no higher than production's, or it is at most 0.02.
+5. **The Welsh set is not clearly worse.** On the Welsh rows, the interval of v2 pooled − production pooled does not
+   lie wholly above zero, and v2's pooled Brier is no more than 1% above production's. Neither model has offsets
+   there, so this condition is the same for both arms.
 
 **Minimum data.** Each of the nine companies needs at least 200 spill-days in the test rows, and the Welsh set at
 least 100. A company short of that makes the test inconclusive, and nothing is adopted.
 
+**Why condition 3 keeps point estimates.** The baselines are a floor. A model that does not beat its company's own
+flat rate or each overflow's own history adds nothing at that company, whatever the noise. In PR #251 every company
+cleared both by 21% or more (Brier skill).
+
+**Thames and condition 4, decided now: an ECE failure is a rejection, not a recalibration matter.**
+- Thames records few, long events, with long gaps between them (median event 60 to 75 minutes against 2 to 20
+  elsewhere). *Inferred, not established* (PR #251): it merges activations. But the label is "spilled that day", so
+  merging changes event counts far more than spill-days, and it does not explain a forecast that is off at Thames.
+- A per-company recalibration fitted after seeing a failure would be a new model component chosen on the test year.
+  It would need its own statement and its own test, as option B and A8 are for company-level offsets.
+- ECE has noise too, but the 0.02 limit is already an allowance: it passes a company whose forecasts are off by up to
+  two percentage points on average, against base rates of 3% to 9% by company in PR #251. ECE's interval is
+  reported.
+- Arm (b) has an offset for every Thames overflow, fitted on two years. If Thames's forecasts are still off after
+  that, the fault is real for the people who read them.
+
 ### What changed from PR #251's conditions, and why (written before any result)
 
-- **Production replaces the hold-out model** in conditions 1, 3 and 4. PR #251 compared with the United Utilities
+- **Noise.** PR #251 compared point estimates. Its losses at Anglian (1.1%) and on the Welsh set (0.9%) were never
+  tested against noise. Conditions 1, 2 and 5 now use option B's interval and option B's form. Condition 1 is new: a
+  model that is merely not worse anywhere is not worth a change of model.
+- **Production replaces the hold-out model** in conditions 2, 4 and 5. PR #251 compared with the United Utilities
   2023-24 hold-out because production had seen United Utilities' 2025, the test year. Production has not seen 2026,
   so it is a fair comparison everywhere, and it is what the site shows. The hold-out is reported.
 - **The baselines use January to August of the training years**, not whole years. The test covers January to August,
@@ -164,7 +215,7 @@ least 100. A company short of that makes the test inconclusive, and nothing is a
   rule. The data check shows a January to August silence cannot be judged against a whole-year return.
 - **Days are local**, as PR #334 passed.
 
-Conditions 1 to 4 are otherwise PR #251's, with point estimates, as there.
+Conditions 3 and 4 are otherwise PR #251's, with point estimates, as there.
 
 ## Reported, not deciding
 
@@ -172,8 +223,9 @@ Conditions 1 to 4 are otherwise PR #251's, with point estimates, as there.
   `882f9d4fb2c9314943fa861d8c6f4c62d8cd1eb57f1aa25059f4eb27d07068dc`) on the same rows.
 - **Arm (b25):** the same layer 1 with offsets at recency 0.25. It shows what the recency choice does. It cannot be
   adopted.
-- **Intervals.** For each arm against production, per company and nine together: a paired bootstrap of the Brier
-  difference over ISO weeks of the target day, 2,000 draws, seed 20261025, 2.5th and 97.5th percentiles.
+- **AUC and log loss** per company and nine together, for every predictor.
+- **Other intervals,** from the same draws: the week-only interval beside every deciding one; each arm's ECE per
+  company; (b) − (a).
 - **Sensitivities**, each rescored with the same models:
   - without United Utilities' January (the data check could not explain its drop);
   - without July;
@@ -189,31 +241,55 @@ Conditions 1 to 4 are otherwise PR #251's, with point estimates, as there.
 ## Prediction (inferred, not a condition)
 
 - (b) beats production at most of the eight companies outside United Utilities, where production has no offsets.
+- Condition 1 passes for (b): PR #251's one-year candidate was already 3.9% better than the hold-out over the nine.
 - At United Utilities, production has three years of offsets on the company's own Stream files, and (b) has two
-  years of EA files at a different recency. Condition 1 there is close to a coin flip.
-- Thames's ECE stays the likeliest failure of condition 3, from its merged events.
-- (a) fails condition 1 at United Utilities, where offsets carry a lot.
-- The Welsh set is unclear: PR #251's layer 1 lost there by 1%.
+  years of EA files at a different recency. Condition 2 there is close to a coin flip; the 1% point limit is the
+  harder half.
+- Thames's ECE stays the likeliest failure of condition 4.
+- (a) fails condition 2 at United Utilities, where offsets carry a lot.
+- The Welsh set should pass condition 5 now: PR #251's 0.9% loss is inside the 1% limit, if its interval allows.
 
 My guess at the verdict: (b) fails on United Utilities or Thames; (a) fails on United Utilities. A pass for (b) would
 not surprise me.
 
+## Revision of 25 October, before any fetch, fit or score
+
+Made after `68f80a9` was pushed, at Ethan's request relayed by the parent session, and before any rain was fetched or
+any model fitted:
+- **Conditions allow for noise.** Point-estimate conditions 1 and 4 of the first version became conditions 2 and 5
+  above, with option B's interval and margins. Condition 1 (a gain over the nine) is new.
+- **Thames's reliability** decided now: an ECE failure stays a rejection (above).
+- **AUC and log loss** are reported for every predictor.
+- **"Seen before writing"** now states that PR #251's per-company results were known, and what the new rules would
+  have done to them.
+- **The run is approved now**, so the dead-monitor reference period ends at the last complete day before the run,
+  not on 1 November.
+- **The fetch is fetch A** (2,468 calls), not fetch C, to stay under 3,000 calls a day from this Mac.
+
+Nothing else changed: the arms, the training data, the rows' other rules, the predictors and the order of
+precedence.
+
 ## Data this depends on
 
-**The 2026 ERA5-Land fetch (needs Ethan's approval).** Fetch C of the data check: 1 January to 31 October 2026 for all
-1,622 cells, on or after 6 November (when `rainfall.fetch_archive`'s six-day lag reaches 31 October), into
-`data/cache/rain_nine/archive_<cell>_2026.parquet`.
-- **Calls:** 1,622 × `rainfall.call_weight(1, 304)` = 1,622 × 2.171 = **3,522**.
-- It serves option B as well, which needs the same months for the same cells.
-- Paced at 3,000 calls an hour, strict (a refusal stops it), in about 70 minutes, under the free limits (5,000 an
-  hour, 10,000 a day). Not run beside a build-sized job or another Open-Meteo fetch from this Mac.
-- The code change: `scripts/fetch_rain_nine.py` gains an `archive 2026` mode that ignores the 200 partial 2026 files
-  in `data/cache/rain/`. It goes in the harness commit.
+**Approval.** Ethan approved the fetch and the run on 25 October, relayed by the parent session ("Monetization
+plans remaining work"): he "approves the recommendations, which included approving v2's Open-Meteo fetch and run",
+with a limit of 3,000 Open-Meteo calls a day from this Mac, which other sessions share. Nothing is adopted or
+deployed, whatever the result.
 
-The smaller choice, if Ethan prefers: fetch A, January to August only for the 1,422 missing cells, 2,468 calls, any
-day. It needs an end-date argument, and option B would then fetch its own 2026 later.
+**The 2026 ERA5-Land fetch: fetch A of the data check.** Fetch C (3,522 calls, which would also have served option B)
+is over the daily limit. So:
+- 1 January to 31 August 2026, for the 1,422 cells of the 2025 return with no cached 2026 file, into
+  `data/cache/rain_nine/archive_<cell>_2026a.parquet`. The tag `2026a` keeps these files apart from a later
+  whole-year fetch: `fetch_archive` treats any `archive_<cell>_2026.parquet` as done.
+- **Calls:** 1,422 × `rainfall.call_weight(1, 243)` = 1,422 × 1.736 = **2,468**, in 143 requests of up to 10 cells.
+  No other Open-Meteo call has been made from this Mac on 25 October (no cache file written that day, no fetch
+  process running, checked 21:57 UTC).
+- Paced at 3,000 calls an hour, strict (a refusal stops it, with no retry on 429). Every request is logged with its
+  time, cells, days, weight and status.
+- Option B still needs its own fetch for 2026 to 31 October; these files cover its cells to 31 August.
+- The code change: `scripts/fetch_rain_nine.py` gains an `archive 2026a` mode.
 
-**The state release** on or after 2 November, for the dead-monitor check.
+**The state release** downloaded just before the run, for the dead-monitor check.
 
 **No forecast-lead fetch.** The test uses reanalysis rain only, as PR #251's did.
 
@@ -283,22 +359,21 @@ runs, but nothing is adopted for 2027. A pass is then a candidate for after the 
 
 ## Order of work
 
-1. This statement and the data check are pushed (draft PR). Nothing below runs before step 2.
-2. Ethan approves the fetch's call count, and this statement.
-3. The harness (`scripts/nine_v2_eval.py`) and the fetch change are committed after this file and before any run.
-   They do not change anything above the line.
-4. On or after 2 November: the `state` release is downloaded read-only; its hashes and the dead-monitor pass list are
+1. This statement and the data check are pushed (draft PR #357). Done in `68f80a9`.
+2. Ethan approves the fetch and the run. Done on 25 October (above).
+3. This revision is pushed before any fetch, fit or score.
+4. The fetch (2,468 calls). Its log and request count go under the line.
+5. The harness (`scripts/nine_v2_eval.py`) is committed after this file and before any run. It does not change
+   anything above the line.
+6. Just before the run: the `state` release is downloaded read-only; its hashes, n and the dead-monitor pass list are
    recorded.
-5. On or after 6 November: the fetch (3,522 calls). Its log and request count go under the line.
-6. Inputs frozen as APFS clones, their SHA-256 recorded. One run from a `git archive` of the harness commit, under the
+7. Inputs frozen as APFS clones, their SHA-256 recorded. One run from a `git archive` of the harness commit, under the
    group's `heavy-run.lock`, alone on this 16 GB Mac (`pgrep -fl`, never `pkill`). `train.py` on United Utilities'
    three years (2.4 million site-days) peaked at 3.9 GB (PR #334). This run trains on about 10 million. The
    dry-weather test's fit on a similar number was estimated at 6 to 9 GB, not measured. The harness logs its peak.
-7. Face checks first (the run stops on any failure): production's hash; every predictor has a forecast on every row;
+8. Face checks first (the run stops on any failure): production's hash; every predictor has a forecast on every row;
    the test rows' spill-days per company equal a recount from the EA file.
-8. The results go below the line.
-
-**The earliest run date is 6 November 2026,** if Ethan approves by then.
+9. The results go below the line, in a record PR. Nothing is adopted or deployed by it.
 
 ---
 

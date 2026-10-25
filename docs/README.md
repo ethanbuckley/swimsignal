@@ -37,8 +37,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   companies. **Not adopted:** conditions 1, 3 and 4 fail. Tables: `-coverage.csv`, `-events.csv`,
   `-reliability.csv`, `-scores.csv`.
 - [NINE-COMPANY-MODEL-V2-TEST-2026-11.md](NINE-COMPANY-MODEL-V2-TEST-2026-11.md): the nine-company model again,
-  trained on 2024 and 2025 and tested on January to August 2026, pooled layer alone and with two-year offsets.
-  **No result yet:** waits for Ethan's approval of a 3,522-call rain fetch; earliest run 6 November 2026.
+  trained on 2024 and 2025 and tested on January to August 2026, pooled layer alone and with two-year offsets, with
+  conditions that allow for noise. **No result yet.**
 - [NEURAL-CHALLENGER-TEST-2026-10.md](NEURAL-CHALLENGER-TEST-2026-10.md): a neural net against the boosted
   trees. **Not adopted:** conditions 1 to 4 fail (Brier 0.0372 against 0.0362). Tables: `-checks.json`,
   `-differences.csv`, `-leads.csv`, `-reliability.csv`, `-scores.csv`, `-training.csv`.
