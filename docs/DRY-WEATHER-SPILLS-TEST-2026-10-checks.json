@@ -1,0 +1,159 @@
+{
+ "smoke": false,
+ "thresholds_mm": {
+  "0.25": 0.25,
+  "1.0": 1.0
+ },
+ "prior_dry_days": 30.0,
+ "d2_sha256": "1603678923ccdd1553830fa67c2069714c0a836c9df7e8c52578aabd729b5bcc",
+ "production_sha256": "faa7917e2be725a9441b277fc111091c5bdffe45c80ab4fd042682aa9de4210e",
+ "rows": {
+  "2024": 4976868,
+  "2025": 5077150
+ },
+ "merged_events": 2756717,
+ "years": {
+  "spearman_rate_n30": 0.3806427637641894,
+  "overflows_n30": 12681,
+  "top5pct_size": 672,
+  "top5pct_overlap": 0.43898809523809523
+ },
+ "question_1": {
+  "1 against production (eight)": false,
+  "2 against D2 (nine)": true,
+  "3 against the flat rate (nine)": false,
+  "4 ranking": false,
+  "yes": false
+ },
+ "feature": {
+  "train_min": 0.0009956005960702896,
+  "train_max": 0.6102756857872009,
+  "test_from_company_rate": 174470,
+  "nan_train": 0,
+  "nan_test": 0
+ },
+ "candidate_iterations": 300,
+ "baseline_all_nine_brier": 0.03615308595420895,
+ "lead_rows": {
+  "files": 544,
+  "cells": 544,
+  "rows": 1939245
+ },
+ "question_2": {
+  "1 a gain": false,
+  "2 no company clearly worse": false,
+  "3 reliability": false,
+  "4 with forecast rain": false,
+  "companies clearly worse": [
+   "Anglian Water",
+   "Severn Trent Water",
+   "South West Water",
+   "Southern Water",
+   "Thames Water",
+   "United Utilities",
+   "Wessex Water"
+  ],
+  "ECE failures": [
+   "Thames Water"
+  ],
+  "passes": false
+ },
+ "2026": {
+  "events_2026": 64672,
+  "months": {
+   "1": {
+    "overflows_2025": 1695,
+    "overflows_2026": 948
+   },
+   "2": {
+    "overflows_2025": 941,
+    "overflows_2026": 1105
+   },
+   "3": {
+    "overflows_2025": 482,
+    "overflows_2026": 1173
+   },
+   "4": {
+    "overflows_2025": 276,
+    "overflows_2026": 752
+   },
+   "5": {
+    "overflows_2025": 771,
+    "overflows_2026": 917
+   },
+   "6": {
+    "overflows_2025": 1290,
+    "overflows_2026": 1101
+   },
+   "7": {
+    "overflows_2025": 1207,
+    "overflows_2026": 287
+   },
+   "8": {
+    "overflows_2025": 843,
+    "overflows_2026": 1458
+   }
+  },
+  "months_used": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "sites": 2263,
+  "sites_with_rain": 53,
+  "rows": 9593,
+  "dry_rows": 885,
+  "continuing": 0,
+  "base_rate": 0.00903954802259887,
+  "scores": {
+   "R (shrunk 2025 rate)": {
+    "brier": 0.008240246715596236,
+    "log_loss": 0.035444013511388664,
+    "auc": 0.9056442417331813,
+    "base_rate": 0.00903954802259887,
+    "n": 885
+   },
+   "D2": {
+    "brier": 0.010443288647266314,
+    "log_loss": 0.054773538960996564,
+    "auc": 0.7995296465222349,
+    "base_rate": 0.00903954802259887,
+    "n": 885
+   },
+   "P (production)": {
+    "brier": 0.00918851510869773,
+    "log_loss": 0.04985073223715276,
+    "auc": 0.7730900798175598,
+    "base_rate": 0.00903954802259887,
+    "n": 885
+   },
+   "F (company 2025 rate)": {
+    "brier": 0.009000407170328791,
+    "log_loss": 0.05660202901115418,
+    "auc": 0.5,
+    "base_rate": 0.00903954802259887,
+    "n": 885
+   }
+  },
+  "differences": {
+   "D2": {
+    "difference": -0.0022030419316700764,
+    "ci_low": -0.004235958013436594,
+    "ci_high": -0.0007745624231592092
+   },
+   "P (production)": {
+    "difference": -0.0009482683931014923,
+    "ci_low": -0.0019496516608072062,
+    "ci_high": -0.00037328461791867157
+   },
+   "F (company 2025 rate)": {
+    "difference": -0.0007601604547325557,
+    "ci_low": -0.0017149128075424254,
+    "ci_high": -0.00019644719214682743
+   }
+  }
+ }
+}

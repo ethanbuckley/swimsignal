@@ -58,6 +58,11 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   16 November. The map: `-map.json`.
 - [LIVE-RECALIBRATION-TEST-2026-10.md](LIVE-RECALIBRATION-TEST-2026-10.md): two corrections for live
   over-forecasting. **Neither passes,** in the first run and the rerun.
+- [DRY-WEATHER-SPILLS-TEST-2026-10.md](DRY-WEATHER-SPILLS-TEST-2026-10.md): overflows that spill in dry weather, and
+  whether that history predicts what the spill model misses. **Question 1 no** (the 2024 rate loses to production and
+  the flat rate); **Question 2 fails all four conditions.** Top-overflows table and a page-note proposal. Tables:
+  `-checks.json`, `-companies.csv`, `-overflows.csv`, `-q1-differences.csv`, `-q1-scores.csv`, `-q2-differences.csv`,
+  `-q2-leads.csv`, `-q2-reliability.csv`, `-q2-scores.csv`, `-q2-subsets.csv`, `-top.csv`, `-y2026.csv`.
 - [ENSEMBLE-RAIN-TEST-2026-11.md](ENSEMBLE-RAIN-TEST-2026-11.md): ensemble rain for the listed spots. **No
   result yet:** the window runs 23 October to 19 November 2026, read on or after 21 November.
 
