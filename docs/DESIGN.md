@@ -1249,7 +1249,7 @@ gives all four navigation links a single full-width row.
   spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
   room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts
   for them." It said it at the foot of the page, about 6,700 px below a phone's first screen. Where the
-  site has alerts, a shared list's lede adds "Added, it stays under Saved, where you can set up alerts for
+  site has alerts, a shared list's lede adds "Once added, it stays under Saved, where you can set up alerts for
   its spots.", and the note after "Add to my lists" ends "To hear when one of its spots reaches high or
   very high risk: Go to alerts", which brings the Alerts tile (about two screens down) into view.
 - Facebook's and Instagram's own browsers (`IN_APP`, by their user agents), where a tapped link opens: a

@@ -3302,7 +3302,7 @@ function renderShared(sh) {
   const have = spots.length ? sameList(LISTS, sh.name, spots.map(s => s.id)) : null;
   let h = `<div class="lead"><a href="${esc(savedPath())}" class="back" id="back-lists">Saved spots</a><h1 class="page-h" tabindex="-1">${esc(sh.name)}</h1>`
     + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}`
-    + `${spots.length && !have && (DATA.push || DATA.email) ? ' Added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p>`;
+    + `${spots.length && !have && (DATA.push || DATA.email) ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p>`;
   if (sh.day && spots.length) h += `<p class="planner-note">Levels for ${dayName(sh.day)}, the day of the plan.</p>`;
   // A link tapped in Facebook opens in Facebook's own browser: a list added there is not in Safari or
   // Chrome afterwards, and alerts cannot be had there at all. Said before the button, not after.

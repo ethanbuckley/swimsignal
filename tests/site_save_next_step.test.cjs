@@ -90,7 +90,7 @@ test("in Facebook's browser the alerts tile says to open the page in Safari firs
 
 test('a shared list says, before its button, that added it stays under Saved with alerts, and the note after points to them', () => {
   const shared = between('function renderShared(', 'function openSaved(');
-  const lede = shared.indexOf('Added, it stays under Saved, where you can set up alerts for its spots.'), note = shared.indexOf("You are in the ${IN_APP} app's browser."), add = shared.indexOf('id="sh-add"');
+  const lede = shared.indexOf('Once added, it stays under Saved, where you can set up alerts for its spots.'), note = shared.indexOf("You are in the ${IN_APP} app's browser."), add = shared.indexOf('id="sh-add"');
   assert.ok(lede > 0 && note > lede && add > note, 'the lede, then the in-app note, then Add to my lists');
   assert.match(shared, /alerts cannot be turned on here\. `/);
   assert.match(shared, /\(kept && \(DATA\.push \|\| DATA\.email\) \? ' To hear when one of its spots reaches high or very high risk: <button type="button" class="linkbtn small" id="to-alerts">Go to alerts<\/button>' : ''\)/);
