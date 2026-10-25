@@ -408,7 +408,7 @@ The earliest date that clears items 2, 4 and 5 is 25 Nov 2026, if the shadow's w
 
 ## Addendum, 25 October 2026: recency
 
-Written 25 Oct 2026 at about 20:05 GMT, and committed and pushed before any result at recency 0.25 is
+Written 25 Oct 2026, committed as `ec9c297` at 20:01 GMT, and pushed before any result at recency 0.25 is
 computed. The statement and the Results above stay exactly as they are.
 
 ### The error
