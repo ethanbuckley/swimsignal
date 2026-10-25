@@ -151,3 +151,124 @@ Nothing is adopted or deployed here. The PR is left for Ethan to merge.
 - Three Previous Runs requests at (51.35, −2.3): `sm` values exist on 1 October 2019, 1 June 2021 and 1 June 2022.
   Counts only.
 - The cached rain files by folder and year.
+
+---
+
+## Results
+
+Added 25 October 2026, after the run. Everything above the line is as committed in 603f0f0 (22:28 GMT) and pushed
+before the Wessex download. The harness came in 7ab958e (22:29). It changed nothing above the line. The figures are
+in `SOIL-MOISTURE-RIVERS-TEST-2026-11.json`: scores and station summaries only, no sample rows. Wessex data: "Wessex
+Water Environmental Water Quality © 2026 by Wessex Water", CC BY 4.0, ArcGIS item 4659ab28caa640c58e725b41ecbba79f.
+NRW data: Open Government Licence v3, credited as in W10.
+
+**Verdict: the test passes on (a) and (b).** Condition 1 holds: the pooled gain is +0.0132, with an interval of
++0.0004 to +0.0279, wholly above zero, barely. Condition 2 holds: neither region is clearly worse. Both regions'
+Brier scores improve, by 29% in Wales and 3.1% in Wessex.
+
+The gain is in the estimate's level, not in how it ranks days within a site. That matters for what a pass means (below).
+Nothing is adopted. (c), the 2027 samples, stays the prospective check.
+
+### How it was run
+
+- **The Wessex download.** 25 October, 22:30 GMT, from 7ab958e. 4,123 E. coli rows, kept in the main checkout's
+  `data/cache/wessex_wq/`, outside git (checked with `git check-ignore`).
+- **Preparation.** Under the lock, 22:30 to 22:32. It placed the points, then fetched `sm` for 75 cell-quarters
+  (25 requests, 85 calls) and one rain gap (one cell, 22 July to 28 September 2020: 1 call by Open-Meteo's rule, 5 by
+  W10's rounding up). With the three coverage probes, this test used about 89 calls of the 300 allowed.
+- **The run.** From a `git archive` of 7ab958e, offline, under the lock, 22:42:09 to 22:49:13 GMT, 54% memory free.
+  Steps: `validate_ecoli` 161 s, `replay_ecoli_leads` 71 s, `train_ecoli` 93 s, `wales.py` 31 s, `rivers.py` 67 s.
+  0 network attempts in every step. Peak memory 3.7 GB.
+- **A correction to the statement.** It gave the English `sm` range as 0.059 to 0.489, which is #344's input. The
+  issue-time input used here runs from 0.052 to 0.494. The rule clips to the range the run computed, as stated.
+
+### Checks. All hold.
+
+- The reference's coefficients equal `ecoli_model.json` in the same root: difference 0.0.
+- The reference equals the check's estimate column in each region: Gate A in Wales, production in Wessex. Difference
+  0.0.
+
+### Rows
+
+- **Wales:** W10's 213 inland and 185 headline. 3 off the network. None lacked an input.
+- **Wessex:**
+  - 1,961 samples in May to September 2020–25. 2,162 rows fell outside the window, and none lacked a time or value.
+  - 276 did not place on an inland river link within 250 m. 1,685 placed, at 60 stations.
+  - The headline set, at least 20 km of river upstream, is 1,308 samples at 35 stations. 4 have an unknown exceedance.
+  - No row lacked rain, exposure or `sm`. 3 had `sm` held to the English range.
+
+### Headline sets: Brier and the gain
+
+Gain = Brier(reference) − Brier(rule). The 95% interval comes from the (region, sampling day) bootstrap.
+
+| | Samples (known) | Over 900 | Rate | Reference | Rule | Gain [95%] | Change |
+|---|---|---|---|---|---|---|---|
+| Pooled | 1,493 (1,489) | 731 | 0.491 | 0.2728 | 0.2596 | +0.0132 [+0.0004, +0.0279] | −4.8% |
+| Wales | 185 (185) | 11 | 0.059 | 0.1468 | 0.1039 | +0.0429 [+0.0150, +0.0678] | −29.2% |
+| Wessex | 1,308 (1,304) | 720 | 0.552 | 0.2907 | 0.2817 | +0.0090 [−0.0054, +0.0247] | −3.1% |
+
+1. **Pooled gain:** +0.0132, interval wholly above zero. Holds.
+2. **No region clearly worse:** Wales and Wessex both improve. Neither interval lies wholly below zero, and neither rule
+   Brier is above the reference's. Holds.
+
+### Reported, deciding nothing
+
+| | AUC ref / rule | Log loss ref / rule | Mean estimate ref / rule | Rho pooled ref / rule | Within-station rho change [95%] |
+|---|---|---|---|---|---|
+| Pooled | 0.632 / 0.700 | 0.785 / 0.760 | 0.307 / 0.289 | 0.291 / 0.428 | −0.005 [−0.034, +0.027] |
+| Wales | 0.739 / 0.688 | 0.459 / 0.353 | 0.334 / 0.225 | 0.504 / 0.532 | −0.019 [−0.110, +0.063] |
+| Wessex | 0.662 / 0.704 | 0.831 / 0.817 | 0.303 / 0.298 | 0.351 / 0.429 | +0.003 [−0.024, +0.033] |
+
+- **All placed points:** pooled gain +0.0202 [+0.0077, +0.0345]. Wales +0.0622 [+0.0323, +0.0914]. Wessex +0.0149
+  [+0.0013, +0.0304].
+- **Per station:** 22 Wessex stations have 14 or more headline samples. Rho rises at 10 and falls at 12, and the
+  mean estimate is lower at 14. At three stations every sample was over 900.
+- **English rows**, leave one year out, rule against today's model (lakes are today's model by construction):
+
+  | Lead | All | Rivers |
+  |---|---|---|
+  | 0 | 0.0921 to 0.0849 | 0.1354 to 0.1234 |
+  | 1 | 0.0966 to 0.0870 | 0.1425 to 0.1265 |
+  | 2 | 0.0985 to 0.0886 | 0.1458 to 0.1295 |
+  | 3 | 0.1025 to 0.0932 | 0.1524 to 0.1369 |
+  | 4 | 0.1015 to 0.0936 | 0.1506 to 0.1375 |
+
+### Against what was expected
+
+- **Wessex, a gain with its interval above zero: wrong.** It gained (+0.0090), but its interval includes zero.
+- **Wales, worse on Brier: wrong.** Welsh soil was drier than the English sites, so the rule lowered an estimate that
+  was too high. Wales gained most.
+- **Condition 1 holds, carried by Wessex: half right.** It holds, but Wales carries more of it than Wessex.
+
+### What this shows
+
+Established, on these samples:
+- By the stated rule, soil moisture on rivers improves the estimate on river samples it was not fitted on, in two
+  regions.
+- The gain is in level and in ranking *between* sites. Pooled AUC rises from 0.632 to 0.700, and pooled rho from
+  0.291 to 0.428. Within a station it does not rank days better: the change is −0.005, with an interval from −0.034
+  to +0.027.
+- The pooled interval's lower end is +0.0004. A pass this close to zero could turn on a different sample of days.
+
+Inferred, not tested:
+- In England, the plan's step 2 found within-site rank improving at 18 of 25 sites. Here it does not. On these
+  samples, soil moisture is acting mostly as a site-level correction. It tells the model how wet a catchment's soils
+  tend to be, which partly stands in for how much runs off and how much is diluted. That is useful, but it is not the
+  day-to-day signal the method page would describe.
+- Neither region is like a bathing water. Wales runs at 6% over 900. Wessex runs at 55%, because its points sit near
+  its own works and outfalls. Brier on such data mostly measures calibration, and the reference is badly calibrated in
+  both: a mean of 0.33 against 0.06 in Wales, and 0.30 against 0.55 in Wessex.
+
+### What follows
+
+As stated, a pass makes an adoption PR for rivers-only `sm` possible, with lakes on today's model. It is Ethan's
+decision. Before deciding, he should weigh three things:
+1. The pass is narrow: a lower end of +0.0004.
+2. It rests on level and between-site differences, not on within-site ranking.
+3. (c), the 2027 bathing-water samples, is the check that matches the site's use. It is stated above and runs after
+   the 2027 season.
+
+A test of `sm` as each site's anomaly would separate the two effects. It would need its own statement and data not
+used here.
+
+Nothing is adopted or deployed in this PR.

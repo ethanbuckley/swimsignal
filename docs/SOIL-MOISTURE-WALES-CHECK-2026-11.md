@@ -85,3 +85,63 @@ here can show the candidate is *better*, and no such claim will be made.
   By month: May 29, June 57, July 53, August 38, September 36, November 3. By year: 2023 30, 2024 22, 2025 142,
   2026 22. No E. coli value was looked at against any input.
 - #344's results, the plan's step 1 and step 2 figures, and the leads test's statement. Not its result.
+
+---
+
+## Results
+
+Added 25 October 2026, after the run. Everything above the line is as committed in 4ed72f3 and pushed before the
+fetch. The harness came in 27720c9. It changed nothing above the line. The figures are in
+`SOIL-MOISTURE-WALES-CHECK-2026-11.json`: scores and station summaries only, with no sample rows and no Dŵr Cymru rows.
+
+**Reading: not clearly worse.** On the headline set, the candidate's Brier is *lower* than the reference's:
+0.1039 against 0.1468. Neither rule for "clearly worse" holds.
+
+### How it was run
+
+- **The fetch.** 25 October, 21:58 GMT, from 27720c9. 11 requests, 26 calls, every hour present.
+- **A first run, stopped before it scored.** It ran under the lock from 22:18 GMT. It was stopped at 22:24 because the
+  rivers-only test (`docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md`) needed these rows unseen. It wrote no score.
+- **The run that counts.** It ran as the `wales` step of that test's run, from a `git archive` of 7ab958e, with
+  `wales.py` unchanged since 27720c9. Offline, 22:42 to 22:49 GMT, under the lock, 0 network attempts. `wales.py` took
+  31 s.
+
+### Checks. All hold.
+
+- The reference's coefficients equal `ecoli_model.json` written in the same root: largest difference 0.0.
+- Its Welsh predictions equal the check's own estimate: largest difference 0.0.
+- **Rows:** 213 inland and 185 headline, the same counts as W10. 3 samples off the network. No row lacked rain,
+  exposure or `sm`. No `sm` was held to the English range (0.052 to 0.494 m³/m³).
+- 10 of the rain cell-spans are under 99% covered, by W10's rule. It counts the warm-up days. Every sample's 48-hour
+  window and exposure was still complete, so no row was dropped.
+
+### The headline set: 185 river samples, 11 stations, 11 over 900
+
+| | Reference | Candidate | Candidate minus reference [95%] |
+|---|---|---|---|
+| Mean estimate | 0.334 | 0.225 | |
+| Brier | 0.1468 | 0.1039 | −0.0429 [−0.0678, −0.0150] |
+| AUC over 900 | 0.739 | 0.688 | −0.051 [−0.111, −0.001] |
+| Spearman, pooled | 0.504 | 0.532 | +0.028 [−0.036, +0.095] |
+| Spearman, within station | 0.513 | 0.494 | −0.019 [−0.110, +0.063] |
+
+All inland points (213, 34 over 900): Brier 0.2165 against 0.1542, a difference of −0.062 [−0.091, −0.032]. AUC goes
+from 0.320 to 0.622. Within-station rho changes by −0.051 [−0.154, +0.045].
+
+**Welsh `sm`:** mean 0.210, range 0.141 to 0.407. The English rows' mean is 0.272.
+
+**Per station** (11 with 14 or more samples): the candidate's mean estimate is lower at 10 of them. Rho rises at 4 and
+falls at 7.
+
+### Against what was expected
+
+- **Brier worse: wrong.** I expected Welsh soils at 9 to 27 cm to be wetter than the English sites. They were drier:
+  a mean of 0.21 against 0.27. So the candidate *lowered* an estimate that was too high, and Brier fell.
+- **Ranks about the same: right within station** (−0.019, with an interval spanning zero). AUC fell by 0.051, and its
+  interval just excludes zero.
+
+### What this shows
+
+On these 185 samples, adding soil moisture moves the estimate's level toward the observed rate. It does not improve
+how it ranks days within a station. With 11 exceedances, nothing here says the candidate is better in Wales. By the
+stated reading, it is not clearly worse.
