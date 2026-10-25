@@ -213,8 +213,6 @@ The D7 session's draft (18 October, not committed) is the base. Changes, made be
 
 ## Results
 
-(Empty until the run.)
-
 ### Harness correction before the run (25 Oct 2026)
 
 Found in review; no data read, no model trained, nothing scored. The statement above the line is unchanged. As
@@ -224,3 +222,129 @@ do not, the run stops"). Now `finish()` applies the face check first. If the fil
 reference score is not a finite number, or any of LOYO, LOSO, forward or the row count differs, `out.json` holds only
 the diagnostic and the face-check figures (no conditions, reading or gain), replacing any earlier file, and the script
 exits 2, so `run.sh` stops at the score step. Tests: `tests/test_farm_pressure_face_check.py` (mocked results only).
+
+### The run (25 Oct 2026)
+
+Everything above the line is as committed in 67a2b18 (24 October 2026, 22:26 BST) and pushed before the run. The
+harness came in 2f3cf00 (22:30) and was corrected in c2f59fc (above) before any data was read. Neither changed the
+statement.
+
+**Verdict: fails conditions 1, 2, 5 and 6. Nothing is adopted. The reading is "neither":** the flag does not predict
+new sites, and it does not re-describe the sites it was fitted on either. Both gains are below zero. This PR is a
+record: this file, `FARM-PRESSURE-TEST-2026-10-score.json` and the harness.
+
+### How it was run
+
+- From a `git archive` of c2f59fc, offline, with `scripts/farm_pressure_eval/run.sh`, 25 October 11:31 to 11:38 GMT.
+  Zero network attempts in each of the four steps.
+- Data: a clone of the frozen folder the die-off and dry-spell tests ran on (23 October; overflow table with network
+  key b5724303). SHA-256 over the sorted per-file SHA-256 list of its 102 processed and raw files (river network
+  excepted): `dbded7ac…6567b`. `rnags.json`: the archive's own copy, SHA-256 `e416907b…7fe89`, identical to the
+  frozen folder's.
+- Main's defaults: velocity 0.2 m/s, T90 72 h, dilution power 0.5, lake path `residence_spill`.
+- Run time: `validate_ecoli` 170 s, `replay_ecoli_leads` 81 s, `train_ecoli` 95 s, `score.py` 78 s. Peak memory
+  3.8 GB. Run alone, under the session group's lock, with 54% of memory free at the start.
+
+### Face check. Holds.
+
+The reference arm equals `train_ecoli.py`'s output in the same root: LOYO 0.0921, LOSO 0.0912, forward 0.0824, 1,502
+rows. These are also the dry-spell test's reference figures.
+
+### The flag after `train_ecoli`'s filters
+
+31 bathing waters, 1,502 samples, 212 over 900. Colwick Country Park left with the filters, so the only unplaced site
+scored is Sandy Lane, Chester.
+
+| | Flag 1 (confirmed) | Flag 0, placed | Not placed | Rows flag 1 / flag 0 |
+|---|---|---|---|---|
+| Rivers (20) | 9 (2) | 10 | 1 | 398 / 509 |
+| Lakes (11) | 7 (3) | 4 | 0 | 390 / 205 |
+
+### Brier scores
+
+| Evaluation | Reference | Candidate (`farm`) | Gain |
+|---|---|---|---|
+| LOSO, all | 0.09119 | 0.09273 | −0.00154 |
+| LOSO, rivers | 0.13335 | 0.13585 | −0.00250 |
+| LOSO, lakes | 0.02692 | 0.02700 | −0.00008 |
+| LOYO, all | 0.09215 | 0.09228 | −0.00013 |
+| Forward (997 rows), all | 0.08240 | 0.08244 | −0.00003 |
+| LOSO AUC | 0.8108 | 0.8015 | |
+| LOYO AUC | 0.8164 | 0.8149 | |
+
+Intervals of the gain, 2,000 resamples:
+
+| | Clusters | 95% interval |
+|---|---|---|
+| LOSO, whole sites (decides) | 31 | −0.00397 to +0.00029 |
+| LOSO, rivers, whole sites | 20 | −0.00639 to +0.00061 |
+| LOSO, (site, ISO week) | 1,325 | −0.00236 to −0.00077 |
+| LOYO, whole sites | 31 | −0.00117 to +0.00090 |
+
+The site-week interval is under 40% as wide as the whole-site one, and it excludes zero. That is the false
+confidence the statement warned of: weeks at one site are not independent evidence about a fixed site fact.
+
+### Placebo flags (1,000, seed 1)
+
+| | Real flag's gain | Placebo 5% | Median | 95% | Share of placebos ≥ real |
+|---|---|---|---|---|---|
+| LOSO, all | −0.00154 | −0.00215 | −0.00142 | +0.00136 | 0.56 |
+| LOYO, all | −0.00013 | −0.00131 | −0.00013 | +0.00152 | 0.50 |
+
+The real flag sits in the middle of both distributions. As an input, it does what a random split of the sites into
+groups of the same sizes does.
+
+### The conditions
+
+1. LOSO gain −0.00154; interval −0.00397 to +0.00029. **Fails.**
+2. 56% of placebos gain as much or more. **Fails.**
+3. LOYO 0.00013 worse, inside the margin. Holds.
+4. Forward 0.00003 worse, inside the margin. Holds.
+5. LOSO rivers 0.00250 worse. **Fails.** Lakes 0.00008 worse.
+6. `farm` is −0.099 per SD. **Fails.** With the other inputs held, flagged sites exceed slightly less often, not more.
+
+### Does it re-describe sites? No.
+
+The rule stated above gives "neither". The LOYO gain is −0.00013, not the large LOYO gain with no LOSO gain that
+re-description would show. A random site split gains the same in LOYO (median −0.00013). The flag carries no signal
+the model does not already have, for old sites or new ones.
+
+### Record-only arms (decide nothing)
+
+| Arm | LOSO | LOYO | Forward | Coefficient per SD |
+|---|---|---|---|---|
+| Reference | 0.09119 | 0.09215 | 0.08240 | |
+| `farm_confirmed` | 0.09052 | 0.09184 | 0.08610 | +0.485 |
+| `farm` + `farm_x_lrain48` | 0.09292 | 0.09264 | 0.08276 | −0.095, −0.007 |
+| Without Sandy Lane (1,485 rows): reference | 0.09081 | 0.09178 | 0.08160 | |
+| Without Sandy Lane: candidate | 0.09238 | 0.09196 | 0.08151 | |
+
+Without Sandy Lane the candidate's LOSO gain is −0.00157, whole-site interval −0.00408 to +0.00036.
+
+Confirmed-only gains 0.00067 in LOSO, but loses 0.0037 in forward. It flags five sites: Derwent Water, two Windermere
+North Basin sites, the Waveney and the Tone. Its gain was found after the run among record-only arms, so it is a
+lead for a new statement at most, not a result. Leaving the unplaced site out changes nothing.
+
+### What the flag measures (read after the run)
+
+All 16 flags rest on nutrient and ecology elements: Phosphate 9, Macrophytes and Phytobenthos 8, Total Phosphorus 4,
+Phytoplankton 2, Dissolved oxygen 1. Of the 46 classification elements anywhere in England's file, none is bacterial
+(checked by name: no coli, faecal, enterococci, pathogen or bathing). So the flag says "farm nutrients keep this water
+body below good". It does not say "farm faeces reach the water".
+
+The raw rates point the same way. Flagged rivers exceed 900 in 71 of 398 samples (17.8%), unflagged ones in 125 of
+509 (24.6%). The unflagged rivers include the Ribble, Nidd, Wharfe and Cam, which run high. *Inferred, not tested:*
+the Environment Agency's farm-pollution flag tracks lowland arable phosphate, while E. coli exceedances here follow
+overflows, rain and livestock uplands that the flag does not mark.
+
+### Wales
+
+Not run, as stated: no openly licensed NRW reasons table. Given what the flag measures, a Welsh arm on the same
+classification would most likely have shown the same: no bacterial element.
+
+### What follows
+
+Nothing is adopted. The page line from part 1 stays: it tells swimmers that farm runoff is not modelled, which is
+true whatever this test found. A diffuse-pollution input for E. coli would need a bacterial or livestock measure,
+such as livestock density or land cover per catchment (review section 4 item 9 needs a licence email first), stated
+as its own test.
