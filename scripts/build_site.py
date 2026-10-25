@@ -1148,6 +1148,65 @@ def attach_upgrades(results: list[dict], path: Path = UPGRADES, years: dict[str,
     return {"overflows": len(seen), "spots": spots, "warnings": warnings}
 
 
+DRY_WEATHER = config.RAW / "dry_weather_spills.csv"
+
+
+def read_dry_weather(path: Path = DRY_WEATHER) -> dict[str, dict]:
+    """data/raw/dry_weather_spills.csv (scripts/make_dry_weather_spills.py) by site id: each overflow's dry
+    spill-days and dry days in one year. Raises ValueError on a file the note could not word truthfully: more
+    than one year, a count that is not a whole number, more dry spill-days than dry days, or an overflow listed
+    twice."""
+    import csv
+    rows = list(csv.DictReader(line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")))
+    out: dict[str, dict] = {}
+    years = {r.get("year") for r in rows}
+    if len(years) > 1:
+        raise ValueError(f"{path.name}: more than one year ({', '.join(sorted(map(str, years)))})")
+    for r in rows:
+        sid = (r.get("site_id") or "").strip()
+        try:
+            year, k, n = int(r["year"]), int(r["dry_spill_days"]), int(r["dry_days"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError(f"{path.name}: {sid or 'a row'}: a count or the year is not a whole number") from None
+        bad = ("no site_id" if not sid else "listed twice" if sid in out else "no company" if not (r.get("company") or "").strip()
+               else "more dry spill-days than dry days" if not 0 <= k <= n else "")
+        if bad:
+            raise ValueError(f"{path.name}: {sid or 'a row'}: {bad}")
+        out[sid] = {"company": r["company"], "year": year, "days": k, "dry_days": n}
+    return out
+
+
+def attach_dry_weather(results: list[dict], path: Path = DRY_WEATHER) -> dict:
+    """`dry_weather` ({year, days, dry_days}) on each overflow in a spot's list that spilled on many of its dry days
+    in the file's year, by the rule tested in docs/DRY-WEATHER-SPILLS-TEST-2026-10.md (dry_weather.noted). The page
+    says it beside the overflow in the test's wording (index.html, dryWeatherNote). Runs after the forecasts, and the
+    spill model never reads the file: the test found the history adds nothing to the forecast, so it is a record of
+    the past, not a risk. A row whose company is not the overflow's is passed over and named in the warnings, as a
+    wrong site id would be. Never stops the build: a bad file leaves every page without the note."""
+    from dipcast.dry_weather import noted
+    try:
+        listed = read_dry_weather(path)
+    except Exception as e:  # noqa: BLE001 - a note beside the forecast must not sink the build
+        return {"overflows": 0, "spots": 0, "warnings": [f"dry-weather spills not shown: {e}"]}
+    seen, spots, warnings = set(), 0, []
+    for r in results:
+        hit = False
+        for c in r.get("contributors") or []:
+            d = listed.get(c.get("site_id"))
+            if d is None or not noted(d["days"], d["dry_days"]):
+                continue
+            if d["company"] != c.get("company"):
+                msg = f"{c['site_id']} is {c.get('company')}'s, not {d['company']}'s: no dry-weather note for it ({path.name})"
+                if msg not in warnings:
+                    warnings.append(msg)
+                continue
+            c["dry_weather"] = {"year": d["year"], "days": d["days"], "dry_days": d["dry_days"]}
+            seen.add(c["site_id"])
+            hit = True
+        spots += hit
+    return {"overflows": len(seen), "spots": spots, "warnings": warnings}
+
+
 def _km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     import math
     r = math.pi / 180
@@ -2692,6 +2751,7 @@ def build(refresh: bool = True) -> dict:
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
+    dry = attach_dry_weather(results)   # notes on past dry-weather spills, from a file: the model never reads them
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -2706,6 +2766,8 @@ def build(refresh: bool = True) -> dict:
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
     health["warnings"] += upgrades["warnings"]
+    health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}
+    health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")

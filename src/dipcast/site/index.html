@@ -4020,6 +4020,18 @@ function upgradeNote(c) {
   said.push(`The forecast still uses its ${u.returns_to ? `spill counts for 2020 to ${u.returns_to}` : 'past spill counts'}, so it may overstate the risk from it.`);
   return `<div class="ov-meta">${said.join(' ')}</div>`;
 }
+// Under an overflow that spilled on many of its dry days in the last full year of the EA's start/stop records
+// (data/raw/dry_weather_spills.csv, build_site.attach_dry_weather, which applies the rule): the count, in the
+// words the stated test proposed (docs/DRY-WEATHER-SPILLS-TEST-2026-10.md). It names no cause, since a blockage, a
+// failed pump and groundwater in the sewer look alike in the records, and is not a forecast: the test found the
+// history adds nothing to the spill model. "dry days" links to the method's definition, "EA records" to the data.
+// '' for an overflow without one, or with counts the page could not say truthfully.
+const EA_EVENTS = 'https://environment.data.gov.uk/dataset/e9677ac1-fd32-4ceb-88a0-2735be5f27c7';
+function dryWeatherNote(c) {
+  const d = c.dry_weather;
+  if (!d || ![d.year, d.days, d.dry_days].every(Number.isInteger) || !(d.days > 0 && d.days <= d.dry_days)) return '';
+  return `<div class="ov-meta">Spilled on ${d.days} of ${d.dry_days} <a href="methods.html#dry-weather">dry days</a> in ${d.year} (<a href="${EA_EVENTS}">EA records</a>).</div>`;
+}
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
@@ -4027,7 +4039,7 @@ function overflowTile(d, total) {
       .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
-      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}</div>`
+      + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}${dryWeatherNote(c)}</div>`
       + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too little reaches here to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
