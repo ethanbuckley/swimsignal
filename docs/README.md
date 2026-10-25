@@ -36,6 +36,9 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [NINE-COMPANY-MODEL-TEST-2026-10.md](NINE-COMPANY-MODEL-TEST-2026-10.md): a spill model trained on nine
   companies. **Not adopted:** conditions 1, 3 and 4 fail. Tables: `-coverage.csv`, `-events.csv`,
   `-reliability.csv`, `-scores.csv`.
+- [NINE-COMPANY-MODEL-V2-TEST-2026-11.md](NINE-COMPANY-MODEL-V2-TEST-2026-11.md): the nine-company model again,
+  trained on 2024 and 2025 and tested on January to August 2026, pooled layer alone and with two-year offsets.
+  **No result yet:** waits for Ethan's approval of a 3,522-call rain fetch; earliest run 6 November 2026.
 - [NEURAL-CHALLENGER-TEST-2026-10.md](NEURAL-CHALLENGER-TEST-2026-10.md): a neural net against the boosted
   trees. **Not adopted:** conditions 1 to 4 fail (Brier 0.0372 against 0.0362). Tables: `-checks.json`,
   `-differences.csv`, `-leads.csv`, `-reliability.csv`, `-scores.csv`, `-training.csv`.
@@ -148,6 +151,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 
 ## Checks and records
 
+- [NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md](NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md): the EA files for 2024
+  to August 2026 before the v2 test. January to August 2026 is usable, no month excluded: July is dry, not missing;
+  the EA file matches the companies' own files; the live feeds add short blips. Tables: `-live-feed.csv`,
+  `-monthly.csv`, `-own-feeds.csv`, `-rain.csv`.
 - [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2
   was fitted at recency 0.25, shown by reproducing every stored offset exactly; `train.py`'s default now matches.
 - [ANYPOINT-LINES-2026-10.md](ANYPOINT-LINES-2026-10.md): map clicks answered differently by page and API because
