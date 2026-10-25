@@ -265,6 +265,9 @@ any model fitted:
 - **The run is approved now**, so the dead-monitor reference period ends at the last complete day before the run,
   not on 1 November.
 - **The fetch is fetch A** (2,468 calls), not fetch C, to stay under 3,000 calls a day from this Mac.
+- **The Welsh set's cells are added to the fetch** (19 cells, 33 calls), found while writing the harness, before
+  any result: 23 of the 29 cells of Dŵr Cymru's English overflows are outside the nine companies' cells, and 4 of
+  those have 2026 cached. The first version counted the nine companies' cells only.
 
 Nothing else changed: the arms, the training data, the rows' other rules, the predictors and the order of
 precedence.
@@ -278,10 +281,12 @@ deployed, whatever the result.
 
 **The 2026 ERA5-Land fetch: fetch A of the data check.** Fetch C (3,522 calls, which would also have served option B)
 is over the daily limit. So:
-- 1 January to 31 August 2026, for the 1,422 cells of the 2025 return with no cached 2026 file, into
+- 1 January to 31 August 2026, for the 1,422 cells of the 2025 return with no cached 2026 file (and the Welsh set's
+  19, below), into
   `data/cache/rain_nine/archive_<cell>_2026a.parquet`. The tag `2026a` keeps these files apart from a later
   whole-year fetch: `fetch_archive` treats any `archive_<cell>_2026.parquet` as done.
 - **Calls:** 1,422 × `rainfall.call_weight(1, 243)` = 1,422 × 1.736 = **2,468**, in 143 requests of up to 10 cells.
+  Then the 19 cells of the Welsh set with no 2026 file: 19 × 1.736 = **33**. **2,501 in all.**
   No other Open-Meteo call has been made from this Mac on 25 October (no cache file written that day, no fetch
   process running, checked 21:57 UTC).
 - Paced at 3,000 calls an hour, strict (a refusal stops it, with no retry on 429). Every request is logged with its
@@ -362,7 +367,7 @@ runs, but nothing is adopted for 2027. A pass is then a candidate for after the 
 1. This statement and the data check are pushed (draft PR #357). Done in `68f80a9`.
 2. Ethan approves the fetch and the run. Done on 25 October (above).
 3. This revision is pushed before any fetch, fit or score.
-4. The fetch (2,468 calls). Its log and request count go under the line.
+4. The fetch (2,501 calls). Its log and request count go under the line.
 5. The harness (`scripts/nine_v2_eval.py`) is committed after this file and before any run. It does not change
    anything above the line.
 6. Just before the run: the `state` release is downloaded read-only; its hashes, n and the dead-monitor pass list are

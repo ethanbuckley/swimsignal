@@ -16,7 +16,8 @@ forecasts for 30 cells each of Anglian, Northumbrian, South West, Southern and Y
 with numpy default_rng(0) from that company's cells with no lead file.
 
 "2026a" is the rain the v2 test needs (docs/NINE-COMPANY-MODEL-V2-TEST-2026-11.md): 1 January to 31 August 2026
-for every cell of the nine companies' overflows in the 2025 return that has no 2026 file in data/cache/rain/. Its
+for every cell of the nine companies' overflows in the 2025 return, and of Dwr Cymru's in England, that has no 2026
+file in data/cache/rain/. Its
 files are tagged 2026a, not 2026, because fetch_archive takes any archive_<cell>_2026.parquet as a whole year
 already fetched. Every request is logged, one JSON line each, in data/cache/rain_nine/requests_2026a.jsonl.
 """
@@ -107,9 +108,10 @@ def fetch_dec2023(cells: list) -> None:
 
 
 def cells_2025() -> list:
-    """The cells of every overflow with a position in the 2025 annual return of the nine companies."""
+    """The cells of every overflow with a position in the 2025 annual return of the nine companies, and of Dwr
+    Cymru's overflows in England (the v2 test's Welsh set)."""
     ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet", columns=["company", "year", "lat", "lon"])
-    a = ar[ar["company"].isin(NINE) & ar["lat"].notna() & (ar["year"] == 2025)]
+    a = ar[ar["company"].isin([*NINE, "Dwr Cymru Welsh Water"]) & ar["lat"].notna() & (ar["year"] == 2025)]
     cl, cn = grid_cell(a["lat"].to_numpy(), a["lon"].to_numpy())
     return sorted(set(zip(cl.tolist(), cn.tolist())))
 
