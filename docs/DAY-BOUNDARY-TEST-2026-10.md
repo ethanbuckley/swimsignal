@@ -459,4 +459,63 @@ The verdict is read from the 0.25 run. The 1.0 run stays as a record.
 
 ### Results at recency 0.25
 
-None yet.
+Written 25 Oct 2026 after the run. Nothing in the addendum above this heading changed after the addendum's
+commit (`ec9c297`, 20:01 GMT; `4122f6b` at 20:02 GMT corrected only its stated time).
+
+**Verdict at recency 0.25: PASS.** N1 holds, and N2 holds at every one of leads 0 to 4. This is the verdict;
+the recency-1.0 run above stays as a record. As before, a pass is not authorisation to deploy.
+
+**Face check: passed.** The old arm at 0.25 reproduces main's two files, as tracked at `b37bfa6`:
+
+| File | Layer-1 largest difference (2,000 random rows) | `site_n` equal | Offsets | Largest offset difference |
+|---|---|---|---|---|
+| `spill_model_holdout_2025.pkl` | 0.0 | yes | 2,241 | 0.0 |
+| `spill_model.pkl` | 0.0 | yes | 2,271 | 0.0 |
+
+The old arm's own `verification_2025.csv` also gives 0.04452666480478931 for the model with site offsets,
+the figure in main's file to every digit. So this run compares the new arm with production's own model.
+
+**Inputs: unchanged.** The SHA-256 list of the `run/cache` copy, recomputed before the run, is identical
+to the first run's (7,263 files). Both new processed copies hash the same as the first run's twelve files.
+
+| Set | Rows | Brier, old (UTC days) | Brier, new (local days) | ΔBrier | 95% interval, ISO weeks | Limit (1% of old) | Pass |
+|---|---|---|---|---|---|---|---|
+| N1 United Utilities, reanalysis | 826,725 | 0.04451 | 0.04457 | +0.000066 (+0.15%) | −0.000090 to +0.000219 | 0.000445 | yes |
+| N2 nine companies, lead 0 | 1,939,245 | 0.03955 | 0.03944 | −0.000103 (−0.26%) | −0.000227 to +0.000002 | 0.000395 | yes |
+| N2 lead 1 | 1,939,245 | 0.04233 | 0.04226 | −0.000078 (−0.18%) | −0.000195 to +0.000033 | 0.000423 | yes |
+| N2 lead 2 | 1,939,245 | 0.04400 | 0.04394 | −0.000064 (−0.15%) | −0.000249 to +0.000112 | 0.000440 | yes |
+| N2 lead 3 | 1,939,245 | 0.04542 | 0.04537 | −0.000051 (−0.11%) | −0.000231 to +0.000125 | 0.000454 | yes |
+| N2 lead 4 | 1,939,245 | 0.04753 | 0.04750 | −0.000027 (−0.06%) | −0.000231 to +0.000140 | 0.000475 | yes |
+
+Tables: `DAY-BOUNDARY-TEST-2026-10-recency025-scores.csv`, `-companies.csv`, `-verification.csv`, and
+`-checks.json` (with the face check).
+
+**Reported, not deciding.**
+- **The harness's N1 rows are `train.py`'s:** 0.0445746757 on 826,725 rows in both.
+- **Day-cluster intervals** (95%): N1 −0.000120 to +0.000247. N2 leads 0 to 4: −0.000207 to −0.000001,
+  −0.000196 to +0.000028, −0.000229 to +0.000087, −0.000204 to +0.000092, −0.000192 to +0.000140. At lead 0
+  the day-cluster interval just excludes zero; the stated week-cluster one does not.
+- **ECE, old then new:** N1 0.0095, 0.0090. N2 by lead: 0.0076, 0.0077; 0.0094, 0.0093; 0.0117, 0.0116;
+  0.0134, 0.0134; 0.0160, 0.0160.
+- **N2 at lead 0 by company:** the same as at recency 1.0 for the eight companies without site offsets.
+  United Utilities: 0.04280 old, 0.04291 new (+0.00010). Southern is again slightly worse (+0.00007);
+  the other seven improve.
+- **The 2025 table, before and after** (each arm on its own day definition): model 0.04453 → 0.04457,
+  pooled only 0.04517 → 0.04516, climatology 0.06693 → 0.06712.
+- **The production refits on the N1 rows:** mean 0.0771 (old arm, which is production) and 0.0775 (new);
+  mean absolute difference 0.0068, 99th percentile 0.078. That is how far a deployment would move
+  production's raw probabilities on these rows.
+- **How much moves** is unchanged from the first run: the counts depend on the data, not on recency.
+
+**Runs.** 25 Oct 2026, GMT, one step at a time under the group's `heavy-run.lock`: old arm
+`train.py 2025 --refit-all --recency 0.25` 20:20:03 to 20:20:48; new arm 20:29:49 to 20:30:31; harness
+20:39:32 to 20:41:25. All exit 0. `train.py` peaked at 2.8 GB. No Open-Meteo call.
+
+**Models written** (scratch only, not committed). New arm: production SHA-256 beginning
+`8ef309708e22eb2b` (MD5 `a8ebda3e`), hold-out `a67cbe02a31d964f`. So a deployment of this model changes
+the 2027 stamp from `spill=808da63d` to `spill=a8ebda3e`, not to `ebcb9653` as dependency 8 above says for
+the recency-1.0 model.
+
+**What this changes in the dependencies above.** Item 9 is settled: the pass holds at recency 0.25, and a
+refit at 0.25 reproduces production exactly. Item 8's stamp is `spill=a8ebda3e`. Items 1 to 7 stand. A
+deployable refit passes `--recency 0.25` until #348 makes it `train.py`'s default.
