@@ -167,10 +167,10 @@ probability:
 | | Sites | Median rho, today | Median rho, with `sm` | Median change | Better / worse |
 |---|---|---|---|---|---|
 | All | 25 | 0.242 | 0.361 | +0.071 | 18 / 7 |
-| Rivers | 13 | | | +0.141 | 10 / 3 |
-| Lakes | 12 | | | +0.052 | 8 / 4 |
+| Rivers | 14 | | | +0.141 | 11 / 3 |
+| Lakes | 11 | | | +0.052 | 7 / 4 |
 
-The largest gains are on chalk and lowland rivers: Sheep's Green on the Cam (+0.299), the Nidd at Knaresborough
+The largest gains are on rivers: Sheep's Green on the Cam (+0.299), the Nidd at Knaresborough
 (+0.249), the Frome at Farleigh Hungerford (+0.237) and the Teme at Ludlow (+0.229). The largest losses are at
 Frensham Great Pond (−0.122), Windermere Millerground (−0.100), Windermere Fellfoot (−0.092), the Avon at Fordingbridge
 (−0.092) and Wolvercote Mill Stream (−0.086).
