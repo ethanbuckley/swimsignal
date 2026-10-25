@@ -259,3 +259,208 @@ Whatever the verdict:
   times 3 May 2023 to 7 September 2026, by month May 370, June 516, July 517, August 491, September 271. No rain,
   E. coli, spill or risk figure was looked at.
 - No score of any kind has been computed for this test.
+
+---
+
+## Results
+
+Added 25 October 2026, after the run. Everything above the line is as committed in deebe56 (24 October 2026, 22:20
+BST) and pushed before any soil moisture was fetched. The harness came in 0dd7172 (22:23 BST), before the fetch. It
+changed nothing above the line.
+
+**Verdict.**
+- **Question 1 passes.** Arm `main`, soil moisture as a main term, meets all five conditions. Arm `interaction` meets
+  conditions 1 to 4 and fails condition 5: the product's sign is the opposite of the one stated. By the stated rule,
+  `main` is the arm taken forward.
+- **Question 2 fails.** Neither arm passes. `add` meets condition 1 and fails conditions 2 and 3. `replace` fails
+  all three.
+
+Nothing is adopted in this PR. Question 1's pass means a separate adoption PR, for Ethan to decide. Files beside this
+one: `-q1.json` (every Question 1 figure), and `-q2-scores.csv`, `-q2-differences.csv`, `-q2-reliability.csv`,
+`-q2-nodes.csv` and `-q2-checks.json`.
+
+### How it was run
+
+- **The fetch.** 24 October, 22:23 to 23:10 BST, from the harness commit. 242 requests. 2,087 calls were logged by
+  Open-Meteo's rule, plus 6 for the four probes: about 2,093 in all, against about 2,050 stated. The extra comes from
+  two Question 2 year requests that ended in a connect timeout. Each was logged at full weight (13), then fetched
+  again by quarter, as stated. No piece failed after that. Question 1: 32 cells × 4 seasons, 0 missing hours.
+  Question 2: 343 nodes × 2 years. 298,248 hours are missing, which is 17 nodes with no value at any hour
+  (17 × 17,544). The cache hashes to `e5602fb6` (SHA-256 of the `shasum -a 256` listing of its 814 parquet files).
+- **The wait.** Each run waited for the Met Office radar backfill and the radar test that followed it to finish, then
+  for the group's `heavy-run.lock` to be free, 10 quiet minutes and 35% memory free. It started at 11:48 GMT on 25
+  October with 58% free. The first waiter could never have ended: its own command line held the text it searched for.
+  It was replaced before anything ran. Nothing was scored twice.
+- **The run.** From a `git archive` of 0dd7172, offline, 11:48:19 to 11:57:08 GMT, with `run.sh q1`, then
+  `run.sh q2`. 0 network attempts in all five steps. `which.log` shows the archive's own `dipcast`. Run times:
+  `validate_ecoli` 166 s, `replay_ecoli_leads` 73 s, `train_ecoli` 94 s, `q1.py` 17 s, `q2.py` 176 s. Peak memory
+  4.4 GB (`replay_ecoli_leads`) and 5.2 GB (`q2.py`).
+- **Question 1's data.** The frozen folder the die-off and dry-spell tests ran on. Overflow table `ebc96774` (key
+  b5724303), river network `fc66101d`, `bwq_samples.parquet` `26f5f646`, as the die-off test records. The 102 files of
+  `processed` and `raw` (river network excepted) hash to `dbded7ac`, the SHA-256 of their sorted `shasum -a 256`
+  listing. The dry-spell test's `6e13bee2` does not record its method, so the two cannot be compared.
+- **Question 2's data.** The main checkout's `annual_returns.parquet` (`9f8604f9`) and the nine EA start/stop files,
+  copied; their SHA-256 values are in `-q2-checks.json`. D2's baseline `1603678923ccdd15`. Rain was read in place from
+  the main checkout's caches: 4,869 files for 1,623 cells.
+- **Main's defaults:** velocity 0.2 m/s, T90 72 h, dilution power 0.5, lake path `residence_spill`.
+
+### Face checks. All hold.
+
+- **Question 1.** The reference arm equals `train_ecoli.py`'s own scores in the same root: LOYO 0.0921, LOSO 0.0912,
+  forward 0.0824, 1,502 rows. These are the dry-spell test's reference figures. No row was dropped for a missing `sm`.
+  212 of the 1,502 are over 900. 31 sites.
+- **Question 2.** D2's rows: 4,976,868 and 5,077,150, and the subsample of 1,569,401. The baseline gives 0.03615 on
+  2025. The refit of D2's own inputs by this harness gives the baseline's predictions exactly: a difference of 0.0 at
+  every company. So the harness's fit is D2's.
+
+### Question 1: the E. coli model
+
+**The input.** `sm` over the 1,502 rows: mean 0.271 m³/m³, SD 0.100, range 0.059 to 0.489. Rivers 0.236, lakes 0.325.
+Correlation with `lrain48` 0.395, with `lrain24` 0.258. Site means run from 0.101 to 0.377. 59% of `sm`'s variance lies
+between sites, and 41% within them.
+
+| Held-out Brier | Reference | `main` | `interaction` |
+|---|---|---|---|
+| LOYO, all (1,502) | 0.09215 | 0.08508 | 0.08457 |
+| LOYO, rivers (907) | 0.13537 | 0.12356 | 0.12273 |
+| LOYO, lakes (595) | 0.02625 | 0.02643 | 0.02641 |
+| LOSO, all | 0.09119 | 0.08710 | 0.08683 |
+| Forward, 2024 to 2025–26 (997) | 0.08240 | 0.07965 | 0.08008 |
+| LOYO AUC | 0.8164 | 0.8517 | 0.8541 |
+| LOYO log loss | 0.3133 | 0.2886 | 0.2872 |
+
+LOYO gain over the reference, from the (site, ISO week) cluster bootstrap over 1,325 clusters:
+
+| | Gain | 95% interval |
+|---|---|---|
+| `main`, all | +0.00706 | +0.00271 to +0.01158 |
+| `main`, rivers | +0.01182 | +0.00470 to +0.01920 |
+| `interaction`, all | +0.00757 | +0.00347 to +0.01187 |
+| `interaction`, rivers | +0.01265 | +0.00584 to +0.01972 |
+
+**`main`: passes all five.**
+1. LOYO gain +0.00706, at least 0.0005, and the interval lies above zero. Holds.
+2. LOSO is 0.00409 better. Holds.
+3. Forward is 0.00275 better. Holds.
+4. Rivers are 0.01182 better. Lakes are 0.00018 worse, inside the 0.0005 margin. Holds.
+5. `sm` is +0.845 per SD, above zero. Holds.
+
+**`interaction`: fails condition 5.**
+1. LOYO gain +0.00757 with the interval above zero. Holds.
+2. LOSO is 0.00436 better. Holds.
+3. Forward is 0.00233 better. Holds.
+4. Rivers are 0.01265 better. Lakes are 0.00016 worse. Holds.
+5. `sm_x_lrain48` is −0.543 per SD, below zero. Fails. `sm` is +1.011 and `lrain48` is +1.066.
+
+`interaction`'s LOYO Brier is 0.00051 lower than `main`'s. That would have reached the 0.0005 tie-break, but the
+tie-break applies only when both arms pass.
+
+**Coefficients per SD, reference against `main`:**
+
+| | `lrain48` | `lrain24` | `logit_risk` | `lake` | `lake_x_lrain48` | `doy_sin` | `doy_cos` | `sm` |
+|---|---|---|---|---|---|---|---|---|
+| Reference | 0.651 | −0.102 | 0.781 | −0.181 | −1.057 | −0.097 | 0.086 | |
+| `main` | 0.657 | 0.058 | 0.543 | −0.626 | −1.190 | −0.233 | −0.032 | 0.845 |
+
+### Question 2: the spill model
+
+**The input.** `sm28` on the 2024 rows: mean 0.358 m³/m³, SD 0.074, range 0.078 to 0.748. Correlation with `api`
+0.337, with `rain_7d` 0.299, with `rain_30d` 0.356, with `rain_d` 0.060. Missing: 39,528 of the 2024 rows (0.8%) and
+43,435 of the 2025 rows (0.9%). These are the overflows whose node returned no value. The returned ERA5-Land point lies
+a median of 5.6 km from the requested node. It is over 10 km at 22 of the 343 nodes and 17.1 km at most; those are
+coastal nodes, where the nearest land point is used.
+
+All nine companies, 2025, ERA5-Land rain, 5,077,150 rows:
+
+| | Brier | AUC | ECE | Difference from baseline [95%] |
+|---|---|---|---|---|
+| Baseline (D2) | 0.03615 | 0.9292 | 0.0080 | |
+| `add` | 0.03591 | 0.9300 | 0.0077 | −0.00025 [−0.00043, −0.00008] |
+| `replace` | 0.03768 | 0.9250 | 0.0106 | +0.00153 [+0.00092, +0.00221] |
+
+Per company, the difference in Brier (arm minus baseline) with its 95% interval:
+
+| Company | Baseline | `add` | `replace` |
+|---|---|---|---|
+| Anglian | 0.02722 | **+0.00050 [+0.00012, +0.00094]** | **+0.00388 [+0.00236, +0.00569]** |
+| Northumbrian | 0.03325 | −0.00010 [−0.00033, +0.00009] | +0.00041 [−0.00020, +0.00114] |
+| Severn Trent | 0.02842 | −0.00015 [−0.00031, −0.00001] | **+0.00129 [+0.00069, +0.00198]** |
+| South West | 0.05190 | −0.00062 [−0.00118, −0.00017] | **+0.00184 [+0.00088, +0.00284]** |
+| Southern | 0.02771 | −0.00028 [−0.00054, −0.00004] | **+0.00093 [+0.00011, +0.00176]** |
+| Thames | 0.03031 | −0.00029 [−0.00070, +0.00011] | **+0.00390 [+0.00212, +0.00598]** |
+| United Utilities | 0.04561 | −0.00059 [−0.00087, −0.00033] | **+0.00085 [+0.00027, +0.00145]** |
+| Wessex | 0.03257 | −0.00057 [−0.00123, −0.00011] | **+0.00190 [+0.00070, +0.00325]** |
+| Yorkshire | 0.04029 | −0.00013 [−0.00038, +0.00007] | **+0.00100 [+0.00035, +0.00168]** |
+
+Bold: the interval lies wholly above zero, so the company is clearly worse.
+
+**`add`: fails conditions 2 and 3.**
+1. A gain, all nine: −0.00025, with the interval wholly below zero. Holds.
+2. No company clearly worse: Anglian is +0.00050 [+0.00012, +0.00094]. Fails.
+3. Reliability: Thames's ECE is 0.0242, against the baseline's 0.0240, and above 0.02. Fails. The baseline already
+   fails 0.02 at Thames, as D2 recorded.
+
+**`replace`: fails all three.**
+1. It is +0.00153 worse, with the interval wholly above zero. Fails.
+2. Eight of the nine companies are clearly worse. Northumbrian is the exception. Fails.
+3. ECE is above the baseline's and above 0.02 at Anglian (0.0213) and Thames (0.0333). Fails.
+
+Reported only: `replace` minus `add`, all nine, is +0.00178 [+0.00114, +0.00250]. On the 2025 rows with `sm28`
+missing, `add` is 0.00037 better than the baseline and `replace` is 0.00010 better. Layer 1 alone, all nine:
+baseline 0.03639, `add` 0.03616, `replace` 0.03771.
+
+### Against what was expected
+
+- **Question 1.** Expected: fail condition 1 in both arms. Wrong: both arms passed condition 1 by a wide margin, with
+  gains of 0.0071 and 0.0076 against a margin of 0.0005. Expected: `sm_x_lrain48` above zero. Wrong: it came out at
+  −0.543. Expected: LOSO most at risk. Wrong: LOSO improved by 0.0041.
+- **Question 2, `add`.** Expected: a small gain whose interval reaches zero, largest at Thames, South West, Southern
+  and Anglian. Partly wrong. The gain is small (−0.7%), but its interval lies below zero. It is largest at South West,
+  United Utilities and Wessex. Anglian is the one company made clearly worse, and Thames's change crosses zero.
+- **Question 2, `replace`.** Expected: worse than D2, failing condition 1. Right.
+
+### What this shows
+
+Established, on these rows:
+- Root-zone soil moisture 48 hours before the sample improves the E. coli model on every held-out evaluation. Held-out
+  Brier falls by 7.7% over years (0.0921 to 0.0851), by 4.5% over sites, and by 3.3% in the forward test. AUC rises
+  from 0.816 to 0.852. The gain is on rivers. Lakes are unchanged within 0.0002.
+- Wetter ground means more exceedances: `sm` is +0.845 per SD, the largest coefficient in the model.
+- With `sm` in, the weight on overflow exposure falls from 0.781 to 0.543 per SD, and the lake term moves from −0.181
+  to −0.626.
+- In the spill model, soil moisture adds a little in 2025 (−0.7%) but makes Anglian worse. It cannot replace the
+  antecedent index and the 7- and 30-day rain: without them the model is worse at eight of nine companies.
+
+Inferred, not tested:
+- **The interaction's sign.** The product is negative: on wet ground, extra rain raises the risk *less*. One reading:
+  wet ground already gives high counts without rain, through drainage, base flow and field runoff, so the next rain
+  adds less on the logistic scale. This does not fit the dry-spell test's reading, that dry soil soaks up the first
+  rain. That test's product was negative too. Both results say more about how rain and wetness overlap in a logistic
+  model than about a mechanism. Neither test can separate the two.
+- **Between or within sites.** 59% of `sm`'s variance is between sites. LOSO improved, so the between-site part
+  generalises to sites the model has not seen. It does not just label sites the model knows. But a site's mean soil
+  moisture may stand in for other things about its catchment, such as upland, wet-west or grazed land. The fall in the
+  overflow weight hints that part of what `sm` carries was being credited to overflows. This test cannot tell how much
+  of the gain is day-to-day wetness and how much is a fixed property of the catchment.
+- **Why the spill model gains so little.** The rain proxies already carry most of what ERA5-Land's root zone knows.
+  The correlations of 0.30 to 0.36 are low, but the boosted model already uses the proxies' shape. *Not checked.*
+
+### What follows
+
+**Question 1 passed: a separate adoption PR for `main`.** As stated above the line, it adds
+`soil_moisture_9_to_27cm` to the spots' forecast request (no added calls), holds the input inside its sample range
+outside May to September, and states before it runs how it handles leads 1 to 4, for which no archived soil-moisture
+forecasts exist. *Inferred:* at leads 0 and 1 the value at t − 48 h is already in the past at issue. At leads 2 to 4
+it is a forecast of 12 to 60 hours. Before that PR, these questions need their own pre-stated checks on data this test
+has not seen:
+- does the gain hold with `sm` as each site's anomaly (day-to-day wetness only), and with a site's mean alone (a
+  fixed catchment property)? The answer decides what the page may say soil moisture means;
+- does it hold on the 2027 season's samples, or on Tim Boden's Waterhead and Lakeside counts when they arrive?
+
+The change itself is Ethan's call.
+
+**Question 2 failed. Nothing changes.** `spill_model.pkl` and `lead_calibration.json` are untouched, and no arm was
+saved. The ERA5-Land soil cache stays in `data/cache/soil/` (not in the repo) for any later test.
+
+Changing a model input is allowed until the 2027 freeze tag (`docs/PREREGISTRATION-2027.md`). The PR is left for
+Ethan to merge.
