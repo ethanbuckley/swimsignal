@@ -403,3 +403,60 @@ current model's outputs, so a deployment must update them in the same change.
    pass holds at 0.25 has not been run.
 
 The earliest date that clears items 2, 4 and 5 is 25 Nov 2026, if the shadow's window is not extended.
+
+---
+
+## Addendum, 25 October 2026: recency
+
+Written 25 Oct 2026 at about 20:05 GMT, and committed and pushed before any result at recency 0.25 is
+computed. The statement and the Results above stay exactly as they are.
+
+### The error
+
+Main's model files (`spill_model_holdout_2025.pkl` from `8ac835f`, and `spill_model.pkl`) were fitted with
+layer-2 recency 0.25. PR #348 (`docs/MODEL-PROVENANCE-2026-10.md`) shows this by reproducing every stored
+site offset exactly from each file's own layer 1 at 0.25, and at no other value tried. Both arms of the
+first run used `train.py`'s default, recency 1.0. So the first run compared two models built differently
+from production.
+
+### What was already seen
+
+The recency-1.0 results above: **PASS**. N1 ΔBrier +0.000081 (95% interval −0.000078 to +0.000238, limit
+0.000447). N2 leads 0 to 4: ΔBrier from −0.000095 to −0.000020, every upper bound inside its limit.
+
+### The corrected comparison
+
+- **Both arms run with `--recency 0.25`**, passed explicitly:
+  `scripts/train.py 2025 --refit-all --recency 0.25`. This branch's `train.py` still defaults to 1.0,
+  because #348 is not merged.
+- **Unchanged from the statement:** the conditions N1 and N2, their rows, the metrics, the margin (1% of the
+  old arm's Brier, upper end of the 95% interval), the interval method (ISO-week clusters, 2,000 resamples,
+  seed 1), the seeds of the fits, and the harness `scripts/day_boundary_eval.py` at `9e6168d`.
+- **The same code:** old arm `git archive 9be5601`, new arm `git archive 9e6168d`.
+- **The same frozen inputs:** the first run's `run/cache` copy and processed copies, whose hashes are listed
+  in the Results above. Their hashes are checked again before the run, and any difference is reported
+  separately.
+- **New folders**, so the first run's outputs and models stay as they are: `run/old25`, `run/new25`,
+  `run/out25`.
+- No retuning, and no recency value other than 0.25.
+- The same machine rules: one step at a time under the group's `heavy-run.lock`, ten quiet minutes, at
+  least 35% memory free.
+
+### A face check, stated before running
+
+The old arm at 0.25 must reproduce main's `data/processed/spill_model.pkl` and
+`spill_model_holdout_2025.pkl`, as tracked at `origin/main` (`b37bfa6`):
+- identical layer-1 probabilities on 2,000 random feature rows (seed 0);
+- `site_n` equal;
+- every site offset within 1e-9.
+
+If it does not, the input differences are reported separately, and the result is not presented as a
+comparison with production.
+
+### The verdict
+
+The verdict is read from the 0.25 run. The 1.0 run stays as a record.
+
+### Results at recency 0.25
+
+None yet.
