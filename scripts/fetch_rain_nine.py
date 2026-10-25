@@ -5,6 +5,7 @@ for the cells the shared cache lacks. Off CI, by hand, paced under Open-Meteo's 
     uv run python scripts/fetch_rain_nine.py archive 2024 2023dec
     uv run python scripts/fetch_rain_nine.py archive 2025        # the next UTC day
     uv run python scripts/fetch_rain_nine.py leads               # the 150 sampled lead cells
+    uv run python scripts/fetch_rain_nine.py archive 2026a       # v2's test rain (below)
 
 Everything new goes to data/cache/rain_nine/, never data/cache/rain/. Other evaluations
 (validate_ecoli.py, the hindcasts) read every file in data/cache/rain/, so a new cell there would
@@ -13,14 +14,21 @@ change what they compute. The cells are those of every overflow with a position 
 no 2023 file, so January 2024's 7-day and 30-day windows are complete. "leads" is the 2025 archived
 forecasts for 30 cells each of Anglian, Northumbrian, South West, Southern and Yorkshire, drawn
 with numpy default_rng(0) from that company's cells with no lead file.
+
+"2026a" is the rain the v2 test needs (docs/NINE-COMPANY-MODEL-V2-TEST-2026-11.md): 1 January to 31 August 2026
+for every cell of the nine companies' overflows in the 2025 return that has no 2026 file in data/cache/rain/. Its
+files are tagged 2026a, not 2026, because fetch_archive takes any archive_<cell>_2026.parquet as a whole year
+already fetched. Every request is logged, one JSON line each, in data/cache/rain_nine/requests_2026a.jsonl.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import sys
 import time
 
+import httpx
 import numpy as np
 import pandas as pd
 
@@ -39,6 +47,8 @@ OWN = config.CACHE / "rain_nine"
 LEAD_SAMPLE = {"Anglian Water": 30, "Northumbrian Water": 30, "South West Water": 30,
                "Southern Water": 30, "Yorkshire Water": 30}
 CALLS_PER_HOUR = 3000   # Open-Meteo's free limit is 5,000 an hour and 10,000 a day
+V2_START, V2_END = "2026-01-01", "2026-08-31"   # the v2 test's days: the EA file's 2026 to August
+V2_DAYS = (pd.Timestamp(V2_END) - pd.Timestamp(V2_START)).days + 1
 
 
 def calls(n_cells: int, days: int, variables: int = 1) -> float:
@@ -96,6 +106,49 @@ def fetch_dec2023(cells: list) -> None:
         pace(calls(len(chunk), 31))
 
 
+def cells_2025() -> list:
+    """The cells of every overflow with a position in the 2025 annual return of the nine companies."""
+    ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet", columns=["company", "year", "lat", "lon"])
+    a = ar[ar["company"].isin(NINE) & ar["lat"].notna() & (ar["year"] == 2025)]
+    cl, cn = grid_cell(a["lat"].to_numpy(), a["lon"].to_numpy())
+    return sorted(set(zip(cl.tolist(), cn.tolist())))
+
+
+def missing_2026a() -> list:
+    """2025-return cells with neither a 2026 file in the shared cache nor a 2026a file here."""
+    shared = {(float(f.stem.split("_")[1]), float(f.stem.split("_")[2])) for f in SHARED.glob("archive_*_2026.parquet")}
+    return [c for c in cells_2025() if c not in shared and c not in have("archive", "2026a")]
+
+
+def fetch_2026a(cells: list) -> None:
+    """1 January to 31 August 2026 for `cells`, strict (a refusal stops the fetch), paced, every request logged."""
+    host = httpx.URL(config.OPEN_METEO_ARCHIVE).host
+    with open(OWN / "requests_2026a.jsonl", "a") as logf:
+        for i in range(0, len(cells), rainfall.BATCH):
+            chunk = cells[i:i + rainfall.BATCH]
+            params = {"latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
+                      "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
+                      "start_date": V2_START, "end_date": V2_END, "hourly": "precipitation", "timezone": "UTC"}
+            weight = rainfall.call_weight(len(chunk), V2_DAYS)
+            before = rainfall._requests.get(host, 0)
+            entry = {"at": pd.Timestamp.now("UTC").isoformat(), "cells": len(chunk), "days": V2_DAYS,
+                     "weight": round(weight, 3), "first_cell": cell_key(*chunk[0])}
+            try:
+                res = _request(config.OPEN_METEO_ARCHIVE, params, retry_429=False)
+            except Exception as e:
+                entry.update(status="failed", error=str(e)[:200], attempts=rainfall._requests.get(host, 0) - before)
+                logf.write(json.dumps(entry) + "\n")
+                logf.flush()
+                raise
+            for (cl, cn), r in zip(chunk, res if isinstance(res, list) else [res], strict=True):
+                _to_frame(r, cl, cn).to_parquet(OWN / f"archive_{cell_key(cl, cn)}_2026a.parquet", index=False)
+            entry.update(status="ok", attempts=rainfall._requests.get(host, 0) - before)
+            logf.write(json.dumps(entry) + "\n")
+            logf.flush()
+            log.info("archive 2026a: %d/%d cells", i + len(chunk), len(cells))
+            pace(weight * entry["attempts"])
+
+
 def lead_sample(cc: pd.DataFrame) -> list:
     got = have("leads", "2025")
     rng = np.random.default_rng(0)
@@ -116,8 +169,10 @@ def main() -> None:
     leads = [c for c in lead_sample(cc) if c not in have("leads", "2025")]
     cost = {"2024": calls(1, 366) * len(miss[2024]), "2025": calls(1, 365) * len(miss[2025]),
             "2023dec": calls(1, 31) * len(miss_dec), "leads": calls(1, 365, 5) * len(leads)}
+    miss_2026a = missing_2026a()
+    cost["2026a"] = rainfall.call_weight(len(miss_2026a), V2_DAYS)
     print(f"{len(allc)} cells; missing 2024 {len(miss[2024])}, 2025 {len(miss[2025])}, "
-          f"2023dec {len(miss_dec)}, lead sample {len(leads)}")
+          f"2023dec {len(miss_dec)}, lead sample {len(leads)}, 2026a {len(miss_2026a)}")
     print("calls:", {k: round(v) for k, v in cost.items()})
     if "--dry-run" in sys.argv:
         return
@@ -125,6 +180,8 @@ def main() -> None:
         for tag in sys.argv[sys.argv.index("archive") + 1:]:
             if tag == "2023dec":
                 fetch_dec2023(miss_dec)
+            elif tag == "2026a":
+                fetch_2026a(miss_2026a)
             elif tag.isdigit():
                 fetch_year(miss[int(tag)], int(tag))
     if "leads" in sys.argv:
