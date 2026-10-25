@@ -3,6 +3,10 @@
 Written 25 October 2026. A note, not an amendment. `docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md` (the statement) is
 not changed by it. Nothing for option B has been fetched, imported, written or scored.
 
+Corrected the same evening. The first version said B differs from P by the recency weight alone on unchanged United
+Utilities overflows, and recommended recency 0.25 for B and B0 as if that isolated the start-date rule. Both were
+wrong: P and B also differ in events, days, rows and fitting. The table below replaces that claim.
+
 ## What is wrong in the statement
 
 The statement says, under "The arms": "All offsets use prior strength 15 and recency 1, as now."
