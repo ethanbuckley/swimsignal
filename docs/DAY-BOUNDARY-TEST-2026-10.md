@@ -311,12 +311,13 @@ The old arm, `train.py` at `9be5601` on the frozen inputs, does not reproduce th
 - The pooled models are the same. On 2,000 random feature rows, main's hold-out and production models and
   the old arm's give identical pooled probabilities, and the same rows per overflow (`site_n`). Only the
   site offsets differ: correlation 0.90 for the hold-out, a largest gap of 1.46 in log odds for production.
-- **Cause not found.** `spill_model.py` and the offset call in `train.py` have not changed since main's
-  hold-out was saved (13 Sep, `8ac835f`). A rerun with `--recency 0.5` and `0.7` does not reproduce it
-  either (0.04460 and 0.04466).
+- **Cause found (#348, `docs/MODEL-PROVENANCE-2026-10.md`): main's files were fitted at layer-2 recency
+  0.25; both arms here used `train.py`'s default, 1.** Recomputed from each file's own layer 1, only 0.25
+  matches every stored offset (2,241 of 2,241 in the hold-out, 2,271 of 2,271 in production). My reruns
+  at 0.5 and 0.7 (0.04460 and 0.04466) did not try 0.25.
 - Scored on the N1 local-day rows (`-checks.json`, "reported"): main's hold-out 0.04451, the old arm's
   0.04472, the new arm's 0.04480. So main's offsets score better than this code reproduces, by more than
-  the day-boundary effect. Whether main's offsets saw 2025 is not known.
+  the day-boundary effect. Recency 0.25 explains it; whether the pass holds at 0.25 has not been run.
 - The comparison stands, because both arms run the same code on the same inputs and differ only in the day
   boundary. A deployment would move production further than that, though: against the live
   `spill_model.pkl` on the N1 rows, the new refit differs by 0.0097 on average (99th percentile 0.109), of
@@ -365,8 +366,8 @@ current model's outputs, so a deployment must update them in the same change.
   United Utilities.
 - The margin is non-inferiority at 1%. The test does not show the local-day model is better: every
   interval includes zero.
-- The rebuilt models do not reproduce main's (above). The test isolates the day boundary; it does not test
-  the model a deployment would replace.
+- Both arms used recency 1; main's models were fitted at 0.25 (#348). The test isolates the day boundary;
+  it does not test the model a deployment would replace. Whether the pass holds at 0.25 has not been run.
 - N2's longer windows use ERA5-Land, as `verify_leads.py` does, not the forecast.
 - Rain-cell totals near midnight depend on where Open-Meteo puts the hour ending at 00:00. The day holds
   the stamps 00:00 to 23:00 in both arms, so this is the same in both and not tested here.
@@ -397,7 +398,8 @@ current model's outputs, so a deployment must update them in the same change.
 8. **The 2027 stamp.** The new model changes `spill=808da63d` to `spill=ebcb9653`, and the refitted map
    changes `cal=`. `src/dipcast/model/` is in `MODEL_PATHS`, so this branch's code is a model change too.
    Allowed only before the freeze tag.
-9. **The reproduction gap.** Decide whether the rebuilt offsets, which score worse on 2025 than main's,
-   are acceptable, or find out how main's were made first.
+9. **The reproduction gap.** Cause found (#348): main's files were fitted at recency 0.25; both arms here
+   used 1. The day-boundary comparison stands. A deployable refit must use recency 0.25, and whether the
+   pass holds at 0.25 has not been run.
 
 The earliest date that clears items 2, 4 and 5 is 25 Nov 2026, if the shadow's window is not extended.
