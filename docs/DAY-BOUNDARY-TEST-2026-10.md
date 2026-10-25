@@ -318,6 +318,7 @@ The old arm, `train.py` at `9be5601` on the frozen inputs, does not reproduce th
 - Scored on the N1 local-day rows (`-checks.json`, "reported"): main's hold-out 0.04451, the old arm's
   0.04472, the new arm's 0.04480. So main's offsets score better than this code reproduces, by more than
   the day-boundary effect. Recency 0.25 explains it; whether the pass holds at 0.25 has not been run.
+  *Note, 25 Oct 2026 evening: since run; it passes at 0.25, and the old arm there reproduces main's files exactly (addendum below).*
 - The comparison stands, because both arms run the same code on the same inputs and differ only in the day
   boundary. A deployment would move production further than that, though: against the live
   `spill_model.pkl` on the N1 rows, the new refit differs by 0.0097 on average (99th percentile 0.109), of
@@ -368,6 +369,7 @@ current model's outputs, so a deployment must update them in the same change.
   interval includes zero.
 - Both arms used recency 1; main's models were fitted at 0.25 (#348). The test isolates the day boundary;
   it does not test the model a deployment would replace. Whether the pass holds at 0.25 has not been run.
+  *Note, 25 Oct 2026 evening: since run; it passes at 0.25, and the old arm there reproduces main's files exactly (addendum below).*
 - N2's longer windows use ERA5-Land, as `verify_leads.py` does, not the forecast.
 - Rain-cell totals near midnight depend on where Open-Meteo puts the hour ending at 00:00. The day holds
   the stamps 00:00 to 23:00 in both arms, so this is the same in both and not tested here.
@@ -401,6 +403,7 @@ current model's outputs, so a deployment must update them in the same change.
 9. **The reproduction gap.** Cause found (#348): main's files were fitted at recency 0.25; both arms here
    used 1. The day-boundary comparison stands. A deployable refit must use recency 0.25, and whether the
    pass holds at 0.25 has not been run.
+   *Note, 25 Oct 2026 evening: since run; it passes at 0.25, and the old arm there reproduces main's files exactly (addendum below).*
 
 The earliest date that clears items 2, 4 and 5 is 25 Nov 2026, if the shadow's window is not extended.
 
