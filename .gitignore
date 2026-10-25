@@ -61,6 +61,8 @@ data/raw/*
 !data/raw/lake_residence_spill.csv
 # Reasons for not achieving good status per water body, and each spot's water body (EA Catchment Data Explorer, OGL v3.0; scripts/make_rnags.py).
 !data/raw/rnags.json
+# Each overflow's dry-weather spill-days in a year (EA start/stop records, OGL v3.0): read by the page's note only, never the model (scripts/make_dry_weather_spills.py).
+!data/raw/dry_weather_spills.csv
 /site/
 .claude/
 /state/
