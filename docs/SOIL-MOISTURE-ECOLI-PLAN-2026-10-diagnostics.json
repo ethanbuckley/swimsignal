@@ -1,0 +1,301 @@
+{
+ "rows": 1502,
+ "brier_loyo": {
+  "reference": 0.09214530846823134,
+  "main": 0.08508066425271767
+ },
+ "within_site": {
+  "sites": 25,
+  "median_change": 0.071,
+  "sites_better": 18,
+  "sites_worse": 7,
+  "median_change_rivers": 0.14100000000000001,
+  "median_change_lakes": 0.052,
+  "median_rho_reference": 0.242,
+  "median_rho_main": 0.361,
+  "table": [
+   {
+    "bw_id": "ukd1101-45800",
+    "name": "Derwent Water at Crow Park",
+    "kind": "lake",
+    "n": 58,
+    "rho_reference": -0.133,
+    "rho_main": -0.158,
+    "change": -0.025
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "name": "Windermere, Lakeside YMCA",
+    "kind": "lake",
+    "n": 57,
+    "rho_reference": 0.092,
+    "rho_main": 0.131,
+    "change": 0.039
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "name": "Windermere, Millerground Landing",
+    "kind": "lake",
+    "n": 59,
+    "rho_reference": 0.044,
+    "rho_main": -0.056,
+    "change": -0.1
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "name": "Windermere, Rayrigg Meadow",
+    "kind": "lake",
+    "n": 57,
+    "rho_reference": -0.153,
+    "rho_main": -0.014,
+    "change": 0.139
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "name": "Windermere, Fellfoot",
+    "kind": "lake",
+    "n": 59,
+    "rho_reference": 0.165,
+    "rho_main": 0.073,
+    "change": -0.092
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "name": "Coniston Water, Brown Howe",
+    "kind": "lake",
+    "n": 57,
+    "rho_reference": -0.164,
+    "rho_main": -0.056,
+    "change": 0.109
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "name": "Coniston Water, Boating Centre",
+    "kind": "lake",
+    "n": 57,
+    "rho_reference": -0.015,
+    "rho_main": 0.132,
+    "change": 0.148
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "name": "Coniston Water, Monk Coniston",
+    "kind": "lake",
+    "n": 57,
+    "rho_reference": -0.006,
+    "rho_main": 0.048,
+    "change": 0.054
+   },
+   {
+    "bw_id": "ukd4308-46501",
+    "name": "River Ribble at Edisford Bridge",
+    "kind": "river",
+    "n": 59,
+    "rho_reference": 0.772,
+    "rho_main": 0.753,
+    "change": -0.019
+   },
+   {
+    "bw_id": "uke2203-08903",
+    "name": "Nidd at the Lido, Knaresborough",
+    "kind": "river",
+    "n": 57,
+    "rho_reference": 0.348,
+    "rho_main": 0.596,
+    "change": 0.249
+   },
+   {
+    "bw_id": "uke4100-08901",
+    "name": "Wharfe at Cromwheel, Ilkley",
+    "kind": "river",
+    "n": 57,
+    "rho_reference": 0.608,
+    "rho_main": 0.622,
+    "change": 0.013
+   },
+   {
+    "bw_id": "uke4200-08904",
+    "name": "Wharfe at Wilderness Carpark",
+    "kind": "river",
+    "n": 56,
+    "rho_reference": 0.585,
+    "rho_main": 0.704,
+    "change": 0.119
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "name": "Rutland Water Whitwell Creek",
+    "kind": "lake",
+    "n": 52,
+    "rho_reference": 0.195,
+    "rho_main": 0.408,
+    "change": 0.213
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "name": "Rutland Water Sykes Lane",
+    "kind": "lake",
+    "n": 48,
+    "rho_reference": -0.041,
+    "rho_main": 0.011,
+    "change": 0.052
+   },
+   {
+    "bw_id": "ukg2100-36070",
+    "name": "River Severn at Ironbridge",
+    "kind": "river",
+    "n": 59,
+    "rho_reference": 0.541,
+    "rho_main": 0.704,
+    "change": 0.163
+   },
+   {
+    "bw_id": "ukg2200-36060",
+    "name": "River Teme in Ludlow",
+    "kind": "river",
+    "n": 59,
+    "rho_reference": 0.428,
+    "rho_main": 0.656,
+    "change": 0.229
+   },
+   {
+    "bw_id": "ukg2200-36071",
+    "name": "River Severn in Shrewsbury",
+    "kind": "river",
+    "n": 57,
+    "rho_reference": 0.436,
+    "rho_main": 0.454,
+    "change": 0.019
+   },
+   {
+    "bw_id": "ukh1201-09801",
+    "name": "Sheep's Green, River Cam",
+    "kind": "river",
+    "n": 58,
+    "rho_reference": 0.279,
+    "rho_main": 0.578,
+    "change": 0.299
+   },
+   {
+    "bw_id": "ukh1401-11051",
+    "name": "Friars Meadow, River Stour",
+    "kind": "river",
+    "n": 59,
+    "rho_reference": 0.29,
+    "rho_main": 0.361,
+    "change": 0.071
+   },
+   {
+    "bw_id": "ukj1402-11946",
+    "name": "Wolvercote Mill Stream",
+    "kind": "river",
+    "n": 55,
+    "rho_reference": 0.242,
+    "rho_main": 0.156,
+    "change": -0.086
+   },
+   {
+    "bw_id": "ukj1403-11947",
+    "name": "Wallingford Beach, River Thames",
+    "kind": "river",
+    "n": 57,
+    "rho_reference": 0.205,
+    "rho_main": 0.425,
+    "change": 0.22
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "name": "Frensham Great Pond",
+    "kind": "lake",
+    "n": 34,
+    "rho_reference": -0.11,
+    "rho_main": -0.232,
+    "change": -0.122
+   },
+   {
+    "bw_id": "ukj3308-19001",
+    "name": "River Avon at Fordingbridge",
+    "kind": "river",
+    "n": 57,
+    "rho_reference": 0.393,
+    "rho_main": 0.301,
+    "change": -0.092
+   },
+   {
+    "bw_id": "ukk2301-36051",
+    "name": "River Frome at Farleigh Hungerford",
+    "kind": "river",
+    "n": 56,
+    "rho_reference": 0.55,
+    "rho_main": 0.787,
+    "change": 0.237
+   },
+   {
+    "bw_id": "ukk2304-35201",
+    "name": "River Tone at French Weir Park",
+    "kind": "river",
+    "n": 59,
+    "rho_reference": 0.297,
+    "rho_main": 0.504,
+    "change": 0.207
+   }
+  ]
+ },
+ "gain_by_month": {
+  "5": {
+   "n": 250,
+   "over_900": 40,
+   "brier_reference": 0.08786436214964415,
+   "gain": 0.012836289141055316
+  },
+  "6": {
+   "n": 364,
+   "over_900": 43,
+   "brier_reference": 0.08019650008489719,
+   "gain": 0.004174869127391818
+  },
+  "7": {
+   "n": 368,
+   "over_900": 43,
+   "brier_reference": 0.07791775798428797,
+   "gain": 0.003803606892966714
+  },
+  "8": {
+   "n": 341,
+   "over_900": 44,
+   "brier_reference": 0.09699179005103149,
+   "gain": 0.007009579864876062
+  },
+  "9": {
+   "n": 179,
+   "over_900": 42,
+   "brier_reference": 0.14243967265558732,
+   "gain": 0.011689256388450149
+  }
+ },
+ "gain_by_type": {
+  "rivers": {
+   "n": 907,
+   "over_900": 196,
+   "gain": 0.011816248810491842
+  },
+  "lakes": {
+   "n": 595,
+   "over_900": 16,
+   "gain": -0.000178558083049724
+  }
+ },
+ "coef_sm_by_fold": {
+  "2024": 0.6437274516263335,
+  "2025": 0.8853925529782644,
+  "2026": 0.9395266835138164
+ },
+ "coef_sm_all_rows": 0.8453503132264504,
+ "sm_by_month_mean": {
+  "5": 0.27724800000000005,
+  "6": 0.2805934065934066,
+  "7": 0.26572010869565216,
+  "8": 0.24552199413489736,
+  "9": 0.30267597765363125
+ }
+}
