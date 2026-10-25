@@ -130,6 +130,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 
 ## Checks and records
 
+- [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2
+  was fitted at recency 0.25, shown by reproducing every stored offset exactly; `train.py`'s default now matches.
 - [ANYPOINT-LINES-2026-10.md](ANYPOINT-LINES-2026-10.md): map clicks answered differently by page and API because
   the page used lines simplified to 30 m. The build now writes full lines.
 - [LIVE-VS-EDM-LABELS-2026-10.md](LIVE-VS-EDM-LABELS-2026-10.md): live spill labels against the EA's start/stop
