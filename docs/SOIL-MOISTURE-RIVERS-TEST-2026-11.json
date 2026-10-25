@@ -1,0 +1,704 @@
+{
+ "credit": "Wessex Water Environmental Water Quality (c) 2026 by Wessex Water, licensed under CC BY 4.0 (ArcGIS item 4659ab28caa640c58e725b41ecbba79f)",
+ "england_sm_range": [
+  0.052,
+  0.494
+ ],
+ "candidate_coef_per_sd": {
+  "lrain48": 0.5421,
+  "lrain24": 0.1155,
+  "logit_risk": 0.5287,
+  "lake": -0.5977,
+  "lake_x_lrain48": -1.225,
+  "doy_sin": -0.2162,
+  "doy_cos": -0.02297,
+  "sm": 0.8921
+ },
+ "english_by_lead": {
+  "0": {
+   "all": {
+    "reference": 0.09215,
+    "rule": 0.08492
+   },
+   "rivers": {
+    "reference": 0.1354,
+    "rule": 0.1234
+   },
+   "lakes": {
+    "reference": 0.02625,
+    "rule": 0.02625
+   }
+  },
+  "1": {
+   "all": {
+    "reference": 0.09661,
+    "rule": 0.08696
+   },
+   "rivers": {
+    "reference": 0.1425,
+    "rule": 0.1265
+   },
+   "lakes": {
+    "reference": 0.0267,
+    "rule": 0.0267
+   }
+  },
+  "2": {
+   "all": {
+    "reference": 0.09853,
+    "rule": 0.08864
+   },
+   "rivers": {
+    "reference": 0.1458,
+    "rule": 0.1295
+   },
+   "lakes": {
+    "reference": 0.02642,
+    "rule": 0.02642
+   }
+  },
+  "3": {
+   "all": {
+    "reference": 0.1025,
+    "rule": 0.09316
+   },
+   "rivers": {
+    "reference": 0.1524,
+    "rule": 0.1369
+   },
+   "lakes": {
+    "reference": 0.02643,
+    "rule": 0.02643
+   }
+  },
+  "4": {
+   "all": {
+    "reference": 0.1015,
+    "rule": 0.09358
+   },
+   "rivers": {
+    "reference": 0.1506,
+    "rule": 0.1375
+   },
+   "lakes": {
+    "reference": 0.0266,
+    "rule": 0.0266
+   }
+  }
+ },
+ "rows": {
+  "Wales": {
+   "off_network": 3,
+   "after_placement": 213,
+   "dropped_missing_input": 0,
+   "rain_window_missing": 0,
+   "exposure_missing": 0,
+   "rain_gaps": 10,
+   "sm_missing": 0,
+   "sm_held_to_range": 0,
+   "sm_mean": 0.2099,
+   "overflows": {
+    "return_overflows": 2730,
+    "emergency_left_out": 150,
+    "position_doubt_left_out": 23,
+    "snapped": 2469,
+    "english_rows_added": 13682
+   },
+   "headline_samples": 185,
+   "all_samples": 213
+  },
+  "Wessex": {
+   "rows": 4123,
+   "no_time_or_value": 0,
+   "outside_may_sep_2020_25": 2162,
+   "kept": 1961,
+   "off_network": 276,
+   "after_placement": 1685,
+   "dropped_missing_input": 0,
+   "rain_window_missing": 0,
+   "exposure_missing": 0,
+   "rain_gaps": 0,
+   "sm_missing": 0,
+   "sm_held_to_range": 3,
+   "sm_mean": 0.2651,
+   "overflows": {
+    "return_overflows": 2730,
+    "emergency_left_out": 150,
+    "position_doubt_left_out": 23,
+    "snapped": 2469,
+    "english_rows_added": 13682
+   },
+   "headline_samples": 1308,
+   "all_samples": 1685
+  }
+ },
+ "face_check": {
+  "reference_vs_ecoli_model_json": 0.0,
+  "Wales_reference_vs_check_estimate": 0.0,
+  "Wessex_reference_vs_check_estimate": 0.0
+ },
+ "headline": {
+  "pooled": {
+   "samples": 1493,
+   "known": 1489,
+   "exceedances": 731,
+   "rate": 0.4909,
+   "sampling_days": 231,
+   "stations": 46,
+   "reference": {
+    "mean": 0.3067,
+    "brier": 0.2728,
+    "auc": 0.6324,
+    "log_loss": 0.7845,
+    "spearman": 0.2905,
+    "spearman_within_station": 0.5302
+   },
+   "candidate": {
+    "mean": 0.2887,
+    "brier": 0.2596,
+    "auc": 0.7001,
+    "log_loss": 0.7595,
+    "spearman": 0.428,
+    "spearman_within_station": 0.5256
+   },
+   "gain": 0.01319,
+   "gain_ci": [
+    0.0004197,
+    0.02785
+   ],
+   "brier_rel_change": -0.04836,
+   "spearman_within_change": -0.004605,
+   "spearman_within_change_ci": [
+    -0.0341,
+    0.02692
+   ],
+   "auc_change": 0.06767,
+   "log_loss_change": -0.02503
+  },
+  "Wales": {
+   "samples": 185,
+   "known": 185,
+   "exceedances": 11,
+   "rate": 0.05946,
+   "sampling_days": 51,
+   "stations": 11,
+   "reference": {
+    "mean": 0.334,
+    "brier": 0.1468,
+    "auc": 0.7388,
+    "log_loss": 0.4588,
+    "spearman": 0.5041,
+    "spearman_within_station": 0.5131
+   },
+   "candidate": {
+    "mean": 0.2253,
+    "brier": 0.1039,
+    "auc": 0.6881,
+    "log_loss": 0.3532,
+    "spearman": 0.5321,
+    "spearman_within_station": 0.4936
+   },
+   "gain": 0.04289,
+   "gain_ci": [
+    0.01502,
+    0.06778
+   ],
+   "brier_rel_change": -0.2921,
+   "spearman_within_change": -0.01942,
+   "spearman_within_change_ci": [
+    -0.1103,
+    0.06333
+   ],
+   "auc_change": -0.05068,
+   "log_loss_change": -0.1056
+  },
+  "Wessex": {
+   "samples": 1308,
+   "known": 1304,
+   "exceedances": 720,
+   "rate": 0.5521,
+   "sampling_days": 186,
+   "stations": 35,
+   "reference": {
+    "mean": 0.3028,
+    "brier": 0.2907,
+    "auc": 0.662,
+    "log_loss": 0.8307,
+    "spearman": 0.3509,
+    "spearman_within_station": 0.5241
+   },
+   "candidate": {
+    "mean": 0.2977,
+    "brier": 0.2817,
+    "auc": 0.7043,
+    "log_loss": 0.8171,
+    "spearman": 0.4294,
+    "spearman_within_station": 0.5267
+   },
+   "gain": 0.00898,
+   "gain_ci": [
+    -0.005385,
+    0.0247
+   ],
+   "brier_rel_change": -0.03089,
+   "spearman_within_change": 0.002639,
+   "spearman_within_change_ci": [
+    -0.02423,
+    0.03271
+   ],
+   "auc_change": 0.04237,
+   "log_loss_change": -0.0136
+  }
+ },
+ "all_placed": {
+  "pooled": {
+   "samples": 1898,
+   "known": 1893,
+   "exceedances": 971,
+   "rate": 0.5129,
+   "sampling_days": 246,
+   "stations": 76,
+   "reference": {
+    "mean": 0.2809,
+    "brier": 0.3031,
+    "auc": 0.6003,
+    "log_loss": 0.8839,
+    "spearman": 0.2392,
+    "spearman_within_station": 0.4793
+   },
+   "candidate": {
+    "mean": 0.2805,
+    "brier": 0.2829,
+    "auc": 0.6801,
+    "log_loss": 0.8227,
+    "spearman": 0.3948,
+    "spearman_within_station": 0.4791
+   },
+   "gain": 0.02022,
+   "gain_ci": [
+    0.007717,
+    0.03451
+   ],
+   "brier_rel_change": -0.06671,
+   "spearman_within_change": -0.0001515,
+   "spearman_within_change_ci": [
+    -0.0291,
+    0.03126
+   ],
+   "auc_change": 0.07989,
+   "log_loss_change": -0.06128
+  },
+  "Wales": {
+   "samples": 213,
+   "known": 213,
+   "exceedances": 34,
+   "rate": 0.1596,
+   "sampling_days": 59,
+   "stations": 16,
+   "reference": {
+    "mean": 0.3018,
+    "brier": 0.2165,
+    "auc": 0.3199,
+    "log_loss": 0.6715,
+    "spearman": 0.1125,
+    "spearman_within_station": 0.4845
+   },
+   "candidate": {
+    "mean": 0.2286,
+    "brier": 0.1542,
+    "auc": 0.6218,
+    "log_loss": 0.4879,
+    "spearman": 0.4565,
+    "spearman_within_station": 0.4332
+   },
+   "gain": 0.06224,
+   "gain_ci": [
+    0.03226,
+    0.09144
+   ],
+   "brier_rel_change": -0.2875,
+   "spearman_within_change": -0.05127,
+   "spearman_within_change_ci": [
+    -0.1536,
+    0.04535
+   ],
+   "auc_change": 0.3018,
+   "log_loss_change": -0.1835
+  },
+  "Wessex": {
+   "samples": 1685,
+   "known": 1680,
+   "exceedances": 937,
+   "rate": 0.5577,
+   "sampling_days": 195,
+   "stations": 60,
+   "reference": {
+    "mean": 0.2782,
+    "brier": 0.3141,
+    "auc": 0.6366,
+    "log_loss": 0.9109,
+    "spearman": 0.3172,
+    "spearman_within_station": 0.4711
+   },
+   "candidate": {
+    "mean": 0.2871,
+    "brier": 0.2992,
+    "auc": 0.6868,
+    "log_loss": 0.8651,
+    "spearman": 0.4049,
+    "spearman_within_station": 0.4803
+   },
+   "gain": 0.01489,
+   "gain_ci": [
+    0.00132,
+    0.03035
+   ],
+   "brier_rel_change": -0.04742,
+   "spearman_within_change": 0.009142,
+   "spearman_within_change_ci": [
+    -0.02036,
+    0.04021
+   ],
+   "auc_change": 0.05013,
+   "log_loss_change": -0.04578
+  }
+ },
+ "conditions": {
+  "1_pooled_gain": true,
+  "2_no_region_clearly_worse": true,
+  "regions_clearly_worse": []
+ },
+ "passes": true,
+ "per_station": [
+  {
+   "region": "Wales",
+   "station": "S50010",
+   "n": 14,
+   "exceedances": 0,
+   "mean_reference": 0.2274,
+   "mean_candidate": 0.1294,
+   "rho_reference": 0.3546,
+   "rho_candidate": 0.4229
+  },
+  {
+   "region": "Wales",
+   "station": "S50014",
+   "n": 14,
+   "exceedances": 0,
+   "mean_reference": 0.3416,
+   "mean_candidate": 0.1892,
+   "rho_reference": 0.5039,
+   "rho_candidate": 0.484
+  },
+  {
+   "region": "Wales",
+   "station": "S50018",
+   "n": 14,
+   "exceedances": 2,
+   "mean_reference": 0.3332,
+   "mean_candidate": 0.1806,
+   "rho_reference": 0.433,
+   "rho_candidate": 0.3802
+  },
+  {
+   "region": "Wales",
+   "station": "S50530",
+   "n": 14,
+   "exceedances": 1,
+   "mean_reference": 0.3072,
+   "mean_candidate": 0.1597,
+   "rho_reference": 0.473,
+   "rho_candidate": 0.451
+  },
+  {
+   "region": "Wales",
+   "station": "S5520068",
+   "n": 37,
+   "exceedances": 2,
+   "mean_reference": 0.3323,
+   "mean_candidate": 0.2748,
+   "rho_reference": 0.6433,
+   "rho_candidate": 0.6817
+  },
+  {
+   "region": "Wales",
+   "station": "S5520112",
+   "n": 14,
+   "exceedances": 2,
+   "mean_reference": 0.3375,
+   "mean_candidate": 0.1765,
+   "rho_reference": 0.5897,
+   "rho_candidate": 0.4598
+  },
+  {
+   "region": "Wales",
+   "station": "S5520113",
+   "n": 14,
+   "exceedances": 0,
+   "mean_reference": 0.3193,
+   "mean_candidate": 0.1738,
+   "rho_reference": 0.5127,
+   "rho_candidate": 0.5149
+  },
+  {
+   "region": "Wales",
+   "station": "S5520114",
+   "n": 14,
+   "exceedances": 0,
+   "mean_reference": 0.3698,
+   "mean_candidate": 0.2268,
+   "rho_reference": 0.5941,
+   "rho_candidate": 0.5919
+  },
+  {
+   "region": "Wales",
+   "station": "S5520115",
+   "n": 14,
+   "exceedances": 0,
+   "mean_reference": 0.3571,
+   "mean_candidate": 0.1909,
+   "rho_reference": 0.5963,
+   "rho_candidate": 0.6315
+  },
+  {
+   "region": "Wales",
+   "station": "S5520116",
+   "n": 14,
+   "exceedances": 0,
+   "mean_reference": 0.2849,
+   "mean_candidate": 0.1551,
+   "rho_reference": 0.3767,
+   "rho_candidate": 0.3568
+  },
+  {
+   "region": "Wales",
+   "station": "S6020030",
+   "n": 22,
+   "exceedances": 4,
+   "mean_reference": 0.4185,
+   "mean_candidate": 0.4253,
+   "rho_reference": 0.2931,
+   "rho_candidate": 0.1948
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.21209,-2.31906",
+   "n": 59,
+   "exceedances": 25,
+   "mean_reference": 0.1552,
+   "mean_candidate": 0.1796,
+   "rho_reference": 0.5376,
+   "rho_candidate": 0.5348
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.25379,-2.30821",
+   "n": 44,
+   "exceedances": 40,
+   "mean_reference": 0.2982,
+   "mean_candidate": 0.284,
+   "rho_reference": 0.4722,
+   "rho_candidate": 0.5167
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.29340,-2.43794",
+   "n": 44,
+   "exceedances": 44,
+   "mean_reference": 0.279,
+   "mean_candidate": 0.2964,
+   "rho_reference": 0.08992,
+   "rho_candidate": -0.03787
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.29477,-2.19367",
+   "n": 44,
+   "exceedances": 35,
+   "mean_reference": 0.1893,
+   "mean_candidate": 0.2088,
+   "rho_reference": 0.3694,
+   "rho_candidate": 0.2473
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.29671,-2.42338",
+   "n": 44,
+   "exceedances": 44,
+   "mean_reference": 0.3039,
+   "mean_candidate": 0.314,
+   "rho_reference": 0.4417,
+   "rho_candidate": 0.5365
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.29962,-2.27946",
+   "n": 60,
+   "exceedances": 30,
+   "mean_reference": 0.3004,
+   "mean_candidate": 0.2617,
+   "rho_reference": 0.5444,
+   "rho_candidate": 0.5493
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.30928,-2.28610",
+   "n": 91,
+   "exceedances": 38,
+   "mean_reference": 0.2991,
+   "mean_candidate": 0.2984,
+   "rho_reference": 0.6105,
+   "rho_candidate": 0.6401
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.32482,-2.21922",
+   "n": 44,
+   "exceedances": 43,
+   "mean_reference": 0.2235,
+   "mean_candidate": 0.2329,
+   "rho_reference": 0.5207,
+   "rho_candidate": 0.4256
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.32803,-2.09435",
+   "n": 44,
+   "exceedances": 33,
+   "mean_reference": 0.1756,
+   "mean_candidate": 0.3537,
+   "rho_reference": 0.5508,
+   "rho_candidate": 0.5546
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.33253,-2.41656",
+   "n": 43,
+   "exceedances": 43,
+   "mean_reference": 0.3125,
+   "mean_candidate": 0.3197,
+   "rho_reference": 0.3423,
+   "rho_candidate": 0.2571
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.33825,-2.30152",
+   "n": 41,
+   "exceedances": 14,
+   "mean_reference": 0.2931,
+   "mean_candidate": 0.2854,
+   "rho_reference": 0.6326,
+   "rho_candidate": 0.5626
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.33914,-2.28075",
+   "n": 44,
+   "exceedances": 19,
+   "mean_reference": 0.3552,
+   "mean_candidate": 0.3218,
+   "rho_reference": 0.7385,
+   "rho_candidate": 0.672
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.34347,-2.34452",
+   "n": 44,
+   "exceedances": 23,
+   "mean_reference": 0.2796,
+   "mean_candidate": 0.2723,
+   "rho_reference": 0.4574,
+   "rho_candidate": 0.4982
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.34399,-2.34126",
+   "n": 43,
+   "exceedances": 36,
+   "mean_reference": 0.2732,
+   "mean_candidate": 0.2649,
+   "rho_reference": 0.4508,
+   "rho_candidate": 0.3602
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.34638,-2.24910",
+   "n": 44,
+   "exceedances": 35,
+   "mean_reference": 0.3448,
+   "mean_candidate": 0.3147,
+   "rho_reference": 0.4775,
+   "rho_candidate": 0.473
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.34813,-2.14549",
+   "n": 44,
+   "exceedances": 23,
+   "mean_reference": 0.3514,
+   "mean_candidate": 0.4974,
+   "rho_reference": 0.6309,
+   "rho_candidate": 0.6731
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.34984,-2.31387",
+   "n": 84,
+   "exceedances": 36,
+   "mean_reference": 0.3577,
+   "mean_candidate": 0.3099,
+   "rho_reference": 0.5326,
+   "rho_candidate": 0.4987
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.35499,-2.31176",
+   "n": 44,
+   "exceedances": 13,
+   "mean_reference": 0.365,
+   "mean_candidate": 0.3439,
+   "rho_reference": 0.6727,
+   "rho_candidate": 0.6552
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.35603,-2.32365",
+   "n": 82,
+   "exceedances": 47,
+   "mean_reference": 0.3204,
+   "mean_candidate": 0.2918,
+   "rho_reference": 0.5946,
+   "rho_candidate": 0.6361
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.37665,-2.13840",
+   "n": 44,
+   "exceedances": 19,
+   "mean_reference": 0.3192,
+   "mean_candidate": 0.3115,
+   "rho_reference": 0.3088,
+   "rho_candidate": 0.2467
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.37705,-2.30063",
+   "n": 20,
+   "exceedances": 2,
+   "mean_reference": 0.4058,
+   "mean_candidate": 0.2412,
+   "rho_reference": 0.6528,
+   "rho_candidate": 0.6845
+  },
+  {
+   "region": "Wessex",
+   "station": "wsx 51.37705,-2.30064",
+   "n": 153,
+   "exceedances": 52,
+   "mean_reference": 0.4078,
+   "mean_candidate": 0.3844,
+   "rho_reference": 0.7069,
+   "rho_candidate": 0.7562
+  }
+ ]
+}
