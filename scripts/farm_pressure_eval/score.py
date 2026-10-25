@@ -12,7 +12,9 @@ the record-only arms.
 with build_site.attach_water_body's rule. A site the file places nowhere gets 0 and is counted.
 
 Face check: this script's reference LOYO, LOSO and forward Brier scores equal those train_ecoli.py wrote to
-ecoli_model_eval.json in the same root.
+ecoli_model_eval.json in the same root. If the file is missing or unreadable, or any score or the row count differs,
+the run stops (the test's "Data" section): out.json then holds only the diagnostic and the face-check figures, no
+conditions, reading or verdict, and the script exits 2, so run.sh reports the step as failed.
 
 --selftest runs the scoring on synthetic rows with a planted site-level effect and with none, and checks the planted
 one passes conditions 1 and 2 and the null one does not. It reads no data.
@@ -22,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -230,19 +233,58 @@ def main(out_path: str, rnags: str | None = None) -> None:
                for name in ("loso", "loyo", "forward")},
             "bootstrap_loso_sites": te.cluster_bootstrap(y[m], Pm["reference"]["loso"], Pm["candidate"]["loso"], site[m])}
 
-    ev = config.PROCESSED / "ecoli_model_eval.json"
-    if ev.exists():
+    finish(res, len(rows), out_path, config.PROCESSED / "ecoli_model_eval.json")
+
+
+FACE_KEYS = ("loyo", "loso", "forward")
+STOP_EXIT = 2
+
+
+def face_check(res: dict, n_rows: int, ev: Path) -> dict:
+    """The stated face check: the reference arm's LOYO, LOSO and forward Brier (4 decimals) and the row count against
+    train_ecoli.py's ecoli_model_eval.json. `holds` is True only when the file is read and all four agree; `why` says
+    what failed."""
+    here = {**{k: round(res[k]["reference"]["all"], 4) for k in FACE_KEYS}, "n": n_rows}
+    if not ev.exists():
+        return {"holds": False, "why": f"{ev} not found: train_ecoli.py must write it in the same root first",
+                "here_reference": here}
+    try:
         e = json.loads(ev.read_text())
         full = te.FULL
         pub = {"loyo": next(r["brier"] for r in e["loyo"] if r["model"] == full),
                "loso": next(r["brier"] for r in e["loso"] if r["model"] == full),
                "forward": next(r["brier"] for r in e["forward"]["table"] if r["model"] == full) if e.get("forward") else None,
                "n": e["n_samples"]}
-        here = {"loyo": round(res["loyo"]["reference"]["all"], 4), "loso": round(res["loso"]["reference"]["all"], 4),
-                "forward": round(res["forward"]["reference"]["all"], 4), "n": len(rows)}
-        res["face_check"] = {"train_ecoli": pub, "here_reference": here,
-                             "holds": all(pub[k] is not None and round(pub[k], 4) == here[k] for k in ("loyo", "loso", "forward"))
-                             and pub["n"] == here["n"]}
+        # Every score a real number, so the comparison below cannot raise: a string, bool, None or NaN is malformed.
+        for k in FACE_KEYS:
+            v = pub[k]
+            if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+                raise ValueError(f"{k} Brier is {v!r}, not a finite number")
+            pub[k] = round(float(v), 4)
+        if isinstance(pub["n"], bool) or not isinstance(pub["n"], int):
+            raise ValueError(f"n_samples is {pub['n']!r}, not a whole number")
+    except (OSError, ValueError, KeyError, TypeError, StopIteration) as err:
+        return {"holds": False, "why": f"{ev} unreadable as train_ecoli output ({type(err).__name__}: {err})",
+                "here_reference": here}
+    differ = [k for k in FACE_KEYS if pub[k] != here[k]]
+    if pub["n"] != here["n"]:
+        differ.append("n")
+    return {"holds": not differ, "why": "" if not differ else "reference differs from train_ecoli on " + ", ".join(differ),
+            "train_ecoli": pub, "here_reference": here}
+
+
+def finish(res: dict, n_rows: int, out_path: str, ev: Path) -> None:
+    """Write the result only if the face check holds. Otherwise the run stops: the file gets the diagnostic and the
+    face-check figures, and none of conditions, reading, gain or the arms' scores, so no verdict can be read from a
+    run whose reference does not match."""
+    fc = face_check(res, n_rows, ev)
+    if not fc["holds"]:
+        stop = {"stopped": "face check failed: " + fc["why"], "face_check": fc,
+                **{k: res[k] for k in ("rnags_sha256", "rows", "sites") if k in res}}
+        Path(out_path).write_text(json.dumps(stop, indent=1, default=float))
+        print(json.dumps(stop, indent=1, default=float), file=sys.stderr)
+        raise SystemExit(STOP_EXIT)
+    res["face_check"] = fc
     Path(out_path).write_text(json.dumps(res, indent=1, default=float))
     print(json.dumps({k: res[k] for k in ("rows", "sites", "split", "gain", "conditions", "reading", "face_check")
                       if k in res}, indent=1, default=float))

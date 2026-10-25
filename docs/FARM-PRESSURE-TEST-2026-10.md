@@ -214,3 +214,13 @@ The D7 session's draft (18 October, not committed) is the base. Changes, made be
 ## Results
 
 (Empty until the run.)
+
+### Harness correction before the run (25 Oct 2026)
+
+Found in review; no data read, no model trained, nothing scored. The statement above the line is unchanged. As
+written, `score.py` computed the conditions, added the face check afterwards as a field, and always wrote and printed
+the result; if `ecoli_model_eval.json` was missing it skipped the check. That did not do what "Data" says ("If they
+do not, the run stops"). Now `finish()` applies the face check first. If the file is missing or unreadable, a
+reference score is not a finite number, or any of LOYO, LOSO, forward or the row count differs, `out.json` holds only
+the diagnostic and the face-check figures (no conditions, reading or gain), replacing any earlier file, and the script
+exits 2, so `run.sh` stops at the score step. Tests: `tests/test_farm_pressure_face_check.py` (mocked results only).
