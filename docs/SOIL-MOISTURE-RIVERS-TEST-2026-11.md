@@ -173,7 +173,7 @@ Nothing is adopted. (c), the 2027 samples, stays the prospective check.
 
 - **The Wessex download.** 25 October, 22:30 GMT, from 7ab958e. 4,123 E. coli rows, kept in the main checkout's
   `data/cache/wessex_wq/`, outside git (checked with `git check-ignore`).
-- **Preparation.** Under the lock, 22:30 to 22:32. It placed the points, then fetched `sm` for 75 cell-quarters
+- **Preparation.** Under the lock, 22:30 to 22:32. It placed the points, then fetched `sm` for 85 cell-quarters
   (25 requests, 85 calls) and one rain gap (one cell, 22 July to 28 September 2020: 1 call by Open-Meteo's rule, 5 by
   W10's rounding up). With the three coverage probes, this test used about 89 calls of the 300 allowed.
 - **The run.** From a `git archive` of 7ab958e, offline, under the lock, 22:42:09 to 22:49:13 GMT, 54% memory free.
