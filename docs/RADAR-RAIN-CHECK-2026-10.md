@@ -172,4 +172,127 @@ folder's hashes.
 
 ## Results
 
-Not yet run.
+Added 25 October 2026, after the run. Everything above the line is as committed in 2c25c91 (24 October 2026, 20:21
+BST) and pushed before the run. The harness came in c5ffe13 (20:23 BST). It changed nothing above the line.
+
+**Question 1 passes: the radar is fit to serve as truth. Question 3's verdict is B: the model is the main limit.**
+Question 2's three stated expectations all hold. Nothing is adopted.
+
+### How it was run
+
+- **Radar.** The backfill ran from 24 October 19:14 BST to 25 October 11:20 GMT, from a `git archive` of 8073988. It
+  covered 702 days and read 66,989 files; 407 were missing and none were bad. It wrote 8,407,152 cell-hours for 499
+  cells. 34 requests were retried after a dropped connection or a timeout. All succeeded: five failures in a row
+  stop the script, and it exited cleanly. The Mac slept from about 00:40 to 10:00,
+  so the run took longer than planned. SHA-256 of the radar file list and contents: `ec6a6218…7d014906`.
+- **Gauges.** Fetched after the harness commit with `run.sh fetch`. 302 stations sit in radar cells; 291 had hours that
+  passed the rules. 907 requests, none failed. `gauges_hourly.parquet` SHA-256 `0986305b…ad405a5d`.
+- **Scoring.** `run.sh score` from a `git archive` of c5ffe13, after the backfill ended and with the group's heavy-run
+  lock held. It ran offline in 69 seconds with 0 network attempts and a peak of 3.3 GB. The run folder's hashes are in
+  its `hashes.txt` (31 files).
+- **A timing check, added in the harness.** The hourly gauge-radar correlation is 0.644 with no shift, 0.356 with the
+  radar one hour earlier and 0.529 one hour later. So the gauge readings are stamped as the statement assumed: each
+  quarter-hour by its start, summed into the hour ending on the hour.
+
+### Question 1: radar against gauges. Passes.
+
+170,583 gauge-days, 291 gauges, 1 December 2024 to 13 September 2026.
+
+| Condition | Figure | Needed |
+|---|---|---|
+| 1. Total radar rain / total gauge rain | 1.083 | 0.80 to 1.25 |
+| 2. Median per-gauge Spearman of daily totals (283 gauges) | 0.876 | at least 0.75 |
+| 3. Gauge wet days (1 mm or more) the radar also reads wet | 93.4% | at least 80% |
+| 3. Gauge dry days (under 0.2 mm) the radar keeps under 1 mm | 96.6% | at least 90% |
+
+By season, ratio and median Spearman: winter 1.06 and 0.90, spring 1.18 and 0.83, summer 1.10 and 0.85, autumn 1.04
+and 0.92. In the North West the ratio is 1.09 and the Spearman 0.90 (120 gauges); elsewhere they are 1.07 and 0.85
+(163 gauges). Per gauge, the middle half of ratios runs from 1.00 to 1.25 (290 gauges). From 14 September to
+23 October 2026, outside the main window, the ratio is 1.04 and the Spearman 0.88.
+
+**Question 1b (decides nothing).** On the 124,533 gauge-days where ERA5-Land also has a total, the radar is closer to
+the gauges than ERA5-Land is. Mean absolute daily error: 1.19 mm against 1.53 mm. Median Spearman: 0.87 against
+0.82. Dry days kept dry: 97.0% against 91.7%. Wet days caught: 93.3% against 90.9%. ERA5-Land's totals are closer to
+the gauges' (1.04 against radar's 1.08).
+
+The statement expected radar to read low, nearer 0.8 than 1, and expected condition 2 to fail. Both were wrong. The
+radar reads 8% above the gauges overall, more in spring, and agrees closely day to day. Gauges catch less than falls,
+especially in wind (inferred, not tested here), so 1.08 may be nearer the truth than it looks.
+
+### Question 2: forecast rain against radar. All three stated expectations hold.
+
+205,917 cell-days, 405 cells, 1 December 2024 to 13 September 2026.
+
+| Lead | Mean abs. error, mm | Bias, mm | Ratio of totals | Pearson | Radar days ≥10 mm also forecast ≥10 mm | Radar days <10 mm forecast ≥10 mm |
+|---|---|---|---|---|---|---|
+| 0 | 1.21 | −0.09 | 0.97 | 0.871 | 71.7% | 2.6% |
+| 1 | 1.63 | −0.18 | 0.93 | 0.749 | 58.2% | 3.2% |
+| 2 | 1.91 | 0.00 | 1.00 | 0.699 | 51.5% | 3.9% |
+| 3 | 2.09 | −0.06 | 0.98 | 0.647 | 45.0% | 4.0% |
+| 4 | 2.40 | −0.03 | 0.99 | 0.547 | 38.9% | 4.7% |
+
+- Error grows with lead: holds. Lead 0 Pearson at least 0.7: holds (0.871). Totals within 20% at every lead: holds
+  (0.93 to 1.00).
+- In the North West the error is about twice the rest's at every lead: lead 0 is 1.83 mm against 0.93 mm, lead 4 is
+  3.50 mm against 1.91 mm. Pearson is about the same in both. The North West is wetter, so its errors are larger in
+  mm, not worse in pattern.
+- Against the gauges, in 194 gauge cells, the pattern is the same: Pearson from 0.894 at lead 0 to 0.562 at lead 4.
+
+### Question 3: what wrong rain forecasts cost. Verdict B.
+
+552,855 site-days in 2025 at 1,515 overflows in 405 cells, United Utilities left out: Severn Trent 699, Wessex 261,
+Yorkshire 223, Thames 204, Anglian 104, Southern 16, South West 5, Northumbrian 3. 28,856 spill days. 120 rows lacked
+a total from some source and left every arm.
+
+| Rain fed to the model | Brier | AUC | Spill days at 0.4 or more | Dry days at 0.4 or more |
+|---|---|---|---|---|
+| ERA5-Land (what it was trained on) | 0.0356 | 0.920 | 26.4% | 0.68% |
+| **Radar (the rain known)** | **0.0339** | **0.932** | **29.6%** | **0.65%** |
+| Forecast, lead 0 | 0.0343 | 0.928 | 29.6% | 0.70% |
+| Forecast, lead 1 | 0.0364 | 0.912 | 27.2% | 0.80% |
+| Forecast, lead 2 | 0.0380 | 0.906 | 22.8% | 0.76% |
+| Forecast, lead 3 | 0.0385 | 0.897 | 21.8% | 0.70% |
+| Forecast, lead 4 | 0.0395 | 0.887 | 20.6% | 0.78% |
+
+- **A** needed radar's Brier below lead 1's with the interval below zero, and its AUC at least 0.03 above. The Brier
+  part holds: radar minus lead 1 is −0.00255, interval −0.00358 to −0.00163 (53 weeks). The AUC part does not:
+  0.932 − 0.912 = 0.020. So not A.
+- **B** holds: radar minus lead 0 is −0.00046, interval −0.00095 to +0.00010, which includes zero.
+- **The scale check.** Radar is better than ERA5-Land by 0.0018, more than lead 0 is (0.0013). There is no sign that
+  radar's scale hurts the model.
+
+The statement expected C. It is B.
+
+### What this shows
+
+- **The radar is a good record of the rain that fell.** It passes all three conditions with room to spare, and it is
+  closer to the gauges than ERA5-Land, the rain the spill model is trained on. That is a free, 15-minute,
+  1 km record from November 2024, available within about 20 minutes.
+- **Knowing the rain exactly would not catch more spills today.** Fed the radar, the model warns of 29.6% of spill
+  days, the same share as with today's forecast. Its Brier is 0.0004 better, inside the noise. About 70% of spill days
+  stay below the High line even with the rain known. That is the model, outside the one company it learned from.
+- **The rain forecast costs more with each day ahead.** From lead 0 to lead 4 the Brier rises from 0.0343 to 0.0395 and
+  the warned share falls from 29.6% to 20.6%. Perfect rain would recover most of that at leads 1 to 4, but no
+  observation can see tomorrow's rain.
+- **One limit on what this says.** These rows are mostly Severn Trent, Wessex, Yorkshire and Thames, and the year is
+  2025. The model saw United Utilities only, so B is the expected shape: a model that does not know these overflows
+  cannot use better rain. Whether better rain helps once the model knows each company is a question for after a
+  change of that kind.
+
+### What follows
+
+As stated: Question 1 passes, so radar can be the truth in the next tests. Verdict B, so the next work is the model
+outside United Utilities:
+- the calibration layer for the other eight companies, stated in PR #333 (read on or after 25 November);
+- option B of `docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, waiting on Ethan's decisions;
+- a nine-company refit, which failed on 17 October (`docs/NINE-COMPANY-MODEL-TEST-2026-10.md`).
+
+Radar for the "right now" rule (D6) and rain at each overflow (`docs/MET-OFFICE-DATA-2026-10.md` §9) stay on the list.
+This result says they matter less than the model does, at least until the model knows the other companies.
+
+### Data credits
+
+Contains Met Office data © Crown copyright 2024–2026, licensed under CC BY-SA 4.0 (AWS Open Data: Met Office UK
+Radar Observations); this test publishes only summary figures from it. Environment Agency Hydrology API rainfall data,
+Open Government Licence v3.0. Weather data by Open-Meteo.com (CC BY 4.0), including ERA5-Land (Copernicus Climate
+Change Service).
