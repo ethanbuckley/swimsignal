@@ -220,8 +220,16 @@ The interval should straddle zero.
 
 ## Results
 
-Written 25 October 2026, from the outputs of the runs below. Nothing above the line was changed after a
-result was seen.
+Written 25 October 2026, from the outputs of the runs below.
+
+The statement was committed in `f7a5318` (24 Oct 22:29 BST). The code commit `9e6168d` (22:38 BST) also
+edited three passages above the line, before any run:
+- which hourly stamps fall in which day (the stamp 23:00 UTC, and a spill from 23:00 to 00:00 UTC);
+- the paragraph saying `train_nn.py`, `live_status_test.py` and `train_multi_year.py` refuse to run at this
+  commit;
+- the acceptance test's wording ("rain stamped 23:00 UTC").
+
+The first run started 25 Oct 11:31 GMT. Nothing above the line changed after that.
 
 ### Verdict: PASS
 
