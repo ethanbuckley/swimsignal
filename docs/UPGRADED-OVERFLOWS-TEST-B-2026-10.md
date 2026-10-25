@@ -391,6 +391,44 @@ candidate for after the season (2027 protocol, section 12).
    go in the results. One run, alone on this machine (`pgrep -fl`, never `pkill`).
 6. Condition 7 and the face checks, then the scores. The results go below the line.
 
+
+## Addendum, 25 October 2026: a reported arm P1
+
+Added on 25 October 2026, before any import, fetch, harness or score for this test. Nothing above this addendum
+is changed. Ethan chose it from the three choices in `docs/UPGRADED-OVERFLOWS-TEST-B-RECENCY-NOTE-2026-10.md`, in
+his words: "Option B: choice 3. Add the reported arm P1 (B0's offsets at United Utilities, 0 elsewhere) as a dated
+addendum."
+
+**Why.** At United Utilities, arm P (production) and arms B and B0 differ in more than the start-date rule:
+
+- **Events.** P uses United Utilities' Stream files for 2023 to 2025. B and B0 use the EA files from 2024 and the polls.
+- **Days.** P uses UTC days; B and B0 use local days.
+- **Rows.** P uses `train.py`'s rule; B and B0 use PR #251's rule, the dead-monitor check and the coverage rule.
+- **Fitting.** P was fitted once; B and B0 are refitted monthly, looking back only.
+- **Recency.** P uses 0.25 (`docs/MODEL-PROVENANCE-2026-10.md`), not 1 as "The arms" says ("as now"). B and B0 use 1.
+
+So B − P cannot say which of these helped or hurt. P1 holds all of them equal to B's at United Utilities.
+
+**Arm P1.** Production's layer 1, unchanged (the same file and hash check as the other arms). Offsets: at every
+United Utilities overflow, B0's offset from the same fit (the same events, days, rows, monthly look-back fits,
+prior strength 15, recency 1 and dead-monitor check, with every start date at the record's start). At the other
+eight companies, 0. P1 needs no fit of its own: the harness takes B0's fitted offsets and zeroes them outside United
+Utilities.
+
+**What it is for. Reported only; it decides nothing.** The deciding comparison stays B − P, and conditions 1 to 7
+are unchanged. Beside them, in each window and with the same scores, interval and draws as the conditions:
+- **B − P1.** At United Utilities this is the start-date rule alone, since B and B0 share everything else there. At
+  the other eight companies P1 is 0, as P is, so B − P1 equals B − P there: the extension.
+- **P1 − P at United Utilities.** What the record change alone does: events, days, rows, fitting and recency
+  together, with no start dates and no extension.
+- **The same three, on unchanged United Utilities overflows,** where B equals B0 and B − P1 is 0 by construction.
+  There P1 − P shows how much of condition 5's result at United Utilities is the record change rather than the
+  extension.
+
+**Unchanged by this addendum:** the arms B, B0 and P and their settings (B and B0 stay at recency 1, as stated);
+the windows E and L; the score, the interval and its seed; the Ilkley exclusion; the conditions; the order of work;
+and what follows. The harness, when written, computes P1 alongside the other arms in the same run.
+
 ---
 
 ## Results
