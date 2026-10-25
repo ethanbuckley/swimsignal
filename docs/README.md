@@ -148,6 +148,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 
 ## Checks and records
 
+- [NOISE-AUDIT-2026-10.md](NOISE-AUDIT-2026-10.md): which tests decided on point rules with no allowance for noise,
+  the re-tests that follow, and the rule for new statements. No verdict is changed.
 - [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2
   was fitted at recency 0.25, shown by reproducing every stored offset exactly; `train.py`'s default now matches.
 - [ANYPOINT-LINES-2026-10.md](ANYPOINT-LINES-2026-10.md): map clicks answered differently by page and API because
