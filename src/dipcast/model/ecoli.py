@@ -21,6 +21,10 @@ import pandas as pd
 from dipcast import config
 
 MODEL_PATH = config.PROCESSED / "ecoli_model.json"
+# The river model: FEATURES plus `sm`, root-zone soil moisture at 00:00 UTC of the issue day (ingest/soil.py),
+# fitted by scripts/train_ecoli_sm.py. It passed docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md on river samples it was
+# not fitted on; on lakes the leads test found it worse, so lakes keep MODEL_PATH.
+SM_MODEL_PATH = config.PROCESSED / "ecoli_model_sm.json"
 THRESHOLD = 900
 SAMPLE_HOUR = 12          # EA samples are taken 10:00-14:00; the model's rain window ends here
 FEATURES = ["lrain48", "lrain24", "logit_risk", "lake", "lake_x_lrain48", "doy_sin", "doy_cos"]
@@ -92,6 +96,18 @@ def fit(X: pd.DataFrame, y: np.ndarray, cols: list[str], C: float = 1.0, meta: d
 @lru_cache(maxsize=1)
 def load() -> EcoliModel | None:
     return EcoliModel.from_json() if MODEL_PATH.exists() else None
+
+
+@lru_cache(maxsize=1)
+def load_sm() -> EcoliModel | None:
+    return EcoliModel.from_json(SM_MODEL_PATH) if SM_MODEL_PATH.exists() else None
+
+
+def with_sm(X: pd.DataFrame, sm: float, model: EcoliModel) -> pd.DataFrame:
+    """X with `sm` for every row, held inside the range the model was fitted on (meta.sm_range): one value per
+    issue, held for every day shown, as the leads test held it."""
+    lo, hi = model.meta["sm_range"]
+    return X.assign(sm=float(np.clip(sm, lo, hi)))
 
 
 MIN_COVERAGE = 0.9   # share of a window's hourly values that must be finite

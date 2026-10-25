@@ -174,12 +174,13 @@ def test_a_day_of_builds_every_30_minutes_asks_each_cell_by_its_floor_not_each_b
 def test_the_floors_fit_the_free_tier_at_a_build_every_30_minutes():
     """The day's most at a build every 30 minutes, with 16 Oct 2026's counts: 332 spot cells, about
     1,270 click-anywhere cells the spots do not share, 105 weather points, 320 Scottish cells. The
-    weather can be asked for once more when the local day turns."""
+    weather can be asked for once more when the local day turns. And the soil moisture the river E. coli
+    estimate reads: one call per river spot cell per UTC day (soil.fetch), 62 cells on 26 Oct 2026."""
     bap, bs = _bap(), _build_site()
     from dipcast import scottish_shadow
     per_day = (332 * 24 / (rainfall.FORECAST_TTL_S / 3600) + 1270 * 24 / bap.RAIN_REFRESH_H
-               + 105 * (24 / bs.WEATHER_REFRESH_H + 1) + 320 * 24 / scottish_shadow.RAIN_REFRESH_H)
-    assert per_day == 8749
+               + 105 * (24 / bs.WEATHER_REFRESH_H + 1) + 320 * 24 / scottish_shadow.RAIN_REFRESH_H + 62 * 1)
+    assert per_day == 8811
     assert per_day <= rainfall.DAILY_CALLS < 10_000
 
 

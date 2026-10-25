@@ -197,6 +197,7 @@ const CREDITS = {modified: 'Combined, filtered and modelled by SwimSignal.', end
     src('rain', 'Weather data by Open-Meteo.com', 'CC BY 4.0'), src('rain', 'Met Office data © Crown copyright, served by Open-Meteo', 'CC BY-SA 4.0'),
     src('model', 'Contains modified Copernicus Climate Change Service information 2026', ''),
     src('lake', 'Lake residence times from HydroLAKES v1.0', 'CC BY 4.0'),
+    src('soil', "Soil moisture from ECMWF's IFS forecasts (models=ecmwf_ifs), served by Open-Meteo", 'CC BY 4.0'),
     src('osm', 'Swim spot location © OpenStreetMap contributors, openstreetmap.org/copyright', 'ODbL 1.0')]};
 const FULL = {...DATA, commit: '3ed1b5a', credits: CREDITS};
 const credits = h => text(h.split('class="credits-h"')[1] || '');
@@ -220,6 +221,10 @@ test('the record credits every source it used, each with its licence and what Sw
   // upstream_summary.companies, every company upstream, wins over the first few contributors.
   const both = credits(Rec.view({...ilkley, upstream_summary: {...ilkley.upstream_summary, companies: ['Anglian Water', 'Yorkshire Water', 'Dwr Cymru Welsh Water']}}, DAYS[1], FULL, VER, BASE, NOW));
   assert.ok(both.includes('Storm overflow status from Anglian Water Services and Yorkshire Water, via'));   // Dŵr Cymru: no data reused, so no credit
+  // Soil moisture only where the river E. coli estimate used it (assumptions.ecoli_model.soil.used).
+  assert.ok(!c.includes('Soil moisture'));
+  const wet = credits(Rec.view({...ilkley, assumptions: {...(ilkley.assumptions || {}), ecoli_model: {soil: {used: true, sm: 0.3}}}}, DAYS[1], FULL, VER, BASE, NOW));
+  assert.ok(wet.includes("Soil moisture from ECMWF's IFS forecasts (models=ecmwf_ifs), served by Open-Meteo, CC BY 4.0. SwimSignal changed soil."));
   // A file from before the sources were written: its one-line credit.
   assert.ok(credits(Rec.view(ilkley, DAYS[1], {...DATA, credits: {attribution: 'Old line.', modified: 'Changed.', full: CREDITS.full}}, VER, BASE, NOW)).includes('Old line. Changed. Full credits: swimsignal.co.uk/terms.html#data.'));
 });

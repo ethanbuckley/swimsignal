@@ -660,3 +660,43 @@ S1 ran with `--from 2026-10-12 --to 2026-10-24` and 2,000 draws.
 |---|---|
 | `scripts/evaluate_2027.py` | `533f5ec776e2361865cf543484f6e7989caf02a0e78466d55c2cdc53fc420d34` |
 | `scripts/make_eval2027.py` | `d28ab0c7b998190445ef00716c0fca7d6f19a70c0086aaff17dc49bcf8117912` |
+
+### Amendment 3, 26 October 2026: soil moisture in the river E. coli estimate
+
+Proposed in the pull request that adopts it, for Ethan to accept or refuse before it merges. Ethan asked for the PR
+on 25 October ("prepare the adoption PR for soil moisture on rivers (lakes keep today's model) ... don't merge until
+I've looked"). If it merges, this amendment stands with it.
+
+**Why.** `docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md` passed: on river samples it was not fitted on, an E. coli model
+with root-zone soil moisture beat today's model. Lakes keep today's model, because the leads test found them worse
+with it (`docs/SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.md`). The site's E. coli figure on rivers then comes from a
+second model file. Section 2's stamp names one E. coli file, so it must say how the second is covered.
+
+**What changes:**
+- **The E. coli model is two files.** `data/processed/ecoli_model.json`, unchanged, serves lakes. It also serves any
+  river spot without usable soil moisture: `forecast.river_ecoli`'s fallback, counted in the build's health as
+  `ecoli_soil`. `data/processed/ecoli_model_sm.json` serves river spots. Its input is ECMWF IFS
+  `soil_moisture_9_to_27cm` (`models=ecmwf_ifs`) at 00:00 UTC of the issue day, held for every day shown
+  (`src/dipcast/ingest/soil.py`).
+- **The stamp's `ecoli` part** is the first 8 hex digits of the MD5 of `ecoli_model.json`'s bytes followed by
+  `ecoli_model_sm.json`'s, when the second exists (`forecast.model_version`). `evaluate_2027.frozen_hashes` computes
+  the same from the tag. Without the second file it is the MD5 of the first alone, as before. With the files in this
+  PR it is `f70c7723`, against `e601ea37` for `ecoli_model.json` alone.
+- **`MODEL_PATHS` gains** `data/processed/ecoli_model_sm.json` and `src/dipcast/ingest/soil.py`.
+- **Freeze step 4 records four model files' SHA-256 at the tag,** not three: the spill model, the calibration map and
+  the two E. coli files.
+- **Section 4's E. coli scoring is unchanged.** It scores the figure each logged forecast carried, which on a river
+  spot is now the soil-moisture model's, or today's on a fallback.
+
+**The prospective check** stated in the rivers-only test, item (c), runs after the 2027 season and decides nothing
+here. It scores the rule (rivers with soil moisture, lakes without) against today's model on the EA's 2027 samples at
+inland bathing waters with overflows upstream, at leads 0 to 4, as `train_ecoli.py`'s by-lead table scores them. Its
+conditions are the rivers-only test's 1 and 2, with rivers and lakes as the subgroups. It reports in a dated
+addendum to that test. If it shows the rule clearly worse, the rule is withdrawn.
+
+**Hashes after this amendment (SHA-256).**
+
+| File | SHA-256 |
+|---|---|
+| `scripts/evaluate_2027.py` | `95176d2086f224122d899aff38cf3dd8f6cbbc8fe0dff760368ee5dbe56c5d40` |
+| `data/processed/ecoli_model_sm.json` | `34d1a7aa4b0382113a79133ee2b5f4f873fdabd524b2a8af6f221964347b64e4` |

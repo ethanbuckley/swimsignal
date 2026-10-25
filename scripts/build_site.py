@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
+from collections import Counter
 from html import escape
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from dipcast.guides import attach_guides, copy_photos
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
+from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fallback_summary, fetch_forecast
 from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
@@ -595,10 +597,13 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     them without rain data, and build_health reports it (fallback_summary)."""
     net, ov = _net(), _overflows()
     lat, lon = list(spots["lat"]), list(spots["lon"])
+    river_cells = []   # the soil moisture the river E. coli model reads (ingest/soil.py): river spots' own cells
     for r in spots.itertuples(index=False):
         try:
             kind, river = spot_hints(r.kind, r.river)
             pin = locate_pin(net, float(r.lon), float(r.lat), kind_hint=kind, river_hint=river, name=r.name)
+            if pin.mode == "river":
+                river_cells.append(soil.cell_of(float(r.lat), float(r.lon)))
             up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
             lat += list(up["lat"]); lon += list(up["lon"])
         except Exception as e:  # noqa: BLE001
@@ -609,6 +614,11 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     fb = fallback_summary()
     log.info("rainfall prefetched: %d cells, %d rows, %.0fs%s", len(cells), len(df), time.time() - t0,
              f"; not fetched: {fb['stale']} from the cache, {fb['missing']} with no rain data" if fb else "")
+    # Once per cell per UTC day (soil.fetch), in its own requests, so a build's spots read it from the cache.
+    t0 = time.time()
+    st = soil.fetch(river_cells)
+    log.info("soil moisture: %d river cells, %d due today, %d fetched (%.0f calls), %d held by the ration, %d failed, %.0fs",
+             st["cells"], st["due"], st["fetched"], st["calls"], st["held"], st["failed"], time.time() - t0)
     # The ensemble's members for the same cells, after the spots' own rain and by the
     # ensemble's own floor, cap and spare-calls rule (rainfall, "ensemble"): each spot's forecast reads them
     # from the cache, and none asks again in this build.
@@ -688,6 +698,19 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
         health["warnings"].append(
             f"{len(failed)} spot{'' if len(failed) == 1 else 's'} published with no forecast: "
             + "; ".join(f"{r['name']} ({r.get('error', 'no days')})" for r in failed[:5]) + more)
+    # River spots whose E. coli figure fell back to today's model for want of soil moisture (forecast.river_ecoli):
+    # counted, and named in `warnings`; never a reason not to publish.
+    soil_states = [((r.get("assumptions") or {}).get("ecoli_model") or {}).get("soil") for r in with_days
+                   if (r.get("location") or {}).get("mode") == "river"]
+    soil_states = [x for x in soil_states if x]
+    fell_back = [x for x in soil_states if not x.get("used")]
+    health["ecoli_soil"] = {"river_spots": len(soil_states), "with_soil": len(soil_states) - len(fell_back),
+                            "fallback": len(fell_back),
+                            "reasons": dict(Counter(x.get("reason", "unknown") for x in fell_back))}
+    if fell_back:
+        health["warnings"].append(
+            f"{len(fell_back)} of {len(soil_states)} river spot{'' if len(soil_states) == 1 else 's'} used today's E. coli model "
+            f"for want of soil moisture ({'; '.join(f'{k}: {v}' for k, v in health['ecoli_soil']['reasons'].items())})")
     # Spots on the wrong water, and gauges whose latest reading is old: reported, never a reason not to publish.
     health["river_levels_stale"] = sum(bool((r.get("river_state") or {}).get("stale")) for r in results)
     misplaced = placement_check(results)
@@ -907,6 +930,8 @@ CREDIT_SOURCES = [
      "changed": "SwimSignal adds up the rain and models it."},
     {"use": "rain", "credit": "Met Office data © Crown copyright, served by Open-Meteo", "licence": "CC BY-SA 4.0",
      "changed": "SwimSignal models it; its rainfall figures stay under CC BY-SA 4.0."},
+    {"use": "soil", "credit": "Soil moisture from ECMWF's IFS forecasts (models=ecmwf_ifs), served by Open-Meteo", "licence": "CC BY 4.0",
+     "changed": "SwimSignal uses it in the E. coli estimate on rivers."},
     {"use": "model", "credit": "Contains modified Copernicus Climate Change Service information 2026 (ERA5-Land). "
      "Neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains",
      "licence": "", "changed": "SwimSignal trained its models on it."},
@@ -927,7 +952,8 @@ def data_credits(root: str) -> dict:
             "database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the "
             "real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by "
             "Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures "
-            "stay under CC BY-SA 4.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature "
+            "stay under CC BY-SA 4.0. Soil moisture from ECMWF's IFS forecasts, served by Open-Meteo, CC BY 4.0. "
+            "Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature "
             "Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): "
             "contains modified Copernicus "
             "Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any "

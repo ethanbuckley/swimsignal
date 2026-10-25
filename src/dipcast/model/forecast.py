@@ -14,6 +14,7 @@ import pandas as pd
 from dipcast import config
 from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
+from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
@@ -134,9 +135,18 @@ def model_version() -> str:
     def h(p) -> str:
         return hashlib.md5(p.read_bytes()).hexdigest()[:8] if p.exists() else "none"
 
+    def h_ecoli() -> str:
+        """Today's E. coli model, and the river model with soil moisture when it exists: the MD5 of the two files'
+        bytes one after the other (evaluate_2027.frozen_hashes computes the same), so either changing starts a
+        new version. Without the river file, the MD5 of ecoli_model.json alone, as before."""
+        if not ecoli.MODEL_PATH.exists():
+            return "none"
+        b = ecoli.MODEL_PATH.read_bytes() + (ecoli.SM_MODEL_PATH.read_bytes() if ecoli.SM_MODEL_PATH.exists() else b"")
+        return hashlib.md5(b).hexdigest()[:8]
+
     from dipcast import __version__
     return (f"spill={h(MODEL_PATH)};cal={h(config.PROCESSED / 'lead_calibration.json')};"
-            f"ecoli={h(ecoli.MODEL_PATH)};code={__version__}+{code_commit()};rain=open-meteo-forecast")
+            f"ecoli={h_ecoli()};code={__version__}+{code_commit()};rain=open-meteo-forecast")
 
 
 @lru_cache(maxsize=1)
@@ -174,6 +184,7 @@ def _model() -> SpillModel:
 def reload_caches() -> None:
     with _LOAD_LOCK:
         _overflows_uncached.cache_clear(); _model.cache_clear(); _lead_calibration.cache_clear(); ecoli.load.cache_clear()
+        ecoli.load_sm.cache_clear()
         model_version.cache_clear(); code_commit.cache_clear(); live_status.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
@@ -311,6 +322,29 @@ def _in_wales(net: RiverNetwork, pin, max_km: float) -> dict:
         log.warning("share of the river in Wales not worked out: %s", e)
         return {}
     return {"wales_share": share} if share else {}
+
+
+def river_ecoli(mode: str, lat: float, lon: float, X: pd.DataFrame, p_today: np.ndarray,
+                now: pd.Timestamp) -> tuple[np.ndarray, dict]:
+    """The E. coli figures a spot shows, and which model gave them. A river spot uses the soil-moisture model
+    (ecoli.load_sm) with its cell's value at 00:00 UTC of the issue day, held for every day shown. A lake, or a river
+    spot with no model file or no usable soil moisture (soil.value), keeps `p_today`, today's model: never a guessed
+    wetness. `reason` says why, and build_health counts the river spots that fell back."""
+    if mode != "river":
+        return p_today, {"used": False, "reason": "lake: today's model"}
+    em_sm = ecoli.load_sm()
+    if em_sm is None:
+        return p_today, {"used": False, "reason": "no river model file"}
+    try:
+        cell = soil.cell_of(lat, lon)
+        soil.fetch([cell], now=now)
+        v, info = soil.value(cell, now)
+    except Exception as e:  # noqa: BLE001 - soil moisture is optional
+        return p_today, {"used": False, "reason": f"soil moisture failed: {type(e).__name__}"}
+    if v is None:
+        return p_today, {"used": False, **info}
+    lo, hi = em_sm.meta["sm_range"]
+    return em_sm.predict(ecoli.with_sm(X, v, em_sm)), {"used": True, "sm": round(v, 3), "held": not lo <= v <= hi, **info}
 
 
 def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = config.MAX_UPSTREAM_KM,
@@ -462,6 +496,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             r48, r24, cov48, _ = ecoli.rain_windows(hourly, ends, return_coverage=True)
             X = ecoli.features(r48, r24, risk, np.full(len(days), 1.0 if pin.mode == "lake" else 0.0), days)
             p_ec = em.predict(X)
+            p_ec, soil_state = river_ecoli(pin.mode, lat, lon, X, p_ec, now)
             for row in day_rows:
                 j = days.get_loc(pd.Timestamp(row["date"], tz=LOCAL_TZ))
                 ok = not (np.isnan(r48[j]) or np.isnan(p_ec[j]))
@@ -472,7 +507,8 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                     row["data_status"] = "rain unavailable"
             out["assumptions"]["ecoli_model"] = {"target": em.meta.get("target"), "fitted_on": em.meta.get("sites"),
                                                  "n_samples": em.meta.get("n_samples"), "loyo_brier": em.meta.get("loyo", {}).get(
-                                                     "rain + spill exposure + season (dipcast)", {}).get("brier")}
+                                                     "rain + spill exposure + season (dipcast)", {}).get("brier"),
+                                                 "soil": soil_state}
             # Where the E. coli figure has been checked: rivers, in the May-September sampling
             # season, at designated bathing waters. Lakes showed no ranking skill.
             out["ecoli_scope"] = {

@@ -337,7 +337,7 @@ def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_c
     assert set(c["companies"]) == set(config.LIVE_FEEDS)   # every feed SwimSignal reads, and no Dwr Cymru
     for name, credited in c["companies"].items():
         assert credited.split(" (")[0] in c["attribution"], name
-    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm"}
+    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm", "soil"}
     for x in c["sources"]:
         assert x["use"] in uses and x["changed"].startswith("SwimSignal ") and x["changed"].endswith(".")
         assert not x["licence"] or x["licence"] in c["licences"]
@@ -346,7 +346,8 @@ def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_c
                  "Environment Agency data © Environment Agency copyright and/or database right",
                  "This uses Environment Agency flood and river level data from the real-time data API (Beta)",
                  "Contains OS data © Crown copyright and database right 2026",
-                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES"):
+                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES",
+                 "Soil moisture from ECMWF's IFS forecasts"):
         assert must in said, must
     lic = {x["credit"].split(",")[0]: x["licence"] for x in c["sources"]}
     assert lic["Weather data by Open-Meteo.com"] == "CC BY 4.0" and lic["Met Office data © Crown copyright"] == "CC BY-SA 4.0"
