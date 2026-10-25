@@ -169,6 +169,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   overflow data. The annual files are OGL v3.0; the live API's licence has no name.
 - [PE-SOURCES-2026-10.md](PE-SOURCES-2026-10.md): sources looked for a population equivalent per overflow, and
   why that work is parked.
+- [OVERFLOW-DATA-SOURCES-2026-10.md](OVERFLOW-DATA-SOURCES-2026-10.md): storm overflow data not yet used, ranked.
+  No section 82 river-quality data is published yet; no source gives upgrade completion dates; open EA
+  improvement flags, WINEP deadlines, EA sondes and Wessex E. coli samples; Southern and Yorkshire event files
+  without a licence.
 
 ## Design
 
