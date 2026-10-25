@@ -33,6 +33,7 @@
 <tr data-file="overflows/"><td><a href="data/overflows/index.json">overflows/</a></td><td>overflows.geojson cut into map tiles, which the map loads a few at a time</td><td class="num">–</td></tr>
 <tr data-file="verification.json"><td><a href="data/verification.json">verification.json</a></td><td>The scores on the Accuracy page</td><td class="num">–</td></tr>
 <tr data-file="verification_live.csv"><td><a href="data/verification_live.csv">verification_live.csv</a></td><td>The individual forecast and observation pairs behind the live spill scores</td><td class="num">–</td></tr>
+<tr data-file="verification_spots_live.csv"><td><a href="data/verification_spots_live.csv">verification_spots_live.csv</a></td><td>Each spot's forecast level beside the level the spills that happened would have given</td><td class="num">–</td></tr>
 <tr data-file="spot_scores.json"><td><a href="data/spot_scores.json">spot_scores.json</a></td><td>Those live spill scores summed over each spot's upstream overflows, for its page</td><td class="num">–</td></tr>
 <tr data-file="upstream/"><td>upstream/</td><td>Every monitored storm overflow upstream of each spot, one file a spot, for the organisers' page</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
@@ -133,7 +134,7 @@
 <p><b>Licence.</b> The water companies' data, CC BY 4.0, via the National Storm Overflow Hub, with the Environment Agency's annual returns (OGL v3.0), combined by SwimSignal.</p>
 
 <h2 id="verification-json">verification.json</h2>
-<p>Everything on the <a href="/verification">Accuracy page</a>, which explains each table: <code>live</code>, the scores of the forecasts this site has issued, against what the overflows then did and, for the E. coli estimate, against the Environment Agency's samples (<code>live.ecoli_live</code>); <code>holdout</code>, <code>leads</code> and <code>reliability</code>, the test on a held-out year, 2025; <code>lead_calibration</code>; <code>ecoli</code>, <code>ecoli_combined</code> and <code>ecoli_model</code>, the E. coli estimate's tests; <code>sampling_plan</code>; and <code>credits</code>.</p>
+<p>Everything on the <a href="/verification">Accuracy page</a>, which explains each table: <code>live</code>, the scores of the forecasts this site has issued, against what the overflows then did and, for the E. coli estimate, against the Environment Agency's samples (<code>live.ecoli_live</code>); the level each spot's page showed, against the level the spills that happened would have given (<code>live.spots_live</code>); <code>holdout</code>, <code>leads</code> and <code>reliability</code>, the test on a held-out year, 2025; <code>lead_calibration</code>; <code>ecoli</code>, <code>ecoli_combined</code> and <code>ecoli_model</code>, the E. coli estimate's tests; <code>sampling_plan</code>; and <code>credits</code>.</p>
 <p><b>Licence.</b> SwimSignal's scores, made against the water companies' discharge records (CC BY 4.0) and the Environment Agency's samples (OGL v3.0).</p>
 
 <h2 id="verification-live-csv">verification_live.csv</h2>
@@ -145,6 +146,17 @@
 <dt><code>observed</code></dt><dd>1 if a spill was observed that day, 0 if none was observed; days without sufficient observations are excluded</dd>
 </dl>
 <p><b>Licence.</b> SwimSignal's forecast and scoring rows, with the water companies' discharge records (CC BY 4.0).</p>
+
+<h2 id="verification-spots-live-csv">verification_spots_live.csv</h2>
+<p>One row for each spot with a monitored overflow upstream, each day and each forecast lead 0 to 4, from the first day the forecasts logged each overflow's travel time, so the level a spot's page shows can be checked against what happened. The rules were fixed in advance in the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md">pre-registration</a> (amendment 1). It is published only when its row count matches <code>live.spots_live.csv.rows</code> in verification.json. Values have 6 decimal places, and the Accuracy page's figures are computed from them as written. Skip the lines beginning with <code>#</code>, which hold its credits.</p>
+<dl class="fields">
+<dt><code>spot_id</code>, <code>day</code>, <code>lead</code></dt><dd>The spot, the day being forecast and the days ahead (0 is the same day)</dd>
+<dt><code>issued_at</code>, <code>forecast</code>, <code>version</code></dt><dd>When the forecast was issued (the latest by 08:00 on the issue day), the spot's sewage spill exposure index from 0 to 1, and the model's stamp. Empty when no forecast was out by 08:00</dd>
+<dt><code>observed</code></dt><dd>The same index with the spills that happened in place of the forecast ones, each overflow's spill days moved later by its travel time in that forecast. Empty when the spot's overflows were not observed well enough to say</dd>
+<dt><code>climatology</code></dt><dd>The same index from each overflow's long-run spill rate for the month instead of its forecast: the reference the forecast is compared with</dd>
+<dt><code>covered</code>, <code>reason</code></dt><dd>The share of the spot's weight whose overflows were observed on every day that reaches it (0.95 is needed), and why there is no observation</dd>
+</dl>
+<p><b>Licence.</b> SwimSignal's forecast and scoring rows, built from the water companies' discharge records (CC BY 4.0).</p>
 
 <h2 id="spot-scores-json">spot_scores.json</h2>
 <p>The rows of <code>verification_live.csv</code> for each spot's upstream overflows, counted, for the "How the forecast has done here" tile on its page. Nothing is weighted, so each count can be found by filtering the CSV to the overflows in the spot's <code>upstream/</code> file. A spot with no monitored overflow upstream is left out. The file has <code>warn_at</code>, the spill chance counted as a warning (the Accuracy page's); <code>min_spills</code>, the spill days a spot needs before its page gives a share; <code>first_day</code> and <code>last_day</code>; <code>all</code>, the same counts over every row; <code>generated_at</code>, <code>credits</code> and <code>spots</code>, by spot id:</p>
