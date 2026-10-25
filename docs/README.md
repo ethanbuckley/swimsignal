@@ -38,7 +38,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   `-reliability.csv`, `-scores.csv`.
 - [NINE-COMPANY-MODEL-V2-TEST-2026-11.md](NINE-COMPANY-MODEL-V2-TEST-2026-11.md): the nine-company model again,
   trained on 2024 and 2025 and tested on January to August 2026, pooled layer alone and with two-year offsets, with
-  conditions that allow for noise. **No result yet.**
+  conditions that allow for noise. **Not adopted:** both arms fail condition 2 at United Utilities only ((b) +3.4%,
+  interval just above zero); at the other eight companies (b) is 11% to 23% better than production, and 15% better on
+  the Welsh set. Tables: `-checks.json`, `-event-defs.csv`, `-intervals.csv`, `-monthly.csv`, `-reliability.csv`,
+  `-scores.csv`, `-sensitivities.csv`, `-training.csv`.
 - [NEURAL-CHALLENGER-TEST-2026-10.md](NEURAL-CHALLENGER-TEST-2026-10.md): a neural net against the boosted
   trees. **Not adopted:** conditions 1 to 4 fail (Brier 0.0372 against 0.0362). Tables: `-checks.json`,
   `-differences.csv`, `-leads.csv`, `-reliability.csv`, `-scores.csv`, `-training.csv`.

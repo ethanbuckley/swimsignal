@@ -384,4 +384,149 @@ runs, but nothing is adopted for 2027. A pass is then a candidate for after the 
 
 ## Results
 
-Not yet run.
+Run 25 October 2026 from harness commit `6bc15b6`, offline, from a `git archive` of that commit, under the group's
+`heavy-run.lock` (taken 23:25:23 UTC, released 23:27:44). Exit 0. Peak memory 4.8 GB. The statement above was last
+changed in `d822eb2`, before the fetch's last request and before any fit. The branch also carries PR #334's
+day-boundary code, merged in `4d66246` as the statement says. Tables beside this file:
+- `-scores.csv`: Brier, AUC, log loss, ECE, mean forecast, skill, per company and predictor;
+- `-intervals.csv`: each arm minus production, two-way and week-only intervals;
+- `-reliability.csv`, `-sensitivities.csv`, `-monthly.csv`, `-event-defs.csv`, `-training.csv`;
+- `-checks.json`: inputs, face checks, every condition, ECE intervals.
+
+### Verdict: not adopted
+
+**Neither arm passes.** Both fail condition 2 at United Utilities, and only there. Arm (a) also fails condition 4
+there. Everything else passes for both arms. Nothing is adopted or deployed, whatever the result (Ethan's terms for
+this run).
+
+| Condition | (a) pooled | (b) offsets |
+|---|---|---|
+| 1. Gain over the nine | pass: −0.00424 [−0.00722, −0.00180] | pass: −0.00550 [−0.00883, −0.00268] |
+| 2. No company clearly worse | **fail at United Utilities**: +9.0% [+0.00185, +0.00511] | **fail at United Utilities**: +3.4% [+0.00007, +0.00261] |
+| 3. Skill against both baselines | pass at all nine | pass at all nine |
+| 4. Reliability | **fail at United Utilities**: ECE 0.0233 against production's 0.0062 | pass at all nine (Thames 0.0221, production 0.0401) |
+| 5. Welsh set | pass: −15.2% [−0.01400, −0.00279] | (same layer 1) |
+
+Brackets are the 95% two-way interval of arm − production. Minimum data held: every company has 8,502 (Thames) to
+31,119 (Severn Trent) spill-days in the test rows, and the Welsh set 1,986.
+
+### Seen before the run
+
+- **The fetch** (`data/cache/rain_nine/requests_2026a.jsonl`): 145 requests, 1,441 cells (1,422 + 19 for the Welsh
+  set), all OK, 22:02 to 22:55 UTC on 25 October. One request was retried once after a dropped connection or a
+  server error, so 146 attempts and **2,518.5 calls**. No other Open-Meteo call from this Mac that UTC day.
+- **A smoke run** of the harness on 30 overflows per company in cells with cached 2026 rain (`--smoke`). It finished;
+  its scores were not read. Its log line "verdict None" came from the minimum-data rule: two companies had no rows.
+- **A first attempt that stopped before any score.** Harness `ebe21d9`, 23:06:05 to 23:07:58 UTC, under the lock. It
+  logged the counts and fits below, "face checks pass", and then raised a TypeError building the Welsh set's
+  bootstrap draws: one Dŵr Cymru row in the 2025 return ("Greenfield Halls Factory Yard Nra") has no site id. No
+  score, interval or condition was computed, printed or written; its output folder held `training.csv` and the three
+  model files only. The fix (`6bc15b6`) leaves out return rows with no site id, which takes the Welsh set from 122
+  overflows to 121. The nine companies have none. The second run used the same frozen inputs (the same SHA-256 list),
+  the same seeds (fit 0, bootstrap 20261025), the same arms and the same conditions.
+
+### The rows
+
+| | Overflows | Site-days | Spill-days |
+|---|---|---|---|
+| Training 2024 | 13,598 | | |
+| Training 2025 | 13,910 | | |
+| Training, both years | | 10,054,018 | 726,312 |
+| Test, passing the dead-monitor check | 13,459 of 13,972 | 3,270,537 | 195,344 |
+| Test, without the check (sensitivity) | 13,972 | 3,395,196 | 200,734 |
+| Welsh set | 121 | 29,403 | 1,986 |
+
+- Kept overflow-years per company and year equal PR #251's coverage table exactly (`-training.csv`).
+- The dead-monitor check's reference period: 5 to 24 October, 20 days, a known poll needed on 14
+  (`live_coverage.parquet` SHA-256 `4cded9b0…`, the release of 25 October 14:18 UTC).
+- Rain for 2026: 1,642 cells, 202 from the shared cache and 1,440 from the fetch.
+- **Face checks:** production's hash matched; every predictor had a finite forecast on every row; the test labels'
+  spill-days per company equal an independent recount from the EA events.
+
+### Scores on the test rows
+
+Brier (ECE in brackets). Bold marks the lowest Brier among the arms and production.
+
+| Company | Rows | Base rate | (a) | (b) | Production | Hold-out | Flat rate | Climatology |
+|---|---|---|---|---|---|---|---|---|
+| Anglian | 321,489 | 0.042 | 0.0309 (0.017) | **0.0300** (0.012) | 0.0347 (0.024) | 0.0348 | 0.0401 | 0.0389 |
+| Northumbrian | 361,098 | 0.054 | 0.0376 (0.021) | **0.0366** (0.019) | 0.0427 (0.032) | 0.0426 | 0.0507 | 0.0482 |
+| Severn Trent | 580,770 | 0.054 | 0.0354 (0.020) | **0.0344** (0.018) | 0.0416 (0.031) | 0.0414 | 0.0508 | 0.0482 |
+| South West | 312,984 | 0.094 | 0.0446 (0.002) | **0.0431** (0.005) | 0.0484 (0.021) | 0.0493 | 0.0852 | 0.0780 |
+| Southern | 216,756 | 0.065 | 0.0352 (0.022) | **0.0347** (0.020) | 0.0431 (0.035) | 0.0435 | 0.0606 | 0.0567 |
+| Thames | 130,005 | 0.065 | 0.0390 (0.026) | **0.0377** (0.022) | 0.0492 (0.040) | 0.0495 | 0.0612 | 0.0569 |
+| United Utilities | 539,946 | 0.054 | 0.0411 (0.023) | 0.0390 (0.016) | **0.0377** (0.006) | 0.0390 | 0.0513 | 0.0480 |
+| Wessex | 304,479 | 0.066 | 0.0375 (0.013) | **0.0371** (0.014) | 0.0432 (0.030) | 0.0433 | 0.0615 | 0.0572 |
+| Yorkshire | 503,010 | 0.060 | 0.0384 (0.015) | **0.0366** (0.011) | 0.0445 (0.030) | 0.0440 | 0.0567 | 0.0531 |
+| All nine | 3,270,537 | 0.060 | 0.0378 (0.010) | **0.0365** (0.009) | 0.0420 (0.024) | 0.0423 | 0.0561 | 0.0526 |
+
+**Arm (b) against production**, Brier difference and 95% two-way interval: Anglian −13.6%, Northumbrian −14.1%,
+Severn Trent −17.4%, South West −11.0%, Southern −19.6%, Thames −23.3%, United Utilities **+3.4%**, Wessex −14.0%,
+Yorkshire −17.6%; nine together −13.1%. Every interval outside United Utilities lies wholly below zero.
+
+**The Welsh set:** v2's pooled layer 0.04122, production's pooled layer 0.04861 (−15.2%). AUC 0.935 against 0.915.
+
+### Reported, not deciding
+
+**AUC and log loss.** Arm (b)'s AUC is higher than production's at eight of nine companies. The exception is United
+Utilities, 0.9230 against 0.9244. Nine together: AUC 0.938 against 0.921; log loss 0.127 against 0.150. At United Utilities, (b)'s log
+loss is 0.1348 against production's 0.1309: worse, as its Brier is.
+
+**Recency 0.25, arm (b25).** Almost the same as (b): nine together 0.03662 against 0.03654; United Utilities
+0.03900 against 0.03902 (+3.3% on production, interval [+0.00002, +0.00264]). It would have failed in the same place.
+So the recency choice did not decide the result.
+
+**(b) − (a)**, nine together: −0.00126 [−0.00169, −0.00084]. The two-year offsets lower the Brier at all nine
+companies, most at United Utilities (0.0390 against 0.0411).
+
+**The hold-out model** (United Utilities 2023-24) scores 0.0390 at United Utilities, equal to (b) (0.03896 against
+0.03902), and 3.2% worse than production. So at United Utilities, (b) does as well as a model with two years of the
+company's own Stream offsets, and production's extra year (2025) is worth about 3%.
+
+**Where United Utilities' loss is.** By month, (b) against production at United Utilities: January +9.8%, February
++9.9%, March −0.6%, April +4.5%, May +1.8%, June −0.5%, July −4.5%, August −0.4%. Mean forecasts against observed:
+January (b) 0.094, production 0.078, observed 0.057; February 0.142, 0.099, 0.091. So most of the loss is (b)
+forecasting United Utilities' winter storms too high. That is the January the data check flagged: fewer United
+Utilities overflows spilling per storm in 2026, cause unknown. Production forecasts it lower, because its layer 1 was
+fitted on United Utilities alone.
+
+**Sensitivities** (point estimates; intervals were not stated for these):
+
+| | United Utilities, (b) vs production | Nine together, (b) vs production |
+|---|---|---|
+| As stated | +3.4% | −13.1% |
+| Without United Utilities' January | +2.3% | −13.6% |
+| Without July | +3.6% | −13.2% |
+| Without the dead-monitor check | +3.5% | −12.9% |
+
+Without United Utilities' January, (b) is still above the 1% limit there. No sensitivity changes the verdict.
+
+**By month, nine together** (b) against production: January −16.9%, February −19.8%, March −12.2%, April +1.2%,
+May −4.0%, June −2.7%, July −2.4%, August −6.4%. The gain is in the wet months.
+
+**Calibration.** Over the nine, observed 0.060; mean forecast (b) 0.051, production 0.036. Both forecast too low on
+the EA file in 2026, as in 2025 (`docs/LIVE-VS-EDM-LABELS-2026-10.md`), production by more. ECE intervals: Thames (b)
+[0.006, 0.042], production [0.015, 0.070]; United Utilities (b) [0.007, 0.026], production [0.004, 0.012].
+
+**Event definitions** (`-event-defs.csv`): the share of spill-days touched only by events under 15 minutes is 1-3% at
+Thames and Yorkshire and 8-19% elsewhere, similar in training and test. At United Utilities it rose from 13.5% in
+training to 18.0% in the test rows.
+
+**Option B side by side:** not available; option B has not run.
+
+### My prediction against the result
+
+I predicted (b) would fail at United Utilities or Thames, and (a) at United Utilities. (b) failed at United
+Utilities only; Thames passed condition 4 because production's own ECE there is worse. I called United Utilities a
+coin flip: it failed by a narrow interval (lower end +0.00007). I did not expect gains of 11% to 23% at the other
+eight companies, or 15% on the Welsh set.
+
+### What this means (inferred, not tested)
+
+- Outside United Utilities, a model trained on the nine companies beats production by a wide margin, at every
+  company, on Brier, AUC and log loss, with intervals well clear of zero. That is the limit the radar check pointed at.
+- The one obstacle is United Utilities, where production has three years of the company's own records and v2 has
+  two years of EA files. The loss is mostly January and February 2026, the months the data check could not explain.
+- A next test could keep production's United Utilities model and use v2 for the other eight companies, or train v2
+  on 2024-26 once the full 2026 file exists. Either needs its own statement. Adoption, of anything, is Ethan's
+  decision.
