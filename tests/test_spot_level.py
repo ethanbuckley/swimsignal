@@ -137,7 +137,12 @@ def test_verify_spots_writes_the_registered_rows(tmp_path, monkeypatch):
     assert out["by_company"][0]["company"] == "Y Water"     # B carries the most weight
     # The reference: each overflow's c x f (October's factor) combined the same way. c is 0.1 and 0.2 a day.
     f = fl._month_factors()[10]
-    assert o["climatology"]["mean"] == pytest.approx(1 - (1 - 0.5 * 0.1 * f) * (1 - 0.8 * 0.2 * f))
+    assert o["climatology"]["mean"] == pytest.approx(1 - (1 - 0.5 * 0.1 * f) * (1 - 0.8 * 0.2 * f), abs=1e-6)
+    # The reference is published too, at 6 places, beside the observation (amendment 2, item 8).
+    text = (tmp_path / fl.SPOTS_CSV).read_text().splitlines()
+    assert text[0].split(",")[6] == "climatology"
+    row = next(x for x in text if x.startswith("s1,2026-10-14,0,")).split(",")
+    assert row[4] == "0.420000" and row[5] == "0.700000" and len(row[6].split(".")[1]) == 6
     assert out["csv"] == {"file": fl.SPOTS_CSV, "rows": 10, "columns": fl.SPOT_COLUMNS}
     assert out["spots_without_overflows"] == 0 and out["never_observed"] == []
 
@@ -159,7 +164,7 @@ def test_the_published_spot_csv_carries_the_credits_and_only_rows_that_match(tmp
     config = _state(tmp_path / "state", monkeypatch)
     config.STATE.mkdir()
     from dipcast.forecast_log import SPOT_COLUMNS, SPOTS_CSV
-    pd.DataFrame([["s1", "2026-10-14", 0, "2026-10-14T07:30+01:00", 0.42, 0.7, 1.0, None, "v"]] * 2,
+    pd.DataFrame([["s1", "2026-10-14", 0, "2026-10-14T07:30+01:00", 0.42, 0.7, 0.1, 1.0, None, "v"]] * 2,
                  columns=SPOT_COLUMNS).to_csv(config.STATE / SPOTS_CSV, index=False)
     site = tmp_path / "site"
     (site / "data").mkdir(parents=True)
@@ -220,3 +225,57 @@ def test_the_latest_decision_forecast_is_taken_whole_and_a_missing_value_is_not_
     assert r.loc[("2026-10-14", 0), "observed"] == 0.5 and pd.isna(r.loc[("2026-10-14", 0), "reason"])
     # Missing forecasts are counted as neither a forecast nor a scored cell.
     assert out["n_forecast"] == 0 and out["n_scored"] == 0 and out["n_observed"] >= 1
+
+
+# ------------------------------------------------------------------ amendment 2 (signed 25 Oct 2026)
+
+def test_levels_are_the_ones_the_site_shows():
+    """Item 3: a level is transport.risk_label's, from the 0-100 score on the page, not the raw cut."""
+    from dipcast import forecast_log as fl
+    from dipcast.model.transport import risk_label
+    # 0.395 shows as 40, High risk, under the raw cut of 0.40. (0.145 shows as 14: in floating point 0.145 x 100 is
+    # 14.499999999999998, on the page too, so hand-picked edges mislead; the grid below is the check.)
+    xs = [0.0, 0.1449, 0.15, 0.3944, 0.395, 0.40, 0.6944, 0.70, 1.0, np.nan]
+    assert list(fl.spot_levels(xs)) == [0, 0, 1, 1, 2, 2, 2, 3, 3, -1]
+    grid = np.round(np.linspace(0, 1, 20001), 6)
+    assert [fl.SPOT_BANDS[i] for i in fl.spot_levels(grid)] == [risk_label(float(x)) for x in grid]
+
+
+def _cells(rows):
+    """spot_summary's input: (spot, day, lead, risk, observed, climatology)."""
+    g = pd.DataFrame(rows, columns=["spot_id", "day", "lead", "risk", "observed", "climatology"])
+    return g.assign(cell=range(len(g)), issued_ms=1.0, reason=None, covered=1.0, no_live=0.0)
+
+
+def test_the_summary_counts_levels_from_the_shown_score():
+    from dipcast import forecast_log as fl
+    spots = pd.DataFrame({"id": ["s"], "name": ["S"], "kind": ["river"]})
+    links = pd.DataFrame({"cell": [0, 1], "site_id": ["A", "A"], "weight": [1.0, 1.0]})
+    # 0.395 shows as 40, High risk: a warning, though under the raw cut. 0.3945 observed shows as 40 too: an event.
+    g = _cells([("s", D, 0, 0.395, 0.3945, 0.2), ("s", D, 1, 0.3944, 0.0, 0.2)])
+    out = fl.spot_summary(g, spots, links)
+    o = out["overall"]
+    assert (o["hits"], o["false_alarms"], o["misses"], o["quiet_correct"]) == (1, 0, 0, 1)
+    assert out["levels"]["counts"][2][2] == 1 and out["levels"]["counts"][1][0] == 1 and out["levels"]["score_cuts"] == [15, 40, 70]
+
+
+def test_the_figures_come_from_the_rows_as_written():
+    """Item 11: the summary reads the 6-place values the CSV gives back, so the page and the evaluation agree.
+    0.39449996 is Moderate risk unrounded (round(x, 3) = 0.394), but is written 0.394500, which is High risk."""
+    from dipcast import forecast_log as fl
+    raw = pd.Series([0.39449996])
+    assert fl.spot_levels(raw)[0] == 1
+    pub = fl.as_published(raw)
+    assert pub[0] == float("0.394500") and fl.spot_levels(pub)[0] == 2
+    # The evaluation reads the same double from the text, with pandas' round-trip parser.
+    import io
+    back = pd.read_csv(io.StringIO("x\n0.394500\n"), float_precision="round_trip")["x"]
+    assert back[0] == pub[0]
+
+
+def test_never_observed_spots_carry_their_share_without_a_live_feed():
+    """Item 7: each spot never observed is listed with the share of its weight on overflows with no live feed."""
+    from dipcast import forecast_log as fl
+    g = _cells([("s", D, 0, 0.1, np.nan, 0.1), ("s", D, 1, 0.1, np.nan, 0.1)]).assign(reason="no_live_feed", no_live=[0.18, 0.181])
+    out = fl.spot_summary(g, pd.DataFrame({"id": ["s"], "name": ["S"], "kind": ["river"]}), pd.DataFrame(columns=["cell", "site_id", "weight"]))
+    assert out["never_observed"] == [{"spot_id": "s", "name": "S", "share_no_live": 0.181}]

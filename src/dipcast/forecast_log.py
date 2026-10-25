@@ -765,16 +765,20 @@ def scored_rows(fc: pd.DataFrame | None, overflows_path: Path | None = None) -> 
 # transport.shift_by_travel moves a chance. So both sides share the forecast's transport.
 
 SPOTS_CSV = "verification_spots_live.csv"
-SPOT_COLUMNS = ["spot_id", "day", "lead", "issued_at", "forecast", "observed", "covered", "reason", "version"]
+# docs/PREREGISTRATION-2027.md, amendment 1 (file D), with amendment 2's climatology column after observed.
+SPOT_COLUMNS = ["spot_id", "day", "lead", "issued_at", "forecast", "observed", "climatology", "covered", "reason", "version"]
 SPOT_LEADS = (0, 1, 2, 3, 4)
 # A spot-day is observed only when the overflows carrying at least this share of its summed weight each have an
 # observation on every source day that reaches it.
 SPOT_OBSERVED_SHARE = 0.95
-# The event: the spot would have read High risk had the spills been known. The bands are the site's (SPILL_CUTS
-# in site/levels.js), a value on a cut in the band above it.
-SPOT_EVENT_AT = SPILL_WARN_AT
-SPOT_CUTS = (0.15, 0.40, 0.70)
+# A level is the one the site shows for a value (transport.risk_label, from the 0-100 score on the page), so the score
+# is of the level an alert fires on. The event: the spills that happened would have put the spot at High risk or
+# above. A warning: the forecast was there (amendment 2, item 3).
 SPOT_BANDS = ("low", "moderate", "high", "very high")
+SPOT_HIGH = SPOT_BANDS.index("high")
+# Published values carry this many decimal places, and every figure is computed from them as written, so the site
+# and the 2027 evaluation read the same numbers (amendment 2, item 11).
+SPOT_DECIMALS = 6
 # Why a spot-day has no observation, in the order checked: no forecast that issue day; none by the decision hour;
 # a forecast from before travel times were logged (12 Oct 2026); none of its overflows carries weight; overflows
 # with no live feed over 5% of its weight (never observable); else the coverage rule that leaves out the most
@@ -793,6 +797,18 @@ def spot_list() -> pd.DataFrame:
     if not frames:
         return pd.DataFrame(columns=["id", "name", "lat", "lon", "kind"])
     return pd.concat(frames, ignore_index=True).drop_duplicates("id").reset_index(drop=True)
+
+
+def spot_levels(values) -> np.ndarray:
+    """The level index (0 low to 3 very high) the site gives each value, by transport.risk_label; -1 for a missing one."""
+    from dipcast.model.transport import risk_label
+    return np.array([-1 if pd.isna(v) else SPOT_BANDS.index(risk_label(float(v))) for v in values], dtype=int)
+
+
+def as_published(values: pd.Series) -> pd.Series:
+    """Each value as the CSV gives it back: the nearest double to its SPOT_DECIMALS-place text, which is what Python's
+    float() and pandas' float_precision="round_trip" read."""
+    return values.map(lambda v: float(f"{v:.{SPOT_DECIMALS}f}") if pd.notna(v) else np.nan).astype(float)
 
 
 def not_current_days(hist: pd.DataFrame, poll_log: pd.DataFrame | None) -> pd.DataFrame:
@@ -822,12 +838,12 @@ def spot_exposure(cells: pd.DataFrame, links: pd.DataFrame, status: pd.DataFrame
     unobserved, under the gap rule, as verify_live counts a day with no coverage row.
 
     Returns one row per cell: weight (the summed weight), covered (the share of it whose overflows have an
-    observation on every source day), observed (o, or NaN when the cell is not observed) and reason (None when
-    observed). An overflow without a live feed is never observed. Unobserved overflows are left out of o, as if
+    observation on every source day), no_live (the share of it on overflows without a live feed), observed (o, or
+    NaN when the cell is not observed) and reason (None when observed). An overflow without a live feed is never observed. Unobserved overflows are left out of o, as if
     they had not spilled: o is computed only when they carry under 5% of the weight."""
     out = cells[["cell"]].copy()
     if links.empty:
-        return out.assign(weight=0.0, covered=np.nan, observed=np.nan, reason="no_overflows")
+        return out.assign(weight=0.0, covered=np.nan, no_live=np.nan, observed=np.nan, reason="no_overflows")
     lk = links.merge(cells[["cell", "day"]], on="cell")
     lk["weight"] = lk["weight"].astype(float)
     no_travel = lk.groupby("cell")["travel_h"].apply(lambda t: bool(t.isna().any()))
@@ -873,6 +889,7 @@ def spot_exposure(cells: pd.DataFrame, links: pd.DataFrame, status: pd.DataFrame
                        ["no_overflows", "no_travel_time", "no_live_feed", out["cell"].map(top).fillna("max_gap").to_numpy()],
                        default="")
     out["covered"] = np.where(travel_missing, np.nan, out["covered"])
+    out["no_live"] = share_no_live
     out["observed"] = np.where(observed, o, np.nan)
     out["reason"] = np.where(reason == "", None, reason)
     return out
@@ -951,11 +968,12 @@ def verify_spots(as_of: date | None = None, spots: pd.DataFrame | None = None, o
     as_of = as_of or pd.Timestamp.now(tz=LOCAL_TZ).date()
     cutoff = as_of - timedelta(days=1)
     spots = spot_list() if spots is None else spots
-    empty = {"n_cells": 0, "n_scored": 0, "event_at": SPOT_EVENT_AT, "observed_share": SPOT_OBSERVED_SHARE,
+    empty = {"n_cells": 0, "n_scored": 0, "event": "observed level High risk or above (transport.risk_label)",
+             "observed_share": SPOT_OBSERVED_SHARE, "decimals": SPOT_DECIMALS,
              "unit": "spot-day forecast: one spot, one target day, one lead"}
 
     def write(rows: pd.DataFrame) -> dict:
-        rows.to_csv(config.state_write(SPOTS_CSV), index=False, float_format="%.4f")
+        rows.to_csv(config.state_write(SPOTS_CSV), index=False, float_format=f"%.{SPOT_DECIMALS}f")
         return {"file": SPOTS_CSV, "rows": len(rows), "columns": SPOT_COLUMNS}
     with _LOCK:
         con = _conn()
@@ -1014,14 +1032,17 @@ def verify_spots(as_of: date | None = None, spots: pd.DataFrame | None = None, o
     else:
         status = pd.DataFrame(columns=["site_id", "day", "e", "reason"])
     obs = spot_exposure(g.loc[has, ["cell", "day"]], lk, status).set_index("cell")
-    g = g.join(obs[["covered", "observed", "reason"]], on="cell")
+    g = g.join(obs[["covered", "no_live", "observed", "reason"]], on="cell")
     g["reason"] = np.where(has, g["reason"], np.where(g["late"].fillna(False).astype(bool), "missed_deadline", "no_forecast"))
     g["climatology"] = climatology_index(g.loc[has, ["cell", "day"]], lk, overflows_path).reindex(g["cell"]).to_numpy()
+    # The values as the file gives them back: the summary below is computed from those, not the unrounded ones.
+    for c in ("risk", "observed", "climatology", "covered"):
+        g[c] = as_published(g[c].astype(float))
     issued = pd.to_datetime(g["issued_ms"], unit="ms", utc=True).dt.tz_convert(LOCAL_TZ)
     rows = pd.DataFrame({
         "spot_id": g["spot_id"].astype(str), "day": pd.to_datetime(g["day"]).dt.strftime("%Y-%m-%d"),
         "lead": g["lead"].astype(int), "issued_at": issued.dt.strftime("%Y-%m-%dT%H:%M%:z").where(has, None),
-        "forecast": g["risk"].astype(float), "observed": g["observed"].astype(float), "covered": g["covered"].astype(float),
+        "forecast": g["risk"], "observed": g["observed"], "climatology": g["climatology"], "covered": g["covered"],
         "reason": g["reason"], "version": g["version"].where(has, None)})
     rows = rows.sort_values(["day", "spot_id", "lead"], kind="stable").reset_index(drop=True)
     out = {**empty, **spot_summary(g, spots, links_by_cell=lk, overflows_path=overflows_path),
@@ -1038,10 +1059,10 @@ def _auc(y, p) -> float | None:
 
 def spot_summary(g: pd.DataFrame, spots: pd.DataFrame, links_by_cell: pd.DataFrame,
                  overflows_path: Path | None = None) -> dict:
-    """The figures the Accuracy page shows for the level, from verify_spots' cells (forecast as `risk`, observed,
-    climatology, reason, lead, day, spot_id, cell): the cells and why each without an observation has none; on
-    cells with both a forecast and an observation, the alert's record at the High line (warning_counts, with
-    the event o >= SPOT_EVENT_AT), the AUC, the four-by-four table of forecast level against observed level, and
+    """The figures the Accuracy page shows for the level, from verify_spots' cells as published (forecast as `risk`,
+    observed, climatology, reason, lead, day, spot_id, cell, no_live): the cells and why each without an observation
+    has none; on cells with both a forecast and an observation, the alert's record at the High line (warning_counts
+    on the levels of spot_levels, the event the observed level at High risk or above), the AUC, the four-by-four table of forecast level against observed level, and
     the mean forecast against the mean observed by week. By lead, same day and in advance, river and lake spots,
     and the company of the overflow with the largest weight. The climatology index's record and AUC beside."""
     n_cells = len(g)
@@ -1053,11 +1074,15 @@ def spot_summary(g: pd.DataFrame, spots: pd.DataFrame, links_by_cell: pd.DataFra
     fc = g[g["issued_ms"].notna() & (g["reason"] != "no_travel_time")]
     nl = fc.groupby("spot_id")["reason"].apply(lambda r: bool((r == "no_live_feed").all())) if len(fc) else pd.Series(dtype=bool)
     names = spots.drop_duplicates("id").set_index("id")
-    out["never_observed"] = [{"spot_id": s, "name": str(names["name"].get(s, s)) if "name" in names else s}
+    share = fc.groupby("spot_id")["no_live"].max() if "no_live" in fc else pd.Series(dtype=float)
+    out["never_observed"] = [{"spot_id": s, "name": str(names["name"].get(s, s)) if "name" in names else s,
+                              "share_no_live": None if pd.isna(share.get(s)) else round(float(share.get(s)), 4)}
                              for s in nl.index[nl]]
     if scored.empty:
         return out
-    scored["y"] = (scored["observed"] >= SPOT_EVENT_AT).astype(int)
+    scored["fl"], scored["ol"] = spot_levels(scored["risk"]), spot_levels(scored["observed"])
+    scored["cl"] = spot_levels(scored["climatology"])
+    scored["y"] = (scored["ol"] >= SPOT_HIGH).astype(int)
     kind = names["kind"] if "kind" in names else pd.Series(dtype=object)
     scored["water"] = scored["spot_id"].map(kind).fillna("unknown")
     comp = _site_companies(overflows_path)
@@ -1065,12 +1090,12 @@ def spot_summary(g: pd.DataFrame, spots: pd.DataFrame, links_by_cell: pd.DataFra
     scored["company"] = scored["cell"].map(top).map(comp).fillna("unknown") if comp is not None else "unknown"
 
     def record(s: pd.DataFrame) -> dict:
-        r = {**warning_counts(s["y"], s["risk"], SPOT_EVENT_AT), "auc": _auc(s["y"], s["risk"]),
+        r = {**warning_counts(s["y"], s["fl"], SPOT_HIGH), "auc": _auc(s["y"], s["risk"]),
              "mean_forecast": float(s["risk"].mean()), "mean_observed": float(s["observed"].mean()),
              "n_spots": int(s["spot_id"].nunique())}
         c = s.dropna(subset=["climatology"])
         if len(c):
-            r["climatology"] = {**warning_counts(c["y"], c["climatology"], SPOT_EVENT_AT), "auc": _auc(c["y"], c["climatology"]),
+            r["climatology"] = {**warning_counts(c["y"], c["cl"], SPOT_HIGH), "auc": _auc(c["y"], c["climatology"]),
                                 "mean": float(c["climatology"].mean())}
         return r
     out["overall"] = record(scored)
@@ -1085,9 +1110,9 @@ def spot_summary(g: pd.DataFrame, spots: pd.DataFrame, links_by_cell: pd.DataFra
     out["by_water"] = [{"water": str(k), **record(s)} for k, s in scored.groupby("water")]
     out["by_company"] = sorted(({"company": str(k), **record(s)} for k, s in scored.groupby("company")),
                                key=lambda r: (-r["n"], r["company"]))
-    fb = np.searchsorted(SPOT_CUTS, scored["risk"].to_numpy(dtype=float), side="right")
-    ob = np.searchsorted(SPOT_CUTS, scored["observed"].to_numpy(dtype=float), side="right")
-    out["levels"] = {"bands": list(SPOT_BANDS), "cuts": list(SPOT_CUTS), "rows": "forecast level", "columns": "observed level",
+    from dipcast.model.transport import SCORE_CUTS
+    fb, ob = scored["fl"].to_numpy(), scored["ol"].to_numpy()
+    out["levels"] = {"bands": list(SPOT_BANDS), "score_cuts": list(SCORE_CUTS), "rows": "forecast level", "columns": "observed level",
                      "counts": [[int(((fb == i) & (ob == j)).sum()) for j in range(len(SPOT_BANDS))] for i in range(len(SPOT_BANDS))]}
     scored["week"] = pd.to_datetime(scored["day"]).dt.to_period("W").dt.start_time.dt.date.astype(str)
     out["by_week"] = [{"week": w, "n": len(s), "mean_forecast": float(s["risk"].mean()), "mean_observed": float(s["observed"].mean())}

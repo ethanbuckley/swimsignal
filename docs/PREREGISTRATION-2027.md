@@ -636,3 +636,27 @@ spots with an overflow upstream on 24 October 2026, less the 8 never observed.
   `scripts/make_eval2027.py` (which gains `--spot-list`). Those rows replace section 13's for the two files.
   `evaluate_2027.recorded_hashes` and `tests/test_evaluate_2027.py` take the last row the protocol gives for a file.
 - Until it is merged, section 13's hashes stand.
+
+**Dry run on autumn 2026, 25 October 2026: not a result.** The `state` release of 25 October 2026 (read only) gave
+file D for target days 12 to 24 October. The published `spots.json` and 80 upstream files of the build of
+25 October 2026, 22:09 UTC, gave a spot list by `make_eval2027.py --spot-list`. That list is not the frozen one.
+S1 ran with `--from 2026-10-12 --to 2026-10-24` and 2,000 draws.
+
+- 80 eligible spots and 5,200 cells; 3,078 scored (59.2%). Not scored: 1,190 forecasts from before travel times
+  were logged, 464 at spots never observed, 448 under the gap rule, 10 with no overflow in that forecast, and 10
+  under the other coverage rules. No row was missing and none was another version's.
+- At the High line, all leads: 169 hits, 128 misses, 111 false alarms, 2,670 correct quiet ones. Events warned of
+  0.569 [0.367, 0.789]; warnings that came true 0.604 [0.366, 0.784]; AUC 0.912 [0.845, 0.950], against 0.813 for
+  the reference. Same day: AUC 0.925 [0.836, 0.965]. In advance: 0.909 [0.843, 0.947].
+- The script, reading D's 6-place values, gave the same counts and AUC as the build's own summary.
+- The list marks 10 spots never observed, against 8 in D. Two Wessex Water spots on the Frome crossed 5% of
+  weight without a live feed in the latest builds. So the count, and the expected size, move with the build. The
+  list at the tag fixes them.
+- 13 days make 3 blocks, so the intervals here say little.
+
+**Hashes after this amendment (SHA-256).** These rows replace section 13's for the two scripts.
+
+| File | SHA-256 |
+|---|---|
+| `scripts/evaluate_2027.py` | `533f5ec776e2361865cf543484f6e7989caf02a0e78466d55c2cdc53fc420d34` |
+| `scripts/make_eval2027.py` | `d28ab0c7b998190445ef00716c0fca7d6f19a70c0086aaff17dc49bcf8117912` |
