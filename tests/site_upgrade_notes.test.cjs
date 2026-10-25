@@ -21,7 +21,7 @@ function page() {
   const ctx = vm.createContext({ Date: FixedDate, L: { circleMarker: () => ({ bindTooltip: () => ({ addTo() {} }) }) }, contribLayer: null });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8') + '\nsetToday("2026-10-24");', ctx);
   vm.runInContext(pageDefs(['esc', 'fmt', 'feedTime', 'endedOn', 'runningAtLastAnswer', 'statusText', 'colourFor', 'drawnStatus', 'sinceTime',
-    'spillFor', 'statusSaid', 'glyph', 'ICON', 'PAGE_ID', 'upgradeDay', 'upgradeNote', 'overflowTile']), ctx);
+    'spillFor', 'statusSaid', 'glyph', 'ICON', 'PAGE_ID', 'upgradeDay', 'upgradeNote', 'EA_EVENTS', 'dryWeatherNote', 'overflowTile']), ctx);
   return ctx;
 }
 const text = h => h.replace(/<\/?a\b[^>]*>/g, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();

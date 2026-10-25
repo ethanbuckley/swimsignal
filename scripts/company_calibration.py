@@ -50,7 +50,11 @@ CHANGED_AT = 0.0001                  # the published file's rounding
 MIN_COMPANY_SPILLS = 50
 MIN_DAYS = 14                        # fewer, after a spill model change cuts the window, and the check stops
 N_BOOT = 2000
-SEED = 20261026
+SEED = 20261026                      # the week-only interval, reported
+# Amendment 2 (noise allowance): the deciding intervals resample overflows and weeks, as option B's do, because the
+# offsets move each overflow's level and so its errors are shared by all its days.
+SEED_TWO_WAY = 20261025
+SLACK = 1.01                         # a changed company's Brier may sit at most 1% above the comparison's
 OFFSET_BANDS = [0.0, 0.05, 0.2, np.inf]
 NOT_IN_LOG = "not in log"
 MAPS = [config.PROCESSED / "lead_calibration.json", config.ROOT / "docs" / "LEAD-CALIBRATION-B-TEST-2026-10-map.json"]
@@ -174,6 +178,41 @@ def boot_interval(diff: np.ndarray, codes: np.ndarray, draws: np.ndarray) -> lis
     return [float(v) for v in np.percentile(stat, [2.5, 97.5])] if len(stat) else [float("nan")] * 2
 
 
+def two_way_draws(n_overflows: int, n_weeks: int, n_boot: int = N_BOOT, seed: int = SEED_TWO_WAY) -> tuple:
+    """How many times each overflow and each week is drawn, per draw: overflows first, then weeks, from one
+    generator. One set for every company and the pooled rows."""
+    rng = np.random.default_rng(seed)
+    ov = rng.integers(0, n_overflows, size=(n_boot, n_overflows))
+    wk = rng.integers(0, n_weeks, size=(n_boot, n_weeks))
+    oc, wc = np.zeros((n_boot, n_overflows)), np.zeros((n_boot, n_weeks))
+    b = np.arange(n_boot)[:, None]
+    np.add.at(oc, (b, ov), 1.0)
+    np.add.at(wc, (b, wk), 1.0)
+    return oc, wc
+
+
+def two_way_interval(diff: np.ndarray, ov: np.ndarray, wk: np.ndarray, oc: np.ndarray, wc: np.ndarray) -> list[float]:
+    """The 2.5th and 97.5th percentiles of the mean difference when a row counts (times its overflow was drawn) x
+    (times its week was drawn). A draw holding no row of the subset is left out."""
+    s, n = np.zeros((oc.shape[1], wc.shape[1])), np.zeros((oc.shape[1], wc.shape[1]))
+    np.add.at(s, (ov, wk), diff)
+    np.add.at(n, (ov, wk), 1.0)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        stat = ((oc @ s) * wc).sum(1) / ((oc @ n) * wc).sum(1)
+    stat = stat[np.isfinite(stat)]
+    return [float(v) for v in np.percentile(stat, [2.5, 97.5])] if len(stat) else [float("nan")] * 2
+
+
+def not_clearly_worse(brier_new: float, brier_old: float, interval: list[float]) -> bool:
+    """The interval of new - old does not lie wholly above zero, and new is at most SLACK times old."""
+    return bool(np.isfinite(interval[0]) and interval[0] <= 0 and brier_new <= SLACK * brier_old)
+
+
+def shown_better(brier_new: float, brier_old: float, interval: list[float]) -> bool:
+    """New is lower and the interval of new - old lies wholly below zero."""
+    return bool(np.isfinite(interval[1]) and interval[1] < 0 and brier_new < brier_old)
+
+
 def window_end(rows: pd.DataFrame, fit_spill: str, start: str, end: str) -> str | None:
     """The last day before the first target day with a scored row on a spill model other than the fitted one;
     `end` if there is none. `rows` carries each row's `spill` stamp. A row missing from the log (a log downloaded
@@ -208,8 +247,8 @@ def available(rows: pd.DataFrame, start: str, end: str, frozen_at: str = CANDIDA
 
 def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0], end: str = WINDOW[1],
           n_boot: int = N_BOOT) -> dict:
-    """The face checks, then conditions 1 and 2 at every changed company, and what is reported beside them.
-    `rows` are the scored rows with a `spill` stamp per row (NaN-free strings)."""
+    """The face checks, then Amendment 2's conditions, which decide, and the statement's conditions 1 and 2 at every
+    changed company, now reported. `rows` are the scored rows with a `spill` stamp per row (NaN-free strings)."""
     offsets = {k: v["offset"] for k, v in doc["offsets"].items()}
     fair = {c: v for c, v in doc.get("fair_flat", {}).items()}
     out: dict = {"window": [start, end]}
@@ -244,6 +283,13 @@ def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0
     out["face_mae"] = float(np.abs(zero - w["forecast_calibrated"].to_numpy(dtype=float)).mean()) if len(w) else None
     codes = week_codes(w["day"])
     draws = np.random.default_rng(SEED).integers(0, int(codes.max()) + 1, size=(n_boot, int(codes.max()) + 1))
+    ov_codes = pd.factorize(w["overflow_id"], sort=True)[0]
+    oc, wc = two_way_draws(int(ov_codes.max()) + 1, int(codes.max()) + 1, n_boot)
+    # The flat rate is each company's own rate over its window rows, held fixed in every draw.
+    w["flat"] = w.groupby("company")["observed"].transform("mean")
+    y_all = w["observed"].to_numpy(dtype=float)
+    d_cur = (w["candidate"].to_numpy() - y_all) ** 2 - (w["forecast_calibrated"].to_numpy(dtype=float) - y_all) ** 2
+    d_flat = (w["candidate"].to_numpy() - y_all) ** 2 - (w["flat"].to_numpy(dtype=float) - y_all) ** 2
     comp = {}
     for c, g in w.groupby("company"):
         r = score_block(g)
@@ -251,6 +297,13 @@ def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0
         y = g["observed"].to_numpy(dtype=float)
         d = (g["candidate"].to_numpy() - y) ** 2 - (g["forecast_calibrated"].to_numpy(dtype=float) - y) ** 2
         r["interval_candidate_minus_current"] = boot_interval(d, codes[m], draws)
+        r["interval_week_candidate_minus_flat"] = boot_interval(d_flat[m], codes[m], draws)
+        r["interval2_candidate_minus_current"] = two_way_interval(d_cur[m], ov_codes[m], codes[m], oc, wc)
+        r["interval2_candidate_minus_flat"] = two_way_interval(d_flat[m], ov_codes[m], codes[m], oc, wc)
+        r["no_worse_than_current"] = not_clearly_worse(r["brier_candidate"], r["brier_current"],
+                                                       r["interval2_candidate_minus_current"])
+        r["no_worse_than_flat"] = not_clearly_worse(r["brier_candidate"], r["brier_flat"],
+                                                    r["interval2_candidate_minus_flat"])
         r["changed"] = bool((np.abs(g["candidate"] - g["forecast_calibrated"]) > CHANGED_AT).any())
         if c in fair:
             r["brier_fair_flat"] = brier(np.full(len(y), fair[c]), y)
@@ -268,15 +321,34 @@ def check(rows: pd.DataFrame, doc: dict, maps: list[dict], start: str = WINDOW[0
     out["changed"] = sorted(changed)
     short = [c for c in changed if not comp[c]["enough_data"]]
     out["short"] = sorted(short)
+    # The statement's own conditions, reported since Amendment 2.
     failing = [c for c in changed if not (comp[c]["condition_1"] and comp[c]["condition_2"])]
-    out["failing"] = sorted(failing)
+    out["failing_original"] = sorted(failing)
+    out["verdict_original"] = "fails" if failing else "passes"
+    # Amendment 2: shown better pooled over the changed companies, and not clearly worse at any one of them.
+    m = w["company"].isin(changed).to_numpy()
+    pooled = {"rows": int(m.sum()), "spills": int(y_all[m].sum()),
+              "brier_candidate": brier(w["candidate"].to_numpy()[m], y_all[m]),
+              "brier_current": brier(w["forecast_calibrated"].to_numpy(dtype=float)[m], y_all[m]),
+              "brier_flat": brier(w["flat"].to_numpy(dtype=float)[m], y_all[m]),
+              "interval2_candidate_minus_current": two_way_interval(d_cur[m], ov_codes[m], codes[m], oc, wc),
+              "interval2_candidate_minus_flat": two_way_interval(d_flat[m], ov_codes[m], codes[m], oc, wc)}
+    pooled["better_than_current"] = shown_better(pooled["brier_candidate"], pooled["brier_current"],
+                                                 pooled["interval2_candidate_minus_current"])
+    pooled["better_than_flat"] = shown_better(pooled["brier_candidate"], pooled["brier_flat"],
+                                              pooled["interval2_candidate_minus_flat"])
+    out["pooled"] = pooled
+    worse = [c for c in changed if not (comp[c]["no_worse_than_current"] and comp[c]["no_worse_than_flat"])]
+    out["clearly_worse"] = sorted(worse)
     if short:
         out["verdict"] = ("not enough data: extend the window to " + EXTENDED_END + ", once" if cut < EXTENDED_END
                           else "inconclusive: not adopted")
-    elif failing:
-        out["verdict"] = "fails: not adopted"
+    elif not changed:
+        out["verdict"] = "fails: no company changed"
+    elif pooled["better_than_current"] and pooled["better_than_flat"] and not worse:
+        out["verdict"] = "passes: shown better pooled, against both, and no changed company clearly worse"
     else:
-        out["verdict"] = "passes: both conditions at every changed company"
+        out["verdict"] = "fails: not adopted"
     return out
 
 

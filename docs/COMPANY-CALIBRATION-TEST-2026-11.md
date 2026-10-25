@@ -305,6 +305,90 @@ statement above the line is unchanged. The frozen offsets are unchanged: same fi
 Nothing else changes: the window (26 Oct to 22 Nov), the conditions, the minimum data and the read date
 (on or after 25 Nov) stand as written.
 
+### Amendment 2, 25 October 2026: noise allowance
+
+Filed on 25 Oct 2026, about 22:00 UTC, before the window's first target day (26 Oct). No window row exists yet, and
+none was read. Ethan asked for an audit of the house tests' rules against noise and approved its recommendations;
+this amendment applies them here. Its form follows Amendment 1 of `docs/PREREGISTRATION-2027.md`. Every line above
+stays as written. The frozen offsets (`2662dcfa…e42e1b`), the window, the changed-company rule, the minimum data,
+Amendment 1's cutoff and the read date are unchanged.
+
+**Why.** Conditions 1 and 2 above are point comparisons with no margin. With four weeks of data, a Brier difference
+of 0.00001 either way would decide a company, and with it the test. The week interval was reported only. So the
+verdict could turn on noise, in either direction.
+
+**The interval.** Option B's two-way cluster bootstrap (`docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, "The score"),
+applied to the difference in Brier, row by row:
+- each draw resamples overflows with replacement and, independently, ISO weeks of the target day with replacement;
+  a row counts (times its overflow was drawn) × (times its week was drawn);
+- all leads of an overflow-day share both draws;
+- 2,000 draws from `numpy.random.default_rng(20261025)`, made once, overflows first, then weeks; the pooled rows and
+  every company use the same draws;
+- the 95% interval runs from the 2.5th to the 97.5th percentile.
+
+*Why two-way.* The offsets move each overflow's level, so an overflow's errors are shared by all its days, as well
+as by every overflow in a wet week. Four weeks alone would give a week-only interval just four clusters. The
+statement's week-only interval stays in the output, reported.
+
+**The flat rate in the bootstrap.** Unchanged in definition: each company's own observed rate over its window rows,
+given to every row. It is held fixed at that value in every draw.
+
+**The conditions, replacing 1 and 2 as the rule that decides.** "Pooled" means the window rows of all changed
+companies together.
+
+- **A. Shown better than the current forecast, pooled.** Brier(candidate) < Brier(current), and the interval of
+  candidate − current lies wholly below zero.
+- **B. Shown better than the flat rate, pooled.** Brier(candidate) < Brier(flat), and the interval of
+  candidate − flat lies wholly below zero.
+- **C. No changed company clearly worse than the current forecast.** At each changed company, the interval of
+  candidate − current does not lie wholly above zero, and Brier(candidate) is at most 1% above Brier(current).
+- **D. No changed company clearly worse than the flat rate.** At each changed company, the interval of
+  candidate − flat does not lie wholly above zero, and Brier(candidate) is at most 1% above Brier(flat).
+
+**How they combine.** The candidate is adopted only if A and B hold and C and D hold at every changed company. This
+keeps the original's "at every changed company" as a rule that no company may be shown worse, and moves the proof of
+help to the pooled rows, where four weeks can show it. It stays all or nothing: there is no adoption at some
+companies only. Choosing companies after seeing their scores would be a new candidate, and would need its own
+statement.
+
+**Why this rule against the flat rate.**
+- *Superiority is kept, and made noise-aware.* The original asked the candidate to beat the flat rate. B asks for that
+  to be shown, pooled, not won by a hair. A forecast that cannot be shown better than a constant over the eight
+  companies is not worth a model change.
+- *Per-company superiority with an interval is not asked.* Northumbrian has 14 overflows, and the minimum data per
+  company is 50 spill rows. At that size an interval cannot exclude zero for any forecast this close to the current
+  one. Requiring it would make the test fail by design, not by evidence.
+- *No company may be shown worse than flat.* D blocks it. A candidate whose interval against flat lies wholly above
+  zero at any changed company is not adopted, however well it does elsewhere. So a candidate clearly worse than flat
+  cannot be adopted.
+- *What is looser than the original.* At a single company, a candidate up to 1% above flat, with an interval that
+  spans zero, now passes D. The original would have failed it. That is the noise allowance. B still needs the pooled
+  gain to be shown.
+
+**Minimum data.** Unchanged. If a changed company has fewer than 50 spill rows, the window extends once to 6 Dec;
+then it is inconclusive and not adopted.
+
+**Reported, not deciding, from now.**
+- The statement's conditions 1 and 2 per company, and the verdict they would give (`verdict_original`).
+- The week-only intervals against the current forecast and against flat, per company.
+- Everything listed under "Reported, not deciding" above.
+
+**Expected under this rule (inferred, not a condition).** On the scored rows of 29 Sep to 16 Oct, from the per-company
+figures in `docs/LEAD-CALIBRATION-B-TEST-2026-10.md`, the current forecast's Brier pooled over the eight companies was
+about 9% above the flat rate's (summed squared errors about 1,223 against 1,124). Thames was about 57% above,
+Southern 41% and Wessex 23%. The offsets move company means by under 5%. So B is likely to fail, and D likely to fail
+at Thames, Southern and Wessex. The prediction stays: not adopted.
+
+**Harness.** `scripts/company_calibration.py` computes A to D (`pooled`, `no_worse_than_current`,
+`no_worse_than_flat`, `clearly_worse`); its `verdict` is now this amendment's, and `verdict_original` the statement's.
+New tests in `tests/test_company_calibration.py`:
+- the draws count every overflow and week, and repeat with the seed;
+- a constant difference gives a zero-width interval at that constant;
+- both rules at their edges (1% slack, interval above zero, gain not shown);
+- a gain by a hair is not shown and fails;
+- one company clearly worse blocks adoption whatever the pooled gain;
+- the case that passed the original passes the amended rules too.
+
 ### Step 4: the check
 
 **Read on or after Wednesday 25 November 2026.** Download the published file and the `state` release's

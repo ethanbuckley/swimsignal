@@ -60,7 +60,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   over-forecasting. **Neither passes,** in the first run and the rerun.
 - [COMPANY-CALIBRATION-TEST-2026-11.md](COMPANY-CALIBRATION-TEST-2026-11.md): per-overflow offsets for the eight
   companies outside United Utilities, fitted on the live labels (review task A8). **No result yet:** the window is
-  26 October to 22 November 2026, read on or after 25 November. The offsets: `-offsets.json`.
+  26 October to 22 November 2026, read on or after 25 November. Amendment 2 (25 October) decides by two-way
+  bootstrap intervals, not point comparisons. The offsets: `-offsets.json`.
 - [DRY-WEATHER-SPILLS-TEST-2026-10.md](DRY-WEATHER-SPILLS-TEST-2026-10.md): overflows that spill in dry weather, and
   whether that history predicts what the spill model misses. **Question 1 no** (the 2024 rate loses to production and
   the flat rate); **Question 2 fails all four conditions.** Top-overflows table and a page-note proposal. Tables:
@@ -148,6 +149,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 
 ## Checks and records
 
+- [NOISE-AUDIT-2026-10.md](NOISE-AUDIT-2026-10.md): which tests decided on point rules with no allowance for noise,
+  the re-tests that follow, and the rule for new statements. No verdict is changed.
 - [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2
   was fitted at recency 0.25, shown by reproducing every stored offset exactly; `train.py`'s default now matches.
 - [ANYPOINT-LINES-2026-10.md](ANYPOINT-LINES-2026-10.md): map clicks answered differently by page and API because
@@ -167,6 +170,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   overflow data. The annual files are OGL v3.0; the live API's licence has no name.
 - [PE-SOURCES-2026-10.md](PE-SOURCES-2026-10.md): sources looked for a population equivalent per overflow, and
   why that work is parked.
+- [OVERFLOW-DATA-SOURCES-2026-10.md](OVERFLOW-DATA-SOURCES-2026-10.md): storm overflow data not yet used, ranked.
+  No section 82 river-quality data is published yet; no source gives upgrade completion dates; open EA
+  improvement flags, WINEP deadlines, EA sondes and Wessex E. coli samples; Southern and Yorkshire event files
+  without a licence.
 
 ## Design
 
