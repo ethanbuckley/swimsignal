@@ -220,4 +220,176 @@ The interval should straddle zero.
 
 ## Results
 
-None yet.
+Written 25 October 2026, from the outputs of the runs below. Nothing above the line was changed after a
+result was seen.
+
+### Verdict: PASS
+
+N1 holds, and N2 holds at every one of leads 0 to 4. Each upper bound is below its 1% margin. A pass says
+the local-day model is not worse than the UTC-day one within the stated margin. It does not authorise a
+deployment: that is Ethan's decision, after the dependencies below.
+
+| Set | Rows | Brier, old (UTC days) | Brier, new (local days) | ΔBrier | 95% interval, ISO weeks | Limit (1% of old) | Pass |
+|---|---|---|---|---|---|---|---|
+| N1 United Utilities, reanalysis | 826,725 | 0.04472 | 0.04480 | +0.000081 (+0.18%) | −0.000078 to +0.000238 | 0.000447 | yes |
+| N2 nine companies, lead 0 | 1,939,245 | 0.03959 | 0.03950 | −0.000095 (−0.24%) | −0.000216 to +0.000007 | 0.000396 | yes |
+| N2 lead 1 | 1,939,245 | 0.04240 | 0.04233 | −0.000072 (−0.17%) | −0.000186 to +0.000038 | 0.000424 | yes |
+| N2 lead 2 | 1,939,245 | 0.04409 | 0.04404 | −0.000054 (−0.12%) | −0.000237 to +0.000122 | 0.000441 | yes |
+| N2 lead 3 | 1,939,245 | 0.04551 | 0.04547 | −0.000044 (−0.10%) | −0.000224 to +0.000133 | 0.000455 | yes |
+| N2 lead 4 | 1,939,245 | 0.04763 | 0.04761 | −0.000020 (−0.04%) | −0.000223 to +0.000149 | 0.000476 | yes |
+
+Both arms are scored on local-day labels with local-day features, paired, on the same rows. N1 is United
+Utilities' own 2025, where the old model was fitted on UTC-day labels of the same company. N2 covers 5,313
+overflows in 544 lead cells: United Utilities 2,263, Yorkshire 772, Severn Trent 699, Northumbrian 399,
+South West 296, Wessex 275, Anglian 251, Thames 205, Southern 153. Table:
+`DAY-BOUNDARY-TEST-2026-10-scores.csv`; checks: `-checks.json`.
+
+### Reported, not deciding
+
+**The 2025 table, before and after** (`DAY-BOUNDARY-TEST-2026-10-verification.csv`). Each arm is scored on
+its own day definition, so these are different targets: a continuity check, not the test.
+
+| Model | Before: UTC features, UTC labels | After: local features, local labels |
+|---|---|---|
+| dipcast (pooled + site offsets) | 0.04474 | 0.04480 |
+| pooled only | 0.04517 | 0.04516 |
+| climatology (site rate) | 0.06693 | 0.06712 |
+| rain rule (>10 mm/48 h) | 0.06214 | 0.06217 |
+| rain rule (>5 mm/48 h) | 0.06326 | 0.06341 |
+| base rate | 0.07453 | 0.07472 |
+| rows | 826,725 | 826,725 |
+
+**The harness's N1 rows are `train.py`'s.** The new model scores 0.0447995553 on 826,725 rows here and in
+`train.py`'s own `verification_2025.csv`.
+
+**Interval with day clusters** (95%): N1 −0.000106 to +0.000261; N2 leads 0 to 4: −0.000198 to +0.000005,
+−0.000190 to +0.000034, −0.000217 to +0.000098, −0.000196 to +0.000102, −0.000187 to +0.000147.
+
+**Calibration (ECE, ten bins), old then new:** N1 0.0108, 0.0103. N2 by lead: 0.0072, 0.0073; 0.0093, 0.0092;
+0.0117, 0.0117; 0.0136, 0.0135; 0.0160, 0.0161. Mean forecasts move by under 0.0005 everywhere.
+
+**N2 at lead 0 by company** (`-companies.csv`). Seven of nine improve. Southern (+0.000067) and United
+Utilities (+0.000120) are slightly worse.
+
+| Company | Rows | Brier old | Brier new | Δ |
+|---|---|---|---|---|
+| Anglian | 91,615 | 0.02976 | 0.02934 | −0.00042 |
+| Northumbrian | 145,635 | 0.03428 | 0.03415 | −0.00013 |
+| Severn Trent | 255,135 | 0.03137 | 0.03114 | −0.00024 |
+| South West | 108,040 | 0.04716 | 0.04634 | −0.00082 |
+| Southern | 55,845 | 0.02829 | 0.02836 | +0.00007 |
+| Thames | 74,825 | 0.04114 | 0.04102 | −0.00012 |
+| United Utilities | 825,995 | 0.04291 | 0.04303 | +0.00012 |
+| Wessex | 100,375 | 0.03633 | 0.03575 | −0.00057 |
+| Yorkshire | 281,780 | 0.04334 | 0.04329 | −0.00005 |
+
+**How much moves** (`-moves.csv`, United Utilities 2025). In summer time, 1,815 of 28,142 spill-day labels
+(6.4%) and 11,903 of 39,060 cell rain totals (30.5%) differ between UTC and local days. In winter none do,
+which checks the code. A smoke test of the harness on 30 overflows, run before the arms, showed the same
+kind of counts (8.9% and 29.3%) and nothing else.
+
+**The production refits** on the N1 rows: mean 0.0797 (old arm) and 0.0802 (new arm); mean absolute
+difference 0.0072, 99th percentile 0.082.
+
+**My prediction** was |ΔBrier| under 0.2% with B slightly better. Partly wrong: N2 lead 0 moved 0.24%, and
+in N1 the new model is slightly worse (+0.18%), not better. Every interval straddles zero, as predicted.
+
+### Reproduction: main's model files are not reproduced
+
+The old arm, `train.py` at `9be5601` on the frozen inputs, does not reproduce the files on main.
+- `verification_2025.csv`: "pooled only" matches main's file to every digit (0.04516644980683494). The
+  model with site offsets does not: 0.04474 here against 0.04453 on main, a gap of 0.00021, over the
+  0.0001 stated.
+- The pooled models are the same. On 2,000 random feature rows, main's hold-out and production models and
+  the old arm's give identical pooled probabilities, and the same rows per overflow (`site_n`). Only the
+  site offsets differ: correlation 0.90 for the hold-out, a largest gap of 1.46 in log odds for production.
+- **Cause not found.** `spill_model.py` and the offset call in `train.py` have not changed since main's
+  hold-out was saved (13 Sep, `8ac835f`). A rerun with `--recency 0.5` and `0.7` does not reproduce it
+  either (0.04460 and 0.04466).
+- Scored on the N1 local-day rows (`-checks.json`, "reported"): main's hold-out 0.04451, the old arm's
+  0.04472, the new arm's 0.04480. So main's offsets score better than this code reproduces, by more than
+  the day-boundary effect. Whether main's offsets saw 2025 is not known.
+- The comparison stands, because both arms run the same code on the same inputs and differ only in the day
+  boundary. A deployment would move production further than that, though: against the live
+  `spill_model.pkl` on the N1 rows, the new refit differs by 0.0097 on average (99th percentile 0.109), of
+  which the old-arm rebuild alone is 0.0059 (0.069).
+
+### Runs
+
+- **Code:** old arm `git archive 9be5601`, new arm `git archive 9e6168d`, `src` and `scripts`. Main
+  checkout's `.venv`: scikit-learn 1.9.1, pandas 3.0.5, numpy 2.5.3.
+- **Times** (25 Oct 2026, GMT, after the radar backfill, one step at a time under the group's
+  `heavy-run.lock`): old arm `train.py 2025 --refit-all` 11:31:08 to 11:31:39; new arm 12:22:43 to 12:23:22;
+  harness 12:32:23 to 12:34:22. All exit 0. `train.py` peaked at 3.9 GB in each arm. No Open-Meteo call.
+- **Models written** (scratch only, not committed): new hold-out SHA-256 beginning `6e5e7aaa00e8263f`; new
+  production `bd22f16a10460095` (MD5 `ebcb9653`, the stamp's `spill=` part); old-arm rebuild `5ebe1ec61f09a748`.
+- **Frozen inputs**, APFS clones taken 24 Oct 22:5x BST. The rain caches had last changed on 12 and 17 Oct.
+  - `data/cache`: 3,337 files in `rain` and 3,926 in `rain_nine` (`archive_*` and `leads_*`). Their
+    SHA-256 list (7,263 lines) has SHA-256 `36e222696b52856eb7c282ada739ef8b4e2d811bd410d7be9582b8b534ba2691`.
+  - `data/processed`, SHA-256:
+
+        9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065  annual_returns.parquet
+        91cdc58c1d3f7abd538bc7cf85c4270a40ac041b2b206cd3cfeedd9cbe06d84e  dcww_ea_events.parquet
+        9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505  ea_events_anglian_water.parquet
+        db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237  ea_events_northumbrian_water.parquet
+        750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504  ea_events_severn_trent_water.parquet
+        b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51  ea_events_south_west_water.parquet
+        0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525  ea_events_southern_water.parquet
+        4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e  ea_events_thames_water.parquet
+        c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c  ea_events_united_utilities.parquet
+        26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3  ea_events_wessex_water.parquet
+        dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78  ea_events_yorkshire_water.parquet
+        4ef2c254706f06ce619371a8e8061c1da2a8b5c6f2a39e9b4f5c791c18f31983  edm_events.parquet
+
+### Not done here, on purpose
+
+"What follows" above says a pass puts the new model files in this pull request. On 25 Oct Ethan's
+instruction, through the parent session, was to commit the results and the small tables only, not the
+models. So `data/processed` is unchanged here, and production is unchanged. The models can be rebuilt
+from the recipe and inputs above, and their hashes checked against the ones listed. With the new files in
+place, two tests fail that pass on main: `test_live_status_shadow::test_the_published_forecast_and_the_rain_requests_do_not_change`
+and `test_methods_csv_prf::test_the_method_page_tables_are_the_committed_test_results`. Both pin the
+current model's outputs, so a deployment must update them in the same change.
+
+### Limitations
+
+- One test year (2025) and one training company. N2 judges other companies with a model fitted only on
+  United Utilities.
+- The margin is non-inferiority at 1%. The test does not show the local-day model is better: every
+  interval includes zero.
+- The rebuilt models do not reproduce main's (above). The test isolates the day boundary; it does not test
+  the model a deployment would replace.
+- N2's longer windows use ERA5-Land, as `verify_leads.py` does, not the forecast.
+- Rain-cell totals near midnight depend on where Open-Meteo puts the hour ending at 00:00. The day holds
+  the stamps 00:00 to 23:00 in both arms, so this is the same in both and not tested here.
+
+### Dependencies before any deployment
+
+1. **Ethan decides.** A pass is not authorisation to deploy.
+2. **Lead calibration B** (`LEAD-CALIBRATION-B-TEST-2026-10.md`). Its live window runs 18 Oct to 14 Nov on
+   the model with SHA-256 beginning `faa7917e2be725a9`, read on or after 16 Nov. A new model must not reach
+   production before that read.
+3. **Refit the lead maps for the new model.** `lead_calibration.json` is refitted with
+   `verify_leads.py --model spill_model.pkl`, by whichever recipe B's verdict leaves, so its `model` field
+   records the new `trained_on` ("... UK local days ..."). Until then the strict xfail in
+   `tests/test_training.py` still fails as it should.
+4. **Live-status shadow** (`LIVE-STATUS-SHADOW-TEST-2026-10.md`). It compares its candidates with production
+   on target days 25 Oct to 21 Nov (to 5 Dec if extended), read on or after 23 Nov. Its fallback rows take
+   production's probability, so swapping the model inside the window would disturb it.
+5. **Company calibration** (PR #333, `COMPANY-CALIBRATION-TEST-2026-11.md`). Its offsets are frozen as
+   ln((n + 15) / (e + 15)), with e the logged `forecast_raw` of the current model at lead 0, 29 Sep to
+   23 Oct. Its window is 26 Oct to 22 Nov, read on or after 25 Nov. A new model changes `forecast_raw`, so
+   inside that window it would change what the offsets correct and break the comparison. After it, the
+   offsets were fitted for the old model: if adopted, they would need refitting on the new model's
+   `forecast_raw` before both run together. The same holds for option B of the upgraded-overflows test,
+   which refits layer 2 on or after 2 Dec.
+6. **Update the two tests** that pin the current model's outputs (above) in the same change as the model.
+7. **E. coli.** Rerun `validate_ecoli.py` and `train_ecoli.py` after the swap; the exposure they read comes
+   from the spill model.
+8. **The 2027 stamp.** The new model changes `spill=808da63d` to `spill=ebcb9653`, and the refitted map
+   changes `cal=`. `src/dipcast/model/` is in `MODEL_PATHS`, so this branch's code is a model change too.
+   Allowed only before the freeze tag.
+9. **The reproduction gap.** Decide whether the rebuilt offsets, which score worse on 2025 than main's,
+   are acceptable, or find out how main's were made first.
+
+The earliest date that clears items 2, 4 and 5 is 25 Nov 2026, if the shadow's window is not extended.
