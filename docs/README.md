@@ -60,7 +60,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   over-forecasting. **Neither passes,** in the first run and the rerun.
 - [COMPANY-CALIBRATION-TEST-2026-11.md](COMPANY-CALIBRATION-TEST-2026-11.md): per-overflow offsets for the eight
   companies outside United Utilities, fitted on the live labels (review task A8). **No result yet:** the window is
-  26 October to 22 November 2026, read on or after 25 November. The offsets: `-offsets.json`.
+  26 October to 22 November 2026, read on or after 25 November. Amendment 2 (25 October) decides by two-way
+  bootstrap intervals, not point comparisons. The offsets: `-offsets.json`.
 - [DRY-WEATHER-SPILLS-TEST-2026-10.md](DRY-WEATHER-SPILLS-TEST-2026-10.md): overflows that spill in dry weather, and
   whether that history predicts what the spill model misses. **Question 1 no** (the 2024 rate loses to production and
   the flat rate); **Question 2 fails all four conditions.** Top-overflows table and a page-note proposal. Tables:

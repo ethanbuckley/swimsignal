@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from company_calibration import (CANDIDATE_FROZEN_AT, NOT_IN_LOG, attach_stamps, available, candidate, check,
+from company_calibration import (not_clearly_worse, shown_better, two_way_draws, two_way_interval, CANDIDATE_FROZEN_AT, NOT_IN_LOG, attach_stamps, available, candidate, check,
                                  fit_offsets, match_maps, offsets_document, window_end)
 
 IDENTITY = {"leads": {str(k): {"iso_x": [0.0, 1.0], "iso_y": [0.0, 1.0]} for k in range(5)}}
@@ -214,3 +214,71 @@ def test_the_freeze_cutoff_is_strict_and_a_missing_issue_time_is_left_out():
     kept, left = available(pd.concat([at, after, blank, before_window], ignore_index=True), "2026-10-26", "2026-11-22")
     assert left == {"cutoff": CANDIDATE_FROZEN_AT, "rows": 2, "by_lead": {3: 2}}
     assert sorted(kept["issued_at"]) == sorted([after["issued_at"].iloc[0], before_window["issued_at"].iloc[0]])
+
+
+# Amendment 2: the noise allowance.
+
+def test_two_way_draws_count_every_overflow_and_week_and_repeat_with_the_seed():
+    oc, wc = two_way_draws(7, 4, n_boot=100)
+    assert oc.shape == (100, 7) and wc.shape == (100, 4)
+    assert (oc.sum(1) == 7).all() and (wc.sum(1) == 4).all()
+    oc2, wc2 = two_way_draws(7, 4, n_boot=100)
+    assert (oc == oc2).all() and (wc == wc2).all()
+
+
+def test_two_way_interval_of_a_constant_difference_is_that_constant():
+    ov, wk = np.repeat(np.arange(5), 4), np.tile(np.arange(4), 5)
+    oc, wc = two_way_draws(5, 4, n_boot=200)
+    lo, hi = two_way_interval(np.full(20, -0.003), ov, wk, oc, wc)
+    assert lo == pytest.approx(-0.003) and hi == pytest.approx(-0.003)
+
+
+def test_the_two_rules_at_their_edges():
+    assert not_clearly_worse(1.005, 1.0, [-0.1, 0.2])            # within 1%, interval spans zero
+    assert not not_clearly_worse(1.02, 1.0, [-0.1, 0.2])         # more than 1% above
+    assert not not_clearly_worse(0.9, 1.0, [0.01, 0.2])          # interval wholly above zero
+    assert shown_better(0.9, 1.0, [-0.2, -0.01])
+    assert not shown_better(0.9, 1.0, [-0.2, 0.01])              # a gain the interval does not show
+
+
+def good_forecast_rows():
+    """Overflows 0-9 spill on 60% of days and are forecast 0.6; the rest never spill and are forecast 0.01."""
+    r = window_rows(lambda i: 0.6 if i < 10 else 0.0)
+    i = r["overflow_id"].str[3:].astype(int)
+    r["forecast_raw"] = np.where(i < 10, 0.6, 0.01)
+    r["forecast_calibrated"] = r["forecast_raw"]
+    return r
+
+
+def test_a_gain_by_a_hair_is_not_shown_and_fails():
+    r = good_forecast_rows()
+    rng = np.random.default_rng(3)
+    offs = {f"{c}{i}": float(rng.choice([-0.002, 0.002])) for c in ("Tha", "Sev") for i in range(40)}
+    res = check(r, doc_for(offs), [IDENTITY], n_boot=300)
+    assert res["changed"] == ["Severn Trent Water", "Thames Water"]
+    assert res["pooled"]["better_than_flat"]                        # a good forecast beats the flat rate
+    assert not res["pooled"]["better_than_current"]
+    assert res["clearly_worse"] == []
+    assert res["verdict"] == "fails: not adopted"
+    assert res["verdict_original"] in ("passes", "fails")          # still reported
+
+
+def test_a_company_clearly_worse_blocks_adoption_whatever_the_pooled_gain():
+    r = window_rows(lambda i: 0.6 if i < 10 else 0.0)
+    offs = {f"Tha{i}": (np.log(20.0) if i < 10 else np.log(0.1)) for i in range(40)}
+    offs.update({f"Sev{i}": np.log(5.0) for i in range(10, 40)})    # raises overflows that never spill
+    res = check(r, doc_for(offs), [IDENTITY], n_boot=300)
+    assert res["clearly_worse"] == ["Severn Trent Water"]
+    assert not res["by_company"]["Severn Trent Water"]["no_worse_than_current"]
+    assert res["by_company"]["Thames Water"]["no_worse_than_current"]
+    assert res["verdict"] == "fails: not adopted"
+
+
+def test_the_passing_case_passes_the_amended_rules_too():
+    r = window_rows(lambda i: 0.6 if i < 10 else 0.0)
+    offs = {f"{c}{i}": (np.log(20.0) if i < 10 else np.log(0.1)) for c in ("Tha", "Sev") for i in range(40)}
+    res = check(r, doc_for(offs), [IDENTITY], n_boot=300)
+    p = res["pooled"]
+    assert p["better_than_current"] and p["better_than_flat"] and res["clearly_worse"] == []
+    assert p["rows"] == sum(res["by_company"][c]["rows"] for c in res["changed"])
+    assert res["verdict_original"] == "passes" and res["verdict"].startswith("passes")
