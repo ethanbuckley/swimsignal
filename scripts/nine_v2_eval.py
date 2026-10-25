@@ -103,7 +103,8 @@ def dead_monitor(coverage: pd.DataFrame, sites: pd.DataFrame) -> tuple[pd.Series
 def test_sites(ar: pd.DataFrame, companies, coverage: pd.DataFrame | None) -> tuple[pd.DataFrame, dict]:
     """The 2026 overflows: a position and covariates in the 2025 return, EDM operation >= 50% in 2025, not the
     Ilkley 16, and (when `coverage` is given) a monitor that passes the dead-monitor check."""
-    prev = ar[ar["company"].isin(companies) & (ar["year"] == TEST_YEAR - 1) & ar["lat"].notna()]
+    # An overflow with no id cannot be matched to an event, so it is left out (one Dwr Cymru row in the 2025 return).
+    prev = ar[ar["company"].isin(companies) & (ar["year"] == TEST_YEAR - 1) & ar["lat"].notna() & ar["site_id"].notna()]
     prev = prev.drop_duplicates("site_id", keep="last")
     prev = prev[prev["edm_operational_pct"].ge(50) & ~prev["site_id"].isin(ILKLEY_16)].reset_index(drop=True)
     info = {"edm_50_not_ilkley": len(prev)}
