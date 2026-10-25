@@ -82,6 +82,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   (population equivalent is not in the source). **Fails** (conditions 1 to 4); stays off.
 - [DIEOFF-WEATHER-TEST-2026-10.md](DIEOFF-WEATHER-TEST-2026-10.md): sunlight and temperature in die-off. **Both
   questions fail;** nothing adopted.
+- [FARM-PRESSURE-TEST-2026-10.md](FARM-PRESSURE-TEST-2026-10.md): the Environment Agency's farm-pollution flag
+  per water body as an E. coli input. **Fails conditions 1, 2, 5 and 6;** nothing adopted. Scores: `-score.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with
