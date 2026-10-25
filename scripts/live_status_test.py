@@ -29,6 +29,7 @@ from dipcast.model import spill_model as sm
 from dipcast.model.features import (
     ALL_FEATURES,
     API_DECAY,
+    LOCAL_TZ,
     MIN_HOURS_PER_DAY,
     MONOTONE,
     RAIN_FEATURES,
@@ -577,4 +578,7 @@ def stage_run() -> None:
 
 
 if __name__ == "__main__":
+    if LOCAL_TZ != "UTC":   # its day indices count UTC days from DAY0 and T0; local days would land summer days one early
+        sys.exit("live_status_test.py indexes UTC days and the model now cuts UK local days (docs/DAY-BOUNDARY-TEST-2026-10.md): "
+                 "run it from the commit its record names")
     {"describe": stage_describe, "run": stage_run}[sys.argv[1]]()

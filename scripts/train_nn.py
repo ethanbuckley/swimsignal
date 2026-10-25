@@ -34,6 +34,7 @@ from dipcast import config
 from dipcast.model.features import (
     ALL_FEATURES,
     API_DECAY,
+    LOCAL_TZ,
     MIN_HOURS_PER_DAY,
     SEASON_FEATURES,
     SITE_FEATURES,
@@ -620,4 +621,7 @@ def stage_score() -> None:
 
 
 if __name__ == "__main__":
+    if LOCAL_TZ != "UTC":   # its day indices count UTC days from T0; local days would land summer days one early
+        sys.exit("train_nn.py indexes UTC days and the model now cuts UK local days (docs/DAY-BOUNDARY-TEST-2026-10.md): "
+                 "run it from the commit its record names")
     {"time": stage_time, "train": stage_train, "score": stage_score}[sys.argv[1]]()

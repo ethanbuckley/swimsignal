@@ -49,7 +49,7 @@ def _events(daily, sites, model, seed=1):
     """Discharges drawn from the stub model's own probabilities, at site A and B only, under other ids
     and a few metres away (so they join by position)."""
     rng = np.random.default_rng(seed)
-    days = pd.date_range("2025-01-01", "2025-12-31", freq="D", tz="UTC")
+    days = pd.date_range("2025-01-01", "2025-12-31", freq="D", tz=hw.LOCAL_TZ)
     sd = hw.build_site_days(sites[sites.site_id.isin(["A", "B"])], daily, days)
     sd = sd[sd["rain_d"].notna()]
     p = model.predict_pooled(hw.features(sd))
@@ -103,7 +103,7 @@ def test_year_before_rate_converts_counts_clips_and_fills_with_median():
 
 def test_scorer_point_values_and_interval_cover_them():
     rng = np.random.default_rng(0)
-    days = pd.date_range("2025-01-01", periods=200, freq="D", tz="UTC")
+    days = pd.date_range("2025-01-01", periods=200, freq="D", tz=hw.LOCAL_TZ)
     df = pd.DataFrame({"site_id": np.repeat(list("abcdefghij"), len(days)), "day": np.tile(days, 10)})
     p = rng.random(len(df)) * 0.6
     df["y"] = (rng.random(len(df)) < p).astype(int)
@@ -165,11 +165,11 @@ def test_event_set_stops_the_day_before_the_file_ends():
     ev = _events(daily, sites, model)
     ev = ev[ev["event_start"] < pd.Timestamp("2025-12-24", tz="UTC")]
     last = hw.last_full_day(ev)
-    assert last == ev["event_start"].max().floor("D") - pd.Timedelta(days=1)
+    assert last == ev["event_start"].max().tz_convert(hw.LOCAL_TZ).floor("D") - pd.DateOffset(days=1)
     df, _ = hw.build_event_set(sites, ev, hw._same_year(sites), [2025], daily, 1.004, {"holdout": model}, last)
     assert df["day"].max() <= last
     full, _ = hw.build_event_set(sites, ev, hw._same_year(sites), [2025], daily, 1.004, {"holdout": model})
-    assert full["day"].max() == pd.Timestamp("2025-12-31", tz="UTC")
+    assert full["day"].max() == pd.Timestamp("2025-12-31", tz=hw.LOCAL_TZ)
 
 
 def test_event_set_arms_and_baselines(event_set):
@@ -199,7 +199,7 @@ def test_score_set_on_the_small_set(event_set):
 
 def test_score_set_and_gate_on_a_model_that_knows_the_answer():
     rng = np.random.default_rng(5)
-    days = pd.date_range("2025-01-01", "2025-12-31", freq="D", tz="UTC")
+    days = pd.date_range("2025-01-01", "2025-12-31", freq="D", tz=hw.LOCAL_TZ)
     n = 30
     df = pd.DataFrame({"site_id": np.repeat([f"s{i}" for i in range(n)], len(days)), "day": np.tile(days, n)})
     rain = rng.gamma(0.5, 6.0, len(df))
@@ -249,7 +249,7 @@ def test_annual_totals_and_ratio():
     t = hw.annual_totals(sites, daily, 2025, StubModel())
     assert (t["rain_days"] == 365).all()
     sd = hw.build_site_days(sites[sites.site_id == "A"], daily,
-                            pd.date_range("2025-01-01", "2025-12-31", freq="D", tz="UTC"))
+                            pd.date_range("2025-01-01", "2025-12-31", freq="D", tz=hw.LOCAL_TZ))
     assert t.set_index("site_id").loc["A", hw.OWN] == pytest.approx(
         StubModel().predict_pooled(hw.features(sd)).mean() * 365)
     s = hw.score_annual(t, 1.004, n_boot=100)

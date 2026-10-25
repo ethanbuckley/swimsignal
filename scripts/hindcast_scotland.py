@@ -27,7 +27,7 @@ scripts/train.py on United Utilities' discharges of 2023 and 2024, and not refit
 production model (spill_model.pkl, refitted on 2023 to 2025) is scored beside it as a check and has
 no part in the gate.
 
-Rain. ERA5-Land hourly rain per 0.1 degree cell, days in UTC, features from
+Rain. ERA5-Land hourly rain per 0.1 degree cell, UK local days, features from
 model/features.daily_rain_features, as train.py builds them. A year's features come from its own
 cell-year and, for January's antecedent windows, the cell-year before, where that is 2021 or later
 (the archive starts in 2021). Rows whose day has no rain total are dropped, as in train.py. "Lead 0"
@@ -36,7 +36,7 @@ means this rain, the rain that fell. "Leads 1, 2 and 3" mean Open-Meteo's archiv
 forecast, longer windows from ERA5-Land).
 
 Overflows and labels. Scottish Water's event history (task S1) and the covariates of task S2
-(ingest/sw_covariates.py). A label is a spill-day: a UTC day touched by an event that
+(ingest/sw_covariates.py). A label is a spill-day: a UK local day touched by an event that
 sw_covariates.counted_events keeps (longer than 15 min 30 s, or of unknown duration), in every year
 and both files. A day record (no end time; its start is local midnight) labels its local date. An
 overflow-year is "counted" when its S2 status is "events" or "no events". Left out: emergency
@@ -188,16 +188,16 @@ Key = tuple[float, float, int]
 def labels(ev: pd.DataFrame) -> pd.DataFrame:
     """(site_id, day) spill-days from the events sw_covariates.counted_events keeps (over 15 min
     30 s, or of unknown duration; one row per overflow, start and end across both files). A timed
-    event touches UTC days as features.spill_days counts them; a day record (no end) labels its
-    local date."""
+    event touches local days as features.spill_days counts them; a day record (no end) labels its
+    local date too."""
     kept = sw_covariates.counted_events(ev)
     timed = spill_days(kept[kept["event_end"].notna()])
     rec = kept[kept["event_end"].isna()]
     local = rec["event_start"].dt.tz_convert(TZ).dt.tz_localize(None).dt.normalize()
     days = pd.DataFrame({"site_id": rec["site_id"].to_numpy(),
-                         "day": pd.DatetimeIndex(local).tz_localize("UTC")})
-    out = pd.concat([timed.astype({"day": "datetime64[ns, UTC]"}),
-                     days.astype({"day": "datetime64[ns, UTC]"})], ignore_index=True)
+                         "day": pd.DatetimeIndex(local).tz_localize(TZ)})
+    out = pd.concat([timed.astype({"day": f"datetime64[ns, {TZ}]"}),
+                     days.astype({"day": f"datetime64[ns, {TZ}]"})], ignore_index=True)
     return out.drop_duplicates().reset_index(drop=True)
 
 

@@ -1,0 +1,53 @@
+{
+ "models": {
+  "old hold-out": "United Utilities 2023-2024; verified on 2025",
+  "new hold-out": "United Utilities 2023-2024, UK local days; verified on 2025",
+  "old production": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+  "new production": "United Utilities 2023-2025, UK local days (refit on all years; verified on 2025 before refit)"
+ },
+ "N1 rows are train.py's": {
+  "train_py_brier": 0.0445746757090506,
+  "train_py_n": 826725,
+  "here_brier": 0.044574675709050694,
+  "here_n": 826725,
+  "match": true
+ },
+ "production refits on N1 rows": {
+  "mean_old": 0.07708743872913866,
+  "mean_new": 0.0775189321821403,
+  "mean_abs_diff": 0.006759604087106562,
+  "p99_abs_diff": 0.07807778949543145
+ },
+ "N1": true,
+ "N2": {
+  "0": true,
+  "1": true,
+  "2": true,
+  "3": true,
+  "4": true
+ },
+ "verdict": "PASS",
+ "face_check": {
+  "spill_model_holdout_2025.pkl": {
+   "layer1_max_abs_diff": 0.0,
+   "site_n_equal": true,
+   "offset_ids_equal": true,
+   "offsets": 2241,
+   "offset_max_abs_diff": 0.0,
+   "trained_on_main": "United Utilities 2023-2024; verified on 2025",
+   "trained_on_old25": "United Utilities 2023-2024; verified on 2025",
+   "pass": true
+  },
+  "spill_model.pkl": {
+   "layer1_max_abs_diff": 0.0,
+   "site_n_equal": true,
+   "offset_ids_equal": true,
+   "offsets": 2271,
+   "offset_max_abs_diff": 0.0,
+   "trained_on_main": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+   "trained_on_old25": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+   "pass": true
+  },
+  "pass": true
+ }
+}

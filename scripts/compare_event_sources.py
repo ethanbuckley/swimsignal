@@ -1,5 +1,5 @@
-"""Compare two event records of the same company and year, counted as spill-days per overflow (any UTC day
-an event touches, features.spill_days, the label the spill model trains on), as
+"""Compare two event records of the same company and year, counted as spill-days per overflow (any UK local
+day an event touches, features.spill_days, the label the spill model trains on), as
 docs/NINE-COMPANY-MODEL-TEST-2026-10.md compared United Utilities' Stream and EA files. Off CI:
 
     uv run python scripts/compare_event_sources.py A.parquet B.parquet --year 2024 [--months 1-12] [--id-a COLUMN]

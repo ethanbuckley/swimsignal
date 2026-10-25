@@ -59,6 +59,11 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [LEAD-CALIBRATION-B-TEST-2026-10.md](LEAD-CALIBRATION-B-TEST-2026-10.md): lead calibration, option B. **No
   result yet:** the map is fitted; the live window is 18 October to 14 November 2026, read on or after
   16 November. The map: `-map.json`.
+- [DAY-BOUNDARY-TEST-2026-10.md](DAY-BOUNDARY-TEST-2026-10.md): one day boundary, UK local days, for training,
+  calibration and the forecast. **Passes** at recency 0.25, production's setting (addendum; the first run used 1.0 and
+  also passed): within 1% of Brier on United Utilities 2025 and at leads 0 to 4 on nine companies. Not deployed: the
+  models are not committed, and the dependencies are listed. Tables: `-checks.json`, `-companies.csv`, `-moves.csv`,
+  `-scores.csv`, `-verification.csv`, and the same with `-recency025` for the addendum.
 - [LIVE-RECALIBRATION-TEST-2026-10.md](LIVE-RECALIBRATION-TEST-2026-10.md): two corrections for live
   over-forecasting. **Neither passes,** in the first run and the rerun.
 - [COMPANY-CALIBRATION-TEST-2026-11.md](COMPANY-CALIBRATION-TEST-2026-11.md): per-overflow offsets for the eight
