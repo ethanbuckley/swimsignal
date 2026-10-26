@@ -277,7 +277,7 @@ OFFICIAL = {"line": "Environment Agency: advice against bathing (harmful algae) 
             "publisher": "Environment Agency",
             "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
             "since": "2026-06-19", "checked": "2026-10-26", "state": "checked"}
-BRIEF = "EA advice against bathing · since 19 Jun · checked 26 Oct"
+BRIEF = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
 
 
 @pytest.mark.parametrize("items", [

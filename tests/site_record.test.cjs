@@ -290,8 +290,9 @@ test('the record shows reviewed official advice above the level, apart from it, 
   const official = [{line: 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026', publisher: 'Environment Agency',
     link: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901', since: '2026-06-19', checked: '2026-10-03', state: 'checked'}];
   const h = Rec.view({...ilkley, official}, DAYS[1], DATA, VER, BASE, NOW);
-  assert.ok(h.includes('<p class="r-official"><b>Official advice:</b> EA advice against bathing · since 19 Jun · checked 3 Oct. '
-    + 'Not part of the level below; follow it first.</p>'));
+  assert.ok(h.includes('<p class="r-official"><b>Official advice:</b> EA advice against bathing (harmful algae) · since 19 Jun · checked 3 Oct. '
+    + 'Not part of the level below; follow it first. <a href="https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901">'
+    + 'Open the Environment Agency page</a>.</p>'));
   assert.ok(h.indexOf('class="r-official"') < h.indexOf('<h3>The level and why</h3>'));
   assert.equal(text(Rec.view({...ilkley, official}, DAYS[1], DATA, VER, BASE, NOW).split('<h3>The level and why</h3>')[1]),
     text(Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW).split('<h3>The level and why</h3>')[1]));   // the level and the rest are unchanged

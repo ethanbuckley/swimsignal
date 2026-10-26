@@ -31,6 +31,10 @@ const Record = (() => {
   const P = node ? require('./printed.js') : Printed;
   // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief).
   const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  // Its first item's link, "Open the Environment Agency page", as the spot page's notice gives it (eaTodayOfficial).
+  const advice = node ? require('./eatoday.js').eaTodayAdvice : typeof eaTodayAdvice === 'function' ? eaTodayAdvice : () => [];
+  const officialLink = s => { const o = advice(s)[0];
+    return o && /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? ` <a href="${esc(o.link)}">Open the ${esc(o.publisher)} page</a>.` : ''; };
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
   const TZ = 'Europe/London';
@@ -240,7 +244,7 @@ const Record = (() => {
     const m = (now - Date.parse(data.generated_at)) / 60000;
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
     const official = brief(s);
-    return h + (official ? `<p class="r-official"><b>Official advice:</b> ${esc(official)}. Not part of the level below; follow it first.</p>` : '')
+    return h + (official ? `<p class="r-official"><b>Official advice:</b> ${esc(official)}. Not part of the level below; follow it first.${officialLink(s)}</p>` : '')
       + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
       + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`

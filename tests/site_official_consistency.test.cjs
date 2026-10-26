@@ -20,7 +20,7 @@ const SITE = join(__dirname, '../src/dipcast/site');
 const PROFILE = 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945';
 const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
 const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', ...extra });
-const BRIEF = 'EA advice against bathing · since 19 Jun · checked 26 Oct';
+const BRIEF = 'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct';
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
 const spot = (id, name, extra = {}) => ({ id, name, kind: 'lake', source: 'designated', lat: 51.15, lon: -0.79, area: 'Surrey',
   classification: { class: 'excellent', year: 2025, url: PROFILE }, upstream_summary: { overflows: 2 }, assumptions: { max_upstream_km: 15 },
@@ -131,7 +131,9 @@ test('the embed and the live sign: the advice under the level, apart from it', (
 
 test('the sites view and its briefing: the advice under the headline, on a day too', () => {
   const row = S.row(frensham());
-  assert.match(row, new RegExp(`<p class="s-head low">Low risk[^<]*</p><p class="o-tag">Official: ${BRIEF}\\. Follow it first; the level is SwimSignal's sewage forecast only\\.</p>`));
+  const tag = `<p class="o-tag">Official: ${BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.</p>`;
+  assert.ok(row.includes(tag), row);
+  assert.match(row.slice(0, row.indexOf(tag)), /<p class="s-head low">Low risk[^<]*<\/p>$/);
   assert.doesNotMatch(S.row(other()), /o-tag/);
   const page = S.view(DATA, { ids: [frensham().id], day: DATES[2] }, NOW);
   assert.match(page, /data-level="low"/);   // the briefing's check reads the level, which is unchanged
@@ -144,4 +146,72 @@ test('the organisers\' page: the advice above the day\'s level, inside the forec
     assert.ok(h.includes(`<p class="o-tag"><b>Official advice:</b> ${BRIEF}. Not part of the level below; follow it first.</p>`), iso);
     assert.doesNotMatch(O.forecast(other(), iso, DATA, NOW), /o-tag/);
   }
+});
+
+// Second round (integrated review, 26 Oct): Nearby, the comparison's EA row, Saved's grid and best day, the
+// action line, and the Not known row.
+const X = require('../src/dipcast/site/experience.js');
+const PAGE_EXTRA = { ROOT: { pathname: '/' }, DATA: { generated_at: '2026-10-26T20:00:00Z', spots: [] }, PLAN: { day: DATES[0] },
+  planWhy: () => '', planEvidence: () => '', milesAway: m => `${m} miles away`, MILE_KM: 1.609344 };
+
+test('"Lower risk nearby" never offers a spot with official advice; a plain "Nearby" tags it', () => {
+  const high = d => ({ ...d, label: 'high', risk: 0.5 });
+  const here = other({ id: 'here', name: 'River Wey', kind: 'river', days: other().days.map(high), now: { label: 'high', discharging_upstream: 1, monitored_upstream: 2 } });
+  const names = ['esc', 'tone', 'km', 'away', 'PAGE_ID', 'spotPath', 'glyph', 'ICON', 'headNote', 'NEAR_KM', 'notHigherAnyDay', 'allFiveDays', 'ratedBetter',
+    'joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell', 'nearby'];
+  const f = frensham(), o = other({ id: 'calm', name: 'Calm Pond' });
+  const ctx = pageContext(names, { ...PAGE_EXTRA, DATA: { ...PAGE_EXTRA.DATA, spots: [here, f, o] } });
+  vm.runInContext('var DAY = null;', ctx);
+  const h = vm.runInContext('nearby', ctx)(here);
+  assert.match(h, /Lower risk nearby/);
+  assert.ok(h.includes('data-id="calm"'), h);
+  assert.ok(!h.includes(`data-id="${f.id}"`), 'a spot under advice is not a lower-risk alternative');
+  // At a low spot the list is plain "Nearby": Frensham may be in it, with its tag.
+  const plain = vm.runInContext('nearby', ctx)(o);
+  assert.match(plain, />Nearby</);
+  assert.ok(plain.includes(`<span class="o-tag">${BRIEF}</span>`), plain);
+});
+
+test('the comparison\'s EA row gives the reviewed notice, not "could not be checked"', () => {
+  const said = X.compareAdvice(frensham());
+  assert.ok(said.startsWith(`Official: ${BRIEF}. Follow it first.`), said);
+  assert.match(said, /<a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">The Environment Agency's page<\/a> has the latest\./);
+  assert.doesNotMatch(said, /could not be checked/);
+  assert.match(X.compareAdvice(frensham({ official: [] })), /could not be checked/);
+  const row = X.compareRows(frensham(), DATES[0], DATA.generated_at).find(([l]) => l === "Today's EA advice");
+  assert.equal(row[1], said);
+});
+
+test('Saved: the grid tags the spot, and the best day leaves it out of the count and says so', () => {
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'tone', 'PAGE_ID', 'spotPath', 'VIEW', 'fiveDays', 'savedGrid', 'bestDayNote'], PAGE_EXTRA);
+  const grid = vm.runInContext('savedGrid', ctx)([frensham(), other()]);
+  assert.ok(grid.includes(`>Frensham Great Pond</a><span class="o-tag">${BRIEF}</span></span>`), grid);
+  assert.equal((grid.match(/o-tag/g) || []).length, 1);
+  const note = vm.runInContext('bestDayNote', ctx)([frensham(), other(), other({ id: 'calm', name: 'Calm Pond' })], true);
+  assert.match(note, /when 2 of your 2 spots are at low risk \(Frensham Great Pond has official advice against swimming, so is not counted\)\./);
+  assert.doesNotMatch(vm.runInContext('bestDayNote', ctx)([other(), other({ id: 'calm', name: 'Calm Pond' })], true), /official/);
+});
+
+test('with a notice shown, the level\'s action line points to it, on the spot page and the embed; without one, unchanged', () => {
+  assert.equal(ea.eaTodayAct(frensham()), 'Follow the official advice above first.');
+  assert.equal(ea.eaTodayAct(other()), '');
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'answerParts'], PAGE_EXTRA);
+  const parts = vm.runInContext('answerParts', ctx);
+  assert.equal(parts(frensham()).act, 'Follow the official advice above first.');
+  assert.match(parts(other()).act, /^Usual care/);
+  assert.equal(parts(frensham(), DATES[2]).act, 'Follow the official advice above first.');
+  const card = Embed.card(frensham(), DATA, NOW);
+  assert.ok(card.includes('<p class="act">Follow the official advice above first.</p>'));
+  assert.doesNotMatch(card, /Usual care/);
+  assert.match(Embed.card(other(), DATA, NOW), /Usual care/);
+});
+
+test('the Not known row and the algae tile: the checked date once, in the answer; the tile says what it is beside an algae notice', () => {
+  assert.equal(ea.eaTodayLatest(frensham()), 'Open <a href="#ea-today">today\'s EA advice</a> for the latest');
+  assert.equal(ea.eaTodayLatest(other({ official: [item()], classification: null })),
+    `Open <a href="${PROFILE}">the Environment Agency page</a> for the latest`);
+  assert.equal(ea.eaTodayLatest(other()), '');
+  const src = pageSrc.join('\n');
+  assert.match(src, /rows\.push\(\["Today's EA advice", 'Notice shown above', `\$\{eaTodayLatest\(d\) \|\| 'See the notice above'\}\.`\]\)/);
+  assert.match(src, /notice above is about harmful algae; this tile is the sampler's last visual check\./);
 });

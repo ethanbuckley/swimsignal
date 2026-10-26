@@ -132,15 +132,14 @@ def _short_day(iso) -> str:
 
 
 def official_brief(spot: dict) -> str:
-    """'EA advice against bathing · since 19 Jun · checked 26 Oct', or '' without advice."""
+    """'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct', or '' without advice."""
     items = [o for o in (spot.get("official") or []) if isinstance(o, dict) and isinstance(o.get("line"), str) and o["line"]
              and isinstance(o.get("publisher"), str) and o["publisher"] and o.get("state") in OFFICIAL_STATES
              and _short_day(o.get("checked"))]
     if not items:
         return ""
     o = items[0]
-    said = re.sub(r"^[^:]*:\s*", "", o["line"], count=1)
-    said = re.sub(r"\s+since\s.*$", "", re.sub(r"\s*\(.*$", "", said, count=1), count=1)
+    said = re.sub(r"\s+since\s.*$", "", re.sub(r"^[^:]*:\s*", "", o["line"], count=1), count=1)   # the cause stays
     who = "EA" if o["publisher"] == "Environment Agency" else o["publisher"]
     since, checked = _short_day(o.get("since")), _short_day(o["checked"])
     parts = [f"{who} {said}", f"since {since}" if since else "",
@@ -646,11 +645,15 @@ def draw_spot(name: str, where: str, level: str | None, headline: str, generated
     head_f, when_f, where_f = font("sans", 44, 700), font("sans", 32, 500), font("sans", 30, 400)
     mark, text = level_colours(level)
     head = wrap(draw, headline, head_f, width - 44)
-    said, said_f = f"Official: {official}." if official else "", font("sans", 30, 600)   # one line: the alt text has the rest
-    said_h = len(wrap(draw, said, said_f, width - 44)) * lh(said_f) + 10 if said else 0
-    # With the advice line, a name that still does not fit at the smallest size loses where it is (the page
-    # says it), rather than the card being left out: the advice must not cost the card.
-    for size, show_where in [(s, True) for s in (60, 52, 44)] + ([(44, False)] if said else []):
+    said_f = font("sans", 30, 600)
+    # The advice in full, then, where a long name and headline leave no room, the line up to its start
+    # ("Official: EA advice against bathing (harmful algae) · since 19 Jun."), and only then without where the
+    # spot is (the page says it): the advice must never cost the card. The alt text has it all.
+    short = official.split(" · checked")[0].split(" · not re-checked")[0] if official else ""
+    tries = [(s, True, official) for s in (60, 52, 44)] + ([(44, True, short), (44, False, short)] if official else [])
+    for size, show_where, o in tries:
+        said = f"Official: {o}." if o else ""
+        said_h = len(wrap(draw, said, said_f, width - 44)) * lh(said_f) + 10 if said else 0
         name_f = font("serif", size)
         lines = wrap(draw, name, name_f, width)
         need = len(lines) * lh(name_f) + (8 + lh(where_f) if show_where else 0) + 24 + len(head) * lh(head_f) + said_h + 8 + lh(when_f)

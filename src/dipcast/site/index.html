@@ -1968,19 +1968,19 @@ function answerParts(d, iso = null) {
       + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     const sub = !r.level ? '' : r.by === 'record' ? cap(poorReason(iso)) : rank(r.level) > 0 ? cap(dayBecause(d, r)) : '';
     return { word: r.level ? cap(r.level) : null, noun: spills ? HEAD_SCOPE : 'risk', tone: r.level ? tone(r.level) : 'na', head: 'No forecast for this day',
-      sub, why: !spills ? sub : !r.now ? '' : dayBecause(d, r).startsWith('recent ') ? recent : 'Right now', next: when, act: dayAction(d, iso),
+      sub, why: !spills ? sub : !r.now ? '' : dayBecause(d, r).startsWith('recent ') ? recent : 'Right now', next: when, act: (typeof eaTodayAct === 'function' && eaTodayAct(d)) || dayAction(d, iso),
       scope: r.level ? levelScope(d, iso) : '' };
   }
   const l = level(d), [h, w] = headParts(d);
   if (ORDER[l] === undefined) { const sub = plainLevel(l) ? OTHER_RISKS : w ? cap(w) : '';
-    return { word: null, tone: headTone(d), head: h, sub, why: sub, next: plainLevel(l) ? rainSaid(d) : '', act: levelAction(d) }; }
+    return { word: null, tone: headTone(d), head: h, sub, why: sub, next: plainLevel(l) ? rainSaid(d) : '', act: (typeof eaTodayAct === 'function' && eaTodayAct(d)) || levelAction(d) }; }
   // headParts gives the level, "risk" and when ("High risk today") and what set it ("rated poor"), or the week.
   const lead = `${cap(l)} risk`, when = h.startsWith(lead + ' ') ? h.slice(lead.length + 1) : '', spills = spillSet(d, worstNear(d)[0]);
   const sub = nowUnknown(d) && rank(l) === 0 ? `Forecast only: ${nowUnknownWhy(d)}`   // right now not known (levels.js)
     : h.startsWith('Low risk now') ? 'Today and tomorrow' : /^Low risk (for|on every)/.test(h) ? cap(when)
     : [w && cap(w), w && w.startsWith('recent ') ? '' : when].filter(Boolean).join(' ');   // "Recent sewage spills", not "... right now"
   const why = !spills || rank(l) === 0 ? sub : w.startsWith('recent ') ? recent : cap(when);   // the cause is in the headline
-  return { word: cap(l), noun: spills ? HEAD_SCOPE : 'risk', tone: tone(l), head: '', sub, why, next: weekNext(d), act: levelAction(d), scope: levelScope(d) };
+  return { word: cap(l), noun: spills ? HEAD_SCOPE : 'risk', tone: tone(l), head: '', sub, why, next: weekNext(d), act: (typeof eaTodayAct === 'function' && eaTodayAct(d)) || levelAction(d), scope: levelScope(d) };
 }
 // The sentence over the five days, as Apple's over its hours: what the overflows upstream are expected
 // to do, not the headline again. A water rated poor says first that every day is at least high; a spot
@@ -2194,7 +2194,10 @@ function facts(d, iso = null) {
     out.push({ live: true, icon: ICON.algae, label: 'Algae at the last check', fig: cap(a.phrase), figTone: algaeLevel(d) ? tone(algaeLevel(d)) : '', rel: tileLine(d, 'algae'),
       say: `The EA sampler's look, ${when}. ${a.n_seen ? `Seen at ${a.n_seen} of ${a.n_checks} checks ${season}${a.n_objectionable ? `, ${a.n_objectionable} of them enough to be objectionable` : ''}.`
         : `None seen at any of ${a.n_checks} check${a.n_checks === 1 ? '' : 's'} ${season}.`} It cannot tell blue-green algae, which can be toxic, from harmless kinds.`,
-      more: `${age > 14 ? 'No check since: the EA checks bathing waters from May to September, and results take about a week to be published. ' : ''}A look at the water, not a lab test.` }); }
+      more: `${age > 14 ? 'No check since: the EA checks bathing waters from May to September, and results take about a week to be published. ' : ''}A look at the water, not a lab test.`
+        // Beside an official notice about algae (eatoday.js), so "None seen" is not read against it.
+        + (typeof eaTodayAdvice === 'function' && eaTodayAdvice(d).some(o => /algae|algal|cyanobacteria/i.test(o.line))
+          ? ` The ${esc(eaTodayAdvice(d).find(o => /algae|algal|cyanobacteria/i.test(o.line)).publisher)}'s notice above is about harmful algae; this tile is the sampler's last visual check.` : '') }); }
   const rt = riverTile(d.river_state); if (rt) out.push(rt);
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
@@ -2300,7 +2303,8 @@ function unknowns(d) {
   if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)]);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
-  if (reviewed) rows.push(["Today's EA advice", 'Notice shown above', `${reviewed}.`]);
+  // The answer says what was checked and when (coverLine); here only where the latest is.
+  if (reviewed) rows.push(["Today's EA advice", 'Notice shown above', `${eaTodayLatest(d) || 'See the notice above'}.`]);
   else if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
   if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
   if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
@@ -2350,10 +2354,14 @@ const coverLine = (d, iso = null) => { const w = coverWords(d, iso); return w.le
 // reach a weekend, how it looks comes first (levels.js, weekendWords), so the Show button stays last,
 // beside its day. The day is in words, as in a sentence ("tomorrow", "Friday"); the button's label
 // keeps the picker's name. The list says the week's best day in its answer's form instead (mostLine).
+// Spots with official advice (eatoday.js) are left out of the counts, and the note names them.
 function bestDayNote(spots, yours = false) {
+  const out = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length) : [];
+  spots = spots.filter(s => !out.includes(s));
   const dates = fiveDays(), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
-  return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk.` : ''}`
+  const left = out.length ? ` (${esc(out.map(s => s.name).join(', '))} ${out.length === 1 ? 'has' : 'have'} official advice against swimming, so ${out.length === 1 ? 'is' : 'are'} not counted)` : '';
+  return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk${left}.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
 }
 // The list's second line (levels.js, mostWords): the week's best day in the answer's form, "Today: 43
@@ -3072,7 +3080,7 @@ function savedGrid(spots) {
     + `href="${esc(spotPath(s.id) + (iso ? '#day=' + iso : ''))}" data-id="${esc(s.id)}"${iso ? ` data-day="${iso}"` : ''} `
     + `aria-label="${esc(s.name)}, ${iso ? dateLabel(iso) : 'every day'}: ${esc(c.said)}">${esc(c.words)}</a></span>`;
   const row = s => { const w = weekCells(s, dates);
-    return `<div class="wg-row" role="row"><span class="wg-name" role="rowheader"><a href="${esc(spotPath(s.id))}" data-id="${esc(s.id)}">${esc(s.name)}</a></span>`
+    return `<div class="wg-row" role="row"><span class="wg-name" role="rowheader"><a href="${esc(spotPath(s.id))}" data-id="${esc(s.id)}">${esc(s.name)}</a>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}</span>`
       + (w.same ? cell(s, w, null) : w.cells.map(c => cell(s, c, c.date)).join('')) + '</div>'; };
   return `<section class="sec tile wgrid-tile" aria-labelledby="wg-h"><h2 class="sec-h" id="wg-h">Day by day</h2>`
     + `<div class="wg-scroll"><div class="wgrid" role="table" aria-labelledby="wg-h"><div class="wg-row wg-head" role="row"><span class="wg-name" role="columnheader">Spot</span>`
@@ -4186,9 +4194,11 @@ const otherAsWell = (d, near) => { const three = near.slice(0, 3);
   if (three.some(([s]) => otherWater(d, s))) return three;
   const o = near.find(([s]) => otherWater(d, s));
   return o ? [...three.slice(0, 2), o] : three; };
+// A spot with official advice (eatoday.js) is never offered as lower risk; in a plain "Nearby" it carries its tag.
 function nearby(d) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
-  const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
+  const officialShown = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).length > 0;
+  const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
     .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]));
   if (!alts.length) return '';
@@ -4197,7 +4207,7 @@ function nearby(d) {
   return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
     + alts.map(([s, k]) => { const why = nearWhy(d, s);
       return `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
-        + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`
+        + `<span class="nm">${esc(s.name)}</span><span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}`
         + `<span class="k">${[away(k), cap(s.kind), s.source === 'designated' ? (classOf(s) ? `bathing water rated ${classOf(s)}` : 'bathing water') : null].filter(Boolean).join(' · ')}</span>`
         + `${why ? `<span class="why">${why}</span>` : ''}</span></a></li>`; }).join('')
     + `</ul>${lower ? `<p class="sub">${claim} A lower forecast level, not clean water: check the signs there too.`
