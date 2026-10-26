@@ -1245,6 +1245,14 @@ gives all four navigation links a single full-width row.
   someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
   tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
   added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- "Open a list from a link" (26 October 2026, a phone-journey audit): the Home Screen app on an iPhone
+  has no address bar and keeps its own storage, so a list sent to someone, or saved in Safari, could not
+  be opened in it. A text box on the Saved page takes a pasted link and opens it as the shared-list page
+  above, with its own "Add to my lists" and "It is in your lists already"; nothing new is drawn after the
+  paste. Only a link to this site's `saved/` with a list in it is taken (`pastedList` in `lists.js`); else
+  one muted line says why. Nothing is read from the clipboard. The form sits in "Your lists"; with nothing
+  saved, when "Your lists" is not shown, it is a tile of its own under the empty tile, whose Home Screen
+  sentence points to it.
 - The next step after saving (25 October 2026, a 375 px walk through the Facebook post's link). Save on a
   spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
   room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts
