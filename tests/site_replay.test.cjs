@@ -35,15 +35,15 @@ const replay = (extra = {}) => ({
 
 test('a reported spill is said as reported, and its arrival as a modelled estimate', () => {
   const t = R.replaySpillSaid(replay().overflows[0].spills[0]);
-  assert.equal(t, 'Reported spilling Sat 18:04 to Sat 21:51. Modelled to reach the spot around Sun 21:34 to Mon 01:21 (estimate; arriving now).');
+  assert.equal(t, 'Reported spilling Sat 18:04 to Sat 21:51. Modelled to reach the spot around Sun 21:34 to Mon 01:21 (estimate; at issue: expected arriving).');
   const run = R.replaySpillSaid(replay().overflows[1].spills[0]);
-  assert.match(run, /^Reported spilling since Sun 21:00, still discharging at the last reading\. Modelled to reach the spot from around Sun 21:24 \(estimate; still arriving\)\.$/);
+  assert.match(run, /^Reported spilling since Sun 21:00, still discharging at the last poll before issue\. Modelled to reach the spot from around Sun 21:24 \(estimate; at issue: expected arriving\)\.$/);
 });
 
 test('an end the feed never gave is said to be unknown, and nothing is drawn after the start', () => {
   const r = replay(), s = r.overflows[2].spills[0];
   assert.match(R.replaySpillSaid(s), /Its end was not reported\..*\(estimate; when it passed is not known\)/);
-  const svg = R.replaySvg({ ...r, overflows: [r.overflows[2]] });
+  const svg = R.replaySvg({ ...r, overflows: [r.overflows[2]] }, 480);
   const spill = svg.match(/<rect [^>]*class="rp-spill"\/>/g);
   assert.equal(spill.length, 1);
   assert.match(spill[0], /width="2\.0"/, "a start mark, not a bar to now");
@@ -56,32 +56,34 @@ test('an end the feed never gave is said to be unknown, and nothing is drawn aft
 
 test('water already passed and water still due are told apart', () => {
   const s = { start: '2026-10-24T09:00Z', end: '2026-10-24T10:00Z', running: false, end_known: true };
-  assert.match(R.replaySpillSaid({ ...s, arrival: { from: '2026-10-24T12:00Z', to: '2026-10-24T13:00Z', state: 'passed' } }), /\(estimate; passed\)\.$/);
-  assert.match(R.replaySpillSaid({ ...s, arrival: { from: '2026-10-26T02:00Z', to: '2026-10-26T03:00Z', state: 'due' } }), /\(estimate; not there yet\)\.$/);
+  assert.match(R.replaySpillSaid({ ...s, arrival: { from: '2026-10-24T12:00Z', to: '2026-10-24T13:00Z', state: 'passed' } }), /\(estimate; passed by issue\)\.$/);
+  assert.match(R.replaySpillSaid({ ...s, arrival: { from: '2026-10-26T02:00Z', to: '2026-10-26T03:00Z', state: 'due' } }), /\(estimate; at issue: expected later\)\.$/);
   assert.match(R.replaySpillSaid({ ...s, arrival: null }), /No travel time to the spot is modelled\.$/);
 });
 
 test('rain: blank hours are a gap mark, never a bar; forecast hours are marked as forecast', () => {
-  const r = replay(), svg = R.replaySvg(r);
+  const r = replay(), svg = R.replaySvg(r, 480);
   assert.equal((svg.match(/class="rp-gap"/g) || []).length, 1);
   assert.equal((svg.match(/class="rp-rain rp-fc"/g) || []).length, 1, 'the one rain hour after the issue time inside the window');
   const said = R.replayRainSaid(r.rain);
   assert.match(said, /^Model rain averaged over the cells of the overflows upstream \(3 cells of Open-Meteo's grid\): 10\.4 mm in the hours shown\./);
   assert.match(said, /not rain gauges, and not the rainfall over the whole area draining here/);
   assert.match(svg, />Model rain, mean of the overflows' cells, mm\/h</);
+  assert.match(R.replaySvg(r, 288), />Model rain, mm\/h</, 'the short label at a narrow width');
   assert.match(said, /1 hour not held, left blank\.$/);
   assert.match(R.replayRainSaid({ unavailable: 'no counted overflow upstream' }), /^Rain: not available here \(no counted overflow upstream\)\.$/);
 });
 
-test('the gauge is its current reading and its time, with no rise and no line drawn', () => {
-  assert.equal(R.replayGaugeSaid(replay().gauge), 'River level at Flint Mill: 1.52 m at Sun 21:15, the current reading. Earlier readings are not shown.');
+test('the gauge is the latest reading held at issue, with its time, no rise and no line drawn', () => {
+  assert.equal(R.replayGaugeSaid(replay().gauge), 'River level at Flint Mill: 1.52 m, the latest reading held at issue, Sun 25 Oct 21:15. Earlier readings are not shown.');
+  assert.doesNotMatch(R.replayGaugeSaid(replay().gauge), /current|now/i);
   assert.equal(R.replayGaugeSaid({ unavailable: 'no level gauge matched to this spot' }), 'River level: no level gauge matched to this spot.');
   assert.doesNotMatch(R.replaySvg(replay()), /gauge|polyline|<path /);
 });
 
 test('overflows with no reading are counted, so silence is not read as no spill', () => {
   assert.equal(R.replayQuietSaid(replay()), '2 other counted overflows with a live reading reported no spill in the polls these hours have. '
-    + '1 counted overflow has no current reading, so a spill there would not show here.');
+    + '1 counted overflow has no reading at issue, so a spill there would not show here.');
   const q = R.replayQuietSaid(replay({ quiet: { no_history: { n: 2 }, late_history: { n: 1 } }, more_with_events: 3, truncated: true }));
   assert.equal(q, '2 counted overflows have no poll history, so whether they spilled in these hours is not known. '
     + '1 counted overflow first appears in the poll history part way through these hours, so earlier spills there are not known. '
@@ -93,13 +95,13 @@ test('the tile: names, data states, an accessible drawing and table, and no caus
   assert.match(html, /^<details class="tile fold" id="replay" open><summary>/);
   assert.match(html, /<svg class="rp-svg"[^>]*role="img" aria-labelledby="rp-title" aria-describedby="rp-desc"/);
   assert.match(html, /<table class="rp-table"><caption>Reported spills upstream and their modelled arrival here, Fri 23:00 to Sun 22:00<\/caption>/);
-  assert.match(html, /<th scope="row">Pool sewage works storm tank overflow<span class="rp-meta">Yorkshire Water · 20\.5 km upstream · about 29 h away \(modelled\) · live reading/);
+  assert.match(html, /<th scope="row">Pool sewage works storm tank overflow<span class="rp-meta">Yorkshire Water · 20\.5 km upstream · about 29 h away \(modelled\) · live reading at issue/);
   assert.match(html, /Bridge Lane storm overflow<span class="rp-meta">Yorkshire Water · 3\.1 km upstream · under an hour away \(modelled\)/);
-  assert.match(html, /Dŵr Cymru Welsh Water .* no current reading: the monitor or its feed is not reporting/);
+  assert.match(html, /Dŵr Cymru Welsh Water .* no reading at issue: the monitor or its feed was not reporting/);
   // The per-overflow details fold under the drawing; the table stays in the page, reached by its summary.
   assert.match(html, /<details class="rp-more"><summary>Details for each overflow \(3\)<\/summary><div class="rp-scroll" tabindex="0" role="region" aria-label="Table of reported spills"><table class="rp-table">/);
   assert.ok(html.indexOf('rp-more') > html.indexOf('</svg>'), 'the details come after the timeline');
-  assert.match(html, /<desc id="rp-desc">3 overflows upstream reported spills or gaps in these hours, 1 still discharging at the last reading\. Each is listed under &quot;Details for each overflow&quot;\.<\/desc>/);
+  assert.match(html, /<desc id="rp-desc">3 overflows upstream reported spills or gaps in these hours, 1 still discharging at issue\. Each is listed under &quot;Details for each overflow&quot;\.<\/desc>/);
   assert.match(html, /<p class="t-say">3 overflows upstream reported spills or gaps in these hours, 1 still discharging/);
   assert.match(html, /reported spilling \(observed\).*modelled to reach the spot \(estimate\).*no reading.*rain not held/);
   assert.doesNotMatch(html, /\bcaus|\bbecause\b|\bresult(ed)? in\b|\bdue to\b|\bpollut/i);
@@ -107,10 +109,11 @@ test('the tile: names, data states, an accessible drawing and table, and no caus
   assert.equal(R.replayTile(null), '');
 });
 
-test('the drawing marks now, and draws hours ahead only for water still due', () => {
+test('the drawing marks the issue time, and draws hours after it only for water still due then', () => {
   const svg = R.replaySvg(replay());
   assert.match(svg, /class="rp-now"/);
-  assert.match(svg, />Now</);
+  assert.match(svg, />At issue, Sun 22:00</);
+  assert.doesNotMatch(svg, />Now</);
   const flat = R.replaySvg(replay({ window: { ...replay().window, ahead_to: '2026-10-25T22:00Z' } }));
   const nowX = +flat.match(/<line x1="([\d.]+)"[^>]*class="rp-now"/)[1];
   // With nothing due, the axis still runs 4 h past now (52 h in all), so now sits 4/52 of the width from the edge.
@@ -149,7 +152,8 @@ test('a lake route: reported spills shown, no arrival drawn or timed, and said s
   const r = replay(), lake = { ...r.overflows[0], lake_route: true, travel_h: null,
     spills: r.overflows[0].spills.map(s => ({ ...s, arrival: null })) };
   assert.equal(R.replaySpillSaid(lake.spills[0], true), 'Reported spilling Sat 18:04 to Sat 21:51. Arrival through the lake not estimated here.');
-  const svg = R.replaySvg({ ...r, overflows: [lake] });
+  const svg = R.replaySvg({ ...r, overflows: [lake] }, 480);
+  assert.match(R.replaySvg({ ...r, overflows: [lake] }, 288), />arrival via the lake not estimated</, "shorter at a narrow width");
   assert.equal((svg.match(/class="rp-spill"/g) || []).length, 1, 'the reported event stays');
   assert.equal((svg.match(/class="rp-arr"/g) || []).length, 0, 'no modelled bar');
   assert.match(svg, />arrival through the lake not estimated here</);
@@ -196,7 +200,7 @@ test('an end known only between two polls is said and drawn as a span, not a tim
     arrival: { from: '2026-10-25T12:00Z', to: null, to_after: '2026-10-25T12:20Z', to_by: '2026-10-25T14:00Z', state: 'passed' } };
   assert.equal(R.replaySpillSaid(s), 'Reported spilling from Sun 10:00. It stopped between Sun 10:20, the last poll that saw it discharging, '
     + 'and Sun 12:00, when the feed said it had stopped; the feed was not polled, or the monitor was offline, in between. '
-    + 'Modelled to reach the spot from around Sun 12:00, its last water between Sun 12:20 and Sun 14:00 (estimate; passed).');
+    + 'Modelled to reach the spot from around Sun 12:00, its last water between Sun 12:20 and Sun 14:00 (estimate; passed by issue).');
   const r = replay(), row = { ...r.overflows[0], spills: [s] };
   const svg = R.replaySvg({ ...r, overflows: [row] });
   assert.equal((svg.match(/class="rp-unsure"/g) || []).length, 2, 'the end span and the arrival span, outlined');
@@ -212,4 +216,40 @@ test('an overflow with no poll history, or one that starts late, says so and is 
   assert.match(table, /Its poll history starts at Sat 21:00; before then nothing is known\./);
   const svg = R.replaySvg({ ...r, overflows: [none, late] });
   assert.equal((svg.match(/class="rp-nopoll"/g) || []).length, 2);
+});
+
+test('everything is as at the issue time: a caption, issue-relative states, and an as-of note when old', () => {
+  const r = replay(), issue = Date.parse(r.window.to);
+  const fresh = R.replayTile(r, issue + 2 * 36e5);
+  assert.match(fresh, /<p class="t-say rp-cap"><b>48 hours to Sun 25 Oct 22:00<\/b>, when this update was issued\.<\/p>/);
+  assert.doesNotMatch(fresh, /rp-asof/, 'not yet past the page\'s stale rule');
+  assert.doesNotMatch(fresh, /arriving now|not there yet|current reading|still arriving|>Now</);
+  const old = R.replayTile(r, issue + 25 * 36e5);   // viewed the next day
+  assert.match(old, /<p class="notice quiet rp-asof" role="note"><b>As of Sun 25 Oct 22:00\.<\/b> This replay was made when this update was issued, 25 hours ago, and may be out of date: nothing after that time is shown\.<\/p>/);
+  assert.ok(old.indexOf('rp-asof') < old.indexOf('<svg'), 'said before the drawing');
+  // The same file viewed later draws the same thing: nothing newer is made up on the client.
+  assert.equal(R.replaySvg(r), R.replaySvg(r));
+  assert.equal(old.replace(/<p class="notice quiet rp-asof"[^]*?<\/p>/, ''), fresh);
+  // The page's own rule, where it has one.
+  global.STALE_MIN = 60;
+  assert.match(R.replayTile(r, issue + 2 * 36e5), /rp-asof/);
+  delete global.STALE_MIN;
+});
+
+test('at 320 px the words are drawn at real size, and the secondary ones go', () => {
+  const r = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'replay_ilkley.json'), 'utf8'));
+  const narrow = R.replaySvg(r, 288), wide = R.replaySvg(r, 480);
+  assert.match(narrow, /^<svg class="rp-svg" viewBox="0 0 288 \d+" width="288" height="\d+"/, 'one unit is one CSS pixel: no scaling down');
+  assert.match(R.REPLAY_CSS, /\.rp-lab \{ font-size:12px;/);
+  assert.match(R.REPLAY_CSS, /\.rp-tick \{ font-size:11px;/);
+  assert.doesNotMatch(narrow, />12:00</, 'no midday ticks at a narrow width');
+  assert.match(wide, />12:00</);
+  assert.doesNotMatch(narrow, /end not reported/);
+  // Every name label fits the width at 12 px (REPLAY_CHAR_PX a character); a long one is cut, its distance kept.
+  for (const [, t] of narrow.matchAll(/class="rp-lab">([^<]*)</g)) assert.ok(t.length * 6.4 <= 288 - 8, t);
+  assert.match(narrow, />Burley in Wharfedale[^<]*…, 31\.3 km</);
+  assert.match(R.replayTable(r), /Burley in Wharfedale sewage works overflow/, 'the table has the full name');
+  assert.equal(R.replayFit('Short name', ', 1 km', 288), 'Short name, 1 km');
+  // Tick words stay inside the drawing at its edges ("Sat" was cut at the left).
+  for (const [, x] of narrow.matchAll(/<text x="([\d.]+)" y="\d+" text-anchor="middle" class="rp-tick">/g)) assert.ok(+x >= 16 && +x <= 272, x);
 });

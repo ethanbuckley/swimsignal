@@ -55,6 +55,25 @@ Code: `src/dipcast/replay.py` (data step), `src/dipcast/site/replay.js` (view), 
    this small". The worst case in the tests (20 overflows, 20 spills and 20 offline spells each, 20
    companies with 16 gaps each) is cut to fit.
 
+## Third review: an issued snapshot (Codex QA, 26 October 2026)
+
+The replay file is made at build time, so it is as of the issue time, whatever the reader's clock says.
+
+- The axis line is "At issue, Sun 22:49", not "Now". Under the heading: "**48 hours to Sun 25 Oct 22:49**,
+  when this update was issued."
+- Arrival states are relative to the issue time: "at issue: expected arriving", "at issue: expected later",
+  "passed by issue". Data states: "live reading at issue", "no reading at issue". A running spill is "still
+  discharging at the last poll before issue".
+- The gauge is "the latest reading held at issue, Sun 25 Oct 21:15".
+- Past the page's own stale rule (`STALE_MIN`, 8 hours), the tile adds its own note before the drawing: "As of
+  Sun 25 Oct 22:49. This replay was made when this update was issued, 25 hours ago, and may be out of date:
+  nothing after that time is shown." The page's global stale notice stays too. The client draws nothing newer
+  than the file (tested: the same file gives the same drawing at any viewing time).
+- Legibility: the drawing is now made at the tile's own width in CSS pixels (no scaling), so names are 12 px and
+  ticks 11 px at every width (measured in headless Chrome at 320 and 375 px: scale 1.0). Under 400 px the
+  midday ticks, "end not reported" and the long rain label go, a long name is cut with an ellipsis (its
+  distance kept), and tick words are kept inside the edges. The table under the fold has everything in full.
+
 ## Benchmark, 105 spots on real saved history
 
 Read-only state: `spots.json` of 25 October 22:49 UTC (105 spots, 80 with counted overflows; the build

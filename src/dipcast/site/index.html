@@ -4306,7 +4306,7 @@ function mountReplay(d) {
   Promise.all([replayScript, fetch(`data/${d.detail_file.replace(/\.json$/, '-replay.json')}`, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null))])
     .then(([, r]) => { if (!host.isConnected) return;
       if (!r) return said('No replay of the last 48 hours upstream for this spot in this update.');
-      replayStyle(document); host.innerHTML = replayTile(r); })
+      replayStyle(document); host.innerHTML = replayTile(r, Date.now(), host.clientWidth - 32); })   // the tile's inner width
     .catch(() => said('The replay of the last 48 hours upstream could not be loaded.'));
 }
 // Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those

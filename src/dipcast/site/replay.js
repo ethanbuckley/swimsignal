@@ -25,12 +25,19 @@ function replayTime(iso) {
   const v = t => p.find(x => x.type === t).value;
   return `${v('weekday')} ${v('hour')}:${v('minute')}`;
 }
+// "Sun 25 Oct 22:49" in UK time: the issue time, which the whole replay is as of.
+function replayStamp(iso) {
+  const p = new Intl.DateTimeFormat('en-GB', { timeZone: REPLAY_TZ, weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    .formatToParts(new Date(iso));
+  const v = t => p.find(x => x.type === t).value;
+  return `${v('weekday')} ${v('day')} ${v('month')} ${v('hour')}:${v('minute')}`;
+}
 const replayName = o => (typeof overflowNames === 'function' ? overflowNames({ site_id: o.site_id, site_name: o.name }).plain : (o.name || o.site_id || ''));
 const replayCompany = c => (typeof companyName === 'function' ? companyName(c) : String(c ?? ''));
 const REPLAY_STATE = {
-  live: 'live reading',
-  stale: 'reading may be out of date: its feed has not updated within 6 hours',
-  offline: 'no current reading: the monitor or its feed is not reporting',
+  live: 'live reading at issue',
+  stale: 'reading at issue may have been out of date: its feed had not updated within 6 hours',
+  offline: 'no reading at issue: the monitor or its feed was not reporting',
   no_feed: 'no live feed from its company',
 };
 
@@ -40,7 +47,7 @@ const REPLAY_STATE = {
 const REPLAY_LAKE = 'Arrival through the lake not estimated here.';
 function replaySpillSaid(s, lake = false) {
   let said;
-  if (s.running) said = `Reported spilling since ${replayTime(s.start)}, still discharging at the last reading.`;
+  if (s.running) said = `Reported spilling since ${replayTime(s.start)}, still discharging at the last poll before issue.`;
   else if (!s.end_known && s.end_after && s.end_by) said = `Reported spilling from ${replayTime(s.start)}. It stopped between `
     + `${replayTime(s.end_after)}, the last poll that saw it discharging, and ${replayTime(s.end_by)}, when the feed said it had stopped; `
     + 'the feed was not polled, or the monitor was offline, in between.';
@@ -54,9 +61,10 @@ function replaySpillSaid(s, lake = false) {
   const when = a.to && a.to !== a.from ? `around ${replayTime(a.from)} to ${replayTime(a.to)}`
     : a.to_after && a.to_by ? `from around ${replayTime(a.from)}, its last water between ${replayTime(a.to_after)} and ${replayTime(a.to_by)}`
       : `from around ${replayTime(a.from)}`;
-  const tail = a.state === 'due' ? (a.to ? 'not there yet' : 'not there yet, and when it would pass is not known')
-    : a.state === 'at_spot' ? (s.running ? 'still arriving' : 'arriving now')
-      : a.state === 'passed' ? 'passed'
+  // As at the issue time, never the reader's clock: the file is a snapshot.
+  const tail = a.state === 'due' ? (a.to || a.to_by ? 'at issue: expected later' : 'at issue: expected later; when it would pass is not known')
+    : a.state === 'at_spot' ? 'at issue: expected arriving'
+      : a.state === 'passed' ? 'passed by issue'
         : 'when it passed is not known';
   return `${said} Modelled to reach the spot ${when} (estimate; ${tail}).`;
 }
@@ -79,14 +87,14 @@ function replayRainSaid(rain) {
 function replayGaugeSaid(g) {
   if (!g || g.unavailable) return `River level: ${replayEsc((g && g.unavailable) || 'not held')}.`;
   const at = g.station ? ` at ${replayEsc(g.station)}` : '';
-  if (g.level_m == null) return `River level${at}: no current reading${g.last_level_m != null ? ` (last ${g.last_level_m.toFixed(2)} m, ${replayTime(g.observed_at)})` : ''}. Earlier readings are not held.`;
-  return `River level${at}: ${g.level_m.toFixed(2)} m at ${replayTime(g.observed_at)}, the current reading. Earlier readings are not shown.`;
+  if (g.level_m == null) return `River level${at}: no recent reading held at issue${g.last_level_m != null ? ` (an older one, ${g.last_level_m.toFixed(2)} m, ${replayStamp(g.observed_at)})` : ''}. Earlier readings are not shown.`;
+  return `River level${at}: ${g.level_m.toFixed(2)} m, the latest reading held at issue, ${replayStamp(g.observed_at)}. Earlier readings are not shown.`;
 }
 function replayQuietSaid(r) {
   const q = r.quiet || {}, out = [], n = k => (q[k] || {}).n || 0, s = k => (n(k) === 1 ? '' : 's');
   if (n('live')) out.push(`${n('live')} other counted overflow${s('live')} with a live reading reported no spill in the polls these hours have.`);
   const dark = ['stale', 'offline', 'no_feed'].reduce((m, k) => m + n(k), 0);
-  if (dark) out.push(`${dark} counted overflow${dark === 1 ? ' has' : 's have'} no current reading, so a spill there would not show here.`);
+  if (dark) out.push(`${dark} counted overflow${dark === 1 ? ' has' : 's have'} no reading at issue, so a spill there would not show here.`);
   if (n('no_history')) out.push(`${n('no_history')} counted overflow${n('no_history') === 1 ? ' has' : 's have'} no poll history, so whether ${n('no_history') === 1 ? 'it' : 'they'} spilled in these hours is not known.`);
   if (n('late_history')) out.push(`${n('late_history')} counted overflow${s('late_history')} first appear${n('late_history') === 1 ? 's' : ''} in the poll history part way through these hours, so earlier spills there are not known.`);
   if (r.more_with_events) out.push(r.truncated
@@ -134,42 +142,50 @@ function replayTable(r) {
     + `<tbody>${rows || '<tr><td colspan="2">No counted overflow upstream reported a spill or a gap in these hours.</td></tr>'}</tbody></table>`;
 }
 
-// The drawing. Width 340 user units, scaled to the tile; a block an overflow: its name, then two lanes on
-// one time axis, reported above, modelled below. Hours ahead of now are drawn only for water still due.
-const REPLAY_W = 340, REPLAY_PAD = 4, REPLAY_LANE = 9, REPLAY_RAIN_H = 30, REPLAY_AFTER_H = 4;
-function replayScale(r) {
-  // At least REPLAY_AFTER_H past now, so the now line and the rain scale never sit on the right edge
-  // (at 320 px they overlapped when nothing was still due).
+// The drawing, in CSS pixels: its width is the tile's (mountReplay passes it; REPLAY_W in Node), so its words
+// are drawn at their real size, 12 px names and 11 px ticks, and never scaled down. Scaled from a fixed 340
+// they were 9.3 and 7.6 px at 320 px (Codex QA, 26 Oct 2026). Narrow (under REPLAY_NARROW), the secondary
+// words go: the 12:00 ticks, "end not reported", the long rain label; a long name is cut with an ellipsis.
+// The table under the fold has everything in full. A block an overflow: its name, then two lanes on one time
+// axis, reported above, modelled below. Hours after the issue time are drawn only for water still due then.
+const REPLAY_W = 340, REPLAY_PAD = 4, REPLAY_LANE = 10, REPLAY_RAIN_H = 30, REPLAY_AFTER_H = 4, REPLAY_NARROW = 400;
+const REPLAY_CHAR_PX = 6.4;   // a 12 px Source Sans 3 character, on average, generously
+function replayScale(r, w = REPLAY_W) {
+  // At least REPLAY_AFTER_H past the issue time, so its line and the rain scale never sit on the right edge.
   const a = replayMs(r.window.from), now = replayMs(r.window.to), b = Math.max(now + REPLAY_AFTER_H * 36e5, replayMs(r.window.ahead_to) || now);
-  const x = t => REPLAY_PAD + (Math.min(Math.max(t, a), b) - a) / (b - a) * (REPLAY_W - 2 * REPLAY_PAD);
+  const x = t => REPLAY_PAD + (Math.min(Math.max(t, a), b) - a) / (b - a) * (w - 2 * REPLAY_PAD);
   return { a, b, now, x };
 }
-function replaySvg(r) {
-  const { a, b, now, x } = replayScale(r);
+const replayFit = (text, tail, w) => {   // a name cut to fit the width, its distance kept
+  const room = Math.floor((w - 2 * REPLAY_PAD) / REPLAY_CHAR_PX) - tail.length;
+  return text.length <= room ? text + tail : text.slice(0, Math.max(4, room - 1)).trimEnd() + '…' + tail;
+};
+function replaySvg(r, w = REPLAY_W) {
+  w = Math.round(Math.max(260, Math.min(720, w || REPLAY_W)));
+  const narrow = w < REPLAY_NARROW, { a, b, now, x } = replayScale(r, w);
   let y = 0;
-  const out = [], under = [];   // under: the grid and the now line, drawn first so the words sit over them
-  // Rain: a bar an hour; blank where not held, with a hatched strip at the foot to show the gap; the
-  // forecast hours hatched.
+  const out = [], under = [];   // under: the grid and the issue line, drawn first so the words sit over them
+  // Rain: a bar an hour; blank where not held, with a strip at the foot to show the gap; forecast hours lighter.
   const rain = r.rain || {};
   if (rain.mm) {
     const top = Math.max(2, ...rain.mm.filter(v => v !== null)), fc = replayMs(rain.forecast_from), t0 = replayMs(rain.start);
-    out.push(`<text x="${REPLAY_PAD}" y="${y + 10}" class="rp-lab">Model rain, mean of the overflows' cells, mm/h</text>`);
-    y += 14;
+    out.push(`<text x="${REPLAY_PAD}" y="${y + 12}" class="rp-lab">${narrow ? 'Model rain, mm/h' : "Model rain, mean of the overflows' cells, mm/h"}</text>`);
+    out.push(`<text x="${w - REPLAY_PAD}" y="${y + 12}" text-anchor="end" class="rp-tick">top ${top.toFixed(1)}</text>`);
+    y += 17;
     rain.mm.forEach((v, i) => {
-      const s = t0 + i * 36e5, x0 = x(s), w = Math.max(0.5, x(s + 36e5) - x0 - 0.4);
+      const s = t0 + i * 36e5, x0 = x(s), bw = Math.max(0.5, x(s + 36e5) - x0 - 0.4);
       if (s + 36e5 <= a || s >= b) return;
-      if (v === null) out.push(`<rect x="${x0.toFixed(1)}" y="${y + REPLAY_RAIN_H - 3}" width="${w.toFixed(1)}" height="3" class="rp-gap"/>`);
+      if (v === null) out.push(`<rect x="${x0.toFixed(1)}" y="${y + REPLAY_RAIN_H - 3}" width="${bw.toFixed(1)}" height="3" class="rp-gap"/>`);
       else if (v > 0) { const h = Math.max(1, v / top * REPLAY_RAIN_H);
-        out.push(`<rect x="${x0.toFixed(1)}" y="${(y + REPLAY_RAIN_H - h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" class="${s >= fc ? 'rp-rain rp-fc' : 'rp-rain'}"/>`); }
+        out.push(`<rect x="${x0.toFixed(1)}" y="${(y + REPLAY_RAIN_H - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" class="${s >= fc ? 'rp-rain rp-fc' : 'rp-rain'}"/>`); }
     });
-    out.push(`<text x="${REPLAY_W - REPLAY_PAD}" y="${y - 4}" text-anchor="end" class="rp-tick">top ${top.toFixed(1)}</text>`);   // on the label's line, clear of the bars
     y += REPLAY_RAIN_H + 8;
   }
   for (const o of r.overflows || []) {
-    out.push(`<text x="${REPLAY_PAD}" y="${y + 10}" class="rp-lab">${replayEsc(replayName(o))}, ${o.km} km</text>`);
-    y += 14;
+    out.push(`<text x="${REPLAY_PAD}" y="${y + 12}" class="rp-lab">${replayEsc(replayFit(replayName(o), `, ${o.km} km`, w))}</text>`);
+    y += 16;
     const lane1 = y, lane2 = y + REPLAY_LANE + 3;
-    out.push(`<rect x="${REPLAY_PAD}" y="${lane1}" width="${REPLAY_W - 2 * REPLAY_PAD}" height="${REPLAY_LANE}" class="rp-track"/>`);
+    out.push(`<rect x="${REPLAY_PAD}" y="${lane1}" width="${w - 2 * REPLAY_PAD}" height="${REPLAY_LANE}" class="rp-track"/>`);
     // Not polled: its company's gaps, and the hours before its poll history starts (all of them with none).
     const cov = (r.coverage || {})[o.company] || {};
     const blind = [...(cov.gaps || []), ...(cov.starts_late ? [[r.window.from, cov.from]] : []),
@@ -183,16 +199,16 @@ function replaySvg(r) {
       out.push(`<rect x="${x0.toFixed(1)}" y="${lane1}" width="${Math.max(1, x1 - x0).toFixed(1)}" height="${REPLAY_LANE}" class="rp-off"/>`);
     }
     for (const [i, s] of (o.spills || []).entries()) {
-      // Solid to what was seen: the end, now while running, else the last poll that saw it discharging.
+      // Solid to what was seen: the end, the issue time while running, else the last poll that saw it discharging.
       const s0 = replayMs(s.start), s1 = s.running ? now : s.end_known ? replayMs(s.end) : s.end_after ? replayMs(s.end_after) : null;
       const x0 = x(s0), x1 = s1 === null ? x0 + 2 : x(s1);
       out.push(`<rect x="${x0.toFixed(1)}" y="${lane1}" width="${Math.max(1.5, x1 - x0).toFixed(1)}" height="${REPLAY_LANE}" class="rp-spill"/>`);
       if (!s.running && !s.end_known && s.end_by) {   // stopped somewhere in here: an outline, not a bar
         const xb = x(replayMs(s.end_by));
         out.push(`<rect x="${x1.toFixed(1)}" y="${lane1 + 0.5}" width="${Math.max(1, xb - x1).toFixed(1)}" height="${REPLAY_LANE - 1}" class="rp-unsure"/>`);
-      } else if (!s.running && !s.end_known) {   // the words only where they fit before the next spill; the table says it anyway
+      } else if (!s.running && !s.end_known && !narrow) {   // the words only where they fit; the table says it anyway
         const next = o.spills[i + 1];
-        if (!next || x(replayMs(next.start)) - x1 > 64) out.push(`<text x="${(x1 + 3).toFixed(1)}" y="${lane1 + 8}" class="rp-tick">end not reported</text>`);
+        if (!next || x(replayMs(next.start)) - x1 > 100) out.push(`<text x="${(x1 + 3).toFixed(1)}" y="${lane1 + 9}" class="rp-tick">end not reported</text>`);
       }
       const ar = o.lake_route ? null : s.arrival;
       if (ar) {
@@ -205,24 +221,26 @@ function replaySvg(r) {
         }
       }
     }
-    if (o.lake_route) out.push(`<text x="${REPLAY_PAD + 2}" y="${lane2 + 7.5}" class="rp-tick">arrival through the lake not estimated here</text>`);
+    if (o.lake_route) out.push(`<text x="${REPLAY_PAD + 2}" y="${lane2 + 9}" class="rp-tick">${narrow ? 'arrival via the lake not estimated' : 'arrival through the lake not estimated here'}</text>`);
     y = lane2 + REPLAY_LANE + 8;
   }
-  // The axis: midnight and midday ticks in UK time, and now.
+  // The axis: midnight ticks (and midday where there is room) in UK time, and the issue time.
   const axis = y;
   for (let t = Math.ceil(a / 432e5) * 432e5 - 36e5 * 2; t <= b; t += 36e5) {
     const p = new Intl.DateTimeFormat('en-GB', { timeZone: REPLAY_TZ, hour: '2-digit', hourCycle: 'h23', weekday: 'short' }).formatToParts(new Date(t));
     const hr = +p.find(q => q.type === 'hour').value;
-    if (t < a || (hr !== 0 && hr !== 12)) continue;
+    if (t < a || (hr !== 0 && hr !== 12) || (narrow && hr === 12)) continue;
     const xx = x(t).toFixed(1);
     under.push(`<line x1="${xx}" y1="0" x2="${xx}" y2="${axis}" class="rp-grid"/>`);
-    out.push(`<text x="${xx}" y="${axis + 11}" text-anchor="middle" class="rp-tick">${hr === 0 ? p.find(q => q.type === 'weekday').value : '12:00'}</text>`);
+    const tx = Math.min(w - 16, Math.max(16, +xx)).toFixed(1);   // a tick's word kept inside the drawing ("Sat" was cut at the left edge)
+    out.push(`<text x="${tx}" y="${axis + 13}" text-anchor="middle" class="rp-tick">${hr === 0 ? p.find(q => q.type === 'weekday').value : '12:00'}</text>`);
   }
   under.push(`<line x1="${x(now).toFixed(1)}" y1="0" x2="${x(now).toFixed(1)}" y2="${axis + 2}" class="rp-now"/>`);
-  out.push(`<text x="${(x(now) - 2).toFixed(1)}" y="${axis + 22}" text-anchor="${b > now ? 'middle' : 'end'}" class="rp-tick rp-nowlab">Now</text>`);
-  const h = axis + 26;
-  return `<svg class="rp-svg" viewBox="0 0 ${REPLAY_W} ${h}" width="100%" role="img" aria-labelledby="rp-title" aria-describedby="rp-desc" focusable="false">`
-    + `<title id="rp-title">Timeline of reported spills upstream and their modelled arrival here</title>`
+  const anchor = x(now) > w - 40 ? 'end' : 'middle';
+  out.push(`<text x="${x(now).toFixed(1)}" y="${axis + 27}" text-anchor="${anchor}" class="rp-tick rp-nowlab">At issue, ${replayTime(r.window.to)}</text>`);
+  const h = axis + 32;
+  return `<svg class="rp-svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-labelledby="rp-title" aria-describedby="rp-desc" focusable="false">`
+    + `<title id="rp-title">Timeline of reported spills upstream and their modelled arrival here, 48 hours to ${replayStamp(r.window.to)}</title>`
     + `<desc id="rp-desc">${replayEsc(replaySummary(r))}</desc>`
     + `<defs><pattern id="rp-hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="4" class="rp-hatchline"/></pattern></defs>`
     + under.join('') + out.join('') + '</svg>';
@@ -234,7 +252,7 @@ function replaySummary(r) {
   const lake = ovs.filter(o => o.lake_route && (o.spills || []).length).length;
   if (!n) return 'No counted overflow upstream reported a spill or a gap in these hours.';
   return `${n} overflow${n === 1 ? '' : 's'} upstream reported spills or gaps in these hours`
-    + (run ? `, ${run} still discharging at the last reading` : '') + '.'
+    + (run ? `, ${run} still discharging at issue` : '') + '.'
     + (lake ? ` For ${lake === n ? (n === 1 ? 'it' : 'all of them') : lake}, the water passes through a lake, so its arrival here is not estimated.` : '')
     + ' Each is listed under "Details for each overflow".';
 }
@@ -248,13 +266,27 @@ const replayKey = () => '<p class="rp-key">'
   + `<span>${replaySwatch('<rect width="16" height="9" class="rp-nopoll"/>')}not polled</span>`
   + `<span>${replaySwatch('<rect y="6" width="16" height="3" class="rp-gap"/>')}rain not held</span></p>`;
 
-// The tile: folded, like the overflows, with a heading that can be reached by keyboard (its summary).
-function replayTile(r) {
+// Older than this, the tile says it may be out of date: the page's own rule (index.html, STALE_MIN) where it
+// has one, else the same 8 hours. The page's global stale notice stays as well.
+const replayStaleMin = () => (typeof STALE_MIN === 'number' ? STALE_MIN : 8 * 60);
+function replayAsOf(r, viewMs) {
+  const age = (viewMs - replayMs(r.window.to)) / 6e4;
+  if (!(age > replayStaleMin())) return '';
+  const h = Math.round(age / 60);
+  return `<p class="notice quiet rp-asof" role="note"><b>As of ${replayStamp(r.window.to)}.</b> This replay was made when this update was issued, `
+    + `${h < 48 ? `${h} hours` : `${Math.round(h / 24)} days`} ago, and may be out of date: nothing after that time is shown.</p>`;
+}
+// The tile: folded, like the overflows, with a heading that can be reached by keyboard (its summary). Everything
+// in it is as at the issue time (r.window.to), whatever the reader's clock says: `viewMs` only decides whether
+// to say it may be out of date, and `width` (the tile's, in px) is the drawing's.
+function replayTile(r, viewMs = replayMs(r && r.window && r.window.to), width = REPLAY_W) {
   if (!r || !r.window) return '';
   return `<details class="tile fold" id="replay" open><summary><span class="t-lab"><span>Upstream, the last 48 hours</span></span></summary>`
-    + `<p class="t-say">What the company feeds reported at the overflows upstream, and when the model estimates each spill's water `
-    + `reached, or will reach, this spot. The arrival times are an estimate from travel time down the river, not given where the water crosses a lake; they say nothing about what any spill did to the water here.</p>`
-    + replaySvg(r) + replayKey() + `<p class="t-say">${replaySummary(r)}</p>`
+    + replayAsOf(r, viewMs)
+    + `<p class="t-say rp-cap"><b>48 hours to ${replayStamp(r.window.to)}</b>, when this update was issued.</p>`
+    + `<p class="t-say">What the company feeds reported at the overflows upstream, and when the model estimated each spill's water `
+    + `would reach this spot, as at the issue time. The arrival times are an estimate from travel time down the river, not given where the water crosses a lake; they say nothing about what any spill did to the water here.</p>`
+    + replaySvg(r, width) + replayKey() + `<p class="t-say">${replaySummary(r)}</p>`
     + `<p class="t-say">${replayCoverageSaid(r)}</p>`
     + `<p class="t-say">${replayRainSaid(r.rain)}</p><p class="t-say">${replayGaugeSaid(r.gauge)}</p>`
     + (replayQuietSaid(r) ? `<p class="t-say">${replayQuietSaid(r)}</p>` : '')
@@ -266,10 +298,10 @@ function replayTile(r) {
 
 // The page's styles for the tile, added once when it is first shown: only tokens (docs/DESIGN.md, Rules).
 const REPLAY_CSS = `
-.rp-svg { display:block; margin:8px 0 4px; font-family:var(--font-text); }
-.rp-lab { font-size:11px; fill:var(--ink); }
+.rp-svg { display:block; margin:8px 0 4px; font-family:var(--font-text); max-width:100%; height:auto; }
+.rp-lab { font-size:12px; fill:var(--ink); }
 .rp-lab, .rp-tick { paint-order:stroke; stroke:var(--card); stroke-width:3px; stroke-linejoin:round; }
-.rp-tick { font-size:9px; fill:var(--muted); }
+.rp-tick { font-size:11px; fill:var(--muted); }
 .rp-nowlab { fill:var(--ink); font-weight:600; }
 .rp-track { fill:var(--track); opacity:.35; }
 .rp-spill { fill:var(--veryhigh); }
@@ -310,5 +342,5 @@ function replayStyle(doc) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { replayTime, replaySpillSaid, replayOfflineSaid, replayRainSaid, replayGaugeSaid, replayQuietSaid, replayTable,
-    replaySvg, replayTile, replayKey, replaySwatch, replaySummary, replayAway, REPLAY_LAKE, replayCoverageSaid, replayStyle, REPLAY_CSS, REPLAY_STATE };
+    replaySvg, replayTile, replayKey, replaySwatch, replaySummary, replayAway, REPLAY_LAKE, replayCoverageSaid, replayStamp, replayAsOf, replayFit, REPLAY_NARROW, replayStyle, REPLAY_CSS, REPLAY_STATE };
 }
