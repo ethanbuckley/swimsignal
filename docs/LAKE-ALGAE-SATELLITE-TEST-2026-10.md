@@ -721,8 +721,8 @@ Too few to judge. For the record: raw AUC 0.81 (0.39 to 0.92), placebo 0.81 agai
 ### What it means
 
 - **Established:** a Sentinel-2 NDCI reading, made as stated, does not add to what the site already shows (the month
-  and the last EA check) for "algae seen". It ranks seen against not seen only weakly (AUC 0.60), and that signal is
-  not lake-to-lake: it shuffles badly across water bodies (Coniston 0.14, Rutland 0.35).
+  and the last EA check) for "algae seen". It ranks seen against not seen only weakly (AUC 0.60), and how well it
+  ranks varies widely from lake to lake (Frensham 0.92, Coniston 0.14).
 - **Established:** the placebo passed for both outcomes. There is some day-level signal within lakes, small for A.
 - **Inferred, not tested:** the objectionable outcome may carry more signal (AUC 0.81, and 0.82 on same-day scenes),
   and Frensham and the Serpentine track best. With 20 events this is a hypothesis for a later, separately stated
