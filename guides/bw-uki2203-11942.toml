@@ -1,6 +1,6 @@
-# Ham and Kingston, River Thames. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked 4 October 2026.
+# Ham and Kingston, River Thames. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; source passages reread for each fact on 26 October 2026 (private audit); one February 2026 facility listing added.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-04
+checked = 2026-10-26
 how = "desk"
 
 [[fact]]
@@ -12,7 +12,7 @@ source_name = "Environment Agency bathing water profile"
 
 [[fact]]
 topic = "entry"
-text = "As of 4 October 2026, Kingston Council says a ramp into the river by the YMCA Hawker Centre is out of use, awaiting repair and improvements. It says other points of entry in the bathing area are unaffected and remain available."
+text = "As of 26 October 2026, Kingston Council says a ramp into the river by the YMCA Hawker Centre is out of use, awaiting repair and improvements. It says other points of entry in the bathing area are unaffected and remain available."
 status = "confirmed"
 source = "https://www.kingston.gov.uk/safety-crime-and-emergencies/safety-in-kingston/stay-safe-near-water/kingstons-designated-bathing-water-site"
 source_name = "Royal Borough of Kingston upon Thames"
@@ -51,3 +51,10 @@ text = "The bathing site is unsupervised: there are no lifeguards on duty and pe
 status = "confirmed"
 source = "https://www.kingston.gov.uk/safety-crime-and-emergencies/safety-in-kingston/stay-safe-near-water/kingstons-designated-bathing-water-site"
 source_name = "Royal Borough of Kingston upon Thames"
+
+[[fact]]
+topic = "toilets"
+text = "Defra's February 2026 designation consultation listed public toilets up to about 500 metres from the site. It did not say where. This is a February 2026 listing, not a current check."
+status = "confirmed"
+source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
+source_name = "Defra"

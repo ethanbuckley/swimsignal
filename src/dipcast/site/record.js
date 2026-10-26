@@ -29,6 +29,8 @@ const Record = (() => {
   const E = node ? require('./evidence.js') : { evidenceAge, evidenceOverflows, evidenceSample };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : Printed;
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief).
+  const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
   const TZ = 'Europe/London';
@@ -237,7 +239,9 @@ const Record = (() => {
     h += `<p class="r-meta">Issue id <b>${esc(issue)}</b>: the build and the forecast's issue time in UTC, to match this copy to SwimSignal's forecast log.</p>`;
     const m = (now - Date.parse(data.generated_at)) / 60000;
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
-    return h + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
+    const official = brief(s);
+    return h + (official ? `<p class="r-official"><b>Official advice:</b> ${esc(official)}. Not part of the level below; follow it first.</p>` : '')
+      + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
       + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`
       + decide(org)

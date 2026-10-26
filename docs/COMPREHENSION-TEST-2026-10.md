@@ -150,6 +150,11 @@ Agreed now, so the results are not read to fit a plan:
 - **Everything passes**: no redesign. Spend the time on pilots.
 - A broad visual redesign happens only if a task fails for a reason a specific design change fixes.
 
+*Clarified 26 October 2026, before any session (section 12):* the headline-scope wording (PR #284) has been
+live since 20 October. If task 2 fails, a clearer explanatory-wording prototype informed by the observed errors
+is evaluated, option A possibly first, with a focused retest before any wider promotion. No wording is rolled
+out automatically (H4).
+
 ## 9. Order of work for the month
 
 From the review's month plan, with the gate for each step:
@@ -173,6 +178,10 @@ continue.
    then. Record which wording each participant saw.
 3. **Who runs the sessions.** Ethan, since participants' words matter more than a script. A friend
    who has not seen the site can take notes.
+
+*Clarified 26 October 2026, before any session (section 12):* item 2 is settled. Every participant sees
+the live scoped wording; there is no headline comparison (H1). Each record holds the exact headline, URL
+and "Issued" line (H3).
 
 ## 11. Clarifications, 26 October 2026, before any session
 
@@ -203,3 +212,28 @@ the same day ("okay i approve your recommendations"). The details, and how each 
   checked for re-identification in the small sample; on withdrawal, anything published that could identify
   the participant is removed or corrected. Consent answers stay with the record while it is kept. SwimSignal is registered with the ICO and
   the fee paid (confirmed by the operator, 26 Oct 2026).
+
+## 12. Clarification, 26 October 2026, before any session: the headline
+
+Added on 26 October 2026, before any participant was recruited and before any session was arranged or run,
+so no result can have shaped it. Approved the same day by Codex, under the delegation of routine decisions
+Ethan gave on 26 October 2026 (`docs/AI-PROGRAMME-2026-10.md`, "Decisions, 26 October 2026"). The text
+above, section 11 included, is left as written; dated lines in sections 8 and 10 point here. How it is
+applied is in `docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`, section 8.
+
+Why: the scoped headline ("Low risk from sewage spills", PR #284, merged 20 October 2026) has been live since
+then; on 26 October the Frensham Great Pond spot page showed it. So the "live wording" and the "scoped
+headline" in section 10 item 2 are the same words, and the headline-scope PR named in section 8 is already
+merged.
+
+- **H1. One wording.** Every participant uses the current live scoped wording, as the site shows it on the
+  day. The earlier bare "Low risk" headline is not restored, and the round makes no comparison between
+  headlines, stated or implied.
+- **H2. Scoring unchanged.** The tasks, the rubric (section 5) and every fail line (section 1), with D1 to D8,
+  stay exactly as written.
+- **H3. What each record holds.** For each page used: the exact headline as shown, the page's URL and its
+  "Issued" line (the build's issue time).
+- **H4. If task 2 fails.** Evaluate a prototype of clearer explanatory wording, informed by the errors
+  observed. Option A ("Moderate predicted risk from monitored sewage overflows", `docs/DESIGN.md`) may be the
+  first candidate. A focused retest comes before any wider promotion (D5); section 8's retest with three new
+  people still applies. No wording is rolled out automatically.
