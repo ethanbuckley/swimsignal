@@ -105,6 +105,9 @@ const SINCE_STALE_MIN = 8 * 60;
 const issuedWords = iso => { const d = new Date(iso);
   return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`; };
 const overflowsWord = n => n === 1 ? '1 overflow upstream' : `${n} overflows upstream`;
+// HOOK (#379, official advice): once #379's `official` list is final in spots.json, official advice
+// appearing or clearing since the last look is one more field in seenRecord's note, compared here and said
+// with its source and time. Until then nothing is said about it here.
 // extra.spills: which overflows are discharging now and since when (sinceSpills), named where the spot's
 // forecast names them; extra.outing: the outing planned at this spot (sinceOuting), so the change is read
 // against it.

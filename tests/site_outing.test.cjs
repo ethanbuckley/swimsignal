@@ -173,3 +173,10 @@ test('storage keys: the code, the doc and the privacy notice agree', () => {
   assert.match(privacy, /the time, spot and backup spot of an outing you chose/);
   assert.match(privacy, /"I have read version …" keeps a note in your browser's local storage/);
 });
+
+test('official advice: one marked hook for #379\'s helper, drawn under the level, nothing of its own yet', () => {
+  assert.equal(O.outingOfficial({id: 'a', official: [{text: 'Advice against bathing'}]}), '');
+  const h = O.outingSection({day: '2026-11-01', when: undefined, spot: 'a', groups: [], backupGroups: [], missing: [], issued: 'x', open: true,
+    main: {id: 'a', name: 'A', href: 'spot/a/', tone: 'low', headline: 'Low risk', official: '<p class="o-mark">MARK</p>', why: 'Why.', ev: ''}, alt: null});
+  assert.match(h, /Low risk<\/p><p class="o-mark">MARK<\/p><p class="why">/);
+});

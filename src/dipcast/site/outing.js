@@ -60,13 +60,19 @@ function outingPair(plan, byId) {
   return { main: byId.get(plan.spot) || null, backup: plan.backup !== plan.spot ? byId.get(plan.backup) || null : null, missing };
 }
 
+// HOOK (#379, official advice): #379 puts each spot's official advice in spots.json (`official`) and adds one
+// shared compact indicator for the list, Saved, the planner and the record. Once it merges, return that
+// helper's markup for s here: one call, nothing else to change. Until then nothing, and this file draws no
+// advice of its own (one display only, #379's).
+const outingOfficial = s => '';
+
 // ------------------------------------------------------------------------------ the tile
 // A column for a spot: c = { id, name, href, tone, headline, why, ev, meta }, headline/why/ev already
 // HTML (the page's own words, escaped where they were made), the rest text.
 const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">${role}</p>`
   + `<h3 class="outing-nm"><a href="${outEsc(c.href)}" data-id="${outEsc(c.id)}">${outEsc(c.name)}</a></h3>`
   + (c.meta ? `<p class="k">${outEsc(c.meta)}</p>` : '')
-  + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + '</div>';
+  + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.official || '') + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + '</div>';
 // The whole tile. o = { day, when, spot, backup, groups (outingOptions for the spot), backupGroups,
 // main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs }.
 function outingSection(o) {
@@ -102,7 +108,7 @@ function drawOuting(box, shown) {
   const away = s => miles.has(s.id) ? miles.get(s.id) : from ? km(from, [s.lat, s.lon]) / MILE_KM : null;
   const col = s => { const m = away(s);
     return { id: s.id, name: s.name, href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), tone: tone(dayLevel(s, PLAN.day)),
-      headline: dayHeadline(s, PLAN.day), why: planWhy(s, PLAN.day), ev: planEvidence(s),
+      headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   if (OUTING_OPEN === null) OUTING_OPEN = !!(PLAN.spot || PLAN.when);
@@ -123,5 +129,5 @@ function drawOuting(box, shown) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_PARTS, OUTING_HOURS, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection };
+  module.exports = { OUTING_PARTS, OUTING_HOURS, outingOfficial, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection };
 }

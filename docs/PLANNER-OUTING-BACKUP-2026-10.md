@@ -64,8 +64,16 @@ The leader can tick "I have read version X". If a later forecast makes a new ver
 - That a time of day has its own forecast. The tile says "The forecast gives one level for the whole of Monday; it does not change between morning and evening." For today, it also says when the chosen time has passed.
 - That a change happened without its evidence. Every since line carries the issue times of both forecasts, and what is known or unknown about the overflows.
 - That a tick is a record anyone else can see, or proof of who read what.
-- **Today's EA advice is not part of the evidence.** It is not in `spots.json`. The EA panel loads only when its fold opens (`eatoday.js`). The line cannot say "EA advice appeared" without a new request, so it says nothing about it.
+- **Official advice is not drawn by this PR.** #379 puts each spot's official advice into `spots.json` and `spots-lite.json` (`official`). It is adding one shared compact indicator for the list, Saved, the planner and the record. This PR builds no second display. It leaves one marked hook (below) to call #379's helper once #379 merges.
 - Spill start times are said only for the overflows `contributors` lists. Every other discharging overflow is a count with no time.
+
+## Hook for official advice (#379)
+
+`outing.js` has `outingOfficial(s)`, which returns '' for now. Each outing column draws it under the spot's level. After #379 merges, it should return #379's compact indicator for `s`. That is one call, in that one function. The function's comment marks the place.
+
+For "what changed since you checked", whether official advice appeared or cleared since the last look would be one more field in the `dipcast.seen` note. It would be compared in `sinceEvidence`. This is left until #379's `official` shape is final, and is marked in `since.js` beside sinceEvidence.
+
+#388 and `origin/proto/advisory-finder` merge without conflicts (checked with a merge-tree on 27 Oct). #388 does not touch `eatoday.js`. In `index.html` it adds only CSS, a script tag and one line in drawPlan.
 
 ## Storage keys
 
