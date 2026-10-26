@@ -1,0 +1,175 @@
+{
+ "@comment": "Ten spots from swimsignal.co.uk/data spots (build 2026-10-25T17:48:31.708751+00:00): pin and location.snapped, the point on the water the spot is placed on.",
+ "spots": [
+  {
+   "id": "wharfe-burnsall",
+   "name": "River Wharfe, Burnsall",
+   "kind": "river",
+   "river": "River Wharfe",
+   "lat": 54.047,
+   "lon": -1.953,
+   "location": {
+    "mode": "river",
+    "watercourse": "River Wharfe",
+    "form": "inlandRiver",
+    "snapped": {
+     "lat": 54.04569,
+     "lon": -1.95223
+    }
+   }
+  },
+  {
+   "id": "wharfe-bolton-abbey",
+   "name": "River Wharfe, Bolton Abbey (Cavendish Pavilion)",
+   "kind": "river",
+   "river": "River Wharfe",
+   "lat": 53.987,
+   "lon": -1.889,
+   "location": {
+    "mode": "river",
+    "watercourse": "River Wharfe",
+    "form": "inlandRiver",
+    "snapped": {
+     "lat": 53.98567,
+     "lon": -1.88754
+    }
+   }
+  },
+  {
+   "id": "wharfe-appletreewick",
+   "name": "River Wharfe, Appletreewick",
+   "kind": "river",
+   "river": "River Wharfe",
+   "lat": 54.0331,
+   "lon": -1.9207,
+   "location": {
+    "mode": "river",
+    "watercourse": "River Wharfe",
+    "form": "inlandRiver",
+    "snapped": {
+     "lat": 54.03306,
+     "lon": -1.92071
+    }
+   }
+  },
+  {
+   "id": "wharfe-linton-falls",
+   "name": "River Wharfe, Linton Falls, Grassington",
+   "kind": "river",
+   "river": "River Wharfe",
+   "lat": 54.068,
+   "lon": -2.0,
+   "location": {
+    "mode": "river",
+    "watercourse": "River Wharfe",
+    "form": "inlandRiver",
+    "snapped": {
+     "lat": 54.0669,
+     "lon": -2.00174
+    }
+   }
+  },
+  {
+   "id": "osm-dart-dartington",
+   "name": "River Dart, Dartington Pontoon",
+   "kind": "river",
+   "river": "River Dart",
+   "lat": 50.4394,
+   "lon": -3.69136,
+   "location": {
+    "mode": "river",
+    "watercourse": "River Dart",
+    "form": "inlandRiver",
+    "snapped": {
+     "lat": 50.43941,
+     "lon": -3.69128
+    }
+   }
+  },
+  {
+   "id": "ure-aysgarth",
+   "name": "River Ure, Aysgarth Falls",
+   "kind": "river",
+   "river": "River Ure",
+   "lat": 54.2925,
+   "lon": -1.9855,
+   "location": {
+    "mode": "river",
+    "watercourse": "River Ure",
+    "form": "inlandRiver",
+    "snapped": {
+     "lat": 54.2925,
+     "lon": -1.98551
+    }
+   }
+  },
+  {
+   "id": "bw-ukd1101-45800",
+   "name": "Derwent Water at Crow Park",
+   "kind": "lake",
+   "river": null,
+   "lat": 54.59499,
+   "lon": -3.14218,
+   "location": {
+    "mode": "lake",
+    "watercourse": "Derwent Water",
+    "form": "lake",
+    "snapped": {
+     "lat": 54.59327,
+     "lon": -3.15125
+    }
+   }
+  },
+  {
+   "id": "derwent-water-calfclose",
+   "name": "Derwent Water, Calfclose Bay",
+   "kind": "lake",
+   "river": null,
+   "lat": 54.586,
+   "lon": -3.133,
+   "location": {
+    "mode": "lake",
+    "watercourse": "Derwent Water",
+    "form": "lake",
+    "snapped": {
+     "lat": 54.58738,
+     "lon": -3.13595
+    }
+   }
+  },
+  {
+   "id": "buttermere",
+   "name": "Buttermere",
+   "kind": "lake",
+   "river": null,
+   "lat": 54.539,
+   "lon": -3.268,
+   "location": {
+    "mode": "lake",
+    "watercourse": "Buttermere",
+    "form": "lake",
+    "snapped": {
+     "lat": 54.53487,
+     "lon": -3.27286
+    }
+   }
+  },
+  {
+   "id": "wastwater",
+   "name": "Wastwater",
+   "kind": "lake",
+   "river": null,
+   "lat": 54.439,
+   "lon": -3.296,
+   "location": {
+    "mode": "lake",
+    "watercourse": "Wast Water",
+    "form": "lake",
+    "snapped": {
+     "lat": 54.4401,
+     "lon": -3.29851
+    }
+   }
+  }
+ ]
+}

@@ -637,9 +637,14 @@ and it always ends "A separate hazard, not part of the pollution level." The lea
 - "**River high**: the gauge at Addingham is above its usual range."
 - "**River rising fast**: the gauge at Addingham rose 0.40 m between 08:45 and 14:30." (more than a
   fifth of the gauge's usual range in six hours).
-- "**Flood alert in force nearby** (Environment Agency): River Wharfe at Ilkley.", the area linked to
-  its page, with "and 1 more" where there are others. "Flood warning" or "Severe flood warning" leads
-  instead when that is the most severe within 10 km.
+- "**Flood alert in force here** (Environment Agency): Upper River Wharfe.", the area linked to its
+  page, with "and 1 more" where there are others. "Flood warning" or "Severe flood warning" leads
+  instead when that is the most severe. "Here", not "nearby": an alert is named only when the EA's
+  outline of its area covers the spot's point on its water, or reaches its lake (26 Oct 2026: "nearby"
+  had named the River Ure at Burnsall on the Wharfe, 16.7 km away). An alert for the spot's own river or
+  lake whose area does not cover it, or one with no outline, is a quiet row of Not known here: "A flood
+  alert or warning is in force that could not be matched to this spot." with the EA's flood map linked
+  (`floodUnmatched`); never "nearby", since such an area can be 11.6 km away (Lower River Ure at Aysgarth). Alerts for other water are counted in the data, never named.
 
 A failed check never reads as none in force, and it is not a hazard either, so it gets no bold line
 in the answer (16 Oct 2026: in bold above the five days on 48 of 105 pages, it read like one).

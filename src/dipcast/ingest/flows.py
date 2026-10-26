@@ -8,16 +8,28 @@ travel speed and to show the swimmer whether the river is up.
 
 from __future__ import annotations
 
+import json
 import logging
+import math
 import re
+import threading
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import NamedTuple
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
+from pyproj import Transformer
+import numpy as np
+import shapely
+from shapely import make_valid
+from shapely.geometry import Point, mapping, shape
+from shapely.ops import unary_union
 
 from dipcast import config
-from dipcast.network.names import river_words
+from dipcast.network.names import WELSH, river_words
 
 log = logging.getLogger(__name__)
 
@@ -355,7 +367,10 @@ RISING_SHARE = 0.2         # a rise of more than this share of the usual range .
 RISE_WINDOW_H = 6.0        # ... over the last six hours is "rising fast"
 RISE_MIN_SPAN_H = 1.0      # fewer hours of readings than this is too short to call a trend
 TREND_READINGS = 24        # the last 24 readings: six hours at the usual 15-minute interval
-FLOOD_DIST_KM = 10         # flood areas within this distance of the spot (the API measures to the area)
+# The `dist` asked of /id/floods. The EA does not measure it to the area's outline: on 26 Oct 2026 it
+# returned 122WAF940 for Burnsall, whose outline is 16.6 km from the pin (6.7 km from the area's
+# bounding box), so which alerts apply is decided by the outline (flood_alert_water).
+FLOOD_DIST_KM = 10
 # The EA's four severity levels. 4 is "Warning no longer in force", so it is never shown as in force.
 FLOOD_WORDS = {1: "Severe flood warning", 2: "Flood warning", 3: "Flood alert"}
 _MEASURE_ID = re.compile(r"[A-Za-z0-9_.-]+")
@@ -450,13 +465,432 @@ def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM, timeout
             continue
         if sev not in FLOOD_WORDS:
             continue
-        area = str(f.get("floodAreaID") or (f.get("floodArea") or {}).get("notation") or "")
+        fa = f.get("floodArea") if isinstance(f.get("floodArea"), dict) else {}
+        area = str(f.get("floodAreaID") or fa.get("notation") or "")
         ok = bool(_AREA_ID.fullmatch(area))
         out.append({"severity_level": sev, "severity": FLOOD_WORDS[sev], "area": f.get("description") or None,
                     "area_id": area if ok else None, "raised": f.get("timeRaised"),
-                    "url": f"https://check-for-flooding.service.gov.uk/target-area/{area}" if ok else None})
+                    "url": f"https://check-for-flooding.service.gov.uk/target-area/{area}" if ok else None,
+                    "waters": flood_waters(fa.get("riverOrSea")),
+                    "tidal": f.get("isTidal") if isinstance(f.get("isTidal"), bool) else None})
     out.sort(key=lambda a: a["severity_level"])
     return out
+
+
+# Which alerts apply to a spot. The EA's `dist` above is not measured to the area's outline: on 26 Oct
+# 2026 the four Wharfe spots near Burnsall were given "Lower River Ure" (122WAF940), whose outline is
+# 15.7 to 18.7 km away, and Dartington on the Dart "South Devon coast from Start Point to Dawlish Warren"
+# (113WACT1B), 8.8 km away. Each flood area's outline is the EA's own statement of where an alert applies
+# (check-for-flooding.service.gov.uk draws the same one), so geometry decides first and names second:
+#  1. It applies, and is named: a river spot's point on its water (location.snapped; the pin when there
+#     is none) lies inside the outline; for a lake, the outline reaches the lake's own outline; for a lake
+#     with no outline, its pin lies inside. Inside or not, with no distance allowed. The point on the
+#     water, not the pin: three of the four Wharfe pins sit 60 to 160 m outside "Upper River Wharfe"
+#     (on banks and paths) while their points on the river are inside.
+#  2. Outside, and the area names the spot's own water: "unknown", said neutrally with the EA's flood map.
+#     It is for this river, but another stretch; the outline cannot say whether its flooding reaches here.
+#  3. Outside, and it is tidal (isTidal: a coast, estuary or tidal river) for an inland spot, or it names
+#     other water: "other", counted, never named.
+#  4. No outline (no area id, a failed fetch, unreadable geometry): never "own"; otherwise as 2 and 3, and
+#     an area that names nothing is "unknown".
+# Short river names ("wharfe") are matched against the area's list of waters only, never its free-text
+# title, where a short name can be part of a place's name ("Ouse Bridge", "Bradford"). Words
+# beside the pollution level, never part of it: nothing here changes a forecast or a level.
+FLOOD_OUTLINE_SIMPLIFY_M = 10.0
+# The outline cache (OutlineStore), in config.CACHE/flood_areas: <area id>.geojson entries and one attempt
+# record, FLOOD_OUTLINE_ATTEMPTS, all made by the build; nothing else lives there. The EA redraws flood
+# areas rarely (in its periodic flood-warning area updates, not from day to day), and one outline is up
+# to 0.9 MB raw, so it is not asked for in every build:
+#  - each area is asked for at most once per FLOOD_OUTLINE_REFRESH_S, success or failure, while the
+#    build's state cache carries over (best effort): each attempt's time is written to the record,
+#    atomically, just before its request, so a request that fails, a later step that fails, or a
+#    cancelled or timed-out run still leaves it on disk for the workflow's always() cache save. Cache
+#    eviction (7 days unused, or the repository's 10 GB limit), a lost runner or a failed cache save
+#    (a re-run of the same run_id included) resets it for the areas involved. Whatever happens, a build
+#    asks for at most FLOOD_OUTLINE_FETCHES_PER_BUILD outlines, and an area with no outline (at most 30
+#    days old) is never named. A kept outline under FLOOD_OUTLINE_REFRESH_S old is used without asking.
+#  - a kept outline is used, when it is not asked for or its request fails, only while its recorded
+#    fetch time is at most FLOOD_OUTLINE_MAX_AGE_S old; past that, or with none, the area has no outline
+#    (rule 4: its alerts are counted or said neutrally, never named). This holds for a first fetch too:
+#    one failed request leaves that area without an outline for up to 7 days.
+#  - at most FLOOD_OUTLINE_FETCHES_PER_BUILD areas are asked for in one build: those with no usable
+#    outline (missing or expired) first, then the oldest, then by id. 8 is one wave of the build's 8
+#    workers. It bounds the cold-cache worst case at 8 GETs a build, 384 a day at 30-minute builds,
+#    about 346 MB a day at the ~0.9 MB largest outline seen; normally one GET per area per week. On a
+#    night like 26 Oct 2026 (~25 distinct in-force areas at the spots) a cold cache takes about four
+#    builds to fill. Areas past it are not asked and not recorded as asked; they get a kept outline at
+#    most 30 days old or none (never named), and the build counts and announces them.
+#  - pruning (prune_flood_outlines) keeps the areas in force in this build and entries fetched within
+#    FLOOD_OUTLINE_MAX_AGE_S, removes older ones, and then keeps at most FLOOD_OUTLINE_CACHE_MAX, the
+#    newest. 500 is over 3.5 times the 137 items the national list held on 26 Oct 2026; at a few kB to
+#    ~120 kB each it bounds the cache to tens of MB. The record drops attempts over 30 days old for
+#    areas not in force.
+FLOOD_OUTLINE_REFRESH_S = 7 * 86400
+FLOOD_OUTLINE_MAX_AGE_S = 30 * 86400
+FLOOD_OUTLINE_CACHE_MAX = 500
+FLOOD_OUTLINE_FETCHES_PER_BUILD = 8
+FLOOD_OUTLINE_ATTEMPTS = "_attempts.json"
+# An EA flood-area id as the service writes them: three digits (the EA area), then letters and digits
+# ("122WAF940", "011FWFNC6KC", "062WAF38BrentBks"; all 137 on 26 Oct 2026 fit). ASCII only, anchored by
+# fullmatch, so no "/", "..", "?", "#", space or other character can reach a URL or a file name.
+_FLOOD_AREA_ID = re.compile(r"[0-9]{3}[A-Za-z0-9]{1,40}", re.ASCII)
+_TO_BNG = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
+_FROM_BNG = Transformer.from_crs("EPSG:27700", "EPSG:4326", always_xy=True)
+
+
+def _reproject(g, tr: Transformer):
+    """A shape's coordinates through a pyproj transformer (x, y order)."""
+    return shapely.transform(g, lambda xy: np.column_stack(tr.transform(xy[:, 0], xy[:, 1])))
+
+
+def bng(lat, lon) -> tuple[float, float] | None:
+    """A WGS84 point in British National Grid metres (x, y); None if either is not a number."""
+    try:
+        lat, lon = float(lat), float(lon)
+    except (TypeError, ValueError):
+        return None
+    if not (math.isfinite(lat) and math.isfinite(lon)):
+        return None
+    return _TO_BNG.transform(lon, lat)
+
+
+class SpotWater(NamedTuple):
+    """The spot as its flood alerts need it: the names an area may give its water (`names`, matched
+    against the area's title and waters; `short`, river names without "River", matched against its
+    waters only), whether it is a lake or on tidal water, its point on its water and its pin (British
+    National Grid x, y), and its lake's outline (BNG) for a lake."""
+    names: frozenset[str] = frozenset()
+    short: frozenset[str] = frozenset()
+    lake: bool = False
+    tidal: bool = False
+    point: tuple[float, float] | None = None
+    pin: tuple[float, float] | None = None
+    lake_outline: object | None = None
+
+
+def flood_waters(river_or_sea) -> list[str] | None:
+    """A flood area's riverOrSea as a list of names: the EA gives one string, the waters split by
+    commas, semicolons or new lines ("River Ure, Swinney Beck"), or now and then a list. None when
+    it names none, which is not the same as naming another water."""
+    items = river_or_sea if isinstance(river_or_sea, list) else [river_or_sea]
+    out = [w.strip() for x in items if isinstance(x, str) for w in re.split(r"[,;\n]", x) if w.strip()]
+    return out or None
+
+
+def _water_text(name) -> str:
+    """A water's name for matching: lower case, a bracket dropped ("Windermere (N Basin)"), letters
+    only, Welsh words read as English ("Afon Gwy" is "river wye")."""
+    t = re.sub(r"\([^)]*\)", " ", str(name or "").lower())
+    words = ["river" if w == "afon" else WELSH.get(w, w) for w in re.findall(r"[^\W\d_]+", t)]
+    return " ".join(words)
+
+
+def water_names(*names) -> frozenset[str]:
+    """The whole names an area may give the spot's water: as written ("river wharfe", "derwent water")
+    and run together ("derwentwater", as the EA writes it for the Keswick campsite)."""
+    out = set()
+    for n in names:
+        t = _water_text(n)
+        if t:
+            out |= {t, t.replace(" ", "")}
+    return frozenset(out)
+
+
+def short_water_names(*names) -> frozenset[str]:
+    """A river's names without "River" ("wharfe", as a list of waters may give it: "Bure, Ant,
+    Thurne"), for the area's waters only. A lake has none: "Derwent" alone is the river."""
+    out = set()
+    for n in names:
+        t = _water_text(n)
+        core = re.sub(r"^(the )?river |( river)$", "", t).strip()
+        if core and core != t and len(core) >= 3:
+            out.add(core)
+    return frozenset(out)
+
+
+def names_own_water(alert: dict, spot: SpotWater) -> bool:
+    """Whether the area names the spot's water: a whole name in its title or its waters, or a short
+    river name in its waters."""
+    waters = [_water_text(w) for w in (alert.get("waters") if isinstance(alert.get("waters"), list) else []) if isinstance(w, str)]
+    title = [_water_text(alert.get("area"))] if isinstance(alert.get("area"), str) else []
+    has = lambda texts, names: any(f" {n} " in f" {t} " for t in texts for n in names)  # noqa: E731
+    return has(waters + title, spot.names) or has(waters, spot.short)
+
+
+def load_outline(geojson) -> object | None:
+    """A flood area's or lake's outline from GeoJSON in WGS84 (a geometry, a Feature or a
+    FeatureCollection), as one shape in British National Grid metres, simplified to
+    FLOOD_OUTLINE_SIMPLIFY_M. None for anything that is not a polygon with an area: unreadable
+    geometry is no outline (rule 4), never a guess."""
+    try:
+        if isinstance(geojson, str | bytes):
+            geojson = json.loads(geojson)
+        feats = geojson["features"] if geojson.get("type") == "FeatureCollection" else [geojson]
+        # Each part made valid before they are joined: the EA's own coast outlines can have a ring that
+        # crosses itself (054WACDV4B, 051WACDV4C on 26 Oct 2026), and joining them as they come raises.
+        parts = [make_valid(shape(f["geometry"] if f.get("type") == "Feature" else f)) for f in feats]
+        g = _reproject(unary_union(parts), _TO_BNG)
+        g = make_valid(g) if not g.is_valid else g
+        g = unary_union([p for p in getattr(g, "geoms", [g]) if p.geom_type in ("Polygon", "MultiPolygon")])
+        g = g.simplify(FLOOD_OUTLINE_SIMPLIFY_M, preserve_topology=True)
+    except Exception as e:  # noqa: BLE001 - shapely and pyproj raise many kinds on bad input; all mean "no outline"
+        log.info("flood outline unreadable: %s", e)
+        return None
+    return g if not g.is_empty and g.area > 0 and g.is_valid else None
+
+
+def _outline_url(area_id: str) -> str | None:
+    """The one URL an outline is asked for: https, the EA service's own host and path, then
+    /id/floodAreas/<id>/polygon, for an id that is strictly an EA flood-area id. Built here, never
+    taken from a response."""
+    if not isinstance(area_id, str) or not _FLOOD_AREA_ID.fullmatch(area_id):
+        return None
+    base = urlsplit(config.EA_FLOOD_MONITORING)
+    return urlunsplit(("https", _EA_HOST, f"{base.path.rstrip('/')}/id/floodAreas/{area_id}/polygon", "", ""))
+
+
+def _entry(path: Path, now: float) -> tuple[dict | None, float | None]:
+    """A kept entry and its age in seconds, from the fetch time recorded in it. An entry without a
+    readable fetch time has no age, so it is never used once a refresh fails, and pruning removes it."""
+    try:
+        entry = json.loads(path.read_text())
+        fetched = float(entry["properties"]["fetched_at"])
+    except (OSError, ValueError, TypeError, KeyError):
+        return None, None
+    return (entry, now - fetched) if math.isfinite(fetched) else (None, None)
+
+
+def _entry_age(path: Path, now: float) -> float | None:
+    return _entry(path, now)[1]
+
+
+def _kept_outline(path: Path, now: float) -> tuple[object | None, float | None]:
+    """A kept outline (load_outline) and its recorded age."""
+    entry, age = _entry(path, now)
+    return (load_outline(entry), age) if entry is not None else (None, None)
+
+
+def _write_json(path: Path, obj) -> None:
+    """Write JSON atomically: a temporary file beside it, then a rename."""
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_text(json.dumps(obj))
+    tmp.replace(path)
+
+
+def _attempt_times(cache_dir: Path) -> dict[str, float]:
+    """The attempt record (FLOOD_OUTLINE_ATTEMPTS): area id -> the time of its last outline request,
+    success or failure. Anything unreadable in it is left out."""
+    try:
+        raw = json.loads((cache_dir / FLOOD_OUTLINE_ATTEMPTS).read_text())
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for k, v in (raw.items() if isinstance(raw, dict) else []):
+        try:
+            t = float(v)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(k, str) and _FLOOD_AREA_ID.fullmatch(k) and math.isfinite(t):
+            out[k] = t
+    return out
+
+
+class OutlineStore:
+    """The outline cache for one build (see the notes at FLOOD_OUTLINE_REFRESH_S). plan() decides, for
+    each in-force area, what is used without asking and which areas are asked for this build (at most
+    `cap`); fetch() asks for one, from any thread; finish() writes the attempt record."""
+
+    def __init__(self, cache_dir: Path, now: float | None = None, get=None, cap: int | None = None):
+        self.dir, self.get = cache_dir, get
+        self.now = time.time() if now is None else now
+        self.cap = FLOOD_OUTLINE_FETCHES_PER_BUILD if cap is None else cap
+        self.attempts = _attempt_times(cache_dir)
+        self._asked: dict[str, float] = {}
+        self._usable: dict[str, object | None] = {}
+        self._lock = threading.Lock()
+
+    def plan(self, area_ids) -> tuple[dict, list[str], list[str]]:
+        """(ready, ask, capped). `ready` maps each area not asked this build to what it has: a kept
+        outline under FLOOD_OUTLINE_REFRESH_S old; or, for an area asked within the last
+        FLOOD_OUTLINE_REFRESH_S (success or failure) or over the cap, a kept outline at most
+        FLOOD_OUTLINE_MAX_AGE_S old, else None (rule 4). `ask` is the areas to ask for this build, in
+        a stable order: those with no usable outline first, then the oldest, then by id, at most
+        `cap`. `capped` are the ones past the cap: not asked and not recorded as asked."""
+        ready, candidates = {}, []
+        for aid in sorted({a for a in area_ids if isinstance(a, str)}):
+            if _outline_url(aid) is None:
+                ready[aid] = None
+                continue
+            path = self.dir / f"{aid}.geojson"
+            kept, age = _kept_outline(path, self.now) if path.exists() else (None, None)
+            usable = kept if kept is not None and age is not None and 0 <= age <= FLOOD_OUTLINE_MAX_AGE_S else None
+            self._usable[aid] = usable
+            if usable is not None and age < FLOOD_OUTLINE_REFRESH_S:
+                ready[aid] = usable
+                continue
+            last = self.attempts.get(aid)
+            if last is not None and 0 <= self.now - last < FLOOD_OUTLINE_REFRESH_S:
+                ready[aid] = usable   # asked within the week: not again, whatever came of it
+                continue
+            candidates.append((usable is not None, -(age if age is not None else math.inf), aid))
+        candidates.sort()
+        ask = [aid for _, _, aid in candidates[:self.cap]]
+        capped = [aid for _, _, aid in candidates[self.cap:]]
+        for aid in capped:
+            ready[aid] = self._usable[aid]
+        return ready, ask, capped
+
+    def fetch(self, area_id: str, timeout: float = EA_TIMEOUT_S) -> object | None:
+        """Ask for one planned area's outline, once, at _outline_url with redirects not followed. The
+        attempt is recorded on disk first (record_attempt), whatever comes of it. A good answer is kept by area id, simplified, with its
+        fetch time. On a failure (no answer, any status but 200, a redirect included, unreadable
+        geometry), the kept outline is used only while at most FLOOD_OUTLINE_MAX_AGE_S old, else None."""
+        url = _outline_url(area_id)
+        if url is None:
+            return None
+        self.record_attempt(area_id)
+        fallback = self._usable.get(area_id)
+        try:
+            r = (self.get or httpx.get)(url, headers=config.EA_HEADERS, timeout=timeout, follow_redirects=False)
+            if r.status_code != 200:   # a redirect is a failure too: no URL from a response is ever followed
+                raise httpx.HTTPStatusError(f"HTTP {r.status_code}", request=r.request, response=r)
+            outline = load_outline(r.json())
+        except Exception as e:  # noqa: BLE001 - a failed outline is rule 4 for that area, not a failed build
+            log.info("flood outline %s: %s", area_id, e)
+            return fallback
+        if outline is None:
+            return fallback
+        try:   # kept simplified, in WGS84 GeoJSON as the EA gives it, a few kB to ~120 kB each
+            self.dir.mkdir(parents=True, exist_ok=True)
+            _write_json(self.dir / f"{area_id}.geojson",
+                        {"type": "Feature", "properties": {"floodAreaID": area_id, "fetched_at": self.now},
+                         "geometry": mapping(_reproject(outline, _FROM_BNG))})
+        except OSError as e:
+            log.info("flood outline %s not kept: %s", area_id, e)
+        return outline
+
+    def record_attempt(self, area_id: str) -> None:
+        """Write one attempt's time to the record before its request: under the lock, read the record,
+        merge, and replace it atomically (_write_json). A record that cannot be written is logged; the
+        request still goes, and the per-build cap still holds."""
+        with self._lock:
+            self._asked[area_id] = self.now
+            try:
+                self.dir.mkdir(parents=True, exist_ok=True)
+                _write_json(self.dir / FLOOD_OUTLINE_ATTEMPTS, {**_attempt_times(self.dir), **self._asked})
+            except OSError as e:
+                log.warning("flood outline attempt for %s not recorded: %s", area_id, e)
+
+    def finish(self) -> None:
+        """Make sure the record holds this build's attempts (each was written before its request; this
+        writes again only if one is missing). Harmless to call more than once."""
+        if not self._asked:
+            return
+        on_disk = _attempt_times(self.dir)
+        if all(on_disk.get(a) == t for a, t in self._asked.items()):
+            return
+        with self._lock:
+            try:
+                _write_json(self.dir / FLOOD_OUTLINE_ATTEMPTS, {**_attempt_times(self.dir), **self._asked})
+            except OSError as e:
+                log.warning("flood outline attempts not recorded: %s", e)
+
+
+def flood_area_outline(area_id: str | None, cache_dir: Path, timeout: float = EA_TIMEOUT_S, now: float | None = None,
+                       get=None) -> object | None:
+    """One area's outline through the cache's rules (OutlineStore), as one build would get it."""
+    store = OutlineStore(cache_dir, now=now, get=get, cap=1)
+    ready, ask, _ = store.plan([area_id])
+    out = store.fetch(area_id, timeout) if ask else ready.get(area_id)
+    store.finish()
+    return out
+
+
+def prune_flood_outlines(cache_dir: Path, keep=(), now: float | None = None, cap: int | None = None) -> list[str]:
+    """Bound the outline cache. Only generated files are touched: regular files directly inside
+    `cache_dir` named <area id>.geojson (_FLOOD_AREA_ID), and the attempt record
+    (FLOOD_OUTLINE_ATTEMPTS); never a link, a subdirectory or anything else. An entry is kept while its
+    area is in force in this build (`keep`) or its recorded fetch time is within
+    FLOOD_OUTLINE_MAX_AGE_S; older ones, and ones with no readable fetch time, go. Then, past
+    FLOOD_OUTLINE_CACHE_MAX entries, the oldest not in force go. The record drops attempt times over
+    FLOOD_OUTLINE_MAX_AGE_S old for areas not in force. Returns the names removed (and the record's, if
+    it changed)."""
+    now = time.time() if now is None else now
+    cap = FLOOD_OUTLINE_CACHE_MAX if cap is None else cap
+    keep = set(keep)
+    try:
+        root = cache_dir.resolve(strict=True)
+        entries = [p for p in root.iterdir() if p.name.endswith(".geojson")
+                   and _FLOOD_AREA_ID.fullmatch(p.name[:-len(".geojson")]) and not p.is_symlink() and p.is_file()
+                   and p.parent == root]
+    except OSError:
+        return []
+    ages = {p: _entry_age(p, now) for p in entries}
+    gone = [p for p in entries if p.name[:-len(".geojson")] not in keep
+            and (ages[p] is None or ages[p] > FLOOD_OUTLINE_MAX_AGE_S)]
+    left = sorted((p for p in entries if p not in gone and p.name[:-len(".geojson")] not in keep), key=lambda p: -(ages[p] or 0))
+    n_kept = len(entries) - len(gone)
+    gone += left[:max(0, n_kept - cap)]
+    removed = []
+    for p in gone:
+        try:
+            p.unlink()
+            removed.append(p.name)
+        except OSError as e:
+            log.info("flood outline cache: %s not removed: %s", p.name, e)
+    record = root / FLOOD_OUTLINE_ATTEMPTS
+    if record.is_file() and not record.is_symlink():
+        times = _attempt_times(root)
+        try:
+            raw = json.loads(record.read_text())
+        except (OSError, ValueError):
+            raw = None
+        kept = {k: t for k, t in times.items() if k in keep or 0 <= now - t <= FLOOD_OUTLINE_MAX_AGE_S}
+        if kept != raw:
+            try:
+                _write_json(record, kept)
+                removed.append(FLOOD_OUTLINE_ATTEMPTS)
+            except OSError as e:
+                log.info("flood outline cache: attempt record not pruned: %s", e)
+    return removed
+
+
+def _applies(outline, spot: SpotWater) -> bool:
+    """Rule 1: the area covers the spot's water (see the notes above)."""
+    if spot.lake and spot.lake_outline is not None:
+        return bool(outline.intersects(spot.lake_outline))
+    at = spot.pin if spot.lake else (spot.point or spot.pin)
+    return at is not None and bool(outline.covers(Point(at)))
+
+
+def flood_alert_water(alert: dict, spot: SpotWater, outline=None) -> str:
+    """"own" (rule 1: the area covers the spot's water; named on the page), "other" (rule 3: tidal for
+    an inland spot, or the area names other water; counted) or "unknown" (rules 2 and 4: the area
+    names the spot's water but does not cover it, it has no outline and names the spot's water or
+    nothing, or the spot has no water name; said neutrally). Never "own" without an outline."""
+    if not isinstance(alert, dict):
+        return "unknown"
+    if outline is not None and _applies(outline, spot):
+        return "own"
+    if alert.get("tidal") is True and not spot.tidal:
+        return "other"
+    if not (spot.names or spot.short) or names_own_water(alert, spot):
+        return "unknown"
+    waters = alert.get("waters") if isinstance(alert.get("waters"), list) else []
+    return "other" if any(_water_text(w) for w in waters if isinstance(w, str)) else "unknown"
+
+
+def split_flood_alerts(alerts: list[dict] | None, spot: SpotWater, outlines: dict | None = None
+                       ) -> tuple[list[dict] | None, int | None, int | None]:
+    """The alerts that apply to the spot (in the order given, the most severe first), and how many
+    others are in force for other water and for water that could not be told. `outlines` maps area ids
+    to outlines (load_outline); an area missing from it has none. None for all three when the EA did
+    not answer (`alerts` None): unchecked is never "none"."""
+    if alerts is None:
+        return None, None, None
+    outlines = outlines or {}
+    kinds = [flood_alert_water(a, spot, outlines.get(a.get("area_id")) if isinstance(a, dict) else None) for a in alerts]
+    return ([a for a, k in zip(alerts, kinds, strict=True) if k == "own"], kinds.count("other"), kinds.count("unknown"))
 
 
 if __name__ == "__main__":

@@ -1411,13 +1411,18 @@ def ask_flood_list(ask=None, sleep=time.sleep, clock=time.monotonic) -> bool:
 
 
 def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None,
-                      sleep=time.sleep, clock=time.monotonic) -> dict:
+                      sleep=time.sleep, clock=time.monotonic, outline=None, lake_at=None, outline_store=None) -> dict:
     """"Too high to swim", beside the pollution level and never part of it: a high river and a flood
     are a different hazard. After attach_river_levels, each spot gets `flow_state`, a word from the
     gauge on its own river (flows.flow_state: "high" above the usual range, "rising fast" up more
     than a fifth of that range in the last six hours, else None), and `flood_alerts`, the
-    Environment Agency's flood alerts and warnings in force within 10 km, the most severe first ([]
-    for none, None if the EA did not answer). The alerts are asked for spot by spot only when the
+    Environment Agency's flood alerts and warnings in force whose area covers the spot's water, the
+    most severe first ([] for none, None if the EA did not answer). The EA's 10 km is not measured to
+    the area's outline, so each area's outline is read (flood_outlines: cached by area id, else one
+    request) and an alert is the spot's only when it covers the spot's point on its water, or its
+    lake (flows.split_flood_alerts, `lake_at` for the lake outlines); `flood_alerts_other` counts those
+    for other water and `flood_alerts_unmatched` those that could not be matched to it (None when
+    unchecked). The alerts are asked for spot by spot only when the
     national list has one in force (flows.floods_in_force_anywhere): on most days one request, not
     one a spot. The rise is fetched only where it could set the word, a current reading on the
     spot's own river not already above its range, from the last 24 readings, and kept in
@@ -1489,16 +1494,156 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
         with ThreadPoolExecutor(max_workers=workers) as pool:
             for i, found in zip(failed, pool.map(again, failed), strict=True):
                 out[i] = (*out[i][:2], found)
-    counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0}
+    shapes, capped = flood_outlines({a.get("area_id") for _, _, found in out for a in found or [] if isinstance(a, dict)},
+                                    outline, workers, clock, store=outline_store) if any(found for _, _, found in out) else ({}, [])
+    lake_at = lake_at or lake_outline_at
+    counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0,
+              "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0}
     for r, (word, rise, found) in zip(results, out, strict=True):
-        r["flow_state"], r["flood_alerts"] = word, found
+        spot = own_water(r, lake_at) if found else own_water(r, None)
+        r["flood_alerts"], r["flood_alerts_other"], r["flood_alerts_unmatched"] = flows.split_flood_alerts(found, spot, shapes)
+        # Which search an empty list comes from, for its words: none in force anywhere in England (the
+        # national list), or none in the EA's own search of this spot within FLOOD_DIST_KM.
+        r["flood_alerts_search"] = None if found is None else "england" if ask is False else "within_10km"
+        r["flow_state"], found = word, r["flood_alerts"]
         if rise and r.get("river_state"):
             r["river_state"].update(rise_6h_m=rise["rise_m"], rise_from=rise["from"], rise_to=rise["to"])
         counts["river_high"] += word == "high"
         counts["river_rising_fast"] += word == "rising fast"
         counts["flood_alerts"] += bool(found)
         counts["flood_alerts_unchecked"] += found is None
+        counts["flood_alerts_other_water"] += bool(r["flood_alerts_other"])
+        counts["flood_alerts_unmatched"] += bool(r["flood_alerts_unmatched"])
+    counts["flood_outlines"] = sum(v is not None for v in shapes.values())
+    counts["flood_outlines_missing"] = sum(v is None for v in shapes.values())
+    counts["flood_outlines_capped"] = len(capped)
     return counts
+
+
+FLOOD_OUTLINES_DIR = "flood_areas"   # under config.CACHE: the build's own outline cache, and the only place pruned
+
+
+def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.monotonic, prune=None,
+                   store=None) -> tuple[dict, list[str]]:
+    """Each in-force area's outline, and the areas not asked for because of the per-build cap.
+
+    In the build, through the outline cache (flows.OutlineStore, in config.CACHE/flood_areas): each
+    area asked for at most once a week, success or failure, while the state cache carries over between
+    runs (best effort: each attempt is on disk before its request, but cache eviction, a lost runner or
+    a failed cache save resets it for the areas involved); whatever happens, at most
+    FLOOD_OUTLINE_FETCHES_PER_BUILD (8) asked in one build, those with no usable outline first; all
+    within FLOOD_BUDGET_S. An area with no
+    outline by then (asked this week and failed, past the cap, out of time, or nothing kept under 30
+    days) maps to None: its alerts are never named (rule 4). Then the cache is pruned
+    (flows.prune_flood_outlines), keeping this build's areas. Tests give `store` (and `prune`), or
+    `outline` (aid, timeout) for the outlines themselves: with an `outline` given and no `prune`,
+    nothing on disk is touched."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from dipcast.ingest import flows
+    ids = sorted(a for a in area_ids if a)
+    deadline = clock() + FLOOD_BUDGET_S
+    capped: list[str] = []
+    if outline is None:
+        cache = config.CACHE / FLOOD_OUTLINES_DIR
+        store = store or flows.OutlineStore(cache)
+        prune = prune or (lambda keep: flows.prune_flood_outlines(cache, keep))
+        shapes, ask, capped = store.plan(ids)
+        fallback = dict(store._usable)
+        outline = store.fetch
+    else:
+        shapes, ask, fallback = {}, ids, {}
+
+    def one(aid: str):
+        left = deadline - clock()
+        if left < 1:   # not started: not asked, so not recorded as asked
+            log.warning("flood outline %s: no time left", aid)
+            return fallback.get(aid)
+        try:
+            return outline(aid, min(left, FLOOD_BUDGET_S - FLOOD_RETRY_S))
+        except Exception as e:  # noqa: BLE001 - a missing outline is rule 4, not a failed build
+            log.warning("flood outline %s: %s", aid, e)
+            return fallback.get(aid)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        shapes.update(zip(ask, pool.map(one, ask), strict=True))
+    if store is not None:
+        store.finish()
+    if capped:
+        log.warning("flood outlines: %d areas not asked this build (at most %d a build)", len(capped),
+                    flows.FLOOD_OUTLINE_FETCHES_PER_BUILD)
+    if prune:
+        try:
+            removed = prune(set(ids))
+            if removed:
+                log.info("flood outline cache: %d old entries removed", len(removed))
+        except Exception as e:  # noqa: BLE001 - a cache left unpruned is not a failed build
+            log.warning("flood outline cache not pruned: %s", e)
+    return shapes, capped
+
+
+def flood_warnings(counts: dict, n_spots: int) -> list[str]:
+    """The build warnings the flood checks raise (announced with the others)."""
+    from dipcast.ingest import flows
+    out = []
+    if counts.get("flood_alerts_unchecked"):
+        out.append(f"flood alerts not checked for {counts['flood_alerts_unchecked']} of {n_spots} spots: "
+                   "the Environment Agency did not answer; their pages say so")
+    n, capped = counts.get("flood_outlines_missing", 0), counts.get("flood_outlines_capped", 0)
+    if n or capped:
+        words = f"flood outlines: {n} area{'s' if n != 1 else ''} unavailable (fetch failed or not asked, no cached outline under 30 days)"
+        if capped:
+            words += (f"; {capped} area{'s' if capped != 1 else ''} not asked this build "
+                      f"(at most {flows.FLOOD_OUTLINE_FETCHES_PER_BUILD} a build)")
+        out.append(words + "; alerts without an outline are not named, only counted")
+    return out
+
+
+_LAKES = None
+
+
+def lake_outline_at(x: float, y: float):
+    """The WFD lake outline (data/processed/lakes.parquet, British National Grid) that the point lies
+    in, else None. Read from the file only, never fetched: no file is no lake outline."""
+    global _LAKES
+    from shapely.geometry import Point
+
+    from dipcast.ingest import lakes
+    if _LAKES is None:
+        try:
+            import geopandas as gpd
+            _LAKES = gpd.read_parquet(lakes.PATH) if lakes.PATH.exists() else False
+        except Exception as e:  # noqa: BLE001 - no lake outlines is the rule's lake-without-outline case
+            log.warning("lake outlines: %s", e)
+            _LAKES = False
+    if _LAKES is False or _LAKES is None or _LAKES.empty:
+        return None
+    pt = Point(x, y)
+    hit = _LAKES.iloc[_LAKES.sindex.query(pt, predicate="intersects")]
+    return hit.geometry.iloc[0] if len(hit) else None
+
+
+def own_water(r: dict, lake_at=None):
+    """The spot's own water for its flood alerts (flows.SpotWater). Its names, from its river and the
+    watercourse it was placed on, and for a lake with no watercourse its name before the first comma
+    ("Blea Tarn, Langdale"): whole names (flows.water_names) and, for a river, short ones
+    (flows.short_water_names). Whether it is a lake, and on tidal water (placed on a tidal river, or of
+    a kind that is neither a river nor a lake). Its point on its water (location.snapped, else the
+    pin) and its pin, in British National Grid. For a lake, the lake outline that point lies in
+    (`lake_at`, lake_outline_at in the build). snap_distance_m is not used."""
+    from dipcast.ingest import flows
+    loc = r.get("location") if isinstance(r.get("location"), dict) else {}
+    lake = r.get("kind") == "lake"
+    names = [r.get("river"), loc.get("watercourse")]
+    if lake and not loc.get("watercourse"):
+        names.append(str(r.get("name") or "").split(",")[0])
+    tidal = loc.get("form") == "tidalRiver" or r.get("kind") not in (None, "", "river", "lake")
+    pin = flows.bng(r.get("lat"), r.get("lon"))
+    snapped = loc.get("snapped") if isinstance(loc.get("snapped"), dict) else {}
+    point = flows.bng(snapped.get("lat"), snapped.get("lon")) or pin
+    lake_outline = lake_at(*point) if lake and lake_at and point else None
+    return flows.SpotWater(flows.water_names(*names), frozenset() if lake else flows.short_water_names(*names),
+                           lake, tidal, point, pin, lake_outline)
 
 
 WEATHER_CREDIT = "Weather data by Open-Meteo.com"
@@ -2936,9 +3081,7 @@ def build(refresh: bool = True) -> dict:
         health["warnings"].append(f"Nearby reasons not made this update: {e}")
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
-    if n_flows.get("flood_alerts_unchecked"):
-        health["warnings"].append(f"flood alerts not checked for {n_flows['flood_alerts_unchecked']} of {len(results)} spots: "
-                                  "the Environment Agency did not answer; their pages say so")
+    health["warnings"] += flood_warnings(n_flows, len(results))
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]

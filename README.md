@@ -1257,10 +1257,63 @@ spot's own river is above the top of its usual range (index over 1.0). "River
 rising fast: the gauge at Addingham rose 0.40 m between 08:45 and 14:30" when
 the gauge's readings in the six hours before the build (the measure's last 24,
 `_limit=24`, 15 minutes apart) rose by more than a fifth of the usual range.
-"Flood alert in force nearby (Environment Agency): River Wharfe at Ilkley" for
-the most severe flood alert or warning in force for a flood area within 10 km
-(`/id/floods?lat&long&dist=10`, which measures to the area, not its centre),
-linked to the area's page on check-for-flooding.service.gov.uk. Severity 4,
+"Flood alert in force here (Environment Agency): Upper River Wharfe" for the
+most severe flood alert or warning in force whose area covers the spot, linked
+to the area's page on check-for-flooding.service.gov.uk. The alerts come from
+`/id/floods?lat&long&dist=10`, whose `dist` is not measured to the area's
+outline: on 26 Oct 2026 it gave the Wharfe at Burnsall "Lower River Ure"
+(122WAF940, 16.7 km away) and Dartington on the Dart a South Devon coastal alert
+(113WACT1B, 8.8 km). So the build reads each in-force area's outline, the EA's
+own map of where the alert applies, and
+`flows.split_flood_alerts` names an alert only when the outline covers the
+spot's point on its water (`location.snapped`, else the pin) or, for a lake,
+reaches the lake's own outline (`data/processed/lakes.parquet`; the pin for a
+lake with none). Three of the four Wharfe pins sit just outside "Upper River
+Wharfe" while their points on the river are inside, which is why the point on
+the water is used. An alert outside that names the spot's own water (by its
+`floodArea.riverOrSea` or, by the whole name, its title), or one with no
+outline that is not plainly for other water, is counted in
+`flood_alerts_unmatched`, and the page says "A flood alert or warning is in
+force that could not be matched to this spot" with a link to the EA's flood map
+(never "nearby": an unmatched area can be 11.6 km away, as at Aysgarth).
+An outline is asked for only at `https://environment.data.gov.uk/flood-monitoring/id/floodAreas/<id>/polygon`,
+for an id that is strictly an EA flood-area id (three digits, then letters and
+digits), with redirects not followed. It is kept, simplified to 10 m, with its
+fetch time, in `config.CACHE/flood_areas/<id>.geojson`, and every attempt's
+time, success or failure, goes in `_attempts.json` there. Each area is asked
+for at most once a week while the build's state cache carries over (best
+effort). Each attempt's time is written to the record just before its request,
+so a failed request, a later failed step or a cancelled run still leaves it for
+the workflow's always() cache save; cache eviction (7 days unused or the 10 GB
+repository limit), a lost runner or a failed cache save (a re-run of the same
+run_id included) resets it for the areas involved. Whatever happens, a build
+asks for at most 8 outlines, and an area with no outline (at most 30 days old)
+is never named. A kept outline under
+a week old is used as it is. An
+outline not asked for, or whose request failed, is used only while it is at
+most 30 days old, else the area has no outline and its alerts are never named.
+That holds for a first fetch too: one failed request leaves an area without an
+outline, its alerts counted or said neutrally, for up to 7 days. At most 8
+areas are asked for in one build (one wave of the 8 workers), those with no
+usable outline first, then the oldest, then by id; the rest are not asked and
+not recorded, and are never named without an outline at most 30 days old. The
+build warns "flood outlines: N areas unavailable ...; M areas not asked this
+build". Cost: per build at most 8 GETs of up to ~0.9 MB raw each, only on
+days with alerts in force (otherwise the national list shortcut asks nothing
+per spot), so even with a cold cache at most 384 GETs a day at 30-minute
+builds, about 346 MB a day at the largest outline seen; normally one GET per
+area per week; the cache at most 500 outlines, tens of MB. Pruning touches only `<id>.geojson` files and `_attempts.json`
+directly in that directory: it keeps the areas in force in the build and
+entries fetched within 30 days, removes older ones, keeps at most 500 (over 3.5
+times the 137 items the national list held on 26 Oct 2026), and drops attempt
+times over 30 days old for areas not in force.
+With no alert in force, the decision record says which search found none: "The
+Environment Agency listed no flood alerts or warnings in force anywhere in
+England" (the national list, when nothing is in force) or "The Environment
+Agency's search within 10 km returned no flood alerts or warnings in force"
+(the spot's own search; `flood_alerts_search`). One for other water,
+or tidal (`isTidal`) for an inland spot, is counted in `flood_alerts_other` and
+never named. Severity 4,
 "Warning no longer in force", is left out: on 3 Oct 2026 it was the only item
 the service held for England. The build asks spot by spot only when the
 national list holds an alert in force, so on most days the floods cost one
