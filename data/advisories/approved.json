@@ -1,4 +1,4 @@
 {
- "note": "Approved advisory lines (docs/ADVISORY-FINDER-2026-10.md, decisions of 26 Oct 2026). Only Ethan Buckley approves, and this file changes only by pull request. One entry per approved draft: draft_id, approver, approved_at (UTC, as 2026-10-26T19:00:00Z) and line (the exact text). scripts/advisory_finder.py reads it and never writes it; nothing here is published.",
+ "note": "Approved advisory lines (docs/ADVISORY-FINDER-2026-10.md, decisions of 26 Oct 2026, incl. decision 8). This file changes only by pull request. Each entry holds the draft's evidence (draft_id, spot_id, line, publisher, link, kind, source_url, incident_id, start, expiry, fetched_at) and its review (reviewer, authority, reviewed_at in UTC as 2026-10-26T23:00:00Z). The reviewer and authority must be one of the pairs in src/dipcast/official_advice.py REVIEWERS: Ethan Buckley on his own authority, or Codex under Ethan Buckley's delegation of routine decisions (26 Oct 2026). A Codex review is never recorded as Ethan's. scripts/advisory_finder.py --entry DRAFT_ID prints a ready entry. The finder reads this file and never writes it.",
  "approvals": []
 }
