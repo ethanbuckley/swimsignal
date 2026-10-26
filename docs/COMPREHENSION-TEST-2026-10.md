@@ -198,5 +198,5 @@ the same day ("okay i approve your recommendations"). The details, and how each 
   deleted within 7 days.
 - **D8.** The privacy notice describes research sessions before anyone is recruited, matching what is
   done. Retention periods are approved practice, not legal deadlines. Coded records may still be personal
-  data. Consent answers stay with the record while it is kept. The ICO fee self-assessment is Ethan's, from
-  known facts, before recruitment.
+  data. Consent answers stay with the record while it is kept. SwimSignal is registered with the ICO and
+  the fee paid (confirmed by the operator, 26 Oct 2026).

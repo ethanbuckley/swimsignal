@@ -10,12 +10,9 @@ Where the plan leaves a point open, section 7 names either the default this shee
 (A1 to A7) or the decision Ethan made on 26 October 2026, before any session (D1 to D8). The checklist
 uses both, so the moderator never has to stop and decide.
 
-**Before anyone is recruited** (D8). None of these is done by this sheet:
-1. The privacy notice's Research sessions section (PR #380) is merged and live on
-   https://swimsignal.co.uk/privacy.
-2. Ethan has done the ICO fee self-assessment from known facts, without assuming an exemption.
-3. Ethan has confirmed once, in System Settings > Apple Account > iCloud > Drive, that Desktop & Documents
-   is off (section 6).
+**Before anyone is recruited** (D8): the privacy notice's Research sessions section (PR #380) is merged
+and live on https://swimsignal.co.uk/privacy. This sheet does not do that. SwimSignal is registered with
+the ICO and the fee paid (confirmed by the operator, 26 Oct 2026).
 
 **⚠ marks the steps where a moderator most often goes wrong, with the reason.**
 
@@ -279,16 +276,18 @@ Rules:
   task 1; write the distance chosen.
 - Follow-up emails go only to those who said yes, and from hello@swimsignal.co.uk.
 
-**Where the private folder is**, checked on this Mac on 26 October 2026:
+**Where the private folder is.** What may be promised, and nothing beyond it: the records are kept in a
+private folder on the operator's own computer; they are not in the public repository and not published;
+that folder is not synced to a cloud service and not backed up (checked 26 October 2026). The privacy
+notice says only "a private folder on the operator's own computer", not published and not in the public
+source code. The checks behind it, on this Mac on 26 October 2026:
 - Finder's iCloud Desktop & Documents setting is off: `defaults read com.apple.finder
-  FXICloudDriveDocuments` and `FXICloudDriveDesktop` both return 0. So `~/Documents` is not synced to
-  iCloud. Ethan confirms this once in System Settings > Apple Account > iCloud > Drive.
+  FXICloudDriveDocuments` and `FXICloudDriveDesktop` both return 0, so `~/Documents` is not synced to
+  iCloud. OneDrive's folders are separate from `~/Documents` (checked by the coordinating session).
 - Time Machine has no destination (`tmutil destinationinfo`), so the folder is not backed up. A lost or
   broken Mac loses the records.
 - The folder is not a git repository.
-- Another session checked that OneDrive's folders are separate from `~/Documents`; that was not
-  re-checked here.
-- Nothing here says the folder is encrypted.
+- No encryption is claimed.
 
 ## 7. Defaults used, and Ethan's decisions
 
@@ -352,5 +351,5 @@ them.
 - **D8. Privacy** [Q12]: accurate research wording in the privacy notice before recruitment, matching
   what is actually done (PR #380). The retention periods are approved practice, not legal deadlines.
   Coded records may still be personal data. Consent answers stay with the research record for as long
-  as it is kept. Ethan does the ICO fee self-assessment from known facts, without assuming an exemption;
-  it is not done here, and recruitment waits for it (see the top of this sheet).
+  as it is kept. SwimSignal is registered with the ICO and the fee paid (confirmed by the operator, 26
+  Oct 2026).
