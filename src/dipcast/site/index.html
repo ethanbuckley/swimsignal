@@ -2287,7 +2287,8 @@ const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof ea
 // A long spill that may be a fault stays beside the answer only: it is a reading, not a gap. Rows:
 //  - Live readings: overflows upstream with no current reading, and why (liveSay, feedDown, feedStale);
 //  - Overflows in Wales: not in the data (levels.js, walesWords);
-//  - Today's EA advice: at a designated bathing water (levels.js, eaUnchecked);
+//  - Today's EA advice: at a designated bathing water (levels.js, eaUnchecked); with a reviewed notice
+//    shown above (eatoday.js, eaTodayCover), what was checked and when, as the answer's line says;
 //  - Access: the desk check (accessSaid), never an inspection;
 //  - Flood warnings: the EA did not answer this build (experience.js, floodUnchecked; kept from the
 //    answer, where in bold it read like a hazard).
@@ -2298,7 +2299,9 @@ function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
   if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)]);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
-  if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
+  const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
+  if (reviewed) rows.push(["Today's EA advice", 'Notice shown above', `${reviewed}.`]);
+  else if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
   if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
   if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
   if (typeof floodUnmatched === 'function' && floodUnmatched(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not matched', floodUnmatchedLine(true)]);

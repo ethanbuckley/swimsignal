@@ -81,3 +81,16 @@ test('without eatoday.js the rows draw as before', () => {
   const ctx = pageContext(NAMES, EXTRA, false), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   for (const f of ['spotItem', 'savedCard']) assert.doesNotMatch(run(f, frensham({ official: [item()] })), /o-tag|advice against/);
 });
+
+// The spot page's "Not known here" tile says the same as the answer's line when a reviewed notice shows.
+test('the "Not known here" row follows the reviewed notice, and says "Not checked" only without one', () => {
+  const names = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'overflows', 'liveSay', 'noFeedSaid', 'accessSaid', 'eaSaid', 'unknowns'];
+  const have = names.filter(n => pageSrc.some(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`)));
+  const ctx = pageContext(have, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
+  const row = d => JSON.parse(JSON.stringify(run('unknowns', d).find(r => r[0] === "Today's EA advice")));   // out of the page's realm
+  assert.deepEqual(row(frensham({ official: [item()] })), ["Today's EA advice", 'Notice shown above',
+    'The Environment Agency\'s notice above was last checked 26 Oct. Open <a href="#ea-today">today\'s EA advice</a> for the latest.']);
+  assert.deepEqual(row(frensham({ official: [item({ state: 'unverified', checked: '2026-10-19' })] })).slice(0, 2), ["Today's EA advice", 'Notice shown above']);
+  assert.equal(row(frensham())[1], 'Not checked');
+});
+

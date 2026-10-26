@@ -210,6 +210,10 @@ def test_the_build_writes_the_advice_into_spots_json_and_the_built_page(tmp_path
     assert ("The Environment Agency's notice above was last checked 26 Oct. Open <a href=\"#ea-today\">today's EA advice</a> "
             "for the latest.") in page
     assert "Today's EA advice not checked" not in page.split('id="answer-words"', 1)[1].split("</section>", 1)[0]
+    # Nothing the build writes into the page says the advice was not checked. (The "Not known here" tile
+    # is drawn by the script, not built; tests/site_official_tags.test.cjs checks its row.)
+    built = page.split('<div id="result"', 1)[1].split("<script", 1)[0]
+    assert "Not checked" not in built and "not checked" not in built
     plain_bw = (tmp_path / "spot" / "bw-uki2203-11942" / "index.html").read_text()
     assert "Today's EA advice not checked: <a href=\"#ea-today\">open it</a> before you swim" in plain_bw
     assert 'id="official"' not in plain_bw and "notice above" not in plain_bw
@@ -292,4 +296,18 @@ def test_a_changed_line_is_not_shown_as_reviewed_or_current(tmp_path, run):
     assert got == [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
                     "checked": "2026-10-26", "state": "changed"}]
     assert all(x["line"] != newer["draft_line"] for x in got)   # the unreviewed line never reaches the page
+
+
+def test_a_synthesized_withdrawal_never_ends_an_older_reviewed_warning(tmp_path, run):
+    # The reviewed draft is superseded by a newer one in its thread that the finder marked withdrawn only
+    # because it left the open list ("gone"): no end was read, so the warning stays, marked not re-checked.
+    check = oa.check_record(run)
+    check["drafts"]["e8b5832d974a"].update(flags=["superseded"], superseded_by="aaaaaaaaaaaa")
+    check["drafts"]["aaaaaaaaaaaa"] = {"spot_id": FRENSHAM, "feed_id": "ea:11945-20260619-142800", "status": "withdrawn",
+                                       "flags": ["gone"], "fetched_at": "2026-10-26T18:37:19Z"}
+    got = shown(tmp_path, [entry(run)], check)[FRENSHAM]
+    assert [x["line"] for x in got] == [LINE]
+    # The same newer record with an end read from the source does end it.
+    check["drafts"]["aaaaaaaaaaaa"]["flags"] = []
+    assert shown(tmp_path, [entry(run)], check) == {}
 
