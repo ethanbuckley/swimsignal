@@ -724,3 +724,16 @@ addendum to that test. If it shows the rule clearly worse, the rule is withdrawn
 - **Labelling.** Any comparison against the deployed file, pooled or split into Wales and Wessex, is post hoc,
   exploratory and descriptive, not confirmatory. It was computed after the results were seen. No subgroup is
   adopted, and no split redefines condition 1.
+
+**Adopted by Ethan's decision, 26 October 2026.** Added lines only; nothing above is changed, the HOLD note included.
+- **Amendment 3 takes effect** when this PR merges. Ethan's words: "i also want to adopt soil moisture for ecoli in
+  rivers".
+- **This is a decision, not a pass.** Condition 1 still misses against the deployed `ecoli_model.json`, by 0.00004, as
+  the HOLD note gives it. The test's own comparison passed. Neither result is changed or rescored.
+- **What the evidence supports, and what it does not.** On rivers in May to September, the estimate's level is
+  better calibrated with soil moisture. No gain in ranking days within a site is shown on the outside data. From
+  October to April the river figure is marked experimental and does not set the level (`levels.js`, `ecoliLevel`),
+  but the experimental figure shown under its fold changes with soil moisture.
+- **The check that can withdraw it** is the prospective one Amendment 3 states: the 2027 samples at inland bathing
+  waters with overflows upstream, with the rule scored against today's model. If it shows the rule clearly worse,
+  the rule is withdrawn.
