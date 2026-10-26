@@ -59,6 +59,37 @@ function eaTodayFold(d) {
     + `<p>Open <a href="${eaTodayEsc(page)}">the EA's page</a> for today's advice.</p></details>`;
 }
 
+// Official advice at a spot (spots.json `official`, newest first): lines a reviewer checked against the
+// publisher's own record, written in by the build from data/advisories/ with no request
+// (src/dipcast/official_advice.py). The block sits above the forecast's level, never changes it, and says
+// so. Each line keeps its publisher, its start and a link, and says when the finder last checked it: a
+// check that is old or could not read the source says "Not re-checked since", never nothing. No item, no
+// block: the page then says what it said before ("Today's EA advice", above). The prerender runs this.
+const EA_TODAY_STATES = new Set(['checked', 'stale', 'unverified']);
+const eaTodayDay = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  return m && +m[2] >= 1 && +m[2] <= 12 ? `${+m[3]} ${EA_TODAY_MONTHS[m[2] - 1]} ${m[1]}` : null; };
+// The items a page can show: a line, a publisher and a known state with a real day. Anything else is dropped.
+const eaTodayAdvice = d => (d && Array.isArray(d.official) ? d.official : [])
+  .filter(o => o && typeof o.line === 'string' && o.line && typeof o.publisher === 'string' && o.publisher
+    && EA_TODAY_STATES.has(o.state) && eaTodayDay(o.checked));
+function eaTodayChecked(o) {
+  const day = eaTodayDay(o.checked);
+  return o.state === 'checked' ? `Last checked ${day}.`
+    : o.state === 'unverified' ? `Not re-checked since ${day}: the ${o.publisher} source could not be read.`
+    : `Not re-checked since ${day}.`;
+}
+function eaTodayOfficial(d) {
+  const items = eaTodayAdvice(d);
+  if (!items.length) return '';
+  return `<section class="notice official" id="official" aria-labelledby="official-h"><h2 id="official-h">Official advice</h2><ul>`
+    + items.map(o => `<li><p class="o-line">${eaTodayEsc(o.line)}</p><p class="o-src">`
+      + (/^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `<a href="${eaTodayEsc(o.link)}">Open the ${eaTodayEsc(o.publisher)} page</a>. ` : '')
+      + `${eaTodayEsc(eaTodayChecked(o))}</p></li>`).join('')
+    + `</ul><p class="o-sep">Follow this advice first. It is not SwimSignal's, and the forecast below does not include it.</p></section>`;
+}
+// The line under the level when there is official advice, so the two are not read as one.
+const eaTodayApart = d => eaTodayAdvice(d).length ? '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>' : '';
+
 // Fills an opened fold with the EA's panel and the line under it; false if its site id is not one.
 function eaTodayOpen(fold, nowMs) {
   const url = eaTodayUrl(fold.dataset.site);
@@ -93,5 +124,6 @@ function eaTodayListen(root, now = () => Date.now()) {
 if (typeof document === 'object' && document && typeof document.addEventListener === 'function') eaTodayListen(document);
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen };
+  module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
+    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart };
 }

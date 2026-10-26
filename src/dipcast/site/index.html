@@ -437,6 +437,14 @@
   /* A long spill that may be a fault: ink, after where the week goes, never a box. */
   .answer .gaps { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   /* What the forecast could read (coverLine): ink, the notes' size, just above the issue time. */
+  /* Official advice (eatoday.js, eaTodayOfficial): a notice, read first, above the level and apart from it. */
+  .answer .official { text-align:left; max-width:30em; margin:14px auto 18px; line-height:1.4; color:var(--ink); }
+  .official h2 { margin:0 0 4px; font-size:var(--fs-body); font-weight:600; }
+  .official ul { margin:0; padding:0; list-style:none; }
+  .official li + li { margin-top:8px; padding-top:8px; border-top:1px solid var(--notice-line); }
+  .official p { margin:0; }
+  .official .o-line { font-weight:600; }
+  .official .o-sep { margin-top:8px; }
   .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
      level counts, at the notes' size. Left, as the tile's sentence is. */
@@ -2233,7 +2241,8 @@ function riverTile(rs) {
 // (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
+    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '')
+    + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
@@ -4197,9 +4206,11 @@ function spotTop(d) {
   // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
   h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
   h += notices(d);
-  // The answer, under the sky: the place, its name, then its words (answerWords).
+  // The answer, under the sky: the place, its name, then any official advice (eatoday.js, eaTodayOfficial),
+  // above the level and apart from it, then its words (answerWords).
+  const official = typeof eaTodayOfficial === 'function' ? eaTodayOfficial(d) : '';
   return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
-    + `<div id="answer-words">${answerWords(d)}</div></section>`;
+    + `${official}<div id="answer-words">${answerWords(d)}</div></section>`;
 }
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
