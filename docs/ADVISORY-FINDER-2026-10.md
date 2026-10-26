@@ -256,6 +256,12 @@ for the latest." The level does not change.
 | Two approved advisories for one spot | Both, newest start first. |
 | The approvals file has a mistake, or is missing | The build stops (BuildUnhealthy) and names the problem. Nothing is published. A valid empty file is fine. |
 
+Elsewhere a spot is one row among many: the list, Saved, Plan a swim's rows and the decision record
+(record.html). There one shared helper (`eaTodayBrief` and `eaTodayTag` in `eatoday.js`) shows the compact
+form, "EA advice against bathing · since 19 Jun · checked 26 Oct", in a line of its own under the level,
+marked by the notice's rule. It never changes the level. The embed, the share card, the map's tooltips and
+the push and email alerts do not show it yet; they are follow-ups.
+
 Only a positive end at the source, or an expiry, removes an advisory. A failed or old check never
 turns it into an all-clear.
 

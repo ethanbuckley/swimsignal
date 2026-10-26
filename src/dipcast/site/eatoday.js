@@ -103,6 +103,20 @@ function eaTodayCover(d) {
     : /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `Open <a href="${eaTodayEsc(o.link)}">the ${eaTodayEsc(o.publisher)} page</a> for the latest` : '';
   return `${what} ${when}${open ? `. ${open}` : ''}`;
 }
+// The compact form for the places a spot is one row among many: the list, Saved, Plan a swim's rows and
+// the decision record. "EA advice against bathing · since 19 Jun · checked 26 Oct", in a line of its own
+// beside the level, never in it. One shared helper, so every surface says the same. '' without advice.
+const eaTodayWho = p => p === 'Environment Agency' ? 'EA' : p;
+function eaTodayBrief(d) {
+  const items = eaTodayAdvice(d);
+  if (!items.length) return '';
+  const o = items[0], said = o.line.replace(/^[^:]*:\s*/, '').replace(/\s*\(.*$/, '').replace(/\s+since\s.*$/, '');
+  const since = eaTodayShort(o.since);
+  return [`${eaTodayWho(o.publisher)} ${said}`, since ? `since ${since}` : '',
+    o.state === 'checked' ? `checked ${eaTodayShort(o.checked)}` : `not re-checked since ${eaTodayShort(o.checked)}`,
+    items.length > 1 ? `${items.length - 1} more` : ''].filter(Boolean).join(' · ');
+}
+const eaTodayTag = (d, el = 'span') => { const t = eaTodayBrief(d); return t ? `<${el} class="o-tag">${eaTodayEsc(t)}</${el}>` : ''; };
 // The line under the level when there is official advice, so the two are not read as one.
 const eaTodayApart = d => eaTodayAdvice(d).length ? '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>' : '';
 
@@ -141,5 +155,5 @@ if (typeof document === 'object' && document && typeof document.addEventListener
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
-    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover };
+    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayBrief, eaTodayTag };
 }

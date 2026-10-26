@@ -445,6 +445,8 @@
   .official p { margin:0; }
   .official .o-line { font-weight:600; }
   .official .o-sep { margin-top:8px; }
+  /* Its compact form in a row or a card (eaTodayTag): a line of its own under the level, marked by the notice's rule. */
+  .o-tag { display:block; margin:3px 0 0; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-meta); line-height:1.35; color:var(--ink); }
   .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
      level counts, at the notes' size. Left, as the tile's sentence is. */
@@ -2849,7 +2851,7 @@ function spotItem(s) {
   const d = dist(s);
   const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, rainMeta(s)].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(listPath(s))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span>${headNote(s)}<span class="k">${meta}</span></span>${week(s)}</a></li>`;
+    + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span>${headNote(s)}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="k">${meta}</span></span>${week(s)}</a></li>`;
 }
 function bindItems(ul) {
   ul.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => {
@@ -3038,7 +3040,7 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
-    + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
+    + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '') + (typeof eaTodayTag === 'function' ? eaTodayTag(s, 'p') : '')
     + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 // A list's spots that the forecast has, in the list's order.
@@ -3556,7 +3558,7 @@ function planItem(o) {
   const s = o.s, why = planWhy(s, PLAN.day), ev = planEvidence(s);
   const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
+    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
     + `<label class="cmp-pick"><input type="checkbox" data-compare-pick="${esc(s.id)}"><span>Compare<span class="sr"> ${esc(s.name)}</span></span></label>${ev}</li>`;
 }
 function renderPlan() {
