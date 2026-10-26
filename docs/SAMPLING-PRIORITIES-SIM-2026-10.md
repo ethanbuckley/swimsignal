@@ -168,4 +168,147 @@ differences are not normal, and rain forecasts fail in ways a lognormal error do
 
 ## Results
 
-Not yet run.
+Added 26 October 2026, after the run. Everything above the line is as committed in 6e69dfc and pushed before the run.
+The harness came after it, in ba1d092. It did not change anything above the line.
+
+**Verdict: fail.** INFO beats RANDOM on both conditions. Against COVER it meets condition 2 but not condition 1: its
+site-rate error is lower in 58.5% of replications, against 60% needed. None of U1 to U3 holds, so the verdict stands.
+Nothing is adopted. Nothing on the live site, `ecoli_model.json` or any shadow or test window changes.
+
+### How it was run
+
+- `uv run python scripts/sampling_priorities_sim.py --out docs/SAMPLING-PRIORITIES-SIM-2026-10.json`, from ba1d092,
+  18:47:58 to 18:49:50 UTC, 112 s, one process. No network call: the harness reads no file and calls no API. The
+  heavy-run lock was absent and no other Python job was running.
+- The two sensitivity runs followed, 100 s and 77 s. Their files are `-tau0.json` and `-budget120.json`.
+- The JSON files were rewritten afterwards to one line per replication. Their content is unchanged (checked by
+  reloading and comparing).
+
+**Seen before the run:** a smoke run of 2 replications on seeds outside the stated range (r = 5000, 5001), to check
+the harness ran. Nothing was changed in the method after it. Changes after it, before ba1d092: the wording of the
+plain-language reasons, a column recording each pick's score, and the test fixture. None of these touches a pick or a
+metric. While writing tests I also saw that the fitted τ can fall to the grid's floor (0.01) in a world whose true τ is
+0.7 (world seed 7, not in the stated range). The estimator was not changed.
+
+### The pass rule
+
+| Against | INFO lower in | Needed | Mean gain in P (baseline − INFO) | 95% interval | Relative | Result |
+|---|---:|---:|---:|---|---:|---|
+| COVER | 58.5% | 60% | 0.000189 | 0.000077 to 0.000306 | 6.2% | condition 1 fails |
+| RANDOM | 73.0% | 60% | 0.000558 | 0.000429 to 0.000693 | 16.4% | passes |
+
+INFO beat both baselines in the same replication in 51.5% of the 200.
+
+### The checks that would make it uninformative
+
+- U1: RANDOM's mean P after the season, 0.00340, is below the history-only fit's, 0.00408. New samples help. Holds.
+- U2: the three means are not within 2% of RANDOM's (INFO is 16% lower). Holds.
+- U3: 21% of INFO's picks share a site and week with a COVER pick, against the 80% limit. Holds.
+
+### All metrics, means over 200 replications
+
+| | INFO | COVER | RANDOM | RISK |
+|---|---:|---:|---:|---:|
+| P, site-rate error | 0.00284 | 0.00303 | 0.00340 | 0.00331 |
+| P, never-sampled sites | 0.00496 | 0.00553 | 0.00679 | 0.00671 |
+| P, history-sampled sites | 0.00193 | 0.00196 | 0.00195 | 0.00185 |
+| S1, day-level error | 0.00395 | 0.00424 | 0.00466 | 0.00448 |
+| S2, posterior spread | 0.00306 | 0.00326 | 0.00353 | 0.00362 |
+| S3, right model, truth A | 0.53 | 0.54 | 0.53 | 0.49 |
+| S3, right model, truth B | 0.77 | 0.67 | 0.65 | 0.80 |
+| S4, exceedances in 60 samples | 24.1 | 11.3 | 11.4 | 48.6 |
+| Share of samples at never-sampled sites | 0.84 | 1.00 | 0.29 | 0.18 |
+| Share at lakes | 0.21 | 0.33 | 0.30 | 0.00 |
+| Mean 48 h rain on sampled days (mm) | 10.1 | 3.5 | 3.5 | 15.5 |
+| Sites visited | 12.5 | 12.0 | 31.1 | 15.1 |
+
+Read from these figures:
+- The whole gain is at never-sampled sites. At history-sampled sites (40 samples each) all four strategies are within
+  0.0001 of each other.
+- INFO and COVER both go mostly to never-sampled sites. INFO differs mainly in the day: it samples wetter days (10.1 mm
+  against 3.5 mm), where the chance is nearer the middle and one result says more. It also spends fewer samples at
+  lakes.
+- INFO's per-replication gain over COVER is small against the replication-to-replication noise. So the mean gain is
+  clear of zero, but INFO loses in 41.5% of single worlds.
+- RISK, the swimmer-protection list, catches twice INFO's exceedances and four times the baselines'. As a way to learn
+  it is no better than RANDOM (P 0.00331 against 0.00340; RANDOM − RISK interval −0.000044 to 0.000221).
+- Picking the right model: under truth A all strategies are near a coin flip, as expected. Under truth B, INFO (0.77)
+  and RISK (0.80) pick B more often than COVER (0.67) and RANDOM (0.65). Inferred: both sample wet river days, where
+  the soil term matters most.
+- The fitted τ in history: median 0.7 (true 0.7), 10th to 90th percentile 0.5 to 0.9. It fell to 0.1 or less in 1% of
+  replications.
+
+By truth: INFO beat COVER in 57% of truth-A and 60% of truth-B replications; RANDOM in 71% and 75%.
+
+### Sensitivity runs (decide nothing)
+
+| | INFO lower than COVER | Mean gain, 95% interval | INFO lower than RANDOM | Mean gain, 95% interval |
+|---|---:|---|---:|---|
+| Main, τ = 0.7, budget 60 | 58.5% | 0.000189 (0.000077 to 0.000306) | 73% | 0.000558 (0.000429 to 0.000693) |
+| τ = 0, budget 60 | 66% | 0.000387 (0.000190 to 0.000582) | 62% | 0.000142 (−0.000004 to 0.000296) |
+| τ = 0.7, budget 120 | 51% | 0.000060 (−0.000066 to 0.000179) | 78% | 0.000656 (0.000484 to 0.000832) |
+
+- **τ = 0 (all sites alike).** COVER is now the worst strategy (P 0.00088 against RANDOM's 0.00063). It spends every
+  sample on sites that are no different. INFO is best (0.00049). But the fitted τ was not 0: median 0.3, and 0.1 or
+  less in only 40% of replications. So the planner still believed in site differences that did not exist.
+- **Budget 120.** COVER catches up. With 6 samples a week each never-sampled site gets about 10, and where they fall
+  matters less. INFO's edge over COVER is gone (51%, interval spanning zero).
+
+### Where it fails, and limits
+
+- **It fails against the simple baseline that matters.** In the world built to its own assumptions, INFO is only a
+  little better than "sample the sites with the fewest samples". On a fair reading the method's added value is in
+  choosing wet days at never-sampled sites, and that edge is small and inconsistent at this budget. It vanishes at
+  budget 120.
+- **The world is friendly.** The truth is logistic with normal site offsets, the score's own form. Real counts, real
+  site differences and real forecast errors are not. A real test would be harder.
+- **The τ estimate is noisy.** With 28 sampled sites it can fall to the floor (the seed-7 world) or stay above zero
+  when the truth is zero (τ = 0 run). The never-sampled part of the score is only as good as τ.
+- **Greedy and partial.** The plan shrinks only the site offset after a pick. It ignores what a sample teaches the
+  fixed part, and it does not refit within the season.
+- **No travel or cost.** 12 never-sampled sites may be far apart. The only limits are 2 samples a day and 1 per site a
+  day.
+- **Selection on inputs.** Sampling wet days does not bias a correctly specified logistic model, because the choice
+  depends on inputs, not on the outcome. If the model is wrong in the wet tail, it would. Not checked.
+
+### The prototype on saved rows (an illustration, not a result)
+
+`scripts/sampling_priorities.py --rows <main checkout>/data/processed/ecoli_validation_rows.parquet`, read only. That
+file is the older one (14 September 2026, 2,165 rows at 38 sites before filters), not the one behind the published
+fit. Model A is today's inputs; model B is train_ecoli.py's "rain + season" variant, with no exposure term. So
+"models disagree" marks a site and day where a sample would show whether exposure matters there. Candidates were three
+scenario days per site (dry, moderate, wet, mid-July), not dated forecasts. Fitted τ was 1.2, larger than the
+synthetic world's 0.7. The top three planned samples were wet scenario days at Falcon Meadow (River Waveney),
+Pangbourne Meadow (River Thames) and the River Frome at Farleigh Hungerford. At each, the two models differed (for
+example 0.79 with exposure against 0.55 rain only at Farleigh Hungerford). 3 of the 10 planned samples were also on
+the high-risk list. These are outputs of a prototype on old rows. They are not a recommendation to sample anywhere.
+
+## What real validation would need
+
+Nothing here was sent, asked for or arranged.
+
+**The data.**
+1. **A sampling arm chosen by the ranking.** The only direct test. A partner with a budget samples some weeks on days
+   the ranking picks and other weeks on their usual schedule, the week's arm drawn at random in advance. Without it,
+   every real dataset was sampled on someone else's schedule, and no strategy can be compared on it.
+2. **Tim Boden's Waterhead series** (59 weekly samples, 2025–26, private, none over 900). It is a fixed weekly schedule
+   at one lake. It can show whether a site outside the EA set has a level the model gets wrong: the "never sampled"
+   case. It cannot test the ranking. What his permission covers was not checked here. Using it for this would need his
+   agreement.
+3. **The 2027 EA season** at the 38 inland bathing waters (`docs/PREREGISTRATION-2027.md` section 3). The EA picks
+   the days, so it cannot test a strategy. It can check one claim of the score, stated in advance: samples with higher
+   predicted information should move the model more (larger change in the site's offset, larger log loss). Section 12
+   applies: nothing in this prototype may touch the frozen model's paths or constants in the season.
+
+**How it would be judged.** A pre-stated test in this file's style. In real data there is no true rate. So the
+primary score would be log loss on later held-out samples not chosen by either arm (for example the next EA season at
+the same sites), from models updated with each arm's samples. The pass rule, margins and the near-miss labels of
+`docs/LAKE-ECOLI-LINE-TEST-2026-10.md` would be fixed before any sample.
+
+**What Ethan must decide.**
+- Whether to take this further at all, given the simulation fails against coverage at this budget. The simple rule
+  "sample the least-sampled sites, on wetter days" may give most of the value with no model.
+- Which second model defines "disagreement" on real data: the soil-moisture river model, rain only, or none.
+- Whether a partner list of high-risk days is offered at all. It is a swimmer-protection list. It biases samples to
+  wet days, which this simulation says is no worse for learning than random sampling, but it does not teach more.
+- Whether to ask any partner about a randomised sampling arm. That is outreach and is his call.
