@@ -73,7 +73,7 @@ test('a note kept before the evidence was added (no gap field) still reads, and 
 // ------------------------------------------------------------------------------ which overflows, and the outing
 const contributor = (name, start, extra = {}) => ({site_id: name.toUpperCase(), site_name: name, status: 1, latest_event_start: start, weight: 0.5, ...extra});
 
-test('which overflows are discharging, and since when, where the forecast names them', () => {
+test('which overflows are discharging, and since when, only where the data has contributors (not spots-lite)', () => {
   const s = spot('moderate', {discharging_upstream: 3}, {contributors: [
     contributor('ILKLEY WWTW', new Date(2026, 9, 26, 9, 10).toISOString()),
     contributor('BEN RHYDDING CSO', new Date(2026, 9, 26, 8, 40).toISOString()),
@@ -116,4 +116,18 @@ test('on the card: the evidence escaped, with the outing read from the plan kept
   assert.match(h, /This is the spot of your outing tomorrow evening\./);
   assert.doesNotMatch(h, /<b>/);
   assert.match(h, /&lt;b&gt;/i);
+});
+
+test('on a Saved card from spots-lite (no contributors): the count, and a link to the spot\'s page, never names', () => {
+  const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
+  const items = new Map([[S.SEEN_KEY, JSON.stringify([S.seenRecord(spot('low'), OLD, LOOKED)])]]);
+  const ctx = vm.createContext({URLSearchParams, localStorage: {getItem: k => items.has(k) ? items.get(k) : null, setItem: (k, v) => items.set(k, v), removeItem: k => items.delete(k)}});
+  for (const f of ['experience.js', 'levels.js', 'since.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
+  vm.runInContext('setToday("2026-10-26"); var spotPath = id => "/spot/" + id + "/";', ctx);
+  const lite = spot('moderate', {discharging_upstream: 2});   // as spots-lite.json carries it: no contributors
+  const h = vm.runInContext('sinceSaid', ctx)(lite, NEW);
+  assert.match(h, /2 overflows upstream reported discharging now, against 0 then\. <a href="\/spot\/wharfe\/" data-id="wharfe">Which overflows: the spot's page<\/a>/);
+  assert.doesNotMatch(h, / since Mon/);
+  // Nothing discharging now: no link.
+  assert.doesNotMatch(vm.runInContext('sinceSaid', ctx)(spot('moderate'), NEW), /Which overflows/);
 });

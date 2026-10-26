@@ -43,7 +43,7 @@ The tile always ends with the issue time and "A lower forecast level does not me
 - Where the count is not known now, why: "a feed upstream is down or has not updated within six hours." This is the new `gap` field in each note.
 - For a spot with no overflow upstream: "No live overflow count for this spot."
 - For a rating change: whose rating it is, the EA's yearly classification.
-- Which overflows are discharging, and since when, where the spot's forecast lists them (`contributors` with a live event, `spillStart`): "2 overflows upstream reported discharging now, against 0 then: Ben Rhydding storm overflow since Mon 08:40, and 1 more." At most two names; the rest as a count. `contributors` holds the overflows that matter most, so it can name fewer than the count. The names are escaped.
+- Which overflows: the Saved page and the list draw from `spots-lite.json`, which stays lean and has no `contributors`. So a Saved card gives the count and a link, "Which overflows: the spot's page". That page lists them under "Overflows that matter most". It never gives names. If a spot does carry `contributors` (the full `spots.json`), the same code names up to two with their spill start times, as in "… discharging now, against 0 then: Ben Rhydding storm overflow since Mon 08:40, and 1 more". Nothing on Saved uses that path today.
 - The outing, when this saved spot is the spot or the backup of the outing kept in `dipcast.plan` and its day has not passed: "This is the spot of your outing tomorrow morning." (`sinceOuting`.)
 - For a forecast over 8 h old (the page's own STALE_MIN): "This forecast is N hours old, so the change may be out of date."
 
@@ -65,7 +65,7 @@ The leader can tick "I have read version X". If a later forecast makes a new ver
 - That a change happened without its evidence. Every since line carries the issue times of both forecasts, and what is known or unknown about the overflows.
 - That a tick is a record anyone else can see, or proof of who read what.
 - **Official advice is not drawn by this PR.** #379 puts each spot's official advice into `spots.json` and `spots-lite.json` (`official`). It is adding one shared compact indicator for the list, Saved, the planner and the record. This PR builds no second display. It leaves one marked hook (below) to call #379's helper once #379 merges.
-- Spill start times are said only for the overflows `contributors` lists. Every other discharging overflow is a count with no time.
+- Saved cards never give overflow names or spill start times. That data is not in `spots-lite.json`; the card links to the spot's page instead.
 
 ## Hook for official advice (#379)
 
@@ -100,8 +100,7 @@ The privacy notice (`pages/privacy.html`) now names the outing in the kept plan 
 3. **Backup suggestions:** the backup list is Saved first, then the plan's spots. Should it suggest the nearest spot at a lower level, as the spot page's "Lower risk nearby" does? That would be a ranking choice the page makes for the swimmer.
 4. **Evidence length on Saved cards:** the evidence adds one to three short sentences per changed card. Keep it as it is, or fold it?
 5. **The read tick:** should a version tick also show in the sites view (`sites.html`) and in the briefing email (`briefing.py` could print the same check)? Today only the record page has it. Should the box be dropped before any paid pilot, since a club may read a local tick as a record?
-6. **Overflow names on Saved cards:** the Saved page draws from `spots-lite.json`, which has no `contributors`. So the names and spill times show only where the full `spots.json` is loaded; on Saved cards today, the evidence gives the count alone. This was checked in the browser on the fixture. Adding the discharging overflows' names and start times to the lite file would cost a few bytes per spot. Do you want that?
-7. **Privacy wording:** the two sentences added to `privacy.html` need your read.
+6. **Privacy wording:** the two sentences added to `privacy.html` need your read.
 
 ## Browser check (26 Oct 2026, fixture preview)
 
@@ -118,8 +117,12 @@ The fixture is a local `spots.json` from 20 Oct with its dates moved on 6 days, 
   - Picking another day on the strip drops the time and keeps both spots.
   - The one-level-a-day sentence stays in both cases.
 - **Past time:** evening chosen at 22:48 today says "That time has already passed today."
-- **Blocked storage:** with `localStorage` throwing, a redraw and a backup change ran without errors, and the link kept the backup. This was a redraw under a throwing getter, not a fresh page load with storage blocked.
-- **Saved cards:** they show the line, then the issue times, the count against then, an unknown count with its reason, and "This is the spot of your outing tomorrow morning." / "This is the backup for …".
+- **Blocked storage, fresh loads:** headless Chrome over CDP, with `localStorage` throwing from page start. The override is injected before any app script (`Page.addScriptToEvaluateOnNewDocument`). At 375 px:
+  - **Plan with an outing link:** the tile opens with its time, spot and backup, both columns and the 10 rows. Changing the backup works, and the address keeps it.
+  - **Saved:** the empty state shows.
+  - **Decision record:** the record draws. The read box says the tick lasts only until the page closes.
+  - On all three pages: no uncaught exceptions and no console errors.
+- **Saved cards:** they show the line, then the issue times, the count against then, an unknown count with its reason, and "This is the spot of your outing tomorrow morning." / "This is the backup for …". They show no names, because the lite data has none; the "Which overflows" link was added after this check (Codex's decision: keep lite lean).
 - **Decision record:** Space ticks the box. `dipcast.briefacks` holds exactly `{spot, day, issue, hash, at}`. The box is `.screen-only`.
 - **Desktop 1440 px (headless Chrome):** the tile sits in the list column, beside the map.
 - **Console:** the only errors were from the fixture:

@@ -129,7 +129,9 @@ function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
 const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
 const esc1 = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);   // overflow names are data
 // The spot's overflows discharging now, earliest first, from those its forecast lists (contributors: the
-// ones that matter most, so possibly fewer than the count): [{name, since}], since in ms.
+// ones that matter most, so possibly fewer than the count): [{name, since}], since in ms. Only where the spot
+// carries `contributors`: the Saved page and the list draw from spots-lite.json, which leaves them out (kept
+// lean), so there this is [] and the card links to the spot's page for which overflows (sinceSaid).
 function sinceSpills(s) {
   const R = sinceRules();
   return (s.contributors || []).map(c => ({ c, since: R.spillStart(c) })).filter(x => x.since !== null)
@@ -179,8 +181,12 @@ function sinceSaid(s, forecast) {
   if (!t) return '';
   let plan = null;
   try { plan = localStorage.getItem(KEPT_PLAN_KEY); } catch (e) { /* no plan kept: no outing to read against */ }
-  const ev = sinceEvidence(was, now, Date.now(), { spills: sinceSpills(s), outing: sinceOuting(s.id, plan) });
-  return `<p class="place-since">${t} <span class="since-ev">${esc1(ev)}</span></p>`;
+  const spills = sinceSpills(s), ev = sinceEvidence(was, now, Date.now(), { spills, outing: sinceOuting(s.id, plan) });
+  // Discharging now but no names in this data (spots-lite.json): which ones, and since when, are on the spot's
+  // page (its "Overflows that matter most"), one tap away, rather than names this card does not have.
+  const which = now.discharging > 0 && !spills.length && typeof spotPath === 'function'
+    ? ` <a href="${esc1(spotPath(s.id))}" data-id="${esc1(s.id)}">Which overflows: the spot's page</a>` : '';
+  return `<p class="place-since">${t} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
 }
 
 if (typeof module === 'object' && module.exports) {
