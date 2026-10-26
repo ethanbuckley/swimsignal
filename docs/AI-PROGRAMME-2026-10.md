@@ -78,6 +78,31 @@ checked; the three also merge cleanly with each other, and their tests pass toge
 
 #383 (river rises) stays a protocol/research draft. #385 and #386 stay unrun and not approved for fetching.
 
+## Build and polling cadence: intended vs observed (checked 26 October 2026, about 23:40 UTC, read-only)
+
+- **Intended.** `site.yml` asks GitHub for a build every 30 minutes (`*/30`), best effort. The push Worker has a
+  second cron (`*/30` in `push/wrangler.toml`, `push/src/dispatch.js`) meant to ask GitHub for a build when the last
+  one is over 20 minutes old, but only once the Worker secret `GITHUB_DISPATCH_TOKEN` is set; without it, it logs
+  "GITHUB_DISPATCH_TOKEN not set; GitHub's own schedule only" and does nothing (`push/README.md`, "Starting the site's
+  build"). Each build polls the company feeds, so the poll cadence is the build cadence.
+- **Observed** (`gh run list --workflow site.yml`, last 48 h to 23:26 UTC): 33 runs, 12 from the schedule and 21 from
+  pushes to main (tonight's merges); **0 `workflow_dispatch` runs in the last 200 runs (back to 12 Oct)**. Scheduled
+  runs were a median 4.3 h apart, at most 6.3 h. #390's replay found 23 answered polls per company feed in 48 h on the
+  25 Oct state, with gaps of 4, 4 and 16 h.
+- **Reading (inferred, not checked):** the Worker's dispatch is not running, most likely because the token is not set
+  (or the deployed Worker predates `dispatch.js`). Confirming needs the Worker's logs in Cloudflare, which this session
+  does not have.
+- **Not a routine code fix.** It is configuration: a fine-grained GitHub token with Actions: write on this repository,
+  set as the Worker secret, and the Worker deployed. That is Ethan's (credentials).
+- **Timing matters.** Builds every 30 minutes would use the Open-Meteo ration up to its planned ceiling (8,750 of
+  9,000 a day), and at that ceiling the ensemble rain test (D4, window 23 Oct to 19 Nov, read 21 Nov) makes no
+  ensemble requests (`docs/ENSEMBLE-RAIN-TEST-2026-11.md`). So turning dispatch on now would change a running study
+  window. Recommendation: leave it off until D4 is read (21 Nov), then decide.
+- **Wording.** User-facing text already describes the schedule as best effort ("at most every 30 minutes" on
+  `data.html`; "asks GitHub for a run every 30 minutes … when it has capacity" on `verification.html`). The one
+  promise of polls "every 30 minutes" was #390's replay footer, now "when the feeds were polled; events between polls
+  can be missed".
+
 ## What was learned
 
 - Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median
