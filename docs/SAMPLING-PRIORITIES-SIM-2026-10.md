@@ -312,3 +312,12 @@ the same sites), from models updated with each arm's samples. The pass rule, mar
 - Whether a partner list of high-risk days is offered at all. It is a swimmer-protection list. It biases samples to
   wet days, which this simulation says is no worse for learning than random sampling, but it does not teach more.
 - Whether to ask any partner about a randomised sampling arm. That is outreach and is his call.
+
+## Decision, 26 October 2026
+
+Ethan adopted the recommendations of 26 October ("Adopt all the recommendations as my decisions"):
+- **Not pursued.** The ranking failed its stated rule against the coverage baseline. This PR is kept as the record of
+  that test. It is not wired into anything.
+- If a partner asks where to sample, the plain rule of thumb is: the least-sampled sites, on wetter days.
+- **No randomised sampling arm now.** It is raised only if a partner (for example Tim Boden at Waterhead) plans 2027
+  sampling anyway. No outreach was made.
