@@ -2927,9 +2927,10 @@ def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd
     except Exception as e:  # noqa: BLE001
         announce(f"quality.html without the long_run list (no {longest_events or monitor_anomalies.LONGEST_FILE}): {e}")
         longest = None
-    when = (generated or pd.Timestamp.now(tz="UTC")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
-    try:
-        page = quality.site_page(cases, positions, outlets, overflows, when, MARK, longest=longest)
+    as_of = generated or pd.Timestamp.now(tz="UTC")
+    when = as_of.tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    try:   # as_of: live readings over FEED_CURRENT_H older than the build leave the long_run list "could not be checked"
+        page = quality.site_page(cases, positions, outlets, overflows, when, MARK, longest=longest, as_of=as_of)
     except Exception as e:  # noqa: BLE001 - a display-only list must not stop the page or the build
         if longest is None:
             raise

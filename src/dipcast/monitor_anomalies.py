@@ -1,11 +1,12 @@
-"""Flags on the live overflow feeds for a person to check: monitors and feeds whose readings look broken in
+"""Flags on the live overflow feeds for a person to check: monitors and feeds whose readings look unusual in
 ways the ingest rules (ingest/live.py) do not already catch. docs/MONITOR-ANOMALIES-2026-10.md has the rules,
 what each adds to the existing checks, the evaluation on saved polls and what Ethan decided on 26 Oct 2026;
 scripts/monitor_anomalies.py runs them offline.
 
 Wired in (section 8 of that doc), display and warnings only: no rule changes a status, count, risk or level.
   long_run         a list on the data-quality page (quality.long_run_section), against each overflow's longest
-                   spill in the EA's records (LONGEST_FILE, made by scripts/make_longest_events.py)
+                   spill in the EA's records (LONGEST_FILE, made by scripts/make_longest_events.py); overflows with no
+                   spill on record in a separate group, and "could not be checked" when the inputs are missing or old
   feed_warnings    future_time, time_format, known_share_drop, company_freeze and id_turnover as build
                    warnings (build_site.monitor_feed_checks); never on the page, never a failed build
 Not wired in: record_contradiction, quiet_monitor (held), cadence_change.
@@ -417,14 +418,14 @@ def feed_warnings(snapshot: pd.DataFrame | None, poll_log: pd.DataFrame | None =
             one = len(g) == 1
             warns.append(f"monitor check (future_time): {len(g)} {c} record{'' if one else 's'} "
                          f"carr{'ies' if one else 'y'} a time up to {ahead * 60:.0f} minutes after the poll that read "
-                         f"{'it' if one else 'them'} ({_ids(g['site_id'])}): a clock or time zone slip in the feed")
+                         f"{'it' if one else 'them'} ({_ids(g['site_id'])}): is the feed's clock or time zone off?")
         done("future_time", len(fut))
         tf = f[f["rule"] == "time_format"]
         for r in tf.itertuples():
             e = json.loads(r.evidence)
             warns.append(f"monitor check (time_format): {e['share_implausible']:.0%} of {r.company}'s {e['records']} records "
                          f"carry a time before 2015 or over a day after the poll ({e['before_2015']} before 2015, "
-                         f"{e['over_a_day_ahead']} ahead): the feed's time format may have changed")
+                         f"{e['over_a_day_ahead']} ahead): has the feed's time format changed?")
         done("time_format", len(tf))
     else:
         summary["skipped"]["future_time"] = summary["skipped"]["time_format"] = "no live snapshot"
@@ -439,7 +440,7 @@ def feed_warnings(snapshot: pd.DataFrame | None, poll_log: pd.DataFrame | None =
             e = json.loads(r.evidence)
             warns.append(f"monitor check (known_share_drop): {r.company}'s share of monitors with a known status fell to "
                          f"{e['share_known']:.2f} at the poll of {last.strftime('%Y-%m-%d %H:%M')} UTC, from a usual "
-                         f"{e['usual_share']:.2f}: its status field may have been renamed or recoded")
+                         f"{e['usual_share']:.2f}: has its status field been renamed or recoded?")
         done("known_share_drop", len(f))
 
     lacking = [n for n, x in (("live snapshot", snapshot if have else None), ("live history", history),
@@ -454,7 +455,7 @@ def feed_warnings(snapshot: pd.DataFrame | None, poll_log: pd.DataFrame | None =
             n = e["status_changes"]
             warns.append(f"monitor check (company_freeze): {r.company}'s feed recorded {n} status change{'' if n == 1 else 's'} "
                          f"on {e['day']}, a day with {WET_MM:g} mm or more of forecast rain at {e['wet_share']:.0%} of its "
-                         "overflows: its statuses may have stopped updating")
+                         "overflows: are its statuses still updating?")
         done("company_freeze", len(f))
 
     if not have or _missing(coverage):
@@ -467,6 +468,6 @@ def feed_warnings(snapshot: pd.DataFrame | None, poll_log: pd.DataFrame | None =
             e = json.loads(r.evidence)
             warns.append(f"monitor check (id_turnover): {r.company} has {e['ids_now']} overflow ids now and had "
                          f"{e['ids_before']} on {yesterday}; {e['share_new']:.0%} are new (such as {_ids(e['examples_new'])}) "
-                         f"and {e['share_gone']:.0%} gone (such as {_ids(e['examples_gone'])}): the feed may have a new id scheme")
+                         f"and {e['share_gone']:.0%} gone (such as {_ids(e['examples_gone'])}): does the feed have a new id scheme?")
         done("id_turnover", len(f))
     return warns, summary
