@@ -552,6 +552,7 @@ DIPCAST_ROOT=<root with the imported events> DIPCAST_CACHE=<frozen cache> PYTHON
 ```
 
 The events come from `scripts/import_ea_events.py --years 2024 2025 2026` run into that root (also from the archive).
-The fits are seeded, so the same inputs give the same models: SHA-256 of the files written on 25 October,
+The fits are seeded, so the same inputs and library versions (scikit-learn 1.9.1, pandas 3.0.5, numpy 2.5.3, the main checkout's `.venv`)
+should give the same models. SHA-256 of the files written on 25 October:
 `spill_model_v2_offsets.pkl` `9e0fc54a9356e4ce…`, `spill_model_v2_pooled.pkl` `bd8faaaf31031fa3…`,
 `spill_model_v2_offsets_r025.pkl` `ab2e7ba834bab881…`.
