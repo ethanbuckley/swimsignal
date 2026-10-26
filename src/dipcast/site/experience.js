@@ -149,7 +149,7 @@ const floodUncheckedLine = (html = false) => 'Flood warnings not checked for thi
 // Not from a build over a day old.
 const floodUnmatched = (s, now = Date.now(), generatedAt = null) =>
   Array.isArray(s.flood_alerts) && s.flood_alerts_unmatched > 0 && !(generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build);
-const floodUnmatchedLine = (html = false) => 'Flood alerts nearby could not be matched to this water. '
+const floodUnmatchedLine = (html = false) => 'A flood alert or warning is in force that could not be matched to this spot. '
   + (html ? `<a href="${FLOOD_SERVICE}">Check the Environment Agency's flood map</a>.` : `Check the Environment Agency's flood map: ${FLOOD_SERVICE}`);
 // One fact as a sentence: plain text for the comparison, or HTML for the answer (escaped here, with
 // the lead in bold and the flood area linked to the Environment Agency's page for it).

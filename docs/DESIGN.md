@@ -642,9 +642,9 @@ and it always ends "A separate hazard, not part of the pollution level." The lea
   instead when that is the most severe. "Here", not "nearby": an alert is named only when the EA's
   outline of its area covers the spot's point on its water, or reaches its lake (26 Oct 2026: "nearby"
   had named the River Ure at Burnsall on the Wharfe, 16.7 km away). An alert for the spot's own river or
-  lake whose area does not cover it, or one with no outline, is a quiet row of Not known here: "Flood
-  alerts nearby could not be matched to this water." with the EA's flood map linked
-  (`floodUnmatched`). Alerts for other water are counted in the data, never named.
+  lake whose area does not cover it, or one with no outline, is a quiet row of Not known here: "A flood
+  alert or warning is in force that could not be matched to this spot." with the EA's flood map linked
+  (`floodUnmatched`); never "nearby", since such an area can be 11.6 km away (Lower River Ure at Aysgarth). Alerts for other water are counted in the data, never named.
 
 A failed check never reads as none in force, and it is not a hazard either, so it gets no bold line
 in the answer (16 Oct 2026: in bold above the five days on 48 of 105 pages, it read like one).

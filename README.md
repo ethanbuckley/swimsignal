@@ -1274,8 +1274,9 @@ Wharfe" while their points on the river are inside, which is why the point on
 the water is used. An alert outside that names the spot's own water (by its
 `floodArea.riverOrSea` or, by the whole name, its title), or one with no
 outline that is not plainly for other water, is counted in
-`flood_alerts_unmatched`, and the page says "Flood alerts nearby could not be
-matched to this water" with a link to the EA's flood map. One for other water,
+`flood_alerts_unmatched`, and the page says "A flood alert or warning is in
+force that could not be matched to this spot" with a link to the EA's flood map
+(never "nearby": an unmatched area can be 11.6 km away, as at Aysgarth). One for other water,
 or tidal (`isTidal`) for an inland spot, is counted in `flood_alerts_other` and
 never named. Severity 4,
 "Warning no longer in force", is left out: on 3 Oct 2026 it was the only item

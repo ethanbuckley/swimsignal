@@ -142,7 +142,7 @@ test('the quiet line in words: the comparison row says it plainly; a spot withou
 // 26 Oct 2026: Burnsall on the Wharfe said "Flood alert in force nearby: Lower River Ure", and
 // Dartington on the Dart a South Devon coastal alert. The build now names only alerts whose area's
 // outline covers the spot, "in force here" (flows.split_flood_alerts); the others are counted, never named.
-const UNMATCHED = '<div class="f-l">Flood warnings</div><div class="f-v na">Not matched</div><div class="f-d">Flood alerts nearby could not be matched to this water. '
+const UNMATCHED = '<div class="f-l">Flood warnings</div><div class="f-v na">Not matched</div><div class="f-d">A flood alert or warning is in force that could not be matched to this spot. '
   + '<a href="https://check-for-flooding.service.gov.uk/">Check the Environment Agency\'s flood map</a>.</div>';
 
 test('an alert for another river or the coast is not named on the spot page', () => {
@@ -162,7 +162,7 @@ test('an alert not matched to the spot (its own river elsewhere, or no outline):
   assert.equal(say(s), '');   // nothing in bold in the answer
   const unknown = tiles(s).find(([label]) => label === 'Not known here')[1];
   assert.ok(unknown.includes(UNMATCHED), unknown);
-  assert.ok(!unknown.includes('Not checked'));   // "could not be matched" is not "the EA did not answer"
+  assert.ok(!unknown.includes('Not checked') && !/nearby/i.test(unknown));   // no "nearby" without evidence   // "could not be matched" is not "the EA did not answer"
   const top = prerender.prerender({generated_at: BUILT, spots: [s]}, 'https://example.org/swim/').w;
   assert.ok(!/Flood/.test(top), top);
   // Unchecked stays its own row, and never says "not matched".
@@ -172,7 +172,7 @@ test('an alert not matched to the spot (its own river elsewhere, or no outline):
   assert.equal(floodUnmatched({flood_alerts: [], flood_alerts_unmatched: 0}, NOW, BUILT), false);
   assert.equal(floodUnmatched({flood_alerts: []}, NOW, BUILT), false);   // a build before the field
   assert.equal(floodUnmatched({flood_alerts: [], flood_alerts_unmatched: 1}, NOW + 26 * 36e5, BUILT), false);   // a stale build
-  assert.equal(floodUnmatchedLine(), "Flood alerts nearby could not be matched to this water. Check the Environment Agency's flood map: https://check-for-flooding.service.gov.uk/");
+  assert.equal(floodUnmatchedLine(), "A flood alert or warning is in force that could not be matched to this spot. Check the Environment Agency's flood map: https://check-for-flooding.service.gov.uk/");
   const built = new Date().toISOString();   // the comparison reads the clock
   assert.equal(Object.fromEntries(evidenceRows({days: [], flood_alerts: [], flood_alerts_unmatched: 2}, '2026-10-03', built))['Local warnings'],
     floodUnmatchedLine() + ' Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.');
