@@ -60,6 +60,7 @@ test('with nothing saved, the Saved page has the form on a tile of its own, and 
   const h = p.ctx.panel;
   assert.match(h, /<\/div><section class="sec tile lists"><form class="lists-form" id="ls-import"><label for="ls-import-link">Open a list from a link<\/label>/);
   assert.equal(h.match(/id="ls-import"/g).length, 1);
+  assert.match(page, /\.tile > \.lists-form:first-child \{ margin:0; padding:0; border-top:0; \}/);   // no rule above it on its own tile
   assert.doesNotMatch(h, /id="lists"/);   // Your lists waits for something to put in a list
   assert.match(h, /iPhones keep the two apart, so save them again here, or paste a list's link below\./);
   assert.match(h, /Paste a link to a list, sent to you or copied with Share this list in Safari, to see it and add it here\./);
