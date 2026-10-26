@@ -1282,23 +1282,27 @@ digits), with redirects not followed. It is kept, simplified to 10 m, with its
 fetch time, in `config.CACHE/flood_areas/<id>.geojson`, and every attempt's
 time, success or failure, goes in `_attempts.json` there. Each area is asked
 for at most once a week while the build's state cache carries over (best
-effort); a lost cache, a cancelled run or a failed cache save resets it for the
-areas involved. Whatever happens, a build asks for at most 32 outlines, and an
-area with no outline (at most 30 days old) is never named. A kept outline under
+effort). Each attempt's time is written to the record just before its request,
+so a failed request, a later failed step or a cancelled run still leaves it for
+the workflow's always() cache save; cache eviction (7 days unused or the 10 GB
+repository limit), a lost runner or a failed cache save (a re-run of the same
+run_id included) resets it for the areas involved. Whatever happens, a build
+asks for at most 8 outlines, and an area with no outline (at most 30 days old)
+is never named. A kept outline under
 a week old is used as it is. An
 outline not asked for, or whose request failed, is used only while it is at
 most 30 days old, else the area has no outline and its alerts are never named.
 That holds for a first fetch too: one failed request leaves an area without an
-outline, its alerts counted or said neutrally, for up to 7 days. At most 32
-areas are asked for in one build (above the ~25 distinct in-force areas at the
-spots on 26 Oct 2026; four rounds of the 8 workers), those with no usable
-outline first, then the oldest; the rest are not asked and not recorded. The
+outline, its alerts counted or said neutrally, for up to 7 days. At most 8
+areas are asked for in one build (one wave of the 8 workers), those with no
+usable outline first, then the oldest, then by id; the rest are not asked and
+not recorded, and are never named without an outline at most 30 days old. The
 build warns "flood outlines: N areas unavailable ...; M areas not asked this
-build". Cost: per build at most 32 GETs of up to ~0.9 MB raw each, only on
+build". Cost: per build at most 8 GETs of up to ~0.9 MB raw each, only on
 days with alerts in force (otherwise the national list shortcut asks nothing
-per spot), so at the 30-minute cadence at most 1,536 GETs a day (about 1.4 GB
-at the largest outline seen); per area typically one GET a week, while the
-state cache carries over; the cache at most 500 outlines, tens of MB. Pruning touches only `<id>.geojson` files and `_attempts.json`
+per spot), so even with a cold cache at most 384 GETs a day at 30-minute
+builds, about 346 MB a day at the largest outline seen; normally one GET per
+area per week; the cache at most 500 outlines, tens of MB. Pruning touches only `<id>.geojson` files and `_attempts.json`
 directly in that directory: it keeps the areas in force in the build and
 entries fetched within 30 days, removes older ones, keeps at most 500 (over 3.5
 times the 137 items the national list held on 26 Oct 2026), and drops attempt

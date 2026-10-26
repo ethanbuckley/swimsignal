@@ -1051,8 +1051,8 @@ def test_more_in_force_areas_than_the_cap_asks_exactly_the_cap_missing_outlines_
     assert sorted(json.loads((cache / flows.FLOOD_OUTLINE_ATTEMPTS).read_text())) == ["113WACT1B", "122WAF940"]
     assert spots[0]["flood_alerts"] == []   # the capped one has no outline: never named
     assert bs.flood_warnings(counts, 1)[0].endswith(
-        "; 1 area not asked this build (at most 32 a build); alerts without an outline are not named, only counted")
-    assert flows.FLOOD_OUTLINE_FETCHES_PER_BUILD == 32
+        "; 1 area not asked this build (at most 8 a build); alerts without an outline are not named, only counted")
+    assert flows.FLOOD_OUTLINE_FETCHES_PER_BUILD == 8
 
 
 def test_prune_drops_old_attempts_for_areas_not_in_force_and_touches_nothing_else(tmp_path):
@@ -1075,3 +1075,91 @@ def test_prune_drops_old_attempts_for_areas_not_in_force_and_touches_nothing_els
     record.unlink()
     record.symlink_to(outside)
     assert flows.prune_flood_outlines(cache, now=now) == [] and json.loads(outside.read_text()) == {"122WAF940": 0.0}
+
+
+def test_the_cap_of_eight_asks_missing_and_expired_first_then_the_oldest_then_by_id(tmp_path):
+    """One wave of the 8 workers: a cold cache costs at most 8 GETs a build."""
+    bs = _build_site()
+    now = 100 * DAY
+    missing = [f"122WAF90{i}" for i in range(6)]
+    _entry(tmp_path, "113WACT1B", now - 40 * DAY)   # expired: no usable outline
+    _entry(tmp_path, "011WAFDW", now - 35 * DAY)    # expired
+    _entry(tmp_path, "122WAF920", now - 20 * DAY)   # kept, due a refresh
+    _entry(tmp_path, "122WAF910", now - 10 * DAY)   # kept, newer
+    asked = []
+    store = flows.OutlineStore(tmp_path, now=now, get=_down(asked))   # the default cap
+    assert store.cap == flows.FLOOD_OUTLINE_FETCHES_PER_BUILD == 8
+    shapes, capped = bs.flood_outlines({*missing, "113WACT1B", "011WAFDW", "122WAF920", "122WAF910"}, workers=1, store=store,
+                                       prune=lambda keep: [])
+    order = [a["url"].split("/")[-2] for a in asked]
+    assert order == [*missing, "113WACT1B", "011WAFDW"]   # no usable outline first (missing, then the oldest), then by id
+    assert capped == ["122WAF920", "122WAF910"]   # in priority order; not asked, not recorded, fail-closed on their kept outlines
+    assert shapes["122WAF910"] is not None and shapes["122WAF920"] is not None
+    assert all(shapes[a] is None for a in [*missing, "113WACT1B", "011WAFDW"])   # failed, nothing usable: never named
+    assert sorted(json.loads((tmp_path / flows.FLOOD_OUTLINE_ATTEMPTS).read_text())) == sorted([*missing, "113WACT1B", "011WAFDW"])
+
+    # Nine with no outline: the first eight by id are asked; the ninth is not asked, not recorded, no outline.
+    cold = tmp_path / "cold"
+    asked.clear()
+    nine = [f"122WAF93{i}" for i in range(9)]
+    shapes, capped = bs.flood_outlines(set(nine), workers=1, store=flows.OutlineStore(cold, now=now, get=_down(asked)),
+                                       prune=lambda keep: [])
+    assert [a["url"].split("/")[-2] for a in asked] == nine[:8] and capped == ["122WAF938"] and shapes["122WAF938"] is None
+    assert "122WAF938" not in json.loads((cold / flows.FLOOD_OUTLINE_ATTEMPTS).read_text())
+
+
+def test_the_attempt_is_on_disk_before_its_request(tmp_path):
+    seen = []
+
+    def get(url, **kw):
+        aid = url.split("/")[-2]
+        record = json.loads((tmp_path / flows.FLOOD_OUTLINE_ATTEMPTS).read_text())   # read by the request itself
+        seen.append((aid, record.get(aid)))
+        return httpx.Response(200, text=RAW_CAMPSITE, request=httpx.Request("GET", url))
+
+    store = flows.OutlineStore(tmp_path, now=5000.0, get=get)
+    _, ask, _ = store.plan(["011FWFNC6KC", "122WAF940"])
+    for aid in ask:
+        store.fetch(aid)
+    assert seen == [("011FWFNC6KC", 5000.0), ("122WAF940", 5000.0)]
+    assert not list(tmp_path.glob(".*.tmp"))   # written by replace, no temporary file left
+
+
+class _Cancelled(BaseException):
+    """What a cancelled or timed-out run looks like to the code: not an Exception, so nothing catches it."""
+
+
+def test_a_cancelled_run_leaves_its_attempt_on_disk(tmp_path):
+    def get(url, **kw):
+        raise _Cancelled("the run was cancelled mid-request")
+
+    store = flows.OutlineStore(tmp_path, now=7000.0, get=get)
+    _, ask, _ = store.plan(["122WAF940"])
+    with pytest.raises(_Cancelled):
+        store.fetch(ask[0])   # finish() is never reached
+    assert json.loads((tmp_path / flows.FLOOD_OUTLINE_ATTEMPTS).read_text()) == {"122WAF940": 7000.0}
+    # The next build, half an hour on, reads it and does not ask again.
+    asked = []
+    assert flows.flood_area_outline("122WAF940", tmp_path, now=7000.0 + 1800, get=_ea(asked)) is None and asked == []
+
+
+def test_the_outline_cache_sits_in_the_state_the_workflow_saves():
+    """This checks the configuration only, not GitHub's cache service: that the workflow puts
+    DIPCAST_CACHE under DIPCAST_STATE (state/cache), that its "Save mutable state" step saves `state`
+    with actions/cache/save under if: always(), and that the outline cache is a directory of
+    config.CACHE. Whether GitHub keeps and restores that cache is not something a test here can see."""
+    import re
+
+    from dipcast import config
+    wf = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "site.yml").read_text()
+    env = dict(re.findall(r"^\s+(DIPCAST_STATE|DIPCAST_CACHE):\s*(.*?)\s*(?:#.*)?$", wf, re.M))
+    assert env["DIPCAST_STATE"] == "${{ github.workspace }}/state"
+    assert env["DIPCAST_CACHE"] == "${{ github.workspace }}/state/cache"
+    assert env["DIPCAST_CACHE"].startswith(env["DIPCAST_STATE"] + "/")
+    step = wf.split("- name: Save mutable state", 1)[1].split("- name:", 1)[0]
+    assert re.search(r"^\s+uses: actions/cache/save@v\d+\s*$", step, re.M)
+    assert re.search(r"^\s+if: always\(\)\s*$", step, re.M)
+    assert re.search(r"^\s+path: state\s*$", step, re.M)
+    bs = _build_site()
+    cache = config.CACHE / bs.FLOOD_OUTLINES_DIR
+    assert cache.parent == config.CACHE and bs.FLOOD_OUTLINES_DIR == "flood_areas"

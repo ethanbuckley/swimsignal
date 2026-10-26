@@ -502,20 +502,24 @@ FLOOD_OUTLINE_SIMPLIFY_M = 10.0
 # areas rarely (in its periodic flood-warning area updates, not from day to day), and one outline is up
 # to 0.9 MB raw, so it is not asked for in every build:
 #  - each area is asked for at most once per FLOOD_OUTLINE_REFRESH_S, success or failure, while the
-#    build's state cache carries over (best effort): the record holds the time of every attempt, and
-#    finish() writes it at the end of the outline round. A lost cache, a cancelled run (finish() not
-#    reached) or a failed cache save resets it for the areas involved. Whatever happens, a build asks
-#    for at most FLOOD_OUTLINE_FETCHES_PER_BUILD outlines, and an area with no outline (at most 30 days
-#    old) is never named. A kept outline under FLOOD_OUTLINE_REFRESH_S old is used without asking.
+#    build's state cache carries over (best effort): each attempt's time is written to the record,
+#    atomically, just before its request, so a request that fails, a later step that fails, or a
+#    cancelled or timed-out run still leaves it on disk for the workflow's always() cache save. Cache
+#    eviction (7 days unused, or the repository's 10 GB limit), a lost runner or a failed cache save
+#    (a re-run of the same run_id included) resets it for the areas involved. Whatever happens, a build
+#    asks for at most FLOOD_OUTLINE_FETCHES_PER_BUILD outlines, and an area with no outline (at most 30
+#    days old) is never named. A kept outline under FLOOD_OUTLINE_REFRESH_S old is used without asking.
 #  - a kept outline is used, when it is not asked for or its request fails, only while its recorded
 #    fetch time is at most FLOOD_OUTLINE_MAX_AGE_S old; past that, or with none, the area has no outline
 #    (rule 4: its alerts are counted or said neutrally, never named). This holds for a first fetch too:
 #    one failed request leaves that area without an outline for up to 7 days.
 #  - at most FLOOD_OUTLINE_FETCHES_PER_BUILD areas are asked for in one build: those with no usable
-#    outline first, then the oldest. 32 is above the ~25 distinct in-force areas at the spots on 26 Oct
-#    2026, a wet night, and is four rounds of the build's 8 workers; at ~0.9 MB raw at most each, under
-#    ~30 MB a build. Areas past it are not asked and not recorded as asked; they get a kept outline at
-#    most 30 days old or none, and the build counts and announces them.
+#    outline (missing or expired) first, then the oldest, then by id. 8 is one wave of the build's 8
+#    workers. It bounds the cold-cache worst case at 8 GETs a build, 384 a day at 30-minute builds,
+#    about 346 MB a day at the ~0.9 MB largest outline seen; normally one GET per area per week. On a
+#    night like 26 Oct 2026 (~25 distinct in-force areas at the spots) a cold cache takes about four
+#    builds to fill. Areas past it are not asked and not recorded as asked; they get a kept outline at
+#    most 30 days old or none (never named), and the build counts and announces them.
 #  - pruning (prune_flood_outlines) keeps the areas in force in this build and entries fetched within
 #    FLOOD_OUTLINE_MAX_AGE_S, removes older ones, and then keeps at most FLOOD_OUTLINE_CACHE_MAX, the
 #    newest. 500 is over 3.5 times the 137 items the national list held on 26 Oct 2026; at a few kB to
@@ -524,7 +528,7 @@ FLOOD_OUTLINE_SIMPLIFY_M = 10.0
 FLOOD_OUTLINE_REFRESH_S = 7 * 86400
 FLOOD_OUTLINE_MAX_AGE_S = 30 * 86400
 FLOOD_OUTLINE_CACHE_MAX = 500
-FLOOD_OUTLINE_FETCHES_PER_BUILD = 32
+FLOOD_OUTLINE_FETCHES_PER_BUILD = 8
 FLOOD_OUTLINE_ATTEMPTS = "_attempts.json"
 # An EA flood-area id as the service writes them: three digits (the EA area), then letters and digits
 # ("122WAF940", "011FWFNC6KC", "062WAF38BrentBks"; all 137 on 26 Oct 2026 fit). ASCII only, anchored by
@@ -735,15 +739,14 @@ class OutlineStore:
         return ready, ask, capped
 
     def fetch(self, area_id: str, timeout: float = EA_TIMEOUT_S) -> object | None:
-        """Ask for one planned area's outline, once, at _outline_url with redirects not followed, and
-        record the attempt whatever comes of it. A good answer is kept by area id, simplified, with its
+        """Ask for one planned area's outline, once, at _outline_url with redirects not followed. The
+        attempt is recorded on disk first (record_attempt), whatever comes of it. A good answer is kept by area id, simplified, with its
         fetch time. On a failure (no answer, any status but 200, a redirect included, unreadable
         geometry), the kept outline is used only while at most FLOOD_OUTLINE_MAX_AGE_S old, else None."""
         url = _outline_url(area_id)
         if url is None:
             return None
-        with self._lock:
-            self._asked[area_id] = self.now
+        self.record_attempt(area_id)
         fallback = self._usable.get(area_id)
         try:
             r = (self.get or httpx.get)(url, headers=config.EA_HEADERS, timeout=timeout, follow_redirects=False)
@@ -764,15 +767,31 @@ class OutlineStore:
             log.info("flood outline %s not kept: %s", area_id, e)
         return outline
 
+    def record_attempt(self, area_id: str) -> None:
+        """Write one attempt's time to the record before its request: under the lock, read the record,
+        merge, and replace it atomically (_write_json). A record that cannot be written is logged; the
+        request still goes, and the per-build cap still holds."""
+        with self._lock:
+            self._asked[area_id] = self.now
+            try:
+                self.dir.mkdir(parents=True, exist_ok=True)
+                _write_json(self.dir / FLOOD_OUTLINE_ATTEMPTS, {**_attempt_times(self.dir), **self._asked})
+            except OSError as e:
+                log.warning("flood outline attempt for %s not recorded: %s", area_id, e)
+
     def finish(self) -> None:
-        """Write this build's attempts into the record, atomically. Nothing to write, nothing written."""
+        """Make sure the record holds this build's attempts (each was written before its request; this
+        writes again only if one is missing). Harmless to call more than once."""
         if not self._asked:
             return
-        try:
-            self.dir.mkdir(parents=True, exist_ok=True)
-            _write_json(self.dir / FLOOD_OUTLINE_ATTEMPTS, {**_attempt_times(self.dir), **self._asked})
-        except OSError as e:
-            log.warning("flood outline attempts not recorded: %s", e)
+        on_disk = _attempt_times(self.dir)
+        if all(on_disk.get(a) == t for a, t in self._asked.items()):
+            return
+        with self._lock:
+            try:
+                _write_json(self.dir / FLOOD_OUTLINE_ATTEMPTS, {**_attempt_times(self.dir), **self._asked})
+            except OSError as e:
+                log.warning("flood outline attempts not recorded: %s", e)
 
 
 def flood_area_outline(area_id: str | None, cache_dir: Path, timeout: float = EA_TIMEOUT_S, now: float | None = None,
