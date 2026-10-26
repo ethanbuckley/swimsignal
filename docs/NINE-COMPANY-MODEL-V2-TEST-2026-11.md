@@ -530,3 +530,28 @@ eight companies, or 15% on the Welsh set.
 - A next test could keep production's United Utilities model and use v2 for the other eight companies, or train v2
   on 2024-26 once the full 2026 file exists. Either needs its own statement. Adoption, of anything, is Ethan's
   decision.
+
+### Reproduction (added 26 October 2026)
+
+This note changes no result above. The run used PR #334's UK-local-day code (`features.LOCAL_TZ`, the local-day
+`daily_rain_features` and `spill_days`, and `build_site_days`' zone check), merged into this branch at `4d66246`. The
+harness that ran is `6bc15b6`, which already has that merge. That commit is tagged `record/nine-company-v2-run`.
+
+This PR is a record only. After the run, the files that came in through #334 were returned to main's version, so
+`src/` here is main's and merging the PR changes no model or day-boundary code. The harness now checks for
+`features.LOCAL_TZ` and stops without it.
+
+To rerun, with the inputs listed under Results (the three EA zips by SHA-256, the frozen rain cache, the
+`live_coverage.parquet` of 25 October, and production and hold-out models by hash):
+
+```bash
+mkdir -p /tmp/v2run && git archive record/nine-company-v2-run src scripts | tar -x -C /tmp/v2run
+DIPCAST_ROOT=<root with the imported events> DIPCAST_CACHE=<frozen cache> PYTHONPATH=/tmp/v2run/src \
+  uv run python /tmp/v2run/scripts/nine_v2_eval.py --zip2026 <2026 zip> --coverage <live_coverage.parquet> \
+  --prod <spill_model.pkl> --holdout <spill_model_holdout_2025.pkl> --out <dir>
+```
+
+The events come from `scripts/import_ea_events.py --years 2024 2025 2026` run into that root (also from the archive).
+The fits are seeded, so the same inputs give the same models: SHA-256 of the files written on 25 October,
+`spill_model_v2_offsets.pkl` `9e0fc54a9356e4ce…`, `spill_model_v2_pooled.pkl` `bd8faaaf31031fa3…`,
+`spill_model_v2_offsets_r025.pkl` `ab2e7ba834bab881…`.

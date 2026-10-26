@@ -29,13 +29,22 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from dipcast import config
-from dipcast.ingest.edm_events import read_ea_dcww_events
-from dipcast.ingest.rainfall import grid_cell
-from dipcast.model.features import ALL_FEATURES, LOCAL_TZ, build_site_days, daily_rain_features, spill_days
-from dipcast.model.spill_model import SpillModel
-from dipcast.model.training import NINE, WELSH, cells_of, ece, load_events, load_rain, site_years
-from dipcast.model.verify import brier_skill, reliability_table, scores
+from dipcast.model import features as _features
+
+# The run used PR #334's UK-local-day code. Without it (features.LOCAL_TZ), rows and labels would be cut on other
+# days, so the harness stops rather than give different numbers.
+if not hasattr(_features, "LOCAL_TZ"):
+    raise SystemExit("nine_v2_eval needs PR #334's local-day code (features.LOCAL_TZ). Run it from "
+                     "`git archive record/nine-company-v2-run src scripts`, as docs/NINE-COMPANY-MODEL-V2-TEST-2026-11.md "
+                     "says under Reproduction.")
+
+from dipcast import config  # noqa: E402
+from dipcast.ingest.edm_events import read_ea_dcww_events  # noqa: E402
+from dipcast.ingest.rainfall import grid_cell  # noqa: E402
+from dipcast.model.features import ALL_FEATURES, LOCAL_TZ, build_site_days, daily_rain_features, spill_days  # noqa: E402
+from dipcast.model.spill_model import SpillModel  # noqa: E402
+from dipcast.model.training import NINE, WELSH, cells_of, ece, load_events, load_rain, site_years  # noqa: E402
+from dipcast.model.verify import brier_skill, reliability_table, scores  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("nine_v2_eval")
