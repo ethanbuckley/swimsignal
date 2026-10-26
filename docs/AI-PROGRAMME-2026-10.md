@@ -61,7 +61,7 @@ protocols are reviewed.
 | 3 | Practical guides for popular spots from verifiable sources; sessions execution pack; outstanding human actions | to come | in progress |
 | 4 | Catchment replay prototype: last 48 h of reported spills, rain and gauges, modelled arrival; observed, estimated and unavailable kept apart | to come | in progress |
 | 5 | Planner: outing time and backup spot; what changed since I checked, with evidence; club brief versions and leader acknowledgement (local only) | to come | in progress |
-| - | Lab-chlorophyll test statement (no fetch) | to come | in progress |
+| - | Lab-chlorophyll test statement (no fetch): EA determinand 7887 at 40 lakes chosen by metadata only; pass needs Spearman ≥ 0.5 (lower end > 0.3), within-lake placebo, LOLO calibration Better (B 0.10, H 0.05), no lake type harmed; stage 1 sized at ~55,200 requests / 3.2 GB | #386 | statement ready for review |
 | - | Algae incident test statement (no fetch) | #385 | statement ready for review |
 
 ## What was learned
