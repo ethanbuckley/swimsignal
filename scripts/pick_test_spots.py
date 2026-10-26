@@ -21,6 +21,7 @@ from pathlib import Path
 
 SITE = "https://swimsignal.co.uk/"
 USER_AGENT = "SwimSignal comprehension-test spot picker (github.com/ethanbuckley/swimsignal)"
+SHOWN = 5   # rows listed for each task
 HEADLINE = re.compile(r'id="risk-headline">(.*?)</h2>', re.S)
 # The gaps task 3 counts, each as the spot page words it (levels.js, experience.js, index.html), and the
 # rule the page itself uses for it. A participant who names any of them has named a gap.
@@ -84,9 +85,11 @@ def candidates(spots: list[dict], headlines: dict[str, str | None], area: str) -
                      "overflows": up, "gaps": gaps(s)})
     low = [r for r in rows if r["headline"].startswith("Low risk") and r["overflows"] > 0]
     gapped = [r for r in rows if set(r["gaps"]) - {"lake_no_ecoli"}]
+    # Ranked by the same gaps that qualify a spot: counting the lake's missing estimate put every lake one gap
+    # ahead of a river with as many real gaps, and the five rows shown were then all lakes.
     return {"area": area, "spots": len(rows) + len(unreadable), "unreadable": unreadable,
             "task2": sorted(low, key=lambda r: (len(r["gaps"]), r["name"])),
-            "task3": sorted(gapped, key=lambda r: (-len(r["gaps"]), r["name"]))}
+            "task3": sorted(gapped, key=lambda r: (-len(set(r["gaps"]) - {"lake_no_ecoli"}), r["name"]))}
 
 
 def report(picked: dict, generated_at: str | None) -> str:
@@ -105,9 +108,11 @@ def report(picked: dict, generated_at: str | None) -> str:
                                        else "Choose any spot and count only what its page shows."), ""]
             continue
         lines += ["| Spot | Page | Headline | Overflows upstream | Gaps |", "|---|---|---|---:|---|"]
-        for r in picked[task][:5]:
+        for r in picked[task][:SHOWN]:
             lines.append(f"| {r['name']} | {SITE}spot/{r['id']}/ | {r['headline'] or 'not built'} | {r['overflows']} | "
                          f"{'; '.join(GAPS[g] for g in r['gaps']) or 'none'} |")
+        if len(picked[task]) > SHOWN:
+            lines.append(f"\n{len(picked[task]) - SHOWN} more qualify; they are not shown.")
         lines.append("")
     return "\n".join(lines)
 

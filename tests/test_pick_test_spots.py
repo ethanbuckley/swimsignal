@@ -104,3 +104,18 @@ def test_a_page_without_a_readable_headline_is_no_candidate(tmp_path, capsys):
     cap = capsys.readouterr()
     assert "broken-page" in cap.err and "left out of both lists" in cap.err
     assert "| Broken Low |" in cap.out and "| Broken Page |" not in cap.out
+
+
+def test_task3_ranks_by_the_gaps_that_qualify_a_spot():
+    """A lake's missing estimate qualifies no spot for task 3, so it does not rank one either: a river with two
+    real gaps comes before a lake with one, and the report says how many qualifying spots it leaves out."""
+    guided = {"facts": [{"status": "confirmed"}]}
+    lakes = [spot(f"a-lake-{i}", mode="lake", no_live=1, guide=guided) for i in range(6)]
+    river = spot("b-river", no_live=1, guide=guided)
+    assert pick.gaps(lakes[0]) == ["no_live_feed", "lake_no_ecoli"]
+    assert pick.gaps(river) == ["no_live_feed", "ecoli_out_of_season"]
+    heads = {s["id"]: "Moderate risk from sewage spills" for s in [*lakes, river]}
+    got = pick.candidates([*lakes, river], heads, AREA)
+    assert got["task3"][0]["id"] == "b-river"
+    text = pick.report(got, "2026-10-26T12:00:00+00:00")
+    assert "spot/b-river/" in text and "2 more qualify; they are not shown." in text
