@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -44,6 +45,20 @@ ITEM_FIELDS = {"include": ["id", "properties.datetime", "properties.proj:epsg", 
                            "properties.grid:code", "properties.s2:processing_baseline",
                            "assets.scl", "assets.red", "assets.rededge1"],
                "exclude": ["links", "geometry", "bbox"]}
+
+
+def pmap(fn, items):
+    """fn over items, netmod.WORKERS at a time (A1), results in item order. When one call raises, the calls not yet
+    started are cancelled (only those already running finish) and the error is raised: nothing new starts."""
+    ex = ThreadPoolExecutor(netmod.WORKERS)
+    futs = [ex.submit(fn, i) for i in items]
+    try:
+        for f in futs:
+            yield f.result()
+    except BaseException:
+        ex.shutdown(wait=True, cancel_futures=True)
+        raise
+    ex.shutdown(wait=True)
 
 
 def stage1_net(out: Path) -> Capped:
@@ -78,16 +93,22 @@ def site_items(net, out: Path, site) -> list[dict]:
 def scl_windows(net, out: Path, site, items: list[dict]) -> dict[str, tuple[np.ndarray, tuple]]:
     d = out / "scl" / site.bw_id
     d.mkdir(parents=True, exist_ok=True)
-    got = {}
+    got, todo = {}, []
     for it in items:
         f = d / f"{it['id']}.npz"
         if f.exists():
             z = np.load(f)
             got[it["id"]] = (z["scl"], tuple(z["centre"]))
-            continue
+        else:
+            todo.append(it)
+
+    def one(it):
+        # A1: reads run netmod.WORKERS at a time; each window is saved as it arrives, so a stop keeps what was read.
         w, centre = stac.site_scl(net, it, site.lon, site.lat)
-        np.savez_compressed(f, scl=w, centre=np.array(centre))
-        got[it["id"]] = (w, centre)
+        np.savez_compressed(d / f"{it['id']}.npz", scl=w, centre=np.array(centre))
+        return it["id"], (w, centre)
+
+    got.update(pmap(one, todo))
     return got
 
 
@@ -114,16 +135,20 @@ def readings(net, out: Path, site, items: list[dict], scl: dict, geom: dict) -> 
         for line in prog.read_text().splitlines():
             r = json.loads(line)
             done[(r["bw_id"], r["item_id"])] = r
-    rows = []
+    rows, todo = [], []
     for it in items:
-        t = it["properties"]["grid:code"]
-        g = geom[t]
+        g = geom[it["properties"]["grid:code"]]
         if not g["passes"]:
             continue
         key = (site.bw_id, it["id"])
         if key in done:
             rows.append(done[key])
-            continue
+        else:
+            todo.append(it)
+
+    def one(it):
+        t = it["properties"]["grid:code"]
+        g = geom[t]
         w = scl[it["id"]][0]
         clear, usable = pr.scene_clear(w, g["core"])
         value = float("nan")
@@ -132,12 +157,16 @@ def readings(net, out: Path, site, items: list[dict], scl: dict, geom: dict) -> 
             b4 = pr.b4_to_20m(pr.reflectance(b4_dn, it["assets"]["red"]["raster:bands"][0]))
             b5 = pr.reflectance(b5_dn, it["assets"]["rededge1"]["raster:bands"][0])
             _, _, value = pr.scene_reading(w, g["core"], pr.ndci(b4, b5))
-        r = {"bw_id": site.bw_id, "water_body": site.water_body, "tile": t, "item_id": it["id"],
-             "scene_date": it["properties"]["datetime"][:10], "clear_core": clear, "n_core": g["n_core"],
-             "usable": bool(usable), "reading": None if np.isnan(value) else value}
-        with prog.open("a") as f:
+        return {"bw_id": site.bw_id, "water_body": site.water_body, "tile": t, "item_id": it["id"],
+                "scene_date": it["properties"]["datetime"][:10], "clear_core": clear, "n_core": g["n_core"],
+                "usable": bool(usable), "reading": None if np.isnan(value) else value}
+
+    # A1: netmod.WORKERS at a time; each row is written to progress.jsonl as it arrives, so a stop keeps it.
+    with prog.open("a") as f:
+        for r in pmap(one, todo):
             f.write(json.dumps(r) + "\n")
-        rows.append(r)
+            f.flush()
+            rows.append(r)
     return rows
 
 

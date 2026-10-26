@@ -518,3 +518,74 @@ def test_wider_intervals_when_clms_is_judged():
     a = pr.score_outcome(rows, "A")["primary"]
     b = pr.score_outcome(rows, "A", levels=(pr.LO4, pr.HI4))["primary"]
     assert b["L"] <= a["L"] and b["U"] >= a["U"] and a["d"] == b["d"]
+
+
+# --- A1: parallel range reads from the COG buckets (26 October 2026) ----------------------------------------
+S3 = "https://e84-earth-search-sentinel-data.s3.us-west-2.amazonaws.com/x.tif"
+
+
+class ThreadSafeFake(FakeClient):
+    def __init__(self, n, status=200):
+        import threading
+        super().__init__([status] * n)
+        self._l = threading.Lock()
+
+    @contextlib.contextmanager
+    def stream(self, method, url, headers=None, json=None):
+        with self._l:
+            self.calls.append((method, url, headers))
+            st = self.statuses.pop(0)
+        yield FakeResponse(st, self.body)
+
+
+def test_bucket_reads_unpaced_search_paced(tmp_path):
+    sleeps = []
+    c = net.Capped(ledger=tmp_path / "l.jsonl", client=FakeClient([200] * 6), sleep=sleeps.append)
+    for _ in range(3):
+        c.request("GET", S3)
+    assert sleeps == []
+    for _ in range(3):
+        c.get_json(URL)
+    assert len(sleeps) >= 2 and all(0 < s <= net.PAUSE_S for s in sleeps)
+
+
+def test_parallel_requests_all_counted_and_capped(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    c = net.Capped(ledger=tmp_path / "l.jsonl", client=ThreadSafeFake(200), sleep=lambda s: None, max_requests=150)
+    ok, capped = 0, 0
+
+    def go(_):
+        try:
+            c.request("GET", S3)
+            return 1
+        except net.CapReached:
+            return 0
+
+    with ThreadPoolExecutor(net.WORKERS) as ex:
+        res = list(ex.map(go, range(200)))
+    ok, capped = sum(res), len(res) - sum(res)
+    assert ok == 150 and capped == 50 and c.requests == 150
+    assert (tmp_path / "l.jsonl").read_text().count("\n") == 150
+
+
+def test_pmap_stops_starting_new_calls_after_an_error():
+    import threading
+    import time as _t
+    started, lock = [], threading.Lock()
+
+    def fn(i):
+        with lock:
+            started.append(i)
+        if i == 3:
+            raise net.Stop("HTTP 429")
+        _t.sleep(0.02)
+        return i
+
+    with pytest.raises(net.Stop):
+        list(stage1.pmap(fn, range(500)))
+    # only calls already running when the error surfaced may have started
+    assert len(started) < 3 * net.WORKERS
+
+
+def test_pmap_keeps_order():
+    assert list(stage1.pmap(lambda i: i * i, range(50))) == [i * i for i in range(50)]

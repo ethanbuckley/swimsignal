@@ -8,6 +8,12 @@ made through it.
 * Stop at once on HTTP 429 or any 5xx, and on any other status that is not 200 or 206. Nothing is retried.
 * Only the hosts listed. Never an Authorization header, a cookie or a token: no account is used.
 
+Amendment A1 (26 October 2026, Ethan, during stage 1; recorded in the statement's run log): range reads from the two
+public AWS buckets (PARALLEL_HOSTS) take no pause and may run WORKERS at a time; the STAC API and the CDSE catalogue
+keep one request at a time with the pause. Counters, caps and the ledger are kept under one lock, so every request is
+still counted. When one read stops the run, reads already in flight (at most WORKERS - 1) still finish and are
+counted; nothing new starts, and nothing is retried.
+
 A response body is read in chunks and stops when it would pass the per-response cap or the run's byte cap, so a cap
 is never exceeded by more than one chunk.
 """
@@ -15,6 +21,7 @@ is never exceeded by more than one chunk.
 from __future__ import annotations
 
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -39,6 +46,9 @@ HOSTS = (
     "catalogue.dataspace.copernicus.eu",                  # CDSE OData catalogue (search only, no download)
     "stac.dataspace.copernicus.eu",                       # CDSE STAC (search only)
 )
+# A1: the COG buckets, built for parallel range reads; no pause there, WORKERS reads at a time (stage1.py).
+PARALLEL_HOSTS = frozenset(HOSTS[1:3])
+WORKERS = 16
 USER_AGENT = "swimsignal-lake-algae-sat-eval/1"   # the CDSE firewall refused one with brackets and a URL (HTTP 403)
 
 
@@ -63,6 +73,7 @@ class Capped:
         self.requests = 0
         self.bytes = 0
         self._last = None
+        self._lock = threading.Lock()
         self.prior_requests, self.prior_bytes = self._prior()
 
     def _prior(self) -> tuple[int, int]:
@@ -81,16 +92,19 @@ class Capped:
             raise CapReached(f"credentials refused: {sorted(bad)}")
 
     def request(self, method: str, url: str, *, headers: dict | None = None, json_body=None) -> tuple[int, bytes]:
+        from urllib.parse import urlsplit
         self._check_url(url, headers)
-        if self.requests + 1 > self.max_requests:
-            raise CapReached(f"request cap per run ({self.max_requests})")
-        if self.prior_requests + self.requests + 1 > self.max_requests_total:
-            raise CapReached(f"request cap over all runs ({self.max_requests_total})")
-        if self._last is not None:
-            wait = PAUSE_S - (time.monotonic() - self._last)
-            if wait > 0:
-                self.sleep(wait)
-        self.requests += 1
+        paced = urlsplit(url).hostname not in PARALLEL_HOSTS
+        with self._lock:
+            if self.requests + 1 > self.max_requests:
+                raise CapReached(f"request cap per run ({self.max_requests})")
+            if self.prior_requests + self.requests + 1 > self.max_requests_total:
+                raise CapReached(f"request cap over all runs ({self.max_requests_total})")
+            if paced and self._last is not None:
+                wait = PAUSE_S - (time.monotonic() - self._last)
+                if wait > 0:
+                    self.sleep(wait)
+            self.requests += 1
         body = bytearray()
         status = None
         try:
@@ -109,13 +123,15 @@ class Capped:
                     if self.prior_bytes + self.bytes + len(body) > self.max_bytes_total:
                         raise CapReached(f"byte cap over all runs ({self.max_bytes_total})")
         finally:
-            self._last = time.monotonic()
-            self.bytes += len(body)
-            if self.ledger is not None:
-                self.ledger.parent.mkdir(parents=True, exist_ok=True)
-                with self.ledger.open("a") as f:
-                    f.write(json.dumps({"t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "method": method,
-                                        "url": url, "status": status, "bytes": len(body)}) + "\n")
+            with self._lock:
+                if paced:
+                    self._last = time.monotonic()
+                self.bytes += len(body)
+                if self.ledger is not None:
+                    self.ledger.parent.mkdir(parents=True, exist_ok=True)
+                    with self.ledger.open("a") as f:
+                        f.write(json.dumps({"t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "method": method,
+                                            "url": url, "status": status, "bytes": len(body)}) + "\n")
         return status, bytes(body)
 
     def get_json(self, url: str):

@@ -607,6 +607,15 @@ A record of what was done and seen while the test ran. It changes nothing above 
   in-window scenes there by season, from SCL only: 2020 15 of 60, 2021 12 of 61, 2023 12 of 61, 2024 9 of 61, 2025 16
   of 91, 2026 27 of 90. No in-window B4 or B5 pixel was read and no EA check was touched. 39 requests, 12.2 MB, own
   ledger.
+- **26 October, 21:23 UTC: Amendment A1, the download pace.** Ethan asked "surely we can just go ahead and download
+  this in seconds?" and then "so are we dowloading them all qucika and speeding this up?". The one-request, 1-second
+  pace was a politeness rule from Claude's brief, set without working out that stage 1 needs about 27,000 requests.
+  Stage 1a was stopped cleanly during a pause (5,292 requests, 136 MB; all 2,657 saved SCL windows checked readable).
+  From A1: range reads from the two public AWS COG buckets take no pause and run 16 at a time (`net.PARALLEL_HOSTS`,
+  `net.WORKERS`); the Earth Search STAC API and the CDSE catalogue keep one request at a time and the 1-second pause.
+  The caps on requests and bytes, the hosts and the stop rules are unchanged; when one read stops the run, reads
+  already in flight (at most 15) finish and are counted and nothing new starts (`stage1.pmap`). **No pixel rule, file,
+  band or reading changes**: the same items and windows are read, so the data are the same as at the old pace.
 
 ---
 
