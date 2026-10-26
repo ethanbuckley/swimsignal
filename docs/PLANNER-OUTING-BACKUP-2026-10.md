@@ -76,7 +76,7 @@ This PR uses #379's one shared helper, from `eatoday.js`. It adds no display of 
   - **Appeared:** "No official advice was shown when you looked today at 07:05; now: EA advice against bathing · since 19 Jun · checked 26 Oct."
   - **No longer shown:** "Official advice was shown when you looked … (…); it is no longer shown here." The evidence adds "That is not an all-clear: check the Environment Agency's own page before you swim."
   - **Another notice:** "Official advice changed: now: …".
-  - **Whenever there is a notice:** the evidence gives it as it stands, with its state ("not re-checked since 12 Oct" when stale, unverified, gone or changed), and adds "It is the publisher's, not part of this level."
+  - **Whenever there is a notice:** if it has just appeared, the evidence says only whose it is ("The official advice is the Environment Agency's, not part of this level."), since the line already gives it. Otherwise the evidence gives the notice as it stands, with its state ("not re-checked since 12 Oct" when stale, unverified, gone or changed).
   - A note from before this field, or a page without `eatoday.js`, compares nothing. No change is made up from a missing field.
 - **The level never moves** for official advice. The tests check that.
 
@@ -133,3 +133,12 @@ The fixture is a local `spots.json` from 20 Oct with its dates moved on 6 days, 
 - **Console:** the only errors were from the fixture:
   - the service worker registration failed with "unknown error when fetching the script". `sw.js` parses (`node --check`), so this looks like a limit of the pane's browser on this port (inferred).
   - 404s for `favicon.ico` and `data/overflows/index.json`, which the fixture does not include.
+
+### Official advice, Frensham fixture (27 Oct 2026, after #379 merged)
+
+The same fixture, with official advice attached by `build_site.attach_official_advice` from the repo's own `data/advisories/approved.json` and `last_check.json`. That gives one notice, Frensham Great Pond, state checked. It was copied into `spots-lite.json` as the build does. Checked at 375 px in the app's browser pane.
+
+- **Plan from Farnham, tomorrow morning:** Frensham Great Pond is the spot, River Wey at Waverley the backup. Frensham's column reads "Low risk", then on its own line "EA advice against bathing · since 19 Jun · checked 26 Oct". The level is unchanged. The Wey column has no notice.
+- **Saved, notice appeared:** a note made at 07:05 with no notice gives: "No official advice was shown when you looked today at 07:05; now: EA advice against bathing · since 19 Jun · checked 26 Oct." The evidence then says whose advice it is and that this spot is the outing's.
+- **Saved, no longer shown:** this is a synthetic note, a notice seeded on the Wey, which has none. The card says "… it is no longer shown here", and the evidence says "That is not an all-clear: check the Environment Agency's own page before you swim."
+- **Console:** no errors from `since.js`, `outing.js` or `eatoday.js`.

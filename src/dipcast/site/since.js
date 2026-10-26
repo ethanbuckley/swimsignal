@@ -149,7 +149,9 @@ function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
   // Official advice: the notice now, in the shared compact words with its state (checked, or not re-checked
   // since); and where one shown before is not shown now, that this is no all-clear. The level never moves for it.
   const oc = officialChange(was, now);
-  if (now.official) out.push(`${oc === 'other' ? 'Official advice changed: now' : 'Official advice'}: ${now.official.brief}. It is the publisher's, not part of this level.`);
+  // A notice that has just appeared is in the line already: the evidence adds only whose it is.
+  if (oc === 'shown') out.push(`The official advice is the ${now.official.publisher}'s, not part of this level.`);
+  else if (now.official) out.push(`${oc === 'other' ? 'Official advice changed: now' : 'Official advice'}: ${now.official.brief}. It is the publisher's, not part of this level.`);
   else if (oc === 'gone') out.push(`That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
   if (extra.outing) out.push(extra.outing);
   const age = (nowMs - Date.parse(now.forecast)) / 60000;

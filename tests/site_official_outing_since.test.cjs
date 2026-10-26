@@ -58,7 +58,10 @@ test('a notice appearing is a change of its own, with its words, its state and t
   assert.deepEqual(b.official, {key: `Environment Agency|${APPROVED.line}|2026-06-19`, brief: 'EA advice against bathing · since 19 Jun · checked 26 Oct', publisher: 'Environment Agency'});
   assert.equal(a.level, b.level);   // the level never moves for it
   assert.equal(S.sinceLine(a, b), 'No official advice was shown when you looked today at 07:05; now: EA advice against bathing · since 19 Jun · checked 26 Oct.');
-  assert.match(S.sinceEvidence(a, b, NOW), /Official advice: EA advice against bathing · since 19 Jun · checked 26 Oct\. It is the publisher's, not part of this level\./);
+  // Said once: the line has the notice, the evidence whose it is.
+  const ev = S.sinceEvidence(a, b, NOW);
+  assert.match(ev, /The official advice is the Environment Agency's, not part of this level\./);
+  assert.doesNotMatch(ev, /since 19 Jun/);
 });
 
 test('a notice no longer shown is said so, and never as an all-clear', () => {
@@ -111,5 +114,6 @@ test('on a Saved card in the page: the notice appearing, escaped, with eatoday.j
   vm.runInContext('setToday("2026-10-26")', ctx);
   const h = vm.runInContext('sinceSaid', ctx)(frensham([notice()]), NEW);
   assert.match(h, /^<p class="place-since">No official advice was shown when you looked today at 07:05; now: EA advice against bathing · since 19 Jun · checked 26 Oct\./);
-  assert.match(h, /It is the publisher&#39;s, not part of this level\./);
+  assert.match(h, /The official advice is the Environment Agency&#39;s, not part of this level\./);
+  assert.equal((h.match(/since 19 Jun/g) || []).length, 1);
 });
