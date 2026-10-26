@@ -594,7 +594,7 @@ A record of what was done and seen while the test ran. It changes nothing above 
   within 300 m and in the whole tile), never a colour or value. Its own caps: 320 requests and 40 MB in all, one at a
   time, stop on HTTP 429. It stopped twice on HTTP 429 and resumed later at a slower pace. Results are added below when
   it ends.
-- **26 October, 20:40 UTC: a walkthrough figure for Ethan** at Rutland Water, Whitwell Creek: true colour, SCL, NDCI
+- **26 October, 20:2x UTC (last request 20:29): a walkthrough figure for Ethan** at Rutland Water, Whitwell Creek: true colour, SCL, NDCI
   and the median NDCI (+0.002) of one scene on **30 April 2026**, outside the May to September window. The water
   mask and core pixels (75) came from the 424 in-window SCL windows stage 1 had saved; SCL holds no chlorophyll. Usable
   in-window scenes there by season, from SCL only: 2020 15 of 60, 2021 12 of 61, 2023 12 of 61, 2024 9 of 61, 2025 16
