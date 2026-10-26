@@ -721,3 +721,6 @@ addendum to that test. If it shows the rule clearly worse, the rule is withdrawn
 - **What stays.** The stamp, `MODEL_PATHS` and the freeze steps stay as sections 2, 13 and 15 give them, and this
   PR stays open and unmerged.
 - **A retry** needs a new dated statement, approved first.
+- **Labelling.** Any comparison against the deployed file, pooled or split into Wales and Wessex, is post hoc,
+  exploratory and descriptive, not confirmatory. It was computed after the results were seen. No subgroup is
+  adopted, and no split redefines condition 1.
