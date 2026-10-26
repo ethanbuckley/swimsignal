@@ -143,6 +143,22 @@ build does not install it.
   from 21 Nov 2024 to 23 Oct 2026 are about 7 hours and 34 GB downloaded. The cell totals are about 11.5 KB per cell-month, so 499
   cells for two years is about 140 MB.
 
+- **Per overflow.** With `--overflows` (an overflows table) the script also keeps the rain at each storm
+  overflow's own position. It takes the 1 km pixel whose square holds the overflow's lat/lon, and the eight around
+  it (fewer at the grid's edge). `radar_mm` and `coverage` pool that 3 x 3 block the same way as a cell;
+  `centre_mm` and `centre_coverage` are the one pixel. One file per UTC day,
+  `<out>/overflows/radar_overflows_<YYYY-MM-DD>.parquet`, with `overflow_pixels.parquet` listing each overflow's
+  pixel. Every file carries the overflow table's SHA-256, its `network_key` and the pixel rule in its metadata, and
+  a folder refuses a second table. A day is skipped when its file exists. `--no-cells` skips the rain cells.
+
+      uv run --extra radar python scripts/fetch_met_office_radar.py 2024-11-21 2026-10-25 --no-cells \
+          --overflows data/processed/overflows.parquet --out ~/somewhere-outside-the-checkout
+
+  Trial, 23 Nov 2024 (Storm Bert), 14,630 overflows: 97 composites in 46 s, 351,120 rows, 0.8 MB with zstd. The
+  overflows' day totals follow their cells' (r 0.96 over 470 cells) but spread within a cell, from 19.7 to 30.0 mm
+  among 49 overflows in one. A wet day is the largest file, so the 702 days come to a few hundred MB, not the tens
+  of MB first guessed.
+
 **A decision for Ethan: keep the raw files too?** The cell totals cover today's cells only. A spot
 added next year in a new cell would have no radar history before it was added, and a catchment
 mean could not be made later. Keeping the raw files costs about 34 GB now and 1.4 GB a month. The
@@ -201,7 +217,8 @@ forecast. That could be real hill rain the model missed, or radar error. A gauge
 - The exact deletion rule (two years to the day, or by month) is not stated. Run the backfill
   oldest first, which the script does.
 - Whether radar helps D6 or forecast-rain checks needs its own pre-stated test.
-- **Rain at each overflow, not each cell (deadline about 20 Nov 2026).** The fetcher averages the 1 km radar into
+- **Rain at each overflow, not each cell (deadline about 20 Nov 2026).** Built: section 6, "Per overflow". The
+  backfill is a data save only; using it still needs everything below. The fetcher averages the 1 km radar into
   0.1° rain cells (about 10 km), so the backfill keeps the measured rain but loses where in the cell it fell. A storm
   over one town and not the next is averaged out. Keeping it means a second output: the radar at each overflow's own
   position (its pixel and the eight around it), for the ~14,600 overflows, tens of MB rather than the 34 GB of raw
