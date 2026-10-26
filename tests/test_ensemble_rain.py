@@ -125,7 +125,7 @@ def test_members_that_stop_short_of_the_fifth_day_are_asked_for_again_next_build
     assert len(fake.asked) == 2
 
 
-def test_no_spare_calls_means_no_request_and_older_members(om):
+def test_no_spare_calls_means_no_request_and_older_members(om, monkeypatch):
     fake = om()
     cells = _cells(3)
     old = rainfall._ensemble_frame({"hourly": {"time": ["2026-10-18T00:00"], "precipitation": [1.0],
@@ -137,6 +137,10 @@ def test_no_spare_calls_means_no_request_and_older_members(om):
     os.utime(p, (t, t))
     midnight = pd.Timestamp.now(tz="UTC").normalize().timestamp()
     rainfall.spend(rainfall.DAILY_CALLS - 100, "spots", now=midnight + 3600)   # nothing spare today
+    # The real rule, read at noon: late in the UTC day the planned use left can fall under 100, and then a few calls
+    # are rightly spare, so the wall clock would make this test pass or fail by the hour it runs.
+    spare_for = rainfall.spare_for
+    monkeypatch.setattr(rainfall, "spare_for", lambda w, now=None: spare_for(w, now=midnight + 12 * 3600))
     df = rainfall.fetch_forecast(cells, ensemble=True)
     assert fake.asked == []
     assert set(zip(df["cell_lat"], df["cell_lon"], strict=True)) == {cells[0]}
