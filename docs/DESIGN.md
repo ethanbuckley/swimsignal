@@ -1245,6 +1245,11 @@ gives all four navigation links a single full-width row.
   someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
   tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
   added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- A spot's back link names the list it returns to (26 October 2026): a shared list's name ("Windermere"),
+  or the list shown when there are several of my own ("Weekend"); with one list it stays "Saved spots".
+  It said "Saved spots" from a shared list too, though Back went to the shared list. A click still goes
+  back in the history; the link's address is the list's, for a new tab. A long name ends in an ellipsis,
+  as Save's does, so the row keeps to one line at 320 px.
 - The next step after saving (25 October 2026, a 375 px walk through the Facebook post's link). Save on a
   spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
   room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts
