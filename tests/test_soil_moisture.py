@@ -24,14 +24,16 @@ class Fake:
     """Open-Meteo's forecast API for soil moisture: hourly values from 00:00 UTC yesterday, one an hour, `value` at
     every hour. `asked` holds each request's params."""
 
-    def __init__(self, now: pd.Timestamp, value: float | None = 0.3):
-        self.now, self.value, self.asked = now, value, []
+    def __init__(self, now: pd.Timestamp, value: float | None = 0.3, respond=None):
+        self.now, self.value, self.asked, self.respond = now, value, [], respond
         self.client = httpx.Client(transport=httpx.MockTransport(self.handle))
 
     def handle(self, request):
         p = dict(request.url.params)
         self.asked.append(p)
         lats = p["latitude"].split(",")
+        if self.respond is not None:
+            return self.respond(lats)
         hours = pd.date_range(self.now.floor("D") - pd.Timedelta(days=1), periods=72, freq="h")
         one = {"latitude": 0, "longitude": 0, "hourly": {"time": hours.strftime("%Y-%m-%dT%H:%M").tolist(),
                                                           soil.SOIL_VAR: [self.value] * 72}}
@@ -50,8 +52,8 @@ def om(monkeypatch, tmp_path):
     rainfall.reset_fallbacks()
     soil.reset()
 
-    def install(now, value=0.3):
-        f = Fake(now, value)
+    def install(now, value=0.3, respond=None):
+        f = Fake(now, value, respond)
         monkeypatch.setattr(rainfall, "_http_get", f.get)
         return f
 
@@ -87,7 +89,9 @@ def test_no_request_when_the_days_ration_is_spent(om, monkeypatch):
     monkeypatch.setattr(rainfall, "DAILY_CALLS", 0.5)
     st = soil.fetch([CELL], now=NOW)
     assert not f.asked and st["held"] == 1 and rainfall.calls_today()["held"] == {"soil": 1.0}
-    assert soil.value(CELL, NOW) == (None, {"reason": "not fetched"})
+    monkeypatch.setattr(rainfall, "DAILY_CALLS", 9000.0)
+    assert soil.value((51.0, -1.0), NOW) == (None, {"reason": "missing"})   # never asked for
+    assert soil.value(CELL, NOW) == (None, {"reason": "held"})
 
 
 # ------------------------------------------------------------------ the value and its age
@@ -105,7 +109,7 @@ def test_yesterdays_fetch_serves_today_but_not_older(om):
     assert soil.value(CELL, later)[0] is not None
     much_later = NOW + pd.Timedelta(hours=soil.MAX_AGE_H + 1)
     v, info = soil.value(CELL, much_later)
-    assert v is None and info["reason"].startswith("last fetch")
+    assert v is None and info["reason"] == "expired"
 
 
 def test_a_missing_value_is_none_never_a_guess(om):
@@ -137,6 +141,7 @@ def test_a_lake_keeps_todays_model(om):
 
 def test_a_river_uses_soil_moisture_held_for_every_day(om):
     om(NOW, value=0.31)
+    soil.fetch([CELL], now=NOW)
     X, p_today = _X(), ecoli.load().predict(_X())
     p, state = forecast.river_ecoli("river", *CELL, X, p_today, NOW)
     assert state["used"] and state["sm"] == 0.31 and not state["held"]
@@ -149,6 +154,7 @@ def test_a_river_uses_soil_moisture_held_for_every_day(om):
 
 def test_a_river_without_soil_moisture_falls_back_to_todays_model(om):
     om(NOW, value=None)
+    soil.fetch([CELL], now=NOW)
     X, p_today = _X(), ecoli.load().predict(_X())
     p, state = forecast.river_ecoli("river", *CELL, X, p_today, NOW)
     assert p is p_today and state["used"] is False and state["reason"] == "no value at 00:00 UTC"
@@ -167,6 +173,7 @@ def test_soil_moisture_is_held_inside_the_fitted_range(om):
     lo, hi = m.meta["sm_range"]
     assert ecoli.with_sm(_X(), 0.9, m)["sm"].iloc[0] == hi and ecoli.with_sm(_X(), 0.0, m)["sm"].iloc[0] == lo
     om(NOW, value=0.9)
+    soil.fetch([CELL], now=NOW)
     p, state = forecast.river_ecoli("river", *CELL, _X(), ecoli.load().predict(_X()), NOW)
     assert state["held"] and np.allclose(p, m.predict(_X().assign(sm=hi)))
 
@@ -212,3 +219,108 @@ def test_the_2027_evaluation_computes_the_same_stamp_part(tmp_path):
     assert E.frozen_hashes(repo, "one")["ecoli"] == hashlib.md5(b"{a}").hexdigest()[:8]
     assert E.frozen_hashes(repo, "two")["ecoli"] == hashlib.md5(b"{a}{b}").hexdigest()[:8]
     assert "data/processed/ecoli_model_sm.json" in E.MODEL_PATHS and "src/dipcast/ingest/soil.py" in E.MODEL_PATHS
+
+
+# ------------------------------------------------------------------ failures: named, never fatal, remembered
+def _prefetch(monkeypatch, spots):
+    """build_site.prefetch_rain with the network, the overflows and the rain stubbed: only soil moisture is asked
+    for, through the Fake."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_site
+    pin = type("Pin", (), {"mode": "river"})()
+    monkeypatch.setattr(build_site, "_net", lambda: None)
+    monkeypatch.setattr(build_site, "_overflows", lambda: None)
+    monkeypatch.setattr(build_site, "locate_pin", lambda *a, **k: pin)
+    monkeypatch.setattr(build_site, "upstream_overflows", lambda *a, **k: pd.DataFrame({"lat": [], "lon": []}))
+    monkeypatch.setattr(build_site, "fetch_forecast", lambda *a, **k: pd.DataFrame())
+    monkeypatch.setattr(build_site, "fallback_summary", lambda: None)
+    build_site.prefetch_rain(spots, ensemble=False)
+    return build_site
+
+
+SPOTS = pd.DataFrame({"id": ["a"], "name": ["A"], "kind": ["river"], "river": [""], "lat": [CELL[0]], "lon": [CELL[1]]})
+
+
+def _hours(now):
+    return pd.date_range(now.floor("D") - pd.Timedelta(days=1), periods=72, freq="h").strftime("%Y-%m-%dT%H:%M").tolist()
+
+
+MALFORMED = {
+    "no hourly block": (lambda lats: httpx.Response(200, json={"latitude": 0}), "bad: schema: no hourly block"),
+    "no soil series": (lambda lats: httpx.Response(200, json={"hourly": {"time": _hours(NOW), "precipitation": [0.0] * 72}}),
+                       "bad: schema: no soil_moisture_9_to_27cm series"),
+    "lengths differ": (lambda lats: httpx.Response(200, json={"hourly": {"time": _hours(NOW), soil.SOIL_VAR: [0.3] * 70}}),
+                       "bad: schema: 72 times and 70 values"),
+    "not JSON": (lambda lats: httpx.Response(200, text="{cut short"), "bad: bad_body"),
+    "server error": (lambda lats: httpx.Response(500, text="down"), "bad: network"),
+    "out of range": (lambda lats: httpx.Response(200, json={"hourly": {"time": _hours(NOW), soil.SOIL_VAR: [7.0] * 72}}),
+                     "no value at 00:00 UTC"),
+}
+
+
+@pytest.mark.parametrize("case", sorted(MALFORMED))
+def test_a_malformed_answer_falls_back_and_the_build_goes_on(om, monkeypatch, case):
+    respond, reason = MALFORMED[case]
+    monkeypatch.setattr(soil.pd.Timestamp, "now", classmethod(lambda cls, tz=None: NOW))
+    om(NOW, respond=respond)
+    bs = _prefetch(monkeypatch, SPOTS)             # raises nothing
+    p_today = ecoli.load().predict(_X())
+    p, state = forecast.river_ecoli("river", *CELL, _X(), p_today, NOW)
+    assert p is p_today and state["used"] is False and state["reason"] == reason
+    day = {"date": "2026-10-26", "data_status": "ok"}
+    h = bs.build_health([{"name": "a", "days": [day], "location": {"mode": "river"},
+                          "assumptions": {"ecoli_model": {"soil": state}}}])
+    assert h["ecoli_soil"]["fallback"] == 1 and h["ecoli_soil"]["reasons"] == {reason: 1}
+
+
+def test_a_wrong_number_of_results_fails_every_cell_in_the_request(om):
+    om(NOW, respond=lambda lats: httpx.Response(200, json={"hourly": {"time": _hours(NOW), soil.SOIL_VAR: [0.3] * 72}}))
+    st = soil.fetch([CELL, (51.5, -0.1)], now=NOW)
+    assert st["failed"] == {"schema": 2}
+    assert soil.value(CELL, NOW)[1]["reason"] == "bad: schema: 1 results for 2 cells"
+
+
+def test_a_cache_that_cannot_be_written_falls_back(om, monkeypatch):
+    om(NOW)
+
+    def refuse(self, *a, **k):
+        raise OSError("read-only file system")
+    monkeypatch.setattr(pd.DataFrame, "to_parquet", refuse)
+    st = soil.fetch([CELL], now=NOW)
+    assert st["failed"] == {"cache_write": 1} and soil.value(CELL, NOW)[1]["reason"] == "bad: cache_write"
+
+
+def test_a_failed_cell_is_tried_once_more_that_day_and_never_by_a_spot(om, monkeypatch):
+    f = om(NOW, respond=lambda lats: httpx.Response(500, text="down"))
+    soil.fetch([CELL], now=NOW)
+    assert len(f.asked) == 1
+    forecast.river_ecoli("river", *CELL, _X(), ecoli.load().predict(_X()), NOW)   # a spot reads, never asks
+    soil.fetch([CELL], now=NOW + pd.Timedelta(minutes=30))                          # the next build: too soon
+    assert len(f.asked) == 1
+    f.respond = None                                                                 # Open-Meteo is back
+    soil.fetch([CELL], now=NOW + pd.Timedelta(hours=soil.RETRY_GAP_H))               # the one retry
+    assert len(f.asked) == 2 and soil.value(CELL, NOW + pd.Timedelta(hours=1.5))[0] == pytest.approx(0.3)
+    soil.fetch([CELL], now=NOW + pd.Timedelta(hours=5))                              # fetched today: no more
+    assert len(f.asked) == 2
+
+
+def test_two_failures_end_the_day_and_the_next_day_asks_again(om):
+    f = om(NOW, respond=lambda lats: httpx.Response(200, text="{cut"))
+    for h in (0, 1, 2, 3, 6):
+        soil.fetch([CELL], now=NOW + pd.Timedelta(hours=h))
+    assert len(f.asked) == soil.MAX_ATTEMPTS == 2
+    assert rainfall.calls_today()["by"] == {"soil": 2.0}   # a 200 that is not JSON was answered, so counted
+    rec = soil.attempts(NOW)["cells"][rainfall.cell_key(*CELL)]
+    assert rec["tries"] == 2 and rec["last_reason"] == "bad_body" and not rec["ok"]
+    soil.fetch([CELL], now=NOW + pd.Timedelta(days=1))
+    assert len(f.asked) == 3
+
+
+def test_a_forced_retry_skips_the_rules_and_is_booked_apart(om):
+    f = om(NOW, respond=lambda lats: httpx.Response(500, text="down"))
+    for _ in range(3):
+        soil.fetch([CELL], now=NOW)
+    assert len(f.asked) == 1
+    f.respond = None
+    soil.fetch([CELL], now=NOW, force=True)
+    assert len(f.asked) == 2 and rainfall.calls_today()["by"] == {"soil_forced": 1.0}

@@ -617,8 +617,8 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     # Once per cell per UTC day (soil.fetch), in its own requests, so a build's spots read it from the cache.
     t0 = time.time()
     st = soil.fetch(river_cells)
-    log.info("soil moisture: %d river cells, %d due today, %d fetched (%.0f calls), %d held by the ration, %d failed, %.0fs",
-             st["cells"], st["due"], st["fetched"], st["calls"], st["held"], st["failed"], time.time() - t0)
+    log.info("soil moisture: %d river cells, %d due, %d fetched (%.0f calls), %d held by the ration, failed %s, %.0fs",
+             st["cells"], st["due"], st["fetched"], st["calls"], st["held"], st["failed"] or "none", time.time() - t0)
     # The ensemble's members for the same cells, after the spots' own rain and by the
     # ensemble's own floor, cap and spare-calls rule (rainfall, "ensemble"): each spot's forecast reads them
     # from the cache, and none asks again in this build.

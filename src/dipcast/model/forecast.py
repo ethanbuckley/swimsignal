@@ -329,18 +329,15 @@ def river_ecoli(mode: str, lat: float, lon: float, X: pd.DataFrame, p_today: np.
     """The E. coli figures a spot shows, and which model gave them. A river spot uses the soil-moisture model
     (ecoli.load_sm) with its cell's value at 00:00 UTC of the issue day, held for every day shown. A lake, or a river
     spot with no model file or no usable soil moisture (soil.value), keeps `p_today`, today's model: never a guessed
-    wetness. `reason` says why, and build_health counts the river spots that fell back."""
+    wetness. It reads the cache only: the build's prefetch is the one place soil moisture is fetched (soil.fetch), so
+    a cell that failed there is not asked for again by each spot. `reason` says why, and build_health counts the river
+    spots that fell back."""
     if mode != "river":
         return p_today, {"used": False, "reason": "lake: today's model"}
     em_sm = ecoli.load_sm()
     if em_sm is None:
         return p_today, {"used": False, "reason": "no river model file"}
-    try:
-        cell = soil.cell_of(lat, lon)
-        soil.fetch([cell], now=now)
-        v, info = soil.value(cell, now)
-    except Exception as e:  # noqa: BLE001 - soil moisture is optional
-        return p_today, {"used": False, "reason": f"soil moisture failed: {type(e).__name__}"}
+    v, info = soil.value(soil.cell_of(lat, lon), now)
     if v is None:
         return p_today, {"used": False, **info}
     lo, hi = em_sm.meta["sm_range"]
