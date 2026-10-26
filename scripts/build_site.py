@@ -1893,6 +1893,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
+SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
+VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
 # Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
 SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
 VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
@@ -1934,6 +1937,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
@@ -2901,7 +2905,7 @@ def write_organisers(site: Path, token: str | None = None, root: str | None = No
 # their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
 # the sitemap lists both, as it lists that page.
 SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "eatoday.js", "sites.js")   # eatoday.js: official advice
-RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "record.js")   # eatoday.js: official advice
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "brief.js", "record.js")   # eatoday.js: official advice; brief.js: the version and a read tick
 
 
 def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -2909,7 +2913,7 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
-    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token, root)
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
