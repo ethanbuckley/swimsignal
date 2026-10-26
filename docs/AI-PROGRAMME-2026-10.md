@@ -47,6 +47,23 @@ UTC). Each decision is recorded in its own PR as well.
 | 15 | Moderation (#378) | Trigger: over 50 waiting three weeks running, over 30 min a week four weeks running, any cap hit, or over 10 reports a week | this PR |
 | 16 | Merging | All of these stay draft PRs for now | all |
 
+## Product brief, 26 October 2026, 22:30 to 00:30 UTC
+
+Ethan approved the next development direction, with Codex coordinating. Order: priorities first, then improvements.
+Research records stay separate from live adoption: #377 and #381 keep their failed outcomes, no live satellite or
+sampler, #383 keeps its dates, and the lab-chlorophyll and incident tests are not fetched or scored until their
+protocols are reviewed.
+
+| # | Item | PR | State |
+|---|---|---|---|
+| 1 | #379: fix the CI guard (the build never asks the EA for its panel), then an official-advice-first block on spot pages from approved advisories, sourced and dated, separate from the sewage forecast | #379 | in progress |
+| 2 | #382: question wording, no-baseline monitors not described as over twice their record, unknown when stale or unchecked, no file paths on the page; a real site build before merge; full CI | #382 | in progress |
+| 3 | Practical guides for popular spots from verifiable sources; sessions execution pack; outstanding human actions | to come | in progress |
+| 4 | Catchment replay prototype: last 48 h of reported spills, rain and gauges, modelled arrival; observed, estimated and unavailable kept apart | to come | in progress |
+| 5 | Planner: outing time and backup spot; what changed since I checked, with evidence; club brief versions and leader acknowledgement (local only) | to come | in progress |
+| - | Lab-chlorophyll test statement (no fetch) | to come | in progress |
+| - | Algae incident test statement (no fetch) | #385 | statement ready for review |
+
 ## What was learned
 
 - Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median
