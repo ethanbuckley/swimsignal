@@ -61,6 +61,15 @@ test('a kept outing time is for its own day: on another day it is dropped and it
   assert.equal(P.planKept(kept.replace('2026-10-28', '2026-11-01'), DATES, '2026-11-02').when, undefined);
 });
 
+test('a day changed in the page drops the time and keeps the spot and the backup', () => {
+  const plan = {day: '2026-11-01', from: FROM, within: 20, kind: 'all', when: 'evening', spot: 'a', backup: 'b'};
+  assert.equal(O.outingForDay(plan, null), plan);   // the first draw changes nothing
+  assert.equal(O.outingForDay(plan, '2026-11-01'), plan);   // the same day
+  assert.deepEqual(O.outingForDay(plan, '2026-10-31'), {day: '2026-11-01', from: FROM, within: 20, kind: 'all', spot: 'a', backup: 'b'});
+  const {when, ...none} = plan;
+  assert.equal(O.outingForDay(none, '2026-10-31'), none);   // no time: nothing to drop
+});
+
 // ------------------------------------------------------------------------------ words for the time
 test('the time in words, and what it does not mean', () => {
   assert.equal(O.outingWhen('2026-10-31', 'morning'), 'this morning');
@@ -70,7 +79,8 @@ test('the time in words, and what it does not mean', () => {
   assert.equal(O.outingWhen('2026-11-02', undefined), 'Monday');
   // One level a day: said whenever a time is picked; nothing said without one.
   const at = h => new Date(2026, 9, 31, h, 30).getTime();
-  assert.deepEqual(O.outingTimeNote('2026-10-31', undefined, at(9)), []);
+  // The daily caveat stays with no time picked (after a day change drops it, say).
+  assert.deepEqual(O.outingTimeNote('2026-10-31', undefined, at(9)), ['The forecast gives one level for the whole of today; it does not change between morning and evening.']);
   assert.deepEqual(O.outingTimeNote('2026-11-02', 'morning', at(9)),
     ['The forecast gives one level for the whole of Monday; it does not change between morning and evening.']);
   // Today, after the time: said so. During it, or another day: not.
@@ -111,7 +121,9 @@ const tile = (o = {}) => O.outingSection({day: '2026-11-01', when: 'evening', sp
 test('the spot and its backup side by side for the day, each with what its level rests on', () => {
   const h = tile();
   assert.match(h, /<details class="sec tile outing" id="outing" open>/);
-  assert.match(h, /<p class="outing-said">Tomorrow evening: Port Meadow, or Wolvercote &lt;Mill&gt; as a backup\.<\/p>/);
+  // Closed, the summary still names the spot and the backup.
+  assert.match(h, /<summary><span>Your outing<span class="k">Port Meadow, backup Wolvercote &lt;Mill&gt;<\/span><\/span><\/summary>/);
+  assert.match(h, /<p class="outing-said">Tomorrow evening: your spot and a backup, side by side\.<\/p>/);
   assert.match(h, /<div class="outing-pair">.*Your spot.*Port Meadow.*Low risk tomorrow.*Backup.*Wolvercote &lt;Mill&gt;.*Moderate risk tomorrow/s);
   assert.equal((h.match(/class="ev-line"/g) || []).length, 2);   // the evidence under each
   assert.match(h, /Issued 15:29, 2 h ago\./);
@@ -128,9 +140,9 @@ test('one spot alone takes the width; none yet asks for one; a missing one is sa
   const one = tile({alt: null, backup: undefined});
   assert.match(one, /<div class="outing-pair one">/);
   assert.doesNotMatch(one, /Backup<\/p>/);
-  assert.match(one, /Tomorrow evening: Port Meadow\.<\/p>/);
+  assert.match(one, /Tomorrow evening: your spot\.<\/p>/);
   const none = tile({main: null, alt: null, spot: undefined, open: false});
-  assert.match(none, /<details class="sec tile outing" id="outing"><summary>Your outing<\/summary>/);
+  assert.match(none, /<details class="sec tile outing" id="outing"><summary><span>Your outing<\/span><\/summary>/);
   assert.match(none, /Choose a spot to see it here/);
   assert.doesNotMatch(none, /outing-pair/);
   assert.match(tile({missing: ['zz']}), /A spot in this outing is no longer listed, so it is left out\./);
@@ -142,4 +154,22 @@ test('the page loads outing.js after plan.js, and the plan draws it', () => {
   assert.match(page, /typeof drawOuting === 'function'\) drawOuting\(box, r\.groups\.flat\(\)\)/);
   const sw = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/sw.js'), 'utf8');
   assert.match(sw, /`outing\.js\?v=\$\{BUILD\}`/);
+});
+
+// The storage keys the doc and the privacy notice describe are the keys the code uses, exactly.
+test('storage keys: the code, the doc and the privacy notice agree', () => {
+  const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const page = read('src/dipcast/site/index.html'), since = read('src/dipcast/site/since.js'), brief = read('src/dipcast/site/brief.js');
+  const doc = read('docs/PLANNER-OUTING-BACKUP-2026-10.md'), privacy = read('src/dipcast/pages/privacy.html');
+  assert.match(page, /const PLAN_KEY = 'dipcast\.plan';/);
+  assert.match(since, /const SEEN_KEY = 'dipcast\.seen';/);
+  assert.match(since, /const KEPT_PLAN_KEY = 'dipcast\.plan'/);   // reads the plan's key, never another
+  assert.match(brief, /const ACK_KEY = 'dipcast\.briefacks'/);
+  for (const k of ['dipcast.plan', 'dipcast.seen', 'dipcast.briefacks']) assert.ok(doc.includes('`' + k + '`'), k);
+  // No other key is written by the new code: outing.js keeps the outing in the plan's address only.
+  assert.doesNotMatch(read('src/dipcast/site/outing.js'), /localStorage/);
+  assert.equal((brief.match(/localStorage\.setItem\(([^,]+),/g) || []).join(), 'localStorage.setItem(ACK_KEY,');
+  // The privacy notice names both: the outing in the kept plan, and the read tick.
+  assert.match(privacy, /the time, spot and backup spot of an outing you chose/);
+  assert.match(privacy, /"I have read version …" keeps a note in your browser's local storage/);
 });

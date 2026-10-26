@@ -28,11 +28,20 @@ function outingWhen(day, when) {
 // What the time does and does not mean, as sentences: the level is for the whole day; and on today, a
 // time already past. nowMs: the device's clock.
 function outingTimeNote(day, when, nowMs = Date.now()) {
-  const R = outingRules(), span = outingSpan(when), out = [];
-  if (!span) return out;
-  out.push(`The forecast gives one level for the whole of ${outDay(day)}; it does not change between morning and evening.`);
-  if (day === R.today() && new Date(nowMs).getHours() >= span[1]) out.push('That time has already passed today.');
+  // The daily caveat always, with or without a time picked, so a time never reads as an hourly forecast.
+  const R = outingRules(), span = outingSpan(when);
+  const out = [`The forecast gives one level for the whole of ${outDay(day)}; it does not change between morning and evening.`];
+  if (span && day === R.today() && new Date(nowMs).getHours() >= span[1]) out.push('That time has already passed today.');
   return out;
+}
+
+// The plan after its day has changed (the day strip, a better day, the next visit): a time was for the day it
+// was picked on, so it goes; the spot and the backup stay. lastDay: the day the outing was last shown for
+// (null on the page's first draw, which changes nothing).
+function outingForDay(plan, lastDay) {
+  if (!plan.when || lastDay === null || lastDay === plan.day) return plan;
+  const { when, ...rest } = plan;
+  return rest;
 }
 
 // ------------------------------------------------------------------------------ which spots
@@ -65,13 +74,14 @@ function outingSection(o) {
     + g.map(s => `<option value="${outEsc(s.id)}"${s.id === sel ? ' selected' : ''}>${outEsc(s.name)}</option>`).join('') + '</optgroup>').join('');
   const times = `<option value="">Any time</option>` + Object.keys(OUTING_PARTS).map(p => `<option value="${p}"${o.when === p ? ' selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')
     + `<optgroup label="An hour">${OUTING_HOURS.map(h => `<option value="${h}"${o.when === h ? ' selected' : ''}>${h}:00</option>`).join('')}</optgroup>`;
-  const said = o.main ? `${outingWhen(o.day, o.when).replace(/^./, c => c.toUpperCase())}: ${outEsc(o.main.name)}${o.alt ? `, or ${outEsc(o.alt.name)} as a backup` : ''}.` : '';
+  // The names are in the columns' heads: the line says only when, and what is side by side.
+  const said = o.main ? `${outingWhen(o.day, o.when).replace(/^./, c => c.toUpperCase())}: ${o.alt ? 'your spot and a backup, side by side' : 'your spot'}.` : '';
   const notes = outingTimeNote(o.day, o.when, o.nowMs);
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
     : `<p class="outing-said">${said}</p><div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`;
-  return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary>Your outing${o.main ? `<span class="k"> · ${outEsc(o.main.name)}</span>` : ''}</summary>`
+  return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary><span>Your outing${o.main ? `<span class="k">${outEsc(o.main.name)}${o.alt ? `, backup ${outEsc(o.alt.name)}` : ''}</span>` : ''}</span></summary>`
     + `<p class="sub">When you mean to go, where, and somewhere else to go instead. Kept in this browser and in this plan's link; sent nowhere.</p>`
     + `<div class="outing-fields"><label>When<select data-outing="when">${times}</select></label>`
     + `<label>Spot<select data-outing="spot"><option value="">Choose a spot</option>${opt(o.groups, o.spot)}</select></label>`
@@ -83,9 +93,11 @@ function outingSection(o) {
 // Draws the tile at the top of the plan's results (index.html, drawPlan), from the page's own spots and
 // sentences (planWhy, planEvidence, dayHeadline), and keeps a change in the plan (planAddress). shown: the
 // plan's rows, as {s, miles, level}. Its open state stays as it was across redraws.
-let OUTING_OPEN = null;
+let OUTING_OPEN = null, OUTING_DAY = null;
 function drawOuting(box, shown) {
   const old = document.getElementById('outing'); if (old) old.remove();
+  const kept = outingForDay(PLAN, OUTING_DAY); OUTING_DAY = PLAN.day;
+  if (kept !== PLAN) { delete PLAN.when; planAddress(); }   // a time picked for another day
   const byId = new Map(DATA.spots.map(s => [s.id, s])), miles = new Map(shown.map(o => [o.s.id, o.miles])), from = planFrom();
   const away = s => miles.has(s.id) ? miles.get(s.id) : from ? km(from, [s.lat, s.lon]) / MILE_KM : null;
   const col = s => { const m = away(s);
@@ -111,5 +123,5 @@ function drawOuting(box, shown) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_PARTS, OUTING_HOURS, outingSpan, outingWhen, outingTimeNote, outingOptions, outingPair, outingSection };
+  module.exports = { OUTING_PARTS, OUTING_HOURS, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection };
 }
