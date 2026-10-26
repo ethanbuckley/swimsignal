@@ -112,8 +112,10 @@ function compareRows(s, iso, generatedAt = null, now = Date.now()) {
     ['Access', compareAccess(s)], ['Local warnings', t('Local warnings')], ['Model limits', t('Model limits')]];
 }
 // "Too high to swim" (build_site.attach_flow_state): the river high or rising fast at a gauge on the
-// spot's own river, and the Environment Agency's flood alerts and warnings in force within 10 km for
-// the spot's own river or lake (build_site.attach_flow_state), the most severe first. A different hazard from pollution, so never part of the level. Each is said only
+// spot's own river, and the Environment Agency's flood alerts and warnings in force whose area's outline
+// covers the spot's point on its water, or reaches its lake (build_site.attach_flow_state), the most
+// severe first: "in force here", since the EA's outline says where an alert applies. A different hazard
+// from pollution, so never part of the level. Each is said only
 // while it can still be true when read: not from a gauge reading over a day old (flows.MAX_READING_AGE_H),
 // a rise whose last reading is over six hours old, or a build over a day old. So a stale reading never
 // shows "River high", whether the build found it stale or it went stale on a phone since.
@@ -129,7 +131,7 @@ function flowFacts(s, now = Date.now(), generatedAt = null) {
   else if (s.flow_state === 'rising fast' && current && typeof rs.rise_6h_m === 'number' && hoursAgo(rs.rise_to, now) <= FLOW_MAX_H.rise)
     out.push({ lead: 'River rising fast', say: `the gauge at ${rs.station} rose ${rs.rise_6h_m.toFixed(2)} m between ${clockTime(rs.rise_from)} and ${clockTime(rs.rise_to)}` });
   const fl = (s.flood_alerts || []).filter(f => f && f.severity);
-  if (fl.length) out.push({ flood: true, lead: `${fl[0].severity} in force nearby`, area: fl[0].area || '', url: fl[0].url || '', more: fl.length - 1 });
+  if (fl.length) out.push({ flood: true, lead: `${fl[0].severity} in force here`, area: fl[0].area || '', url: fl[0].url || '', more: fl.length - 1 });
   return out;
 }
 // null is "the EA did not answer" (after one retry, build_site.attach_flow_state), which must not read
@@ -140,10 +142,11 @@ const floodUnchecked = (s, now = Date.now(), generatedAt = null) =>
   s.flood_alerts === null && !(generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build);
 const floodUncheckedLine = (html = false) => 'Flood warnings not checked for this forecast. '
   + (html ? `<a href="${FLOOD_SERVICE}">See the Environment Agency</a>.` : `See the Environment Agency: ${FLOOD_SERVICE}`);
-// Alerts in force nearby whose flood area names no water the build could tie to this spot
-// (flows.split_flood_alerts, "unknown"): said, neutrally, beside the unchecked line, never as a
-// named warning for another river and never as none. Alerts for other named waters (a nearby river,
-// the coast) are not this spot's and are not said (`flood_alerts_other`). Not from a build over a day old.
+// Alerts in force that could not be matched to this spot (flows.split_flood_alerts, "unknown": for its
+// own river or lake but an area that does not cover it, or an area with no outline or no named water):
+// said, neutrally, beside the unchecked line, never as a named warning and never as none. Alerts for
+// other water (another river, the coast) are not this spot's and are not said (`flood_alerts_other`).
+// Not from a build over a day old.
 const floodUnmatched = (s, now = Date.now(), generatedAt = null) =>
   Array.isArray(s.flood_alerts) && s.flood_alerts_unmatched > 0 && !(generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build);
 const floodUnmatchedLine = (html = false) => 'Flood alerts nearby could not be matched to this water. '

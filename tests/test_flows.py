@@ -227,8 +227,10 @@ def test_attach_flow_state_words_and_flood_alerts():
         return []
 
     clock = _Clock()
+    from shapely.geometry import Point
+    area = Point(flows.bng(spots[4]["lat"], spots[4]["lon"])).buffer(100)   # the alert's area covers the lake's pin
     counts = bs.attach_flow_state(spots, trend=trend, alerts=alerts, any_alerts=lambda: True, workers=1, now=NOW,
-                                  sleep=clock.sleep, clock=clock)
+                                  sleep=clock.sleep, clock=clock, outline=lambda aid, timeout: area, lake_at=lambda x, y: None)
     by = {s["id"]: s for s in spots}
     assert by["high"]["flow_state"] == "high"
     assert by["rising"]["flow_state"] == "rising fast"
@@ -240,7 +242,7 @@ def test_attach_flow_state_words_and_flood_alerts():
     assert by["down"]["flood_alerts"] is None and by["high"]["flood_alerts"] == []
     assert by["down"]["flood_alerts_other"] is None and by["high"]["flood_alerts_other"] == 0   # unchecked is never "none"
     assert counts == {"river_high": 1, "river_rising_fast": 1, "flood_alerts": 1, "flood_alerts_unchecked": 1,
-                      "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0}
+                      "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0, "flood_outlines": 1, "flood_outlines_missing": 0}
     assert len(asked_trend) == 1   # asked only where it could set the word: current, own river, not already high
     assert all("days" not in s and "now" not in s for s in spots)   # nothing here touches the pollution level
 
@@ -381,8 +383,11 @@ def test_a_lake_never_gets_a_river_word():
              for i, (k, level) in enumerate((("high", 2.1), ("usual", 0.6)))]
     flood = [{"severity_level": 3, "severity": "Flood alert", "area": "Windermere", "area_id": "011WAF1", "url": None, "raised": None,
               "waters": ["Windermere"]}]
+    from shapely.geometry import box
+    lake = box(*flows.bng(54.29, -2.91), *flows.bng(54.32, -2.89))   # the alert's area reaches the lake's outline
     bs.attach_flow_state(spots, trend=lambda m: asked.append(m) or [], alerts=lambda lat, lon: flood,
-                         any_alerts=lambda: True, workers=1, now=NOW)
+                         any_alerts=lambda: True, workers=1, now=NOW, outline=lambda aid, timeout: lake.buffer(-500),
+                         lake_at=lambda x, y: lake)
     assert [s["flow_state"] for s in spots] == [None, None] and asked == []
     assert spots[0]["flood_alerts"] == flood
 
@@ -543,13 +548,33 @@ def test_the_flood_requests_take_the_timeout_they_are_given(monkeypatch):
     assert seen == [flows.EA_TIMEOUT_S, 10.0, flows.EA_TIMEOUT_S, 7.5]
 
 
-# ------------------------------------------------------------------------------ the spot's own water
+# ------------------------------------------------------------------------------ which alerts apply here
 # 26 Oct 2026, live: the four Wharfe spots near Burnsall said "Flood alert in force nearby: Lower River
-# Ure" (122WAF940, 16.6 km from Burnsall at its nearest), and Dartington on the Dart "South Devon coast
-# from Start Point to Dawlish Warren" (113WACT1B). The EA's `dist` is not measured to the area's
-# outline, so an alert is the spot's only when its area names the spot's river or lake. The fixture is
-# that night's /id/floods, trimmed to eight items.
-LIVE_FLOODS = json.loads((Path(__file__).parent / "fixtures" / "ea_floods_2026-10-26.json").read_text())
+# Ure" (122WAF940, whose outline is 15.7 to 18.7 km away), and Dartington on the Dart "South Devon coast
+# from Start Point to Dawlish Warren" (113WACT1B, 8.8 km away). An alert is now the spot's only when the
+# EA's outline of its area covers the spot's point on its water, or its lake. The fixtures are that
+# night's /id/floods (trimmed), the EA outlines of five of its areas and three WFD lake outlines,
+# simplified to 10 m (outcomes checked identical to the raw outlines), and ten spots from the site data.
+FIX = Path(__file__).parent / "fixtures"
+LIVE_FLOODS = json.loads((FIX / "ea_floods_2026-10-26.json").read_text())
+SPOTS = {s["id"]: s for s in json.loads((FIX / "flood_areas" / "spots.json").read_text())["spots"]}
+OUTLINES = {a: flows.load_outline((FIX / "flood_areas" / f"{a}.geojson").read_text())
+            for a in ("122WAF940", "122WAF942", "113WACT1B", "011WAFDW", "011FWFNC6KC")}
+LAKES = [flows.load_outline(p.read_text()) for p in sorted((FIX / "flood_areas").glob("lake-*.geojson"))]
+
+
+def _lake_at(x, y):
+    """The fixture lake outline a point lies in, as build_site.lake_outline_at reads lakes.parquet."""
+    from shapely.geometry import Point
+    return next((g for g in LAKES if g.covers(Point(x, y))), None)
+
+
+@pytest.fixture(autouse=True)
+def _no_live_fetch(monkeypatch):
+    """Nothing in these tests asks the EA: a request a test did not fake fails it."""
+    def refuse(url, **kw):
+        raise AssertionError(f"live request in a test: {url}")
+    monkeypatch.setattr(flows.httpx, "get", refuse)
 
 
 def _live_alerts(monkeypatch, *area_ids, severity: int | None = None) -> list[dict]:
@@ -562,126 +587,234 @@ def _live_alerts(monkeypatch, *area_ids, severity: int | None = None) -> list[di
     return flows.flood_alerts(54.047, -1.953)
 
 
-def _spot(id_, kind, river, watercourse, name=None):
-    return {"id": id_, "name": name or id_, "kind": kind, "river": river, "location": {"watercourse": watercourse}}
+def _water(spot_id, **change):
+    bs = _build_site()
+    return bs.own_water({**SPOTS[spot_id], **change}, _lake_at)
 
 
-BURNSALL = _spot("wharfe-burnsall", "river", "River Wharfe", "River Wharfe", "River Wharfe, Burnsall")
-DARTINGTON = _spot("osm-dart-dartington", "river", "River Dart", "River Dart", "River Dart, Dartington Pontoon")
-CALFCLOSE = _spot("derwent-water-calfclose", "lake", None, "Derwent Water", "Derwent Water, Calfclose Bay")
+def _kind(monkeypatch, spot_id, area_id, severity=None, outline=True, **change):
+    alert = _live_alerts(monkeypatch, area_id, severity=severity)[0]
+    return flows.flood_alert_water(alert, _water(spot_id, **change), OUTLINES[area_id] if outline else None)
+
+
+def _pin_inside(spot_id, area_id):
+    from shapely.geometry import Point
+    return OUTLINES[area_id].covers(Point(_water(spot_id).pin))
 
 
 def test_flood_alerts_keep_each_areas_waters(monkeypatch):
     found = _live_alerts(monkeypatch, "122WAF940", "113WACT1B", "062WAF38BrentBks")
-    by = {a["area_id"]: a["waters"] for a in found}
-    assert by["122WAF940"] == ["River Ure", "Swinney Beck", "Bishop Monkton Beck", "River Skell", "River Laver",
-                               "River Tutt", "Stainley Beck"]
-    assert by["113WACT1B"] == ["South Devon Coast"]
+    by = {a["area_id"]: (a["waters"], a["tidal"]) for a in found}
+    assert by["122WAF940"] == (["River Ure", "Swinney Beck", "Bishop Monkton Beck", "River Skell", "River Laver",
+                                "River Tutt", "Stainley Beck"], False)
+    assert by["113WACT1B"] == (["South Devon Coast"], True)
     assert "062WAF38BrentBks" not in by   # severity 4 in the fixture: never shown as in force
     assert flows.flood_waters("Silk Stream;\nDollis Brook;\nDeans Brook") == ["Silk Stream", "Dollis Brook", "Deans Brook"]
     assert flows.flood_waters(None) is None and flows.flood_waters(" , ") is None and flows.flood_waters(["Derwent", 3]) == ["Derwent"]
 
 
-def test_burnsall_on_the_wharfe_drops_the_lower_river_ure_area(monkeypatch):
-    bs = _build_site()
+def test_burnsall_on_the_wharfe_is_outside_the_lower_river_ure_area_so_it_is_other(monkeypatch):
+    assert _kind(monkeypatch, "wharfe-burnsall", "122WAF940") == "other"
+    for s in ("wharfe-bolton-abbey", "wharfe-appletreewick", "wharfe-linton-falls"):
+        assert _kind(monkeypatch, s, "122WAF940") == "other"
     found = _live_alerts(monkeypatch, "122WAF940")
-    assert [a["area"] for a in found] == ["Lower River Ure"]   # what the EA's 10 km query gave Burnsall
-    assert flows.split_flood_alerts(found, bs.own_water(BURNSALL)) == ([], 1, 0)   # another named river: not shown, counted
+    assert flows.split_flood_alerts(found, _water("wharfe-burnsall"), OUTLINES) == ([], 1, 0)   # counted, not named
 
 
-def test_dartington_on_the_dart_drops_the_south_devon_coast_area(monkeypatch):
-    bs = _build_site()
-    found = _live_alerts(monkeypatch, "113WACT1B")
-    assert flows.flood_alert_water(found[0], bs.own_water(DARTINGTON)) == "other"
-    assert flows.split_flood_alerts(found, bs.own_water(DARTINGTON)) == ([], 1, 0)
+def test_dartington_on_the_dart_is_outside_the_south_devon_coast_area_so_it_is_other(monkeypatch):
+    from shapely.geometry import Point
+    dart = _water("osm-dart-dartington")
+    assert not OUTLINES["113WACT1B"].covers(Point(dart.point)) and not dart.tidal   # outside, and tidal for an inland spot
+    assert _kind(monkeypatch, "osm-dart-dartington", "113WACT1B") == "other"
+    assert _kind(monkeypatch, "osm-dart-dartington", "113WACT1B", outline=False) == "other"
 
 
-def test_a_wharfe_spot_keeps_an_upper_river_wharfe_alert_most_severe_first(monkeypatch):
-    bs = _build_site()
-    # 122WAF942 was in the Burnsall answer at severity 4 that night; here in force, beside the Ure.
+def test_the_wharfe_spots_are_in_upper_river_wharfe_by_their_point_on_the_river_not_their_pin(monkeypatch):
+    """122WAF942 was at severity 4 that night (not shown); here a copy in force. Three of the four pins
+    sit on a bank or path just outside the outline, while each spot's point on the river is inside:
+    a pin test would turn a genuine same-river alert neutral."""
+    for s in ("wharfe-burnsall", "wharfe-bolton-abbey", "wharfe-linton-falls"):
+        assert not _pin_inside(s, "122WAF942"), s
+        assert _kind(monkeypatch, s, "122WAF942", severity=3) == "own", s
+    assert _kind(monkeypatch, "wharfe-appletreewick", "122WAF942", severity=3) == "own"
+    # Beside the Ure alert, the Wharfe one is named, the most severe first, and the Ure one counted.
     found = _live_alerts(monkeypatch, "122WAF940", "122WAF942", severity=3)
     found[1]["severity_level"], found[1]["severity"] = 2, "Flood warning"
-    kept, other, unknown = flows.split_flood_alerts(sorted(found, key=lambda a: a["severity_level"]), bs.own_water(BURNSALL))
+    kept, other, unknown = flows.split_flood_alerts(sorted(found, key=lambda a: a["severity_level"]), _water("wharfe-burnsall"), OUTLINES)
     assert [(a["area_id"], a["severity"]) for a in kept] == [("122WAF942", "Flood warning")] and (other, unknown) == (1, 0)
-    # Welsh names read as English: a spot placed on "Afon Gwy" keeps a River Wye area.
-    wye = flows.SpotWater(flows.water_names("Afon Gwy"))
-    assert flows.flood_alert_water({"area": "River Wye in Herefordshire", "waters": ["River Wye"]}, wye) == "own"
 
 
-def test_derwent_water_keeps_its_own_areas_and_never_names_the_lower_river_derwent(monkeypatch):
-    bs = _build_site()
-    found = _live_alerts(monkeypatch, "011WAFDW", "011FWFNC6KC", "011WAFCD", severity=3)
-    kept, other, unknown = flows.split_flood_alerts(found, bs.own_water(CALFCLOSE))
-    # "Upper River Derwent, Stonethwaite Beck and Derwent Water" by its name; the Keswick campsite by
-    # its water, "Derwentwater". "Rivers Cocker, Marron and Derwent" is another river, which for a lake
-    # is "unknown" (a river can run into a lake): not named, said neutrally.
-    assert sorted(a["area_id"] for a in kept) == ["011FWFNC6KC", "011WAFDW"] and (other, unknown) == (0, 1)
-    # A river spot on the Derwent keeps that river's areas.
-    river = bs.own_water(_spot("x", "river", "River Derwent", "River Derwent"))
-    assert all(flows.flood_alert_water(a, river) == "own" for a in found if a["area_id"] != "011FWFNC6KC")
+def test_a_spot_without_location_snapped_uses_its_pin(monkeypatch):
+    no_snap = {"location": {**SPOTS["wharfe-burnsall"]["location"], "snapped": None}}
+    w = _water("wharfe-burnsall", **no_snap)
+    assert w.point == w.pin
+    # Burnsall's pin is outside Upper River Wharfe: the same river, another stretch, so not matched.
+    assert _kind(monkeypatch, "wharfe-burnsall", "122WAF942", severity=3, **no_snap) == "unknown"
 
 
-def test_a_coastal_or_tidal_area_never_attaches_to_an_inland_spot_even_when_it_names_the_river(monkeypatch):
-    bs = _build_site()
-    dart = bs.own_water(DARTINGTON)
-    assert dart.tidal is False and dart.lake is False
-    coast = {"area": "Coast at Dartmouth and Dartmouth Castle", "waters": ["English Channel"]}
-    assert flows.flood_alert_water(coast, dart) == "other"   # "dart" is not a word of "dartmouth"
-    assert flows.flood_alert_water({**coast, "tidal": True}, dart) == "other"
-    # 26 Oct 2026: "Coast at Duddon estuary" (011WACN4, isTidal) named the Duddon at Birks Bridge, far inland.
-    estuary = {"area": "Coast at Duddon estuary", "waters": ["Irish Sea"], "tidal": True}
-    assert flows.flood_alert_water(estuary, bs.own_water(_spot("d", "river", "River Duddon", "River Duddon"))) == "other"
-    tidal_dart = {"area": "Tidal River Dart at Totnes", "waters": ["River Dart"], "tidal": True}
-    assert flows.flood_alert_water(tidal_dart, dart) == "other"
-    # A spot placed on a tidal river keeps its own river's tidal areas.
-    on_tide = bs.own_water({**_spot("t", "river", "River Dart", None), "location": {"watercourse": "River Dart", "form": "tidalRiver"}})
-    assert on_tide.tidal and flows.flood_alert_water(tidal_dart, on_tide) == "own"
-    # The fixture's live coastal item carries the EA's flag through flows.flood_alerts.
-    assert [a["tidal"] for a in _live_alerts(monkeypatch, "113WACT1B", "122WAF940")] == [True, False]
+def test_aysgarth_on_the_ure_is_outside_lower_river_ure_so_it_is_not_matched(monkeypatch):
+    """The same river, 11.6 km outside its outline: for this river, but not for here. Said neutrally."""
+    assert _kind(monkeypatch, "ure-aysgarth", "122WAF940") == "unknown"
+    found = _live_alerts(monkeypatch, "122WAF940")
+    assert flows.split_flood_alerts(found, _water("ure-aysgarth"), OUTLINES) == ([], 0, 1)
 
 
-def test_a_lakes_alert_for_another_river_is_unknown_and_a_coast_is_other():
-    """The Rothay runs through Grasmere and Rydal Water into Windermere: a lake cannot rule a river
-    out by name, so that alert is said neutrally. The coast never reaches a lake."""
-    waterhead = _build_site().own_water(_spot("w", "lake", None, "Windermere (N Basin)", "Windermere, Waterhead"))
-    rothay = {"area": "Rivers Brathay, Rothay and Winster", "waters": ["River Brathay", "River Rothay", "River Winster"], "tidal": False}
-    assert flows.flood_alert_water(rothay, waterhead) == "unknown"
-    coast = {"area": "Coast at North Morecambe Bay", "waters": ["Irish Sea"], "tidal": True}
-    assert flows.flood_alert_water(coast, waterhead) == "other"
-    assert flows.flood_alert_water({"area": "Windermere at Bowness", "waters": ["Windermere"], "tidal": False}, waterhead) == "own"
+def test_derwent_water_spots_are_reached_by_their_lake_outline(monkeypatch):
+    """Calfclose Bay's pin is 1.85 km from the Keswick Campsite area (riverOrSea "Derwentwater"), but
+    that area reaches Derwent Water's shore, and the lake is the spot's water."""
+    from shapely.geometry import Point
+    calf = _water("derwent-water-calfclose")
+    assert calf.lake and calf.lake_outline is not None
+    assert 1700 < OUTLINES["011FWFNC6KC"].distance(Point(calf.pin)) < 2000
+    for s in ("bw-ukd1101-45800", "derwent-water-calfclose"):
+        for a in ("011WAFDW", "011FWFNC6KC"):
+            assert _kind(monkeypatch, s, a, severity=3) == "own", (s, a)
 
 
-def test_an_alert_whose_water_cannot_be_told_is_unknown_not_dropped_and_not_named():
-    bs = _build_site()
-    names = bs.own_water(BURNSALL)
-    no_waters = {"severity_level": 3, "severity": "Flood alert", "area": "Grassington area", "waters": None}
-    assert flows.flood_alert_water(no_waters, names) == "unknown"
-    assert flows.flood_alert_water({**no_waters, "area": "River Wharfe at Grassington"}, names) == "own"   # its name says it
-    # A spot with no water name: every alert near it is unknown, never dropped as another river's.
-    pond = bs.own_water({"id": "p", "name": "", "kind": "lake", "river": None, "location": None})
-    assert pond.names == frozenset() and flows.split_flood_alerts([no_waters, {**no_waters, "waters": ["River Ure"]}], pond) == ([], 0, 2)
+def test_buttermere_and_wast_water_are_not_reached_by_the_derwent_area(monkeypatch):
+    for s in ("buttermere", "wastwater"):
+        assert _water(s).lake_outline is not None
+        assert _kind(monkeypatch, s, "011WAFDW", severity=3) == "other", s
+
+
+def test_without_an_outline_an_alert_is_never_named(monkeypatch):
+    # Rule 4: the same water is not matched, other water or the coast is other, never "own".
+    assert _kind(monkeypatch, "wharfe-burnsall", "122WAF942", severity=3, outline=False) == "unknown"
+    assert _kind(monkeypatch, "derwent-water-calfclose", "011WAFDW", severity=3, outline=False) == "unknown"
+    assert _kind(monkeypatch, "wharfe-burnsall", "122WAF940", outline=False) == "other"
+    assert _kind(monkeypatch, "buttermere", "011WAFDW", severity=3, outline=False) == "other"
+    burnsall = _water("wharfe-burnsall")
+    nothing = {"severity_level": 3, "severity": "Flood alert", "area": "Grassington area", "waters": None, "tidal": False}
+    assert flows.flood_alert_water(nothing, burnsall, None) == "unknown"   # names nothing
+    # A spot with no water name: every alert near it is not matched, never dropped as another river's.
+    pond = _build_site().own_water({"id": "p", "name": "", "kind": "lake", "river": None, "location": None, "lat": 51.56, "lon": -0.16})
+    assert flows.split_flood_alerts([nothing, {**nothing, "waters": ["River Ure"]}], pond, {}) == ([], 0, 2)
+
+
+def test_malformed_geometry_is_no_outline(monkeypatch):
+    for bad in ("not json", "{}", {"type": "Feature", "geometry": None}, {"type": "Point", "coordinates": [-1.9, 54.0]},
+                {"type": "Polygon", "coordinates": [[[0, 0], [0, 0], [0, 0], [0, 0]]]}, {"type": "Polygon", "coordinates": "x"},
+                {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "LineString",
+                                                                                           "coordinates": [[-1.9, 54.0], [-1.8, 54.1]]}}]}):
+        assert flows.load_outline(bad) is None, bad
+    # Treated as no outline: the Wharfe alert at Burnsall is then not matched, never named.
+    found = _live_alerts(monkeypatch, "122WAF942", severity=3)
+    assert flows.split_flood_alerts(found, _water("wharfe-burnsall"), {"122WAF942": flows.load_outline("{}")}) == ([], 0, 1)
     # Malformed items are never the spot's and never raise.
     odd = [None, "x", {}, {"area": 5, "waters": "River Wharfe"}, {"waters": [None, 7]}, {"waters": ["(1)"]}]
-    assert flows.split_flood_alerts(odd, names) == ([], 0, 6)
-    assert flows.split_flood_alerts(None, names) == (None, None, None)   # unchecked stays unchecked
-    # A lake with no watercourse goes by its name before the comma.
-    assert "blea tarn" in bs.own_water({"name": "Blea Tarn, Langdale", "kind": "lake", "location": {"watercourse": None}}).names
+    assert flows.split_flood_alerts(odd, _water("wharfe-burnsall"), OUTLINES) == ([], 0, 6)
 
 
-def test_attach_flow_state_keeps_only_the_spots_own_water(monkeypatch):
-    """The build end to end, with the night's alerts as flows.flood_alerts returns them."""
+def test_unchecked_stays_unchecked():
+    assert flows.split_flood_alerts(None, _water("wharfe-burnsall"), OUTLINES) == (None, None, None)
+
+
+def test_a_short_river_name_counts_in_the_areas_waters_never_its_title():
+    w = _water("wharfe-burnsall")
+    assert w.short == frozenset({"wharfe"}) and "river wharfe" in w.names
+    place = {"area": "Wharfe Lodge and Bradford", "waters": ["Bradford Beck"], "tidal": False}
+    assert flows.flood_alert_water(place, w, None) == "other"   # "Wharfe" in a title is a place
+    assert flows.flood_alert_water({**place, "waters": ["Wharfe", "Bradford Beck"]}, w, None) == "unknown"
+    assert flows.flood_alert_water({"area": "River Wharfe at Ilkley", "waters": None}, w, None) == "unknown"   # a whole name may
+    # Welsh names read as English, and a lake goes by its whole name, run together too.
+    assert "river wye" in flows.water_names("Afon Gwy") and flows.short_water_names("Afon Gwy") == {"wye"}
+    assert flows.water_names("Derwent Water") == {"derwent water", "derwentwater"} and _water("buttermere").short == frozenset()
+
+
+def test_a_coastal_area_is_other_for_an_inland_spot_and_can_apply_to_a_tidal_one():
+    dart = _water("osm-dart-dartington")
+    estuary = {"area": "Coast at Duddon estuary", "waters": ["Irish Sea"], "tidal": True}
+    assert flows.flood_alert_water(estuary, _build_site().own_water(
+        {"kind": "river", "river": "River Duddon", "lat": 54.372, "lon": -3.19, "location": {"watercourse": "River Duddon"}}), None) == "other"
+    tidal_dart = {"area": "Tidal River Dart at Totnes", "waters": ["River Dart"], "tidal": True}
+    assert flows.flood_alert_water(tidal_dart, dart, None) == "other"
+    on_tide = _water("osm-dart-dartington", location={**SPOTS["osm-dart-dartington"]["location"], "form": "tidalRiver"})
+    assert on_tide.tidal and flows.flood_alert_water(tidal_dart, on_tide, None) == "unknown"   # its river, no outline
+    from shapely.geometry import Point
+    assert flows.flood_alert_water(tidal_dart, on_tide, Point(on_tide.point).buffer(50)) == "own"
+
+
+def test_an_outline_is_asked_for_once_and_kept_by_area_id(tmp_path):
+    raw = (FIX / "flood_areas" / "011FWFNC6KC.geojson").read_text()
+    asked = []
+
+    def get(url, headers=None, timeout=None):
+        asked.append((url, timeout))
+        return httpx.Response(200, text=raw, request=httpx.Request("GET", url))
+
+    first = flows.flood_area_outline("011FWFNC6KC", tmp_path, 7.0, now=1000.0, get=get)
+    assert first is not None and asked == [(f"https://{EA}/flood-monitoring/id/floodAreas/011FWFNC6KC/polygon", 7.0)]
+    assert (tmp_path / "011FWFNC6KC.geojson").exists()
+    t = (tmp_path / "011FWFNC6KC.geojson").stat().st_mtime
+    again = flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t + 86400, get=get)
+    assert len(asked) == 1 and abs(again.area - first.area) < 0.01 * first.area   # kept: no second request
+
+    def down(url, headers=None, timeout=None):
+        asked.append(url)
+        raise httpx.ConnectTimeout("EA timed out")
+
+    old = flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t + flows.FLOOD_OUTLINE_MAX_AGE_S + 1, get=down)
+    assert len(asked) == 2 and old is not None   # past its month the EA is asked; refused, the kept outline stands
+    assert flows.flood_area_outline("122WAF940", tmp_path, now=t, get=down) is None   # nothing kept: no outline
+    assert flows.flood_area_outline("bad id/../x", tmp_path, get=down) is None and len(asked) == 3   # never asked
+    assert flows.flood_area_outline(None, tmp_path, get=down) is None
+
+    def junk(url, headers=None, timeout=None):
+        return httpx.Response(200, text="{}", request=httpx.Request("GET", url))
+    assert flows.flood_area_outline("113WACT1B", tmp_path, get=junk) is None and not (tmp_path / "113WACT1B.geojson").exists()
+
+
+def test_attach_flow_state_names_only_the_alerts_whose_area_covers_the_spot(monkeypatch):
+    """The build end to end, with the night's alerts as flows.flood_alerts returns them and the
+    fixture outlines in place of the EA's: each area's outline asked for once, and none fetched."""
     bs = _build_site()
     ure, coast = _live_alerts(monkeypatch, "122WAF940"), _live_alerts(monkeypatch, "113WACT1B")
-    wharfe = _live_alerts(monkeypatch, "122WAF942", severity=3)
-    spots = [{**BURNSALL, "lat": 54.047, "lon": -1.953}, {**DARTINGTON, "lat": 50.4394, "lon": -3.69136},
-             {**_spot("ilkley", "river", "River Wharfe", "River Wharfe"), "lat": 53.925, "lon": -1.82},
-             {"id": "pond", "name": "Hampstead Heath (Ladies Pond)", "kind": "lake", "river": None, "lat": 51.56, "lon": -0.16}]
-    answers = {54.047: ure, 50.4394: coast, 53.925: wharfe + ure, 51.56: [{**ure[0], "waters": None, "area": "North London ponds"}]}
-    counts = bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: answers[lat], any_alerts=lambda: True,
-                                  workers=1, now=NOW)
-    got = {s["id"]: (s["flood_alerts"], s["flood_alerts_other"], s["flood_alerts_unmatched"]) for s in spots}
-    assert got["wharfe-burnsall"] == ([], 1, 0) and got["osm-dart-dartington"] == ([], 1, 0)
-    assert [a["area"] for a in got["ilkley"][0]] == ["Upper River Wharfe"] and got["ilkley"][1:] == (1, 0)
-    assert got["pond"] == ([], 0, 1)
-    assert counts["flood_alerts"] == 1 and counts["flood_alerts_other_water"] == 3 and counts["flood_alerts_unmatched"] == 1
+    wharfe, derwent = _live_alerts(monkeypatch, "122WAF942", severity=3), _live_alerts(monkeypatch, "011WAFDW", severity=3)
+    ids = ["wharfe-burnsall", "wharfe-bolton-abbey", "osm-dart-dartington", "ure-aysgarth", "derwent-water-calfclose", "buttermere"]
+    spots = [dict(SPOTS[i]) for i in ids]
+    answers = {"wharfe-burnsall": ure, "wharfe-bolton-abbey": wharfe + ure, "osm-dart-dartington": coast,
+               "ure-aysgarth": ure, "derwent-water-calfclose": derwent, "buttermere": derwent}
+    by_lat = {SPOTS[i]["lat"]: answers[i] for i in ids}
+    asked = []
+
+    def outline(aid, timeout):
+        asked.append(aid)
+        return OUTLINES[aid]
+
+    counts = bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: by_lat[lat], any_alerts=lambda: True,
+                                  workers=1, now=NOW, outline=outline, lake_at=_lake_at)
+    got = {s["id"]: ([a["area_id"] for a in s["flood_alerts"]], s["flood_alerts_other"], s["flood_alerts_unmatched"]) for s in spots}
+    assert got == {"wharfe-burnsall": ([], 1, 0), "wharfe-bolton-abbey": (["122WAF942"], 1, 0), "osm-dart-dartington": ([], 1, 0),
+                   "ure-aysgarth": ([], 0, 1), "derwent-water-calfclose": (["011WAFDW"], 0, 0), "buttermere": ([], 1, 0)}
+    assert sorted(asked) == ["011WAFDW", "113WACT1B", "122WAF940", "122WAF942"]   # once each, not once a spot
+    assert counts["flood_alerts"] == 2 and counts["flood_alerts_other_water"] == 4 and counts["flood_alerts_unmatched"] == 1
+    assert counts["flood_outlines"] == 4 and counts["flood_outlines_missing"] == 0
     assert all("days" not in s and "now" not in s for s in spots)   # nothing here touches the pollution level
+
+    # An outline that fails is rule 4 for its area: Bolton Abbey's Wharfe alert is then not matched.
+    spots = [dict(SPOTS["wharfe-bolton-abbey"])]
+
+    def broken(aid, timeout):
+        if aid == "122WAF942":
+            raise httpx.ReadTimeout("slow")
+        return OUTLINES[aid]
+
+    counts = bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: wharfe + ure, any_alerts=lambda: True,
+                                  workers=1, now=NOW, outline=broken, lake_at=_lake_at)
+    assert (spots[0]["flood_alerts"], spots[0]["flood_alerts_other"], spots[0]["flood_alerts_unmatched"]) == ([], 1, 1)
+    assert counts["flood_outlines_missing"] == 1
+
+
+def test_the_outlines_are_all_asked_within_the_budget():
+    bs = _build_site()
+    clock, asked = _Clock(), []
+
+    def slow(aid, timeout):
+        asked.append((aid, timeout))
+        clock.t += 12.0
+        return OUTLINES.get(aid)
+
+    got = bs.flood_outlines({"122WAF940", "122WAF942", "113WACT1B", "011WAFDW"}, slow, workers=1, clock=clock)
+    assert [a for a, _ in asked] == ["011WAFDW", "113WACT1B", "122WAF940"]   # the fourth would start after 30 s
+    assert got["122WAF942"] is None and got["011WAFDW"] is not None
+    assert [t for _, t in asked] == [10.0, 10.0, 6.0]

@@ -8,14 +8,24 @@ travel speed and to show the swimmer whether the river is up.
 
 from __future__ import annotations
 
+import json
 import logging
+import math
 import re
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
+from pyproj import Transformer
+import numpy as np
+import shapely
+from shapely import make_valid
+from shapely.geometry import Point, mapping, shape
+from shapely.ops import unary_union
 
 from dipcast import config
 from dipcast.network.names import WELSH, river_words
@@ -463,22 +473,62 @@ def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM, timeout
     return out
 
 
-# Which water a flood area is for. The EA's `dist` above is not measured to the area's outline: on
-# 26 Oct 2026 the four Wharfe spots near Burnsall were given "Lower River Ure" (122WAF940), whose
-# nearest point is 16 to 19 km away, and Dartington on the Dart "South Devon coast from Start Point to
-# Dawlish Warren" (113WACT1B). Each area names its waters (floodArea.riverOrSea, "River Ure, Swinney
-# Beck, ..."), so an alert is the spot's own only when its name or one of its waters names the spot's
-# river or lake. The EA marks coasts, estuaries and tidal rivers (isTidal): those are never an inland
-# spot's, even when they name its river ("Coast at Duddon estuary" for Birks Bridge, 20 km upstream).
-# A river can flow into or through a lake (the Rothay through Grasmere and Rydal Water into
-# Windermere), so a lake's alert for another named river is "unknown", said neutrally, not dropped.
-# Words beside the pollution level, never part of it: nothing here changes a forecast or a level.
+# Which alerts apply to a spot. The EA's `dist` above is not measured to the area's outline: on 26 Oct
+# 2026 the four Wharfe spots near Burnsall were given "Lower River Ure" (122WAF940), whose outline is
+# 15.7 to 18.7 km away, and Dartington on the Dart "South Devon coast from Start Point to Dawlish Warren"
+# (113WACT1B), 8.8 km away. Each flood area's outline is the EA's own statement of where an alert applies
+# (check-for-flooding.service.gov.uk draws the same one), so geometry decides first and names second:
+#  1. It applies, and is named: a river spot's point on its water (location.snapped; the pin when there
+#     is none) lies inside the outline; for a lake, the outline reaches the lake's own outline; for a lake
+#     with no outline, its pin lies inside. Inside or not, with no distance allowed. The point on the
+#     water, not the pin: three of the four Wharfe pins sit 60 to 160 m outside "Upper River Wharfe"
+#     (on banks and paths) while their points on the river are inside.
+#  2. Outside, and the area names the spot's own water: "unknown", said neutrally with the EA's flood map.
+#     It is for this river, but another stretch; the outline cannot say whether its flooding reaches here.
+#  3. Outside, and it is tidal (isTidal: a coast, estuary or tidal river) for an inland spot, or it names
+#     other water: "other", counted, never named.
+#  4. No outline (no area id, a failed fetch, unreadable geometry): never "own"; otherwise as 2 and 3, and
+#     an area that names nothing is "unknown".
+# Short river names ("wharfe") are matched against the area's list of waters only, never its free-text
+# title, where a short name can be part of a place's name ("Ouse Bridge", "Bradford"). Words
+# beside the pollution level, never part of it: nothing here changes a forecast or a level.
+FLOOD_OUTLINE_SIMPLIFY_M = 10.0
+# An area's outline is kept this long before it is asked for again. The EA redraws flood areas rarely
+# (in its periodic flood-warning area updates, not from day to day), and one outline is up to 0.9 MB
+# raw, so a month keeps a redrawn outline from lasting long without asking again in every build.
+FLOOD_OUTLINE_MAX_AGE_S = 30 * 86400
+_TO_BNG = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
+_FROM_BNG = Transformer.from_crs("EPSG:27700", "EPSG:4326", always_xy=True)
+
+
+def _reproject(g, tr: Transformer):
+    """A shape's coordinates through a pyproj transformer (x, y order)."""
+    return shapely.transform(g, lambda xy: np.column_stack(tr.transform(xy[:, 0], xy[:, 1])))
+
+
+def bng(lat, lon) -> tuple[float, float] | None:
+    """A WGS84 point in British National Grid metres (x, y); None if either is not a number."""
+    try:
+        lat, lon = float(lat), float(lon)
+    except (TypeError, ValueError):
+        return None
+    if not (math.isfinite(lat) and math.isfinite(lon)):
+        return None
+    return _TO_BNG.transform(lon, lat)
+
+
 class SpotWater(NamedTuple):
-    """What a flood area must name to be the spot's (water_names), whether the spot is a lake, and
-    whether it is on tidal water (a tidal river, the coast)."""
-    names: frozenset[str]
+    """The spot as its flood alerts need it: the names an area may give its water (`names`, matched
+    against the area's title and waters; `short`, river names without "River", matched against its
+    waters only), whether it is a lake or on tidal water, its point on its water and its pin (British
+    National Grid x, y), and its lake's outline (BNG) for a lake."""
+    names: frozenset[str] = frozenset()
+    short: frozenset[str] = frozenset()
     lake: bool = False
     tidal: bool = False
+    point: tuple[float, float] | None = None
+    pin: tuple[float, float] | None = None
+    lake_outline: object | None = None
 
 
 def flood_waters(river_or_sea) -> list[str] | None:
@@ -498,49 +548,131 @@ def _water_text(name) -> str:
     return " ".join(words)
 
 
-def water_names(*names, lake: bool = False) -> frozenset[str]:
-    """The ways a flood area can name the spot's water: the whole name ("river wharfe", "derwent
-    water"), run together ("derwentwater", as the EA writes it for the Keswick campsite), and for a
-    river the name without "River" ("wharfe", as a list of waters may give it: "Bure, Ant, Thurne").
-    A lake keeps its "Water" or "Mere": "Derwent" alone is the river, which the lake's alerts are not."""
+def water_names(*names) -> frozenset[str]:
+    """The whole names an area may give the spot's water: as written ("river wharfe", "derwent water")
+    and run together ("derwentwater", as the EA writes it for the Keswick campsite)."""
     out = set()
     for n in names:
         t = _water_text(n)
-        if not t:
-            continue
-        out |= {t, t.replace(" ", "")}
+        if t:
+            out |= {t, t.replace(" ", "")}
+    return frozenset(out)
+
+
+def short_water_names(*names) -> frozenset[str]:
+    """A river's names without "River" ("wharfe", as a list of waters may give it: "Bure, Ant,
+    Thurne"), for the area's waters only. A lake has none: "Derwent" alone is the river."""
+    out = set()
+    for n in names:
+        t = _water_text(n)
         core = re.sub(r"^(the )?river |( river)$", "", t).strip()
-        if not lake and core and core != t and len(core) >= 3:
+        if core and core != t and len(core) >= 3:
             out.add(core)
     return frozenset(out)
 
 
-def flood_alert_water(alert: dict, spot: SpotWater) -> str:
-    """"own" when the alert's area name or one of its waters names the spot's water, "other" when it
-    is a tidal area and the spot is inland, or its area names its waters and none is the spot's river,
-    else "unknown": a spot with no water name, an area that names no waters, or a lake's alert for
-    another named river. An unknown alert is never shown as the spot's, nor dropped as if there were none."""
+def names_own_water(alert: dict, spot: SpotWater) -> bool:
+    """Whether the area names the spot's water: a whole name in its title or its waters, or a short
+    river name in its waters."""
+    waters = [_water_text(w) for w in (alert.get("waters") if isinstance(alert.get("waters"), list) else []) if isinstance(w, str)]
+    title = [_water_text(alert.get("area"))] if isinstance(alert.get("area"), str) else []
+    has = lambda texts, names: any(f" {n} " in f" {t} " for t in texts for n in names)  # noqa: E731
+    return has(waters + title, spot.names) or has(waters, spot.short)
+
+
+def load_outline(geojson) -> object | None:
+    """A flood area's or lake's outline from GeoJSON in WGS84 (a geometry, a Feature or a
+    FeatureCollection), as one shape in British National Grid metres, simplified to
+    FLOOD_OUTLINE_SIMPLIFY_M. None for anything that is not a polygon with an area: unreadable
+    geometry is no outline (rule 4), never a guess."""
+    try:
+        if isinstance(geojson, str | bytes):
+            geojson = json.loads(geojson)
+        feats = geojson["features"] if geojson.get("type") == "FeatureCollection" else [geojson]
+        parts = [shape(f["geometry"] if f.get("type") == "Feature" else f) for f in feats]
+        g = _reproject(unary_union(parts), _TO_BNG)
+        g = make_valid(g) if not g.is_valid else g
+        g = unary_union([p for p in getattr(g, "geoms", [g]) if p.geom_type in ("Polygon", "MultiPolygon")])
+        g = g.simplify(FLOOD_OUTLINE_SIMPLIFY_M, preserve_topology=True)
+    except Exception as e:  # noqa: BLE001 - shapely and pyproj raise many kinds on bad input; all mean "no outline"
+        log.info("flood outline unreadable: %s", e)
+        return None
+    return g if not g.is_empty and g.area > 0 and g.is_valid else None
+
+
+def flood_area_outline(area_id: str | None, cache_dir: Path, timeout: float = EA_TIMEOUT_S, now: float | None = None,
+                       get=None) -> object | None:
+    """The outline of one EA flood area (load_outline), from `cache_dir` while it is under
+    FLOOD_OUTLINE_MAX_AGE_S old, else asked for once at /id/floodAreas/<id>/polygon and kept there,
+    simplified, by area id. An outline the EA no longer answers for is kept as it was. None when there
+    is no id, no answer and nothing kept, or the geometry is unreadable: never an error, so the build
+    goes on with rule 4 for that area."""
+    if not area_id or not _AREA_ID.fullmatch(area_id):
+        return None
+    path = cache_dir / f"{area_id}.geojson"
+    now = time.time() if now is None else now
+    kept = None
+    if path.exists():
+        kept = load_outline(path.read_text())
+        if kept is not None and now - path.stat().st_mtime < FLOOD_OUTLINE_MAX_AGE_S:
+            return kept
+    try:
+        r = (get or httpx.get)(f"{config.EA_FLOOD_MONITORING}/id/floodAreas/{area_id}/polygon",
+                               headers=config.EA_HEADERS, timeout=timeout)
+        r.raise_for_status()
+        outline = load_outline(r.json())
+    except Exception as e:  # noqa: BLE001 - a failed outline is rule 4 for that area, not a failed build
+        log.info("flood outline %s: %s", area_id, e)
+        return kept
+    if outline is None:
+        return kept
+    try:   # kept simplified, in WGS84 GeoJSON as the EA gives it, a few kB to ~120 kB each
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps({"type": "Feature", "properties": {"floodAreaID": area_id},
+                                   "geometry": mapping(_reproject(outline, _FROM_BNG))}))
+        tmp.replace(path)
+    except OSError as e:
+        log.info("flood outline %s not kept: %s", area_id, e)
+    return outline
+
+
+
+def _applies(outline, spot: SpotWater) -> bool:
+    """Rule 1: the area covers the spot's water (see the notes above)."""
+    if spot.lake and spot.lake_outline is not None:
+        return bool(outline.intersects(spot.lake_outline))
+    at = spot.pin if spot.lake else (spot.point or spot.pin)
+    return at is not None and bool(outline.covers(Point(at)))
+
+
+def flood_alert_water(alert: dict, spot: SpotWater, outline=None) -> str:
+    """"own" (rule 1: the area covers the spot's water; named on the page), "other" (rule 3: tidal for
+    an inland spot, or the area names other water; counted) or "unknown" (rules 2 and 4: the area
+    names the spot's water but does not cover it, it has no outline and names the spot's water or
+    nothing, or the spot has no water name; said neutrally). Never "own" without an outline."""
     if not isinstance(alert, dict):
         return "unknown"
+    if outline is not None and _applies(outline, spot):
+        return "own"
     if alert.get("tidal") is True and not spot.tidal:
         return "other"
-    if not spot.names:
+    if not (spot.names or spot.short) or names_own_water(alert, spot):
         return "unknown"
     waters = alert.get("waters") if isinstance(alert.get("waters"), list) else []
-    texts = [_water_text(x) for x in [alert.get("area"), *waters] if isinstance(x, str)]
-    if any(f" {n} " in f" {t} " for t in texts for n in spot.names):
-        return "own"
-    named = any(_water_text(w) for w in waters if isinstance(w, str))
-    return "other" if named and not spot.lake else "unknown"
+    return "other" if any(_water_text(w) for w in waters if isinstance(w, str)) else "unknown"
 
 
-def split_flood_alerts(alerts: list[dict] | None, spot: SpotWater) -> tuple[list[dict] | None, int | None, int | None]:
-    """The alerts for the spot's own water (in the order given, the most severe first), and how many
-    others are in force nearby for other waters and for water that could not be told. None for all
-    three when the EA did not answer (`alerts` None): unchecked is never "none"."""
+def split_flood_alerts(alerts: list[dict] | None, spot: SpotWater, outlines: dict | None = None
+                       ) -> tuple[list[dict] | None, int | None, int | None]:
+    """The alerts that apply to the spot (in the order given, the most severe first), and how many
+    others are in force for other water and for water that could not be told. `outlines` maps area ids
+    to outlines (load_outline); an area missing from it has none. None for all three when the EA did
+    not answer (`alerts` None): unchecked is never "none"."""
     if alerts is None:
         return None, None, None
-    kinds = [flood_alert_water(a, spot) for a in alerts]
+    outlines = outlines or {}
+    kinds = [flood_alert_water(a, spot, outlines.get(a.get("area_id")) if isinstance(a, dict) else None) for a in alerts]
     return ([a for a, k in zip(alerts, kinds, strict=True) if k == "own"], kinds.count("other"), kinds.count("unknown"))
 
 

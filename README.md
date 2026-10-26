@@ -1257,24 +1257,27 @@ spot's own river is above the top of its usual range (index over 1.0). "River
 rising fast: the gauge at Addingham rose 0.40 m between 08:45 and 14:30" when
 the gauge's readings in the six hours before the build (the measure's last 24,
 `_limit=24`, 15 minutes apart) rose by more than a fifth of the usual range.
-"Flood alert in force nearby (Environment Agency): River Wharfe at Ilkley" for
-the most severe flood alert or warning in force for a flood area within 10 km
-(`/id/floods?lat&long&dist=10`), linked to the area's page on
-check-for-flooding.service.gov.uk, when the area names the spot's own river or
-lake. The EA's `dist` is not measured to the area's outline: on 26 Oct 2026 it
-gave the Wharfe at Burnsall "Lower River Ure" (122WAF940, 16.6 km away at its
-nearest) and Dartington on the Dart a South Devon coastal alert (113WACT1B).
-So `flows.split_flood_alerts` keeps an alert only when its area name or one of
-its waters (`floodArea.riverOrSea`) names the spot's river or watercourse
-("Wharfe", "River Wharfe"; a lake by its whole name, "Derwent Water" or
-"Derwentwater"). An area the EA marks tidal (`isTidal`: coasts, estuaries,
-tidal rivers) is never an inland spot's, even when it names the spot's river
-("Coast at Duddon estuary" for Birks Bridge). Alerts for other named waters
-are counted in `flood_alerts_other` and not named. Alerts whose water cannot be
-told (no `riverOrSea`, a spot with no water name, or a lake's alert for another
-river, which may run into it, as the Rothay into Windermere) are counted in
+"Flood alert in force here (Environment Agency): Upper River Wharfe" for the
+most severe flood alert or warning in force whose area covers the spot, linked
+to the area's page on check-for-flooding.service.gov.uk. The alerts come from
+`/id/floods?lat&long&dist=10`, whose `dist` is not measured to the area's
+outline: on 26 Oct 2026 it gave the Wharfe at Burnsall "Lower River Ure"
+(122WAF940, 16.7 km away) and Dartington on the Dart a South Devon coastal alert
+(113WACT1B, 8.8 km). So the build reads each in-force area's outline, the EA's
+own map of where the alert applies (`/id/floodAreas/<id>/polygon`, one request
+per area, kept by area id in the cache for 30 days, simplified to 10 m), and
+`flows.split_flood_alerts` names an alert only when the outline covers the
+spot's point on its water (`location.snapped`, else the pin) or, for a lake,
+reaches the lake's own outline (`data/processed/lakes.parquet`; the pin for a
+lake with none). Three of the four Wharfe pins sit just outside "Upper River
+Wharfe" while their points on the river are inside, which is why the point on
+the water is used. An alert outside that names the spot's own water (by its
+`floodArea.riverOrSea` or, by the whole name, its title), or one with no
+outline that is not plainly for other water, is counted in
 `flood_alerts_unmatched`, and the page says "Flood alerts nearby could not be
-matched to this water" with a link to the EA's flood map. Severity 4,
+matched to this water" with a link to the EA's flood map. One for other water,
+or tidal (`isTidal`) for an inland spot, is counted in `flood_alerts_other` and
+never named. Severity 4,
 "Warning no longer in force", is left out: on 3 Oct 2026 it was the only item
 the service held for England. The build asks spot by spot only when the
 national list holds an alert in force, so on most days the floods cost one

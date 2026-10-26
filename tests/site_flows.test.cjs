@@ -1,5 +1,5 @@
 // "Too high to swim" (roadmap task 8): the sentence under a spot's headline when its river is high
-// or rising fast at a gauge on its own river, or a flood alert is in force nearby, from the fields
+// or rising fast at a gauge on its own river, or a flood alert is in force here (its area covers the spot), from the fields
 // build_site.attach_flow_state writes (tests/test_flows.py checks those). Never from a stale reading.
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
@@ -41,9 +41,9 @@ test('a fast rise gives the measured rise and the times it ran between, and only
 
 test('a spot with a live flood alert in the fixture shows the sentence, and the page puts it under the headline', () => {
   const s = {flow_state: null, river_state: null, flood_alerts: [ALERT]};
-  assert.equal(say(s), 'Flood alert in force nearby (Environment Agency): River Wharfe at Ilkley.');
+  assert.equal(say(s), 'Flood alert in force here (Environment Agency): River Wharfe at Ilkley.');
   const two = {...s, flood_alerts: [{...ALERT, severity_level: 2, severity: 'Flood warning', area: 'River Wharfe at Burley'}, ALERT]};
-  assert.equal(say(two), 'Flood warning in force nearby (Environment Agency): River Wharfe at Burley and 1 more.');
+  assert.equal(say(two), 'Flood warning in force here (Environment Agency): River Wharfe at Burley and 1 more.');
   assert.equal(say({flood_alerts: []}) + say({}), '');
   // The EA did not answer (null): said, never left to read as none in force.
   assert.equal(say({flood_alerts: null}), '');   // a failed check is not a hazard: the quiet line under the level tile says it (below)
@@ -52,7 +52,7 @@ test('a spot with a live flood alert in the fixture shows the sentence, and the 
   const src = page.slice(page.indexOf('const flowLine = '), page.indexOf('\n', page.indexOf('A separate hazard, not part of the pollution level.')));
   const ctx = vm.createContext({flowFacts, flowSentence, DATA: {generated_at: BUILT}, Date: {now: () => NOW}});
   vm.runInContext(src + '\nthis.flowLine = flowLine;', ctx);
-  assert.equal(ctx.flowLine(s), '<p class="flow"><b>Flood alert in force nearby</b> (Environment Agency): '
+  assert.equal(ctx.flowLine(s), '<p class="flow"><b>Flood alert in force here</b> (Environment Agency): '
     + '<a href="https://check-for-flooding.service.gov.uk/target-area/123WAF456">River Wharfe at Ilkley</a>. A separate hazard, not part of the pollution level.</p>');
   assert.equal(ctx.flowLine({flow_state: 'high', river_state: gauge(), flood_alerts: [ALERT]}).match(/<b>/g).length, 2);   // both, river first
   assert.equal(ctx.flowLine({flow_state: null, flood_alerts: []}), '');
@@ -66,7 +66,7 @@ test('names from the feed are escaped in the page and plain in the comparison', 
   assert.ok(html.includes('Beck &lt;b&gt;&amp;&lt;/b&gt; &quot;Brook&quot;') && !html.includes('"onmouseover'));
   const built = new Date().toISOString();   // the comparison reads the clock
   const rows = Object.fromEntries(evidenceRows({days: [], ...s}, '2026-10-03', built));
-  assert.match(rows['Local warnings'], /^Flood alert in force nearby \(Environment Agency\): Beck <b>&<\/b> "Brook"\. Short-term pollution warnings are not fetched/);
+  assert.match(rows['Local warnings'], /^Flood alert in force here \(Environment Agency\): Beck <b>&<\/b> "Brook"\. Short-term pollution warnings are not fetched/);
   assert.equal(Object.fromEntries(evidenceRows({days: []}, '2026-10-03', built))['Local warnings'],
     'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.');
 });
@@ -140,8 +140,8 @@ test('the quiet line in words: the comparison row says it plainly; a spot withou
 });
 
 // 26 Oct 2026: Burnsall on the Wharfe said "Flood alert in force nearby: Lower River Ure", and
-// Dartington on the Dart a South Devon coastal alert. The build now keeps only alerts whose flood area
-// names the spot's own water (flows.split_flood_alerts); the others are counted, never named.
+// Dartington on the Dart a South Devon coastal alert. The build now names only alerts whose area's
+// outline covers the spot, "in force here" (flows.split_flood_alerts); the others are counted, never named.
 const UNMATCHED = '<div class="f-l">Flood warnings</div><div class="f-v na">Not matched</div><div class="f-d">Flood alerts nearby could not be matched to this water. '
   + '<a href="https://check-for-flooding.service.gov.uk/">Check the Environment Agency\'s flood map</a>.</div>';
 
@@ -151,12 +151,13 @@ test('an alert for another river or the coast is not named on the spot page', ()
   const t = tiles(burnsall);
   assert.ok(!t.some(([, h]) => /Ure|Devon|Flood alert/.test(h)));
   assert.equal(t.find(([label]) => label === 'Not known here')[1], '');
+  assert.ok(!t.some(([, h]) => /nearby|none in force/i.test(h)));   // nothing says "none" or "nearby" of them
   // The spot's own river's alert is still said, most severe first, beside the counted others.
   const own = river({flood_alerts: [{...ALERT, area: 'Upper River Wharfe'}], flood_alerts_other: 1, flood_alerts_unmatched: 0});
-  assert.equal(say(own), 'Flood alert in force nearby (Environment Agency): Upper River Wharfe.');
+  assert.equal(say(own), 'Flood alert in force here (Environment Agency): Upper River Wharfe.');
 });
 
-test('an alert whose water could not be told: a neutral row of Not known here, never a named warning', () => {
+test('an alert not matched to the spot (its own river elsewhere, or no outline): a neutral row of Not known here, never named', () => {
   const s = river({flood_alerts: [], flood_alerts_other: 0, flood_alerts_unmatched: 1});
   assert.equal(say(s), '');   // nothing in bold in the answer
   const unknown = tiles(s).find(([label]) => label === 'Not known here')[1];

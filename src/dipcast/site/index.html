@@ -2277,8 +2277,8 @@ const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof ea
 //  - Access: the desk check (accessSaid), never an inspection;
 //  - Flood warnings: the EA did not answer this build (experience.js, floodUnchecked; kept from the
 //    answer, where in bold it read like a hazard).
-//  - Flood warnings: alerts in force nearby that could not be matched to this water (experience.js,
-//    floodUnmatched), never named as another river's.
+//  - Flood warnings: alerts in force that could not be matched to this spot (experience.js,
+//    floodUnmatched), never named.
 // Not on a failed forecast's live readings (no forecast, nothing to read against). Empty with no gap.
 function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
@@ -2294,7 +2294,7 @@ const unknownTile = d => { const rows = unknowns(d); if (!rows.length) return ''
   return `<section class="tile" id="unknowns" aria-labelledby="unknowns-h"><h2 class="t-lab" id="unknowns-h">${ICON.unknown}<span>Not known here</span></h2>`
     + `<div class="factors">${rows.map(([l, v, say]) => factorRow(l, null, v, say)).join('')}</div></section>`; };
 // Under the headline, on every day's view, kept in view: the river high or rising fast at a gauge on
-// the spot's own river, and any Environment Agency flood alert in force nearby (experience.js,
+// the spot's own river, and any Environment Agency flood alert in force here (experience.js,
 // flowFacts). A different hazard, said in ink and never in a level's colour, and not part of the level.
 const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); if (!f.length) return '';
   return `<p class="flow">${f.map(x => flowSentence(x, true)).join(' ')} A separate hazard, not part of the pollution level.</p>`; };
