@@ -281,6 +281,8 @@ const Record = (() => {
       document.title = s ? `${s.name}, ${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: decision record · SwimSignal` : 'Decision record · SwimSignal';
       out.innerHTML = view(s, iso, data, ver, base, Date.now(), st.spot || '', st.org || '');
       const pr = document.getElementById('print'); if (pr) pr.addEventListener('click', () => window.print());
+      // brief.js: the version of this record and the leader's "read" tick, on screen only, kept in this browser.
+      if (s && typeof BriefAck === 'object' && document.getElementById('r-decide')) BriefAck.draw(out, s, iso, data, P.issueId(data));
     };
     const go = () => { const addr = location.pathname + location.search + toHash(sel.value || null, ISO.test(date.value) ? date.value : null, fromHash(location.hash).org);
       if (addr !== location.pathname + location.search + location.hash) { history.replaceState(null, '', addr); draw(); } };

@@ -45,6 +45,10 @@
   main.doc .credits li { margin:2px 0; }
   .credits-run { display:none; }
   .print-only { display:none; }
+  /* The version of this brief and the leader's read tick (brief.js): on screen only, under a hairline. */
+  .brief-ack { margin:24px 0 0; padding-top:12px; border-top:1px solid var(--hair); }
+  .brief-ack-tick label { display:flex; align-items:center; gap:10px; min-height:44px; font-weight:600; cursor:pointer; }
+  .brief-ack-tick input { flex:none; width:22px; height:22px; margin:0; accent-color:var(--brand); }
   /* Printed: up to two A4 pages at reading size, no controls, not one page shrunk to about 8 pt.
      The decision lines stay together on one page. */
   @page { size:A4 portrait; margin:7mm 10mm; }
@@ -112,5 +116,6 @@
 <script src="organisers.js"></script>
 <script src="printed.js"></script>
 <script src="eatoday.js"></script>
+<script src="brief.js"></script>
 <script src="record.js"></script>
 </body></html>
