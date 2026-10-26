@@ -11,7 +11,9 @@ three files, and this pack points into them by section:
 - **The records file:** `docs/COMPREHENSION-TEST-2026-10-RECORDS.md` (blank record, tally, public summary).
 
 Where this pack and those files differ, those files win. Anything that looks as if it needs a change to them is
-listed in section 10 as a proposed amendment for decision, and is not applied here.
+listed in section 10 as a proposed amendment for decision, and is not applied here. The one change made so far
+is a dated clarification about the headline (H1 to H4), approved on 26 October 2026 before any session and
+recorded in the plan (section 12) and the run sheet (section 8), with the original text kept.
 
 Every statement below is marked. **[read]** means I opened the file, page or log named on 26 October 2026.
 **[inferred]** means it comes from notes or reasoning, not from a source I opened, and needs checking.
@@ -42,12 +44,11 @@ computer, where the private folder is. Items 2 and 3 need no decision. Tick them
    leaders, checked against the organiser plan's section 5 first, since money paid may count as trading. Then fill
    the "[Thank-you line, if decided]" in the consent wording (run sheet, section 5), or delete it.
    You will know it worked when the consent text in your private copy has no square brackets left.
-2. **Headline wording** (plan, section 10 item 2). There is nothing to find or merge: the scoped headline ("Low
-   risk from sewage spills", PR #284) has been live since 20 October, so every participant will see it unless it
-   changes. Keep the run sheet's step: the day before each session, check which wording is live and note it in
-   the record (run sheet, section 1 step 8). [read: section 1 above] What this means for the plan's
-   "first four on the live wording, then the scoped headline" recommendation is in section 10, as a question,
-   not a change.
+2. **Headline wording: settled** (plan, section 12; run sheet, section 8). Every participant uses the live
+   scoped wording ("Low risk from sewage spills", PR #284, live since 20 October). The old bare "Low risk" is not
+   restored and there is no headline comparison (H1). Scoring and fail lines are unchanged (H2). In each record,
+   write the exact headline as shown, the page's URL and its "Issued" line (H3), the day before (run sheet,
+   section 1 step 8) and again for the chosen pages that morning (section 2 steps 4 and 5).
 3. **A note-taker is optional** (plan, section 10 item 3: "A friend who has not seen the site can take notes").
    With none, there is no second scorer for task 2 (records file, section 2.3). Not a blocker.
 4. **Approve the recruitment wording and where it goes, specifically.** Recruitment is a Facebook group post, or a
@@ -193,7 +194,7 @@ Nothing here is drafted or sent. Dates are the ones in the source.
 | # | Action | Owner | Unblocks | Date | Source | Basis |
 |---|---|---|---|---|---|---|
 | S1 | Decide the participant thank-you, then fill or delete the consent line | Ethan (money; it may count as trading) | Recruitment; the consent text | Before recruiting | plan s10 item 1; run sheet s5 | read; no recorded decision found, so inferred open |
-| S2 | Headline wording: **nothing to decide or find.** "Low risk from sewage spills" is live (PR #284, merged 20 Oct). Note the live wording in each record, as run sheet s1 step 8 says | Moderator, per session | Task 2 record | Day before each session | section 1 of this pack | read: Frensham page checked 22:49 UTC, 26 Oct |
+| S2 | Headline wording: **settled** by the 26 Oct clarification (H1 to H4). Every participant sees the live scoped wording; each record holds the exact headline, URL and "Issued" line | Moderator, per session | Task 2 record | Day before and morning of each session | plan s12; run sheet s8 | read: Frensham page checked 22:49 UTC, 26 Oct |
 | S3 | Note-taker: optional. With none, there is no blind second scorer | None needed | Second scoring of task 2 only | None | plan s10 item 3; records s2.3 | read |
 | S4 | **Approve the exact recruitment post(s), and each group or organiser they go to.** Nothing is drafted here | Ethan, approving each one specifically | Every session | Week 1, from 26 Oct | plan s2, s9 | read |
 | S5 | Book sessions, Wednesday to Friday only | Ethan | Sessions | First possible slots 28 to 30 Oct | run sheet s1 step 3 | read; the slot dates are inferred |
@@ -215,7 +216,7 @@ State on 26 Oct 2026, read from `gh pr list` and the status map:
 |---|---|---|---|---|---|---|
 | P1 | Algae-incident test statement. Codex reviewed the protocol as a bounded exploratory question. It is kept unrun in this window | Codex | Its one fetch and score | None | #385; AI-PROGRAMME product brief | read |
 | P2 | Frensham Great Pond advisory. Codex approves the record from the exact line and its evidence, as the recorded reviewer. It is never attributed to Ethan. Re-run the finder first, so the approval matches the current draft. Merge #379 after #382, which is done | Codex | The EA "advice against bathing (harmful algae)" line on the spot page | EA incident open since 19 Jun, still open 26 Oct | #379; AI-PROGRAMME product brief item 1 | read. The note in `data/advisories/approved.json` on `proto/advisory-finder` still said "Only Ethan Buckley approves" at 22:50 UTC; #379 is in progress |
-| P3 | #382 data-quality flags: watch the publishing run (40414855047). Revert on any material regression | Codex | The flags on the live data-quality page | Now | AI-PROGRAMME product brief item 2 | read; the run's result was not checked here |
+| P3 | #382 data-quality flags: **done.** Publishing run 40414855047 succeeded. The live quality page shows 4 comparative and 2 no-baseline rows; 105/105 forecasts OK; 5 feed checks run, 0 skipped, 0 flags | Codex | — | Done 26 Oct | AI-PROGRAMME product brief item 2 | run result read (`gh run view`: completed, success, 22:55 UTC); page figures from Codex's check, not re-checked here |
 | P4 | River rises: any change to the evaluation plan goes in as a dated amendment, before the run | Codex | The run | Not before **2 Nov 2026**; if possible before **21 Nov** | #383, `docs/RIVER-RISES-SCOPE-2026-10.md`; decision 12 | read |
 | P5 | River rises: run it once, alone on the machine, offline from the cache | Agent | The verdict | 2 Nov to 21 Nov | same | read |
 | P6 | Missing event ends: measure again. Fix only if rule B changes levels at more than 1% of spot-builds | Agent; Codex merges | A fix, or a confirmed no-fix | On or after **9 Nov 2026** | #384; decision 11 | read |
@@ -266,29 +267,25 @@ checking before anyone acts on it.
 - The API has not been deployed since the Fly trial ended, so API-only fixes reach no one. [inferred]
 - An Ilkley overflow note is owed if a source comes back. [inferred]
 
-## 10. Proposed amendments, for decision (none applied)
+## 10. Proposed amendments: both resolved, 26 October 2026
 
-Dated 26 October 2026, before any session. Each is a question about the plan's text. The plan, run sheet and
-records file are unchanged, and the sessions run as written unless one of these is approved and recorded in those
-files, in the way of their section 11 and section 7.
+Two questions about the plan's text were raised here before any session. Both are resolved by the headline
+clarification approved on 26 October 2026 by Codex, under the delegation of routine decisions Ethan gave that
+day. It is recorded, with the original text kept, in the plan (section 12) and the run sheet (section 8).
 
-1. **Plan, section 10 item 2 (headline baseline).**
-   - The plan recommends the first four sessions "on the live wording as it is", then the rest "on the scoped
-     headline if that PR is merged by then".
-   - The scoped headline has been live since 20 October (PR #284), so both halves are the same wording.
-   - As written, every participant sees "Low risk from sewage spills", and the record notes it.
-   - Question: is that the intended baseline, or should some sessions show the earlier "Low risk" wording? The
-     second would need a way to show it, which does not exist on the live site. [inferred]
-2. **Plan, section 8, "Task 2 fails".**
-   - The plan names "the headline-scope PR (option A or B)" as the first candidate fix.
-   - Option B is #284, already live. Option A, "Moderate predicted risk from monitored sewage overflows", is
-     recorded in `docs/DESIGN.md`.
-   - Question: if task 2 fails, is option A the first candidate? [inferred]
+1. **Plan, section 10 item 2 (headline baseline).** The plan's "live wording" and "scoped headline" are the same
+   words, since PR #284 has been live since 20 October. **Resolved (H1, H3):** every participant uses the live
+   scoped wording; the old bare "Low risk" is not restored and there is no headline comparison. Each record
+   holds the exact headline, URL and "Issued" line.
+2. **Plan, section 8, "Task 2 fails".** Option B (#284) is already live. **Resolved (H4):** if task 2 fails, a
+   clearer explanatory-wording prototype informed by the observed errors is evaluated, option A possibly first,
+   with a focused retest before any wider promotion. No wording is rolled out automatically. Scoring and fail
+   lines stay exactly as written (H2).
 
 ## 11. What I could not verify
 
 - Whether the thank-you has been decided anywhere outside the repository.
 - Whether scheduled tasks for W1 to W4 still exist.
 - Whether option B's import and 2026 ERA5-Land fetch (W5, steps 2 and 3) have been done.
-- The result of the #382 publishing run (40414855047).
+- The live quality page's row counts after #382 (taken from Codex's check).
 - The repository's secrets (`gh secret list` printed nothing).

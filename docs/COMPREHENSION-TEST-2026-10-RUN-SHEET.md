@@ -50,6 +50,9 @@ swimsignal.co.uk/spots.html.
    the build may be stuck; write that in the record and consider moving the session.
 8. Check which headline wording is live, the current one or the scoped headline, and note it for the
    record (plan, section 10 item 2).
+   *Clarified 26 October 2026, before any session (section 8):* the scoped wording is live and is the one
+   every participant uses (H1). Note the exact headline as shown, the page's URL and its "Issued" line
+   (H3); there is no choice between wordings.
 9. Copy the blank record (`COMPREHENSION-TEST-2026-10-RECORDS.md`, section 1) into the private folder as
    `P0X-2026-MM-DD.md`. Never into this repository.
 10. Group leaders: have the buyer-interview questions from the launch kit open. They come after the
@@ -362,3 +365,23 @@ them.
   anonymised findings and quotes are published. Consent answers stay with the research record for as long
   as it is kept. SwimSignal is registered with the ICO and the fee paid (confirmed by the operator, 26
   Oct 2026).
+
+## 8. Clarification, 26 October 2026, before any session: the headline
+
+Added on 26 October 2026, before any participant was recruited and before any session was arranged or run.
+Approved the same day by Codex, under the delegation of routine decisions Ethan gave on 26 October 2026
+(`docs/AI-PROGRAMME-2026-10.md`, "Decisions, 26 October 2026"). The plan records it in its section 12. The
+checklist above is left as written, with a dated line at section 1 step 8.
+
+- **H1. One wording.** Every participant uses the current live scoped wording ("Low risk from sewage
+  spills", PR #284, live since 20 October 2026). The earlier bare "Low risk" headline is not restored, and
+  there is no headline comparison, stated or implied.
+- **H2. Scoring unchanged.** Tasks, the rubric and every fail line stay exactly as in the plan, with A1 to A7
+  and D1 to D8.
+- **H3. The record.** For each page used, write the exact headline as shown, the page's URL and its "Issued"
+  line (section 2 steps 4 and 5 already ask for the headline and the "Issued" line; add the URL). In the
+  record's "Headline wording live today" field, write the exact headline rather than "current" or
+  "scoped".
+- **H4. If task 2 fails.** A prototype of clearer explanatory wording, informed by the errors observed, is
+  evaluated (option A, in `docs/DESIGN.md`, may be the first candidate), with a focused retest before any
+  wider promotion (D5). No wording is rolled out automatically.
