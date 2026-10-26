@@ -203,10 +203,10 @@ test('the evidence panel says nothing of the fold: the advice is not part of the
   assert.doesNotMatch(fs.readFileSync(join(SITE, 'evidence.js'), 'utf8'), /ea-today|eaToday|Today's EA advice|short-term/);
 });
 
-test('the embed, the organisers\' page and sign, and the alerts do not load the panel', () => {
+test('the embed, the organisers\' page and sign, and the alerts do not load the panel (the embed and the organisers\' page load eatoday.js for the compact form alone)', () => {
   const files = ['embed.js', 'embed.html', 'organisers.js', 'organisers.html', 'sign.html'].map(f => join(SITE, f))
     .concat(fs.readdirSync(join(__dirname, '../push/src')).filter(f => f.endsWith('.js')).map(f => join(__dirname, '../push/src', f)));
-  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /bwq\/widget|eatoday|ea-today/, f);
+  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /bwq\/widget|ea-today|eaTodayFold|eaTodayOpen|eaTodayListen|eaTodayOfficial/, f);
 });
 
 test("no other script of the page defines one of eatoday.js's names, and the page loads it first", () => {
