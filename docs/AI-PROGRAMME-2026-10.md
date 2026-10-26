@@ -12,7 +12,7 @@ the #377 statement at about 19:25 UTC and asked for the rest to be built autonom
 
 | Piece | PR | What it is | Tests | Evidence | Costs and limits used | State |
 |---|---|---|---|---|---|---|
-| Satellite algae | #377 | approved statement, run once (26 Oct): Sentinel-2 NDCI at 14 lake sites vs 1,358 EA algae checks, 2020-26 | 56 pass | **A (algae seen) fails**: adds nothing to month + last check (Brier gain −0.0047, 97.5% interval −0.023 to +0.002, "Possible harm"; AUC 0.60). **B (objectionable) too few to judge** (20 events; AUC 0.81 description only). 404 of 1,358 checks paired (30%). CLMS lake product: no data at any English site | stage 1 28,317 requests / 5.18 GB after A1 (parallel bucket reads); A2 byte cap 5 GiB (8.2 MB overshoot disclosed); A3 EA fetch per point; scoring offline, 0 network attempts | **done: lakes keep the EA check only** |
+| Satellite algae | #377 | approved statement, run once (26 Oct): Sentinel-2 NDCI at 14 lake sites vs 1,358 EA algae checks, 2020-26 | 56 pass | **A (algae seen) fails**: adds nothing to month + last check (Brier gain −0.0047, 97.5% interval −0.023 to +0.002, "Possible harm"; AUC 0.60). **B (objectionable) too few to judge** (20 events; AUC 0.81 description only). 404 of 1,358 checks paired (30%). CLMS lake product: no data at the 18 English sites checked in summer 2025 | stage 1 28,317 requests / 5.18 GB after A1 (parallel bucket reads); A2 byte cap 5 GiB (8.2 MB overshoot disclosed); A3 EA fetch per point; scoring offline, 0 network attempts | **done: lakes keep the EA check only** |
 | Advisory finder | #379 | dry-run drafts from the EA incident feed and the Irish EPA, plus 4 whitelisted pages; deterministic, no LLM | 33 pass | EA open incidents answered this Mac: 7 open, 1 at a SwimSignal spot (Frensham Great Pond, algae, since 19 Jun); EPA 0 in force (season over) | 11 requests; no account | prototype done |
 | Sampling priorities | #381 | ranking of new sample days by information, high-risk list kept apart; simulation stated before it ran | 7 pass | **fails its stated rule**: beats least-sampled-first in 58.5% of 200 runs (60% needed); beats random in 73% | no network; 112 s | prototype done, rule failed |
 | Monitoring anomalies | #382 | 9 review-only flags beyond today's feed checks, on 39 days of saved polls plus injected failures | 25 pass | long_run 7 (4 look stuck, 1 probable false alarm); quiet_monitor 12 (10 worth a look); future_time 4 (UU starts 22-47 min ahead of the poll); company_freeze, known_share_drop and future_time caught injected failures no current check fired on | no network | prototype done |
@@ -30,7 +30,7 @@ UTC). Each decision is recorded in its own PR as well.
 
 | # | Piece | Decision | Applied |
 |---|---|---|---|
-| 0 | Satellite (#377) | No Copernicus Data Space account. Even full Lake District coverage is 3 water bodies, under the statement's 4; the tile check then found no English site covered at all | recorded in #377 |
+| 0 | Satellite (#377) | No Copernicus Data Space account. Even full Lake District coverage is 3 water bodies, under the statement's 4; the tile check then found no data at the 18 English sites checked in summer 2025 | recorded in #377 |
 | 1 | Advisory (#379) | Ethan alone approves; approvals in a file in the repo, changed by PR | code in #379 |
 | 2 | Advisory | Sources: EA, NRW, Irish EPA, council water-quality notices; water companies for their own incidents as "[company] says"; closures are not advisories | code in #379 |
 | 3 | Advisory | Council text: link and own summary; verbatim only from openly licensed sources | code in #379 |
@@ -72,7 +72,7 @@ checked; the three also merge cleanly with each other, and their tests pass toge
 
 | PR | Record | Verdict, unchanged | Head | Checks |
 |---|---|---|---|---|
-| #377 | Satellite algae (Sentinel-2 NDCI) | A fails (Possible harm, AUC 0.60); B too few to judge; CLMS covers no English site | f291f7a → **merged 41d3afd** | 56 harness tests, ruff, docs checks; CI green |
+| #377 | Satellite algae (Sentinel-2 NDCI) | A fails (Possible harm, AUC 0.60); B too few to judge; CLMS had no data at the 18 English sites checked in summer 2025 | f291f7a → **merged 41d3afd** | 56 harness tests, ruff, docs checks; CI green |
 | #381 | Sampling priorities simulation | fails its stated rule against coverage (58.5% vs 60%) | 456307e → **merged c4006ca** | 10 tests, ruff; CI green |
 | #384 | Missing event ends | do not fix now; re-measure on or after 9 Nov | be3a17b → **merged c581b9f** | 7 tests, ruff; CI green |
 

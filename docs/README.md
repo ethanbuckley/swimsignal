@@ -124,8 +124,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   `-score.json`, `-face.json`, `-model-235.json`, `-model-500.json`.
 - [LAKE-ALGAE-SATELLITE-TEST-2026-10.md](LAKE-ALGAE-SATELLITE-TEST-2026-10.md): a Sentinel-2 chlorophyll index
   (NDCI) at lake bathing waters, scored against the EA's visual algae checks, 2020–26. **"Algae seen" fails
-  (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS covers no
-  English site. Tables: `-score.json`, `-sizes.json`, `-clms-tiles.json`, `-coverage.json`.
+  (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS had no data
+  at the 18 English sites checked in summer 2025. Tables: `-score.json`, `-sizes.json`, `-clms-tiles.json`, `-coverage.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with
