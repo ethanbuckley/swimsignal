@@ -51,6 +51,9 @@ eight does not show the wording works for everyone.
   overflows upstream. Task 3 needs a spot with at least one gap: an overflow with no live feed, the E.
   coli estimate out of season, unchecked EA advice, or unconfirmed access. River Thames, Long
   Bridges, Oxford has had all four in October. Note the spot and its level in the record.
+  `uv run python scripts/pick_test_spots.py --area "<area heading from spots.html>"` lists that
+  morning's candidates for both tasks from the published forecast and spot pages, with each page's
+  headline and gaps.
 
 ## 4. The tasks
 
