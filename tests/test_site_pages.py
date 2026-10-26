@@ -224,6 +224,35 @@ def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_pictu
         assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in (tmp_path / page).read_text(), page
 
 
+PROSE_PAGES = ["organisers.html", "verification.html", "spots.html", "about.html", "methods.html", "clubs.html", "coverage.html",
+               "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html",
+               "quality.html", "support.html"]
+
+
+def test_every_prose_page_has_its_own_share_preview(tmp_path):
+    """A link to a prose page in a post gets the page's own title and description, its address and the
+    shared picture, from one block like the app's (page_meta), with its canonical link at the same address."""
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/", support="https://ko-fi.com/example")
+    for name in PROSE_PAGES:
+        head = (tmp_path / name).read_text().split("</head>")[0]
+        title = re.search(r"<title>([^<]+)</title>", head)[1]
+        description = re.search(r'<meta name="description" content="([^"]+)">', head)[1]
+        url = f"https://example.org/swim/{name}"
+        assert head.count("<title>") == 1 and head.count('name="description"') == 1, name
+        assert f'<meta property="og:title" content="{title}">' in head, name
+        assert f'<meta property="og:description" content="{description}">' in head, name
+        assert f'<meta property="og:url" content="{url}">' in head and f'<link rel="canonical" href="{url}">' in head, name
+        assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in head, name
+        assert '<meta property="og:image:width" content="1200">' in head and '<meta property="og:image:height" content="630">' in head, name
+        assert '<meta property="og:type" content="website">' in head and '<meta name="twitter:card" content="summary_large_image">' in head, name
+        assert "<base" not in head and "{{" not in head, name
+        assert "safe" not in description.lower().replace("unsafe", ""), name
+    assert "Event organisers · SwimSignal" in (tmp_path / "organisers.html").read_text().split("</head>")[0]
+    with pytest.raises(ValueError, match="no canonical link or share tags"):
+        bs.with_share_meta((tmp_path / "about.html").read_text(), "about.html", "https://example.org/swim/")   # never twice
+
+
 def test_the_build_draws_the_share_cards_from_this_runs_levels(tmp_path):
     bs = _build_site()
     (tmp_path / "data").mkdir()

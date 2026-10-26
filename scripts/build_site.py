@@ -17,7 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
-from html import escape
+from html import escape, unescape
 from pathlib import Path
 
 import numpy as np
@@ -1751,6 +1751,24 @@ def page_meta(title: str, description: str, url: str, root: str, base: str | Non
     ])
 
 
+PAGE_TITLE = re.compile(r"<title>(.*?)</title>")
+PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
+
+
+def with_share_meta(page: str, path: str, root: str) -> str:
+    """A prose page with page_meta's block in place of its own <title> and description: its canonical
+    link and its share preview (og: and twitter: tags, with the shared icons/og.png), in the page's own
+    title and description, at root + path. Without them a link to the page in a post or a message showed
+    whatever picture and words the app picked from the page."""
+    head, sep, rest = page.partition("</head>")
+    titles, descriptions = PAGE_TITLE.findall(head), PAGE_DESCRIPTION.findall(head)
+    if len(titles) != 1 or len(descriptions) != 1 or 'rel="canonical"' in head or 'property="og:' in head:
+        raise ValueError(f"{path} needs one <title>, one description, and no canonical link or share tags of its own")
+    head = PAGE_DESCRIPTION.sub("", head, count=1)
+    head = PAGE_TITLE.sub(lambda _: page_meta(unescape(titles[0]), unescape(descriptions[0]), root + path, root), head, count=1)
+    return head + sep + rest
+
+
 def spot_blurb(spot: dict) -> str:
     """One sentence for a spot's search result and link preview. It leaves out today's level:
     messaging apps keep a preview for days, and a level in it would go stale."""
@@ -2266,13 +2284,13 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
         s = with_counter(with_push(s, push, email, push_dates) if name == "privacy.html" else s, token)
-        s = with_tiles(s, name, tiles)
+        s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
     if support:
         s = (STATIC / "support.html").read_text().replace("__KOFI_URL__", escape(support))
         for a, b in REWRITES:
             s = s.replace(a, b)
-        (site / "support.html").write_text(with_counter(s, token))
+        (site / "support.html").write_text(with_counter(with_share_meta(s, "support.html", root), token))
     else:
         (site / "support.html").unlink(missing_ok=True)   # tips turned off: no page, no links
     shutil.copy(STATIC / "page.css", site / "page.css")
@@ -2312,12 +2330,12 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
-    write_data_page(site, token)   # lists what is in data/, so build() writes the data files first
-    write_quality_page(site, overflows, generated, token)
+    write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
+    write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
-    write_organisers(site, token)
-    write_sites(site, token)
-    write_record(site, token)
+    write_organisers(site, token, root)
+    write_sites(site, token, root)
+    write_record(site, token, root)
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
@@ -2524,7 +2542,7 @@ def write_app_data(site: Path, doc: dict) -> int:
     return len(doc["spots"]) - sum(1 for s in lite if "detail_file" not in s)
 
 
-def write_data_page(site: Path, token: str | None = None) -> list[str]:
+def write_data_page(site: Path, token: str | None = None, root: str | None = None) -> list[str]:
     """data.html, from the files in site/data. Returns the ones it does not describe."""
     page = (STATIC / "data.html").read_text()
     for a, b in REWRITES:
@@ -2534,7 +2552,7 @@ def write_data_page(site: Path, token: str | None = None) -> list[str]:
     if extra:
         announce(f"data.html does not describe {', '.join(extra)}: listed without a description. "
                  "Add a row and a section for each to src/dipcast/pages/data.html")
-    (site / "data.html").write_text(with_counter(page, token))
+    (site / "data.html").write_text(with_counter(with_share_meta(page, "data.html", root or site_url()), token))
     return extra
 
 
@@ -2578,7 +2596,7 @@ ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
 
 
 def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],
-                        token: str | None = None) -> str:
+                        token: str | None = None, root: str | None = None) -> str:
     """A prose page from src/dipcast/site/<name> that reads spots.json with its own scripts, written
     beside the app with its scripts at ?v=<hash of the scripts>, as the embed's are, so the page and its
     level rules always come from one build. own: the scripts this page brings (the app's, levels.js,
@@ -2595,14 +2613,14 @@ def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tu
         page = page.replace(tag, f'<script src="{f}?v={v}"></script>', 1)
     for f in own:
         shutil.copy(TEMPLATE.parent / f, site / f)
-    (site / name).write_text(with_counter(page, token))
+    (site / name).write_text(with_counter(with_share_meta(page, name, root or site_url()), token))
     return v
 
 
-def write_organisers(site: Path, token: str | None = None) -> str:
+def write_organisers(site: Path, token: str | None = None, root: str | None = None) -> str:
     """organisers.html and organisers.js beside the app (which has levels.js, lists.js and spots.json).
     Returns the scripts' version."""
-    return write_scripted_page(site, "organisers.html", ORGANISERS_SCRIPTS, ("organisers.js", "sites.js"), token)
+    return write_scripted_page(site, "organisers.html", ORGANISERS_SCRIPTS, ("organisers.js", "sites.js"), token, root)
 
 
 # The sites view, sites.html#spots=a,b&name=...: several spots on one page, each with its five days, for a
@@ -2615,12 +2633,12 @@ SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.
 RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "record.js")
 
 
-def write_sites(site: Path, token: str | None = None) -> str:
-    return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token)
+def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
+    return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token, root)
 
 
-def write_record(site: Path, token: str | None = None) -> str:
-    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token)
+def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token, root)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
@@ -2633,7 +2651,8 @@ REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, cen
 
 
 def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
-                       token: str | None = None, live: Path | None = None, returns: Path | None = None) -> None:
+                       token: str | None = None, live: Path | None = None, returns: Path | None = None,
+                       root: str | None = None) -> None:
     """quality.html: the overflow records to correct, from the position conflicts' cases
     file, the live snapshot's positions, the annual returns' outlets and this build's overflow table
     (src/dipcast/quality.py). A missing input leaves its part of the page saying so; nothing here stops
@@ -2657,7 +2676,8 @@ def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd
         announce(f"quality.html without the annual returns' outlets: {e}")
         outlets = empty
     when = (generated or pd.Timestamp.now(tz="UTC")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
-    (site / "quality.html").write_text(with_counter(quality.site_page(cases, positions, outlets, overflows, when, MARK), token))
+    page = quality.site_page(cases, positions, outlets, overflows, when, MARK)
+    (site / "quality.html").write_text(with_counter(with_share_meta(page, "quality.html", root or site_url()), token))
 
 
 def write_profiles(site: Path, spots: list[dict], token: str | None = None, returns: Path | None = None,
@@ -2726,13 +2746,13 @@ def every_spot_body(spots: list[dict]) -> str:
 
 def write_every_spot(site: Path, spots: list[dict], root: str, token: str | None = None) -> None:
     """spots.html, from the spots with a page of their own (write_pages passes the ones it wrote)."""
-    slots = {"mark": MARK, "body": every_spot_body(spots), "description": escape(EVERY_SPOT_DESCRIPTION),
-             "url": escape(f"{root}spots.html")}
+    slots = {"mark": MARK, "body": every_spot_body(spots), "description": escape(EVERY_SPOT_DESCRIPTION)}
     page = EVERY_SPOT.read_text()
     missing = set(re.findall(r"\{\{(\w+)\}\}", page)) - slots.keys()
     if missing:
         raise ValueError(f"spots.html has slots this build does not fill: {sorted(missing)}")
-    (site / "spots.html").write_text(with_counter(re.sub(r"\{\{(\w+)\}\}", lambda m: slots[m.group(1)], page), token))
+    page = re.sub(r"\{\{(\w+)\}\}", lambda m: slots[m.group(1)], page)
+    (site / "spots.html").write_text(with_counter(with_share_meta(page, "spots.html", root), token))
 
 
 def write_cards(site: Path, results: list[dict], generated_at: str, root: str, alerts_ok: bool = True) -> dict:

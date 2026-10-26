@@ -132,7 +132,7 @@ def test_the_data_page_lists_the_area_feeds(tmp_path):
 def test_the_build_writes_the_feeds_after_the_spot_pages():
     src = (ROOT / "scripts" / "build_site.py").read_text()
     pages = src[src.index("def write_pages("):src.index("def write_any_point(")]
-    assert pages.index('shutil.rmtree(site / "spot"') < pages.index("write_feeds(site, results, root)") < pages.index("write_data_page(site, token)")
+    assert pages.index('shutil.rmtree(site / "spot"') < pages.index("write_feeds(site, results, root)") < pages.index("write_data_page(site, token, root)")
 
 
 def test_the_home_and_spot_pages_link_their_feeds_only_when_there_are_feeds(tmp_path):
