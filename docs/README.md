@@ -36,6 +36,12 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [NINE-COMPANY-MODEL-TEST-2026-10.md](NINE-COMPANY-MODEL-TEST-2026-10.md): a spill model trained on nine
   companies. **Not adopted:** conditions 1, 3 and 4 fail. Tables: `-coverage.csv`, `-events.csv`,
   `-reliability.csv`, `-scores.csv`.
+- [NINE-COMPANY-MODEL-V2-TEST-2026-11.md](NINE-COMPANY-MODEL-V2-TEST-2026-11.md): the nine-company model again,
+  trained on 2024 and 2025 and tested on January to August 2026, pooled layer alone and with two-year offsets, with
+  conditions that allow for noise. **Not adopted:** both arms fail condition 2 at United Utilities only ((b) +3.4%,
+  interval just above zero); at the other eight companies (b) is 11% to 23% better than production, and 15% better on
+  the Welsh set. Tables: `-checks.json`, `-event-defs.csv`, `-intervals.csv`, `-monthly.csv`, `-reliability.csv`,
+  `-scores.csv`, `-sensitivities.csv`, `-training.csv`.
 - [NEURAL-CHALLENGER-TEST-2026-10.md](NEURAL-CHALLENGER-TEST-2026-10.md): a neural net against the boosted
   trees. **Not adopted:** conditions 1 to 4 fail (Brier 0.0372 against 0.0362). Tables: `-checks.json`,
   `-differences.csv`, `-leads.csv`, `-reliability.csv`, `-scores.csv`, `-training.csv`.
@@ -152,6 +158,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 
 ## Checks and records
 
+- [NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md](NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md): the EA files for 2024
+  to August 2026 before the v2 test. January to August 2026 is usable, no month excluded: July is dry, not missing;
+  the EA file matches the companies' own files; the live feeds add short blips. Tables: `-live-feed.csv`,
+  `-monthly.csv`, `-own-feeds.csv`, `-rain.csv`.
 - [NOISE-AUDIT-2026-10.md](NOISE-AUDIT-2026-10.md): which tests decided on point rules with no allowance for noise,
   the re-tests that follow, and the rule for new statements. No verdict is changed.
 - [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2
