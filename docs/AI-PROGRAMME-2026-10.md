@@ -11,7 +11,7 @@ Last updated: 26 October 2026, evening. Test counts were rerun by the coordinato
 
 | Piece | PR | What it is | Tests | Evidence | Costs and limits used | State |
 |---|---|---|---|---|---|---|
-| Satellite algae | #377 | statement revised to benchmark the CLMS lake product first; coverage prototype; harness | synthetic | pending | caps written before any fetch | in progress |
+| Satellite algae | #377 | statement revised before any run: the CLMS lake product is benchmarked first, with a decision rule; coverage prototype; full harness (stages 1 and 2) | 50 pass | CLMS LWQ 100 m v2 is 10-day composites from Sep 2024, lag up to 4 days, shores not flagged, one granule over Great Britain (in Scotland); inferred: none of our 12 lakes covered. Sentinel-2 C1: scale and offset on all 7,317 items, no C1 items in 2022, Millerground 323 core pixels, Ladies Pond 0. No red or red-edge band read, no check fetched, nothing paired | 522 requests, 113.7 MB (ledger checked: SCL reads only); per-run caps 300 requests and 100 MB, one fired | statement ready for review; stage 1 not run |
 | Advisory finder | #379 | dry-run drafts from the EA incident feed and the Irish EPA, plus 4 whitelisted pages; deterministic, no LLM | 33 pass | EA open incidents answered this Mac: 7 open, 1 at a SwimSignal spot (Frensham Great Pond, algae, since 19 Jun); EPA 0 in force (season over) | 11 requests; no account | prototype done |
 | Sampling priorities | #381 | ranking of new sample days by information, high-risk list kept apart; simulation stated before it ran | 7 pass | **fails its stated rule**: beats least-sampled-first in 58.5% of 200 runs (60% needed); beats random in 73% | no network; 112 s | prototype done, rule failed |
 | Monitoring anomalies | #382 | 9 review-only flags beyond today's feed checks, on 39 days of saved polls plus injected failures | 25 pass | long_run 7 (4 look stuck, 1 probable false alarm); quiet_monitor 12 (10 worth a look); future_time 4 (UU starts 22-47 min ahead of the poll); company_freeze, known_share_drop and future_time caught injected failures no current check fired on | no network | prototype done |
@@ -19,6 +19,12 @@ Last updated: 26 October 2026, evening. Test counts were rerun by the coordinato
 | Moderation help | #378 | a trigger based on queue volume, then Worker rules, a local model, an outside model only after a DPIA | none (no code) | 0 published reviews, 0 notes showing (26 Oct) | none | written |
 
 ## Decisions for Ethan
+
+**Satellite algae (#377)**
+0. Read and approve the revised statement; nothing is scored before that. Then: whether to make a free Copernicus
+   Data Space account, which CLMS downloads need (catalogue search works without one). Without it, CLMS stays
+   metadata-only and NDCI on Sentinel-2 is the reading. Stage 1 is estimated (not measured) at about 27,000 requests
+   and 2 GB over 7 capped runs.
 
 **Advisory finder (#379)**
 1. Who may approve a draft, and where approvals are kept.
