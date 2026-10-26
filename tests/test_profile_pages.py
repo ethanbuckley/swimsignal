@@ -105,6 +105,48 @@ def test_write_pages_writes_a_profile_for_every_spot_page_and_lists_them(tmp_pat
     assert "/profile/" not in (tmp_path / "data.html").read_text() and "profile" not in (bs.TEMPLATE.parent / "sw.js").read_text()
 
 
+
+def share(page: str) -> dict:
+    return {m.group(1): unescape(m.group(2)) for m in re.finditer(r'<meta (?:property|name)="((?:og|twitter):[^"]+)" content="([^"]*)">', page)}
+
+
+def test_a_profile_page_has_the_same_link_preview_tags_as_the_other_pages(tmp_path):
+    """A link to a spot's overflow history (shared, or found by a search) had a canonical link but no
+    preview: no og: or twitter: tags (26 Oct 2026). It now has build_site.page_meta's set, from the page's
+    own title, description and address, with the site's shared picture: not the spot's card, which shows
+    today's level."""
+    (tmp_path / "data").mkdir()
+    upstream_file(tmp_path)
+    bs.write_pages(tmp_path, SPOTS[:3], root="https://example.org/", day="2026-10-06")
+    page = (tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text()
+    tags = share(page)
+    other = share(bs.page_meta("T", "D", "https://example.org/x", "https://example.org/"))
+    assert set(tags) == set(other)   # the same tags as every other page
+    title = unescape(re.search(r"<title>([^<]+)</title>", page).group(1))
+    description = unescape(re.search(r'<meta name="description" content="([^"]+)">', page).group(1))
+    canonical = re.search(r'<link rel="canonical" href="([^"]+)">', page).group(1)
+    assert tags["og:title"] == title == "Overflow history: Wharfe & Ilkley · SwimSignal"   # escaped once in the HTML
+    assert tags["og:description"] == description and "2021 to 2025" in description
+    assert tags["og:url"] == canonical == "https://example.org/spot/wharfe-ilkley/profile/"
+    assert tags["og:image"] == "https://example.org/icons/og.png" and tags["og:image"] == other["og:image"]
+    assert (bs.TEMPLATE.parent / "icons" / "og.png").exists()
+    assert "cards/spot/" not in page   # never the spot's card with today's level
+    for words in (tags["og:title"], tags["og:description"]):
+        assert not re.search(r"\b(risk|safe|today|right now|forecast)\b", words, re.I), words
+    assert 'content="Overflow history: Wharfe &amp; Ilkley · SwimSignal"' in page   # escaped in the attribute
+    # Every spot's history page has them, the one without overflows too.
+    for i in ("tarn", "beck"):
+        assert share((tmp_path / "spot" / i / "profile" / "index.html").read_text())["og:url"] == f"https://example.org/spot/{i}/profile/"
+
+
+def test_a_profile_page_without_its_address_has_no_preview(tmp_path):
+    """Without the published address there is no canonical link, and no preview either: an og:url or
+    og:image must be absolute."""
+    page = pf.site_page(SPOTS[0], None, "", url=None, root="https://example.org/")
+    assert "og:" not in page and "twitter:" not in page and "{{share}}" not in page
+    assert "og:" not in pf.site_page(SPOTS[0], None, "", url="https://example.org/spot/x/profile/", root=None)
+
+
 def action_lines() -> dict:
     js = (bs.TEMPLATE.parent / "levels.js").read_text()
     out = {k: re.search(rf"\b{k}: '([^']+)'", js).group(1) for k in ("moderate", "high")}

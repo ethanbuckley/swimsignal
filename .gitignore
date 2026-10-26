@@ -23,6 +23,7 @@ data/processed/*
 !data/processed/lead_calibration.json
 !data/processed/spill_day_ratio.json
 !data/processed/ecoli_model.json
+!data/processed/ecoli_model_sm.json
 !data/processed/ecoli_model_eval.json
 !data/processed/verification_2025.csv
 !data/processed/reliability_2025.csv
