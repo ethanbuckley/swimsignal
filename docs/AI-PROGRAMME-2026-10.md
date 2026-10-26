@@ -103,6 +103,34 @@ checked; the three also merge cleanly with each other, and their tests pass toge
   promise of polls "every 30 minutes" was #390's replay footer, now "when the feeds were polled; events between polls
   can be missed".
 
+## Integrated usability review (26 October 2026, on main 6b3e544, before #388 and #391)
+
+Static preview, no pipeline, no Open-Meteo; real approved and check files; 320, 375 and 1440 px, with and without
+JavaScript. The official block itself passed: above the level, the separation sentence, link contrast 7.4:1 and text
+14.9:1, in the prerendered page, and in the stale state. Home list, Saved cards, plan rows, a shared plan opened fresh
+and the record (incl. print) carry the compact notice. No sideways scroll on any page checked.
+
+| Finding | Severity | Where it is fixed |
+|---|---|---|
+| B1 "Lower risk nearby" suggests the advised water | blocker | #391 (sent) |
+| B2 embed / live sign say advice "could not be checked" | blocker | #391 |
+| B3 sites view and printed briefing | blocker | #391 |
+| B4 organisers page has no official line | blocker | #391 |
+| B5 compare tables' EA row says "could not be checked" | blocker | #391 (sent) |
+| S1 map tooltip, S2 share card and alt text | should-fix | #391 |
+| S3 Atom feeds headline a clean Low | should-fix | #391 (sent); alerts.json and push/email delivery are follow-ups |
+| S4 Saved day grid untagged, "lowest risk this week" counts the advised spot | should-fix | #391 (sent) |
+| S5 plan share and low-only filter | should-fix | #391 (share: exclusion vs notice is Codex's decision) |
+| S6 Saved since line reads as good news at an advised water | should-fix | #388 (sent) |
+| S7 "Usual care" under the level at an advised water; algae tile "None seen" beside the notice | should-fix | #391 (sent) |
+| S8 compact line drops "(harmful algae)"; record line has no link | should-fix | #391 (sent; shared helper) |
+| P1 guide label "Verified: Defra" on a fact that says it is not a current check | polish | follow-up: needs a label rule for dated sources |
+| P2 "last checked" sentence repeated on the spot page | polish | #391 (sent) |
+| P3 Saved and Plan stuck on "Loading…" without JavaScript | polish | follow-up |
+| P4 sites view heading order skips a level | polish | follow-up |
+
+Not checked: a real phone, iOS Safari, Firefox, screen-reader output, real keyboard focus rings.
+
 ## What was learned
 
 - Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median
