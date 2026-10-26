@@ -23,6 +23,18 @@ test('verified facts name their page; a suggestion says who, when, and that it i
   assert.match(html, /feedback\.html\?type=guide&amp;spot=Wharfe%20at%20Cromwheel%2C%20Ilkley/);
 });
 
+test('a fact from a dated record says Source and the month, not Verified', () => {
+  const dated = { topic: 'toilets', text: 'Listed in a February 2026 consultation. This is a February 2026 listing, not a current check.', status: 'confirmed',
+    source: 'https://consult.example.gov.uk/doc.pdf', source_name: 'Defra', source_date: '2026-02' };
+  assert.equal(g.guideSource(dated), '<span class="g-who">Source</span>: <a href="https://consult.example.gov.uk/doc.pdf">Defra</a>, February 2026.');
+  const html = g.guideTile(spot({ guide: guide({ facts: [...guide().facts, dated] }) }), '2026-10-04');
+  assert.match(html, /<span class="g-who">Verified<\/span>: <a href="https:\/\/www.example.gov.uk\/p">Example Council<\/a>\./, 'a current page still says Verified');
+  assert.doesNotMatch(html, /not a current check\.<\/p><p class="g-src"><span class="g-who">Verified/);
+  // A malformed month, or no page to name, falls back to the plain line rather than writing it.
+  assert.match(g.guideSource({ ...dated, source_date: '2026-2<b>' }), /^<span class="g-who">Verified<\/span>/);
+  assert.match(g.guideSource({ status: 'confirmed', seen: '2026-08-20', source_date: '2026-02' }), /^<span class="g-who">Verified<\/span>: seen on site 20 Aug 2026\.$/);
+});
+
 test('a site visit, a guide of suggestions only, and an old guide each say so', () => {
   assert.equal(g.guideChecked(guide({ how: 'visit' }), '2026-10-04'), 'Checked on site 3 Oct 2026.');
   const onlySuggested = guide({ facts: [guide().facts[0]] });
