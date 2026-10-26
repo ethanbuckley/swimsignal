@@ -1,0 +1,123 @@
+{
+ "what": "CLMS Lake Water Quality 100 m v2, public WMTS, layer TMEAN, zoom 14, May-September 2025 dekads (controls: 5 dekads). Data-or-not only: alpha channel within 300 m of the point and in the whole 1.4 km tile; no colour or value kept.",
+ "requests": 297,
+ "bytes": 291210,
+ "http_429_stops": 2,
+ "by_site": {
+  "Colwick Country Park (West Lake)": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Coniston Water, Boating Centre": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Coniston Water, Brown Howe": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Coniston Water, Monk Coniston": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Cotswold Country Park and Beach": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Derwent Water at Crow Park": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Frensham Great Pond": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Hampstead Heath (Ladies Pond)": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Hampstead Heath (Mens Pond)": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Hampstead Heath (Mixed Pond)": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Henleaze Lake": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Lake Balaton": {
+   "dekads": 5,
+   "with_data_near": 5,
+   "with_data_in_tile": 5
+  },
+  "Lake Geneva": {
+   "dekads": 5,
+   "with_data_near": 5,
+   "with_data_in_tile": 5
+  },
+  "Loch Lomond": {
+   "dekads": 5,
+   "with_data_near": 4,
+   "with_data_in_tile": 5
+  },
+  "Lough Neagh": {
+   "dekads": 5,
+   "with_data_near": 3,
+   "with_data_in_tile": 3
+  },
+  "Rutland Water Sykes Lane": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Rutland Water Whitwell Creek": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "The Serpentine - Hyde Park": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Vanern": {
+   "dekads": 5,
+   "with_data_near": 5,
+   "with_data_in_tile": 5
+  },
+  "Windermere, Fellfoot": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Windermere, Lakeside YMCA": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Windermere, Millerground Landing": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  },
+  "Windermere, Rayrigg Meadow": {
+   "dekads": 15,
+   "with_data_near": 0,
+   "with_data_in_tile": 0
+  }
+ }
+}
