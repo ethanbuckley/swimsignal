@@ -6,12 +6,14 @@ upstream, from what the build already holds.
                and the times a monitor reported itself offline
   estimated    when each spill's water was modelled to reach the spot: the spill's start and end moved
                on by the overflow's travel time (model.transport, travel_h), the same shift the
-               forecast uses. Never a measurement.
-  rain         Open-Meteo's hourly rain over the cells of the counted overflows, read from the rain cache
-               the build's own prefetch filled (ingest.rainfall, forecast_<cell>.parquet). Past hours are
-               the weather model's record, not rain gauges; hours after the cache was issued are forecast.
-  gauge        the spot gauge's latest reading and six-hour rise, as attach_river_levels and
-               attach_flow_state already fetched them. No 48-hour series: the build holds none.
+               forecast uses. Never a measurement. Not for water that crosses a lake on its way
+               (lake_distance_km > 0): its spills are shown, its arrival is "not estimated here".
+  rain         Open-Meteo's hourly model rain averaged over the cells of the counted overflows (not the
+               catchment's rainfall), read from the rain cache the build's own prefetch filled
+               (ingest.rainfall, forecast_<cell>.parquet). Past hours are the weather model's record, not
+               rain gauges; hours after the cache was issued are forecast.
+  gauge        the spot gauge's current reading and its time, as attach_river_levels already fetched it.
+               No series.
 
 What is not held is marked unavailable and never filled: a spill whose end the feed never reported has
 no end, an hour of rain missing at any cell has no value, and a monitor with no reading is listed as such.
@@ -38,8 +40,11 @@ WINDOW_H = 48.0            # how far back the replay looks
 AHEAD_MAX_H = 24.0         # water still due later than now is drawn this far ahead at most
 MAX_ROWS = 12              # overflows listed with their spills; the rest are counted
 MAX_SPILLS = 8             # spills listed per overflow, the latest; earlier ones in the window are counted
+MAX_OFFLINE = 4            # no-reading spans listed per overflow, the latest; earlier ones are counted
+MAX_GAPS = 12              # poll gaps kept per company, the longest (the page names the 3 longest, draws them all)
+GAP_MIN_H = 1.5            # a stretch this long with no answered poll is a gap (the site polls every 30 min when it runs)
 MIN_WEIGHT = 0.005         # transport.COUNT_WEIGHT: under it the page says "0% reach", so not listed
-REPLAY_MAX_BYTES = 20_000  # a file at MAX_ROWS x MAX_SPILLS (tests/test_replay.py); real spots were 2-7 kB on 25 Oct 2026
+REPLAY_MAX_BYTES = 20_000  # enforced: rows of least reach are dropped, and counted, until a file fits (spot_replay)
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]+")
 FEED_DOWN = -3             # ingest.live.FEED_DOWN, repeated so this module needs nothing from the feed code
 STATES = ("live", "stale", "offline", "no_feed")
@@ -65,18 +70,77 @@ def _key(t: pd.Timestamp) -> pd.Timestamp:
     return t.floor("min")
 
 
+def _records(history) -> list[dict]:
+    """One overflow's history rows as dicts: from its slice of the table, or as group_history gave them."""
+    if history is None:
+        return []
+    return history if isinstance(history, list) else history.to_dict("records")
+
+
+def group_history(history: pd.DataFrame | None, sites=None) -> dict[str, list[dict]]:
+    """The poll history by site, once for a whole build: each site's rows as dicts, only `sites` when given
+    (the overflows some spot counts). Grouping the 91,000-row table again for every spot cost about 1.7 s a
+    spot on 25 Oct 2026, and a pandas group per site 8.7 s in all; one to_dict and a dict of lists is
+    under a second (docs/CATCHMENT-REPLAY-2026-10.md, Cost)."""
+    if history is None or not len(history):
+        return {}
+    if sites is not None:
+        history = history[history["site_id"].isin(set(sites))]
+    out: dict[str, list[dict]] = {}
+    for r in history.to_dict("records"):
+        out.setdefault(str(r["site_id"]), []).append(r)
+    return out
+
+
 def _first(*xs) -> pd.Timestamp | None:
     """The first of xs that is a time (NaT, None and NaN are not)."""
     return next((t for t in map(_ts, xs) if t is not None), None)
 
 
-def spill_intervals(history: pd.DataFrame, current: dict, now: pd.Timestamp) -> list[dict]:
+def poll_coverage(poll_log: pd.DataFrame | None, companies, since: pd.Timestamp, now: pd.Timestamp) -> dict:
+    """When each company's feed was actually read in the window, from the poll log (ingest.live.log_poll:
+    one row per company per poll, n_rows 0 when its feed did not answer). Per company: the answered polls,
+    the first and last, the longest stretches with none (MAX_GAPS of at least GAP_MIN_H, the window's
+    start and end included), and `starts_late` where the first answered poll is GAP_MIN_H or more after
+    the window starts. Without a poll log: {"unavailable": reason}. The site is meant to poll every 30
+    minutes; the log, not the schedule, says what happened."""
+    if poll_log is None or poll_log.empty:
+        return {"unavailable": "no poll log in this build's state"}
+    t = pd.to_datetime(poll_log["fetched_at"], utc=True)
+    ok = poll_log["n_rows"].fillna(0).astype(int) > 0
+    gap = pd.Timedelta(hours=GAP_MIN_H)
+    out = {}
+    for c in sorted({str(c) for c in companies if c}):
+        times = sorted(t[ok & (poll_log["company"] == c) & (t >= since) & (t <= now)].unique())
+        if not times:
+            out[c] = {"polls": 0, "gaps": [[_iso(since), _iso(now)]]}
+            continue
+        edges = [since, *[pd.Timestamp(x) for x in times], now]
+        gaps = sorted(((a, b) for a, b in zip(edges, edges[1:], strict=False) if b - a >= gap), key=lambda g: g[0] - g[1])
+        out[c] = {"polls": len(times), "from": _iso(pd.Timestamp(times[0])), "to": _iso(pd.Timestamp(times[-1])),
+                  "starts_late": pd.Timestamp(times[0]) - since >= gap,
+                  "gaps": [[_iso(a), _iso(b)] for a, b in sorted(gaps[:MAX_GAPS])], "more_gaps": max(0, len(gaps) - MAX_GAPS)}
+    return out
+
+
+def _gap_spans(cov: dict | None) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+    """A company's poll gaps as times (its entry of poll_coverage); none when coverage is not known."""
+    return [(_ts(a), _ts(b)) for a, b in (cov or {}).get("gaps", [])]
+
+
+def spill_intervals(history: pd.DataFrame, current: dict, now: pd.Timestamp,
+                    gaps: list[tuple[pd.Timestamp, pd.Timestamp]] | None = None) -> list[dict]:
     """One overflow's reported spills, oldest first: {start, end, running, end_known}. `history` is its
     rows of live_history.parquet (any order), `current` its row in this build (status, latest_event_*,
     last_status). A start with no reported end is `running` when the feed says it is discharging now, and
     otherwise has no end (`end_known` False): the feed went offline or stopped answering, so when it ended
     is not known, and nothing is drawn after the start. An end before its start (a feed's previous
-    event's) is ignored."""
+    event's) is ignored.
+
+    An end rebuilt from the feed's next "not discharging" is exact only when nothing stood between the last
+    poll that saw the spill and that one: no poll gap (`gaps`, the company's, from poll_coverage) and no
+    span with the monitor offline. Otherwise the spill has no end, but bounds: `end_after`, the last poll
+    that saw it discharging, and `end_by`, the stop the feed gave. A spill never closed keeps `end_after`."""
     events: dict[pd.Timestamp, pd.Timestamp | None] = {}
 
     def put(s, e) -> None:
@@ -89,11 +153,16 @@ def spill_intervals(history: pd.DataFrame, current: dict, now: pd.Timestamp) -> 
         if e is not None or k not in events:
             events[k] = e if e is not None else events.get(k)
 
-    rows = [] if history is None or history.empty else history.to_dict("records")
+    rows = _records(history)
+    seen: dict[pd.Timestamp, pd.Timestamp] = {}   # a start, and the last poll that saw it discharging
     for r in [*rows, current]:
         put(r.get("latest_event_start"), r.get("latest_event_end"))
         if r.get("status") == 1:
-            put(_first(r.get("status_start"), r.get("latest_event_start")), None)
+            st = _first(r.get("status_start"), r.get("latest_event_start"))
+            put(st, None)
+            polled = _ts(r.get("fetched_at"))
+            if st is not None and polled is not None and st <= now:
+                seen[_key(st)] = max(seen.get(_key(st), polled), min(polled, now))
     status = current.get("status")
     running_from = None
     if status == 1:
@@ -107,14 +176,25 @@ def spill_intervals(history: pd.DataFrame, current: dict, now: pd.Timestamp) -> 
     # stopped 20:51:50, "latest event" 20:51:20 to 20:51:50), so its start alone would lose the rest.
     stops = sorted(t for r in [*rows, current] if r.get("status") == 0
                    and (t := _ts(r.get("status_start"))) is not None and t <= now)
+    offline = [o["from"] for o in offline_spans(history, current, now)]
+    bounds: dict[pd.Timestamp, tuple[pd.Timestamp | None, pd.Timestamp | None]] = {}
     for k in [k for k, e in events.items() if e is None and k != running_from]:
-        events[k] = next((t for t in stops if t >= k), None)
+        t = next((t for t in stops if t >= k), None)
+        last = seen.get(k, k)
+        if t is None:
+            bounds[k] = (last if last > k else None, None)
+            continue
+        blind = any(a < t and b > last for a, b in (gaps or [])) or any(k < o < t for o in offline)
+        if blind:   # not seen between: it stopped somewhere from the last poll that saw it to the feed's stop
+            bounds[k] = (last, t)
+        else:
+            events[k] = t
     # An event inside a longer one (the part a feed reports as its latest event, or the same start a
     # minute apart) is that one, not another spill. Longest first at each start.
     minute = pd.Timedelta(minutes=1)
 
     def until(k, e):
-        return now if k == running_from else e
+        return now if k == running_from else e if e is not None else bounds.get(k, (None, None))[1]
 
     kept: list[tuple[pd.Timestamp, pd.Timestamp | None]] = []
     for k, e in sorted(events.items(), key=lambda x: (x[0], -((until(*x) or x[0]) - x[0]).total_seconds())):
@@ -123,11 +203,15 @@ def spill_intervals(history: pd.DataFrame, current: dict, now: pd.Timestamp) -> 
         if not covered:
             kept.append((k, e))
     out = []
-    for k, e in kept:
+    for i, (k, e) in enumerate(kept):
         if k == running_from:
             out.append({"start": k, "end": None, "running": True, "end_known": False})
-        elif e is None:   # never closed: the feed went offline or stopped answering before it said
-            out.append({"start": k, "end": None, "running": False, "end_known": False})
+        elif e is None:   # never closed, or closed only within bounds
+            after, by = bounds.get(k, (None, None))
+            nxt = kept[i + 1][0] if i + 1 < len(kept) else None
+            if after is not None and nxt is not None and after > nxt:
+                after = nxt   # a feed still giving the old start after a new one began: seen no later than that
+            out.append({"start": k, "end": None, "running": False, "end_known": False, "end_after": after, "end_by": by})
         else:
             out.append({"start": k, "end": e, "running": False, "end_known": True})
     return out
@@ -138,7 +222,7 @@ def offline_spans(history: pd.DataFrame, current: dict, now: pd.Timestamp) -> li
     the time the feed gives (status_start, else the poll) to the next reported state, or to now while it
     is still offline. A company feed that did not answer (status -3, this build only) is a span from
     `feed_down_since`. Oldest first, as {from, to}."""
-    rows = [] if history is None or history.empty else history.to_dict("records")
+    rows = _records(history)
     seq = []
     for r in rows:
         b = _first(r.get("status_start"), r.get("fetched_at"))
@@ -170,15 +254,17 @@ def arrival(spill: dict, travel_h: float | None, now: pd.Timestamp) -> dict | No
     shift = pd.Timedelta(hours=float(travel_h))
     a = spill["start"] + shift
     b = spill["end"] + shift if spill["end"] is not None else None
+    by = spill.get("end_by") + shift if spill.get("end_by") is not None else None
+    after = spill.get("end_after") + shift if spill.get("end_after") is not None else None
     if a > now:
         state = "due"
-    elif b is not None and b <= now:
+    elif (b is not None and b <= now) or (by is not None and by <= now):
         state = "passed"
     elif spill["running"] or b is not None:
         state = "at_spot"
     else:
         state = "unknown_end"
-    return {"from": a, "to": b, "state": state}
+    return {"from": a, "to": b, "to_after": after, "to_by": by, "state": state}
 
 
 def rain_series(cells: list[tuple[float, float]], start: pd.Timestamp, hours: int, cache_dir: Path) -> dict:
@@ -213,8 +299,9 @@ def rain_series(cells: list[tuple[float, float]], start: pd.Timestamp, hours: in
 
 
 def gauge_of(spot: dict) -> dict:
-    """The spot gauge as this build read it: the latest reading, and the six-hour rise where the build
-    fetched one. Nothing older is held."""
+    """The spot gauge as this build read it: its current reading and that reading's time, nothing more.
+    A 48-hour series would cost one EA request a spot a build; Ethan's call (26 Oct 2026) is the reading
+    alone. A reading too old to be current (flows.reading_fields) is kept as last_level_m."""
     rs = spot.get("river_state") or {}
     if not rs or (rs.get("level_m") is None and rs.get("last_level_m") is None):
         return {"unavailable": "no level gauge matched to this spot"}
@@ -223,8 +310,6 @@ def gauge_of(spot: dict) -> dict:
            "typical_low_m": rs.get("typical_low_m"), "typical_high_m": rs.get("typical_high_m")}
     if rs.get("stale"):
         out["level_m"], out["last_level_m"] = None, rs.get("last_level_m")
-    if rs.get("rise_6h_m") is not None:
-        out.update(rise_6h_m=rs.get("rise_6h_m"), rise_from=rs.get("rise_from"), rise_to=rs.get("rise_to"))
     return out
 
 
@@ -237,58 +322,91 @@ def _state(c: dict) -> str:
 
 
 def spot_replay(spot: dict, upstream: list[dict], history: pd.DataFrame | None, now: pd.Timestamp,
-                rain_cache: Path | None = None) -> dict:
+                rain_cache: Path | None = None, poll_log: pd.DataFrame | None = None) -> dict:
     """The replay for one spot: `upstream` is every overflow the forecast counted there (the build's
-    full contributor list), `history` live_history.parquet (all sites; None if there is none)."""
+    full contributor list), `history` live_history.parquet (all sites; None if there is none), `poll_log`
+    the poll log (None if there is none). The result is at most REPLAY_MAX_BYTES as JSON: listed overflows
+    of least reach are dropped, and counted in `more_with_events`, until it fits (`truncated`)."""
     since = now - pd.Timedelta(hours=WINDOW_H)
-    by_site = {k: g for k, g in history.groupby("site_id")} if history is not None and len(history) else {}
+    # `history` may come grouped already (group_history), as write_replays passes it for every spot.
+    by_site = history if isinstance(history, dict) else group_history(history)
     counted = [c for c in upstream if (c.get("weight") or 0) >= MIN_WEIGHT]
-    rows, quiet = [], {s: {"n": 0, "weight": 0.0} for s in STATES}
+    coverage = poll_coverage(poll_log, {c.get("company") for c in counted}, since, now)
+    rows, quiet = [], {k: {"n": 0, "weight": 0.0} for k in (*STATES, "no_history", "late_history")}
     for c in counted:
         h = by_site.get(c.get("site_id"))
-        travel = c.get("travel_h")
-        spills = [s for s in spill_intervals(h, c, now)
-                  if (s["end"] or now) >= since
-                  or (travel is not None and (s["end"] or now) + pd.Timedelta(hours=float(travel)) >= since)]
+        # Water that crosses a lake before the spot (transport.upstream_overflows puts the lake's metres in
+        # lake_distance_m): the travel time there is a river speed or a residence assumption, too coarse
+        # to draw as an arrival window. Its reported spills are shown; its arrival is not estimated.
+        lake = float(c.get("lake_distance_km") or 0) > 0
+        travel = None if lake else c.get("travel_h")
+        # Where its poll history starts: before then nothing is known of it (quiet is not proof of no spill).
+        begins = [] if h is None else [t for r in h if (t := _first(r.get("status_start"), r.get("fetched_at")))]
+        known_from = None if not begins else min(begins)
+        history_note = "none" if h is None else "late" if known_from > since else None
+        spills = [s for s in spill_intervals(h, c, now, _gap_spans(coverage.get(c.get("company"))))
+                  if (s["end"] or s.get("end_by") or now) >= since
+                  or (travel is not None and (s["end"] or s.get("end_by") or now) + pd.Timedelta(hours=float(travel)) >= since)]
         offline = [o for o in offline_spans(h, c, now) if (o["to"] or now) >= since]
         state = _state(c)
         if not spills and not offline:
-            quiet[state]["n"] += 1
-            quiet[state]["weight"] += float(c.get("weight") or 0)
+            k = "no_history" if history_note == "none" else "late_history" if history_note == "late" else state
+            quiet[k]["n"] += 1
+            quiet[k]["weight"] += float(c.get("weight") or 0)
             continue
         rows.append({
             "site_id": c.get("site_id"), "name": c.get("site_name"), "company": c.get("company"),
-            "receiving": c.get("receiving_watercourse"),
             "km": round(float(c.get("distance_km") or 0) + float(c.get("lake_distance_km") or 0), 1),
-            "travel_h": travel, "weight": c.get("weight"), "state": state,
-            "status": c.get("status"),
-            "spills": [{"start": _iso(s["start"]), "end": _iso(s["end"]), "running": s["running"],
-                        "end_known": s["end_known"], "arrival": _arr(arrival(s, travel, now))} for s in spills[-MAX_SPILLS:]],
+            "travel_h": travel, "lake_route": lake, "weight": c.get("weight"), "state": state,
+            **({"history": "none"} if history_note == "none" else {}),
+            **({"history_from": _iso(known_from)} if history_note == "late" else {}),
+            "spills": [_spill_out(sp, travel, now) for sp in spills[-MAX_SPILLS:]],
             "earlier_spills": max(0, len(spills) - MAX_SPILLS),
             "offline": [{"from": _iso(o["from"]), "to": _iso(o["to"]), **({"feed_down": True} if o.get("feed_down") else {})}
-                        for o in offline],
+                        for o in offline[-MAX_OFFLINE:]],
+            "earlier_offline": max(0, len(offline) - MAX_OFFLINE),
         })
     rows.sort(key=lambda r: -(r["weight"] or 0))
-    more = rows[MAX_ROWS:]
     cells = sorted({(float(a), float(b)) for a, b in zip(*_cells(counted), strict=True)})
-    ahead = max([(_ts(a["to"]) or _ts(a["from"])) for r in rows[:MAX_ROWS] for s in r["spills"]
-                 if (a := s["arrival"]) and a["state"] == "due"] or [now])
-    return {
-        "id": spot.get("id"), "window": {"from": _iso(since), "to": _iso(now), "hours": WINDOW_H,
-                                         "ahead_to": _iso(min(ahead, now + pd.Timedelta(hours=AHEAD_MAX_H)))},
+    doc = {
+        "id": spot.get("id"), "window": {"from": _iso(since), "to": _iso(now), "hours": WINDOW_H},
         "counted": len(counted),
+        "history": None if history is not None else {"unavailable": "no poll history in this build's state"},
+        "coverage": coverage,
         "overflows": rows[:MAX_ROWS],
-        "more_with_events": len(more),
+        "more_with_events": max(0, len(rows) - MAX_ROWS),
+        "truncated": False,
         "quiet": {k: {"n": v["n"], "weight": round(v["weight"], 3)} for k, v in quiet.items() if v["n"]},
         "rain": rain_series(cells, since, int(WINDOW_H), rain_cache) if rain_cache is not None
         else {"unavailable": "rain cache not read"},
         "gauge": gauge_of(spot),
         "recent_spill_hours": config.RECENT_SPILL_HOURS, "t90_hours": config.T90_HOURS,
     }
+    # The budget, enforced: the overflow of least reach goes first, and is counted, never silently lost.
+    while len(json.dumps({**doc, "generated_at": now.isoformat()}, separators=(",", ":"), default=str)) > REPLAY_MAX_BYTES \
+            and doc["overflows"]:
+        doc["overflows"] = doc["overflows"][:-1]
+        doc["more_with_events"] += 1
+        doc["truncated"] = True
+    ahead = max([(_ts(a["to"]) or _ts(a.get("to_by")) or _ts(a["from"])) for r in doc["overflows"] for sp in r["spills"]
+                 if (a := sp["arrival"]) and a["state"] == "due"] or [now])
+    doc["window"]["ahead_to"] = _iso(min(ahead, now + pd.Timedelta(hours=AHEAD_MAX_H)))
+    return doc
 
 
 def _arr(a: dict | None) -> dict | None:
-    return None if a is None else {"from": _iso(a["from"]), "to": _iso(a["to"]), "state": a["state"]}
+    if a is None:
+        return None
+    return {"from": _iso(a["from"]), "to": _iso(a["to"]), "state": a["state"],
+            **({"to_after": _iso(a["to_after"])} if a.get("to_after") is not None else {}),
+            **({"to_by": _iso(a["to_by"])} if a.get("to_by") is not None else {})}
+
+
+def _spill_out(s: dict, travel, now) -> dict:
+    return {"start": _iso(s["start"]), "end": _iso(s["end"]), "running": s["running"], "end_known": s["end_known"],
+            **({"end_after": _iso(s["end_after"])} if s.get("end_after") is not None else {}),
+            **({"end_by": _iso(s["end_by"])} if s.get("end_by") is not None else {}),
+            "arrival": _arr(arrival(s, travel, now))}
 
 
 def _cells(rows: list[dict]) -> tuple[np.ndarray, np.ndarray]:
@@ -307,21 +425,30 @@ def load_history(path: Path | None = None) -> pd.DataFrame | None:
     return pd.read_parquet(p, columns=["site_id", "status", "status_start", "latest_event_start", "latest_event_end", "fetched_at"])
 
 
+def load_poll_log(path: Path | None = None) -> pd.DataFrame | None:
+    p = path or config.state_read("poll_log.parquet")
+    return pd.read_parquet(p, columns=["fetched_at", "company", "n_rows"]) if p.exists() else None
+
+
 def write_replays(site: Path, results: list[dict], upstream: dict[str, list[dict]], now: pd.Timestamp,
-                  history: pd.DataFrame | None = None, rain_cache: Path | None = None) -> dict:
+                  history: pd.DataFrame | None = None, rain_cache: Path | None = None,
+                  poll_log: pd.DataFrame | None = None) -> dict:
     """data/spot/<id>-replay.json for each spot with an id that can be a file name and a forecast. After
     write_app_data, which clears data/spot/. The page asks for it only with ?replay=1. Returns counts
     and the largest file's size for the build log."""
     out = site / "data" / "spot"
     out.mkdir(parents=True, exist_ok=True)
     history = load_history() if history is None else history
+    sites = {c.get("site_id") for rows in upstream.values() for c in rows or []}
+    by_site = None if history is None else group_history(history, sites)   # once, not once a spot
+    poll_log = load_poll_log() if poll_log is None else poll_log
     rain_cache = rain_cache or (config.CACHE / "rain")
     n, largest = 0, (None, 0)
     for r in results:
         sid = str(r.get("id"))
         if r.get("error") or not SPOT_ID.fullmatch(sid):
             continue
-        body = json.dumps({**spot_replay(r, upstream.get(sid, []), history, now, rain_cache),
+        body = json.dumps({**spot_replay(r, upstream.get(sid, []), by_site, now, rain_cache, poll_log),
                            "generated_at": now.isoformat()}, separators=(",", ":"), default=str)
         (out / f"{sid}-replay.json").write_text(body)
         n += 1

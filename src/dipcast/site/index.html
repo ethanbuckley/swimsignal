@@ -4279,8 +4279,10 @@ let replayScript = null;
 function mountReplay(d) {
   const host = document.getElementById('replay-host');
   if (!host) return;
+  // At the build's stamp, read off levels.js's tag (build_site.with_build), as the offline copy stores it.
+  const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
   replayScript = replayScript || new Promise((ok, no) => { const s = document.createElement('script');
-    s.src = 'replay.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    s.src = `replay.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
   const said = t => { if (host.isConnected) host.innerHTML = `<section class="tile"><p class="t-say">${t}</p></section>`; };
   Promise.all([replayScript, fetch(`data/${d.detail_file.replace(/\.json$/, '-replay.json')}`, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null))])
     .then(([, r]) => { if (!host.isConnected) return;

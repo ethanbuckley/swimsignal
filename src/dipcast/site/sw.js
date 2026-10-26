@@ -31,6 +31,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   `spotscores.js?v=${BUILD}`,   // how the forecast has done here; its data file is stored when a spot first asks for it
   `measured.js?v=${BUILD}`,   // lab results an organisation sent (samples/)
   `journal.js?v=${BUILD}`,
+  `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 
 self.addEventListener('install', e => {
@@ -89,7 +90,7 @@ async function networkFirst(req) {
 const SPOT_FILE = /\/data\/spot\/([A-Za-z0-9_-]+)\.json$/;
 function withTrace(cache, k) {
   const u = new URL(k), m = u.pathname.match(SPOT_FILE);
-  if (!m || m[1].endsWith('-trace')) return;
+  if (!m || /-(trace|replay)$/.test(m[1])) return;   // a trace, or a replay (replay.js): neither has a trace of its own
   u.pathname = u.pathname.replace(SPOT_FILE, '/data/spot/$1-trace.json'); u.search = '';
   fetch(u.href, { cache: 'no-cache', credentials: 'omit' }).then(res => { if (res.ok) cache.put(u.href, res); }).catch(() => {});
 }
