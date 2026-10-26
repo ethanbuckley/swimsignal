@@ -1,6 +1,6 @@
-# River Severn in Shrewsbury. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# River Severn in Shrewsbury. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-26
 how = "desk"
 
 [[fact]]
@@ -30,3 +30,10 @@ text = "Shropshire Council's Frankwell Riverside car park (Frankwell Quay, SY3 8
 status = "confirmed"
 source = "https://next.shropshire.gov.uk/parking/find-my-nearest-car-park/shrewsbury-frankwell-riverside/"
 source_name = "Shropshire Council"
+
+[[fact]]
+topic = "toilets"
+text = "Defra's February 2024 consultation lists, near the site, toilets in a local business which are open to bathers. It does not name the business."
+status = "confirmed"
+source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
+source_name = "Defra"
