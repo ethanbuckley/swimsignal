@@ -121,7 +121,8 @@ summary is written, unless the participant agreed to more.
 *Clarified 26 October 2026, before any session (section 11):* contact details are deleted when the last
 follow-up is answered or 21 days after the session, whichever comes first (D6); a recording within 7 days
 (D7); the notes and consent answers once the summary is written, and by 31 January 2027 at the latest. These
-are approved practice, not legal deadlines, and coded notes may still be personal data (D8).
+are approved practice, not legal deadlines. Coded notes are treated as personal data for as long as they
+are kept, and only genuinely anonymised findings are published (D8).
 
 ## 7. Repeat use
 
@@ -197,6 +198,8 @@ the same day ("okay i approve your recommendations"). The details, and how each 
 - **D7.** Notes only by default. A recording only with separate agreement; checked against the notes and
   deleted within 7 days.
 - **D8.** The privacy notice describes research sessions before anyone is recruited, matching what is
-  done. Retention periods are approved practice, not legal deadlines. Coded records may still be personal
-  data. Consent answers stay with the record while it is kept. SwimSignal is registered with the ICO and
+  done. Retention periods are approved practice, not legal deadlines. Coded records are treated as
+  personal data for as long as they are kept. Only genuinely anonymised findings and quotes are published,
+  checked for re-identification in the small sample; on withdrawal, anything published that could identify
+  the participant is removed or corrected. Consent answers stay with the record while it is kept. SwimSignal is registered with the ICO and
   the fee paid (confirmed by the operator, 26 Oct 2026).

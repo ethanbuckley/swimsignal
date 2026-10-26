@@ -209,8 +209,9 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 >
 > **What is written down.** Notes of what you do and say, under a code (for example P03), not your name,
 > and a note of what you agreed to here. We do not ask for, or write down, your health, your home
-> address or where you are. A code is not the same as anonymous: while your contact details are kept,
-> the notes can be linked back to you.
+> address or where you are. A code is not the same as anonymous: what you said or did and the date of
+> your session can still identify you, especially in a small group. So the notes are treated as personal
+> data for as long as they are kept, including after your contact details are deleted.
 >
 > **Recording.** None, unless you agree to it separately below. A recording stays on Ethan's computer,
 > is used only to check the notes, and is deleted within 7 days.
@@ -219,8 +220,10 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 > code or website, and not shared or sold. Your contact details are kept in a separate list from the
 > notes.
 >
-> **What is published.** A summary of all the sessions together, and the changes made because of it. It
-> does not name you. Your words are quoted in it, without your name, only if you agree below.
+> **What is published.** Only genuinely anonymised findings, and the changes made because of them.
+> Identifying details are removed, and Ethan checks that you could not be recognised from what is
+> published, taking into account how few people take part. Your words are quoted only if you agree
+> below, and only if the quote cannot identify you.
 >
 > **How long.** Your contact details are deleted when your last follow-up email is answered, or 21 days
 > after today, whichever comes first. The notes, and the note of what you agreed to, are deleted once
@@ -229,7 +232,9 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 >
 > **Your rights.** Taking part rests on your consent. You can ask to see what is held about you, have it
 > corrected or deleted, or withdraw at any time, by emailing hello@swimsignal.co.uk with your code or the
-> date of your session. You can also complain to the Information Commissioner's Office (ico.org.uk). The
+> date of your session. Ethan then deletes your notes, any recording and your contact details. Findings
+> already published in genuinely anonymised form stay, since they cannot identify you; anything published
+> that could identify you, such as a quote or a detail, is removed or corrected. You can also complain to the Information Commissioner's Office (ico.org.uk). The
 > privacy notice, swimsignal.co.uk/privacy, says the same under "Research sessions".
 >
 > **Please do not use today's forecast to decide whether to swim.** It may be out of date.
@@ -240,7 +245,7 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 > |---|---|---|
 > | I agree to take part and for notes to be taken | | |
 > | I agree, separately, to the screen and our voices being recorded | | |
-> | My words may be quoted in the public summary, without my name | | |
+> | My words may be quoted in the public summary, without my name, if they cannot identify me | | |
 > | You may email me twice, at one week and two weeks, to ask whether I used SwimSignal | | |
 
 For a video call, the participant can answer each line aloud; write their answers and the time in the
@@ -262,7 +267,7 @@ branches, pull request text and issues.
 | Contact list: code, name, how to reach them, follow-up answers | A separate file, not in the records folder | The last follow-up is answered, or 21 days after the session, whichever comes first (D6) |
 | Recording, only with separate agreement | The moderator's own computer, not a cloud service | The notes are checked against it, within 7 days (D7) |
 | Picker output for the day | The private folder, next to the records | With the records |
-| Summary table and decisions | A public doc or issue, after the round | Kept; it holds no names and no contact details |
+| Anonymised summary table and decisions | A public doc or issue, after the round, once it passes the re-identification check (records file, section 3) | Kept; anything found to identify someone is removed or corrected |
 
 These periods are practice Ethan approved on 26 October 2026, not legal deadlines (D8). The 31 January
 2027 end for the notes is the one date in them chosen when the notice was written; Ethan confirms it in
@@ -270,8 +275,11 @@ PR #380.
 
 Rules:
 - Codes P01 to P10. Never a name in a record.
-- A coded record is still personal data while the contact list exists. Never describe the notes as
-  anonymous.
+- A coded record is personal data for as long as it is kept, including after the contact list is
+  deleted: what someone said or did and the session date can identify them in a small group. Never
+  describe the notes as anonymous.
+- If a participant withdraws: delete their record, any recording and their contact details, and remove
+  or correct anything published that could identify them.
 - No medical history, home address or precise location (plan, section 3). Do not write the town used in
   task 1; write the distance chosen.
 - Follow-up emails go only to those who said yes, and from hello@swimsignal.co.uk.
@@ -350,6 +358,7 @@ them.
   useful; the notes are checked against it and it is deleted within 7 days.
 - **D8. Privacy** [Q12]: accurate research wording in the privacy notice before recruitment, matching
   what is actually done (PR #380). The retention periods are approved practice, not legal deadlines.
-  Coded records may still be personal data. Consent answers stay with the research record for as long
+  Coded records are treated as personal data for as long as they are kept, and only genuinely
+  anonymised findings and quotes are published. Consent answers stay with the research record for as long
   as it is kept. SwimSignal is registered with the ICO and the fee paid (confirmed by the operator, 26
   Oct 2026).

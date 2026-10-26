@@ -207,8 +207,9 @@ section 8).
   covered', P05, P07, P08)" and, separately, "The EA advice link may read as a feature, not a gap."
 - Do not paraphrase a quote to make it fit a category. If it does not fit, put it under "unclear" with
   the quote.
-- Quote in the public summary only those who agreed (consent line 3). Use P-codes, never names, and drop
-  any detail in a quote that could identify them (a club, a place they live, a job).
+- Quote in the public summary only those who agreed (consent line 3), and only a quote that cannot
+  identify them. Never use names, and drop any detail that could identify someone (a club, a place they
+  live, a job, an unusual turn of phrase). Section 3's check applies to every quote.
 
 ## 3. The public summary
 
@@ -217,9 +218,18 @@ After the round, one public doc or issue holds only (plan, section 6):
 - the tally table (section 2.1), with the wording version each participant saw;
 - for repeat use, how many completed a session, agreed to follow-ups and answered (D4);
 - the problems to fix, ranked as in section 2.2, each with its count and severity;
-- quotes from those who agreed, under P-codes;
+- quotes from those who agreed, and only those that pass the check below;
 - the decisions taken under the plan's section 8;
 - what was not tested (for example no overflow without a live feed in the Lake District).
+
+Publish only genuinely anonymised findings. Before publishing, check every finding and quote against the
+small sample: could someone who knows a participant recognise them from a quote, a detail, the session
+date, their device, or the answers grouped under one code? If so, remove the detail, or drop the
+participant codes from the public version. Publish nothing that fails this check. Coded notes are not
+anonymous and are never published.
+
+If a participant withdraws, delete their record, any recording and their contact details, and remove or
+correct anything already published that could identify them.
 
 Then delete the raw records and their consent answers, unless a participant agreed to more (plan,
 section 6), and by 31 January 2027 at the latest. Contact details go sooner: when the last follow-up is
