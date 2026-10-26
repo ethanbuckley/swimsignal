@@ -65,7 +65,7 @@ SHORT = 80                 # a passage shorter than this is read with the block 
 MAX_BYTES = 4_000_000      # a page larger than this is refused (the City of London page is 2.3 MB)
 TIMEOUT_S = 20
 PAUSE_S = 1.0              # between live requests, one at a time
-STATUSES = ("new", "update", "withdrawn", "lifted")
+STATUSES = ("open", "update", "withdrawn", "lifted")
 ENDED = {"withdrawn", "lifted"}
 # Flags that stop a draft being approved as it stands: a reviewer has to settle them first.
 HOLDING = {"unmatched", "ambiguous", "no_date", "conflict", "superseded", "unverified", "company_notice"}
@@ -481,7 +481,7 @@ def _draft(source: Source, *, spot_id, spot_name, candidates, water_id, water_na
         "expected_end": expected_end.isoformat() if expected_end else None, "expected_end_basis": expected_end_basis,
         "ended": ended.isoformat() if ended else None,
         "fetched_at": fetched_at, "flags": sorted(set(flags)), "reason": reason,
-        "duplicates": 0, "superseded_by": None, "draft_line": None,
+        "duplicates": 0, "superseded_by": None, "draft_line": None, "first_seen": None,
     }
     if spot_id is None:
         d["flags"] = sorted(set(d["flags"]) | {"unmatched"} | ({"ambiguous"} if candidates else set()))
@@ -508,7 +508,7 @@ def _label(x) -> str | None:
 
 def parse_ea(body, source: Source, gazetteer: Gazetteer, fetched_at: str, errors: list) -> list[dict]:
     """The EA's pollution-incident list (open, or one water's history) as drafts, one per incident and
-    water. An incident with an end is "lifted"; one without is open ("new"). A row without a valid
+    water. An incident with an end is "lifted"; one without is "open". A row without a valid
     incident id, water id or start is left out and named in `errors`."""
     items = ((body or {}).get("result") or {}).get("items") if isinstance(body, dict) else None
     if not isinstance(items, list):
@@ -549,7 +549,7 @@ def parse_ea(body, source: Source, gazetteer: Gazetteer, fetched_at: str, errors
                       ("expectedEndOfIncident", expected_raw), ("endOfIncident", end_raw),
                       ("recordDateTime", rec)]
             evidence = "; ".join(f"{k}: {clean(str(v))}" for k, v in fields if v)
-            status = "lifted" if ended else "new"
+            status = "lifted" if ended else "open"
             if spot:
                 reason = f"EA incident {inc} at {wname} ({wid}), which is spot {sid}"
             else:
@@ -616,7 +616,7 @@ def parse_epa(body, source: Source, gazetteer: Gazetteer, fetched_at: str, now: 
         out.append(_draft(source, spot_id=None, spot_name=None, candidates=[], water_id=wid, water_name=name,
                           feed_id=f"epa:{inc}", record_url=None, record_time=a.get("last_updated"),
                           evidence=evidence, evidence_kind="feed fields", notice_date=start,
-                          status="lifted" if ended else "new",
+                          status="lifted" if ended else "open",
                           advice=re.sub(r"^bathing is ", "bathing ", kind.lower()),
                           cause=clean(a.get("incident_description")) or None, expiry=None,
                           expiry_basis=None if ended else "stands while the EPA lists it; re-checked every run",
@@ -676,7 +676,7 @@ def parse_page(markup: str, source: Source, gazetteer: Gazetteer, fetched_at: st
     date_note = f"notice date {show_day(notice)} (latest labelled date on the page)" if notice else "no labelled date on the page"
 
     def make(b, sid, cands, reason):
-        status = "withdrawn" if WITHDRAWN.search(b) else "lifted" if LIFTED.search(b) else "new"
+        status = "withdrawn" if WITHDRAWN.search(b) else "lifted" if LIFTED.search(b) else "open"
         return _draft(source, spot_id=sid, spot_name=gazetteer.spots[sid].name if sid else None, candidates=cands,
                       water_id=None, water_name=None, feed_id=None, record_url=None, record_time=None, evidence=b,
                       evidence_kind="page passage", notice_date=notice, status=status,
@@ -737,7 +737,9 @@ def is_current(d: dict, today: date) -> bool:
 def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = None,
             complete_feeds: set[str] | None = None, unverified_feeds: set[str] | None = None) -> list[dict]:
     """Collapse duplicates, mark updates against `previous`, supersede within a thread, flag conflicts
-    and stale page notices, and set `held` and `current`. Nothing is dropped except exact duplicates,
+    and stale page notices, and set `held`, `current` and `first_seen` (the draft id is not in
+    `previous`; true for every draft when there is no previous file). "open" means in force at the
+    source, not new: an open draft seen last week is open with first_seen false. Nothing is dropped except exact duplicates,
     which are counted on the draft kept. `complete_feeds` are feed sources read whole this run: a
     previous open draft from one of them that is no longer listed comes back as "withdrawn", for a
     person to check. `unverified_feeds` are feed sources that could not be read whole this run: a
@@ -842,7 +844,9 @@ def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = Non
         d["approved_by"] = d["approved_at"] = d["approved_line"] = None
         d["current"] = is_current(d, today)
         d["draft_line"] = draft_line(d)
-    order = {"new": 0, "update": 1, "lifted": 2, "withdrawn": 3}
+        # Whether this draft id was absent from the previous drafts file (every draft, with none).
+        d["first_seen"] = d["draft_id"] not in prev
+    order ={"open": 0, "update": 1, "lifted": 2, "withdrawn": 3}
     return sorted(out, key=lambda d: (d["spot_id"] is None, d["spot_id"] or "", order.get(d["status"], 9),
                                       d["notice_date"] or "", d["draft_id"]))
 
@@ -1130,16 +1134,20 @@ def run(*, fixtures: Path | None = None, now: datetime | None = None, previous: 
 
 def table(result: dict, width: int = 64) -> str:
     """A short plain-text review table. Each row starts with the draft id and ends with the whole draft
-    line, the two things an approval entry needs. Quoted evidence after it is cut to `width`; where
-    nothing is quoted, the source's link is printed whole. Every cell is cleaned again, so a page cannot write terminal escapes or new lines into it."""
-    rows = [("id", "status", "approval", "spot", "notice", "expiry", "source", "flags", "line | evidence")]
+    line, the two things an approval entry needs. `first_seen` is "yes" for a draft id that was not
+    in the previous file. Quoted evidence after the line is cut to `width`; where nothing is quoted,
+    the source's link is printed whole. Every cell is cleaned again, so a page cannot write terminal
+    escapes or new lines into it."""
+    rows = [("id", "status", "first_seen", "approval", "spot", "notice", "expiry", "source", "flags",
+             "line | evidence")]
     for d in result["drafts"]:
         spot = d["spot_id"] or ("? " + ",".join(c.removeprefix("bw-") for c in d["candidates"][:3])
                                 + ("…" if len(d["candidates"]) > 3 else "") if d["candidates"] else "-")
         ev = clean(d.get("evidence") or "")
         ev = (ev[:width] + ("…" if len(ev) > width else "") if ev
               else "not quoted: open " + clean(d.get("link") or ""))   # a fixed address, printed whole
-        rows.append((clean(d["draft_id"]), d["status"], d.get("approval", "unapproved"), clean(spot)[:28],
+        rows.append((clean(d["draft_id"]), d["status"], "yes" if d.get("first_seen") else "no",
+                     d.get("approval", "unapproved"), clean(spot)[:28],
                      d["notice_date"] or "-", d["expiry"] or "-", d["source"]["key"][:24],
                      ",".join(d["flags"]) or "-", clean(d.get("draft_line") or "") + " | " + ev))
     n = len(rows[0]) - 1
@@ -1154,6 +1162,7 @@ def table(result: dict, width: int = 64) -> str:
                      + "; ".join(clean(f"{e['source']} row {e['row']}: {e['problem']}") for e in result["errors"][:5]))
     held = sum(d["held"] for d in result["drafts"])
     approved = sum(d["approved"] for d in result["drafts"])
-    lines.append(f"{len(result['drafts'])} draft(s), {held} held, {approved} approved. "
+    first = sum(bool(d.get("first_seen")) for d in result["drafts"])
+    lines.append(f"{len(result['drafts'])} draft(s), {first} first seen, {held} held, {approved} approved. "
                  "Dry run: nothing published or sent; approvals are read, never written.")
     return "\n".join(lines)

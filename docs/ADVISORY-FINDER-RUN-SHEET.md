@@ -61,7 +61,7 @@ drafts file stays where it is, in that worktree's `data/cache/`.
    uv run python scripts/advisory_finder.py --dry-run --fixtures tests/fixtures/advisories --now 2026-10-26T19:00:00+00:00
    ```
 
-   You will know it worked: the last two lines are `11 draft(s), 8 held, 0 approved. Dry run: ...`
+   You will know it worked: the last two lines are `11 draft(s), 11 first seen, 8 held, 0 approved. Dry run: ...`
    and `Drafts written to .../advisory_drafts_fixtures.json`.
 
 ## Weekly: the dry run
@@ -105,7 +105,7 @@ drafts file stays where it is, in that worktree's `data/cache/`.
    ```
 
    You will know it worked: one `source <key>: ok` line for each of the 6 sources, then
-   `N draft(s), N held, N approved. Dry run: nothing published or sent ...`, then
+   `N draft(s), N first seen, N held, N approved. Dry run: nothing published or sent ...`, then
    `Drafts written to .../data/cache/advisory_drafts.json`.
 
 The mistake you are most likely to make: leaving out `--previous`. The run still works, so nothing
@@ -126,7 +126,9 @@ ends" below for the usual cause).
 One row per draft. The columns:
 
 - `id`: the draft id. You copy it into an approval.
-- `status`: `new`, `update`, `lifted` or `withdrawn` (below).
+- `status`: `open`, `update`, `lifted` or `withdrawn` (below).
+- `first_seen`: `yes` if this draft id was not in the previous drafts file, `no` if it was. On a run
+  without `--previous`, every row says `yes`. This is the column to scan for what is new this week.
 - `approval`: `unapproved`, `approved`, `changed` or `lapsed` (below).
 - `spot`: the spot id. `?` and ids means more than one spot fits. `-` means no SwimSignal spot (most
   EA incidents are on the coast).
@@ -139,8 +141,8 @@ One row per draft. The columns:
 
 Statuses:
 
-- `new`: in force at the source, and not changed since the previous run. It does **not** mean first
-  seen this week. A standing incident shows `new` every week.
+- `open`: in force at the source, and not changed since the previous run. A standing incident shows
+  `open` every week; `first_seen` tells you whether it is new this week.
 - `update`: in force, and its words, expiry or expected end changed since the previous run.
 - `lifted`: the source gives an end date.
 - `withdrawn`: the page says it was withdrawn, or the incident left the EA list with no end date

@@ -95,8 +95,9 @@ Each draft has: `spot_id` (or `null`, unmatched) and `candidates`; the official 
 gives one; the source's key, publisher, kind, role, address, licence and `open_licence`; `link`, the
 address a reader opens (the EA profile, the beaches.ie page, or the notice page); the feed record's id
 and address; `evidence`, the source's own text, at most 600 characters, with white space made single,
-or `null` for a copyright-only source; `evidence_quoted`; `evidence_hash`; `notice_date`; `status` (new,
-update, withdrawn or lifted); `advice`, the line's words for the advice, and `cause`; `expiry` and
+or `null` for a copyright-only source; `evidence_quoted`; `evidence_hash`; `notice_date`; `status` (open,
+update, withdrawn or lifted; "open" means in force at the source, not new); `first_seen` (true when
+the draft id was not in the `--previous` file, and for every draft without one); `advice`, the line's words for the advice, and `cause`; `expiry` and
 `expiry_basis`; `expected_end` and `expected_end_basis` (the EA's or EPA's expectation, never an
 expiry); `ended`; `fetched_at`; `flags`; `reason`; `duplicates`; `superseded_by`; `draft_line`; `held`;
 `current`; and `approval` (unapproved, approved, changed or lapsed) with `approved`, `approved_by`,
@@ -276,7 +277,9 @@ Unexpected, and what was done:
   `test_fixture_run_does_not_overwrite_the_live_drafts_file`.
 - The test of the repo's `approved.json` required it to be empty, so Ethan's first approval PR would
   have failed it. Now it checks the file is valid, with the real clock.
-- Every draft was `new`, though 9 were in the previous run. Read from the code: `new` means in force
-  and unchanged since the previous run, not first seen. Not changed; the run sheet says so.
+- Every draft was `new`, though 9 were in the previous run: `new` meant in force and unchanged, not
+  first seen. Fixed the same day: that status is now `open`, and a separate `first_seen` (shown in
+  the table) says whether the draft id was in the `--previous` file. Draft ids are unchanged. Test:
+  `test_open_is_in_force_and_first_seen_is_separate`.
 - A stale page notice is not held and is still marked current. This is as designed (stale is
   flagged, not dropped). The run sheet tells the reviewer to check the page.
