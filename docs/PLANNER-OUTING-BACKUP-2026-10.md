@@ -47,7 +47,7 @@ The tile always ends with the issue time and "A lower forecast level does not me
 - The outing, when this saved spot is the spot or the backup of the outing kept in `dipcast.plan` and its day has not passed: "This is the spot of your outing tomorrow morning." (`sinceOuting`.)
 - For a forecast over 8 h old (the page's own STALE_MIN): "This forecast is N hours old, so the change may be out of date."
 
-**Storage:** `dipcast.seen` as before. Each note gains `gap` (boolean). Notes written before this change have no `gap` and still read and compare. A test covers this. A `gap` that is not a boolean reads as not seen.
+**Storage:** `dipcast.seen` as before. Each note gains `gap` (boolean) and `official` (null or `{key, brief, publisher}`). Notes written before this change have neither, and still read and compare. A test covers this. A `gap` that is not a boolean reads as not seen.
 
 ## 3. Brief versions and a leader's read tick (decision record, prototype)
 
@@ -64,23 +64,28 @@ The leader can tick "I have read version X". If a later forecast makes a new ver
 - That a time of day has its own forecast. The tile says "The forecast gives one level for the whole of Monday; it does not change between morning and evening." For today, it also says when the chosen time has passed.
 - That a change happened without its evidence. Every since line carries the issue times of both forecasts, and what is known or unknown about the overflows.
 - That a tick is a record anyone else can see, or proof of who read what.
-- **Official advice is not drawn by this PR.** #379 puts each spot's official advice into `spots.json` and `spots-lite.json` (`official`). It is adding one shared compact indicator for the list, Saved, the planner and the record. This PR builds no second display. It leaves one marked hook (below) to call #379's helper once #379 merges.
+- That official advice has ended. A notice no longer shown is said as no longer shown, with "That is not an all-clear". It is never read as advice lifted.
 - Saved cards never give overflow names or spill start times. That data is not in `spots-lite.json`; the card links to the spot's page instead.
 
-## Hook for official advice (#379)
+## Official advice (#379, merged 26 Oct 2026)
 
-`outing.js` has `outingOfficial(s)`, which returns '' for now. Each outing column draws it under the spot's level. After #379 merges, it should return #379's compact indicator for `s`. That is one call, in that one function. The function's comment marks the place.
+This PR uses #379's one shared helper, from `eatoday.js`. It adds no display of its own. `index.html` already loads `eatoday.js`, before `since.js` and `outing.js`.
 
-For "what changed since you checked", whether official advice appeared or cleared since the last look would be one more field in the `dipcast.seen` note. It would be compared in `sinceEvidence`. This is left until #379's `official` shape is final, and is marked in `since.js` beside sinceEvidence.
-
-#388 and `origin/proto/advisory-finder` merge without conflicts (checked with a merge-tree on 27 Oct). #388 does not touch `eatoday.js`. In `index.html` it adds only CSS, a script tag and one line in drawPlan.
+- **Outing columns:** `outingOfficial(s)` is `eaTodayTag(s, 'p')`. That is the compact line the list, Saved and the plan's rows show, for example "EA advice against bathing · since 19 Jun · checked 26 Oct". It sits on its own line under the column's level, never in it. A spot without a notice shows nothing extra.
+- **Since you last looked:** the `dipcast.seen` note gains `official`. It holds null for no notice, or `{key, brief, publisher}` taken from `eaTodayAdvice` and `eaTodayBrief`. The key is the publisher, the line and the start, so a new check day alone is not a change. The card says:
+  - **Appeared:** "No official advice was shown when you looked today at 07:05; now: EA advice against bathing · since 19 Jun · checked 26 Oct."
+  - **No longer shown:** "Official advice was shown when you looked … (…); it is no longer shown here." The evidence adds "That is not an all-clear: check the Environment Agency's own page before you swim."
+  - **Another notice:** "Official advice changed: now: …".
+  - **Whenever there is a notice:** the evidence gives it as it stands, with its state ("not re-checked since 12 Oct" when stale, unverified, gone or changed), and adds "It is the publisher's, not part of this level."
+  - A note from before this field, or a page without `eatoday.js`, compares nothing. No change is made up from a missing field.
+- **The level never moves** for official advice. The tests check that.
 
 ## Storage keys
 
 | Key | What | New? |
 |---|---|---|
 | `dipcast.plan` | The plan's address string, now with `when`, `spot` and `backup` when set | Extended |
-| `dipcast.seen` | One note per saved spot; gains `gap` | Extended |
+| `dipcast.seen` | One note per saved spot; gains `gap` and `official` | Extended |
 | `dipcast.briefacks` | Read ticks for decision-record versions | New |
 
 The privacy notice (`pages/privacy.html`) now names the outing in the kept plan and the read tick. Ethan should check that wording.

@@ -10,6 +10,8 @@
 //
 // A plain script, as plan.js: globals in the page, exports in Node.
 const outingRules = () => typeof dayLevel === 'function' ? { dayWord, today } : require('./levels.js');
+// eatoday.js's compact official-advice line (eaTodayTag, #379), the one every list, card and row uses.
+const outingTag = () => typeof eaTodayTag === 'function' ? eaTodayTag : require('./eatoday.js').eaTodayTag;
 const outDay = iso => outingRules().dayWord(iso).replace(/^on /, '');   // "today", "tomorrow", "Monday" (levels.js, dayName)
 const outEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
@@ -60,11 +62,10 @@ function outingPair(plan, byId) {
   return { main: byId.get(plan.spot) || null, backup: plan.backup !== plan.spot ? byId.get(plan.backup) || null : null, missing };
 }
 
-// HOOK (#379, official advice): #379 puts each spot's official advice in spots.json (`official`) and adds one
-// shared compact indicator for the list, Saved, the planner and the record. Once it merges, return that
-// helper's markup for s here: one call, nothing else to change. Until then nothing, and this file draws no
-// advice of its own (one display only, #379's).
-const outingOfficial = s => '';
+// Official advice at the spot (spots.json and spots-lite.json `official`, #379), in eatoday.js's compact
+// form, a line of its own under the column's level, never in it: the level is the forecast's alone. The same
+// helper as the list, Saved and the plan's rows, so the outing says what they say. '' without advice.
+const outingOfficial = s => outingTag()(s, 'p');
 
 // ------------------------------------------------------------------------------ the tile
 // A column for a spot: c = { id, name, href, tone, headline, why, ev, meta }, headline/why/ev already

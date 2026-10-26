@@ -13,8 +13,9 @@
 // A plain script, as levels.js: globals in the page, exports in Node. It asks for the level rules
 // when it is called, so in the page it only has to load before it is used.
 const sinceRules = () => typeof level === 'function'
-  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart }
-  : { ...require('./levels.js'), ...require('./experience.js') };
+  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart,
+      ...(typeof eaTodayAdvice === 'function' ? { eaTodayAdvice, eaTodayBrief } : {}) }
+  : { ...require('./levels.js'), ...require('./experience.js'), ...require('./eatoday.js') };
 
 const SEEN_KEY = 'dipcast.seen';
 const RATED = /^((excellent|good|sufficient|poor) \d{4}|unrated)$/;
@@ -40,7 +41,18 @@ function seenRecord(s, forecast, at) {
   // than say nothing). Added 26 Oct 2026; a note kept before then has none, and reads as no gap.
   const gap = !!(R.daily(s) && Number.isInteger(k) && !known);
   return { id: s.id, level: R.ORDER[l] !== undefined || l === R.NO_OVERFLOWS ? l : null, discharging: known ? k : null,
-    rating: rating && RATED.test(rating) ? rating : null, gap, forecast, at };
+    rating: rating && RATED.test(rating) ? rating : null, gap, official: seenOfficial(s), forecast, at };
+}
+// The official advice the spot showed (eatoday.js, #379: the reviewed notices in `official`): null for none,
+// else the first notice as the compact line says it (eaTodayBrief: "EA advice against bathing · since 19 Jun
+// · checked 26 Oct"), its publisher, and a key of what it says and since when, so a new check day alone is
+// not a change. Its state (checked, or not re-checked since) is in the brief. Undefined where the page has
+// no eatoday.js, so nothing is compared. Added 27 Oct 2026; notes from before have none, and compare nothing.
+function seenOfficial(s) {
+  const R = sinceRules();
+  if (typeof R.eaTodayAdvice !== 'function') return undefined;
+  const o = R.eaTodayAdvice(s)[0];
+  return o ? { key: `${o.publisher}|${o.line}|${o.since || ''}`.slice(0, 300), brief: R.eaTodayBrief(s).slice(0, 300), publisher: o.publisher.slice(0, 100) } : null;
 }
 
 // The notes as stored. Anything that is not what this file writes reads as not seen, rather than stop
@@ -52,7 +64,9 @@ function seenOK(x) {
     && (x.level === null || (typeof x.level === 'string' && (R.ORDER[x.level] !== undefined || x.level === R.NO_OVERFLOWS)))
     && (x.discharging === null || (Number.isInteger(x.discharging) && x.discharging >= 0))
     && (x.rating === null || (typeof x.rating === 'string' && RATED.test(x.rating)))
-    && (x.gap === undefined || typeof x.gap === 'boolean');
+    && (x.gap === undefined || typeof x.gap === 'boolean')
+    && (x.official === undefined || x.official === null || (typeof x.official === 'object'
+      && ['key', 'brief', 'publisher'].every(k => typeof x.official[k] === 'string' && x.official[k].length > 0 && x.official[k].length <= 300)));
 }
 const readSeen = text => new Map(sinceRules().storedList(text, seenOK).map(x => [x.id, x]));
 
@@ -64,6 +78,17 @@ function noteSeen(seen, spots, forecast, at) {
     if (r && !(old && Date.parse(old.forecast) > Date.parse(forecast))) seen.set(s.id, r);
   }
   return seen;
+}
+
+// Official advice appearing ('shown'), no longer shown ('gone'), another notice ('other'), or none of these
+// (''). Only where both notes know (a note from before 27 Oct 2026, or a page without eatoday.js, has
+// undefined): never a change made up from a missing field.
+function officialChange(was, now) {
+  const a = was.official, b = now.official;
+  if (a === undefined || b === undefined) return '';
+  if (!a && b) return 'shown';
+  if (a && !b) return 'gone';
+  return a && b && a.key !== b.key ? 'other' : '';
 }
 
 // ------------------------------------------------------------------------------ the line
@@ -90,6 +115,9 @@ function sinceLine(was, now) {
   const when = lookedWhen(was.at);
   if (was.level && now.level && was.level !== now.level) return `Was ${levelWords(was.level)} when you looked ${when}; now ${levelWords(now.level)}.`;
   if (was.rating && now.rating && was.rating !== now.rating) return `Was ${ratingWords(was.rating)} when you looked ${when}; now ${ratingWords(now.rating)}.`;
+  const o = officialChange(was, now);
+  if (o === 'shown') return `No official advice was shown when you looked ${when}; now: ${now.official.brief}.`;
+  if (o === 'gone') return `Official advice was shown when you looked ${when} (${was.official.brief}); it is no longer shown here.`;
   const a = was.discharging, b = now.discharging;
   if (a === null || b === null || (a > 0) === (b > 0)) return '';
   return b > 0 ? `No overflow upstream was discharging when you looked ${when}; now ${b === 1 ? '1 is' : `${b} are`}.`
@@ -105,9 +133,6 @@ const SINCE_STALE_MIN = 8 * 60;
 const issuedWords = iso => { const d = new Date(iso);
   return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`; };
 const overflowsWord = n => n === 1 ? '1 overflow upstream' : `${n} overflows upstream`;
-// HOOK (#379, official advice): once #379's `official` list is final in spots.json, official advice
-// appearing or clearing since the last look is one more field in seenRecord's note, compared here and said
-// with its source and time. Until then nothing is said about it here.
 // extra.spills: which overflows are discharging now and since when (sinceSpills), named where the spot's
 // forecast names them; extra.outing: the outing planned at this spot (sinceOuting), so the change is read
 // against it.
@@ -121,6 +146,11 @@ function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
   else if (now.gap) out.push('How many overflows upstream are discharging now is not known: a feed upstream is down or has not updated within six hours.');
   else if (now.level) out.push('No live overflow count for this spot.');
   if (was.rating && now.rating && was.rating !== now.rating) out.push("The rating is the Environment Agency's, from its yearly bathing water classification.");
+  // Official advice: the notice now, in the shared compact words with its state (checked, or not re-checked
+  // since); and where one shown before is not shown now, that this is no all-clear. The level never moves for it.
+  const oc = officialChange(was, now);
+  if (now.official) out.push(`${oc === 'other' ? 'Official advice changed: now' : 'Official advice'}: ${now.official.brief}. It is the publisher's, not part of this level.`);
+  else if (oc === 'gone') out.push(`That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
   if (extra.outing) out.push(extra.outing);
   const age = (nowMs - Date.parse(now.forecast)) / 60000;
   if (age > SINCE_STALE_MIN) out.push(`This forecast is ${Math.round(age / 60)} hours old, so the change may be out of date.`);
@@ -190,5 +220,5 @@ function sinceSaid(s, forecast) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }
