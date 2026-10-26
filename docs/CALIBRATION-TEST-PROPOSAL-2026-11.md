@@ -68,6 +68,12 @@ forecast log, the `state` release. The figures that shaped this proposal:
   `docs/LAKE-ECOLI-LINE-TEST-2026-10.md`.
 - **Code:** `model/forecast.py` (`calibrate_by_lead`, and where the calibrated chance `p` feeds `risk` and the E. coli
   features), the head of `model/ecoli.py`, and `forecast_log.SCORED_COLUMNS`.
+- **Production changed on 26 October, after this file was first written:** PR #361 merged at 11:15 UTC (`827b9ae`)
+  and adopted soil moisture in the river E. coli estimate. Checked with `git log origin/main` and its diff. It changes
+  the `ecoli=` part of the stamp and the E. coli code only. `spill_model.pkl`, `lead_calibration.json`,
+  `model/spill_model.py` and `calibrate_by_lead` are unchanged, and no later commit on main touches them, so the
+  `spill=` and `cal=` stamps and `forecast_calibrated` are as before. PR #372 (CI workflows only) is still open, not
+  merged, and touches no model file.
 
 ## Step 1: the plans already running, and how this avoids them
 
@@ -282,6 +288,26 @@ lead 0 in the window.
 **If both qualify,** R2 is chosen unless R3 beats R2 clearly: the 97.5% interval of 1 − Brier(R3) ÷ Brier(R2) lies
 wholly above 0. The simpler candidate wins a tie.
 
+**How many chances to adopt by error.** Two candidates, each with two routes, then a choice between them. The
+accounting:
+- *The 97.5% intervals cover the two candidates.* Each route-1 test and each route-2 non-inferiority test is one-sided
+  at 1.25%, so 2.5% over the two candidates (Bonferroni).
+- *Route 2 is a different claim, not a second try at route 1.* Route 1 claims a better Brier score. Route 2 claims a
+  Brier score no worse than δ together with a better calibration. A candidate adopted by route 2 is reported as that,
+  never as a gain.
+- *The choice between R2 and R3 adds no chance of a false adoption.* R3 can replace R2 only if R3 has already
+  qualified on its own. The guardrails only remove adoptions.
+- *Approximate bounds, from the stated levels alone,* assuming each interval has its stated coverage:
+  - **Adopting a candidate that is worse than production by more than δ:** at most 1.25% per candidate, 2.5% for
+    both. Both routes need the 97.5% interval above −δ (route 1's lower end above 0 implies it).
+  - **Adopting a candidate with no real Brier gain and no real calibration gain:** at most 1.25% (route 1) + 2.5%
+    (route 2's 95% calibration interval) = 3.75% per candidate, 7.5% for both.
+  - If route 2's calibration interval were 97.5% as well, the second bound would be 2.5% per candidate, 5% for both.
+- *What these bounds do not cover.* With twelve week clusters, a bootstrap interval's real coverage is likely below its
+  stated level, so the true rates are likely higher. By how much is not known without a simulation, which this file
+  does not run. The route-2 parts are tested on the same rows and are not independent, so a union bound is used, not a
+  product.
+
 **Labels, reported, not deciding.** For R2 and R3 against production, the near-miss framework's labels with B = 1% and
 H = 1%. A "promising, not shown" result is not adopted, and it is not stacked with another window to make a pass.
 
@@ -387,6 +413,9 @@ decision in section 15), since that moves layer 1's inputs for every overflow.
    which needs a separate test of the line.
 6. **The 2027 season:** option (a) or (b) above.
 7. **Order with option B and A8:** this draft has option B take precedence, and A8 not deployed inside this window.
+8. **Route 2's calibration interval:** 95% (this draft; bound on a false adoption with no real gain about 7.5% over
+   both candidates) or 97.5% (about 5%). Also whether to ask for a simulation of the bootstrap's real coverage with
+   twelve week clusters, run at the fit on the fitting rows, before the window opens.
 
 ---
 
