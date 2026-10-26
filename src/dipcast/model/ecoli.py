@@ -25,6 +25,11 @@ MODEL_PATH = config.PROCESSED / "ecoli_model.json"
 # fitted by scripts/train_ecoli_sm.py. It passed docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md on river samples it was
 # not fitted on; on lakes the leads test found it worse, so lakes keep MODEL_PATH.
 SM_MODEL_PATH = config.PROCESSED / "ecoli_model_sm.json"
+# Its held-out score, for the provenance a spot publishes: leave one year out at lead 0 with the issue-time input, on
+# its 1,502 fitting rows (docs/SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.json, by_lead 0, candidate 0.08498). The test it
+# passed on rivers it was not fitted on is SM_MODEL_TEST.
+SM_MODEL_LOYO_BRIER = 0.0850
+SM_MODEL_TEST = "docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md"
 THRESHOLD = 900
 SAMPLE_HOUR = 12          # EA samples are taken 10:00-14:00; the model's rain window ends here
 FEATURES = ["lrain48", "lrain24", "logit_risk", "lake", "lake_x_lrain48", "doy_sin", "doy_cos"]

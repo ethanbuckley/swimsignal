@@ -324,3 +324,61 @@ def test_a_forced_retry_skips_the_rules_and_is_booked_apart(om):
     f.respond = None
     soil.fetch([CELL], now=NOW, force=True)
     assert len(f.asked) == 2 and rainfall.calls_today()["by"] == {"soil_forced": 1.0}
+
+
+# ------------------------------------------------------------------ the reviewer's cases, by name
+def test_an_empty_json_object_falls_back_with_a_schema_reason(om):
+    """A 200 with body {} raised KeyError('hourly') before the fix."""
+    om(NOW, respond=lambda lats: httpx.Response(200, json={}))
+    st = soil.fetch([CELL], now=NOW)
+    assert st["failed"] == {"schema": 1}
+    p_today = ecoli.load().predict(_X())
+    p, state = forecast.river_ecoli("river", *CELL, _X(), p_today, NOW)
+    assert p is p_today and state["reason"] == "bad: schema: no hourly block"
+
+
+def test_two_503s_for_one_cell_in_one_day_make_one_request_until_the_retry_gap(om):
+    """Before the fix every spot on the cell asked again. Now a second build inside RETRY_GAP_H sends nothing; the
+    one retry comes after it, and after a second 503 nothing more that day."""
+    f = om(NOW, respond=lambda lats: httpx.Response(503, text="busy"))
+    soil.fetch([CELL], now=NOW)
+    for _ in range(3):   # three spots on the cell, reading
+        forecast.river_ecoli("river", *CELL, _X(), ecoli.load().predict(_X()), NOW)
+    soil.fetch([CELL], now=NOW + pd.Timedelta(minutes=30))
+    assert len(f.asked) == 1
+    soil.fetch([CELL], now=NOW + pd.Timedelta(hours=soil.RETRY_GAP_H))
+    soil.fetch([CELL], now=NOW + pd.Timedelta(hours=4))
+    assert len(f.asked) == 2
+    assert soil.value(CELL, NOW + pd.Timedelta(hours=4))[1] == {"reason": "bad: network", "tries": 2}
+
+
+# ------------------------------------------------------------------ what a spot publishes about the model
+def test_a_river_spot_on_the_soil_model_publishes_that_models_provenance(om):
+    om(NOW, value=0.31)
+    soil.fetch([CELL], now=NOW)
+    _, state = forecast.river_ecoli("river", *CELL, _X(), ecoli.load().predict(_X()), NOW)
+    m = forecast.ecoli_provenance(ecoli.load(), state)
+    sm = ecoli.load_sm()
+    assert m["file"] == "ecoli_model_sm.json" and m["n_samples"] == sm.meta["n_samples"] == 1502
+    assert m["loyo_brier"] == ecoli.SM_MODEL_LOYO_BRIER == 0.0850 and m["test"] == "docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md"
+    assert "models=ecmwf_ifs" in m["soil_source"] and m["soil"]["at"] == "2026-10-26T00:00:00+00:00"
+    assert m["baseline"]["file"] == "ecoli_model.json" and m["baseline"]["loyo_brier"] == 0.0919
+    # The score is the leads test's lead-0 figure for this model.
+    leads = json.loads((ROOT / "docs" / "SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.json").read_text())
+    assert round(leads["by_lead"]["0"]["all"]["candidate"], 4) == ecoli.SM_MODEL_LOYO_BRIER
+
+
+def test_a_river_spot_that_fell_back_publishes_todays_model(om):
+    om(NOW, value=None)
+    soil.fetch([CELL], now=NOW)
+    _, state = forecast.river_ecoli("river", *CELL, _X(), ecoli.load().predict(_X()), NOW)
+    m = forecast.ecoli_provenance(ecoli.load(), state)
+    em = ecoli.load()
+    assert {k: m[k] for k in ("file", "target", "n_samples", "loyo_brier")} == {
+        "file": "ecoli_model.json", "target": em.meta["target"], "n_samples": em.meta["n_samples"], "loyo_brier": 0.0919}
+    assert "baseline" not in m and m["soil"]["used"] is False
+
+
+def test_forecast_point_publishes_the_provenance_of_the_model_it_used():
+    src = (ROOT / "src" / "dipcast" / "model" / "forecast.py").read_text()
+    assert 'out["assumptions"]["ecoli_model"] = ecoli_provenance(em, soil_state)' in src

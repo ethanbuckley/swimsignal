@@ -344,6 +344,21 @@ def river_ecoli(mode: str, lat: float, lon: float, X: pd.DataFrame, p_today: np.
     return em_sm.predict(ecoli.with_sm(X, v, em_sm)), {"used": True, "sm": round(v, 3), "held": not lo <= v <= hi, **info}
 
 
+def ecoli_provenance(em: ecoli.EcoliModel, soil_state: dict) -> dict:
+    """What a spot publishes about the E. coli model that gave its figures (assumptions.ecoli_model): the soil-moisture
+    model's file, size, score, test and soil source when soil_state says it was used, with today's model under
+    `baseline`; otherwise today's model, as before, and why soil moisture was not used."""
+    today = {"file": ecoli.MODEL_PATH.name, "target": em.meta.get("target"), "fitted_on": em.meta.get("sites"),
+             "n_samples": em.meta.get("n_samples"),
+             "loyo_brier": em.meta.get("loyo", {}).get("rain + spill exposure + season (dipcast)", {}).get("brier")}
+    if not soil_state.get("used"):
+        return {**today, "soil": soil_state}
+    sm = ecoli.load_sm()
+    return {"file": ecoli.SM_MODEL_PATH.name, "target": sm.meta.get("target"), "fitted_on": sm.meta.get("fitted_on"),
+            "n_samples": sm.meta.get("n_samples"), "loyo_brier": ecoli.SM_MODEL_LOYO_BRIER, "test": ecoli.SM_MODEL_TEST,
+            "soil_source": sm.meta.get("sm_source"), "soil": soil_state, "baseline": today}
+
+
 def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = config.MAX_UPSTREAM_KM,
                    include_contributors: int = 25, log_to_store: bool = True, gauge: bool = True,
                    kind_hint: str | None = None, river_hint: str | None = None, name: str | None = None,
@@ -502,10 +517,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 row["p_ecoli_gt900"] = round(float(p_ec[j]), 3) if ok else None
                 if not ok and row["data_status"] == "ok":
                     row["data_status"] = "rain unavailable"
-            out["assumptions"]["ecoli_model"] = {"target": em.meta.get("target"), "fitted_on": em.meta.get("sites"),
-                                                 "n_samples": em.meta.get("n_samples"), "loyo_brier": em.meta.get("loyo", {}).get(
-                                                     "rain + spill exposure + season (dipcast)", {}).get("brier"),
-                                                 "soil": soil_state}
+            out["assumptions"]["ecoli_model"] = ecoli_provenance(em, soil_state)
             # Where the E. coli figure has been checked: rivers, in the May-September sampling
             # season, at designated bathing waters. Lakes showed no ranking skill.
             out["ecoli_scope"] = {
