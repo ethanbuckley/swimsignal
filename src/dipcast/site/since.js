@@ -36,8 +36,11 @@ function seenRecord(s, forecast, at) {
   // A discharge counts whatever the feed's state, as in the count itself (forecast.py).
   const known = R.daily(s) && Number.isInteger(k) && k >= 0 && (k > 0 || (!n.feed_down_upstream && !n.stale_upstream));
   const c = s.classification, rating = !c ? null : c.class ? `${String(c.class).toLowerCase()} ${c.year}` : 'unrated';
+  // gap: the count is not known because a feed upstream is down or late (the evidence line says so, rather
+  // than say nothing). Added 26 Oct 2026; a note kept before then has none, and reads as no gap.
+  const gap = !!(R.daily(s) && Number.isInteger(k) && !known);
   return { id: s.id, level: R.ORDER[l] !== undefined || l === R.NO_OVERFLOWS ? l : null, discharging: known ? k : null,
-    rating: rating && RATED.test(rating) ? rating : null, forecast, at };
+    rating: rating && RATED.test(rating) ? rating : null, gap, forecast, at };
 }
 
 // The notes as stored. Anything that is not what this file writes reads as not seen, rather than stop
@@ -48,7 +51,8 @@ function seenOK(x) {
     && typeof x.forecast === 'string' && Number.isFinite(Date.parse(x.forecast))
     && (x.level === null || (typeof x.level === 'string' && (R.ORDER[x.level] !== undefined || x.level === R.NO_OVERFLOWS)))
     && (x.discharging === null || (Number.isInteger(x.discharging) && x.discharging >= 0))
-    && (x.rating === null || (typeof x.rating === 'string' && RATED.test(x.rating)));
+    && (x.rating === null || (typeof x.rating === 'string' && RATED.test(x.rating)))
+    && (x.gap === undefined || typeof x.gap === 'boolean');
 }
 const readSeen = text => new Map(sinceRules().storedList(text, seenOK).map(x => [x.id, x]));
 
@@ -92,6 +96,29 @@ function sinceLine(was, now) {
     : `${a === 1 ? '1 overflow upstream was' : `${a} overflows upstream were`} discharging when you looked ${when}; ${a === 1 ? 'it has' : 'all have'} stopped.`;
 }
 
+// The evidence under a line (sinceSaid): a change is never said without it. Which two forecasts were
+// compared, by their issue times ("issued Fri 17:31 and Sun 15:29"); what the overflow feeds upstream
+// report now, against then where both are known; where the count is not known, why; for a rating, whose
+// it is; and a forecast older than the page calls stale (index.html, STALE_MIN: 8 h), said as out of date.
+// No word here says safe: a lower level is a lower forecast risk, nothing more.
+const SINCE_STALE_MIN = 8 * 60;
+const issuedWords = iso => { const d = new Date(iso);
+  return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`; };
+const overflowsWord = n => n === 1 ? '1 overflow upstream' : `${n} overflows upstream`;
+function sinceEvidence(was, now, nowMs = Date.now()) {
+  if (!was || !now) return '';
+  const out = [`Forecasts compared: issued ${issuedWords(was.forecast)} and ${issuedWords(now.forecast)}.`];
+  const a = was.discharging, b = now.discharging, then = a === null || a === undefined ? '' : `, against ${a} then`;
+  if (Number.isInteger(b)) out.push(b ? `${cap1(overflowsWord(b))} reported discharging now${then}.` : `No overflow upstream reported discharging now${then}.`);
+  else if (now.gap) out.push('How many overflows upstream are discharging now is not known: a feed upstream is down or has not updated within six hours.');
+  else if (now.level) out.push('No live overflow count for this spot.');
+  if (was.rating && now.rating && was.rating !== now.rating) out.push("The rating is the Environment Agency's, from its yearly bathing water classification.");
+  const age = (nowMs - Date.parse(now.forecast)) / 60000;
+  if (age > SINCE_STALE_MIN) out.push(`This forecast is ${Math.round(age / 60)} hours old, so the change may be out of date.`);
+  return out.join(' ');
+}
+const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+
 // ------------------------------------------------------------------------------ in the page
 // The notes, read on first use (the first card drawn), and a copy as they were then, which the lines
 // compare with for the rest of the visit.
@@ -118,10 +145,10 @@ function lookedAt(spots, forecast, saved) {
 // A card's line, as HTML (the words are this file's own), or ''.
 function sinceSaid(s, forecast) {
   seenStore();
-  const t = sinceLine(LOOKED.get(s.id), seenRecord(s, forecast, Date.now()));
-  return t ? `<p class="place-since">${t}</p>` : '';
+  const was = LOOKED.get(s.id), now = seenRecord(s, forecast, Date.now()), t = sinceLine(was, now);
+  return t ? `<p class="place-since">${t} <span class="since-ev">${sinceEvidence(was, now)}</span></p>` : '';
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, seenRecord, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, sinceEvidence, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }

@@ -21,6 +21,8 @@ const PLAN_DEFAULT = { day: null, from: null, within: 20, kind: 'all' };
 // An open comparison (Compare these spots) is in it too, as the spots it shows:
 // &compare=thames-port-meadow,bw-ukj1403-11947. `compare` is there only while it is open; empty, it is
 // open on the first spots shown (planCompareIds).
+// An outing's time: a part of the day, or an hour ("07"), as outing.js offers them.
+const PLAN_WHEN = /^(morning|afternoon|evening|[01]\d|2[0-3])$/;
 const inGB = (lat, lon) => lat > 49.8 && lat < 61 && lon > -8.7 && lon < 2;
 const COMPARE_MAX = 3;
 function readPlan(hash, dates, was = PLAN_DEFAULT) {
@@ -36,6 +38,12 @@ function readPlan(hash, dates, was = PLAN_DEFAULT) {
   else if (from && at.length === 2 && inGB(at[0], at[1])) p.from = { name: from.slice(0, 80), lat: at[0], lon: at[1] };
   // Ids as lists.js reads a link's (listIds: text of a sane length, each once), at most three.
   if (q.has('compare')) p.compare = [...new Set(q.get('compare').split(',').filter(id => id && id.length <= 100))].slice(0, COMPARE_MAX);
+  // An outing (outing.js): when on the day, the spot, and a backup spot, each only where the address has
+  // it, so a plan from before 27 Oct 2026 (an old link, or the copy kept in dipcast.plan) reads as it did.
+  const when = q.get('when'), one = id => typeof id === 'string' && id.length > 0 && id.length <= 100;
+  if (PLAN_WHEN.test(when || '')) p.when = when;
+  if (one(q.get('spot'))) p.spot = q.get('spot');
+  if (one(q.get('backup')) && q.get('backup') !== p.spot) p.backup = q.get('backup');
   return p;
 }
 function planHash(p) {
@@ -46,6 +54,9 @@ function planHash(p) {
   q.set('within', String(p.within));
   if (p.kind !== 'all') q.set('kind', p.kind);
   if (Array.isArray(p.compare)) q.set('compare', p.compare.join(','));
+  if (p.when) q.set('when', p.when);
+  if (p.spot) q.set('spot', p.spot);
+  if (p.backup) q.set('backup', p.backup);
   return '#' + q.toString();
 }
 // The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the
@@ -55,7 +66,10 @@ function planHash(p) {
 // first day.
 function planKept(hash, dates, listDay = null) {
   const p = readPlan(hash || '', dates), d = new URLSearchParams(String(hash || '').replace(/^#/, '')).get('day');
-  return { ...p, day: dates.includes(listDay) ? listDay : dates.includes(d) ? d : null };
+  const day = dates.includes(listDay) ? listDay : dates.includes(d) ? d : null;
+  // An outing's time was for its own day: on another day it is dropped, and its spots kept.
+  if (p.when && day !== d) delete p.when;
+  return { ...p, day };
 }
 // A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it: a search
 // for "Ilkley" lists the one spot named for it, and Plan a swim should not want the town typed again. base:
@@ -217,6 +231,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
 }

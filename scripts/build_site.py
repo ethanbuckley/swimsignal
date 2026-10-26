@@ -1822,6 +1822,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
+SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
+VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
 # Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
 SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
 VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
@@ -1863,6 +1866,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on

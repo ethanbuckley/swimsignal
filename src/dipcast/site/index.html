@@ -761,6 +761,21 @@
      otherwise sit in, so the row's padding below moves under it. Muted, the meta size. */
   a.row:has(+ .ev-line) { padding-bottom:4px; }
   .ev-line { margin:0; padding:0 0 12px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  /* Your outing (outing.js): the choices, then the spot and its backup in two equal columns, which on a
+     375 px phone are about 160 px each; one spot alone takes the width. No fills or rules beyond the tile's. */
+  .outing-fields { display:grid; gap:10px; margin:14px 0; }
+  .outing-fields label { font-size:var(--fs-note); font-weight:600; }
+  .outing-fields select { margin-top:4px; }
+  .outing-said { margin:0 0 8px; font-weight:600; }
+  .outing-pair { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin:0 0 10px; }
+  .outing-pair.one { grid-template-columns:minmax(0, 1fr); }
+  .outing-col { min-width:0; }
+  .outing-col p { margin:0 0 4px; }
+  .outing-role { font-size:var(--fs-meta); color:var(--muted); }
+  .outing-nm { margin:0 0 2px; font-size:var(--fs-body); overflow-wrap:anywhere; }
+  .outing-nm a { display:inline-block; padding:10px 0; margin:-10px 0; }   /* 44 px to tap */
+  .outing-col .why { font-size:var(--fs-note); line-height:1.4; }
+  .since-ev { display:block; margin-top:2px; font-size:var(--fs-meta); }
   /* A plan row's Compare tick (planCompare), at the right of its name while the comparison is open. */
   #plan-results ul.spots li { position:relative; }
   .cmp-pick { display:none; }
@@ -1248,6 +1263,7 @@
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
+<script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
 <script>
@@ -3620,6 +3636,7 @@ function drawPlan(fit = false) {
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
+  if (typeof drawOuting === 'function') drawOuting(box, r.groups.flat());   // outing.js: at the top of the results
   planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
   // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
   // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
