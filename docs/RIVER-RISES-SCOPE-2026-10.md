@@ -509,3 +509,11 @@ The plan and the sections above are unchanged. Where they differ from this secti
    3); give none, or exactly 0.02 and 0.01.
 4. Stage 2: `uv run python scripts/river_rises_eval/score.py score --data <data dir> --out <run dir> --statement <file>`.
    It writes `result.json` and `report.md`. The placebo refits each candidate 200 times.
+
+## Decisions on running and showing, 26 October 2026
+
+Ethan adopted the recommendations of 26 October ("Adopt all the recommendations as my decisions"):
+- **Run the stated test in early November,** not before 2 November 2026, with the answers above. Radar rain for the
+  test period must be saved before about 21 November, while the oldest months are still on AWS.
+- **No upstream-rise line on spot pages before the test.** A median lead of about 1.5 h is too short to justify a new
+  line without evidence that it helps.
