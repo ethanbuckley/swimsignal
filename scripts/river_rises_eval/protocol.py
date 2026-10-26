@@ -1,7 +1,8 @@
 """docs/RIVER-RISES-SCOPE-2026-10.md, "Evaluation plan": the stated plan as functions of arrays and frames, no network.
 
-fetch.py gets the series (capped, behind the heavy-run lock). score.py runs two stages: `predict` (the gate, the
-fits and the test-period predictions; no test outcome is scored) and `score` (needs the run statement with B and H).
+fetch.py gets the series (capped, behind the heavy-run lock). score.py runs two stages: `predict` (the datum rule,
+the gate, the fits and the test-period predictions; no test outcome is scored) and `score` (needs the run statement
+naming those predictions; B and H are fixed below).
 tests/test_river_rises_eval.py checks each piece on synthetic series.
 
 - **Issue times:** every hour on the hour, UTC (issue_grid).
@@ -17,7 +18,10 @@ tests/test_river_rises_eval.py checks each piece on synthetic series.
   upstream gauges, C2 adds radar.
 - **Metrics, gate, the six conditions, the placebo and the near-miss labels** as stated.
 
-Choices the plan leaves open are fixed here and listed in the doc ("Harness choices", 26 October 2026).
+Choices the plan leaves open are fixed here and listed in the doc ("Harness choices", 26 October 2026). Ethan's
+answers to the doc's questions are in "Answers, 26 October 2026": fixed margins (MARGINS), the datum rule
+(DATUM_INDEX, datum_rule), tributary-only gauges reported apart (upstream_kind) and each gauge's labelled share
+beside the pooled gate (gate).
 """
 
 from __future__ import annotations
@@ -26,7 +30,7 @@ import hashlib
 import json
 import math
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import numpy as np
@@ -69,6 +73,14 @@ FETCH_FROM = pd.Timestamp("2024-11-20", tz="UTC")   # one day before the first i
 STEP_MAX_H = 1.0          # a rise's two readings: each the last at or before its time, at most this much older
 LABEL_NOW_MAX_H = 1.0     # the label's "last reading at or before t": at most this much older than t
 HOUR = 3_600_000_000_000  # ns
+
+# ------------------------------------------------------------------ Ethan's answers (doc, "Answers, 26 October 2026")
+# 3. B and H in Brier skill against the comparison's reference (R3 for C1), fixed now, not written from predictions.
+MARGIN_B = 0.02
+MARGIN_H = MARGIN_B / 2
+MARGINS = {"C1": {"B": MARGIN_B, "H": MARGIN_H}, "C2": {"B": MARGIN_B, "H": MARGIN_H}}
+# 6. A spot or upstream gauge whose training-period index median lies outside this range is dropped in stage 1.
+DATUM_INDEX = (-0.5, 1.5)
 
 
 class StopRule(RuntimeError):
@@ -549,16 +561,22 @@ def lead_gained(rows: pd.DataFrame, p_col: str, line: float = LINE, look_h: int 
 
 # ------------------------------------------------------------------ gate, conditions, placebo, labels
 def gate(rows: pd.DataFrame, paired_gauges: int, y: str = f"y{PRIMARY_H}", per: str = f"period{PRIMARY_H}") -> dict:
-    """Checked before any score, from labels and populations only (rows at d = 1 h)."""
+    """Checked before any score, from labels and populations only (rows at d = 1 h). The labelled share is pooled
+    over every gauge (the gate's figure); each gauge's own share is reported beside it and enters no condition."""
     share = {}
     for name in ("train", "test"):
         m = rows[per] == name
         share[name] = float(rows.loc[m, y].notna().mean()) if m.any() else 0.0
+    by_gauge = {}
+    for g, d in rows.groupby("gauge", observed=True, sort=True):
+        by_gauge[str(g)] = {name: (float(d.loc[d[per] == name, y].notna().mean()) if (d[per] == name).any() else None)
+                            for name in ("train", "test")}
     ep = episodes(rows[rows[per] == "test"], y, "in_P")
     n_g, n_s = int(ep["gauge"].nunique()), int(ep["system"].nunique())
     ok = (paired_gauges >= GATE_PAIRED_GAUGES and all(v >= GATE_LABELLED for v in share.values())
           and len(ep) >= GATE_EPISODES and n_g >= GATE_EP_GAUGES and n_s >= GATE_EP_SYSTEMS)
-    return {"paired_gauges": int(paired_gauges), "labelled_share": share, "episodes": int(len(ep)),
+    return {"paired_gauges": int(paired_gauges), "labelled_share": share, "labelled_share_by_gauge": by_gauge,
+            "episodes": int(len(ep)),
             "gauges_with_episode": n_g, "systems_with_episode": n_s,
             "episodes_by_system": {str(k): int(v) for k, v in ep.groupby("system").size().items()},
             "judged": bool(ok)}
@@ -631,7 +649,7 @@ def nearmiss_label(d: float, L: float, U: float, B: float, H: float, secondary_h
 
 
 # A secondary comparison with either label blocks "Promising, not shown". In the addendum's order "Harm" can never
-# be reached (see the doc's questions), so "Possible harm" is counted too: the stricter reading.
+# be reached, so "Possible harm" counts as harm: Ethan's answer 2 (doc, "Answers, 26 October 2026").
 SECONDARY_HARM = {"Harm", "Possible harm"}
 
 
@@ -651,19 +669,98 @@ def sha256(path: Path) -> str:
 
 
 def read_statement(path: Path, predictions_sha: str, candidates=("C1", "C2")) -> dict:
-    """The run statement, written from predictions alone before any outcome is read: JSON with
-    "predictions_sha256" (the predictions file it was written from), "margins": {"C1": {"B": .., "H": ..}, ...}
-    in Brier-skill units, and "working" (how B and H were worked out). Refused unless it names these predictions
-    and every margin has 0 <= H <= B and B > 0."""
+    """The run statement, written after stage 1 and before any outcome is read: JSON with "predictions_sha256",
+    the predictions file it was written after. Refused unless it names these predictions. B and H are not the
+    statement's to choose: they are Ethan's fixed decision (MARGINS, 26 October 2026). A statement that gives
+    "margins" other than MARGINS is refused; one that gives none takes them. "working", if given, is kept."""
     if path is None or not Path(path).exists():
-        raise StopRule("no run statement: write B and H from the predictions first")
+        raise StopRule("no run statement: write one naming the predictions first")
     s = json.loads(Path(path).read_text())
-    if s.get("predictions_sha256", "").strip().lower() != predictions_sha:
+    if str(s.get("predictions_sha256", "")).strip().lower() != predictions_sha:
         raise StopRule("the statement names other predictions than these")
-    if not str(s.get("working", "")).strip():
-        raise StopRule("the statement does not show how B and H were worked out")
-    for c in candidates:
-        m = (s.get("margins") or {}).get(c)
-        if not m or not (float(m["B"]) > 0 and 0 <= float(m["H"]) <= float(m["B"])):
-            raise StopRule(f"margins for {c} missing or not 0 <= H <= B, B > 0")
+    given = s.get("margins")
+    if given is not None:
+        if not isinstance(given, dict) or set(given) - set(MARGINS):
+            raise StopRule("the statement's margins name a comparison the plan does not judge")
+        for c, m in given.items():
+            try:
+                b, h = float(m["B"]), float(m["H"])
+            except (KeyError, TypeError, ValueError):
+                raise StopRule(f"the statement's margins for {c} are not B and H") from None
+            if not (math.isclose(b, MARGINS[c]["B"], abs_tol=1e-12) and math.isclose(h, MARGINS[c]["H"], abs_tol=1e-12)):
+                raise StopRule(f"the statement gives B {b}, H {h} for {c}; Ethan fixed B {MARGINS[c]['B']}, "
+                               f"H {MARGINS[c]['H']} on 26 October 2026")
+    s["margins"] = {c: dict(MARGINS[c]) for c in candidates}
     return s
+
+
+# ------------------------------------------------------------------ the datum rule and the upstream kind (answers 6, 7)
+def training_index(series: pd.Series | None, low: float, high: float, issues=None) -> dict:
+    """A gauge's index at each training-period issue time (3 h periods) as the inputs read it: the latest reading
+    published by t - DELAY_H, at most MAX_AGE_H old, minus `low`, over `high - low`. Its median, 5th and 95th
+    percentiles, and `n`, the issue times with a value."""
+    issues = issue_grid() if issues is None else pd.DatetimeIndex(issues)
+    issues = issues[period(issues, PRIMARY_H) == "train"]
+    r = Readings.of(series)
+    t = ns(issues)
+    rng = high - low
+    v = (r.value(t - int(DELAY_H * HOUR), t - int(MAX_AGE_H * HOUR)) - low) / rng if rng > 0 else np.full(len(t), np.nan)
+    v = v[np.isfinite(v)]
+    if not len(v):
+        return {"median": float("nan"), "p5": float("nan"), "p95": float("nan"), "n": 0}
+    return {"median": float(np.median(v)), "p5": float(np.percentile(v, 5)), "p95": float(np.percentile(v, 95)),
+            "n": int(len(v))}
+
+
+def datum_ok(median: float) -> bool:
+    """Kept unless the median is a number outside DATUM_INDEX (the ends are kept). With no training-period reading
+    the datum cannot be checked: that gauge is kept and listed as unchecked."""
+    return not np.isfinite(median) or DATUM_INDEX[0] <= median <= DATUM_INDEX[1]
+
+
+def datum_rule(gauges: list[Gauge], issues=None) -> tuple[list[Gauge], dict]:
+    """Ethan's answer 6, applied in stage 1 before any prediction is made. A spot gauge whose training-period index
+    median lies outside DATUM_INDEX is dropped with all its rows. An upstream gauge outside it is dropped from its
+    slot, which is then missing (0 and a flag, as for a spot gauge without one). A spot gauge left with no upstream
+    gauge is dropped too. Returns the kept gauges (new objects; the input is not changed) and every figure, with
+    the drops listed."""
+    out = {"rule": list(DATUM_INDEX), "spot": {}, "upstream": {}, "dropped": [], "unchecked": []}
+    kept = []
+    for g in gauges:
+        c = training_index(g.series, g.low, g.high, issues)
+        out["spot"][g.ref] = c
+        if c["n"] == 0:
+            out["unchecked"].append({"gauge": g.ref, "role": "spot"})
+        if not datum_ok(c["median"]):
+            out["dropped"].append({"gauge": g.ref, "role": "spot", "of": None, **c,
+                                   "why": "training-period index median outside the rule"})
+            continue
+        slots = {}
+        for slot in ("same", "trib"):
+            up = getattr(g, slot)
+            if up is None:
+                slots[slot] = None
+                continue
+            if up.ref not in out["upstream"]:
+                out["upstream"][up.ref] = training_index(up.series, up.low, up.high, issues)
+                if out["upstream"][up.ref]["n"] == 0:
+                    out["unchecked"].append({"gauge": up.ref, "role": "upstream"})
+            cu = out["upstream"][up.ref]
+            slots[slot] = up if datum_ok(cu["median"]) else None
+            if slots[slot] is None:
+                out["dropped"].append({"gauge": up.ref, "role": slot, "of": g.ref, **cu,
+                                       "why": "training-period index median outside the rule"})
+        if (g.same is not None or g.trib is not None) and slots["same"] is None and slots["trib"] is None:
+            out["dropped"].append({"gauge": g.ref, "role": "spot", "of": None, **c,
+                                   "why": "no upstream gauge left after the rule"})
+            continue
+        kept.append(replace(g, same=slots["same"], trib=slots["trib"]))
+    return kept, out
+
+
+def upstream_kind(g: Gauge) -> str:
+    """Ethan's answer 7: "same river" when the spot gauge has a `same` gauge, "tributary only" when its only
+    upstream gauge is on another river name. Reported apart; the conditions are pooled as stated."""
+    if g.same is not None:
+        return "same river"
+    return "tributary only" if g.trib is not None else "none"

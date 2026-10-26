@@ -426,6 +426,8 @@ or Missing are dropped, as in the coverage run; "Unchecked" readings are kept.
 
 Each needs an answer, or a dated amendment, before 2 November. The harness runs as described above if none comes.
 
+**All eight answered by Ethan on 26 October 2026.** See "Answers, 26 October 2026" below.
+
 1. **R1 and the catchment separation.** R1 is "by spot gauge", but "both separations hold at once" forbids a
    gauge's own rows. The harness uses the gauge's own training-period rows for R1 only. The alternative: the other
    folds' rate by month. R1 enters no pass condition.
@@ -449,6 +451,52 @@ Each needs an answer, or a dated amendment, before 2 November. The harness runs 
    alternative is paired gauges only.
 8. **The gate's 80%.** Pooled over all gauges in the run, per period. Per gauge instead?
 
+## Answers, 26 October 2026
+
+Ethan's answer to all eight: "Adopt all the recommendations as my decisions". Written before any data for the run
+was fetched, and before any label, fit or score. Nothing has been fetched or scored since the harness was written.
+The plan and the sections above are unchanged. Where they differ from this section, this section holds.
+
+1. **R1.** Kept as the harness has it: each gauge's own training-period rows by month. R1 enters no pass
+   condition. No code change.
+2. **"Harm" cannot be reached.** "Possible harm" counts as harm for "no secondary check is labelled harm", as the
+   harness already does (`SECONDARY_HARM`). A matching note on the framework itself is recorded elsewhere, not here.
+   Code: comments only (`protocol.py`, the test).
+3. **B and H.** Units: Brier skill against the comparison's reference (R3 for C1). **B = 0.02, H = B / 2 = 0.01,**
+   fixed now. They are no longer written from predictions. The harness applies the same B and H to C2 against C1.
+   A "Promising, not shown" label leads to a winter shadow log, under the conditions the addendum's forward step
+   states. Nothing reaches the site from that label. Only a pass could ever reach the site.
+   Code: `protocol.MARGINS`. `score` takes B and H from it. The run statement must still name the predictions'
+   SHA-256. A statement that gives margins other than these is refused; one that gives none takes them; "working" is
+   no longer required. `score` writes the shadow-log line into the report when the label is "Promising, not
+   shown". Tested: `test_margins_are_ethans_fixed_values_and_a_statement_cannot_change_them`, and the end-to-end
+   test refuses a statement with B = 0.03.
+4. **Radar in the d = 3 h run.** Kept at t − 1 h, as the plan states (radar is published within minutes). No code
+   change.
+5. **C2's placebo.** Shift the radar only, as the harness does. No code change.
+6. **Datum: a drop rule.** In stage 1, before any prediction is made: a spot gauge or an upstream gauge whose
+   training-period index median lies outside −0.5 to 1.5 is dropped. The ends are kept.
+   - The index is read as the inputs read it: at each training-period issue time, the latest reading published by
+     t − 1 h and at most 24 h old, against that gauge's own EA usual range.
+   - A dropped spot gauge leaves the run with all its rows. A dropped upstream gauge leaves its slot, which is then
+     missing (0 and a flag). A spot gauge left with no upstream gauge is dropped too.
+   - Harness choice: a gauge with no training-period reading cannot be checked. It is kept and listed as unchecked.
+   - The folds stay those of every fetched gauge, so the rule moves no river system to another fold. The gate's
+     count of spot gauges with a pair is taken after the rule.
+   - Every figure (median, 5th and 95th percentile, issue times) goes to `datum.json` and to `index_check` in
+     `prediction_summary.json`. Stage 1 prints the drops. The report lists each dropped gauge with its figures.
+   Code: `protocol.DATUM_INDEX`, `training_index`, `datum_ok`, `datum_rule`; `score.load_checked`, used by both
+   stages so the placebo refits on the same gauges. Tested: `test_datum_rule_drops_gauges_whose_training_index_median_is_off_the_range`,
+   and the end-to-end test drops a spot gauge put 50 m off its range.
+7. **Gauges with only a tributary upstream.** Included, and reported apart: a "By upstream gauge kind" table
+   ("same river", "tributary only") with gauges, labelled rows, events, C1 skill against R3 and C2 skill against
+   C1. The six conditions are not changed and stay pooled. Code: `protocol.upstream_kind`; `upstream_kind` in
+   `prediction_summary.json` and `result.json`; `by_upstream_kind` in `result.json`. Tested:
+   `test_tributary_only_gauges_are_tagged`, and the end-to-end test.
+8. **The gate's 80%.** Pooled, as the harness has it. Each gauge's own share, per period, is reported beside it and
+   enters no condition. Code: `labelled_share_by_gauge` in the gate's output, and a table in the report. Tested:
+   `test_gate_pools_the_labelled_share_and_reports_each_gauges`, and the end-to-end test.
+
 ## Running the harness (not before 2 November 2026)
 
 1. Fetch, under the heavy-run lock (it waits while another job holds it):
@@ -456,7 +504,8 @@ Each needs an answer, or a dated amendment, before 2 November. The harness runs 
    to reuse its station answers. A run that stops at the 300-request cap says so; run it again to continue. Done
    when `<data dir>/summary.json` has `"stopped": null` and a `series` count.
 2. Stage 1, alone on the machine: `uv run python scripts/river_rises_eval/score.py predict --data <data dir> --out <run dir>`.
-   It prints the gate and the predictions' SHA-256.
-3. Write the run statement from `<run dir>/prediction_summary.json` only.
+   It applies the datum rule, then prints the gate, the gauges the rule dropped and the predictions' SHA-256.
+3. Write the run statement: a JSON file with `"predictions_sha256"` set to that SHA-256. B and H are fixed (answer
+   3); give none, or exactly 0.02 and 0.01.
 4. Stage 2: `uv run python scripts/river_rises_eval/score.py score --data <data dir> --out <run dir> --statement <file>`.
    It writes `result.json` and `report.md`. The placebo refits each candidate 200 times.

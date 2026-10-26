@@ -380,30 +380,83 @@ def test_near_miss_labels(d, L, U, want):
 def test_near_miss_order_and_secondary_harm():
     assert pr.nearmiss_label(0.002, 0.001, 0.004, B=0.05, H=0.0) == "No useful difference"
     # In the addendum's order "Harm" (U < 0) is never reached: L > -H gives "No useful difference" first, and
-    # L <= -H with d <= U < 0 gives "Possible harm" first. Asked of Ethan; the harness keeps the order as written.
+    # L <= -H with d <= U < 0 gives "Possible harm" first. Ethan, 26 October 2026 (answer 2): "Possible harm"
+    # counts as harm for "no secondary check labelled harm"; the order stays as written.
     assert pr.nearmiss_label(-0.005, -0.008, -0.001, B=0.05, H=0.01) == "No useful difference"
     assert pr.nearmiss_label(-0.02, -0.03, -0.01, B=0.05, H=0.01) == "Possible harm"
     assert pr.nearmiss_label(0.02, -0.005, 0.04, B=0.05, H=0.01, secondary_harm=True) == "No useful difference"
     assert pr.SECONDARY_HARM == {"Harm", "Possible harm"}
 
 
-def test_statement_must_name_the_predictions_and_sane_margins(tmp_path):
+def test_margins_are_ethans_fixed_values_and_a_statement_cannot_change_them(tmp_path):
+    """Answer 3: B = 0.02 and H = B / 2 in Brier skill, fixed on 26 October 2026, not written from predictions. The
+    statement must still name the predictions; one that gives other margins is refused."""
+    assert pr.MARGINS == {"C1": {"B": 0.02, "H": 0.01}, "C2": {"B": 0.02, "H": 0.01}}
     pred = tmp_path / "predictions.parquet"
     pred.write_bytes(b"predictions")
     sha = pr.sha256(pred)
     st = tmp_path / "statement.json"
-    good = {"predictions_sha256": sha, "working": "from the predictions alone: ...",
-            "margins": {"C1": {"B": 0.02, "H": 0.01}, "C2": {"B": 0.02, "H": 0.02}}}
-    st.write_text(json.dumps(good))
-    assert pr.read_statement(st, sha)["margins"]["C1"]["B"] == 0.02
+    for ok in ({"predictions_sha256": sha},
+               {"predictions_sha256": sha.upper(), "margins": {"C1": {"B": 0.02, "H": 0.01}}},
+               {"predictions_sha256": sha, "working": "x", "margins": pr.MARGINS}):
+        st.write_text(json.dumps(ok))
+        assert pr.read_statement(st, sha)["margins"] == pr.MARGINS
     with pytest.raises(pr.StopRule, match="no run statement"):
         pr.read_statement(tmp_path / "none.json", sha)
-    for bad in ({**good, "predictions_sha256": "0" * 64}, {**good, "working": ""},
-                {**good, "margins": {"C1": {"B": 0.01, "H": 0.02}, "C2": good["margins"]["C2"]}},
-                {**good, "margins": {"C1": good["margins"]["C1"]}}):
+    for bad, why in (({"predictions_sha256": "0" * 64}, "other predictions"),
+                     ({"working": "x"}, "other predictions"),
+                     ({"predictions_sha256": sha, "margins": {"C1": {"B": 0.05, "H": 0.01}}}, "Ethan fixed"),
+                     ({"predictions_sha256": sha, "margins": {"C2": {"B": 0.02, "H": 0.02}}}, "Ethan fixed"),
+                     ({"predictions_sha256": sha, "margins": {"C1": {"B": 0.02}}}, "not B and H"),
+                     ({"predictions_sha256": sha, "margins": {"C3": {"B": 0.02, "H": 0.01}}}, "does not judge")):
         st.write_text(json.dumps(bad))
-        with pytest.raises(pr.StopRule):
+        with pytest.raises(pr.StopRule, match=why):
             pr.read_statement(st, sha)
+
+
+# ------------------------------------------------------------------ answers 6, 7 and 8
+def test_datum_rule_drops_gauges_whose_training_index_median_is_off_the_range():
+    idx = pd.date_range("2025-08-20", "2025-11-10", freq="15min", tz="UTC", inclusive="left")
+
+    def flat(v, start=None):
+        s = pd.Series(float(v), index=idx)
+        return s[s.index >= pd.Timestamp(start, tz="UTC")] if start else s
+    ok_up = pr.Upstream("U1", 0.0, 1.0, flat(0.5))
+    bad_up = pr.Upstream("U2", 0.0, 1.0, flat(40.0))                     # mAOD against a stage scale
+    gauges = [pr.Gauge("A", "s", 0.0, 1.0, flat(0.5), same=ok_up, trib=bad_up),
+              pr.Gauge("B", "s", 0.0, 1.0, flat(40.0), same=ok_up),      # the spot gauge on another datum
+              pr.Gauge("C", "s", 0.0, 1.0, flat(0.5), trib=bad_up),      # its only upstream gauge is dropped
+              pr.Gauge("D", "s", 0.0, 2.0, flat(3.0), same=ok_up),       # median exactly 1.5: kept
+              pr.Gauge("E", "s", 0.0, 1.0, flat(0.5, "2025-10-01"), same=ok_up)]   # no training reading: kept
+    kept, d = pr.datum_rule(gauges)
+    assert [g.ref for g in kept] == ["A", "D", "E"]
+    assert kept[0].same is ok_up and kept[0].trib is None and gauges[0].trib is bad_up   # input not changed
+    assert {(x["gauge"], x["role"], x["of"]) for x in d["dropped"]} == {
+        ("U2", "trib", "A"), ("B", "spot", None), ("U2", "trib", "C"), ("C", "spot", None)}
+    assert d["spot"]["B"]["median"] == pytest.approx(40.0) and d["upstream"]["U2"]["p95"] == pytest.approx(40.0)
+    assert d["spot"]["D"]["median"] == pytest.approx(1.5) and d["spot"]["A"]["n"] > 0
+    assert d["unchecked"] == [{"gauge": "E", "role": "spot"}] and d["spot"]["E"]["n"] == 0
+    assert pr.DATUM_INDEX == (-0.5, 1.5)
+    assert pr.datum_ok(-0.5) and pr.datum_ok(1.5) and pr.datum_ok(float("nan"))
+    assert not pr.datum_ok(-0.5001) and not pr.datum_ok(1.5001)
+
+
+def test_tributary_only_gauges_are_tagged():
+    s = _series(days=2, gaps=False)
+    up = pr.Upstream("U", 0.0, 1.0, s)
+    assert pr.upstream_kind(pr.Gauge("G", "s", 0, 1, s, same=up)) == "same river"
+    assert pr.upstream_kind(pr.Gauge("G", "s", 0, 1, s, same=up, trib=up)) == "same river"
+    assert pr.upstream_kind(pr.Gauge("G", "s", 0, 1, s, trib=up)) == "tributary only"
+
+
+def test_gate_pools_the_labelled_share_and_reports_each_gauges():
+    rows = _gate_rows(150, 15, 6)
+    rows.loc[(rows["gauge"] == "G0") & (rows["period3"] == "train"), "y3"] = np.nan
+    g = pr.gate(rows, 25)
+    assert g["labelled_share"]["train"] == pytest.approx(14 / 15) and g["judged"]       # pooled: still met
+    assert set(g["labelled_share_by_gauge"]) == {f"G{i}" for i in range(15)}
+    assert g["labelled_share_by_gauge"]["G0"] == {"train": 0.0, "test": 1.0}
+    assert g["labelled_share_by_gauge"]["G1"] == {"train": 1.0, "test": 1.0}
 
 
 def test_the_plans_numbers_are_the_sites_and_the_plans():
@@ -452,12 +505,12 @@ def _fake_fetch(tmp_path: Path, gauges: list[pr.Gauge]) -> tuple[Path, Path]:
     rng = np.random.default_rng(0)
     hours = pd.date_range("2025-08-20T01:00", "2025-11-10", freq="1h", tz="UTC")
     for i, g in enumerate(gauges):
-        u = g.same
+        slot, u = ("same", g.same) if g.same is not None else ("trib", g.trib)
         for ref, s in ((g.ref, g.series), (u.ref, u.series)):
             s.rename("value").rename_axis("time").reset_index().to_parquet(data / "series" / f"m{ref}.parquet")
         rows.append({"gauge": g.ref, "label": g.ref, "river": "R", "lat": 54.0, "lon": -2.0, "low": g.low, "high": g.high,
-                     "measure": f"m{g.ref}", "system": g.system, "spots": "x", "paired": True, "why": ""})
-        slots.append({"gauge": g.ref, "slot": "same", "up": u.ref, "low": u.low, "high": u.high, "measure": f"m{u.ref}"})
+                     "measure": f"m{g.ref}", "system": g.system, "spots": "x", "paired": slot == "same", "why": ""})
+        slots.append({"gauge": g.ref, "slot": slot, "up": u.ref, "low": u.low, "high": u.high, "measure": f"m{u.ref}"})
         cell = f"5{i}.000_-2.000"
         cells.append({"gauge": g.ref, "cell": cell, "cell_lat": 50 + i, "cell_lon": -2.0, "saved_months": 1})
         pd.DataFrame({"time": hours, "radar_mm": rng.gamma(0.3, 1.0, len(hours))}).to_parquet(radar / f"radar_{cell}_2025-08.parquet")
@@ -472,7 +525,9 @@ def test_predict_then_score_end_to_end(tmp_path, monkeypatch):
 
     from river_rises_eval import score as sc
     monkeypatch.setattr(pr, "N_PLACEBO", 3)
-    gauges = _world(lead_h=2.0, n=6)[0]
+    gauges = _world(lead_h=2.0, n=8)[0]
+    gauges[6] = pr.Gauge(gauges[6].ref, gauges[6].system, 0.0, 1.0, gauges[6].series, trib=gauges[6].same)
+    gauges[7] = pr.Gauge(gauges[7].ref, gauges[7].system, 0.0, 1.0, gauges[7].series + 50.0, same=gauges[7].same)
     data, radar = _fake_fetch(tmp_path, gauges)
     args = SimpleNamespace(data=data, out=tmp_path / "run", radar=radar, statement=None)
     summary = sc.stage_predict(args)
@@ -480,15 +535,30 @@ def test_predict_then_score_end_to_end(tmp_path, monkeypatch):
     assert not [c for c in pred.columns if c.startswith("y")]           # no outcome in the predictions file
     assert set(pred["config"]) == set(sc.CONFIGS) and pred["C2"].notna().any() and pred["R2"].notna().any()
     assert not summary["gate"]["judged"] and summary["gate"]["paired_gauges"] == 6   # under 25: description only
+    # answer 6: G7 (another datum) is dropped before any prediction and listed with its figures
+    assert "G7" not in set(pred["gauge"]) and summary["gauges"] == 7
+    assert [(d["gauge"], d["role"]) for d in summary["index_check"]["dropped"]] == [("G7", "spot")]
+    assert summary["index_check"]["spot"]["G7"]["median"] > 40
+    # answers 7 and 8: G6 tagged tributary only; each gauge's labelled share beside the pooled one
+    assert summary["upstream_kind"]["G6"] == "tributary only" and summary["upstream_kind"]["G0"] == "same river"
+    assert set(summary["gate"]["labelled_share_by_gauge"]) == {f"G{i}" for i in range(7)}
     with pytest.raises(pr.StopRule):
         sc.stage_score(args)                                             # no statement yet
     st = tmp_path / "statement.json"
-    st.write_text(json.dumps({"predictions_sha256": summary["predictions_sha256"], "working": "synthetic",
-                              "margins": {"C1": {"B": 0.02, "H": 0.01}, "C2": {"B": 0.02, "H": 0.01}}}))
     args.statement = st
+    st.write_text(json.dumps({"predictions_sha256": summary["predictions_sha256"],
+                              "margins": {"C1": {"B": 0.03, "H": 0.01}}}))
+    with pytest.raises(pr.StopRule, match="Ethan fixed"):
+        sc.stage_score(args)                                             # answer 3: B and H are not the statement's
+    st.write_text(json.dumps({"predictions_sha256": summary["predictions_sha256"]}))
     res = sc.stage_score(args)
     assert res["judged"]["C1"]["verdict"].startswith("Too few") and res["judged"]["C2"]["against"] == "C1"
+    assert (res["judged"]["C1"]["B"], res["judged"]["C1"]["H"]) == (0.02, 0.01)
     assert res["judged"]["C1"]["conditions"]["1"]["d"] > pr.SKILL_MIN
     assert res["judged"]["C1"]["conditions"]["6"]["draws"] == 3
+    kinds = res["configs"]["P3d1"]["by_upstream_kind"]
+    assert kinds["same river"]["gauges"] == 6 and kinds["tributary only"]["gauges"] == 1
     report = (args.out / "report.md").read_text()
     assert "## Gate" in report and "description only" in report and "C1 against R3" in report
+    assert "## Datum rule" in report and "| G7 | spot |" in report
+    assert "| tributary only | 1 |" in report and "| G6 |" in report and "Each gauge's share" in report

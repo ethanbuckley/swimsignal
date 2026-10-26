@@ -1,15 +1,16 @@
 """The river-rises evaluation run, for docs/RIVER-RISES-SCOPE-2026-10.md. Offline: reads fetch.py's tables and series
 and the saved radar months; makes no request. Not before 2 November 2026, alone on the machine (no heavy-run lock).
 
-    # stage 1: the gate, the fits and the test-period predictions. Prints the gate and the predictions' SHA-256.
+    # stage 1: the datum rule, the gate, the fits and the test-period predictions. Prints the gate, the gauges the
+    # datum rule dropped and the predictions' SHA-256.
     uv run python scripts/river_rises_eval/score.py predict --data <fetch out dir> --out <run dir>
-    # Ethan writes the run statement from <run dir>/prediction_summary.json (predictions alone): B and H.
+    # the run statement: JSON naming that SHA-256. B and H are fixed (protocol.MARGINS), not the statement's.
     # stage 2: every stated figure, the six conditions, the placebo, the labels and the report.
     uv run python scripts/river_rises_eval/score.py score --data <fetch out dir> --out <run dir> --statement <file>
 
 Stage 1 reads labels only to fit on the training period and to count the gate. It writes the test-period labels
 to <run dir>/rows_d*.parquet for stage 2 and prints nothing from them. Stage 2 refuses a statement that does not
-name the predictions file it was written from.
+name the predictions file, or that gives B or H other than Ethan's.
 """
 
 from __future__ import annotations
@@ -74,6 +75,18 @@ def load(data: Path, radar: Path | None) -> tuple[list[pr.Gauge], pd.DataFrame, 
     return gauges, g, pr.system_folds(g["system"])
 
 
+def load_checked(data: Path, radar: Path | None) -> tuple[list[pr.Gauge], dict[str, int], dict]:
+    """load, then the datum rule (answer 6). The folds stay those of every fetched gauge, so the rule moves no
+    river system to another fold. Both stages call this, so the placebo refits on the same gauges."""
+    gauges, _, folds = load(data, radar)
+    kept, datum = pr.datum_rule(gauges)
+    return kept, folds, datum
+
+
+def kinds(gauges: list[pr.Gauge]) -> dict[str, str]:
+    return {g.ref: pr.upstream_kind(g) for g in gauges}
+
+
 def rows_for(gauges, folds, delay_h, **kw) -> pd.DataFrame:
     rows = pr.build_rows(gauges, pr.issue_grid(), delay_h, folds, **kw)
     for c in ["word"] + [f"period{h}" for h in pr.HORIZONS_H]:
@@ -98,11 +111,12 @@ def predict_config(rows: pd.DataFrame, pop: str, h: int, has_rain: bool) -> pd.D
 
 # ------------------------------------------------------------------ stage 1
 def stage_predict(args) -> dict:
-    gauges, gdf, folds = load(args.data, args.radar)
+    gauges, folds, datum = load_checked(args.data, args.radar)
     has_rain = any(g.rain is not None for g in gauges)
     args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "datum.json").write_text(json.dumps(datum, indent=1, default=str))
     rows = {d: rows_for(gauges, folds, d) for d in sorted({c[2] for c in CONFIGS.values()})}
-    gate = pr.gate(rows[pr.DELAY_H], int(gdf["paired"].astype(bool).sum()))
+    gate = pr.gate(rows[pr.DELAY_H], sum(g.same is not None for g in gauges))
     (args.out / "gate.json").write_text(json.dumps(gate, indent=1))
     preds = []
     for name, (pop, h, d) in CONFIGS.items():
@@ -114,7 +128,8 @@ def stage_predict(args) -> dict:
         r.to_parquet(args.out / f"rows_d{d:g}.parquet", index=False)
     summary = {"made": datetime.now(UTC).isoformat(timespec="seconds"), "gauges": len(gauges),
                "systems": len(set(folds)), "folds": folds, "has_rain": has_rain,
-               "predictions_sha256": pr.sha256(pred_path), "gate": gate, "predictions_alone": {}}
+               "predictions_sha256": pr.sha256(pred_path), "margins": pr.MARGINS, "gate": gate,
+               "upstream_kind": kinds(gauges), "predictions_alone": {}}
     for name in CONFIGS:
         sub = pred[pred["config"] == name]
         summary["predictions_alone"][name] = {
@@ -123,12 +138,10 @@ def stage_predict(args) -> dict:
                 "deciles": [float(x) for x in np.nanpercentile(sub[m], np.arange(10, 100, 10))] if sub[m].notna().any() else [],
                 "histogram_10": np.histogram(sub[m].dropna(), bins=pr.BINS, range=(0, 1))[0].tolist()}
             for m in MODELS if m in sub}
-    r1 = rows[pr.DELAY_H]
-    tr = r1[(r1[f"period{pr.PRIMARY_H}"] == "train") & r1["in_A"]]
-    summary["index_check"] = {g: {"median": float(s.median()), "p5": float(s.quantile(0.05)), "p95": float(s.quantile(0.95))}
-                              for g, s in tr.groupby("gauge", observed=True)["spot_index"]}
+    summary["index_check"] = datum
     (args.out / "prediction_summary.json").write_text(json.dumps(summary, indent=1, default=str))
-    print(json.dumps({"gate": gate, "predictions_sha256": summary["predictions_sha256"]}, indent=1))
+    print(json.dumps({"gate": gate, "datum_dropped": datum["dropped"],
+                      "predictions_sha256": summary["predictions_sha256"]}, indent=1, default=str))
     return summary
 
 
@@ -169,10 +182,11 @@ def stage_score(args) -> dict:
     gate = json.loads((args.out / "gate.json").read_text())
     pred = pd.read_parquet(pred_path)
     rows = {d: pd.read_parquet(args.out / f"rows_d{d:g}.parquet") for d in sorted({c[2] for c in CONFIGS.values()})}
-    gauges, _, folds = load(args.data, args.radar)
+    gauges, folds, datum = load_checked(args.data, args.radar)
+    kind = kinds(gauges)
     res = {"scored": datetime.now(UTC).isoformat(timespec="seconds"), "gate": gate,
            "statement_sha256": pr.sha256(args.statement), "predictions_sha256": statement["predictions_sha256"],
-           "configs": {}, "judged": {}}
+           "margins": statement["margins"], "datum": datum, "upstream_kind": kind, "configs": {}, "judged": {}}
     joined = {}
     for name, (_pop, h, d) in CONFIGS.items():
         sub = pred[pred["config"] == name].merge(rows[d][["gauge", "issue", f"y{h}"]], on=["gauge", "issue"])
@@ -187,6 +201,13 @@ def stage_score(args) -> dict:
                                          for s, g in main.groupby("system")}
     res["configs"][MAIN]["by_gauge"] = {s: table(g, g[f"y{pr.PRIMARY_H}"].to_numpy(dtype=float))
                                         for s, g in main.groupby("gauge")}
+    by_kind = {}
+    for k, g in main.groupby(main["gauge"].map(kind).fillna("none"), sort=True):
+        yk = g[f"y{pr.PRIMARY_H}"].to_numpy(dtype=float)
+        by_kind[str(k)] = {"gauges": int(g["gauge"].nunique()), "rows_with_label": int(np.isfinite(yk).sum()),
+                           "events": int(np.nansum(yk)), "pooled": table(g, yk),
+                           "skill": {f"{c} vs {r}": pr.skill(g[c], g[r], yk) for c, r in JUDGED if c in g and r in g}}
+    res["configs"][MAIN]["by_upstream_kind"] = by_kind
     full = rows[pr.DELAY_H][["gauge", "system", "issue", "word"]]
     for cand, ref in JUDGED:
         if cand not in main or ref not in main:
@@ -204,8 +225,7 @@ def stage_score(args) -> dict:
         for name in ("P3d3", "A3d1"):
             s = joined[name]
             secondary[name] = pr.cluster_skill(s[f"y{pr.PRIMARY_H}"], s[cand], s[ref], s["system"])
-        m = statement["margins"][cand]
-        B, H = float(m["B"]), float(m["H"])
+        B, H = float(pr.MARGINS[cand]["B"]), float(pr.MARGINS[cand]["H"])
         for v in secondary.values():
             v["label"] = pr.nearmiss_label(v["d"], v["L"], v["U"], B, H)
         harm = any(v["label"] in pr.SECONDARY_HARM for v in secondary.values())
@@ -237,7 +257,27 @@ def write_report(res: dict, path: Path) -> None:
          f"test {f(g['labelled_share'].get('test'), 3)} (needs {pr.GATE_LABELLED} in both).",
          f"- Label-1 episodes in P, test period: {g['episodes']} at {g['gauges_with_episode']} gauges in "
          f"{g['systems_with_episode']} river systems (needs {pr.GATE_EPISODES}, {pr.GATE_EP_GAUGES}, {pr.GATE_EP_SYSTEMS}).",
-         f"- **{'Met' if g['judged'] else 'Not met: the scores below are description only, and nothing can pass'}.**", ""]
+         f"- **{'Met' if g['judged'] else 'Not met: the scores below are description only, and nothing can pass'}.**", "",
+         "Each gauge's share of hourly issue times with a label (reported; the gate uses the pooled share above):", "",
+         "| Spot gauge | Training | Test |", "|---|---|---|"]
+    for ref, sh in sorted(g.get("labelled_share_by_gauge", {}).items()):
+        L.append(f"| {ref} | {f(sh.get('train'), 3)} | {f(sh.get('test'), 3)} |")
+    dm = res.get("datum", {})
+    lo, hi = dm.get("rule", pr.DATUM_INDEX)
+    L += ["", "## Datum rule (stage 1, before any prediction)", "",
+          f"A spot or upstream gauge whose training-period index median lies outside {lo} to {hi} is dropped."]
+    if dm.get("dropped"):
+        L += ["", "| Gauge | Role | Spot gauge | Median | 5th pct | 95th pct | Issue times | Why |",
+              "|---|---|---|---|---|---|---|---|"]
+        for d in dm["dropped"]:
+            L.append(f"| {d['gauge']} | {d['role']} | {d['of'] or ''} | {f(d['median'], 3)} | {f(d['p5'], 3)} | "
+                     f"{f(d['p95'], 3)} | {d['n']} | {d['why']} |")
+    else:
+        L.append("None dropped.")
+    if dm.get("unchecked"):
+        L += ["", "No training-period reading, so not checked (kept): "
+              + ", ".join(f"{u['gauge']} ({u['role']})" for u in dm["unchecked"]) + "."]
+    L.append("")
     for cand, j in res["judged"].items():
         L += [f"## {cand} against {j.get('against', '?')} (population P, 3 h, d = 1 h)", ""]
         if "conditions" not in j:
@@ -259,7 +299,15 @@ def write_report(res: dict, path: Path) -> None:
               "Secondary comparisons (own bootstrap, same B and H): "
               + "; ".join(f"{k} skill {f(v['d'])} [{f(v['L'])}, {f(v['U'])}], {v['label']}" for k, v in j["secondary"].items())
               + f". At 6 h: skill {f(j['horizon_6h']['d'])} [{f(j['horizon_6h']['L'])}, {f(j['horizon_6h']['U'])}].", ""]
-    L += ["## Pooled scores", "", "| Config | Model | Brier | Skill vs R3 | Skill vs R1 | AUC | Hit rate | False-alarm ratio |",
+        if j["label"] == "Promising, not shown":
+            L += ["\"Promising, not shown\" leads to a winter shadow log under the forward step's conditions "
+                  "(docs/LAKE-ECOLI-LINE-TEST-2026-10.md). Nothing reaches the site from this label; only a pass could.", ""]
+    L += ["## By upstream gauge kind (reported apart; the conditions above are pooled)", "",
+          "| Kind | Spot gauges | Rows with a label | Events | C1 skill vs R3 | C2 skill vs C1 |", "|---|---|---|---|---|---|"]
+    for k, b in res["configs"].get(MAIN, {}).get("by_upstream_kind", {}).items():
+        L.append(f"| {k} | {b['gauges']} | {b['rows_with_label']} | {b['events']} | "
+                 f"{f(b['skill'].get('C1 vs R3'))} | {f(b['skill'].get('C2 vs C1'))} |")
+    L += ["", "## Pooled scores", "", "| Config | Model | Brier | Skill vs R3 | Skill vs R1 | AUC | Hit rate | False-alarm ratio |",
           "|---|---|---|---|---|---|---|---|"]
     for name, cfg in res["configs"].items():
         for m, t in cfg["pooled"].items():
