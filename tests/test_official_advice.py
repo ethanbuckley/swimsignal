@@ -86,8 +86,9 @@ def test_the_check_record_keeps_status_and_times_not_words(run):
     rec = oa.check_record(run)
     assert rec["checked_at"] == "2026-10-26T19:00:00Z" and rec["sources"]["ea-open"] == "ok"
     d = rec["drafts"]["e8b5832d974a"]
-    assert d == {"spot_id": FRENSHAM, "status": "open", "flags": [], "current": True,
-                 "fetched_at": "2026-10-26T18:37:19Z", "superseded_by": None, "source": "ea-open"}
+    assert d == {"spot_id": FRENSHAM, "feed_id": "ea:11945-20260619-142800", "status": "open", "line": LINE,
+                 "flags": [], "current": True, "fetched_at": "2026-10-26T18:37:19Z", "superseded_by": None,
+                 "source": "ea-open"}
     assert all(k not in json.dumps(rec) for k in ("evidence", "draft_line"))
     assert all(x["spot_id"] for x in rec["drafts"].values())   # unmatched coastal drafts are left out
 
@@ -154,12 +155,19 @@ def test_conflicting_advisories_are_both_shown_newest_first(tmp_path, run):
     assert got[0]["state"] == "stale"   # the newer one is not in the check record: shown, as not re-checked
 
 
-def test_a_bad_approvals_file_shows_nothing_and_says_so(tmp_path, run):
+def test_a_bad_approvals_file_stops_the_build_and_an_empty_one_does_not(tmp_path, run):
+    # A site that silently dropped a reviewed advisory would look clean where it is not: the build stops,
+    # naming the problem, as build_health stops it for a bad forecast.
     bs = _build_site()
     results = [{"id": FRENSHAM, "name": "Frensham Great Pond"}]
-    bad = write(tmp_path, entry(run, reviewer="Someone"))
-    out = bs.attach_official_advice(results, approvals=bad, check=tmp_path / "none.json", now=NOW)
-    assert out["shown"] == 0 and "may not review" in out["error"] and "official" not in results[0]
+    for bad, problem in [(write(tmp_path, entry(run, reviewer="Someone")), "may not review"),
+                         (tmp_path / "missing.json", "cannot be read as JSON"),
+                         (write(tmp_path, entry(run), entry(run), name="twice.json"), "approved twice")]:
+        with pytest.raises(bs.BuildUnhealthy, match=f"official advice: .*{problem}.*not publishing"):
+            bs.attach_official_advice(results, approvals=bad, check=tmp_path / "none.json", now=NOW)
+        assert "official" not in results[0]
+    out = bs.attach_official_advice(results, approvals=write(tmp_path, name="empty.json"), check=tmp_path / "none.json", now=NOW)
+    assert out == {"shown": 0, "states": {}} and "official" not in results[0]
 
 
 def _build_site():
@@ -177,7 +185,9 @@ def test_the_build_writes_the_advice_into_spots_json_and_the_built_page(tmp_path
             "upstream_summary": {"overflows": 2}, "location": {"mode": "lake"}, "now": {"label": "low", "discharging_upstream": 0},
             "contributors": [], "classification": {"class": "excellent", "year": 2025, "url": PROFILE}}
     other = {**spot, "id": "a", "name": "A river", "classification": None, "source": "curated"}
-    results = [spot, other]
+    ham = {**spot, "id": "bw-uki2203-11942", "name": "Ham and Kingston",
+           "classification": {"class": "good", "year": 2025, "url": PROFILE.replace("ukj2310-11945", "uki2203-11942")}}
+    results = [spot, other, ham]
     out = bs.attach_official_advice(results, approvals=write(tmp_path, entry(run)), check=check, now=NOW)
     assert out == {"shown": 1, "states": {"checked": 1}} and "official" not in other
     (tmp_path / "data").mkdir()
@@ -195,6 +205,14 @@ def test_the_build_writes_the_advice_into_spots_json_and_the_built_page(tmp_path
     # Above the level, which keeps its own words and is said to be SwimSignal's forecast, apart from it.
     assert page.index('<h1 class="spot-name"') < page.index(block) < page.index('id="risk-headline">Low risk')
     assert '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>' in page
+    # The coverage line says what was checked and when, not "not checked"; a bathing water without a
+    # reviewed notice keeps the old line.
+    assert ("The Environment Agency's notice above was last checked 26 Oct. Open <a href=\"#ea-today\">today's EA advice</a> "
+            "for the latest.") in page
+    assert "Today's EA advice not checked" not in page.split('id="answer-words"', 1)[1].split("</section>", 1)[0]
+    plain_bw = (tmp_path / "spot" / "bw-uki2203-11942" / "index.html").read_text()
+    assert "Today's EA advice not checked: <a href=\"#ea-today\">open it</a> before you swim" in plain_bw
+    assert 'id="official"' not in plain_bw and "notice above" not in plain_bw
     plain = (tmp_path / "spot" / "a" / "index.html").read_text()
     assert 'id="official"' not in plain and "o-apart" not in plain and 'id="risk-headline">Low risk' in plain
     assert "bwq/widget" not in page
@@ -232,3 +250,46 @@ def test_the_committed_check_record_is_readable_and_from_a_live_run():
     rec = oa.load_check(oa.CHECK_FILE)
     assert rec is not None and rec["mode"] == "live"
     assert all(d["spot_id"] and d["status"] in ("open", "update", "withdrawn", "lifted") for d in rec["drafts"].values())
+
+
+def test_an_incident_that_leaves_the_open_list_with_no_end_stays_shown(tmp_path, run):
+    # Next week the EA's list is read whole and Frensham's incident is not on it, and no end was read.
+    gaz = adv.Gazetteer.load(ROOT)
+    week = NOW + timedelta(days=7)
+    body = json.loads((FIX / "ea_open_2026-10-26.json").read_text())
+    body["result"]["items"] = [i for i in body["result"]["items"] if "11945" not in i["incidentNotation"]]
+    later = tmp_path / "later"
+    later.mkdir()
+    (later / "open.json").write_text(json.dumps(body))
+    (later / "manifest.json").write_text(json.dumps({"sources": [
+        {"key": "ea-open", "file": "open.json", "url": adv.EA_OPEN, "fetched_at": "2026-11-02T19:00:00+00:00"}]}))
+    again = adv.run(fixtures=later, now=week, previous=run["drafts"], gazetteer=gaz)
+    d = next(x for x in again["drafts"] if x["draft_id"] == "e8b5832d974a")
+    assert d["status"] == "withdrawn" and "gone" in d["flags"]
+    got = shown(tmp_path, [entry(run)], oa.check_record(again), week)[FRENSHAM]
+    assert got == [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
+                    "checked": "2026-10-26", "state": "gone"}]
+    # It stays so after it drops out of the drafts (the record carries it).
+    week2 = oa.check_record(dict(again, drafts=[]), previous=oa.check_record(again))
+    assert shown(tmp_path, [entry(run)], week2, week)[FRENSHAM][0]["state"] == "gone"
+    # An end read from the source for the same incident (the EA history) hides it, whatever the draft id.
+    ended = oa.check_record(again)
+    ended["drafts"]["0123456789ab"] = {"spot_id": FRENSHAM, "feed_id": "ea:11945-20260619-142800", "status": "lifted",
+                                       "flags": [], "fetched_at": "2026-11-02T19:00:00Z", "source": "ea-history"}
+    assert shown(tmp_path, [entry(run)], ended, week) == {}
+
+
+def test_a_changed_line_is_not_shown_as_reviewed_or_current(tmp_path, run):
+    # The approval holds only for the exact line: the finder marks the draft "changed" and not approved,
+    # and the site keeps the reviewed line marked as not re-checked, never "Last checked".
+    d = feed_draft(run)
+    newer = dict(d, draft_line=LINE.replace("harmful algae", "sewage"))
+    approvals = oa.load_approvals(write(tmp_path, entry(run)), now=NOW)
+    marked = adv.apply_approvals([newer], approvals, NOW)[0]
+    assert marked["approval"] == "changed" and marked["approved"] is False
+    check = oa.check_record(dict(run, drafts=[newer]))
+    got = oa.shown(approvals, check, NOW)[FRENSHAM]
+    assert got == [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
+                    "checked": "2026-10-26", "state": "changed"}]
+    assert all(x["line"] != newer["draft_line"] for x in got)   # the unreviewed line never reaches the page
+

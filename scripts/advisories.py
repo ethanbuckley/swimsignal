@@ -780,7 +780,9 @@ def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = Non
         src = (p.get("source") or {}).get("key")
         if (src in (complete_feeds or set()) and p.get("feed_id") and p.get("status") not in ENDED
                 and p["feed_id"] not in seen_feed):
-            gone = dict(p, status="withdrawn", flags=[f for f in p.get("flags", []) if f != "superseded"],
+            # Flagged "gone": no end was read, so the site keeps an approved advisory up, marked not
+            # re-checked (official_advice.shown). Only an end or withdrawal read from a source hides it.
+            gone = dict(p, status="withdrawn", flags=sorted({f for f in p.get("flags", []) if f != "superseded"} | {"gone"}),
                         reason=f"{p.get('feed_id')} is no longer in the source's list and no end was read; "
                                "check the source before treating it as lifted",
                         superseded_by=None, duplicates=0, approved=False)

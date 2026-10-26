@@ -267,3 +267,28 @@ test('official advice: its words are escaped, and a link that is not https is le
   assert.match(html, /Last checked 26 Oct 2026\./);
   assert.doesNotMatch(ea.eaTodayOfficial(frensham({ official: [item({ link: 'https://x.org/"><script>' })] })), /<script>|<a /);
 });
+
+test('official advice: the coverage line says what was checked and when, in place of "not checked"', () => {
+  assert.equal(ea.eaTodayCover(frensham({ official: [item()] })),
+    'The Environment Agency\'s notice above was last checked 26 Oct. Open <a href="#ea-today">today\'s EA advice</a> for the latest');
+  assert.equal(ea.eaTodayCover(frensham({ official: [item({ state: 'unverified', checked: '2026-10-19' })] })),
+    'The Environment Agency\'s notice above has not been re-checked since 19 Oct. Open <a href="#ea-today">today\'s EA advice</a> for the latest');
+  assert.match(ea.eaTodayCover(frensham({ official: [item(), item({ since: '2026-01-01' })] })), /^The notices above were last checked 26 Oct\./);
+  // Not a bathing water (no fold): the publisher's own page instead.
+  assert.equal(ea.eaTodayCover({ id: 'osm-x', name: 'X', official: [item()] }),
+    `The Environment Agency's notice above was last checked 26 Oct. Open <a href="${PROFILE}">the Environment Agency page</a> for the latest`);
+  for (const d of [frensham(), frensham({ official: [] }), null]) assert.equal(ea.eaTodayCover(d), '');
+});
+
+test('official advice: gone from the open list, or changed since review, stays up and says so', () => {
+  assert.equal(ea.eaTodayChecked(item({ state: 'gone', checked: '2026-10-26' })),
+    "Not re-checked since 26 Oct 2026: no longer in the Environment Agency's open list; its end was not published.");
+  assert.equal(ea.eaTodayChecked(item({ state: 'changed', checked: '2026-10-26' })),
+    "Not re-checked since 26 Oct 2026: the Environment Agency's record has changed since it was reviewed.");
+  for (const state of ['gone', 'changed']) {
+    const html = ea.eaTodayOfficial(frensham({ official: [item({ state })] }));
+    assert.ok(html.includes(`<p class="o-line">${LINE}</p>`) && !html.includes('Last checked'), state);
+    assert.match(ea.eaTodayCover(frensham({ official: [item({ state })] })), /has not been re-checked since 26 Oct/);
+  }
+});
+

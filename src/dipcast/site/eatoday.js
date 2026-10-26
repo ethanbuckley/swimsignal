@@ -65,7 +65,7 @@ function eaTodayFold(d) {
 // so. Each line keeps its publisher, its start and a link, and says when the finder last checked it: a
 // check that is old or could not read the source says "Not re-checked since", never nothing. No item, no
 // block: the page then says what it said before ("Today's EA advice", above). The prerender runs this.
-const EA_TODAY_STATES = new Set(['checked', 'stale', 'unverified']);
+const EA_TODAY_STATES = new Set(['checked', 'stale', 'unverified', 'gone', 'changed']);
 const eaTodayDay = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
   return m && +m[2] >= 1 && +m[2] <= 12 ? `${+m[3]} ${EA_TODAY_MONTHS[m[2] - 1]} ${m[1]}` : null; };
 // The items a page can show: a line, a publisher and a known state with a real day. Anything else is dropped.
@@ -76,6 +76,8 @@ function eaTodayChecked(o) {
   const day = eaTodayDay(o.checked);
   return o.state === 'checked' ? `Last checked ${day}.`
     : o.state === 'unverified' ? `Not re-checked since ${day}: the ${o.publisher} source could not be read.`
+    : o.state === 'gone' ? `Not re-checked since ${day}: no longer in the ${o.publisher}'s open list; its end was not published.`
+    : o.state === 'changed' ? `Not re-checked since ${day}: the ${o.publisher}'s record has changed since it was reviewed.`
     : `Not re-checked since ${day}.`;
 }
 function eaTodayOfficial(d) {
@@ -86,6 +88,20 @@ function eaTodayOfficial(d) {
       + (/^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `<a href="${eaTodayEsc(o.link)}">Open the ${eaTodayEsc(o.publisher)} page</a>. ` : '')
       + `${eaTodayEsc(eaTodayChecked(o))}</p></li>`).join('')
     + `</ul><p class="o-sep">Follow this advice first. It is not SwimSignal's, and the forecast below does not include it.</p></section>`;
+}
+// In the answer's coverage line, in place of "Today's EA advice not checked: open it before you swim"
+// when a reviewed notice shows above: what was checked and when, then where the latest is. '' without one.
+const eaTodayShort = iso => (eaTodayDay(iso) || '').replace(/ \d{4}$/, '');
+function eaTodayCover(d) {
+  const items = eaTodayAdvice(d);
+  if (!items.length) return '';
+  const o = items[0], what = items.length > 1 ? 'The notices above' : `The ${eaTodayEsc(o.publisher)}'s notice above`;
+  const when = o.state === 'checked' ? `${items.length > 1 ? 'were' : 'was'} last checked ${eaTodayShort(o.checked)}`
+    : `${items.length > 1 ? 'have' : 'has'} not been re-checked since ${eaTodayShort(o.checked)}`;
+  const id = eaTodayId(d);   // a bathing water: the fold in its rating tile (eaTodayFold)
+  const open = id ? `Open <a href="#ea-today">today's EA advice</a> for the latest`
+    : /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `Open <a href="${eaTodayEsc(o.link)}">the ${eaTodayEsc(o.publisher)} page</a> for the latest` : '';
+  return `${what} ${when}${open ? `. ${open}` : ''}`;
 }
 // The line under the level when there is official advice, so the two are not read as one.
 const eaTodayApart = d => eaTodayAdvice(d).length ? '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>' : '';
@@ -125,5 +141,5 @@ if (typeof document === 'object' && document && typeof document.addEventListener
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
-    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart };
+    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover };
 }

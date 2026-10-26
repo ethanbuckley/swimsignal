@@ -13,7 +13,9 @@
  "drafts": {
   "800f5abe3b84": {
    "spot_id": "bw-ukj2310-11945",
+   "feed_id": null,
    "status": "open",
+   "line": "Environment Agency: advice against bathing (harmful algae)",
    "flags": [
     "no_date"
    ],
@@ -24,7 +26,9 @@
   },
   "f815928c7a06": {
    "spot_id": "bw-ukj2310-11945",
+   "feed_id": null,
    "status": "open",
+   "line": "Waverley Borough Council: advice against swimming (blue-green algae) since 22 Aug 2025",
    "flags": [
     "stale"
    ],
@@ -35,7 +39,9 @@
   },
   "e8b5832d974a": {
    "spot_id": "bw-ukj2310-11945",
+   "feed_id": "ea:11945-20260619-142800",
    "status": "open",
+   "line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
    "flags": [],
    "current": true,
    "fetched_at": "2026-10-26T22:45:58Z",

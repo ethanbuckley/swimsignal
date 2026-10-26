@@ -6,9 +6,11 @@ lives in scripts/ (scripts/advisories.py), outside this package, so nothing the 
 reach it. docs/ADVISORY-FINDER-2026-10.md has the rules.
 
 An advisory is shown at its spot while nothing positive has ended it: the source listing it as
-withdrawn or lifted, a stated expiry passing, or (for a page notice with no stated end) PAGE_TERM_DAYS
-after review. A check that failed or is old never hides it: it stays, marked "not re-checked since".
-The advice never changes a forecast level.
+withdrawn or lifted (an end read from the source, for the same draft or the same incident), a stated
+expiry passing, or (for a page notice with no stated end) PAGE_TERM_DAYS after review. A check that
+failed or is old never hides it, and nor does an incident that left the EA's open list with no end
+read (the finder flags that "gone"): it stays, marked "not re-checked since". The advice never changes
+a forecast level.
 """
 
 from __future__ import annotations
@@ -150,8 +152,9 @@ def load_approvals(path: Path | None = None, known: set[str] | None = None, now:
 
 def check_record(result: dict, previous: dict | None = None) -> dict:
     """What the page needs from one finder run, to commit as CHECK_FILE: when it ran, each source's
-    state, and each draft at a spot with its status, flags and when its source last confirmed it. No
-    evidence text: the line and the link are in the approvals file. An ended draft (withdrawn, lifted)
+    state, and each draft at a spot with its status, flags, its line as this run wrote it (our own
+    words, so the site can tell a reviewed line from a changed one) and when its source last confirmed
+    it. No evidence text. An ended draft (withdrawn, lifted)
     in the `previous` record that this run no longer lists is kept, so an ended advisory stays ended
     after it drops out of the finder's drafts, rather than coming back as "not re-checked"."""
     out = _check_record(result)
@@ -172,7 +175,8 @@ def _check_record(result: dict) -> dict:
             fetched = datetime.fromisoformat(fetched).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         except (TypeError, ValueError):
             fetched = None
-        drafts[d["draft_id"]] = {"spot_id": d["spot_id"], "status": d["status"], "flags": list(d.get("flags", [])),
+        drafts[d["draft_id"]] = {"spot_id": d["spot_id"], "feed_id": d.get("feed_id"), "status": d["status"],
+                                 "line": d.get("draft_line"), "flags": list(d.get("flags", [])),
                                  "current": d.get("current"), "fetched_at": fetched,
                                  "superseded_by": d.get("superseded_by"), "source": d["source"]["key"]}
     return {"note": "The advisory finder's last live check (scripts/advisory_finder.py). Written by the "
@@ -201,14 +205,19 @@ def _local(at: datetime) -> date:
 def shown(approvals: dict, check: dict | None, now: datetime) -> dict[str, list[dict]]:
     """The advisories each spot's page shows, newest first, as {spot_id: [{line, publisher, link,
     since, checked, state}]}. state is "checked" (the last check confirmed it within RECHECK_DAYS),
-    "stale" (no check since `checked`) or "unverified" (the last check could not read its source;
-    `checked` is when the source last confirmed it). Not shown: an advisory its source lists as
-    withdrawn or lifted, one superseded by an ended notice, one past its stated expiry, and a page
-    notice PAGE_TERM_DAYS after review when it gives no end."""
+    "stale" (no check since `checked`), "unverified" (the last check could not read its source),
+    "gone" (it left the source's open list and no end was read) or "changed" (the source's line is no
+    longer the reviewed one: the new line needs a review, and the reviewed one is not shown as
+    current); for the last three, `checked` is when the source last confirmed the reviewed line. Not shown: an advisory its source ended (withdrawn or lifted, read
+    from the source, for this draft or any draft of the same incident), one superseded by an ended
+    notice, one past its stated expiry, and a page notice PAGE_TERM_DAYS after review when it gives
+    no end."""
     today = _local(now)
     drafts = (check or {}).get("drafts", {})
     run_at = _utc((check or {}).get("checked_at"))
     out: dict[str, list[dict]] = {}
+    positive = lambda d: isinstance(d, dict) and d.get("status") in ENDED and "gone" not in (d.get("flags") or [])
+    ended_incidents = {d.get("feed_id") for d in drafts.values() if positive(d) and d.get("feed_id")}
     for did, a in approvals.items():
         exp = _day(a.get("expiry"))
         if exp and exp < today:
@@ -216,15 +225,21 @@ def shown(approvals: dict, check: dict | None, now: datetime) -> dict[str, list[
         if a["kind"] == "page" and not exp and today > _local(a["when"]) + timedelta(days=PAGE_TERM_DAYS):
             continue
         d = drafts.get(did)
+        if a.get("incident_id") and a["incident_id"] in ended_incidents:
+            continue
         if isinstance(d, dict):
-            if d.get("status") in ENDED:
+            if positive(d):
                 continue
             newer = drafts.get(d.get("superseded_by") or "")
             if "superseded" in (d.get("flags") or []) and isinstance(newer, dict) and newer.get("status") in ENDED:
                 continue
         confirmed = _utc(d.get("fetched_at")) if isinstance(d, dict) else None
         confirmed = max(filter(None, (confirmed, _utc(a["fetched_at"]))))
-        if isinstance(d, dict) and "unverified" in (d.get("flags") or []):
+        if isinstance(d, dict) and "gone" in (d.get("flags") or []):
+            state, checked = "gone", confirmed
+        elif isinstance(d, dict) and d.get("line") and d["line"] != a["line"]:
+            state, checked = "changed", _utc(a["fetched_at"])
+        elif isinstance(d, dict) and "unverified" in (d.get("flags") or []):
             state, checked = "unverified", confirmed
         elif isinstance(d, dict) and run_at and (today - _local(run_at)).days <= RECHECK_DAYS:
             state, checked = "checked", run_at

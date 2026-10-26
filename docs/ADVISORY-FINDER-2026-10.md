@@ -145,8 +145,9 @@ gave them. A feed has no sentence to quote.
   page, "lifted" or "withdrawn" counts only when the sentence says what was lifted ("the warning has
   been lifted") or says "issued in error". A bare "status=lifted" changes nothing.
 - **Gone from a feed is not lifted.** With `--previous`, an incident that has left a feed read whole,
-  with no end date read, comes back as "withdrawn" with a reason asking the reviewer to check. From a
-  feed not read whole, nothing is inferred.
+  with no end date read, comes back as "withdrawn", flagged `gone`, with a reason asking the reviewer
+  to check. The site keeps an approved advisory that is `gone` up, marked not re-checked. From a feed
+  not read whole, nothing is inferred.
 - **Unverified is not current.** If a feed (`ea-open` or `epa-alerts`) cannot be read, or is not read
   whole, its open drafts from `--previous` that were not seen this run come back flagged `unverified`,
   held and `current: false`. This is the rule `ireland.py` uses: a restriction is never shown from a
@@ -205,12 +206,12 @@ draft; the reviewer fills in the last three fields:
  "reviewer": "<name>", "authority": "<authority>", "reviewed_at": "<UTC time>"}
 ```
 
-The loader refuses the whole file, and the run stops, if any entry has an unknown draft id (not in
+The loader refuses the whole file, and the finder run and the site build both stop, if any entry has an unknown draft id (not in
 this run or `--previous`), a missing field, a reviewer and authority pair not in `REVIEWERS`, a
 `reviewed_at` or `fetched_at` that is not UTC in that form (or a `reviewed_at` in the future), a
 `start` or `expiry` that is not a day, a link or source address that is not https, a line that is not
-one clean line, a repeated id or another key. The build reads the same file with the same loader; a
-file with any mistake shows no advisory anywhere, and the build log says why. An approval
+one clean line, a repeated id or another key. The build reads the same file with the same loader.
+The site build checks no draft ids: the finder's drafts are not in CI. An approval
 holds only for the exact line: if the draft's line changes, the draft is `changed` and needs
 approving again. When an advisory has ended and left the drafts, its entry has to be removed by PR.
 The finder never writes the file and has no function that publishes or sends.
@@ -237,7 +238,9 @@ The page (`eaTodayOfficial` in `eatoday.js`) draws it after the spot's name and 
 notice box headed "Official advice". The prerender runs the same function, so it shows without
 scripts. Each item has the line (publisher, advice, cause and start), a link to the publisher's page
 and when it was checked. Under the level, one line says it is SwimSignal's forecast and the official
-advice is separate. The level does not change.
+advice is separate. In the answer's coverage line, "Today's EA advice not checked: open it before you
+swim" becomes "The Environment Agency's notice above was last checked 26 Oct. Open today's EA advice
+for the latest." The level does not change.
 
 | Case | What the page shows |
 | --- | --- |
@@ -245,11 +248,13 @@ advice is separate. The level does not change.
 | Approved, checked within 8 days | The line, the link, "Last checked <date>." |
 | Last check older than 8 days, or no check file | The line, the link, "Not re-checked since <date>." |
 | The last run could not read the source (`unverified`) | The line, the link, "Not re-checked since <date>: the <publisher> source could not be read." |
-| The source lists it as withdrawn or lifted | Nothing. The check record keeps an ended draft after it drops out of the drafts. |
+| The incident left the EA's open list and no end was read (`gone`) | The line, the link, "Not re-checked since <date>: no longer in the Environment Agency's open list; its end was not published." |
+| The source's line changed since review | The reviewed line, "Not re-checked since <date>: the Environment Agency's record has changed since it was reviewed." The new line needs its own review and is not shown. |
+| The source ended it (withdrawn or lifted, read from the source, for this draft or the same incident) | Nothing. The check record keeps an ended draft after it drops out of the drafts. |
 | Superseded by a notice that ended it | Nothing. Superseded by a newer open notice: still shown. |
 | Past a stated expiry, or a page notice 14 days after review with no stated end | Nothing. |
 | Two approved advisories for one spot | Both, newest start first. |
-| The approvals file has a mistake | Nothing anywhere, and the build log says why. |
+| The approvals file has a mistake, or is missing | The build stops (BuildUnhealthy) and names the problem. Nothing is published. A valid empty file is fine. |
 
 Only a positive end at the source, or an expiry, removes an advisory. A failed or old check never
 turns it into an all-clear.

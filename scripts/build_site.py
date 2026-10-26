@@ -1171,15 +1171,15 @@ def attach_official_advice(results: list[dict], approvals: Path | None = None, c
     """Reviewed official advice for each spot's page (`official`: [{line, publisher, link, since, checked,
     state}], newest first), from data/advisories/approved.json and the advisory finder's last check,
     data/advisories/last_check.json (dipcast.official_advice). Files only: the build asks no publisher
-    for anything, and the advice never changes a level. An approvals file with any mistake gives no
-    spot any advice and says so: the page then shows what it did before (the "Today's EA advice"
-    fold). Returns {"shown": n, "states": {...}, "error": ...} for the build's health record."""
+    for anything, and the advice never changes a level. An approvals file with any mistake (or none at
+    all) raises BuildUnhealthy, naming the problem: a site that silently dropped a reviewed advisory
+    would look clean where it is not. A valid file with no entries is fine. Returns {"shown": n,
+    "states": {...}} for the build's health record."""
     now = now or pd.Timestamp.now(tz="UTC").to_pydatetime()
     try:
         approved = official_advice.load_approvals(approvals, now=now)
     except official_advice.ApprovalError as e:
-        log.warning("official advice: %s", e)
-        return {"shown": 0, "error": str(e)[:300]}
+        raise BuildUnhealthy(f"official advice: {e}; fix data/advisories/approved.json by PR; not publishing") from None
     by_spot = official_advice.shown(approved, official_advice.load_check(check), now)
     n, states = 0, Counter()
     for r in results:
