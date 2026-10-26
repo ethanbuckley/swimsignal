@@ -31,9 +31,30 @@ def test_the_page_loads_the_ea_advice_script_from_its_build(tmp_path):
 
 
 def test_the_build_never_asks_for_the_panel():
-    # No request is added to the build: only the page's script knows the widget's address.
+    # No request is added to the build: only the page's script knows the widget's address. The advisory
+    # finder, which lists the panel as a source, lives in scripts/ (scripts/advisories.py), outside the
+    # package, so this holds for every module of the package.
     for f in [ROOT / "scripts" / "build_site.py", *(ROOT / "src" / "dipcast").rglob("*.py")]:
         assert "bwq/widget" not in f.read_text(), f
+
+
+def test_the_build_never_imports_the_advisory_finder():
+    # The same contract, from what the build actually loads: import build_site in a fresh interpreter
+    # and read every module it brought in from this repo. None is the finder, and none names the panel.
+    import json
+    import subprocess
+    code = ("import json, sys; sys.path[:0] = [sys.argv[1] + '/scripts', sys.argv[1] + '/src']; import build_site; "
+            "print(json.dumps(sorted({n: getattr(m, '__file__', None) for n, m in list(sys.modules.items())}.items(), "
+            "key=lambda x: x[0])))")
+    out = subprocess.run([sys.executable, "-c", code, str(ROOT)], capture_output=True, text=True, check=True, cwd=ROOT)
+    mods = dict(json.loads(out.stdout.splitlines()[-1]))
+    assert "build_site" in mods and "dipcast.official_advice" in mods
+    assert "advisories" not in mods and "advisory_finder" not in mods
+    ours = [Path(f) for f in mods.values() if f and Path(f).resolve().is_relative_to(ROOT)]
+    assert len(ours) > 5
+    for f in ours:
+        assert "bwq/widget" not in f.read_text(), f
+    assert (ROOT / "scripts" / "advisories.py").exists() and "bwq/widget" in (ROOT / "scripts" / "advisories.py").read_text()
 
 
 def test_the_privacy_notice_names_the_panel_on_a_bathing_waters_page():

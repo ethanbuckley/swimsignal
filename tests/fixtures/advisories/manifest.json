@@ -1,5 +1,5 @@
 {
-  "note": "Real answers, fetched one at a time from a Mac on 26 Oct 2026 (UTC times below), for the advisory finder's dry run (src/dipcast/advisories.py). JSON and the EA panel are byte for byte as received. The GOV.UK page is cut to its <main> element (OGL v3.0). epa_alerts_2026-10-04.json is a copy of tests/fixtures/ireland/epa_alerts.json (the EPA's answer on 4 Oct 2026, trimmed to two rows); it is used by the tests, not listed here. The Waverley and City of London pages are on the whitelist but their copies are not kept here: neither is open-licensed.",
+  "note": "Real answers, fetched one at a time from a Mac on 26 Oct 2026 (UTC times below), for the advisory finder's dry run (scripts/advisories.py). JSON and the EA panel are byte for byte as received. The GOV.UK page is cut to its <main> element (OGL v3.0). epa_alerts_2026-10-04.json is a copy of tests/fixtures/ireland/epa_alerts.json (the EPA's answer on 4 Oct 2026, trimmed to two rows); it is used by the tests, not listed here. The Waverley and City of London pages are on the whitelist but their copies are not kept here: neither is open-licensed.",
   "sources": [
     {"key": "ea-open", "file": "ea_open_2026-10-26.json",
      "url": "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100",

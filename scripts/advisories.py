@@ -56,25 +56,24 @@ from zoneinfo import ZoneInfo
 import httpx
 
 from dipcast import config
+from dipcast.official_advice import (APPROVALS_FILE, ENDED, PAGE_TERM_DAYS, REVIEWERS, ApprovalError,  # noqa: F401
+                                     load_approvals)
 
 TZ = ZoneInfo("Europe/London")
 STALE_DAYS = 28            # a page notice older than this with no stated expiry is flagged stale
-PAGE_TERM_DAYS = 14        # an approved page notice with no stated end lapses this long after approval
 MAX_EVIDENCE = 600         # characters of evidence kept per draft
 SHORT = 80                 # a passage shorter than this is read with the block after it
 MAX_BYTES = 4_000_000      # a page larger than this is refused (the City of London page is 2.3 MB)
 TIMEOUT_S = 20
 PAUSE_S = 1.0              # between live requests, one at a time
 STATUSES = ("open", "update", "withdrawn", "lifted")
-ENDED = {"withdrawn", "lifted"}
 # Flags that stop a draft being approved as it stands: a reviewer has to settle them first.
 HOLDING = {"unmatched", "ambiguous", "no_date", "conflict", "superseded", "unverified", "company_notice"}
 ROLES = ("regulator", "council", "water company")     # the EA, NRW and the Irish EPA are regulators
 MAX_HISTORY = 40           # EA history requests in one run, at most (38 inland bathing waters)
 
-# Approvals: Ethan's file, changed only by pull request. The finder reads it and never writes it.
-APPROVALS_FILE = config.ROOT / "data" / "advisories" / "approved.json"
-ALLOWED_APPROVERS = ("Ethan Buckley",)
+# Approvals (APPROVALS_FILE, load_approvals, REVIEWERS) live in dipcast.official_advice, which the site
+# build reads. The finder reads the file and never writes it.
 HISTORY_STAMP = config.CACHE / "advisory_ea_history_day.json"   # the day the EA history was last read
 
 EA_ID = re.compile(r"uk[a-z0-9]+-\d{5}\Z")                 # "ukj2310-11945"
@@ -463,7 +462,7 @@ def _draft(source: Source, *, spot_id, spot_name, candidates, water_id, water_na
     text, cut = cap(evidence)
     quoted = source.open_licence
     d = {
-        "draft_id": None, "approved": False, "approval": "unapproved", "approved_by": None, "approved_at": None,
+        "draft_id": None, "approved": False, "approval": "unapproved", "approved_by": None, "approved_authority": None, "approved_at": None,
         "approved_line": None, "held": False, "current": None,
         "spot_id": spot_id, "spot_name": spot_name, "candidates": list(candidates),
         "water_id": water_id, "water_name": water_name,
@@ -841,7 +840,7 @@ def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = Non
             d["reason"] += f"; older than {STALE_DAYS} days with no stated expiry"
         d["held"] = bool(HOLDING & set(d["flags"]))
         d["approved"], d["approval"] = False, "unapproved"
-        d["approved_by"] = d["approved_at"] = d["approved_line"] = None
+        d["approved_by"] = d["approved_authority"] = d["approved_at"] = d["approved_line"] = None
         d["current"] = is_current(d, today)
         d["draft_line"] = draft_line(d)
         # Whether this draft id was absent from the previous drafts file (every draft, with none).
@@ -873,70 +872,6 @@ def draft_line(d: dict) -> str:
 
 # ---- approvals ---------------------------------------------------------------------------------
 
-_DRAFT_ID = re.compile(r"[0-9a-f]{12}\Z")
-_UTC = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
-_ENTRY_KEYS = {"draft_id", "approver", "approved_at", "line"}
-
-
-class ApprovalError(ValueError):
-    """The approvals file is not as it must be. Nothing is marked approved from a file with any error."""
-
-
-def load_approvals(path: Path | None = None, known: set[str] | None = None, now: datetime | None = None) -> dict:
-    """Ethan's approvals, by draft id: {"approvals": [{"draft_id", "approver", "approved_at", "line"}]}.
-    Every entry must have a 12-character draft id (one of `known`, when given), an approver in
-    ALLOWED_APPROVERS, approved_at in UTC as 2026-10-26T19:00:00Z (not after `now`) and the exact
-    one-line text; no id twice, no other keys. Any problem raises ApprovalError, naming each entry:
-    a file with a mistake approves nothing. The finder never writes this file."""
-    path = Path(path or APPROVALS_FILE)
-    try:
-        body = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as err:
-        raise ApprovalError(f"{path}: cannot be read as JSON ({type(err).__name__})") from None
-    entries = body.get("approvals") if isinstance(body, dict) else None
-    if not isinstance(entries, list):
-        raise ApprovalError(f"{path}: no \"approvals\" list")
-    out, problems = {}, []
-    for i, e in enumerate(entries):
-        if not isinstance(e, dict):
-            problems.append(f"entry {i}: not an object")
-            continue
-        did = e.get("draft_id")
-        if not isinstance(did, str) or not _DRAFT_ID.fullmatch(did):
-            problems.append(f"entry {i}: no valid draft_id")
-            continue
-        here, before = f"entry {i} ({did})", len(problems)
-        if known is not None and did not in known:
-            problems.append(f"{here}: unknown draft id, not in this run or the previous one")
-        if did in out:
-            problems.append(f"{here}: approved twice")
-        who = e.get("approver")
-        if not isinstance(who, str) or not who.strip():
-            problems.append(f"{here}: missing approver")
-        elif who not in ALLOWED_APPROVERS:
-            problems.append(f"{here}: {clean(who)[:40]!r} may not approve (only {', '.join(ALLOWED_APPROVERS)})")
-        at, when = e.get("approved_at"), None
-        if not isinstance(at, str) or not _UTC.fullmatch(at):
-            problems.append(f"{here}: approved_at must be UTC as 2026-10-26T19:00:00Z")
-        else:
-            try:
-                when = datetime.strptime(at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=ZoneInfo("UTC"))
-            except ValueError:
-                problems.append(f"{here}: approved_at is not a real time")
-            if when and now and when > now:
-                problems.append(f"{here}: approved_at is in the future")
-        line = e.get("line")
-        if not isinstance(line, str) or not line or clean(line) != line or len(line) > 300:
-            problems.append(f"{here}: line must be the exact one-line text")
-        if set(e) - _ENTRY_KEYS:
-            problems.append(f"{here}: unexpected keys {sorted(set(e) - _ENTRY_KEYS)}")
-        if len(problems) == before:
-            out[did] = {"approver": who, "approved_at": at, "when": when, "line": line}
-    if problems:
-        raise ApprovalError(f"{path}: " + "; ".join(problems))
-    return out
-
-
 def apply_approvals(drafts: list[dict], approvals: dict, now: datetime) -> list[dict]:
     """Mark each draft approved or not from `load_approvals`. An approval holds only for the exact line
     approved: if the draft's line has changed since, it is "changed" and needs approving again. A page
@@ -948,7 +883,8 @@ def apply_approvals(drafts: list[dict], approvals: dict, now: datetime) -> list[
         a = approvals.get(d["draft_id"])
         if not a:
             continue
-        d.update(approved_by=a["approver"], approved_at=a["approved_at"], approved_line=a["line"])
+        d.update(approved_by=a["reviewer"], approved_authority=a["authority"], approved_at=a["reviewed_at"],
+                 approved_line=a["line"])
         if a["line"] != d["draft_line"]:
             d["approval"] = "changed"
             d["reason"] += "; the approved line differs from this run's line: approve again by PR"
@@ -965,6 +901,18 @@ def apply_approvals(drafts: list[dict], approvals: dict, now: datetime) -> list[
                 continue
         d["approval"], d["approved"] = "approved", True
     return drafts
+
+
+def review_entry(d: dict) -> dict:
+    """A draft as an entry for the approvals file, for a reviewer to check and complete: the line and
+    the evidence it rests on, with reviewer, authority and reviewed_at left empty. Writes nothing."""
+    fetched = datetime.fromisoformat(d["fetched_at"]).astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {"draft_id": d["draft_id"], "spot_id": d["spot_id"], "line": d["draft_line"],
+            "publisher": d["source"]["publisher"], "link": d["link"],
+            "kind": "page" if _kind(d) == "page" else "feed",
+            "source_url": d["source"]["url"], "incident_id": d.get("feed_id"),
+            "start": d.get("notice_date"), "expiry": d.get("expiry"), "fetched_at": fetched,
+            "reviewer": None, "authority": None, "reviewed_at": None}
 
 
 # ---- reading -----------------------------------------------------------------------------------

@@ -8,8 +8,10 @@ Runs by hand on Ethan's Mac, weekly in season: not in GitHub Actions and not in 
 EA's bathing-water service refuses GitHub's runners). Writes a JSON file of drafts (default
 data/cache/advisory_drafts.json, which git ignores) and prints a short review table. It reads
 approvals from data/advisories/approved.json (Ethan's, changed only by pull request) and never writes
-them. There is no publish path: nothing reaches the site build and nothing is sent. Without --dry-run
-it refuses to run. docs/ADVISORY-FINDER-2026-10.md has the rules.
+them. A live run also writes data/advisories/last_check.json (each draft's status and when its source
+last confirmed it, no evidence text); committed by pull request, that file is what the site build
+reads for "last checked". The drafts themselves never reach the build, and nothing is sent. Without
+--dry-run it refuses to run. docs/ADVISORY-FINDER-2026-10.md has the rules.
 """
 
 from __future__ import annotations
@@ -21,9 +23,11 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from advisories import APPROVALS_FILE, BY_KEY, HISTORY_STAMP, TZ, ApprovalError, review_entry, run, table  # scripts/advisories.py
 from dipcast import config
-from dipcast.advisories import APPROVALS_FILE, BY_KEY, HISTORY_STAMP, TZ, ApprovalError, run, table
+from dipcast.official_advice import CHECK_FILE, check_record
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -41,6 +45,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ea-history", action="store_true",
                     help="live only: also read each inland bathing water's EA incident history (38 requests, "
                          f"one at a time), at most once a day ({HISTORY_STAMP.name} in the cache)")
+    ap.add_argument("--check-file", type=Path, default=CHECK_FILE,
+                    help="live runs only: where the check record goes (default data/advisories/last_check.json)")
+    ap.add_argument("--entry", action="append", default=[], metavar="DRAFT_ID",
+                    help="also print this draft as an approvals entry for a reviewer to complete (repeatable)")
     args = ap.parse_args(argv)
     if not args.dry_run:
         ap.error("--dry-run is required: this prototype has no other mode")
@@ -66,6 +74,17 @@ def main(argv: list[str] | None = None) -> int:
     out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(table(result))
     print(f"Drafts written to {out}")
+    if result["mode"] == "live" and not args.source:
+        # A run of some sources only is not a check of all of them, so it leaves the record alone.
+        args.check_file.parent.mkdir(parents=True, exist_ok=True)
+        args.check_file.write_text(json.dumps(check_record(result), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"Check record written to {args.check_file}: commit it by pull request")
+    by_id = {d["draft_id"]: d for d in result["drafts"]}
+    for did in args.entry:
+        if did in by_id and by_id[did].get("spot_id"):
+            print(json.dumps(review_entry(by_id[did]), ensure_ascii=False))
+        else:
+            print(f"No draft at a spot with id {did}", file=sys.stderr)
     return 0
 
 

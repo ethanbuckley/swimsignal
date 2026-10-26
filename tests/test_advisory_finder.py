@@ -1,4 +1,4 @@
-"""The advisory finder (src/dipcast/advisories.py, scripts/advisory_finder.py): drafts only, from
+"""The advisory finder (scripts/advisories.py, scripts/advisory_finder.py): drafts only, from
 whitelisted sources, with conservative defaults. The real fixtures are the EA's and the EPA's
 answers on 26 Oct 2026 (and the EPA's on 4 Oct 2026); tests/fixtures/advisories/manifest.json
 names each one's address and fetch time. The council pages here are made up, in the shape of
@@ -13,10 +13,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-from dipcast import advisories as adv
-from dipcast.advisories import TZ, Gazetteer, Refused
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import advisories as adv
+from advisories import TZ, Gazetteer, Refused
+
 FIX = ROOT / "tests" / "fixtures" / "advisories"
 NOW = datetime(2026, 10, 26, 19, 0, tzinfo=TZ)
 WAVERLEY = adv.BY_KEY["waverley-frensham"]
@@ -424,8 +425,13 @@ def approvals_file(tmp_path, *entries, name="approved.json"):
 
 
 def entry_for(d, **change):
-    return {"draft_id": d["draft_id"], "approver": "Ethan Buckley", "approved_at": "2026-10-26T18:00:00Z",
-            "line": d["draft_line"], **change}
+    """An approvals entry for a draft, with its evidence and Ethan as the reviewer, changed by `change`."""
+    return {"draft_id": d["draft_id"], "spot_id": d["spot_id"] or "bw-ukj2310-11945", "line": d["draft_line"],
+            "publisher": d["source"]["publisher"], "link": d["link"] or d["source"]["url"],
+            "kind": "page" if d["source"]["kind"] == "page" else "feed", "source_url": d["source"]["url"],
+            "incident_id": d["feed_id"], "start": d["notice_date"] or "2026-10-22", "expiry": d["expiry"],
+            "fetched_at": "2026-10-26T18:00:00Z", "reviewer": "Ethan Buckley", "authority": "Ethan Buckley",
+            "reviewed_at": "2026-10-26T18:00:00Z", **change}
 
 
 def test_sources_roles_and_licences():
@@ -497,8 +503,7 @@ def test_approvals_file_in_the_repo_is_valid():
     # approved today is not "in the future".
     assert adv.APPROVALS_FILE == ROOT / "data" / "advisories" / "approved.json"
     got = adv.load_approvals(adv.APPROVALS_FILE, known=None, now=datetime.now(TZ))
-    assert all(a["approver"] == "Ethan Buckley" for a in got.values())
-    assert adv.ALLOWED_APPROVERS == ("Ethan Buckley",)
+    assert all((a["reviewer"], a["authority"]) in adv.REVIEWERS for a in got.values())
 
 
 def test_review_table_shows_the_id_and_the_whole_line(gaz):
@@ -542,14 +547,24 @@ def test_approval_marks_only_that_draft_and_only_its_exact_line(tmp_path, gaz):
 @pytest.mark.parametrize("change, problem", [
     ({"draft_id": "0123456789ab"}, "unknown draft id"),
     ({"draft_id": "<script>"}, "no valid draft_id"),
-    ({"approver": None}, "missing approver"),
-    ({"approver": " "}, "missing approver"),
-    ({"approver": "Someone Else"}, "may not approve"),
-    ({"approved_at": "26/10/2026 18:00"}, "approved_at must be UTC"),
-    ({"approved_at": "2026-10-26T18:00:00+01:00"}, "approved_at must be UTC"),
-    ({"approved_at": "2026-02-30T18:00:00Z"}, "not a real time"),
-    ({"approved_at": "2026-10-27T18:00:00Z"}, "in the future"),
-    ({"line": "two\nlines"}, "exact one-line text"),
+    ({"reviewer": None}, "missing reviewer"),
+    ({"reviewer": ""}, "missing reviewer"),
+    ({"authority": None}, "missing authority"),
+    ({"reviewer": "Someone Else"}, "may not review"),
+    ({"reviewer": "Codex"}, "may not review"),             # Codex only on the delegated authority
+    ({"authority": "Ethan said so"}, "may not review"),
+    ({"reviewed_at": "26/10/2026 18:00"}, "reviewed_at must be a real UTC time"),
+    ({"reviewed_at": "2026-10-26T18:00:00+01:00"}, "reviewed_at must be a real UTC time"),
+    ({"reviewed_at": "2026-02-30T18:00:00Z"}, "reviewed_at must be a real UTC time"),
+    ({"reviewed_at": "2026-10-27T18:00:00Z"}, "in the future"),
+    ({"fetched_at": "x"}, "fetched_at must be"),
+    ({"start": "19 Jun 2026"}, "start must be a day"),
+    ({"source_url": "http://example.org/"}, "source_url must be an https address"),
+    ({"link": "javascript:alert(1)"}, "link must be an https address"),
+    ({"kind": "rumour"}, "kind must be one of"),
+    ({"spot_id": "<b>"}, "spot_id is not a spot id"),
+    ({"line": "two  spaces"}, "line must be one clean line"),
+    ({"line": "two\nlines"}, "line must be one clean line"),
     ({"extra": 1}, "unexpected keys"),
 ])
 def test_approvals_rejected(tmp_path, gaz, change, problem):
@@ -583,7 +598,7 @@ def test_page_notice_lapses_14_days_after_approval(tmp_path, gaz):
     out = drafts_of(markup, gaz)
     d = out[0]
     assert d["expiry"] is None and d["current"] is True
-    got = adv.load_approvals(approvals_file(tmp_path, entry_for(d, approved_at="2026-10-21T09:00:00Z")), {d["draft_id"]}, NOW)
+    got = adv.load_approvals(approvals_file(tmp_path, entry_for(d, reviewed_at="2026-10-21T09:00:00Z")), {d["draft_id"]}, NOW)
     a = adv.apply_approvals(out, got, NOW)[0]
     assert a["approval"] == "approved" and a["expiry"] == "2026-11-04" and a["current"] is True
     assert a["expiry_basis"] == "14 days after approval on 21 Oct 2026; the page gives no end"
@@ -591,7 +606,7 @@ def test_page_notice_lapses_14_days_after_approval(tmp_path, gaz):
     out_later = drafts_of(markup, gaz, now=later)
     lapsed = adv.apply_approvals(out_later, got, later)[0]
     assert lapsed["approval"] == "lapsed" and lapsed["approved"] is False and lapsed["current"] is False
-    again = adv.load_approvals(approvals_file(tmp_path, entry_for(d, approved_at="2026-11-04T09:00:00Z")), None, later)
+    again = adv.load_approvals(approvals_file(tmp_path, entry_for(d, reviewed_at="2026-11-04T09:00:00Z")), None, later)
     renewed = adv.apply_approvals(out_later, again, later)[0]
     assert renewed["approval"] == "approved" and renewed["expiry"] == "2026-11-18"
     # A stated end stands: the 14 days apply only where the page gives none.
@@ -601,10 +616,13 @@ def test_page_notice_lapses_14_days_after_approval(tmp_path, gaz):
 
 
 def test_never_changes_a_risk_level_and_runs_only_by_hand(gaz):
-    # Nothing in the package imports the finder, so no forecast, level or page reads a draft; a
-    # draft carries no level and its line names none. No workflow runs it (decision 7).
-    users = [p.relative_to(ROOT) for p in (ROOT / "src").rglob("*.py")
-             if p.name != "advisories.py" and "advisories" in p.read_text(encoding="utf-8")]
+    # The finder is not in the package (scripts/advisories.py), and nothing in the package imports it,
+    # so no forecast, level or page reads a draft; the build reads only the reviewed file and the check
+    # record (dipcast.official_advice). A draft carries no level and its line names none. No workflow
+    # runs it (decision 7). tests/test_eatoday.py checks what the build imports.
+    assert not (ROOT / "src" / "dipcast" / "advisories.py").exists()
+    imports = re.compile(r"^\s*(?:from\s+advisories\b|import\s+advisories\b|from\s+\S+\s+import\s+.*\badvisories\b)", re.M)
+    users = [p.relative_to(ROOT) for p in (ROOT / "src").rglob("*.py") if imports.search(p.read_text(encoding="utf-8"))]
     assert users == []
     workflows = [w for w in (ROOT / ".github" / "workflows").glob("*.y*ml") if "advisor" in w.read_text(encoding="utf-8")]
     assert workflows == []

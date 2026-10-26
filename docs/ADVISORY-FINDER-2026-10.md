@@ -45,7 +45,7 @@ with `--fixtures` or `--now`.
 
 ## Sources and licences
 
-Each source below is a fixed entry in `SOURCES` in `src/dipcast/advisories.py`. Any other address is
+Each source below is a fixed entry in `SOURCES` in `scripts/advisories.py`. Any other address is
 refused. The licence lines were read from the pages named, on 26 Oct 2026.
 
 | Key | What it is | Licence, as the source states it |
