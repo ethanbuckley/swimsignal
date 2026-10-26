@@ -177,6 +177,53 @@ def test_a_repeated_overflow_id_does_not_fail_the_forecast(monkeypatch):
     assert len(st1) == 2 and st1[0] == st1[1]
 
 
+def test_the_day_grid_is_local_midnights_across_a_clock_change():
+    """From 00:00 UTC on 26 Oct 2026 every spot failed: 24 h back from 26 Oct 00:00 GMT is 25 Oct 01:00, the
+    hour that happens twice. Away from a clock change the grid is the one the 24 h steps gave."""
+    from dipcast.model.forecast import LOCAL_TZ, day_grid
+
+    for at, hist in (("2026-10-26 00:30", 1), ("2026-10-26 00:30", 6), ("2026-10-31 23:30", 14),
+                     ("2027-03-29 00:30", 3), ("2026-10-25 00:30", 2)):
+        now = pd.Timestamp(at, tz="UTC").tz_convert(LOCAL_TZ)
+        g = day_grid(now, hist, 4)
+        assert len(g) == hist + 5 and g[hist] == now.normalize()
+        assert (g.hour == 0).all() and (g.minute == 0).all() and g.normalize().is_unique
+    for at in ("2026-07-01 12:00", "2026-10-25 12:00", "2027-01-15 08:00"):
+        now = pd.Timestamp(at, tz="UTC").tz_convert(LOCAL_TZ)
+        old = pd.date_range(now.floor("D") - pd.Timedelta(days=3), periods=8, freq="D")
+        assert day_grid(now, 3, 4).equals(old)
+
+
+def test_a_forecast_issued_just_after_the_clocks_go_back(monkeypatch):
+    """The failing build's clock, 26 Oct 2026 00:30 UTC, with travel long enough that the grid starts before
+    the change."""
+    from dipcast.model import forecast
+    from dipcast.model.transport import PinLocation
+
+    now = pd.Timestamp("2026-10-26 00:30", tz="UTC").tz_convert(forecast.LOCAL_TZ)
+    ov = _repeated_overflow().assign(travel_h=[1.0, 60.0, 1.0])
+
+    def rain(cells):
+        t = pd.date_range(now.tz_convert("UTC").floor("D") - pd.Timedelta(days=6), periods=24 * 12, freq="h")
+        return pd.concat([pd.DataFrame({"cell_lat": a, "cell_lon": b, "time": t, "precip_mm": 0.4}) for a, b in cells],
+                         ignore_index=True)
+
+    monkeypatch.setattr(forecast, "_now", lambda: now)
+    monkeypatch.setattr(forecast, "_net", lambda: None)
+    monkeypatch.setattr(forecast, "_overflows", lambda: ov)
+    monkeypatch.setattr(forecast, "_model", lambda: None)
+    monkeypatch.setattr(forecast, "locate_pin", lambda *a, **k: PinLocation(mode="river", x=0.0, y=0.0, snap=None,
+                                                                             watercourse="River Severn"))
+    monkeypatch.setattr(forecast, "upstream_overflows", lambda *a, **k: ov.copy())
+    monkeypatch.setattr(forecast, "fetch_forecast", rain)
+    monkeypatch.setattr(forecast.ecoli, "load", lambda: None)
+    out = forecast.forecast_point(52.70, -2.75, days_ahead=4, gauge=False, log_to_store=False)
+
+    assert "error" not in out and [d["date"] for d in out["days"]] == [
+        "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30"]
+    assert all(d["risk"] is not None for d in out["days"])
+
+
 def test_overflow_table_keeps_the_most_recent_row_of_a_repeated_id(caplog):
     """The 3 Oct 2026 02:59 snapshot listed Anglian Water's AWS00528 twice. One row each, the latest
     fetched_at (ST9 has an older row and a newer one)."""

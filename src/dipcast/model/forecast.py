@@ -100,6 +100,17 @@ def _apply(cal: dict, p: np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-(cal["a"] + cal["b"] * np.log(q / (1 - q)))))
 
 
+def _now() -> pd.Timestamp:
+    return pd.Timestamp.now(tz=LOCAL_TZ)
+
+
+def day_grid(now: pd.Timestamp, hist: int, days_ahead: int) -> pd.DatetimeIndex:
+    """Local midnights from `hist` days before `now`'s day to `days_ahead` after it. Steps back by calendar days:
+    24 h steps from 26 Oct 2026 00:00 GMT land on 25 Oct 01:00, the hour that happens twice, which pandas
+    refuses (every spot failed from 00:00 UTC on 26 Oct), and after a spring change they land at 23:00."""
+    return pd.date_range(now.normalize() - pd.DateOffset(days=hist), periods=hist + days_ahead + 1, freq="D")
+
+
 def calibrate_by_lead(p: np.ndarray, first_lead: int) -> np.ndarray:
     """p: (n_overflows, n_days); column j is lead first_lead + j. Leads beyond the
     fitted range use the last available parameters."""
@@ -321,7 +332,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     each day a `band`, the lowest and highest member's risk. The listed spots only (the build); the headline
     does not change."""
     net, ov_all, model = _net(), _overflows(), _model()
-    now = pd.Timestamp.now(tz=LOCAL_TZ)
+    now = _now()
     # The EA gauge lookup is slow and optional: run it alongside everything else.
     pool = ThreadPoolExecutor(max_workers=1)
     state_future = pool.submit(nearest_level_station, lat, lon, 15, river_hint) if gauge else None
@@ -383,7 +394,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     # The grid starts far enough back for the longest travel time (same rule as the
     # hindcast), so today's risk includes spills that left distant overflows days ago.
     hist = history_days(travel)
-    days = pd.date_range(now.floor("D") - pd.Timedelta(days=hist), periods=hist + days_ahead + 1, freq="D")
+    days = day_grid(now, hist, days_ahead)
     today_idx = hist
     # The rain is fetched here (from the cache the build's prefetch filled), not in spill_probabilities, so
     # the ensemble's members can share its past and the spot can say how old it is (forecast_age).
