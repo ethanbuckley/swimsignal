@@ -23,6 +23,12 @@ MAX_BYTES_PER_RUN = 100 * 1024**2
 MAX_REQUESTS_TOTAL = 900          # the coverage prototype, all runs together (ledger)
 MAX_BYTES_TOTAL = 300 * 1024**2
 MAX_BYTES_PER_RESPONSE = 32 * 1024**2
+# Stage 1 (stage1.py), set after the coverage prototype and before any stage 1 request: its own ledger, larger per-run
+# caps, the same pause, hosts and stop rules. Estimate from the prototype's counts: about 27,000 requests and 2 GB.
+STAGE1_MAX_REQUESTS_PER_RUN = 4000
+STAGE1_MAX_BYTES_PER_RUN = 500 * 1024**2
+STAGE1_MAX_REQUESTS_TOTAL = 40000
+STAGE1_MAX_BYTES_TOTAL = 4 * 1024**3
 PAUSE_S = 1.0
 TIMEOUT_S = 60.0
 CHUNK = 64 * 1024
@@ -33,7 +39,7 @@ HOSTS = (
     "catalogue.dataspace.copernicus.eu",                  # CDSE OData catalogue (search only, no download)
     "stac.dataspace.copernicus.eu",                       # CDSE STAC (search only)
 )
-USER_AGENT = "swimsignal-lake-algae-sat-eval (github.com/ethanbuckley/swimsignal)"
+USER_AGENT = "swimsignal-lake-algae-sat-eval/1"   # the CDSE firewall refused one with brackets and a URL (HTTP 403)
 
 
 class CapReached(RuntimeError):
