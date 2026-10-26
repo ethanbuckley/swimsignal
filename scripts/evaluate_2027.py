@@ -11,6 +11,9 @@ Reads only published files and the frozen inputs, and never fetches anything:
 * --unscored (optional, once published): one row per overflow-day forecast that was not scored, with
   overflow_id, day, lead, reason.
 * data/eval2027/sites.csv and data/eval2027/climatology.json, frozen on 4 October 2026.
+* --spots (amendments 1 and 2): data/verification_spots_live.csv, one row per spot, day and lead with the spot's
+  forecast index, the observed one and the reference (score S1); and --spot-list, data/eval2027/spots.csv, the
+  eligible spots, frozen at the tag. S2 reads the E. coli file's `exposure` column once prerequisite B publishes it.
 
 Writes a JSON of every figure the protocol names and prints the headline lines. The analysis:
 Brier score, skill against the training-only season/site climatology (and the climatology the
@@ -34,6 +37,7 @@ import argparse
 import hashlib
 import io
 import json
+import math
 import re
 import subprocess
 import sys
@@ -45,6 +49,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 SITES = ROOT / "data" / "eval2027" / "sites.csv"
+SPOT_LIST = ROOT / "data" / "eval2027" / "spots.csv"
 CLIMATOLOGY = ROOT / "data" / "eval2027" / "climatology.json"
 
 # ---- The registered settings (docs/PREREGISTRATION-2027.md) --------------------------------------
@@ -67,6 +72,7 @@ CONFIDENCE = 0.95
 # A change to any of these after the tag makes a forecast a candidate's, not the frozen model's.
 MODEL_PATHS = (
     "data/processed/spill_model.pkl", "data/processed/lead_calibration.json", "data/processed/ecoli_model.json",
+    "data/processed/ecoli_model_sm.json", "src/dipcast/ingest/soil.py",
     "data/processed/annual_returns.parquet", "data/processed/id_lookup.parquet", "data/processed/lakes.parquet",
     "src/dipcast/model/", "src/dipcast/network/", "src/dipcast/overflows.py", "src/dipcast/ids.py",
     "src/dipcast/ingest/rainfall.py", "src/dipcast/ingest/flows.py", "src/dipcast/ingest/lakes.py",
@@ -81,6 +87,13 @@ MODEL_CONSTANTS = ("SNAP_MAX_M", "RIVER_VELOCITY_MS", "LAKE_VELOCITY_MS", "T90_H
 WATCHED_PATHS = ("src/dipcast/forecast_log.py", "src/dipcast/ingest/live.py", "src/dipcast/ingest/wqa.py",
                  "src/dipcast/ingest/bwq.py", "data/processed/spill_day_ratio.json", "data/raw/bathing_waters_inland.json",
                  "spots.csv", "scripts/build_site.py")
+# Scores S1 and S2 of a spot's level (amendments 1 and 2): a level is the one the site shows, from the 0-100 score
+# (transport.risk_label and SCORE_CUTS), applied to each value as published in file D. The event and a warning are
+# High risk or above. Their bootstrap draws come from a stream of their own, so the primary outcomes' do not change.
+SCORE_CUTS = (15, 40, 70)
+SPOT_HIGH = 2
+SPOT_SEED = 20270502
+SPOT_COLUMNS = ["spot_id", "day", "lead", "issued_at", "forecast", "observed", "climatology", "covered", "reason", "version"]
 SPILL_COLUMNS = ["overflow_id", "company", "day", "lead", "issued_at", "forecast_raw", "forecast_calibrated",
                  "climatology", "observed"]
 ECOLI_COLUMNS = ["bathing_water", "sample_time", "day", "ecoli", "lead", "issued_at", "forecast"]
@@ -277,6 +290,12 @@ def frozen_hashes(repo: Path, tag: str) -> dict:
                     ("ecoli", "data/processed/ecoli_model.json")):
         r = _git(repo, "show", f"{tag}:{path}")
         out[k] = hashlib.md5(r.stdout).hexdigest()[:8] if r.returncode == 0 else "none"
+    # The river E. coli model with soil moisture (amendment 3), when the tag has it: the MD5 of the two files' bytes
+    # one after the other, as forecast.model_version computes it.
+    sm = _git(repo, "show", f"{tag}:data/processed/ecoli_model_sm.json")
+    if out["ecoli"] != "none" and sm.returncode == 0:
+        base = _git(repo, "show", f"{tag}:data/processed/ecoli_model.json").stdout
+        out["ecoli"] = hashlib.md5(base + sm.stdout).hexdigest()[:8]
     out["rain"] = "open-meteo-forecast"
     return out
 
@@ -497,6 +516,203 @@ def evaluate_ecoli(path: Path, sites: pd.DataFrame, clim: dict, first: date, las
     return out
 
 
+# ---- The spot level: S1 and S2 (amendments 1 and 2) -------------------------------------------------
+
+def spot_level(r) -> int:
+    """0-3, low to very high, as transport.risk_label gives it: the 0-100 score the page shows, the value rounded to 3
+    places, times 100, rounded half up (transport.shown_score), against SCORE_CUTS. -1 for a missing value."""
+    if r is None or (isinstance(r, float) and math.isnan(r)):
+        return -1
+    score = math.floor(round(float(r), 3) * 100 + 0.5)
+    return sum(score >= c for c in SCORE_CUTS)
+
+
+def spot_levels(values) -> np.ndarray:
+    return np.array([spot_level(v) for v in values], dtype=int)
+
+
+class _LevelRows:
+    """The per-row terms of S1's or S2's bootstrapped figures: the alert's record at the High line, the AUC of the
+    index, and, given a reference, the reference's record and AUC."""
+
+    def __init__(self, y, p, lev, ref=None, ref_lev=None):
+        self.y = np.asarray(y, dtype=float)
+        self.yb = self.y.astype(bool)
+        warn = np.asarray(lev) >= SPOT_HIGH
+        self.hit, self.miss, self.fa = (warn & self.yb).astype(float), (~warn & self.yb).astype(float), (warn & ~self.yb).astype(float)
+        _, self.vidx = np.unique(np.asarray(p, dtype=float), return_inverse=True)
+        self.nv = int(self.vidx.max()) + 1 if len(self.vidx) else 0
+        self.lev = np.asarray(lev)
+        self.ref = None if ref is None else _LevelRows(y, ref, ref_lev)
+
+
+def _level_stats(r: _LevelRows, w: np.ndarray, levels: bool = False) -> dict:
+    sw = w.sum()
+    if sw <= 0:
+        return {}
+    nan = float("nan")
+    hits, misses, fas = np.dot(w, r.hit), np.dot(w, r.miss), np.dot(w, r.fa)
+    out = {"hit_rate": float(hits / (hits + misses)) if hits + misses > 0 else nan,
+           "warnings_true": float(hits / (hits + fas)) if hits + fas > 0 else nan,
+           "auc": auc(r.yb, None, w, r.vidx, r.nv)}
+    if levels:   # S2: the share over 900 at each level
+        for b, name in enumerate(BANDS):
+            wb = np.dot(w, r.lev == b)
+            out[f"over_{name}"] = float(np.dot(w, (r.lev == b) * r.y) / wb) if wb > 0 else nan
+    if r.ref is not None:
+        out.update({f"reference_{k}": v for k, v in _level_stats(r.ref, w).items()})
+    return out
+
+
+def _intervals(pre: _LevelRows, boot: "Bootstrap", rows: np.ndarray, point: dict, levels: bool = False) -> dict:
+    reps: dict[str, list[float]] = {k: [] for k in point}
+    for d in range(len(boot.draws)):
+        st = _level_stats(pre, boot.weights(d, rows), levels)
+        for k, values in reps.items():
+            values.append(st.get(k, float("nan")))
+    lo, hi = 100 * (1 - CONFIDENCE) / 2, 100 * (1 + CONFIDENCE) / 2
+    ci = {}
+    for k, v in reps.items():
+        a = np.asarray(v, dtype=float)
+        ok = a[~np.isnan(a)]
+        ci[k] = {"lo": float(np.percentile(ok, lo)), "hi": float(np.percentile(ok, hi)),
+                 "undefined_draws": int(len(a) - len(ok))} if len(ok) else {"lo": None, "hi": None, "undefined_draws": len(a)}
+    return ci
+
+
+def describe_spots(df: pd.DataFrame, boot: "Bootstrap", rows: np.ndarray) -> dict:
+    """S1 for one stratum: df has site (the spot), day, y (o at High risk or above), p (the forecast index), fl and ol
+    (the forecast's and o's levels), observed, ref and rl (the reference index and its level)."""
+    g = df.iloc[rows]
+    out = {"n": len(g), "n_spots": int(g["site"].nunique()), "events": int(g["y"].sum())}
+    if not len(g):
+        return out
+    y, p = g["y"].to_numpy(dtype=float), g["p"].to_numpy(dtype=float)
+    pre = _LevelRows(y, p, g["fl"].to_numpy(), g["ref"].to_numpy(dtype=float), g["rl"].to_numpy())
+    point = _level_stats(pre, np.ones(len(g)))
+    out["warning"] = warning_table(y, g["fl"].to_numpy(), SPOT_HIGH)
+    out["reference_warning"] = warning_table(y, g["rl"].to_numpy(), SPOT_HIGH)
+    out["auc"], out["reference_auc"] = point["auc"], point.get("reference_auc")
+    out["mean_forecast"], out["mean_observed"], out["mean_reference"] = float(p.mean()), float(g["observed"].mean()), float(g["ref"].mean())
+    fl_, ol = g["fl"].to_numpy(), g["ol"].to_numpy()
+    out["levels"] = {"bands": list(BANDS), "rows": "forecast level", "columns": "observed level",
+                     "counts": [[int(((fl_ == i) & (ol == j)).sum()) for j in range(len(BANDS))] for i in range(len(BANDS))]}
+    blk = block_of(pd.Series(g["day"]))
+    out["by_block"] = [{"block": int(b), "n": int((blk == b).sum()), "mean_forecast": float(p[blk == b].mean()),
+                        "mean_observed": float(g["observed"].to_numpy()[blk == b].mean())} for b in np.unique(blk)]
+    out["ci"] = _intervals(pre, boot, rows, point)
+    out["undefined_draws_rule"] = "a draw with no event, no warning or none of the stratum's rows has no share or AUC: left out of the interval and counted"
+    return out
+
+
+def evaluate_spots(path: Path, spot_list: pd.DataFrame, first: date, last: date, resamples: int, seed: int,
+                   model: dict | None = None, repo: Path | None = None, tag: str | None = None) -> dict:
+    """S1: each eligible spot's forecast index against the observed one, on the levels the site shows."""
+    raw = read_published(path, float_precision="round_trip")   # the nearest double to each 6-place value (amendment 2)
+    missing = [c for c in SPOT_COLUMNS if c not in raw]
+    if missing:
+        raise SystemExit(f"{path}: missing columns {missing}")
+    raw["day"] = pd.to_datetime(raw["day"]).dt.date
+    out: dict = {"file": str(path), "sha256": sha256(path), "rows_read": len(raw)}
+    w = raw[(raw["day"] >= first) & (raw["day"] <= last) & raw["lead"].isin(LEADS)]
+    units = spot_list[spot_list["eligible"].astype(str) == "1"]
+    inlist = w["spot_id"].astype(str).isin(units["id"])
+    out["rows_outside_list"] = int((~inlist).sum())
+    w = w[inlist]
+    if w.duplicated(["spot_id", "day", "lead"]).any():
+        raise SystemExit(f"{path}: repeated (spot, day, lead) rows")
+    fc = w[w["forecast"].notna()]
+    kept, out["versions"] = split_versions(fc, model, repo, tag)
+    scored = kept[kept["observed"].notna()]
+    meta = units.set_index("id")
+    df = pd.DataFrame({"site": scored["spot_id"].astype(str).to_numpy(), "day": scored["day"].to_numpy(),
+                       "lead": scored["lead"].astype(int).to_numpy(), "p": scored["forecast"].astype(float).to_numpy(),
+                       "observed": scored["observed"].astype(float).to_numpy(), "ref": scored["climatology"].astype(float).to_numpy()})
+    df["fl"], df["ol"], df["rl"] = spot_levels(df["p"]), spot_levels(df["observed"]), spot_levels(df["ref"])
+    df["y"] = (df["ol"] >= SPOT_HIGH).astype(int)
+    df["water"] = meta.loc[df["site"], "water"].to_numpy() if len(df) else []
+    df["company"] = meta.loc[df["site"], "company"].to_numpy() if len(df) else []
+    n_days = (last - first).days + 1
+    cells = len(units) * n_days * len(LEADS)
+    have = set(zip(w["spot_id"].astype(str), w["day"], w["lead"], strict=True))
+    reasons = w.loc[w["observed"].isna() | w["forecast"].isna(), "reason"].fillna("no_forecast_value").value_counts()
+    season_days = pd.Series(pd.date_range(first, last, freq="D").date)
+    day_block, row_block = block_of(season_days), block_of(pd.Series(df["day"]))
+    out["coverage"] = {
+        "unit": "spot-day forecast: one eligible spot, one target day, one lead",
+        "eligible_spots": len(units), "never_observed_spots": int((units["never_observed"].astype(str) == "1").sum()),
+        "days": n_days, "cells": cells, "scored": len(df), "share_scored": len(df) / cells if cells else None,
+        "not_scored_by_reason": {**{str(k): int(v) for k, v in reasons.items()}, "no_row": cells - len(have),
+                                 "other_version": int(len(fc) - len(kept))},
+        "by_lead": [{"lead": k, "cells": len(units) * n_days, "scored": int((df["lead"] == k).sum())} for k in LEADS],
+        "by_block": [{"from": str(season_days[day_block == b].min()), "to": str(season_days[day_block == b].max()),
+                      "cells": len(units) * int((day_block == b).sum()) * len(LEADS), "scored": int((row_block == b).sum()),
+                      "event_rate": float(df.loc[row_block == b, "y"].mean()) if (row_block == b).any() else None,
+                      "mean_forecast": float(df.loc[row_block == b, "p"].mean()) if (row_block == b).any() else None}
+                     for b in np.unique(day_block)]}
+    if df.empty:
+        out["strata"] = []
+        return out
+    boot = Bootstrap(df["site"].to_numpy(), block_of(pd.Series(df["day"])), resamples, seed)
+    out["bootstrap"] = {"sites": len(boot.site_codes), "blocks": len(boot.block_codes), "resamples": resamples, "seed": seed}
+    strata = [("all leads", None, df.index.to_numpy()),
+              ("same day (lead 0)", "s1", np.flatnonzero(df["lead"] == 0)),
+              ("in advance (leads 1-4)", "s1", np.flatnonzero(df["lead"].isin(ADVANCE)))]
+    strata += [(f"lead {k}", "lead", np.flatnonzero(df["lead"] == k)) for k in LEADS]
+    strata += [(f"water: {x}", "water", np.flatnonzero(df["water"] == x)) for x in sorted(df["water"].unique())]
+    strata += [(f"company: {c}", "company", np.flatnonzero(df["company"] == c)) for c in sorted(df["company"].unique())]
+    out["strata"] = [{"stratum": name, "group": grp, **describe_spots(df, boot, rows)} for name, grp, rows in strata]
+    return out
+
+
+def evaluate_spots_ecoli(path: Path, sites: pd.DataFrame, first: date, last: date, resamples: int, seed: int,
+                         model: dict | None = None, repo: Path | None = None, tag: str | None = None) -> dict:
+    """S2: each EA sample at an eligible bathing water against the spot's forecast index (prerequisite B's `exposure`,
+    the latest issued before the sample, at each lead), rivers and lakes apart."""
+    raw = read_published(path, float_precision="round_trip")
+    if "exposure" not in raw:
+        return {"status": "not run: the E. coli file has no exposure column (prerequisite B)"}
+    raw["day"] = pd.to_datetime(raw["day"]).dt.date
+    raw["sample_time"] = pd.to_datetime(raw["sample_time"], utc=True)
+    raw["issued_at"] = pd.to_datetime(raw["issued_at"], utc=True)
+    units = sites[sites["unit"] == "bathing_water"]
+    w = raw[(raw["day"] >= first) & (raw["day"] <= last) & raw["bathing_water"].isin(units["id"])]
+    pairs = w[w["exposure"].notna() & w["lead"].notna()].copy()
+    pairs["lead"] = pairs["lead"].astype(int)
+    pairs = pairs[pairs["lead"].isin(LEADS) & (pairs["issued_at"] < pairs["sample_time"])]
+    pairs, versions = split_versions(pairs, model, repo, tag)
+    out: dict = {"file": str(path), "sha256": sha256(path), "pairs": len(pairs), "versions": versions}
+    if pairs.empty:
+        out["strata"] = []
+        return out
+    meta = units.set_index("id")
+    df = pd.DataFrame({"site": pairs["bathing_water"].to_numpy(), "day": pairs["day"].to_numpy(), "lead": pairs["lead"].to_numpy(),
+                       "y": (pairs["ecoli"].astype(float) > ECOLI_THRESHOLD).astype(int).to_numpy(),
+                       "p": pairs["exposure"].astype(float).to_numpy(), "water": meta.loc[pairs["bathing_water"], "water"].to_numpy()})
+    df["lev"] = spot_levels(df["p"])
+    boot = Bootstrap(df["site"].to_numpy(), block_of(pd.Series(df["day"])), resamples, seed)
+    out["bootstrap"] = {"sites": len(boot.site_codes), "blocks": len(boot.block_codes), "resamples": resamples, "seed": seed}
+    strata = []
+    for x in ("river", "lake"):
+        strata += [(f"{x}: all leads", np.flatnonzero(df["water"] == x)),
+                   (f"{x}: same day (lead 0)", np.flatnonzero((df["water"] == x) & (df["lead"] == 0))),
+                   (f"{x}: in advance (leads 1-4)", np.flatnonzero((df["water"] == x) & df["lead"].isin(ADVANCE)))]
+    out["strata"] = []
+    for name, rows in strata:
+        g = df.iloc[rows]
+        s = {"stratum": name, "n": len(g), "samples_over_900": int(g["y"].sum())}
+        if len(g):
+            pre = _LevelRows(g["y"].to_numpy(), g["p"].to_numpy(), g["lev"].to_numpy())
+            point = _level_stats(pre, np.ones(len(g)), levels=True)
+            s["auc"] = point["auc"]
+            s["warning"] = warning_table(g["y"].to_numpy(), g["lev"].to_numpy(), SPOT_HIGH)
+            s["by_level"] = [{"level": name_, "n": int((g["lev"] == b).sum()), "share_over_900": point[f"over_{name_}"]}
+                             for b, name_ in enumerate(BANDS)]
+            s["ci"] = _intervals(pre, boot, rows, point, levels=True)
+        out["strata"].append(s)
+    return out
+
+
 # ---- Running it ----------------------------------------------------------------------------------
 
 def _fmt(x, d=3):
@@ -542,6 +758,18 @@ def headline(res: dict) -> list[str]:
             lines.append(f"{title}, {s['stratum']}: n {s['n']:,}, events {s['events']:,}; Brier {_fmt(s['brier'], 4)}; "
                          f"skill vs season/site climatology {_fmt(s.get('skill_season_site'))} "
                          f"[{_fmt(sk.get('lo'))}, {_fmt(sk.get('hi'))}]; AUC {_fmt(s.get('auc'))} [{_fmt(au.get('lo'))}, {_fmt(au.get('hi'))}]")
+    for key, title in (("s1", "Spot level S1 (secondary)"), ("s2", "Spot level S2 (secondary)")):
+        part = (res.get("spot_level") or {}).get(key) or {}
+        if "strata" not in part:
+            lines.append(f"{title}: {part.get('status', 'not run')}")
+            continue
+        for s in part["strata"]:
+            if s.get("group", "s2" if key == "s2" else None) not in ("s1", "s2") or not s["n"]:
+                continue
+            ci, wt = s.get("ci", {}), s.get("warning", {})
+            au = ci.get("auc", {})
+            lines.append(f"{title}, {s['stratum']}: n {s['n']:,}; warned of {_fmt(wt.get('hit_rate'))}, warnings true "
+                         f"{_fmt(wt.get('warnings_true'))}; AUC {_fmt(s.get('auc'))} [{_fmt(au.get('lo'))}, {_fmt(au.get('hi'))}]")
     return lines
 
 
@@ -555,6 +783,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--spills", type=Path, required=True)
     ap.add_argument("--ecoli", type=Path)
     ap.add_argument("--unscored", type=Path)
+    ap.add_argument("--spots", type=Path, help="verification_spots_live.csv, for score S1 (amendments 1 and 2)")
+    ap.add_argument("--spot-list", type=Path, default=SPOT_LIST, help="the frozen eligible spots, data/eval2027/spots.csv")
     ap.add_argument("--sites", type=Path, default=SITES)
     ap.add_argument("--climatology", type=Path, default=CLIMATOLOGY)
     ap.add_argument("--from", dest="first", type=date.fromisoformat, default=SEASON[0])
@@ -572,6 +802,8 @@ def main(argv: list[str] | None = None) -> dict:
     model = parse_stamp(a.model) if a.model else (frozen_hashes(a.repo, a.tag) if a.repo and a.tag else None)
     files = {"scripts/evaluate_2027.py": sha256(Path(__file__)), "data/eval2027/sites.csv": sha256(a.sites),
              "data/eval2027/climatology.json": sha256(a.climatology)}
+    if a.spots and a.spot_list.exists():   # recorded at the tag (amendment 2); before it, S1 is not the registered analysis
+        files["data/eval2027/spots.csv"] = sha256(a.spot_list)
     recorded = recorded_hashes()
     match = all(recorded.get(k) == v for k, v in files.items())
     registered = match and (a.first, a.last, a.resamples, a.seed) == (*SEASON, RESAMPLES, SEED)
@@ -581,11 +813,22 @@ def main(argv: list[str] | None = None) -> dict:
            "settings": {"from": str(a.first), "to": str(a.last), "leads": list(LEADS), "spill_cuts": list(SPILL_CUTS),
                         "ecoli_cuts": list(ECOLI_CUTS), "spill_warn_at": SPILL_WARN_AT, "ecoli_warn_at": ECOLI_WARN_AT,
                         "ecoli_threshold": ECOLI_THRESHOLD, "block_days": BLOCK_DAYS, "block_anchor": str(BLOCK_ANCHOR),
-                        "resamples": a.resamples, "seed": a.seed, "confidence": CONFIDENCE},
+                        "resamples": a.resamples, "seed": a.seed, "confidence": CONFIDENCE,
+                        "spot_score_cuts": list(SCORE_CUTS), "spot_seed": SPOT_SEED},
            "frozen_files": {k: {"sha256": v, "as_registered": recorded.get(k) == v} for k, v in files.items()}}
     res["spills"] = evaluate_spills(a.spills, sites, clim, a.first, a.last, a.resamples, a.seed, model, a.repo, a.tag, a.unscored)
     res["ecoli"] = (evaluate_ecoli(a.ecoli, sites, clim, a.first, a.last, a.resamples, a.seed, model, a.repo, a.tag)
                     if a.ecoli else {"status": "not run: no E. coli file given"})
+    if not a.spots:
+        s1 = {"status": "not run: no spot file given (--spots)"}
+    elif not a.spot_list.exists():
+        s1 = {"status": f"not run: no frozen spot list at {a.spot_list} (made at the tag)"}
+    else:
+        spot_list = read_published(a.spot_list, dtype=str, keep_default_na=False)
+        s1 = evaluate_spots(a.spots, spot_list, a.first, a.last, a.resamples, SPOT_SEED, model, a.repo, a.tag)
+    s2 = (evaluate_spots_ecoli(a.ecoli, sites, a.first, a.last, a.resamples, SPOT_SEED, model, a.repo, a.tag)
+          if a.ecoli else {"status": "not run: no E. coli file given"})
+    res["spot_level"] = {"s1": s1, "s2": s2}
     res = clean(res)
     if a.out:
         a.out.write_text(json.dumps(res, indent=1, default=str, allow_nan=False) + "\n")

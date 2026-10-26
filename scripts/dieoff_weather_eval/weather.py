@@ -45,8 +45,8 @@ def cells() -> list[tuple[float, float]]:
     return sorted({(round(float(a), 3), round(float(b), 3)) for a, b in zip(cl, cn, strict=True)})
 
 
-def path(cache: Path, cell: tuple[float, float], year: int) -> Path:
-    return cache / f"weather_leads_{cell_key(*cell)}_{year}.parquet"
+def path(cache: Path, cell: tuple[float, float], year: int, prefix: str = "weather_leads") -> Path:
+    return cache / f"{prefix}_{cell_key(*cell)}_{year}.parquet"
 
 
 def _spans(start: pd.Timestamp, end: pd.Timestamp, freq: str) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
@@ -56,13 +56,16 @@ def _spans(start: pd.Timestamp, end: pd.Timestamp, freq: str) -> list[tuple[pd.T
     return [(a, min(b - pd.Timedelta(days=1), end)) for a, b in zip(edges, [*edges[1:], end + pd.Timedelta(days=1)], strict=True)]
 
 
-def fetch(out_dir: str) -> None:
+def fetch(out_dir: str, cs: list[tuple[float, float]] | None = None, variables: tuple[str, ...] = VARS,
+          prefix: str = "weather_leads", extra: dict | None = None) -> None:
     """By quarter, not by year: on 23 Oct 2026 the API answered a year of 2023 shortwave_radiation with
     "timeoutReached" (a 200 whose body is not JSON), while a quarter for four cells came back whole in 4 s.
     A quarter that still fails is asked for again month by month. The cost is about the same: a quarter of
-    2 variables weighs 0.2 x 92 / 14 = 1.3 per cell, against 5.2 for a year."""
+    2 variables weighs 0.2 x 92 / 14 = 1.3 per cell, against 5.2 for a year.
+    `cs`, `variables`, `prefix` and `extra` (more request parameters, such as a unit) let another test fetch other
+    variables at other cells the same way; the defaults are this test's."""
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
-    cs = cells()
+    cs = cells() if cs is None else cs
     spent, requests, bad = 0.0, 0, 0
     last = pd.Timestamp.now("UTC").tz_localize(None).normalize() - pd.Timedelta(days=2)
 
@@ -71,15 +74,15 @@ def fetch(out_dir: str) -> None:
         params = {"latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
                   "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
                   "start_date": a.strftime("%Y-%m-%d"), "end_date": b.strftime("%Y-%m-%d"),
-                  "hourly": ",".join(VARS), "timezone": "UTC"}
+                  "hourly": ",".join(variables), "timezone": "UTC", **(extra or {})}
         requests += 1
-        spent += rainfall.call_weight(len(chunk), (b - a).days + 1, len(VARS))   # a bad body is counted too
+        spent += rainfall.call_weight(len(chunk), (b - a).days + 1, len(variables))   # a bad body is counted too
         res = rainfall._request(PREVIOUS_RUNS, params, retry_429=False)          # raises at a refusal: stop
         time.sleep(1.0)
         return res if isinstance(res, list) else [res]
 
     for year in YEARS:
-        todo = [c for c in cs if not path(out, c, year).exists()]
+        todo = [c for c in cs if not path(out, c, year, prefix).exists()]
         end = min(pd.Timestamp(f"{year}-12-31"), last)
         for i in range(0, len(todo), BATCH):
             chunk = todo[i:i + BATCH]
@@ -99,10 +102,10 @@ def fetch(out_dir: str) -> None:
                         h = r["hourly"]
                         parts[j].append(pd.DataFrame({"cell_lat": chunk[j][0], "cell_lon": chunk[j][1],
                                                       "time": pd.to_datetime(h["time"], utc=True),
-                                                      **{v: np.asarray(h[v], dtype=float) for v in VARS}}))
+                                                      **{v: np.asarray(h[v], dtype=float) for v in variables}}))
             for c, ps in zip(chunk, parts, strict=True):
                 pd.concat(ps, ignore_index=True).drop_duplicates("time").sort_values("time").to_parquet(
-                    path(out, c, year), index=False)
+                    path(out, c, year, prefix), index=False)
             log.info("%d: %d/%d cells, %.1f calls so far", year, min(i + BATCH, len(todo)), len(todo), spent)
     print(json.dumps({"cells": len(cs), "years": list(YEARS), "requests": requests, "not_json": bad, "calls_by_open_meteo_rule": round(spent, 1),
                       "requests_made_by_host": rainfall.requests_made()}))

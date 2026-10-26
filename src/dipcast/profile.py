@@ -219,10 +219,12 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
     return "\n".join(out)
 
 
-def site_page(spot: dict, t: pd.DataFrame | None, mark: str, template: str | None = None) -> str:
-    """spot/<id>/profile/index.html for one spot. `mark` is the brand mark's inline SVG (build_site.MARK)."""
+def site_page(spot: dict, t: pd.DataFrame | None, mark: str, template: str | None = None, url: str | None = None) -> str:
+    """spot/<id>/profile/index.html for one spot. `mark` is the brand mark's inline SVG (build_site.MARK);
+    `url` the page's own published address, for its canonical link (none without it)."""
     name = escape(str(spot["name"]))
     slots = {"name": name, "mark": mark, "body": body(spot, t),
+             "canonical": f'<link rel="canonical" href="{escape(url)}">' if url else "",
              "description": escape(f"The monitored storm overflows upstream of {spot['name']} and how often each "
                                    "spilled in each year from 2021 to 2025, from the Environment Agency's annual returns.")}
     html = template if template is not None else TEMPLATE.read_text()

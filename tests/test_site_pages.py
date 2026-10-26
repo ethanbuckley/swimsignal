@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 17 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html and two profiles
+    assert sm.count("<url>") == 18 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -107,7 +107,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     home = (tmp_path / "index.html").read_text()
     # data-built: the script updates this opening where it stands (index.html, overBuilt), so its
     # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
-    body = home.split('<div id="result" data-built>', 1)[1].split('<p class="about-line"', 1)[0]
+    body = home.split('<div id="result" data-built data-nosnippet>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
     assert "Five-day pollution risk forecasts for 3 swim spots in England<span class=\"lede-map\">, and for any river or lake you " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
@@ -155,7 +155,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river, SPOTS[1]]}))
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
-    assert '<body class="view-spot">' in page and '<div id="result" data-built>' in page
+    assert '<body class="view-spot">' in page and '<div id="result" data-built data-nosnippet>' in page
     # A spot's page spans the screen from 801 px, so it preloads the wide sky from there.
     assert bs.SPOT_SKY_PRELOAD in page and bs.SKY_PRELOAD not in page and 'fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 801px)"' in page
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
@@ -165,7 +165,12 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
     # Issued when, without how long ago, which would be wrong by the time the page is read.
     assert '<p class="issued">Issued Tue 08:00</p>' in page
-    assert f"<noscript><p class=\"muted\">{bs.NOSCRIPT}</p></noscript>" in page
+    # Above the answer, for a reader without scripts: the day and time "Today" and "right now" mean.
+    note = "This forecast was issued on Tuesday 29 September 2026 at 08:00 UK time. On this copy, \u201cToday\u201d and " \
+           "\u201cright now\u201d mean then, and the levels may have changed since. With JavaScript on, the page updates it " \
+           "and adds the map, the overflows upstream and the rest of the detail."
+    assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
+    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d">Today</span>')
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
@@ -177,7 +182,8 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     (tmp_path / "data" / "spots.json").unlink()
     bs.write_pages(tmp_path, [river, SPOTS[1]], root="https://example.org/swim/")
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
-    assert '<body class="view-list">' in page and '<div id="result" data-built>' not in page and '<h2 class="spot-name">A river</h2>' in page
+    assert '<body class="view-list">' in page and '<div id="result" data-built data-nosnippet>' not in page and '<h2 class="spot-name">A river</h2>' in page
+    assert '<div id="result" data-nosnippet>' in page   # a level drawn here later is not quoted in search results either
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -336,7 +342,7 @@ def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_c
     assert set(c["companies"]) == set(config.LIVE_FEEDS)   # every feed SwimSignal reads, and no Dwr Cymru
     for name, credited in c["companies"].items():
         assert credited.split(" (")[0] in c["attribution"], name
-    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm"}
+    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm", "soil"}
     for x in c["sources"]:
         assert x["use"] in uses and x["changed"].startswith("SwimSignal ") and x["changed"].endswith(".")
         assert not x["licence"] or x["licence"] in c["licences"]
@@ -345,7 +351,8 @@ def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_c
                  "Environment Agency data © Environment Agency copyright and/or database right",
                  "This uses Environment Agency flood and river level data from the real-time data API (Beta)",
                  "Contains OS data © Crown copyright and database right 2026",
-                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES"):
+                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES",
+                 "Soil moisture from ECMWF's IFS forecasts"):
         assert must in said, must
     lic = {x["credit"].split(",")[0]: x["licence"] for x in c["sources"]}
     assert lic["Weather data by Open-Meteo.com"] == "CC BY 4.0" and lic["Met Office data © Crown copyright"] == "CC BY-SA 4.0"
@@ -652,7 +659,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert row("links/") == '<td>links/</td><td>Not described here yet.</td><td class="num">3 kB</td>'   # a folder, whole
     assert bs.with_data_files((bs.STATIC / "data.html").read_text(), data)[1] == ["links/", "new.csv"]
     # The documented files each have a section of their own.
-    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "spot_scores.json", "places.json", "waters.json"):
+    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "verification_spots_live.csv", "spot_scores.json", "places.json", "waters.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
     assert '<h2 id="anypoint">anypoint/</h2>' in page and '<h2 id="upstream">upstream/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
@@ -662,7 +669,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 18   # spot_scores.json makes 16, overflows/ 17, waters.json 18
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 19   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -1044,3 +1051,64 @@ def test_the_overflow_layer_is_cut_into_the_tiles_the_map_asks_for(tmp_path):
     london = json.loads((out / "511-340.json").read_text())
     assert london["type"] == "FeatureCollection" and [f["properties"]["site_id"] for f in london["features"]] == ["A", "B"]
     assert london["features"][0] == feats[0]   # each overflow as the whole file has it
+
+
+def test_every_spot_with_a_page_is_linked_from_a_page_search_engines_can_read(tmp_path):
+    # Google listed the home page alone on 24 Oct 2026: the list and the map are drawn by the script, so no
+    # page linked a spot's page in its HTML. spots.html links each one, and the app's foot links spots.html.
+    bs = _build_site()
+    spots = [{**SPOTS[0], "area": "Yorkshire"}, {**SPOTS[1], "area": "Cumbria and the Lake District"},
+             {"id": "beck", "name": "A Beck & Pool", "kind": "river", "area": "Yorkshire", "days": []},
+             {"id": "no-area", "name": "Somewhere", "kind": "lake", "days": []}, {**SPOTS[2], "area": "Yorkshire"}]
+    assert bs.write_pages(tmp_path, spots, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-24") == 4
+    page = (tmp_path / "spots.html").read_text()
+    head = page.split("</head>")[0]
+    assert "<title>Every spot · SwimSignal</title>" in head and '<link rel="canonical" href="https://example.org/swim/spots.html">' in head
+    assert f'<meta name="description" content="{bs.EVERY_SPOT_DESCRIPTION}">' in head and "noindex" not in head
+    assert '<header class="top">' in page and 'class="site-foot"' in page and "cloudflareinsights" in page
+    assert "{{" not in page and 'href="/' not in page and "<script src=" not in page   # no script: the links are in the HTML
+    main = page.split("<main", 1)[1].split("</main>")[0]
+    links = re.findall(r'<a href="spot/([^"/]+)/">', main)
+    assert sorted(links) == sorted(p.name for p in (tmp_path / "spot").iterdir())   # every spot with a page, once
+    assert "Bad Id" not in main and "Odd" not in main   # no page of its own, so no link
+    # Areas A-Z, a spot with none last; names A-Z within each, escaped.
+    heads = re.findall(r'<h2 id="([^"]+)">([^<]+)</h2>', main.split("</nav>")[1])   # after the contents list
+    assert heads == [("cumbria-and-the-lake-district", "Cumbria and the Lake District"), ("yorkshire", "Yorkshire"), ("other-spots", "Other spots")]
+    york = main.split('<h2 id="yorkshire">')[1].split("<h2")[0]
+    assert york.index("A Beck &amp; Pool") < york.index("Wharfe at &quot;Cromwheel&quot; &amp; Ilkley")
+    assert '<a href="#yorkshire">Yorkshire</a>' in main and 'href="feedback.html?type=spot"' in main
+    words = re.sub(r"<[^>]+>", " ", main).lower()
+    assert "forecast, not a water test" in words and not re.search(r"\b(safe|clean)\b", words) and not re.search(r"\d", words)
+    # Linked from the app's foot, which the home page and every spot's page carry; in the sitemap.
+    for f in ("index.html", "spot/wharfe-ilkley/index.html", "spot/no-area/index.html"):
+        assert '<a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · ' in (tmp_path / f).read_text(), f
+    assert "<loc>https://example.org/swim/spots.html</loc>" in (tmp_path / "sitemap.xml").read_text()
+    # Each spot's overflow history names its own address as canonical.
+    prof = (tmp_path / "spot" / "tarn" / "profile" / "index.html").read_text().split("</head>")[0]
+    assert '<link rel="canonical" href="https://example.org/swim/spot/tarn/profile/">' in prof and '<meta name="description" content="The' in prof
+
+
+def test_the_note_without_scripts_names_the_issue_time_in_uk_time():
+    """The built answer says "Today", "right now" and "Issued Sun 17:48" as at the issue time; a page
+    read days later without scripts had only "This is the forecast as it was issued", under the five
+    days (26 Oct 2026). The note names the day, date and time, in UK time either side of a clock change,
+    and falls back to the old words when the time cannot be read."""
+    bs = _build_site()
+    q = "\u201cToday\u201d and \u201cright now\u201d mean then"
+    gmt = bs.noscript_note(pd.Timestamp("2026-10-25T17:48:31+00:00"))
+    assert gmt.startswith("This forecast was issued on Sunday 25 October 2026 at 17:48 UK time.") and q in gmt
+    assert gmt.endswith("With JavaScript on, the page updates it and adds the map, the overflows upstream and the rest of the detail.")
+    assert bs.noscript_note(pd.Timestamp("2026-07-01T23:30:00+00:00")).startswith("This forecast was issued on Thursday 2 July 2026 at 00:30 UK time.")
+    assert bs.noscript_note(pd.Timestamp("2026-10-25T00:30:00Z")).startswith("This forecast was issued on Sunday 25 October 2026 at 01:30 UK time.")
+    for bad in (None, pd.Timestamp("2026-10-25 17:48"), "not a time", pd.NaT):
+        assert bs.noscript_note(bad) == bs.NOSCRIPT, bad
+
+
+def test_the_issue_time_comes_from_the_file_the_built_answers_are_made_from(tmp_path):
+    bs = _build_site()
+    assert bs.built_issue_time(tmp_path) is None
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "spots.json").write_text("{}")
+    assert bs.built_issue_time(tmp_path) is None
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-10-25T17:48:31+00:00"}))
+    assert bs.built_issue_time(tmp_path) == pd.Timestamp("2026-10-25T17:48:31+00:00")

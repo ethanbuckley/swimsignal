@@ -213,8 +213,9 @@ def test_the_published_forecast_and_the_rain_requests_do_not_change(tmp_path, mo
     monkeypatch.setattr(forecast.ecoli, "load", lambda: None)
     monkeypatch.setattr(forecast, "live_now_risk", live_now_risk)
     monkeypatch.setattr(forecast, "clear_time", clear_time)
-    readings = [str(t.tz_convert("Europe/London").tz_localize(None))
-                for t in pd.date_range(now - pd.Timedelta(days=9), now, freq="2h")]
+    # Each reading keeps its offset: a bare London time is ambiguous in the hour the clocks go back (_local would raise
+    # on any run within nine days after it).
+    readings = [str(t.tz_convert("Europe/London")) for t in pd.date_range(now - pd.Timedelta(days=9), now, freq="2h")]
     table = ls.status_table(now.tz_convert("Europe/London").date(), _hist([]),
                             pd.concat([_cov(s, readings) for s in ("A1", "B2")]))
     monkeypatch.setattr(ls, "_status_for", lambda d: table)
@@ -289,3 +290,12 @@ def test_the_check_stops_when_the_join_or_the_fallback_is_wrong():
     assert chk.check(r, n_boot=50)["verdict"].startswith("stopped")
     r = _rows(better=True, n_days=3)
     assert chk.check(r, n_boot=50)["verdict"].startswith("not enough data")
+
+
+def test_coverage_readings_across_the_hour_the_clocks_go_back():
+    """The fixture's readings carry their offset, so the repeated 01:00-02:00 on 25 Oct 2026 is no longer ambiguous:
+    00:30 and 01:30 UTC are 01:30 BST and 01:30 GMT, the same local slot on the same day."""
+    readings = [str(t.tz_convert("Europe/London")) for t in pd.to_datetime(["2026-10-25 00:30", "2026-10-25 01:30"], utc=True)]
+    assert readings == ["2026-10-25 01:30:00+01:00", "2026-10-25 01:30:00+00:00"]
+    cov = _cov("A1", readings)
+    assert list(cov["day"]) == [date(2026, 10, 25)] and list(cov["slots"]) == [1 << 3]

@@ -1,0 +1,1660 @@
+# Each overflow's spill-days in dry weather in 2025, for the note beside it on a spot's page.
+# Made by scripts/make_dry_weather_spills.py on 2026-10-25; read only by scripts/build_site.py (attach_dry_weather).
+# The spill model never reads this file. Rule: docs/DRY-WEATHER-SPILLS-TEST-2026-10.md and dipcast.dry_weather.
+# dry_days: UTC days with under 0.25 mm of ERA5-Land rain in the overflow's cell on the day and the two before,
+# less days with a spill only from events that started on wet days. dry_spill_days: those of them on which an
+# event that started on a dry day spilled. Only overflows with at least one dry spill-day are listed.
+# Contains Environment Agency data: Event Duration Monitoring - Storm Overflow - Start/Stop Detailed Data,
+# © Environment Agency copyright and/or database right, Open Government Licence v3.0; not formally verified by the
+# Environment Agency. Rain: ERA5-Land via Open-Meteo (CC BY 4.0); contains modified Copernicus Climate Change
+# Service information.
+site_id,company,year,dry_spill_days,dry_days
+AWS00001,Anglian Water,2025,3,88
+AWS00004,Anglian Water,2025,4,103
+AWS00007,Anglian Water,2025,1,120
+AWS00008,Anglian Water,2025,1,100
+AWS00010,Anglian Water,2025,2,91
+AWS00012,Anglian Water,2025,11,112
+AWS00018,Anglian Water,2025,1,93
+AWS00021,Anglian Water,2025,3,99
+AWS00031,Anglian Water,2025,1,110
+AWS00037,Anglian Water,2025,1,131
+AWS00041,Anglian Water,2025,2,124
+AWS00043,Anglian Water,2025,1,93
+AWS00045,Anglian Water,2025,1,103
+AWS00052,Anglian Water,2025,4,88
+AWS00056,Anglian Water,2025,1,120
+AWS00058,Anglian Water,2025,1,102
+AWS00059,Anglian Water,2025,3,102
+AWS00064,Anglian Water,2025,2,86
+AWS00070,Anglian Water,2025,1,114
+AWS00076,Anglian Water,2025,4,98
+AWS00090,Anglian Water,2025,1,116
+AWS00091,Anglian Water,2025,3,93
+AWS00095,Anglian Water,2025,1,116
+AWS00096,Anglian Water,2025,7,126
+AWS00099,Anglian Water,2025,1,98
+AWS00100,Anglian Water,2025,1,98
+AWS00105,Anglian Water,2025,1,106
+AWS00110,Anglian Water,2025,2,104
+AWS00113,Anglian Water,2025,2,86
+AWS00120,Anglian Water,2025,7,116
+AWS00131,Anglian Water,2025,2,101
+AWS00142,Anglian Water,2025,1,113
+AWS00143,Anglian Water,2025,4,113
+AWS00144,Anglian Water,2025,6,113
+AWS00145,Anglian Water,2025,1,113
+AWS00146,Anglian Water,2025,2,113
+AWS00150,Anglian Water,2025,1,100
+AWS00160,Anglian Water,2025,1,107
+AWS00164,Anglian Water,2025,18,119
+AWS00172,Anglian Water,2025,2,92
+AWS00175,Anglian Water,2025,2,109
+AWS00177,Anglian Water,2025,2,109
+AWS00186,Anglian Water,2025,1,111
+AWS00195,Anglian Water,2025,1,125
+AWS00204,Anglian Water,2025,2,105
+AWS00207,Anglian Water,2025,12,105
+AWS00215,Anglian Water,2025,3,94
+AWS00224,Anglian Water,2025,1,102
+AWS00228,Anglian Water,2025,5,100
+AWS00230,Anglian Water,2025,1,121
+AWS00240,Anglian Water,2025,2,110
+AWS00253,Anglian Water,2025,1,109
+AWS00254,Anglian Water,2025,1,124
+AWS00256,Anglian Water,2025,4,109
+AWS00269,Anglian Water,2025,4,78
+AWS00270,Anglian Water,2025,1,87
+AWS00273,Anglian Water,2025,4,102
+AWS00274,Anglian Water,2025,14,101
+AWS00282,Anglian Water,2025,1,92
+AWS00287,Anglian Water,2025,2,112
+AWS00289,Anglian Water,2025,2,88
+AWS00297,Anglian Water,2025,1,96
+AWS00299,Anglian Water,2025,1,96
+AWS00300,Anglian Water,2025,5,96
+AWS00301,Anglian Water,2025,1,111
+AWS00311,Anglian Water,2025,1,106
+AWS00312,Anglian Water,2025,12,106
+AWS00324,Anglian Water,2025,16,99
+AWS00330,Anglian Water,2025,1,103
+AWS00334,Anglian Water,2025,3,103
+AWS00337,Anglian Water,2025,1,98
+AWS00340,Anglian Water,2025,1,109
+AWS00344,Anglian Water,2025,1,94
+AWS00345,Anglian Water,2025,2,100
+AWS00352,Anglian Water,2025,1,97
+AWS00353,Anglian Water,2025,1,100
+AWS00354,Anglian Water,2025,3,118
+AWS00359,Anglian Water,2025,1,87
+AWS00365,Anglian Water,2025,1,93
+AWS00370,Anglian Water,2025,8,116
+AWS00371,Anglian Water,2025,1,116
+AWS00380,Anglian Water,2025,4,97
+AWS00389,Anglian Water,2025,1,105
+AWS00390,Anglian Water,2025,1,99
+AWS00398,Anglian Water,2025,3,118
+AWS00400,Anglian Water,2025,1,125
+AWS00402,Anglian Water,2025,1,122
+AWS00414,Anglian Water,2025,3,95
+AWS00416,Anglian Water,2025,14,88
+AWS00427,Anglian Water,2025,2,112
+AWS00429,Anglian Water,2025,7,106
+AWS00444,Anglian Water,2025,1,109
+AWS00447,Anglian Water,2025,1,122
+AWS00449,Anglian Water,2025,1,107
+AWS00456,Anglian Water,2025,7,80
+AWS00463,Anglian Water,2025,1,88
+AWS00464,Anglian Water,2025,1,118
+AWS00471,Anglian Water,2025,4,101
+AWS00481,Anglian Water,2025,1,124
+AWS00484,Anglian Water,2025,1,89
+AWS00485,Anglian Water,2025,1,100
+AWS00489,Anglian Water,2025,1,123
+AWS00497,Anglian Water,2025,8,84
+AWS00499,Anglian Water,2025,1,81
+AWS00501,Anglian Water,2025,1,86
+AWS00505,Anglian Water,2025,2,95
+AWS00515,Anglian Water,2025,1,111
+AWS00516,Anglian Water,2025,4,111
+AWS00524,Anglian Water,2025,4,105
+AWS00529,Anglian Water,2025,10,78
+AWS00532,Anglian Water,2025,1,107
+AWS00536,Anglian Water,2025,1,119
+AWS00538,Anglian Water,2025,7,113
+AWS00545,Anglian Water,2025,1,125
+AWS00552,Anglian Water,2025,23,101
+AWS00553,Anglian Water,2025,1,116
+AWS00554,Anglian Water,2025,3,92
+AWS00562,Anglian Water,2025,9,99
+AWS00567,Anglian Water,2025,1,114
+AWS00569,Anglian Water,2025,1,115
+AWS00582,Anglian Water,2025,1,108
+AWS00583,Anglian Water,2025,1,86
+AWS00588,Anglian Water,2025,6,78
+AWS00592,Anglian Water,2025,2,84
+AWS00593,Anglian Water,2025,1,115
+AWS00600,Anglian Water,2025,1,118
+AWS00602,Anglian Water,2025,1,102
+AWS00604,Anglian Water,2025,1,113
+AWS00606,Anglian Water,2025,4,108
+AWS00611,Anglian Water,2025,8,97
+AWS00613,Anglian Water,2025,1,70
+AWS00616,Anglian Water,2025,1,105
+AWS00617,Anglian Water,2025,4,102
+AWS00619,Anglian Water,2025,2,112
+AWS00626,Anglian Water,2025,2,70
+AWS00632,Anglian Water,2025,1,114
+AWS00636,Anglian Water,2025,2,78
+AWS00641,Anglian Water,2025,9,81
+AWS00644,Anglian Water,2025,15,115
+AWS00647,Anglian Water,2025,1,113
+AWS00648,Anglian Water,2025,10,113
+AWS00659,Anglian Water,2025,5,100
+AWS00660,Anglian Water,2025,5,105
+AWS00664,Anglian Water,2025,3,110
+AWS00676,Anglian Water,2025,1,102
+AWS00680,Anglian Water,2025,1,99
+AWS00688,Anglian Water,2025,1,107
+AWS00690,Anglian Water,2025,14,105
+AWS00691,Anglian Water,2025,1,107
+AWS00694,Anglian Water,2025,6,107
+AWS00705,Anglian Water,2025,1,125
+AWS00706,Anglian Water,2025,1,103
+AWS00707,Anglian Water,2025,1,84
+AWS00711,Anglian Water,2025,4,105
+AWS00716,Anglian Water,2025,1,113
+AWS00718,Anglian Water,2025,7,78
+AWS00723,Anglian Water,2025,1,106
+AWS00724,Anglian Water,2025,1,106
+AWS00725,Anglian Water,2025,1,106
+AWS00726,Anglian Water,2025,1,106
+AWS00727,Anglian Water,2025,1,106
+AWS00728,Anglian Water,2025,1,106
+AWS00729,Anglian Water,2025,1,106
+AWS00730,Anglian Water,2025,1,106
+AWS00731,Anglian Water,2025,1,106
+AWS00737,Anglian Water,2025,1,82
+AWS00739,Anglian Water,2025,4,107
+AWS00743,Anglian Water,2025,1,112
+AWS00744,Anglian Water,2025,2,100
+AWS00745,Anglian Water,2025,2,97
+AWS00746,Anglian Water,2025,6,94
+AWS00764,Anglian Water,2025,1,86
+AWS00768,Anglian Water,2025,3,97
+AWS00775,Anglian Water,2025,1,81
+AWS00786,Anglian Water,2025,7,107
+AWS00791,Anglian Water,2025,4,102
+AWS00808,Anglian Water,2025,1,113
+AWS00810,Anglian Water,2025,24,99
+AWS00823,Anglian Water,2025,13,112
+AWS00825,Anglian Water,2025,1,123
+AWS00827,Anglian Water,2025,5,103
+AWS00833,Anglian Water,2025,6,120
+AWS00836,Anglian Water,2025,2,93
+AWS00838,Anglian Water,2025,1,124
+AWS00839,Anglian Water,2025,3,92
+AWS00854,Anglian Water,2025,4,102
+AWS00864,Anglian Water,2025,1,88
+AWS00868,Anglian Water,2025,1,115
+AWS00872,Anglian Water,2025,1,109
+AWS00873,Anglian Water,2025,7,71
+AWS00878,Anglian Water,2025,12,89
+AWS00888,Anglian Water,2025,1,83
+AWS00890,Anglian Water,2025,1,70
+AWS00893,Anglian Water,2025,4,84
+AWS00915,Anglian Water,2025,1,100
+AWS00928,Anglian Water,2025,3,118
+AWS00932,Anglian Water,2025,1,118
+AWS00934,Anglian Water,2025,1,118
+AWS00944,Anglian Water,2025,3,118
+AWS00948,Anglian Water,2025,1,91
+AWS00949,Anglian Water,2025,2,115
+AWS00955,Anglian Water,2025,3,94
+AWS00964,Anglian Water,2025,1,115
+AWS00965,Anglian Water,2025,1,114
+AWS00967,Anglian Water,2025,2,103
+AWS00974,Anglian Water,2025,1,81
+AWS00975,Anglian Water,2025,1,84
+AWS00980,Anglian Water,2025,21,107
+AWS00982,Anglian Water,2025,4,98
+AWS00983,Anglian Water,2025,1,98
+AWS00994,Anglian Water,2025,4,116
+AWS00999,Anglian Water,2025,1,103
+AWS01012,Anglian Water,2025,1,96
+AWS01016,Anglian Water,2025,10,93
+AWS01017,Anglian Water,2025,1,112
+AWS01018,Anglian Water,2025,3,88
+AWS01019,Anglian Water,2025,4,88
+AWS01027,Anglian Water,2025,33,109
+AWS01067,Anglian Water,2025,2,107
+AWS01069,Anglian Water,2025,1,126
+AWS01073,Anglian Water,2025,1,116
+AWS01076,Anglian Water,2025,3,116
+AWS01084,Anglian Water,2025,8,97
+AWS01086,Anglian Water,2025,1,105
+AWS01105,Anglian Water,2025,4,89
+AWS01118,Anglian Water,2025,1,92
+AWS01130,Anglian Water,2025,1,99
+AWS01133,Anglian Water,2025,3,97
+AWS01136,Anglian Water,2025,2,84
+AWS01141,Anglian Water,2025,2,89
+AWS01143,Anglian Water,2025,1,86
+AWS01145,Anglian Water,2025,8,86
+AWS01149,Anglian Water,2025,1,118
+AWS01152,Anglian Water,2025,1,93
+AWS01157,Anglian Water,2025,1,116
+AWS01160,Anglian Water,2025,3,87
+AWS01166,Anglian Water,2025,1,125
+AWS01169,Anglian Water,2025,1,125
+AWS01173,Anglian Water,2025,1,125
+AWS01174,Anglian Water,2025,1,125
+AWS01177,Anglian Water,2025,1,125
+AWS01178,Anglian Water,2025,1,125
+AWS01182,Anglian Water,2025,3,125
+AWS01183,Anglian Water,2025,1,125
+AWS01184,Anglian Water,2025,1,125
+AWS01186,Anglian Water,2025,4,108
+AWS01190,Anglian Water,2025,3,125
+AWS01193,Anglian Water,2025,1,114
+AWS01196,Anglian Water,2025,1,103
+AWS01202,Anglian Water,2025,1,113
+AWS01203,Anglian Water,2025,1,113
+AWS01210,Anglian Water,2025,1,88
+AWS01213,Anglian Water,2025,14,109
+AWS01214,Anglian Water,2025,9,109
+AWS01232,Anglian Water,2025,7,108
+AWS01256,Anglian Water,2025,1,119
+AWS01258,Anglian Water,2025,1,126
+AWS01264,Anglian Water,2025,3,107
+AWS01274,Anglian Water,2025,4,93
+AWS01275,Anglian Water,2025,1,129
+AWS01277,Anglian Water,2025,4,124
+AWS01279,Anglian Water,2025,1,95
+AWS01280,Anglian Water,2025,2,112
+AWS01288,Anglian Water,2025,3,123
+AWS01291,Anglian Water,2025,1,123
+AWS01295,Anglian Water,2025,1,100
+AWS01321,Anglian Water,2025,1,113
+AWS01329,Anglian Water,2025,1,91
+AWS01341,Anglian Water,2025,1,109
+AWS01351,Anglian Water,2025,2,100
+AWS01362,Anglian Water,2025,2,87
+AWS01373,Anglian Water,2025,22,100
+AWS01382,Anglian Water,2025,1,92
+AWS01383,Anglian Water,2025,1,129
+AWS01385,Anglian Water,2025,4,101
+AWS01395,Anglian Water,2025,7,123
+AWS01406,Anglian Water,2025,1,101
+AWS01412,Anglian Water,2025,1,105
+AWS01420,Anglian Water,2025,1,106
+AWS01421,Anglian Water,2025,1,114
+AWS01422,Anglian Water,2025,2,124
+AWS01429,Anglian Water,2025,1,108
+AWS01440,Anglian Water,2025,1,118
+AWS01442,Anglian Water,2025,1,116
+AWS01456,Anglian Water,2025,3,97
+AWS01458,Anglian Water,2025,1,103
+AWS01460,Anglian Water,2025,1,103
+AWS01462,Anglian Water,2025,1,103
+AWS01464,Anglian Water,2025,1,91
+AWS01465,Anglian Water,2025,1,85
+AWS01466,Anglian Water,2025,7,97
+AWS01479,Anglian Water,2025,2,97
+AWS01481,Anglian Water,2025,1,103
+AWS01484,Anglian Water,2025,1,123
+AWS01486,Anglian Water,2025,3,99
+AWS01489,Anglian Water,2025,1,126
+AWS01493,Anglian Water,2025,2,87
+AWS01502,Anglian Water,2025,1,111
+AWS01503,Anglian Water,2025,1,103
+AWS01504,Anglian Water,2025,6,91
+AWS01509,Anglian Water,2025,3,101
+AWS01512,Anglian Water,2025,6,87
+AWS01525,Anglian Water,2025,3,93
+AWS01534,Anglian Water,2025,1,123
+AWS01539,Anglian Water,2025,4,88
+AWS01557,Anglian Water,2025,33,120
+AWS01559,Anglian Water,2025,1,97
+NWL00007,Northumbrian Water,2025,1,65
+NWL00014,Northumbrian Water,2025,1,71
+NWL00021,Northumbrian Water,2025,1,89
+NWL00023,Northumbrian Water,2025,1,68
+NWL00034,Northumbrian Water,2025,4,59
+NWL00036,Northumbrian Water,2025,1,70
+NWL00080,Northumbrian Water,2025,2,78
+NWL00091,Northumbrian Water,2025,1,73
+NWL00114,Northumbrian Water,2025,1,75
+NWL00117,Northumbrian Water,2025,1,71
+NWL00124,Northumbrian Water,2025,2,65
+NWL00139,Northumbrian Water,2025,1,86
+NWL00150,Northumbrian Water,2025,2,91
+NWL00170,Northumbrian Water,2025,1,66
+NWL00180,Northumbrian Water,2025,1,66
+NWL00186,Northumbrian Water,2025,1,91
+NWL00188,Northumbrian Water,2025,1,65
+NWL00189,Northumbrian Water,2025,1,68
+NWL00197,Northumbrian Water,2025,1,64
+NWL00214,Northumbrian Water,2025,1,65
+NWL00243,Northumbrian Water,2025,1,65
+NWL00245,Northumbrian Water,2025,4,89
+NWL00246,Northumbrian Water,2025,3,89
+NWL00248,Northumbrian Water,2025,1,82
+NWL00252,Northumbrian Water,2025,2,65
+NWL00253,Northumbrian Water,2025,1,65
+NWL00254,Northumbrian Water,2025,1,65
+NWL00283,Northumbrian Water,2025,1,54
+NWL00296,Northumbrian Water,2025,4,64
+NWL00309,Northumbrian Water,2025,2,86
+NWL00332,Northumbrian Water,2025,8,58
+NWL00342,Northumbrian Water,2025,1,54
+NWL00351,Northumbrian Water,2025,2,77
+NWL00352,Northumbrian Water,2025,2,77
+NWL00366,Northumbrian Water,2025,1,65
+NWL00448,Northumbrian Water,2025,1,61
+NWL00449,Northumbrian Water,2025,1,61
+NWL00451,Northumbrian Water,2025,1,65
+NWL00472,Northumbrian Water,2025,1,68
+NWL00487,Northumbrian Water,2025,1,62
+NWL00488,Northumbrian Water,2025,1,62
+NWL00500,Northumbrian Water,2025,1,88
+NWL00521,Northumbrian Water,2025,1,68
+NWL00524,Northumbrian Water,2025,2,68
+NWL00528,Northumbrian Water,2025,3,91
+NWL00544,Northumbrian Water,2025,12,71
+NWL00552,Northumbrian Water,2025,2,71
+NWL00555,Northumbrian Water,2025,2,82
+NWL00565,Northumbrian Water,2025,3,69
+NWL00568,Northumbrian Water,2025,2,68
+NWL00584,Northumbrian Water,2025,1,62
+NWL00592,Northumbrian Water,2025,1,68
+NWL00612,Northumbrian Water,2025,8,89
+NWL00617,Northumbrian Water,2025,1,89
+NWL00626,Northumbrian Water,2025,1,69
+NWL00632,Northumbrian Water,2025,1,86
+NWL00644,Northumbrian Water,2025,2,82
+NWL00657,Northumbrian Water,2025,1,64
+NWL00679,Northumbrian Water,2025,2,61
+NWL00689,Northumbrian Water,2025,1,68
+NWL00714,Northumbrian Water,2025,1,71
+NWL00726,Northumbrian Water,2025,1,69
+NWL00737,Northumbrian Water,2025,1,65
+NWL00766,Northumbrian Water,2025,2,77
+NWL00773,Northumbrian Water,2025,1,68
+NWL00775,Northumbrian Water,2025,2,74
+NWL00818,Northumbrian Water,2025,2,91
+NWL00819,Northumbrian Water,2025,4,89
+NWL00823,Northumbrian Water,2025,1,70
+NWL00834,Northumbrian Water,2025,1,65
+NWL00835,Northumbrian Water,2025,1,65
+NWL00836,Northumbrian Water,2025,2,65
+NWL00840,Northumbrian Water,2025,1,65
+NWL00844,Northumbrian Water,2025,1,69
+NWL00871,Northumbrian Water,2025,3,69
+NWL00875,Northumbrian Water,2025,1,88
+NWL00881,Northumbrian Water,2025,18,68
+NWL00887,Northumbrian Water,2025,1,59
+NWL00889,Northumbrian Water,2025,1,65
+NWL00890,Northumbrian Water,2025,2,68
+NWL00893,Northumbrian Water,2025,2,65
+NWL00898,Northumbrian Water,2025,1,54
+NWL00912,Northumbrian Water,2025,1,65
+NWL00934,Northumbrian Water,2025,1,71
+NWL00952,Northumbrian Water,2025,8,89
+NWL00987,Northumbrian Water,2025,7,85
+NWL00989,Northumbrian Water,2025,1,69
+NWL00990,Northumbrian Water,2025,2,69
+NWL01000,Northumbrian Water,2025,1,65
+NWL01001,Northumbrian Water,2025,1,65
+NWL01017,Northumbrian Water,2025,2,91
+NWL01031,Northumbrian Water,2025,1,61
+NWL01045,Northumbrian Water,2025,1,61
+NWL01047,Northumbrian Water,2025,1,61
+NWL01058,Northumbrian Water,2025,1,71
+NWL01067,Northumbrian Water,2025,1,65
+NWL01073,Northumbrian Water,2025,1,65
+NWL01081,Northumbrian Water,2025,1,65
+NWL01086,Northumbrian Water,2025,1,65
+NWL01143,Northumbrian Water,2025,2,77
+NWL01159,Northumbrian Water,2025,1,65
+NWL01169,Northumbrian Water,2025,1,85
+NWL01170,Northumbrian Water,2025,1,67
+NWL01192,Northumbrian Water,2025,4,69
+NWL01198,Northumbrian Water,2025,1,65
+NWL01210,Northumbrian Water,2025,2,64
+NWL01211,Northumbrian Water,2025,1,64
+NWL01238,Northumbrian Water,2025,2,71
+NWL01245,Northumbrian Water,2025,1,70
+NWL01252,Northumbrian Water,2025,1,65
+NWL01257,Northumbrian Water,2025,1,65
+NWL01270,Northumbrian Water,2025,3,71
+NWL01282,Northumbrian Water,2025,1,71
+NWL01333,Northumbrian Water,2025,1,78
+NWL01367,Northumbrian Water,2025,1,66
+NWL01369,Northumbrian Water,2025,2,62
+NWL01395,Northumbrian Water,2025,2,82
+NWL01396,Northumbrian Water,2025,4,82
+NWL01418,Northumbrian Water,2025,6,71
+NWL01419,Northumbrian Water,2025,1,71
+NWL01452,Northumbrian Water,2025,1,68
+NWL01453,Northumbrian Water,2025,1,76
+NWL01454,Northumbrian Water,2025,1,86
+NWL01503,Northumbrian Water,2025,1,65
+NWL01522,Northumbrian Water,2025,1,69
+NWL01536,Northumbrian Water,2025,1,69
+NWL01538,Northumbrian Water,2025,2,68
+NWL01554,Northumbrian Water,2025,1,69
+NWL01578,Northumbrian Water,2025,1,64
+NWL01581,Northumbrian Water,2025,1,54
+SBB00024,South West Water,2025,4,77
+SBB00027,South West Water,2025,8,44
+SBB00032,South West Water,2025,1,73
+SBB00034,South West Water,2025,1,73
+SBB00037,South West Water,2025,46,74
+SBB00043,South West Water,2025,2,54
+SBB00054,South West Water,2025,18,75
+SBB00055,South West Water,2025,1,72
+SBB00056,South West Water,2025,4,74
+SBB00072,South West Water,2025,2,71
+SBB00074,South West Water,2025,1,69
+SBB00080,South West Water,2025,1,72
+SBB00092,South West Water,2025,17,82
+SBB00096,South West Water,2025,1,63
+SBB00104,South West Water,2025,3,80
+SBB00113,South West Water,2025,1,75
+SBB00128,South West Water,2025,2,42
+SBB00147,South West Water,2025,3,69
+SBB00148,South West Water,2025,4,75
+SBB00151,South West Water,2025,1,78
+SBB00155,South West Water,2025,5,41
+SBB00157,South West Water,2025,2,76
+SBB00178,South West Water,2025,2,53
+SBB00194,South West Water,2025,1,82
+SBB00195,South West Water,2025,1,77
+SBB00223,South West Water,2025,1,51
+SBB00230,South West Water,2025,2,56
+SBB00242,South West Water,2025,8,69
+SBB00247,South West Water,2025,5,77
+SBB00248,South West Water,2025,2,79
+SBB00252,South West Water,2025,3,67
+SBB00254,South West Water,2025,5,67
+SBB00283,South West Water,2025,3,73
+SBB00291,South West Water,2025,1,87
+SBB00297,South West Water,2025,3,52
+SBB00298,South West Water,2025,1,72
+SBB00299,South West Water,2025,6,64
+SBB00301,South West Water,2025,1,68
+SBB00306,South West Water,2025,3,89
+SBB00309,South West Water,2025,3,59
+SBB00310,South West Water,2025,1,41
+SBB00323,South West Water,2025,1,63
+SBB00330,South West Water,2025,1,67
+SBB00332,South West Water,2025,38,62
+SBB00334,South West Water,2025,3,78
+SBB00336,South West Water,2025,1,52
+SBB00338,South West Water,2025,1,52
+SBB00342,South West Water,2025,1,88
+SBB00349,South West Water,2025,2,61
+SBB00357,South West Water,2025,14,56
+SBB00368,South West Water,2025,3,63
+SBB00373,South West Water,2025,1,75
+SBB00376,South West Water,2025,1,63
+SBB00379,South West Water,2025,6,64
+SBB00381,South West Water,2025,1,79
+SBB00390,South West Water,2025,7,78
+SBB00393,South West Water,2025,1,68
+SBB00395,South West Water,2025,1,72
+SBB00401,South West Water,2025,8,82
+SBB00409,South West Water,2025,4,69
+SBB00432,South West Water,2025,3,70
+SBB00434,South West Water,2025,5,78
+SBB00435,South West Water,2025,11,78
+SBB00460,South West Water,2025,2,78
+SBB00464,South West Water,2025,5,67
+SBB00466,South West Water,2025,2,85
+SBB00477,South West Water,2025,1,55
+SBB00481,South West Water,2025,1,68
+SBB00484,South West Water,2025,1,72
+SBB00494,South West Water,2025,3,65
+SBB00495,South West Water,2025,2,66
+SBB00500,South West Water,2025,4,56
+SBB00510,South West Water,2025,5,57
+SBB00514,South West Water,2025,9,74
+SBB00515,South West Water,2025,8,77
+SBB00517,South West Water,2025,10,56
+SBB00523,South West Water,2025,9,77
+SBB00526,South West Water,2025,6,48
+SBB00530,South West Water,2025,1,74
+SBB00531,South West Water,2025,1,78
+SBB00536,South West Water,2025,7,59
+SBB00537,South West Water,2025,2,49
+SBB00540,South West Water,2025,12,77
+SBB00541,South West Water,2025,2,77
+SBB00557,South West Water,2025,7,65
+SBB00568,South West Water,2025,10,74
+SBB00570,South West Water,2025,1,74
+SBB00574,South West Water,2025,2,73
+SBB00575,South West Water,2025,1,77
+SBB00581,South West Water,2025,3,53
+SBB00591,South West Water,2025,3,80
+SBB00597,South West Water,2025,27,85
+SBB00599,South West Water,2025,2,80
+SBB00608,South West Water,2025,1,75
+SBB00617,South West Water,2025,3,78
+SBB00624,South West Water,2025,1,80
+SBB00626,South West Water,2025,1,62
+SBB00631,South West Water,2025,2,80
+SBB00643,South West Water,2025,4,73
+SBB00644,South West Water,2025,4,63
+SBB00650,South West Water,2025,10,60
+SBB00651,South West Water,2025,1,57
+SBB00658,South West Water,2025,2,66
+SBB00661,South West Water,2025,1,64
+SBB00686,South West Water,2025,1,78
+SBB00690,South West Water,2025,2,77
+SBB00696,South West Water,2025,3,57
+SBB00721,South West Water,2025,2,44
+SBB00723,South West Water,2025,1,77
+SBB00724,South West Water,2025,1,76
+SBB00725,South West Water,2025,8,74
+SBB00727,South West Water,2025,2,77
+SBB00740,South West Water,2025,1,72
+SBB00741,South West Water,2025,1,72
+SBB00752,South West Water,2025,5,73
+SBB00753,South West Water,2025,4,62
+SBB00758,South West Water,2025,1,74
+SBB00762,South West Water,2025,12,74
+SBB00764,South West Water,2025,2,73
+SBB00770,South West Water,2025,2,71
+SBB00779,South West Water,2025,2,46
+SBB00784,South West Water,2025,4,64
+SBB00789,South West Water,2025,4,79
+SBB00791,South West Water,2025,3,67
+SBB00792,South West Water,2025,3,64
+SBB00795,South West Water,2025,2,84
+SBB00797,South West Water,2025,8,74
+SBB00803,South West Water,2025,4,79
+SBB00806,South West Water,2025,6,75
+SBB00807,South West Water,2025,1,70
+SBB00817,South West Water,2025,2,69
+SBB00825,South West Water,2025,2,47
+SBB00842,South West Water,2025,1,78
+SBB00850,South West Water,2025,1,83
+SBB00851,South West Water,2025,1,83
+SBB00857,South West Water,2025,1,74
+SBB00918,South West Water,2025,10,59
+SBB00929,South West Water,2025,2,45
+SBB00932,South West Water,2025,1,74
+SBB00936,South West Water,2025,1,73
+SBB00945,South West Water,2025,1,73
+SBB00956,South West Water,2025,17,70
+SBB00957,South West Water,2025,2,40
+SBB00980,South West Water,2025,3,31
+SBB00990,South West Water,2025,2,78
+SBB00994,South West Water,2025,3,72
+SBB01003,South West Water,2025,1,67
+SBB01004,South West Water,2025,3,72
+SBB01016,South West Water,2025,1,63
+SBB01021,South West Water,2025,1,47
+SBB01024,South West Water,2025,29,80
+SBB01025,South West Water,2025,2,75
+SBB01033,South West Water,2025,7,57
+SBB01034,South West Water,2025,21,75
+SBB01043,South West Water,2025,16,63
+SBB01048,South West Water,2025,1,89
+SBB01050,South West Water,2025,1,79
+SBB01058,South West Water,2025,8,49
+SBB01066,South West Water,2025,2,65
+SBB01073,South West Water,2025,1,72
+SBB01076,South West Water,2025,6,73
+SBB01077,South West Water,2025,1,70
+SBB01093,South West Water,2025,9,70
+SBB01096,South West Water,2025,3,75
+SBB01101,South West Water,2025,1,79
+SBB01120,South West Water,2025,6,57
+SBB01122,South West Water,2025,7,56
+SBB01124,South West Water,2025,1,64
+SBB01128,South West Water,2025,4,60
+SBB01129,South West Water,2025,3,59
+SBB01131,South West Water,2025,1,77
+SBB01152,South West Water,2025,1,77
+SBB01154,South West Water,2025,3,57
+SBB01155,South West Water,2025,13,58
+SBB01156,South West Water,2025,1,65
+SBB01158,South West Water,2025,2,56
+SBB01160,South West Water,2025,2,52
+SBB01164,South West Water,2025,8,80
+SBB01175,South West Water,2025,2,80
+SBB01176,South West Water,2025,3,76
+SBB01180,South West Water,2025,4,75
+SBB01209,South West Water,2025,28,69
+SBB01215,South West Water,2025,1,67
+SBB01228,South West Water,2025,1,77
+SBB01246,South West Water,2025,1,78
+SBB01247,South West Water,2025,9,77
+SBB01256,South West Water,2025,1,69
+SBB01264,South West Water,2025,6,61
+SBB01268,South West Water,2025,27,65
+SBB01272,South West Water,2025,3,71
+SBB01279,South West Water,2025,1,57
+SBB01323,South West Water,2025,2,71
+SBB01324,South West Water,2025,8,74
+SBB01329,South West Water,2025,1,73
+SBB01330,South West Water,2025,1,82
+SBB01333,South West Water,2025,1,84
+SBB01336,South West Water,2025,1,78
+SBB01342,South West Water,2025,2,77
+SBB01370,South West Water,2025,10,80
+SBB01374,South West Water,2025,1,78
+SBB01379,South West Water,2025,14,74
+SBB01380,South West Water,2025,2,69
+SBB01382,South West Water,2025,4,76
+SBB01383,South West Water,2025,1,74
+SBB01391,South West Water,2025,1,69
+SBB01392,South West Water,2025,5,69
+SBB01393,South West Water,2025,5,78
+SBB01396,South West Water,2025,17,73
+SBB01403,South West Water,2025,3,69
+SBB01407,South West Water,2025,13,69
+SBB01417,South West Water,2025,1,68
+SBB01418,South West Water,2025,1,86
+SBB01419,South West Water,2025,5,89
+SBB01426,South West Water,2025,1,80
+SBB01434,South West Water,2025,1,79
+SVT00005,Severn Trent Water,2025,2,90
+SVT00013,Severn Trent Water,2025,2,91
+SVT00023,Severn Trent Water,2025,6,101
+SVT00032,Severn Trent Water,2025,1,92
+SVT00050,Severn Trent Water,2025,2,85
+SVT00051,Severn Trent Water,2025,1,93
+SVT00130,Severn Trent Water,2025,3,75
+SVT00134,Severn Trent Water,2025,5,85
+SVT00145,Severn Trent Water,2025,1,83
+SVT00150,Severn Trent Water,2025,26,90
+SVT00161,Severn Trent Water,2025,2,74
+SVT00166,Severn Trent Water,2025,6,98
+SVT00177,Severn Trent Water,2025,2,96
+SVT00180,Severn Trent Water,2025,1,94
+SVT00185,Severn Trent Water,2025,1,77
+SVT00186,Severn Trent Water,2025,4,86
+SVT00187,Severn Trent Water,2025,1,99
+SVT00196,Severn Trent Water,2025,8,74
+SVT00216,Severn Trent Water,2025,1,93
+SVT00221,Severn Trent Water,2025,1,98
+SVT00234,Severn Trent Water,2025,3,90
+SVT00236,Severn Trent Water,2025,2,97
+SVT00263,Severn Trent Water,2025,2,93
+SVT00267,Severn Trent Water,2025,1,97
+SVT00271,Severn Trent Water,2025,1,97
+SVT00291,Severn Trent Water,2025,15,91
+SVT00300,Severn Trent Water,2025,2,85
+SVT00304,Severn Trent Water,2025,1,83
+SVT00311,Severn Trent Water,2025,1,86
+SVT00323,Severn Trent Water,2025,4,78
+SVT00325,Severn Trent Water,2025,1,86
+SVT00326,Severn Trent Water,2025,2,87
+SVT00340,Severn Trent Water,2025,1,96
+SVT00341,Severn Trent Water,2025,1,104
+SVT00345,Severn Trent Water,2025,4,89
+SVT00361,Severn Trent Water,2025,1,90
+SVT00365,Severn Trent Water,2025,2,91
+SVT00366,Severn Trent Water,2025,1,98
+SVT00391,Severn Trent Water,2025,3,84
+SVT00401,Severn Trent Water,2025,2,97
+SVT00427,Severn Trent Water,2025,2,82
+SVT00458,Severn Trent Water,2025,1,91
+SVT00466,Severn Trent Water,2025,1,92
+SVT00474,Severn Trent Water,2025,1,87
+SVT00480,Severn Trent Water,2025,1,82
+SVT00481,Severn Trent Water,2025,1,82
+SVT00537,Severn Trent Water,2025,5,86
+SVT00538,Severn Trent Water,2025,5,97
+SVT00558,Severn Trent Water,2025,5,79
+SVT00564,Severn Trent Water,2025,3,91
+SVT00573,Severn Trent Water,2025,1,85
+SVT00591,Severn Trent Water,2025,1,101
+SVT00617,Severn Trent Water,2025,3,75
+SVT00620,Severn Trent Water,2025,1,82
+SVT00621,Severn Trent Water,2025,5,82
+SVT00672,Severn Trent Water,2025,1,86
+SVT00676,Severn Trent Water,2025,3,88
+SVT00678,Severn Trent Water,2025,12,88
+SVT00686,Severn Trent Water,2025,5,97
+SVT00688,Severn Trent Water,2025,1,85
+SVT00693,Severn Trent Water,2025,13,80
+SVT00694,Severn Trent Water,2025,7,89
+SVT00696,Severn Trent Water,2025,1,88
+SVT00706,Severn Trent Water,2025,1,85
+SVT00714,Severn Trent Water,2025,1,90
+SVT00722,Severn Trent Water,2025,2,75
+SVT00730,Severn Trent Water,2025,2,83
+SVT00731,Severn Trent Water,2025,1,83
+SVT00745,Severn Trent Water,2025,1,94
+SVT00758,Severn Trent Water,2025,1,88
+SVT00772,Severn Trent Water,2025,2,87
+SVT00784,Severn Trent Water,2025,1,91
+SVT00785,Severn Trent Water,2025,1,102
+SVT00790,Severn Trent Water,2025,1,100
+SVT00798,Severn Trent Water,2025,1,104
+SVT00825,Severn Trent Water,2025,2,86
+SVT00827,Severn Trent Water,2025,2,91
+SVT00828,Severn Trent Water,2025,1,91
+SVT00829,Severn Trent Water,2025,1,96
+SVT00830,Severn Trent Water,2025,1,89
+SVT00840,Severn Trent Water,2025,1,95
+SVT00842,Severn Trent Water,2025,3,77
+SVT00845,Severn Trent Water,2025,1,86
+SVT00866,Severn Trent Water,2025,1,75
+SVT00886,Severn Trent Water,2025,8,83
+SVT00887,Severn Trent Water,2025,1,86
+SVT00891,Severn Trent Water,2025,7,87
+SVT00897,Severn Trent Water,2025,2,102
+SVT00903,Severn Trent Water,2025,9,83
+SVT00915,Severn Trent Water,2025,3,97
+SVT00925,Severn Trent Water,2025,12,97
+SVT00931,Severn Trent Water,2025,1,82
+SVT00932,Severn Trent Water,2025,1,82
+SVT00948,Severn Trent Water,2025,2,94
+SVT00990,Severn Trent Water,2025,2,90
+SVT00994,Severn Trent Water,2025,5,94
+SVT01002,Severn Trent Water,2025,1,88
+SVT01006,Severn Trent Water,2025,1,100
+SVT01018,Severn Trent Water,2025,1,86
+SVT01023,Severn Trent Water,2025,2,84
+SVT01025,Severn Trent Water,2025,1,82
+SVT01028,Severn Trent Water,2025,5,75
+SVT01037,Severn Trent Water,2025,2,88
+SVT01071,Severn Trent Water,2025,1,78
+SVT01074,Severn Trent Water,2025,1,85
+SVT01076,Severn Trent Water,2025,1,86
+SVT01094,Severn Trent Water,2025,6,83
+SVT01125,Severn Trent Water,2025,1,85
+SVT01149,Severn Trent Water,2025,1,102
+SVT01154,Severn Trent Water,2025,12,82
+SVT01197,Severn Trent Water,2025,3,91
+SVT01210,Severn Trent Water,2025,3,88
+SVT01223,Severn Trent Water,2025,1,98
+SVT01226,Severn Trent Water,2025,1,102
+SVT01233,Severn Trent Water,2025,2,88
+SVT01241,Severn Trent Water,2025,3,90
+SVT01243,Severn Trent Water,2025,1,102
+SVT01288,Severn Trent Water,2025,2,76
+SVT01289,Severn Trent Water,2025,1,82
+SVT01308,Severn Trent Water,2025,1,102
+SVT01322,Severn Trent Water,2025,7,98
+SVT01326,Severn Trent Water,2025,12,84
+SVT01351,Severn Trent Water,2025,9,76
+SVT01353,Severn Trent Water,2025,1,83
+SVT01361,Severn Trent Water,2025,14,97
+SVT01364,Severn Trent Water,2025,4,98
+SVT01407,Severn Trent Water,2025,3,90
+SVT01419,Severn Trent Water,2025,1,77
+SVT01429,Severn Trent Water,2025,1,104
+SVT01434,Severn Trent Water,2025,4,95
+SVT01445,Severn Trent Water,2025,2,98
+SVT01447,Severn Trent Water,2025,29,91
+SVT01453,Severn Trent Water,2025,2,82
+SVT01455,Severn Trent Water,2025,1,82
+SVT01494,Severn Trent Water,2025,3,89
+SVT01498,Severn Trent Water,2025,1,83
+SVT01500,Severn Trent Water,2025,1,91
+SVT01511,Severn Trent Water,2025,1,82
+SVT01515,Severn Trent Water,2025,1,80
+SVT01520,Severn Trent Water,2025,2,85
+SVT01524,Severn Trent Water,2025,1,77
+SVT01567,Severn Trent Water,2025,6,105
+SVT01569,Severn Trent Water,2025,19,92
+SVT01573,Severn Trent Water,2025,1,84
+SVT01592,Severn Trent Water,2025,7,102
+SVT01600,Severn Trent Water,2025,1,93
+SVT01604,Severn Trent Water,2025,2,99
+SVT01632,Severn Trent Water,2025,1,96
+SVT01637,Severn Trent Water,2025,1,97
+SVT01641,Severn Trent Water,2025,1,86
+SVT01649,Severn Trent Water,2025,1,84
+SVT01650,Severn Trent Water,2025,7,85
+SVT01667,Severn Trent Water,2025,1,89
+SVT01669,Severn Trent Water,2025,12,87
+SVT01694,Severn Trent Water,2025,1,101
+SVT01696,Severn Trent Water,2025,1,86
+SVT01701,Severn Trent Water,2025,1,88
+SVT01710,Severn Trent Water,2025,2,90
+SVT01711,Severn Trent Water,2025,1,82
+SVT01750,Severn Trent Water,2025,1,90
+SVT01764,Severn Trent Water,2025,1,88
+SVT01790,Severn Trent Water,2025,1,94
+SVT01799,Severn Trent Water,2025,1,95
+SVT01820,Severn Trent Water,2025,3,90
+SVT01838,Severn Trent Water,2025,1,94
+SVT01856,Severn Trent Water,2025,1,97
+SVT01884,Severn Trent Water,2025,1,85
+SVT01885,Severn Trent Water,2025,1,80
+SVT01888,Severn Trent Water,2025,4,99
+SVT01913,Severn Trent Water,2025,2,107
+SVT01915,Severn Trent Water,2025,1,91
+SVT01929,Severn Trent Water,2025,1,85
+SVT01950,Severn Trent Water,2025,2,83
+SVT01953,Severn Trent Water,2025,1,91
+SVT01973,Severn Trent Water,2025,2,77
+SVT01998,Severn Trent Water,2025,1,92
+SVT02008,Severn Trent Water,2025,1,90
+SVT02027,Severn Trent Water,2025,1,85
+SVT02039,Severn Trent Water,2025,1,85
+SVT02061,Severn Trent Water,2025,1,87
+SVT02076,Severn Trent Water,2025,13,80
+SVT02081,Severn Trent Water,2025,2,90
+SVT02082,Severn Trent Water,2025,1,90
+SVT02083,Severn Trent Water,2025,1,90
+SVT02104,Severn Trent Water,2025,1,91
+SVT02107,Severn Trent Water,2025,3,90
+SVT02110,Severn Trent Water,2025,1,88
+SVT02114,Severn Trent Water,2025,1,90
+SVT02123,Severn Trent Water,2025,7,84
+SVT02128,Severn Trent Water,2025,1,88
+SVT02132,Severn Trent Water,2025,1,85
+SVT02154,Severn Trent Water,2025,1,102
+SVT02163,Severn Trent Water,2025,2,90
+SVT02168,Severn Trent Water,2025,1,87
+SVT02214,Severn Trent Water,2025,1,88
+SVT02235,Severn Trent Water,2025,1,99
+SVT02249,Severn Trent Water,2025,9,87
+SVT02251,Severn Trent Water,2025,24,81
+SVT02267,Severn Trent Water,2025,1,77
+SVT02273,Severn Trent Water,2025,1,82
+SVT02275,Severn Trent Water,2025,2,102
+SVT02278,Severn Trent Water,2025,3,85
+SVT02283,Severn Trent Water,2025,3,71
+SVT02300,Severn Trent Water,2025,2,84
+SVT02301,Severn Trent Water,2025,6,78
+SVT02318,Severn Trent Water,2025,9,85
+SVT02320,Severn Trent Water,2025,1,85
+SVT02329,Severn Trent Water,2025,1,75
+SVT02330,Severn Trent Water,2025,2,98
+SVT02337,Severn Trent Water,2025,1,90
+SVT02346,Severn Trent Water,2025,1,97
+SVT02354,Severn Trent Water,2025,1,91
+SVT02361,Severn Trent Water,2025,4,102
+SVT02369,Severn Trent Water,2025,6,86
+SVT02404,Severn Trent Water,2025,1,77
+SVT02412,Severn Trent Water,2025,1,77
+SVT02437,Severn Trent Water,2025,1,89
+SVT02441,Severn Trent Water,2025,1,77
+SVT02448,Severn Trent Water,2025,1,70
+SVT02469,Severn Trent Water,2025,1,97
+SVT02470,Severn Trent Water,2025,3,97
+SVT02487,Severn Trent Water,2025,11,92
+SVT02490,Severn Trent Water,2025,1,97
+SVT02526,Severn Trent Water,2025,2,93
+SVT02528,Severn Trent Water,2025,1,90
+SVT02530,Severn Trent Water,2025,1,75
+SVT02531,Severn Trent Water,2025,1,85
+SVT02583,Severn Trent Water,2025,1,97
+SVT02601,Severn Trent Water,2025,1,92
+SVT02611,Severn Trent Water,2025,1,77
+SVT02626,Severn Trent Water,2025,1,86
+SVT02635,Severn Trent Water,2025,1,84
+SVT02644,Severn Trent Water,2025,2,70
+SVT02645,Severn Trent Water,2025,1,94
+SVT02659,Severn Trent Water,2025,1,96
+SVT02670,Severn Trent Water,2025,6,87
+SVT02683,Severn Trent Water,2025,1,82
+SVT02699,Severn Trent Water,2025,1,91
+SWS00023,Southern Water,2025,13,93
+SWS00043,Southern Water,2025,2,113
+SWS00061,Southern Water,2025,1,87
+SWS00069,Southern Water,2025,1,101
+SWS00078,Southern Water,2025,1,95
+SWS00117,Southern Water,2025,1,100
+SWS00119,Southern Water,2025,1,78
+SWS00127,Southern Water,2025,10,105
+SWS00133,Southern Water,2025,4,119
+SWS00162,Southern Water,2025,1,86
+SWS00172,Southern Water,2025,13,92
+SWS00203,Southern Water,2025,4,100
+SWS00219,Southern Water,2025,1,98
+SWS00225,Southern Water,2025,1,105
+SWS00232,Southern Water,2025,1,98
+SWS00239,Southern Water,2025,2,95
+SWS00269,Southern Water,2025,12,100
+SWS00316,Southern Water,2025,24,99
+SWS00330,Southern Water,2025,1,101
+SWS00332,Southern Water,2025,1,99
+SWS00335,Southern Water,2025,1,87
+SWS00387,Southern Water,2025,6,103
+SWS00389,Southern Water,2025,23,82
+SWS00404,Southern Water,2025,1,98
+SWS00408,Southern Water,2025,13,105
+SWS00428,Southern Water,2025,2,98
+SWS00478,Southern Water,2025,45,104
+SWS00490,Southern Water,2025,1,95
+SWS00496,Southern Water,2025,28,91
+SWS00502,Southern Water,2025,2,103
+SWS00503,Southern Water,2025,31,92
+SWS00508,Southern Water,2025,1,99
+SWS00513,Southern Water,2025,12,91
+SWS00532,Southern Water,2025,5,96
+SWS00544,Southern Water,2025,6,112
+SWS00557,Southern Water,2025,4,93
+SWS00584,Southern Water,2025,3,113
+SWS00600,Southern Water,2025,3,96
+SWS00624,Southern Water,2025,1,101
+SWS00633,Southern Water,2025,4,103
+SWS00636,Southern Water,2025,1,104
+SWS00637,Southern Water,2025,1,104
+SWS00656,Southern Water,2025,3,119
+SWS00657,Southern Water,2025,2,104
+SWS00660,Southern Water,2025,1,99
+SWS00667,Southern Water,2025,1,98
+SWS00675,Southern Water,2025,1,106
+SWS00703,Southern Water,2025,2,100
+SWS00732,Southern Water,2025,1,96
+SWS00778,Southern Water,2025,5,113
+SWS00790,Southern Water,2025,2,60
+SWS00800,Southern Water,2025,1,96
+SWS00827,Southern Water,2025,2,98
+SWS00832,Southern Water,2025,10,101
+SWS00866,Southern Water,2025,1,96
+SWS00922,Southern Water,2025,1,107
+SWS00925,Southern Water,2025,1,87
+SWS00926,Southern Water,2025,23,105
+SWS00931,Southern Water,2025,2,103
+SWS00944,Southern Water,2025,1,90
+SWS00950,Southern Water,2025,1,98
+TWL00002,Thames Water,2025,8,117
+TWL00006,Thames Water,2025,2,107
+TWL00009,Thames Water,2025,3,106
+TWL00010,Thames Water,2025,5,93
+TWL00024,Thames Water,2025,15,97
+TWL00028,Thames Water,2025,12,108
+TWL00031,Thames Water,2025,2,107
+TWL00037,Thames Water,2025,2,105
+TWL00038,Thames Water,2025,1,99
+TWL00042,Thames Water,2025,2,79
+TWL00047,Thames Water,2025,8,83
+TWL00049,Thames Water,2025,5,80
+TWL00064,Thames Water,2025,1,103
+TWL00085,Thames Water,2025,3,103
+TWL00088,Thames Water,2025,7,115
+TWL00093,Thames Water,2025,3,110
+TWL00098,Thames Water,2025,8,84
+TWL00102,Thames Water,2025,15,87
+TWL00110,Thames Water,2025,1,83
+TWL00112,Thames Water,2025,15,89
+TWL00117,Thames Water,2025,2,93
+TWL00120,Thames Water,2025,12,97
+TWL00147,Thames Water,2025,6,103
+TWL00148,Thames Water,2025,1,92
+TWL00157,Thames Water,2025,3,88
+TWL00162,Thames Water,2025,1,98
+TWL00167,Thames Water,2025,20,73
+TWL00171,Thames Water,2025,1,111
+TWL00177,Thames Water,2025,1,89
+TWL00178,Thames Water,2025,9,84
+TWL00180,Thames Water,2025,1,102
+TWL00181,Thames Water,2025,2,77
+TWL00186,Thames Water,2025,2,109
+TWL00196,Thames Water,2025,4,96
+TWL00207,Thames Water,2025,7,102
+TWL00211,Thames Water,2025,6,91
+TWL00214,Thames Water,2025,1,76
+TWL00224,Thames Water,2025,2,105
+TWL00235,Thames Water,2025,1,77
+TWL00242,Thames Water,2025,2,87
+TWL00257,Thames Water,2025,5,97
+TWL00271,Thames Water,2025,3,94
+TWL00283,Thames Water,2025,1,105
+TWL00290,Thames Water,2025,2,110
+TWL00292,Thames Water,2025,5,108
+TWL00293,Thames Water,2025,27,92
+TWL00303,Thames Water,2025,3,79
+TWL00306,Thames Water,2025,8,108
+TWL00324,Thames Water,2025,3,98
+TWL00331,Thames Water,2025,2,93
+TWL00333,Thames Water,2025,5,109
+TWL00355,Thames Water,2025,1,109
+TWL00361,Thames Water,2025,13,92
+TWL00362,Thames Water,2025,8,93
+TWL00368,Thames Water,2025,1,92
+TWL00369,Thames Water,2025,7,77
+TWL00378,Thames Water,2025,24,69
+TWL00389,Thames Water,2025,1,84
+TWL00391,Thames Water,2025,12,87
+TWL00392,Thames Water,2025,9,102
+TWL00397,Thames Water,2025,1,108
+TWL00404,Thames Water,2025,3,116
+TWL00409,Thames Water,2025,2,110
+TWL00422,Thames Water,2025,6,102
+TWL00425,Thames Water,2025,1,88
+TWL00427,Thames Water,2025,11,77
+TWL00430,Thames Water,2025,2,105
+TWL00433,Thames Water,2025,4,94
+TWL00437,Thames Water,2025,2,93
+TWL00443,Thames Water,2025,1,99
+TWL00445,Thames Water,2025,2,115
+TWL00446,Thames Water,2025,5,100
+TWL00451,Thames Water,2025,15,129
+TWL00452,Thames Water,2025,2,108
+TWL00454,Thames Water,2025,16,103
+TWL00457,Thames Water,2025,6,84
+TWL00500,Thames Water,2025,1,110
+TWL00600,Thames Water,2025,2,101
+TWL00726,Thames Water,2025,2,86
+TWL00728,Thames Water,2025,1,106
+TWL00803,Thames Water,2025,1,92
+UUP00029,United Utilities,2025,1,89
+UUP00051,United Utilities,2025,1,89
+UUP00068,United Utilities,2025,1,68
+UUP00098,United Utilities,2025,2,72
+UUP00099,United Utilities,2025,1,72
+UUP00122,United Utilities,2025,1,72
+UUP00132,United Utilities,2025,2,64
+UUP00133,United Utilities,2025,4,77
+UUP00148,United Utilities,2025,7,77
+UUP00158,United Utilities,2025,3,89
+UUP00159,United Utilities,2025,3,87
+UUP00168,United Utilities,2025,2,88
+UUP00197,United Utilities,2025,1,75
+UUP00200,United Utilities,2025,1,74
+UUP00207,United Utilities,2025,1,84
+UUP00211,United Utilities,2025,1,76
+UUP00254,United Utilities,2025,1,75
+UUP00259,United Utilities,2025,18,81
+UUP00260,United Utilities,2025,4,87
+UUP00267,United Utilities,2025,3,81
+UUP00268,United Utilities,2025,1,77
+UUP00287,United Utilities,2025,1,76
+UUP00291,United Utilities,2025,5,79
+UUP00306,United Utilities,2025,9,59
+UUP00324,United Utilities,2025,2,77
+UUP00336,United Utilities,2025,1,73
+UUP00363,United Utilities,2025,2,76
+UUP00365,United Utilities,2025,1,80
+UUP00369,United Utilities,2025,1,72
+UUP00402,United Utilities,2025,5,77
+UUP00426,United Utilities,2025,3,72
+UUP00435,United Utilities,2025,1,75
+UUP00438,United Utilities,2025,1,84
+UUP00444,United Utilities,2025,1,77
+UUP00447,United Utilities,2025,2,74
+UUP00481,United Utilities,2025,1,79
+UUP00507,United Utilities,2025,2,75
+UUP00518,United Utilities,2025,2,72
+UUP00519,United Utilities,2025,4,74
+UUP00525,United Utilities,2025,1,74
+UUP00534,United Utilities,2025,2,75
+UUP00563,United Utilities,2025,1,84
+UUP00570,United Utilities,2025,8,65
+UUP00601,United Utilities,2025,1,72
+UUP00630,United Utilities,2025,1,69
+UUP00642,United Utilities,2025,1,74
+UUP00644,United Utilities,2025,1,73
+UUP00672,United Utilities,2025,2,70
+UUP00695,United Utilities,2025,1,83
+UUP00704,United Utilities,2025,5,72
+UUP00728,United Utilities,2025,1,68
+UUP00730,United Utilities,2025,5,78
+UUP00733,United Utilities,2025,1,72
+UUP00736,United Utilities,2025,1,85
+UUP00781,United Utilities,2025,1,67
+UUP00792,United Utilities,2025,1,65
+UUP00798,United Utilities,2025,1,89
+UUP00799,United Utilities,2025,2,67
+UUP00802,United Utilities,2025,1,82
+UUP00803,United Utilities,2025,8,48
+UUP00808,United Utilities,2025,2,65
+UUP00809,United Utilities,2025,3,61
+UUP00827,United Utilities,2025,1,81
+UUP00837,United Utilities,2025,2,76
+UUP00858,United Utilities,2025,1,75
+UUP00859,United Utilities,2025,1,75
+UUP00861,United Utilities,2025,3,76
+UUP00862,United Utilities,2025,6,66
+UUP00863,United Utilities,2025,2,68
+UUP00925,United Utilities,2025,2,73
+UUP00935,United Utilities,2025,5,77
+UUP00936,United Utilities,2025,8,77
+UUP00976,United Utilities,2025,1,68
+UUP00982,United Utilities,2025,1,86
+UUP01022,United Utilities,2025,4,70
+UUP01050,United Utilities,2025,1,60
+UUP01070,United Utilities,2025,1,82
+UUP01074,United Utilities,2025,2,79
+UUP01080,United Utilities,2025,2,64
+UUP01081,United Utilities,2025,1,77
+UUP01095,United Utilities,2025,8,72
+UUP01123,United Utilities,2025,1,67
+UUP01151,United Utilities,2025,3,72
+UUP01152,United Utilities,2025,2,64
+UUP01155,United Utilities,2025,2,67
+UUP01161,United Utilities,2025,2,73
+UUP01163,United Utilities,2025,24,79
+UUP01164,United Utilities,2025,1,73
+UUP01175,United Utilities,2025,1,77
+UUP01198,United Utilities,2025,1,81
+UUP01201,United Utilities,2025,1,78
+UUP01220,United Utilities,2025,1,84
+UUP01240,United Utilities,2025,1,84
+UUP01268,United Utilities,2025,1,74
+UUP01332,United Utilities,2025,1,70
+UUP01342,United Utilities,2025,1,77
+UUP01351,United Utilities,2025,2,61
+UUP01355,United Utilities,2025,2,83
+UUP01373,United Utilities,2025,1,72
+UUP01393,United Utilities,2025,1,85
+UUP01398,United Utilities,2025,1,86
+UUP01408,United Utilities,2025,10,76
+UUP01447,United Utilities,2025,9,84
+UUP01452,United Utilities,2025,1,74
+UUP01461,United Utilities,2025,1,83
+UUP01479,United Utilities,2025,1,78
+UUP01491,United Utilities,2025,4,58
+UUP01505,United Utilities,2025,1,76
+UUP01512,United Utilities,2025,1,78
+UUP01523,United Utilities,2025,2,64
+UUP01534,United Utilities,2025,1,67
+UUP01548,United Utilities,2025,1,57
+UUP01551,United Utilities,2025,1,72
+UUP01555,United Utilities,2025,15,87
+UUP01556,United Utilities,2025,6,84
+UUP01565,United Utilities,2025,2,62
+UUP01600,United Utilities,2025,1,82
+UUP01677,United Utilities,2025,5,79
+UUP01679,United Utilities,2025,7,79
+UUP01691,United Utilities,2025,1,64
+UUP01700,United Utilities,2025,1,82
+UUP01706,United Utilities,2025,4,79
+UUP01729,United Utilities,2025,1,78
+UUP01741,United Utilities,2025,1,77
+UUP01743,United Utilities,2025,1,75
+UUP01746,United Utilities,2025,3,67
+UUP01763,United Utilities,2025,1,68
+UUP01769,United Utilities,2025,1,72
+UUP01780,United Utilities,2025,1,72
+UUP01795,United Utilities,2025,1,77
+UUP01799,United Utilities,2025,2,75
+UUP01807,United Utilities,2025,1,71
+UUP01813,United Utilities,2025,1,60
+UUP01854,United Utilities,2025,9,65
+UUP01885,United Utilities,2025,1,74
+UUP01926,United Utilities,2025,1,87
+UUP01939,United Utilities,2025,1,89
+UUP01943,United Utilities,2025,1,77
+UUP01952,United Utilities,2025,2,81
+UUP01957,United Utilities,2025,8,71
+UUP01958,United Utilities,2025,2,83
+UUP01978,United Utilities,2025,1,68
+UUP02003,United Utilities,2025,1,76
+UUP02006,United Utilities,2025,1,85
+UUP02010,United Utilities,2025,6,73
+UUP02027,United Utilities,2025,1,87
+UUP02029,United Utilities,2025,1,87
+UUP02049,United Utilities,2025,1,71
+UUP02065,United Utilities,2025,1,84
+UUP02066,United Utilities,2025,7,84
+UUP02096,United Utilities,2025,2,78
+UUP02118,United Utilities,2025,1,73
+UUP02129,United Utilities,2025,1,76
+UUP02137,United Utilities,2025,1,72
+UUP02152,United Utilities,2025,2,63
+UUP02154,United Utilities,2025,2,78
+UUP02167,United Utilities,2025,1,61
+UUP02175,United Utilities,2025,1,72
+UUP02180,United Utilities,2025,2,77
+UUP02183,United Utilities,2025,1,84
+UUP02235,United Utilities,2025,3,85
+UUP02240,United Utilities,2025,6,89
+UUP02261,United Utilities,2025,1,72
+UUP02264,United Utilities,2025,1,81
+UUP02268,United Utilities,2025,1,68
+UUP02276,United Utilities,2025,2,78
+UUP02277,United Utilities,2025,5,86
+UUP02288,United Utilities,2025,7,84
+WXW00048,Wessex Water,2025,1,81
+WXW00075,Wessex Water,2025,1,83
+WXW00080,Wessex Water,2025,2,93
+WXW00085,Wessex Water,2025,1,81
+WXW00099,Wessex Water,2025,1,86
+WXW00104,Wessex Water,2025,21,91
+WXW00124,Wessex Water,2025,1,88
+WXW00128,Wessex Water,2025,2,85
+WXW00136,Wessex Water,2025,2,97
+WXW00140,Wessex Water,2025,1,101
+WXW00157,Wessex Water,2025,3,91
+WXW00191,Wessex Water,2025,5,88
+WXW00195,Wessex Water,2025,3,86
+WXW00208,Wessex Water,2025,7,97
+WXW00217,Wessex Water,2025,1,81
+WXW00219,Wessex Water,2025,6,69
+WXW00226,Wessex Water,2025,2,100
+WXW00251,Wessex Water,2025,1,91
+WXW00261,Wessex Water,2025,2,82
+WXW00265,Wessex Water,2025,22,80
+WXW00268,Wessex Water,2025,9,78
+WXW00278,Wessex Water,2025,1,85
+WXW00312,Wessex Water,2025,32,97
+WXW00337,Wessex Water,2025,10,91
+WXW00343,Wessex Water,2025,2,83
+WXW00365,Wessex Water,2025,1,89
+WXW00374,Wessex Water,2025,2,87
+WXW00380,Wessex Water,2025,3,79
+WXW00381,Wessex Water,2025,6,80
+WXW00393,Wessex Water,2025,13,79
+WXW00410,Wessex Water,2025,1,93
+WXW00412,Wessex Water,2025,1,87
+WXW00437,Wessex Water,2025,2,93
+WXW00443,Wessex Water,2025,12,93
+WXW00470,Wessex Water,2025,1,81
+WXW00472,Wessex Water,2025,1,101
+WXW00480,Wessex Water,2025,4,87
+WXW00481,Wessex Water,2025,5,93
+WXW00491,Wessex Water,2025,1,94
+WXW00494,Wessex Water,2025,8,83
+WXW00498,Wessex Water,2025,25,93
+WXW00509,Wessex Water,2025,6,81
+WXW00516,Wessex Water,2025,6,91
+WXW00545,Wessex Water,2025,1,89
+WXW00546,Wessex Water,2025,1,80
+WXW00548,Wessex Water,2025,3,99
+WXW00562,Wessex Water,2025,18,87
+WXW00568,Wessex Water,2025,5,86
+WXW00571,Wessex Water,2025,48,94
+WXW00573,Wessex Water,2025,1,81
+WXW00582,Wessex Water,2025,16,94
+WXW00584,Wessex Water,2025,7,88
+WXW00599,Wessex Water,2025,1,88
+WXW00603,Wessex Water,2025,7,89
+WXW00614,Wessex Water,2025,1,88
+WXW00630,Wessex Water,2025,1,88
+WXW00638,Wessex Water,2025,1,92
+WXW00639,Wessex Water,2025,1,87
+WXW00643,Wessex Water,2025,2,83
+WXW00663,Wessex Water,2025,1,97
+WXW00674,Wessex Water,2025,6,87
+WXW00677,Wessex Water,2025,1,97
+WXW00679,Wessex Water,2025,2,87
+WXW00690,Wessex Water,2025,6,92
+WXW00695,Wessex Water,2025,25,86
+WXW00707,Wessex Water,2025,1,85
+WXW00708,Wessex Water,2025,1,85
+WXW00735,Wessex Water,2025,1,86
+WXW00747,Wessex Water,2025,1,79
+WXW00750,Wessex Water,2025,8,81
+WXW00753,Wessex Water,2025,1,83
+WXW00758,Wessex Water,2025,1,87
+WXW00774,Wessex Water,2025,3,93
+WXW00786,Wessex Water,2025,1,79
+WXW00798,Wessex Water,2025,1,79
+WXW00800,Wessex Water,2025,1,90
+WXW00810,Wessex Water,2025,3,91
+WXW00816,Wessex Water,2025,6,81
+WXW00822,Wessex Water,2025,1,94
+WXW00827,Wessex Water,2025,1,89
+WXW00856,Wessex Water,2025,4,99
+WXW00857,Wessex Water,2025,2,75
+WXW00861,Wessex Water,2025,1,91
+WXW00875,Wessex Water,2025,7,101
+WXW00881,Wessex Water,2025,1,91
+WXW00885,Wessex Water,2025,5,90
+WXW00895,Wessex Water,2025,1,75
+WXW00897,Wessex Water,2025,14,85
+WXW00913,Wessex Water,2025,2,83
+WXW00922,Wessex Water,2025,1,86
+WXW00923,Wessex Water,2025,1,86
+WXW00939,Wessex Water,2025,2,90
+WXW00949,Wessex Water,2025,5,93
+WXW00959,Wessex Water,2025,1,90
+WXW00969,Wessex Water,2025,1,89
+WXW00987,Wessex Water,2025,4,99
+WXW00992,Wessex Water,2025,2,83
+WXW00993,Wessex Water,2025,16,87
+WXW01007,Wessex Water,2025,4,88
+WXW01024,Wessex Water,2025,2,80
+WXW01025,Wessex Water,2025,1,87
+WXW01045,Wessex Water,2025,1,97
+WXW01072,Wessex Water,2025,2,88
+WXW01078,Wessex Water,2025,1,97
+WXW01090,Wessex Water,2025,4,87
+WXW01100,Wessex Water,2025,6,67
+WXW01112,Wessex Water,2025,8,89
+WXW01122,Wessex Water,2025,1,83
+WXW01125,Wessex Water,2025,1,76
+WXW01136,Wessex Water,2025,1,93
+WXW01142,Wessex Water,2025,1,83
+WXW01161,Wessex Water,2025,1,89
+WXW01193,Wessex Water,2025,1,81
+WXW01195,Wessex Water,2025,1,94
+WXW01224,Wessex Water,2025,1,97
+WXW01269,Wessex Water,2025,4,82
+WXW01282,Wessex Water,2025,12,85
+WXW01296,Wessex Water,2025,3,87
+WXW01301,Wessex Water,2025,6,97
+YWS00008,Yorkshire Water,2025,1,81
+YWS00011,Yorkshire Water,2025,1,78
+YWS00025,Yorkshire Water,2025,7,70
+YWS00029,Yorkshire Water,2025,1,87
+YWS00034,Yorkshire Water,2025,3,90
+YWS00039,Yorkshire Water,2025,2,64
+YWS00043,Yorkshire Water,2025,1,73
+YWS00050,Yorkshire Water,2025,2,87
+YWS00051,Yorkshire Water,2025,2,87
+YWS00061,Yorkshire Water,2025,1,84
+YWS00062,Yorkshire Water,2025,5,85
+YWS00073,Yorkshire Water,2025,6,98
+YWS00075,Yorkshire Water,2025,2,77
+YWS00084,Yorkshire Water,2025,7,86
+YWS00086,Yorkshire Water,2025,1,85
+YWS00087,Yorkshire Water,2025,1,85
+YWS00088,Yorkshire Water,2025,13,78
+YWS00091,Yorkshire Water,2025,5,77
+YWS00096,Yorkshire Water,2025,1,76
+YWS00103,Yorkshire Water,2025,10,79
+YWS00105,Yorkshire Water,2025,4,82
+YWS00108,Yorkshire Water,2025,4,78
+YWS00109,Yorkshire Water,2025,7,76
+YWS00114,Yorkshire Water,2025,1,80
+YWS00115,Yorkshire Water,2025,1,80
+YWS00118,Yorkshire Water,2025,5,78
+YWS00123,Yorkshire Water,2025,7,77
+YWS00127,Yorkshire Water,2025,1,98
+YWS00135,Yorkshire Water,2025,1,77
+YWS00140,Yorkshire Water,2025,3,78
+YWS00144,Yorkshire Water,2025,1,72
+YWS00147,Yorkshire Water,2025,3,87
+YWS00153,Yorkshire Water,2025,11,70
+YWS00158,Yorkshire Water,2025,7,87
+YWS00160,Yorkshire Water,2025,2,71
+YWS00173,Yorkshire Water,2025,15,89
+YWS00174,Yorkshire Water,2025,7,89
+YWS00175,Yorkshire Water,2025,1,89
+YWS00176,Yorkshire Water,2025,2,89
+YWS00195,Yorkshire Water,2025,3,83
+YWS00198,Yorkshire Water,2025,11,89
+YWS00199,Yorkshire Water,2025,7,78
+YWS00205,Yorkshire Water,2025,1,81
+YWS00211,Yorkshire Water,2025,2,82
+YWS00214,Yorkshire Water,2025,8,80
+YWS00221,Yorkshire Water,2025,1,80
+YWS00223,Yorkshire Water,2025,6,80
+YWS00225,Yorkshire Water,2025,2,66
+YWS00227,Yorkshire Water,2025,4,80
+YWS00233,Yorkshire Water,2025,2,80
+YWS00234,Yorkshire Water,2025,1,99
+YWS00235,Yorkshire Water,2025,1,99
+YWS00239,Yorkshire Water,2025,1,80
+YWS00245,Yorkshire Water,2025,2,99
+YWS00246,Yorkshire Water,2025,9,85
+YWS00249,Yorkshire Water,2025,13,78
+YWS00250,Yorkshire Water,2025,1,78
+YWS00259,Yorkshire Water,2025,2,80
+YWS00279,Yorkshire Water,2025,1,80
+YWS00284,Yorkshire Water,2025,6,81
+YWS00286,Yorkshire Water,2025,1,70
+YWS00304,Yorkshire Water,2025,5,87
+YWS00307,Yorkshire Water,2025,2,77
+YWS00310,Yorkshire Water,2025,1,81
+YWS00324,Yorkshire Water,2025,1,83
+YWS00329,Yorkshire Water,2025,1,71
+YWS00333,Yorkshire Water,2025,1,78
+YWS00346,Yorkshire Water,2025,1,83
+YWS00349,Yorkshire Water,2025,14,72
+YWS00358,Yorkshire Water,2025,1,90
+YWS00363,Yorkshire Water,2025,3,91
+YWS00366,Yorkshire Water,2025,2,77
+YWS00370,Yorkshire Water,2025,2,77
+YWS00371,Yorkshire Water,2025,1,83
+YWS00381,Yorkshire Water,2025,7,71
+YWS00384,Yorkshire Water,2025,6,86
+YWS00385,Yorkshire Water,2025,3,89
+YWS00386,Yorkshire Water,2025,1,93
+YWS00388,Yorkshire Water,2025,1,83
+YWS00398,Yorkshire Water,2025,4,89
+YWS00399,Yorkshire Water,2025,6,92
+YWS00404,Yorkshire Water,2025,4,92
+YWS00405,Yorkshire Water,2025,9,80
+YWS00406,Yorkshire Water,2025,7,88
+YWS00424,Yorkshire Water,2025,1,92
+YWS00426,Yorkshire Water,2025,1,96
+YWS00428,Yorkshire Water,2025,2,89
+YWS00429,Yorkshire Water,2025,3,93
+YWS00433,Yorkshire Water,2025,2,89
+YWS00435,Yorkshire Water,2025,4,89
+YWS00438,Yorkshire Water,2025,2,91
+YWS00442,Yorkshire Water,2025,6,91
+YWS00444,Yorkshire Water,2025,12,89
+YWS00445,Yorkshire Water,2025,5,91
+YWS00449,Yorkshire Water,2025,1,88
+YWS00450,Yorkshire Water,2025,5,90
+YWS00452,Yorkshire Water,2025,1,88
+YWS00458,Yorkshire Water,2025,11,90
+YWS00461,Yorkshire Water,2025,1,88
+YWS00463,Yorkshire Water,2025,1,91
+YWS00471,Yorkshire Water,2025,2,91
+YWS00472,Yorkshire Water,2025,4,89
+YWS00484,Yorkshire Water,2025,17,86
+YWS00486,Yorkshire Water,2025,2,95
+YWS00488,Yorkshire Water,2025,2,90
+YWS00509,Yorkshire Water,2025,2,87
+YWS00514,Yorkshire Water,2025,1,75
+YWS00518,Yorkshire Water,2025,1,89
+YWS00520,Yorkshire Water,2025,4,86
+YWS00525,Yorkshire Water,2025,9,66
+YWS00532,Yorkshire Water,2025,13,87
+YWS00548,Yorkshire Water,2025,6,84
+YWS00549,Yorkshire Water,2025,4,88
+YWS00551,Yorkshire Water,2025,13,88
+YWS00556,Yorkshire Water,2025,2,99
+YWS00560,Yorkshire Water,2025,14,99
+YWS00563,Yorkshire Water,2025,3,88
+YWS00569,Yorkshire Water,2025,10,98
+YWS00571,Yorkshire Water,2025,3,87
+YWS00576,Yorkshire Water,2025,1,55
+YWS00584,Yorkshire Water,2025,1,55
+YWS00586,Yorkshire Water,2025,1,55
+YWS00593,Yorkshire Water,2025,1,55
+YWS00624,Yorkshire Water,2025,16,79
+YWS00628,Yorkshire Water,2025,6,78
+YWS00635,Yorkshire Water,2025,1,78
+YWS00639,Yorkshire Water,2025,14,77
+YWS00653,Yorkshire Water,2025,6,77
+YWS00677,Yorkshire Water,2025,1,66
+YWS00679,Yorkshire Water,2025,2,78
+YWS00690,Yorkshire Water,2025,1,72
+YWS00699,Yorkshire Water,2025,2,79
+YWS00700,Yorkshire Water,2025,1,79
+YWS00702,Yorkshire Water,2025,1,82
+YWS00706,Yorkshire Water,2025,2,99
+YWS00710,Yorkshire Water,2025,1,82
+YWS00711,Yorkshire Water,2025,1,82
+YWS00719,Yorkshire Water,2025,2,92
+YWS00726,Yorkshire Water,2025,11,98
+YWS00766,Yorkshire Water,2025,1,87
+YWS00768,Yorkshire Water,2025,4,77
+YWS00771,Yorkshire Water,2025,2,90
+YWS00772,Yorkshire Water,2025,1,86
+YWS00773,Yorkshire Water,2025,2,78
+YWS00779,Yorkshire Water,2025,1,79
+YWS00783,Yorkshire Water,2025,6,77
+YWS00784,Yorkshire Water,2025,7,79
+YWS00785,Yorkshire Water,2025,1,88
+YWS00787,Yorkshire Water,2025,2,76
+YWS00789,Yorkshire Water,2025,2,78
+YWS00790,Yorkshire Water,2025,5,77
+YWS00794,Yorkshire Water,2025,1,97
+YWS00806,Yorkshire Water,2025,3,76
+YWS00815,Yorkshire Water,2025,5,70
+YWS00816,Yorkshire Water,2025,1,70
+YWS00817,Yorkshire Water,2025,2,69
+YWS00831,Yorkshire Water,2025,1,80
+YWS00832,Yorkshire Water,2025,7,77
+YWS00844,Yorkshire Water,2025,1,80
+YWS00849,Yorkshire Water,2025,1,66
+YWS00859,Yorkshire Water,2025,3,92
+YWS00861,Yorkshire Water,2025,2,93
+YWS00865,Yorkshire Water,2025,5,90
+YWS00866,Yorkshire Water,2025,1,91
+YWS00867,Yorkshire Water,2025,2,77
+YWS00881,Yorkshire Water,2025,4,77
+YWS00888,Yorkshire Water,2025,6,78
+YWS00891,Yorkshire Water,2025,4,86
+YWS00892,Yorkshire Water,2025,1,87
+YWS00893,Yorkshire Water,2025,7,89
+YWS00896,Yorkshire Water,2025,1,79
+YWS00899,Yorkshire Water,2025,2,79
+YWS00900,Yorkshire Water,2025,11,79
+YWS00901,Yorkshire Water,2025,1,82
+YWS00910,Yorkshire Water,2025,2,65
+YWS00911,Yorkshire Water,2025,4,90
+YWS00913,Yorkshire Water,2025,3,85
+YWS00915,Yorkshire Water,2025,8,77
+YWS00916,Yorkshire Water,2025,7,72
+YWS00917,Yorkshire Water,2025,6,74
+YWS00927,Yorkshire Water,2025,1,79
+YWS00929,Yorkshire Water,2025,2,99
+YWS00957,Yorkshire Water,2025,3,77
+YWS00969,Yorkshire Water,2025,1,67
+YWS00972,Yorkshire Water,2025,2,79
+YWS00974,Yorkshire Water,2025,3,87
+YWS01000,Yorkshire Water,2025,1,92
+YWS01001,Yorkshire Water,2025,2,94
+YWS01002,Yorkshire Water,2025,1,75
+YWS01015,Yorkshire Water,2025,2,87
+YWS01016,Yorkshire Water,2025,1,91
+YWS01023,Yorkshire Water,2025,3,79
+YWS01029,Yorkshire Water,2025,2,79
+YWS01034,Yorkshire Water,2025,1,80
+YWS01039,Yorkshire Water,2025,3,80
+YWS01044,Yorkshire Water,2025,4,93
+YWS01045,Yorkshire Water,2025,6,79
+YWS01070,Yorkshire Water,2025,3,76
+YWS01096,Yorkshire Water,2025,2,76
+YWS01100,Yorkshire Water,2025,3,79
+YWS01101,Yorkshire Water,2025,5,79
+YWS01124,Yorkshire Water,2025,3,93
+YWS01125,Yorkshire Water,2025,2,75
+YWS01126,Yorkshire Water,2025,3,75
+YWS01136,Yorkshire Water,2025,1,96
+YWS01155,Yorkshire Water,2025,2,66
+YWS01156,Yorkshire Water,2025,3,70
+YWS01164,Yorkshire Water,2025,1,80
+YWS01175,Yorkshire Water,2025,3,83
+YWS01178,Yorkshire Water,2025,2,70
+YWS01207,Yorkshire Water,2025,2,79
+YWS01248,Yorkshire Water,2025,1,78
+YWS01249,Yorkshire Water,2025,1,66
+YWS01250,Yorkshire Water,2025,2,91
+YWS01281,Yorkshire Water,2025,1,92
+YWS01282,Yorkshire Water,2025,1,80
+YWS01284,Yorkshire Water,2025,1,80
+YWS01305,Yorkshire Water,2025,2,63
+YWS01306,Yorkshire Water,2025,1,70
+YWS01310,Yorkshire Water,2025,3,83
+YWS01323,Yorkshire Water,2025,4,78
+YWS01327,Yorkshire Water,2025,10,93
+YWS01330,Yorkshire Water,2025,4,76
+YWS01335,Yorkshire Water,2025,2,78
+YWS01336,Yorkshire Water,2025,15,87
+YWS01340,Yorkshire Water,2025,17,71
+YWS01343,Yorkshire Water,2025,5,77
+YWS01349,Yorkshire Water,2025,3,89
+YWS01363,Yorkshire Water,2025,1,72
+YWS01365,Yorkshire Water,2025,4,91
+YWS01366,Yorkshire Water,2025,2,93
+YWS01375,Yorkshire Water,2025,6,88
+YWS01379,Yorkshire Water,2025,3,77
+YWS01380,Yorkshire Water,2025,6,91
+YWS01388,Yorkshire Water,2025,1,92
+YWS01394,Yorkshire Water,2025,10,79
+YWS01395,Yorkshire Water,2025,3,79
+YWS01396,Yorkshire Water,2025,1,79
+YWS01405,Yorkshire Water,2025,1,67
+YWS01416,Yorkshire Water,2025,1,78
+YWS01417,Yorkshire Water,2025,7,79
+YWS01419,Yorkshire Water,2025,2,79
+YWS01420,Yorkshire Water,2025,10,69
+YWS01421,Yorkshire Water,2025,2,70
+YWS01422,Yorkshire Water,2025,1,70
+YWS01428,Yorkshire Water,2025,1,67
+YWS01434,Yorkshire Water,2025,1,90
+YWS01437,Yorkshire Water,2025,1,98
+YWS01438,Yorkshire Water,2025,1,98
+YWS01441,Yorkshire Water,2025,5,90
+YWS01451,Yorkshire Water,2025,5,84
+YWS01453,Yorkshire Water,2025,5,75
+YWS01454,Yorkshire Water,2025,1,80
+YWS01457,Yorkshire Water,2025,3,78
+YWS01459,Yorkshire Water,2025,4,79
+YWS01461,Yorkshire Water,2025,3,82
+YWS01471,Yorkshire Water,2025,1,87
+YWS01490,Yorkshire Water,2025,1,92
+YWS01495,Yorkshire Water,2025,2,67
+YWS01496,Yorkshire Water,2025,1,67
+YWS01498,Yorkshire Water,2025,1,88
+YWS01500,Yorkshire Water,2025,1,77
+YWS01526,Yorkshire Water,2025,1,87
+YWS01531,Yorkshire Water,2025,1,92
+YWS01533,Yorkshire Water,2025,1,82
+YWS01537,Yorkshire Water,2025,5,72
+YWS01543,Yorkshire Water,2025,1,76
+YWS01556,Yorkshire Water,2025,1,87
+YWS01559,Yorkshire Water,2025,7,84
+YWS01561,Yorkshire Water,2025,1,93
+YWS01582,Yorkshire Water,2025,6,90
+YWS01587,Yorkshire Water,2025,1,87
+YWS01597,Yorkshire Water,2025,3,87
+YWS01603,Yorkshire Water,2025,5,65
+YWS01633,Yorkshire Water,2025,1,72
+YWS01651,Yorkshire Water,2025,1,87
+YWS01657,Yorkshire Water,2025,2,87
+YWS01670,Yorkshire Water,2025,2,87
+YWS01694,Yorkshire Water,2025,2,79
+YWS01711,Yorkshire Water,2025,2,78
+YWS01718,Yorkshire Water,2025,5,93
+YWS01719,Yorkshire Water,2025,56,87
+YWS01720,Yorkshire Water,2025,2,87
+YWS01733,Yorkshire Water,2025,1,88
+YWS01753,Yorkshire Water,2025,3,76
+YWS01764,Yorkshire Water,2025,1,76
+YWS01767,Yorkshire Water,2025,1,79
+YWS01769,Yorkshire Water,2025,3,79
+YWS01775,Yorkshire Water,2025,5,70
+YWS01778,Yorkshire Water,2025,3,74
+YWS01779,Yorkshire Water,2025,8,74
+YWS01784,Yorkshire Water,2025,1,85
+YWS01804,Yorkshire Water,2025,5,65
+YWS01819,Yorkshire Water,2025,1,78
+YWS01823,Yorkshire Water,2025,1,77
+YWS01825,Yorkshire Water,2025,2,77
+YWS01826,Yorkshire Water,2025,2,77
+YWS01834,Yorkshire Water,2025,2,92
+YWS01856,Yorkshire Water,2025,1,87
+YWS01872,Yorkshire Water,2025,1,76
+YWS01881,Yorkshire Water,2025,1,78
+YWS01886,Yorkshire Water,2025,8,90
+YWS01895,Yorkshire Water,2025,2,78
+YWS01899,Yorkshire Water,2025,1,87
+YWS01941,Yorkshire Water,2025,3,85
+YWS01944,Yorkshire Water,2025,1,87
+YWS01956,Yorkshire Water,2025,1,82
+YWS01960,Yorkshire Water,2025,1,78
+YWS01964,Yorkshire Water,2025,2,76
+YWS01974,Yorkshire Water,2025,1,88
+YWS01976,Yorkshire Water,2025,1,78
+YWS01988,Yorkshire Water,2025,7,87
+YWS02055,Yorkshire Water,2025,1,87
+YWS02110,Yorkshire Water,2025,1,75
+YWS02112,Yorkshire Water,2025,1,82
+YWS02119,Yorkshire Water,2025,1,70
+YWS02121,Yorkshire Water,2025,19,70
+YWS02122,Yorkshire Water,2025,1,70
+YWS02124,Yorkshire Water,2025,4,78
+YWS02133,Yorkshire Water,2025,2,87
+YWS02163,Yorkshire Water,2025,1,92
+YWS02178,Yorkshire Water,2025,3,70
+YWS02188,Yorkshire Water,2025,4,90
+YWS02190,Yorkshire Water,2025,2,90
+YWS02195,Yorkshire Water,2025,1,90
+YWS02196,Yorkshire Water,2025,1,92
+YWS02227,Yorkshire Water,2025,2,99
+YWS02244,Yorkshire Water,2025,2,84
+YWS02245,Yorkshire Water,2025,4,84
+YWS02253,Yorkshire Water,2025,4,89

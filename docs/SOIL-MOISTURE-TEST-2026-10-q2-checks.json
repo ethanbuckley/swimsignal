@@ -1,0 +1,88 @@
+{
+ "baseline_sha256": "1603678923ccdd1553830fa67c2069714c0a836c9df7e8c52578aabd729b5bcc",
+ "inputs_sha256": {
+  "annual_returns.parquet": "9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065",
+  "ea_events_anglian_water.parquet": "9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505",
+  "ea_events_northumbrian_water.parquet": "db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237",
+  "ea_events_severn_trent_water.parquet": "750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504",
+  "ea_events_south_west_water.parquet": "b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51",
+  "ea_events_southern_water.parquet": "0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525",
+  "ea_events_thames_water.parquet": "4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e",
+  "ea_events_united_utilities.parquet": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+  "ea_events_wessex_water.parquet": "26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3",
+  "ea_events_yorkshire_water.parquet": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78"
+ },
+ "baseline_all_nine_brier": 0.03615308595420895,
+ "soil": {
+  "nodes": 343,
+  "node_to_returned_point_km_max": 17.05582118615985,
+  "missing_train": 39528,
+  "missing_test": 43435,
+  "train": {
+   "mean": 0.35803449153900146,
+   "sd": 0.07389757037162781,
+   "min": 0.07800000160932541,
+   "max": 0.7480000257492065
+  },
+  "corr_2024": {
+   "api": 0.3372659269111104,
+   "rain_7d": 0.29901135720604777,
+   "rain_30d": 0.35554174399693167,
+   "rain_d": 0.05967640116245887
+  }
+ },
+ "iterations": {
+  "refit": 300,
+  "add": 300,
+  "replace": 300
+ },
+ "replace_minus_add": {
+  "difference": 0.0017785569628769513,
+  "ci": [
+   0.001139278939860189,
+   0.0025048336997330685
+  ]
+ },
+ "missing_rows_2025": {
+  "add": -0.00037068747595434535,
+  "replace": -0.00010392072634117446
+ },
+ "conditions": {
+  "add": {
+   "1 gain, all nine": true,
+   "2 no company clearly worse": false,
+   "3 reliability": false,
+   "companies clearly worse": [
+    "Anglian Water"
+   ],
+   "ECE failures": [
+    "Thames Water"
+   ],
+   "passes": false
+  },
+  "replace": {
+   "1 gain, all nine": false,
+   "2 no company clearly worse": false,
+   "3 reliability": false,
+   "companies clearly worse": [
+    "Anglian Water",
+    "Severn Trent Water",
+    "South West Water",
+    "Southern Water",
+    "Thames Water",
+    "United Utilities",
+    "Wessex Water",
+    "Yorkshire Water"
+   ],
+   "ECE failures": [
+    "Anglian Water",
+    "Thames Water"
+   ],
+   "passes": false
+  }
+ },
+ "verdict": {
+  "soil moisture adds (add passes)": false,
+  "soil moisture beats the rain proxies (replace passes)": false
+ }
+}

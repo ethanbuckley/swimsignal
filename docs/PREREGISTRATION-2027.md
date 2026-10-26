@@ -542,3 +542,198 @@ with its hash in section 13, and each excluded spot listed with its reason.
 **Code.** `scripts/evaluate_2027.py` gains S1 and S2 by 31 January 2027, with tests, and a dry run
 on autumn 2026 from 12 October (section 14's form). A further amendment records its new hash and
 the list's. Until then the hashes in section 13 stand.
+
+### Amendment 2, 25 October 2026: the spot-level score made exact, and S1 and S2 in the evaluation script
+
+Signed by Ethan Buckley on 25 October 2026, who accepted all eleven recommendations in
+`docs/SPOT-SCORING-RULINGS-2026-10.md` ("353 - i agree with recomendations"). That file gives each point's options,
+the reasons and the effect measured on autumn 2026.
+
+**Why.** Amendment 1 added two secondary scores for a spot's level, S1 and S2, and file D. Building D found eleven
+points it left open. A score that is not fully defined can be tuned after the fact. So each point is fixed here,
+before any season data exist. This amendment also lets `scripts/evaluate_2027.py` gain S1 and S2, which changes
+its hash in section 13.
+
+Nothing here changes the four primary outcomes, their data, rules or seed. S1 and S2 stay secondary.
+
+**Definitions for S1** (each numbered as in `docs/SPOT-SCORING-RULINGS-2026-10.md`):
+
+1. An overflow-day has an observation only when it passes section 5's coverage rule, whether it spilled or not.
+   This is the rule the primary spill scores use.
+2. Overflows without an observation on every source day are left out of `o`, as if they had not spilled. With
+   under 5% of the weight unobserved, `o` is a lower bound.
+3. A level is the one `transport.risk_label` gives: the index rounded to 3 decimal places, times 100, rounded
+   half up, then Low risk under 15, Moderate risk from 15, High risk from 40, Very high risk from 70. It applies to
+   the forecast, to `o` and to the reference alike, each as published in D. The event is `o` at High risk or above.
+   A forecast at High risk or above is a warning. This replaces the raw cuts of amendment 1 for S1 and S2.
+4. Where no forecast was out by 08:00, `observed` is empty too. The reason is `missed_deadline` when a forecast
+   came later that issue day, and `no_forecast` when none did.
+5. The forecast scored is the latest by 08:00, taken as one whole row. If its risk is empty, the cell has no
+   forecast. It is counted, not scored, and never filled from another forecast.
+6. A source day that carries no share of the target day (a whole-day travel time) is not a source day.
+7. The 95% rule stands. Every spot whose overflows without a live feed carry over 5% of its weight is listed as
+   never observed, with that share.
+
+**File D, changed.**
+
+- D gains a column `climatology` after `observed`: the reference index for the cell, with each overflow's
+  `clip(c × f, 0.001, 0.95)` in place of its chance. `c` is the overflow's `climatology` as
+  `verification_live.csv` publishes it. `f` is the month factor of the source day in
+  `data/eval2027/climatology.json`.
+- `forecast`, `observed`, `covered` and `climatology` are written at 6 decimal places. Every figure the site shows
+  for the spot level is computed from the rows as written. A value is read back as the nearest double to its
+  6-place text (Python's `float`; pandas' `float_precision="round_trip"`), so the site and the evaluation get the
+  same level from it.
+
+**Eligible spots, frozen at the tag.** The list `data/eval2027/spots.csv` is made from the tagged build, by
+`scripts/make_eval2027.py --spot-list`, from the build's `spots.json` and upstream files.
+
+- An eligible spot is in `spots.csv` or `spots-osm.csv` and has at least one monitored overflow, with or without a
+  live feed, in its upstream file.
+- Each excluded spot is listed with its reason.
+- Each eligible spot carries its kind of water, the company of its overflow with the largest weight, and the
+  share of its weight with no live feed. Over 5% marks it never observed (item 7).
+- The list's SHA-256 is recorded in section 17 in the pull request of section 15, step 4. The script and its tests
+  are due by 31 January 2027. The list is not.
+
+**Expected size,** inferred and not a promise: about 72 spots × 153 days × 5 leads = 55,080 cells. That is the 80
+spots with an overflow upstream on 24 October 2026, less the 8 never observed.
+
+**S1 in `evaluate_2027.py`.**
+
+- New inputs: `--spots`, the published `verification_spots_live.csv`, and `--spot-list`, `data/eval2027/spots.csv`.
+- **Cells.** Every listed spot × season day × lead 0 to 4. A cell is scored when it has both a forecast and an
+  observation. The rest are counted by reason, by lead and by 7-day block.
+- **Frozen-model check.** By `version`, as `split_versions` does for the primary scores.
+- **Reported:** amendment 1's list, on the levels of item 3.
+  - The alert's record at the High line.
+  - The AUC of the forecast index for the event.
+  - The four-by-four table of forecast level against observed level.
+  - The mean forecast beside the mean `o` by 7-day block.
+  - The reference's alert record and AUC beside the forecast's.
+- **Strata.** By lead; same day and in advance; river and lake spots; and the company of the spot's overflow with
+  the largest weight, from the list. D carries no company, so the company is the list's, fixed at the tag.
+- **Intervals.** Amendment 1's bootstrap: spots as the sites, section 10's blocks, 2,000 draws from
+  `default_rng(20270502)`.
+
+**S2 in `evaluate_2027.py`.**
+
+- It reads prerequisite B's `exposure` column: the spot's forecast index, the latest issued before the sample, at
+  each lead.
+- Levels follow item 3.
+- Reported for rivers and lakes apart, as amendment 1 says:
+  - the AUC for a sample over 900;
+  - the share over 900 at each level, with intervals;
+  - the alert's record at the High line.
+- Same bootstrap as S1, with bathing waters as the sites.
+- S2 cannot run before B carries `exposure`. Until then the script reports it as not run, and why.
+
+**Code and hashes.**
+
+- The changes to file D and S1 and S2 come in one pull request, with tests and a dry run on autumn 2026 from
+  12 October, in section 14's form.
+- That pull request adds, below, the SHA-256 at its merge of `scripts/evaluate_2027.py` and of
+  `scripts/make_eval2027.py` (which gains `--spot-list`). Those rows replace section 13's for the two files.
+  `evaluate_2027.recorded_hashes` and `tests/test_evaluate_2027.py` take the last row the protocol gives for a file.
+- Until it is merged, section 13's hashes stand.
+
+**Dry run on autumn 2026, 25 October 2026: not a result.** The `state` release of 25 October 2026 (read only) gave
+file D for target days 12 to 24 October. The published `spots.json` and 80 upstream files of the build of
+25 October 2026, 22:09 UTC, gave a spot list by `make_eval2027.py --spot-list`. That list is not the frozen one.
+S1 ran with `--from 2026-10-12 --to 2026-10-24` and 2,000 draws.
+
+- 80 eligible spots and 5,200 cells; 3,078 scored (59.2%). Not scored: 1,190 forecasts from before travel times
+  were logged, 464 at spots never observed, 448 under the gap rule, 10 with no overflow in that forecast, and 10
+  under the other coverage rules. No row was missing and none was another version's.
+- At the High line, all leads: 169 hits, 128 misses, 111 false alarms, 2,670 correct quiet ones. Events warned of
+  0.569 [0.367, 0.789]; warnings that came true 0.604 [0.366, 0.784]; AUC 0.912 [0.845, 0.950], against 0.813 for
+  the reference. Same day: AUC 0.925 [0.836, 0.965]. In advance: 0.909 [0.843, 0.947].
+- The script, reading D's 6-place values, gave the same counts and AUC as the build's own summary.
+- The list marks 10 spots never observed, against 8 in D. Two Wessex Water spots on the Frome crossed 5% of
+  weight without a live feed in the latest builds. So the count, and the expected size, move with the build. The
+  list at the tag fixes them.
+- 13 days make 3 blocks, so the intervals here say little.
+
+**Hashes after this amendment (SHA-256).** These rows replace section 13's for the two scripts.
+
+| File | SHA-256 |
+|---|---|
+| `scripts/evaluate_2027.py` | `533f5ec776e2361865cf543484f6e7989caf02a0e78466d55c2cdc53fc420d34` |
+| `scripts/make_eval2027.py` | `d28ab0c7b998190445ef00716c0fca7d6f19a70c0086aaff17dc49bcf8117912` |
+
+### Amendment 3, 26 October 2026: soil moisture in the river E. coli estimate
+
+Proposed in the pull request that adopts it, for Ethan to accept or refuse before it merges. Ethan asked for the PR
+on 25 October ("prepare the adoption PR for soil moisture on rivers (lakes keep today's model) ... don't merge until
+I've looked"). If it merges, this amendment stands with it.
+
+**Why.** `docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md` passed: on river samples it was not fitted on, an E. coli model
+with root-zone soil moisture beat today's model. Lakes keep today's model, because the leads test found them worse
+with it (`docs/SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.md`). The site's E. coli figure on rivers then comes from a
+second model file. Section 2's stamp names one E. coli file, so it must say how the second is covered.
+
+**What changes:**
+- **The E. coli model is two files.** `data/processed/ecoli_model.json`, unchanged, serves lakes. It also serves any
+  river spot without usable soil moisture: `forecast.river_ecoli`'s fallback, counted in the build's health as
+  `ecoli_soil`. `data/processed/ecoli_model_sm.json` serves river spots. Its input is ECMWF IFS
+  `soil_moisture_9_to_27cm` (`models=ecmwf_ifs`) at 00:00 UTC of the issue day, held for every day shown
+  (`src/dipcast/ingest/soil.py`).
+- **The stamp's `ecoli` part** is the first 8 hex digits of the MD5 of `ecoli_model.json`'s bytes followed by
+  `ecoli_model_sm.json`'s, when the second exists (`forecast.model_version`). `evaluate_2027.frozen_hashes` computes
+  the same from the tag. Without the second file it is the MD5 of the first alone, as before. With the files in this
+  PR it is `f70c7723`, against `e601ea37` for `ecoli_model.json` alone.
+- **`MODEL_PATHS` gains** `data/processed/ecoli_model_sm.json` and `src/dipcast/ingest/soil.py`.
+- **Freeze step 4 records four model files' SHA-256 at the tag,** not three: the spill model, the calibration map and
+  the two E. coli files.
+- **Section 4's E. coli scoring is unchanged.** It scores the figure each logged forecast carried, which on a river
+  spot is now the soil-moisture model's, or today's on a fallback.
+
+**The prospective check** stated in the rivers-only test, item (c), runs after the 2027 season and decides nothing
+here. It scores the rule (rivers with soil moisture, lakes without) against today's model on the EA's 2027 samples at
+inland bathing waters with overflows upstream, at leads 0 to 4, as `train_ecoli.py`'s by-lead table scores them. Its
+conditions are the rivers-only test's 1 and 2, with rivers and lakes as the subgroups. It reports in a dated
+addendum to that test. If it shows the rule clearly worse, the rule is withdrawn.
+
+**Hashes after this amendment (SHA-256).**
+
+| File | SHA-256 |
+|---|---|
+| `scripts/evaluate_2027.py` | `95176d2086f224122d899aff38cf3dd8f6cbbc8fe0dff760368ee5dbe56c5d40` |
+| `data/processed/ecoli_model_sm.json` | `34d1a7aa4b0382113a79133ee2b5f4f873fdabd524b2a8af6f221964347b64e4` |
+
+**Adoption note, 26 October 2026: the clamp.** Added lines only; nothing above is changed.
+- **The plan named 0.059 to 0.489 m³/m³** (`docs/SOIL-MOISTURE-ECOLI-PLAN-2026-10.md`, step 3). That is the range of
+  #344's input: soil moisture 48 hours before the sample.
+- **The model reads a different series:** soil moisture at 00:00 UTC of the issue day. In its 1,502 fitting rows that
+  series runs from 0.052 to 0.494 m³/m³, recorded as `meta.sm_range` in `ecoli_model_sm.json`.
+- **The rivers-only test clipped the input to that fitted range.** So the site's clamp uses the model file's
+  `sm_range`, which is the rule the test passed. The planned range would clip a little inside it, which was never
+  tested.
+- **Today it changes nothing.** At the isolated build of 26 October 2026, 00:17 UTC, the 62 river spot cells read
+  0.278 to 0.485 at 00:00 UTC. None falls between the two ranges, and none falls outside either.
+- **The code is unchanged.**
+
+**HOLD, 26 October 2026.** Added lines only; nothing above is changed.
+- **Amendment 3 does not take effect.** The river soil-moisture model is not adopted.
+- **The reason.** The rivers-only test passed against its own reference, a model refitted on the same rows:
+  +0.01319 [+0.00042, +0.02785]. Against the deployed `ecoli_model.json`, its condition 1 misses by 0.00004:
+  +0.01278 [−0.00004, +0.02742]. That second comparison was computed after the results were seen.
+- **What stays.** The stamp, `MODEL_PATHS` and the freeze steps stay as sections 2, 13 and 15 give them, and this
+  PR stays open and unmerged.
+- **A retry** needs a new dated statement, approved first.
+- **Labelling.** Any comparison against the deployed file, pooled or split into Wales and Wessex, is post hoc,
+  exploratory and descriptive, not confirmatory. It was computed after the results were seen. No subgroup is
+  adopted, and no split redefines condition 1.
+
+**Adopted by Ethan's decision, 26 October 2026.** Added lines only; nothing above is changed, the HOLD note included.
+- **Amendment 3 takes effect** when this PR merges. Ethan's words: "i also want to adopt soil moisture for ecoli in
+  rivers".
+- **This is a decision, not a pass.** Condition 1 still misses against the deployed `ecoli_model.json`, by 0.00004, as
+  the HOLD note gives it. The test's own comparison passed. Neither result is changed or rescored.
+- **What the evidence supports, and what it does not.** On rivers in May to September, the estimate's level is
+  better calibrated with soil moisture. No gain in ranking days within a site is shown on the outside data. From
+  October to April the river figure is marked experimental and does not set the level (`levels.js`, `ecoliLevel`),
+  but the experimental figure shown under its fold changes with soil moisture.
+- **The check that can withdraw it** is the prospective one Amendment 3 states: the 2027 samples at inland bathing
+  waters with overflows upstream, with the rule scored against today's model. If it shows the rule clearly worse,
+  the rule is withdrawn.
