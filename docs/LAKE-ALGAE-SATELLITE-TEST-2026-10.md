@@ -281,6 +281,24 @@ These are guesses.
 - One run, alone. No other evaluation, training, build or test on this machine at the same time.
 - It runs after Ethan has read this statement.
 
+## Download caps
+
+Written here and in `scripts/lake_algae_sat_eval/net.py` (26 October 2026) before any request went through the
+harness. Every public request the harness makes, in the coverage prototype, stage 1 and stage 2's metadata, goes
+through that one client.
+- One request at a time. At least 1 second between requests. A 60-second timeout on each.
+- At most 300 requests and 100 MB per run.
+- The coverage prototype, all its runs together: at most 900 requests and 300 MB, counted in a ledger file (one line
+  per request: time, URL, status, bytes).
+- At most 32 MB in any one response.
+- Stop at once on HTTP 429 or any 5xx, and on any status other than 200 or 206. Nothing is retried.
+- Only these hosts: Earth Search's STAC API, the two public AWS buckets that hold its Sentinel-2 files, and the CDSE
+  catalogue and STAC search endpoints (search only). No account, token, key or cookie is ever sent; the client refuses
+  a request that carries one.
+
+Stage 1 over all 18 sites and seven seasons would pass the per-run cap. It runs in as many runs as it needs, each
+under the per-run caps, and resumes from what earlier runs wrote.
+
 ## What will be reported
 
 Whatever the verdict:
