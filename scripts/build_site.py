@@ -2836,14 +2836,14 @@ def write_data_page(site: Path, token: str | None = None, root: str | None = Non
 # rules come from one build, as the app's do (VERSIONED_SCRIPTS). It has no page-view counter: inside
 # another site's page it could not see a visitor's choice not to be counted, which is kept on this one.
 EMBED = TEMPLATE.parent / "embed.html"
-EMBED_SCRIPTS = ('<script src="levels.js"></script>', '<script src="embed.js"></script>')
+EMBED_SCRIPTS = ('<script src="levels.js"></script>', '<script src="eatoday.js"></script>', '<script src="embed.js"></script>')   # eatoday.js: official advice
 
 
 def write_embed(site: Path) -> str:
     """embed.html and embed.js beside the app (which has levels.js, page.css and the fonts). Returns
     the scripts' version."""
     h = hashlib.sha256()
-    for f in ("levels.js", "embed.js"):
+    for f in ("levels.js", "eatoday.js", "embed.js"):
         h.update((TEMPLATE.parent / f).read_bytes())
     v = h.hexdigest()[:8]
     page = EMBED.read_text()
@@ -2867,7 +2867,7 @@ ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
 REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
 # The organisers' page loads lists.js and sites.js too, for "Make a sites link" (sites.js, maker).
-ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "eatoday.js", "organisers.js", "sites.js")   # eatoday.js: official advice
 
 
 def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],
@@ -2904,7 +2904,7 @@ def write_organisers(site: Path, token: str | None = None, root: str | None = No
 # go/no-go decision (record.js). Both reuse organisers.js's words, so they load it, and printed.js gives both
 # their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
 # the sitemap lists both, as it lists that page.
-SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.js")
+SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "eatoday.js", "sites.js")   # eatoday.js: official advice
 RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "brief.js", "record.js")   # eatoday.js: official advice; brief.js: the version and a read tick
 
 
