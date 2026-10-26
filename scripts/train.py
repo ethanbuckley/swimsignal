@@ -45,7 +45,12 @@ def _arg(name: str, default: float) -> float:
 
 
 NEG_FRAC = _arg("--neg-frac", 0.25)
-RECENCY = _arg("--recency", 1.0)
+# Layer 2 weights a year k years older than the newest by RECENCY**k. 0.25 is what main's model files were
+# fitted with: scripts/check_model_provenance.py reproduces their offsets exactly at 0.25 and at no other
+# value tried, so a rebuild with this default gives production's offsets. The nine-company path keeps 1,
+# as docs/NINE-COMPANY-MODEL-TEST-2026-10.md states.
+RECENCY = _arg("--recency", 0.25)
+NINE_RECENCY = _arg("--recency", 1.0)
 SAVE = "--no-save" not in sys.argv
 MIN_EDM_PCT = 50.0
 
@@ -226,7 +231,7 @@ def main_nine() -> None:
     step(f"site-days: train {len(train)}, test {len(test)}, Welsh {len(test_w)}")
 
     m = SpillModel().fit_pooled(train, neg_frac=NEG_FRAC)
-    m.fit_site_offsets(train, recency=RECENCY)
+    m.fit_site_offsets(train, recency=NINE_RECENCY)
     m.trained_on = NINE_TRAINED_ON
     step("candidate fitted")
     hold = SpillModel.load(config.PROCESSED / "spill_model_holdout_2025.pkl")

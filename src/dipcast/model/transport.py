@@ -1009,8 +1009,9 @@ def upstream_overflows(net: RiverNetwork, pin: PinLocation, overflows: pd.DataFr
         same = ov.iloc[0:0].copy()
 
     if pin.mode == "river":
+        # astype: pandas 3.1 keeps the string dtype when an empty id column is mapped, and float + str fails.
         ov["distance_m"] = ((1.0 - ov["frac"]) * ov["link_length"]
-                            + ov["link_id"].map(link_dist) + pin.trace_offset_m)
+                            + ov["link_id"].map(link_dist).astype(float) + pin.trace_offset_m)
         ov["lake_distance_m"] = 0.0
         same["lake_distance_m"] = 0.0
         if by_reach:

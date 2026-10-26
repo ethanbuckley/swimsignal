@@ -223,11 +223,57 @@ test('11 Oct 2026: the offline counts agree with their tables, and the reanalysi
   assert.match(o, /\(2,165 samples\)\. The table scores the 1,750 samples at the 32 with a monitored overflow upstream\. The other 6 have none/);
 });
 
-test('In short says the spot level is not yet scored, and links the pre-registration (review A6)', async () => {
-  for (const data of [live(), live({warning_table: SPILL, overall: OVERALL})]) {
-    const els = await render(data), s = text(els.short.innerHTML);
-    assert.match(s, /The level you see on a spot's page is not yet scored; its spill part is, above\. How it will be scored from 2027 is fixed in the pre-registration ?\./);
+// The spot level as the scorer summed it on 24 Oct 2026 (forecast_log.verify_spots on the state release), trimmed.
+const rec = (n, hits, misses, false_alarms, auc) => ({n, hits, misses, false_alarms, quiet_correct: n - hits - misses - false_alarms,
+  hit_rate: hits / (hits + misses), warnings_true: hits + false_alarms ? hits / (hits + false_alarms) : null,
+  base_rate: (hits + misses) / n, auc, n_spots: 67});
+const SPOTS = {n_cells: 4800, n_forecast: 4800, n_observed: 2803, n_scored: 2803, first_day: '2026-10-12', last_day: '2026-10-23',
+  not_observed: {no_travel_time: 1190, no_overflows: 10, no_live_feed: 414, max_gap: 378, min_known_polls: 5},
+  never_observed: [{spot_id: 'bw-ukd6300-40752', name: 'Sandy Lane, Chester'}, {spot_id: 'wye-hereford', name: "River Wye, Bishop's Meadow, Hereford"}],
+  overall: {...rec(2803, 96, 101, 80, 0.902), climatology: {...rec(2803, 78, 119, 249, 0.834)}},
+  n_spot_days: 691, n_event_spot_days: 45, n_days: 11, first_scored_day: '2026-10-13', last_scored_day: '2026-10-23',
+  by_lead: [{lead: 0, ...rec(687, 23, 21, 20, 0.912)}, {lead: 4, ...rec(437, 11, 22, 7, 0.86)}],
+  by_water: [{water: 'lake', ...rec(855, 0, 5, 0, 0.86)}, {water: 'river', ...rec(1948, 96, 96, 80, 0.88)}],
+  by_company: [{company: 'United Utilities', ...rec(945, 15, 2, 33, 0.97)}, {company: 'unknown', ...rec(10, 0, 0, 0, null)}],
+  levels: {bands: ['low', 'moderate', 'high', 'very high'], counts: [[2069, 55, 16, 24], [340, 62, 30, 31], [54, 14, 23, 45], [11, 1, 7, 21]]},
+  by_week: [{week: '2026-10-12', n: 1272, mean_forecast: 0.049, mean_observed: 0.039}, {week: '2026-10-19', n: 1531, mean_forecast: 0.154, mean_observed: 0.107}],
+  csv: {file: 'verification_spots_live.csv', rows: 4800}};
+
+test('the level itself: its own section, the alert record, ranking, levels table and why days were not checked (review A5)', async () => {
+  const els = await render({...live({warning_table: SPILL, overall: OVERALL, spots_live: SPOTS}), credits: {}});
+  const L = els.live.innerHTML, t = text(L);
+  assert.match(L, /<section id="spot-level"><h2>How the level itself has done<\/h2>/);
+  const sec = t.slice(t.indexOf('How the level itself has done'));
+  assert.match(sec, /2,803 of the 4,800 spot-day forecasts for days from 12 Oct 2026 could be checked\. The others could not: 1,190 because the forecast was made before travel times were logged; 414 because overflows with no live feed carry over 5% of the spot's weight; 378 because some overflows went unobserved for too long that day; 10 because no monitored overflow was upstream in that forecast; and 5 because there were too few runs/);
+  assert.match(sec, /2 spots are never checked, because overflows with no live feed carry over 5% of their weight: Sandy Lane, Chester; River Wye, Bishop's Meadow, Hereford\./);
+  assert.match(sec, /Since 13 Oct 2026, on 691 spot-days at 67 spots, the spills that happened would have put the spot at High risk or above on 45\. Of the 197 forecasts for those spot-days, 96 \(49%\) were at High risk or above\. Of the 176 forecasts at High risk or above, 96 \(55%\) were for such a day, against 7\.0% of all forecasts\. 11 days are too few to judge/);
+  assert.match(sec, /Forecast High risk or above 96 hits 80 false alarms Forecast lower 101 misses 2,526 correct quiet days/);
+  assert.match(sec, /the forecast gave the first the higher score 90 times in 100\. Each overflow's long-run spill rate for the month, combined the same way, did so 83 times in 100, and reached High risk or above on 78 of the 197/);
+  // The levels table: each level word with its noun, rows forecast, columns observed.
+  assert.match(sec, /Forecast Low risk Moderate risk High risk Very high risk Low risk 2,069 55 16 24 Moderate risk 340 62 30 31/);
+  assert.match(sec, /2,175 of 2,803 forecasts had the same level\./);
+  assert.match(sec, /Same day, as of 08:00 687 44 23 20 91/);
+  assert.match(sec, /Lake spots 855 5 0 0 86 River spots 1,948 192 96 80 88 United Utilities 945 17 15 33 97 Company not known/);
+  assert.match(sec, /12 Oct 2026 1,272 4\.9 3\.9/);
+  assert.match(L, /<a href="data\/verification_spots_live\.csv" download>Download every spot-day forecast<\/a> \(CSV, 4,800 rows/);
+  assert.match(L, /PREREGISTRATION-2027\.md#amendment-1/);
+  // The design rules: no level word without its noun, no callout box.
+  assert.ok(!/>(Low|Moderate|High|Very high)</.test(L.slice(L.indexOf('id="spot-level"'))), 'a bare level word');
+  assert.ok(!/class="notice"/.test(L.slice(L.indexOf('id="spot-level"'))));
+  // No link to rows the build did not publish.
+  const unpublished = (await render(live({spots_live: {...SPOTS, csv: undefined}}))).live.innerHTML;
+  assert.ok(!/verification_spots_live\.csv/.test(unpublished));
+});
+
+test('In short says how the level has done, or that nothing is checked yet, and no longer that it is not scored', async () => {
+  const s = text((await render(live({warning_table: SPILL, overall: OVERALL, spots_live: SPOTS}))).short.innerHTML);
+  assert.match(s, /The level a spot's page shows, against the spills that happened: 49% of forecasts for a spot-day the spills would have put at High risk were at High risk or above\. 55% of forecasts at High risk or above were for such a day\. 11 days are too few to judge\. Details/);
+  for (const data of [live(), live({spots_live: {n_cells: 0, n_scored: 0}})]) {
+    const els = await render(data), t = text(els.short.innerHTML);
+    assert.match(t, /The level a spot's page shows is checked against the spills that happened; nothing has been checked yet\. How it is scored is fixed in the pre-registration ?\./);
     assert.match(els.short.innerHTML, /PREREGISTRATION-2027\.md#amendment-1/);
+    assert.ok(!/not yet scored/.test(t));
+    assert.ok(!els.live.innerHTML.includes('id="spot-level"'));
   }
 });
 
@@ -275,4 +321,12 @@ test('the four figure tiles come first, before any h2, then the by-company line,
     && at('id="live-scoring"') < at('id="holdout"'), 'order');
   assert.match(out.top, /<li><a href="#warnings">Warnings, misses and false alarms<\/a><\/li><li><a href="#in-short">In short<\/a><\/li>/);
   assert.ok(out.short.includes('<section class="summary" id="in-short"'));
+});
+
+test('the build writes the level section into the page, and the contents list points at it', async () => {
+  const prerender = require('../scripts/prerender_verification.js').prerender;
+  const out = await prerender(html, {live: {...OCT24, spots_live: SPOTS}, credits: {}});
+  assert.match(out.live, /<section id="spot-level"><h2>How the level itself has done<\/h2>/);
+  assert.match(out.top, /<li><a href="#spot-level">How the level itself has done<\/a><\/li>/);
+  assert.match(out.short, /href="#spot-level">Details<\/a>/);
 });
