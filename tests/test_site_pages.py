@@ -478,7 +478,8 @@ def test_the_privacy_notice_covers_research_sessions_with_their_retention(tmp_pa
     privacy = (tmp_path / "privacy.html").read_text()
     assert '<h2 id="research">Research sessions</h2>' in privacy
     for kept in ["or 21 days after your session, whichever comes first", "no more than 7 days",
-                 "no later than 31 January 2027", "they are still personal data"]:
+                 "no later than 31 January 2027", "including after your contact details are deleted",
+                 "Only genuinely anonymised findings are published", "removed or corrected under your rights to erasure"]:
         assert kept in privacy, kept
     assert "Apart from what is kept for research sessions (above), SwimSignal holds none" in privacy
 
