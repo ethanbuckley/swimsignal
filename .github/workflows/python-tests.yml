@@ -20,13 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false   # the tests run code from the pull request; they need no token
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: actions/setup-node@v4    # a few tests check the page's JavaScript against the Python
+      - uses: actions/setup-node@v7    # a few tests check the page's JavaScript against the Python
         with:
           node-version: "22"
       - name: Install
