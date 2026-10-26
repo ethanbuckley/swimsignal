@@ -646,4 +646,85 @@ A record of what was done and seen while the test ran. It changes nothing above 
 
 ## Results
 
-None yet.
+Added 26 October 2026 after the one scoring run. Everything above the line is as approved (cb06272), with the run log
+and Amendments A1 to A3 recorded there before the checks were fetched.
+
+**Verdicts: A (algae seen) fails. B (objectionable) is too few to judge.** Lakes keep the EA check only. Nothing goes
+to the 2027 forward step, and nothing on the site changes.
+
+### The run
+
+- Stage 1: 28,317 requests, 5.18 GB, features SHA-256 `41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e`
+  (committed in 4ec237b before any check was fetched). Stage 0 (CLMS) not run: no account, and no English site
+  covered.
+- Stage 2 fetch: 1,857 checks, one sampling point a request (A3), checks SHA-256
+  `f036b6ebf62e29a2569a9c6334f2305d1bed20068296b44322f29783e9a70413`.
+- Scoring: `run.sh score` from a `git archive` of 70f67c2, under the group's heavy-run lock, nothing else running,
+  52% memory free at the start. **Network attempts: 0.** 5.9 s, peak memory 186 MB. Exit 0.
+- Stop rules: both hashes matched, every item had scale and offset, the level map equalled `algae.LEVELS`.
+
+### Checks and pairing
+
+- 1,846 checks in May to September 2020–2026 at the 18 sites; 0 with unknown wording. 1,358 at the 14 sites in the
+  test; **404 (30%) had a usable scene within 3 days**. The statement guessed "a third or fewer".
+- Per site and season (checks, with a reading, median days from scene to check): `pairing` in
+  `docs/LAKE-ALGAE-SATELLITE-TEST-2026-10-score.json`.
+
+### The gate
+
+| | Events | Water bodies with one | Seasons with 5 or more | Judged |
+|---|---|---|---|---|
+| A, seen | 102 of 404 | 7 | 5 (2021 17, 2023 15, 2024 10, 2025 26, 2026 33; 2020 1) | yes |
+| B, objectionable | 20 of 404 | 5 | 1 (2026 9) | **no: too few to judge** |
+
+### Outcome A: algae seen
+
+**Primary comparison, M2 against R2, LOWO Brier gain: d = −0.00465, 97.5% interval −0.02282 to +0.00203. B = 0.0036,
+H = 0.0018. Label: Possible harm.** Adding the reading to the month and the last check made predictions at an unseen
+lake slightly worse, and the interval reaches well below −H.
+
+| Condition | Figure | Holds |
+|---|---|---|
+| 1. AUC of the raw reading ≥ 0.65, lower end > 0.50 | 0.604 (0.394 to 0.746) | no |
+| 2. LOWO M1 vs R1, gain ≥ B, lower end > 0 | −0.0031 (−0.0207 to +0.0069) | no |
+| 3. LOSO M2 vs R2, pooled > 0 and ≥ 4 of 5 seasons | pooled −0.0055; 2 of 5 seasons above 0 (2023, 2024) | no |
+| 4. Placebo: real AUC above the 95th percentile | 0.604 vs 0.591 (3 of 200 at or above); median 0.553 | yes |
+| 5. No group labelled Harm | Lake District and lowland both "Possible harm" | yes, as written* |
+| 6. LOWO M2 mean within 0.03 of the rate | 0.243 vs 0.253 | yes |
+
+\*By the note added to the near-miss framework on 26 October, later tests read "Possible harm" as harm here. It
+does not change this verdict.
+
+Brier (AUC), outcome A:
+
+| | R1 base rate | R2 month + last check | M1 reading | M2 R2 + reading |
+|---|---|---|---|---|
+| LOWO | 0.1993 (0.268) | 0.1745 (0.573) | 0.2024 (0.368) | 0.1791 (0.592) |
+| LOSO | 0.1911 (0.401) | 0.1655 (0.661) | 0.1932 (0.511) | 0.1711 (0.655) |
+
+AUC of the raw reading by water body (description): Frensham Great Pond 0.92, the Serpentine 0.73, Windermere 0.64,
+Cotswold 0.42, Colwick 0.40, Rutland Water 0.35, Coniston Water 0.14, Derwent Water none (no event).
+
+### Outcome B: objectionable (description only)
+
+Too few to judge. For the record: raw AUC 0.81 (0.39 to 0.92), placebo 0.81 against a 95th percentile of 0.77 (0 of
+200 at or above), primary d = −0.00110 (−0.00521 to +0.00093), "Possible harm"; LOWO Brier R2 0.0438, M2 0.0449.
+
+### Description
+
+| | Rows | Events A | AUC A | Events B | AUC B |
+|---|---|---|---|---|---|
+| Same-day scene only | 132 | 35 | 0.67 | 10 | 0.82 |
+| Within 7 days | 640 | 146 | 0.62 | 35 | 0.77 |
+| Statutory visits only (3 days) | 389 | 98 | 0.61 | 19 | 0.80 |
+
+### What it means
+
+- **Established:** a Sentinel-2 NDCI reading, made as stated, does not add to what the site already shows (the month
+  and the last EA check) for "algae seen". It ranks seen against not seen only weakly (AUC 0.60), and that signal is
+  not lake-to-lake: it shuffles badly across water bodies (Coniston 0.14, Rutland 0.35).
+- **Established:** the placebo passed for both outcomes. There is some day-level signal within lakes, small for A.
+- **Inferred, not tested:** the objectionable outcome may carry more signal (AUC 0.81, and 0.82 on same-day scenes),
+  and Frensham and the Serpentine track best. With 20 events this is a hypothesis for a later, separately stated
+  test, not a finding. Between-image forecasting stays off: detection did not pass.
+- **What follows, as stated:** lakes keep the EA check only. No shadow log. This PR stays as the record.
