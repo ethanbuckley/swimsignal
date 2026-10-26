@@ -1,95 +1,125 @@
 # Catchment replay (prototype, 26 October 2026)
 
-A spot page can show the last 48 hours upstream: each counted overflow's reported spills, when the model
-estimates each spill's water reached (or will reach) the spot, rain over the overflows, and the spot
-gauge's latest reading. It is behind an opt-in, `?replay=1` on a spot's address
-(`spot/<id>/?replay=1`). Without it the page is unchanged: no script tag, no request, no new tile.
+A spot page can show the last 48 hours upstream: each counted overflow's reported spills, when the feeds
+were actually polled, when the model estimates each spill's water reached (or will reach) the spot, model
+rain averaged over the overflows' cells, and the spot gauge's current reading. It is behind an opt-in,
+`?replay=1` on a spot's address (`spot/<id>/?replay=1`). Without it the page draws nothing new and asks
+for no replay file. The production model is unchanged: the replay reads what the build already has.
 
 Code: `src/dipcast/replay.py` (data step), `src/dipcast/site/replay.js` (view), a small hook in
-`src/dipcast/site/index.html` (`REPLAY`, `mountReplay`), two lines in `scripts/build_site.py`. Tests:
-`tests/test_replay.py`, `tests/site_replay.test.cjs`.
+`src/dipcast/site/index.html` (`REPLAY`, `mountReplay`), `replay_files` and two lines in
+`scripts/build_site.py`, two lines in `src/dipcast/site/sw.js`. Tests: `tests/test_replay.py`,
+`tests/site_replay.test.cjs`.
+
+## Decisions taken (Codex for Ethan, 26 October 2026)
+
+1. The window stays 48 hours. The gauge is its current reading and that reading's time, nothing more:
+   no rise, no series, so no extra EA requests.
+2. The rain is the mean over the 0.1° cells holding the counted overflows, and is called that: "Model
+   rain averaged over the cells of the overflows upstream". Never "catchment rainfall"; a test fails on
+   the word "catchment" in the tile.
+3. The per-overflow details fold under the timeline ("Details for each overflow (N)"). The timeline's
+   description and a sentence above the fold give the count of overflows with spills or gaps, how many are
+   still discharging, and how many reach the spot through a lake. The fold's summary is keyboard
+   focusable and the table inside it is the full text alternative.
+4. Lake routes: where an overflow's water passes through a lake before the spot (the model puts the lake's
+   metres in `lake_distance_m`, `transport.upstream_overflows`; the replay reads `lake_distance_km > 0`),
+   no arrival is drawn or timed and no travel time is given. The reported spills are still shown, with
+   "Arrival through the lake not estimated here."
+5. A spill whose end was not reported keeps an open-ended arrival on a river route.
+6. `replay.js` loads at the build's `?v=` stamp, read off `levels.js`'s versioned tag; it is in
+   `SHELL_SOURCES`, and the offline copy stores it (`sw.js` SHELL). Trade-off: the service worker downloads
+   it (about 25 kB) once for every visitor who installs the worker, though only `?replay=1` runs it. The
+   worker's trace prefetch skips `-replay.json` files.
+7. Checked at 320, 375 and 1440 px.
+
+## Second review (Codex, 26 October 2026)
+
+1. **Polling is said as it happened.** The page no longer says "every 30 minutes". It says "when SwimSignal
+   polled them; events between polls can be missed", and gives each company's answered polls in the window,
+   the first and last, and the three longest gaps. The poll log (`poll_log.parquet`, one row per company per
+   poll) is the source. On the saved state of 25 October, each company's feed answered **23 polls in 48
+   hours**, not 96, with gaps of 4, 4 and 16 hours. Every gap of 90 minutes or more is drawn as "not
+   polled" on that company's rows (the file keeps the 12 longest).
+2. **Quiet is not proof.** A counted overflow with no poll history at all, or whose history starts inside
+   the window, is counted apart ("whether they spilled in these hours is not known") and drawn as not polled
+   for those hours. Without a poll log the page says how complete the hours are is not known.
+3. **Ends rebuilt across gaps are spans.** An end taken from the feed's next "not discharging" is exact only
+   when no poll gap and no offline spell lies between the last poll that saw the spill and that stop. Otherwise
+   the spill has `end_after` (the last poll that saw it discharging) and `end_by` (the stop), is drawn as an
+   outline over that span, and is said as "It stopped between ... and ...". Its arrival gets the same span.
+   On real data this turned Pool (YWS00199)'s "18:04 to 21:51" into "stopped between 20:37 and 21:51".
+4. **The size is enforced.** Spills (8), no-reading spans (4) and poll gaps (12) are capped per overflow or
+   company, with the counts of those left out. If the file is still over 20 kB, overflows of least reach are
+   dropped one by one, counted in `more_with_events`, and `truncated` is set; the page says "left out to keep
+   this small". The worst case in the tests (20 overflows, 20 spills and 20 offline spells each, 20
+   companies with 16 gaps each) is cut to fit.
+
+## Benchmark, 105 spots on real saved history
+
+Read-only state: `spots.json` of 25 October 22:49 UTC (105 spots, 80 with counted overflows; the build
+passes every overflow upstream, this file has the top 10), `live_history.parquet` (91,313 rows as of then),
+`poll_log.parquet` (3,609 rows), and a local rain cache. No requests.
+
+| | Time, 105 spots | Peak (tracemalloc) | Max RSS |
+|---|---|---|---|
+| Before: the history grouped again for every spot | 183.7 s (under tracemalloc) | 79 MB | 306 MB |
+| Grouped once, a pandas group per site | 19.1 s (under tracemalloc) | 82 MB | 264 MB |
+| After: grouped once, only the counted sites, one `to_dict` | 6.5 s under tracemalloc; 1.5 s under cProfile | 3.3 MB | 142 MB |
+
+The output files are byte-identical before and after (checked on the largest). Sizes of the 102 files written
+(three spots have no forecast or no file name): smallest 0.4 kB, median 2.6 kB, 90th percentile 6.7 kB,
+largest 8.2 kB (River Lune, Crook o' Lune), 324 kB in all, none over the 20 kB budget.
+
+A failure is a warning in the build health, never a failed build: `build_site.replay_files` catches it,
+announces it and records `{"written": 0, "warning": ...}` (tested).
 
 ## What it shows
 
 | Part | Source | Label on the page |
 |---|---|---|
-| Spills at each counted overflow | `live_history.parquet` (the poll history) and this build's poll | "Reported spilling Sat 18:04 to Sat 21:51." Observed. |
+| Spills at each counted overflow | the poll history and this build's poll | "Reported spilling Sat 18:04 to Sat 21:51." |
+| An end not seen | the last poll that saw it and the feed's stop | "It stopped between Sat 20:37, the last poll that saw it discharging, and Sat 21:51" |
 | Monitor gaps | status -1 rows in the history; status -3 (feed not answering) in this build | "No reading (monitor offline) from ..." |
-| Arrival at the spot | spill start and end + the overflow's `travel_h` (`model.transport`), the shift the forecast uses | "Modelled to reach the spot around ... (estimate; passed / arriving now / not there yet)" |
-| Rain | the build's own rain cache, `data/cache/rain/forecast_<cell>.parquet`, the cells holding the counted overflows | "Open-Meteo's model record, not rain gauges"; hours after the cache's issue time drawn as forecast |
-| River level | `river_state` already on the spot (latest reading, six-hour rise where fetched) | "Earlier readings are not held, so no line is drawn for it." |
-| Overflows with nothing to show | counted overflows with no spill and no gap, by data state | "1 counted overflow has no current reading, so a spill there would not show here." |
-
-The drawing (SVG) repeats the table: a solid bar for a reported spill, a hatched, dashed-outline bar
-for the modelled arrival, a grey bar for no reading, a short grey strip for an hour of rain not held.
-Each mark has its words in the key, so colour is never the only cue. The table is the text
-alternative: one row an overflow, `th scope="row"`, a caption, in a focusable scrolling region; under
-480 px its rows stack. The tile is a fold like "Overflows that matter most", open on arrival because the
-reader asked for it.
+| Polls | the poll log | "Yorkshire Water's feed answered 23 polls, from ... Its longest gaps with no poll: ..." |
+| Arrival, river routes | spill start and end + `travel_h`, the shift the forecast uses | "Modelled to reach the spot around ... (estimate; ...)" |
+| Arrival, lake routes | none | "Arrival through the lake not estimated here." |
+| Rain | the build's rain cache | "Model rain averaged over the cells of the overflows upstream ..." |
+| River level | `river_state` already on the spot | "1.52 m at Sun 21:15, the current reading. Earlier readings are not shown." |
 
 ## What it never claims
 
-- No cause. The words are "reported upstream" and "modelled to reach the spot". The tile's first
-  paragraph says the arrival times "say nothing about what any spill did to the water here". A test
-  fails on "cause", "because", "due to", "resulted in" or "pollut".
-- No filled gaps. A spill whose end the feed never reported has no end: a start mark and "Its end was
-  not reported". Its arrival has no end either ("when it passed is not known"). An hour of rain
-  missing at any cell has no value. The gauge has no line, because only one reading (and a six-hour
-  rise) is held.
-- No silence read as "no spill". Counted overflows with no current reading are counted and said.
-- Arrival is never called observed. Every arrival sentence carries "(estimate; ...)".
+- No cause. A test fails on "caus", "because", "due to", "resulted in" or "pollut".
+- No continuous observation: no "every 30 minutes", and the gaps are drawn and named.
+- No filled gaps: an unreported end has no end; a rebuilt end across a gap is a span; a missing rain hour
+  has no value; the gauge has no line.
+- No silence read as "no spill": no current reading, no history, or late history are each counted and said.
+- No arrival called observed, and none through a lake.
 
-## How a spill is rebuilt from the history
+## Data and cost
 
-The history keeps one row per distinct (site, status, status start), each with the feed's latest
-event start and end. A spill is a latest-event pair, or a "discharging" status start. A start with no
-end is closed by the feed's next "not discharging" status start. Yorkshire Water needed this: its
-"latest event" is only the last part of a spill (YWS00199 on 24 October 2026: discharging from
-17:04:39, stopped 20:51:50, latest event 20:51:20 to 20:51:50). An event inside a longer one is
-dropped as part of it. A start still open at the end stays open: running if this build's poll says
-discharging, otherwise "end not reported".
+- No new requests at build time: zero Open-Meteo calls (the rain cache files are read directly; a test makes
+  any request raise) and zero EA calls.
+- One file a spot, `data/spot/<id>-replay.json`, at most 20 kB; nothing added to `spots.json`,
+  `spots-lite.json` or `data/spot/<id>.json`.
 
-Known limit, said on the tile: if two spills start and stop between two polls (30 minutes), only the
-second is recorded. South West Water's feed gives no status start; its spills come from the
-latest-event pairs alone (not checked against real South West Water rows in this prototype).
+## Preview for QA
 
-## Data, requests and cost
+A small static site of three real spots from the saved state, built with this branch's pages:
+`~/Documents/GitHub/swimsignal-private/replay-preview/`, served by the `replay-preview` entry
+(port 8793) in this worktree's `.claude/launch.json`. Paths:
 
-- No new requests at build time. The step reads the poll history (state), the rain cache files
-  directly (it never calls `rainfall.fetch_forecast`, so it cannot spend Open-Meteo calls; a test
-  makes any request raise), and the build's results. Zero Open-Meteo calls, zero EA calls.
-- One file a spot, `data/spot/<id>-replay.json`, written after `write_app_data` (which clears
-  `data/spot/`). Nothing is added to `spots.json`, `spots-lite.json` or `data/spot/<id>.json`; a test
-  checks the results the build writes from are unchanged.
-- Size: the three real spots below were 1.8 to 6.6 kB. A file is capped by design at 12 overflows and
-  their latest 8 spills each; that worst case is 19.6 kB in the test, under the 20 kB budget
-  (`REPLAY_MAX_BYTES`). Over it, the build log gets a warning. Only a reader who opts in downloads one.
-- The step is wrapped so that a failure is a line in the build log, never a failed build.
+- `/spot/bw-uke4200-08904/?replay=1` (Wharfe at Wilderness Carpark, river)
+- `/spot/osm-windermere-waterhead/?replay=1` (Windermere, Waterhead: both overflows through the lake)
+- `/spot/bw-ukg2100-36070/?replay=1` (Severn at Ironbridge, river)
+- the same without `?replay=1` shows the page as it is today.
 
-## What was checked, and on what
-
-Real (read only, no pipeline run): the published `spots.json` of 25 October 2026 22:49 UTC (89 spots),
-the poll history as of that time (state saved 26 October 11:06 UTC, rows that had begun by 22:49), and a
-rain cache from a local build issued 26 October 00:17 UTC (after the spots file, so every hour shown is
-the model's record of the past). Rendered: Wharfe at Wilderness Carpark (Ilkley), Windermere at
-Waterhead, Severn at Ironbridge. The Ilkley file is `tests/fixtures/replay_ilkley.json`.
-
-Synthetic (tests): a finished spill, a running spill, an end never reported with the monitor offline,
-an offline spell closed by the next reading, a feed not answering, the Yorkshire tail case, two spills
-that must stay two, water already passed and water still due, rain with a missing hour, a busy
-catchment at the size cap, no history at all.
-
-Not done: a real build with this branch (another worker runs builds), and a 320 px check.
+The forecast in it is from 25 October 22:49 UTC, so the page says it is out of date. Missing files in it
+(reviews, spot scores, traces) are left out on purpose.
 
 ## Open questions for Ethan
 
-1. Gauge history. A 48-hour level line needs one EA request a spot (`/id/measures/<m>/readings?_limit=192`):
-   about 90 requests a build (one a spot with a gauge; time not measured). Worth it, or keep the latest reading?
-2. Rain area. Now the plain mean over the 0.1° cells holding the counted overflows. Weight by reach instead,
-   or show the spot's own cell?
-3. Lake hold. Arrival uses `travel_h` alone, as "about N hours away" does. For a lake spot the forecast also
-   holds bacteria in the lake; the replay does not show that holding. Say so on lake spots, or leave lakes out?
-4. Where it lives if kept: a fold under "Overflows that matter most" (as now), or reached from each overflow row.
-5. The 48-hour window. The forecast counts a spill until 48 h after its water passed; a longer window (72 h)
-   would show more of what the level still counts, at a larger file.
-6. Whether a running spill's arrival should show an end at all. Now it is "from around ...", open.
+1. Where it lives if kept: a fold under "Overflows that matter most" (as now), or reached from each overflow row.
+2. Whether the offline copy should store `replay.js` while it is a prototype (decision 6's trade-off).
+3. The polling itself: 23 answered polls in 48 hours on 25 October against a 30-minute schedule. The replay
+   now shows it; the cause (scheduler, runner minutes, feed failures) is outside this PR.

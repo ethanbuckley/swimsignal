@@ -101,7 +101,7 @@ function replayCoverageSaid(r) {
   if (c.unavailable || (r.history && r.history.unavailable))
     return 'When the feeds were polled is not recorded here, so how complete these hours are is not known. Events between polls can be missed.';
   return Object.entries(c).map(([co, v]) => {
-    const who = `${replayEsc(replayCompany(co))}'s feed`;
+    const name = replayEsc(replayCompany(co)), who = `${name}${/s$/.test(name) ? "'" : "'s"} feed`;   // United Utilities' feed
     if (!v.polls) return `${who} did not answer a poll in these hours, so its spills then are not known.`;
     // The three longest in words, in time order; the drawing has every gap the file keeps.
     const gaps = [...(v.gaps || [])].sort((p, q) => (replayMs(q[1]) - replayMs(q[0])) - (replayMs(p[1]) - replayMs(p[0]))).slice(0, 3)

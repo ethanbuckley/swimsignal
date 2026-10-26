@@ -181,6 +181,8 @@ test('polling is said as it happened: answered polls, the longest gaps, never "e
   assert.match(said, /^Yorkshire Water's feed answered 81 polls, from Sat 02:00 to Sun 21:50\. Nothing was polled before then in these hours\. Its longest gap with no poll: Sat 11:00 to Sat 15:00 \(4 h\)\./);
   assert.match(said, /Dŵr Cymru Welsh Water's feed did not answer a poll in these hours, so its spills then are not known\./);
   assert.match(said, /Events between polls can be missed\.$/);
+  assert.match(R.replayCoverageSaid(replay({ coverage: { 'United Utilities': { polls: 2, from: '2026-10-25T10:00Z', to: '2026-10-25T21:00Z', gaps: [] } } })),
+    /^United Utilities' feed answered 2 polls/);
   assert.match(R.replayCoverageSaid(replay({ coverage: { unavailable: 'no poll log' } })), /^When the feeds were polled is not recorded here, so how complete these hours are is not known\./);
   const html = R.replayTile(replay({ coverage: cov }));
   assert.doesNotMatch(html, /every 30 minutes|continuous|complete record/i);
