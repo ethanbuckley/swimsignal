@@ -76,7 +76,9 @@ This PR uses #379's one shared helper, from `eatoday.js`. It adds no display of 
   - **Appeared:** "No official advice was shown when you looked today at 07:05; now: EA advice against bathing · since 19 Jun · checked 26 Oct."
   - **No longer shown:** "Official advice was shown when you looked … (…); it is no longer shown here." The evidence adds "That is not an all-clear: check the Environment Agency's own page before you swim."
   - **Another notice:** "Official advice changed: now: …".
-  - **Whenever there is a notice:** if it has just appeared, the evidence says only whose it is ("The official advice is the Environment Agency's, not part of this level."), since the line already gives it. Otherwise the evidence gives the notice as it stands, with its state ("not re-checked since 12 Oct" when stale, unverified, gone or changed).
+  - **Whenever a notice shows and the line says anything:** the line itself carries the notice, in `eaTodayBrief`'s words. This applies to a level, rating or spill change too. For example: "Was moderate risk when you looked …; now low risk. Official advice still shown: EA advice against bathing · since 19 Jun · checked 26 Oct. Follow it first." This means a lower sewage level never reads as an all-clear while advice shows (review finding S6, 27 Oct). The words "still" and "now" depend on what the note from then held. The evidence then adds only whose advice it is. A stale state keeps the helper's "not re-checked since …".
+  - **Level change while the notice went away:** the line adds "Official advice shown then (…) is no longer shown here", and the evidence says it is not an all-clear.
+  - **Tests:** they take the notice's words from the helper and never type them out, so #391's change to `eaTodayBrief`, which keeps the cause, does not break them.
   - A note from before this field, or a page without `eatoday.js`, compares nothing. No change is made up from a missing field.
 - **The level never moves** for official advice. The tests check that.
 

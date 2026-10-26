@@ -112,16 +112,22 @@ const ratingWords = r => r === 'unrated' ? 'not yet rated' : `rated ${r.replace(
 // card's own line says what set the level).
 function sinceLine(was, now) {
   if (!was || !now || !(Date.parse(now.forecast) > Date.parse(was.forecast))) return '';
-  const when = lookedWhen(was.at);
-  if (was.level && now.level && was.level !== now.level) return `Was ${levelWords(was.level)} when you looked ${when}; now ${levelWords(now.level)}.`;
-  if (was.rating && now.rating && was.rating !== now.rating) return `Was ${ratingWords(was.rating)} when you looked ${when}; now ${ratingWords(now.rating)}.`;
-  const o = officialChange(was, now);
-  if (o === 'shown') return `No official advice was shown when you looked ${when}; now: ${now.official.brief}.`;
-  if (o === 'gone') return `Official advice was shown when you looked ${when} (${was.official.brief}); it is no longer shown here.`;
-  const a = was.discharging, b = now.discharging;
-  if (a === null || b === null || (a > 0) === (b > 0)) return '';
-  return b > 0 ? `No overflow upstream was discharging when you looked ${when}; now ${b === 1 ? '1 is' : `${b} are`}.`
+  const when = lookedWhen(was.at), o = officialChange(was, now), a = was.discharging, b = now.discharging;
+  let line = '';
+  if (was.level && now.level && was.level !== now.level) line = `Was ${levelWords(was.level)} when you looked ${when}; now ${levelWords(now.level)}.`;
+  else if (was.rating && now.rating && was.rating !== now.rating) line = `Was ${ratingWords(was.rating)} when you looked ${when}; now ${ratingWords(now.rating)}.`;
+  else if (o === 'shown') return `No official advice was shown when you looked ${when}; now: ${now.official.brief}. Follow it first.`;
+  else if (o === 'gone') return `Official advice was shown when you looked ${when} (${was.official.brief}); it is no longer shown here.`;
+  else if (o === 'other') return `Official advice changed since you looked ${when}; now: ${now.official.brief}. Follow it first.`;
+  else if (a !== null && b !== null && (a > 0) !== (b > 0)) line = b > 0 ? `No overflow upstream was discharging when you looked ${when}; now ${b === 1 ? '1 is' : `${b} are`}.`
     : `${a === 1 ? '1 overflow upstream was' : `${a} overflows upstream were`} discharging when you looked ${when}; ${a === 1 ? 'it has' : 'all have'} stopped.`;
+  if (!line) return '';
+  // A level, a rating or a spill that changed while official advice shows: the notice in the same line, in the
+  // shared helper's words (eaTodayBrief, kept in the note), so a lower sewage level never reads as an
+  // all-clear. "Still" only where the note from then had it too.
+  if (now.official) return `${line} Official advice ${o === 'shown' ? 'now' : o === 'other' ? 'changed, now' : was.official ? 'still' : ''} shown: ${now.official.brief}. Follow it first.`.replace('advice  shown', 'advice shown');
+  if (o === 'gone') return `${line} Official advice shown then (${was.official.brief}) is no longer shown here.`;
+  return line;
 }
 
 // The evidence under a line (sinceSaid): a change is never said without it. Which two forecasts were
@@ -150,8 +156,8 @@ function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
   // since); and where one shown before is not shown now, that this is no all-clear. The level never moves for it.
   const oc = officialChange(was, now);
   // A notice that has just appeared is in the line already: the evidence adds only whose it is.
-  if (oc === 'shown') out.push(`The official advice is the ${now.official.publisher}'s, not part of this level.`);
-  else if (now.official) out.push(`${oc === 'other' ? 'Official advice changed: now' : 'Official advice'}: ${now.official.brief}. It is the publisher's, not part of this level.`);
+  // The line carries the notice whenever one shows (sinceLine): here only whose it is, said once.
+  if (now.official) out.push(`The official advice is the ${now.official.publisher}'s, not part of this level.`);
   else if (oc === 'gone') out.push(`That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
   if (extra.outing) out.push(extra.outing);
   const age = (nowMs - Date.parse(now.forecast)) / 60000;

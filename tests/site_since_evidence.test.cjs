@@ -126,7 +126,8 @@ test('on a Saved card from spots-lite (no contributors): the count, and a link t
   vm.runInContext('setToday("2026-10-26"); var spotPath = id => "/spot/" + id + "/";', ctx);
   const lite = spot('moderate', {discharging_upstream: 2});   // as spots-lite.json carries it: no contributors
   const h = vm.runInContext('sinceSaid', ctx)(lite, NEW);
-  assert.match(h, /2 overflows upstream reported discharging now, against 0 then\. <a href="\/spot\/wharfe\/" data-id="wharfe">Which overflows: the spot's page<\/a>/);
+  // (A stale-forecast sentence may sit between, by the clock the test runs at.)
+  assert.match(h, /2 overflows upstream reported discharging now, against 0 then\.[^<]* <a href="\/spot\/wharfe\/" data-id="wharfe">Which overflows: the spot's page<\/a>/);
   assert.doesNotMatch(h, / since Mon/);
   // Nothing discharging now: no link.
   assert.doesNotMatch(vm.runInContext('sinceSaid', ctx)(spot('moderate'), NEW), /Which overflows/);
