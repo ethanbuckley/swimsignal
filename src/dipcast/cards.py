@@ -231,6 +231,7 @@ class WeekendCard:
     rows: list[Row]
     plain: list[tuple[str, str, list[str]]] = field(default_factory=list)   # (headline, level, names)
     missing: list[str] = field(default_factory=list)                        # ids not in the forecast
+    plain_official: list[tuple[str, str]] = field(default_factory=list)     # (label, official_brief) in a plain group
 
     @property
     def ids(self) -> list[str]:
@@ -253,6 +254,8 @@ def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: d
                 card.rows.append(Row(sid, label, [s["level"]] * len(days), poor="rated poor" in s["headline"]))
             else:
                 plain.setdefault(s["headline"], (s["level"], []))[1].append(label)
+                if (advice or {}).get(sid):   # a plain group reads as clean: its advice gets a line, as a row's does
+                    card.plain_official.append((label, advice[sid]))
             continue
         got = [s["days"].get(iso) for iso in days]
         cells = [x[0] if x and x[0] in LEVELS else None for x in got]
@@ -333,6 +336,8 @@ def weekend_caption(card: WeekendCard, generated_at: str, root: str) -> str:
             lines[-1] += " " + official_words(r.official)
     for headline, _, who in card.plain:
         lines.append(f"{and_list(who)}: {headline[:1].lower() + headline[1:]}.")
+    for label, brief in card.plain_official:
+        lines.append(f"{label}: {official_words(brief)}")
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         lines += ["", poor_words(poor)]
@@ -517,6 +522,7 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     for r in card.rows:   # official advice under the table, in ink: the row's level is the sewage forecast alone
         if r.official:
             notes.append((None, INK, f"{r.label}: {official_words(r.official)}"))
+    notes += [(None, INK, f"{label}: {official_words(brief)}") for label, brief in card.plain_official]
     note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes)
     text_h = [len(wrap(draw, r.label, name_f, name_w)) * lh(name_f) for r in card.rows]
     room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes else 0) - sum(text_h)

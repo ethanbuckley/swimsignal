@@ -36,6 +36,13 @@ export async function readJson(request) {
   try { return JSON.parse(text); } catch { throw new Invalid('Body is not JSON'); }
 }
 
+// Reviewed official advice at a spot, as a message says it: alerts.json `official` (eatoday.js
+// eaTodayBrief, written by scripts/alerts.js) becomes "Official: EA advice against bathing · since
+// 19 Jun · checked 26 Oct. Follow it first." '' when the spot has none, and in an alerts.json from
+// before the field. Words only: it never decides who is told or when.
+export const officialWords = (spot) =>
+  (isObject(spot) && typeof spot.official === 'string' && spot.official ? `Official: ${spot.official}. Follow it first.` : '');
+
 export function cleanSpots(spots) {
   check(Array.isArray(spots), 'spots must be an array');
   check(spots.length <= MAX_SPOTS, `at most ${MAX_SPOTS} spots`);

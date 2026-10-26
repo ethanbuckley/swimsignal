@@ -6,6 +6,11 @@
 const fs = require('fs');
 const path = require('path');
 const L = require(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'levels.js'));
+// Reviewed official advice (spots.json `official`) in the site's compact words, eatoday.js eaTodayBrief:
+// "EA advice against bathing · since 19 Jun · checked 26 Oct". Written as `official` only where a spot
+// has some, so an alert, a dated notice or the weekly note never shows a bare level beside it. Text only:
+// the level and rank stay the forecast's, so who is told and when do not change.
+const { eaTodayBrief } = require(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'eatoday.js'));
 
 const [src, out, root] = process.argv.slice(2);
 if (!src || !out || !root || !root.endsWith('/')) {
@@ -47,7 +52,9 @@ const spots = {};
 for (const s of data.spots) {
   const level = L.level(s), b = best(s);
   const clears = L.clearWords(s);   // "The spills upstream should have passed and died off by Saturday 22:47."
+  const official = eaTodayBrief(s);
   spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: L.levelAction(s), ...(clears ? { clears } : {}),
+    ...(official ? { official } : {}),
     url: PAGE_ID.test(s.id) ? `${root}spot/${s.id}/` : `${root}?spot=${encodeURIComponent(s.id)}`, ...(b ? { best: b } : {}),
     ...(L.daily(s) ? { days: daysOf(s) } : {}) };
 }

@@ -5,7 +5,8 @@
 
 import { importEcdhPublic, sendPush, unb64url, vapidSigner } from './webpush.js';
 import {
-  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, readJson, reply, retryAfter,
+  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, officialWords, readJson, reply,
+  retryAfter,
 } from './shared.js';
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 import { runWeekly } from './weekly.js';
@@ -407,10 +408,11 @@ export function alertPayload(ids, spots, siteUrl) {
   if (ids.length === 1) {
     const [id] = ids;
     const spot = spots[id];
-    const body = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
-    return { title: spot.name ?? id, body, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
+    const said = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
+    const official = officialWords(spot);   // official advice first, as the page shows it above the level
+    return { title: spot.name ?? id, body: official ? `${official} ${said}` : said, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
   }
-  const names = ids.map((id) => spots[id].name ?? id).join(', ');
+  const names = ids.map((id) => `${spots[id].name ?? id}${officialWords(spots[id]) ? ' (official advice in force)' : ''}`).join(', ');
   return {
     title: `${ids.length} of your saved spots are at high or very high risk`,
     body: names.length > 200 ? names.slice(0, 199) + '…' : names,

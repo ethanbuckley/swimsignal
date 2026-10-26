@@ -328,3 +328,44 @@ def test_weekend_card_and_caption_carry_official_advice():
     assert f"Upper: low risk on Saturday, moderate risk on Sunday. Official: {BRIEF}. Follow it first" in caption
     for size in cards.SIZES:
         cards.draw_weekend(card, GEN, size)   # the note under the table fits
+
+
+def test_weekend_plain_group_carries_official_advice():
+    """A spot in a plain group ("No monitored overflow found upstream") with advice says so on its own
+    line, in the caption and under the table; the group line and the rows are as before."""
+    levels = cards.spot_levels(alerts_fixture())
+    before = cards.weekend_card(AREA, levels, [SAT, SUN])
+    card = cards.weekend_card(AREA, levels, [SAT, SUN], {"lake": BRIEF, "missing": BRIEF})
+    assert card.plain == before.plain and [r.cells for r in card.rows] == [r.cells for r in before.rows]
+    assert card.plain_official == [("Quiet Lake", BRIEF)] and before.plain_official == []
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert "Quiet Lake and Quiet Tarn: no monitored overflow found upstream." in caption
+    assert f"Quiet Lake: Official: {BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only." in caption
+    assert "Official" not in cards.weekend_caption(before, GEN, "https://swimsignal.co.uk/")
+    for size in cards.SIZES:
+        assert cards.draw_weekend(card, GEN, size).tobytes() != cards.draw_weekend(before, GEN, size).tobytes()
+
+
+def test_alerts_json_carries_official_advice_and_keeps_levels(tmp_path):
+    """scripts/alerts.js writes `official` (eaTodayBrief's words) only where a spot has advice; the level,
+    rank, headline and action, which decide who is told and when, are the same with or without it."""
+    import json
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    script = Path(__file__).resolve().parents[1] / "scripts/alerts.js"
+    spots = [{"id": "f", "name": "Frensham Great Pond", "kind": "lake", "official": [OFFICIAL]},
+             {"id": "o", "name": "Other Pond", "kind": "lake"}]
+
+    def run(ss):
+        (tmp_path / "spots.json").write_text(json.dumps({"generated_at": "2026-10-26T22:00:00+00:00", "spots": ss}))
+        subprocess.run([node, str(script), str(tmp_path / "spots.json"), str(tmp_path / "alerts.json"), SITE], check=True)
+        return json.loads((tmp_path / "alerts.json").read_text())["spots"]
+
+    with_advice, without = run(spots), run([{k: v for k, v in s.items() if k != "official"} for s in spots])
+    assert with_advice["f"]["official"] == BRIEF and "official" not in with_advice["o"]
+    assert "official" not in without["f"]
+    for sid in ("f", "o"):
+        assert {k: v for k, v in with_advice[sid].items() if k != "official"} == without[sid]
