@@ -279,4 +279,67 @@ Whatever the verdict:
 
 ## Results
 
-Not run.
+Not run yet. The harness is in 5b5efc8 (26 October 2026). It changed nothing above the line. The run waits for the
+shared heavy-run lock, held by the radar backfill (PR #362).
+
+## Addendum, 26 October 2026: a framework for near misses in later tests
+
+Written before this test's run, at Ethan's request, and before any score at 235 or 500 was seen. It changes nothing
+above the line. It does not apply to this test, and it does not reopen any past verdict. A past near miss can only be
+tested again under a new statement, on new data.
+
+**The problem.** Several tests have ended with a gain whose interval narrowly crosses zero. The rule "lower end above
+zero" then gives "fails", which reads the same as "made things worse". The labels below keep these cases apart. Every
+label is fixed before the data, and none of them adopts anything.
+
+### Labels
+
+Each statement names one primary comparison, an interval level, a benefit margin B and a harm margin H, both in the
+primary score's units. Then, from the interval (L, U) and the point estimate d of the gain:
+- **Better:** d ≥ B and L > 0.
+- **Promising, not shown:** d > 0, L ≤ 0 and L > −H, and no secondary check is labelled harm. Not adopted. It may go to
+  the forward step below.
+- **No useful difference:** −H < L and U < B.
+- **Possible harm:** L ≤ −H and d ≤ 0.
+- **Harm:** U < 0.
+- **Too uncertain:** L ≤ −H and U ≥ B. The data cannot tell.
+
+The first label that fits, in this order, is the result.
+
+### Margins, set before the data
+
+- **B, the benefit margin,** is the smallest gain that changes what a swimmer sees. It is worked out from predictions
+  alone, never from outcomes: for example, the change in the primary score when a stated share of forecasts move across
+  a band cut (`ECOLI_CUTS`, `SPILL_CUTS`). The statement shows the working.
+- **H, the harm margin,** is the largest loss accepted as noise. It is no larger than B.
+- Both are written down before any outcome of the test is read. Neither may be taken from an earlier test's result on
+  the same data.
+
+### The forward step for "promising, not shown"
+
+- The candidate is frozen (file hash), runs in shadow and is logged but not shown, for a window stated in advance.
+- Only samples or spill days after the shadow starts count. They are not pooled with the data that found the gain.
+- The forward test uses the same B and H. It needs "better" to support adoption.
+- A second "promising, not shown" is not stacked onto the first to make a pass.
+
+### What else must hold before Ethan is asked to adopt
+
+Each with its own margin, stated in advance:
+- **Coverage:** the share of spot-days or samples with a figure is not lower than the live model's by more than a
+  stated amount. A missing input has a tested fallback.
+- **Calibration:** the mean forecast matches the observed rate within a stated amount, and the reliability by band is
+  no worse than the live model's.
+- **False alarms and misses** at the site's warning lines (0.25 for E. coli, 0.40 for spills): the miss rate and the
+  false-alarm rate are each no worse than the live model's by more than a stated amount. Both are reported.
+- **Groups:** no group listed in advance (company, river or lake, lead) is labelled harm.
+- **Resources:** Open-Meteo calls within the daily ledger with headroom, build time, data licence, and upkeep.
+
+### Sample size, set in advance
+
+- Power is computed before the forward window starts, at a stated level (80% or 90%) for a gain of B.
+- The spread of the per-cluster gain comes from an earlier, finished test on other data, or from a simulation. Never
+  from the data being judged.
+- Clustering is allowed for: clusters (sites, weeks), not rows, are the unit. Number of clusters ≈
+  ((z for the interval + z for the power) × spread ÷ B)².
+- A minimum number of events is stated, as in this test's gate.
+- If the window cannot reach that power, the statement says so in advance, and the result is description only.
