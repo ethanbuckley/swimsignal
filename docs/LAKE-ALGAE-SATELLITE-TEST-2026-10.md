@@ -592,8 +592,15 @@ A record of what was done and seen while the test ran. It changes nothing above 
   english lakes"). The dataset's public WMTS needs no account. Tiles of the TMEAN (turbidity) layer, zoom 14, one per
   site per dekad of May to September 2025, plus five control lakes; only the alpha channel was kept (data or no data
   within 300 m and in the whole tile), never a colour or value. Its own caps: 320 requests and 40 MB in all, one at a
-  time, stop on HTTP 429. It stopped twice on HTTP 429 and resumed later at a slower pace. Results are added below when
-  it ends.
+  time, stop on HTTP 429. It stopped twice on HTTP 429 (requests 173 and 271) and resumed later at 3 s, then 6 s, a request. Ended
+  20:35 UTC: 297 requests, 0.29 MB.
+  **Result: CLMS has no data at any of the 18 English sites in any of the 15 dekads of May to September 2025** (270
+  site-dekads), not within 300 m and not anywhere in the 1.4 km tile around each point. The controls had data: Lake
+  Geneva, Lake Balaton and Vänern in 5 of 5 dekads, Loch Lomond in 4 and Lough Neagh in 3 (cloud, inferred). So the
+  product reaches Scotland and Northern Ireland but not these English lakes, and an account would not change that.
+  Counts: `docs/LAKE-ALGAE-SATELLITE-TEST-2026-10-clms-tiles.json`; the script and ledger are kept privately.
+  **Decision (Ethan, 26 October, "Adopt all the recommendations as my decisions"): no Copernicus Data Space
+  account.**
 - **26 October, 20:2x UTC (last request 20:29): a walkthrough figure for Ethan** at Rutland Water, Whitwell Creek: true colour, SCL, NDCI
   and the median NDCI (+0.002) of one scene on **30 April 2026**, outside the May to September window. The water
   mask and core pixels (75) came from the 424 in-window SCL windows stage 1 had saved; SCL holds no chlorophyll. Usable
