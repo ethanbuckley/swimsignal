@@ -279,8 +279,173 @@ Whatever the verdict:
 
 ## Results
 
-Not run yet. The harness is in 5b5efc8 (26 October 2026). It changed nothing above the line. The run waits for the
-shared heavy-run lock, held by the radar backfill (PR #362).
+Added 26 October 2026, after the run. Everything above the line is as committed in ac53332 (25 October 2026) and
+pushed before the run. The harness came in 5b5efc8, with one fix in 711e850 (below). Neither changed anything above
+the line. The near-miss addendum after this section was committed in 629be10, before the run.
+
+**Verdict: both lines fail. Nothing is adopted. Lakes keep no E. coli estimate.** Each line meets the gate and six of
+the seven conditions. Each fails condition 3, ranking:
+- 235: lake LOSO AUC 0.632, against 0.65 needed. Its interval's lower end, 0.534, is above 0.5.
+- 500: lake LOSO AUC 0.535, interval 0.442 to 0.874.
+
+This PR is a record: this file, the harness, `-score.json`, `-face.json` and the two fitted model files.
+
+### How it was run
+
+- From a `git archive` of 711e850, offline, with `scripts/lake_ecoli_line_eval/run.sh`. 26 October 2026, 07:34:46 to
+  07:40:50 UTC, under the shared heavy-run lock, after the radar backfill (PR #362) released it. `memory_pressure`
+  read 52% free. Nothing else ran.
+- 0 network attempts in each of the four steps. Times: `validate_ecoli` 145 s, `replay_ecoli_leads` 68 s, face
+  check 92 s, scoring 36 s. Peak memory 3.9 GB (`replay_ecoli_leads`). No Open-Meteo calls.
+- Data: the die-off test's frozen folder, as the soil test used it. Its `processed` and `raw` files (river network
+  excepted) hash to `dbded7ac`, the SHA-256 of their sorted `shasum -a 256` listing. The rebuilt rows file hashes to
+  `63623259…`, the exposure file to `44af2a79…`.
+- Main's defaults: velocity 0.2 m/s, T90 72 h, dilution power 0.5, lake path `residence_spill`.
+
+**A first try stopped, on a harness fault.** 07:28:47 to 07:34:08 UTC, from 5b5efc8. The face check ran and passed,
+with 0 network attempts in every step. Then `run.sh` stopped: its check wanted `network attempts: 0` alone on a line.
+The offline wrapper printed it straight after unflushed table output, on the same line. 711e850 reads the count
+wherever it lands. Nothing at 235 or 500 was counted or scored in that try. The second run repeated every step.
+
+**Seen before the run, besides "Seen before writing":** the first try's face-check output, which holds only the
+900 figures.
+
+### Face check. Holds.
+
+LOYO, LOSO and forward predictions at 900 equal `train_ecoli.main()`'s, row by row: largest difference 0.0, the same
+rows missing (505 forward rows, the 2024 training year). LOYO Brier 0.092145, LOSO 0.091188, the same as the
+`ecoli_model_eval.json` written in that root.
+
+### The rows and what is missing
+
+- 1,502 rows at 31 sites, 2024 to 2026: the published counts. 595 are lake samples, at 11 lakes, not the 12 in the
+  older file. 16 lake samples are over 900.
+- Dropped before scoring, by `train_ecoli.py`'s own filters: 182 samples with no archived forecast rain at every lead
+  (all of 2023), 142 of them at lakes; 0 for missing exposure.
+- No lake row lacks a LOSO or LOYO prediction. Forward scores 2025–26 only: 380 lake rows.
+
+### The gate. Both lines are judged.
+
+| | 235 | 500 | Needed |
+|---|---|---|---|
+| Lake samples over the line | 86 | 30 | 30 |
+| Lakes with one or more | 11 | 6 | 5 |
+| 2024 / 2025 / 2026 | 22 / 32 / 32 | 9 / 12 / 9 | 5 each |
+| Lake rate (all rows) | 0.1445 | 0.0504 | |
+
+Lake samples a year: 215, 212, 168. 500 clears the gate with exactly 30.
+
+### Lake scores
+
+Brier score, AUC in brackets, skill against R1 after the slash. R1 is the lake base rate, R2 the 10 mm rain rule.
+
+| | Model | R1 | R2 |
+|---|---|---|---|
+| **235, LOSO** | 0.11933 (0.632) / 0.075 | 0.12901 (0.194) | 0.12349 (0.487) / 0.043 |
+| 235, LOYO | 0.11781 (0.665) / 0.059 | 0.12516 (0.422) | 0.11926 (0.598) / 0.047 |
+| 235, forward | 0.13434 (0.688) / 0.070 | 0.14442 | 0.13759 (0.636) / 0.047 |
+| **500, LOSO** | 0.04807 (0.535) / 0.028 | 0.04945 (0.134) | 0.04933 (0.232) / 0.002 |
+| 500, LOYO | 0.04651 (0.658) / 0.030 | 0.04794 (0.465) | 0.04779 (0.565) / 0.003 |
+| 500, forward | 0.05096 (0.660) / 0.027 | 0.05239 | 0.05222 (0.599) / 0.003 |
+| 900, LOSO | 0.02692 (0.244) / 0.002 | 0.02698 (0.080) | 0.02701 (0.140) / −0.001 |
+| 900, LOYO | 0.02625 (0.537) / 0.005 | 0.02638 (0.375) | 0.02651 (0.399) / −0.005 |
+| 900, forward | 0.03331 (0.594) / 0.004 | 0.03345 | 0.03376 (0.411) / −0.009 |
+
+R1's AUC in LOSO and LOYO is below 0.5 by construction: a lake left out gets the other lakes' rate, which is lower
+where its own rate is high. Forward R1 is one constant (AUC 0.5). River figures are in `-score.json`, as description.
+
+LOSO Brier gain, lakes, site-cluster bootstrap (11 lakes, 2,000 draws, seed 1; the replayed draws equal
+`cluster_bootstrap`'s 95% output exactly):
+
+| | Gain | 97.5% interval | 95% interval |
+|---|---|---|---|
+| 235, over R1 | +0.00968 | +0.00245 to +0.01863 | +0.00311 to +0.01731 |
+| 235, over R2 | +0.00416 | −0.00132 to +0.00923 | −0.00072 to +0.00866 |
+| 500, over R1 | +0.00137 | +0.00007 to +0.00308 | +0.00019 to +0.00287 |
+| 500, over R2 | +0.00125 | −0.00017 to +0.00288 | +0.00001 to +0.00272 |
+
+Model lake AUC, LOSO, 97.5% interval in the same draws: 235: 0.534 to 0.769. 500: 0.442 to 0.874. No draw lacked an
+event.
+
+LOYO gain over R1 on lakes, by held-out year:
+
+| | 2024 | 2025 | 2026 | Pooled |
+|---|---|---|---|---|
+| 235 | +0.00405 | +0.00506 | +0.01447 | +0.00735 |
+| 500 | +0.00159 | +0.00056 | +0.00230 | +0.00143 |
+
+Placebo, 200 within-lake shuffles, LOSO gain over R1:
+
+| | Real | Lowest | Median | 95th percentile | Highest | At or above real |
+|---|---|---|---|---|---|---|
+| 235 | 0.009678 | −0.000699 | 0.004150 | 0.007013 | 0.009678 | 1 of 200 |
+| 500 | 0.001372 | −0.000683 | 0.000629 | 0.001357 | 0.001761 | 10 of 200 |
+
+At 235 the highest placebo is 0.0096779, just above the real 0.0096777. They are not the same value.
+
+### The conditions
+
+| | 235 | 500 |
+|---|---|---|
+| 1. LOSO skill ≥ 0.02, gain interval above 0 | 0.075, +0.00245. **Holds** | 0.028, +0.00007. **Holds** |
+| 2. LOSO no worse than R2 | +0.00416. **Holds** | +0.00125. **Holds** |
+| 3. LOSO AUC ≥ 0.65, interval above 0.5 | 0.632, 0.534. **Fails** | 0.535, 0.442. **Fails** |
+| 4. LOYO gain > 0, and in 2 of 3 years | +0.00735, 3 of 3. **Holds** | +0.00143, 3 of 3. **Holds** |
+| 5. Forward gain > 0 | +0.01008. **Holds** | +0.00143. **Holds** |
+| 6. Placebo above its 95th percentile | 0.009678 > 0.007013. **Holds** | 0.001372 > 0.001357. **Holds**, by 0.000015 |
+| 7. Face check | **Holds** | **Holds** |
+
+### LOSO by lake
+
+At 235, Brier for model / R1 / R2:
+
+| Lake | Samples | Over 235 | Model | R1 | R2 |
+|---|---|---|---|---|---|
+| Derwent Water at Crow Park | 58 | 32 | 0.4168 | 0.4509 | 0.4317 |
+| Coniston Water, Boating Centre | 57 | 15 | 0.1837 | 0.2111 | 0.1954 |
+| Coniston Water, Brown Howe | 57 | 12 | 0.1538 | 0.1715 | 0.1470 |
+| Coniston Water, Monk Coniston | 57 | 8 | 0.1232 | 0.1207 | 0.1125 |
+| Windermere, Fellfoot | 59 | 8 | 0.1169 | 0.1173 | 0.1243 |
+| Windermere, Lakeside YMCA | 57 | 3 | 0.0601 | 0.0602 | 0.0736 |
+| Rutland Water Whitwell Creek | 52 | 3 | 0.0584 | 0.0634 | 0.0624 |
+| Rutland Water Sykes Lane | 48 | 2 | 0.0437 | 0.0525 | 0.0419 |
+| Windermere, Millerground Landing | 59 | 1 | 0.0359 | 0.0367 | 0.0392 |
+| Windermere, Rayrigg Meadow | 57 | 1 | 0.0318 | 0.0370 | 0.0387 |
+| Frensham Great Pond | 34 | 1 | 0.0346 | 0.0435 | 0.0354 |
+
+At 500, Derwent Water holds 17 of the 30 samples over the line. The table for 500 is in `-score.json`.
+
+Coefficients per SD, all-rows fit: 235: `logit_risk` +0.996, `lrain48` +0.217, `lake_x_lrain48` −0.362, `lake`
+−0.726. 500: +1.033, +0.473, −0.811, −0.341. The rest are in `-score.json`.
+
+### What this means
+
+Checked:
+- At both lines, the model's lake figures beat the lake base rate on Brier score in every evaluation. At 235 the gain
+  is larger than all but one of 200 placebos.
+- Neither line ranks lake days well enough by the stated bar. 235 misses on the point AUC (0.632 against 0.65). 500
+  misses on both parts.
+- Derwent Water holds 32 of the 86 lake samples over 235 and 17 of the 30 over 500. It gives the largest single Brier
+  gain at 235.
+
+Inferred, not tested:
+- Much of the Brier gain may come from telling lakes apart (Derwent Water's rate against Windermere's), not from
+  telling days apart. The placebo keeps each lake's rate, and at 235 the real gain still beats it. So some of the
+  signal is in the days. How much was not split out.
+- With 1 to 3 samples over 235 at most Windermere sites, the test cannot say whether the model ranks days there.
+  Waterhead's own record would bear on that, prospectively.
+
+### What follows
+
+As stated above the line: nothing changes on the site. Lakes keep no E. coli estimate. Rivers stay at 900. The live
+model, `ecoli_model.json`, is untouched.
+
+The prospective 2027 part was stated to run whatever this verdict, if Ethan approves a shadow log. The two fitted
+files are kept for that. They are not used by anything:
+- `LAKE-ECOLI-LINE-TEST-2026-10-model-235.json`: SHA-256 `46d675e6459d4da5d432591448382ee5b82a6633379056a5d1254faeb4fc0c45`;
+- `LAKE-ECOLI-LINE-TEST-2026-10-model-500.json`: SHA-256 `4398e1d3f52267d4d3394826eb2a8a1fa53af9dcbe7ba360313a54e105986170`.
+
+Whether to run that shadow, and the section 17 amendment it needs, are Ethan's decisions.
 
 ## Addendum, 26 October 2026: a framework for near misses in later tests
 
