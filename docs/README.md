@@ -83,6 +83,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   before the run. **The chances run too high overall** (observed over expected 0.74 same day, 0.80 in advance),
   and the higher chances run highest (slope 0.74), but not at every company: Thames, Wessex and Southern too high;
   Anglian and Yorkshire too extreme, not too high. Nothing is refitted. Tables: `.json`, `-persistence.json`.
+- [CALIBRATION-TEST-PROPOSAL-2026-11.md](CALIBRATION-TEST-PROPOSAL-2026-11.md): a recalibration of the live spill
+  forecast (intercept and slope per lead, pooled or with a company term), fitted to 6 December 2026 and judged on
+  14 December to 7 March 2027 against production, with a non-inferiority route, company guardrails and a staged
+  switch-on. **Proposal, not run:** a draft for Ethan's review, not yet approved.
 
 ### Transport and the E. coli estimate
 
