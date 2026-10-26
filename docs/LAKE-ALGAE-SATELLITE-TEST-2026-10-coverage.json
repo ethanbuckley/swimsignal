@@ -1,0 +1,2285 @@
+{
+ "written": "2026-10-26, by scripts/lake_algae_sat_eval/coverage.py; counts only, no value of any band or product",
+ "clms_lwq_100m_v2_catalogue": {
+  "source": "CDSE OData catalogue, dataset lwq-nrt_global_100m_10daily_v2 (search only, no download)",
+  "count_reported": 155,
+  "count_listed": 155,
+  "requests": {
+   "requests": 1,
+   "bytes": 174579,
+   "requests_all_runs": 8,
+   "bytes_all_runs": 354996
+  },
+  "first_dekad": "2024-09-01",
+  "last_dekad": "2026-10-11",
+  "footprints": [
+   "geography'SRID=4326;POLYGON ((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'"
+  ],
+  "by_format": {
+   "nc": 78,
+   "cog": 77
+  },
+  "season_dekads": {
+   "2024": {
+    "cog": 3,
+    "nc": 3
+   },
+   "2025": {
+    "cog": 15,
+    "nc": 15
+   },
+   "2026": {
+    "cog": 15,
+    "nc": 15
+   }
+  },
+  "bytes_per_file_gb": {
+   "cog": [
+    7.4,
+    8.96
+   ],
+   "nc": [
+    0.38,
+    1.87
+   ]
+  },
+  "catalogue_lag_days": {
+   "min": 2.3,
+   "median": 372.6,
+   "max": 758.4
+  },
+  "catalogue_lag_days_by_year": {
+   "2024": 701.7,
+   "2025": 463.4,
+   "2026": 38.7
+  },
+  "site_coverage": "not measurable here: every product is one global file (footprint the whole globe), and reading any pixel needs a CDSE account"
+ },
+ "earth_search_c1_l2a": {
+  "note": "first run stopped at the 100 MB per-run cap after 181 requests (fields that ask for raster:bands return whole items); a second run with lighter fields did the 29 site-seasons left, without the scale and offset count (null)",
+  "first_run_partial": "byte cap per run (104857600)",
+  "sites": {
+   "Rutland Water Whitwell Creek": {
+    "2020": {
+     "items": 60,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UXD": 60
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30769.0,
+     "items_with_scale_and_offset": 60,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21926.0,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4270.7,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 11,
+     "dates_tile_cloud_under_50": 11,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 91,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UXD": 91
+     },
+     "items_tile_cloud_under_50": 26,
+     "dates_tile_cloud_under_50": 23,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 4.9,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXD": 90
+     },
+     "items_tile_cloud_under_50": 35,
+     "dates_tile_cloud_under_50": 31,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Rutland Water Sykes Lane": {
+    "2020": {
+     "items": 60,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UXD": 60
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30769.0,
+     "items_with_scale_and_offset": 60,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21926.0,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4270.7,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 11,
+     "dates_tile_cloud_under_50": 11,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 91,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UXD": 91
+     },
+     "items_tile_cloud_under_50": 26,
+     "dates_tile_cloud_under_50": 23,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 4.9,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXD": 90
+     },
+     "items_tile_cloud_under_50": 35,
+     "dates_tile_cloud_under_50": 31,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Colwick Country Park (West Lake)": {
+    "2020": {
+     "items": 60,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UXD": 60
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30769.0,
+     "items_with_scale_and_offset": 60,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21926.0,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4270.7,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXD": 61
+     },
+     "items_tile_cloud_under_50": 11,
+     "dates_tile_cloud_under_50": 11,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 91,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UXD": 91
+     },
+     "items_tile_cloud_under_50": 26,
+     "dates_tile_cloud_under_50": 23,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 4.9,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXD": 90
+     },
+     "items_tile_cloud_under_50": 35,
+     "dates_tile_cloud_under_50": 31,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Cotswold Country Park and Beach": {
+    "2020": {
+     "items": 61,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UWC": 61
+     },
+     "items_tile_cloud_under_50": 18,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30795.1,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UWC": 61
+     },
+     "items_tile_cloud_under_50": 14,
+     "dates_tile_cloud_under_50": 14,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21883.0,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UWC": 61
+     },
+     "items_tile_cloud_under_50": 14,
+     "dates_tile_cloud_under_50": 14,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4264.1,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UWC": 61
+     },
+     "items_tile_cloud_under_50": 11,
+     "dates_tile_cloud_under_50": 11,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.7,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 91,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UWC": 91
+     },
+     "items_tile_cloud_under_50": 23,
+     "dates_tile_cloud_under_50": 20,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UWC": 90
+     },
+     "items_tile_cloud_under_50": 31,
+     "dates_tile_cloud_under_50": 27,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Hampstead Heath (Ladies Pond)": {
+    "2020": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 19,
+     "dates_tile_cloud_under_50": 19,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 30766.4,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21917.7,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4245.1,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.09"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXC": 61
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.8,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 93,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 93
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.3,
+     "items_with_scale_and_offset": 93,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 90
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Hampstead Heath (Mens Pond)": {
+    "2020": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 19,
+     "dates_tile_cloud_under_50": 19,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 30766.4,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21917.7,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4245.1,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.09"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXC": 61
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.8,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 93,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 93
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.3,
+     "items_with_scale_and_offset": 93,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 90
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Hampstead Heath (Mixed Pond)": {
+    "2020": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 19,
+     "dates_tile_cloud_under_50": 19,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 30766.4,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21917.7,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4245.1,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.09"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXC": 61
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.8,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 93,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 93
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.3,
+     "items_with_scale_and_offset": 93,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 90
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "The Serpentine - Hyde Park": {
+    "2020": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 19,
+     "dates_tile_cloud_under_50": 19,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 30766.4,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21917.7,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UXC": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4245.1,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.09"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UXC": 61
+     },
+     "items_tile_cloud_under_50": 15,
+     "dates_tile_cloud_under_50": 15,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.8,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 91,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 91
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.3,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 91,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UXC": 91
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Frensham Great Pond": {
+    "2020": {
+     "items": 31,
+     "dates": 31,
+     "tiles": {
+      "MGRS-30UXB": 31
+     },
+     "items_tile_cloud_under_50": 14,
+     "dates_tile_cloud_under_50": 14,
+     "gap_days_median": 5.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30788.8,
+     "items_with_scale_and_offset": 31,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 31,
+     "dates": 31,
+     "tiles": {
+      "MGRS-30UXB": 31
+     },
+     "items_tile_cloud_under_50": 8,
+     "dates_tile_cloud_under_50": 8,
+     "gap_days_median": 5.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 21884.4,
+     "items_with_scale_and_offset": 31,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 32,
+     "dates": 31,
+     "tiles": {
+      "MGRS-30UXB": 32
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 5.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 4201.1,
+     "items_with_scale_and_offset": 32,
+     "baselines": [
+      "05.09"
+     ]
+    },
+    "2024": {
+     "items": 30,
+     "dates": 30,
+     "tiles": {
+      "MGRS-30UXB": 30
+     },
+     "items_tile_cloud_under_50": 11,
+     "dates_tile_cloud_under_50": 11,
+     "gap_days_median": 5.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 5.7,
+     "items_with_scale_and_offset": 30,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 45,
+     "dates": 45,
+     "tiles": {
+      "MGRS-30UXB": 45
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 3.0,
+     "gap_days_max": 7,
+     "created_minus_sensed_hours_median": 5.3,
+     "items_with_scale_and_offset": 45,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 45,
+     "dates": 45,
+     "tiles": {
+      "MGRS-30UXB": 45
+     },
+     "items_tile_cloud_under_50": 18,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 5.2,
+     "items_with_scale_and_offset": 45,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Henleaze Lake": {
+    "2020": {
+     "items": 60,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UWC": 60
+     },
+     "items_tile_cloud_under_50": 18,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30830.2,
+     "items_with_scale_and_offset": 60,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UWC": 61
+     },
+     "items_tile_cloud_under_50": 14,
+     "dates_tile_cloud_under_50": 14,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21883.0,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UWC": 62
+     },
+     "items_tile_cloud_under_50": 14,
+     "dates_tile_cloud_under_50": 14,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4229.6,
+     "items_with_scale_and_offset": 62,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UWC": 61
+     },
+     "items_tile_cloud_under_50": 11,
+     "dates_tile_cloud_under_50": 11,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.7,
+     "items_with_scale_and_offset": 61,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 91,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UWC": 91
+     },
+     "items_tile_cloud_under_50": 23,
+     "dates_tile_cloud_under_50": 20,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": 91,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 90,
+     "dates": 75,
+     "tiles": {
+      "MGRS-30UWC": 90
+     },
+     "items_tile_cloud_under_50": 31,
+     "dates_tile_cloud_under_50": 27,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.1,
+     "items_with_scale_and_offset": 90,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Windermere, Lakeside YMCA": {
+    "2020": {
+     "items": 120,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 60,
+      "MGRS-30UWF": 60
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 20,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30790.4,
+     "items_with_scale_and_offset": 120,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 122,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 24,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21880.1,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 122,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4243.8,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 124,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62,
+      "MGRS-30UWF": 62
+     },
+     "items_tile_cloud_under_50": 28,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.5,
+     "items_with_scale_and_offset": 124,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 184,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 92,
+      "MGRS-30UWF": 92
+     },
+     "items_tile_cloud_under_50": 51,
+     "dates_tile_cloud_under_50": 27,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.7,
+     "items_with_scale_and_offset": 184,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 190,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 95,
+      "MGRS-30UWF": 95
+     },
+     "items_tile_cloud_under_50": 50,
+     "dates_tile_cloud_under_50": 24,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": 190,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Windermere, Millerground Landing": {
+    "2020": {
+     "items": 122,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 32,
+     "dates_tile_cloud_under_50": 20,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30770.5,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 122,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 24,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21880.1,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 124,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 62,
+      "MGRS-30UWF": 62
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4220.1,
+     "items_with_scale_and_offset": 124,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 124,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62,
+      "MGRS-30UWF": 62
+     },
+     "items_tile_cloud_under_50": 28,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.5,
+     "items_with_scale_and_offset": 124,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 186,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 93,
+      "MGRS-30UWF": 93
+     },
+     "items_tile_cloud_under_50": 51,
+     "dates_tile_cloud_under_50": 27,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.8,
+     "items_with_scale_and_offset": 186,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 186,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 93,
+      "MGRS-30UWF": 93
+     },
+     "items_tile_cloud_under_50": 50,
+     "dates_tile_cloud_under_50": 24,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": 186,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Windermere, Rayrigg Meadow": {
+    "2020": {
+     "items": 122,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 32,
+     "dates_tile_cloud_under_50": 20,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30770.5,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 122,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 24,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21880.1,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 124,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 62,
+      "MGRS-30UWF": 62
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4220.1,
+     "items_with_scale_and_offset": 124,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 124,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62,
+      "MGRS-30UWF": 62
+     },
+     "items_tile_cloud_under_50": 28,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.5,
+     "items_with_scale_and_offset": 124,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 186,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 93,
+      "MGRS-30UWF": 93
+     },
+     "items_tile_cloud_under_50": 51,
+     "dates_tile_cloud_under_50": 27,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.8,
+     "items_with_scale_and_offset": 186,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 186,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 93,
+      "MGRS-30UWF": 93
+     },
+     "items_tile_cloud_under_50": 50,
+     "dates_tile_cloud_under_50": 24,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": 186,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Windermere, Fellfoot": {
+    "2020": {
+     "items": 120,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 60,
+      "MGRS-30UWF": 60
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 20,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30790.4,
+     "items_with_scale_and_offset": 120,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 122,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 24,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21880.1,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": 0,
+     "baselines": []
+    },
+    "2023": {
+     "items": 122,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61,
+      "MGRS-30UWF": 61
+     },
+     "items_tile_cloud_under_50": 30,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4243.8,
+     "items_with_scale_and_offset": 122,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 124,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62,
+      "MGRS-30UWF": 62
+     },
+     "items_tile_cloud_under_50": 28,
+     "dates_tile_cloud_under_50": 18,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.5,
+     "items_with_scale_and_offset": 124,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 184,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 92,
+      "MGRS-30UWF": 92
+     },
+     "items_tile_cloud_under_50": 51,
+     "dates_tile_cloud_under_50": 27,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.7,
+     "items_with_scale_and_offset": 184,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 190,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 95,
+      "MGRS-30UWF": 95
+     },
+     "items_tile_cloud_under_50": 50,
+     "dates_tile_cloud_under_50": 24,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Coniston Water, Brown Howe": {
+    "2020": {
+     "items": 60,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 60
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30790.4,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21858.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": null,
+     "baselines": []
+    },
+    "2023": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 22,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4243.2,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 92,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 92
+     },
+     "items_tile_cloud_under_50": 32,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.7,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 95,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 95
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Coniston Water, Boating Centre": {
+    "2020": {
+     "items": 61,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 17,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30788.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21858.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": null,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 22,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4220.1,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 93,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 93
+     },
+     "items_tile_cloud_under_50": 32,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.7,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 95,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 95
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Coniston Water, Monk Coniston": {
+    "2020": {
+     "items": 61,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 17,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30788.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21858.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": null,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 22,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4220.1,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 93,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 93
+     },
+     "items_tile_cloud_under_50": 32,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.7,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 95,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 95
+     },
+     "items_tile_cloud_under_50": 27,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   },
+   "Derwent Water at Crow Park": {
+    "2020": {
+     "items": 62,
+     "dates": 60,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 18,
+     "dates_tile_cloud_under_50": 17,
+     "gap_days_median": 3.0,
+     "gap_days_max": 5,
+     "created_minus_sensed_hours_median": 30850.1,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00"
+     ]
+    },
+    "2021": {
+     "items": 61,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 61
+     },
+     "items_tile_cloud_under_50": 13,
+     "dates_tile_cloud_under_50": 13,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 21858.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.00",
+      "05.11"
+     ]
+    },
+    "2022": {
+     "items": 0,
+     "dates": 0,
+     "tiles": {},
+     "items_tile_cloud_under_50": 0,
+     "dates_tile_cloud_under_50": 0,
+     "gap_days_median": null,
+     "gap_days_max": null,
+     "created_minus_sensed_hours_median": null,
+     "items_with_scale_and_offset": null,
+     "baselines": []
+    },
+    "2023": {
+     "items": 62,
+     "dates": 61,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 23,
+     "dates_tile_cloud_under_50": 22,
+     "gap_days_median": 2.5,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4220.1,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.09",
+      "05.11"
+     ]
+    },
+    "2024": {
+     "items": 62,
+     "dates": 62,
+     "tiles": {
+      "MGRS-30UVF": 62
+     },
+     "items_tile_cloud_under_50": 16,
+     "dates_tile_cloud_under_50": 16,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 5.6,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.10",
+      "05.11"
+     ]
+    },
+    "2025": {
+     "items": 92,
+     "dates": 77,
+     "tiles": {
+      "MGRS-30UVF": 92
+     },
+     "items_tile_cloud_under_50": 32,
+     "dates_tile_cloud_under_50": 26,
+     "gap_days_median": 2.0,
+     "gap_days_max": 3,
+     "created_minus_sensed_hours_median": 4.8,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.11"
+     ]
+    },
+    "2026": {
+     "items": 93,
+     "dates": 76,
+     "tiles": {
+      "MGRS-30UVF": 93
+     },
+     "items_tile_cloud_under_50": 26,
+     "dates_tile_cloud_under_50": 21,
+     "gap_days_median": 2.0,
+     "gap_days_max": 4,
+     "created_minus_sensed_hours_median": 5.0,
+     "items_with_scale_and_offset": null,
+     "baselines": [
+      "05.12",
+      "05.13"
+     ]
+    }
+   }
+  }
+ },
+ "c1_2022_gap_check": {
+  "c1_items_2022_whole_year": 22,
+  "c1_months_2022": [
+   "2022-03",
+   "2022-12"
+  ],
+  "old_l2a_items_may_sep_2022": 124,
+  "old_l2a_dates_may_sep_2022": 61,
+  "old_l2a_baselines": [
+   "04.00"
+  ],
+  "requests": {
+   "requests": 3,
+   "bytes": 43393,
+   "requests_all_runs": 192,
+   "bytes_all_runs": 105273212
+  }
+ },
+ "scl_samples_2025": [
+  {
+   "site": "Hampstead Heath (Ladies Pond)",
+   "season": 2025,
+   "max_items": 45,
+   "partial": null,
+   "tile": "MGRS-30UXC",
+   "items_on_tile": 93,
+   "items_in_season_all_tiles": 93,
+   "items_read": 45,
+   "window_px": [
+    101,
+    101
+   ],
+   "water_px_in_window": 21,
+   "piece_px": 8,
+   "site_px": 7,
+   "core_px": 0,
+   "passes_size_rule": false,
+   "usable_items": 0,
+   "usable_dates": 0,
+   "usable_dates_list": [],
+   "gap_days_median": null,
+   "gap_days_max": null,
+   "requests": {
+    "requests": 92,
+    "bytes": 2877373,
+    "requests_all_runs": 430,
+    "bytes_all_runs": 111205851
+   }
+  },
+  {
+   "site": "Rutland Water Whitwell Creek",
+   "season": 2025,
+   "max_items": 45,
+   "partial": null,
+   "tile": "MGRS-30UXD",
+   "items_on_tile": 91,
+   "items_in_season_all_tiles": 91,
+   "items_read": 45,
+   "window_px": [
+    101,
+    101
+   ],
+   "water_px_in_window": 4233,
+   "piece_px": 4233,
+   "site_px": 120,
+   "core_px": 74,
+   "passes_size_rule": true,
+   "usable_items": 8,
+   "usable_dates": 8,
+   "usable_dates_list": [
+    "2025-05-02",
+    "2025-05-12",
+    "2025-06-19",
+    "2025-07-04",
+    "2025-07-12",
+    "2025-09-12",
+    "2025-09-22",
+    "2025-09-30"
+   ],
+   "gap_days_median": 10.0,
+   "gap_days_max": 62,
+   "requests": {
+    "requests": 92,
+    "bytes": 2537052,
+    "requests_all_runs": 522,
+    "bytes_all_runs": 113742903
+   }
+  },
+  {
+   "site": "Windermere, Millerground Landing",
+   "season": 2025,
+   "max_items": 45,
+   "partial": null,
+   "tile": "MGRS-30UVF",
+   "items_on_tile": 93,
+   "items_in_season_all_tiles": 186,
+   "items_read": 45,
+   "window_px": [
+    101,
+    101
+   ],
+   "water_px_in_window": 4203,
+   "piece_px": 4203,
+   "site_px": 362,
+   "core_px": 323,
+   "passes_size_rule": true,
+   "usable_items": 8,
+   "usable_dates": 8,
+   "usable_dates_list": [
+    "2025-05-01",
+    "2025-05-15",
+    "2025-05-18",
+    "2025-06-12",
+    "2025-07-07",
+    "2025-07-24",
+    "2025-08-24",
+    "2025-09-23"
+   ],
+   "gap_days_median": 25.0,
+   "gap_days_max": 31,
+   "requests": {
+    "requests": 92,
+    "bytes": 2466096,
+    "requests_all_runs": 338,
+    "bytes_all_runs": 108328478
+   }
+  }
+ ],
+ "ledger": {
+  "requests": 522,
+  "bytes": 113742903,
+  "by_status": {
+   "200": 248,
+   "206": 272,
+   "403": 2
+  },
+  "by_host": {
+   "earth-search.aws.element84.com": 246,
+   "e84-earth-search-sentinel-data.s3.us-west-2.amazonaws.com": 272,
+   "catalogue.dataspace.copernicus.eu": 4
+  },
+  "first": "2026-10-26T18:41:10Z",
+  "last": "2026-10-26T19:02:35Z"
+ },
+ "requests_outside_the_client": [
+  "2 curl requests to the CDSE OData catalogue to read why the client's requests were refused (HTTP 403 body, then 200 with a plain user agent; the first 1,240 bytes only)",
+  "globalland.vito.be download manifest (no answer: HTTP/2 stream error)",
+  "csv.dataspace.copernicus.eu listing page for the dataset (a list of CSV catalogue files, not opened)",
+  "land.copernicus.eu WMTS GetCapabilities for the dataset (layer names read; no tile requested)"
+ ]
+}
