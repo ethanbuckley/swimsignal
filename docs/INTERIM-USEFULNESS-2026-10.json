@@ -1,0 +1,5396 @@
+{
+ "inputs": {
+  "scored": {
+   "file": "verification_live.csv",
+   "sha256": "434f910aa0170ec59bba08eaf5f038b423caae0209b4c89ac75891de786eb598",
+   "rows": 117324,
+   "first_day": "2026-09-29",
+   "last_day": "2026-10-23"
+  },
+  "dipcast.duckdb": "8544507fda525c3cb7f3cb3e246d57728e911cbf54dbe6b9e35d519313aed4e7",
+  "live_history.parquet": "b38bb6a8e7f58e501b11d01af03dd19006926b1b4bc74fc6437233fb61349052",
+  "live_coverage.parquet": "75cdd298c062cc28b907b25bdaf8b1577496f0741775c0812f5be731c5542676",
+  "poll_log.parquet": "b09aafb84e2a9be1ba4eedd03b0dceadc457f329b667a2f506e50cf424f63662"
+ },
+ "settings": {
+  "resamples": 2000,
+  "seed": 20270501,
+  "block_days": 7,
+  "first_block_day": "2026-09-29",
+  "recent_spill_hours": 48.0,
+  "max_gap_h": 8.0,
+  "rain_rules_mm": {
+   "rain10": 10.0,
+   "rain5": 5.0
+  }
+ },
+ "join": {
+  "rows": 117324,
+  "joined": 117324,
+  "issue_time_matches": 117324
+ },
+ "coverage": [
+  {
+   "company": "All companies",
+   "rows": 117324,
+   "joined_to_log": 117324,
+   "status_known": 91444,
+   "rain_both_days": 107650,
+   "common": 91391
+  },
+  {
+   "company": "Anglian Water",
+   "rows": 16004,
+   "joined_to_log": 16004,
+   "status_known": 13392,
+   "rain_both_days": 14769,
+   "common": 13372
+  },
+  {
+   "company": "Northumbrian Water",
+   "rows": 1398,
+   "joined_to_log": 1398,
+   "status_known": 1092,
+   "rain_both_days": 1318,
+   "common": 1092
+  },
+  {
+   "company": "Severn Trent Water",
+   "rows": 12055,
+   "joined_to_log": 12055,
+   "status_known": 9955,
+   "rain_both_days": 11058,
+   "common": 9949
+  },
+  {
+   "company": "South West Water",
+   "rows": 2345,
+   "joined_to_log": 2345,
+   "status_known": 2003,
+   "rain_both_days": 2345,
+   "common": 2003
+  },
+  {
+   "company": "Southern Water",
+   "rows": 8635,
+   "joined_to_log": 8635,
+   "status_known": 1730,
+   "rain_both_days": 7645,
+   "common": 1730
+  },
+  {
+   "company": "Thames Water",
+   "rows": 20863,
+   "joined_to_log": 20863,
+   "status_known": 17426,
+   "rain_both_days": 19222,
+   "common": 17416
+  },
+  {
+   "company": "United Utilities",
+   "rows": 14395,
+   "joined_to_log": 14395,
+   "status_known": 11754,
+   "rain_both_days": 13284,
+   "common": 11752
+  },
+  {
+   "company": "Wessex Water",
+   "rows": 28104,
+   "joined_to_log": 28104,
+   "status_known": 22985,
+   "rain_both_days": 25658,
+   "common": 22971
+  },
+  {
+   "company": "Yorkshire Water",
+   "rows": 13445,
+   "joined_to_log": 13445,
+   "status_known": 11047,
+   "rain_both_days": 12281,
+   "common": 11046
+  }
+ ],
+ "blocks": [
+  {
+   "from": "2026-09-29",
+   "to": "2026-10-05",
+   "rows": 32895,
+   "spill_rows": 745,
+   "spill_overflow_days": 149
+  },
+  {
+   "from": "2026-10-06",
+   "to": "2026-10-12",
+   "rows": 25379,
+   "spill_rows": 711,
+   "spill_overflow_days": 146
+  },
+  {
+   "from": "2026-10-13",
+   "to": "2026-10-19",
+   "rows": 36925,
+   "spill_rows": 1053,
+   "spill_overflow_days": 212
+  },
+  {
+   "from": "2026-10-20",
+   "to": "2026-10-23",
+   "rows": 22125,
+   "spill_rows": 2995,
+   "spill_overflow_days": 599
+  }
+ ],
+ "fitted_chances": {
+  "rain10": {
+   "lead0_on": {
+    "rows": 5008,
+    "chance": 0.14756389776357828
+   },
+   "lead0_off": {
+    "rows": 18635,
+    "chance": 0.019586799034075664
+   },
+   "lead1_on": {
+    "rows": 5149,
+    "chance": 0.14740726354631967
+   },
+   "lead1_off": {
+    "rows": 17474,
+    "chance": 0.019228568158406775
+   },
+   "lead2_on": {
+    "rows": 4972,
+    "chance": 0.1500402252614642
+   },
+   "lead2_off": {
+    "rows": 16552,
+    "chance": 0.018245529241179313
+   },
+   "lead3_on": {
+    "rows": 4138,
+    "chance": 0.15176413726437893
+   },
+   "lead3_off": {
+    "rows": 16298,
+    "chance": 0.02466560314148975
+   },
+   "lead4_on": {
+    "rows": 3126,
+    "chance": 0.14075495841330773
+   },
+   "lead4_off": {
+    "rows": 16298,
+    "chance": 0.03215118419437968
+   }
+  },
+  "rain5": {
+   "lead0_on": {
+    "rows": 7788,
+    "chance": 0.11825885978428351
+   },
+   "lead0_off": {
+    "rows": 15855,
+    "chance": 0.011542100283822139
+   },
+   "lead1_on": {
+    "rows": 8752,
+    "chance": 0.10477605118829982
+   },
+   "lead1_off": {
+    "rows": 13871,
+    "chance": 0.012832528296445822
+   },
+   "lead2_on": {
+    "rows": 9071,
+    "chance": 0.10241428728916327
+   },
+   "lead2_off": {
+    "rows": 12453,
+    "chance": 0.00955593029792018
+   },
+   "lead3_on": {
+    "rows": 8406,
+    "chance": 0.10349750178443969
+   },
+   "lead3_off": {
+    "rows": 12030,
+    "chance": 0.013300083125519535
+   },
+   "lead4_on": {
+    "rows": 6408,
+    "chance": 0.10564918851435705
+   },
+   "lead4_off": {
+    "rows": 13016,
+    "chance": 0.02204978488014751
+   }
+  },
+  "persistence": {
+   "lead0_on": {
+    "rows": 1382,
+    "chance": 0.3885672937771346
+   },
+   "lead0_off": {
+    "rows": 19130,
+    "chance": 0.024934657605854678
+   },
+   "lead1_on": {
+    "rows": 1118,
+    "chance": 0.2701252236135957
+   },
+   "lead1_off": {
+    "rows": 18134,
+    "chance": 0.03771920149994486
+   },
+   "lead2_on": {
+    "rows": 1019,
+    "chance": 0.22276741903827282
+   },
+   "lead2_off": {
+    "rows": 17258,
+    "chance": 0.04061884343492873
+   },
+   "lead3_on": {
+    "rows": 960,
+    "chance": 0.17708333333333334
+   },
+   "lead3_off": {
+    "rows": 16359,
+    "chance": 0.04217861727489455
+   },
+   "lead4_on": {
+    "rows": 873,
+    "chance": 0.1706758304696449
+   },
+   "lead4_off": {
+    "rows": 15211,
+    "chance": 0.04621655380974295
+   }
+  }
+ },
+ "status_check_vs_shadow": {
+  "rows": 5727,
+  "shadow_spilling": 79,
+  "of_which_rebuilt_active": 79,
+  "of_which_rebuilt_spilling_now": 43,
+  "rebuilt_spilling_now_shadow_not": 50,
+  "rebuilt_active": 812
+ },
+ "bootstrap": {
+  "overflows": 1145,
+  "blocks": 4
+ },
+ "results": [
+  {
+   "company": "All companies",
+   "leads": "0",
+   "common": {
+    "rows": 20459,
+    "overflows": 1145,
+    "spill_rows": 1014,
+    "spill_overflow_days": 1014,
+    "observed_rate": 0.04956253971357349,
+    "mean_forecast": 0.06687570262476172,
+    "skill_clim": 0.21285839761796488,
+    "skill_persistence": -0.05499657423737703,
+    "skill_rain10": 0.07028380157223324,
+    "skill_rain5": 0.07580874304628504,
+    "skill_best": -0.05499657423737703,
+    "best_ref": "persistence",
+    "auc": 0.8756534259629776,
+    "brier": 0.04090566113104257,
+    "brier_clim": 0.05196734743438095,
+    "brier_persistence": 0.038773264416154106,
+    "brier_rain10": 0.043998008424740505,
+    "brier_rain5": 0.04426103452425454,
+    "auc_clim": 0.7028885396173803,
+    "auc_persistence": 0.7430906623293434,
+    "auc_rain10": 0.7505554279176132,
+    "auc_rain5": 0.7696214934856468,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07621239319619821,
+      "hi": 0.43812874459943496,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.18550723688150167,
+      "hi": 0.1721620716525761,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": 0.013843810112319799,
+      "hi": 0.14047140757770465,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": 0.016553689851336543,
+      "hi": 0.14332588665319357,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.18550723688150167,
+      "hi": 0.11825834165146218,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7941092455501462,
+      "hi": 0.9138390583861805,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 23700,
+    "overflows": 1145,
+    "spill_rows": 1105,
+    "spill_overflow_days": 1105,
+    "observed_rate": 0.04662447257383966,
+    "mean_forecast": 0.0630601729957806,
+    "skill_clim": 0.21470186741700514,
+    "auc": 0.8687877128143715,
+    "brier": 0.039026363068776375,
+    "brier_clim": 0.04969623821772152,
+    "auc_clim": 0.7044348096874034,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07666110540233327,
+      "hi": 0.40282284305710164,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7932614601138681,
+      "hi": 0.8968461040883882,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "All companies",
+   "leads": "1-4",
+   "common": {
+    "rows": 70932,
+    "overflows": 1145,
+    "spill_rows": 3626,
+    "spill_overflow_days": 1009,
+    "observed_rate": 0.051119381943269614,
+    "mean_forecast": 0.06347125274911182,
+    "skill_clim": 0.19481494222738882,
+    "skill_persistence": 0.08842111751017023,
+    "skill_rain10": 0.06864262024952505,
+    "skill_rain5": 0.08060387653219381,
+    "skill_best": 0.06864262024952505,
+    "best_ref": "rain10",
+    "auc": 0.8430581548924851,
+    "brier": 0.042698316386539224,
+    "brier_clim": 0.053029196175914964,
+    "brier_persistence": 0.04683995779928083,
+    "brier_rain10": 0.04584525480216701,
+    "brier_rain5": 0.046441697214785485,
+    "auc_clim": 0.7024423355858465,
+    "auc_persistence": 0.6097949299696331,
+    "auc_rain10": 0.7406410963427744,
+    "auc_rain5": 0.7405497017195826,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.10961358973522022,
+      "hi": 0.40035546372948,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.03999685766444885,
+      "hi": 0.1662884391798498,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.0366737503943038,
+      "hi": 0.12325717813946901,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.02780986473444497,
+      "hi": 0.13667978307196504,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.048439826695063054,
+      "hi": 0.12288450606541734,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.758068657217731,
+      "hi": 0.8892184162461287,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 93624,
+    "overflows": 1145,
+    "spill_rows": 4399,
+    "spill_overflow_days": 1105,
+    "observed_rate": 0.04698581560283688,
+    "mean_forecast": 0.05902356981115953,
+    "skill_clim": 0.2045649341902026,
+    "auc": 0.8406647986873401,
+    "brier": 0.03969088737727506,
+    "brier_clim": 0.0498983375052337,
+    "auc_clim": 0.7052662774997068,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1171990617016522,
+      "hi": 0.33562920765624893,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7611228487461308,
+      "hi": 0.8694409998259329,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "All companies",
+   "leads": "1",
+   "common": {
+    "rows": 19252,
+    "overflows": 1145,
+    "spill_rows": 986,
+    "spill_overflow_days": 986,
+    "observed_rate": 0.05121545813421982,
+    "mean_forecast": 0.07289736650737587,
+    "skill_clim": 0.19891582940732344,
+    "skill_persistence": 0.06885171517814537,
+    "skill_rain10": 0.06062211421407937,
+    "skill_rain5": 0.07911291502848727,
+    "skill_best": 0.06062211421407937,
+    "best_ref": "rain10",
+    "auc": 0.8625712065711819,
+    "brier": 0.042495719916372326,
+    "brier_clim": 0.05304775887024725,
+    "brier_persistence": 0.045637972607663196,
+    "brier_rain10": 0.045238152355288476,
+    "brier_rain5": 0.046146504397644915,
+    "auc_clim": 0.7043365409836029,
+    "auc_persistence": 0.6308074346001138,
+    "auc_rain10": 0.7556574924226591,
+    "auc_rain5": 0.749009731999665,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.0835148923720564,
+      "hi": 0.4262190169773448,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.019550976470186342,
+      "hi": 0.21275874611591747,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.019811733201407278,
+      "hi": 0.12683793771729715,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.002646569203927834,
+      "hi": 0.14754548931345246,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.02913048230255048,
+      "hi": 0.1264371002236891,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7598067830930013,
+      "hi": 0.9201879733688725,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 23591,
+    "overflows": 1145,
+    "spill_rows": 1103,
+    "spill_overflow_days": 1103,
+    "observed_rate": 0.04675511847738544,
+    "mean_forecast": 0.06766823364842525,
+    "skill_clim": 0.20478792991338723,
+    "auc": 0.8555042391098563,
+    "brier": 0.039575314962061806,
+    "brier_clim": 0.049766994806494005,
+    "auc_clim": 0.7048283512866981,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07785192144171521,
+      "hi": 0.3916550358289071,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7570653619140644,
+      "hi": 0.8962882169304501,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "All companies",
+   "leads": "2",
+   "common": {
+    "rows": 18277,
+    "overflows": 1143,
+    "spill_rows": 928,
+    "spill_overflow_days": 928,
+    "observed_rate": 0.05077419707829513,
+    "mean_forecast": 0.06899329758713138,
+    "skill_clim": 0.22729475278890043,
+    "skill_persistence": 0.12231775017817215,
+    "skill_rain10": 0.09267965973502545,
+    "skill_rain5": 0.11041313993711066,
+    "skill_best": 0.09267965973502545,
+    "best_ref": "rain10",
+    "auc": 0.8733443657191808,
+    "brier": 0.04076792447940034,
+    "brier_clim": 0.052759994353011985,
+    "brier_persistence": 0.04644952599608399,
+    "brier_rain10": 0.04493222808990973,
+    "brier_rain5": 0.04582793014334567,
+    "auc_clim": 0.7033401259339205,
+    "auc_persistence": 0.5994805113978546,
+    "auc_rain10": 0.7534635679091113,
+    "auc_rain5": 0.7498469863611338,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.14541946360811128,
+      "hi": 0.40104106908676146,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.03221936301679599,
+      "hi": 0.19737499750324927,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.08019671284370651,
+      "hi": 0.1567277190456194,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.05813366990934481,
+      "hi": 0.1768495241105742,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.08268024353858314,
+      "hi": 0.15634614155795465,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.793022574575288,
+      "hi": 0.9146506066391139,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 23467,
+    "overflows": 1145,
+    "spill_rows": 1105,
+    "spill_overflow_days": 1105,
+    "observed_rate": 0.04708739932671411,
+    "mean_forecast": 0.06376051902671838,
+    "skill_clim": 0.22797321726129072,
+    "auc": 0.865218286030641,
+    "brier": 0.03857841438573316,
+    "brier_clim": 0.04997030575659436,
+    "auc_clim": 0.7049292169448738,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.14150261594273714,
+      "hi": 0.34859584908413555,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7893980681243676,
+      "hi": 0.8902003729598771,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "All companies",
+   "leads": "3",
+   "common": {
+    "rows": 17319,
+    "overflows": 1141,
+    "spill_rows": 860,
+    "spill_overflow_days": 860,
+    "observed_rate": 0.04965644667705987,
+    "mean_forecast": 0.055789208383855884,
+    "skill_clim": 0.18205719382728702,
+    "skill_persistence": 0.07968209559698836,
+    "skill_rain10": 0.048902505265493446,
+    "skill_rain5": 0.061225851884761595,
+    "skill_best": 0.048902505265493446,
+    "best_ref": "rain10",
+    "auc": 0.8382379683413471,
+    "brier": 0.042553482066516546,
+    "brier_clim": 0.052025009261504704,
+    "brier_persistence": 0.0462378074608035,
+    "brier_rain10": 0.04474145111526676,
+    "brier_rain5": 0.04532877492627007,
+    "auc_clim": 0.7007638430659977,
+    "auc_persistence": 0.5748381814148477,
+    "auc_rain10": 0.709029908002549,
+    "auc_rain5": 0.7241139363916257,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.10452856836480648,
+      "hi": 0.3935719417332873,
+      "undefined_draws": 1
+     },
+     "skill_persistence": {
+      "lo": -0.09855786601926672,
+      "hi": 0.17549108839827066,
+      "undefined_draws": 1
+     },
+     "skill_rain10": {
+      "lo": -0.09297122378914895,
+      "hi": 0.11251992531649935,
+      "undefined_draws": 1
+     },
+     "skill_rain5": {
+      "lo": -0.11104136205460802,
+      "hi": 0.13072832444691074,
+      "undefined_draws": 1
+     },
+     "skill_best": {
+      "lo": -0.12115748871437339,
+      "hi": 0.1124543248664591,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.739487602033416,
+      "hi": 0.8768435897300452,
+      "undefined_draws": 1
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 23355,
+    "overflows": 1145,
+    "spill_rows": 1100,
+    "spill_overflow_days": 1100,
+    "observed_rate": 0.047099122243630914,
+    "mean_forecast": 0.057050044958253054,
+    "skill_clim": 0.19167566220727672,
+    "auc": 0.8398061722595536,
+    "brier": 0.04037833262941554,
+    "brier_clim": 0.04995313235238706,
+    "auc_clim": 0.7055865280529401,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1263600413052739,
+      "hi": 0.29346702475714087,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7566333399601047,
+      "hi": 0.8652727329469004,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "All companies",
+   "leads": "4",
+   "common": {
+    "rows": 16084,
+    "overflows": 1141,
+    "spill_rows": 852,
+    "spill_overflow_days": 852,
+    "observed_rate": 0.05297189753792589,
+    "mean_forecast": 0.0541854638149714,
+    "skill_clim": 0.1673673540277063,
+    "skill_persistence": 0.08264768639891096,
+    "skill_rain10": 0.07188084148421336,
+    "skill_rain5": 0.06983846808598093,
+    "skill_best": 0.06983846808598093,
+    "best_ref": "rain5",
+    "auc": 0.7963774528297234,
+    "brier": 0.04529036722705795,
+    "brier_clim": 0.05439417664697837,
+    "brier_persistence": 0.04937074508404461,
+    "brier_rain10": 0.04879800919041977,
+    "brier_rain5": 0.04869086247187915,
+    "auc_clim": 0.7009616291498993,
+    "auc_persistence": 0.5636755582514696,
+    "auc_rain10": 0.6399222541129128,
+    "auc_rain5": 0.6811504751548507,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.09541868914984314,
+      "hi": 0.3365705868687985,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.07808223758617899,
+      "hi": 0.16473568655685747,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.035428077295517946,
+      "hi": 0.12697464764732214,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.04215909499968745,
+      "hi": 0.12443374987877381,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.07808223758617899,
+      "hi": 0.11922717705923641,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.6964204974565555,
+      "hi": 0.836987426079489,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 23211,
+    "overflows": 1145,
+    "spill_rows": 1091,
+    "spill_overflow_days": 1091,
+    "observed_rate": 0.04700357589074146,
+    "mean_forecast": 0.04743395372883547,
+    "skill_clim": 0.19362299673682692,
+    "auc": 0.805628204129463,
+    "brier": 0.04024138449829822,
+    "brier_clim": 0.0499039336879066,
+    "auc_clim": 0.7057281298740475,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1148655251109586,
+      "hi": 0.32142609495295704,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7133697594890966,
+      "hi": 0.8365418344507191,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Anglian Water",
+   "leads": "0",
+   "common": {
+    "rows": 2958,
+    "overflows": 159,
+    "spill_rows": 107,
+    "spill_overflow_days": 107,
+    "observed_rate": 0.03617308992562542,
+    "mean_forecast": 0.03368076402974983,
+    "skill_clim": 0.10288962367884891,
+    "skill_persistence": -0.07147240183892167,
+    "skill_rain10": 0.018990877257960004,
+    "skill_rain5": 0.013472490900435674,
+    "skill_best": -0.07147240183892167,
+    "best_ref": "persistence",
+    "auc": 0.7704101200759202,
+    "brier": 0.03406933055780933,
+    "brier_clim": 0.03797674339418526,
+    "brier_persistence": 0.03179674110069248,
+    "brier_rain10": 0.03472886211555444,
+    "brier_rain5": 0.03453459760985834,
+    "auc_clim": 0.6420685314547773,
+    "auc_persistence": 0.7110212189853043,
+    "auc_rain10": 0.6832034668930724,
+    "auc_rain5": 0.6981777176068734,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.0005460399326584538,
+      "hi": 0.3273114235629013,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.2589291229144837,
+      "hi": 0.18366108401113607,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.05667153136684021,
+      "hi": 0.10512746112857467,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.06941006536335403,
+      "hi": 0.09859020144577321,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.2589291229144837,
+      "hi": 0.04312787214732539,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.57709718622674,
+      "hi": 0.8651213957271534,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 3266,
+    "overflows": 159,
+    "spill_rows": 118,
+    "spill_overflow_days": 118,
+    "observed_rate": 0.036129822412737295,
+    "mean_forecast": 0.03213447642375995,
+    "skill_clim": 0.09267709504716382,
+    "auc": 0.736512824930545,
+    "brier": 0.03437840075321494,
+    "brier_clim": 0.03788992933557869,
+    "auc_clim": 0.6441122154502186,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.009115394607308196,
+      "hi": 0.27128994363039893,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5420977038292919,
+      "hi": 0.8182271703363122,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Anglian Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 10414,
+    "overflows": 159,
+    "spill_rows": 409,
+    "spill_overflow_days": 105,
+    "observed_rate": 0.03927405415786441,
+    "mean_forecast": 0.030089600537737658,
+    "skill_clim": 0.10184508242633772,
+    "skill_persistence": -0.004869724308134815,
+    "skill_rain10": 0.01090035614205287,
+    "skill_rain5": 0.021282652544435954,
+    "skill_best": -0.004869724308134815,
+    "best_ref": "persistence",
+    "auc": 0.7580817170876665,
+    "brier": 0.03658027590263107,
+    "brier_clim": 0.040728247640676014,
+    "brier_persistence": 0.036403003312511055,
+    "brier_rain10": 0.036983408223615434,
+    "brier_rain5": 0.037375730590380574,
+    "auc_clim": 0.637109929143008,
+    "auc_persistence": 0.6362648748975146,
+    "auc_rain10": 0.6818426972332905,
+    "auc_rain5": 0.6805186648729425,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.014561431356407209,
+      "hi": 0.38026422256212056,
+      "undefined_draws": 2
+     },
+     "skill_persistence": {
+      "lo": -0.07952758589168353,
+      "hi": 0.14435599530552073,
+      "undefined_draws": 2
+     },
+     "skill_rain10": {
+      "lo": -0.0432458262040679,
+      "hi": 0.07090935015249893,
+      "undefined_draws": 2
+     },
+     "skill_rain5": {
+      "lo": -0.030254697220291896,
+      "hi": 0.08197287709353109,
+      "undefined_draws": 2
+     },
+     "skill_best": {
+      "lo": -0.07952758589168353,
+      "hi": 0.05929594474339509,
+      "undefined_draws": 2
+     },
+     "auc": {
+      "lo": 0.5874373780891575,
+      "hi": 0.8497331231283259,
+      "undefined_draws": 2
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 12738,
+    "overflows": 159,
+    "spill_rows": 465,
+    "spill_overflow_days": 118,
+    "observed_rate": 0.0365049458313707,
+    "mean_forecast": 0.026242267231904537,
+    "skill_clim": 0.10519716783528055,
+    "auc": 0.741792412578008,
+    "brier": 0.03423106717852095,
+    "brier_clim": 0.03825543007693515,
+    "auc_clim": 0.6462995525627109,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.01215310613904112,
+      "hi": 0.30908570927453255,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5786936095945027,
+      "hi": 0.8109584707198847,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Anglian Water",
+   "leads": "1",
+   "common": {
+    "rows": 2833,
+    "overflows": 159,
+    "spill_rows": 103,
+    "spill_overflow_days": 103,
+    "observed_rate": 0.03635721849629368,
+    "mean_forecast": 0.038415107659724675,
+    "skill_clim": 0.0732586384128151,
+    "skill_persistence": -0.07323458069894695,
+    "skill_rain10": -0.019285068122833815,
+    "skill_rain5": -0.016914483478903453,
+    "skill_best": -0.07323458069894695,
+    "best_ref": "persistence",
+    "auc": 0.7681603186457555,
+    "brier": 0.03547875222026121,
+    "brier_clim": 0.03828333739145782,
+    "brier_persistence": 0.03305777959293443,
+    "brier_rain10": 0.03480748745353512,
+    "brier_rain5": 0.03488862908008454,
+    "auc_clim": 0.6361677157793663,
+    "auc_persistence": 0.656717877591664,
+    "auc_rain10": 0.6915395284327324,
+    "auc_rain5": 0.683585831644084,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.03637621464127926,
+      "hi": 0.3812069698595225,
+      "undefined_draws": 2
+     },
+     "skill_persistence": {
+      "lo": -0.19928655408847537,
+      "hi": 0.16927525998425916,
+      "undefined_draws": 2
+     },
+     "skill_rain10": {
+      "lo": -0.11129565249957135,
+      "hi": 0.059354635500325346,
+      "undefined_draws": 2
+     },
+     "skill_rain5": {
+      "lo": -0.10546713308730894,
+      "hi": 0.05711319492549194,
+      "undefined_draws": 2
+     },
+     "skill_best": {
+      "lo": -0.199860946367915,
+      "hi": 0.02397858856826815,
+      "undefined_draws": 2
+     },
+     "auc": {
+      "lo": 0.5869516680381562,
+      "hi": 0.8791773274967504,
+      "undefined_draws": 2
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 3233,
+    "overflows": 159,
+    "spill_rows": 117,
+    "spill_overflow_days": 117,
+    "observed_rate": 0.036189297865759355,
+    "mean_forecast": 0.03403615836684194,
+    "skill_clim": 0.06786596346745832,
+    "auc": 0.7332817660160408,
+    "brier": 0.035392971812557995,
+    "brier_clim": 0.037969830974327254,
+    "auc_clim": 0.6433653709006726,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.03703741886120695,
+      "hi": 0.2591264200822787,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5562072946423818,
+      "hi": 0.8176869264132771,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Anglian Water",
+   "leads": "2",
+   "common": {
+    "rows": 2679,
+    "overflows": 159,
+    "spill_rows": 104,
+    "spill_overflow_days": 104,
+    "observed_rate": 0.03882045539380366,
+    "mean_forecast": 0.029993915640164237,
+    "skill_clim": 0.1517032324874228,
+    "skill_persistence": 0.05886130892597785,
+    "skill_rain10": 0.05380911017789469,
+    "skill_rain5": 0.061395599216619745,
+    "skill_best": 0.05380911017789469,
+    "best_ref": "rain10",
+    "auc": 0.7780302464525766,
+    "brier": 0.034297090798805524,
+    "brier_clim": 0.04043053340798806,
+    "brier_persistence": 0.0364421217872425,
+    "brier_rain10": 0.036247538596840406,
+    "brier_rain5": 0.03654051778382929,
+    "auc_clim": 0.6328510082150859,
+    "auc_persistence": 0.5976680358476475,
+    "auc_rain10": 0.6777203136669157,
+    "auc_rain5": 0.7057337565347274,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.06709414448955095,
+      "hi": 0.40595780058263087,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.041305655674998276,
+      "hi": 0.20588301072713366,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.022631648887684763,
+      "hi": 0.13953971780973246,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.030802018095362926,
+      "hi": 0.146104416885261,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.0480414371409188,
+      "hi": 0.12877387680799948,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.5703287980753697,
+      "hi": 0.8857286327425532,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 3199,
+    "overflows": 159,
+    "spill_rows": 118,
+    "spill_overflow_days": 118,
+    "observed_rate": 0.036886527039699905,
+    "mean_forecast": 0.02640919037199125,
+    "skill_clim": 0.14361492918331753,
+    "auc": 0.7539223452654047,
+    "brier": 0.033057378443263515,
+    "brier_clim": 0.03860106810565802,
+    "auc_clim": 0.6435025497994817,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.06108942413396553,
+      "hi": 0.3142093907564423,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5697186968970454,
+      "hi": 0.835705461455633,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Anglian Water",
+   "leads": "3",
+   "common": {
+    "rows": 2537,
+    "overflows": 159,
+    "spill_rows": 102,
+    "spill_overflow_days": 102,
+    "observed_rate": 0.04020496649586126,
+    "mean_forecast": 0.02613314938904218,
+    "skill_clim": 0.09647286343041972,
+    "skill_persistence": -0.0027248791075240586,
+    "skill_rain10": -0.003713635611093169,
+    "skill_rain5": 0.017556789377170756,
+    "skill_best": -0.003713635611093169,
+    "best_ref": "rain10",
+    "auc": 0.7607400249627572,
+    "brier": 0.037503238155301544,
+    "brier_clim": 0.041507594666929444,
+    "brier_persistence": 0.03740132406875285,
+    "brier_rain10": 0.03736448009144396,
+    "brier_rain5": 0.0381734412226494,
+    "auc_clim": 0.635799412167331,
+    "auc_persistence": 0.6050690502073519,
+    "auc_rain10": 0.6813644965172927,
+    "auc_rain5": 0.6629282924668841,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.0037858981179916817,
+      "hi": 0.3807044838425434,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.0746334783022024,
+      "hi": 0.11780394058088847,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.05321638839231102,
+      "hi": 0.04869566473045436,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.039499874710542726,
+      "hi": 0.08543260912945058,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.0763104211999262,
+      "hi": 0.04431404225163596,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.5744048299533114,
+      "hi": 0.8492111736843422,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 3177,
+    "overflows": 159,
+    "spill_rows": 116,
+    "spill_overflow_days": 116,
+    "observed_rate": 0.03651243311299968,
+    "mean_forecast": 0.02363320742839156,
+    "skill_clim": 0.10523455485898092,
+    "auc": 0.7508561547387038,
+    "brier": 0.03424330875354108,
+    "brier_clim": 0.03827070987094744,
+    "auc_clim": 0.6458532821142516,
+    "ci": {
+     "skill_clim": {
+      "lo": -6.959070532905871e-05,
+      "hi": 0.32458860866569916,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5781051210855181,
+      "hi": 0.8182449381253665,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Anglian Water",
+   "leads": "4",
+   "common": {
+    "rows": 2365,
+    "overflows": 159,
+    "spill_rows": 100,
+    "spill_overflow_days": 100,
+    "observed_rate": 0.042283298097251586,
+    "mean_forecast": 0.024469175475687107,
+    "skill_clim": 0.08485469030118098,
+    "skill_persistence": -0.005116432395834147,
+    "skill_rain10": 0.012962389716202671,
+    "skill_rain5": 0.023472664196952264,
+    "skill_best": -0.005116432395834147,
+    "best_ref": "persistence",
+    "auc": 0.7303774834437086,
+    "brier": 0.03949601131501058,
+    "brier_clim": 0.04315818580549683,
+    "brier_persistence": 0.039294961302011926,
+    "brier_rain10": 0.04001469741730966,
+    "brier_rain5": 0.04044537194909246,
+    "auc_clim": 0.643832229580574,
+    "auc_persistence": 0.6031456953642385,
+    "auc_rain10": 0.5749006622516556,
+    "auc_rain5": 0.6018211920529801,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.009044909401358936,
+      "hi": 0.3457809905415765,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.06971837690325261,
+      "hi": 0.10946748991714633,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.042338537692006406,
+      "hi": 0.060900605413428316,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.019912368791003165,
+      "hi": 0.084245927059311,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.07103591173414714,
+      "hi": 0.04445559809352009,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.5778268684308075,
+      "hi": 0.8075023567369932,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 3129,
+    "overflows": 159,
+    "spill_rows": 114,
+    "spill_overflow_days": 114,
+    "observed_rate": 0.0364333652924257,
+    "mean_forecast": 0.020667753275806965,
+    "skill_clim": 0.1038084605342845,
+    "auc": 0.7337333798842047,
+    "brier": 0.034218060178970916,
+    "brier_clim": 0.03818163715244487,
+    "auc_clim": 0.6526359430915597,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.0028897589018680612,
+      "hi": 0.3342616229719024,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5791946605439023,
+      "hi": 0.8049615978428093,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Northumbrian Water",
+   "leads": "0",
+   "common": {
+    "rows": 245,
+    "overflows": 14,
+    "spill_rows": 12,
+    "spill_overflow_days": 12,
+    "observed_rate": 0.04897959183673469,
+    "mean_forecast": 0.046993061224489804,
+    "skill_clim": 0.26495841484653615,
+    "skill_persistence": 0.20324528217182192,
+    "skill_rain10": 0.14159172966708822,
+    "skill_rain5": 0.15950197918789766,
+    "skill_best": 0.14159172966708822,
+    "best_ref": "rain10",
+    "auc": 0.7498211731044349,
+    "brier": 0.03887127057142857,
+    "brier_clim": 0.05288309036734693,
+    "brier_persistence": 0.048786997681526424,
+    "brier_rain10": 0.045282963730479145,
+    "brier_rain5": 0.04624790256361406,
+    "auc_clim": 0.6006795422031473,
+    "auc_persistence": 0.6280400572246065,
+    "auc_rain10": 0.6800786838340487,
+    "auc_rain5": 0.6625536480686696,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.022314366484626248,
+      "hi": 0.5740689364913321,
+      "undefined_draws": 16
+     },
+     "skill_persistence": {
+      "lo": -0.33140008565277235,
+      "hi": 0.5661524595795832,
+      "undefined_draws": 16
+     },
+     "skill_rain10": {
+      "lo": -0.18057472651810397,
+      "hi": 0.5061574740188911,
+      "undefined_draws": 16
+     },
+     "skill_rain5": {
+      "lo": -0.17390020201272363,
+      "hi": 0.511045611078398,
+      "undefined_draws": 16
+     },
+     "skill_best": {
+      "lo": -0.36366734654447525,
+      "hi": 0.481253212979788,
+      "undefined_draws": 16
+     },
+     "auc": {
+      "lo": 0.42085777893854975,
+      "hi": 0.9945505148763903,
+      "undefined_draws": 16
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 291,
+    "overflows": 14,
+    "spill_rows": 16,
+    "spill_overflow_days": 16,
+    "observed_rate": 0.054982817869415807,
+    "mean_forecast": 0.044241924398625426,
+    "skill_clim": 0.23098228312425462,
+    "auc": 0.7855681818181818,
+    "brier": 0.042881400343642614,
+    "brier_clim": 0.055761264536082475,
+    "auc_clim": 0.6345454545454545,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.01089233758633415,
+      "hi": 0.5299683806352395,
+      "undefined_draws": 6
+     },
+     "auc": {
+      "lo": 0.5539489957254274,
+      "hi": 0.9919198380566802,
+      "undefined_draws": 6
+     }
+    }
+   }
+  },
+  {
+   "company": "Northumbrian Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 847,
+    "overflows": 14,
+    "spill_rows": 48,
+    "spill_overflow_days": 16,
+    "observed_rate": 0.05667060212514758,
+    "mean_forecast": 0.03648831168831169,
+    "skill_clim": 0.1966550067849897,
+    "skill_persistence": 0.1617586158893607,
+    "skill_rain10": 0.13470857814569615,
+    "skill_rain5": 0.12924897855038342,
+    "skill_best": 0.12924897855038342,
+    "best_ref": "rain5",
+    "auc": 0.7872470796829371,
+    "brier": 0.04568831829988193,
+    "brier_clim": 0.056872599799291615,
+    "brier_persistence": 0.054504966189848215,
+    "brier_rain10": 0.05280107619924479,
+    "brier_rain5": 0.052470014015970415,
+    "auc_clim": 0.6328353149770547,
+    "auc_persistence": 0.5617308093450146,
+    "auc_rain10": 0.6333568001668752,
+    "auc_rain5": 0.6679051939924906,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.014173293449751184,
+      "hi": 0.44521297982694424,
+      "undefined_draws": 6
+     },
+     "skill_persistence": {
+      "lo": -0.10209522733051879,
+      "hi": 0.43506189508273313,
+      "undefined_draws": 6
+     },
+     "skill_rain10": {
+      "lo": -0.0253594052259314,
+      "hi": 0.39240547140306314,
+      "undefined_draws": 6
+     },
+     "skill_rain5": {
+      "lo": -0.051791293903207275,
+      "hi": 0.39638260264817826,
+      "undefined_draws": 6
+     },
+     "skill_best": {
+      "lo": -0.1091294441397148,
+      "hi": 0.37191565701680707,
+      "undefined_draws": 6
+     },
+     "auc": {
+      "lo": 0.6039550320455582,
+      "hi": 0.9700943458145209,
+      "undefined_draws": 6
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1107,
+    "overflows": 14,
+    "spill_rows": 62,
+    "spill_overflow_days": 16,
+    "observed_rate": 0.05600722673893405,
+    "mean_forecast": 0.03467109304426377,
+    "skill_clim": 0.1614177868598461,
+    "auc": 0.7566985645933014,
+    "brier": 0.04712992273712737,
+    "brier_clim": 0.05620191079494129,
+    "auc_clim": 0.6224031486340484,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.0173053028666764,
+      "hi": 0.3998091255941715,
+      "undefined_draws": 6
+     },
+     "auc": {
+      "lo": 0.5875324800617443,
+      "hi": 0.9634477312850172,
+      "undefined_draws": 6
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Northumbrian Water",
+   "leads": "1",
+   "common": {
+    "rows": 232,
+    "overflows": 14,
+    "spill_rows": 10,
+    "spill_overflow_days": 10,
+    "observed_rate": 0.04310344827586207,
+    "mean_forecast": 0.044024999999999995,
+    "skill_clim": 0.26757538735748,
+    "skill_persistence": 0.2847989203216179,
+    "skill_rain10": 0.18505828887061504,
+    "skill_rain5": 0.16120983807620348,
+    "skill_best": 0.16120983807620348,
+    "best_ref": "rain5",
+    "auc": 0.7925675675675675,
+    "brier": 0.034151264913793104,
+    "brier_clim": 0.0466276860775862,
+    "brier_persistence": 0.04775057796214533,
+    "brier_rain10": 0.04190638968088241,
+    "brier_rain5": 0.04071490876271832,
+    "auc_clim": 0.65,
+    "auc_persistence": 0.4527027027027027,
+    "auc_rain10": 0.6490990990990991,
+    "auc_rain5": 0.6815315315315316,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.011718945897832234,
+      "hi": 0.5997349175662153,
+      "undefined_draws": 37
+     },
+     "skill_persistence": {
+      "lo": 0.059171618519771534,
+      "hi": 0.5209910844111432,
+      "undefined_draws": 37
+     },
+     "skill_rain10": {
+      "lo": -0.03023655959627486,
+      "hi": 0.48513865240985105,
+      "undefined_draws": 37
+     },
+     "skill_rain5": {
+      "lo": -0.0987018836720985,
+      "hi": 0.46349940737921275,
+      "undefined_draws": 37
+     },
+     "skill_best": {
+      "lo": -0.1081052994226298,
+      "hi": 0.4287557629983982,
+      "undefined_draws": 37
+     },
+     "auc": {
+      "lo": 0.3923395833033085,
+      "hi": 0.9903763505402161,
+      "undefined_draws": 37
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 285,
+    "overflows": 14,
+    "spill_rows": 16,
+    "spill_overflow_days": 16,
+    "observed_rate": 0.056140350877192984,
+    "mean_forecast": 0.04305508771929825,
+    "skill_clim": 0.20403007377148064,
+    "auc": 0.7688197026022305,
+    "brier": 0.04482525203508772,
+    "brier_clim": 0.05631525835087719,
+    "auc_clim": 0.6339451672862454,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.0005934826997854109,
+      "hi": 0.46647069717152456,
+      "undefined_draws": 6
+     },
+     "auc": {
+      "lo": 0.5536533556860862,
+      "hi": 0.9805094530351768,
+      "undefined_draws": 6
+     }
+    }
+   }
+  },
+  {
+   "company": "Northumbrian Water",
+   "leads": "2",
+   "common": {
+    "rows": 220,
+    "overflows": 14,
+    "spill_rows": 12,
+    "spill_overflow_days": 12,
+    "observed_rate": 0.05454545454545454,
+    "mean_forecast": 0.03148590909090909,
+    "skill_clim": 0.17862081416489806,
+    "skill_persistence": 0.18444754715445033,
+    "skill_rain10": 0.15371268052889342,
+    "skill_rain5": 0.14937491009418224,
+    "skill_best": 0.14937491009418224,
+    "best_ref": "rain5",
+    "auc": 0.8457532051282052,
+    "brier": 0.043783822136363636,
+    "brier_clim": 0.05330524913636363,
+    "brier_persistence": 0.053686089697354465,
+    "brier_rain10": 0.051736356115706254,
+    "brier_rain5": 0.051472526093971,
+    "auc_clim": 0.6744791666666666,
+    "auc_persistence": 0.530448717948718,
+    "auc_rain10": 0.6049679487179487,
+    "auc_rain5": 0.6169871794871795,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.00245870992825159,
+      "hi": 0.5032167814164197,
+      "undefined_draws": 49
+     },
+     "skill_persistence": {
+      "lo": -0.13837987788684253,
+      "hi": 0.4957339594216719,
+      "undefined_draws": 49
+     },
+     "skill_rain10": {
+      "lo": 0.005354169519500629,
+      "hi": 0.455915281598765,
+      "undefined_draws": 49
+     },
+     "skill_rain5": {
+      "lo": -0.007844849948992039,
+      "hi": 0.4506742740699867,
+      "undefined_draws": 49
+     },
+     "skill_best": {
+      "lo": -0.1434503885254796,
+      "hi": 0.4187008718924222,
+      "undefined_draws": 49
+     },
+     "auc": {
+      "lo": 0.7308340533412155,
+      "hi": 1.0,
+      "undefined_draws": 49
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 280,
+    "overflows": 14,
+    "spill_rows": 16,
+    "spill_overflow_days": 16,
+    "observed_rate": 0.05714285714285714,
+    "mean_forecast": 0.030523928571428577,
+    "skill_clim": 0.13852693599687815,
+    "auc": 0.7727272727272727,
+    "brier": 0.04887885832142857,
+    "brier_clim": 0.056738696035714284,
+    "auc_clim": 0.6322206439393939,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.013323533176768917,
+      "hi": 0.37058475309879346,
+      "undefined_draws": 6
+     },
+     "auc": {
+      "lo": 0.6069512082579298,
+      "hi": 0.9651597805869385,
+      "undefined_draws": 6
+     }
+    }
+   }
+  },
+  {
+   "company": "Northumbrian Water",
+   "leads": "3",
+   "common": {
+    "rows": 205,
+    "overflows": 14,
+    "spill_rows": 14,
+    "spill_overflow_days": 14,
+    "observed_rate": 0.06829268292682927,
+    "mean_forecast": 0.03752780487804878,
+    "skill_clim": 0.16398407780446866,
+    "skill_persistence": 0.11016522117484673,
+    "skill_rain10": 0.12777894101031895,
+    "skill_rain5": 0.12228427300962585,
+    "skill_best": 0.11016522117484673,
+    "best_ref": "persistence",
+    "auc": 0.7903889304412864,
+    "brier": 0.05470843180487805,
+    "brier_clim": 0.06543946156097562,
+    "brier_persistence": 0.06148156164126273,
+    "brier_rain10": 0.0627231264838393,
+    "brier_rain5": 0.062330467738648636,
+    "auc_clim": 0.6293941660433807,
+    "auc_persistence": 0.6235976065818998,
+    "auc_rain10": 0.6105086013462977,
+    "auc_rain5": 0.6617427075542259,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.051924955216398234,
+      "hi": 0.49287676236243844,
+      "undefined_draws": 31
+     },
+     "skill_persistence": {
+      "lo": -0.21096878917758785,
+      "hi": 0.5153353241146015,
+      "undefined_draws": 31
+     },
+     "skill_rain10": {
+      "lo": -0.04854477733495889,
+      "hi": 0.4538104295023809,
+      "undefined_draws": 31
+     },
+     "skill_rain5": {
+      "lo": -0.1220752366875068,
+      "hi": 0.48443410545264687,
+      "undefined_draws": 31
+     },
+     "skill_best": {
+      "lo": -0.21493790657905545,
+      "hi": 0.44761833692122327,
+      "undefined_draws": 31
+     },
+     "auc": {
+      "lo": 0.5921089774627043,
+      "hi": 1.0,
+      "undefined_draws": 31
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 274,
+    "overflows": 14,
+    "spill_rows": 16,
+    "spill_overflow_days": 16,
+    "observed_rate": 0.058394160583941604,
+    "mean_forecast": 0.03902007299270073,
+    "skill_clim": 0.125670365578061,
+    "auc": 0.7842781007751938,
+    "brier": 0.050130856021897804,
+    "brier_clim": 0.057336334087591236,
+    "auc_clim": 0.6315406976744186,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.05903537084375215,
+      "hi": 0.4356914168277158,
+      "undefined_draws": 6
+     },
+     "auc": {
+      "lo": 0.5898692892832337,
+      "hi": 0.9818599520804113,
+      "undefined_draws": 6
+     }
+    }
+   }
+  },
+  {
+   "company": "Northumbrian Water",
+   "leads": "4",
+   "common": {
+    "rows": 190,
+    "overflows": 14,
+    "spill_rows": 12,
+    "spill_overflow_days": 12,
+    "observed_rate": 0.06315789473684211,
+    "mean_forecast": 0.03195631578947368,
+    "skill_clim": 0.18703953015463493,
+    "skill_persistence": 0.06986562124394136,
+    "skill_rain10": 0.07739292703583733,
+    "skill_rain5": 0.08878746015508732,
+    "skill_best": 0.06986562124394136,
+    "best_ref": "persistence",
+    "auc": 0.7584269662921348,
+    "brier": 0.05224864605263159,
+    "brier_clim": 0.0642696022631579,
+    "brier_persistence": 0.056173223187930936,
+    "brier_rain10": 0.05663152557975361,
+    "brier_rain5": 0.05733969163936684,
+    "auc_clim": 0.5807584269662921,
+    "auc_persistence": 0.6577715355805244,
+    "auc_rain10": 0.6713483146067416,
+    "auc_rain5": 0.6793071161048689,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.019820602515766776,
+      "hi": 0.5400140865942162,
+      "undefined_draws": 76
+     },
+     "skill_persistence": {
+      "lo": -0.22187351570756164,
+      "hi": 0.47599774897140995,
+      "undefined_draws": 76
+     },
+     "skill_rain10": {
+      "lo": -0.09208609865646017,
+      "hi": 0.4105500838592966,
+      "undefined_draws": 76
+     },
+     "skill_rain5": {
+      "lo": -0.11121524250555316,
+      "hi": 0.4267005621046892,
+      "undefined_draws": 76
+     },
+     "skill_best": {
+      "lo": -0.22348522600922666,
+      "hi": 0.4034168068781711,
+      "undefined_draws": 76
+     },
+     "auc": {
+      "lo": 0.51933836073201,
+      "hi": 0.99393475572047,
+      "undefined_draws": 76
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 268,
+    "overflows": 14,
+    "spill_rows": 14,
+    "spill_overflow_days": 14,
+    "observed_rate": 0.05223880597014925,
+    "mean_forecast": 0.025641791044776117,
+    "skill_clim": 0.17798346233955242,
+    "auc": 0.7045838020247469,
+    "brier": 0.044685420746268655,
+    "brier_clim": 0.054360732052238805,
+    "auc_clim": 0.5873172103487064,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.02578250680869687,
+      "hi": 0.5126203159111744,
+      "undefined_draws": 19
+     },
+     "auc": {
+      "lo": 0.3535184574818721,
+      "hi": 0.9833137825557569,
+      "undefined_draws": 19
+     }
+    }
+   }
+  },
+  {
+   "company": "Severn Trent Water",
+   "leads": "0",
+   "common": {
+    "rows": 2208,
+    "overflows": 111,
+    "spill_rows": 77,
+    "spill_overflow_days": 77,
+    "observed_rate": 0.034873188405797104,
+    "mean_forecast": 0.04815126811594204,
+    "skill_clim": 0.23827934637166492,
+    "skill_persistence": -0.045433853722131046,
+    "skill_rain10": 0.012268297046920562,
+    "skill_rain5": 0.04631785389012355,
+    "skill_best": -0.045433853722131046,
+    "best_ref": "persistence",
+    "auc": 0.9127840718643159,
+    "brier": 0.030663376385869568,
+    "brier_clim": 0.04025540890851449,
+    "brier_persistence": 0.029330766625450862,
+    "brier_rain10": 0.031044236298372805,
+    "brier_rain5": 0.0321526165829435,
+    "auc_clim": 0.6774363599797668,
+    "auc_persistence": 0.7557576163864291,
+    "auc_rain10": 0.8159421526385393,
+    "auc_rain5": 0.7945266840151871,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07294715239845742,
+      "hi": 0.8092765839518088,
+      "undefined_draws": 14
+     },
+     "skill_persistence": {
+      "lo": -0.37615767110724707,
+      "hi": 0.5989207140720909,
+      "undefined_draws": 14
+     },
+     "skill_rain10": {
+      "lo": -0.4342667347203875,
+      "hi": 0.14583731665657373,
+      "undefined_draws": 14
+     },
+     "skill_rain5": {
+      "lo": -0.2875856090742704,
+      "hi": 0.20371917634281567,
+      "undefined_draws": 14
+     },
+     "skill_best": {
+      "lo": -0.47515708645998894,
+      "hi": 0.1093023072504281,
+      "undefined_draws": 14
+     },
+     "auc": {
+      "lo": 0.7498813278127437,
+      "hi": 0.9630647735188778,
+      "undefined_draws": 14
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2431,
+    "overflows": 111,
+    "spill_rows": 100,
+    "spill_overflow_days": 100,
+    "observed_rate": 0.04113533525298231,
+    "mean_forecast": 0.0474130399012752,
+    "skill_clim": 0.20010948511880455,
+    "auc": 0.8975353925353925,
+    "brier": 0.03595968683257919,
+    "brier_clim": 0.04495576102426985,
+    "auc_clim": 0.6838953238953239,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.0734715984378586,
+      "hi": 0.46917060036035985,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.8165171802987395,
+      "hi": 0.9517412283755529,
+      "undefined_draws": 1
+     }
+    }
+   }
+  },
+  {
+   "company": "Severn Trent Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 7741,
+    "overflows": 111,
+    "spill_rows": 308,
+    "spill_overflow_days": 79,
+    "observed_rate": 0.039788141067045604,
+    "mean_forecast": 0.04570565818369719,
+    "skill_clim": 0.21752773466190556,
+    "skill_persistence": 0.0816252543517959,
+    "skill_rain10": 0.06309088939010288,
+    "skill_rain5": 0.055587909994069706,
+    "skill_best": 0.055587909994069706,
+    "best_ref": "rain5",
+    "auc": 0.8819643796268308,
+    "brier": 0.03431075533781165,
+    "brier_clim": 0.043849164830125305,
+    "brier_persistence": 0.03736029926824105,
+    "brier_rain10": 0.03662122072382932,
+    "brier_rain5": 0.03633027965323507,
+    "auc_clim": 0.6828566798464552,
+    "auc_persistence": 0.6234703175204992,
+    "auc_rain10": 0.720809141752906,
+    "auc_rain5": 0.779483952748449,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.06811378481891914,
+      "hi": 0.7340744820465545,
+      "undefined_draws": 7
+     },
+     "skill_persistence": {
+      "lo": -0.09869198968299657,
+      "hi": 0.36507477246634923,
+      "undefined_draws": 7
+     },
+     "skill_rain10": {
+      "lo": -0.11357464649690797,
+      "hi": 0.1252469761920217,
+      "undefined_draws": 7
+     },
+     "skill_rain5": {
+      "lo": -0.09868811358307487,
+      "hi": 0.1256797864250102,
+      "undefined_draws": 7
+     },
+     "skill_best": {
+      "lo": -0.14933146531169178,
+      "hi": 0.11785565096518903,
+      "undefined_draws": 7
+     },
+     "auc": {
+      "lo": 0.7254030728146519,
+      "hi": 0.9211179154189194,
+      "undefined_draws": 7
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 9624,
+    "overflows": 111,
+    "spill_rows": 399,
+    "spill_overflow_days": 100,
+    "observed_rate": 0.04145885286783042,
+    "mean_forecast": 0.04364815045719036,
+    "skill_clim": 0.1952326559270554,
+    "auc": 0.860045370879774,
+    "brier": 0.03639724494804655,
+    "brier_clim": 0.04522704010806318,
+    "auc_clim": 0.683951749291929,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.06906826857157565,
+      "hi": 0.47852805281390554,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.775893455325695,
+      "hi": 0.8990850452479305,
+      "undefined_draws": 1
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Severn Trent Water",
+   "leads": "1",
+   "common": {
+    "rows": 2099,
+    "overflows": 111,
+    "spill_rows": 78,
+    "spill_overflow_days": 78,
+    "observed_rate": 0.037160552644116246,
+    "mean_forecast": 0.04811972367794187,
+    "skill_clim": 0.23986705416249188,
+    "skill_persistence": 0.04868724248052725,
+    "skill_rain10": 0.039219882596574385,
+    "skill_rain5": 0.056113951311140164,
+    "skill_best": 0.039219882596574385,
+    "best_ref": "rain10",
+    "auc": 0.9111032872784481,
+    "brier": 0.03186832384468794,
+    "brier_clim": 0.04192467122915674,
+    "brier_persistence": 0.03349931302065569,
+    "brier_rain10": 0.03316921662660368,
+    "brier_rain5": 0.033762893189231716,
+    "auc_clim": 0.6801215442976947,
+    "auc_persistence": 0.6579631814663977,
+    "auc_rain10": 0.7888929065326888,
+    "auc_rain5": 0.7845538512287646,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.055781221543809004,
+      "hi": 0.7944053847913063,
+      "undefined_draws": 14
+     },
+     "skill_persistence": {
+      "lo": -0.11886638301718316,
+      "hi": 0.5473353742266385,
+      "undefined_draws": 14
+     },
+     "skill_rain10": {
+      "lo": -0.11271780374859244,
+      "hi": 0.11996600907287447,
+      "undefined_draws": 14
+     },
+     "skill_rain5": {
+      "lo": -0.105102229450901,
+      "hi": 0.138949698495733,
+      "undefined_draws": 14
+     },
+     "skill_best": {
+      "lo": -0.1553623094726974,
+      "hi": 0.10931270504400521,
+      "undefined_draws": 14
+     },
+     "auc": {
+      "lo": 0.7366643080794457,
+      "hi": 0.9555510950869159,
+      "undefined_draws": 14
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2421,
+    "overflows": 111,
+    "spill_rows": 100,
+    "spill_overflow_days": 100,
+    "observed_rate": 0.041305245766212306,
+    "mean_forecast": 0.04798926063610079,
+    "skill_clim": 0.21662423800250752,
+    "auc": 0.9023481258078414,
+    "brier": 0.03533294432878976,
+    "brier_clim": 0.045103443382899636,
+    "auc_clim": 0.6834446359327876,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.0605423604791527,
+      "hi": 0.5149131250922995,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.8053680029356807,
+      "hi": 0.9433993669430255,
+      "undefined_draws": 1
+     }
+    }
+   }
+  },
+  {
+   "company": "Severn Trent Water",
+   "leads": "2",
+   "common": {
+    "rows": 1988,
+    "overflows": 111,
+    "spill_rows": 77,
+    "spill_overflow_days": 77,
+    "observed_rate": 0.03873239436619718,
+    "mean_forecast": 0.04785186116700202,
+    "skill_clim": 0.18210923012976477,
+    "skill_persistence": 0.006515207261037714,
+    "skill_rain10": 0.025904887721858505,
+    "skill_rain5": 0.006072476790404124,
+    "skill_best": 0.006072476790404124,
+    "best_ref": "rain5",
+    "auc": 0.8601908295785847,
+    "brier": 0.03524164100100603,
+    "brier_clim": 0.043088444446680085,
+    "brier_persistence": 0.03547275334114325,
+    "brier_rain10": 0.03617885004944281,
+    "brier_rain5": 0.03545695252225589,
+    "auc_clim": 0.6814478038967835,
+    "auc_persistence": 0.6240188383045526,
+    "auc_rain10": 0.6913086913086913,
+    "auc_rain5": 0.7791969934827078,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.022807472768886995,
+      "hi": 0.6892589987630772,
+      "undefined_draws": 7
+     },
+     "skill_persistence": {
+      "lo": -0.18519394471900652,
+      "hi": 0.2855944071774549,
+      "undefined_draws": 7
+     },
+     "skill_rain10": {
+      "lo": -0.3297199061802132,
+      "hi": 0.10297954346248825,
+      "undefined_draws": 7
+     },
+     "skill_rain5": {
+      "lo": -0.1989860352545704,
+      "hi": 0.07524420730085309,
+      "undefined_draws": 7
+     },
+     "skill_best": {
+      "lo": -0.3436607387474686,
+      "hi": 0.06384577477821753,
+      "undefined_draws": 7
+     },
+     "auc": {
+      "lo": 0.7336613392761948,
+      "hi": 0.9286119390785496,
+      "undefined_draws": 7
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2411,
+    "overflows": 111,
+    "spill_rows": 100,
+    "spill_overflow_days": 100,
+    "observed_rate": 0.0414765657403567,
+    "mean_forecast": 0.04514720033181252,
+    "skill_clim": 0.16850821439908104,
+    "auc": 0.8538468195586326,
+    "brier": 0.03762695798009125,
+    "brier_clim": 0.045252350812940684,
+    "auc_clim": 0.6829900475984423,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.021061796243022353,
+      "hi": 0.45633588320957386,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.7715222545687372,
+      "hi": 0.9029819516725924,
+      "undefined_draws": 1
+     }
+    }
+   }
+  },
+  {
+   "company": "Severn Trent Water",
+   "leads": "3",
+   "common": {
+    "rows": 1881,
+    "overflows": 111,
+    "spill_rows": 77,
+    "spill_overflow_days": 77,
+    "observed_rate": 0.04093567251461988,
+    "mean_forecast": 0.036810898458266884,
+    "skill_clim": 0.23052971833632252,
+    "skill_persistence": 0.1327091936629443,
+    "skill_rain10": 0.09657796803925522,
+    "skill_rain5": 0.0720213608371234,
+    "skill_best": 0.0720213608371234,
+    "best_ref": "rain5",
+    "auc": 0.8954091916952227,
+    "brier": 0.03442471944178628,
+    "brier_clim": 0.04473820531100478,
+    "brier_persistence": 0.039692245311785064,
+    "brier_rain10": 0.0381048039829984,
+    "brier_rain5": 0.03709645673831523,
+    "auc_clim": 0.6816490050968986,
+    "auc_persistence": 0.5136205258156478,
+    "auc_rain10": 0.6745327842888819,
+    "auc_rain5": 0.7865853658536586,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.06669320693304374,
+      "hi": 0.722118088173187,
+      "undefined_draws": 7
+     },
+     "skill_persistence": {
+      "lo": 0.0275922891072536,
+      "hi": 0.3356160141274676,
+      "undefined_draws": 7
+     },
+     "skill_rain10": {
+      "lo": -0.0070843778573859584,
+      "hi": 0.17614049113960875,
+      "undefined_draws": 7
+     },
+     "skill_rain5": {
+      "lo": -0.020494675134275733,
+      "hi": 0.1820365670914882,
+      "undefined_draws": 7
+     },
+     "skill_best": {
+      "lo": -0.03677884639277398,
+      "hi": 0.13010650110345842,
+      "undefined_draws": 7
+     },
+     "auc": {
+      "lo": 0.7317078708712319,
+      "hi": 0.9333245971882209,
+      "undefined_draws": 7
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2401,
+    "overflows": 111,
+    "spill_rows": 100,
+    "spill_overflow_days": 100,
+    "observed_rate": 0.04164931278633902,
+    "mean_forecast": 0.04118904623073719,
+    "skill_clim": 0.1952148105438879,
+    "auc": 0.8665906127770534,
+    "brier": 0.03653925845481049,
+    "brier_clim": 0.04540249862140775,
+    "auc_clim": 0.6825315080399826,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.06421964484992203,
+      "hi": 0.5254881670236529,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.7755226230638805,
+      "hi": 0.9180650315792618,
+      "undefined_draws": 1
+     }
+    }
+   }
+  },
+  {
+   "company": "Severn Trent Water",
+   "leads": "4",
+   "common": {
+    "rows": 1773,
+    "overflows": 111,
+    "spill_rows": 76,
+    "spill_overflow_days": 76,
+    "observed_rate": 0.04286520022560632,
+    "mean_forecast": 0.049877834179357025,
+    "skill_clim": 0.21720840719030654,
+    "skill_persistence": 0.1331623425063554,
+    "skill_rain10": 0.09064853355414537,
+    "skill_rain5": 0.08848899429955537,
+    "skill_best": 0.08848899429955537,
+    "best_ref": "rain5",
+    "auc": 0.8696693856030766,
+    "brier": 0.036037600530174844,
+    "brier_clim": 0.04603728611957134,
+    "brier_persistence": 0.04157364440577394,
+    "brier_rain10": 0.03963000210581463,
+    "brier_rain5": 0.03953611125351361,
+    "auc_clim": 0.6883819743820364,
+    "auc_persistence": 0.5062804329621934,
+    "auc_rain10": 0.6876298731507614,
+    "auc_rain5": 0.7365125763731663,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.10778168227727056,
+      "hi": 0.6878822709568477,
+      "undefined_draws": 14
+     },
+     "skill_persistence": {
+      "lo": -0.255512885766948,
+      "hi": 0.32070967869284484,
+      "undefined_draws": 14
+     },
+     "skill_rain10": {
+      "lo": -0.18725884814559043,
+      "hi": 0.18567036522375854,
+      "undefined_draws": 14
+     },
+     "skill_rain5": {
+      "lo": -0.19865237931020693,
+      "hi": 0.19037657798773938,
+      "undefined_draws": 14
+     },
+     "skill_best": {
+      "lo": -0.26080007268757166,
+      "hi": 0.17757228774027972,
+      "undefined_draws": 14
+     },
+     "auc": {
+      "lo": 0.6170918367346938,
+      "hi": 0.9152805003739815,
+      "undefined_draws": 14
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2391,
+    "overflows": 111,
+    "spill_rows": 99,
+    "spill_overflow_days": 99,
+    "observed_rate": 0.04140526976160602,
+    "mean_forecast": 0.040210372229192805,
+    "skill_clim": 0.20062204318924504,
+    "auc": 0.8280404392969838,
+    "brier": 0.03609229273107486,
+    "brier_clim": 0.045150472843998334,
+    "auc_clim": 0.6868819080860966,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.10597147659013138,
+      "hi": 0.4472814149065835,
+      "undefined_draws": 1
+     },
+     "auc": {
+      "lo": 0.6690241321965325,
+      "hi": 0.8934325555251836,
+      "undefined_draws": 1
+     }
+    }
+   }
+  },
+  {
+   "company": "South West Water",
+   "leads": "0",
+   "common": {
+    "rows": 426,
+    "overflows": 29,
+    "spill_rows": 61,
+    "spill_overflow_days": 61,
+    "observed_rate": 0.1431924882629108,
+    "mean_forecast": 0.14197018779342724,
+    "skill_clim": 0.3643650257612888,
+    "skill_persistence": 0.18420492693302515,
+    "skill_rain10": 0.3494370806637075,
+    "skill_rain5": 0.38336016098583847,
+    "skill_best": 0.18420492693302515,
+    "best_ref": "persistence",
+    "auc": 0.8660004491354143,
+    "brier": 0.07556284039906104,
+    "brier_clim": 0.11887772615023473,
+    "brier_persistence": 0.09262478150913946,
+    "brier_rain10": 0.11614993439243451,
+    "brier_rain5": 0.12253966678485348,
+    "auc_clim": 0.6692117673478554,
+    "auc_persistence": 0.7827082865483943,
+    "auc_rain10": 0.7949023130473838,
+    "auc_rain5": 0.6824837188412306,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.11851787759437835,
+      "hi": 0.6135979769854858,
+      "undefined_draws": 45
+     },
+     "skill_persistence": {
+      "lo": -1.197195203209519,
+      "hi": 0.5370102148430915,
+      "undefined_draws": 45
+     },
+     "skill_rain10": {
+      "lo": -0.5095493078954587,
+      "hi": 0.5993422483868207,
+      "undefined_draws": 45
+     },
+     "skill_rain5": {
+      "lo": -0.2599732266151572,
+      "hi": 0.6251135151116665,
+      "undefined_draws": 45
+     },
+     "skill_best": {
+      "lo": -1.320677292237688,
+      "hi": 0.5370102148430915,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.5594798671647987,
+      "hi": 0.968730441320819,
+      "undefined_draws": 45
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 493,
+    "overflows": 29,
+    "spill_rows": 63,
+    "spill_overflow_days": 63,
+    "observed_rate": 0.12778904665314403,
+    "mean_forecast": 0.12342231237322515,
+    "skill_clim": 0.3734406278174184,
+    "auc": 0.8562753783684016,
+    "brier": 0.06935272803245436,
+    "brier_clim": 0.11068819829614604,
+    "auc_clim": 0.6597083794758213,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.07409565298014206,
+      "hi": 0.6300649008152354,
+      "undefined_draws": 25
+     },
+     "auc": {
+      "lo": 0.46729205867259666,
+      "hi": 0.9656744625224911,
+      "undefined_draws": 25
+     }
+    }
+   }
+  },
+  {
+   "company": "South West Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 1577,
+    "overflows": 29,
+    "spill_rows": 242,
+    "spill_overflow_days": 62,
+    "observed_rate": 0.1534559289790742,
+    "mean_forecast": 0.12935047558655677,
+    "skill_clim": 0.2038885676381459,
+    "skill_persistence": 0.2241480984837172,
+    "skill_rain10": 0.22638306680992193,
+    "skill_rain5": 0.2533794711619226,
+    "skill_best": 0.2038885676381459,
+    "best_ref": "clim",
+    "auc": 0.8171789395487046,
+    "brier": 0.09924017103994927,
+    "brier_clim": 0.12465613104629043,
+    "brier_persistence": 0.12791123002469887,
+    "brier_rain10": 0.1282807637505084,
+    "brier_rain5": 0.1329191566623423,
+    "auc_clim": 0.6720370198409014,
+    "auc_persistence": 0.66252669700065,
+    "auc_rain10": 0.7581514841984709,
+    "auc_rain5": 0.6940709443773795,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.18098601814716167,
+      "hi": 0.42156672439938603,
+      "undefined_draws": 45
+     },
+     "skill_persistence": {
+      "lo": -0.9394915843904696,
+      "hi": 0.47808300123143016,
+      "undefined_draws": 45
+     },
+     "skill_rain10": {
+      "lo": -0.6524440887874042,
+      "hi": 0.41985915040184746,
+      "undefined_draws": 45
+     },
+     "skill_rain5": {
+      "lo": -0.5922134196157458,
+      "hi": 0.4476943660585029,
+      "undefined_draws": 45
+     },
+     "skill_best": {
+      "lo": -0.9394915843904696,
+      "hi": 0.37119485472649305,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.5634075624754675,
+      "hi": 0.9044261789336819,
+      "undefined_draws": 45
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1852,
+    "overflows": 29,
+    "spill_rows": 250,
+    "spill_overflow_days": 63,
+    "observed_rate": 0.13498920086393087,
+    "mean_forecast": 0.11621738660907127,
+    "skill_clim": 0.21556038030568858,
+    "auc": 0.8131897627965043,
+    "brier": 0.08935599591792656,
+    "brier_clim": 0.1139106104211663,
+    "auc_clim": 0.6696029962546817,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.12358120599747288,
+      "hi": 0.4795338102887215,
+      "undefined_draws": 25
+     },
+     "auc": {
+      "lo": 0.503802374873864,
+      "hi": 0.9068102235811252,
+      "undefined_draws": 25
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "South West Water",
+   "leads": "1",
+   "common": {
+    "rows": 388,
+    "overflows": 29,
+    "spill_rows": 60,
+    "spill_overflow_days": 60,
+    "observed_rate": 0.15463917525773196,
+    "mean_forecast": 0.17821056701030927,
+    "skill_clim": 0.26788015736287873,
+    "skill_persistence": 0.24657584375690844,
+    "skill_rain10": 0.270195786148861,
+    "skill_rain5": 0.30327201743944254,
+    "skill_best": 0.24657584375690844,
+    "best_ref": "persistence",
+    "auc": 0.853734756097561,
+    "brier": 0.09226997363402063,
+    "brier_clim": 0.12603124278350514,
+    "brier_persistence": 0.12246750103437058,
+    "brier_rain10": 0.12643113301184813,
+    "brier_rain5": 0.13243328234775012,
+    "auc_clim": 0.6660569105691057,
+    "auc_persistence": 0.6801829268292683,
+    "auc_rain10": 0.7469512195121951,
+    "auc_rain5": 0.6871951219512196,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.2559703677404673,
+      "hi": 0.49445880328585046,
+      "undefined_draws": 45
+     },
+     "skill_persistence": {
+      "lo": -1.902142309214682,
+      "hi": 0.5621771118031196,
+      "undefined_draws": 45
+     },
+     "skill_rain10": {
+      "lo": -1.230976510630568,
+      "hi": 0.5137353649744444,
+      "undefined_draws": 45
+     },
+     "skill_rain5": {
+      "lo": -1.2704176354386387,
+      "hi": 0.5514557432454938,
+      "undefined_draws": 45
+     },
+     "skill_best": {
+      "lo": -1.9612762816233764,
+      "hi": 0.480942026962616,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.5328070175438596,
+      "hi": 0.9519230349225762,
+      "undefined_draws": 45
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 493,
+    "overflows": 29,
+    "spill_rows": 63,
+    "spill_overflow_days": 63,
+    "observed_rate": 0.12778904665314403,
+    "mean_forecast": 0.14489006085192696,
+    "skill_clim": 0.2875308674394398,
+    "auc": 0.8493909191583611,
+    "brier": 0.07886192462474645,
+    "brier_clim": 0.11068819829614604,
+    "auc_clim": 0.6597083794758213,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.0788426460210652,
+      "hi": 0.5172486664135998,
+      "undefined_draws": 25
+     },
+     "auc": {
+      "lo": 0.4867239091981132,
+      "hi": 0.953552282964929,
+      "undefined_draws": 25
+     }
+    }
+   }
+  },
+  {
+   "company": "South West Water",
+   "leads": "2",
+   "common": {
+    "rows": 397,
+    "overflows": 29,
+    "spill_rows": 60,
+    "spill_overflow_days": 60,
+    "observed_rate": 0.15113350125944586,
+    "mean_forecast": 0.14119672544080603,
+    "skill_clim": 0.27679867908304834,
+    "skill_persistence": 0.28700847663536233,
+    "skill_rain10": 0.27235626091398546,
+    "skill_rain5": 0.3224755794029792,
+    "skill_best": 0.27235626091398546,
+    "best_ref": "rain10",
+    "auc": 0.8536844708209693,
+    "brier": 0.08945555377833754,
+    "brier_clim": 0.12369384732997481,
+    "brier_persistence": 0.1254651014028791,
+    "brier_rain10": 0.12293867035907119,
+    "brier_rain5": 0.13203295860466713,
+    "auc_clim": 0.6686696340257171,
+    "auc_persistence": 0.6542284866468843,
+    "auc_rain10": 0.7672601384767557,
+    "auc_rain5": 0.6394411473788328,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.15524438349618105,
+      "hi": 0.5091894704047811,
+      "undefined_draws": 45
+     },
+     "skill_persistence": {
+      "lo": -0.9014884035067399,
+      "hi": 0.5672298327146634,
+      "undefined_draws": 45
+     },
+     "skill_rain10": {
+      "lo": -0.5386877990969776,
+      "hi": 0.4959008062728274,
+      "undefined_draws": 45
+     },
+     "skill_rain5": {
+      "lo": -0.44208870772217024,
+      "hi": 0.5388809425711449,
+      "undefined_draws": 45
+     },
+     "skill_best": {
+      "lo": -0.914669421261555,
+      "hi": 0.46995819528391775,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.5922710525735213,
+      "hi": 0.9441022115319151,
+      "undefined_draws": 45
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 473,
+    "overflows": 29,
+    "spill_rows": 63,
+    "spill_overflow_days": 63,
+    "observed_rate": 0.1331923890063425,
+    "mean_forecast": 0.12308710359408034,
+    "skill_clim": 0.27947562391895175,
+    "auc": 0.8382113821138212,
+    "brier": 0.08175687374207188,
+    "brier_clim": 0.1134685743551797,
+    "auc_clim": 0.6633759194734804,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.10685766914702224,
+      "hi": 0.5403323041403942,
+      "undefined_draws": 25
+     },
+     "auc": {
+      "lo": 0.4790699092041803,
+      "hi": 0.9420042358233822,
+      "undefined_draws": 25
+     }
+    }
+   }
+  },
+  {
+   "company": "South West Water",
+   "leads": "3",
+   "common": {
+    "rows": 406,
+    "overflows": 29,
+    "spill_rows": 61,
+    "spill_overflow_days": 61,
+    "observed_rate": 0.15024630541871922,
+    "mean_forecast": 0.10227044334975367,
+    "skill_clim": 0.22167312257394145,
+    "skill_persistence": 0.2615405785941217,
+    "skill_rain10": 0.2259662276306441,
+    "skill_rain5": 0.27478081278810207,
+    "skill_best": 0.22167312257394145,
+    "best_ref": "clim",
+    "auc": 0.8295794725588026,
+    "brier": 0.09546388605911331,
+    "brier_clim": 0.12265269108374384,
+    "brier_persistence": 0.1292743829814904,
+    "brier_rain10": 0.12333297262585018,
+    "brier_rain5": 0.13163452890170185,
+    "auc_clim": 0.6728676645283915,
+    "auc_persistence": 0.6325492991209314,
+    "auc_rain10": 0.7631503920171062,
+    "auc_rain5": 0.7041815157994773,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.23564862268655662,
+      "hi": 0.5408038883846881,
+      "undefined_draws": 45
+     },
+     "skill_persistence": {
+      "lo": -0.6166561949115854,
+      "hi": 0.5357528443530771,
+      "undefined_draws": 45
+     },
+     "skill_rain10": {
+      "lo": -0.38952515252306935,
+      "hi": 0.44457684051105345,
+      "undefined_draws": 45
+     },
+     "skill_rain5": {
+      "lo": -0.4031171026135682,
+      "hi": 0.4909223199174886,
+      "undefined_draws": 45
+     },
+     "skill_best": {
+      "lo": -0.6393265354481769,
+      "hi": 0.41724556803068497,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.4970706225198413,
+      "hi": 0.9370726736049789,
+      "undefined_draws": 45
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 453,
+    "overflows": 29,
+    "spill_rows": 62,
+    "spill_overflow_days": 62,
+    "observed_rate": 0.1368653421633554,
+    "mean_forecast": 0.10263487858719647,
+    "skill_clim": 0.22143697674555596,
+    "auc": 0.8158980282154937,
+    "brier": 0.0890459365562914,
+    "brier_clim": 0.11437216242825607,
+    "auc_clim": 0.6759962049335864,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.2009909039132409,
+      "hi": 0.5076122919131132,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.4362752237862301,
+      "hi": 0.9290151124229525,
+      "undefined_draws": 45
+     }
+    }
+   }
+  },
+  {
+   "company": "South West Water",
+   "leads": "4",
+   "common": {
+    "rows": 386,
+    "overflows": 29,
+    "spill_rows": 61,
+    "spill_overflow_days": 61,
+    "observed_rate": 0.15803108808290156,
+    "mean_forecast": 0.09653652849740933,
+    "skill_clim": 0.04818327685339541,
+    "skill_persistence": 0.10547957963123766,
+    "skill_rain10": 0.1459585412176595,
+    "skill_rain5": 0.11342436619796326,
+    "skill_best": 0.04818327685339541,
+    "best_ref": "clim",
+    "auc": 0.7532156368221942,
+    "brier": 0.12028188437823831,
+    "brier_clim": 0.12637084582901553,
+    "brier_persistence": 0.13446521917146695,
+    "brier_rain10": 0.14083846064069494,
+    "brier_rain5": 0.13567018965140662,
+    "auc_clim": 0.6805800756620429,
+    "auc_persistence": 0.6505926860025221,
+    "auc_rain10": 0.601891551071879,
+    "auc_rain5": 0.7083228247162673,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.1723732210003124,
+      "hi": 0.40783465477205444,
+      "undefined_draws": 45
+     },
+     "skill_persistence": {
+      "lo": -0.6998590700770586,
+      "hi": 0.2882579938534928,
+      "undefined_draws": 45
+     },
+     "skill_rain10": {
+      "lo": -0.5074519981049282,
+      "hi": 0.27224920557590665,
+      "undefined_draws": 45
+     },
+     "skill_rain5": {
+      "lo": -0.4325274314542055,
+      "hi": 0.238750840674264,
+      "undefined_draws": 45
+     },
+     "skill_best": {
+      "lo": -0.7170430582681716,
+      "hi": 0.15777451536085943,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.5752880604796664,
+      "hi": 0.878317031388152,
+      "undefined_draws": 45
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 433,
+    "overflows": 29,
+    "spill_rows": 62,
+    "spill_overflow_days": 62,
+    "observed_rate": 0.14318706697459585,
+    "mean_forecast": 0.09027713625866052,
+    "skill_clim": 0.0650609307548945,
+    "auc": 0.758303625771672,
+    "brier": 0.10992971145496533,
+    "brier_clim": 0.11757954616628175,
+    "auc_clim": 0.6804843057125467,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.13428990273635374,
+      "hi": 0.4678692192116645,
+      "undefined_draws": 45
+     },
+     "auc": {
+      "lo": 0.5760106660588763,
+      "hi": 0.8741746785120275,
+      "undefined_draws": 45
+     }
+    }
+   }
+  },
+  {
+   "company": "Southern Water",
+   "leads": "0",
+   "common": {
+    "rows": 575,
+    "overflows": 120,
+    "spill_rows": 66,
+    "spill_overflow_days": 66,
+    "observed_rate": 0.11478260869565217,
+    "mean_forecast": 0.1321273043478261,
+    "skill_clim": 0.3055084751016284,
+    "skill_persistence": 0.07699175287630411,
+    "skill_rain10": 0.2966359686969454,
+    "skill_rain5": 0.29538441885794664,
+    "skill_best": 0.07699175287630411,
+    "best_ref": "persistence",
+    "auc": 0.8993123772102161,
+    "brier": 0.06805513206956522,
+    "brier_clim": 0.09799274667826086,
+    "brier_persistence": 0.07373187864966593,
+    "brier_rain10": 0.09675662820500792,
+    "brier_rain5": 0.09658476748308667,
+    "auc_clim": 0.7210811454426386,
+    "auc_persistence": 0.7873132106923856,
+    "auc_rain10": 0.6820265523605405,
+    "auc_rain5": 0.7053045186640472,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1958058662195348,
+      "hi": 0.7181613190420102,
+      "undefined_draws": 331
+     },
+     "skill_persistence": {
+      "lo": -0.6736990376017641,
+      "hi": 0.2555848835493848,
+      "undefined_draws": 331
+     },
+     "skill_rain10": {
+      "lo": 0.0003899489536158263,
+      "hi": 0.3758642595495943,
+      "undefined_draws": 331
+     },
+     "skill_rain5": {
+      "lo": -0.13932169580875933,
+      "hi": 0.3802497753205289,
+      "undefined_draws": 331
+     },
+     "skill_best": {
+      "lo": -0.6736990376017641,
+      "hi": 0.19685151343151144,
+      "undefined_draws": 331
+     },
+     "auc": {
+      "lo": 0.8151851872343719,
+      "hi": 0.9406417384222738,
+      "undefined_draws": 331
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1733,
+    "overflows": 120,
+    "spill_rows": 77,
+    "spill_overflow_days": 77,
+    "observed_rate": 0.044431621465666475,
+    "mean_forecast": 0.06930929024812464,
+    "skill_clim": 0.28096609828572994,
+    "auc": 0.9126592007026789,
+    "brier": 0.031849801765724176,
+    "brier_clim": 0.044295271321407974,
+    "auc_clim": 0.6876842963799485,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.07177009950691278,
+      "hi": 0.5713107831016984,
+      "undefined_draws": 15
+     },
+     "auc": {
+      "lo": 0.5734137543345883,
+      "hi": 0.9662949285544675,
+      "undefined_draws": 15
+     }
+    }
+   }
+  },
+  {
+   "company": "Southern Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 1155,
+    "overflows": 120,
+    "spill_rows": 107,
+    "spill_overflow_days": 59,
+    "observed_rate": 0.09264069264069263,
+    "mean_forecast": 0.10558432900432901,
+    "skill_clim": 0.45660670357832334,
+    "skill_persistence": 0.4863039933886969,
+    "skill_rain10": 0.40463077905851164,
+    "skill_rain5": 0.4557127005358712,
+    "skill_best": 0.40463077905851164,
+    "best_ref": "rain10",
+    "auc": 0.9534583006349433,
+    "brier": 0.0438252587099567,
+    "brier_clim": 0.08065108458008657,
+    "brier_persistence": 0.08531360599639201,
+    "brier_rain10": 0.07361021895060943,
+    "brier_rain5": 0.0805186135210289,
+    "auc_clim": 0.7215925304986802,
+    "auc_persistence": 0.3226082613968752,
+    "auc_rain10": 0.8581855960619248,
+    "auc_rain5": 0.6622092815866448,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.3360744482060703,
+      "hi": 0.7714106781406105,
+      "undefined_draws": 158
+     },
+     "skill_persistence": {
+      "lo": -0.2089241650422751,
+      "hi": 0.5714782360505548,
+      "undefined_draws": 158
+     },
+     "skill_rain10": {
+      "lo": -0.09565353193568776,
+      "hi": 0.49534322111758217,
+      "undefined_draws": 158
+     },
+     "skill_rain5": {
+      "lo": 0.2523089012323063,
+      "hi": 0.577808419525408,
+      "undefined_draws": 158
+     },
+     "skill_best": {
+      "lo": -0.23165548533079575,
+      "hi": 0.49534322111758217,
+      "undefined_draws": 158
+     },
+     "auc": {
+      "lo": 0.38212904424814326,
+      "hi": 0.9737384907945386,
+      "undefined_draws": 158
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 6902,
+    "overflows": 120,
+    "spill_rows": 304,
+    "spill_overflow_days": 76,
+    "observed_rate": 0.044045204288612,
+    "mean_forecast": 0.06701763257026948,
+    "skill_clim": 0.299899608232846,
+    "auc": 0.9146297322952729,
+    "brier": 0.03074873690959142,
+    "brier_clim": 0.04392046808026659,
+    "auc_clim": 0.6920558063847099,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.15696811921901926,
+      "hi": 0.47055127005150443,
+      "undefined_draws": 23
+     },
+     "auc": {
+      "lo": 0.7016288292968544,
+      "hi": 0.9515637798304784,
+      "undefined_draws": 23
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Southern Water",
+   "leads": "1",
+   "common": {
+    "rows": 350,
+    "overflows": 120,
+    "spill_rows": 58,
+    "spill_overflow_days": 58,
+    "observed_rate": 0.1657142857142857,
+    "mean_forecast": 0.20805828571428572,
+    "skill_clim": 0.4084981395423146,
+    "skill_persistence": 0.46013810538997313,
+    "skill_rain10": 0.3917854947944708,
+    "skill_rain5": 0.4211132552560073,
+    "skill_best": 0.3917854947944708,
+    "best_ref": "rain10",
+    "auc": 0.9251299008030232,
+    "brier": 0.08039415502857143,
+    "brier_clim": 0.13591530374285712,
+    "brier_persistence": 0.14891615028070226,
+    "brier_rain10": 0.1321805947416602,
+    "brier_rain5": 0.13887717374514247,
+    "auc_clim": 0.752509447331129,
+    "auc_persistence": 0.5431624940954181,
+    "auc_rain10": 0.690009447331129,
+    "auc_rain5": 0.690009447331129,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.19526550660778078,
+      "hi": 0.540185768222581,
+      "undefined_draws": 331
+     },
+     "skill_persistence": {
+      "lo": 0.04487739223065842,
+      "hi": 0.564069416483034,
+      "undefined_draws": 331
+     },
+     "skill_rain10": {
+      "lo": -0.010044068549173679,
+      "hi": 0.49954669908401617,
+      "undefined_draws": 331
+     },
+     "skill_rain5": {
+      "lo": -0.008413255502667938,
+      "hi": 0.5278183429448465,
+      "undefined_draws": 331
+     },
+     "skill_best": {
+      "lo": -0.010044068549173679,
+      "hi": 0.49832746361062236,
+      "undefined_draws": 331
+     },
+     "auc": {
+      "lo": 0.8042934782608696,
+      "hi": 0.9557668760642457,
+      "undefined_draws": 331
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1727,
+    "overflows": 120,
+    "spill_rows": 76,
+    "spill_overflow_days": 76,
+    "observed_rate": 0.04400694846554719,
+    "mean_forecast": 0.0838611464968153,
+    "skill_clim": 0.27957195320031347,
+    "auc": 0.9197934266313876,
+    "brier": 0.03162079994209613,
+    "brier_clim": 0.043891683676896366,
+    "auc_clim": 0.6918494373425994,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.2629608808663988,
+      "hi": 0.5103199448561109,
+      "undefined_draws": 23
+     },
+     "auc": {
+      "lo": 0.6234665155491926,
+      "hi": 0.9682593882215568,
+      "undefined_draws": 23
+     }
+    }
+   }
+  },
+  {
+   "company": "Southern Water",
+   "leads": "2",
+   "common": {
+    "rows": 345,
+    "overflows": 120,
+    "spill_rows": 47,
+    "spill_overflow_days": 47,
+    "observed_rate": 0.13623188405797101,
+    "mean_forecast": 0.10895884057971016,
+    "skill_clim": 0.49544034840747453,
+    "skill_persistence": 0.5507013215088086,
+    "skill_rain10": 0.4455863964429996,
+    "skill_rain5": 0.49703233005708336,
+    "skill_best": 0.4455863964429996,
+    "best_ref": "rain10",
+    "auc": 0.9702984435242039,
+    "brier": 0.05729003292753623,
+    "brier_clim": 0.11354461805797102,
+    "brier_persistence": 0.12750990748498142,
+    "brier_rain10": 0.10333446466676774,
+    "brier_rain5": 0.11390400686000007,
+    "auc_clim": 0.7387191203769813,
+    "auc_persistence": 0.49161073825503354,
+    "auc_rain10": 0.8791946308724832,
+    "auc_rain5": 0.7734899328859061,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.4066961569526259,
+      "hi": 0.556444369942456,
+      "undefined_draws": 653
+     },
+     "skill_persistence": {
+      "lo": 0.4665181334751734,
+      "hi": 0.6191086155670331,
+      "undefined_draws": 653
+     },
+     "skill_rain10": {
+      "lo": 0.3478953316428292,
+      "hi": 0.5287721176414868,
+      "undefined_draws": 653
+     },
+     "skill_rain5": {
+      "lo": 0.4028172963533924,
+      "hi": 0.57288741617205,
+      "undefined_draws": 653
+     },
+     "skill_best": {
+      "lo": 0.3478953316428292,
+      "hi": 0.5283428946654447,
+      "undefined_draws": 653
+     },
+     "auc": {
+      "lo": 0.8561798314502373,
+      "hi": 0.9843426442436908,
+      "undefined_draws": 653
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1727,
+    "overflows": 120,
+    "spill_rows": 76,
+    "spill_overflow_days": 76,
+    "observed_rate": 0.04400694846554719,
+    "mean_forecast": 0.0666544875506659,
+    "skill_clim": 0.3123366147104053,
+    "auc": 0.9267748414039338,
+    "brier": 0.030174717678054432,
+    "brier_clim": 0.04388007028372903,
+    "auc_clim": 0.6924312219069783,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.21114518813124672,
+      "hi": 0.6228717928110392,
+      "undefined_draws": 23
+     },
+     "auc": {
+      "lo": 0.6348953762091463,
+      "hi": 0.9642243616336434,
+      "undefined_draws": 23
+     }
+    }
+   }
+  },
+  {
+   "company": "Southern Water",
+   "leads": "3",
+   "common": {
+    "rows": 343,
+    "overflows": 117,
+    "spill_rows": 1,
+    "spill_overflow_days": 1,
+    "observed_rate": 0.0029154518950437317,
+    "mean_forecast": 0.02504489795918367,
+    "skill_clim": 0.6391690014443672,
+    "skill_persistence": -0.068026313596115,
+    "skill_rain10": 0.17727747960797546,
+    "skill_rain5": 0.4798329591946163,
+    "skill_best": -0.068026313596115,
+    "best_ref": "persistence",
+    "auc": 0.5760233918128655,
+    "brier": 0.004555767113702625,
+    "brier_clim": 0.012625764227405249,
+    "brier_persistence": 0.004265594448102179,
+    "brier_rain10": 0.005537428477747048,
+    "brier_rain5": 0.008758277161599569,
+    "auc_clim": 0.2777777777777778,
+    "auc_persistence": 0.9912280701754386,
+    "auc_rain10": 0.4517543859649123,
+    "auc_rain5": 0.22660818713450293,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.23040093299302297,
+      "hi": 0.7239683376657765,
+      "undefined_draws": 1086
+     },
+     "skill_persistence": {
+      "lo": -0.4229992082427976,
+      "hi": 0.11015639723061489,
+      "undefined_draws": 1086
+     },
+     "skill_rain10": {
+      "lo": -0.036613881668409905,
+      "hi": 0.31466419653392663,
+      "undefined_draws": 1086
+     },
+     "skill_rain5": {
+      "lo": 0.20475020800390453,
+      "hi": 0.5683459600465206,
+      "undefined_draws": 1086
+     },
+     "skill_best": {
+      "lo": -0.4229992082427976,
+      "hi": 0.10748269284941682,
+      "undefined_draws": 1086
+     },
+     "auc": {
+      "lo": 0.26917420814479637,
+      "hi": 0.7741586406164006,
+      "undefined_draws": 1086
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1727,
+    "overflows": 120,
+    "spill_rows": 76,
+    "spill_overflow_days": 76,
+    "observed_rate": 0.04400694846554719,
+    "mean_forecast": 0.0716189345686161,
+    "skill_clim": 0.3248216777338304,
+    "auc": 0.9036787911632503,
+    "brier": 0.029626872235089745,
+    "brier_clim": 0.04388007028372903,
+    "auc_clim": 0.6924312219069783,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1702162328588608,
+      "hi": 0.4185688984205659,
+      "undefined_draws": 23
+     },
+     "auc": {
+      "lo": 0.7168954200252738,
+      "hi": 0.9404398021100795,
+      "undefined_draws": 23
+     }
+    }
+   }
+  },
+  {
+   "company": "Southern Water",
+   "leads": "4",
+   "common": {
+    "rows": 117,
+    "overflows": 117,
+    "spill_rows": 1,
+    "spill_overflow_days": 1,
+    "observed_rate": 0.008547008547008548,
+    "mean_forecast": 0.025199145299145298,
+    "skill_clim": 0.44539666750656215,
+    "skill_persistence": -0.19737742280472004,
+    "skill_rain10": 0.04502269530278702,
+    "skill_rain5": 0.44881824697349826,
+    "skill_best": -0.19737742280472004,
+    "best_ref": "persistence",
+    "auc": 0.25,
+    "brier": 0.00985068435897436,
+    "brier_clim": 0.017761675384615393,
+    "brier_persistence": 0.008226883329652447,
+    "brier_rain10": 0.010315097867270926,
+    "brier_rain5": 0.017871934810767813,
+    "auc_clim": 0.28448275862068967,
+    "auc_persistence": 0.9956896551724138,
+    "auc_rain10": 0.46551724137931033,
+    "auc_rain5": 0.06465517241379311,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.16669153836759137,
+      "hi": 0.5056355534103556,
+      "undefined_draws": 1086
+     },
+     "skill_persistence": {
+      "lo": -0.37391641255154784,
+      "hi": -0.10998592904026919,
+      "undefined_draws": 1086
+     },
+     "skill_rain10": {
+      "lo": -0.05503292644351428,
+      "hi": 0.12960669038143188,
+      "undefined_draws": 1086
+     },
+     "skill_rain5": {
+      "lo": 0.17056196620485922,
+      "hi": 0.48910557745425576,
+      "undefined_draws": 1086
+     },
+     "skill_best": {
+      "lo": -0.37391641255154784,
+      "hi": -0.10998592904026919,
+      "undefined_draws": 1086
+     },
+     "auc": {
+      "lo": 0.1682506991157131,
+      "hi": 0.3333333333333333,
+      "undefined_draws": 1086
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 1721,
+    "overflows": 120,
+    "spill_rows": 76,
+    "spill_overflow_days": 76,
+    "observed_rate": 0.044160371876815804,
+    "mean_forecast": 0.0458624636839047,
+    "skill_clim": 0.2828725536439398,
+    "auc": 0.9234642457206846,
+    "brier": 0.0315754299070308,
+    "brier_clim": 0.04403043011040094,
+    "auc_clim": 0.6915093585026396,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.20466797128413602,
+      "hi": 0.6414158908889013,
+      "undefined_draws": 23
+     },
+     "auc": {
+      "lo": 0.808839576612022,
+      "hi": 0.9697829941909311,
+      "undefined_draws": 23
+     }
+    }
+   }
+  },
+  {
+   "company": "Thames Water",
+   "leads": "0",
+   "common": {
+    "rows": 3863,
+    "overflows": 194,
+    "spill_rows": 93,
+    "spill_overflow_days": 93,
+    "observed_rate": 0.024074553455863318,
+    "mean_forecast": 0.062028604711364226,
+    "skill_clim": 0.12662707800271955,
+    "skill_persistence": -0.457609719754666,
+    "skill_rain10": -0.28285353193149887,
+    "skill_rain5": -0.29643902749753215,
+    "skill_best": -0.457609719754666,
+    "best_ref": "persistence",
+    "auc": 0.8675979008014603,
+    "brier": 0.029673972593838988,
+    "brier_clim": 0.03397629105099663,
+    "brier_persistence": 0.020357968385963758,
+    "brier_rain10": 0.023131224146189986,
+    "brier_rain5": 0.022888830067941988,
+    "auc_clim": 0.6329254727474972,
+    "auc_persistence": 0.6713185590827415,
+    "auc_rain10": 0.8111933487350618,
+    "auc_rain5": 0.7985325575425687,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.29431695774232813,
+      "hi": 0.786971845033441,
+      "undefined_draws": 4
+     },
+     "skill_persistence": {
+      "lo": -1.0295805589413556,
+      "hi": -0.07458803489628499,
+      "undefined_draws": 4
+     },
+     "skill_rain10": {
+      "lo": -0.5550501958277446,
+      "hi": -0.08743673476609909,
+      "undefined_draws": 4
+     },
+     "skill_rain5": {
+      "lo": -0.6302546346878268,
+      "hi": -0.06599114084637453,
+      "undefined_draws": 4
+     },
+     "skill_best": {
+      "lo": -1.0295805589413556,
+      "hi": -0.12891760609706004,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.5209830324186052,
+      "hi": 0.9274429736377829,
+      "undefined_draws": 4
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 4228,
+    "overflows": 194,
+    "spill_rows": 94,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.022232734153263954,
+    "mean_forecast": 0.05888315988647114,
+    "skill_clim": 0.1552542758692278,
+    "auc": 0.8721474230306024,
+    "brier": 0.027631306863765377,
+    "brier_clim": 0.03270961435430464,
+    "auc_clim": 0.6310100978908687,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.278646627306659,
+      "hi": 0.7927039267451345,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.519889174360771,
+      "hi": 0.9340560233784997,
+      "undefined_draws": 4
+     }
+    }
+   }
+  },
+  {
+   "company": "Thames Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 13553,
+    "overflows": 194,
+    "spill_rows": 371,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.027374013133623552,
+    "mean_forecast": 0.061764199808160544,
+    "skill_clim": 0.21994442780173484,
+    "skill_persistence": -0.08248679799821734,
+    "skill_rain10": -0.10048634544791946,
+    "skill_rain5": -0.08288868464275545,
+    "skill_best": -0.10048634544791946,
+    "best_ref": "rain10",
+    "auc": 0.8615444322712381,
+    "brier": 0.0283744267114292,
+    "brier_clim": 0.03637487856341769,
+    "brier_persistence": 0.026212261215472057,
+    "brier_rain10": 0.02578353364291883,
+    "brier_rain5": 0.026202533200159837,
+    "auc_clim": 0.632454981288296,
+    "auc_persistence": 0.5822496044389536,
+    "auc_rain10": 0.8009130722650875,
+    "auc_rain5": 0.770719874074792,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.06664781479879295,
+      "hi": 0.7415951949049407,
+      "undefined_draws": 4
+     },
+     "skill_persistence": {
+      "lo": -0.3319105125558508,
+      "hi": 0.06931076461914927,
+      "undefined_draws": 4
+     },
+     "skill_rain10": {
+      "lo": -0.4635293864806206,
+      "hi": 0.02480034673501781,
+      "undefined_draws": 4
+     },
+     "skill_rain5": {
+      "lo": -0.2590533246895701,
+      "hi": 0.03829751156198612,
+      "undefined_draws": 4
+     },
+     "skill_best": {
+      "lo": -0.46937388106709815,
+      "hi": 0.024588517751584466,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.5128707898094236,
+      "hi": 0.9194677731612478,
+      "undefined_draws": 4
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 16635,
+    "overflows": 194,
+    "spill_rows": 376,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.022602945596633603,
+    "mean_forecast": 0.05432833183047791,
+    "skill_clim": 0.2736224033912966,
+    "auc": 0.8696032344770098,
+    "brier": 0.023997025065223925,
+    "brier_clim": 0.033036571030357675,
+    "auc_clim": 0.6307164738874574,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.043787811929037856,
+      "hi": 0.7847916259263245,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.5228269728759444,
+      "hi": 0.9309035755018713,
+      "undefined_draws": 4
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Thames Water",
+   "leads": "1",
+   "common": {
+    "rows": 3676,
+    "overflows": 194,
+    "spill_rows": 93,
+    "spill_overflow_days": 93,
+    "observed_rate": 0.02529923830250272,
+    "mean_forecast": 0.07123843852013058,
+    "skill_clim": 0.14536392989157965,
+    "skill_persistence": -0.2773294731704179,
+    "skill_rain10": -0.22972805613194525,
+    "skill_rain5": -0.22331259540144632,
+    "skill_best": -0.2773294731704179,
+    "best_ref": "persistence",
+    "auc": 0.8660355501937165,
+    "brier": 0.029782296254080524,
+    "brier_clim": 0.03484792801958651,
+    "brier_persistence": 0.023316064398137507,
+    "brier_rain10": 0.024218603540492857,
+    "brier_rain5": 0.02434561400416798,
+    "auc_clim": 0.6332592079083126,
+    "auc_persistence": 0.6029218021781471,
+    "auc_rain10": 0.8033830603897136,
+    "auc_rain5": 0.7673872138143383,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.16863754824464963,
+      "hi": 0.6891564842752184,
+      "undefined_draws": 4
+     },
+     "skill_persistence": {
+      "lo": -0.9068251967475696,
+      "hi": -0.05640041601431753,
+      "undefined_draws": 4
+     },
+     "skill_rain10": {
+      "lo": -0.9980689764025041,
+      "hi": -0.04409816535481037,
+      "undefined_draws": 4
+     },
+     "skill_rain5": {
+      "lo": -0.7503882275701066,
+      "hi": -0.042216940454583685,
+      "undefined_draws": 4
+     },
+     "skill_best": {
+      "lo": -1.042178423486968,
+      "hi": -0.07029269266605498,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.4871512055259876,
+      "hi": 0.9315595303065062,
+      "undefined_draws": 4
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 4200,
+    "overflows": 194,
+    "spill_rows": 94,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.02238095238095238,
+    "mean_forecast": 0.06473176190476192,
+    "skill_clim": 0.18562260165404465,
+    "auc": 0.8738820200847748,
+    "brier": 0.026745094747619054,
+    "brier_clim": 0.03284115546666667,
+    "auc_clim": 0.6308878548258386,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.16343372045734586,
+      "hi": 0.7500850913464479,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.49209376263583543,
+      "hi": 0.9419441659453284,
+      "undefined_draws": 4
+     }
+    }
+   }
+  },
+  {
+   "company": "Thames Water",
+   "leads": "2",
+   "common": {
+    "rows": 3482,
+    "overflows": 193,
+    "spill_rows": 92,
+    "spill_overflow_days": 92,
+    "observed_rate": 0.026421596783457783,
+    "mean_forecast": 0.06783052843193568,
+    "skill_clim": 0.19555829443271955,
+    "skill_persistence": -0.13106423830405056,
+    "skill_rain10": -0.14221153773851003,
+    "skill_rain5": -0.1355012019914037,
+    "skill_best": -0.14221153773851003,
+    "best_ref": "rain10",
+    "auc": 0.8734417083493652,
+    "brier": 0.028700574890867313,
+    "brier_clim": 0.03567763169442849,
+    "brier_persistence": 0.025374840719835482,
+    "brier_rain10": 0.025127197495914144,
+    "brier_rain5": 0.025275688691947854,
+    "auc_clim": 0.6324050917019366,
+    "auc_persistence": 0.5505130178273695,
+    "auc_rain10": 0.8102186738489162,
+    "auc_rain5": 0.7660959343337181,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.16218436052115867,
+      "hi": 0.7847997379052084,
+      "undefined_draws": 11
+     },
+     "skill_persistence": {
+      "lo": -0.3415958523239305,
+      "hi": 0.05455261905437269,
+      "undefined_draws": 11
+     },
+     "skill_rain10": {
+      "lo": -0.3813040443139502,
+      "hi": -0.013035113841773405,
+      "undefined_draws": 11
+     },
+     "skill_rain5": {
+      "lo": -0.3421024598233097,
+      "hi": 0.03294845413725595,
+      "undefined_draws": 11
+     },
+     "skill_best": {
+      "lo": -0.41235195313089595,
+      "hi": -0.016578839695771966,
+      "undefined_draws": 11
+     },
+     "auc": {
+      "lo": 0.5027721999784327,
+      "hi": 0.9320904789519452,
+      "undefined_draws": 11
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 4172,
+    "overflows": 194,
+    "spill_rows": 94,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.022531160115052733,
+    "mean_forecast": 0.060329889741131355,
+    "skill_clim": 0.24103764963898544,
+    "auc": 0.8791765362662131,
+    "brier": 0.02502637535714286,
+    "brier_clim": 0.03297446223154363,
+    "auc_clim": 0.6307639330919412,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.14199457224022846,
+      "hi": 0.8064578033967339,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.5157801914701177,
+      "hi": 0.9400877328589361,
+      "undefined_draws": 4
+     }
+    }
+   }
+  },
+  {
+   "company": "Thames Water",
+   "leads": "3",
+   "common": {
+    "rows": 3293,
+    "overflows": 194,
+    "spill_rows": 93,
+    "spill_overflow_days": 93,
+    "observed_rate": 0.028241724870938355,
+    "mean_forecast": 0.05724254479198299,
+    "skill_clim": 0.26271152583027324,
+    "skill_persistence": 0.009131827735597953,
+    "skill_rain10": -0.021942702758856125,
+    "skill_rain5": -0.0024825613240970767,
+    "skill_best": -0.021942702758856125,
+    "best_ref": "rain10",
+    "auc": 0.8714465725806452,
+    "brier": 0.027292646993622837,
+    "brier_clim": 0.037017596164591555,
+    "brier_persistence": 0.027544175660877017,
+    "brier_rain10": 0.026706631320858876,
+    "brier_rain5": 0.027225059114818134,
+    "auc_clim": 0.6319774865591398,
+    "auc_persistence": 0.518067876344086,
+    "auc_rain10": 0.7767489919354839,
+    "auc_rain5": 0.758736559139785,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.030100576854130697,
+      "hi": 0.78787406047445,
+      "undefined_draws": 11
+     },
+     "skill_persistence": {
+      "lo": -0.1508854942904261,
+      "hi": 0.15629352689247217,
+      "undefined_draws": 11
+     },
+     "skill_rain10": {
+      "lo": -0.18551297003634745,
+      "hi": 0.08913304580610613,
+      "undefined_draws": 11
+     },
+     "skill_rain5": {
+      "lo": -0.1524400722404175,
+      "hi": 0.18187328325799876,
+      "undefined_draws": 11
+     },
+     "skill_best": {
+      "lo": -0.19603071991260965,
+      "hi": 0.085463319817428,
+      "undefined_draws": 11
+     },
+     "auc": {
+      "lo": 0.5292095307873687,
+      "hi": 0.926189321009303,
+      "undefined_draws": 11
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 4145,
+    "overflows": 194,
+    "spill_rows": 94,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.022677925211097707,
+    "mean_forecast": 0.05152422195416164,
+    "skill_clim": 0.308191796843976,
+    "auc": 0.8739436545743893,
+    "brier": 0.02290063215199035,
+    "brier_clim": 0.033102573874547646,
+    "auc_clim": 0.6306585713010184,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.003693294079199022,
+      "hi": 0.7829305591227818,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.5337400441786243,
+      "hi": 0.930542615979807,
+      "undefined_draws": 4
+     }
+    }
+   }
+  },
+  {
+   "company": "Thames Water",
+   "leads": "4",
+   "common": {
+    "rows": 3102,
+    "overflows": 194,
+    "spill_rows": 93,
+    "spill_overflow_days": 93,
+    "observed_rate": 0.029980657640232108,
+    "mean_forecast": 0.048527433913604125,
+    "skill_clim": 0.282003140324653,
+    "skill_persistence": 0.05766547449954562,
+    "skill_rain10": -0.0034124937217707707,
+    "skill_rain5": 0.030666165711291882,
+    "skill_best": -0.0034124937217707707,
+    "best_ref": "rain10",
+    "auc": 0.8468769319282297,
+    "brier": 0.027488328778207605,
+    "brier_clim": 0.0382847479174726,
+    "brier_persistence": 0.029170457023856924,
+    "brier_rain10": 0.02739484404489551,
+    "brier_rain5": 0.028357958637003938,
+    "auc_clim": 0.6323091656928855,
+    "auc_persistence": 0.5233921890243248,
+    "auc_rain10": 0.7600424532853054,
+    "auc_rain5": 0.7761286034370009,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07484450278092158,
+      "hi": 0.7195648261549407,
+      "undefined_draws": 11
+     },
+     "skill_persistence": {
+      "lo": -0.29132620583880264,
+      "hi": 0.1808351751578834,
+      "undefined_draws": 11
+     },
+     "skill_rain10": {
+      "lo": -0.3413460738699134,
+      "hi": 0.09785129290923286,
+      "undefined_draws": 11
+     },
+     "skill_rain5": {
+      "lo": -0.18277021098212604,
+      "hi": 0.13776018274595786,
+      "undefined_draws": 11
+     },
+     "skill_best": {
+      "lo": -0.3485170773499052,
+      "hi": 0.09740111767876646,
+      "undefined_draws": 11
+     },
+     "auc": {
+      "lo": 0.4987896587187,
+      "hi": 0.900769280002508,
+      "undefined_draws": 11
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 4118,
+    "overflows": 194,
+    "spill_rows": 94,
+    "spill_overflow_days": 94,
+    "observed_rate": 0.022826614861583293,
+    "mean_forecast": 0.04045998057309373,
+    "skill_clim": 0.3604136478566341,
+    "auc": 0.8614152848864262,
+    "brier": 0.021254967401651285,
+    "brier_clim": 0.03323236546624575,
+    "auc_clim": 0.6305517956093228,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.11483840006209393,
+      "hi": 0.8135346768186223,
+      "undefined_draws": 4
+     },
+     "auc": {
+      "lo": 0.5155448431585434,
+      "hi": 0.9247458274825773,
+      "undefined_draws": 4
+     }
+    }
+   }
+  },
+  {
+   "company": "United Utilities",
+   "leads": "0",
+   "common": {
+    "rows": 2632,
+    "overflows": 135,
+    "spill_rows": 235,
+    "spill_overflow_days": 235,
+    "observed_rate": 0.08928571428571429,
+    "mean_forecast": 0.13299658054711247,
+    "skill_clim": 0.18309728744549492,
+    "skill_persistence": 0.10216781234049721,
+    "skill_rain10": 0.1281673703411047,
+    "skill_rain5": 0.11303200837574479,
+    "skill_best": 0.10216781234049721,
+    "best_ref": "persistence",
+    "auc": 0.8841867937759078,
+    "brier": 0.06844618765957447,
+    "brier_clim": 0.08378744079027356,
+    "brier_persistence": 0.07623494523848838,
+    "brier_rain10": 0.07850840325436552,
+    "brier_rain5": 0.07716872345554743,
+    "auc_clim": 0.7632830044648009,
+    "auc_persistence": 0.6849812265331665,
+    "auc_rain10": 0.6732165206508135,
+    "auc_rain5": 0.7080934501460159,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.11224656749258898,
+      "hi": 0.3403822617892468,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.3775272858258896,
+      "hi": 0.3097244411436669,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.2544877762967432,
+      "hi": 0.30559949892079463,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.2617533774651004,
+      "hi": 0.28730222757555235,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.3775272858258896,
+      "hi": 0.26226287167383155,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.8472774275165776,
+      "hi": 0.9175035295237123,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2917,
+    "overflows": 135,
+    "spill_rows": 256,
+    "spill_overflow_days": 256,
+    "observed_rate": 0.08776139869729174,
+    "mean_forecast": 0.1321108330476517,
+    "skill_clim": 0.18835149636437698,
+    "auc": 0.8832536229331078,
+    "brier": 0.06776936291052452,
+    "brier_clim": 0.08349595004113816,
+    "auc_clim": 0.7615359885851184,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.09401406695175982,
+      "hi": 0.335538834004907,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.846393555940436,
+      "hi": 0.9157712491821692,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "United Utilities",
+   "leads": "1-4",
+   "common": {
+    "rows": 9120,
+    "overflows": 135,
+    "spill_rows": 731,
+    "spill_overflow_days": 232,
+    "observed_rate": 0.08015350877192982,
+    "mean_forecast": 0.12223623903508772,
+    "skill_clim": 0.11333347705110186,
+    "skill_persistence": 0.059912485913617974,
+    "skill_rain10": 0.05341861161502426,
+    "skill_rain5": 0.05004362872358881,
+    "skill_best": 0.05004362872358881,
+    "best_ref": "rain5",
+    "auc": 0.8540856789369311,
+    "brier": 0.06788166349013158,
+    "brier_clim": 0.07655827950328946,
+    "brier_persistence": 0.07220781307376684,
+    "brier_rain10": 0.07171244260987311,
+    "brier_rain5": 0.07145766431243807,
+    "auc_clim": 0.7951104949987435,
+    "auc_persistence": 0.6059765907377569,
+    "auc_rain10": 0.6650398321428996,
+    "auc_rain5": 0.6778245533244222,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.03569465449167359,
+      "hi": 0.24914498631877222,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.13539945095414738,
+      "hi": 0.17614976959778506,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.15224384503234156,
+      "hi": 0.16871745733134952,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.14942056036325324,
+      "hi": 0.1678357515932181,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.16872456954505546,
+      "hi": 0.1408035418756695,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7974381406993717,
+      "hi": 0.9041619125410637,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 11478,
+    "overflows": 135,
+    "spill_rows": 1016,
+    "spill_overflow_days": 256,
+    "observed_rate": 0.08851716326886216,
+    "mean_forecast": 0.12156698902247777,
+    "skill_clim": 0.11419761159635877,
+    "auc": 0.8286632010560905,
+    "brier": 0.074222304590521,
+    "brier_clim": 0.08379104139048615,
+    "auc_clim": 0.7613750626564529,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.024055184416251044,
+      "hi": 0.21286594782662407,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7739741820215095,
+      "hi": 0.8921092190912798,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "United Utilities",
+   "leads": "1",
+   "common": {
+    "rows": 2482,
+    "overflows": 135,
+    "spill_rows": 226,
+    "spill_overflow_days": 226,
+    "observed_rate": 0.09105560032232071,
+    "mean_forecast": 0.13337743755036258,
+    "skill_clim": 0.2055838337139667,
+    "skill_persistence": 0.17942618358470142,
+    "skill_rain10": 0.1513194836074998,
+    "skill_rain5": 0.1589278639080488,
+    "skill_best": 0.1513194836074998,
+    "best_ref": "rain10",
+    "auc": 0.8861207870457541,
+    "brier": 0.0669552055842063,
+    "brier_clim": 0.0842822797743755,
+    "brier_persistence": 0.08159559109100277,
+    "brier_rain10": 0.07889329882205123,
+    "brier_rain5": 0.07960697152008175,
+    "auc_clim": 0.7639931666980481,
+    "auc_persistence": 0.6113843908868386,
+    "auc_rain10": 0.6970791752965543,
+    "auc_rain5": 0.6808824452394402,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.02128119257522168,
+      "hi": 0.3742792500112448,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.11174542472348795,
+      "hi": 0.34263038994108863,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.10110270948899028,
+      "hi": 0.29511085214910354,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.09123081191508467,
+      "hi": 0.31009694901701895,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.12056897917752928,
+      "hi": 0.2865634992649878,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.844588612943894,
+      "hi": 0.9179762192072524,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2898,
+    "overflows": 135,
+    "spill_rows": 256,
+    "spill_overflow_days": 256,
+    "observed_rate": 0.0883367839889579,
+    "mean_forecast": 0.13203712905452036,
+    "skill_clim": 0.2142306949046754,
+    "auc": 0.8839221293054504,
+    "brier": 0.06576789549344375,
+    "brier_clim": 0.08369873328847481,
+    "auc_clim": 0.761885083506813,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.015237469920113492,
+      "hi": 0.3600488119188005,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.8440298699447885,
+      "hi": 0.9164720326112638,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "United Utilities",
+   "leads": "2",
+   "common": {
+    "rows": 2349,
+    "overflows": 135,
+    "spill_rows": 182,
+    "spill_overflow_days": 182,
+    "observed_rate": 0.07747977862920391,
+    "mean_forecast": 0.12885730097914008,
+    "skill_clim": 0.09764618176481221,
+    "skill_persistence": 0.03768880882906711,
+    "skill_rain10": 0.023981308821642844,
+    "skill_rain5": 0.03343399242302125,
+    "skill_best": 0.023981308821642844,
+    "best_ref": "rain10",
+    "auc": 0.8676627940587331,
+    "brier": 0.06711628584078332,
+    "brier_clim": 0.07437912322690506,
+    "brier_persistence": 0.06974488757541804,
+    "brier_rain10": 0.0687653694006138,
+    "brier_rain5": 0.06943787109690805,
+    "auc_clim": 0.8091743282098612,
+    "auc_persistence": 0.6244073185697551,
+    "auc_rain10": 0.6831265181518988,
+    "auc_rain5": 0.6558378170053297,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.04464536260775084,
+      "hi": 0.21380124437199116,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.3146498248882289,
+      "hi": 0.18319936188467206,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.38139836384797293,
+      "hi": 0.19130791830412228,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.3555451808616707,
+      "hi": 0.18756445300807983,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.3847183719745035,
+      "hi": 0.1280649474246798,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.8264632405190079,
+      "hi": 0.917955203759972,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2879,
+    "overflows": 135,
+    "spill_rows": 256,
+    "spill_overflow_days": 256,
+    "observed_rate": 0.08891976380687738,
+    "mean_forecast": 0.13201260854463356,
+    "skill_clim": 0.11338932742083252,
+    "auc": 0.8485847848360656,
+    "brier": 0.07439035305661687,
+    "brier_clim": 0.08390419307745746,
+    "auc_clim": 0.7622392358463591,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.008078366073631332,
+      "hi": 0.21294158797179374,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.8003855913814656,
+      "hi": 0.9038888312772624,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "United Utilities",
+   "leads": "3",
+   "common": {
+    "rows": 2212,
+    "overflows": 135,
+    "spill_rows": 164,
+    "spill_overflow_days": 164,
+    "observed_rate": 0.07414104882459313,
+    "mean_forecast": 0.1143491862567812,
+    "skill_clim": 0.008859386599105457,
+    "skill_persistence": -0.07903317789388842,
+    "skill_rain10": -0.06443613748142174,
+    "skill_rain5": -0.08628061830432476,
+    "skill_best": -0.08628061830432476,
+    "best_ref": "rain5",
+    "auc": 0.8289095250571646,
+    "brier": 0.07220989528933093,
+    "brier_clim": 0.07285534899186258,
+    "brier_persistence": 0.06692092214464979,
+    "brier_rain10": 0.06783863563688076,
+    "brier_rain5": 0.0664744395440379,
+    "auc_clim": 0.8084776343368902,
+    "auc_persistence": 0.6226002762957317,
+    "auc_rain10": 0.6298351753048781,
+    "auc_rain5": 0.6731552496189024,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.1278182993031059,
+      "hi": 0.21620401640895667,
+      "undefined_draws": 3
+     },
+     "skill_persistence": {
+      "lo": -0.41357434263803694,
+      "hi": 0.09538103065946402,
+      "undefined_draws": 3
+     },
+     "skill_rain10": {
+      "lo": -0.3882489950385799,
+      "hi": 0.12057513873105873,
+      "undefined_draws": 3
+     },
+     "skill_rain5": {
+      "lo": -0.44739422567468806,
+      "hi": 0.10560549949655634,
+      "undefined_draws": 3
+     },
+     "skill_best": {
+      "lo": -0.45072457996259074,
+      "hi": 0.05144691229590554,
+      "undefined_draws": 3
+     },
+     "auc": {
+      "lo": 0.7534084835856156,
+      "hi": 0.9030764041745086,
+      "undefined_draws": 3
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2860,
+    "overflows": 135,
+    "spill_rows": 254,
+    "spill_overflow_days": 254,
+    "observed_rate": 0.08881118881118881,
+    "mean_forecast": 0.11871339160839162,
+    "skill_clim": 0.03502480763814042,
+    "auc": 0.8140307648612227,
+    "brier": 0.08101547569580421,
+    "brier_clim": 0.08395601911538463,
+    "auc_clim": 0.7611062599331645,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.09531701173972834,
+      "hi": 0.14617083270299844,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7569066924097801,
+      "hi": 0.8798939996503278,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "United Utilities",
+   "leads": "4",
+   "common": {
+    "rows": 2077,
+    "overflows": 135,
+    "spill_rows": 159,
+    "spill_overflow_days": 159,
+    "observed_rate": 0.07655272026961964,
+    "mean_forecast": 0.10983413577274916,
+    "skill_clim": 0.11516001922739683,
+    "skill_persistence": 0.05994700051258084,
+    "skill_rain10": 0.0757211566177467,
+    "skill_rain5": 0.05866187879113727,
+    "skill_best": 0.05866187879113727,
+    "best_ref": "rain5",
+    "auc": 0.8232287957188109,
+    "brier": 0.0652448276119403,
+    "brier_clim": 0.07373630151179585,
+    "brier_persistence": 0.0694054778267994,
+    "brier_rain10": 0.07058998275151156,
+    "brier_rain5": 0.0693107249583743,
+    "auc_clim": 0.8091614692978142,
+    "auc_persistence": 0.6023586545208911,
+    "auc_rain10": 0.5882667348718856,
+    "auc_rain5": 0.6401158177084358,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.1340054742040077,
+      "hi": 0.31224574171631425,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.1678602549764699,
+      "hi": 0.19280129817458255,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.19880582294817828,
+      "hi": 0.20078983484721324,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.17669794709944797,
+      "hi": 0.18208787348417785,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.21618474950966887,
+      "hi": 0.17476445017825717,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.7359422752763756,
+      "hi": 0.9327780519918598,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2841,
+    "overflows": 135,
+    "spill_rows": 250,
+    "spill_overflow_days": 250,
+    "observed_rate": 0.08799718409010912,
+    "mean_forecast": 0.1031741288278775,
+    "skill_clim": 0.0929019431649406,
+    "auc": 0.7717684291779235,
+    "brier": 0.07583743893347412,
+    "brier_clim": 0.08360445528687081,
+    "auc_clim": 0.7602416055576997,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.1060317243174644,
+      "hi": 0.2297743183846687,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.6877177406964186,
+      "hi": 0.8949829702437883,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Wessex Water",
+   "leads": "0",
+   "common": {
+    "rows": 5090,
+    "overflows": 262,
+    "spill_rows": 196,
+    "spill_overflow_days": 196,
+    "observed_rate": 0.03850687622789784,
+    "mean_forecast": 0.05887762278978389,
+    "skill_clim": 0.28273945583210214,
+    "skill_persistence": -0.3013146446661119,
+    "skill_rain10": 0.0453901444368201,
+    "skill_rain5": 0.07897584773735944,
+    "skill_best": -0.3013146446661119,
+    "best_ref": "persistence",
+    "auc": 0.9319720941094051,
+    "brier": 0.031057291758349703,
+    "brier_clim": 0.0432998747956778,
+    "brier_persistence": 0.023866089485466684,
+    "brier_rain10": 0.03253401541724834,
+    "brier_rain5": 0.033720387985540425,
+    "auc_clim": 0.7414555932712276,
+    "auc_persistence": 0.8548858243747028,
+    "auc_rain10": 0.8825435977415077,
+    "auc_rain5": 0.8552527876700333,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07675994801569612,
+      "hi": 0.8260813684471809,
+      "undefined_draws": 3
+     },
+     "skill_persistence": {
+      "lo": -0.5204656527114252,
+      "hi": 0.27226648124282415,
+      "undefined_draws": 3
+     },
+     "skill_rain10": {
+      "lo": -0.4518834559600343,
+      "hi": 0.14888772412549375,
+      "undefined_draws": 3
+     },
+     "skill_rain5": {
+      "lo": -0.21152885186668394,
+      "hi": 0.1831481122478456,
+      "undefined_draws": 3
+     },
+     "skill_best": {
+      "lo": -0.558086950105126,
+      "hi": -0.08151222209152462,
+      "undefined_draws": 3
+     },
+     "auc": {
+      "lo": 0.81114501328385,
+      "hi": 0.9451146631897958,
+      "undefined_draws": 3
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 5634,
+    "overflows": 262,
+    "spill_rows": 209,
+    "spill_overflow_days": 209,
+    "observed_rate": 0.037096201632942846,
+    "mean_forecast": 0.05589739084132055,
+    "skill_clim": 0.2846739610891029,
+    "auc": 0.9261993693912199,
+    "brier": 0.030106102710330138,
+    "brier_clim": 0.042087245637202696,
+    "auc_clim": 0.7452415496218552,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.07831954472881184,
+      "hi": 0.756804484930713,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7951625443205264,
+      "hi": 0.9408776016211394,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Wessex Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 17881,
+    "overflows": 262,
+    "spill_rows": 768,
+    "spill_overflow_days": 195,
+    "observed_rate": 0.04295061797438622,
+    "mean_forecast": 0.05868963145237961,
+    "skill_clim": 0.2912793735621506,
+    "skill_persistence": 0.1677429404972801,
+    "skill_rain10": 0.11318688457828185,
+    "skill_rain5": 0.1462959819336166,
+    "skill_best": 0.11318688457828185,
+    "best_ref": "rain10",
+    "auc": 0.9070543196936053,
+    "brier": 0.03292701089033052,
+    "brier_clim": 0.04645978917789833,
+    "brier_persistence": 0.0395635104735605,
+    "brier_rain10": 0.03712959395584978,
+    "brier_rain5": 0.03856958640643311,
+    "auc_clim": 0.746012146284988,
+    "auc_persistence": 0.6186789648220651,
+    "auc_rain10": 0.8599412042380062,
+    "auc_rain5": 0.8094262220241921,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.13064409135378469,
+      "hi": 0.8432458529554695,
+      "undefined_draws": 12
+     },
+     "skill_persistence": {
+      "lo": -0.1900542440786577,
+      "hi": 0.39695134723100245,
+      "undefined_draws": 12
+     },
+     "skill_rain10": {
+      "lo": -0.5321371223715801,
+      "hi": 0.19126658980401554,
+      "undefined_draws": 12
+     },
+     "skill_rain5": {
+      "lo": -0.1539381049671286,
+      "hi": 0.26713746980263886,
+      "undefined_draws": 12
+     },
+     "skill_best": {
+      "lo": -0.5321371223715801,
+      "hi": 0.19057999555872698,
+      "undefined_draws": 12
+     },
+     "auc": {
+      "lo": 0.7021210827839491,
+      "hi": 0.9242902130214806,
+      "undefined_draws": 12
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 22470,
+    "overflows": 262,
+    "spill_rows": 839,
+    "spill_overflow_days": 210,
+    "observed_rate": 0.03733867378727192,
+    "mean_forecast": 0.05325313751668892,
+    "skill_clim": 0.3046051739568084,
+    "auc": 0.9036447492449614,
+    "brier": 0.029355680783266575,
+    "brier_clim": 0.042214407821094806,
+    "auc_clim": 0.7454524801595556,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.13964146828202867,
+      "hi": 0.7284170550018654,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7173254762059721,
+      "hi": 0.9216342829233078,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Wessex Water",
+   "leads": "1",
+   "common": {
+    "rows": 4850,
+    "overflows": 262,
+    "spill_rows": 192,
+    "spill_overflow_days": 192,
+    "observed_rate": 0.03958762886597938,
+    "mean_forecast": 0.06321517525773196,
+    "skill_clim": 0.29781848023365276,
+    "skill_persistence": 0.07159053950139005,
+    "skill_rain10": 0.06191578804165765,
+    "skill_rain5": 0.11884433917307557,
+    "skill_best": 0.06191578804165765,
+    "best_ref": "rain10",
+    "auc": 0.9296707277801631,
+    "brier": 0.030922494478350517,
+    "brier_clim": 0.044037750364948454,
+    "brier_persistence": 0.03330695753761851,
+    "brier_rain10": 0.03296345262414852,
+    "brier_rain5": 0.03509311220826882,
+    "auc_clim": 0.7442717278517247,
+    "auc_persistence": 0.6833695613281809,
+    "auc_rain10": 0.8923782560469443,
+    "auc_rain5": 0.8402144160583942,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1162182118516205,
+      "hi": 0.8559366435148592,
+      "undefined_draws": 13
+     },
+     "skill_persistence": {
+      "lo": -0.3541175822173824,
+      "hi": 0.46584285280519205,
+      "undefined_draws": 13
+     },
+     "skill_rain10": {
+      "lo": -1.3957515369963285,
+      "hi": 0.16901141009762174,
+      "undefined_draws": 13
+     },
+     "skill_rain5": {
+      "lo": -0.343643329494158,
+      "hi": 0.2106249560401798,
+      "undefined_draws": 13
+     },
+     "skill_best": {
+      "lo": -1.3957515369963285,
+      "hi": 0.16006584594041073,
+      "undefined_draws": 13
+     },
+     "auc": {
+      "lo": 0.7982375525716896,
+      "hi": 0.9666433728925875,
+      "undefined_draws": 13
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 5628,
+    "overflows": 262,
+    "spill_rows": 209,
+    "spill_overflow_days": 209,
+    "observed_rate": 0.03713574982231699,
+    "mean_forecast": 0.05913235607675906,
+    "skill_clim": 0.3032464583327712,
+    "auc": 0.9194350729446542,
+    "brier": 0.029335643825515276,
+    "brier_clim": 0.04210332932835821,
+    "auc_clim": 0.7450159857527696,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.12164032556806544,
+      "hi": 0.7285639841465094,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7383456069021309,
+      "hi": 0.9392573056149527,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Wessex Water",
+   "leads": "2",
+   "common": {
+    "rows": 4595,
+    "overflows": 261,
+    "spill_rows": 192,
+    "spill_overflow_days": 192,
+    "observed_rate": 0.04178454842219804,
+    "mean_forecast": 0.06648615886833514,
+    "skill_clim": 0.35918789478613145,
+    "skill_persistence": 0.2450211605348499,
+    "skill_rain10": 0.15958422586821008,
+    "skill_rain5": 0.21392820407138846,
+    "skill_best": 0.15958422586821008,
+    "best_ref": "rain10",
+    "auc": 0.9523259472708002,
+    "brier": 0.029229792763873778,
+    "brier_clim": 0.0456136713492927,
+    "brier_persistence": 0.0387160424053488,
+    "brier_rain10": 0.034780157231187464,
+    "brier_rain5": 0.037184634934451115,
+    "auc_clim": 0.7455824390567037,
+    "auc_persistence": 0.5700623154667273,
+    "auc_rain10": 0.8830130024982966,
+    "auc_rain5": 0.823575545082898,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.18564748211404497,
+      "hi": 0.8698241076520618,
+      "undefined_draws": 12
+     },
+     "skill_persistence": {
+      "lo": 0.020120113369883248,
+      "hi": 0.4385472240382172,
+      "undefined_draws": 12
+     },
+     "skill_rain10": {
+      "lo": -0.578122035163997,
+      "hi": 0.26237326732392363,
+      "undefined_draws": 12
+     },
+     "skill_rain5": {
+      "lo": 0.02120367435419746,
+      "hi": 0.30684296519524873,
+      "undefined_draws": 12
+     },
+     "skill_best": {
+      "lo": -0.578122035163997,
+      "hi": 0.26192263212797445,
+      "undefined_draws": 12
+     },
+     "auc": {
+      "lo": 0.7342751097809215,
+      "hi": 0.9653675808204306,
+      "undefined_draws": 12
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 5621,
+    "overflows": 262,
+    "spill_rows": 210,
+    "spill_overflow_days": 210,
+    "observed_rate": 0.037359900373599,
+    "mean_forecast": 0.058606920476783494,
+    "skill_clim": 0.3673437475145023,
+    "auc": 0.9425152467196452,
+    "brier": 0.02671597450453656,
+    "brier_clim": 0.042228262819782966,
+    "auc_clim": 0.745847964023902,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.19113166381517452,
+      "hi": 0.7789309715432857,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.723676924397664,
+      "hi": 0.9605961213998426,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Wessex Water",
+   "leads": "3",
+   "common": {
+    "rows": 4342,
+    "overflows": 261,
+    "spill_rows": 191,
+    "spill_overflow_days": 191,
+    "observed_rate": 0.04398894518654998,
+    "mean_forecast": 0.0514267618608936,
+    "skill_clim": 0.284692848182991,
+    "skill_persistence": 0.20120670277068742,
+    "skill_rain10": 0.09892646332838229,
+    "skill_rain5": 0.14886192834504752,
+    "skill_best": 0.09892646332838229,
+    "best_ref": "rain10",
+    "auc": 0.8977443144337893,
+    "brier": 0.033767156508521426,
+    "brier_clim": 0.0472065132058959,
+    "brier_persistence": 0.04227270887931318,
+    "brier_rain10": 0.037474362673273504,
+    "brier_rain5": 0.039672948059842485,
+    "auc_clim": 0.7463860975908159,
+    "auc_persistence": 0.5011080405781235,
+    "auc_rain10": 0.815949856276353,
+    "auc_rain5": 0.7879309975140034,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1112108224769858,
+      "hi": 0.8589429307628625,
+      "undefined_draws": 12
+     },
+     "skill_persistence": {
+      "lo": 0.07561200325964096,
+      "hi": 0.37934815240253417,
+      "undefined_draws": 12
+     },
+     "skill_rain10": {
+      "lo": -0.17067766332587941,
+      "hi": 0.17182590240470888,
+      "undefined_draws": 12
+     },
+     "skill_rain5": {
+      "lo": 0.075519671757653,
+      "hi": 0.45288260219026705,
+      "undefined_draws": 12
+     },
+     "skill_best": {
+      "lo": -0.17067766332587941,
+      "hi": 0.17115689599376027,
+      "undefined_draws": 12
+     },
+     "auc": {
+      "lo": 0.6292696692069735,
+      "hi": 0.9267715419924294,
+      "undefined_draws": 12
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 5614,
+    "overflows": 262,
+    "spill_rows": 210,
+    "spill_overflow_days": 210,
+    "observed_rate": 0.03740648379052369,
+    "mean_forecast": 0.05078051300320627,
+    "skill_clim": 0.2837695391568569,
+    "auc": 0.8918512741884318,
+    "brier": 0.03026183016743855,
+    "brier_clim": 0.042251526319914495,
+    "auc_clim": 0.7455976172852561,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.11012878787436349,
+      "hi": 0.7578760664585658,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7186317417665422,
+      "hi": 0.9212167758645778,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Wessex Water",
+   "leads": "4",
+   "common": {
+    "rows": 4094,
+    "overflows": 261,
+    "spill_rows": 193,
+    "spill_overflow_days": 193,
+    "observed_rate": 0.047142159257449925,
+    "mean_forecast": 0.052280605764533465,
+    "skill_clim": 0.22079590978400854,
+    "skill_persistence": 0.14411740782195726,
+    "skill_rain10": 0.13027785561036653,
+    "skill_rain5": 0.10475318218865626,
+    "skill_best": 0.10475318218865626,
+    "best_ref": "rain5",
+    "auc": 0.8568209559658544,
+    "brier": 0.03856030586223741,
+    "brier_clim": 0.04948678574255007,
+    "brier_persistence": 0.04505326573369074,
+    "brier_rain10": 0.044336350535605654,
+    "brier_rain5": 0.043072262414188524,
+    "auc_clim": 0.747970163090904,
+    "auc_persistence": 0.5035695643338429,
+    "auc_rain10": 0.6276668796230008,
+    "auc_rain5": 0.7249170864917059,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.08855011584171477,
+      "hi": 0.8080088471430027,
+      "undefined_draws": 12
+     },
+     "skill_persistence": {
+      "lo": -0.6628819907287641,
+      "hi": 0.36272654525096665,
+      "undefined_draws": 12
+     },
+     "skill_rain10": {
+      "lo": -0.3718995601144956,
+      "hi": 0.20417051175169149,
+      "undefined_draws": 12
+     },
+     "skill_rain5": {
+      "lo": -0.6921514019511735,
+      "hi": 0.35646069630815486,
+      "undefined_draws": 12
+     },
+     "skill_best": {
+      "lo": -0.7112680313945428,
+      "hi": 0.19641988873165162,
+      "undefined_draws": 12
+     },
+     "auc": {
+      "lo": 0.5463058485172538,
+      "hi": 0.8812255967610109,
+      "undefined_draws": 12
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 5607,
+    "overflows": 262,
+    "spill_rows": 210,
+    "spill_overflow_days": 210,
+    "observed_rate": 0.03745318352059925,
+    "mean_forecast": 0.044460460139111826,
+    "skill_clim": 0.2639876670004454,
+    "auc": 0.8643046842602151,
+    "brier": 0.031114809434635283,
+    "brier_clim": 0.04227484790618869,
+    "auc_clim": 0.7453466211387278,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.10003927353386302,
+      "hi": 0.7178048218417398,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.6420235502956014,
+      "hi": 0.8906087569406403,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Yorkshire Water",
+   "leads": "0",
+   "common": {
+    "rows": 2448,
+    "overflows": 120,
+    "spill_rows": 155,
+    "spill_overflow_days": 155,
+    "observed_rate": 0.06331699346405228,
+    "mean_forecast": 0.050819689542483656,
+    "skill_clim": 0.22254380566098797,
+    "skill_persistence": 0.080132938154716,
+    "skill_rain10": 0.11637341700679671,
+    "skill_rain5": 0.11009907002289276,
+    "skill_best": 0.080132938154716,
+    "best_ref": "persistence",
+    "auc": 0.8303040108042711,
+    "brier": 0.05054070088235294,
+    "brier_clim": 0.06500777953839869,
+    "brier_persistence": 0.05494348366052654,
+    "brier_rain10": 0.057196899521912294,
+    "brier_rain5": 0.05679362632383483,
+    "auc_clim": 0.6172755792524233,
+    "auc_persistence": 0.6664645555196038,
+    "auc_rain10": 0.6621723900229309,
+    "auc_rain5": 0.7092680387715768,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.12042450859614881,
+      "hi": 0.41924985372993684,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.12727448917253875,
+      "hi": 0.18781201275950224,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": 0.018776650638201303,
+      "hi": 0.23098036483475987,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": 0.0003134327658749105,
+      "hi": 0.23758714696876218,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.12727448917253875,
+      "hi": 0.1800513399181597,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7150223522376236,
+      "hi": 0.9356269716233246,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2691,
+    "overflows": 120,
+    "spill_rows": 158,
+    "spill_overflow_days": 158,
+    "observed_rate": 0.058714232627276104,
+    "mean_forecast": 0.04854087699739873,
+    "skill_clim": 0.2373812474976662,
+    "auc": 0.8370059518157785,
+    "brier": 0.046965381029357114,
+    "brier_clim": 0.06158435112597547,
+    "auc_clim": 0.6206442053501376,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1222466002179462,
+      "hi": 0.46517767257419046,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7182168994738503,
+      "hi": 0.9375794591896573,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Yorkshire Water",
+   "leads": "1-4",
+   "common": {
+    "rows": 8598,
+    "overflows": 120,
+    "spill_rows": 603,
+    "spill_overflow_days": 156,
+    "observed_rate": 0.07013258897418004,
+    "mean_forecast": 0.05523029774366131,
+    "skill_clim": 0.15700577090752366,
+    "skill_persistence": 0.09420381595827909,
+    "skill_rain10": 0.07173448714265374,
+    "skill_rain5": 0.06651400539331587,
+    "skill_best": 0.06651400539331587,
+    "best_ref": "rain5",
+    "auc": 0.7613360132835925,
+    "brier": 0.059139397868108866,
+    "brier_clim": 0.070153977129565,
+    "brier_persistence": 0.06528996137323642,
+    "brier_rain10": 0.06370957129072757,
+    "brier_rain5": 0.06335327815285187,
+    "auc_clim": 0.6114339704437993,
+    "auc_persistence": 0.5651800410082172,
+    "auc_rain10": 0.647017881200626,
+    "auc_rain5": 0.7047931076325689,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.08298726767960825,
+      "hi": 0.31840140880713247,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.01712701087588026,
+      "hi": 0.22120414602147956,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.01878779344461761,
+      "hi": 0.17958407185284248,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.03630011143458668,
+      "hi": 0.1910576775329526,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.03854512989933463,
+      "hi": 0.1781983949770706,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.6381964919711264,
+      "hi": 0.8864836751104886,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 10754,
+    "overflows": 120,
+    "spill_rows": 632,
+    "spill_overflow_days": 158,
+    "observed_rate": 0.05876883020271527,
+    "mean_forecast": 0.05174117537660406,
+    "skill_clim": 0.18651931966823942,
+    "auc": 0.7694347317161015,
+    "brier": 0.05014426352798958,
+    "brier_clim": 0.06164161576343686,
+    "auc_clim": 0.6202881804016317,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.08868747024405631,
+      "hi": 0.3891972153407606,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.6436805133452465,
+      "hi": 0.8889038248569546,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "promise": "still being tested"
+  },
+  {
+   "company": "Yorkshire Water",
+   "leads": "1",
+   "common": {
+    "rows": 2329,
+    "overflows": 120,
+    "spill_rows": 155,
+    "spill_overflow_days": 155,
+    "observed_rate": 0.06655216831258051,
+    "mean_forecast": 0.060697939029626446,
+    "skill_clim": 0.08688637666469667,
+    "skill_persistence": 0.030912180913225118,
+    "skill_rain10": -0.0026284496155351,
+    "skill_rain5": -0.009986364247759338,
+    "skill_best": -0.009986364247759338,
+    "best_ref": "rain5",
+    "auc": 0.7512434341336024,
+    "brier": 0.061486678355517396,
+    "brier_clim": 0.06733737925289823,
+    "brier_persistence": 0.0634479942317918,
+    "brier_rain10": 0.061325487401733804,
+    "brier_rain5": 0.0608787212699776,
+    "auc_clim": 0.6178235451227112,
+    "auc_persistence": 0.5394590022850699,
+    "auc_rain10": 0.6248404902513577,
+    "auc_rain5": 0.6604193251624774,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.03028639674473919,
+      "hi": 0.319334488720371,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": -0.06174106474858977,
+      "hi": 0.1135715395302897,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": -0.08620855195566046,
+      "hi": 0.08445141693527089,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.10400852559195434,
+      "hi": 0.07763315610740294,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.10649083536636973,
+      "hi": 0.0708776579859775,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.6277610708043638,
+      "hi": 0.8897158122668146,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2690,
+    "overflows": 120,
+    "spill_rows": 158,
+    "spill_overflow_days": 158,
+    "observed_rate": 0.058736059479553904,
+    "mean_forecast": 0.05708237918215614,
+    "skill_clim": 0.11453949595667867,
+    "auc": 0.7654190913272142,
+    "brier": 0.05455078150929368,
+    "brier_clim": 0.06160724420817844,
+    "auc_clim": 0.6205018797368368,
+    "ci": {
+     "skill_clim": {
+      "lo": -0.03051936878948952,
+      "hi": 0.3954733160093201,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.6334027919284815,
+      "hi": 0.9063403861371853,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Yorkshire Water",
+   "leads": "2",
+   "common": {
+    "rows": 2210,
+    "overflows": 120,
+    "spill_rows": 152,
+    "spill_overflow_days": 152,
+    "observed_rate": 0.06877828054298643,
+    "mean_forecast": 0.0632841628959276,
+    "skill_clim": 0.23023600685852996,
+    "skill_persistence": 0.15343462838457544,
+    "skill_rain10": 0.14822137773518085,
+    "skill_rain5": 0.13134394427806573,
+    "skill_best": 0.13134394427806573,
+    "best_ref": "rain5",
+    "auc": 0.8248571044959337,
+    "brier": 0.05323474991855204,
+    "brier_clim": 0.06915723571493212,
+    "brier_persistence": 0.0628832122166407,
+    "brier_rain10": 0.06249833997594892,
+    "brier_rain5": 0.06128403706839871,
+    "auc_clim": 0.6125949439926347,
+    "auc_persistence": 0.5792862257685029,
+    "auc_rain10": 0.6560917600122755,
+    "auc_rain5": 0.7124507697815968,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.1381513274904097,
+      "hi": 0.3976277337749138,
+      "undefined_draws": 0
+     },
+     "skill_persistence": {
+      "lo": 0.009507259320149628,
+      "hi": 0.304807592467398,
+      "undefined_draws": 0
+     },
+     "skill_rain10": {
+      "lo": 0.014079169223642251,
+      "hi": 0.28917152900971055,
+      "undefined_draws": 0
+     },
+     "skill_rain5": {
+      "lo": -0.0350256332424036,
+      "hi": 0.30165994495029785,
+      "undefined_draws": 0
+     },
+     "skill_best": {
+      "lo": -0.0366424686809545,
+      "hi": 0.28835767572414756,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7262731673394145,
+      "hi": 0.928066719396599,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2689,
+    "overflows": 120,
+    "spill_rows": 158,
+    "spill_overflow_days": 158,
+    "observed_rate": 0.05875790256600967,
+    "mean_forecast": 0.05905555968761622,
+    "skill_clim": 0.2541601680061605,
+    "auc": 0.8352904990772647,
+    "brier": 0.04596622394198587,
+    "brier_clim": 0.061630154317590176,
+    "auc_clim": 0.6203594416576227,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.14489539285167252,
+      "hi": 0.44513156933204384,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.7298100768360589,
+      "hi": 0.9365966296162612,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Yorkshire Water",
+   "leads": "3",
+   "common": {
+    "rows": 2089,
+    "overflows": 120,
+    "spill_rows": 148,
+    "spill_overflow_days": 148,
+    "observed_rate": 0.07084729535662997,
+    "mean_forecast": 0.05159219722355195,
+    "skill_clim": 0.18230047567622165,
+    "skill_persistence": 0.11209975128847849,
+    "skill_rain10": 0.100711225685297,
+    "skill_rain5": 0.08460881484709715,
+    "skill_best": 0.08460881484709715,
+    "best_ref": "rain5",
+    "auc": 0.7902237631758497,
+    "brier": 0.05791307080421254,
+    "brier_clim": 0.07082439096696984,
+    "brier_persistence": 0.06522474893801779,
+    "brier_rain10": 0.06439874760845847,
+    "brier_rain5": 0.0632659258069423,
+    "auc_clim": 0.607072489800465,
+    "auc_persistence": 0.5645146692287342,
+    "auc_rain10": 0.6298613141735244,
+    "auc_rain5": 0.7140005151983514,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.08917866125886983,
+      "hi": 0.3499294561339088,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.047112446985573486,
+      "hi": 0.29370525112107626,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.00902234807312996,
+      "hi": 0.23044031760120975,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.06343573839357253,
+      "hi": 0.25151344499818296,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.06562522028443324,
+      "hi": 0.22930069935210667,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.5864703227660889,
+      "hi": 0.9038774182287995,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2688,
+    "overflows": 120,
+    "spill_rows": 158,
+    "spill_overflow_days": 158,
+    "observed_rate": 0.058779761904761904,
+    "mean_forecast": 0.051533147321428566,
+    "skill_clim": 0.20142208989175048,
+    "auc": 0.7891604542952919,
+    "brier": 0.04923478895461309,
+    "brier_clim": 0.06165308147321428,
+    "auc_clim": 0.6202168909791365,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.09805959960061097,
+      "hi": 0.35638126091882594,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5938391072995102,
+      "hi": 0.8934888291938738,
+      "undefined_draws": 0
+     }
+    }
+   }
+  },
+  {
+   "company": "Yorkshire Water",
+   "leads": "4",
+   "common": {
+    "rows": 1970,
+    "overflows": 120,
+    "spill_rows": 148,
+    "spill_overflow_days": 148,
+    "observed_rate": 0.0751269035532995,
+    "mean_forecast": 0.04358908629441624,
+    "skill_clim": 0.12995269665671716,
+    "skill_persistence": 0.08468422015916932,
+    "skill_rain10": 0.042696582700163854,
+    "skill_rain5": 0.06411125138130469,
+    "skill_best": 0.042696582700163854,
+    "best_ref": "rain10",
+    "auc": 0.6796696531877652,
+    "brier": 0.06428876484771573,
+    "brier_clim": 0.07389111442639594,
+    "brier_persistence": 0.07023670547763884,
+    "brier_rain10": 0.06715610086199024,
+    "brier_rain5": 0.06869274253227357,
+    "auc_clim": 0.6079783131100365,
+    "auc_persistence": 0.521842643961195,
+    "auc_rain10": 0.6512630907526626,
+    "auc_rain5": 0.6381575043759457,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.036707591791518085,
+      "hi": 0.25579731233813485,
+      "undefined_draws": 9
+     },
+     "skill_persistence": {
+      "lo": -0.07992479949671893,
+      "hi": 0.2645972535674798,
+      "undefined_draws": 9
+     },
+     "skill_rain10": {
+      "lo": -0.04571243587578472,
+      "hi": 0.16098055034679346,
+      "undefined_draws": 9
+     },
+     "skill_rain5": {
+      "lo": -0.04808601610251889,
+      "hi": 0.20290364200385513,
+      "undefined_draws": 9
+     },
+     "skill_best": {
+      "lo": -0.07992479949671893,
+      "hi": 0.16098055034679346,
+      "undefined_draws": 9
+     },
+     "auc": {
+      "lo": 0.49967195282298343,
+      "hi": 0.8440986709646889,
+      "undefined_draws": 9
+     }
+    }
+   },
+   "all_rows_clim": {
+    "rows": 2687,
+    "overflows": 120,
+    "spill_rows": 158,
+    "spill_overflow_days": 158,
+    "observed_rate": 0.05880163751395608,
+    "mean_forecast": 0.039282285076293263,
+    "skill_clim": 0.17595552559604866,
+    "auc": 0.6858254375822734,
+    "brier": 0.05082378817640491,
+    "brier_clim": 0.06167602569408262,
+    "auc_clim": 0.6200742275678084,
+    "ci": {
+     "skill_clim": {
+      "lo": 0.061411174178903946,
+      "hi": 0.3805726713785246,
+      "undefined_draws": 0
+     },
+     "auc": {
+      "lo": 0.5016920288525086,
+      "hi": 0.8369599806058791,
+      "undefined_draws": 0
+     }
+    }
+   }
+  }
+ ]
+}
