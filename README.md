@@ -1264,8 +1264,7 @@ to the area's page on check-for-flooding.service.gov.uk. The alerts come from
 outline: on 26 Oct 2026 it gave the Wharfe at Burnsall "Lower River Ure"
 (122WAF940, 16.7 km away) and Dartington on the Dart a South Devon coastal alert
 (113WACT1B, 8.8 km). So the build reads each in-force area's outline, the EA's
-own map of where the alert applies (`/id/floodAreas/<id>/polygon`, one request
-per area, kept by area id in the cache for 30 days, simplified to 10 m), and
+own map of where the alert applies, and
 `flows.split_flood_alerts` names an alert only when the outline covers the
 spot's point on its water (`location.snapped`, else the pin) or, for a lake,
 reaches the lake's own outline (`data/processed/lakes.parquet`; the pin for a
@@ -1276,7 +1275,22 @@ the water is used. An alert outside that names the spot's own water (by its
 outline that is not plainly for other water, is counted in
 `flood_alerts_unmatched`, and the page says "A flood alert or warning is in
 force that could not be matched to this spot" with a link to the EA's flood map
-(never "nearby": an unmatched area can be 11.6 km away, as at Aysgarth). One for other water,
+(never "nearby": an unmatched area can be 11.6 km away, as at Aysgarth).
+An outline is asked for only at `https://environment.data.gov.uk/flood-monitoring/id/floodAreas/<id>/polygon`,
+for an id that is strictly an EA flood-area id (three digits, then letters and
+digits), with redirects not followed. It is kept, simplified to 10 m, with its
+fetch time, in `config.CACHE/flood_areas/<id>.geojson`: used as it is for a
+week, then asked for again; if that fails, used only while it is at most 30
+days old, else the area has no outline and its alerts are never named. The
+build warns "flood outlines: N areas unavailable". Pruning touches only
+`<id>.geojson` files directly in that directory: it keeps the areas in force in
+the build and entries fetched within 30 days, removes older ones, and keeps at
+most 500 (over 3.5 times the 137 items the national list held on 26 Oct 2026).
+With no alert in force, the decision record says which search found none: "The
+Environment Agency listed no flood alerts or warnings in force anywhere in
+England" (the national list, when nothing is in force) or "The Environment
+Agency's search within 10 km returned no flood alerts or warnings in force"
+(the spot's own search; `flood_alerts_search`). One for other water,
 or tidal (`isTidal`) for an inland spot, is counted in `flood_alerts_other` and
 never named. Severity 4,
 "Warning no longer in force", is left out: on 3 Oct 2026 it was the only item

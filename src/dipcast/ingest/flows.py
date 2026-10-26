@@ -366,7 +366,10 @@ RISING_SHARE = 0.2         # a rise of more than this share of the usual range .
 RISE_WINDOW_H = 6.0        # ... over the last six hours is "rising fast"
 RISE_MIN_SPAN_H = 1.0      # fewer hours of readings than this is too short to call a trend
 TREND_READINGS = 24        # the last 24 readings: six hours at the usual 15-minute interval
-FLOOD_DIST_KM = 10         # flood areas within this distance of the spot (the API measures to the area)
+# The `dist` asked of /id/floods. The EA does not measure it to the area's outline: on 26 Oct 2026 it
+# returned 122WAF940 for Burnsall, whose outline is 16.6 km from the pin (6.7 km from the area's
+# bounding box), so which alerts apply is decided by the outline (flood_alert_water).
+FLOOD_DIST_KM = 10
 # The EA's four severity levels. 4 is "Warning no longer in force", so it is never shown as in force.
 FLOOD_WORDS = {1: "Severe flood warning", 2: "Flood warning", 3: "Flood alert"}
 _MEASURE_ID = re.compile(r"[A-Za-z0-9_.-]+")
@@ -493,10 +496,23 @@ def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM, timeout
 # title, where a short name can be part of a place's name ("Ouse Bridge", "Bradford"). Words
 # beside the pollution level, never part of it: nothing here changes a forecast or a level.
 FLOOD_OUTLINE_SIMPLIFY_M = 10.0
-# An area's outline is kept this long before it is asked for again. The EA redraws flood areas rarely
-# (in its periodic flood-warning area updates, not from day to day), and one outline is up to 0.9 MB
-# raw, so a month keeps a redrawn outline from lasting long without asking again in every build.
+# The outline cache (config.CACHE/flood_areas/<area id>.geojson, made by the build; nothing else lives
+# there). The EA redraws flood areas rarely (in its periodic flood-warning area updates, not from day to
+# day), and one outline is up to 0.9 MB raw, so it is not asked for in every build:
+#  - a kept outline under FLOOD_OUTLINE_REFRESH_S old is used without asking; older, it is asked for again;
+#  - if that fails, a kept outline is used only while its recorded fetch time is at most
+#    FLOOD_OUTLINE_MAX_AGE_S old; past that, or with none, the area has no outline (rule 4);
+#  - pruning (prune_flood_outlines) keeps the areas in force in this build and entries fetched within
+#    FLOOD_OUTLINE_MAX_AGE_S, removes older ones, and then keeps at most FLOOD_OUTLINE_CACHE_MAX, the
+#    newest. 500 is over 3.5 times the 137 items the national list held on 26 Oct 2026, a wet night
+#    with alerts on most coasts; at a few kB to ~120 kB each it bounds the cache to tens of MB.
+FLOOD_OUTLINE_REFRESH_S = 7 * 86400
 FLOOD_OUTLINE_MAX_AGE_S = 30 * 86400
+FLOOD_OUTLINE_CACHE_MAX = 500
+# An EA flood-area id as the service writes them: three digits (the EA area), then letters and digits
+# ("122WAF940", "011FWFNC6KC", "062WAF38BrentBks"; all 137 on 26 Oct 2026 fit). ASCII only, anchored by
+# fullmatch, so no "/", "..", "?", "#", space or other character can reach a URL or a file name.
+_FLOOD_AREA_ID = re.compile(r"[0-9]{3}[A-Za-z0-9]{1,40}", re.ASCII)
 _TO_BNG = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
 _FROM_BNG = Transformer.from_crs("EPSG:27700", "EPSG:4326", always_xy=True)
 
@@ -600,42 +616,105 @@ def load_outline(geojson) -> object | None:
     return g if not g.is_empty and g.area > 0 and g.is_valid else None
 
 
+def _outline_url(area_id: str) -> str | None:
+    """The one URL an outline is asked for: https, the EA service's own host and path, then
+    /id/floodAreas/<id>/polygon, for an id that is strictly an EA flood-area id. Built here, never
+    taken from a response."""
+    if not isinstance(area_id, str) or not _FLOOD_AREA_ID.fullmatch(area_id):
+        return None
+    base = urlsplit(config.EA_FLOOD_MONITORING)
+    return urlunsplit(("https", _EA_HOST, f"{base.path.rstrip('/')}/id/floodAreas/{area_id}/polygon", "", ""))
+
+
+def _entry(path: Path, now: float) -> tuple[dict | None, float | None]:
+    """A kept entry and its age in seconds, from the fetch time recorded in it. An entry without a
+    readable fetch time has no age, so it is never used once a refresh fails, and pruning removes it."""
+    try:
+        entry = json.loads(path.read_text())
+        fetched = float(entry["properties"]["fetched_at"])
+    except (OSError, ValueError, TypeError, KeyError):
+        return None, None
+    return (entry, now - fetched) if math.isfinite(fetched) else (None, None)
+
+
+def _entry_age(path: Path, now: float) -> float | None:
+    return _entry(path, now)[1]
+
+
+def _kept_outline(path: Path, now: float) -> tuple[object | None, float | None]:
+    """A kept outline (load_outline) and its recorded age."""
+    entry, age = _entry(path, now)
+    return (load_outline(entry), age) if entry is not None else (None, None)
+
+
 def flood_area_outline(area_id: str | None, cache_dir: Path, timeout: float = EA_TIMEOUT_S, now: float | None = None,
                        get=None) -> object | None:
-    """The outline of one EA flood area (load_outline), from `cache_dir` while it is under
-    FLOOD_OUTLINE_MAX_AGE_S old, else asked for once at /id/floodAreas/<id>/polygon and kept there,
-    simplified, by area id. An outline the EA no longer answers for is kept as it was. None when there
-    is no id, no answer and nothing kept, or the geometry is unreadable: never an error, so the build
-    goes on with rule 4 for that area."""
-    if not area_id or not _AREA_ID.fullmatch(area_id):
+    """The outline of one EA flood area (load_outline). A kept outline under FLOOD_OUTLINE_REFRESH_S
+    old is used as it is. Otherwise it is asked for once, at _outline_url, with redirects not
+    followed; a good answer is kept in `cache_dir` by area id, simplified, with its fetch time. If
+    that fails (no answer, a redirect or any status but 200, unreadable geometry), a kept outline is
+    used only while its recorded age is at most FLOOD_OUTLINE_MAX_AGE_S. Otherwise None: no outline,
+    so the area's alerts are never named (rule 4). Never an error, so the build goes on."""
+    url = _outline_url(area_id)
+    if url is None:
         return None
     path = cache_dir / f"{area_id}.geojson"
     now = time.time() if now is None else now
-    kept = None
-    if path.exists():
-        kept = load_outline(path.read_text())
-        if kept is not None and now - path.stat().st_mtime < FLOOD_OUTLINE_MAX_AGE_S:
-            return kept
+    kept, age = _kept_outline(path, now) if path.exists() else (None, None)
+    if kept is not None and age is not None and 0 <= age < FLOOD_OUTLINE_REFRESH_S:
+        return kept
+    fallback = kept if kept is not None and age is not None and 0 <= age <= FLOOD_OUTLINE_MAX_AGE_S else None
     try:
-        r = (get or httpx.get)(f"{config.EA_FLOOD_MONITORING}/id/floodAreas/{area_id}/polygon",
-                               headers=config.EA_HEADERS, timeout=timeout)
-        r.raise_for_status()
+        r = (get or httpx.get)(url, headers=config.EA_HEADERS, timeout=timeout, follow_redirects=False)
+        if r.status_code != 200:   # a redirect is a failure too: no URL from a response is ever followed
+            raise httpx.HTTPStatusError(f"HTTP {r.status_code}", request=r.request, response=r)
         outline = load_outline(r.json())
     except Exception as e:  # noqa: BLE001 - a failed outline is rule 4 for that area, not a failed build
         log.info("flood outline %s: %s", area_id, e)
-        return kept
+        return fallback
     if outline is None:
-        return kept
+        return fallback
     try:   # kept simplified, in WGS84 GeoJSON as the EA gives it, a few kB to ~120 kB each
         cache_dir.mkdir(parents=True, exist_ok=True)
         tmp = path.with_suffix(".tmp")
-        tmp.write_text(json.dumps({"type": "Feature", "properties": {"floodAreaID": area_id},
+        tmp.write_text(json.dumps({"type": "Feature", "properties": {"floodAreaID": area_id, "fetched_at": now},
                                    "geometry": mapping(_reproject(outline, _FROM_BNG))}))
         tmp.replace(path)
     except OSError as e:
         log.info("flood outline %s not kept: %s", area_id, e)
     return outline
 
+
+def prune_flood_outlines(cache_dir: Path, keep=(), now: float | None = None, cap: int | None = None) -> list[str]:
+    """Bound the outline cache. Only generated entries are touched: regular files directly inside
+    `cache_dir` named <area id>.geojson (_FLOOD_AREA_ID), never a link, a subdirectory or anything
+    else. An entry is kept while its area is in force in this build (`keep`) or its recorded fetch
+    time is within FLOOD_OUTLINE_MAX_AGE_S; older ones, and ones with no readable fetch time, go. Then,
+    past FLOOD_OUTLINE_CACHE_MAX entries, the oldest not in force go. Returns the names removed."""
+    now = time.time() if now is None else now
+    cap = FLOOD_OUTLINE_CACHE_MAX if cap is None else cap
+    keep = set(keep)
+    try:
+        root = cache_dir.resolve(strict=True)
+        entries = [p for p in root.iterdir() if p.name.endswith(".geojson")
+                   and _FLOOD_AREA_ID.fullmatch(p.name[:-len(".geojson")]) and not p.is_symlink() and p.is_file()
+                   and p.parent == root]
+    except OSError:
+        return []
+    ages = {p: _entry_age(p, now) for p in entries}
+    gone = [p for p in entries if p.name[:-len(".geojson")] not in keep
+            and (ages[p] is None or ages[p] > FLOOD_OUTLINE_MAX_AGE_S)]
+    left = sorted((p for p in entries if p not in gone and p.name[:-len(".geojson")] not in keep), key=lambda p: -(ages[p] or 0))
+    n_kept = len(entries) - len(gone)
+    gone += left[:max(0, n_kept - cap)]
+    removed = []
+    for p in gone:
+        try:
+            p.unlink()
+            removed.append(p.name)
+        except OSError as e:
+            log.info("flood outline cache: %s not removed: %s", p.name, e)
+    return removed
 
 
 def _applies(outline, spot: SpotWater) -> bool:

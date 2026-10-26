@@ -202,8 +202,14 @@ const Record = (() => {
       // either: said as a count, never by name, and then nothing says "none".
       const fl = s.flood_alerts.filter(f => f && f.severity), rest = (s.flood_alerts_other || 0) + (s.flood_alerts_unmatched || 0);
       const others = rest ? `${rest} other ${rest === 1 ? 'alert or warning is' : 'alerts or warnings are'} in force for other water or could not be matched to this spot: check the Environment Agency's flood map.` : '';
+      // None at all: said as the search that found none (build_site.attach_flow_state, flood_alerts_search):
+      // the national list, with none in force in England, or the EA's own search of this spot within 10 km.
+      // A build before the field: words true of both.
+      const none = {england: 'The Environment Agency listed no flood alerts or warnings in force anywhere in England when the forecast was made.',
+        within_10km: 'The Environment Agency\'s search within 10 km returned no flood alerts or warnings in force when the forecast was made.'}[s.flood_alerts_search]
+        || 'The Environment Agency listed no flood alerts or warnings in force within 10 km when the forecast was made.';
       add('Flood alerts', fl.length ? [...fl.map(f => `${esc(f.severity)} in force here: ${esc(f.area)}.`), others].filter(Boolean).join(' ') + ' A separate hazard, not part of the pollution level.'
-        : rest ? others : 'None in force nearby when the forecast was made.',
+        : rest ? others : none,
         `Checked with the forecast, ${at(data.generated_at)}`, 'the Environment Agency');
     }
     return `<dl class="fields r-inputs">${out.join('')}</dl>`;

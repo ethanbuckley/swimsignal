@@ -91,7 +91,7 @@ test('every input has its time, its age when the page was opened, and its source
   assert.ok(inputs.includes('<dt>Environment Agency rating</dt><dd>Poor, for 2025.'));
   assert.ok(inputs.includes('0.20 m at Ilkley, 1 km away; its usual range is 0.09 to 1.80 m. Not part of the pollution level.'));
   assert.ok(inputs.includes('16°C, measured at Bures Mill on the Stour, 10.9 km downstream. Not part of the pollution level.'));
-  assert.ok(inputs.includes('None in force nearby when the forecast was made.'));
+  assert.ok(inputs.includes('The Environment Agency listed no flood alerts or warnings in force within 10 km when the forecast was made.'));   // a build before flood_alerts_search
   assert.ok(Rec.view(lake, DAYS[0], DATA, VER, BASE, NOW).includes('Not checked: the Environment Agency did not answer'));   // null is never "none"
 });
 
@@ -110,7 +110,12 @@ test('alerts for other water or not matched to the spot are counted, never named
   assert.ok(unmatched.includes('2 other alerts or warnings are in force') && !/none|nearby/i.test(unmatched.split('Checked with the forecast')[0]), unmatched);
   const both = row({flood_alerts: [{severity: 'Flood alert', area: 'Upper River Wharfe'}], flood_alerts_other: 1, flood_alerts_unmatched: 1});
   assert.ok(both.includes('Flood alert in force here: Upper River Wharfe. 2 other alerts or warnings are in force for other water'), both);
-  assert.ok(row({flood_alerts: [], flood_alerts_other: 0, flood_alerts_unmatched: 0}).includes('None in force nearby when the forecast was made.'));
+  // None at all, in the words of the search that found none.
+  assert.ok(row({flood_alerts: [], flood_alerts_other: 0, flood_alerts_unmatched: 0, flood_alerts_search: 'within_10km'})
+    .includes("The Environment Agency's search within 10 km returned no flood alerts or warnings in force when the forecast was made."));
+  assert.ok(row({flood_alerts: [], flood_alerts_other: 0, flood_alerts_unmatched: 0, flood_alerts_search: 'england'})
+    .includes('The Environment Agency listed no flood alerts or warnings in force anywhere in England when the forecast was made.'));
+  assert.ok(!/nearby/i.test(row({flood_alerts: [], flood_alerts_search: 'within_10km'})));
   assert.ok(row({flood_alerts: null, flood_alerts_other: null, flood_alerts_unmatched: null}).includes('Not checked'));   // unchecked stays its own
 });
 

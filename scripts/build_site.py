@@ -1476,6 +1476,9 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
     for r, (word, rise, found) in zip(results, out, strict=True):
         spot = own_water(r, lake_at) if found else own_water(r, None)
         r["flood_alerts"], r["flood_alerts_other"], r["flood_alerts_unmatched"] = flows.split_flood_alerts(found, spot, shapes)
+        # Which search an empty list comes from, for its words: none in force anywhere in England (the
+        # national list), or none in the EA's own search of this spot within FLOOD_DIST_KM.
+        r["flood_alerts_search"] = None if found is None else "england" if ask is False else "within_10km"
         r["flow_state"], found = word, r["flood_alerts"]
         if rise and r.get("river_state"):
             r["river_state"].update(rise_6h_m=rise["rise_m"], rise_from=rise["from"], rise_to=rise["to"])
@@ -1490,14 +1493,23 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
     return counts
 
 
-def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.monotonic) -> dict:
-    """Each in-force area's outline (flows.flood_area_outline: from the cache by area id, or asked
-    for once, one GET per area not already kept), all within FLOOD_BUDGET_S. An area with no outline
-    by then, or whose outline failed, maps to None: its alerts are never named (rule 4)."""
+FLOOD_OUTLINES_DIR = "flood_areas"   # under config.CACHE: the build's own outline cache, and the only place pruned
+
+
+def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.monotonic, prune=None) -> dict:
+    """Each in-force area's outline (flows.flood_area_outline: kept by area id in
+    config.CACHE/flood_areas, asked for again after a week, one GET per area), all within
+    FLOOD_BUDGET_S. An area with no outline by then (a failed fetch with nothing kept under 30 days,
+    no time left, an id that is not one) maps to None: its alerts are never named (rule 4). Then the
+    cache is pruned (flows.prune_flood_outlines), keeping this build's areas. Tests give `outline`
+    (and `prune`): with an `outline` given and no `prune`, nothing on disk is touched."""
     from concurrent.futures import ThreadPoolExecutor
 
     from dipcast.ingest import flows
-    outline = outline or (lambda aid, timeout: flows.flood_area_outline(aid, config.CACHE / "flood_areas", timeout))
+    if outline is None:
+        cache = config.CACHE / FLOOD_OUTLINES_DIR
+        outline = lambda aid, timeout: flows.flood_area_outline(aid, cache, timeout)  # noqa: E731
+        prune = prune or (lambda keep: flows.prune_flood_outlines(cache, keep))
     ids = sorted(a for a in area_ids if a)
     deadline = clock() + FLOOD_BUDGET_S
 
@@ -1513,7 +1525,28 @@ def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.mon
             return None
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        return dict(zip(ids, pool.map(one, ids), strict=True))
+        shapes = dict(zip(ids, pool.map(one, ids), strict=True))
+    if prune:
+        try:
+            removed = prune(set(ids))
+            if removed:
+                log.info("flood outline cache: %d old entries removed", len(removed))
+        except Exception as e:  # noqa: BLE001 - a cache left unpruned is not a failed build
+            log.warning("flood outline cache not pruned: %s", e)
+    return shapes
+
+
+def flood_warnings(counts: dict, n_spots: int) -> list[str]:
+    """The build warnings the flood checks raise (announced with the others)."""
+    out = []
+    if counts.get("flood_alerts_unchecked"):
+        out.append(f"flood alerts not checked for {counts['flood_alerts_unchecked']} of {n_spots} spots: "
+                   "the Environment Agency did not answer; their pages say so")
+    if counts.get("flood_outlines_missing"):
+        n = counts["flood_outlines_missing"]
+        out.append(f"flood outlines: {n} area{'s' if n != 1 else ''} unavailable (fetch failed, no cached outline under "
+                   "30 days); their alerts are not named, only counted")
+    return out
 
 
 _LAKES = None
@@ -2949,9 +2982,7 @@ def build(refresh: bool = True) -> dict:
         health["warnings"].append(f"Nearby reasons not made this update: {e}")
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
-    if n_flows.get("flood_alerts_unchecked"):
-        health["warnings"].append(f"flood alerts not checked for {n_flows['flood_alerts_unchecked']} of {len(results)} spots: "
-                                  "the Environment Agency did not answer; their pages say so")
+    health["warnings"] += flood_warnings(n_flows, len(results))
     health["water_temperature"] = n_water_temp
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]

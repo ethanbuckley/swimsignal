@@ -734,34 +734,195 @@ def test_a_coastal_area_is_other_for_an_inland_spot_and_can_apply_to_a_tidal_one
     assert flows.flood_alert_water(tidal_dart, on_tide, Point(on_tide.point).buffer(50)) == "own"
 
 
-def test_an_outline_is_asked_for_once_and_kept_by_area_id(tmp_path):
-    raw = (FIX / "flood_areas" / "011FWFNC6KC.geojson").read_text()
-    asked = []
+DAY = 86400.0
+RAW_CAMPSITE = (FIX / "flood_areas" / "011FWFNC6KC.geojson").read_text()
 
-    def get(url, headers=None, timeout=None):
-        asked.append((url, timeout))
-        return httpx.Response(200, text=raw, request=httpx.Request("GET", url))
 
-    first = flows.flood_area_outline("011FWFNC6KC", tmp_path, 7.0, now=1000.0, get=get)
-    assert first is not None and asked == [(f"https://{EA}/flood-monitoring/id/floodAreas/011FWFNC6KC/polygon", 7.0)]
-    assert (tmp_path / "011FWFNC6KC.geojson").exists()
-    t = (tmp_path / "011FWFNC6KC.geojson").stat().st_mtime
-    again = flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t + 86400, get=get)
-    assert len(asked) == 1 and abs(again.area - first.area) < 0.01 * first.area   # kept: no second request
+def _ea(asked, status=200, text=RAW_CAMPSITE, headers=None):
+    """A fake httpx.get for one outline: records each URL and its arguments, never goes out."""
+    def get(url, headers=None, timeout=None, follow_redirects=None, **kw):
+        asked.append({"url": url, "timeout": timeout, "follow_redirects": follow_redirects})
+        return httpx.Response(status, text=text, headers=headers_ or {}, request=httpx.Request("GET", url))
+    headers_ = headers
+    return get
 
-    def down(url, headers=None, timeout=None):
-        asked.append(url)
+
+def _down(asked):
+    def get(url, **kw):
+        asked.append({"url": url, **kw})
         raise httpx.ConnectTimeout("EA timed out")
+    return get
 
-    old = flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t + flows.FLOOD_OUTLINE_MAX_AGE_S + 1, get=down)
-    assert len(asked) == 2 and old is not None   # past its month the EA is asked; refused, the kept outline stands
-    assert flows.flood_area_outline("122WAF940", tmp_path, now=t, get=down) is None   # nothing kept: no outline
-    assert flows.flood_area_outline("bad id/../x", tmp_path, get=down) is None and len(asked) == 3   # never asked
-    assert flows.flood_area_outline(None, tmp_path, get=down) is None
 
-    def junk(url, headers=None, timeout=None):
-        return httpx.Response(200, text="{}", request=httpx.Request("GET", url))
-    assert flows.flood_area_outline("113WACT1B", tmp_path, get=junk) is None and not (tmp_path / "113WACT1B.geojson").exists()
+def test_an_outline_is_asked_for_once_at_the_fixed_url_and_kept_with_its_fetch_time(tmp_path):
+    asked = []
+    first = flows.flood_area_outline("011FWFNC6KC", tmp_path, 7.0, now=1000.0, get=_ea(asked))
+    assert first is not None
+    assert asked == [{"url": f"https://{EA}/flood-monitoring/id/floodAreas/011FWFNC6KC/polygon", "timeout": 7.0,
+                      "follow_redirects": False}]
+    entry = json.loads((tmp_path / "011FWFNC6KC.geojson").read_text())
+    assert entry["properties"] == {"floodAreaID": "011FWFNC6KC", "fetched_at": 1000.0}   # its age is recorded
+    again = flows.flood_area_outline("011FWFNC6KC", tmp_path, now=1000.0 + 6 * DAY, get=_ea(asked))
+    assert len(asked) == 1 and abs(again.area - first.area) < 0.01 * first.area   # under a week: kept, not asked
+    flows.flood_area_outline("011FWFNC6KC", tmp_path, now=1000.0 + 8 * DAY, get=_ea(asked))
+    assert len(asked) == 2   # over a week: asked again
+    assert json.loads((tmp_path / "011FWFNC6KC.geojson").read_text())["properties"]["fetched_at"] == 1000.0 + 8 * DAY
+
+
+def test_a_cached_outline_29_days_old_is_used_when_the_refresh_fails(tmp_path):
+    flows.flood_area_outline("011FWFNC6KC", tmp_path, now=0.0, get=_ea([]))
+    asked = []
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=29 * DAY, get=_down(asked)) is not None
+    assert len(asked) == 1   # it was asked, failed, and the kept outline stood
+
+
+def test_a_cached_outline_31_days_old_is_not_used_when_the_refresh_fails(tmp_path, monkeypatch):
+    flows.flood_area_outline("011FWFNC6KC", tmp_path, now=0.0, get=_ea([]))
+    asked = []
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=31 * DAY, get=_down(asked)) is None and len(asked) == 1
+    # So the alert falls back to rule 4: Calfclose's own area, never named; Buttermere's, other.
+    alert = _live_alerts(monkeypatch, "011FWFNC6KC", severity=3)
+    assert flows.split_flood_alerts(alert, _water("derwent-water-calfclose"), {"011FWFNC6KC": None}) == ([], 0, 1)
+    assert flows.split_flood_alerts(alert, _water("buttermere"), {"011FWFNC6KC": None}) == ([], 1, 0)
+    # An entry with no recorded fetch time has no age: never used once a refresh fails.
+    (tmp_path / "011WAFDW.geojson").write_text((FIX / "flood_areas" / "011WAFDW.geojson").read_text())
+    assert flows.flood_area_outline("011WAFDW", tmp_path, now=1.0, get=_down(asked)) is None
+
+
+def test_no_cached_outline_and_a_failed_fetch_is_no_outline(tmp_path):
+    asked = []
+    assert flows.flood_area_outline("122WAF940", tmp_path, now=0.0, get=_down(asked)) is None and len(asked) == 1
+    assert flows.flood_area_outline("113WACT1B", tmp_path, get=_ea(asked, status=500)) is None
+    assert flows.flood_area_outline("113WACT1B", tmp_path, get=_ea(asked, text="{}")) is None   # unreadable
+    assert not any(tmp_path.iterdir())   # nothing kept from a failure
+
+
+def test_a_redirect_is_a_failure_and_its_location_is_never_asked(tmp_path):
+    asked = []
+    moved = _ea(asked, status=301, text="", headers={"Location": "https://evil.example/x.geojson"})
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, get=moved) is None
+    assert [a["url"] for a in asked] == [f"https://{EA}/flood-monitoring/id/floodAreas/011FWFNC6KC/polygon"]
+    assert asked[0]["follow_redirects"] is False
+    for status in (302, 307, 308):
+        assert flows.flood_area_outline("011FWFNC6KC", tmp_path, get=_ea(asked, status=status, headers={"Location": "/x"})) is None
+    assert all(a["url"].startswith(f"https://{EA}/flood-monitoring/id/floodAreas/") for a in asked)
+
+
+def test_an_id_that_is_not_an_ea_flood_area_id_is_refused_without_a_request(tmp_path):
+    asked = []
+    for bad in ("122WAF940/../x", "..", "../122WAF940", "122WAF940?x=1", "122WAF940#x", "122 WAF940", "122WAF940 ",
+                "１２２WAF940", "122WAFé40", "122WAF940\n", "", None, 122, "WAF940", "12WAF940", "122WAF940.geojson",
+                "122WAF940%2F..", "https://evil.example/122WAF940"):
+        assert flows.flood_area_outline(bad, tmp_path, get=_ea(asked)) is None, bad
+    assert asked == [] and not any(tmp_path.iterdir())
+    assert flows._outline_url("062WAF38BrentBks") == f"https://{EA}/flood-monitoring/id/floodAreas/062WAF38BrentBks/polygon"
+    # Every id in that night's fixture is one.
+    assert all(flows._outline_url(f["floodAreaID"]) for f in LIVE_FLOODS["items"])
+
+
+def _entry(path, area_id, fetched_at):
+    p = path / f"{area_id}.geojson"
+    p.write_text(json.dumps({"type": "Feature", "properties": {"floodAreaID": area_id, "fetched_at": fetched_at},
+                             "geometry": {"type": "Polygon", "coordinates": [[[-2, 54], [-2, 54.01], [-1.99, 54.01], [-2, 54]]]}}))
+    return p
+
+
+def test_prune_removes_expired_entries_keeps_fresh_and_in_force_ones_and_touches_nothing_else(tmp_path):
+    cache = tmp_path / "flood_areas"
+    cache.mkdir()
+    now = 100 * DAY
+    old = _entry(cache, "122WAF940", now - 31 * DAY)
+    fresh = _entry(cache, "122WAF942", now - 29 * DAY)
+    in_force = _entry(cache, "113WACT1B", now - 90 * DAY)   # old, but in force in this build
+    no_time = cache / "011WAFDW.geojson"
+    no_time.write_text('{"type": "Feature", "properties": {}, "geometry": null}')
+    other = cache / "notes.txt"
+    other.write_text("not an outline")
+    odd = cache / "README.geojson"   # not an area id
+    odd.write_text("{}")
+    sub = cache / "sub"
+    sub.mkdir()
+    deep = _entry(sub, "011FWFNC6KC", 0.0)
+    outside = _entry(tmp_path, "011FWFNC6KC", 0.0)   # same name pattern, outside the directory
+    link = cache / "122WAF946.geojson"
+    link.symlink_to(outside)
+    removed = flows.prune_flood_outlines(cache, keep={"113WACT1B"}, now=now)
+    assert sorted(removed) == ["011WAFDW.geojson", "122WAF940.geojson"]
+    assert not old.exists() and not no_time.exists()
+    assert fresh.exists() and in_force.exists() and other.exists() and odd.exists() and deep.exists() and outside.exists()
+    assert link.is_symlink()   # a link is never followed or removed
+    assert flows.prune_flood_outlines(tmp_path / "missing", now=now) == []
+
+
+def test_prune_caps_the_cache_oldest_first_but_never_an_area_in_force(tmp_path):
+    now = 10 * DAY
+    for i in range(6):
+        _entry(tmp_path, f"122WAF9{i:02d}", now - i * DAY)   # 122WAF900 newest ... 122WAF905 oldest
+    removed = flows.prune_flood_outlines(tmp_path, keep={"122WAF905"}, now=now, cap=3)
+    assert sorted(removed) == ["122WAF902.geojson", "122WAF903.geojson", "122WAF904.geojson"]   # the oldest not in force
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["122WAF900.geojson", "122WAF901.geojson", "122WAF905.geojson"]
+    assert flows.FLOOD_OUTLINE_CACHE_MAX == 500
+
+
+def test_the_build_prunes_only_its_own_cache_and_never_when_a_test_gives_the_outlines(tmp_path, monkeypatch):
+    bs = _build_site()
+    pruned = []
+    bs.flood_outlines({"011WAFDW"}, lambda aid, t: OUTLINES[aid], workers=1, prune=lambda keep: pruned.append(keep))
+    assert pruned == [{"011WAFDW"}]
+    monkeypatch.setattr(bs.config, "CACHE", tmp_path)
+    calls = []
+    monkeypatch.setattr(flows, "prune_flood_outlines", lambda cache, keep: calls.append((cache, keep)) or [])
+    monkeypatch.setattr(flows, "flood_area_outline", lambda aid, cache, timeout: None)
+    bs.flood_outlines({"011WAFDW"}, workers=1)
+    assert calls == [(tmp_path / "flood_areas", {"011WAFDW"})]   # the one directory, keeping this build's areas
+    calls.clear()
+    bs.flood_outlines({"011WAFDW"}, lambda aid, t: None, workers=1)
+    assert calls == []   # outlines given, no prune given: nothing on disk is touched
+
+
+def test_unavailable_outlines_are_counted_and_announced(monkeypatch):
+    bs = _build_site()
+    spots = [dict(SPOTS["wharfe-bolton-abbey"])]
+    alerts = _live_alerts(monkeypatch, "122WAF942", "122WAF940", severity=3)
+    counts = bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: alerts, any_alerts=lambda: True,
+                                  workers=1, now=NOW, outline=lambda aid, t: None if aid == "122WAF942" else OUTLINES[aid],
+                                  lake_at=_lake_at)
+    assert counts["flood_outlines_missing"] == 1
+    assert (spots[0]["flood_alerts"], spots[0]["flood_alerts_unmatched"]) == ([], 1)   # the Wharfe alert, not named
+    assert bs.flood_warnings(counts, 1) == [
+        "flood outlines: 1 area unavailable (fetch failed, no cached outline under 30 days); their alerts are not named, only counted"]
+    assert bs.flood_warnings({"flood_alerts_unchecked": 2}, 5)[0].startswith("flood alerts not checked for 2 of 5 spots")
+    assert bs.flood_warnings({}, 5) == []
+
+
+def test_an_empty_list_says_which_search_found_none():
+    bs = _build_site()
+    spots = [dict(SPOTS["wharfe-burnsall"])]
+    bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: [], any_alerts=lambda: False, workers=1, now=NOW,
+                         outline=lambda aid, t: None)
+    assert (spots[0]["flood_alerts"], spots[0]["flood_alerts_search"]) == ([], "england")   # none in force in England
+    bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: [], any_alerts=lambda: True, workers=1, now=NOW,
+                         outline=lambda aid, t: None)
+    assert (spots[0]["flood_alerts"], spots[0]["flood_alerts_search"]) == ([], "within_10km")   # the spot's own search
+
+    def refused():
+        raise httpx.ReadTimeout("slow")
+    bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: [], any_alerts=refused, workers=1, now=NOW,
+                         outline=lambda aid, t: None)
+    assert (spots[0]["flood_alerts"], spots[0]["flood_alerts_search"]) == (None, None)   # unchecked
+
+
+def test_coast_at_duddon_estuary_is_other_water_at_birks_bridge():
+    """26 Oct 2026: "Coast at Duddon estuary" (011WACN4, isTidal) was in force near Birks Bridge, far up
+    the Duddon. A tidal or coastal area never matches an inland spot because a name overlaps: it is
+    other water, even when its waters name the river and it has no outline."""
+    birks = _build_site().own_water({"id": "duddon-birks-bridge", "kind": "river", "river": "River Duddon", "lat": 54.372,
+                                     "lon": -3.19, "location": {"watercourse": "River Duddon", "form": "inlandRiver",
+                                                                "snapped": {"lat": 54.37092, "lon": -3.18707}}})
+    estuary = {"area": "Coast at Duddon estuary", "waters": ["Irish Sea"], "tidal": True}
+    assert flows.flood_alert_water(estuary, birks, None) == "other"
+    assert flows.flood_alert_water({**estuary, "waters": ["Irish Sea", "River Duddon"]}, birks, None) == "other"
+    assert flows.split_flood_alerts([{**estuary, "waters": ["River Duddon"], "severity": "Flood alert"}], birks, {}) == ([], 1, 0)
 
 
 def test_attach_flow_state_names_only_the_alerts_whose_area_covers_the_spot(monkeypatch):
