@@ -219,14 +219,37 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
     return "\n".join(out)
 
 
-def site_page(spot: dict, t: pd.DataFrame | None, mark: str, template: str | None = None, url: str | None = None) -> str:
+def share_tags(title: str, description: str, url: str, root: str) -> str:
+    """A link preview for the page, the tags build_site.page_meta gives every other page: its own title
+    and description, its address, and the site's shared picture (icons/og.png). Not the spot's own card
+    (cards/spot/<id>.png), which shows today's level: a preview is kept for days, and this page is about
+    past years. Values escaped here."""
+    return "\n".join([
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="SwimSignal">',
+        f'<meta property="og:title" content="{escape(title)}">',
+        f'<meta property="og:description" content="{escape(description)}">',
+        f'<meta property="og:url" content="{escape(url)}">',
+        f'<meta property="og:image" content="{escape(root + "icons/og.png")}">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        '<meta property="og:image:alt" content="SwimSignal: pollution risk forecasts for river and lake swim spots">',
+        '<meta name="twitter:card" content="summary_large_image">',
+    ])
+
+
+def site_page(spot: dict, t: pd.DataFrame | None, mark: str, template: str | None = None, url: str | None = None,
+              root: str | None = None) -> str:
     """spot/<id>/profile/index.html for one spot. `mark` is the brand mark's inline SVG (build_site.MARK);
-    `url` the page's own published address, for its canonical link (none without it)."""
+    `url` the page's own published address, for its canonical link, and with `root` (the site's published
+    address) its link preview (none without them)."""
     name = escape(str(spot["name"]))
+    description = (f"The monitored storm overflows upstream of {spot['name']} and how often each "
+                   "spilled in each year from 2021 to 2025, from the Environment Agency's annual returns.")
     slots = {"name": name, "mark": mark, "body": body(spot, t),
              "canonical": f'<link rel="canonical" href="{escape(url)}">' if url else "",
-             "description": escape(f"The monitored storm overflows upstream of {spot['name']} and how often each "
-                                   "spilled in each year from 2021 to 2025, from the Environment Agency's annual returns.")}
+             "share": share_tags(f"Overflow history: {spot['name']} · SwimSignal", description, url, root) if url and root else "",
+             "description": escape(description)}
     html = template if template is not None else TEMPLATE.read_text()
     missing = set(SLOT.findall(html)) - slots.keys()
     if missing:
