@@ -24,6 +24,12 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   coverage, how a forecast would be validated, draft emails and tasks. Plans only.
 - [COMPREHENSION-TEST-2026-10.md](COMPREHENSION-TEST-2026-10.md): a plan for 8 to 10 moderated swimmer sessions,
   October to November 2026. Not yet run.
+- [COMPREHENSION-TEST-2026-10-RUN-SHEET.md](COMPREHENSION-TEST-2026-10-RUN-SHEET.md): the moderator's checklist for
+  one Lake District session (day before, morning, during, after), the consent wording, where participants' data
+  is kept and for how long, the defaults it takes from the plan, and Ethan's decisions of 26 October 2026.
+- [COMPREHENSION-TEST-2026-10-RECORDS.md](COMPREHENSION-TEST-2026-10-RECORDS.md): the blank record for one
+  session and how to analyse 8 to 10 of them against the plan's fail lines. Filled records stay out of the
+  repository.
 - [SWIMMER_TESTING.md](SWIMMER_TESTING.md): the earlier swimmer test plan. The comprehension test replaces its
   tasks and keeps its recording rules.
 - [SWIMSIGNAL_REVIEW.md](SWIMSIGNAL_REVIEW.md): review notes for the SwimSignal rebrand: scope, compatibility,
@@ -83,6 +89,11 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   before the run. **The chances run too high overall** (observed over expected 0.74 same day, 0.80 in advance),
   and the higher chances run highest (slope 0.74), but not at every company: Thames, Wessex and Southern too high;
   Anglian and Yorkshire too extreme, not too high. Nothing is refitted. Tables: `.json`, `-persistence.json`.
+- [CALIBRATION-TEST-PROPOSAL-2026-11.md](CALIBRATION-TEST-PROPOSAL-2026-11.md): a recalibration of the live spill
+  forecast (intercept and slope per lead, pooled or with a company term), fitted to 6 December 2026 and judged on
+  14 December to 7 March 2027 against production, with a non-inferiority route, company guardrails and a staged
+  switch-on. **Approved 26 October 2026, not run:** the fit is on or after 10 December. A pass leads to a separate
+  rollout review, not a switch-on. For 2027 it stays a labelled secondary.
 
 ### Transport and the E. coli estimate
 
