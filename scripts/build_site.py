@@ -29,6 +29,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
@@ -1163,6 +1164,31 @@ def attach_classifications(results: list[dict], path: Path = CLASSIFICATIONS) ->
             r["classification"] = {k: c[k] for k in ("class", "year", "history", "url") if k in c}
             n += "class" in c
     return n
+
+
+def attach_official_advice(results: list[dict], approvals: Path | None = None, check: Path | None = None,
+                           now=None) -> dict:
+    """Reviewed official advice for each spot's page (`official`: [{line, publisher, link, since, checked,
+    state}], newest first), from data/advisories/approved.json and the advisory finder's last check,
+    data/advisories/last_check.json (dipcast.official_advice). Files only: the build asks no publisher
+    for anything, and the advice never changes a level. An approvals file with any mistake (or none at
+    all) raises BuildUnhealthy, naming the problem: a site that silently dropped a reviewed advisory
+    would look clean where it is not. A valid file with no entries is fine. Returns {"shown": n,
+    "states": {...}} for the build's health record."""
+    now = now or pd.Timestamp.now(tz="UTC").to_pydatetime()
+    try:
+        approved = official_advice.load_approvals(approvals, now=now)
+    except official_advice.ApprovalError as e:
+        raise BuildUnhealthy(f"official advice: {e}; fix data/advisories/approved.json by PR; not publishing") from None
+    by_spot = official_advice.shown(approved, official_advice.load_check(check), now)
+    n, states = 0, Counter()
+    for r in results:
+        items = by_spot.get(r["id"])
+        if items:
+            r["official"] = items
+            n += len(items)
+            states.update(x["state"] for x in items)
+    return {"shown": n, "states": dict(states)}
 
 
 RNAGS = config.RAW / "rnags.json"
@@ -2880,7 +2906,7 @@ def write_organisers(site: Path, token: str | None = None, root: str | None = No
 # their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
 # the sitemap lists both, as it lists that page.
 SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.js")
-RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "record.js")
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "record.js")   # eatoday.js: official advice
 
 
 def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -3112,6 +3138,7 @@ def build(refresh: bool = True) -> dict:
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
     dry = attach_dry_weather(results)   # notes on past dry-weather spills, from a file: the model never reads them
+    official = attach_official_advice(results)   # reviewed official advice, from two files: no request, never a level
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -3128,6 +3155,7 @@ def build(refresh: bool = True) -> dict:
         feed_warns, health["monitor_checks"] = monitor_feed_checks(poll_log)
         health["warnings"] += feed_warns
     health["algae_checks"], health["classifications"] = n_algae, n_classified
+    health["official_advice"] = official
     health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
     health["warnings"] += upgrades["warnings"]
     health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}

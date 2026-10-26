@@ -437,6 +437,16 @@
   /* A long spill that may be a fault: ink, after where the week goes, never a box. */
   .answer .gaps { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   /* What the forecast could read (coverLine): ink, the notes' size, just above the issue time. */
+  /* Official advice (eatoday.js, eaTodayOfficial): a notice, read first, above the level and apart from it. */
+  .answer .official { text-align:left; max-width:30em; margin:14px auto 18px; line-height:1.4; color:var(--ink); }
+  .official h2 { margin:0 0 4px; font-size:var(--fs-body); font-weight:600; }
+  .official ul { margin:0; padding:0; list-style:none; }
+  .official li + li { margin-top:8px; padding-top:8px; border-top:1px solid var(--notice-line); }
+  .official p { margin:0; }
+  .official .o-line { font-weight:600; }
+  .official .o-sep { margin-top:8px; }
+  /* Its compact form in a row or a card (eaTodayTag): a line of its own under the level, marked by the notice's rule. */
+  .o-tag { display:block; margin:3px 0 0; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-meta); line-height:1.35; color:var(--ink); }
   .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
      level counts, at the notes' size. Left, as the tile's sentence is. */
@@ -2233,7 +2243,8 @@ function riverTile(rs) {
 // (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
+    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '')
+    + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
@@ -2276,7 +2287,8 @@ const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof ea
 // A long spill that may be a fault stays beside the answer only: it is a reading, not a gap. Rows:
 //  - Live readings: overflows upstream with no current reading, and why (liveSay, feedDown, feedStale);
 //  - Overflows in Wales: not in the data (levels.js, walesWords);
-//  - Today's EA advice: at a designated bathing water (levels.js, eaUnchecked);
+//  - Today's EA advice: at a designated bathing water (levels.js, eaUnchecked); with a reviewed notice
+//    shown above (eatoday.js, eaTodayCover), what was checked and when, as the answer's line says;
 //  - Access: the desk check (accessSaid), never an inspection;
 //  - Flood warnings: the EA did not answer this build (experience.js, floodUnchecked; kept from the
 //    answer, where in bold it read like a hazard).
@@ -2287,7 +2299,9 @@ function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
   if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)]);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
-  if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
+  const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
+  if (reviewed) rows.push(["Today's EA advice", 'Notice shown above', `${reviewed}.`]);
+  else if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
   if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
   if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
   if (typeof floodUnmatched === 'function' && floodUnmatched(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not matched', floodUnmatchedLine(true)]);
@@ -2322,7 +2336,10 @@ function coverWords(d, iso = null) {
   const gone = daily(d) && !iso ? d.days.slice(0, 5).filter(x => !hasData(x)).map(x => dayName(x.date)) : [];
   if (gone.length && gone.length < 5) out.push(`No forecast for ${gone.length > 1 ? gone.slice(0, -1).join(', ') + ' or ' + gone[gone.length - 1] : gone[0]}`);
   if (walesWords(d, true)) out.push(esc(walesWords(d, true)));
-  if (eaUnchecked(d)) { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
+  // A reviewed notice above (eatoday.js, eaTodayCover) says when it was checked and where the latest is.
+  const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
+  if (reviewed) out.push(reviewed);
+  else if (eaUnchecked(d)) { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
     out.push(`Today's EA advice not checked: ${fold ? '<a href="#ea-today">open it</a>' : /^https:\/\//.test(url || '') ? `<a href="${esc(url)}">see the EA's page</a>` : "see the EA's page"} before you swim`); }
   return out;
 }
@@ -2837,7 +2854,7 @@ function spotItem(s) {
   const d = dist(s);
   const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, rainMeta(s)].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(listPath(s))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span>${headNote(s)}<span class="k">${meta}</span></span>${week(s)}</a></li>`;
+    + `<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span>${headNote(s)}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="k">${meta}</span></span>${week(s)}</a></li>`;
 }
 function bindItems(ul) {
   ul.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => {
@@ -3026,7 +3043,7 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
-    + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
+    + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '') + (typeof eaTodayTag === 'function' ? eaTodayTag(s, 'p') : '')
     + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 // A list's spots that the forecast has, in the list's order.
@@ -3544,7 +3561,7 @@ function planItem(o) {
   const s = o.s, why = planWhy(s, PLAN.day), ev = planEvidence(s);
   const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
-    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
+    + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
     + `<label class="cmp-pick"><input type="checkbox" data-compare-pick="${esc(s.id)}"><span>Compare<span class="sr"> ${esc(s.name)}</span></span></label>${ev}</li>`;
 }
 function renderPlan() {
@@ -4197,9 +4214,11 @@ function spotTop(d) {
   // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
   h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
   h += notices(d);
-  // The answer, under the sky: the place, its name, then its words (answerWords).
+  // The answer, under the sky: the place, its name, then any official advice (eatoday.js, eaTodayOfficial),
+  // above the level and apart from it, then its words (answerWords).
+  const official = typeof eaTodayOfficial === 'function' ? eaTodayOfficial(d) : '';
   return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
-    + `<div id="answer-words">${answerWords(d)}</div></section>`;
+    + `${official}<div id="answer-words">${answerWords(d)}</div></section>`;
 }
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
