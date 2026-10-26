@@ -63,6 +63,10 @@ UTC). Each decision is recorded in its own PR as well.
 - Statements are written before any data that could judge them is read. Anything seen first is listed.
 - Heavy runs wait for the group's shared `heavy-run.lock`. Public fetches have caps written down first. No piece uses
   Open-Meteo calls.
+- Caps are sized before they are written: requests × (pause + latency) = run time, stated with the caps. Rate-limited
+  APIs (EA, Open-Meteo, the CLMS map tiles, STAC search) go one request at a time with a pause; object stores such as
+  the AWS Sentinel-2 buckets are read in parallel (16 at a time) with no pause. Learned on 26 October 2026: #377's
+  stage 1 was first paced at 1 request a second for every host, about 9.5 hours for under 1 GB; Amendment A1 fixed it.
 - Algae blooms are kept apart from toxins and from E. coli. A river-rise figure is not a swimming-safety forecast.
 - An advisory is always a draft a person approves, and never changes a level.
 
