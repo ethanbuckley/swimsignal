@@ -665,6 +665,51 @@ def snapshot_duplicates() -> list[str]:
     return duplicate_site_ids(pd.read_parquet(p, columns=["site_id"])) if p.exists() else []
 
 
+def lead0_rain(db: Path, since: str) -> pd.DataFrame | None:
+    """Lead-0 forecast rain per overflow and target day from `since` (YYYY-MM-DD), the latest issue of each, from
+    the forecast log (forecast_overflows): what company_freeze judges a wet day by. None without the log."""
+    if not db.exists():
+        return None
+    import duckdb
+    con = duckdb.connect(str(db), read_only=True)
+    try:
+        return con.execute("""
+            SELECT site_id, CAST(target_day AS VARCHAR) AS day, rain_mm FROM forecast_overflows
+            WHERE lead = 0 AND rain_mm IS NOT NULL AND target_day >= CAST(? AS DATE)
+            QUALIFY row_number() OVER (PARTITION BY site_id, target_day ORDER BY issued_at DESC) = 1""", [since]).fetchdf()
+    finally:
+        con.close()
+
+
+def monitor_feed_checks(poll_log: pd.DataFrame | None) -> tuple[list[str], dict]:
+    """The whole-feed monitor checks decided on 26 Oct 2026 (docs/MONITOR-ANOMALIES-2026-10.md, sections 7 and 8):
+    future_time, time_format, known_share_drop, company_freeze and id_turnover, as build warnings
+    (monitor_anomalies.feed_warnings), each starting "monitor check (<rule>)". Never on the page; never a failed
+    build. Reads the state's live snapshot, live history and coverage, and the forecast log's rain; a rule whose
+    file is missing is skipped and named in the summary."""
+    from dipcast import monitor_anomalies as ma
+    from dipcast.ingest.live import COVERAGE_FILE
+
+    def read(name: str, columns: list[str] | None = None) -> pd.DataFrame | None:
+        p = config.state_read(name)
+        try:
+            return pd.read_parquet(p, columns=columns) if p.exists() else None
+        except Exception as e:  # noqa: BLE001
+            log.warning("monitor checks: %s unreadable: %s", name, e)
+            return None
+    try:
+        since = (pd.Timestamp.now(tz="Europe/London").normalize() - pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+        try:
+            rain = lead0_rain(config.DUCKDB_PATH, since)
+        except Exception as e:  # noqa: BLE001
+            log.warning("monitor checks: forecast log unreadable: %s", e)
+            rain = None
+        return ma.feed_warnings(read("live_latest.parquet"), poll_log, read("live_history.parquet"), rain,
+                                read(COVERAGE_FILE, ["site_id", "day"]))
+    except Exception as e:  # noqa: BLE001 - checks beside the forecast must never stop it
+        return [f"monitor checks not run: {e}"], {"error": str(e)}
+
+
 def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_log: pd.DataFrame | None = None,
                  duplicate_overflow_ids: list[str] | None = None, rain_fallback: dict | None = None) -> dict:
     """Counts the workflow and the page use to judge a build; raises BuildUnhealthy
@@ -2853,10 +2898,11 @@ REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, cen
 
 def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
                        token: str | None = None, live: Path | None = None, returns: Path | None = None,
-                       root: str | None = None) -> None:
+                       root: str | None = None, longest_events: Path | None = None) -> None:
     """quality.html: the overflow records to correct, from the position conflicts' cases
-    file, the live snapshot's positions, the annual returns' outlets and this build's overflow table
-    (src/dipcast/quality.py). A missing input leaves its part of the page saying so; nothing here stops
+    file, the live snapshot's positions, the annual returns' outlets, this build's overflow table
+    (src/dipcast/quality.py) and each overflow's longest spill on record (monitor_anomalies.LONGEST_FILE,
+    for the long_run list). A missing input leaves its part of the page saying so; nothing here stops
     the build."""
     from dipcast import quality
     try:
@@ -2876,8 +2922,21 @@ def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd
     except Exception as e:  # noqa: BLE001
         announce(f"quality.html without the annual returns' outlets: {e}")
         outlets = empty
-    when = (generated or pd.Timestamp.now(tz="UTC")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
-    page = quality.site_page(cases, positions, outlets, overflows, when, MARK)
+    from dipcast import monitor_anomalies
+    try:   # each overflow's longest spill on record, for the long_run list: without it the list is left out
+        longest = monitor_anomalies.load_longest(longest_events)
+    except Exception as e:  # noqa: BLE001
+        announce(f"quality.html without the long_run list (no {longest_events or monitor_anomalies.LONGEST_FILE}): {e}")
+        longest = None
+    as_of = generated or pd.Timestamp.now(tz="UTC")
+    when = as_of.tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    try:   # as_of: live readings over FEED_CURRENT_H older than the build leave the long_run list "could not be checked"
+        page = quality.site_page(cases, positions, outlets, overflows, when, MARK, longest=longest, as_of=as_of)
+    except Exception as e:  # noqa: BLE001 - a display-only list must not stop the page or the build
+        if longest is None:
+            raise
+        announce(f"quality.html without the long_run list: {e}")
+        page = quality.site_page(cases, positions, outlets, overflows, when, MARK)
     (site / "quality.html").write_text(with_counter(with_share_meta(page, "quality.html", root or site_url()), token))
 
 
@@ -3041,8 +3100,12 @@ def build(refresh: bool = True) -> dict:
     n_weather = attach_weather(results) if refresh else 0
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
-    health = build_health(results, samples_status(), load_poll_log() if refresh else None,
+    poll_log = load_poll_log() if refresh else None
+    health = build_health(results, samples_status(), poll_log,
                           duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
+    if refresh:   # whole-feed monitor checks: warnings only (monitor_feed_checks); like the live check, they need this run's poll
+        feed_warns, health["monitor_checks"] = monitor_feed_checks(poll_log)
+        health["warnings"] += feed_warns
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
     health["warnings"] += upgrades["warnings"]
