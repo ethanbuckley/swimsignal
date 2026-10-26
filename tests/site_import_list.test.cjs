@@ -100,18 +100,19 @@ test('a list\'s link opens the shared list, which adds it once and then says it 
   assert.match(p.ctx.panel, /<h1 class="page-h" tabindex="-1">Windermere<\/h1><p class="lede">Someone shared this list of 2 spots with you\./);
   assert.match(p.ctx.panel, /<button type="button" class="btn primary" id="sh-add">Add to my lists<\/button>/);
   assert.match(p.ctx.panel, /Windermere, Waterhead<\/li><li class="scard">Windermere, Millerground/);
-  // Added, it is a list of its own, and the address is the Saved page's again.
+  // Added, it takes the place of a first visit's empty "My spots" (lists.js addSharedList, #369), and the
+  // address is the Saved page's again.
   p.els['sh-add'].on.click();
-  assert.equal(JSON.stringify(p.ctx.lists().lists.map(l => [l.name, l.spots])), JSON.stringify([['My spots', []], ['Windermere', ['osm-windermere-waterhead', 'bw-ukd1203-45650']]]));
+  assert.equal(JSON.stringify(p.ctx.lists().lists.map(l => [l.name, l.spots])), JSON.stringify([['Windermere', ['osm-windermere-waterhead', 'bw-ukd1203-45650']]]));
   assert.equal(p.loc.hash, '');
   // Now something is saved: the form is in Your lists, and not on a tile of its own.
-  assert.match(p.ctx.panel, /<details class="sec tile lists" id="lists">[\s\S]*id="ls-new"[\s\S]*<form class="lists-form" id="ls-import">[\s\S]*id="ls-delete"[\s\S]*id="lists-msg"/);
+  assert.match(p.ctx.panel, /<details class="sec tile lists" id="lists">[\s\S]*id="ls-new"[\s\S]*<form class="lists-form" id="ls-import">[\s\S]*id="lists-msg"/);
   assert.doesNotMatch(p.ctx.panel, /<section class="sec tile lists">/);
   // The same link again: no second copy, but "It is in your lists already".
   p.paste(LINK);
   assert.match(p.ctx.panel, /It is in your lists already, as Windermere\. <button type="button" class="linkbtn small" id="sh-show">Show it<\/button>/);
   assert.doesNotMatch(p.ctx.panel, /id="sh-add"/);
-  assert.equal(p.ctx.lists().lists.length, 2);
+  assert.equal(p.ctx.lists().lists.length, 1);
   // A name with markup in it is shown as text.
   p.els['sh-show'].on.click();
   p.paste('https://swimsignal.co.uk/saved/#list=%3Cb%3EHi%3C%2Fb%3E&spots=osm-windermere-waterhead');

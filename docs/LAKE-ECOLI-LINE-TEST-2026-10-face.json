@@ -1,0 +1,51 @@
+{
+ "rows": 1502,
+ "lake_rows": 595,
+ "sites": 31,
+ "lakes": 11,
+ "over_900": 212,
+ "lake_over_900": 16,
+ "published": {
+  "rows": 1502,
+  "lake_rows": 595
+ },
+ "missingness": {
+  "samples_with_upstream": 1684,
+  "lake_samples_with_upstream": 737,
+  "dropped_missing_forecast_rain": 182,
+  "dropped_missing_forecast_rain_lakes": 142,
+  "dropped_missing_replayed_exposure": 0,
+  "dropped_missing_replayed_exposure_lakes": 0
+ },
+ "compare": {
+  "loyo": {
+   "same_missing": true,
+   "max_abs_diff": 0.0,
+   "n_missing": 0
+  },
+  "loso": {
+   "same_missing": true,
+   "max_abs_diff": 0.0,
+   "n_missing": 0
+  },
+  "forward": {
+   "same_missing": true,
+   "max_abs_diff": 0.0,
+   "n_missing": 505
+  }
+ },
+ "train_ecoli_eval": {
+  "n_samples": 1502,
+  "base_rate_by_type": {
+   "river": 0.2161,
+   "lake": 0.0269
+  },
+  "loyo_brier_full": 0.09214530846823131,
+  "loso_brier_full": 0.09118782059521027
+ },
+ "here": {
+  "loyo_brier_full": 0.09214530846823131,
+  "loso_brier_full": 0.09118782059521027
+ },
+ "passes": true
+}

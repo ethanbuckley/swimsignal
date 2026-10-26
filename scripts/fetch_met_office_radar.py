@@ -10,6 +10,8 @@ reaches the site or the model. Off CI, by hand, with h5py from the optional `rad
 
     uv run --extra radar python scripts/fetch_met_office_radar.py 2026-02-06 2026-02-06
     uv run --extra radar python scripts/fetch_met_office_radar.py 2024-11-21 2026-10-23 --cells cells.csv
+    uv run --extra radar python scripts/fetch_met_office_radar.py 2024-11-21 2026-10-25 --no-cells \
+        --overflows data/processed/overflows.parquet --out ~/radar
 
 Cells: by default every cell with a forecast_* or leads_* file in the rain cache (data/cache/rain,
 or $DIPCAST_CACHE/rain), which is the listed spots' cells and the evaluation cells. Or --cells CSV
@@ -20,8 +22,16 @@ cell_lat, cell_lon, time (UTC, hour-ending, as Open-Meteo labels its hourly rain
 that hour, mm) and coverage (0 to 1: the share of the hour's pixel samples that had data). It goes
 in data/raw, not data/cache, because once the bucket deletes a month it cannot be fetched again.
 
-Resumable: a day is skipped for a cell whose month file already has all 24 of that day's hours, so
-a stopped run starts again where it stopped. Polite: one request at a time, a pause between them,
+Overflows (--overflows overflows.parquet): also the rain at each storm overflow's own position, which a
+0.1 degree cell averages away. For each overflow, the radar pixel that holds its lat/lon and the eight
+around it (fewer at the grid's edge), pooled like a cell, plus the centre pixel alone. One file per UTC
+day, <out>/overflows/radar_overflows_<YYYY-MM-DD>.parquet: site_id, time, radar_mm and coverage (the
+3 x 3 block), centre_mm and centre_coverage (the one pixel). <out>/overflows/overflow_pixels.parquet
+lists each overflow's pixel; it and every day file carry the overflow table's SHA-256, its
+network_key and the pixel rule in their metadata. --no-cells writes the overflows only.
+
+Resumable: a day is skipped for a cell whose month file already has all 24 of that day's hours, and
+for the overflows when that day's file exists, so a stopped run starts again where it stopped. Polite: one request at a time, a pause between them,
 and retries with a growing wait.
 
 Contains Met Office data, British Crown copyright 2024-2025, the Met Office, licensed under
@@ -32,6 +42,7 @@ under CC BY-SA 4.0 with this credit.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import logging
 import re
@@ -131,6 +142,56 @@ def cell_pixels(cells: list[tuple[float, float]]) -> tuple[np.ndarray, np.ndarra
     if not idx:
         return np.zeros(0, np.int64), np.zeros(0, np.int64), n
     return np.concatenate(idx), np.concatenate(lab), n
+
+
+PIXEL_RULE = ("the 1 km radar pixel whose square holds the overflow's lat/lon (EPSG:4326 to "
+              f"{GRID_CRS}), and for radar_mm the 3 x 3 block around it, clipped to the grid; "
+              "centre_mm is that pixel alone")
+
+
+def overflow_pixels(lat, lon) -> tuple[np.ndarray, np.ndarray]:
+    """The (row, col) of the radar pixel whose square holds each point; -1 for a point off the grid."""
+    x, y = Transformer.from_crs("EPSG:4326", GRID_CRS, always_xy=True).transform(
+        np.asarray(lon, float), np.asarray(lat, float))
+    col = np.floor((np.asarray(x) - X_LEFT) / PIXEL_M)
+    row = np.floor((Y_TOP - np.asarray(y)) / PIXEL_M)
+    off = ~((col >= 0) & (col < NX) & (row >= 0) & (row < NY))
+    col[off], row[off] = -1, -1
+    return row.astype(np.int64), col.astype(np.int64)
+
+
+def block_pixels(row: np.ndarray, col: np.ndarray, half: int = 1
+                 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """For each (row, col), the pixels of the (2 half + 1) square around it that lie on the grid, as
+    cell_pixels returns them: (flat pixel index, point number per index, pixels per point). A point
+    off the grid (row -1) has none."""
+    d = np.arange(-half, half + 1)
+    dr, dc = (a.ravel() for a in np.meshgrid(d, d, indexing="ij"))
+    rr, cc = row[:, None] + dr, col[:, None] + dc
+    ok = (row[:, None] >= 0) & (rr >= 0) & (rr < NY) & (cc >= 0) & (cc < NX)
+    lab = np.broadcast_to(np.arange(len(row))[:, None], rr.shape)
+    return (rr * NX + cc)[ok], lab[ok], ok.sum(axis=1)
+
+
+def table_sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def read_overflows(path: Path) -> tuple[pd.DataFrame, dict]:
+    """site_id, lat, lon from an overflows table, and the metadata the output carries to say which."""
+    df = pd.read_parquet(path)
+    keys = sorted(df["network_key"].dropna().unique()) if "network_key" in df else []
+    meta = {"overflows_sha256": table_sha256(path), "overflows_file": Path(path).name,
+            "overflows_rows": len(df), "network_key": ",".join(keys) or "none",
+            "pixel_rule": PIXEL_RULE}
+    df = df[["site_id", "lat", "lon"]].dropna()
+    if not df.site_id.is_unique:
+        raise SystemExit(f"{path}: site_id is not unique")
+    return df.reset_index(drop=True), meta
 
 
 # ------------------------------------------------------------------ one composite
@@ -245,14 +306,36 @@ def read_month(path: Path) -> pd.DataFrame | None:
         return None
 
 
-def write_month(path: Path, df: pd.DataFrame) -> None:
-    """Write atomically, with the credit in the file's metadata (CC BY-SA needs it to travel)."""
+def write_month(path: Path, df: pd.DataFrame, meta: dict | None = None, compression: str = "snappy") -> None:
+    """Write atomically, with the credit in the file's metadata (CC BY-SA needs it to travel), and
+    any other metadata given."""
     table = pa.Table.from_pandas(df, preserve_index=False)
-    table = table.replace_schema_metadata({**(table.schema.metadata or {}), b"credit": CREDIT.encode()})
+    extra = {k.encode(): str(v).encode() for k, v in (meta or {}).items()}
+    table = table.replace_schema_metadata({**(table.schema.metadata or {}), **extra,
+                                           b"credit": CREDIT.encode()})
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".parquet.tmp")
-    pq.write_table(table, tmp)
+    pq.write_table(table, tmp, compression=compression)
     tmp.replace(path)
+
+
+def overflow_day_path(out: Path, day: pd.Timestamp) -> Path:
+    return out / "overflows" / f"radar_overflows_{day:%Y-%m-%d}.parquet"
+
+
+def start_overflow_dir(out: Path, overflows: pd.DataFrame, row: np.ndarray, col: np.ndarray,
+                       n_block: np.ndarray, meta: dict) -> None:
+    """Write overflow_pixels.parquet, or refuse if the folder was begun from another overflow table:
+    one folder's day files must all come from the same table."""
+    path = out / "overflows" / "overflow_pixels.parquet"
+    if path.exists():
+        had = (pq.read_schema(path).metadata or {}).get(b"overflows_sha256", b"").decode()
+        if had != meta["overflows_sha256"]:
+            raise SystemExit(f"{path.parent} was begun from overflow table {had[:12] or '?'}, not "
+                             f"{meta['overflows_sha256'][:12]}: use another --out")
+        return
+    write_month(path, pd.DataFrame({"site_id": overflows.site_id, "lat": overflows.lat, "lon": overflows.lon,
+                                    "row": row, "col": col, "block_pixels": n_block}), meta)
 
 
 def day_hours(day: pd.Timestamp) -> pd.DatetimeIndex:
@@ -262,8 +345,10 @@ def day_hours(day: pd.Timestamp) -> pd.DatetimeIndex:
 
 # ------------------------------------------------------------------ the run
 def run(start: str, end: str, cells: list[tuple[float, float]], out: Path = OUT,
-        client: httpx.Client | None = None, pause_s: float = PAUSE_S) -> dict:
-    """Fetch and reduce every day from start to end (UTC, inclusive). Returns counts for the log."""
+        client: httpx.Client | None = None, pause_s: float = PAUSE_S,
+        overflows: pd.DataFrame | None = None, overflow_meta: dict | None = None) -> dict:
+    """Fetch and reduce every day from start to end (UTC, inclusive), for the cells and, if given, the
+    overflows (site_id, lat, lon; overflow_meta goes in their files). Returns counts for the log."""
     days = pd.date_range(pd.Timestamp(start), pd.Timestamp(end), freq="D")
     today = pd.Timestamp.now("UTC").tz_localize(None).normalize()
     if len(days) and days[-1] >= today:
@@ -273,9 +358,24 @@ def run(start: str, end: str, cells: list[tuple[float, float]], out: Path = OUT,
         if n == 0:
             log.warning("cell %s has no radar pixel; it is left out", cell_key(*c))
     use = [k for k in range(len(cells)) if n_pix[k] > 0]
+    # The overflows ride along as more groups after the cells: their 3 x 3 blocks, then their
+    # centre pixels, so one reduce and one hourly serve all three.
+    nc = len(cells)
+    if overflows is not None:
+        orow, ocol = overflow_pixels(overflows.lat.to_numpy(), overflows.lon.to_numpy())
+        bidx, blab, bn = block_pixels(orow, ocol)
+        cidx, clab, cn = block_pixels(orow, ocol, half=0)
+        no = len(overflows)
+        idx, lab = np.concatenate([idx, bidx, cidx]), np.concatenate([lab, blab + nc, clab + nc + no])
+        n_pix = np.concatenate([n_pix, bn, cn])
+        ov_use = np.flatnonzero(bn > 0)
+        if len(ov_use) < no:
+            log.warning("%d overflows have no radar pixel; they are left out", no - len(ov_use))
+        start_overflow_dir(out, overflows, orow, ocol, bn, overflow_meta or {})
+        ov_ids = overflows.site_id.to_numpy()[ov_use]
     own = client is None
     client = client or httpx.Client(headers=config.EA_HEADERS, timeout=TIMEOUT_S, follow_redirects=True)
-    stats = {"days": 0, "skipped": 0, "files": 0, "missing": 0, "bad": 0, "rows": 0}
+    stats = {"days": 0, "skipped": 0, "files": 0, "missing": 0, "bad": 0, "rows": 0, "overflow_rows": 0}
     have: dict[tuple[int, pd.Timestamp], set] = {}    # (cell, month) -> hour times on disk
     snaps: dict[pd.Timestamp, tuple[np.ndarray, np.ndarray]] = {}
     try:
@@ -291,7 +391,8 @@ def run(start: str, end: str, cells: list[tuple[float, float]], out: Path = OUT,
                     have[(k, month)] = set() if df is None else set(pd.to_datetime(df.time, utc=True))
                 if not set(hours) <= have[(k, month)]:
                     todo.append(k)
-            if not todo:
+            ov_todo = overflows is not None and not overflow_day_path(out, day).exists()
+            if not todo and not ov_todo:
                 stats["skipped"] += 1
                 continue
             need = pd.date_range(hours[0] - 4 * STEP, hours[-1], freq=STEP)
@@ -317,7 +418,7 @@ def run(start: str, end: str, cells: list[tuple[float, float]], out: Path = OUT,
                     log.warning("%s: unreadable (%r)", listing[t], e)
                     stats["bad"] += 1
                     continue
-                snaps[t] = reduce_snapshot(rate, idx, lab, len(cells))
+                snaps[t] = reduce_snapshot(rate, idx, lab, len(n_pix))
                 got += 1
             mm, cov = hourly(snaps, hours, n_pix)
             for k in todo:
@@ -331,11 +432,25 @@ def run(start: str, end: str, cells: list[tuple[float, float]], out: Path = OUT,
                 write_month(path, df)
                 have[(k, month)] |= set(hours)
                 stats["rows"] += len(new)
+            if ov_todo:
+                block, centre = slice(nc, nc + no), slice(nc + no, nc + 2 * no)
+
+                def per_site(a):   # (hours, overflows) to one column, each overflow's 24 hours together
+                    return np.round(a.T[ov_use].ravel(), 3).astype(np.float32)
+
+                df = pd.DataFrame({
+                    "site_id": np.repeat(ov_ids, len(hours)),
+                    "time": pd.to_datetime(np.tile(hours.tz_convert(None).to_numpy(), len(ov_use)), utc=True).astype("datetime64[us, UTC]"),
+                    "radar_mm": per_site(mm[:, block]), "coverage": per_site(cov[:, block]),
+                    "centre_mm": per_site(mm[:, centre]), "centre_coverage": per_site(cov[:, centre])})
+                write_month(overflow_day_path(out, day), df, overflow_meta, compression="zstd")
+                stats["overflow_rows"] += len(df)
             stats["days"] += 1
             stats["files"] += got
             stats["missing"] += missing
-            log.info("%s: %d composites read, %d missing, %d cells written (%.0f s)",
-                     f"{day:%Y-%m-%d}", got, missing, len(todo), time.monotonic() - t0)
+            log.info("%s: %d composites read, %d missing, %d cells written%s (%.0f s)",
+                     f"{day:%Y-%m-%d}", got, missing, len(todo),
+                     f", {len(ov_use)} overflows" if ov_todo else "", time.monotonic() - t0)
     finally:
         if own:
             client.close()
@@ -351,14 +466,22 @@ def main(argv: list[str] | None = None) -> None:
                     help="rain cache whose forecast_/leads_ files name the default cells")
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--pause", type=float, default=PAUSE_S, help="seconds between requests")
+    ap.add_argument("--overflows", type=Path, help="overflows table (site_id, lat, lon, network_key) for "
+                                                   "the per-overflow output")
+    ap.add_argument("--no-cells", action="store_true", help="the overflows only, no rain cells")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
-    cells = read_cells(a.cells) if a.cells else default_cells(a.cache)
-    if not cells:
+    if a.no_cells and not a.overflows:
+        sys.exit("--no-cells needs --overflows")
+    cells = [] if a.no_cells else read_cells(a.cells) if a.cells else default_cells(a.cache)
+    if not cells and not a.no_cells:
         sys.exit(f"no cells: none in {a.cache} and no --cells")
-    log.info("%d cells -> %s", len(cells), a.out)
-    stats = run(a.start, a.end, cells, a.out, pause_s=a.pause)
+    overflows, meta = read_overflows(a.overflows) if a.overflows else (None, None)
+    log.info("%d cells, %s overflows -> %s", len(cells), len(overflows) if overflows is not None else 0, a.out)
+    if meta:
+        log.info("overflow table %s, network %s", meta["overflows_sha256"][:12], meta["network_key"])
+    stats = run(a.start, a.end, cells, a.out, pause_s=a.pause, overflows=overflows, overflow_meta=meta)
     print(stats)
 
 

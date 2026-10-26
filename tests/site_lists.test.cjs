@@ -273,3 +273,25 @@ test('"Highest risk", "Near me" and "Low risk only" draw rows as before: only Aâ
   const ctx = listPage(cumbria);
   assert.equal(cumbria.filter(s => vm.runInContext('mapLevel', ctx)(s) === 'low').every(s => s.upstream_summary.overflows > 0), true);
 });
+
+// Add to my lists from a shared link (phone audit, 25 Oct 2026): a newcomer had the empty "My spots" a
+// first visit makes, so adding "Windermere" left two lists and a chip for an empty one beside it.
+test('a shared list takes the place of a first visitâ€™s empty "My spots", and is added beside anything else', () => {
+  const W = ['osm-windermere-waterhead', 'bw-ukd1203-45650'];
+  const fresh = S.readLists(null, null);
+  assert.deepEqual(fresh, {current: 'l1', lists: [{id: 'l1', name: 'My spots', spots: []}]});
+  const one = S.addSharedList(fresh, 'Windermere', W);
+  assert.deepEqual(one, {current: 'l1', lists: [{id: 'l1', name: 'Windermere', spots: W}]});   // one list, shown, Save adds to it
+  assert.deepEqual(fresh.lists[0].spots, []);   // the old state is left as it was
+  // Anything saved, a renamed list, or more than one list: beside them, exactly as makeList.
+  const saved = S.addToList(fresh, 'l1', 'grasmere');
+  const renamed = S.renameList(fresh, 'l1', 'Weekend');
+  const two = S.makeList(fresh, 'Club');
+  for (const st of [saved, renamed, two]) assert.deepEqual(S.addSharedList(st, 'Windermere', W), S.makeList(st, 'Windermere', W));
+  assert.deepEqual(S.addSharedList(saved, 'Windermere', W).lists.map(l => [l.name, l.spots.length]), [['My spots', 1], ['Windermere', 2]]);
+  // From a link before lists (#spots= only), the name a shared list reads: still one list.
+  assert.equal(S.addSharedList(fresh, S.SHARED_LIST, W).lists[0].name, 'Shared list');
+  // The page uses it for Add to my lists.
+  const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  assert.match(page, /setLists\(addSharedList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)\)/);
+});

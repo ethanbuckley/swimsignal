@@ -85,6 +85,15 @@ function makeList(state, name, spots = []) {
   const id = freeListId(state.lists);
   return { current: id, lists: [...state.lists, { id, name: freeListName(state.lists, listName(name) || 'New list'), spots: listIds(spots) }] };
 }
+// A shared list added to my lists (the shared view's Add to my lists). Someone with nothing saved has
+// only the empty "My spots" that readLists makes on a first visit; the shared list takes its place, so a
+// newcomer from a link has one list, not an empty "My spots" chip beside it (phone audit, 25 Oct 2026).
+// Anything saved, another list, or "My spots" renamed: added beside them, as makeList.
+function addSharedList(state, name, spots) {
+  const only = state.lists.length === 1 ? state.lists[0] : null;
+  if (only && !only.spots.length && only.name === FIRST_LIST) return makeList({ current: only.id, lists: [] }, name, spots);
+  return makeList(state, name, spots);
+}
 function renameList(state, id, name) {
   const n = listName(name); if (!n) return state;
   return { ...state, lists: state.lists.map(l => l.id === id ? { ...l, name: freeListName(state.lists, n, id) } : l) };
@@ -158,5 +167,5 @@ const planListName = iso => 'Plan for ' + new Date(iso + 'T12:00:00').toLocaleDa
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList };
 }

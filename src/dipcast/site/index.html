@@ -729,6 +729,8 @@
   .save .ln { min-width:0; max-width:10em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* a long list name */
   .top-row .save:has(.ln) { flex:0 1 auto; min-width:0; }   /* gives way to the back link on a narrow phone, */
   .top-row:has(.ln) .back { flex:none; white-space:nowrap; }   /* which keeps to one line */
+  .top-row .back:has(.bn) { flex:0 1 auto; min-width:0; }   /* a list's name in the back link gives way as well, */
+  .back .bn { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }   /* on one line, ending in an ellipsis */
   /* Plan a swim (plan.js): the choices on the sky, as the list's are (the day and how far, where you
      start, the kind of water), then a tile for each group of spots. A row is the list's with one more
      line, in ink: why it is there. */
@@ -3345,7 +3347,7 @@ function renderShared(sh) {
   $('back-lists').addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
     keepPlace(); history.pushState({ view: 'saved', from: 'saved' }, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); });
   if ($('sh-add')) $('sh-add').addEventListener('click', () => {
-    const kept = setLists(makeList(LISTS, sh.name, spots.map(s => s.id)));
+    const kept = setLists(addSharedList(LISTS, sh.name, spots.map(s => s.id)));
     // The alerts tile is some two screens down on a phone, under the days, the cards and Compare: the
     // note that says the list was added points to it.
     LISTS_UI.said = (kept ? `Added to your lists as ${esc(listNow().name)}.` : 'This browser is not keeping site data, so this list is kept only for this visit.')
@@ -3800,7 +3802,12 @@ function openSpot(s, fly, push, day) {
   if (push) {
     keepPlace();
     if (fromMap) { const c = map.getCenter(); history.replaceState({ ...history.state, mapView: [c.lat, c.lng, map.getZoom()] }, ''); }
-    history.pushState({ spot: id, from: fromMap ? 'map' : shown }, '', spotPath(id));
+    // From Saved, the list it showed, for the spot's back link (backTo): a shared list's name and
+    // address, read before the address becomes the spot's, or the list shown when there are several.
+    const st = { spot: id, from: fromMap ? 'map' : shown };
+    if (st.from === 'saved') { const sh = readShared(location.hash, planDates());
+      if (sh) { st.back = sh.name; st.backHash = location.hash; } else if (manyLists()) st.back = listNow().name; }
+    history.pushState(st, '', spotPath(id));
   }
   shown = null;
   if (mapMode()) setMapMode(false);
@@ -4160,6 +4167,18 @@ const bindNearby = () => { const box = document.getElementById('nearby-host'); i
   box.addEventListener('click', e => { const a = e.target.closest('a[data-id]');
     if (a && plainClick(e)) { e.preventDefault(); select(a.dataset.id, true, true, DAY); } }); };
 
+// Where a spot's back link goes, and what it says, from the history state openSpot left. From Saved
+// it names the list Back returns to: a shared list's, or the one shown of several lists of my own;
+// with one list, "Saved spots". The shared list's address goes in the link only when it reads as a
+// list (lists.js readShared), for a new tab; a click goes back (bindBack). No state: all the spots.
+// A list's name (named) can be 40 characters: spotTop puts it in .bn, which ends it in an ellipsis.
+function backTo(st) {
+  const from = (st || {}).from;
+  if (from === 'saved') { const hash = String(st.backHash || '');
+    return { label: st.back || 'Saved spots', named: !!st.back, href: savedPath() + (hash[0] === '#' && readShared(hash) ? hash : '') }; }
+  if (from === 'plan') return { label: 'Plan a swim', href: planPath() };
+  return { label: from === 'map' ? 'Map' : 'All spots', href: ROOT.pathname };
+}
 // The top of a spot's page, down to the answer, and the five days' tile. The build writes both into
 // the spot's own page (scripts/prerender_spots.js runs these two functions in Node), so the words
 // and the sky show before the forecast arrives and render() redraws them in the same place.
@@ -4168,10 +4187,10 @@ function spotTop(d) {
   const tags = [cap(d.kind), d.source === 'designated' ? 'Environment Agency designated bathing water' : null,
     loc.watercourse ? esc(loc.watercourse) : null, loc.lake_area_km2 ? `${loc.lake_area_km2} km²` : null,
     d.notes && d.notes !== 'Environment Agency designated bathing water' ? esc(d.notes) : null].filter(Boolean);
-  // The back link names where it goes: Saved, a plan, the full map a marker was tapped on (bindBack
-  // goes back to any of them), or all the spots. Save sits opposite it.
-  const from = (history.state || {}).from;
-  let h = `<div class="top-row"><a href="${esc(from === 'saved' ? savedPath() : from === 'plan' ? planPath() : ROOT.pathname)}" class="back" id="back">${from === 'saved' ? 'Saved spots' : from === 'plan' ? 'Plan a swim' : from === 'map' ? 'Map' : 'All spots'}</a>${saveButton(d)}</div>`;
+  // The back link names where it goes (backTo): Saved, or the list it showed, a plan, the full map a
+  // marker was tapped on (bindBack goes back to any of them), or all the spots. Save sits opposite it.
+  const back = backTo(history.state);
+  let h = `<div class="top-row"><a href="${esc(back.href)}" class="back" id="back">${back.named ? `<span class="bn">${esc(back.label)}</span>` : esc(back.label)}</a>${saveButton(d)}</div>`;
   // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
   h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
   h += notices(d);

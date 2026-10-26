@@ -1245,6 +1245,14 @@ gives all four navigation links a single full-width row.
   someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
   tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
   added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- A spot's back link names the list it returns to (26 October 2026): a shared list's name ("Windermere"),
+  or the list shown when there are several of my own ("Weekend"); with one list it stays "Saved spots".
+  It said "Saved spots" from a shared list too, though Back went to the shared list. A click still goes
+  back in the history; the link's address is the list's, for a new tab. A long name ends in an ellipsis,
+  as Save's does, so the row keeps to one line at 320 px.
+- Someone with nothing saved who adds a shared list gets that one list (26 October 2026): it takes the
+  place of the empty "My spots" a first visit makes (lists.js, `addSharedList`), so there is no chip for
+  an empty list beside it. With anything saved, another list, or "My spots" renamed, it is added beside them.
 - "Open a list from a link" (26 October 2026, a phone-journey audit): the Home Screen app on an iPhone
   has no address bar and keeps its own storage, so a list sent to someone, or saved in Safari, could not
   be opened in it. A text box on the Saved page takes a pasted link and opens it as the shared-list page

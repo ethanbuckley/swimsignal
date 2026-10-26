@@ -72,6 +72,7 @@ CONFIDENCE = 0.95
 # A change to any of these after the tag makes a forecast a candidate's, not the frozen model's.
 MODEL_PATHS = (
     "data/processed/spill_model.pkl", "data/processed/lead_calibration.json", "data/processed/ecoli_model.json",
+    "data/processed/ecoli_model_sm.json", "src/dipcast/ingest/soil.py",
     "data/processed/annual_returns.parquet", "data/processed/id_lookup.parquet", "data/processed/lakes.parquet",
     "src/dipcast/model/", "src/dipcast/network/", "src/dipcast/overflows.py", "src/dipcast/ids.py",
     "src/dipcast/ingest/rainfall.py", "src/dipcast/ingest/flows.py", "src/dipcast/ingest/lakes.py",
@@ -289,6 +290,12 @@ def frozen_hashes(repo: Path, tag: str) -> dict:
                     ("ecoli", "data/processed/ecoli_model.json")):
         r = _git(repo, "show", f"{tag}:{path}")
         out[k] = hashlib.md5(r.stdout).hexdigest()[:8] if r.returncode == 0 else "none"
+    # The river E. coli model with soil moisture (amendment 3), when the tag has it: the MD5 of the two files' bytes
+    # one after the other, as forecast.model_version computes it.
+    sm = _git(repo, "show", f"{tag}:data/processed/ecoli_model_sm.json")
+    if out["ecoli"] != "none" and sm.returncode == 0:
+        base = _git(repo, "show", f"{tag}:data/processed/ecoli_model.json").stdout
+        out["ecoli"] = hashlib.md5(base + sm.stdout).hexdigest()[:8]
     out["rain"] = "open-meteo-forecast"
     return out
 
