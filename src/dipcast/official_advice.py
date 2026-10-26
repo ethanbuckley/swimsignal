@@ -231,7 +231,9 @@ def shown(approvals: dict, check: dict | None, now: datetime) -> dict[str, list[
             if positive(d):
                 continue
             newer = drafts.get(d.get("superseded_by") or "")
-            if "superseded" in (d.get("flags") or []) and isinstance(newer, dict) and newer.get("status") in ENDED:
+            # Superseded by a notice that ended it: only a positive end read from the source counts, never
+            # a synthesized "gone" withdrawal.
+            if "superseded" in (d.get("flags") or []) and positive(newer):
                 continue
         confirmed = _utc(d.get("fetched_at")) if isinstance(d, dict) else None
         confirmed = max(filter(None, (confirmed, _utc(a["fetched_at"]))))
