@@ -223,3 +223,12 @@ same fill there.
 - Only the 80 traced listed spots. Map clicks anywhere can sit below any UU overflow, and were
   not measured.
 - Headline changes leave out E. coli, ratings, samples and algae.
+
+## Decision, 26 October 2026
+
+Ethan adopted the recommendation ("Adopt all the recommendations as my decisions"):
+- **Do not fix now.**
+- **Measure again in about two weeks** (on or after 9 November 2026), with `scripts/measure_missing_event_end.py` on a
+  fresh state, because United Utilities' count of such records rose on 25-26 October.
+- **Fix if,** in that run, rule B changes the right-now level at more than 1% of spot-builds in its primary window.
+- **Whenever it is fixed,** `scripts/build_any_point.py` (`ended_h`, map clicks) is fixed in the same PR.
