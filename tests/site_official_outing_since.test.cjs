@@ -125,6 +125,31 @@ test('on a Saved card in the page: the notice appearing, escaped, with eatoday.j
   assert.equal((h.match(/since 19 Jun/g) || []).length, 1);
 });
 
+test('Saved change summaries render notice and restored-note markup as literal text', () => {
+  const vm = require('node:vm');
+  const markup = '<img src=x onerror="throw 1"> & "quoted"';
+  const hostile = {...notice(), line: `Environment Agency: ${markup} since 19 Jun 2026`};
+  const render = (before, after) => {
+    const items = new Map([[S.SEEN_KEY, JSON.stringify([before])]]);
+    const ctx = vm.createContext({URLSearchParams, localStorage: {
+      getItem: k => items.get(k) ?? null, setItem: (k, v) => items.set(k, v), removeItem: k => items.delete(k)
+    }});
+    for (const f of ['experience.js', 'eatoday.js', 'levels.js', 'since.js'])
+      vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
+    vm.runInContext('setToday("2026-10-26")', ctx);
+    return vm.runInContext('sinceSaid', ctx)(after, NEW);
+  };
+  const restored = S.seenRecord(frensham([notice()]), OLD, LOOKED);
+  restored.official.brief = markup;
+  for (const html of [
+    render(S.seenRecord(frensham([]), OLD, LOOKED), frensham([hostile])),
+    render(restored, frensham([]))
+  ]) {
+    assert.doesNotMatch(html, /<img\b/);
+    assert.ok(html.includes('&lt;img src=x onerror=&quot;throw 1&quot;&gt; &amp; &quot;quoted&quot;'), html);
+  }
+});
+
 // S6 (integrated review, 27 Oct 2026): Frensham's card read "Was moderate risk …; now low risk." while the
 // EA's advice against bathing showed both then and now, so no appeared/cleared line fired. A lower sewage
 // level must never read as an all-clear while official advice shows: the line itself carries the notice.

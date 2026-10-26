@@ -224,7 +224,7 @@ function sinceSaid(s, forecast) {
   // page (its "Overflows that matter most"), one tap away, rather than names this card does not have.
   const which = now.discharging > 0 && !spills.length && typeof spotPath === 'function'
     ? ` <a href="${esc1(spotPath(s.id))}" data-id="${esc1(s.id)}">Which overflows: the spot's page</a>` : '';
-  return `<p class="place-since">${t} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
+  return `<p class="place-since">${esc1(t)} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
 }
 
 if (typeof module === 'object' && module.exports) {
