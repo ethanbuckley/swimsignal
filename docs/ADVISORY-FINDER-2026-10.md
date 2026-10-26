@@ -27,7 +27,12 @@ It runs by hand on Ethan's Mac, weekly in season. It does not run in GitHub Acti
 build: the EA's bathing-water service refuses GitHub's runners, and a test checks that no workflow
 names the finder. A live run makes one request to each source, one at a time with a pause.
 
-It writes `data/cache/advisory_drafts.json`, which git ignores, and prints a short table. Without
+`docs/ADVISORY-FINDER-RUN-SHEET.md` is the step-by-step sheet for the weekly run and for approving.
+
+It writes `data/cache/advisory_drafts.json`, which git ignores, and prints a short table. A run with
+`--fixtures` writes `advisory_drafts_fixtures.json` instead, so a check on the saved answers never
+replaces the file the next live run compares with. Each table row starts with the draft id and ends
+with the whole draft line, the two things an approval needs. Without
 `--dry-run` it refuses to run. `--previous FILE` compares with an earlier drafts file; pass last
 week's file, because that is how drafts from a feed that could not be read come back as unverified.
 `--approvals FILE` (default `data/advisories/approved.json`) is read, never written. If that file has
@@ -237,3 +242,41 @@ changed in the code:
    mock answers only; no live request was made while building it.
 7. **Where it runs.** By hand on Ethan's Mac, weekly in season. Not in GitHub Actions and not in
    the site build.
+
+## Live dry run, 26 October 2026
+
+One run of `scripts/advisory_finder.py --dry-run` with the real feeds, from this Mac, at 22:06 UTC.
+`--previous` was the fixture run of the same day (the 18:37 UTC answers). No `--ea-history`.
+
+Requests (read): 6, one at a time, 22:06:01 to 22:06:08 UTC, all HTTP 200. They were `ea-open`,
+`epa-alerts`, `ea-widget-frensham`, `govuk-lake-district-algae-2018`, `waverley-frensham` and
+`col-hampstead-swimming`. Nothing downloaded was committed: the EA list and the EA panel were
+identical to the fixtures already kept, and the council pages are not open-licensed.
+
+What it found (read):
+
+- 10 drafts, 8 held, 0 approved. All 6 sources `ok`. No feed rows left out.
+- One draft at a spot with no flag: `e8b5832d974a`, Frensham Great Pond, "Environment Agency: advice
+  against bathing (harmful algae) since 19 Jun 2026".
+- Two more for Frensham. The EA panel (`800f5abe3b84`) is held `no_date`. Waverley's notice of
+  22 Aug 2025 (`f815928c7a06`) is flagged `stale`, not held, and marked current.
+- The 2018 GOV.UK notice (`59099bc9475b`) is held: ambiguous, stale, unmatched (11 spots).
+- Six coastal EA incidents are held `unmatched`: Blyth South Beach, Plymouth Hoe East and West, Ryde,
+  Perranuthnoe and Portreath. The EA list matched the 18:37 answer exactly.
+- EPA: no alerts. City of London: no draft (the closure for winter is skipped, as designed).
+- The 9 drafts also in the earlier run kept the same ids.
+
+Unexpected, and what was done:
+
+- The review table cut the draft id and the line off at 64 characters, so an approval could not be
+  copied from it. Fixed: each row starts with the id and ends with the whole line; a link where
+  nothing is quoted is printed whole. Test: `test_review_table_shows_the_id_and_the_whole_line`.
+- A fixture run without `--out` wrote over `data/cache/advisory_drafts.json`, the file the next live
+  run compares with. Fixed: a fixture run writes `advisory_drafts_fixtures.json`. Test:
+  `test_fixture_run_does_not_overwrite_the_live_drafts_file`.
+- The test of the repo's `approved.json` required it to be empty, so Ethan's first approval PR would
+  have failed it. Now it checks the file is valid, with the real clock.
+- Every draft was `new`, though 9 were in the previous run. Read from the code: `new` means in force
+  and unchanged since the previous run, not first seen. Not changed; the run sheet says so.
+- A stale page notice is not held and is still marked current. This is as designed (stale is
+  flagged, not dropped). The run sheet tells the reviewer to check the page.
