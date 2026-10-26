@@ -1,4 +1,4 @@
-# Rutland Water Whitwell Creek. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026.
+# Rutland Water Whitwell Creek. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; source passages reread for each fact on 26 October 2026 (private audit); one fact reworded to match its source.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -40,7 +40,7 @@ source_name = "Inspire2tri, which runs the swim sessions"
 
 [[fact]]
 topic = "rules"
-text = "The Sunday swim is a 300m to 600m marked course within the more sheltered creek area. Evening swims are also run within the creek, with the watersports safety team of kayakers and powerboats."
+text = "The Sunday swim is a 300m to 600m marked course within the more sheltered creek area. Evening courses and swims are also run within the creek and may go a little way into the lake. Inspire2tri names the watersports safety team of kayakers and powerboats among its safety measures."
 status = "confirmed"
 source = "https://inspire2tri.com/venues/ow-whitwell"
 source_name = "Inspire2tri, which runs the swim sessions"
