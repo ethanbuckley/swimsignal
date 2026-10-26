@@ -1,0 +1,119 @@
+{
+ "rows_same": 5727,
+ "first_day": "2026-10-21",
+ "last_day": "2026-10-23",
+ "agreement": {
+  "both_on": 43,
+  "logged_only": 36,
+  "rebuilt_only": 50,
+  "both_off": 5598
+ },
+ "fitted": {
+  "logged": {
+   "lead0_on": {
+    "rows": 59,
+    "chance": 1.0
+   },
+   "lead0_off": {
+    "rows": 2813,
+    "chance": 0.14397440455030217
+   },
+   "lead1_on": {
+    "rows": 12,
+    "chance": 1.0
+   },
+   "lead1_off": {
+    "rows": 1882,
+    "chance": 0.17747077577045697
+   },
+   "lead2_on": {
+    "rows": 8,
+    "chance": 0.875
+   },
+   "lead2_off": {
+    "rows": 953,
+    "chance": 0.27492130115424973
+   },
+   "lead3_on": {
+    "rows": 0,
+    "chance": NaN
+   },
+   "lead3_off": {
+    "rows": 0,
+    "chance": NaN
+   },
+   "lead4_on": {
+    "rows": 0,
+    "chance": NaN
+   },
+   "lead4_off": {
+    "rows": 0,
+    "chance": NaN
+   }
+  },
+  "rebuilt": {
+   "lead0_on": {
+    "rows": 56,
+    "chance": 1.0
+   },
+   "lead0_off": {
+    "rows": 2816,
+    "chance": 0.14488636363636365
+   },
+   "lead1_on": {
+    "rows": 19,
+    "chance": 0.7894736842105263
+   },
+   "lead1_off": {
+    "rows": 1875,
+    "chance": 0.17653333333333332
+   },
+   "lead2_on": {
+    "rows": 18,
+    "chance": 0.7777777777777778
+   },
+   "lead2_off": {
+    "rows": 943,
+    "chance": 0.2704135737009544
+   },
+   "lead3_on": {
+    "rows": 0,
+    "chance": NaN
+   },
+   "lead3_off": {
+    "rows": 0,
+    "chance": NaN
+   },
+   "lead4_on": {
+    "rows": 0,
+    "chance": NaN
+   },
+   "lead4_off": {
+    "rows": 0,
+    "chance": NaN
+   }
+  }
+ },
+ "by_leads": [
+  {
+   "leads": "0",
+   "rows": 2872,
+   "spill_rows": 464,
+   "brier_forecast": 0.12511303359331477,
+   "brier_now_logged": 0.1207139157928717,
+   "brier_now_rebuilt": 0.12147853887060017,
+   "skill_vs_logged": -0.03644250765579793,
+   "skill_vs_rebuilt": -0.02991882151781633
+  },
+  {
+   "leads": "1-4",
+   "rows": 2855,
+   "spill_rows": 615,
+   "brier_forecast": 0.14192504764973732,
+   "brier_now_logged": 0.16307193694930083,
+   "brier_now_rebuilt": 0.16283047678489546,
+   "skill_vs_logged": 0.12967828613048304,
+   "skill_vs_rebuilt": 0.12838769220564838
+  }
+ ]
+}

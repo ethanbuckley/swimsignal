@@ -49,6 +49,7 @@ const Printed = (() => {
       else if (up.overflows) unnamed = true;
       if (up.overflows) u.add('model');
       if ((s.days || []).some(d => !nil(d.rain_48h_mm)) || R.daily(s)) u.add('rain');
+      if ((((s.assumptions || {}).ecoli_model || {}).soil || {}).used) u.add('soil');   // the river E. coli estimate
       if (up.through_lake || (s.contributors || []).some(c => c.lake_distance_km > 0)) u.add('lake');
       if (s.source === 'openstreetmap') u.add('osm');
     }

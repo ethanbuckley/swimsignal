@@ -1,0 +1,19 @@
+rows,company,share_spill_days_only_short_events
+training,Anglian Water,0.092587
+training,Northumbrian Water,0.11374
+training,Severn Trent Water,0.139566
+training,South West Water,0.15988
+training,Southern Water,0.057048
+training,Thames Water,0.018844
+training,United Utilities,0.134729
+training,Wessex Water,0.179302
+training,Yorkshire Water,0.022299
+test,Anglian Water,0.083607
+test,Northumbrian Water,0.176975
+test,Severn Trent Water,0.131817
+test,South West Water,0.150482
+test,Southern Water,0.081399
+test,Thames Water,0.01435
+test,United Utilities,0.180225
+test,Wessex Water,0.185696
+test,Yorkshire Water,0.025715
