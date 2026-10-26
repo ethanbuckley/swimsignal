@@ -1,24 +1,35 @@
 """Advisory finder, a prototype: drafts of official advice against swimming at a spot, for a person
 to read and approve. Nothing here is published, sent or wired into the site build, and nothing here
-changes a forecast level. docs/ADVISORY-FINDER-2026-10.md has the reasons and the open decisions.
+changes a forecast level. docs/ADVISORY-FINDER-2026-10.md has the reasons and Ethan's decisions of
+26 Oct 2026. It runs by hand on Ethan's Mac, weekly in season: not in GitHub Actions, not in the build.
 
 It reads two kinds of source, both fixed in this module (SOURCES), and refuses any other address:
 
 - Structured official feeds. The Environment Agency's open pollution incidents at bathing waters
   (bathing-water linked-data API, Open Government Licence v3.0) and the Irish EPA's bathing
   restrictions (Bathing Water Open Data API, CC BY 4.0). Each record becomes one draft per water.
+  A feed draft stands for as long as the feed lists it, re-checked every run; when the feed cannot
+  be read whole, earlier drafts from it come back flagged "unverified" and are not current.
 - A short list of public notice pages: the EA's own panel for one water, an EA press release on
   GOV.UK, a council news item and a council's swimming status page. Their text is read
   deterministically: HTML to plain text, fixed phrases, labelled dates and a gazetteer of the spots'
   names. No language model, no paid service, no account.
 
-Every draft keeps the source's own words (the evidence, capped in length), the address, the notice
-date, the stated expiry, the fetch time and a reason. The defaults are conservative: an expiry
-nobody stated stays null; a place name that fits no spot, several spots, or is only a generic word
-("the lake") leaves the draft unmatched; a notice without a date is held; a newer lifting or
-withdrawal supersedes an older notice in the same thread; notices for one spot that disagree are
-all kept and flagged; duplicates collapse; a notice older than STALE_DAYS with no expiry is flagged
-stale, never dropped.
+Publishers that count: the EA, Natural Resources Wales and the Irish EPA (regulators), councils on
+water quality, and a water company only for its own incident, as "[company] says". A closure for
+access or the season is not an advisory and makes no draft.
+
+Every draft keeps the address, the notice date, the stated expiry, the fetch time and a reason. The
+source's own words (the evidence, capped in length) are kept only for an openly licensed source (OGL,
+CC BY); for a copyright-only page the draft keeps the link, the date and evidence_quoted false, and a
+reviewer opens the link. The defaults are conservative: an expiry nobody stated stays null; a place
+name that fits no spot, several spots, or is only a generic word ("the lake") leaves the draft
+unmatched; a notice without a date is held; a newer lifting or withdrawal supersedes an older notice
+in the same thread; notices for one spot that disagree are all kept and flagged; duplicates collapse;
+a page notice older than STALE_DAYS with no expiry is flagged stale, never dropped.
+
+Approvals are read from APPROVALS_FILE (Ethan's, changed only by pull request) and never written
+here. An approved page notice with no stated end lapses PAGE_TERM_DAYS after its approval.
 
 Source text is hostile data. Scripts, styles, comments and hidden elements are dropped; control and
 invisible characters are removed; evidence is plain text. No link found on a page is ever followed.
@@ -47,7 +58,8 @@ import httpx
 from dipcast import config
 
 TZ = ZoneInfo("Europe/London")
-STALE_DAYS = 28            # a notice older than this with no stated expiry is flagged stale
+STALE_DAYS = 28            # a page notice older than this with no stated expiry is flagged stale
+PAGE_TERM_DAYS = 14        # an approved page notice with no stated end lapses this long after approval
 MAX_EVIDENCE = 600         # characters of evidence kept per draft
 SHORT = 80                 # a passage shorter than this is read with the block after it
 MAX_BYTES = 4_000_000      # a page larger than this is refused (the City of London page is 2.3 MB)
@@ -56,12 +68,20 @@ PAUSE_S = 1.0              # between live requests, one at a time
 STATUSES = ("new", "update", "withdrawn", "lifted")
 ENDED = {"withdrawn", "lifted"}
 # Flags that stop a draft being approved as it stands: a reviewer has to settle them first.
-HOLDING = {"unmatched", "ambiguous", "no_date", "conflict", "superseded"}
+HOLDING = {"unmatched", "ambiguous", "no_date", "conflict", "superseded", "unverified", "company_notice"}
+ROLES = ("regulator", "council", "water company")     # the EA, NRW and the Irish EPA are regulators
+MAX_HISTORY = 40           # EA history requests in one run, at most (38 inland bathing waters)
+
+# Approvals: Ethan's file, changed only by pull request. The finder reads it and never writes it.
+APPROVALS_FILE = config.ROOT / "data" / "advisories" / "approved.json"
+ALLOWED_APPROVERS = ("Ethan Buckley",)
+HISTORY_STAMP = config.CACHE / "advisory_ea_history_day.json"   # the day the EA history was last read
 
 EA_ID = re.compile(r"uk[a-z0-9]+-\d{5}\Z")                 # "ukj2310-11945"
 EA_INCIDENT = re.compile(r"\d{5}-\d{8}-\d{6}\Z")            # "11945-20260619-142800"
 EPA_ID = re.compile(r"[A-Za-z0-9_]{10,30}\Z")              # as ireland.ID
-EPA_HOME = "https://www.beaches.ie/"
+EA_PROFILE = "https://environment.data.gov.uk/bwq/profiles/profile.html?site={}"   # as coastal.py
+EPA_PAGE = "https://www.beaches.ie/find-a-beach/#/beach/{}"                         # as ireland.PAGE_URL
 
 EA_OPEN = "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100"
 EA_HISTORY = "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?bathingWater.eubwidNotation={}&_pageSize=50"
@@ -75,40 +95,48 @@ GOVUK_LICENCE = ("Open Government Licence v3.0. GOV.UK footer: \"All content is 
                  "Government Licence v3.0, except where otherwise stated\" (read 26 Oct 2026).")
 
 
+COPYRIGHT_ONLY = (" (read 26 Oct 2026). Copyright only: the draft keeps the link and the notice date, not the "
+                  "passage (evidence_quoted false); a reviewer opens the link, and the line is our own summary.")
+
+
 @dataclass(frozen=True)
 class Source:
-    """One whitelisted source. `kind` is "ea-feed", "epa-feed" or "page"; `scope` lists the spot ids
-    a page may speak for (None: any spot)."""
+    """One whitelisted source. `kind` is "ea-feed", "epa-feed" or "page"; `short` is the publisher's
+    name in a draft line; `role` is one of ROLES; `open_licence` says whether the source's own words
+    may be kept as evidence (OGL, CC BY); `scope` lists the spot ids a page may speak for (None: any
+    spot). A water company's page must have a scope: it counts only for its own incidents."""
     key: str
     url: str
     publisher: str
     short: str
     kind: str
     licence: str
+    role: str
+    open_licence: bool
     scope: tuple[str, ...] | None = None
 
 
 SOURCES: tuple[Source, ...] = (
-    Source("ea-open", EA_OPEN, "Environment Agency", "EA", "ea-feed", EA_LICENCE),
-    Source("epa-alerts", EPA_ALERTS, "Environmental Protection Agency (Ireland)", "EPA", "epa-feed", EPA_LICENCE),
+    Source("ea-open", EA_OPEN, "Environment Agency", "Environment Agency", "ea-feed", EA_LICENCE, "regulator", True),
+    Source("epa-alerts", EPA_ALERTS, "Environmental Protection Agency (Ireland)", "EPA (Ireland)", "epa-feed",
+           EPA_LICENCE, "regulator", True),
     Source("ea-widget-frensham",
            "https://environment.data.gov.uk/bwq/widget/widget/widget1?eu=ukj2310-11945&history=false&m=false&p=false",
-           "Environment Agency", "EA", "page", EA_LICENCE + " The panel itself ends \"Linked-data from the "
-           "Environment Agency · OGL\".", ("bw-ukj2310-11945",)),
+           "Environment Agency", "Environment Agency", "page", EA_LICENCE + " The panel itself ends \"Linked-data "
+           "from the Environment Agency · OGL\".", "regulator", True, ("bw-ukj2310-11945",)),
     Source("govuk-lake-district-algae-2018",
            "https://www.gov.uk/government/news/blue-green-algae-remains-present-in-four-lake-district-locations",
-           "Environment Agency (GOV.UK)", "EA", "page", GOVUK_LICENCE),
+           "Environment Agency (GOV.UK)", "Environment Agency", "page", GOVUK_LICENCE, "regulator", True),
     Source("waverley-frensham",
            "https://www.waverley.gov.uk/council-updates/read-our-latest-news/visitors-to-frensham-reminded-do-not-enter-water",
-           "Waverley Borough Council", "Waverley BC", "page",
-           "Not open-licensed: the footer reads \"© Copyright 2026 by Waverley Borough Council\" (read 26 Oct "
-           "2026). Evidence may be kept for review; it may not be republished without permission."),
+           "Waverley Borough Council", "Waverley Borough Council", "page",
+           "Not open-licensed: the footer reads \"© Copyright 2026 by Waverley Borough Council\"" + COPYRIGHT_ONLY,
+           "council", False),
     Source("col-hampstead-swimming",
            "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/activities-at-hampstead-heath/swimming-at-hampstead-heath",
-           "City of London Corporation", "City of London", "page",
-           "Not open-licensed: the footer reads \"© City of London Corporation 2026\" (read 26 Oct 2026). "
-           "Evidence may be kept for review; it may not be republished without permission.",
-           ("bw-uki1101-11910", "bw-uki1101-11920", "bw-uki1101-11930")),
+           "City of London Corporation", "City of London Corporation", "page",
+           "Not open-licensed: the footer reads \"© City of London Corporation 2026\"" + COPYRIGHT_ONLY,
+           "council", False, ("bw-uki1101-11910", "bw-uki1101-11920", "bw-uki1101-11930")),
 )
 BY_KEY = {s.key: s for s in SOURCES}
 
@@ -140,7 +168,8 @@ def source_for(url: str, key: str | None = None) -> Source:
     m = re.fullmatch(r"https://environment\.data\.gov\.uk/doc/bathing-water-quality/pollution-incident\.json"
                      r"\?bathingWater\.eubwidNotation=([a-z0-9-]+)&_pageSize=50", url)
     if m and ea_history_url(m[1]) == url and key in (None, "ea-history"):
-        return Source("ea-history", url, "Environment Agency", "EA", "ea-feed", EA_LICENCE)
+        return Source("ea-history", url, "Environment Agency", "Environment Agency", "ea-feed", EA_LICENCE,
+                      "regulator", True)
     raise Refused(f"not on the whitelist: {url!r}")
 
 
@@ -266,6 +295,38 @@ _DATE = r"(\d{1,2}(?:st|nd|rd|th)? [A-Za-z]{3,9},? \d{4}|\d{4}-\d{2}-\d{2})"
 LABELLED = re.compile(r"\b(first published|published|date posted|posted|last updated|updated|issued)\s*:?\s*" + _DATE, re.I)
 UNTIL = re.compile(r"\buntil (?:at least )?" + _DATE, re.I)
 FURTHER_NOTICE = re.compile(r"\buntil further notice\b", re.I)
+# A closure for access or the season ("closed for the winter", "car park closed") is not an advisory:
+# a passage that reads as one and names no cause in the water makes no draft.
+CLOSURE = re.compile(
+    r"\b(?:closed|closure|shut)\b[^.;]{0,40}?\b(?:for (?:the )?(?:winter|summer|season|maintenance|repairs?"
+    r"|works?|an event|events?|cleaning|the day)|until (?:spring|next season)|to the public)\b"
+    r"|\bseasonal closure\b|\b(?:car park|access|path|road|gate|lido|pond|lake|site)s? (?:is |are )?(?:now )?closed\b", re.I)
+WATER_CAUSE = re.compile(r"\b(?:alga(?:e|l)|cyanobacteria|sewage|pollution|water quality|bacteria|e\.? ?coli"
+                         r"|(?:oil|fuel) (?:spill|pollution|sheen)|contaminat\w*)\b", re.I)
+_BAN = re.compile(r"\b(bathing|swimming) (?:is )?(?:temporarily )?prohibited\b", re.I)
+_AGAINST = re.compile(r"\badvi[cs]e[sd]? against|\bnot advised\b|\badvice not to\b|\bdo not swim\b|\bdon'?t swim\b"
+                      r"|\bnot to (?:swim|enter the water)\b", re.I)
+_CLOSED_FOR = re.compile(r"\bclosed\b[^.;]{0,40}?\b(?:due to|because of)\b", re.I)
+
+
+def is_closure(text: str) -> bool:
+    """A closure for access or the season, with no cause in the water: not an advisory."""
+    return bool(CLOSURE.search(text)) and not WATER_CAUSE.search(text)
+
+
+def advice_words(text: str) -> str:
+    """The line's words for what a passage advises (decision 5): "bathing prohibited", "advice
+    against bathing" or "advice against swimming", "closed", or "notice" when the passage names a
+    cause but no advice."""
+    m = _BAN.search(text)
+    if m:
+        return f"{m[1].lower()} prohibited"
+    if _AGAINST.search(text):
+        bathing = re.search(r"\bbathing\b", text, re.I) and not re.search(r"\bswim", text, re.I)
+        return "advice against bathing" if bathing else "advice against swimming"
+    if _CLOSED_FOR.search(text):
+        return "closed"
+    return "notice"
 
 
 def parse_day(text) -> date | None:
@@ -398,19 +459,26 @@ class Gazetteer:
 
 def _draft(source: Source, *, spot_id, spot_name, candidates, water_id, water_name, feed_id, record_url,
            record_time, evidence, evidence_kind, notice_date, status, advice, cause, expiry, expiry_basis,
-           ended, fetched_at, reason, flags=()) -> dict:
+           ended, fetched_at, reason, link, expected_end=None, expected_end_basis=None, flags=()) -> dict:
     text, cut = cap(evidence)
+    quoted = source.open_licence
     d = {
-        "draft_id": None, "approved": False, "held": False,
+        "draft_id": None, "approved": False, "approval": "unapproved", "approved_by": None, "approved_at": None,
+        "approved_line": None, "held": False, "current": None,
         "spot_id": spot_id, "spot_name": spot_name, "candidates": list(candidates),
         "water_id": water_id, "water_name": water_name,
         "source": {"key": source.key, "publisher": source.publisher, "short": source.short, "url": source.url,
-                   "licence": source.licence},
-        "feed_id": feed_id, "record_url": record_url, "record_time": record_time,
-        "evidence": text, "evidence_kind": evidence_kind, "evidence_truncated": cut,
+                   "kind": source.kind, "role": source.role, "licence": source.licence,
+                   "open_licence": source.open_licence},
+        "link": link, "feed_id": feed_id, "record_url": record_url, "record_time": record_time,
+        # A copyright-only source's words are not kept: only a hash, to tell one passage from another.
+        "evidence": text if quoted else None, "evidence_quoted": quoted, "evidence_kind": evidence_kind,
+        "evidence_truncated": cut if quoted else False,
+        "evidence_hash": hashlib.sha1(text.encode()).hexdigest()[:16],
         "notice_date": notice_date.isoformat() if notice_date else None,
         "status": status, "advice": advice, "cause": cause,
         "expiry": expiry.isoformat() if expiry else None, "expiry_basis": expiry_basis,
+        "expected_end": expected_end.isoformat() if expected_end else None, "expected_end_basis": expected_end_basis,
         "ended": ended.isoformat() if ended else None,
         "fetched_at": fetched_at, "flags": sorted(set(flags)), "reason": reason,
         "duplicates": 0, "superseded_by": None, "draft_line": None,
@@ -487,18 +555,17 @@ def parse_ea(body, source: Source, gazetteer: Gazetteer, fetched_at: str, errors
             else:
                 reason = f"EA incident {inc} at {wname} ({wid}): not a SwimSignal spot (coast or estuary, or not listed)"
             reason += f"; {'ended ' + end_raw if ended else 'open in the EA list'} as read {fetched_at}"
-            if expected_raw and not ended:
-                basis = "EA expectedEndOfIncident"
-            elif ended:
-                basis = None
-            else:
-                basis = "the EA gives no expected end"
+            # Decision 4a: an open incident stands for as long as the EA lists it open, re-checked every
+            # run. The EA's expected end is kept beside it, never as an expiry.
+            basis = None if ended else "stands while the EA lists it open; re-checked every run"
+            exp_basis = ("EA expectedEndOfIncident" if expected_raw else "the EA gives no expected end") if not ended else None
             out.append(_draft(source, spot_id=sid if spot else None, spot_name=spot.name if spot else None,
                               candidates=[], water_id=wid, water_name=wname, feed_id=f"ea:{inc}",
                               record_url=about, record_time=rec, evidence=evidence, evidence_kind="feed fields",
-                              notice_date=start, status=status, advice="open pollution incident" if not ended
-                              else "pollution incident ended", cause=kind, expiry=expected if not ended else None,
-                              expiry_basis=basis, ended=ended, fetched_at=fetched_at, reason=reason))
+                              notice_date=start, status=status, advice="advice against bathing", cause=kind,
+                              expiry=None, expiry_basis=basis, ended=ended, fetched_at=fetched_at, reason=reason,
+                              link=EA_PROFILE.format(wid), expected_end=None if ended else expected,
+                              expected_end_basis=exp_basis))
         if not good:
             errors.append({"source": source.key, "row": i, "problem": f"{inc}: no valid bathing-water id"})
     return out
@@ -506,9 +573,10 @@ def parse_ea(body, source: Source, gazetteer: Gazetteer, fetched_at: str, errors
 
 def parse_epa(body, source: Source, gazetteer: Gazetteer, fetched_at: str, now: datetime, errors: list) -> list[dict]:
     """The Irish EPA's restrictions as drafts. The Republic's waters are on the coverage page, not
-    SwimSignal spots, so every draft is unmatched and keeps the EPA's water id. The expiry is the
-    start plus the EPA's expected duration in days, marked as such; an end date already past makes
-    the draft "lifted"."""
+    SwimSignal spots, so every draft is unmatched and keeps the EPA's water id. A restriction stands
+    while the EPA lists it, re-checked every run. The start plus the EPA's expected duration in days
+    is kept as `expected_end` and shown as "EPA expects until <date>", never as an expiry (decision
+    4b). An end date already past makes the draft "lifted"."""
     items = body.get("list") if isinstance(body, dict) else None
     if not isinstance(items, list):
         errors.append({"source": source.key, "row": None, "problem": "no list"})
@@ -532,12 +600,12 @@ def parse_epa(body, source: Source, gazetteer: Gazetteer, fetched_at: str, now: 
             errors.append({"source": source.key, "row": i, "problem": f"{wid}: no incident_id"})
             continue
         days = a.get("incident_expected_duration")
-        expiry = basis = None
+        expected = None
         if isinstance(days, int) and not isinstance(days, bool) and 0 < days <= 366:
-            expiry = start + timedelta(days=days)
-            basis = f"EPA expected duration {days} days, counted from the start date"
+            expected = start + timedelta(days=days)
+            exp_basis = f"EPA expected duration {days} days, counted from the start date; not an end date"
         else:
-            basis = "the EPA gives no expected duration"
+            exp_basis = "the EPA gives no expected duration"
         ended = end if end and end <= today else None
         name = clean(a.get("beach_name")) or None
         fields = [("bathing_water_incident_id", a.get("bathing_water_incident_id")), ("beach_name", name),
@@ -548,10 +616,12 @@ def parse_epa(body, source: Source, gazetteer: Gazetteer, fetched_at: str, now: 
         out.append(_draft(source, spot_id=None, spot_name=None, candidates=[], water_id=wid, water_name=name,
                           feed_id=f"epa:{inc}", record_url=None, record_time=a.get("last_updated"),
                           evidence=evidence, evidence_kind="feed fields", notice_date=start,
-                          status="lifted" if ended else "new", advice=kind,
-                          cause=clean(a.get("incident_description")) or None,
-                          expiry=None if ended else expiry, expiry_basis=None if ended else basis, ended=ended,
-                          fetched_at=fetched_at,
+                          status="lifted" if ended else "new",
+                          advice=re.sub(r"^bathing is ", "bathing ", kind.lower()),
+                          cause=clean(a.get("incident_description")) or None, expiry=None,
+                          expiry_basis=None if ended else "stands while the EPA lists it; re-checked every run",
+                          ended=ended, fetched_at=fetched_at, link=EPA_PAGE.format(wid),
+                          expected_end=None if ended else expected, expected_end_basis=None if ended else exp_basis,
                           reason=f"EPA restriction at {name} ({wid}): the Republic of Ireland's list on the "
                                  "coverage page, not a SwimSignal spot"))
     return out
@@ -568,7 +638,13 @@ def _cause(text: str) -> str | None:
 def parse_page(markup: str, source: Source, gazetteer: Gazetteer, fetched_at: str) -> list[dict]:
     """A notice page as drafts: one per spot the page's advisory passages name, or one unmatched
     draft when they name none. The notice date is the latest labelled date on the page ("Published",
-    "Date posted", "Updated"); an expiry only where the page states a date ("until 3 July 2026")."""
+    "Date posted", "Updated"); an expiry only where the page states a date ("until 3 July 2026"). A
+    passage about a closure for access or the season makes no draft. A water company's page counts
+    only for its own incidents: it must have a scope, and each draft is held for a reviewer to check."""
+    if source.role == "water company" and not source.scope:
+        return []
+    company = ("; a water company's notice counts only for its own incident: check that this is one"
+               if source.role == "water company" else "")
     blocks = html_blocks(markup)
     page = " ".join(blocks)
     dates = [parse_day(m[2]) for m in LABELLED.finditer(page)]
@@ -587,6 +663,7 @@ def parse_page(markup: str, source: Source, gazetteer: Gazetteer, fetched_at: st
     # from harmful algae" in the EA's panel): the two together are the evidence.
     hits = [b if len(b) >= SHORT or i + 1 >= len(blocks) else f"{b} {blocks[i + 1]}"
             for i, b in enumerate(blocks) if ADVICE.search(b)]
+    hits = [b for b in hits if not is_closure(b)]       # decision 2: closures are not advisories
     out, by_spot, unmatched = [], {}, []
     for b in hits:
         sid, cands, why = gazetteer.match(b, source.scope)
@@ -603,8 +680,9 @@ def parse_page(markup: str, source: Source, gazetteer: Gazetteer, fetched_at: st
         return _draft(source, spot_id=sid, spot_name=gazetteer.spots[sid].name if sid else None, candidates=cands,
                       water_id=None, water_name=None, feed_id=None, record_url=None, record_time=None, evidence=b,
                       evidence_kind="page passage", notice_date=notice, status=status,
-                      advice=clean(ADVICE.search(b).group(0)), cause=_cause(b), expiry=expiry, expiry_basis=basis,
-                      ended=None, fetched_at=fetched_at, reason=f"{reason}; {date_note}")
+                      advice=advice_words(b), cause=_cause(b), expiry=expiry, expiry_basis=basis, link=source.url,
+                      flags={"company_notice"} if source.role == "water company" else (),
+                      ended=None, fetched_at=fetched_at, reason=f"{reason}; {date_note}{company}")
 
     for sid, (b, why) in by_spot.items():
         out.append(make(b, sid, [], f"passage {why}"))
@@ -636,17 +714,40 @@ def _flag(d: dict, *flags: str) -> None:
     d["flags"] = sorted(set(d["flags"]) | set(flags))
 
 
+def _ev(d: dict):
+    """What tells one passage from another: the hash (a copyright-only source keeps no words)."""
+    return d.get("evidence_hash") or d.get("evidence")
+
+
+def _kind(d: dict) -> str | None:
+    src = d.get("source") or {}
+    if src.get("kind"):
+        return src["kind"]
+    return BY_KEY[src["key"]].kind if src.get("key") in BY_KEY else "ea-feed" if src.get("key") == "ea-history" else None
+
+
+def is_current(d: dict, today: date) -> bool:
+    """Whether the source, as read this run, still has the notice in force: not ended, superseded or
+    unverified, and not past an expiry. Approval is separate (`approval`)."""
+    if d["status"] in ENDED or {"unverified", "superseded"} & set(d["flags"]):
+        return False
+    return not d.get("expiry") or date.fromisoformat(d["expiry"]) >= today
+
+
 def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = None,
-            complete_feeds: set[str] | None = None) -> list[dict]:
+            complete_feeds: set[str] | None = None, unverified_feeds: set[str] | None = None) -> list[dict]:
     """Collapse duplicates, mark updates against `previous`, supersede within a thread, flag conflicts
-    and stale notices, and set `held`. Nothing is dropped except exact duplicates, which are counted
-    on the draft kept. `complete_feeds` are feed sources read whole this run: a previous open draft
-    from one of them that is no longer listed comes back as "withdrawn", for a person to check."""
+    and stale page notices, and set `held` and `current`. Nothing is dropped except exact duplicates,
+    which are counted on the draft kept. `complete_feeds` are feed sources read whole this run: a
+    previous open draft from one of them that is no longer listed comes back as "withdrawn", for a
+    person to check. `unverified_feeds` are feed sources that could not be read whole this run: a
+    previous open draft from one of them not seen this run comes back flagged "unverified", held and
+    not current (decision 4a, as ireland.py never shows restrictions from a kept copy)."""
     drafts = copy.deepcopy(drafts)
     kept: dict[str, dict] = {}
     for d in drafts:
         key = (f"feed|{d['feed_id']}|{d['water_id']}" if d["feed_id"]
-               else f"page|{d['source']['url']}|{d['spot_id']}|{d['evidence']}")
+               else f"page|{d['source']['url']}|{d['spot_id']}|{_ev(d)}")
         old = kept.get(key)
         if old is None:
             kept[key] = d
@@ -668,7 +769,8 @@ def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = Non
         if d["status"] in ENDED:
             continue
         for p in prev_threads.get(_thread(d), []):
-            if p.get("status") not in ENDED and (p.get("evidence") != d["evidence"] or p.get("expiry") != d["expiry"]):
+            if p.get("status") not in ENDED and (_ev(p) != _ev(d) or p.get("expiry") != d["expiry"]
+                                                 or p.get("expected_end") != d.get("expected_end")):
                 d["status"] = "update"
                 d["reason"] += "; changed since the previous run"
                 break
@@ -682,6 +784,13 @@ def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = Non
                                "check the source before treating it as lifted",
                         superseded_by=None, duplicates=0, approved=False)
             out.append(gone)
+        elif (src in (unverified_feeds or set()) and p.get("feed_id") and p.get("status") not in ENDED
+              and p["feed_id"] not in seen_feed):
+            out.append(dict(p, flags=sorted((set(p.get("flags", [])) - {"superseded", "stale"}) | {"unverified"}),
+                            reason=f"{p.get('feed_id')}: the {(p.get('source') or {}).get('publisher')} list could "
+                                   "not be read whole this run, so this is from the previous run and is not "
+                                   "current until the list is read again",
+                            superseded_by=None, duplicates=0, approved=False))
 
     threads: dict[str, list[dict]] = {}
     for d in out:
@@ -707,41 +816,151 @@ def resolve(drafts: list[dict], now: datetime, previous: list[dict] | None = Non
         if d["spot_id"] and "superseded" not in d["flags"]:
             by_spot.setdefault(d["spot_id"], []).append(d)
     for items in by_spot.values():
-        states = {d["status"] in ENDED for d in items}
-        if len(states) > 1:
-            for d in items:
+        live = [d for d in items if d["status"] not in ENDED]
+        gone = [d for d in items if d["status"] in ENDED]
+        if not live or not gone:
+            continue
+        # An ending disagrees with a notice in force only if it is as new as that notice: an incident
+        # that ended before the current one began is history (the EA history lists every one).
+        start = min(d["notice_date"] or "" for d in live)
+        clash = [g for g in gone if (g.get("ended") or g["notice_date"] or "9999") >= start]
+        if clash:
+            for d in live + clash:
                 _flag(d, "conflict")
                 d["reason"] += "; another current notice for this spot disagrees"
 
     today = now.astimezone(TZ).date()
     for d in out:
         nd = date.fromisoformat(d["notice_date"]) if d["notice_date"] else None
-        if nd and d["status"] not in ENDED and not d["expiry"] and (today - nd).days > STALE_DAYS:
+        # Decision 4a: an EA feed incident is not stale while the EA lists it open.
+        if (nd and d["status"] not in ENDED and not d["expiry"] and _kind(d) != "ea-feed"
+                and (today - nd).days > STALE_DAYS):
             _flag(d, "stale")
             d["reason"] += f"; older than {STALE_DAYS} days with no stated expiry"
         d["held"] = bool(HOLDING & set(d["flags"]))
-        d["approved"] = False
+        d["approved"], d["approval"] = False, "unapproved"
+        d["approved_by"] = d["approved_at"] = d["approved_line"] = None
+        d["current"] = is_current(d, today)
         d["draft_line"] = draft_line(d)
     order = {"new": 0, "update": 1, "lifted": 2, "withdrawn": 3}
     return sorted(out, key=lambda d: (d["spot_id"] is None, d["spot_id"] or "", order.get(d["status"], 9),
                                       d["notice_date"] or "", d["draft_id"]))
 
 
-def draft_line(d: dict) -> str | None:
-    """A suggested line for a matched draft, from its fields only. The wording is not settled
-    (docs/ADVISORY-FINDER-2026-10.md); a person writes or approves the line that is shown."""
-    if not d.get("spot_id"):
-        return None
-    short = d["source"].get("short") or d["source"]["publisher"]
-    nd = date.fromisoformat(d["notice_date"]) if d.get("notice_date") else None
-    parts = [f"{short}: {d['advice']} at {d['spot_name']}"]
-    if d.get("cause"):
-        parts.append(d["cause"])
+def draft_line(d: dict) -> str:
+    """The line, from the draft's fields only, in the form Ethan set on 26 Oct 2026: "Environment
+    Agency: advice against bathing (harmful algae) since 19 Jun 2026", shown with the source link. A
+    water company is "[company] says"; the Irish EPA's expected duration is "EPA expects until
+    <date>", never an end date. The line never names or changes a risk level."""
+    src = d["source"]
+    name = src.get("short") or src["publisher"]
+    who = f"{name} says" if src.get("role") == "water company" else name
+    cause = d.get("cause")
+    cause = (_cause(cause) or cause) if cause else None
+    line = f"{who}: {d.get('advice') or 'notice'}" + (f" ({cause})" if cause else "")
     if d["status"] in ENDED:
-        parts.append(f"ended {show_day(date.fromisoformat(d['ended']))}" if d.get("ended") else d["status"])
-    elif nd:
-        parts.append(f"since {show_day(nd)}")
-    return ", ".join(parts)
+        line += f" ended {show_day(date.fromisoformat(d['ended']))}" if d.get("ended") else f" {d['status']}"
+    elif d.get("notice_date"):
+        line += f" since {show_day(date.fromisoformat(d['notice_date']))}"
+    if d["status"] not in ENDED and d.get("expected_end") and _kind(d) == "epa-feed":
+        line += f"; EPA expects until {show_day(date.fromisoformat(d['expected_end']))}"
+    return line
+
+
+# ---- approvals ---------------------------------------------------------------------------------
+
+_DRAFT_ID = re.compile(r"[0-9a-f]{12}\Z")
+_UTC = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
+_ENTRY_KEYS = {"draft_id", "approver", "approved_at", "line"}
+
+
+class ApprovalError(ValueError):
+    """The approvals file is not as it must be. Nothing is marked approved from a file with any error."""
+
+
+def load_approvals(path: Path | None = None, known: set[str] | None = None, now: datetime | None = None) -> dict:
+    """Ethan's approvals, by draft id: {"approvals": [{"draft_id", "approver", "approved_at", "line"}]}.
+    Every entry must have a 12-character draft id (one of `known`, when given), an approver in
+    ALLOWED_APPROVERS, approved_at in UTC as 2026-10-26T19:00:00Z (not after `now`) and the exact
+    one-line text; no id twice, no other keys. Any problem raises ApprovalError, naming each entry:
+    a file with a mistake approves nothing. The finder never writes this file."""
+    path = Path(path or APPROVALS_FILE)
+    try:
+        body = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as err:
+        raise ApprovalError(f"{path}: cannot be read as JSON ({type(err).__name__})") from None
+    entries = body.get("approvals") if isinstance(body, dict) else None
+    if not isinstance(entries, list):
+        raise ApprovalError(f"{path}: no \"approvals\" list")
+    out, problems = {}, []
+    for i, e in enumerate(entries):
+        if not isinstance(e, dict):
+            problems.append(f"entry {i}: not an object")
+            continue
+        did = e.get("draft_id")
+        if not isinstance(did, str) or not _DRAFT_ID.fullmatch(did):
+            problems.append(f"entry {i}: no valid draft_id")
+            continue
+        here, before = f"entry {i} ({did})", len(problems)
+        if known is not None and did not in known:
+            problems.append(f"{here}: unknown draft id, not in this run or the previous one")
+        if did in out:
+            problems.append(f"{here}: approved twice")
+        who = e.get("approver")
+        if not isinstance(who, str) or not who.strip():
+            problems.append(f"{here}: missing approver")
+        elif who not in ALLOWED_APPROVERS:
+            problems.append(f"{here}: {clean(who)[:40]!r} may not approve (only {', '.join(ALLOWED_APPROVERS)})")
+        at, when = e.get("approved_at"), None
+        if not isinstance(at, str) or not _UTC.fullmatch(at):
+            problems.append(f"{here}: approved_at must be UTC as 2026-10-26T19:00:00Z")
+        else:
+            try:
+                when = datetime.strptime(at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=ZoneInfo("UTC"))
+            except ValueError:
+                problems.append(f"{here}: approved_at is not a real time")
+            if when and now and when > now:
+                problems.append(f"{here}: approved_at is in the future")
+        line = e.get("line")
+        if not isinstance(line, str) or not line or clean(line) != line or len(line) > 300:
+            problems.append(f"{here}: line must be the exact one-line text")
+        if set(e) - _ENTRY_KEYS:
+            problems.append(f"{here}: unexpected keys {sorted(set(e) - _ENTRY_KEYS)}")
+        if len(problems) == before:
+            out[did] = {"approver": who, "approved_at": at, "when": when, "line": line}
+    if problems:
+        raise ApprovalError(f"{path}: " + "; ".join(problems))
+    return out
+
+
+def apply_approvals(drafts: list[dict], approvals: dict, now: datetime) -> list[dict]:
+    """Mark each draft approved or not from `load_approvals`. An approval holds only for the exact line
+    approved: if the draft's line has changed since, it is "changed" and needs approving again. A page
+    notice with no stated end gets an expiry 14 days after its approval (decision 4c) and is "lapsed"
+    after that, unless re-approved (a newer approved_at, by PR). Publishes nothing."""
+    drafts = copy.deepcopy(drafts)
+    today = now.astimezone(TZ).date()
+    for d in drafts:
+        a = approvals.get(d["draft_id"])
+        if not a:
+            continue
+        d.update(approved_by=a["approver"], approved_at=a["approved_at"], approved_line=a["line"])
+        if a["line"] != d["draft_line"]:
+            d["approval"] = "changed"
+            d["reason"] += "; the approved line differs from this run's line: approve again by PR"
+            continue
+        if _kind(d) == "page" and not d["expiry"] and d["status"] not in ENDED:
+            day = a["when"].astimezone(TZ).date()
+            end = day + timedelta(days=PAGE_TERM_DAYS)
+            d["expiry"] = end.isoformat()
+            d["expiry_basis"] = f"{PAGE_TERM_DAYS} days after approval on {show_day(day)}; the page gives no end"
+            d["current"] = is_current(d, today)
+            if today > end:
+                d["approval"] = "lapsed"
+                d["reason"] += f"; approval lapsed after {show_day(end)}: re-approve by PR to keep it"
+                continue
+        d["approval"], d["approved"] = "approved", True
+    return drafts
 
 
 # ---- reading -----------------------------------------------------------------------------------
@@ -788,14 +1007,58 @@ def fetch(url: str, client: httpx.Client, key: str | None = None) -> tuple[Sourc
         return source, b"".join(chunks).decode(r.encoding or "utf-8", errors="replace")
 
 
+def history_ids(gazetteer: Gazetteer) -> list[str]:
+    """The EA ids of the inland bathing waters that are spots ("bw-<id>"): 38 on 26 Oct 2026."""
+    return sorted(sid[3:] for sid in gazetteer.spots if sid.startswith("bw-") and EA_ID.fullmatch(sid[3:]))
+
+
+def _read_ea_history(client, gazetteer, now, stamp: Path, errors: list) -> tuple[list[dict], dict]:
+    """Decision 6: each inland bathing water's EA incident history, one request at a time with a
+    pause, at most MAX_HISTORY requests and at most once a day (Europe/London), counted by `stamp`.
+    The stamp is written before the first request, so a run that stops part way still counts."""
+    day = now.astimezone(TZ).date().isoformat()
+    try:
+        last = json.loads(stamp.read_text(encoding="utf-8")).get("day")
+    except (OSError, ValueError, AttributeError):
+        last = None
+    if last == day:
+        return [], {"key": "ea-history", "url": None, "state": "skipped",
+                    "error": f"already read on {day}: once a day at most"}
+    ids = history_ids(gazetteer)[:MAX_HISTORY]
+    stamp.parent.mkdir(parents=True, exist_ok=True)
+    stamp.write_text(json.dumps({"day": day, "requests": len(ids)}) + "\n", encoding="utf-8")
+    drafts, failed = [], []
+    for i, wid in enumerate(ids):
+        if i:
+            time.sleep(PAUSE_S)
+        fetched = datetime.now(TZ).isoformat(timespec="seconds")
+        try:
+            source, raw = fetch(ea_history_url(wid), client, "ea-history")
+        except Exception as err:  # noqa: BLE001 - one water that fails is named, the rest go on
+            code = getattr(getattr(err, "response", None), "status_code", None)
+            failed.append(f"{wid}: {'HTTP ' + str(code) if code else type(err).__name__}")
+            continue
+        drafts += _parse(source, raw, gazetteer, fetched, now, errors)
+    state = "ok" if not failed else "partial" if len(failed) < len(ids) else "error"
+    return drafts, {"key": "ea-history", "url": EA_HISTORY.format("<id>"), "state": state, "requests": len(ids),
+                    "candidates": len(drafts), "failed": failed,
+                    **({"error": f"{len(failed)} of {len(ids)} waters failed"} if failed else {})}
+
+
 def run(*, fixtures: Path | None = None, now: datetime | None = None, previous: list[dict] | None = None,
         gazetteer: Gazetteer | None = None, client: httpx.Client | None = None,
-        keys: tuple[str, ...] | None = None) -> dict:
+        keys: tuple[str, ...] | None = None, approvals: Path | None = None, ea_history: bool = False,
+        history_stamp: Path | None = None) -> dict:
     """A dry run: read every whitelisted source (from `fixtures`/manifest.json, or live, one request at
-    a time), and return the drafts. Writes nothing and sends nothing."""
+    a time), and return the drafts, marked approved or not from the `approvals` file. With
+    `ea_history` (live only), also read the EA history of each inland bathing water, at most once a
+    day. Writes nothing but the history day stamp, publishes nothing and sends nothing. Raises
+    ApprovalError if the approvals file has any mistake."""
+    if ea_history and fixtures is not None:
+        raise ValueError("the EA history option is live only; fixtures list their own history answers")
     now = now or datetime.now(TZ)
     gazetteer = gazetteer or Gazetteer.load()
-    drafts, errors, report, complete = [], [], [], set()
+    drafts, errors, report, complete, tried = [], [], [], set(), set()
     if fixtures is not None:
         manifest = json.loads((Path(fixtures) / "manifest.json").read_text(encoding="utf-8"))
         entries = manifest.get("sources", []) if isinstance(manifest, dict) else []
@@ -803,6 +1066,8 @@ def run(*, fixtures: Path | None = None, now: datetime | None = None, previous: 
             key, url = e.get("key"), e.get("url")
             if keys and key not in keys:
                 continue
+            if key in BY_KEY and BY_KEY[key].kind != "page":
+                tried.add(key)
             try:
                 source = source_for(url, key)
                 raw = (Path(fixtures) / Path(str(e.get("file"))).name).read_text(encoding="utf-8")
@@ -826,6 +1091,8 @@ def run(*, fixtures: Path | None = None, now: datetime | None = None, previous: 
             for i, s in enumerate(x for x in SOURCES if not keys or x.key in keys):
                 if i:
                     time.sleep(PAUSE_S)
+                if s.kind != "page":
+                    tried.add(s.key)
                 fetched = datetime.now(TZ).isoformat(timespec="seconds")
                 try:
                     source, raw = fetch(s.url, client, s.key)
@@ -842,34 +1109,49 @@ def run(*, fixtures: Path | None = None, now: datetime | None = None, previous: 
                     complete.add(source.key)
                 drafts += found
                 report.append({"key": s.key, "url": s.url, "state": "ok", "fetched_at": fetched, "candidates": len(found)})
+            if ea_history:
+                found, row = _read_ea_history(client, gazetteer, now, Path(history_stamp or HISTORY_STAMP), errors)
+                drafts += found
+                report.append(row)
         finally:
             if own:
                 client.close()
-    drafts = resolve(drafts, now, previous, complete)
+    drafts = resolve(drafts, now, previous, complete, unverified_feeds=tried - complete)
+    approved = {}
+    if approvals is not None:
+        known = {d["draft_id"] for d in drafts} | {p.get("draft_id") for p in previous or [] if isinstance(p, dict)}
+        approved = load_approvals(approvals, known, now)
+        drafts = apply_approvals(drafts, approved, now)
     return {"generated_at": now.isoformat(timespec="seconds"), "dry_run": True, "published": False,
             "mode": "fixtures" if fixtures is not None else "live", "stale_days": STALE_DAYS,
+            "page_term_days": PAGE_TERM_DAYS, "approvals_file": str(approvals) if approvals is not None else None,
             "sources": report, "errors": errors, "drafts": drafts}
 
 
 def table(result: dict, width: int = 64) -> str:
     """A short plain-text review table. Every cell is cleaned again, so a page cannot write terminal
     escapes or new lines into it."""
-    rows = [("status", "spot", "notice", "expiry", "source", "flags", "evidence")]
+    rows = [("status", "approval", "spot", "notice", "expiry", "source", "flags", "line / evidence")]
     for d in result["drafts"]:
         spot = d["spot_id"] or ("? " + ",".join(c.removeprefix("bw-") for c in d["candidates"][:3])
                                 + ("…" if len(d["candidates"]) > 3 else "") if d["candidates"] else "-")
-        ev = clean(d["evidence"])
-        rows.append((d["status"], clean(spot)[:28], d["notice_date"] or "-", d["expiry"] or "-",
-                     d["source"]["key"][:24], ",".join(d["flags"]) or "-",
+        ev = clean(d.get("draft_line") or "") + " | " + (clean(d["evidence"]) if d.get("evidence")
+                                                          else "not quoted: open " + clean(d.get("link") or ""))
+        rows.append((d["status"], d.get("approval", "unapproved"), clean(spot)[:28], d["notice_date"] or "-",
+                     d["expiry"] or "-", d["source"]["key"][:24], ",".join(d["flags"]) or "-",
                      ev[:width] + ("…" if len(ev) > width else "")))
-    widths = [max(len(r[i]) for r in rows) for i in range(6)]
-    lines = ["  ".join(r[i].ljust(widths[i]) for i in range(6)) + "  " + r[6] for r in rows]
+    n = len(rows[0]) - 1
+    widths = [max(len(r[i]) for r in rows) for i in range(n)]
+    lines = ["  ".join(r[i].ljust(widths[i]) for i in range(n)) + "  " + r[n] for r in rows]
     for s in result["sources"]:
         lines.append(f"source {clean(str(s['key']))}: {s['state']}"
-                     + (f", {s.get('candidates', 0)} candidate(s)" if s["state"] == "ok" else f" ({clean(str(s.get('error')))})"))
+                     + (f", {s.get('candidates', 0)} candidate(s)" if s["state"] in ("ok", "partial") else "")
+                     + (f" ({clean(str(s.get('error')))})" if s.get("error") else ""))
     if result["errors"]:
         lines.append(f"{len(result['errors'])} feed row(s) left out: "
                      + "; ".join(clean(f"{e['source']} row {e['row']}: {e['problem']}") for e in result["errors"][:5]))
     held = sum(d["held"] for d in result["drafts"])
-    lines.append(f"{len(result['drafts'])} draft(s), {held} held. Dry run: nothing approved, published or sent.")
+    approved = sum(d["approved"] for d in result["drafts"])
+    lines.append(f"{len(result['drafts'])} draft(s), {held} held, {approved} approved. "
+                 "Dry run: nothing published or sent; approvals are read, never written.")
     return "\n".join(lines)

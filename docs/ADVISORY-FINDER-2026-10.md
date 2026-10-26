@@ -1,6 +1,7 @@
 # Advisory finder, a dry-run prototype (26 October 2026)
 
-Status: prototype. Drafts only. Nothing is published, sent or read by the site build.
+Status: prototype. Drafts only. Nothing is published, sent or read by the site build. Ethan's
+decisions of 26 Oct 2026 are applied (see "Decisions, 26 October 2026" at the end).
 
 ## What it is for
 
@@ -9,20 +10,33 @@ its cause and start date. SwimSignal has no such line. The nearest thing is the 
 reader can open on a bathing water's page (`src/dipcast/site/eatoday.js`). The site build cannot read
 the EA's advice: the bathing-water service has refused GitHub's runners since 28 Sep 2026.
 
-The finder proposes draft advisory lines, such as "EA: open pollution incident at Frensham Great Pond,
-harmful algae, since 19 Jun 2026". A person reads each draft and decides. A draft is kept apart from
-the forecast levels and never changes them.
+The finder proposes draft advisory lines, such as "Environment Agency: advice against bathing (harmful
+algae) since 19 Jun 2026", each with its source link. Ethan reads each draft and decides. A draft is
+kept apart from the forecast levels and never changes them.
 
 ## How to run it
 
 ```
 uv run python scripts/advisory_finder.py --dry-run --fixtures tests/fixtures/advisories --now 2026-10-26T19:00:00+00:00
-uv run python scripts/advisory_finder.py --dry-run          # live: one request to each source, one at a time
+uv run python scripts/advisory_finder.py --dry-run --previous data/cache/advisory_drafts.json   # live, weekly
+uv run python scripts/advisory_finder.py --dry-run --previous data/cache/advisory_drafts.json --ea-history
 uv run pytest tests/test_advisory_finder.py -q
 ```
 
+It runs by hand on Ethan's Mac, weekly in season. It does not run in GitHub Actions or in the site
+build: the EA's bathing-water service refuses GitHub's runners, and a test checks that no workflow
+names the finder. A live run makes one request to each source, one at a time with a pause.
+
 It writes `data/cache/advisory_drafts.json`, which git ignores, and prints a short table. Without
-`--dry-run` it refuses to run. `--previous FILE` compares with an earlier drafts file.
+`--dry-run` it refuses to run. `--previous FILE` compares with an earlier drafts file; pass last
+week's file, because that is how drafts from a feed that could not be read come back as unverified.
+`--approvals FILE` (default `data/advisories/approved.json`) is read, never written. If that file has
+any mistake, the run stops with exit code 2 and writes nothing.
+
+`--ea-history` also reads the incident history of each of the 38 inland bathing waters: 38 requests,
+one at a time, at most once a day (Europe/London). The day is kept in
+`data/cache/advisory_ea_history_day.json`, written before the first request. It is live only: not
+with `--fixtures` or `--now`.
 
 ## Sources and licences
 
@@ -32,12 +46,16 @@ refused. The licence lines were read from the pages named, on 26 Oct 2026.
 | Key | What it is | Licence, as the source states it |
 | --- | --- | --- |
 | `ea-open` | The EA's open pollution incidents at bathing waters: `https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100` | [environment.data.gov.uk/bwq](https://environment.data.gov.uk/bwq/): "This dataset is published under the terms of the Open Government Licence". [OGL v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) asks for an attribution statement and, where possible, a link to the licence. |
-| `ea-history` | One water's incidents, open and closed. The address is built in code from a valid EA bathing-water id, never taken from a response. Not read in a live run; the fixture is Ham and Kingston. | As above. |
+| `ea-history` | One water's incidents, open and closed. The address is built in code from a valid EA bathing-water id, never taken from a response. Read in a live run only with `--ea-history`, for the 38 inland bathing waters; the fixture is Ham and Kingston. | As above. |
 | `epa-alerts` | The Irish EPA's bathing restrictions: `https://data.epa.ie/bw/api/v1/alerts?page=1&per_page=100` | [data.epa.ie](https://data.epa.ie/api-list/bathing-water-open-data/): "The data provided in the API is licensed under a Creative Commons Attribution 4.0 International License". |
 | `ea-widget-frensham` | The EA's own panel for Frensham Great Pond. | OGL. The panel ends "Linked-data from the Environment Agency · OGL". |
 | `govuk-lake-district-algae-2018` | An EA press release on GOV.UK, 19 Jul 2018, naming Windermere, Ullswater, Coniston Water and Killington Reservoir. Kept as a real example of an old notice that names shared waters. | GOV.UK footer: "All content is available under the Open Government Licence v3.0, except where otherwise stated". |
-| `waverley-frensham` | Waverley Borough Council's news item of 22 Aug 2025 about Frensham Great Pond. | No open licence. Footer: "© Copyright 2026 by Waverley Borough Council". |
-| `col-hampstead-swimming` | The City of London's swimming status page for Hampstead Heath. | No open licence. Footer: "© City of London Corporation 2026". |
+| `waverley-frensham` | Waverley Borough Council's news item of 22 Aug 2025 about Frensham Great Pond. | No open licence. Footer: "© Copyright 2026 by Waverley Borough Council". Copyright only: link and notice date kept, passage not kept. |
+| `col-hampstead-swimming` | The City of London's swimming status page for Hampstead Heath. | No open licence. Footer: "© City of London Corporation 2026". Copyright only: link and notice date kept, passage not kept. |
+
+Each entry also has a `role` (regulator, council or water company) and `open_licence` (true for OGL
+and CC BY). There is no Natural Resources Wales or water-company entry yet: each needs an address read
+and its licence checked first. The code takes them as they are (see decision 2).
 
 What each source said on 26 Oct 2026 (read):
 
@@ -52,7 +70,7 @@ What each source said on 26 Oct 2026 (read):
 - The EA panel for Frensham said "Bathing is not advised today due to pollution from harmful algae".
   It gives no date.
 - Waverley's page (read live, not kept): one draft for Frensham Great Pond, dated 22 Aug 2025, "until
-  further notice", flagged stale.
+  further notice", flagged stale. That was before decision 3; the draft now keeps no passage.
 - The City of London page (read live, not kept): no draft. It said the Mixed Pond was "closed for the
   winter". That is a closure, not advice about the water, so the finder skips it.
 
@@ -69,22 +87,25 @@ Their tests use made-up pages of the same shape.
 ## The draft record
 
 Each draft has: `spot_id` (or `null`, unmatched) and `candidates`; the official water id where a feed
-gives one; the source's key, publisher, address and licence; the feed record's id and address;
-`evidence`, the source's own text, at most 600 characters, with white space made single; `notice_date`;
-`status` (new, update, withdrawn or lifted); `advice` and `cause` in the source's words; `expiry` and
-`expiry_basis`; `ended`; `fetched_at`; `flags`; `reason`; `duplicates`; `superseded_by`; `draft_line`;
-`held`; and `approved`, which is always false.
+gives one; the source's key, publisher, kind, role, address, licence and `open_licence`; `link`, the
+address a reader opens (the EA profile, the beaches.ie page, or the notice page); the feed record's id
+and address; `evidence`, the source's own text, at most 600 characters, with white space made single,
+or `null` for a copyright-only source; `evidence_quoted`; `evidence_hash`; `notice_date`; `status` (new,
+update, withdrawn or lifted); `advice`, the line's words for the advice, and `cause`; `expiry` and
+`expiry_basis`; `expected_end` and `expected_end_basis` (the EA's or EPA's expectation, never an
+expiry); `ended`; `fetched_at`; `flags`; `reason`; `duplicates`; `superseded_by`; `draft_line`; `held`;
+`current`; and `approval` (unapproved, approved, changed or lapsed) with `approved`, `approved_by`,
+`approved_at` and `approved_line` from the approvals file.
 
 For a feed, the evidence is the record's fields as `name: value`, with the values exactly as the feed
 gave them. A feed has no sentence to quote.
 
 ## The defaults, and why
 
-- **Unknown expiry stays unknown.** An expiry is only a date the source gives: the EA's
-  `expectedEndOfIncident`, or "until 30 November 2026" on a page. "Until further notice" is recorded
-  as the basis, with no date. For the EPA, the expiry is the start plus the EPA's expected duration in
-  days, and `expiry_basis` says so. That date is worked out, not stated: it is Ethan's call whether to
-  keep it.
+- **Unknown expiry stays unknown.** An expiry is only a date the source gives, such as "until 30
+  November 2026" on a page. "Until further notice" is recorded as the basis, with no date. A feed
+  draft has no expiry: it stands while the feed lists it. The EA's `expectedEndOfIncident` and the
+  EPA's start plus expected duration go in `expected_end`, never `expiry`.
 - **An ambiguous place stays unmatched.** A passage matches a spot only when it names exactly one: by
   the spot's whole name, by one of three aliases for the Hampstead Heath ponds, or by a water that
   only one spot is on. "Windermere" fits five spots and "Hampstead Heath" three, so both stay
@@ -101,22 +122,33 @@ gave them. A feed has no sentence to quote.
   in force, one says lifted), every one is kept and flagged `conflict`.
 - **Duplicates collapse.** The same feed id, or the same page, spot and passage, makes one draft. The
   newest feed record wins. `duplicates` counts the rest.
-- **Stale is flagged, not dropped.** A notice older than 28 days with no expiry is flagged `stale`.
-  Frensham's EA incident (since 19 Jun) is flagged stale although the EA still lists it as open on
-  26 Oct. The reason line says both, so the reviewer sees why.
+- **Stale is flagged, not dropped.** A page notice older than 28 days with no expiry is flagged
+  `stale`. EA feed incidents are never flagged stale: Frensham's (since 19 Jun) is still open on 26 Oct.
+- **History is not a conflict.** An ended incident that ended before a current one began does not
+  disagree with it. Without this, every water's EA history would flag its current incident.
+- **Closures are not advisories.** A passage about a closure for access or the season ("closed for the
+  winter", "closed for maintenance", "the pond is closed") makes no draft unless it names a cause in
+  the water (algae, sewage, pollution, water quality). "Closed due to blue-green algae" is a draft.
 - **Lifted and withdrawn need the source's words.** A feed's end date makes a draft "lifted". On a
   page, "lifted" or "withdrawn" counts only when the sentence says what was lifted ("the warning has
   been lifted") or says "issued in error". A bare "status=lifted" changes nothing.
 - **Gone from a feed is not lifted.** With `--previous`, an incident that has left a feed read whole,
   with no end date read, comes back as "withdrawn" with a reason asking the reviewer to check. From a
   feed not read whole, nothing is inferred.
-- **Held** means a reviewer must settle a flag first: unmatched, ambiguous, no_date, conflict or
-  superseded.
+- **Unverified is not current.** If a feed (`ea-open` or `epa-alerts`) cannot be read, or is not read
+  whole, its open drafts from `--previous` that were not seen this run come back flagged `unverified`,
+  held and `current: false`. This is the rule `ireland.py` uses: a restriction is never shown from a
+  kept copy.
+- **Held** means a reviewer must settle a flag first: unmatched, ambiguous, no_date, conflict,
+  superseded, unverified or company_notice.
+- **Current** means the source, as read this run, still has the notice in force: not ended,
+  superseded or unverified, and not past an expiry. It is separate from approval.
 
 Inferred, not established: that an open EA incident means the EA advises against bathing. The EA
 panel says so for Frensham on 26 Oct. `coastal.py` records the same for Plymouth Hoe on 1 Oct. The
-API reference does not say every open incident carries that advice. So a feed draft says "open
-pollution incident", not "advice against bathing".
+API reference does not say every open incident carries that advice. Ethan adopted "advice against
+bathing" as the line's wording for an open EA incident on 26 Oct (decision 5); the inference itself
+is unchanged, and a reviewer can check it on the EA panel before approving.
 
 ## Source text is treated as hostile
 
@@ -134,40 +166,74 @@ pollution incident", not "advice against bathing".
 
 ## What a reviewer approves
 
-For each draft, a person checks the evidence at the source address and decides:
+Only Ethan approves. For each draft he checks the evidence, or opens the link where nothing is
+quoted, and decides:
 
 1. Is this the spot? Pick from `candidates` if the draft is unmatched.
 2. Is it still in force today? Check stale and no-date drafts at the source.
-3. What is the line, word for word, and its start date and expiry?
-4. Which of conflicting notices stands?
+3. Is the line right, word for word?
+4. Which of conflicting notices stands? For a water company, is it the company's own incident?
 
-The finder writes `approved: false` on every draft. It has no function that approves, publishes or
-sends.
+An approval is one entry in `data/advisories/approved.json`, added by pull request:
+
+```
+{"draft_id": "1a2b3c4d5e6f", "approver": "Ethan Buckley", "approved_at": "2026-10-26T19:00:00Z",
+ "line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026"}
+```
+
+The loader refuses the whole file, and the run stops, if any entry has an unknown draft id (not in
+this run or `--previous`), a missing or other approver, an `approved_at` that is not UTC in that form
+or is in the future, a line that is not one clean line, a repeated id or another key. An approval
+holds only for the exact line: if the draft's line changes, the draft is `changed` and needs
+approving again. When an advisory has ended and left the drafts, its entry has to be removed by PR.
+The finder never writes the file and has no function that publishes or sends.
 
 ## What it never does
 
-- It never changes a forecast level or the spot's answer.
+- It never changes a forecast level or the spot's answer. A test checks that nothing in the package
+  imports it, that no workflow runs it, and that no draft carries or names a level.
 - It never publishes, posts, emails or commits drafts. Nothing in the site build imports it.
 - It never calls a language model, a paid API or anything that needs an account.
 - It never follows a link from a page, and never reads an address that is not on the list.
 - It never fills in an expiry, a date or a place the source did not give.
-- It never shows Irish restrictions from a kept copy. Each run reads the feed or reports that it could
-  not, as `ireland.py` does.
+- It never treats a feed draft from an earlier run as current. Each run reads the feed or marks the
+  earlier drafts unverified, as `ireland.py` does.
+- It never keeps a copyright-only source's words.
 
-## Decisions still Ethan's
+## Decisions, 26 October 2026
 
-1. **Who may approve a draft**, and where approvals are kept. Nothing records an approval yet.
-2. **What counts as a source.** The list has two feeds and four pages. Should council and water
-   company pages count, given they are not open-licensed? Should closures ("closed for the winter")
-   count, or only advice about the water?
-3. **Using council text.** Waverley's and the City of London's pages are copyright. Quote them, link
-   only, or ask permission?
-4. **Expiry rules.** Should an EPA expected duration become an expiry date? How long may a draft with
-   no expiry stand before it lapses (28 days is the stale flag, not a removal)? Should an EA incident
-   still in the open list be exempt from stale?
-5. **Wording.** "Open pollution incident" versus "advice against bathing", and the form of the line.
-   `draft_line` is a suggestion built from fields only.
-6. **The EA history feed.** Reading it for all 38 inland bathing waters would be 38 requests a run.
-   Is the open list alone enough?
-7. **Where it runs.** The EA service refuses GitHub's runners, so a live run has to be from a Mac,
-   like the other off-CI scripts.
+Ethan, 26 Oct 2026: "Adopt all the recommendations as my decisions". What each one is, and what
+changed in the code:
+
+1. **Who approves.** Ethan only. Approvals live in `data/advisories/approved.json` (created empty),
+   one entry per approved draft: draft id, approver, approved_at (UTC) and the exact line text. The
+   file changes only by pull request. Code: `load_approvals` (validation), `apply_approvals`,
+   `ALLOWED_APPROVERS`, `--approvals`; the finder marks drafts approved or not and still never
+   publishes. Tests reject an unknown draft id, a missing or other approver and a malformed date.
+2. **Sources.** The EA, Natural Resources Wales, the Irish EPA and council notices about water
+   quality. A water company counts only for its own incidents and is attributed "[company] says".
+   Closures for access or the season are not advisories. Code: `Source.role`; `is_closure` drops
+   closure passages; a water company's page must have a scope and its drafts are held
+   (`company_notice`) for Ethan to confirm the incident is the company's own. No NRW or water-company
+   address is on the list yet.
+3. **Council text.** Link plus our own short summary. Words are stored only for openly licensed
+   sources (OGL, CC BY). For a copyright-only source the draft keeps the link, the notice date and
+   `evidence_quoted: false`, not the passage. Code: `Source.open_licence`; `evidence` is null and only
+   a hash is kept for Waverley and the City of London; their licence fields say so.
+4. **Expiry.** (a) An EA feed incident stands while the EA lists it open, re-checked every run. If
+   the feed cannot be read, its earlier drafts are marked `unverified` and are not current. EA feed
+   items are no longer flagged stale. (b) The Irish EPA's expected duration is shown as "EPA expects
+   until <date>", never as an expiry. (c) A page advisory with no stated end expires 14 days after
+   approval unless re-approved. Code: `expected_end` beside `expiry`; `unverified_feeds` in
+   `resolve`; `current`; `PAGE_TERM_DAYS`; `approval: lapsed`.
+5. **Wording.** "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026" plus
+   the source link. Equivalents: "EPA (Ireland): bathing temporarily prohibited (algal bloom) since
+   11 Sep 2026; EPA expects until 18 Sep 2026" (Ballyallia Lake, from the EPA's answer of 4 Oct),
+   "Waverley Borough Council: advice against swimming (<cause>) since <date>", and "Thames Water
+   says: advice against swimming (sewage) since <date>". The line never changes a risk
+   level. Code: `draft_line`, `advice_words`, `link`.
+6. **EA history.** Allowed once a day for the 38 inland bathing waters, one request at a time. Code:
+   `--ea-history`, `history_ids`, `MAX_HISTORY` (40), the day stamp. It was tested with saved and
+   mock answers only; no live request was made while building it.
+7. **Where it runs.** By hand on Ethan's Mac, weekly in season. Not in GitHub Actions and not in
+   the site build.

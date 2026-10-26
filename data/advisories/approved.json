@@ -1,0 +1,4 @@
+{
+ "note": "Approved advisory lines (docs/ADVISORY-FINDER-2026-10.md, decisions of 26 Oct 2026). Only Ethan Buckley approves, and this file changes only by pull request. One entry per approved draft: draft_id, approver, approved_at (UTC, as 2026-10-26T19:00:00Z) and line (the exact text). scripts/advisory_finder.py reads it and never writes it; nothing here is published.",
+ "approvals": []
+}
