@@ -119,6 +119,41 @@ def cap(s: str) -> str:
     return s[:1].upper() + s[1:]
 
 
+# Reviewed official advice (spots.json `official`, src/dipcast/official_advice.py), in the compact form the
+# site's rows use: eatoday.js eaTodayBrief, line for line, so a card says what the list says
+# (tests/test_cards.py checks the two agree). It never changes a level; a card shows it beside the level.
+OFFICIAL_STATES = {"checked", "stale", "unverified", "gone", "changed"}
+MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+
+def _short_day(iso) -> str:
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", str(iso or ""))
+    return f"{int(m[3])} {MONTHS[int(m[2]) - 1]}" if m and 1 <= int(m[2]) <= 12 else ""
+
+
+def official_brief(spot: dict) -> str:
+    """'EA advice against bathing · since 19 Jun · checked 26 Oct', or '' without advice."""
+    items = [o for o in (spot.get("official") or []) if isinstance(o, dict) and isinstance(o.get("line"), str) and o["line"]
+             and isinstance(o.get("publisher"), str) and o["publisher"] and o.get("state") in OFFICIAL_STATES
+             and _short_day(o.get("checked"))]
+    if not items:
+        return ""
+    o = items[0]
+    said = re.sub(r"^[^:]*:\s*", "", o["line"], count=1)
+    said = re.sub(r"\s+since\s.*$", "", re.sub(r"\s*\(.*$", "", said, count=1), count=1)
+    who = "EA" if o["publisher"] == "Environment Agency" else o["publisher"]
+    since, checked = _short_day(o.get("since")), _short_day(o["checked"])
+    parts = [f"{who} {said}", f"since {since}" if since else "",
+             f"checked {checked}" if o["state"] == "checked" else f"not re-checked since {checked}",
+             f"{len(items) - 1} more" if len(items) > 1 else ""]
+    return " · ".join(p for p in parts if p)
+
+
+def official_words(brief: str) -> str:
+    """The advice as a card or caption says it, apart from the level."""
+    return f"Official: {brief}. Follow it first; the level is SwimSignal's sewage forecast only."
+
+
 def and_list(words: list[str]) -> str:
     return words[0] if len(words) < 2 else f"{', '.join(words[:-1])} and {words[-1]}"
 
@@ -186,6 +221,7 @@ class Row:
     label: str
     cells: list[str | None]   # a level on each day, or None for no forecast that day
     poor: bool = False        # rated poor: at least high on every day, whatever the forecast
+    official: str = ""        # official_brief: advice beside the level, never in it
 
 
 @dataclass
@@ -201,7 +237,7 @@ class WeekendCard:
         return [sid for sid, _ in self.area.spots if sid not in self.missing]
 
 
-def weekend_card(area: Area, levels: dict[str, dict], days: list[str]) -> WeekendCard | None:
+def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: dict[str, str] | None = None) -> WeekendCard | None:
     """An area's card for two days, or None when none of its spots is in the forecast. A spot whose
     level is one of the four goes in a row; one with a plain level ("No monitored overflow found upstream")
     goes in a line under the table, in the page's words."""
@@ -222,6 +258,8 @@ def weekend_card(area: Area, levels: dict[str, dict], days: list[str]) -> Weeken
         cells = [x[0] if x and x[0] in LEVELS else None for x in got]
         card.rows.append(Row(sid, label, cells, poor=any(x and "rated poor" in x[1] for x in got)))
     card.plain = [(h, lv, names) for h, (lv, names) in plain.items()]
+    for r in card.rows:
+        r.official = (advice or {}).get(r.id, "")
     if not card.rows and not card.plain:
         return None
     return card
@@ -291,6 +329,8 @@ def weekend_caption(card: WeekendCard, generated_at: str, root: str) -> str:
             lines.append(f"{r.label}: {cell_words(r.cells[0])} both days.")
         else:
             lines.append(f"{r.label}: " + ", ".join(f"{cell_words(c)} on {n}" for c, n in zip(r.cells, names)) + ".")
+        if r.official:
+            lines[-1] += " " + official_words(r.official)
     for headline, _, who in card.plain:
         lines.append(f"{and_list(who)}: {headline[:1].lower() + headline[1:]}.")
     poor = [r.label for r in card.rows if r.poor]
@@ -474,6 +514,9 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         notes.append((None, MUTED, poor_words(poor)))
+    for r in card.rows:   # official advice under the table, in ink: the row's level is the sewage forecast alone
+        if r.official:
+            notes.append((None, INK, f"{r.label}: {official_words(r.official)}"))
     note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes)
     text_h = [len(wrap(draw, r.label, name_f, name_w)) * lh(name_f) for r in card.rows]
     room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes else 0) - sum(text_h)
@@ -587,9 +630,10 @@ def level_colours(level: str | None) -> tuple[str, str]:
     return MARKS.get(level, NA_MARK), TEXTS.get(level, NA_TEXT)
 
 
-def draw_spot(name: str, where: str, level: str | None, headline: str, generated_at: str):
+def draw_spot(name: str, where: str, level: str | None, headline: str, generated_at: str, official: str = ""):
     """A spot's share card as a Pillow image: its name, where it is, the headline from levels.js
-    (alerts.json) beside the level's mark, when it was issued, and the caveat. The name steps down a
+    (alerts.json) beside the level's mark, any official advice (official_brief) on its own line under it,
+    when it was issued, and the caveat. The name steps down a
     size before it takes a third line; raises Overflow if it still does not fit."""
     from PIL import Image, ImageDraw
 
@@ -602,18 +646,24 @@ def draw_spot(name: str, where: str, level: str | None, headline: str, generated
     head_f, when_f, where_f = font("sans", 44, 700), font("sans", 32, 500), font("sans", 30, 400)
     mark, text = level_colours(level)
     head = wrap(draw, headline, head_f, width - 44)
-    for size in (60, 52, 44):
+    said, said_f = f"Official: {official}." if official else "", font("sans", 30, 600)   # one line: the alt text has the rest
+    said_h = len(wrap(draw, said, said_f, width - 44)) * lh(said_f) + 10 if said else 0
+    # With the advice line, a name that still does not fit at the smallest size loses where it is (the page
+    # says it), rather than the card being left out: the advice must not cost the card.
+    for size, show_where in [(s, True) for s in (60, 52, 44)] + ([(44, False)] if said else []):
         name_f = font("serif", size)
         lines = wrap(draw, name, name_f, width)
-        need = len(lines) * lh(name_f) + 8 + lh(where_f) + 24 + len(head) * lh(head_f) + 8 + lh(when_f)
+        need = len(lines) * lh(name_f) + (8 + lh(where_f) if show_where else 0) + 24 + len(head) * lh(head_f) + said_h + 8 + lh(when_f)
         if len(lines) <= 2 and top + need <= foot_top - 24:
             break
     else:
         raise Overflow(f"{name}: the name and headline do not fit the share card")
     y = text_block(draw, M, top + (foot_top - 24 - top - need) // 2, name, name_f, INK, width)   # in the middle of the room
-    y = text_block(draw, M, y + 8, where, where_f, MUTED, width) + 24
+    y = (text_block(draw, M, y + 8, where, where_f, MUTED, width) if show_where else y) + 24
     dot(img, M + 12, y + lh(head_f) * 0.56, 24, mark)   # on the words' middle, a little under the line's
     y = text_block(draw, M + 44, y, headline, head_f, text, width - 44) + 8
+    if said:   # in ink, never the level's colour: it is not part of the level
+        y = text_block(draw, M + 44, y + 2, said, said_f, INK, width - 44) + 8
     draw.text((M + 44, y), issued(generated_at), font=when_f, fill=INK)
     return img
 
@@ -634,9 +684,10 @@ def write_spot_cards(out: Path, spots: list[dict], alerts: dict | None, generate
         if not a or not re.fullmatch(r"[A-Za-z0-9_-]+", str(s["id"])):
             continue
         try:
-            draw_spot(s["name"], spot_where(s), a.get("level"), a.get("headline") or "", generated_at).save(
+            o = official_brief(s)
+            draw_spot(s["name"], spot_where(s), a.get("level"), a.get("headline") or "", generated_at, o).save(
                 out / f"{s['id']}.png", "PNG", optimize=True)
-            made[s["id"]] = f"{s['name']}: {a.get('headline')}. {issued(generated_at)}."
+            made[s["id"]] = f"{s['name']}: {a.get('headline')}.{' ' + official_words(o) if o else ''} {issued(generated_at)}."
         except Exception as e:  # noqa: BLE001 - one card must not stop the others, or the site
             log.warning("share card for %s not made: %s", s["id"], e)
     return made
@@ -714,7 +765,7 @@ def write_cards(out: Path, spots: list[dict], alerts: dict | None, generated_at:
     else:
         for area in areas:
             try:
-                card = weekend_card(area, levels, days)
+                card = weekend_card(area, levels, days, {s["id"]: official_brief(s) for s in spots})
                 if card is None:
                     warnings.append(f"card {area.slug}: none of its spots is in the forecast")
                     continue
