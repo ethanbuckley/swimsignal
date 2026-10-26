@@ -24,7 +24,8 @@ the #377 statement at about 19:25 UTC and asked for the rest to be built autonom
 
 Ethan adopted every recommendation on 26 October 2026 (about 20:15 UTC): "Adopt all the recommendations as my
 decisions. Record them in the status map and the relevant PRs, apply the ones that need only docs or harness settings,
-and keep everything as draft PRs." Earlier the same evening he approved the #377 statement ("approved", about 19:25
+and keep everything as draft PRs." Later that evening Ethan delegated routine decisions to Codex; approval records now name the actual reviewer and
+authority rather than Ethan by default (#379). Earlier the same evening he approved the #377 statement ("approved", about 19:25
 UTC). Each decision is recorded in its own PR as well.
 
 | # | Piece | Decision | Applied |
@@ -60,9 +61,9 @@ protocols are reviewed.
 | 2 | #382: question wording, no-baseline monitors not described as over twice their record, unknown when stale or unchecked, no file paths on the page; a real site build before merge; full CI | #382 | in progress |
 | 3 | Practical guides for popular spots from verifiable sources; sessions execution pack; outstanding human actions | to come | in progress |
 | 4 | Catchment replay prototype: last 48 h of reported spills, rain and gauges, modelled arrival; observed, estimated and unavailable kept apart | to come | in progress |
-| 5 | Planner: outing time and backup spot; what changed since I checked, with evidence; club brief versions and leader acknowledgement (local only) | to come | in progress |
-| - | Lab-chlorophyll test statement (no fetch): EA determinand 7887 at 40 lakes chosen by metadata only; pass needs Spearman ≥ 0.5 (lower end > 0.3), within-lake placebo, LOLO calibration Better (B 0.10, H 0.05), no lake type harmed; stage 1 sized at ~55,200 requests / 3.2 GB | #386 | statement ready for review |
-| - | Algae incident test statement (no fetch) | #385 | statement ready for review |
+| 5 | Planner: outing time and backup spot; what changed since I checked, with evidence (extending the existing `since.js`, not duplicating it); club brief versions and leader acknowledgement (local only) | to come | in progress |
+| - | Lab-chlorophyll test statement (no fetch): EA determinand 7887 at 40 lakes chosen by metadata only; pass needs Spearman ≥ 0.5 (lower end > 0.3), within-lake placebo, LOLO calibration Better (B 0.10, H 0.05), no lake type harmed; stage 1 sized at ~55,200 requests / 3.2 GB | #386 | **kept unrun**; first verify 7887's analytical definition from a primary EA source (in progress); if unresolved, the inference stays explicit and nothing claims lab chlorophyll-a validation. No 55k-request fetch |
+| - | Algae incident test statement (no fetch) | #385 | protocol reviewed by Codex as a bounded exploratory question; **kept unrun in this window** |
 
 ## What was learned
 
