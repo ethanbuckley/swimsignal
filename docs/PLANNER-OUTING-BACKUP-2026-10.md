@@ -43,6 +43,8 @@ The tile always ends with the issue time and "A lower forecast level does not me
 - Where the count is not known now, why: "a feed upstream is down or has not updated within six hours." This is the new `gap` field in each note.
 - For a spot with no overflow upstream: "No live overflow count for this spot."
 - For a rating change: whose rating it is, the EA's yearly classification.
+- Which overflows are discharging, and since when, where the spot's forecast lists them (`contributors` with a live event, `spillStart`): "2 overflows upstream reported discharging now, against 0 then: Ben Rhydding storm overflow since Mon 08:40, and 1 more." At most two names; the rest as a count. `contributors` holds the overflows that matter most, so it can name fewer than the count. The names are escaped.
+- The outing, when this saved spot is the spot or the backup of the outing kept in `dipcast.plan` and its day has not passed: "This is the spot of your outing tomorrow morning." (`sinceOuting`.)
 - For a forecast over 8 h old (the page's own STALE_MIN): "This forecast is N hours old, so the change may be out of date."
 
 **Storage:** `dipcast.seen` as before. Each note gains `gap` (boolean). Notes written before this change have no `gap` and still read and compare. A test covers this. A `gap` that is not a boolean reads as not seen.
@@ -63,7 +65,7 @@ The leader can tick "I have read version X". If a later forecast makes a new ver
 - That a change happened without its evidence. Every since line carries the issue times of both forecasts, and what is known or unknown about the overflows.
 - That a tick is a record anyone else can see, or proof of who read what.
 - **Today's EA advice is not part of the evidence.** It is not in `spots.json`. The EA panel loads only when its fold opens (`eatoday.js`). The line cannot say "EA advice appeared" without a new request, so it says nothing about it.
-- **Spill start times ("spilling since 09:10") are not said.** `spots.json` has counts, not start times.
+- Spill start times are said only for the overflows `contributors` lists. Every other discharging overflow is a count with no time.
 
 ## Storage keys
 
@@ -78,7 +80,7 @@ The privacy notice (`pages/privacy.html`) now names the outing in the kept plan 
 ## Tests
 
 - `tests/site_outing.test.cjs`: address and storage migration, odd values, a kept time dropped on another day, time words, the passed-time note, backup choices, missing spots, and the tile side by side (one spot, none, escaping, the "safe" check). It also checks that the page loads and draws it, and covers the service worker's list.
-- `tests/site_since_evidence.test.cjs`: evidence with counts, unknown counts and why, no overflow, rating, stale over 8 h, nothing to compare, and old notes without `gap`.
+- `tests/site_since_evidence.test.cjs`: evidence with counts, unknown counts and why, no overflow, rating, stale over 8 h, nothing to compare, old notes without `gap`, which overflows and since when, the outing sentence (spot, backup, hour, today, past day, odd text), and the card escaping an overflow name.
 - `tests/site_brief.test.cjs`: version stability and FNV-1a reference values, a tick per version, an older version, storage limits and odd values, the box words, the page with storage and with storage blocked, and script order.
 - `tests/test_outing.py`: the build copies outing.js, versions it after plan.js, and the offline copy lists it.
 - Updated: `tests/site_since.test.cjs` (the note's `gap`, and the card line now with evidence) and `tests/site_record.test.cjs` (script order).

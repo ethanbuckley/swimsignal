@@ -13,7 +13,7 @@
 // A plain script, as levels.js: globals in the page, exports in Node. It asks for the level rules
 // when it is called, so in the page it only has to load before it is used.
 const sinceRules = () => typeof level === 'function'
-  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList }
+  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart }
   : { ...require('./levels.js'), ...require('./experience.js') };
 
 const SEEN_KEY = 'dipcast.seen';
@@ -105,19 +105,46 @@ const SINCE_STALE_MIN = 8 * 60;
 const issuedWords = iso => { const d = new Date(iso);
   return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`; };
 const overflowsWord = n => n === 1 ? '1 overflow upstream' : `${n} overflows upstream`;
-function sinceEvidence(was, now, nowMs = Date.now()) {
+// extra.spills: which overflows are discharging now and since when (sinceSpills), named where the spot's
+// forecast names them; extra.outing: the outing planned at this spot (sinceOuting), so the change is read
+// against it.
+function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
   if (!was || !now) return '';
   const out = [`Forecasts compared: issued ${issuedWords(was.forecast)} and ${issuedWords(now.forecast)}.`];
   const a = was.discharging, b = now.discharging, then = a === null || a === undefined ? '' : `, against ${a} then`;
-  if (Number.isInteger(b)) out.push(b ? `${cap1(overflowsWord(b))} reported discharging now${then}.` : `No overflow upstream reported discharging now${then}.`);
+  const named = (extra.spills || []).slice(0, 2), more = Number.isInteger(b) ? b - named.length : 0;
+  const which = !named.length || !b ? '' : `: ${named.map(x => `${x.name} since ${issuedWords(new Date(x.since).toISOString())}`).join(', ')}${more > 0 ? `, and ${more} more` : ''}`;
+  if (Number.isInteger(b)) out.push(b ? `${cap1(overflowsWord(b))} reported discharging now${then}${which}.` : `No overflow upstream reported discharging now${then}.`);
   else if (now.gap) out.push('How many overflows upstream are discharging now is not known: a feed upstream is down or has not updated within six hours.');
   else if (now.level) out.push('No live overflow count for this spot.');
   if (was.rating && now.rating && was.rating !== now.rating) out.push("The rating is the Environment Agency's, from its yearly bathing water classification.");
+  if (extra.outing) out.push(extra.outing);
   const age = (nowMs - Date.parse(now.forecast)) / 60000;
   if (age > SINCE_STALE_MIN) out.push(`This forecast is ${Math.round(age / 60)} hours old, so the change may be out of date.`);
   return out.join(' ');
 }
 const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+const esc1 = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);   // overflow names are data
+// The spot's overflows discharging now, earliest first, from those its forecast lists (contributors: the
+// ones that matter most, so possibly fewer than the count): [{name, since}], since in ms.
+function sinceSpills(s) {
+  const R = sinceRules();
+  return (s.contributors || []).map(c => ({ c, since: R.spillStart(c) })).filter(x => x.since !== null)
+    .sort((x, y) => x.since - y.since).map(x => ({ name: R.overflowNames(x.c).plain.slice(0, 80), since: x.since }));
+}
+// The outing planned on Plan a swim (outing.js), as the plan kept in this browser holds it (index.html,
+// PLAN_KEY, dipcast.plan: the plan's address, with when=, spot= and backup=): a sentence when this spot is
+// its spot or its backup and its day has not passed, else ''.
+const KEPT_PLAN_KEY = 'dipcast.plan', OUTING_WHEN = /^(morning|afternoon|evening|[01]\d|2[0-3])$/;
+function sinceOuting(id, planText) {
+  if (!planText) return '';
+  const R = sinceRules(), q = new URLSearchParams(String(planText).replace(/^#/, ''));
+  const day = q.get('day'), when = q.get('when'), role = q.get('spot') === id ? 'spot' : q.get('backup') === id ? 'backup' : null;
+  if (!role || !/^\d{4}-\d{2}-\d{2}$/.test(day || '') || day < R.today()) return '';
+  const d = R.dayWord(day).replace(/^on /, ''), part = OUTING_WHEN.test(when || '') ? when : null;
+  const w = !part ? d : /^\d/.test(part) ? `${d} at ${part}:00` : d === 'today' ? `this ${part}` : `${d} ${part}`;
+  return role === 'spot' ? `This is the spot of your outing ${w}.` : `This is the backup for your outing ${w}.`;
+}
 
 // ------------------------------------------------------------------------------ in the page
 // The notes, read on first use (the first card drawn), and a copy as they were then, which the lines
@@ -146,9 +173,13 @@ function lookedAt(spots, forecast, saved) {
 function sinceSaid(s, forecast) {
   seenStore();
   const was = LOOKED.get(s.id), now = seenRecord(s, forecast, Date.now()), t = sinceLine(was, now);
-  return t ? `<p class="place-since">${t} <span class="since-ev">${sinceEvidence(was, now)}</span></p>` : '';
+  if (!t) return '';
+  let plan = null;
+  try { plan = localStorage.getItem(KEPT_PLAN_KEY); } catch (e) { /* no plan kept: no outing to read against */ }
+  const ev = sinceEvidence(was, now, Date.now(), { spills: sinceSpills(s), outing: sinceOuting(s.id, plan) });
+  return `<p class="place-since">${t} <span class="since-ev">${esc1(ev)}</span></p>`;
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, sinceEvidence, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }

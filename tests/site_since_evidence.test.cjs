@@ -69,3 +69,51 @@ test('a note kept before the evidence was added (no gap field) still reads, and 
   // A gap field that is not a boolean is not what the page writes: not seen.
   assert.equal(S.readSeen(JSON.stringify([{...before, gap: 'yes'}])).size, 0);
 });
+
+// ------------------------------------------------------------------------------ which overflows, and the outing
+const contributor = (name, start, extra = {}) => ({site_id: name.toUpperCase(), site_name: name, status: 1, latest_event_start: start, weight: 0.5, ...extra});
+
+test('which overflows are discharging, and since when, where the forecast names them', () => {
+  const s = spot('moderate', {discharging_upstream: 3}, {contributors: [
+    contributor('ILKLEY WWTW', new Date(2026, 9, 26, 9, 10).toISOString()),
+    contributor('BEN RHYDDING CSO', new Date(2026, 9, 26, 8, 40).toISOString()),
+    contributor('ADDINGHAM CSO', new Date(2026, 9, 25, 22, 0).toISOString(), {status: 0}),   // not discharging now
+    contributor('BURLEY CSO', new Date(2026, 9, 26, 6, 0).toISOString(), {latest_event_end: new Date(2026, 9, 26, 7, 0).toISOString()})]});
+  const spills = S.sinceSpills(s);
+  assert.equal(spills.length, 2);   // stopped and ended ones are left out
+  assert.ok(spills[0].since < spills[1].since);   // earliest first
+  const [a, b] = pair(spot('low'), s);
+  const ev = S.sinceEvidence(a, b, NOW, {spills});
+  assert.match(ev, new RegExp(`3 overflows upstream reported discharging now, against 0 then: ${spills[0].name} since Mon 08:40, ${spills[1].name} since Mon 09:10, and 1 more\\.`));
+  // None discharging now: no names, whatever was passed.
+  const [c, d] = pair(spot('moderate', {discharging_upstream: 1}), spot('low'));
+  assert.doesNotMatch(S.sinceEvidence(c, d, NOW, {spills}), /since Mon/);
+});
+
+test('the outing planned at this spot is said beside the change; another spot\'s, or a past day\'s, is not', () => {
+  const plan = '#day=2026-10-27&from=Ilkley&at=53.92%2C-1.82&within=20&when=morning&spot=wharfe&backup=eden';
+  assert.equal(S.sinceOuting('wharfe', plan), 'This is the spot of your outing tomorrow morning.');
+  assert.equal(S.sinceOuting('eden', plan), 'This is the backup for your outing tomorrow morning.');
+  assert.equal(S.sinceOuting('wharfe', plan.replace('when=morning', 'when=07')), 'This is the spot of your outing tomorrow at 07:00.');
+  assert.equal(S.sinceOuting('wharfe', plan.replace('2026-10-27', '2026-10-26')), 'This is the spot of your outing this morning.');
+  assert.equal(S.sinceOuting('wharfe', plan.replace('&when=morning', '')), 'This is the spot of your outing tomorrow.');
+  assert.equal(S.sinceOuting('other', plan), '');
+  assert.equal(S.sinceOuting('wharfe', plan.replace('2026-10-27', '2026-10-25')), '');   // a day gone by
+  for (const odd of [null, '', 'garbage', '#spot=wharfe']) assert.equal(S.sinceOuting('wharfe', odd), '', String(odd));
+  const [a, b] = pair(spot('low'), spot('moderate', {discharging_upstream: 1}));
+  assert.match(S.sinceEvidence(a, b, NOW, {outing: S.sinceOuting('wharfe', plan)}), /now, against 0 then\. This is the spot of your outing tomorrow morning\.$/);
+});
+
+test('on the card: the evidence escaped, with the outing read from the plan kept in this browser', () => {
+  const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
+  const items = new Map([[S.SEEN_KEY, JSON.stringify([S.seenRecord(spot('low'), OLD, LOOKED)])],
+    ['dipcast.plan', '#day=2026-10-27&within=20&when=evening&spot=wharfe']]);
+  const ctx = vm.createContext({URLSearchParams, localStorage: {getItem: k => items.has(k) ? items.get(k) : null, setItem: (k, v) => items.set(k, v), removeItem: k => items.delete(k)}});
+  for (const f of ['experience.js', 'levels.js', 'since.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
+  vm.runInContext('setToday("2026-10-26")', ctx);
+  const s = spot('moderate', {discharging_upstream: 1}, {contributors: [contributor('<b>ODD</b> CSO', new Date(2026, 9, 26, 9, 10).toISOString())]});
+  const h = vm.runInContext('sinceSaid', ctx)(s, NEW);
+  assert.match(h, /This is the spot of your outing tomorrow evening\./);
+  assert.doesNotMatch(h, /<b>/);
+  assert.match(h, /&lt;b&gt;/i);
+});
