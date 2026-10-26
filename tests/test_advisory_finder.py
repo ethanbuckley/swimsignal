@@ -444,7 +444,8 @@ def test_copyright_only_page_keeps_link_and_date_not_the_passage(gaz):
     assert d["link"] == WAVERLEY.url and d["notice_date"] == "2026-10-22"
     assert "rangers" not in json.dumps(d)
     assert d["draft_line"] == "Waverley Borough Council: advice against swimming (blue-green algae) since 22 Oct 2026"
-    assert "not quoted: open https://www.waverley.gov.uk/" in adv.table({"drafts": out, "sources": [], "errors": []}, 400)
+    # The link is the reviewer's only way to the words, so the table prints it whole at any width.
+    assert f"not quoted: open {WAVERLEY.url}" in adv.table({"drafts": out, "sources": [], "errors": []})
 
 
 def test_water_company_only_for_its_own_incident(gaz):
@@ -470,10 +471,38 @@ def test_unreadable_feed_marks_earlier_drafts_unverified(tmp_path, gaz):
     assert any(d["spot_id"] == "bw-ukj2310-11945" for d in result["drafts"])
 
 
-def test_approvals_file_in_the_repo_is_valid_and_empty():
+def test_approvals_file_in_the_repo_is_valid():
+    # Valid, not empty: Ethan's approval PRs add entries, and this test must stay green on them. Draft
+    # ids are not checked here (they come from a live run), and "now" is the real clock, so an entry
+    # approved today is not "in the future".
     assert adv.APPROVALS_FILE == ROOT / "data" / "advisories" / "approved.json"
-    assert adv.load_approvals(adv.APPROVALS_FILE, known=set(), now=NOW) == {}
+    got = adv.load_approvals(adv.APPROVALS_FILE, known=None, now=datetime.now(TZ))
+    assert all(a["approver"] == "Ethan Buckley" for a in got.values())
     assert adv.ALLOWED_APPROVERS == ("Ethan Buckley",)
+
+
+def test_review_table_shows_the_id_and_the_whole_line(gaz):
+    # An approval entry needs the draft id and the exact line. The table cut both off at 64
+    # characters until 26 Oct 2026, so neither could be copied from it.
+    result = adv.run(fixtures=FIX, now=NOW, gazetteer=gaz)
+    rows = adv.table(result).splitlines()
+    assert rows[0].startswith("id ")
+    for d in result["drafts"]:
+        row = next(r for r in rows if r.startswith(d["draft_id"] + " "))
+        assert d["draft_line"] + " | " in row
+    assert any(len(d["draft_line"]) > 64 for d in result["drafts"])
+
+
+def test_fixture_run_does_not_overwrite_the_live_drafts_file(tmp_path, monkeypatch):
+    # The live drafts file is next week's --previous. Until 26 Oct 2026 a fixture check without --out
+    # wrote over it, so the next live run compared against the fixtures.
+    import advisory_finder
+    monkeypatch.setattr(advisory_finder.config, "CACHE", tmp_path)
+    live = tmp_path / "advisory_drafts.json"
+    live.write_text('{"drafts": []}\n')
+    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat()]) == 0
+    assert live.read_text() == '{"drafts": []}\n'
+    assert json.loads((tmp_path / "advisory_drafts_fixtures.json").read_text())["mode"] == "fixtures"
 
 
 def test_approval_marks_only_that_draft_and_only_its_exact_line(tmp_path, gaz):

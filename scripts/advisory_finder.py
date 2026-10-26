@@ -30,7 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--dry-run", action="store_true", help="required: the finder only ever drafts")
     ap.add_argument("--fixtures", type=Path, help="read saved answers (DIR/manifest.json) instead of the network")
-    ap.add_argument("--out", type=Path, default=config.CACHE / "advisory_drafts.json", help="where the drafts go")
+    ap.add_argument("--out", type=Path, help="where the drafts go (default: advisory_drafts.json in the cache, "
+                                             "or advisory_drafts_fixtures.json with --fixtures)")
     ap.add_argument("--previous", type=Path, help="an earlier drafts file, to mark updates, withdrawals and "
                                                   "drafts from a feed that could not be read (unverified)")
     ap.add_argument("--approvals", type=Path, default=APPROVALS_FILE, help="Ethan's approvals file (read only)")
@@ -59,10 +60,12 @@ def main(argv: list[str] | None = None) -> int:
     except ApprovalError as err:
         print(f"Approvals refused, nothing written: {err}. Fix the file by pull request.", file=sys.stderr)
         return 2
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    # A fixture run never lands on the live drafts file: that file is next week's --previous.
+    out = args.out or config.CACHE / ("advisory_drafts_fixtures.json" if args.fixtures else "advisory_drafts.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(table(result))
-    print(f"Drafts written to {args.out}")
+    print(f"Drafts written to {out}")
     return 0
 
 

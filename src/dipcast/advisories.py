@@ -1129,17 +1129,19 @@ def run(*, fixtures: Path | None = None, now: datetime | None = None, previous: 
 
 
 def table(result: dict, width: int = 64) -> str:
-    """A short plain-text review table. Every cell is cleaned again, so a page cannot write terminal
-    escapes or new lines into it."""
-    rows = [("status", "approval", "spot", "notice", "expiry", "source", "flags", "line / evidence")]
+    """A short plain-text review table. Each row starts with the draft id and ends with the whole draft
+    line, the two things an approval entry needs. Quoted evidence after it is cut to `width`; where
+    nothing is quoted, the source's link is printed whole. Every cell is cleaned again, so a page cannot write terminal escapes or new lines into it."""
+    rows = [("id", "status", "approval", "spot", "notice", "expiry", "source", "flags", "line | evidence")]
     for d in result["drafts"]:
         spot = d["spot_id"] or ("? " + ",".join(c.removeprefix("bw-") for c in d["candidates"][:3])
                                 + ("…" if len(d["candidates"]) > 3 else "") if d["candidates"] else "-")
-        ev = clean(d.get("draft_line") or "") + " | " + (clean(d["evidence"]) if d.get("evidence")
-                                                          else "not quoted: open " + clean(d.get("link") or ""))
-        rows.append((d["status"], d.get("approval", "unapproved"), clean(spot)[:28], d["notice_date"] or "-",
-                     d["expiry"] or "-", d["source"]["key"][:24], ",".join(d["flags"]) or "-",
-                     ev[:width] + ("…" if len(ev) > width else "")))
+        ev = clean(d.get("evidence") or "")
+        ev = (ev[:width] + ("…" if len(ev) > width else "") if ev
+              else "not quoted: open " + clean(d.get("link") or ""))   # a fixed address, printed whole
+        rows.append((clean(d["draft_id"]), d["status"], d.get("approval", "unapproved"), clean(spot)[:28],
+                     d["notice_date"] or "-", d["expiry"] or "-", d["source"]["key"][:24],
+                     ",".join(d["flags"]) or "-", clean(d.get("draft_line") or "") + " | " + ev))
     n = len(rows[0]) - 1
     widths = [max(len(r[i]) for r in rows) for i in range(n)]
     lines = ["  ".join(r[i].ljust(widths[i]) for i in range(n)) + "  " + r[n] for r in rows]
