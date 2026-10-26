@@ -499,8 +499,8 @@ def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM, timeout
 FLOOD_OUTLINE_SIMPLIFY_M = 10.0
 # The outline cache (OutlineStore), in config.CACHE/flood_areas: <area id>.geojson entries and one attempt
 # record, FLOOD_OUTLINE_ATTEMPTS, all made by the build; nothing else lives there. The EA redraws flood
-# areas rarely (in its periodic flood-warning area updates, not from day to day), and one outline is up
-# to 0.9 MB raw, so it is not asked for in every build:
+# areas rarely (in its periodic flood-warning area updates, not from day to day), and one outline was up
+# to 1.21 MB raw on 26 Oct 2026 (031WAF114, the largest of 29 fetched), so it is not asked for in every build:
 #  - each area is asked for at most once per FLOOD_OUTLINE_REFRESH_S, success or failure, while the
 #    build's state cache carries over (best effort): each attempt's time is written to the record,
 #    atomically, just before its request, so a request that fails, a later step that fails, or a
@@ -515,15 +515,17 @@ FLOOD_OUTLINE_SIMPLIFY_M = 10.0
 #    one failed request leaves that area without an outline for up to 7 days.
 #  - at most FLOOD_OUTLINE_FETCHES_PER_BUILD areas are asked for in one build: those with no usable
 #    outline (missing or expired) first, then the oldest, then by id. 8 is one wave of the build's 8
-#    workers. It bounds the cold-cache worst case at 8 GETs a build, 384 a day at 30-minute builds,
-#    about 346 MB a day at the ~0.9 MB largest outline seen; normally one GET per area per week. On a
+#    workers. It bounds the cold-cache worst case at 8 GETs a build, 384 a day at 30-minute builds;
+#    normally one GET per area per week. Only the number of requests is capped, not their size: at the
+#    1.21 MB largest outline seen, 384 a day would be about 465 MB, an estimate, not a limit. On a
 #    night like 26 Oct 2026 (~25 distinct in-force areas at the spots) a cold cache takes about four
 #    builds to fill. Areas past it are not asked and not recorded as asked; they get a kept outline at
 #    most 30 days old or none (never named), and the build counts and announces them.
 #  - pruning (prune_flood_outlines) keeps the areas in force in this build and entries fetched within
 #    FLOOD_OUTLINE_MAX_AGE_S, removes older ones, and then keeps at most FLOOD_OUTLINE_CACHE_MAX, the
-#    newest. 500 is over 3.5 times the 137 items the national list held on 26 Oct 2026; at a few kB to
-#    ~120 kB each it bounds the cache to tens of MB. The record drops attempts over 30 days old for
+#    newest. 500 is over 3.5 times the 137 items the national list held on 26 Oct 2026. The 10 outlines kept
+#    in a test on 26 Oct 2026 were 2 to 326 kB each, so 500 would be about 160 MB at the largest (an estimate;
+#    entry size is not capped) and tens of MB at typical sizes. The record drops attempts over 30 days old for
 #    areas not in force.
 FLOOD_OUTLINE_REFRESH_S = 7 * 86400
 FLOOD_OUTLINE_MAX_AGE_S = 30 * 86400
@@ -760,7 +762,7 @@ class OutlineStore:
             return fallback
         if outline is None:
             return fallback
-        try:   # kept simplified, in WGS84 GeoJSON as the EA gives it, a few kB to ~120 kB each
+        try:   # kept simplified, in WGS84 GeoJSON as the EA gives it, 2 to 326 kB each in a test on 26 Oct 2026
             self.dir.mkdir(parents=True, exist_ok=True)
             _write_json(self.dir / f"{area_id}.geojson",
                         {"type": "Feature", "properties": {"floodAreaID": area_id, "fetched_at": self.now},
