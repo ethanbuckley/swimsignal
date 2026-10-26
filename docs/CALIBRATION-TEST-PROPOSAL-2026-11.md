@@ -167,7 +167,27 @@ With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibra
 - **If production changes in the window.** The check reads each row's `spill=` and `cal=` stamp from the forecast
   log. If a row in the window carries a stamp other than the one at the freeze, or the headline rule changes (for
   example the ensemble mean), the window ends the day before. If that leaves fewer than eight weeks, the test stops
-  and a new statement is needed.
+  and a new statement is needed. In dates: a change that first reaches a window row on or before Sunday 7 February
+  2027 stops the test; one from Monday 8 February shortens the window but does not stop it.
+  - *What could plausibly land between the freeze (10 Dec) and 7 Mar, by each plan's own dates:*
+    - **Live-status inputs at some lead.** Read on or after 23 Nov (7 Dec if extended); the switch is its own PR and
+      "changes the model stamp" (`LIVE-STATUS-SHADOW-TEST-2026-10.md`, "What follows"). If it merges after the freeze,
+      likely December: the test stops.
+    - **A8's offsets.** Read on or after 25 Nov (9 Dec if extended), not deployed before option B's run (on or after
+      2 Dec); "if option B fails and this passed, Ethan may adopt this" (`COMPANY-CALIBRATION-TEST-2026-11.md`,
+      "Option B and lead calibration B"). If adopted, likely December: the test stops. Its own statement predicts it
+      is not adopted.
+    - **Option B's adoption.** After its 28-day shadow (about late January to late February 2027), by 31 Mar 2027.
+      An adoption merged between about late February and 7 Mar shortens the window; it cannot stop it.
+    - **Lead calibration B's map and the ensemble mean.** Read on or after 16 Nov and 21 Nov (5 Dec if extended).
+      Most likely decided before the fit, where "If production changes before the fit" handles them. An adoption
+      after the freeze would end the window as above.
+    - **The annual-returns refresh** is a mid-April 2027 decision (pre-registration section 15), after the window.
+  - *Option B's shadow does not shorten the window.* By `UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, "What follows", it
+    adds one logged column, `p_offsets`, that "nothing published reads". It changes no `p_cal`, no map and no
+    headline. That statement does not say where its offsets are stored. If they are kept outside `spill_model.pkl`,
+    no stamp changes and the window runs on. If they were written into `spill_model.pkl`, the `spill=` stamp would
+    change and the rule above would apply. The check reads the stamp, so either case is caught.
 - **Minimum data.** At least 800 spill overflow-days at lead 0, all companies. If short, the window extends by four
   weeks once, to Sunday 4 April 2027, read on or after 6 April. Still short: description only, nothing adopted.
 - **Sanity check, first.** p rebuilt from the log matches the published `forecast_calibrated` (mean absolute
@@ -281,7 +301,11 @@ lead 0 in the window.
   blocks clear harm of any size.
 - **G2, calibration by company.** At each judged company, ECE(candidate) ≤ ECE(production) + 0.005, the margin the
   noise audit proposes.
-- **G3, ranking.** Pooled AUC, and AUC at each lead, not lower than production's by more than 0.005. Binds R3 only.
+- **G3, ranking.** Pooled AUC, and AUC at each lead, not lower than production's by more than 0.005. The pooled guard
+  applies to R2 and R3: each lead has its own transform, so the ranking across leads can change. The per-lead guard
+  is met automatically by R1, and by R2 at every lead where its fitted slope is above 0, because a logistic transform
+  with a positive slope keeps the ranking within a lead. It can bind R3, whose company terms reorder rows within a
+  lead. A slope at or below 0 withdraws the candidate before the window opens (see "Metrics").
 - **G4, warnings.** At the 0.40 line, leads pooled: the share of warnings that came true is not clearly lower: the 95%
   interval of candidate minus production does not lie wholly below 0. See "Warnings".
 
@@ -363,7 +387,9 @@ the logged chance:
 
 **Option B goes first.** If option B passes its shadow and is adopted (by 31 March 2027), it changes `p_raw` for every
 company. This correction was fitted on forecasts before that. It is then not switched on, or is switched off, and a
-refit needs a new statement. The same holds if `annual_returns.parquet` is refreshed before the tag (the mid-April
+refit needs a new statement. Stage B (10 Mar to 6 Apr) overlaps that adoption date. If option B is adopted during
+stage B, the correction switches off the same day, by its config flag, and stays off. If option B is adopted before
+10 Mar, stage B does not start. The same holds if `annual_returns.parquet` is refreshed before the tag (the mid-April
 decision in section 15), since that moves layer 1's inputs for every overflow.
 
 **No candidate qualifies.** Nothing changes. The record stands. Any re-test is a new statement on new data.
