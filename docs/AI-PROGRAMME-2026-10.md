@@ -65,6 +65,19 @@ protocols are reviewed.
 | - | Lab-chlorophyll test statement (no fetch): EA determinand 7887 at 40 lakes chosen by metadata only; pass needs Spearman ≥ 0.5 (lower end > 0.3), within-lake placebo, LOLO calibration Better (B 0.10, H 0.05), no lake type harmed; stage 1 sized at ~55,200 requests / 3.2 GB | #386 | **kept unrun**. 7887 **partly verified** (61ff324): the EA lab's only accredited chlorophyll test (UKAS 0754) is acetone extraction + spectrophotometry per the SCA 1980 chlorophyll a method, uncorrected by default; no EA page ties code 7887 to it, and phaeopigment correction is not stated. Results must say "EA acetone-extract chlorophyll (7887), correction not stated"; if unresolved, the inference stays explicit and nothing claims lab chlorophyll-a validation. No 55k-request fetch |
 | - | Algae incident test statement (no fetch) | #385 | protocol reviewed by Codex as a bounded exploratory question; **kept unrun in this window** |
 
+## Research records ready for merge (26 October 2026, about 23:30 UTC)
+
+Kept separate from adoption: merging a record activates nothing. Each was merged with main at a2353a6..6b3e544 and
+checked; the three also merge cleanly with each other, and their tests pass together (67).
+
+| PR | Record | Verdict, unchanged | Head | Checks |
+|---|---|---|---|---|
+| #377 | Satellite algae (Sentinel-2 NDCI) | A fails (Possible harm, AUC 0.60); B too few to judge; CLMS covers no English site | f291f7a | 56 harness tests, ruff, docs checks |
+| #381 | Sampling priorities simulation | fails its stated rule against coverage (58.5% vs 60%) | 456307e | 10 tests, ruff |
+| #384 | Missing event ends | do not fix now; re-measure on or after 9 Nov | be3a17b | 7 tests, ruff |
+
+#383 (river rises) stays a protocol/research draft. #385 and #386 stay unrun and not approved for fetching.
+
 ## What was learned
 
 - Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median
