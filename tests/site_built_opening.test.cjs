@@ -73,6 +73,16 @@ test("a spot's answer stays the element the build wrote, changed only where the 
   assert.equal(find(b, n => n.nodeName === 'NOSCRIPT'), null);
 });
 
+test("the note for readers without scripts goes, wherever the build put it, and the answer stays", () => {
+  // The build puts the note first (scripts/build_site.py, spot_page), before "Today" and "right now".
+  const first = '<noscript><p class="muted">Issued Sunday 25 October</p></noscript>' + BUILT.replace('<noscript>No scripts</noscript>', '');
+  const b = box(first), hero = find(b, n => n.id === 'risk-hero');
+  ctx.overBuilt(b, DRAWN);
+  assert.equal(html(b).replace(/^<div>|<\/div>$/g, ''), DRAWN);
+  assert.equal(find(b, n => n.id === 'risk-hero'), hero);
+  assert.equal(find(b, n => n.nodeName === 'NOSCRIPT'), null);
+});
+
 test("the home page's opening is updated where it stands, and what comes after a changed line is new", () => {
   const built = '<div class="lead"><section class="intro"><h1>Check the water</h1><p class="lede">For 3 spots, or <span class="w-touch">tap</span>'
     + '<span class="w-click">click</span> any river.</p></section><div class="toolbar"><select id="listday"><option value="">Today and tomorrow</option></select>'
