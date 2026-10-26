@@ -712,3 +712,12 @@ addendum to that test. If it shows the rule clearly worse, the rule is withdrawn
 - **Today it changes nothing.** At the isolated build of 26 October 2026, 00:17 UTC, the 62 river spot cells read
   0.278 to 0.485 at 00:00 UTC. None falls between the two ranges, and none falls outside either.
 - **The code is unchanged.**
+
+**HOLD, 26 October 2026.** Added lines only; nothing above is changed.
+- **Amendment 3 does not take effect.** The river soil-moisture model is not adopted.
+- **The reason.** The rivers-only test passed against its own reference, a model refitted on the same rows:
+  +0.01319 [+0.00042, +0.02785]. Against the deployed `ecoli_model.json`, its condition 1 misses by 0.00004:
+  +0.01278 [−0.00004, +0.02742]. That second comparison was computed after the results were seen.
+- **What stays.** The stamp, `MODEL_PATHS` and the freeze steps stay as sections 2, 13 and 15 give them, and this
+  PR stays open and unmerged.
+- **A retry** needs a new dated statement, approved first.
