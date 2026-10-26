@@ -1,13 +1,44 @@
-# Recalibrating the live spill forecast: a proposed test, not yet approved
+# Recalibrating the live spill forecast: the test, stated before any fit
 
-Written 26 October 2026. **A draft for Ethan to review. It is not an approval and nothing in it runs.** Ethan approves
-it by merging the PR that carries it, or by saying so in writing in that PR. He may change any choice in it before he
-approves. After approval, the statement above the line is fixed. Results would go below the line at the end, and
-nothing above that line would change after a result is seen. Changes after approval and before the fit are dated
-addenda, as in the other tests.
+Written 26 October 2026 as a draft, and approved the same day with the choices below. **Nothing in it has run.** No
+correction is fitted, no score is computed, no data is fetched and no Open-Meteo call is made. No acceptance rule in
+any other record changes.
 
-This file runs nothing. No correction is fitted, no score is computed, no data is fetched and no Open-Meteo call is
-made. No acceptance rule in any other record changes.
+Results go below the line at the end. Nothing above that line changes after a result is seen. Changes before the fit
+are dated addenda, as in the other tests.
+
+**Approving this protocol switches nothing on.** If a candidate qualifies, it goes to a separate rollout review (see
+"What follows"). Only that review, and Ethan's decision on it, can put a correction on the site.
+
+## Approval record, 26 October 2026
+
+Ethan approved Codex's recommendations for this file on 26 October 2026, in these words: "okay i approve your
+recommendations". The approved choices are written in `~/Documents/GitHub/swimsignal-private/approved-decisions-373-374-2026-10-26.md`,
+section "Calibration protocol, #374". That file is private and outside this repository. The coordinator session
+relayed them to this one, and this statement was then revised to apply them. That was before any fit. No row of
+`verification_live.csv` has been read for this test.
+
+The eight approved choices, and where each is applied:
+
+1. **Candidates.** R2 and R3 are judged. Intercept-only R1 is reported as a reference. The simpler R2 is preferred
+   unless R3 clearly improves on it. ("The candidates"; "Decision rules".)
+2. **B and δ.** Both are 1% relative Brier score. ("Margins and power".)
+3. **The per-company point-loss margin is 1%,** replacing the draft's 2%. Insufficient or uncertain company evidence is
+   stated explicitly, and the margin is never relaxed after results. (G1 in "Decision rules".)
+4. **Window.** Twelve weeks, 14 December 2026 to 7 March 2027, read from 9 March. Both candidates are power-checked
+   beforehand, and the window extends to 16 weeks before evaluation if needed. It is never shortened for a launch
+   deadline. The non-overlap, issuance and label-availability rules are kept. ("The evaluation window"; "Margins and
+   power".)
+5. **Warnings.** The 0.40 line keeps its meaning as a probability. Missed spills, recall and warning counts are reported
+   explicitly. Those consequences must be reviewed before any rollout. ("Warnings".)
+6. **2027.** The correction stays a labelled secondary for 2027. The main frozen comparator is not changed on
+   winter-only evidence. ("The 2027 season".)
+7. **Precedence.** The existing option B, A8 and shadow studies take precedence, and their windows are preserved. If
+   the underlying production model changes, the correction is reassessed and restated, never applied automatically.
+   ("Step 1"; "The evaluation window"; "What follows".)
+8. **Route 2's calibration requirement uses 97.5% intervals.** The full decision procedure's false-adoption and
+   coverage properties are simulated on synthetic or fitting-only data before any unseen evaluation. (Route 2 in
+   "Decision rules"; "The required simulation"; "Order of work".)
 
 ## Why
 
@@ -18,9 +49,9 @@ high and too spread out:
 - `docs/CALIBRATION-CHECK-2026-10.md` (PR #340): observed over expected (O/E) 0.74 same day and 0.80 in advance;
   logistic slope 0.74. Uneven by company.
 
-#340 said any recalibration "needs its own stated test on data it was not fitted to". This is a proposal for that
-test. It asks one question: does a simple correction, fitted on the live record to early December and frozen, beat
-the production forecast on twelve later weeks it never saw?
+#340 said any recalibration "needs its own stated test on data it was not fitted to". This is that test's statement.
+It asks one question: does a simple correction, fitted on the live record to early December and frozen, beat the
+production forecast on twelve later weeks it never saw?
 
 ## Seen before writing
 
@@ -28,7 +59,7 @@ Everything below was read before any choice in this file was made. None of it ma
 October rows may be used to fit one (see "Fitting").
 
 **From #338 and #340, both read in full, every table.** Not opened: their JSON files, `verification_live.csv`, the
-forecast log, the `state` release. The figures that shaped this proposal:
+forecast log, the `state` release. The figures that shaped this statement:
 
 | All companies, 29 Sep to 23 Oct | Same day (lead 0) | In advance (leads 1–4) |
 |---|---|---|
@@ -74,31 +105,36 @@ forecast log, the `state` release. The figures that shaped this proposal:
   `model/spill_model.py` and `calibrate_by_lead` are unchanged, and no later commit on main touches them, so the
   `spill=` and `cal=` stamps and `forecast_calibrated` are as before. PR #372 (CI workflows only) is still open, not
   merged, and touches no model file.
+- **The approved decisions file** named in the approval record, section "Calibration protocol, #374", read on
+  26 October 2026 before the revision. It holds no data or result.
 
 ## Step 1: the plans already running, and how this avoids them
 
-| Plan | What it tests | Rows and window | Read | How this proposal avoids it |
+Approved choice 7: these studies take precedence, and their windows are preserved.
+
+| Plan | What it tests | Rows and window | Read | How this test avoids it |
 |---|---|---|---|---|
-| Lead calibration B (`LEAD-CALIBRATION-B-TEST-2026-10.md`) | A per-lead isotonic map fitted on 2025 EA labels outside United Utilities, replacing `lead_calibration.json` | Scored live rows, target days 18 Oct to 14 Nov 2026; 14-day extension once, to 28 Nov | On or after 16 Nov (about 30 Nov if extended; its file gives no extended read date) | Same layer (after the model), different labels. This proposal deploys nothing before its read, and its window starts after it. If B's map is adopted, this correction is fitted on top of it (see "If production changes before the fit"). |
+| Lead calibration B (`LEAD-CALIBRATION-B-TEST-2026-10.md`) | A per-lead isotonic map fitted on 2025 EA labels outside United Utilities, replacing `lead_calibration.json` | Scored live rows, target days 18 Oct to 14 Nov 2026; 14-day extension once, to 28 Nov | On or after 16 Nov (about 30 Nov if extended; its file gives no extended read date) | Same layer (after the model), different labels. This test deploys nothing before its read, and its window starts after it. If B's map is adopted, this correction is fitted on top of it (see "If production changes before the fit"). |
 | Company calibration A8 (`COMPANY-CALIBRATION-TEST-2026-11.md`) | Per-overflow offsets outside United Utilities, fitted on lead-0 live rows to 23 Oct | Target days 26 Oct to 22 Nov, issued after 24 Oct 21:31:41 UTC; extension to 6 Dec | On or after 25 Nov (9 Dec if extended) | A8 corrects each overflow's level. This corrects the chances' spread and the overall level, pooled (R2) or by company (R3), never by overflow. Fitting reads A8's window rows but changes no forecast in it. Window starts after A8's latest read. |
 | Live-status shadow (`LIVE-STATUS-SHADOW-TEST-2026-10.md`) | #254's status inputs as a model input, logged as `p_status` | Target days 25 Oct to 21 Nov; extension to 5 Dec | On or after 23 Nov (7 Dec if extended) | Different input. Nothing here touches `p_cal` or `p_status` before its read. If it is switched on at some lead, see "If production changes before the fit". |
 | Live recalibration (`LIVE-RECALIBRATION-TEST-2026-10.md`) | Isotonic (A) and company intercepts with a common slope (B), leave one day out | 29 Sep to 12 Oct, retrospective | Done, 11 and 13 Oct: neither passed | This is its prospective successor. R3 is close to its B, refitted per lead on far more days and judged on unseen weeks. Its record is not reopened: it said "re-run with the same rule"; this is a new statement on new data, which the noise audit asks for. |
-| Option B and P1 (`UPGRADED-OVERFLOWS-TEST-B-2026-10.md`) | Layer 2 offsets for every company, each from a start date; reported arm P1 | Window E: EA file, 1 Jan to 31 Aug 2026, lead 0. Window L: live rows 29 Sep to 30 Nov 2026 | Runs on or after 2 Dec 2026. If it passes: a 28-day shadow about late January to late February 2027, adoption by 31 Mar 2027 | Window L is over before this window opens, so nothing deployed here can touch it. Option B rebuilds its arms from `p_raw` and the row's map, so a correction after the map would break its pairing if deployed inside window L or its shadow. Neither happens: the earliest switch-on here is 10 Mar 2027. If option B is adopted, it goes first (see "What follows"). |
-| 2027 pre-registration and amendments 1–3 (`PREREGISTRATION-2027.md`) | The frozen model's May to September 2027 forecasts against climatology; spot-level scores S1, S2; soil moisture in river E. coli | Season 1 May to 30 Sep 2027; tag by 30 Apr 2027 | 31 Oct 2027 | Any adopted correction must be in the tagged model, so in `MODEL_PATHS` and the version stamp, by an amendment before 30 Apr. Or it stays out and is scored as a labelled secondary. Ethan's choice, below. |
-| Noise audit (`NOISE-AUDIT-2026-10.md`) | Which verdicts rested on point rules; the rule for new statements | A record | — | Followed: pooled gain with an interval, per-company "not clearly worse" with a margin, ECE with a margin, cluster bootstrap with a fixed seed, AUC and log loss reported. |
-| Near-miss framework (end of `LAKE-ECOLI-LINE-TEST-2026-10.md`) | Labels (better, promising, no useful difference, possible harm, harm, too uncertain), margins B and H, forward step, power | A record | — | Its labels are reported for the primary comparison. B and H are set below, before any data. Its power rule (spread from other data) sets the window's check. |
+| Option B and P1 (`UPGRADED-OVERFLOWS-TEST-B-2026-10.md`) | Layer 2 offsets for every company, each from a start date; reported arm P1 | Window E: EA file, 1 Jan to 31 Aug 2026, lead 0. Window L: live rows 29 Sep to 30 Nov 2026 | Runs on or after 2 Dec 2026. If it passes: a 28-day shadow about late January to late February 2027, adoption by 31 Mar 2027 | Window L is over before this window opens, so nothing here can touch it. Option B rebuilds its arms from `p_raw` and the row's map, so a correction after the map would break its pairing if it were live inside window L or its shadow. Neither can happen: nothing goes live before this test's read and a rollout review, after its shadow. If option B is adopted, it goes first (see "What follows"). |
+| 2027 pre-registration and amendments 1–3 (`PREREGISTRATION-2027.md`) | The frozen model's May to September 2027 forecasts against climatology; spot-level scores S1, S2; soil moisture in river E. coli | Season 1 May to 30 Sep 2027; tag by 30 Apr 2027 | 31 Oct 2027 | Approved choice 6: the correction stays out of the frozen model and is a labelled secondary for 2027. The main comparator is unchanged. See "The 2027 season". |
+| Noise audit (`NOISE-AUDIT-2026-10.md`) | Which verdicts rested on point rules; the rule for new statements | A record | — | Followed: pooled gain with an interval, per-company "not clearly worse" with the house 1% margin, ECE with a margin, cluster bootstrap with a fixed seed, AUC and log loss reported. |
+| Near-miss framework (end of `LAKE-ECOLI-LINE-TEST-2026-10.md`) | Labels (better, promising, no useful difference, possible harm, harm, too uncertain), margins B and H, forward step, power | A record | — | Its labels are reported for the primary comparison and by company. B and H are set below, before any data. Its power rule (spread from other data) sets the window's check. |
 | Ensemble rain D4 (`ENSEMBLE-RAIN-TEST-2026-11.md`) | Members' spread; whether the members' mean beats the single forecast at leads 2–4 | Target days 23 Oct to 19 Nov; extension to 3 Dec | On or after 21 Nov (5 Dec if extended) | If it passes, the headline at leads 2–4 becomes the members' mean. That would change production before this fit, which is handled below. Nothing here touches the members. |
 
 **The dates this sets.**
-- **No correction from this proposal may be deployed before 9 December 2026**, the latest possible read of the
-  windows above (A8 extended). Option B's run (on or after 2 Dec) must also be in.
-- In practice nothing deploys before this test's own read: **9 March 2027** at the earliest.
-- **No switch-on during option B's shadow** if it runs. Its expected dates (late January to late February 2027) end
-  before 9 March, so this holds unless option B slips.
+- **No correction from this test may go live before 9 December 2026**, the latest possible read of the windows above
+  (A8 extended). Option B's run (on or after 2 Dec) must also be in.
+- In practice nothing goes live before this test's own read (**9 March 2027** at the earliest) and a separate rollout
+  review after it.
+- **Nothing goes live during option B's shadow** if it runs. Its expected dates (late January to late February 2027)
+  end before 9 March. If option B slips, the rollout review waits for its shadow to end.
 - **The window opens on 14 December 2026**, after every read above, extensions included.
 
 Reading the other windows' rows to fit this correction does not touch them. Fitting changes no forecast they score.
-Only deployment could, and none happens before their reads.
+Only a correction on the site could, and none is on the site before their reads.
 
 ## The candidates (fixed now)
 
@@ -107,7 +143,7 @@ It sits after the lead map. The spill model and the lead map are unchanged.
 
 With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibrate_by_lead` clamps:
 
-- **R1, level only (reported, never adopted).** p' = σ(a_k + q). Five numbers, one per lead.
+- **R1, level only (a reference, reported, never adopted).** p' = σ(a_k + q). Five numbers, one per lead.
 - **R2, level and spread, pooled (candidate).** p' = σ(a_k + b_k × q). Ten numbers, an intercept and a slope per lead.
 - **R3, R2 plus a company term (candidate).** p' = σ(a_k + b_k × q + c_company). Ten numbers plus one per company
   (nine). A row with no company in the file gets c = 0.
@@ -121,7 +157,7 @@ With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibra
 - *R3,* because the bias is uneven by company: Thames O/E 0.38, Anglian 1.12. A pooled shift lowers Anglian's and
   Yorkshire's chances too, where October did not show them too high on average. R3 is close to live recalibration's
   candidate B, the one that came nearest to passing (4.3% against a 5% bar).
-- *R1 is reported only.* It shows how much of any gain is the level alone, to read R2 by.
+- *R1 is a reference only.* It shows how much of any gain is the level alone, to read R2 by.
 
 **Not chosen, and why.**
 - *Isotonic.* Live recalibration's A lost AUC beyond its 0.005 bar and gained less than B. It also has many more
@@ -131,7 +167,8 @@ With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibra
 - *Refitting the spill model.* The nine-company tests and option B own that question.
 - *A rolling refit.* The correction would change every week, so no window could judge a fixed candidate, and it
   would break the 2027 freeze. Worth a statement of its own after the 2027 season.
-- *Moving the 0.40 High line.* A product decision, not a calibration. See "Warnings" below.
+- *Moving the 0.40 High line.* A product decision, not a calibration. Approved choice 5 keeps its meaning. See
+  "Warnings" below.
 
 ## Fitting
 
@@ -148,17 +185,25 @@ With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibra
   A8's offsets are adopted before 10 December, every fitting row is first rebuilt as the forecast production would
   then have published. The rebuild uses the logged columns each of those tests' own harness uses (`forecast_raw` and
   the map; `p_status`; `p_cal_members`; the A8 offsets). The exact rebuild is written as a dated addendum before the
-  fit, with nothing scored. Rows that cannot be rebuilt are dropped and counted. If more than 25% are dropped, the fit
-  waits for a new statement.
-- **Before the window: the power check** (see "Margins and power"). Computed on the fitting rows only.
-- **No score of any candidate on the fitting rows is reported** except that power check, which is labelled as such.
+  fit, with nothing scored. That addendum is the restatement approved choice 7 asks for. Rows that cannot be rebuilt
+  are dropped and counted. If more than 25% are dropped, the fit waits for a new statement.
+- **Before any window row is read:** the power check for both candidates and the required simulation (see "Margins
+  and power" and "The required simulation"). Both use the fitting rows or synthetic data only.
+- **No score of any candidate on the fitting rows is reported** except those two, which are labelled as such.
 
 ## The evaluation window
 
 - **Target days Monday 14 December 2026 to Sunday 7 March 2027.** Twelve whole ISO weeks.
 - **Read on or after Tuesday 9 March 2027**, from the file published then.
+- **Sixteen weeks if the power check requires it.** Then target days 14 December 2026 to Sunday 4 April 2027, read on
+  or after Tuesday 6 April. The choice is made by the rule in "Margins and power" and written under the line before any
+  window row is read. It is never made after.
+- **The window is never shortened for a deadline.** Not for the 2027 tag, a launch, a pilot or a rollout. The only
+  way it ends early is a production change, below. That is a forced end, not a choice.
 - **Only forecasts issued after the freeze count**, as A8's amendment 1 set: a row whose `issued_at` is at or before
   the freeze is dropped and counted.
+- **Labels must be available.** A day's label needs a poll on the next day. The read date is two days after the last
+  target day for that reason, and every extension keeps that gap.
 - **Rows.** Every scored row of `verification_live.csv` in the window, leads 0 to 4, as `forecast_log.verify_live`
   selects and labels them. Labels are the poll-based live labels (PR #253's method).
 - **Production** is `forecast_calibrated` as published. **The candidates** are computed from it, row by row, with the
@@ -169,7 +214,11 @@ With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibra
   example the ensemble mean), the window ends the day before. If that leaves fewer than eight weeks, the test stops
   and a new statement is needed. In dates: a change that first reaches a window row on or before Sunday 7 February
   2027 stops the test; one from Monday 8 February shortens the window but does not stop it.
-  - *What could plausibly land between the freeze (10 Dec) and 7 Mar, by each plan's own dates:*
+  - *A shortened window is read and reported, but it cannot lead to a rollout as it stands.* Its candidates were
+    fitted for the production before the change. Under approved choice 7, a correction for the changed production
+    needs a reassessment and a new statement, with a refit and a new window. The old correction is never applied to
+    the new model automatically.
+  - *What could plausibly land between the freeze (10 Dec) and the window's end, by each plan's own dates:*
     - **Live-status inputs at some lead.** Read on or after 23 Nov (7 Dec if extended); the switch is its own PR and
       "changes the model stamp" (`LIVE-STATUS-SHADOW-TEST-2026-10.md`, "What follows"). If it merges after the freeze,
       likely December: the test stops.
@@ -178,18 +227,20 @@ With q = logit(clip(p, 0.0001, 0.9999)) and lead k clamped to 0–4, as `calibra
       "Option B and lead calibration B"). If adopted, likely December: the test stops. Its own statement predicts it
       is not adopted.
     - **Option B's adoption.** After its 28-day shadow (about late January to late February 2027), by 31 Mar 2027.
-      An adoption merged between about late February and 7 Mar shortens the window; it cannot stop it.
+      An adoption merged between about late February and the window's end shortens the window; it cannot stop it.
     - **Lead calibration B's map and the ensemble mean.** Read on or after 16 Nov and 21 Nov (5 Dec if extended).
       Most likely decided before the fit, where "If production changes before the fit" handles them. An adoption
       after the freeze would end the window as above.
-    - **The annual-returns refresh** is a mid-April 2027 decision (pre-registration section 15), after the window.
+    - **The annual-returns refresh** is a mid-April 2027 decision (pre-registration section 15). It falls after a
+      twelve-week window, and could fall inside a sixteen-week one or its extension. If so, the rule above applies.
   - *Option B's shadow does not shorten the window.* By `UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, "What follows", it
     adds one logged column, `p_offsets`, that "nothing published reads". It changes no `p_cal`, no map and no
     headline. That statement does not say where its offsets are stored. If they are kept outside `spill_model.pkl`,
     no stamp changes and the window runs on. If they were written into `spill_model.pkl`, the `spill=` stamp would
     change and the rule above would apply. The check reads the stamp, so either case is caught.
 - **Minimum data.** At least 800 spill overflow-days at lead 0, all companies. If short, the window extends by four
-  weeks once, to Sunday 4 April 2027, read on or after 6 April. Still short: description only, nothing adopted.
+  weeks once: to Sunday 4 April 2027 (read on or after 6 April) from twelve weeks, or to Sunday 2 May 2027 (read on or
+  after 4 May) from sixteen. Still short: description only, nothing qualifies.
 - **Sanity check, first.** p rebuilt from the log matches the published `forecast_calibrated` (mean absolute
   difference under 0.0001). Otherwise the check stops and reports.
 
@@ -211,9 +262,10 @@ Only the comparison with production decides. The others are reported.
 
 - **Primary: the Brier score**, all window rows, leads 0 to 4 pooled, all companies. The comparison is the relative
   gain g = 1 − Brier(candidate) ÷ Brier(production). Above 0 means the candidate is better.
-- **Reported:** g by lead (0, 1–4, and each lead); the Murphy decomposition over #340's seven bands (reliability and
-  resolution); O/E and the slope b with intervals, as #340 computed them; log loss (clip 0.0001 to 0.9999); AUC by
-  lead and pooled; ECE (`training.ece`, ten equal bins); the warning table at the 0.40 line.
+- **Reported:** g by lead (0, 1–4, and each lead) and by company; the Murphy decomposition over #340's seven bands
+  (reliability and resolution); O/E and the slope b with intervals, as #340 computed them; log loss (clip 0.0001 to
+  0.9999); AUC by lead and pooled; ECE (`training.ece`, ten equal bins); the warning table at the 0.40 line (see
+  "Warnings").
 - R1, and R2 where its slope is above 0, change nothing within a lead's ranking, so their AUC by lead equals
   production's. Pooled over leads, and for R3, it can differ. A fitted slope at or below 0 at any lead is reported
   under the line before the window opens, and that candidate is withdrawn.
@@ -225,9 +277,12 @@ Only the comparison with production decides. The others are reported.
   overflow was drawn) × (times its week was drawn). All leads of an overflow-day share both draws.
 - **2,000 draws from `numpy.random.default_rng(20261214)`**, made once, overflows first, then weeks. Every candidate,
   company, lead and reference uses the same draws. The fitted parameters stay fixed in every draw.
-- **Intervals.** The two candidates are judged against production with **97.5% intervals** (1.25th to 98.75th
-  percentiles), because two candidates are tested. Everything else, guardrails included, uses 95%.
-- The week-only interval is reported beside it. Twelve week clusters are still few. Three times #340's four.
+- **97.5% intervals** (1.25th to 98.75th percentiles), because two candidates are tested, for every part of the
+  qualifying rule: route 1, both parts of route 2 (non-inferiority and the calibration gain), and the choice between
+  R2 and R3.
+- **95% intervals** for the guardrails and for everything reported.
+- The week-only interval is reported beside it. Twelve week clusters are still few. Three times #340's four. The
+  required simulation measures how far the intervals' real coverage falls short with this few clusters.
 
 ## Margins and power
 
@@ -240,18 +295,19 @@ Only the comparison with production decides. The others are reported.
   could be nil or negative. 2025's EA labels showed the forecast too low at all nine companies, so the direction is
   not settled. That is what the test measures.
 
-**The margins, set now.**
+**The margins (approved choices 2 and 3).**
 - **B, the benefit margin: g ≥ 1%.** 1% is the house margin (A8 amendment 2, option B, noise audit). It is between a
   quarter and the whole of the expected gain above. In October's terms it is about 0.0004 of Brier, a sixth of the
   same-day calibration loss.
 - **δ, the non-inferiority margin (H in the near-miss framework): 1% of production's Brier.** δ ≤ B, as the framework
   requires. *Why 1%:* it is the largest loss the house tests have accepted as noise, pooled. A candidate that loses
-  more than that on Brier is not adopted for any calibration gain.
-- **The per-company margin: 2%.** See the guardrails.
+  more than that on Brier never qualifies, for any calibration gain.
+- **The per-company point-loss margin: 1%.** See G1.
+- None of these margins changes after any result of this test is seen.
 
-**Interval width for twelve weeks (inferred).** The week clusters dominate the width for a pooled correction, because
-one storm moves every overflow's error together. Let G be the true mean gain per week and s its spread across weeks,
-s = k × G. With 12 week clusters, a 97.5% interval and 80% power, the near-miss framework's rule gives
+**Interval width (inferred).** The week clusters dominate the width for a pooled correction, because one storm moves
+every overflow's error together. Let G be the true mean gain per week and s its spread across weeks, s = k × G. With a
+97.5% interval and 80% power, the near-miss framework's rule gives
 
     weeks needed ≈ ((2.24 + 0.84) × k)² = 9.5 × k²
 
@@ -260,45 +316,94 @@ size. Sixteen weeks allow k ≤ 1.30. The overflow clusters widen this a little 
 in all four blocks, which suggests k near 1, not much below. No finished test gives the weekly spread of a
 recalibration gain on live rows, so k is not known now.
 
-**The binding check, at the fit, before the window opens.** On the fitting rows only: fit R2 leaving out one ISO week
-at a time, and score each left-out week's gain. Their mean and spread give k. Written under the line before
-14 December, with the window's power at 97.5% for a gain equal to that mean. These are fitting rows, not the rows being
-judged, as the framework requires.
-- If power is at least 80%: the window stays at twelve weeks.
-- If below: an addendum before 14 December may lengthen the window to sixteen weeks (to 4 April 2027, read on or
-  after 6 April). That leaves no time for the staged switch-on before the 2027 tag, so the result would serve the 2027
-  secondary score and later seasons (see "What follows"). Ethan chooses. The window length is never changed after
-  14 December.
-- If the leave-one-week-out gain is negative on the fitting rows, that is reported, and the test still runs as stated.
+**The power check, for both candidates, before any window row is read (approved choice 4).** On the fitting rows only:
+fit R2, and separately R3, leaving out one ISO week at a time, and score each left-out week's gain over production.
+For each candidate, their mean and spread give k and the power at 97.5% for a gain equal to that mean, at twelve and at
+sixteen weeks. Written under the line. These are fitting rows, not the rows being judged, as the framework requires.
+- **Twelve weeks** if both candidates reach at least 80% power at twelve weeks.
+- **Sixteen weeks** otherwise. This is mechanical and needs no further decision.
+- If a candidate still falls short of 80% at sixteen weeks, or its leave-one-week-out gain is not above 0, that is
+  reported, and the test still runs as stated at sixteen weeks. A result for that candidate is then expected to read
+  "promising, not shown" or "too uncertain" at best, and is read that way.
+
+## The required simulation (approved choice 8)
+
+Run after the fit and before any window row is read. It uses the fitting rows' structure and synthetic outcomes, or the
+fitting rows alone. It never uses a window row.
+
+**What it runs.** The full decision procedure, exactly as the harness will apply it to the window: both candidates
+fitted on synthetic fitting weeks, the minimum-data rule, the bootstrap (2,000 draws), routes 1 and 2, guardrails G1
+to G4, the R2-or-R3 choice and the labels. The window length is the one the power check set.
+
+**How the synthetic data are made.** The fitting rows' overflows, companies, leads, weeks and production chances p are
+kept. Outcomes are drawn as y ~ Bernoulli(p_true), with an overflow effect and a week effect on the logit scale whose
+variances are estimated from the fitting rows, so that the synthetic data are clustered as the real data are. Fitting
+weeks and window weeks are both synthetic. Scenarios:
+- **S0, production calibrated:** p_true = p. Any correction moves away from the truth, so every qualification is a
+  false adoption.
+- **S1, harm beyond δ:** p_true set so that each candidate's true Brier is worse than production's by more than 1%.
+- **S2, the boundary:** p_true set so that a candidate's true gain is 0 and its true calibration no better than
+  production's.
+- **S3, October-like:** p_true = σ(a + 0.74 × q), with a set so that the mean is 0.74 of production's. This measures
+  power, not error.
+
+**What it reports.** For each scenario, at least 1,000 replicates: the share in which any candidate qualifies, by route
+and by candidate; the coverage of the 97.5% interval of g and of the 95% guardrail intervals, against the true values
+computed from p_true; and power under S3.
+
+**Pass criteria, all required:**
+- **P1.** Under S0 and S2, the share of replicates in which any candidate qualifies is at most 5%, the stated bound
+  for both candidates together (see "How many chances to qualify by error").
+- **P2.** Under S1, the share in which any candidate qualifies is at most 2.5%.
+- **P3.** The 97.5% interval of g covers the true g in at least 95% of replicates, and the 95% guardrail intervals
+  cover in at least 92%, in every scenario.
+
+With 1,000 replicates, the Monte Carlo standard error of a 5% rate is about 0.7 points. The criteria are read on the
+point estimates.
+
+**If it fails.** No window row is read. A dated addendum restates the procedure, for example a small-cluster
+correction to the intervals or the sixteen-week window, and the simulation runs again on the same rules. If no
+restatement passes before the first window row would be read, the window's start moves later by addendum, before any
+window row is read, or the test does not run. A failed simulation is never set aside.
+
+The simulation is run under `heavy-run.lock`. It makes no Open-Meteo call.
 
 ## Decision rules (fixed now)
 
 Each candidate, R2 and R3, is judged against production by the same rules. A candidate **qualifies** by route 1 or
-route 2, and only if every guardrail holds.
+route 2, and only if every guardrail holds. To qualify means to go to the rollout review in "What follows". It
+switches nothing on.
 
-**Route 1: adopt for a clear gain.** g ≥ 1% (B), and g's 97.5% interval lies wholly above 0.
+**Route 1: a clear gain.** g ≥ 1% (B), and g's 97.5% interval lies wholly above 0.
 
-**Route 2: adopt for no harm with a likely gain (non-inferiority).** All three:
+**Route 2: no harm with a likely gain (non-inferiority).** All three:
 - g > 0 (the point estimate favours the candidate);
 - g's 97.5% interval lies wholly above −1% (−δ): shown no worse than δ;
 - the calibration gain is shown: production's reliability term minus the candidate's, over #340's seven bands, has a
-  95% interval wholly above 0.
+  97.5% interval wholly above 0.
 
 *Why route 2 exists, and why it is not a back door.* The site shows each overflow's figure as a chance, and the pages
 say what a chance means. A forecast whose 50% comes true 36% of the time misleads, even if its Brier score is no
-worse. Route 2 adopts a correction only where that is shown to be fixed, at a shown cost below δ, with a positive point
-estimate. It is fixed before any window row exists, and it is not a fallback chosen after route 1 fails: both routes
-are in the rule from the start. It cannot rescue a candidate that is worse on Brier.
+worse. Route 2 qualifies a correction only where that is shown to be fixed, at a shown cost below δ, with a positive
+point estimate. It is fixed before any window row exists, and it is not a fallback chosen after route 1 fails: both
+routes are in the rule from the start. It cannot rescue a candidate that is worse on Brier.
 
 **Otherwise: hold.** Nothing changes. This file is the record.
 
-**Guardrails, all required, for either route.** "Judged companies" are those with at least 50 spill overflow-days at
-lead 0 in the window.
-- **G1, no company clearly worse.** At each judged company, the 95% interval of Brier(candidate) − Brier(production)
-  does not lie wholly above 0, and Brier(candidate) is at most 2% above Brier(production). *Why 2%, not the house 1%:*
-  a company cell has roughly a ninth of the rows, so its point estimate is noisier. Over nine companies, small chances
-  of a false fail add up (the noise audit's worked example: 2.5% each gives about 20%). The interval part still
-  blocks clear harm of any size.
+**Guardrails, all required, for either route.**
+- **Judged and not judged companies.** A company is **judged** if it has at least 50 spill overflow-days at lead 0 in
+  the window. A company with fewer is **not judged**: its evidence is insufficient, so it can neither block nor support
+  qualification. It is listed by name with its counts, labelled "insufficient evidence", and the rollout review must
+  consider it explicitly. The threshold of 50 is fixed now and never lowered after results.
+- **G1, no judged company clearly worse.** At each judged company, both:
+  - the 95% interval of Brier(candidate) − Brier(production) does not lie wholly above 0; and
+  - Brier(candidate) is at most 1% above Brier(production).
+
+  *Uncertain evidence is stated, not hidden.* Each judged company also gets its near-miss label (B = 1%, H = 1%). A
+  company that passes G1 with an interval reaching past −1% or +1% is labelled "too uncertain" or "possible harm" in
+  the result, and the rollout review must consider it. *The cost of 1%:* with nine companies, a point rule can fail a
+  good candidate by chance (the noise audit's worked example: 2.5% each gives about 20% for at least one). That cost
+  falls on the side of holding, and approved choice 3 accepts it. The 1% is never relaxed after results.
 - **G2, calibration by company.** At each judged company, ECE(candidate) ≤ ECE(production) + 0.005, the margin the
   noise audit proposes.
 - **G3, ranking.** Pooled AUC, and AUC at each lead, not lower than production's by more than 0.005. The pooled guard
@@ -309,31 +414,31 @@ lead 0 in the window.
 - **G4, warnings.** At the 0.40 line, leads pooled: the share of warnings that came true is not clearly lower: the 95%
   interval of candidate minus production does not lie wholly below 0. See "Warnings".
 
-**If both qualify,** R2 is chosen unless R3 beats R2 clearly: the 97.5% interval of 1 − Brier(R3) ÷ Brier(R2) lies
-wholly above 0. The simpler candidate wins a tie.
+**If both qualify,** R2 is chosen unless R3 clearly improves on it: the 97.5% interval of 1 − Brier(R3) ÷ Brier(R2)
+lies wholly above 0. The simpler candidate wins a tie (approved choice 1).
 
-**How many chances to adopt by error.** Two candidates, each with two routes, then a choice between them. The
+**How many chances to qualify by error.** Two candidates, each with two routes, then a choice between them. The
 accounting:
-- *The 97.5% intervals cover the two candidates.* Each route-1 test and each route-2 non-inferiority test is one-sided
-  at 1.25%, so 2.5% over the two candidates (Bonferroni).
+- *The 97.5% intervals cover the two candidates.* Each one-sided test in the qualifying rule is at 1.25%, so 2.5% over
+  the two candidates (Bonferroni).
 - *Route 2 is a different claim, not a second try at route 1.* Route 1 claims a better Brier score. Route 2 claims a
-  Brier score no worse than δ together with a better calibration. A candidate adopted by route 2 is reported as that,
-  never as a gain.
-- *The choice between R2 and R3 adds no chance of a false adoption.* R3 can replace R2 only if R3 has already
-  qualified on its own. The guardrails only remove adoptions.
+  Brier score no worse than δ together with a better calibration. A candidate that qualifies by route 2 is reported as
+  that, never as a gain.
+- *The choice between R2 and R3 adds no chance of a false qualification.* R3 can replace R2 only if R3 has already
+  qualified on its own. The guardrails only remove qualifications.
 - *Approximate bounds, from the stated levels alone,* assuming each interval has its stated coverage:
-  - **Adopting a candidate that is worse than production by more than δ:** at most 1.25% per candidate, 2.5% for
+  - **Qualifying a candidate that is worse than production by more than δ:** at most 1.25% per candidate, 2.5% for
     both. Both routes need the 97.5% interval above −δ (route 1's lower end above 0 implies it).
-  - **Adopting a candidate with no real Brier gain and no real calibration gain:** at most 1.25% (route 1) + 2.5%
-    (route 2's 95% calibration interval) = 3.75% per candidate, 7.5% for both.
-  - If route 2's calibration interval were 97.5% as well, the second bound would be 2.5% per candidate, 5% for both.
-- *What these bounds do not cover.* With twelve week clusters, a bootstrap interval's real coverage is likely below its
-  stated level, so the true rates are likely higher. By how much is not known without a simulation, which this file
-  does not run. The route-2 parts are tested on the same rows and are not independent, so a union bound is used, not a
-  product.
+  - **Qualifying a candidate with no real Brier gain and no real calibration gain:** at most 1.25% (route 1) + 1.25%
+    (route 2's 97.5% calibration interval) = 2.5% per candidate, 5% for both.
+- *What these bounds do not cover.* With twelve or sixteen week clusters, a bootstrap interval's real coverage is
+  likely below its stated level, so the true rates are likely higher. The route-2 parts are tested on the same rows
+  and are not independent, so a union bound is used, not a product. The required simulation measures the real rates
+  for the whole procedure, and its pass criteria P1 to P3 hold it to these bounds.
 
-**Labels, reported, not deciding.** For R2 and R3 against production, the near-miss framework's labels with B = 1% and
-H = 1%. A "promising, not shown" result is not adopted, and it is not stacked with another window to make a pass.
+**Labels, reported, not deciding.** For R2 and R3 against production, pooled and by company, the near-miss framework's
+labels with B = 1% and H = 1%. A "promising, not shown" result does not qualify, and it is not stacked with another
+window to make a pass.
 
 ### Warnings
 
@@ -344,104 +449,120 @@ from about 0.58. Same day, that cuts the High warnings roughly in half, and the 
 overflow-days warned from about 35% (388 of 1,105) to perhaps 20% to 25%. The warnings that remain would come true
 more often.
 
-That is what a calibrated forecast does at a fixed line, and it is a choice about the product. This draft takes the
-view that the 0.40 line means "a 40% chance" and should keep that meaning, so G4 guards only the share of warnings that
-come true. The fall in the share of spills warned is reported in full. **Ethan decides this before approving** (see the
-list at the end). If he wants the warning count held, the right test is a separate one of the line, not a looser rule
+**Approved choice 5.** The 0.40 line keeps its meaning: "a 40% chance". So G4 guards only the share of warnings that
+come true. The consequences are reported explicitly, not left to a guardrail:
+- **warning counts** at 0.40, candidate and production: overflow-days warned, by lead (0 and 1–4) and by company;
+- **missed spills:** spill overflow-days not warned, with the same splits;
+- **recall:** the share of spill overflow-days warned, with its 95% interval and the change from production;
+- the share of warnings that came true, and false alarms, with the same splits.
+
+**The rollout review must look at these before any rollout.** A large fall in recall is a reason the review may refuse
+a qualified candidate. Holding the warning count instead would need a separate test of the line, not a looser rule
 here.
 
 ## What follows
 
-**A candidate qualifies.** Three stages, each its own PR and Ethan's call.
+**A candidate qualifies.** It goes to a **separate rollout review**, never to an automatic switch-on. The review is a
+written note in a PR, for Ethan's decision. It must cover:
+- the warning consequences listed in "Warnings";
+- every judged company's label, and every not-judged company by name;
+- whether production has changed since the freeze. If it has, the candidate is not rolled out. Under approved choice
+  7 it is reassessed and restated: refitted on the changed production and judged on a new window;
+- the precedence of option B, A8 and the shadow studies (below);
+- the E. coli input (below), and the count of spot levels and alerts that would change (stage A);
+- the 2027 constraint (below).
+
+Three stages, each its own PR and Ethan's call. Stage A only logs and shows nothing, so it may run before the review.
+Stages B and C happen only if Ethan approves the review.
 
 1. **Stage A, shadow.** May start any time after the freeze, since it only logs. `forecast_overflows` gains
-   `p_recal`, the chosen candidate's chance. Nothing published reads it. It changes no `p_cal`, member or `p_status`,
+   `p_recal`, each frozen candidate's chance. Nothing published reads it. It changes no `p_cal`, member or `p_status`,
    so it disturbs no window. Before stage B, on every window row, the logged `p_recal` must equal the harness's value
    within 1e-6. Logging alone judges nothing: the offline window already did.
-2. **Stage B, switch-on with a stop rule. 10 March to 6 April 2027 (28 days).** The site shows the corrected chances
-   on the map, the spot pages, the API and the Accuracy page. The uncorrected chance is still logged, so the paired
-   comparison continues. A script checks each Monday, on the rows since switch-on. **Stop rule:** switch off the same
-   day, by a config flag, if any of these holds:
+2. **Stage B, switch-on with a stop rule, 28 days.** It starts no earlier than the day after the review is approved,
+   so no earlier than 10 March 2027. It must end by 29 April 2027 (see "The 2027 season"). If 28 days do not fit
+   before then, stage B does not run before the season. The site shows the corrected chances on the map, the spot
+   pages, the API and the Accuracy page. The uncorrected chance is still logged, so the paired comparison continues.
+   A script checks each Monday, on the rows since switch-on. **Stop rule:** switch off the same day, by a config flag,
+   if any of these holds:
    - the 95% interval of Brier(corrected) − Brier(uncorrected), pooled, lies wholly above 0;
    - a judged company fails G1;
    - a technical fault: a corrected value missing where production had one, or differing from the harness by more
-     than 1e-6.
+     than 1e-6;
+   - the production model changes (approved choice 7).
 
    This is a safety stop, not a second test. Weekly looks raise the chance of a false stop, which is the safe
    direction.
-3. **Stage C, kept.** If stage B ends without a stop, the correction stays. Its 2027 status is decided by
-   8 April 2027 (below).
+3. **Stage C, kept until the tag.** If stage B ends without a stop, the correction stays on the site until the 2027
+   tag (30 April 2027) and is switched off then (below). Whether it returns after 30 September 2027 is a new rollout
+   review, informed by its 2027 secondary scores.
 
 **The E. coli estimate keeps the uncorrected input.** `model/forecast.py` feeds the calibrated chance `p` into the
 spot's `risk`, and `risk` into the E. coli features. The E. coli models were fitted on the uncorrected chance. So the
 switch-on keeps a second, uncorrected `risk` for E. coli. Changing that is a separate test.
 
-**The 2027 season.** The correction is fitted on autumn and judged on winter. It would be used in May to September,
-which neither covers. Two options, both scoring both forecasts in 2027, since the correction is a fixed function of
-the logged chance:
-- **(a) Into the frozen model.** An amendment to section 2 adds the correction file to `MODEL_PATHS` and the stamp,
-  merged by 30 April 2027. The uncorrected forecast is scored as a secondary.
-- **(b) Out of the frozen model.** The tag carries the uncorrected forecast. An amendment registers the frozen
-  correction as a labelled secondary, scored on the 2027 rows. The live site may still show the corrected chances,
-  which then is a candidate under section 12. Ethan decides which.
+**The 2027 season (approved choice 6).** The correction is fitted on autumn and judged on winter. It would be used in
+May to September, which neither covers. So the main frozen comparator does not change on this evidence:
+- The tag (`eval-2027-model`) carries the uncorrected forecast, and the live site shows the frozen model from the tag
+  to 30 September 2027. A correction live in the season would end the frozen model's record (pre-registration section
+  12), so none is live then.
+- The frozen candidates R2 and R3 are registered as **labelled secondary** forecasts by a dated amendment to
+  `docs/PREREGISTRATION-2027.md` section 17, its own PR, merged before 1 May 2027. They are fixed functions of the
+  frozen model's logged chances, so they are scored on the same 2027 rows at no cost to the main record. This file's
+  winter verdict is quoted beside their 2027 scores. They decide nothing in 2027.
+- This file does not edit the pre-registration.
 
-**Option B goes first.** If option B passes its shadow and is adopted (by 31 March 2027), it changes `p_raw` for every
-company. This correction was fitted on forecasts before that. It is then not switched on, or is switched off, and a
-refit needs a new statement. Stage B (10 Mar to 6 Apr) overlaps that adoption date. If option B is adopted during
-stage B, the correction switches off the same day, by its config flag, and stays off. If option B is adopted before
-10 Mar, stage B does not start. The same holds if `annual_returns.parquet` is refreshed before the tag (the mid-April
-decision in section 15), since that moves layer 1's inputs for every overflow.
+**Option B goes first, and so do A8 and the shadow studies (approved choice 7).** If option B passes its shadow and is
+adopted (by 31 March 2027), it changes `p_raw` for every company. This correction was fitted on forecasts before that.
+It is then not switched on, or is switched off, and any later correction needs a reassessment and a new statement.
+Stage B (from 10 Mar at the earliest) can overlap that adoption date. If option B is adopted during stage B, the
+correction switches off the same day, by its config flag, and stays off. If option B is adopted before stage B, stage
+B does not start. The same holds for A8's offsets or a live-status switch-on, and if `annual_returns.parquet` is
+refreshed before the tag (the mid-April decision in section 15), since that moves layer 1's inputs for every overflow.
 
 **No candidate qualifies.** Nothing changes. The record stands. Any re-test is a new statement on new data.
 
 ## What is not tested
 
-- **Summer.** No May to September day is in the fitting rows or the window.
+- **Summer.** No May to September day is in the fitting rows or the window. The 2027 secondary scores cover it,
+  without changing the main record.
 - **Spot levels and alerts.** Only overflow-days are scored. Spot levels move with the corrected chances, and stage A
   counts how many levels and alerts would change. The 2027 S1 and S2 scores cover spot levels.
 - **The E. coli estimate.** It keeps the uncorrected input.
 - **Why the chances run high.** A correction treats the symptom. The causes (labels against EDM files, autumn rain,
   the model's month factors fitted on May to September) are for other tests.
 - **Per overflow.** A8 and option B.
-- **The fitting rows' own score.** Never reported, except the labelled power check.
+- **The fitting rows' own score.** Never reported, except the labelled power check and the simulation.
 
 ## What would stop the study
 
-- Ethan does not approve before 10 December 2026. The dates then move by addendum before any fit, or the proposal
-  lapses.
+- The required simulation fails and no restatement passes before the first window row would be read, and the start
+  is not moved by addendum.
 - A production change in the window leaving fewer than eight weeks.
 - More than 25% of fitting rows cannot be rebuilt after a production change.
 - The sanity check fails (published and rebuilt production differ).
 - Fewer than 800 lead-0 spill overflow-days after the one extension: description only.
 - The forecast log or the published file is lost or rewritten for window days: the analysis runs on what exists, says
-  where and why, and adopts nothing.
+  where and why, and nothing qualifies.
 - A change to the live labelling rule (`verify_live`'s coverage rules) inside the window: the window ends the day
   before, with the eight-week minimum as above.
 
-## Order of work, after approval
+## Order of work
 
-1. Ethan approves this statement. Nothing below runs before.
-2. The harness (`scripts/calibration_test/`, with tests) is committed. It changes nothing above the line.
+1. This statement is approved (26 October 2026, approval record above). Nothing below has run.
+2. The harness (`scripts/calibration_test/`, with tests) is committed. It includes the simulation. It changes nothing
+   above the line.
 3. On or after 10 December 2026: download the published file and the `state` release read-only, record their hashes,
-   fit R1 to R3, commit the parameters with their SHA-256 (the freeze), and write the power check under the line.
-   No Open-Meteo call; one light run under `heavy-run.lock` if other sessions use it.
-4. On or after 9 March 2027: run the check once and write the result under the line.
-5. If a candidate qualifies: stages A to C, each its own PR.
-
-## Decisions for Ethan before approval
-
-1. **The candidate set:** R2 and R3 judged, R1 reported. Or a single candidate.
-2. **δ and B:** both 1% of production's Brier.
-3. **The per-company margin:** 2% (this draft) or the house 1%.
-4. **The windows:** fitting rows 29 Sep to 6 Dec 2026, fit on or after 10 Dec; window 14 Dec 2026 to 7 Mar 2027,
-   read on or after 9 Mar. Sixteen weeks instead, if the power check falls short.
-5. **Warnings:** keep the 0.40 line's meaning and accept fewer High warnings (this draft), or hold the warning count,
-   which needs a separate test of the line.
-6. **The 2027 season:** option (a) or (b) above.
-7. **Order with option B and A8:** this draft has option B take precedence, and A8 not deployed inside this window.
-8. **Route 2's calibration interval:** 95% (this draft; bound on a false adoption with no real gain about 7.5% over
-   both candidates) or 97.5% (about 5%). Also whether to ask for a simulation of the bootstrap's real coverage with
-   twelve week clusters, run at the fit on the fitting rows, before the window opens.
+   fit R1 to R3, and commit the parameters with their SHA-256 (the freeze). No Open-Meteo call. Under
+   `heavy-run.lock` if other sessions use it.
+4. **Before any window row is read:** run the power check for R2 and R3 and set the window to twelve or sixteen weeks;
+   then run the required simulation on that window length and check P1 to P3. Write both under the line. If the
+   simulation fails, follow "If it fails" in "The required simulation".
+5. On or after the read date (9 March 2027 for twelve weeks, 6 April 2027 for sixteen, later if extended): run the
+   check once and write the result under the line.
+6. If a candidate qualifies: the rollout review, then stages A to C only if Ethan approves it, each its own PR.
+7. Before 1 May 2027, whatever the result: the pre-registration amendment that registers R2 and R3 as labelled
+   secondaries, its own PR.
 
 ---
 
