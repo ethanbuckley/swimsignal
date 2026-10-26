@@ -706,6 +706,19 @@ def test_malformed_geometry_is_no_outline(monkeypatch):
     assert flows.split_flood_alerts(odd, _water("wharfe-burnsall"), OUTLINES) == ([], 0, 6)
 
 
+def test_an_outline_whose_ring_crosses_itself_is_still_an_outline():
+    # As the EA serves two coast areas (054WACDV4B, 051WACDV4C): a multipolygon with a ring that crosses
+    # itself and another part over it. Joined as it came, it raised and was "no outline"; each part made
+    # valid first, it is the shape it draws.
+    from shapely.geometry import Point
+    bow = [[[1.0, 52.0], [1.1, 52.1], [1.1, 52.0], [1.0, 52.1], [1.0, 52.0]]]
+    bar = [[[1.04, 52.04], [1.2, 52.04], [1.2, 52.06], [1.04, 52.06], [1.04, 52.04]]]
+    o = flows.load_outline({"type": "MultiPolygon", "coordinates": [bow, bar]})
+    assert o is not None and o.is_valid
+    assert o.covers(Point(*flows.bng(52.05, 1.02))) and o.covers(Point(*flows.bng(52.05, 1.15)))
+    assert not o.covers(Point(*flows.bng(52.09, 1.05)))
+
+
 def test_unchecked_stays_unchecked():
     assert flows.split_flood_alerts(None, _water("wharfe-burnsall"), OUTLINES) == (None, None, None)
 

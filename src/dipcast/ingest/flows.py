@@ -626,7 +626,9 @@ def load_outline(geojson) -> object | None:
         if isinstance(geojson, str | bytes):
             geojson = json.loads(geojson)
         feats = geojson["features"] if geojson.get("type") == "FeatureCollection" else [geojson]
-        parts = [shape(f["geometry"] if f.get("type") == "Feature" else f) for f in feats]
+        # Each part made valid before they are joined: the EA's own coast outlines can have a ring that
+        # crosses itself (054WACDV4B, 051WACDV4C on 26 Oct 2026), and joining them as they come raises.
+        parts = [make_valid(shape(f["geometry"] if f.get("type") == "Feature" else f)) for f in feats]
         g = _reproject(unary_union(parts), _TO_BNG)
         g = make_valid(g) if not g.is_valid else g
         g = unary_union([p for p in getattr(g, "geoms", [g]) if p.geom_type in ("Polygon", "MultiPolygon")])
