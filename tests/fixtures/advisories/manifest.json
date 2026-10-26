@@ -1,0 +1,20 @@
+{
+  "note": "Real answers, fetched one at a time from a Mac on 26 Oct 2026 (UTC times below), for the advisory finder's dry run (src/dipcast/advisories.py). JSON and the EA panel are byte for byte as received. The GOV.UK page is cut to its <main> element (OGL v3.0). epa_alerts_2026-10-04.json is a copy of tests/fixtures/ireland/epa_alerts.json (the EPA's answer on 4 Oct 2026, trimmed to two rows); it is used by the tests, not listed here. The Waverley and City of London pages are on the whitelist but their copies are not kept here: neither is open-licensed.",
+  "sources": [
+    {"key": "ea-open", "file": "ea_open_2026-10-26.json",
+     "url": "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100",
+     "fetched_at": "2026-10-26T18:37:19+00:00", "licence": "Open Government Licence v3.0"},
+    {"key": "ea-history", "file": "ea_history_uki2203-11942_2026-10-26.json",
+     "url": "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?bathingWater.eubwidNotation=uki2203-11942&_pageSize=50",
+     "fetched_at": "2026-10-26T18:37:32+00:00", "licence": "Open Government Licence v3.0"},
+    {"key": "epa-alerts", "file": "epa_alerts_2026-10-26.json",
+     "url": "https://data.epa.ie/bw/api/v1/alerts?page=1&per_page=100",
+     "fetched_at": "2026-10-26T18:37:43+00:00", "licence": "CC BY 4.0"},
+    {"key": "ea-widget-frensham", "file": "ea_widget_frensham_2026-10-26.html",
+     "url": "https://environment.data.gov.uk/bwq/widget/widget/widget1?eu=ukj2310-11945&history=false&m=false&p=false",
+     "fetched_at": "2026-10-26T18:38:33+00:00", "licence": "Open Government Licence v3.0"},
+    {"key": "govuk-lake-district-algae-2018", "file": "govuk_lake_district_algae_2018_main.html",
+     "url": "https://www.gov.uk/government/news/blue-green-algae-remains-present-in-four-lake-district-locations",
+     "fetched_at": "2026-10-26T18:38:50+00:00", "licence": "Open Government Licence v3.0"}
+  ]
+}
