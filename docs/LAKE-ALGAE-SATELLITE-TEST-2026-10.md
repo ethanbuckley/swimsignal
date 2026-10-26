@@ -616,6 +616,16 @@ A record of what was done and seen while the test ran. It changes nothing above 
   The caps on requests and bytes, the hosts and the stop rules are unchanged; when one read stops the run, reads
   already in flight (at most 15) finish and are counted and nothing new starts (`stage1.pmap`). **No pixel rule, file,
   band or reading changes**: the same items and windows are read, so the data are the same as at the old pace.
+- **26 October, 21:36 UTC: stage 1b stopped at the overall byte cap (4 GiB).** With A1 the reads ran at about 2,100
+  a minute. Stage 1a was complete; 1,548 of 1,749 usable scenes had readings (all but Monk Coniston and Derwent Water).
+  The byte estimate was wrong: a clear scene costs about 2.6 MB (B4 at 10 m pulls whole COG tiles), not about 0.1 MB.
+  Two faults let the run pass the cap by about 8.2 MB (4,303,217,489 bytes against 4,294,967,296): the client checked
+  the byte caps only while a body arrived, so with parallel reads new requests could start after the cap was passed;
+  and the runner resumed while any of the last five log lines named a per-run cap, so it restarted five times after
+  the overall cap. **Amendment A2:** the client refuses a request before it starts once a byte cap is reached (tested);
+  the runner looks only at the last stop line; the stage 1 byte cap over all runs is raised from 4 GiB to 5 GiB for
+  the remaining 201 scenes (about 0.5 GB). Request caps, hosts, pace (A1) and stop rules are unchanged. No reading
+  changes: the same scenes are read.
 
 ---
 

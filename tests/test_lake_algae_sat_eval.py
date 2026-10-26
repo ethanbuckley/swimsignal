@@ -589,3 +589,17 @@ def test_pmap_stops_starting_new_calls_after_an_error():
 
 def test_pmap_keeps_order():
     assert list(stage1.pmap(lambda i: i * i, range(50))) == [i * i for i in range(50)]
+
+
+def test_byte_cap_reached_refuses_the_next_request_before_it_starts(tmp_path):
+    led = tmp_path / "l.jsonl"
+    led.write_text('{"bytes": 1000}\n')
+    client = FakeClient([200] * 3, body=b"x" * 10)
+    c = net.Capped(ledger=led, client=client, sleep=lambda s: None, max_bytes_total=1000)
+    with pytest.raises(net.CapReached, match="over all runs"):
+        c.request("GET", S3)
+    assert client.calls == []          # nothing was sent
+    c2 = net.Capped(client=FakeClient([200] * 3, body=b"x" * 10), sleep=lambda s: None, max_bytes=10)
+    c2.request("GET", S3)
+    with pytest.raises(net.CapReached, match="per run"):
+        c2.request("GET", S3)

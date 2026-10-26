@@ -35,7 +35,7 @@ MAX_BYTES_PER_RESPONSE = 32 * 1024**2
 STAGE1_MAX_REQUESTS_PER_RUN = 4000
 STAGE1_MAX_BYTES_PER_RUN = 500 * 1024**2
 STAGE1_MAX_REQUESTS_TOTAL = 40000
-STAGE1_MAX_BYTES_TOTAL = 4 * 1024**3
+STAGE1_MAX_BYTES_TOTAL = 5 * 1024**3   # A2 (26 Oct 2026): from 4 GiB; clear-scene reads are ~2.6 MB, not the estimate
 PAUSE_S = 1.0
 TIMEOUT_S = 60.0
 CHUNK = 64 * 1024
@@ -100,6 +100,12 @@ class Capped:
                 raise CapReached(f"request cap per run ({self.max_requests})")
             if self.prior_requests + self.requests + 1 > self.max_requests_total:
                 raise CapReached(f"request cap over all runs ({self.max_requests_total})")
+            # A2: a byte cap already reached stops a request before it starts (with parallel reads, checking only
+            # while a body arrives let new requests start after the cap was passed).
+            if self.bytes >= self.max_bytes:
+                raise CapReached(f"byte cap per run ({self.max_bytes})")
+            if self.prior_bytes + self.bytes >= self.max_bytes_total:
+                raise CapReached(f"byte cap over all runs ({self.max_bytes_total})")
             if paced and self._last is not None:
                 wait = PAUSE_S - (time.monotonic() - self._last)
                 if wait > 0:
