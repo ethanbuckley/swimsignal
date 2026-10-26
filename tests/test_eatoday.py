@@ -38,9 +38,30 @@ def test_the_build_never_asks_for_the_panel():
         assert "bwq/widget" not in f.read_text(), f
 
 
+def repo_sources(files, root=ROOT):
+    """The repo's own Python source among loaded modules' files: under src/ or scripts/, as .py. A
+    cached .pyc maps to its source; anything else (an extension module, a .venv inside the checkout,
+    a file with no source) is left out, so a binary never reaches the text check."""
+    import importlib.util
+    out = set()
+    for f in files:
+        if not f:
+            continue
+        f = Path(f)
+        if f.suffix == ".pyc":
+            try:
+                f = Path(importlib.util.source_from_cache(str(f)))
+            except ValueError:
+                continue
+        f = f.resolve()
+        if f.suffix == ".py" and f.is_file() and any(f.is_relative_to(root / d) for d in ("src", "scripts")):
+            out.add(f)
+    return sorted(out)
+
+
 def test_the_build_never_imports_the_advisory_finder():
     # The same contract, from what the build actually loads: import build_site in a fresh interpreter
-    # and read every module it brought in from this repo. None is the finder, and none names the panel.
+    # and read every repo source module it brought in. None is the finder, and none names the panel.
     import json
     import subprocess
     code = ("import json, sys; sys.path[:0] = [sys.argv[1] + '/scripts', sys.argv[1] + '/src']; import build_site; "
@@ -50,11 +71,31 @@ def test_the_build_never_imports_the_advisory_finder():
     mods = dict(json.loads(out.stdout.splitlines()[-1]))
     assert "build_site" in mods and "dipcast.official_advice" in mods
     assert "advisories" not in mods and "advisory_finder" not in mods
-    ours = [Path(f) for f in mods.values() if f and Path(f).resolve().is_relative_to(ROOT)]
+    ours = repo_sources(mods.values())
+    assert ROOT / "scripts" / "build_site.py" in ours and ROOT / "src" / "dipcast" / "official_advice.py" in ours
     assert len(ours) > 5
     for f in ours:
-        assert "bwq/widget" not in f.read_text(), f
-    assert (ROOT / "scripts" / "advisories.py").exists() and "bwq/widget" in (ROOT / "scripts" / "advisories.py").read_text()
+        assert "bwq/widget" not in f.read_text(encoding="utf-8"), f
+    assert "bwq/widget" in (ROOT / "scripts" / "advisories.py").read_text(encoding="utf-8")
+
+
+def test_the_scan_reads_only_source_files(tmp_path):
+    # CI checks the repo out with its .venv inside it: binary modules and caches must not break the scan.
+    (tmp_path / "src" / "pkg" / "__pycache__").mkdir(parents=True)
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / ".venv").mkdir()
+    py = tmp_path / "src" / "pkg" / "mod.py"
+    py.write_text("x = 1\n")
+    pyc = tmp_path / "src" / "pkg" / "__pycache__" / "mod.cpython-312.pyc"
+    pyc.write_bytes(b"\x90\xff\x00binary")
+    stray = tmp_path / "src" / "pkg" / "_speed.cpython-312-darwin.so"
+    stray.write_bytes(b"\x90\xff\x00binary")
+    orphan = tmp_path / "src" / "pkg" / "__pycache__" / "gone.cpython-312.pyc"
+    orphan.write_bytes(b"\x90")
+    venv = tmp_path / ".venv" / "site.py"
+    venv.write_text("y = 2\n")
+    got = repo_sources([str(py), str(pyc), str(stray), str(orphan), str(venv), None], root=tmp_path.resolve())
+    assert got == [py.resolve()]
 
 
 def test_the_privacy_notice_names_the_panel_on_a_bathing_waters_page():
