@@ -55,6 +55,10 @@ eight does not show the wording works for everyone.
   morning's candidates for both tasks from the published forecast and spot pages, with each page's
   headline and gaps.
 
+The run sheet for each session, the consent wording and the privacy rules are in
+`docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`; the blank record and the analysis in
+`docs/COMPREHENSION-TEST-2026-10-RECORDS.md`.
+
 ## 4. The tasks
 
 Read each task as written. Swimmers do tasks 1 to 4; group leaders do all five.

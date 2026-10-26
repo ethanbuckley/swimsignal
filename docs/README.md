@@ -24,6 +24,12 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   coverage, how a forecast would be validated, draft emails and tasks. Plans only.
 - [COMPREHENSION-TEST-2026-10.md](COMPREHENSION-TEST-2026-10.md): a plan for 8 to 10 moderated swimmer sessions,
   October to November 2026. Not yet run.
+- [COMPREHENSION-TEST-2026-10-RUN-SHEET.md](COMPREHENSION-TEST-2026-10-RUN-SHEET.md): the moderator's checklist for
+  one Lake District session (day before, morning, during, after), the consent wording, where participants' data
+  is kept and for how long, and the questions the plan leaves open.
+- [COMPREHENSION-TEST-2026-10-RECORDS.md](COMPREHENSION-TEST-2026-10-RECORDS.md): the blank record for one
+  session and how to analyse 8 to 10 of them against the plan's fail lines. Filled records stay out of the
+  repository.
 - [SWIMMER_TESTING.md](SWIMMER_TESTING.md): the earlier swimmer test plan. The comprehension test replaces its
   tasks and keeps its recording rules.
 - [SWIMSIGNAL_REVIEW.md](SWIMSIGNAL_REVIEW.md): review notes for the SwimSignal rebrand: scope, compatibility,
