@@ -79,6 +79,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   October 2026, against persistence and a rain rule as well as the long-run rate. **No company passes the promise
   rule:** at leads 1 to 4 every lower bound against the best reference is at or below 0, so the wording this winter
   is "still being tested". Includes a draft amendment, not filed. Table: `.json`.
+- [CALIBRATION-CHECK-2026-10.md](CALIBRATION-CHECK-2026-10.md): a diagnostic of the same live record, stated
+  before the run. **The chances run too high overall** (observed over expected 0.74 same day, 0.80 in advance),
+  and the higher chances run highest (slope 0.74), but not at every company: Thames, Wessex and Southern too high;
+  Anglian and Yorkshire too extreme, not too high. Nothing is refitted. Tables: `.json`, `-persistence.json`.
 
 ### Transport and the E. coli estimate
 
