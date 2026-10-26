@@ -1502,8 +1502,10 @@ def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.mon
     """Each in-force area's outline, and the areas not asked for because of the per-build cap.
 
     In the build, through the outline cache (flows.OutlineStore, in config.CACHE/flood_areas): each
-    area asked for at most once a week, success or failure; at most FLOOD_OUTLINE_FETCHES_PER_BUILD
-    asked in one build, those with no usable outline first; all within FLOOD_BUDGET_S. An area with no
+    area asked for at most once a week, success or failure, while the state cache carries over between
+    runs (best effort: a lost cache, a cancelled run or a failed cache save resets it for the areas
+    involved); whatever happens, at most FLOOD_OUTLINE_FETCHES_PER_BUILD asked in one build, those with
+    no usable outline first; all within FLOOD_BUDGET_S. An area with no
     outline by then (asked this week and failed, past the cap, out of time, or nothing kept under 30
     days) maps to None: its alerts are never named (rule 4). Then the cache is pruned
     (flows.prune_flood_outlines), keeping this build's areas. Tests give `store` (and `prune`), or

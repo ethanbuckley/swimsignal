@@ -501,8 +501,12 @@ FLOOD_OUTLINE_SIMPLIFY_M = 10.0
 # record, FLOOD_OUTLINE_ATTEMPTS, all made by the build; nothing else lives there. The EA redraws flood
 # areas rarely (in its periodic flood-warning area updates, not from day to day), and one outline is up
 # to 0.9 MB raw, so it is not asked for in every build:
-#  - each area is asked for at most once per FLOOD_OUTLINE_REFRESH_S, success or failure: the record
-#    holds the time of every attempt. A kept outline under that age is used without asking.
+#  - each area is asked for at most once per FLOOD_OUTLINE_REFRESH_S, success or failure, while the
+#    build's state cache carries over (best effort): the record holds the time of every attempt, and
+#    finish() writes it at the end of the outline round. A lost cache, a cancelled run (finish() not
+#    reached) or a failed cache save resets it for the areas involved. Whatever happens, a build asks
+#    for at most FLOOD_OUTLINE_FETCHES_PER_BUILD outlines, and an area with no outline (at most 30 days
+#    old) is never named. A kept outline under FLOOD_OUTLINE_REFRESH_S old is used without asking.
 #  - a kept outline is used, when it is not asked for or its request fails, only while its recorded
 #    fetch time is at most FLOOD_OUTLINE_MAX_AGE_S old; past that, or with none, the area has no outline
 #    (rule 4: its alerts are counted or said neutrally, never named). This holds for a first fetch too:
