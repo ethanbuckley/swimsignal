@@ -34,7 +34,9 @@ L=$O/logs
 step() { local n=$1; shift; date +%s > $L/$n.start
   /usr/bin/time -l $PY $OFF "$@" > $L/$n.log 2>&1 || { echo "$n failed" >&2; exit 1; }
   date +%s > $L/$n.done
-  grep -q '^network attempts: 0$' $L/$n.log || { echo "$n made network attempts" >&2; exit 1; }; }
+  # The count can follow unflushed stdout on the same line, so match it anywhere and read the number.
+  [[ $(grep -o 'network attempts: [0-9]*' $L/$n.log | tail -1) == 'network attempts: 0' ]] \
+    || { echo "$n made network attempts (or printed no count)" >&2; exit 1; }; }
 $PY -c "import dipcast; from dipcast import config; from dipcast.model import transport
 print(dipcast.__file__, config.RIVER_VELOCITY_MS, config.T90_HOURS, transport.DILUTION_POWER, config.LAKE_PATH_MODE)" > $L/which.log
 step validate scripts/validate_ecoli.py
