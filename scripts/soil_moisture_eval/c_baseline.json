@@ -1,0 +1,350 @@
+{
+ "note": "computed 26 Oct 2026, after the rivers-only test's results were seen; decides nothing by itself",
+ "english_rows": 1502,
+ "english_in_sample": {
+  "test_arm": {
+   "all": 0.08825,
+   "rivers": 0.1291,
+   "lakes": 0.026
+  },
+  "root_ecoli_model_json": {
+   "all": 0.08825,
+   "rivers": 0.1291,
+   "lakes": 0.026
+  },
+  "main_model": {
+   "all": 0.08826,
+   "rivers": 0.1291,
+   "lakes": 0.026
+  },
+  "candidate": {
+   "all": 0.08187,
+   "rivers": 0.1185,
+   "lakes": 0.02608
+  }
+ },
+ "test_arm_equals_root_json": 0.0,
+ "coef": {
+  "test_arm": {
+   "lrain48": 0.6507,
+   "lrain24": -0.1017,
+   "logit_risk": 0.7811,
+   "lake": -0.1811,
+   "lake_x_lrain48": -1.057,
+   "doy_sin": -0.09737,
+   "doy_cos": 0.08584
+  },
+  "main_model": {
+   "lrain48": 0.6379,
+   "lrain24": -0.09349,
+   "logit_risk": 0.7922,
+   "lake": -0.1795,
+   "lake_x_lrain48": -1.058,
+   "doy_sin": -0.09575,
+   "doy_cos": 0.08601
+  },
+  "intercepts": [
+   -2.436,
+   -2.439
+  ]
+ },
+ "main_vs_arm_feature_means": {
+  "lrain48": [
+   1.177,
+   1.177
+  ],
+  "lrain24": [
+   0.7258,
+   0.7258
+  ],
+  "logit_risk": [
+   -3.737,
+   -3.754
+  ],
+  "lake": [
+   0.3961,
+   0.3961
+  ],
+  "lake_x_lrain48": [
+   0.6471,
+   0.6471
+  ],
+  "doy_sin": [
+   -0.154,
+   -0.154
+  ],
+  "doy_cos": [
+   -0.7892,
+   -0.7892
+  ]
+ },
+ "main_vs_arm_feature_scales": {
+  "lrain48": [
+   1.208,
+   1.208
+  ],
+  "lrain24": [
+   0.9887,
+   0.9887
+  ],
+  "logit_risk": [
+   1.906,
+   1.905
+  ],
+  "lake": [
+   0.4891,
+   0.4891
+  ],
+  "lake_x_lrain48": [
+   1.154,
+   1.154
+  ],
+  "doy_sin": [
+   0.5542,
+   0.5542
+  ],
+  "doy_cos": [
+   0.2149,
+   0.2149
+  ]
+ },
+ "test_arm_loyo": 0.09215,
+ "rivers_test_with_reference": {
+  "test_arm": {
+   "scores": {
+    "pooled": {
+     "samples": 1493,
+     "known": 1489,
+     "exceedances": 731,
+     "rate": 0.4909,
+     "sampling_days": 231,
+     "stations": 46,
+     "reference": {
+      "mean": 0.3067,
+      "brier": 0.2728,
+      "auc": 0.6324,
+      "log_loss": 0.7845,
+      "spearman": 0.2905,
+      "spearman_within_station": 0.5302
+     },
+     "candidate": {
+      "mean": 0.2887,
+      "brier": 0.2596,
+      "auc": 0.7001,
+      "log_loss": 0.7595,
+      "spearman": 0.428,
+      "spearman_within_station": 0.5256
+     },
+     "gain": 0.01319,
+     "gain_ci": [
+      0.0004197,
+      0.02785
+     ],
+     "brier_rel_change": -0.04836,
+     "spearman_within_change": -0.004605,
+     "spearman_within_change_ci": [
+      -0.0341,
+      0.02692
+     ],
+     "auc_change": 0.06767,
+     "log_loss_change": -0.02503
+    },
+    "Wales": {
+     "samples": 185,
+     "known": 185,
+     "exceedances": 11,
+     "rate": 0.05946,
+     "sampling_days": 51,
+     "stations": 11,
+     "reference": {
+      "mean": 0.334,
+      "brier": 0.1468,
+      "auc": 0.7388,
+      "log_loss": 0.4588,
+      "spearman": 0.5041,
+      "spearman_within_station": 0.5131
+     },
+     "candidate": {
+      "mean": 0.2253,
+      "brier": 0.1039,
+      "auc": 0.6881,
+      "log_loss": 0.3532,
+      "spearman": 0.5321,
+      "spearman_within_station": 0.4936
+     },
+     "gain": 0.04289,
+     "gain_ci": [
+      0.01502,
+      0.06778
+     ],
+     "brier_rel_change": -0.2921,
+     "spearman_within_change": -0.01942,
+     "spearman_within_change_ci": [
+      -0.1103,
+      0.06333
+     ],
+     "auc_change": -0.05068,
+     "log_loss_change": -0.1056
+    },
+    "Wessex": {
+     "samples": 1308,
+     "known": 1304,
+     "exceedances": 720,
+     "rate": 0.5521,
+     "sampling_days": 186,
+     "stations": 35,
+     "reference": {
+      "mean": 0.3028,
+      "brier": 0.2907,
+      "auc": 0.662,
+      "log_loss": 0.8307,
+      "spearman": 0.3509,
+      "spearman_within_station": 0.5241
+     },
+     "candidate": {
+      "mean": 0.2977,
+      "brier": 0.2817,
+      "auc": 0.7043,
+      "log_loss": 0.8171,
+      "spearman": 0.4294,
+      "spearman_within_station": 0.5267
+     },
+     "gain": 0.00898,
+     "gain_ci": [
+      -0.005385,
+      0.0247
+     ],
+     "brier_rel_change": -0.03089,
+     "spearman_within_change": 0.002639,
+     "spearman_within_change_ci": [
+      -0.02423,
+      0.03271
+     ],
+     "auc_change": 0.04237,
+     "log_loss_change": -0.0136
+    }
+   },
+   "1_pooled_gain": true,
+   "regions_clearly_worse": [],
+   "passes": true
+  },
+  "main_model": {
+   "scores": {
+    "pooled": {
+     "samples": 1493,
+     "known": 1489,
+     "exceedances": 731,
+     "rate": 0.4909,
+     "sampling_days": 231,
+     "stations": 46,
+     "reference": {
+      "mean": 0.3091,
+      "brier": 0.2724,
+      "auc": 0.6319,
+      "log_loss": 0.7832,
+      "spearman": 0.2895,
+      "spearman_within_station": 0.5302
+     },
+     "candidate": {
+      "mean": 0.2887,
+      "brier": 0.2596,
+      "auc": 0.7001,
+      "log_loss": 0.7595,
+      "spearman": 0.428,
+      "spearman_within_station": 0.5256
+     },
+     "gain": 0.01278,
+     "gain_ci": [
+      -3.664e-05,
+      0.02742
+     ],
+     "brier_rel_change": -0.04691,
+     "spearman_within_change": -0.004626,
+     "spearman_within_change_ci": [
+      -0.03379,
+      0.02702
+     ],
+     "auc_change": 0.06819,
+     "log_loss_change": -0.02367
+    },
+    "Wales": {
+     "samples": 185,
+     "known": 185,
+     "exceedances": 11,
+     "rate": 0.05946,
+     "sampling_days": 51,
+     "stations": 11,
+     "reference": {
+      "mean": 0.3371,
+      "brier": 0.1489,
+      "auc": 0.7398,
+      "log_loss": 0.4635,
+      "spearman": 0.5033,
+      "spearman_within_station": 0.5148
+     },
+     "candidate": {
+      "mean": 0.2253,
+      "brier": 0.1039,
+      "auc": 0.6881,
+      "log_loss": 0.3532,
+      "spearman": 0.5321,
+      "spearman_within_station": 0.4936
+     },
+     "gain": 0.04495,
+     "gain_ci": [
+      0.01695,
+      0.07039
+     ],
+     "brier_rel_change": -0.302,
+     "spearman_within_change": -0.0212,
+     "spearman_within_change_ci": [
+      -0.1114,
+      0.06273
+     ],
+     "auc_change": -0.05172,
+     "log_loss_change": -0.1102
+    },
+    "Wessex": {
+     "samples": 1308,
+     "known": 1304,
+     "exceedances": 720,
+     "rate": 0.5521,
+     "sampling_days": 186,
+     "stations": 35,
+     "reference": {
+      "mean": 0.3051,
+      "brier": 0.2899,
+      "auc": 0.6614,
+      "log_loss": 0.8285,
+      "spearman": 0.3499,
+      "spearman_within_station": 0.5239
+     },
+     "candidate": {
+      "mean": 0.2977,
+      "brier": 0.2817,
+      "auc": 0.7043,
+      "log_loss": 0.8171,
+      "spearman": 0.4294,
+      "spearman_within_station": 0.5267
+     },
+     "gain": 0.008214,
+     "gain_ci": [
+      -0.006214,
+      0.02393
+     ],
+     "brier_rel_change": -0.02833,
+     "spearman_within_change": 0.002788,
+     "spearman_within_change_ci": [
+      -0.02375,
+      0.03281
+     ],
+     "auc_change": 0.04292,
+     "log_loss_change": -0.01139
+    }
+   },
+   "1_pooled_gain": false,
+   "regions_clearly_worse": [],
+   "passes": false
+  }
+ }
+}

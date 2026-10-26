@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
+from collections import Counter
 from html import escape
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from dipcast.guides import attach_guides, copy_photos
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
+from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fallback_summary, fetch_forecast
 from dipcast.jobs import refresh_all
 from dipcast.model.forecast import (
@@ -595,10 +597,13 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     them without rain data, and build_health reports it (fallback_summary)."""
     net, ov = _net(), _overflows()
     lat, lon = list(spots["lat"]), list(spots["lon"])
+    river_cells = []   # the soil moisture the river E. coli model reads (ingest/soil.py): river spots' own cells
     for r in spots.itertuples(index=False):
         try:
             kind, river = spot_hints(r.kind, r.river)
             pin = locate_pin(net, float(r.lon), float(r.lat), kind_hint=kind, river_hint=river, name=r.name)
+            if pin.mode == "river":
+                river_cells.append(soil.cell_of(float(r.lat), float(r.lon)))
             up = upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
             lat += list(up["lat"]); lon += list(up["lon"])
         except Exception as e:  # noqa: BLE001
@@ -609,6 +614,11 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     fb = fallback_summary()
     log.info("rainfall prefetched: %d cells, %d rows, %.0fs%s", len(cells), len(df), time.time() - t0,
              f"; not fetched: {fb['stale']} from the cache, {fb['missing']} with no rain data" if fb else "")
+    # Once per cell per UTC day (soil.fetch), in its own requests, so a build's spots read it from the cache.
+    t0 = time.time()
+    st = soil.fetch(river_cells)
+    log.info("soil moisture: %d river cells, %d due, %d fetched (%.0f calls), %d held by the ration, failed %s, %.0fs",
+             st["cells"], st["due"], st["fetched"], st["calls"], st["held"], st["failed"] or "none", time.time() - t0)
     # The ensemble's members for the same cells, after the spots' own rain and by the
     # ensemble's own floor, cap and spare-calls rule (rainfall, "ensemble"): each spot's forecast reads them
     # from the cache, and none asks again in this build.
@@ -688,6 +698,19 @@ def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_lo
         health["warnings"].append(
             f"{len(failed)} spot{'' if len(failed) == 1 else 's'} published with no forecast: "
             + "; ".join(f"{r['name']} ({r.get('error', 'no days')})" for r in failed[:5]) + more)
+    # River spots whose E. coli figure fell back to today's model for want of soil moisture (forecast.river_ecoli):
+    # counted, and named in `warnings`; never a reason not to publish.
+    soil_states = [((r.get("assumptions") or {}).get("ecoli_model") or {}).get("soil") for r in with_days
+                   if (r.get("location") or {}).get("mode") == "river"]
+    soil_states = [x for x in soil_states if x]
+    fell_back = [x for x in soil_states if not x.get("used")]
+    health["ecoli_soil"] = {"river_spots": len(soil_states), "with_soil": len(soil_states) - len(fell_back),
+                            "fallback": len(fell_back),
+                            "reasons": dict(Counter(x.get("reason", "unknown") for x in fell_back))}
+    if fell_back:
+        health["warnings"].append(
+            f"{len(fell_back)} of {len(soil_states)} river spot{'' if len(soil_states) == 1 else 's'} used today's E. coli model "
+            f"for want of soil moisture ({'; '.join(f'{k}: {v}' for k, v in health['ecoli_soil']['reasons'].items())})")
     # Spots on the wrong water, and gauges whose latest reading is old: reported, never a reason not to publish.
     health["river_levels_stale"] = sum(bool((r.get("river_state") or {}).get("stale")) for r in results)
     misplaced = placement_check(results)
@@ -907,6 +930,8 @@ CREDIT_SOURCES = [
      "changed": "SwimSignal adds up the rain and models it."},
     {"use": "rain", "credit": "Met Office data © Crown copyright, served by Open-Meteo", "licence": "CC BY-SA 4.0",
      "changed": "SwimSignal models it; its rainfall figures stay under CC BY-SA 4.0."},
+    {"use": "soil", "credit": "Soil moisture from ECMWF's IFS forecasts (models=ecmwf_ifs), served by Open-Meteo", "licence": "CC BY 4.0",
+     "changed": "SwimSignal uses it in the E. coli estimate on rivers."},
     {"use": "model", "credit": "Contains modified Copernicus Climate Change Service information 2026 (ERA5-Land). "
      "Neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains",
      "licence": "", "changed": "SwimSignal trained its models on it."},
@@ -927,7 +952,8 @@ def data_credits(root: str) -> dict:
             "database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the "
             "real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by "
             "Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures "
-            "stay under CC BY-SA 4.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature "
+            "stay under CC BY-SA 4.0. Soil moisture from ECMWF's IFS forecasts, served by Open-Meteo, CC BY 4.0. "
+            "Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature "
             "Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): "
             "contains modified Copernicus "
             "Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any "
@@ -1807,12 +1833,13 @@ def home_lead(n: int) -> str:
 
 
 def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
-              feed: bool = False) -> str:
+              feed: bool = False, issued: pd.Timestamp | None = None) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
     <head>, and its share card (card: path and alt, write_spot_cards) as the preview picture. In the body, top: the spot's answer and five days as the page's script draws them
     (prerender_spots), for crawlers, readers without scripts and the moment before the script runs.
     Without it, its name under the sky, as the answer will be (see home_lead). feed: link its Atom feed
-    (write_feeds)."""
+    (write_feeds). issued: the forecast's issue time, which the note for readers without scripts names
+    (noscript_note)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
@@ -1825,15 +1852,41 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
         # opens as a page"), so each screen asks early for the picture it shows, and only that one.
         page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
-        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
+        # The note goes before the answer: "Today" and "right now" in it are the issue time's, and a reader
+        # without scripts meets them first. The script keeps only the answer's element (overBuilt), so the
+        # note goes wherever it stands.
+        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{escape(noscript_note(issued))}</p></noscript>{top}</div>', 1)
     return page.replace(LOADING, '<div id="result" data-nosnippet><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
                                  f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
 
 
-# Under a built spot page's five days, for a reader without scripts: what they are seeing, and what not.
+# Above a built spot page's answer, for a reader without scripts: what they are seeing, and what not.
 NOSCRIPT = ("This is the forecast as it was issued. With JavaScript on, the page updates it and adds the map, "
             "the overflows upstream and the rest of the detail.")
+
+
+def noscript_note(issued: pd.Timestamp | None) -> str:
+    """The note for readers without scripts. The built answer says "Today", "right now" and "Issued Sun
+    17:48" as at the issue time, and a page can be read days later; so the note names the day, date and
+    time in UK time, and says those words mean then. Without a readable time, NOSCRIPT alone."""
+    try:
+        t = pd.Timestamp(issued).tz_convert("Europe/London") if issued is not None else None
+    except (TypeError, ValueError):
+        t = None
+    if t is None or pd.isna(t):
+        return NOSCRIPT
+    return (f"This forecast was issued on {t:%A} {t.day} {t:%B %Y} at {t:%H:%M} UK time. On this copy, "
+            "“Today” and “right now” mean then, and the levels may have changed since. " + NOSCRIPT.split(". ", 1)[1])
+
+
+def built_issue_time(site: Path) -> pd.Timestamp | None:
+    """The forecast's issue time from this build's data/spots.json, the file prerender_spots reads, so
+    the note and the built words agree. None if it cannot be read."""
+    try:
+        return pd.Timestamp(json.loads((site / "data" / "spots.json").read_text())["generated_at"])
+    except (OSError, KeyError, TypeError, ValueError):
+        return None
 
 
 def prerender_spots(site: Path, root: str) -> dict[str, str]:
@@ -2293,6 +2346,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copy(WATERS, site / "data" / "waters.json")
     shutil.rmtree(site / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
     tops = prerender_spots(site, root)
+    issued = built_issue_time(site)   # the time the built answers are as at (the note without scripts)
     ids = []
     for r in results:
         if not SPOT_ID.fullmatch(str(r["id"])):
@@ -2300,7 +2354,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
-            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds), token))
+            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds,
+            issued=issued), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     paged = [r for r in results if r["id"] in set(ids)]
@@ -2688,7 +2743,7 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "profile" / "index.html").write_text(
-            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/"), token))
+            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root), token))
     return n
 
 
