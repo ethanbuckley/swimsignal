@@ -1,0 +1,157 @@
+{
+ "@comment": "Trimmed from GET https://environment.data.gov.uk/flood-monitoring/id/floods on 26 Oct 2026 at 00:24 UTC: eight of 137 items, messages removed. Environment Agency flood and river level data from the real-time data API (Beta), OGL v3.0.",
+ "items": [
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/122WAF940",
+   "description": "Lower River Ure",
+   "eaAreaName": "Yorkshire",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/122WAF940",
+    "county": "North Yorkshire",
+    "notation": "122WAF940",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/122WAF940/polygon",
+    "riverOrSea": "River Ure, Swinney Beck, Bishop Monkton Beck, River Skell, River Laver, River Tutt, Stainley Beck"
+   },
+   "floodAreaID": "122WAF940",
+   "isTidal": false,
+   "severity": "Flood alert",
+   "severityLevel": 3,
+   "timeMessageChanged": "2026-10-25T21:50:00",
+   "timeRaised": "2026-10-25T21:50:34",
+   "timeSeverityChanged": "2026-10-25T20:18:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/113WACT1B",
+   "description": "South Devon coast from Start Point to Dawlish Warren",
+   "eaAreaName": "Devon, Cornwall and the Isles of Scilly",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/113WACT1B",
+    "county": "Devon, Torbay",
+    "notation": "113WACT1B",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/113WACT1B/polygon",
+    "riverOrSea": "South Devon Coast"
+   },
+   "floodAreaID": "113WACT1B",
+   "isTidal": true,
+   "severity": "Flood alert",
+   "severityLevel": 3,
+   "timeMessageChanged": "2026-10-25T10:17:00",
+   "timeRaised": "2026-10-25T10:17:25",
+   "timeSeverityChanged": "2026-10-25T10:17:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/011WAFDW",
+   "description": "Upper River Derwent, Stonethwaite Beck and Derwent Water",
+   "eaAreaName": "Cumbria and Lancashire",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/011WAFDW",
+    "county": "Cumberland",
+    "notation": "011WAFDW",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/011WAFDW/polygon",
+    "riverOrSea": "Derwent, Stonethwaite Beck"
+   },
+   "floodAreaID": "011WAFDW",
+   "isTidal": false,
+   "severity": "Flood alert",
+   "severityLevel": 3,
+   "timeMessageChanged": "2026-10-25T10:36:00",
+   "timeRaised": "2026-10-25T10:36:00",
+   "timeSeverityChanged": "2026-10-24T12:00:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/011FWFNC6KC",
+   "description": "Keswick Campsite",
+   "eaAreaName": "Cumbria and Lancashire",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/011FWFNC6KC",
+    "county": "Cumberland",
+    "notation": "011FWFNC6KC",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/011FWFNC6KC/polygon",
+    "riverOrSea": "Derwentwater"
+   },
+   "floodAreaID": "011FWFNC6KC",
+   "isTidal": false,
+   "severity": "Flood warning",
+   "severityLevel": 2,
+   "timeMessageChanged": "2026-10-25T10:34:00",
+   "timeRaised": "2026-10-25T10:34:27",
+   "timeSeverityChanged": "2026-10-24T20:14:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/122WAF942",
+   "description": "Upper River Wharfe",
+   "eaAreaName": "Yorkshire",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/122WAF942",
+    "county": "Bradford, Leeds, North Yorkshire",
+    "notation": "122WAF942",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/122WAF942/polygon",
+    "riverOrSea": "River Wharfe"
+   },
+   "floodAreaID": "122WAF942",
+   "isTidal": false,
+   "severity": "Warning no longer in force",
+   "severityLevel": 4,
+   "timeMessageChanged": "2026-10-25T09:08:00",
+   "timeRaised": "2026-10-25T09:08:36",
+   "timeSeverityChanged": "2026-10-25T09:08:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/011WAFCD",
+   "description": "Rivers Cocker, Marron and Derwent",
+   "eaAreaName": "Cumbria and Lancashire",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/011WAFCD",
+    "county": "Cumberland",
+    "notation": "011WAFCD",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/011WAFCD/polygon",
+    "riverOrSea": "River Cocker, River Marron, River Derwent"
+   },
+   "floodAreaID": "011WAFCD",
+   "isTidal": false,
+   "severity": "Warning no longer in force",
+   "severityLevel": 4,
+   "timeMessageChanged": "2026-10-25T10:35:00",
+   "timeRaised": "2026-10-25T10:35:40",
+   "timeSeverityChanged": "2026-10-25T10:35:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/122WAF946",
+   "description": "Upper River Ouse",
+   "eaAreaName": "Yorkshire",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/122WAF946",
+    "county": "North Yorkshire, York",
+    "notation": "122WAF946",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/122WAF946/polygon",
+    "riverOrSea": "River Ouse, Burdyke, Holgate Beck, Blue Beck, River Foss, The Fleet"
+   },
+   "floodAreaID": "122WAF946",
+   "isTidal": false,
+   "severity": "Flood alert",
+   "severityLevel": 3,
+   "timeMessageChanged": "2026-10-25T21:52:00",
+   "timeRaised": "2026-10-25T21:52:29",
+   "timeSeverityChanged": "2026-10-25T17:10:00"
+  },
+  {
+   "@id": "http://environment.data.gov.uk/flood-monitoring/id/floods/062WAF38BrentBks",
+   "description": "Silk Stream and the Deans, Edgware, Dollis, Mutton, Wembley and Wealdstone Brooks",
+   "eaAreaName": "Hertfordshire and North London",
+   "floodArea": {
+    "@id": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/062WAF38BrentBks",
+    "county": "Barnet, Brent, Greater London, Harrow",
+    "notation": "062WAF38BrentBks",
+    "polygon": "http://environment.data.gov.uk/flood-monitoring/id/floodAreas/062WAF38BrentBks/polygon",
+    "riverOrSea": "Silk Stream;\r\nDollis Brook;\r\nDeans Brook;\r\nEdgware Brook;\r\nMutton Brook;\r\nWealdstone Brook;\r\nWembley Brook"
+   },
+   "floodAreaID": "062WAF38BrentBks",
+   "isTidal": false,
+   "severity": "Warning no longer in force",
+   "severityLevel": 4,
+   "timeMessageChanged": "2026-10-25T08:53:00",
+   "timeRaised": "2026-10-25T08:53:42",
+   "timeSeverityChanged": "2026-10-25T08:53:00"
+  }
+ ]
+}

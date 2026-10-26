@@ -34,6 +34,7 @@ function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
     ['Algae observation', s.algae?.date ? `${s.algae.phrase || 'Visual check'} · ${dayMonthYear(s.algae.date)}. A past visual observation, not a current algae warning.` : 'No algae observation in this update. This does not mean algae are absent.'],
     ['Local warnings', [...flowFacts(s, Date.now(), generatedAt).filter(f => f.flood).map(f => flowSentence(f)),
       floodUnchecked(s, Date.now(), generatedAt) ? floodUncheckedLine() : '',
+      floodUnmatched(s, Date.now(), generatedAt) ? floodUnmatchedLine() : '',
       'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.'].filter(Boolean).join(' ')]
   ];
 }
@@ -111,8 +112,8 @@ function compareRows(s, iso, generatedAt = null, now = Date.now()) {
     ['Access', compareAccess(s)], ['Local warnings', t('Local warnings')], ['Model limits', t('Model limits')]];
 }
 // "Too high to swim" (build_site.attach_flow_state): the river high or rising fast at a gauge on the
-// spot's own river, and the Environment Agency's flood alerts and warnings in force within 10 km, the
-// most severe first. A different hazard from pollution, so never part of the level. Each is said only
+// spot's own river, and the Environment Agency's flood alerts and warnings in force within 10 km for
+// the spot's own river or lake (build_site.attach_flow_state), the most severe first. A different hazard from pollution, so never part of the level. Each is said only
 // while it can still be true when read: not from a gauge reading over a day old (flows.MAX_READING_AGE_H),
 // a rise whose last reading is over six hours old, or a build over a day old. So a stale reading never
 // shows "River high", whether the build found it stale or it went stale on a phone since.
@@ -139,6 +140,14 @@ const floodUnchecked = (s, now = Date.now(), generatedAt = null) =>
   s.flood_alerts === null && !(generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build);
 const floodUncheckedLine = (html = false) => 'Flood warnings not checked for this forecast. '
   + (html ? `<a href="${FLOOD_SERVICE}">See the Environment Agency</a>.` : `See the Environment Agency: ${FLOOD_SERVICE}`);
+// Alerts in force nearby whose flood area names no water the build could tie to this spot
+// (flows.split_flood_alerts, "unknown"): said, neutrally, beside the unchecked line, never as a
+// named warning for another river and never as none. Alerts for other named waters (a nearby river,
+// the coast) are not this spot's and are not said (`flood_alerts_other`). Not from a build over a day old.
+const floodUnmatched = (s, now = Date.now(), generatedAt = null) =>
+  Array.isArray(s.flood_alerts) && s.flood_alerts_unmatched > 0 && !(generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build);
+const floodUnmatchedLine = (html = false) => 'Flood alerts nearby could not be matched to this water. '
+  + (html ? `<a href="${FLOOD_SERVICE}">Check the Environment Agency's flood map</a>.` : `Check the Environment Agency's flood map: ${FLOOD_SERVICE}`);
 // One fact as a sentence: plain text for the comparison, or HTML for the answer (escaped here, with
 // the lead in bold and the flood area linked to the Environment Agency's page for it).
 const htmlText = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
@@ -160,4 +169,4 @@ function comparisonIds(ids, available) {
   return [...new Set(ids.filter(id => valid.has(id)))].slice(0,3);
 }
 if (typeof module === 'object' && module.exports) module.exports = {evidenceRows, compareDays, weekCells, compareNow, compareAdvice, compareAccess, compareRows, ACCESS_WORDS,
-  comparisonIds, storedList, flowFacts, flowSentence, floodUnchecked, floodUncheckedLine};
+  comparisonIds, storedList, flowFacts, flowSentence, floodUnchecked, floodUncheckedLine, floodUnmatched, floodUnmatchedLine};

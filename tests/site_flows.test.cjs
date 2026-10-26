@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const {flowFacts, flowSentence, evidenceRows, floodUnchecked, floodUncheckedLine} = require('../src/dipcast/site/experience.js');
+const {flowFacts, flowSentence, evidenceRows, floodUnchecked, floodUncheckedLine, floodUnmatched, floodUnmatchedLine} = require('../src/dipcast/site/experience.js');
 const prerender = require('../scripts/prerender_spots.js');
 
 const NOW = Date.parse('2026-10-03T13:30:00Z'), BUILT = '2026-10-03T14:05:00+01:00';
@@ -137,4 +137,42 @@ test('the quiet line in words: the comparison row says it plainly; a spot withou
   assert.equal(Object.fromEntries(evidenceRows({days: [], flood_alerts: null}, '2026-10-03', built))['Local warnings'],
     'Flood warnings not checked for this forecast. See the Environment Agency: https://check-for-flooding.service.gov.uk/ '
     + 'Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.');
+});
+
+// 26 Oct 2026: Burnsall on the Wharfe said "Flood alert in force nearby: Lower River Ure", and
+// Dartington on the Dart a South Devon coastal alert. The build now keeps only alerts whose flood area
+// names the spot's own water (flows.split_flood_alerts); the others are counted, never named.
+const UNMATCHED = '<div class="f-l">Flood warnings</div><div class="f-v na">Not matched</div><div class="f-d">Flood alerts nearby could not be matched to this water. '
+  + '<a href="https://check-for-flooding.service.gov.uk/">Check the Environment Agency\'s flood map</a>.</div>';
+
+test('an alert for another river or the coast is not named on the spot page', () => {
+  const burnsall = river({flood_alerts: [], flood_alerts_other: 1, flood_alerts_unmatched: 0});
+  assert.equal(say(burnsall), '');
+  const t = tiles(burnsall);
+  assert.ok(!t.some(([, h]) => /Ure|Devon|Flood alert/.test(h)));
+  assert.equal(t.find(([label]) => label === 'Not known here')[1], '');
+  // The spot's own river's alert is still said, most severe first, beside the counted others.
+  const own = river({flood_alerts: [{...ALERT, area: 'Upper River Wharfe'}], flood_alerts_other: 1, flood_alerts_unmatched: 0});
+  assert.equal(say(own), 'Flood alert in force nearby (Environment Agency): Upper River Wharfe.');
+});
+
+test('an alert whose water could not be told: a neutral row of Not known here, never a named warning', () => {
+  const s = river({flood_alerts: [], flood_alerts_other: 0, flood_alerts_unmatched: 1});
+  assert.equal(say(s), '');   // nothing in bold in the answer
+  const unknown = tiles(s).find(([label]) => label === 'Not known here')[1];
+  assert.ok(unknown.includes(UNMATCHED), unknown);
+  assert.ok(!unknown.includes('Not checked'));   // "could not be matched" is not "the EA did not answer"
+  const top = prerender.prerender({generated_at: BUILT, spots: [s]}, 'https://example.org/swim/').w;
+  assert.ok(!/Flood/.test(top), top);
+  // Unchecked stays its own row, and never says "not matched".
+  const down = tiles(river({flood_alerts: null, flood_alerts_other: null, flood_alerts_unmatched: null})).find(([label]) => label === 'Not known here')[1];
+  assert.ok(down.includes(QUIET) && !down.includes('Not matched'));
+  assert.equal(floodUnmatched({flood_alerts: [], flood_alerts_unmatched: 1}, NOW, BUILT), true);
+  assert.equal(floodUnmatched({flood_alerts: [], flood_alerts_unmatched: 0}, NOW, BUILT), false);
+  assert.equal(floodUnmatched({flood_alerts: []}, NOW, BUILT), false);   // a build before the field
+  assert.equal(floodUnmatched({flood_alerts: [], flood_alerts_unmatched: 1}, NOW + 26 * 36e5, BUILT), false);   // a stale build
+  assert.equal(floodUnmatchedLine(), "Flood alerts nearby could not be matched to this water. Check the Environment Agency's flood map: https://check-for-flooding.service.gov.uk/");
+  const built = new Date().toISOString();   // the comparison reads the clock
+  assert.equal(Object.fromEntries(evidenceRows({days: [], flood_alerts: [], flood_alerts_unmatched: 2}, '2026-10-03', built))['Local warnings'],
+    floodUnmatchedLine() + ' Short-term pollution warnings are not fetched by this app. Check official advice and signs at the water.');
 });

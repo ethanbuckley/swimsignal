@@ -95,6 +95,18 @@ test('every input has its time, its age when the page was opened, and its source
   assert.ok(Rec.view(lake, DAYS[0], DATA, VER, BASE, NOW).includes('Not checked: the Environment Agency did not answer'));   // null is never "none"
 });
 
+// 26 Oct 2026: the Wharfe spots were given "Lower River Ure". An alert for another water is no longer
+// named, but the record never turns it into "none in force nearby".
+test('alerts for other water or unmatched water are counted, never named and never "none nearby"', () => {
+  const inputs = s => text(Rec.view({...ilkley, ...s}, DAYS[1], DATA, VER, BASE, NOW).split('class="fields r-inputs"')[1].split('</dl>')[0]);
+  const other = inputs({flood_alerts: [], flood_alerts_other: 1, flood_alerts_unmatched: 0});
+  assert.ok(other.includes("None in force for this water when the forecast was made. 1 more in force nearby is for other water or could not be matched to this water: check the Environment Agency's flood map."), other);
+  assert.ok(!other.includes('None in force nearby') && !other.includes('Ure'));
+  const both = inputs({flood_alerts: [{severity: 'Flood alert', area: 'Upper River Wharfe'}], flood_alerts_other: 1, flood_alerts_unmatched: 1});
+  assert.ok(both.includes('Flood alert in force: Upper River Wharfe. 2 more in force nearby are for other water'), both);
+  assert.ok(inputs({flood_alerts: [], flood_alerts_other: 0, flood_alerts_unmatched: 0}).includes('None in force nearby when the forecast was made.'));
+});
+
 test('what the forecast cannot see is the About page\'s list, word for word', () => {
   const about = fs.readFileSync(path.join(ROOT, 'src', 'dipcast', 'pages', 'about.html'), 'utf8');
   const list = about.split('<h2>What it cannot see</h2>')[1].split('</ul>')[0];

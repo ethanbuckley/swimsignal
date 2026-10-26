@@ -1390,8 +1390,12 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
     are a different hazard. After attach_river_levels, each spot gets `flow_state`, a word from the
     gauge on its own river (flows.flow_state: "high" above the usual range, "rising fast" up more
     than a fifth of that range in the last six hours, else None), and `flood_alerts`, the
-    Environment Agency's flood alerts and warnings in force within 10 km, the most severe first ([]
-    for none, None if the EA did not answer). The alerts are asked for spot by spot only when the
+    Environment Agency's flood alerts and warnings in force within 10 km for the spot's own water,
+    the most severe first ([] for none, None if the EA did not answer). The EA's 10 km is not
+    measured to the area's outline, so an alert counts only when its area names the spot's river or
+    lake (flows.split_flood_alerts); `flood_alerts_other` counts those in force nearby for other
+    waters and `flood_alerts_unmatched` those whose water could not be told (None when unchecked).
+    The alerts are asked for spot by spot only when the
     national list has one in force (flows.floods_in_force_anywhere): on most days one request, not
     one a spot. The rise is fetched only where it could set the word, a current reading on the
     spot's own river not already above its range, from the last 24 readings, and kept in
@@ -1463,16 +1467,36 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
         with ThreadPoolExecutor(max_workers=workers) as pool:
             for i, found in zip(failed, pool.map(again, failed), strict=True):
                 out[i] = (*out[i][:2], found)
-    counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0}
+    counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0,
+              "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0}
     for r, (word, rise, found) in zip(results, out, strict=True):
-        r["flow_state"], r["flood_alerts"] = word, found
+        r["flood_alerts"], r["flood_alerts_other"], r["flood_alerts_unmatched"] = flows.split_flood_alerts(found, own_water(r))
+        r["flow_state"], found = word, r["flood_alerts"]
         if rise and r.get("river_state"):
             r["river_state"].update(rise_6h_m=rise["rise_m"], rise_from=rise["from"], rise_to=rise["to"])
         counts["river_high"] += word == "high"
         counts["river_rising_fast"] += word == "rising fast"
         counts["flood_alerts"] += bool(found)
         counts["flood_alerts_unchecked"] += found is None
+        counts["flood_alerts_other_water"] += bool(r["flood_alerts_other"])
+        counts["flood_alerts_unmatched"] += bool(r["flood_alerts_unmatched"])
     return counts
+
+
+def own_water(r: dict):
+    """The spot's own water for its flood alerts (flows.SpotWater): the names a flood area can give it
+    (flows.water_names), from its river and the watercourse it was placed on, and for a lake with no
+    watercourse its name before the first comma ("Blea Tarn, Langdale"); whether it is a lake; and
+    whether it is on tidal water (placed on a tidal river, or of a kind that is neither a river nor a
+    lake). With no name, its alerts are "unknown", never dropped."""
+    from dipcast.ingest import flows
+    loc = r.get("location") if isinstance(r.get("location"), dict) else {}
+    lake = r.get("kind") == "lake"
+    names = [r.get("river"), loc.get("watercourse")]
+    if lake and not loc.get("watercourse"):
+        names.append(str(r.get("name") or "").split(",")[0])
+    tidal = loc.get("form") == "tidalRiver" or r.get("kind") not in (None, "", "river", "lake")
+    return flows.SpotWater(flows.water_names(*names, lake=lake), lake, tidal)
 
 
 WEATHER_CREDIT = "Weather data by Open-Meteo.com"

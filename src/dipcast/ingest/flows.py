@@ -12,12 +12,13 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import NamedTuple
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 
 from dipcast import config
-from dipcast.network.names import river_words
+from dipcast.network.names import WELSH, river_words
 
 log = logging.getLogger(__name__)
 
@@ -450,13 +451,97 @@ def flood_alerts(lat: float, lon: float, dist_km: float = FLOOD_DIST_KM, timeout
             continue
         if sev not in FLOOD_WORDS:
             continue
-        area = str(f.get("floodAreaID") or (f.get("floodArea") or {}).get("notation") or "")
+        fa = f.get("floodArea") if isinstance(f.get("floodArea"), dict) else {}
+        area = str(f.get("floodAreaID") or fa.get("notation") or "")
         ok = bool(_AREA_ID.fullmatch(area))
         out.append({"severity_level": sev, "severity": FLOOD_WORDS[sev], "area": f.get("description") or None,
                     "area_id": area if ok else None, "raised": f.get("timeRaised"),
-                    "url": f"https://check-for-flooding.service.gov.uk/target-area/{area}" if ok else None})
+                    "url": f"https://check-for-flooding.service.gov.uk/target-area/{area}" if ok else None,
+                    "waters": flood_waters(fa.get("riverOrSea")),
+                    "tidal": f.get("isTidal") if isinstance(f.get("isTidal"), bool) else None})
     out.sort(key=lambda a: a["severity_level"])
     return out
+
+
+# Which water a flood area is for. The EA's `dist` above is not measured to the area's outline: on
+# 26 Oct 2026 the four Wharfe spots near Burnsall were given "Lower River Ure" (122WAF940), whose
+# nearest point is 16 to 19 km away, and Dartington on the Dart "South Devon coast from Start Point to
+# Dawlish Warren" (113WACT1B). Each area names its waters (floodArea.riverOrSea, "River Ure, Swinney
+# Beck, ..."), so an alert is the spot's own only when its name or one of its waters names the spot's
+# river or lake. The EA marks coasts, estuaries and tidal rivers (isTidal): those are never an inland
+# spot's, even when they name its river ("Coast at Duddon estuary" for Birks Bridge, 20 km upstream).
+# A river can flow into or through a lake (the Rothay through Grasmere and Rydal Water into
+# Windermere), so a lake's alert for another named river is "unknown", said neutrally, not dropped.
+# Words beside the pollution level, never part of it: nothing here changes a forecast or a level.
+class SpotWater(NamedTuple):
+    """What a flood area must name to be the spot's (water_names), whether the spot is a lake, and
+    whether it is on tidal water (a tidal river, the coast)."""
+    names: frozenset[str]
+    lake: bool = False
+    tidal: bool = False
+
+
+def flood_waters(river_or_sea) -> list[str] | None:
+    """A flood area's riverOrSea as a list of names: the EA gives one string, the waters split by
+    commas, semicolons or new lines ("River Ure, Swinney Beck"), or now and then a list. None when
+    it names none, which is not the same as naming another water."""
+    items = river_or_sea if isinstance(river_or_sea, list) else [river_or_sea]
+    out = [w.strip() for x in items if isinstance(x, str) for w in re.split(r"[,;\n]", x) if w.strip()]
+    return out or None
+
+
+def _water_text(name) -> str:
+    """A water's name for matching: lower case, a bracket dropped ("Windermere (N Basin)"), letters
+    only, Welsh words read as English ("Afon Gwy" is "river wye")."""
+    t = re.sub(r"\([^)]*\)", " ", str(name or "").lower())
+    words = ["river" if w == "afon" else WELSH.get(w, w) for w in re.findall(r"[^\W\d_]+", t)]
+    return " ".join(words)
+
+
+def water_names(*names, lake: bool = False) -> frozenset[str]:
+    """The ways a flood area can name the spot's water: the whole name ("river wharfe", "derwent
+    water"), run together ("derwentwater", as the EA writes it for the Keswick campsite), and for a
+    river the name without "River" ("wharfe", as a list of waters may give it: "Bure, Ant, Thurne").
+    A lake keeps its "Water" or "Mere": "Derwent" alone is the river, which the lake's alerts are not."""
+    out = set()
+    for n in names:
+        t = _water_text(n)
+        if not t:
+            continue
+        out |= {t, t.replace(" ", "")}
+        core = re.sub(r"^(the )?river |( river)$", "", t).strip()
+        if not lake and core and core != t and len(core) >= 3:
+            out.add(core)
+    return frozenset(out)
+
+
+def flood_alert_water(alert: dict, spot: SpotWater) -> str:
+    """"own" when the alert's area name or one of its waters names the spot's water, "other" when it
+    is a tidal area and the spot is inland, or its area names its waters and none is the spot's river,
+    else "unknown": a spot with no water name, an area that names no waters, or a lake's alert for
+    another named river. An unknown alert is never shown as the spot's, nor dropped as if there were none."""
+    if not isinstance(alert, dict):
+        return "unknown"
+    if alert.get("tidal") is True and not spot.tidal:
+        return "other"
+    if not spot.names:
+        return "unknown"
+    waters = alert.get("waters") if isinstance(alert.get("waters"), list) else []
+    texts = [_water_text(x) for x in [alert.get("area"), *waters] if isinstance(x, str)]
+    if any(f" {n} " in f" {t} " for t in texts for n in spot.names):
+        return "own"
+    named = any(_water_text(w) for w in waters if isinstance(w, str))
+    return "other" if named and not spot.lake else "unknown"
+
+
+def split_flood_alerts(alerts: list[dict] | None, spot: SpotWater) -> tuple[list[dict] | None, int | None, int | None]:
+    """The alerts for the spot's own water (in the order given, the most severe first), and how many
+    others are in force nearby for other waters and for water that could not be told. None for all
+    three when the EA did not answer (`alerts` None): unchecked is never "none"."""
+    if alerts is None:
+        return None, None, None
+    kinds = [flood_alert_water(a, spot) for a in alerts]
+    return ([a for a, k in zip(alerts, kinds, strict=True) if k == "own"], kinds.count("other"), kinds.count("unknown"))
 
 
 if __name__ == "__main__":

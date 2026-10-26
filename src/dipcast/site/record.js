@@ -197,9 +197,13 @@ const Record = (() => {
       + `${nil(wt.river_km) ? '' : `, ${wt.river_km} km ${esc(wt.direction || 'away')}`}. Not part of the pollution level.`, when(wt.observed_at), 'the Environment Agency\'s water-quality sensor');
     if (s.flood_alerts === null) add('Flood alerts', 'Not checked: the Environment Agency did not answer when this forecast was made. Check flood warnings.', '', 'the Environment Agency');
     else if (Array.isArray(s.flood_alerts)) {
-      const fl = s.flood_alerts.filter(f => f && f.severity);
-      add('Flood alerts', fl.length ? fl.map(f => `${esc(f.severity)} in force: ${esc(f.area)}.`).join(' ') + ' A separate hazard, not part of the pollution level.'
-        : 'None in force nearby when the forecast was made.', `Checked with the forecast, ${at(data.generated_at)}`, 'the Environment Agency');
+      // Alerts for other waters (flood_alerts_other) or water that could not be told (flood_alerts_unmatched)
+      // are not this spot's, but are not "none in force" either: said as a count, never by name.
+      const fl = s.flood_alerts.filter(f => f && f.severity), rest = (s.flood_alerts_other || 0) + (s.flood_alerts_unmatched || 0);
+      const others = rest ? ` ${rest} more in force nearby ${rest === 1 ? 'is' : 'are'} for other water or could not be matched to this water: check the Environment Agency's flood map.` : '';
+      add('Flood alerts', fl.length ? fl.map(f => `${esc(f.severity)} in force: ${esc(f.area)}.`).join(' ') + others + ' A separate hazard, not part of the pollution level.'
+        : rest ? `None in force for this water when the forecast was made.${others}` : 'None in force nearby when the forecast was made.',
+        `Checked with the forecast, ${at(data.generated_at)}`, 'the Environment Agency');
     }
     return `<dl class="fields r-inputs">${out.join('')}</dl>`;
   }

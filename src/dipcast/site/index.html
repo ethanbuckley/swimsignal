@@ -2277,6 +2277,8 @@ const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof ea
 //  - Access: the desk check (accessSaid), never an inspection;
 //  - Flood warnings: the EA did not answer this build (experience.js, floodUnchecked; kept from the
 //    answer, where in bold it read like a hazard).
+//  - Flood warnings: alerts in force nearby that could not be matched to this water (experience.js,
+//    floodUnmatched), never named as another river's.
 // Not on a failed forecast's live readings (no forecast, nothing to read against). Empty with no gap.
 function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
@@ -2285,6 +2287,7 @@ function unknowns(d) {
   if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
   if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
   if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
+  if (typeof floodUnmatched === 'function' && floodUnmatched(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not matched', floodUnmatchedLine(true)]);
   return rows;
 }
 const unknownTile = d => { const rows = unknowns(d); if (!rows.length) return '';
