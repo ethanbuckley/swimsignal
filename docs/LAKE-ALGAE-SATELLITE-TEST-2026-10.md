@@ -573,6 +573,16 @@ Added for this revision (26 October 2026):
 - No EA algae check was fetched or opened for this revision. No satellite value was paired with any check. No score of
   any kind has been computed.
 
+## Approval
+
+Ethan approved this statement on 26 October 2026 at about 19:25 UTC, in the session that wrote it, in reply to "Approve
+the revised #377 statement so stage 1 can run?": "approved". He had the revision at e6382b7. Nothing above this
+section changed after that, and nothing had been run.
+
+**Stage 0 is not run.** The approval did not cover a Copernicus Data Space account, and Claude does not create
+accounts. So, by the decision rule in "Stage 0: CLMS first", CLMS is reported as coverage only (the metadata above) and
+NDCI is the primary reading at every water body.
+
 ---
 
 ## Results
