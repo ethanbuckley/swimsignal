@@ -92,4 +92,28 @@ The privacy notice (`pages/privacy.html`) now names the outing in the kept plan 
 3. **Backup suggestions:** the backup list is Saved first, then the plan's spots. Should it suggest the nearest spot at a lower level, as the spot page's "Lower risk nearby" does? That would be a ranking choice the page makes for the swimmer.
 4. **Evidence length on Saved cards:** the evidence adds one to three short sentences per changed card. Keep it as it is, or fold it?
 5. **The read tick:** should a version tick also show in the sites view (`sites.html`) and in the briefing email (`briefing.py` could print the same check)? Today only the record page has it. Should the box be dropped before any paid pilot, since a club may read a local tick as a record?
-6. **Privacy wording:** the two sentences added to `privacy.html` need your read.
+6. **Overflow names on Saved cards:** the Saved page draws from `spots-lite.json`, which has no `contributors`. So the names and spill times show only where the full `spots.json` is loaded; on Saved cards today, the evidence gives the count alone. This was checked in the browser on the fixture. Adding the discharging overflows' names and start times to the lite file would cost a few bytes per spot. Do you want that?
+7. **Privacy wording:** the two sentences added to `privacy.html` need your read.
+
+## Browser check (26 Oct 2026, fixture preview)
+
+The fixture is a local `spots.json` from 20 Oct with its dates moved on 6 days, issued 21:40. One edit: Port Meadow is set to moderate, with two listed overflows spilling. The pages were written with `build_site.write_pages`. No pipeline, no network.
+
+- **Phone 375 px (app browser pane):**
+  - The tile is closed with no saved plan.
+  - Keyboard: Enter opens it, Tab reaches each select, focus ring 2 px, focus kept on the select after each redraw.
+  - The two columns are 148 px each. No sideways scroll (scrollWidth 375).
+- **Link round trip:** choose the time, spot and backup. Copy the address. Clear storage. Open it in a new tab. The same time, spot and backup appear.
+- **Refresh:** bare `/plan/` restores the time, spot and backup from `dipcast.plan`.
+- **Day changes:**
+  - A kept plan from yesterday opens on today with the time dropped and the spot and backup kept.
+  - Picking another day on the strip drops the time and keeps both spots.
+  - The one-level-a-day sentence stays in both cases.
+- **Past time:** evening chosen at 22:48 today says "That time has already passed today."
+- **Blocked storage:** with `localStorage` throwing, a redraw and a backup change ran without errors, and the link kept the backup. This was a redraw under a throwing getter, not a fresh page load with storage blocked.
+- **Saved cards:** they show the line, then the issue times, the count against then, an unknown count with its reason, and "This is the spot of your outing tomorrow morning." / "This is the backup for …".
+- **Decision record:** Space ticks the box. `dipcast.briefacks` holds exactly `{spot, day, issue, hash, at}`. The box is `.screen-only`.
+- **Desktop 1440 px (headless Chrome):** the tile sits in the list column, beside the map.
+- **Console:** the only errors were from the fixture:
+  - the service worker registration failed with "unknown error when fetching the script". `sw.js` parses (`node --check`), so this looks like a limit of the pane's browser on this port (inferred).
+  - 404s for `favicon.ico` and `data/overflows/index.json`, which the fixture does not include.
