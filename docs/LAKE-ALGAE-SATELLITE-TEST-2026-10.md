@@ -626,6 +626,14 @@ A record of what was done and seen while the test ran. It changes nothing above 
   the runner looks only at the last stop line; the stage 1 byte cap over all runs is raised from 4 GiB to 5 GiB for
   the remaining 201 scenes (about 0.5 GB). Request caps, hosts, pace (A1) and stop rules are unchanged. No reading
   changes: the same scenes are read.
+- **26 October, 21:39 UTC: stage 1 complete.** One read failed at 21:39:00 (Amazon closed the connection without a
+  response; `RemoteProtocolError`, logged with status null); the run stopped, nothing was retried in it, and a new run
+  resumed from the saved files 23 seconds later. Totals over all stage 1 runs: 28,317 requests, 5,175,518,264 bytes
+  (under the A2 cap of 5 GiB). 7,523 scene rows, 1,749 of them usable.
+  **Size rule: 14 of 18 sites pass, on 8 water bodies.** Out, with 0 core pixels: Hampstead Heath Ladies, Men's and
+  Mixed Ponds, and Henleaze Lake. Core pixels per site and tile: `docs/LAKE-ALGAE-SATELLITE-TEST-2026-10-sizes.json`.
+  **Features file SHA-256: `41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e`**, committed here before
+  stage 2 fetches a single EA check. No reading in the file has been looked at.
 
 ---
 
