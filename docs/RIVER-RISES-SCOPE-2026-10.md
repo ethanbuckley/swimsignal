@@ -336,3 +336,127 @@ most likely C2 (radar), or C1 at the five longer pairs. Overall expectation: C1 
   `docs/RADAR-RAIN-CHECK-2026-10.md`; `docs/MET-OFFICE-DATA-2026-10.md`; `docs/LAKE-ECOLI-LINE-TEST-2026-10.md`.
 - The list of saved radar months (file names only; no radar value was read).
 - No label rate, no model fit and no score of any kind.
+
+## Harness choices (26 October 2026)
+
+Written with the harness in `scripts/river_rises_eval/`, before any data for the run was fetched and before any
+label, fit or score. Nothing above is changed. These are the points the plan leaves open, and how the harness fixes
+them. Each is a constant or a function in `scripts/river_rises_eval/protocol.py`, checked in
+`tests/test_river_rises_eval.py` on synthetic series only.
+
+**What the site showed at t.**
+- "Published by t" means a reading at r ≤ t − d. The site's word at t is the site's own rule on those readings:
+  the index from the latest published reading at most 24 h old (`MAX_READING_AGE_H`), the rise from
+  `flows.rise_over_window` on the newest 24 published readings (rounded to the millimetre, as the site does), and
+  `flows.flow_state`. A test checks this against the flows functions themselves.
+- So in the d = 3 h sensitivity run, population P is rebuilt from readings published 3 h late, not kept from d = 1 h.
+- Population A: issue times with a published reading at most 24 h old.
+
+**Labels.** The "last reading at or before t" must be at most 1 h old, or the label is missing. The "ahead" side
+needs at least one reading in (t, t + h]. Labels read the archived series as it is, with no delay.
+
+**Inputs.**
+- A rise over k hours is the reading at the cut (t − d) minus the reading at the cut − k h. Each is the last
+  reading at or before its time, and at most 1 h older than it. Otherwise that rise is missing.
+- The plan fills a missing upstream gauge with 0 and a flag. The harness does the same for a missing spot-gauge
+  rise (one flag, `spot_missing`), so R3, C1 and C2 score the same rows. Each upstream slot (`same`, `trib`) gets
+  one flag, set when any of its four inputs is missing.
+- Radar: the cells holding the spot gauge and every upstream gauge found within 50 km (not only the two chosen),
+  averaged over the cells with a value that hour. A sum needs every hour in it, or it is missing (0 and a flag).
+  The files' `coverage` column is not used. The radar cut stays at t − 1 h in the d = 3 h run, as stated.
+
+**Which gauges.**
+- The chosen upstream gauge must have a Hydrology 15-minute series and an EA usual range. Candidates are tried in
+  order until one has both: `same` by distance up the river, `trib` by catchment share (largest first), then
+  distance. `trib` has no minimum distance or share beyond the plan's 0.5 km.
+- A spot gauge enters the run if it is usable by the site's test, has a Hydrology series, and has at least one
+  chosen upstream gauge. The gate's "spot gauges with a pair" counts only those with a `same` gauge.
+- A spot gauge used by several spots counts once.
+
+**Periods.** An issue time belongs to a period only if its whole label window does too. For 3 h: training issue
+times 21 November 2024 00:00 to 30 September 2025 21:00 UTC; test 1 October 2025 00:00 to 24 October 2026 21:00.
+Readings are fetched from 20 November 2024, for the 24 h look-back.
+
+**River systems and folds.**
+- The outlet is the sink reached downstream of the spot gauge's link. Where the network splits and reaches more
+  than one sink, the one with the most network above it. A loop with no sink is named by its smallest node.
+- Systems are sorted, permuted with `default_rng(20261026)`, and dealt into folds in turn (position mod 5).
+
+**Models.** Each model is fitted separately for each population, horizon and delay, with `ecoli.fit` (C = 1). A
+training set whose labels are all one value predicts that rate.
+- R1 uses the gauge's own training-period rows by month (time separation only). A gauge-month with no rows takes the
+  gauge's rate, then the pooled rate. See question 1.
+- R2 uses the other folds' training rows.
+
+**Metrics.**
+- A forecast at or above 0.5 is a warning. Hit rate = hits / events. False-alarm ratio = false alarms / warnings.
+  Reliability: ten equal bins from 0 to 1.
+- Cluster bootstrap: river systems drawn with replacement, 2,000 draws, `default_rng(20261026)`, 2.5th to 97.5th
+  percentiles. Skill on a draw is 1 − SSE(candidate) / SSE(reference) over its rows.
+- The gate's labelled share is pooled over every gauge in the run, per period, for the 3 h label. Episodes are
+  counted in P at d = 1 h.
+
+**Conditions.**
+- Condition 2: river systems with 5 or more test episodes; needs ceil(2n/3) of them above 0. With none, it fails.
+- Condition 3 with no warning at all fails.
+- Condition 4: an onset is an issue time whose word is "rising fast" when the hour before was "none", with all 6
+  look-back hours in the test period. An hour with no forecast (outside P, for example "high") ends the run. An onset
+  is caught when the forecast at t0 − 1 h is at or above 0.5. With no caught onset, it fails.
+- Condition 6: each upstream gauge's whole fetched series is shifted circularly, so its gaps move with it. A gauge
+  shared by two spot gauges gets one shift. Only the candidate is refitted; the gain is against the real reference.
+  For C2 against C1, the radar mean of each spot gauge is shifted instead (see question 5).
+
+**Near-miss labels.** The primary comparison is C1 against R3, in Brier skill (condition 1's units), with its 95%
+interval. B and H are read from the run statement in the same units. Secondary checks: the d = 3 h run and
+population A, each with its own bootstrap. A secondary labelled "Harm" or "Possible harm" blocks "Promising, not
+shown" (see question 2). The verdict (all six conditions) and the label are reported side by side, not combined.
+
+**Order of work.**
+- Stage 1 (`score.py predict`) writes the gate, the predictions and a summary of the predictions alone, and prints
+  the predictions file's SHA-256. It also writes the rows with their labels for stage 2, and prints nothing from them.
+- The run statement is a JSON file: that SHA-256, B and H for C1 and C2, and the working. Stage 2
+  (`score.py score`) refuses a statement that names other predictions, lacks the working, or has H > B.
+- `fetch.py --fetch` and `score.py` refuse to run before 2 November 2026.
+
+**Fetching.** One CSV request per series for the whole window (about 70,000 rows, under the soft limit of 100,000),
+not the batch API. A series that reaches the 200,000 rows asked for stops the run. Readings marked Suspect, Rejected
+or Missing are dropped, as in the coverage run; "Unchecked" readings are kept.
+
+## Questions for Ethan before the run
+
+Each needs an answer, or a dated amendment, before 2 November. The harness runs as described above if none comes.
+
+1. **R1 and the catchment separation.** R1 is "by spot gauge", but "both separations hold at once" forbids a
+   gauge's own rows. The harness uses the gauge's own training-period rows for R1 only. The alternative: the other
+   folds' rate by month. R1 enters no pass condition.
+2. **"Harm" cannot be reached** in the addendum's order. A wholly negative interval with L > −H is labelled "No
+   useful difference" first; with L ≤ −H it is "Possible harm" first. Checked in the tests. So "no secondary check is
+   labelled harm" never blocks anything as written. The harness counts "Possible harm" too. Confirm, or amend the
+   addendum.
+3. **B and H.** The plan says they are written in the run statement from predictions alone. Which units (the harness
+   expects Brier skill against R3), and what working? Stage 1 writes `prediction_summary.json` to work from. Also:
+   does a "Promising, not shown" label with conditions failing lead to the shadow, or only a pass?
+4. **Radar in the d = 3 h run.** The plan states t − 1 h for radar and d for gauges. The harness keeps radar at
+   t − 1 h when d = 3 h. The stricter alternative is t − 3 h for both.
+5. **C2's placebo.** The plan shifts "each upstream series". For C2 against C1 the added input is radar, so the
+   harness shifts the radar. Shift the upstream gauges as well?
+6. **Datum.** The index uses the EA usual range (flood-monitoring stage scale) with Hydrology levels. If a
+   Hydrology series is on another datum (mAOD against a stage scale), the index is wrong; the rises are not.
+   Inferred, not checked. Stage 1 writes each gauge's training-period index (median, 5th, 95th percentile) as
+   `index_check`. Should a gauge be dropped on a stated rule before stage 2, for example a median outside −0.5 to 1.5?
+7. **Gauges with only a tributary.** The harness includes spot gauges whose only chosen upstream gauge is on another
+   river name. The plan's fetch speaks of "spot gauges with upstream gauges", which reads the same way. The
+   alternative is paired gauges only.
+8. **The gate's 80%.** Pooled over all gauges in the run, per period. Per gauge instead?
+
+## Running the harness (not before 2 November 2026)
+
+1. Fetch, under the heavy-run lock (it waits while another job holds it):
+   `bash scripts/river_rises_eval/run_fetch.sh <cache dir> <data dir>`. Give it the coverage run's cache directory
+   to reuse its station answers. A run that stops at the 300-request cap says so; run it again to continue. Done
+   when `<data dir>/summary.json` has `"stopped": null` and a `series` count.
+2. Stage 1, alone on the machine: `uv run python scripts/river_rises_eval/score.py predict --data <data dir> --out <run dir>`.
+   It prints the gate and the predictions' SHA-256.
+3. Write the run statement from `<run dir>/prediction_summary.json` only.
+4. Stage 2: `uv run python scripts/river_rises_eval/score.py score --data <data dir> --out <run dir> --statement <file>`.
+   It writes `result.json` and `report.md`. The placebo refits each candidate 200 times.
