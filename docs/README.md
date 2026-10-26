@@ -102,6 +102,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   questions fail;** nothing adopted.
 - [FARM-PRESSURE-TEST-2026-10.md](FARM-PRESSURE-TEST-2026-10.md): the Environment Agency's farm-pollution flag
   per water body as an E. coli input. **Fails conditions 1, 2, 5 and 6;** nothing adopted. Scores: `-score.json`.
+- [LAKE-ECOLI-LINE-TEST-2026-10.md](LAKE-ECOLI-LINE-TEST-2026-10.md): a lower E. coli line (235 or 500 per 100 ml)
+  to give lakes an estimate. **Both lines fail condition 3** (ranking: lake AUC 0.632 and 0.535 against 0.65);
+  lakes keep no E. coli estimate. Ends with a near-miss framework for later tests, dated before the run. Tables:
+  `-score.json`, `-face.json`, `-model-235.json`, `-model-500.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with
