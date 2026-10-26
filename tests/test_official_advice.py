@@ -203,3 +203,31 @@ def test_the_build_writes_the_advice_into_spots_json_and_the_built_page(tmp_path
 def test_the_build_side_reader_makes_no_request():
     src = (ROOT / "src" / "dipcast" / "official_advice.py").read_text()
     assert "httpx" not in src and "urllib" not in src and "requests" not in src and "advisories import" not in src
+
+
+def test_an_ended_advisory_stays_ended_after_it_leaves_the_drafts(tmp_path, run):
+    # Week 1 the EA lists the incident as lifted; week 2 the finder no longer has the draft at all.
+    ended = oa.check_record(run)
+    ended["drafts"]["e8b5832d974a"]["status"] = "lifted"
+    later = dict(run, drafts=[d for d in run["drafts"] if d["draft_id"] != "e8b5832d974a"])
+    week2 = oa.check_record(later, previous=ended)
+    assert week2["drafts"]["e8b5832d974a"]["status"] == "lifted"
+    assert shown(tmp_path, [entry(run)], week2) == {}
+    # Without the carried record it would come back, marked not re-checked: never a silent all-clear,
+    # but not right either for an advisory the source ended.
+    assert shown(tmp_path, [entry(run)], oa.check_record(later))[FRENSHAM][0]["state"] == "stale"
+
+
+def test_a_fixture_run_does_not_write_the_check_record(tmp_path, monkeypatch):
+    import advisory_finder
+    monkeypatch.setattr(advisory_finder.config, "CACHE", tmp_path)
+    check = tmp_path / "last_check.json"
+    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat(),
+                                 "--check-file", str(check), "--entry", "e8b5832d974a"]) == 0
+    assert not check.exists()
+
+
+def test_the_committed_check_record_is_readable_and_from_a_live_run():
+    rec = oa.load_check(oa.CHECK_FILE)
+    assert rec is not None and rec["mode"] == "live"
+    assert all(d["spot_id"] and d["status"] in ("open", "update", "withdrawn", "lifted") for d in rec["drafts"].values())

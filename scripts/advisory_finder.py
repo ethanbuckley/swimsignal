@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from advisories import APPROVALS_FILE, BY_KEY, HISTORY_STAMP, TZ, ApprovalError, review_entry, run, table  # scripts/advisories.py
 from dipcast import config
-from dipcast.official_advice import CHECK_FILE, check_record
+from dipcast.official_advice import CHECK_FILE, check_record, load_check
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,7 +77,8 @@ def main(argv: list[str] | None = None) -> int:
     if result["mode"] == "live" and not args.source:
         # A run of some sources only is not a check of all of them, so it leaves the record alone.
         args.check_file.parent.mkdir(parents=True, exist_ok=True)
-        args.check_file.write_text(json.dumps(check_record(result), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        record = check_record(result, load_check(args.check_file))   # keeps advisories that ended earlier
+        args.check_file.write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"Check record written to {args.check_file}: commit it by pull request")
     by_id = {d["draft_id"]: d for d in result["drafts"]}
     for did in args.entry:

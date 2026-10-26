@@ -3,14 +3,17 @@
 For Ethan, by hand, on your Mac, once a week in season. The rules and reasons are in
 `docs/ADVISORY-FINDER-2026-10.md`. This sheet is only what you do.
 
-**The site does not show advisories yet.** Nothing in the site build reads the drafts or
-`data/advisories/approved.json`. Showing approved lines on spot pages is a later PR, and it needs your
-go-ahead. Until then, an approval is a record of your decision and nothing more.
+**What the site shows.** Once #379 merges, the site build reads `data/advisories/approved.json`
+and `data/advisories/last_check.json`, and a spot's page shows each approved advisory above the level
+with "Last checked <date>". The build never reads the drafts and never asks a source. If the weekly
+check is not committed for 8 days, the page says "Not re-checked since <date>". It never hides the
+advisory for that.
 
 ## What never happens
 
 - Nothing is published, posted, sent or emailed. The finder has no code that does any of these.
-- The finder never writes `approved.json`. Only you change it, by pull request.
+- The finder never writes `approved.json`. Only a reviewer on the list changes it, by pull request
+  (you, or Codex under your delegation of 26 Oct 2026; each entry names who and on what authority).
 - It never changes a risk level or a spot's answer.
 - It does not run in GitHub Actions or in the site build. A test fails if a workflow names it.
 - A weekly run makes 6 requests, one at a time with a 1 second pause: the EA open-incident list, the
@@ -108,6 +111,20 @@ drafts file stays where it is, in that worktree's `data/cache/`.
    `N draft(s), N first seen, N held, N approved. Dry run: nothing published or sent ...`, then
    `Drafts written to .../data/cache/advisory_drafts.json`.
 
+A full live run (not `--fixtures`, not `--source`) also writes `data/advisories/last_check.json`.
+Commit it by PR every week, with or without an approval:
+
+```bash
+git add data/advisories/last_check.json
+```
+
+```bash
+git commit -m "Advisories: weekly check $(date -u +%Y-%m-%d)"
+```
+
+You will know it worked: the run prints `Check record written to .../last_check.json`. If you skip
+this, the pages say "Not re-checked since <date>" after 8 days.
+
 The mistake you are most likely to make: leaving out `--previous`. The run still works, so nothing
 looks wrong. But without last week's file, a feed that failed this week cannot mark its old drafts
 `unverified`, and an incident that left the EA list cannot come back as `withdrawn`. You lose the
@@ -153,9 +170,8 @@ Flags, and what to do:
 - `held`: not a flag but a count in the last line. A draft is held when it has any of `unmatched`,
   `ambiguous`, `no_date`, `conflict`, `superseded`, `unverified` or `company_notice`. Settle the flag
   before you approve. `stale` alone does not hold a draft.
-- `unmatched`: no single spot. For an EA coastal incident, ignore it. An approval has no spot field
-  (read from the code: the only keys are draft id, approver, time and line), so you cannot assign a
-  spot by approving.
+- `unmatched`: no single spot. For an EA coastal incident, ignore it. `--entry` prints nothing for
+  a draft with no spot, so you cannot assign a spot by approving.
 - `ambiguous`: the source names a water several spots share, such as Windermere. Ignore it, or ask for
   a narrower source.
 - `no_date`: the source gives no date. The EA panel for Frensham is the usual one. Approve the dated
@@ -176,11 +192,11 @@ Approval states:
 - `changed`: you approved a different line for this draft id. The source changed. Read the new line,
   and approve again by PR if it is right.
 - `lapsed`: a page notice with no stated end, approved more than 14 days ago. Check the page. If it
-  still says so, re-approve by PR with today's `approved_at`. If not, remove the entry by PR.
+  still says so, re-approve by PR with today's `reviewed_at`. If not, remove the entry by PR.
 
 ## Approving a draft
 
-Only after #379 merges. Only you approve.
+Only after #379 merges. Only a reviewer on the list approves: you, or Codex under your delegation.
 
 1. Decide from the table. Check four things: it is the right spot; it is in force today (open the
    link for `stale` or `not quoted` rows); the line is right word for word; no other row for the spot
@@ -200,15 +216,16 @@ Only after #379 merges. Only you approve.
    date -u +%Y-%m-%dT%H:%M:%SZ
    ```
 
-4. Open `data/advisories/approved.json` and add one entry to the `approvals` list. Copy the id and the
-   line from the table, not by retyping:
+4. Print the entry for the draft, with its evidence, from the weekly run:
 
-   ```json
-   {"draft_id": "e8b5832d974a", "approver": "Ethan Buckley", "approved_at": "2026-11-02T19:00:00Z",
-    "line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026"}
+   ```bash
+   uv run python scripts/advisory_finder.py --dry-run --previous data/cache/advisory_drafts.json --entry e8b5832d974a
    ```
 
-   The line is the text in the last column, up to and not including ` | `.
+   The last line is the entry as JSON, with `reviewer`, `authority` and `reviewed_at` set to `null`.
+   Paste it into the `approvals` list in `data/advisories/approved.json`. Fill in the three fields:
+   your name, your authority (`"Ethan Buckley"` for you), and the time from step 3. Do not retype the
+   line.
 
 5. Check the file is valid.
 
@@ -227,10 +244,10 @@ Only after #379 merges. Only you approve.
    You will know it worked: that row's `approval` column says `approved`, and the last line says
    `1 approved` (or one more than before).
 
-7. Commit the file.
+7. Commit both files.
 
    ```bash
-   git add data/advisories/approved.json
+   git add data/advisories/approved.json data/advisories/last_check.json
    ```
 
    ```bash
@@ -251,7 +268,7 @@ Only after #379 merges. Only you approve.
 
 The mistake you are most likely to make: retyping the line, or letting an editor change it (curly
 quotes, a double space, a line break). The finder compares the line character for character. A line
-that differs by one character shows `changed`, not `approved`. Copy it from the table.
+that differs by one character shows `changed`, not `approved`. Paste the `--entry` output whole.
 
 ## When an approved advisory ends
 

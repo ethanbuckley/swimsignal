@@ -148,10 +148,20 @@ def load_approvals(path: Path | None = None, known: set[str] | None = None, now:
     return out
 
 
-def check_record(result: dict) -> dict:
+def check_record(result: dict, previous: dict | None = None) -> dict:
     """What the page needs from one finder run, to commit as CHECK_FILE: when it ran, each source's
     state, and each draft at a spot with its status, flags and when its source last confirmed it. No
-    evidence text: the line and the link are in the approvals file."""
+    evidence text: the line and the link are in the approvals file. An ended draft (withdrawn, lifted)
+    in the `previous` record that this run no longer lists is kept, so an ended advisory stays ended
+    after it drops out of the finder's drafts, rather than coming back as "not re-checked"."""
+    out = _check_record(result)
+    for did, d in ((previous or {}).get("drafts") or {}).items():
+        if did not in out["drafts"] and isinstance(d, dict) and d.get("status") in ENDED:
+            out["drafts"][did] = d
+    return out
+
+
+def _check_record(result: dict) -> dict:
     at = datetime.fromisoformat(result["generated_at"]).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     drafts = {}
     for d in result.get("drafts", []):

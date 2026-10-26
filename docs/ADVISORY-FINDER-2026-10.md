@@ -1,7 +1,13 @@
 # Advisory finder, a dry-run prototype (26 October 2026)
 
-Status: prototype. Drafts only. Nothing is published, sent or read by the site build. Ethan's
-decisions of 26 Oct 2026 are applied (see "Decisions, 26 October 2026" at the end).
+Status: the finder only drafts. Nothing is sent. The site build reads two files and nothing else:
+the reviewed advisories in `data/advisories/approved.json` and the finder's last check in
+`data/advisories/last_check.json`. A spot's page shows a reviewed advisory above the level (see "On
+the spot's page"). Ethan's decisions of 26 Oct 2026 are applied (see "Decisions, 26 October 2026"
+at the end).
+
+The finder lives in `scripts/advisories.py`, outside the `dipcast` package, so nothing the build
+imports can reach it. The build's side is `src/dipcast/official_advice.py`. It makes no request.
 
 ## What it is for
 
@@ -100,8 +106,8 @@ update, withdrawn or lifted; "open" means in force at the source, not new); `fir
 the draft id was not in the `--previous` file, and for every draft without one); `advice`, the line's words for the advice, and `cause`; `expiry` and
 `expiry_basis`; `expected_end` and `expected_end_basis` (the EA's or EPA's expectation, never an
 expiry); `ended`; `fetched_at`; `flags`; `reason`; `duplicates`; `superseded_by`; `draft_line`; `held`;
-`current`; and `approval` (unapproved, approved, changed or lapsed) with `approved`, `approved_by`,
-`approved_at` and `approved_line` from the approvals file.
+`current`; and `approval` (unapproved, approved, changed or lapsed) with `approved`, `approved_by` (the reviewer),
+`approved_authority`, `approved_at` (the review time) and `approved_line` from the approvals file.
 
 For a feed, the evidence is the record's fields as `name: value`, with the values exactly as the feed
 gave them. A feed has no sentence to quote.
@@ -172,24 +178,39 @@ is unchanged, and a reviewer can check it on the EA panel before approving.
 
 ## What a reviewer approves
 
-Only Ethan approves. For each draft he checks the evidence, or opens the link where nothing is
-quoted, and decides:
+A reviewer on the list in `REVIEWERS` (`src/dipcast/official_advice.py`) approves. Each entry
+says who reviewed it and on what authority. The list on 26 Oct 2026 is Ethan Buckley, and Codex
+"under Ethan Buckley's delegation of routine decisions, 26 Oct 2026" (decision 8). A Codex review is
+never recorded as Ethan's. For each draft the reviewer checks the evidence, or opens the link where
+nothing is quoted, and decides:
 
 1. Is this the spot? Pick from `candidates` if the draft is unmatched.
 2. Is it still in force today? Check stale and no-date drafts at the source.
 3. Is the line right, word for word?
 4. Which of conflicting notices stands? For a water company, is it the company's own incident?
 
-An approval is one entry in `data/advisories/approved.json`, added by pull request:
+An approval is one entry in `data/advisories/approved.json`, added by pull request. It holds the
+line, the evidence it rests on, and the review. `--entry DRAFT_ID` prints the first two parts for a
+draft; the reviewer fills in the last three fields:
 
 ```
-{"draft_id": "1a2b3c4d5e6f", "approver": "Ethan Buckley", "approved_at": "2026-10-26T19:00:00Z",
- "line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026"}
+{"draft_id": "e8b5832d974a", "spot_id": "bw-ukj2310-11945",
+ "line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
+ "publisher": "Environment Agency",
+ "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
+ "kind": "feed",
+ "source_url": "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100",
+ "incident_id": "ea:11945-20260619-142800", "start": "2026-06-19", "expiry": null,
+ "fetched_at": "2026-10-26T22:45:58Z",
+ "reviewer": "<name>", "authority": "<authority>", "reviewed_at": "<UTC time>"}
 ```
 
 The loader refuses the whole file, and the run stops, if any entry has an unknown draft id (not in
-this run or `--previous`), a missing or other approver, an `approved_at` that is not UTC in that form
-or is in the future, a line that is not one clean line, a repeated id or another key. An approval
+this run or `--previous`), a missing field, a reviewer and authority pair not in `REVIEWERS`, a
+`reviewed_at` or `fetched_at` that is not UTC in that form (or a `reviewed_at` in the future), a
+`start` or `expiry` that is not a day, a link or source address that is not https, a line that is not
+one clean line, a repeated id or another key. The build reads the same file with the same loader; a
+file with any mistake shows no advisory anywhere, and the build log says why. An approval
 holds only for the exact line: if the draft's line changes, the draft is `changed` and needs
 approving again. When an advisory has ended and left the drafts, its entry has to be removed by PR.
 The finder never writes the file and has no function that publishes or sends.
@@ -198,13 +219,45 @@ The finder never writes the file and has no function that publishes or sends.
 
 - It never changes a forecast level or the spot's answer. A test checks that nothing in the package
   imports it, that no workflow runs it, and that no draft carries or names a level.
-- It never publishes, posts, emails or commits drafts. Nothing in the site build imports it.
+- It never publishes, posts, emails or commits drafts. Nothing in the site build imports it. A test
+  imports `build_site` in a fresh interpreter and checks that neither the finder nor any module that
+  names the EA panel's address is loaded.
 - It never calls a language model, a paid API or anything that needs an account.
 - It never follows a link from a page, and never reads an address that is not on the list.
 - It never fills in an expiry, a date or a place the source did not give.
 - It never treats a feed draft from an earlier run as current. Each run reads the feed or marks the
   earlier drafts unverified, as `ireland.py` does.
 - It never keeps a copyright-only source's words.
+
+## On the spot's page
+
+The build (`attach_official_advice` in `scripts/build_site.py`) joins each approval to the last check
+by draft id and writes what to show into the spot's `official` list in spots.json (and the lite file).
+The page (`eaTodayOfficial` in `eatoday.js`) draws it after the spot's name and above the level, in a
+notice box headed "Official advice". The prerender runs the same function, so it shows without
+scripts. Each item has the line (publisher, advice, cause and start), a link to the publisher's page
+and when it was checked. Under the level, one line says it is SwimSignal's forecast and the official
+advice is separate. The level does not change.
+
+| Case | What the page shows |
+| --- | --- |
+| No approval for the spot | Nothing new. "Today's EA advice" stays the live check. |
+| Approved, checked within 8 days | The line, the link, "Last checked <date>." |
+| Last check older than 8 days, or no check file | The line, the link, "Not re-checked since <date>." |
+| The last run could not read the source (`unverified`) | The line, the link, "Not re-checked since <date>: the <publisher> source could not be read." |
+| The source lists it as withdrawn or lifted | Nothing. The check record keeps an ended draft after it drops out of the drafts. |
+| Superseded by a notice that ended it | Nothing. Superseded by a newer open notice: still shown. |
+| Past a stated expiry, or a page notice 14 days after review with no stated end | Nothing. |
+| Two approved advisories for one spot | Both, newest start first. |
+| The approvals file has a mistake | Nothing anywhere, and the build log says why. |
+
+Only a positive end at the source, or an expiry, removes an advisory. A failed or old check never
+turns it into an all-clear.
+
+`data/advisories/last_check.json` is written by a live finder run (not a fixture run, and not a run
+of some sources only) and committed by pull request. It holds the run time, each source's state, and
+each draft at a spot with its status, flags and the time its source last confirmed it. It holds no
+evidence text.
 
 ## Decisions, 26 October 2026
 
@@ -243,6 +296,13 @@ changed in the code:
    mock answers only; no live request was made while building it.
 7. **Where it runs.** By hand on Ethan's Mac, weekly in season. Not in GitHub Actions and not in
    the site build.
+
+8. **Reviewers, for this release** (added 26 Oct 2026, late). Codex, coordinating under Ethan's
+   delegation of routine decisions, decided: "APPROVED for this release: the transparent reviewer
+   list with Codex's identity ("Codex, under Ethan Buckley's delegation of routine decisions, 26 Oct
+   2026"). Never attribute a Codex review to Ethan's own factual review." This replaces "Ethan only"
+   in decision 1 for this release. Code: `REVIEWERS`, and the `reviewer`, `authority` and
+   `reviewed_at` fields. Ethan can narrow the list again by PR.
 
 ## Live dry run, 26 October 2026
 
@@ -283,3 +343,24 @@ Unexpected, and what was done:
   `test_open_is_in_force_and_first_seen_is_separate`.
 - A stale page notice is not held and is still marked current. This is as designed (stale is
   flagged, not dropped). The run sheet tells the reviewer to check the page.
+
+## Live run for the check record, 26 October 2026, 22:45 UTC
+
+Codex, under Ethan's delegation, asked for one bounded live run to make the first
+`data/advisories/last_check.json`. `scripts/advisory_finder.py --dry-run --entry e8b5832d974a`, from
+this Mac, 22:45:58 to 22:46:05 UTC. No `--previous` (no earlier live drafts file was on this Mac), no
+`--ea-history`.
+
+Read:
+
+- 6 requests, one at a time, all 6 sources `ok`. The EA list had 7 open incidents and no next page.
+- 10 drafts, 8 held, 0 approved, the same 10 ids as the 22:06 run.
+- Frensham Great Pond: `e8b5832d974a`, incident 11945-20260619-142800, harmful algae, start
+  2026-06-19T14:28:00, no expected end, open. The EA panel draft (`800f5abe3b84`, no date) and
+  Waverley's 22 Aug 2025 notice (`f815928c7a06`, stale) are as before.
+- `last_check.json` holds the 3 drafts at a spot, all Frensham. Unmatched coastal incidents are not in it.
+
+Before that run, one request each to the EA open-incident list (22:43:12 UTC, the same Frensham
+record) and to the EA profile page for Frensham (22:43:23 UTC). The profile page's HTML does not
+contain the advice: its scripts fill it in. So the open-incident record is the evidence, not the
+profile page.
