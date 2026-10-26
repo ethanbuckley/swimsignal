@@ -292,8 +292,38 @@ A fourth list on `quality.html`, after "Records without a current time": "Monito
 any on record" (`quality.long_run_section`). One row per flagged overflow: its name (or its id), its id, its company,
 its receiving water, how long it has reported discharging and since when (UK time), and its longest spill in the
 EA's records. Each row links to the feedback form with the id filled in. The link reads "Is this monitor still
-reporting correctly?". It asks the company; it does not call the monitor broken. Rows are by company, longest run
-first.
+reporting correctly?". Rows are by company, longest run first.
+
+**Wording rule.** Every line the list adds asks a question about unusual reporting. None says a monitor or a company
+is at fault. The words "stuck", "broken", "faulty", "failing" and "fault" are not on the page
+(`test_the_long_run_words_ask_and_never_accuse`). The intro says a spill that long can be real, and that "the
+question for each is whether its monitor is still reporting correctly, and the company that runs it can answer
+that". The five build warnings below end in a question for the same reason ("are its statuses still updating?").
+
+**Two groups (review of 26 Oct 2026).** The heading and intro compare each spill with the overflow's longest on
+record. That claim is true only where a record exists. An overflow with no spill in the EA's 2024-25 records has the
+seven-day floor alone (`long_runs`, unchanged). So:
+- The list proper holds only overflows with a longest spill on record.
+- The others go in a second group under their own heading, "Monitors reporting one spill for more than 7 days,
+  with no Environment Agency record to compare against". Its note says there is nothing to compare with, that this
+  can be because the overflow did not spill in those years or its monitor or id is new, and that "nothing here says
+  the spill is unusual for the overflow". It has no "Longest on record" column. It is left out when empty.
+
+Chosen over dropping them: a seven-day spill is still worth a question to the company, and the separate heading
+keeps the comparison claim true.
+
+**Could not be checked is never "None".** "None in this build." appears only when the check ran on current data and
+found nothing. Otherwise the list says it could not be checked, and adds "This is not a finding that every monitor
+is reporting as usual.":
+- no overflow table, or a table without the live columns;
+- no record of past spill lengths ("The comparison with past spills could not be made in this build, because the
+  record of past spill lengths was not available."). No file name is on the page; the build log names the file;
+- live readings more than 6 hours (`ingest.live.FEED_CURRENT_H`) older than the build. `write_quality_page`
+  passes the build's time as `as_of`; the poll time is the latest `fetched_at` of a row with a status;
+- per monitor: a flagged overflow whose own `data_state` is not "live" (`ingest.live.data_states`: its feed or its
+  record not current) is in neither group. The list counts it ("1 more monitor has reported a spill this long, but
+  its reading was not current in this build, so it was not checked.") and then cannot say "None in this build"; it
+  says "None among the monitors with a current reading."
 
 Inputs, and whether the build has them:
 - **The live statuses** (status, status start, event start, poll time). Yes: the build's overflow table carries
@@ -304,8 +334,9 @@ Inputs, and whether the build has them:
   overflow (site_id, longest_h, n_events), 12,908 overflows, sha256 33bc399bd6c7. `scripts/make_longest_events.py`
   makes it from the 16 Oct EA files. It is committed through a `.gitignore` exception. Rerun the script when
   `scripts/import_ea_events.py` reads a new year.
-- Without that file, the list is left out with a note on the page, and the build warns "quality.html without the
-  long_run list". It is never an error. Without the overflow table, or without its live columns, the list says so.
+- Without that file, the list says the comparison could not be made, and the build warns "quality.html without the
+  long_run list" with the file's path. It is never an error. Without the overflow table, or without its live
+  columns, the list says it could not be checked.
 
 A dry run on the 26 Oct 11:06 UTC snapshot (a scratch copy; no build run) flagged 6: YWS00425 (54 days, longest 12.8
 h), UUP00274 (18 days, 43 minutes), SWS00007 (28 days, none on record), SWS00803 (13 days, 12.2 h), YWS02029 (13
@@ -333,10 +364,11 @@ Not wired in, as decided: quiet_monitor (held), record_contradiction, cadence_ch
 
 ### How to check after a build
 
-1. Open `quality.html#long-runs` on the built site (locally `site/quality.html`). You should see the list, or "None
-   in this build.", or a note saying the list is left out.
-2. If it says the list is left out, look for "quality.html without the long_run list" in the build log. It names the
-   missing file.
+1. Open `quality.html#long-runs` on the built site (locally `site/quality.html`). You should see the list (and the
+   no-record group if any), or "None in this build.", or a sentence saying the list could not be checked.
+2. If it says the comparison could not be made, look for "quality.html without the long_run list" in the build log.
+   It names the missing file. If it says the live readings are more than 6 hours old, the build ran on an old
+   snapshot: the live-feed health warning says why.
 3. Run `jq .build.monitor_checks site/data/spots.json`. "checked" should list all five rules, "skipped" should be
    empty, and "flags" gives each rule's count.
 4. On GitHub Actions, any warning shows as a "dipcast build health" annotation starting "monitor check (". Locally,
@@ -345,6 +377,50 @@ Not wired in, as decided: quiet_monitor (held), record_contradiction, cadence_ch
 The likely mistake: reading an empty "skipped" in a local `--no-refresh` build. The checks run on refresh builds
 only, so a `--no-refresh` build has no `monitor_checks` at all.
 
-Tests: `tests/test_quality.py` (the list, its escaping, its empty and missing-input cases, inputs unchanged, the
-build carrying on without the file) and `tests/test_monitor_anomalies.py` (each warning on a failure put in by hand,
+Tests: `tests/test_quality.py` (the list, the no-record group, the wording, its escaping, its empty, missing-input,
+old-snapshot and not-current cases, inputs unchanged, the build carrying on without the file) and `tests/test_monitor_anomalies.py` (each warning on a failure put in by hand,
 none on normal data, none for a fault that has cleared, missing inputs skipped).
+
+## 9. Build check before merge, 26 October 2026
+
+**A full site build without Open-Meteo is not possible.** `scripts/build_site.py --no-refresh` still asks Open-Meteo
+for the rain forecast (`prefetch_rain`, then soil moisture). It skips only the feeds, levels, flows and weather. The
+state release holds no rain cache, so with no calls every forecast has no rain for today, and `build_health` stops
+the build before any page is written.
+
+Run, on PR head 0ae3c68 (main merged in) from a `git archive` copy, against the `state` release of 26 Oct 11:13 UTC,
+with `river_network.pkl` symlinked read-only from the main checkout:
+
+```
+DIPCAST_ROOT=<copy> DIPCAST_STATE=<scratch>/state-pr DIPCAST_CACHE=<empty scratch dir> \
+DIPCAST_OPEN_METEO_DAILY_CALLS=0 PYTHONPATH=<socket guard>:<copy>/src \
+/usr/bin/time -l python scripts/build_site.py --no-refresh
+```
+
+`DIPCAST_OPEN_METEO_DAILY_CALLS=0` makes the ration refuse every Open-Meteo request (`rainfall.may_spend`). The
+socket guard is a `sitecustomize.py` that refuses and logs every outbound connection and DNS lookup.
+
+Result: exit 2 after 42 s. "102/105 forecasts have no rainfall data for today; not publishing". Peak memory 884 MB
+(max RSS; 872 MB peak footprint). Network attempts: 0. Open-Meteo requests: 0 (7 spot and 2 soil requests held by
+the ration). Memory free before and after: 42%. No `site/` was written, so there is no `spots.json` to compare with a
+build of main; that comparison was not made.
+
+**What was checked instead, on real data, with no network (0 attempts):**
+- The overflow table that build made from the state (14,636 overflows; 13,882 live, 572 offline, 128 no feed, 54
+  stale; poll 26 Oct 11:06 UTC) went through `write_quality_page` with this branch's code, twice.
+- As a build 20 minutes after the poll would: the list shows 4 overflows: SWS00803 (13 days; longest 12.2 h),
+  SWS00628 (10 days; 3.4 days), UUP00274 (18 days; 43 minutes) and YWS00425 (54 days; 12.8 h). The no-record
+  group shows SWS00007 (28 days) and YWS02029 (13 days). These are section 8's six, now split by whether a record
+  exists. All six are "live"; none was left out as not current.
+- As a build at 22:41 UTC would (live readings 11.6 h old): "The live readings in this build are more than 6 hours
+  older than the build, so this list could not be checked."
+- Both pages pass a structural check (balanced tags, unique ids, every `#` link has a target, every table row as
+  wide as its header): 21 and 19 tables, no problems. Tidy on this Mac is from 2006 and does not know HTML5, so it
+  was not used.
+- `monitor_feed_checks` on the same state and its poll log (what `.build.monitor_checks` would hold on a refresh
+  build): all five rules checked, none skipped, 0 flags, 0 warnings.
+
+What is left: no build has written the whole site with this branch. Without spending Open-Meteo calls, the first
+such build is the next scheduled `site.yml` run on main after merge; check it with "How to check after a build"
+above. Before merge, the only way is one local build with Open-Meteo allowed: the held requests above weigh 394
+calls (332 rain, 62 soil), plus ensemble members only from spare ration. That is Ethan's call.
