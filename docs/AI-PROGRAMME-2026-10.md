@@ -5,14 +5,14 @@ one place that says what each piece is, where it stands and what is waiting on a
 draft PR. None is merged or deployed by this programme, and none changes the live site, the live models, or the A8,
 option B or shadow windows.
 
-Last updated: 26 October 2026, about 20:00 UTC. Test counts were rerun by the coordinator on each branch. Ethan approved
+Last updated: 26 October 2026, about 21:50 UTC. Test counts were rerun by the coordinator on each branch. Ethan approved
 the #377 statement at about 19:25 UTC and asked for the rest to be built autonomously.
 
 ## The map
 
 | Piece | PR | What it is | Tests | Evidence | Costs and limits used | State |
 |---|---|---|---|---|---|---|
-| Satellite algae | #377 | statement revised before any run: the CLMS lake product is benchmarked first, with a decision rule; coverage prototype; full harness (stages 1 and 2) | 50 pass | CLMS LWQ 100 m v2 is 10-day composites from Sep 2024, lag up to 4 days, shores not flagged, **checked 26 Oct via its public map tiles: no data at any of the 18 English sites in any dekad of summer 2025** (controls in Scotland, Northern Ireland and Europe had data). Sentinel-2 C1: scale and offset on all 7,317 items, no C1 items in 2022, Millerground 323 core pixels, Ladies Pond 0. No red or red-edge band read, no check fetched, nothing paired | 522 requests, 113.7 MB (ledger checked: SCL reads only); per-run caps 300 requests and 100 MB, one fired | **approved 19:25 UTC; stage 1 running** (from 19:30 UTC, under the heavy-run lock, est. 9-10 h); then the features hash is committed, then stage 2 scores once offline |
+| Satellite algae | #377 | approved statement, run once (26 Oct): Sentinel-2 NDCI at 14 lake sites vs 1,358 EA algae checks, 2020-26 | 56 pass | **A (algae seen) fails**: adds nothing to month + last check (Brier gain −0.0047, 97.5% interval −0.023 to +0.002, "Possible harm"; AUC 0.60). **B (objectionable) too few to judge** (20 events; AUC 0.81 description only). 404 of 1,358 checks paired (30%). CLMS lake product: no data at any English site | stage 1 28,317 requests / 5.18 GB after A1 (parallel bucket reads); A2 byte cap 5 GiB (8.2 MB overshoot disclosed); A3 EA fetch per point; scoring offline, 0 network attempts | **done: lakes keep the EA check only** |
 | Advisory finder | #379 | dry-run drafts from the EA incident feed and the Irish EPA, plus 4 whitelisted pages; deterministic, no LLM | 33 pass | EA open incidents answered this Mac: 7 open, 1 at a SwimSignal spot (Frensham Great Pond, algae, since 19 Jun); EPA 0 in force (season over) | 11 requests; no account | prototype done |
 | Sampling priorities | #381 | ranking of new sample days by information, high-risk list kept apart; simulation stated before it ran | 7 pass | **fails its stated rule**: beats least-sampled-first in 58.5% of 200 runs (60% needed); beats random in 73% | no network; 112 s | prototype done, rule failed |
 | Monitoring anomalies | #382 | 9 review-only flags beyond today's feed checks, on 39 days of saved polls plus injected failures | 25 pass | long_run 7 (4 look stuck, 1 probable false alarm); quiet_monitor 12 (10 worth a look); future_time 4 (UU starts 22-47 min ahead of the poll); company_freeze, known_share_drop and future_time caught injected failures no current check fired on | no network | prototype done |
