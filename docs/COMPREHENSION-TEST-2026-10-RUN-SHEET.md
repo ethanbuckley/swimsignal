@@ -6,12 +6,16 @@ consent wording and the privacy rules. The record to fill in and the analysis ar
 has been run with a participant.
 
 The tasks, their words, the scoring rubric and the fail lines are the plan's. This sheet adds no criterion.
-Where the plan leaves a point open, section 7 either names the default this sheet uses, taken from the
-plan, or lists it as a decision only Ethan can make, with what the record does until then. The checklist
-already uses the defaults, so the moderator never has to stop and decide.
+Where the plan leaves a point open, section 7 names either the default this sheet takes from the plan
+(A1 to A7) or the decision Ethan made on 26 October 2026, before any session (D1 to D8). The checklist
+uses both, so the moderator never has to stop and decide.
 
-**Before session 1:** decisions D6, D7 and D8 in section 7 (privacy) must be settled. They block the
-first session.
+**Before anyone is recruited** (D8). None of these is done by this sheet:
+1. The privacy notice's Research sessions section (PR #380) is merged and live on
+   https://swimsignal.co.uk/privacy.
+2. Ethan has done the ICO fee self-assessment from known facts, without assuming an exemption.
+3. Ethan has confirmed once, in System Settings > Apple Account > iCloud > Drive, that Desktop & Documents
+   is off (section 6).
 
 **⚠ marks the steps where a moderator most often goes wrong, with the reason.**
 
@@ -32,9 +36,9 @@ swimsignal.co.uk/spots.html.
 4. Consent: have the consent wording in section 5 ready, printed for a session in person, or as text you
    can paste into the call's chat. Have the thank-you settled first if there is one (plan, section 10
    item 1); the wording has a line for it.
-5. Recording: the default is notes only. Record only if the participant agrees at the start (plan,
-   section 3), and only once Ethan has decided how long a recording is kept (D7). If they agree, record
-   on your own device, not to a video service's cloud.
+5. Recording: notes only, by default (D7). Offer a recording only when it would help, and make one only
+   if the participant agrees to it separately (plan, section 3). Record on your own device, not to a
+   video service's cloud.
    ⚠ Why it goes wrong: video call services can save a recording to their own cloud, and the record
    button does not always say where it saves. A cloud recording sits on their servers, outside the
    private folder.
@@ -67,17 +71,17 @@ swimsignal.co.uk/spots.html.
 3. Task 3 spot: take the first row of "Task 3: a page with gaps". Use a Lake District spot; use River
    Thames, Long Bridges, Oxford (the plan's example) only if the area has none that qualifies (default
    A3).
-   ⚠ Use the picker from PR #375 or later. Why it goes wrong: before #375 the list counted the lake's
-   missing E. coli estimate when ranking, so on 26 October the five rows shown were all lakes and the
-   rivers with two qualifying gaps were hidden. #375 ranks by the qualifying gaps and says how many
-   spots it does not show. Until #375 is merged, run the picker from its branch,
-   `fix/picker-task3-order`. The first row may have a high headline, as the River Eden spots did on 26
-   October; that does not change the choice.
+   ⚠ Pull main first, so the picker includes PR #375 (merged 26 October). Why it goes wrong: an older
+   checkout counts the lake's missing E. coli estimate when ranking, so on 26 October its five rows were
+   all lakes and the rivers with two qualifying gaps were hidden. Since #375 it ranks by the qualifying
+   gaps and says how many spots it does not show. The first row may have a high headline, as the River
+   Eden spots did on 26 October; that does not change the choice.
 4. Open each chosen page and write in the record: the spot, its headline, its "Issued" line as the page
    shows it, and every gap the page shows. The gaps you write here are what you count against in task 3.
-   Mark which are among the plan's four (an overflow with no live feed, the E. coli estimate out of
-   season, unchecked EA advice, unconfirmed access) and which is the lake's missing E. coli estimate,
-   which is not one of the four.
+   Write every limitation the page itself displays: the picker's gaps, the lake's missing E. coli
+   estimate on a lake, and any other limit the page states in words. This list is fixed before the
+   session, and it is what task 3 counts (D2). The rule for choosing the spot is unchanged: the lake's
+   estimate alone does not qualify a spot (A3).
 5. Write the picker's "Forecast issued" time too. It comes from spots.json and can differ by a few
    minutes from the page's "Issued" line (17:37 against 17:44 UTC on 26 October). The page's line is
    what the participant sees. UK time is UTC until 28 March 2027.
@@ -143,10 +147,9 @@ participant past 5 minutes, task 5 fails past 10.
    answer feels like an invitation to add "Anything else it doesn't cover?", which is a prompt for
    limits. Let the pause sit, then move to task 3.
 3. **"Open [the spot with gaps]. Is there anything this page does not know, or cannot tell you?"**
-   Count each gap named, against the list you wrote that morning. Write every limit they name, with
-   their words, and mark it as one of the plan's four gaps, the lake's missing estimate, or another
-   limit; what counts is Ethan's decision D2, and the record keeps all three. Note if they treat a gap
-   as good news (for example, "no overflow found, so it's clean").
+   Count each limitation named that is on the list you wrote that morning, the lake's missing estimate
+   included (D2). Write any other valid limit they name separately, in their words; it is recorded, not
+   counted. Note if they treat a gap as good news (for example, "no overflow found, so it's clean").
 4. **"Save this spot. Now go back to the home page and find it again."** Then, on a phone: **"Close the
    browser, open it again, and find your saved spot."**
    Note which route they take. On an iPhone, note whether they use Safari or the Home Screen app: the two
@@ -155,8 +158,9 @@ participant past 5 minutes, task 5 fails past 10.
 5. Group leaders only: **"You are running a session at [a spot they use, or the nearest listed one] on
    Saturday at 10. Prepare what you would send your team or put in your risk assessment."**
    Watch for: whether they find the event page, the sites view or the decision record; whether the limits
-   travel with what they prepare; how long it takes; what they say is missing. Record what they produced
-   and whether it carries the limits; what counts as a briefing is Ethan's decision D3.
+   travel with what they prepare; how long it takes; what they say is missing. It counts as a briefing
+   if it carries the place, the activity's date and time, dated forecast information and the
+   limitations (D3). A plain message or document is enough. Note which of the four it carries.
 
 ### Closing questions, in this order
 
@@ -175,8 +179,8 @@ participant past 5 minutes, task 5 fails past 10.
 
 ## 4. After the session
 
-1. Within the hour, while you remember, finish the record: times, the outcome fields, and their words
-   from your notes.
+1. Within the hour, while you remember, finish the record: times, help, the other measures, and their
+   words from your notes. There is no per-person overall score (D1).
 2. Score task 2 on the plan's rubric (section 5 of the plan), from the words you wrote, not from your
    memory of their tone. Mark separately whether they said "tested": that marks a failure of the
    forecast-versus-test message whatever the score.
@@ -184,9 +188,12 @@ participant past 5 minutes, task 5 fails past 10.
 4. Save the record in the private folder (section 6). ⚠ Check the file is not inside the swimsignal
    checkout. Why it goes wrong: a record saved next to the docs it was copied from lands in the public
    repository on the next commit.
-5. If you recorded, check the notes against the recording, then keep or delete it as decided under D7.
+5. If you recorded, check the notes against the recording and delete it, within 7 days of the session
+   (D7).
 6. Put the 7- and 14-day follow-up dates in your calendar for anyone who said yes, using their code,
-   not their name.
+   not their name. Add a reminder 21 days after the session to delete their contact details (D6).
+   Delete them sooner when the last follow-up is answered; for anyone who said no to follow-ups, delete
+   them at 21 days at the latest.
 7. Paper notes: type them into the record, then shred them.
 8. Publish nothing yet. The public summary is written once, after the round (records file, section 3).
 
@@ -203,25 +210,30 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 > few small tasks. It takes about 30 minutes (45 for group leaders). You can skip any task or stop at
 > any time, without giving a reason.
 >
-> **What is written down.** Notes of what you do and say, under a code (for example P03), not your name.
-> We do not ask for, or write down, your health, your home address or where you are.
+> **What is written down.** Notes of what you do and say, under a code (for example P03), not your name,
+> and a note of what you agreed to here. We do not ask for, or write down, your health, your home
+> address or where you are. A code is not the same as anonymous: while your contact details are kept,
+> the notes can be linked back to you.
 >
-> **Recording.** Only if you agree below. A recording stays on the moderator's computer, is used only to
-> check the notes, and is deleted [when, per decision D7].
+> **Recording.** None, unless you agree to it separately below. A recording stays on Ethan's computer,
+> is used only to check the notes, and is deleted within 7 days.
 >
-> **Where it is kept.** On Ethan's computer, in a private folder. Never in SwimSignal's public code or
-> website. Your contact details are kept in a separate list from the notes.
+> **Where it is kept.** Only on Ethan's own computer, in a private folder. Never in SwimSignal's public
+> code or website, and not shared or sold. Your contact details are kept in a separate list from the
+> notes.
 >
 > **What is published.** A summary of all the sessions together, and the changes made because of it. It
 > does not name you. Your words are quoted in it, without your name, only if you agree below.
 >
-> **How long.** The notes are deleted once the summary is written, unless you agree to more. If you
-> agree to the follow-up emails, your contact details are kept until the last one is answered [or for
-> the wait set by decision D6], then deleted.
+> **How long.** Your contact details are deleted when your last follow-up email is answered, or 21 days
+> after today, whichever comes first. The notes, and the note of what you agreed to, are deleted once
+> the summary of all the sessions is written, and by 31 January 2027 at the latest, unless you agree to
+> them being kept longer.
 >
-> **Your rights.** You can ask to see what is held about you, have it corrected or deleted, or withdraw
-> at any time, by emailing hello@swimsignal.co.uk with your code or the date of your session. You can
-> also complain to the Information Commissioner's Office (ico.org.uk).
+> **Your rights.** Taking part rests on your consent. You can ask to see what is held about you, have it
+> corrected or deleted, or withdraw at any time, by emailing hello@swimsignal.co.uk with your code or the
+> date of your session. You can also complain to the Information Commissioner's Office (ico.org.uk). The
+> privacy notice, swimsignal.co.uk/privacy, says the same under "Research sessions".
 >
 > **Please do not use today's forecast to decide whether to swim.** It may be out of date.
 >
@@ -230,17 +242,18 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 > | | Yes | No |
 > |---|---|---|
 > | I agree to take part and for notes to be taken | | |
-> | I agree to the screen and our voices being recorded | | |
+> | I agree, separately, to the screen and our voices being recorded | | |
 > | My words may be quoted in the public summary, without my name | | |
 > | You may email me twice, at one week and two weeks, to ask whether I used SwimSignal | | |
 
 For a video call, the participant can answer each line aloud; write their answers and the time in the
-record. Asking for a signature is not needed for this, and a signed form would hold their name.
+record. Asking for a signature is not needed for this, and a signed form would hold their name. The
+answers are the consent record: they stay with the participant's record and are deleted with it.
 
 ## 6. Privacy: what is stored, where, and for how long
 
-From the plan (sections 3, 6 and 7) and `docs/SWIMMER_TESTING.md`, and in line with the site's privacy
-notice, which promises no personal data beyond what it lists.
+From the plan (sections 3, 6 and 7), `docs/SWIMMER_TESTING.md` and Ethan's decisions of 26 October 2026
+(section 7). The site's privacy notice says the same under "Research sessions" (PR #380).
 
 **The repository is public.** Nothing that could identify a participant goes into it: no record, no
 contact detail, no recording, no picker output with a session date next to a code. This includes
@@ -248,39 +261,44 @@ branches, pull request text and issues.
 
 | What | Where | Kept until |
 |---|---|---|
-| Records, one per participant, under a code | `swimsignal-private/research/2026-10-comprehension/`, outside the repository | The summary is written; longer only if the participant agreed (plan, section 6) |
-| Contact list: code, name, how to reach them, follow-up answer | A separate file from the records, not in the records folder | The last follow-up is answered, or the wait set by D6 runs out |
-| Recording, only with agreement | The moderator's own computer, not a cloud service | As decided under D7 |
+| Record, one per participant, under a code, with their consent answers | `~/Documents/GitHub/swimsignal-private/research/2026-10-comprehension/` | The summary is written, and 31 January 2027 at the latest; longer only if the participant agreed (plan, section 6) |
+| Contact list: code, name, how to reach them, follow-up answers | A separate file, not in the records folder | The last follow-up is answered, or 21 days after the session, whichever comes first (D6) |
+| Recording, only with separate agreement | The moderator's own computer, not a cloud service | The notes are checked against it, within 7 days (D7) |
 | Picker output for the day | The private folder, next to the records | With the records |
 | Summary table and decisions | A public doc or issue, after the round | Kept; it holds no names and no contact details |
 
+These periods are practice Ethan approved on 26 October 2026, not legal deadlines (D8). The 31 January
+2027 end for the notes is the one date in them chosen when the notice was written; Ethan confirms it in
+PR #380.
+
 Rules:
 - Codes P01 to P10. Never a name in a record.
+- A coded record is still personal data while the contact list exists. Never describe the notes as
+  anonymous.
 - No medical history, home address or precise location (plan, section 3). Do not write the town used in
   task 1; write the distance chosen.
-- The private folder's README says it is not in git and not backed up. Whether this Mac syncs
-  `~/Documents` to a cloud service was not checked.
 - Follow-up emails go only to those who said yes, and from hello@swimsignal.co.uk.
 
-**The site's privacy notice does not cover this yet.** It says SwimSignal holds no personal data beyond
-what it lists, and it lists no research sessions. Decision D8 is whether to add a section before the
-first session. This PR does not change the notice. A possible text:
+**Where the private folder is**, checked on this Mac on 26 October 2026:
+- Finder's iCloud Desktop & Documents setting is off: `defaults read com.apple.finder
+  FXICloudDriveDocuments` and `FXICloudDriveDesktop` both return 0. So `~/Documents` is not synced to
+  iCloud. Ethan confirms this once in System Settings > Apple Account > iCloud > Drive.
+- Time Machine has no destination (`tmutil destinationinfo`), so the folder is not backed up. A lost or
+  broken Mac loses the records.
+- The folder is not a git repository.
+- Another session checked that OneDrive's folders are separate from `~/Documents`; that was not
+  re-checked here.
+- Nothing here says the folder is encrypted.
 
-> **Research sessions.** If you take part in a test session, the operator keeps notes of what you did and
-> said under a code, not your name, and your contact details separately if you agreed to follow-up
-> emails. The basis is your consent. The notes are kept on the operator's computer, not on this website or
-> in its source code, and deleted once a summary of all sessions is written; contact details are deleted
-> after the last follow-up. You can withdraw at any time by email.
-
-## 7. Defaults used, and decisions only Ethan can make
+## 7. Defaults used, and Ethan's decisions
 
 Numbers in brackets are the questions in this PR's first version (Q1 to Q15), kept so earlier comments
 still match.
 
 ### Defaults used (from the plan)
 
-Each default comes from the plan section named, and the checklist above already uses it. Ethan can
-override any of them; the record keeps the raw facts, so an override can be applied afterwards.
+Each default comes from the plan section named, and the checklist above uses it. Ethan can override any
+of them; the record keeps the raw facts, so an override can be applied afterwards.
 
 - **A1. The one-minute prompt is not help** [Q2]. Plan, section 3: "If they are stuck for a minute, ask
   'What would you try next?'. Help only after two minutes, and record that help was given." Help is
@@ -290,9 +308,9 @@ override any of them; the record keeps the raw facts, so an override can be appl
   words; section 1 gives the measure, unaided completion and time. The record notes how many places were
   found and how. Done or not done stays the plan's measure; no new definition is added.
 - **A3. Task 3 uses a Lake District spot**: the first row of the picker's task 3 list that morning [Q5].
-  Plan, section 3 says how to choose; the winter plan runs one area. The lake's missing E. coli estimate
-  is not one of the plan's four gaps. River Thames, Long Bridges, Oxford is used only if no local spot
-  qualifies.
+  Plan, section 3 says how to choose; the winter plan runs one area. For choosing the spot, the lake's
+  missing E. coli estimate is not one of the plan's four gaps, so it alone does not qualify a spot. (For
+  scoring, D2 counts it.) River Thames, Long Bridges, Oxford is used only if no local spot qualifies.
 - **A4. Task 4's two halves are recorded separately** [Q6]. "Unaided" for the fail line means both
   halves done without help: plan, section 1 asks "Can people save a spot and find it again?", and
   section 4 adds the close-and-reopen step on a phone.
@@ -303,35 +321,36 @@ override any of them; the record keeps the raw facts, so an override can be appl
   in the closing [Q9]. Plan, section 3: "Do not explain the site, define terms or point at anything."
   The private session card says to tell a participant, if asked, that lakes are the least tested part;
   the plan wins on timing, and the card's words are used in the closing.
-- **A7. The picker ranks task 3 by the qualifying gaps** [Q15]. Fixed by PR #375, which also says how
-  many qualifying spots the table does not show. Until it is merged, run the picker from its branch,
-  `fix/picker-task3-order`.
+- **A7. The picker ranks task 3 by the qualifying gaps** [Q15]. PR #375, merged 26 October 2026, made
+  this change and has the table say how many qualifying spots it does not show.
 
-### Decisions only Ethan can make
+### Ethan's decisions, 26 October 2026, before any session
 
-Each says what the record does until it is decided. D6 to D8 block session 1.
+Ethan approved these on 26 October 2026 ("okay i approve your recommendations"), before any session was
+arranged. They are applied in the checklist, the consent wording, the record and the analysis, and in a
+dated note in the plan (section 11). They were set before any result existed, so results cannot move
+them.
 
-- **D1. A per-person outcome for tasks 1, 3, 4 and 5** [Q1]. The plan scores task 2 as right, partly
-  right or wrong, and for the others gives a measure and a fail line for the round, not an outcome per
-  person. Until decided: the record keeps the plan's measures and leaves the outcome field blank; the
-  round's fail lines are tallied from the measures.
-- **D2. What counts as naming a gap in task 3** [Q4]. Is any true limit enough (for example "it doesn't
-  cover algae"), or only the gaps the page shows? Does the lake's missing estimate count? Until decided:
-  the record marks each limit named as one of the plan's four gaps, the lake's estimate, or another
-  limit, and the analysis tallies "named no gap" each way.
-- **D3. What counts as a task 5 briefing** [Q7]: anything the leader would send, or only one that
-  carries the limits? Until decided: the record keeps what they produced, whether the limits travelled
-  with it, and the time, and the analysis tallies both readings.
-- **D4. The repeat-use fail line with 9 or 10 participants** [Q13]. The plan says "fewer than 3 of 8".
-  Until decided: the analysis reports the count of returns and how many were asked, and applies 3 as
-  written.
-- **D5. Whether the older plan's release rule still applies** [Q14]. `docs/SWIMMER_TESTING.md` treats
-  reading "low" as a safety guarantee, or mixing up an annual rating with today's sample, as
-  release-blocking. Until decided: the record notes both kinds of misreading.
-- **D6. How long to wait for a follow-up reply before deleting the contact list** [Q10]. **Blocks
-  session 1.** The consent wording has a placeholder for it.
-- **D7. Keeping a recording** [Q11]: whether recording is offered at all, and when a recording is
-  deleted. **Blocks session 1.** The consent wording has a placeholder; until decided, take notes only.
-- **D8. The privacy notice and the ICO fee** [Q12]. Whether the research-sessions section (section 6)
-  goes into the site's privacy notice before session 1, and whether the sessions change the ICO fee
-  position (not checked). **Blocks session 1.**
+- **D1. No per-person overall score** [Q1]. Tasks 1, 3, 4 and 5 are recorded as direct measures:
+  completion, help, time, limits named and misunderstandings. Task 2 keeps the plan's rubric.
+- **D2. What task 3 counts** [Q4]. Any genuine limitation the selected page explicitly displays, the
+  lake's missing E. coli estimate included. The list is written the morning of the session, before it
+  starts. Other valid limits a participant names are recorded separately and not counted. The rule for
+  choosing the spot is unchanged (A3).
+- **D3. A usable briefing** [Q7] carries the place, the activity's date and time, dated forecast
+  information and the limitations. A plain message or document is enough.
+- **D4. The repeat-use line** [Q13]: confirmed purposeful returns of at least 3 of 8, or at least 4 of
+  9 or 10. The denominator is everyone who completed a session; it is fixed before any follow-up and
+  never reduced after outcomes are known. No reply counts as unknown use, not a return. Report follow-up
+  consent and how many replied.
+- **D5. A safety-guarantee or "water tested" misreading** [Q14]: any one clear case leads to a wording
+  fix and a focused retest before the site is promoted more widely. Routine bug fixes may continue.
+- **D6. Contact details** [Q10] are deleted when the participant's last follow-up is answered, or 21
+  days after their session, whichever comes first. Follow-ups stay at 7 and 14 days.
+- **D7. Recording** [Q11]: notes only by default. A recording only with separate agreement, when it is
+  useful; the notes are checked against it and it is deleted within 7 days.
+- **D8. Privacy** [Q12]: accurate research wording in the privacy notice before recruitment, matching
+  what is actually done (PR #380). The retention periods are approved practice, not legal deadlines.
+  Coded records may still be personal data. Consent answers stay with the research record for as long
+  as it is kept. Ethan does the ICO fee self-assessment from known facts, without assuming an exemption;
+  it is not done here, and recruitment waits for it (see the top of this sheet).

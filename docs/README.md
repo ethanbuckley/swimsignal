@@ -26,7 +26,7 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   October to November 2026. Not yet run.
 - [COMPREHENSION-TEST-2026-10-RUN-SHEET.md](COMPREHENSION-TEST-2026-10-RUN-SHEET.md): the moderator's checklist for
   one Lake District session (day before, morning, during, after), the consent wording, where participants' data
-  is kept and for how long, the defaults it takes from the plan, and the decisions left to Ethan.
+  is kept and for how long, the defaults it takes from the plan, and Ethan's decisions of 26 October 2026.
 - [COMPREHENSION-TEST-2026-10-RECORDS.md](COMPREHENSION-TEST-2026-10-RECORDS.md): the blank record for one
   session and how to analyse 8 to 10 of them against the plan's fail lines. Filled records stay out of the
   repository.

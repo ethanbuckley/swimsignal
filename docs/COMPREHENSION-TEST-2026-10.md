@@ -23,6 +23,10 @@ The fail lines are judgement calls made before the sessions, so the results cann
 Eight people give direction, not proof. A failure by two people is still worth fixing; a pass by
 eight does not show the wording works for everyone.
 
+*Clarified 26 October 2026, before any session (section 11):* the repeat-use line is at least 3 of 8, or at
+least 4 of 9 or 10, out of everyone who completed a session (D4). Any one clear safety-guarantee or "water
+tested" reading leads to a wording fix and a focused retest before wider promotion (D5).
+
 ## 2. Who to recruit
 
 - **Six swimmers** who swim in rivers or lakes at least monthly. At least two who do not follow
@@ -55,6 +59,10 @@ eight does not show the wording works for everyone.
   morning's candidates for both tasks from the published forecast and spot pages, with each page's
   headline and gaps.
 
+*Clarified 26 October 2026, before any session (section 11):* recording is off by default and needs separate
+agreement (D7). Task 3 counts any limitation the chosen page displays, the lake's missing E. coli estimate
+included, listed the morning of the session (D2); the rule for choosing the spot is unchanged.
+
 The run sheet for each session, the consent wording and the privacy rules are in
 `docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`; the blank record and the analysis in
 `docs/COMPREHENSION-TEST-2026-10-RECORDS.md`.
@@ -84,6 +92,10 @@ Then ask every participant, in this order:
 - "What did you want to know that it did not tell you?"
 - Group leaders only: the buyer-interview questions from the launch kit.
 
+*Clarified 26 October 2026, before any session (section 11):* tasks 1, 3, 4 and 5 have no per-person overall
+score (D1). A task 5 briefing counts if it carries the place, the activity's date and time, dated forecast
+information and the limitations; a plain message is enough (D3).
+
 ## 5. Scoring "What does Low risk mean?"
 
 | Score | The answer | Example |
@@ -106,6 +118,11 @@ Keep raw notes in `swimsignal-private/research/2026-10-comprehension/`, not in t
 Put only the summary table and the decisions in a public issue or doc. Delete raw notes once the
 summary is written, unless the participant agreed to more.
 
+*Clarified 26 October 2026, before any session (section 11):* contact details are deleted when the last
+follow-up is answered or 21 days after the session, whichever comes first (D6); a recording within 7 days
+(D7); the notes and consent answers once the summary is written, and by 31 January 2027 at the latest. These
+are approved practice, not legal deadlines, and coded notes may still be personal data (D8).
+
 ## 7. Repeat use
 
 Repeat use cannot be measured from the site: the analytics are aggregate only (Cloudflare Web
@@ -115,6 +132,9 @@ Analytics, no identifiers), by design. So ask:
 - At 7 and 14 days, one email each: "Have you opened SwimSignal since we spoke? If yes, what for, and
   did it change anything you did?" Count a return as a visit with a purpose they can name.
 - Group leaders: at 14 days, "Did you use it for a real session? If not, what stopped you?"
+
+*Clarified 26 October 2026, before any session (section 11):* follow-ups stay at 7 and 14 days. No reply is
+unknown use, not a return, and the denominator is never reduced after the answers are in (D4).
 
 ## 8. What the results decide
 
@@ -152,3 +172,31 @@ continue.
    then. Record which wording each participant saw.
 3. **Who runs the sessions.** Ethan, since participants' words matter more than a script. A friend
    who has not seen the site can take notes.
+
+## 11. Clarifications, 26 October 2026, before any session
+
+Added on 26 October 2026, before any session was arranged or run, so no result can have shaped them. The
+text above is left as written; dated lines in sections 1, 3, 4, 6 and 7 point here. Ethan approved these
+the same day ("okay i approve your recommendations"). The details, and how each is applied, are in
+`docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`, section 7.
+
+- **D1.** No per-person overall score for tasks 1, 3, 4 and 5: direct measures only (completion, help,
+  time, limits named, misunderstandings).
+- **D2.** Task 3 counts any genuine limitation the chosen page explicitly displays, the lake's missing E.
+  coli estimate included, written down before the session. Other valid limits are recorded separately and
+  not counted. The rule for choosing the spot (section 3) is unchanged.
+- **D3.** A usable task 5 briefing carries the place, the activity's date and time, dated forecast
+  information and the limitations. A plain message or document is enough.
+- **D4.** Repeat use passes at 3 of 8, or 4 of 9 or 10, confirmed purposeful returns, out of everyone who
+  completed a session. No reply is unknown use. The denominator is never reduced after outcomes are known;
+  follow-up consent and losses are reported.
+- **D5.** Any one clear safety-guarantee or "water tested" reading leads to a wording fix and a focused
+  retest before wider promotion. Routine bug fixes may continue.
+- **D6.** Contact details are deleted when the last follow-up is answered, or 21 days after the session,
+  whichever comes first. Follow-ups stay at 7 and 14 days (section 7).
+- **D7.** Notes only by default. A recording only with separate agreement; checked against the notes and
+  deleted within 7 days.
+- **D8.** The privacy notice describes research sessions before anyone is recruited, matching what is
+  done. Retention periods are approved practice, not legal deadlines. Coded records may still be personal
+  data. Consent answers stay with the record while it is kept. The ICO fee self-assessment is Ethan's, from
+  known facts, before recruitment.
