@@ -112,20 +112,20 @@ and the record (incl. print) carry the compact notice. No sideways scroll on any
 
 | Finding | Severity | Where it is fixed |
 |---|---|---|
-| B1 "Lower risk nearby" suggests the advised water | blocker | #391 (sent) |
-| B2 embed / live sign say advice "could not be checked" | blocker | #391 |
-| B3 sites view and printed briefing | blocker | #391 |
-| B4 organisers page has no official line | blocker | #391 |
-| B5 compare tables' EA row says "could not be checked" | blocker | #391 (sent) |
-| S1 map tooltip, S2 share card and alt text | should-fix | #391 |
-| S3 Atom feeds headline a clean Low | should-fix | #391 (sent); alerts.json and push/email delivery are follow-ups |
-| S4 Saved day grid untagged, "lowest risk this week" counts the advised spot | should-fix | #391 (sent) |
-| S5 plan share and low-only filter | should-fix | #391 (share: exclusion vs notice is Codex's decision) |
-| S6 Saved since line reads as good news at an advised water | should-fix | #388 (sent) |
-| S7 "Usual care" under the level at an advised water; algae tile "None seen" beside the notice | should-fix | #391 (sent) |
-| S8 compact line drops "(harmful algae)"; record line has no link | should-fix | #391 (sent; shared helper) |
+| B1 "Lower risk nearby" suggests the advised water | blocker | #392 |
+| B2 embed / live sign say advice "could not be checked" | blocker | #391 (merged) |
+| B3 sites view and printed briefing | blocker | #391 (merged) |
+| B4 organisers page has no official line | blocker | #391 (merged) |
+| B5 compare tables' EA row says "could not be checked" | blocker | #392 |
+| S1 map tooltip, S2 share card and alt text | should-fix | #391 (merged); #392 keeps the cause on the card |
+| S3 Atom feeds headline a clean Low | should-fix | #392; alerts.json and push/email delivery are follow-ups |
+| S4 Saved day grid untagged, "lowest risk this week" counts the advised spot | should-fix | #392 |
+| S5 plan share and low-only filter | should-fix | #391 (merged); share exclusion vs notice still Codex's decision |
+| S6 Saved since line reads as good news at an advised water | should-fix | #388 (fixed, cec52a9) |
+| S7 "Usual care" under the level at an advised water; algae tile "None seen" beside the notice | should-fix | #392 |
+| S8 compact line drops "(harmful algae)"; record line has no link | should-fix | #392 |
 | P1 guide label "Verified: Defra" on a fact that says it is not a current check | polish | follow-up: needs a label rule for dated sources |
-| P2 "last checked" sentence repeated on the spot page | polish | #391 (sent) |
+| P2 "last checked" sentence repeated on the spot page | polish | #392 |
 | P3 Saved and Plan stuck on "Loading…" without JavaScript | polish | follow-up |
 | P4 sites view heading order skips a level | polish | follow-up |
 
