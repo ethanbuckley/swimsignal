@@ -338,7 +338,7 @@ def spot_replay(spot: dict, upstream: list[dict], history: pd.DataFrame | None, 
         # Water that crosses a lake before the spot (transport.upstream_overflows puts the lake's metres in
         # lake_distance_m): the travel time there is a river speed or a residence assumption, too coarse
         # to draw as an arrival window. Its reported spills are shown; its arrival is not estimated.
-        lake = float(c.get("lake_distance_km") or 0) > 0
+        lake = spot.get("kind") == "lake" or float(c.get("lake_distance_km") or 0) > 0
         travel = None if lake else c.get("travel_h")
         # Where its poll history starts: before then nothing is known of it (quiet is not proof of no spill).
         begins = [] if h is None else [t for r in h if (t := _first(r.get("status_start"), r.get("fetched_at")))]

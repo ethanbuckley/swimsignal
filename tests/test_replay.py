@@ -146,6 +146,16 @@ def test_the_real_lake_fixture_has_no_arrivals():
     assert all(s["arrival"] is None for o in doc["overflows"] for s in o["spills"])
 
 
+def test_a_lake_spot_never_gets_river_arrivals_from_zero_or_missing_lake_distance():
+    h = hist(("L", 0, "2026-10-25T12:00", "2026-10-25T10:00", "2026-10-25T12:00", "2026-10-25T21:30"))
+    for distance in (0.0, None):
+        r = replay.spot_replay({"id": "lake", "kind": "lake"},
+            [contributor(1, site_id="L", lake_distance_km=distance, travel_h=30.0, weight=0.5)], h, NOW)
+        [o] = r["overflows"]
+        assert o["lake_route"] is True and o["travel_h"] is None
+        assert o["spills"] and all(s["arrival"] is None for s in o["spills"])
+
+
 def test_the_page_asks_for_replay_js_at_the_builds_stamp_and_the_offline_copy_stores_it():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
     import build_site as bs
