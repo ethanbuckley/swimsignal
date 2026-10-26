@@ -6,8 +6,12 @@ consent wording and the privacy rules. The record to fill in and the analysis ar
 has been run with a participant.
 
 The tasks, their words, the scoring rubric and the fail lines are the plan's. This sheet adds no criterion.
-Where the plan is unclear, the point is listed under "Questions for Ethan" at the end, and the sheet says
-what to record until it is answered.
+Where the plan leaves a point open, section 7 either names the default this sheet uses, taken from the
+plan, or lists it as a decision only Ethan can make, with what the record does until then. The checklist
+already uses the defaults, so the moderator never has to stop and decide.
+
+**Before session 1:** decisions D6, D7 and D8 in section 7 (privacy) must be settled. They block the
+first session.
 
 **⚠ marks the steps where a moderator most often goes wrong, with the reason.**
 
@@ -29,7 +33,8 @@ swimsignal.co.uk/spots.html.
    can paste into the call's chat. Have the thank-you settled first if there is one (plan, section 10
    item 1); the wording has a line for it.
 5. Recording: the default is notes only. Record only if the participant agrees at the start (plan,
-   section 3). If they agree, record on your own device, not to a video service's cloud.
+   section 3), and only once Ethan has decided how long a recording is kept (D7). If they agree, record
+   on your own device, not to a video service's cloud.
    ⚠ Why it goes wrong: video call services can save a recording to their own cloud, and the record
    button does not always say where it saves. A cloud recording sits on their servers, outside the
    private folder.
@@ -59,15 +64,20 @@ swimsignal.co.uk/spots.html.
    folder as `picker-2026-MM-DD.md`.
 2. Task 2 spot: take the first row of "Task 2: low risk with overflows upstream". Open its page and
    check the headline starts "Low risk".
-3. Task 3 spot: choose from "Task 3: a page with gaps".
-   ⚠ The table shows five rows, sorted with the lake's missing E. coli estimate counted as a gap. River
-   spots with two other gaps can drop off the list. On 26 October all four river spots were hidden this
-   way: River Eden at Armathwaite and at Lazonby, River Lune at Devil's Bridge and River Duddon at
-   Birks Bridge, each with "the E. coli estimate is untested this month" and "no access information".
-   Their pages may also show a high headline, which can pull attention from the gaps. Open one or two of
-   them before you choose. Which spot to prefer is question 5.
+3. Task 3 spot: take the first row of "Task 3: a page with gaps". Use a Lake District spot; use River
+   Thames, Long Bridges, Oxford (the plan's example) only if the area has none that qualifies (default
+   A3).
+   ⚠ Use the picker from PR #375 or later. Why it goes wrong: before #375 the list counted the lake's
+   missing E. coli estimate when ranking, so on 26 October the five rows shown were all lakes and the
+   rivers with two qualifying gaps were hidden. #375 ranks by the qualifying gaps and says how many
+   spots it does not show. Until #375 is merged, run the picker from its branch,
+   `fix/picker-task3-order`. The first row may have a high headline, as the River Eden spots did on 26
+   October; that does not change the choice.
 4. Open each chosen page and write in the record: the spot, its headline, its "Issued" line as the page
    shows it, and every gap the page shows. The gaps you write here are what you count against in task 3.
+   Mark which are among the plan's four (an overflow with no live feed, the E. coli estimate out of
+   season, unchecked EA advice, unconfirmed access) and which is the lake's missing E. coli estimate,
+   which is not one of the four.
 5. Write the picker's "Forecast issued" time too. It comes from spots.json and can differ by a few
    minutes from the page's "Issued" line (17:37 against 17:44 UTC on 26 October). The page's line is
    what the participant sees. UK time is UTC until 28 March 2027.
@@ -94,8 +104,9 @@ swimsignal.co.uk/spots.html.
 - Read each task as written. Do not paraphrase it.
 - Start the timer when you finish reading the task. Stop it when they say they are done or give up.
 - Do not explain the site, define terms or point at anything.
-- Stuck for one minute: ask **"What would you try next?"**. Help only after two minutes, and record that
-  help was given and what it was.
+- Stuck for one minute: ask **"What would you try next?"**. That prompt is not help. Help is anything,
+  at or after two minutes, that points to where to go (default A1). Record both, each with its time,
+  and what the help was.
 - Neutral follow-ups only: **"What does that tell you?"**, **"What made you say that?"**.
 - ⚠ Never **"Did you notice...?"** or **"Would it help if...?"**. Why it goes wrong: both slip out when a
   participant is near the thing you hope they find. Either one turns an unprompted finding into a
@@ -120,9 +131,11 @@ participant past 5 minutes, task 5 fails past 10.
    places you might go."**
    Watch for: whether they find Plan a swim or the map, whether they pick a day, what they compare, what
    they say makes one better.
-   Notes: the planner works in miles, not minutes; record a conversion or a question about it as
-   friction (question 3). The planner's day is the strip under "Plan a swim"; the map's own day menu
-   changes only the map. Do not write their town in the record; write the distance they chose.
+   Read it exactly as written, "half an hour" included (default A2). The planner works in miles, not
+   minutes; if they convert or ask, do not answer, and note it as friction. Record how many places they
+   found and how. Done or not done is the plan's measure: completed without help, and the time taken.
+   The planner's day is the strip under "Plan a swim"; the map's own day menu changes only the map. Do
+   not write their town in the record; write the distance they chose.
 2. **"Open [the low-risk spot]. Tell me, in your own words, what this page is telling you about swimming
    there today."** Then: **"What does 'Low risk' mean here?"**
    Write both answers word for word. Score afterwards (section 4), not during.
@@ -130,16 +143,20 @@ participant past 5 minutes, task 5 fails past 10.
    answer feels like an invitation to add "Anything else it doesn't cover?", which is a prompt for
    limits. Let the pause sit, then move to task 3.
 3. **"Open [the spot with gaps]. Is there anything this page does not know, or cannot tell you?"**
-   Count each gap named, against the list you wrote that morning. Note if they treat a gap as good news
-   (for example, "no overflow found, so it's clean").
+   Count each gap named, against the list you wrote that morning. Write every limit they name, with
+   their words, and mark it as one of the plan's four gaps, the lake's missing estimate, or another
+   limit; what counts is Ethan's decision D2, and the record keeps all three. Note if they treat a gap
+   as good news (for example, "no overflow found, so it's clean").
 4. **"Save this spot. Now go back to the home page and find it again."** Then, on a phone: **"Close the
    browser, open it again, and find your saved spot."**
    Note which route they take. On an iPhone, note whether they use Safari or the Home Screen app: the two
-   keep separate saved lists.
+   keep separate saved lists. Record the two halves separately, each with any prompt or help. On a
+   phone, "unaided" for the fail line means both halves done without help (default A4).
 5. Group leaders only: **"You are running a session at [a spot they use, or the nearest listed one] on
    Saturday at 10. Prepare what you would send your team or put in your risk assessment."**
    Watch for: whether they find the event page, the sites view or the decision record; whether the limits
-   travel with what they prepare; how long it takes; what they say is missing.
+   travel with what they prepare; how long it takes; what they say is missing. Record what they produced
+   and whether it carries the limits; what counts as a briefing is Ethan's decision D3.
 
 ### Closing questions, in this order
 
@@ -148,10 +165,12 @@ participant past 5 minutes, task 5 fails past 10.
 3. "What did you want to know that it did not tell you?"
 4. Group leaders only: the buyer-interview questions from the launch kit.
 5. ⚠ Only now, if they asked something during the tasks that you did not answer, answer it plainly.
-   Why it goes wrong: moderators answer mid-task to be kind; this is where the kindness goes instead.
+   That includes questions about lakes: say plainly that lakes are the least tested part of the forecast
+   (default A6). Why it goes wrong: moderators answer mid-task to be kind; this is where the kindness
+   goes instead.
 6. Ask: **"May I send you one short email in a week, and one a week later, to ask whether you used
-   it?"** Record yes or no. Send nothing to anyone who says no (plan, section 7). Question 8 is about a
-   third check-in at four weeks.
+   it?"** Record yes or no. Send nothing to anyone who says no (plan, section 7). Follow-ups are at 7
+   and 14 days only (default A5).
 7. Thank them. If there is a thank-you (plan, section 10 item 1), say how and when it arrives.
 
 ## 4. After the session
@@ -165,7 +184,7 @@ participant past 5 minutes, task 5 fails past 10.
 4. Save the record in the private folder (section 6). ⚠ Check the file is not inside the swimsignal
    checkout. Why it goes wrong: a record saved next to the docs it was copied from lands in the public
    repository on the next commit.
-5. If you recorded, check the notes against the recording, then delete the recording (question 11).
+5. If you recorded, check the notes against the recording, then keep or delete it as decided under D7.
 6. Put the 7- and 14-day follow-up dates in your calendar for anyone who said yes, using their code,
    not their name.
 7. Paper notes: type them into the record, then shred them.
@@ -188,7 +207,7 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 > We do not ask for, or write down, your health, your home address or where you are.
 >
 > **Recording.** Only if you agree below. A recording stays on the moderator's computer, is used only to
-> check the notes, and is deleted once they are checked.
+> check the notes, and is deleted [when, per decision D7].
 >
 > **Where it is kept.** On Ethan's computer, in a private folder. Never in SwimSignal's public code or
 > website. Your contact details are kept in a separate list from the notes.
@@ -197,8 +216,8 @@ Read aloud or give to read before the first task. Plain language, so it can be r
 > does not name you. Your words are quoted in it, without your name, only if you agree below.
 >
 > **How long.** The notes are deleted once the summary is written, unless you agree to more. If you
-> agree to the follow-up emails, your contact details are kept until the last one is answered, then
-> deleted.
+> agree to the follow-up emails, your contact details are kept until the last one is answered [or for
+> the wait set by decision D6], then deleted.
 >
 > **Your rights.** You can ask to see what is held about you, have it corrected or deleted, or withdraw
 > at any time, by emailing hello@swimsignal.co.uk with your code or the date of your session. You can
@@ -230,8 +249,8 @@ branches, pull request text and issues.
 | What | Where | Kept until |
 |---|---|---|
 | Records, one per participant, under a code | `swimsignal-private/research/2026-10-comprehension/`, outside the repository | The summary is written; longer only if the participant agreed (plan, section 6) |
-| Contact list: code, name, how to reach them, follow-up answer | A separate file from the records, not in the records folder | The last follow-up is answered or given up on (question 10) |
-| Recording, only with agreement | The moderator's own computer, not a cloud service | The notes are checked against it (question 11) |
+| Contact list: code, name, how to reach them, follow-up answer | A separate file from the records, not in the records folder | The last follow-up is answered, or the wait set by D6 runs out |
+| Recording, only with agreement | The moderator's own computer, not a cloud service | As decided under D7 |
 | Picker output for the day | The private folder, next to the records | With the records |
 | Summary table and decisions | A public doc or issue, after the round | Kept; it holds no names and no contact details |
 
@@ -244,8 +263,8 @@ Rules:
 - Follow-up emails go only to those who said yes, and from hello@swimsignal.co.uk.
 
 **The site's privacy notice does not cover this yet.** It says SwimSignal holds no personal data beyond
-what it lists, and it lists no research sessions. Question 12 asks whether to add a section before the
-first session. A possible text:
+what it lists, and it lists no research sessions. Decision D8 is whether to add a section before the
+first session. This PR does not change the notice. A possible text:
 
 > **Research sessions.** If you take part in a test session, the operator keeps notes of what you did and
 > said under a code, not your name, and your contact details separately if you agreed to follow-up
@@ -253,50 +272,66 @@ first session. A possible text:
 > in its source code, and deleted once a summary of all sessions is written; contact details are deleted
 > after the last follow-up. You can withdraw at any time by email.
 
-## 7. Questions for Ethan
+## 7. Defaults used, and decisions only Ethan can make
 
-Each is a point the plan leaves open. Until it is answered, the record keeps the raw facts, so any answer
-can be applied afterwards.
+Numbers in brackets are the questions in this PR's first version (Q1 to Q15), kept so earlier comments
+still match.
 
-1. **Per-task outcome.** The brief for these materials asked for success, partial or fail per task. The
-   plan defines a three-way score only for task 2 (right, partly right, wrong). For tasks 1, 3, 4 and 5
-   it states the measure and a fail line for the round, not an outcome per person. Do you want a
-   per-person outcome for those tasks, and if so, what is "partial"? Until then the record keeps the
-   plan's measures and the outcome field is left blank.
-2. **Does "What would you try next?" count as help?** The plan prompts at one minute and helps at two.
-   Task 1 fails on people who "need help"; task 4 counts "unaided". The record notes the prompt and the
-   help separately.
-3. **Task 1's words.** "Within half an hour" against a planner in miles; and does finding one place,
-   not two, count as done?
-4. **What counts as naming a gap in task 3.** Only what the page shows that day (the picker's list), or
-   any true limit the participant states (for example "it doesn't cover algae")? Does the lake's missing
-   E. coli estimate count? The picker and the private session card say yes; the plan's list of four
-   does not name it.
-5. **Which task 3 spot in the Lake District.** No spot in the area had an overflow without a live feed
-   on 26 October, and none had more than two kinds of gap. The plan's example, Long Bridges in Oxford,
-   has had all four but is outside the area. Use the local spot with the most gaps, or Long Bridges? And
-   if local: a river (two gaps, a high headline) or a lake (one gap besides the lake estimate, a moderate
-   headline)?
-6. **Task 4 on a phone.** Is the close-and-reopen step part of "unaided"? A participant can pass the
-   first half and fail the second.
-7. **Task 5.** What counts as having produced a briefing: anything they would send, or one that
-   carries the limits?
-8. **Follow-ups at 7 and 14 days, or also 28?** The plan (section 7) says 7 and 14. The private
-   session card and check-in log also have 28. The consent wording follows the plan; a third email needs
-   its own consent line.
-9. **Answering questions about lakes.** The private session card says to say plainly, if asked, that
-   lakes are the least tested part. The plan says not to explain the site. This sheet answers only after
-   the tasks (section 3, closing step 5). Is that right?
-10. **How long to wait for a follow-up reply** before deleting the contact list.
-11. **The recording.** The plan says nothing on keeping it. The consent wording says it is deleted once
-    the notes are checked against it.
-12. **The privacy notice.** Add the research-sessions section before the first session? Whether the
-    sessions change anything about the ICO fee was not checked.
-13. **The repeat-use fail line** says "fewer than 3 of 8". With 9 or 10 participants, is it still 3?
-14. **The older plan's release rule.** `docs/SWIMMER_TESTING.md` treats reading "low" as a safety
-    guarantee, or mixing up an annual rating with today's sample, as release-blocking. The new plan keeps
-    that file's recording rules but does not say whether this rule still applies. The analysis records
-    both kinds of misreading either way.
-15. **The picker's task 3 order.** It counts the lake's missing estimate when sorting, so on 26 October
-    rivers with two other gaps fell below lakes with one, and off the five-row table. Not changed here.
-    Change the sort to ignore that gap, or show more rows?
+### Defaults used (from the plan)
+
+Each default comes from the plan section named, and the checklist above already uses it. Ethan can
+override any of them; the record keeps the raw facts, so an override can be applied afterwards.
+
+- **A1. The one-minute prompt is not help** [Q2]. Plan, section 3: "If they are stuck for a minute, ask
+  'What would you try next?'. Help only after two minutes, and record that help was given." Help is
+  anything, at or after two minutes, that points to where to go. The record keeps the prompt and the help
+  separately, each with its time.
+- **A2. Task 1 is read exactly as written**, "half an hour" included [Q3]. Plan, section 4 gives the
+  words; section 1 gives the measure, unaided completion and time. The record notes how many places were
+  found and how. Done or not done stays the plan's measure; no new definition is added.
+- **A3. Task 3 uses a Lake District spot**: the first row of the picker's task 3 list that morning [Q5].
+  Plan, section 3 says how to choose; the winter plan runs one area. The lake's missing E. coli estimate
+  is not one of the plan's four gaps. River Thames, Long Bridges, Oxford is used only if no local spot
+  qualifies.
+- **A4. Task 4's two halves are recorded separately** [Q6]. "Unaided" for the fail line means both
+  halves done without help: plan, section 1 asks "Can people save a spot and find it again?", and
+  section 4 adds the close-and-reopen step on a phone.
+- **A5. Follow-ups at 7 and 14 days only** [Q8]. Plan, section 7. The private kit
+  (`session-card.md` and `checkin-log.csv`, 24 October) adds a 28-day check-in; it is not used, and
+  the consent wording asks for two follow-ups. The plan wins.
+- **A6. No explaining during the tasks**; questions about lakes are answered plainly after the tasks,
+  in the closing [Q9]. Plan, section 3: "Do not explain the site, define terms or point at anything."
+  The private session card says to tell a participant, if asked, that lakes are the least tested part;
+  the plan wins on timing, and the card's words are used in the closing.
+- **A7. The picker ranks task 3 by the qualifying gaps** [Q15]. Fixed by PR #375, which also says how
+  many qualifying spots the table does not show. Until it is merged, run the picker from its branch,
+  `fix/picker-task3-order`.
+
+### Decisions only Ethan can make
+
+Each says what the record does until it is decided. D6 to D8 block session 1.
+
+- **D1. A per-person outcome for tasks 1, 3, 4 and 5** [Q1]. The plan scores task 2 as right, partly
+  right or wrong, and for the others gives a measure and a fail line for the round, not an outcome per
+  person. Until decided: the record keeps the plan's measures and leaves the outcome field blank; the
+  round's fail lines are tallied from the measures.
+- **D2. What counts as naming a gap in task 3** [Q4]. Is any true limit enough (for example "it doesn't
+  cover algae"), or only the gaps the page shows? Does the lake's missing estimate count? Until decided:
+  the record marks each limit named as one of the plan's four gaps, the lake's estimate, or another
+  limit, and the analysis tallies "named no gap" each way.
+- **D3. What counts as a task 5 briefing** [Q7]: anything the leader would send, or only one that
+  carries the limits? Until decided: the record keeps what they produced, whether the limits travelled
+  with it, and the time, and the analysis tallies both readings.
+- **D4. The repeat-use fail line with 9 or 10 participants** [Q13]. The plan says "fewer than 3 of 8".
+  Until decided: the analysis reports the count of returns and how many were asked, and applies 3 as
+  written.
+- **D5. Whether the older plan's release rule still applies** [Q14]. `docs/SWIMMER_TESTING.md` treats
+  reading "low" as a safety guarantee, or mixing up an annual rating with today's sample, as
+  release-blocking. Until decided: the record notes both kinds of misreading.
+- **D6. How long to wait for a follow-up reply before deleting the contact list** [Q10]. **Blocks
+  session 1.** The consent wording has a placeholder for it.
+- **D7. Keeping a recording** [Q11]: whether recording is offered at all, and when a recording is
+  deleted. **Blocks session 1.** The consent wording has a placeholder; until decided, take notes only.
+- **D8. The privacy notice and the ICO fee** [Q12]. Whether the research-sessions section (section 6)
+  goes into the site's privacy notice before session 1, and whether the sessions change the ICO fee
+  position (not checked). **Blocks session 1.**

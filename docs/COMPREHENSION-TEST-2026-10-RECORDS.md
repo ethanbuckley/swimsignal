@@ -2,8 +2,9 @@
 
 The blank record for one session and the analysis of 8 to 10 records, for the plan in
 `docs/COMPREHENSION-TEST-2026-10.md`. How to run a session, the consent wording and the privacy rules are in
-`docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`; its section 7 lists the questions for Ethan that this file
-refers to as "question N". Written on 26 October 2026, before any session.
+`docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`. Its section 7 lists the defaults used (A1 to A7) and the
+decisions only Ethan can make (D1 to D8), which this file refers to by those labels. Written on 26 October
+2026, before any session.
 
 **Filled-in records never go in this repository.** Copy section 1 into
 `swimsignal-private/research/2026-10-comprehension/P0X-2026-MM-DD.md`, one file per participant.
@@ -43,17 +44,17 @@ refers to as "question N". Written on 26 October 2026, before any session.
 
 ## Task 1: two places for a weekend swim
 - Time (min:sec):
-- Prompted "What would you try next?" (yes / no, at what time):
-- Help given (no / yes: what, at what time):
+- Prompted "What would you try next?" (yes / no, at what time; not help, A1):
+- Help given, at or after two minutes (no / yes: what, at what time):
 - Done without help? (yes / no):
-- Places found (how many, which):
+- Places found (how many, which, and how):
 - Route: Plan a swim / map / list / search / other:
 - Day picked? Which, and how (planner day strip / map day menu / none):
 - Distance chosen:              (not their town)
 - What they compared, and what they said makes one better:
   - Said: "  "
 - Friction or misunderstanding:
-- Outcome (blank until question 1 is answered):
+- Outcome (blank until D1 is decided):
 
 ## Task 2: the low-risk spot
 - Time (min:sec):
@@ -65,35 +66,42 @@ refers to as "question N". Written on 26 October 2026, before any session.
 - Used the words "tested", "measured", "safe" or "clean"? Which, quoted:
 - Score (plan, section 5): Right / Partly right / Wrong
 - Said "tested" (fails the forecast-versus-test message whatever the score): yes / no
-- Mixed up the annual EA rating with today's forecast or sample? (quote): (question 14)
+- Mixed up the annual EA rating with today's forecast or sample? (quote): (D5)
 - Moderator's reading (kept apart from the quotes):
 
 ## Task 3: the spot with gaps
 - Time (min:sec):
-- Gaps named, each against the morning's list (quote each):
-  1. "  "    → matches page gap no.
-  2. "  "    → matches page gap no.
-- Other limits named that are not on the page's list (quote): (question 4)
-- Number of the page's gaps named:
+- Limits named (quote each), and what each is: one of the plan's four gaps on the page / the lake's
+  missing estimate / another limit (D2):
+  1. "  "    → 
+  2. "  "    → 
+- Number named of the plan's four gaps on the page:
+- Number named including the lake's estimate:
+- Number named including other limits:
 - Treated a gap as good news? (quote):
 - Moderator's reading:
-- Outcome (blank until question 1 is answered):
+- Outcome (blank until D1 is decided):
 
 ## Task 4: save and find again
 - Time (min:sec):
-- Prompted (yes / no, when):     Help given (no / yes: what, when):
-- Saved it? Route to find it again (home page Saved section / Saved page / list / other):
-- Phone only, close and reopen: found it? Route? Safari or Home Screen app:
-- Done without help? first half (yes / no), close-and-reopen (yes / no / not a phone):
+- First half, save and find from the home page:
+  - Prompted (yes / no, when):     Help given (no / yes: what, when):
+  - Route to find it again (home page Saved section / Saved page / list / other):
+  - Done without help? (yes / no):
+- Second half, phone only, close and reopen:
+  - Prompted (yes / no, when):     Help given (no / yes: what, when):
+  - Route; Safari or Home Screen app:
+  - Done without help? (yes / no / not a phone):
+- Unaided for the fail line (both halves without help on a phone; A4): yes / no
 - Friction:
-- Outcome (blank until questions 1 and 6 are answered):
+- Outcome (blank until D1 is decided):
 
 ## Task 5: briefing (group leaders only)
 - Time (min:sec):
 - Prompted / help given:
 - Found: event page / sites view / decision record / none:
 - Produced something to send or file? What:
-- Did the limits travel with it? (what was in it, quoted or described):
+- Did the limits travel with it? (what was in it, quoted or described; D3):
 - Said was missing: "  "
 - Produced within 10 minutes? (yes / no):
 
@@ -140,16 +148,16 @@ results cannot move them.
 | 2 | Scored Wrong (said tested, measured, safe or clean) | | all | 2 or more | |
 | 2 | Said "tested" | | all | any one marks a failure of the forecast-versus-test message | |
 | 2 | Right / Partly right / Wrong, three counts | | all | (shown, no line) | |
-| 3 | Named none of the page's gaps | | all | 3 or more | |
+| 3 | Named none of the page's gaps: three counts, by D2's readings (the plan's four; plus the lake's estimate; plus other limits) | | all | 3 or more | |
 | 3 | Treated a gap as good news | | all | (noted, no line) | |
-| 1 | Needed help | | all | 3 or more | |
+| 1 | Needed help (at or after two minutes; the one-minute prompt is not help, A1) | | all | 3 or more | |
 | 1 | Took over 5 minutes | | all | any one | |
-| 4 | Failed to save and find again unaided | | all | 2 or more | |
-| 5 | Did not produce a briefing in 10 minutes | | leaders | any one | |
-| Repeat use | Reported a return visit with a purpose they can name, at 7 or 14 days | | 8 | fewer than 3 (question 13) | |
+| 4 | Failed to save and find again unaided (both halves on a phone, A4) | | all | 2 or more | |
+| 5 | Did not produce a briefing in 10 minutes: two counts, by D3's readings (anything they would send; one that carries the limits) | | leaders | any one | |
+| Repeat use | Reported a return visit with a purpose they can name, at 7 or 14 days | | asked | fewer than 3 of 8, applied as written (D4) | |
 
-How to count when a question for Ethan is still open: count both ways and show both. For example, if
-question 2 is open, show task 1 "needed help" with and without the one-minute prompt counted as help.
+How to count while a decision of Ethan's is open (D1 to D5): count each reading and show them all, as
+the table does for D2 and D3. A default (A1 to A7) is applied as written unless Ethan overrides it.
 Never pick the reading that passes.
 
 A participant who did not reach a task (out of time, call dropped) is left out of that task's "out of",
