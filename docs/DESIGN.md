@@ -1253,6 +1253,14 @@ gives all four navigation links a single full-width row.
 - Someone with nothing saved who adds a shared list gets that one list (26 October 2026): it takes the
   place of the empty "My spots" a first visit makes (lists.js, `addSharedList`), so there is no chip for
   an empty list beside it. With anything saved, another list, or "My spots" renamed, it is added beside them.
+- "Open a list from a link" (26 October 2026, a phone-journey audit): the Home Screen app on an iPhone
+  has no address bar and keeps its own storage, so a list sent to someone, or saved in Safari, could not
+  be opened in it. A text box on the Saved page takes a pasted link and opens it as the shared-list page
+  above, with its own "Add to my lists" and "It is in your lists already"; nothing new is drawn after the
+  paste. Only a link to this site's `saved/` with a list in it is taken (`pastedList` in `lists.js`); else
+  one muted line says why. Nothing is read from the clipboard. The form sits in "Your lists"; with nothing
+  saved, when "Your lists" is not shown, it is a tile of its own under the empty tile, whose Home Screen
+  sentence points to it.
 - The next step after saving (25 October 2026, a 375 px walk through the Facebook post's link). Save on a
   spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
   room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts

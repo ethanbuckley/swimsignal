@@ -113,6 +113,44 @@ test('a link from before lists, or an odd one, reads safely', () => {
   assert.deepEqual(S.readShared('#list=%3Cb%3EHi%3C%2Fb%3E%0A&spots=a').name, '<b>Hi</b>');   // the page escapes it: esc() in renderShared
 });
 
+// A list's link pasted on the Saved page (the Home Screen app on an iPhone has no address bar, 26 Oct
+// 2026): only a link to this site's Saved page holding a list is taken, and only its hash is kept.
+test('a pasted link opens a list only when it is a link to a list on this site', () => {
+  const live = 'https://swimsignal.co.uk/saved/#list=Windermere&spots=osm-windermere-waterhead,bw-ukd1203-45650';
+  const here = 'http://localhost:8812';
+  assert.deepEqual(S.pastedList(live, here), {hash: '#list=Windermere&spots=osm-windermere-waterhead,bw-ukd1203-45650'});
+  assert.deepEqual(S.pastedList(`  \n${live}\t `, here), S.pastedList(live, here));   // spaces and a line break around it, as a paste brings
+  assert.deepEqual(S.pastedList('https://www.swimsignal.co.uk/saved/#spots=a,b', 'https://swimsignal.co.uk'), {hash: '#spots=a,b'});   // a link from before lists
+  assert.deepEqual(S.pastedList('http://localhost:8812/saved/index.html#list=W&spots=a', here), {hash: '#list=W&spots=a'});   // the page's own host
+  assert.deepEqual(S.pastedList('https://swimsignal.co.uk/saved#list=W&spots=a', here), {hash: '#list=W&spots=a'});   // typed without the last slash
+  assert.deepEqual(S.pastedList('https://example.org/swimsignal/saved/#list=W&spots=a', 'https://example.org/swimsignal/'), {hash: '#list=W&spots=a'});   // under a folder
+  assert.deepEqual(S.pastedList('https://swimsignal.co.uk/saved/' + S.shareHash('Plan', ['a'], '2026-10-27'), here), {hash: '#list=Plan&day=2026-10-27&spots=a'});
+  // What is turned away, and why.
+  const why = (t, origin = here) => S.pastedList(t, origin).why;
+  for (const t of ['', '   \n', null, undefined, 42, {toString: () => live}]) assert.equal(why(t), 'empty', String(t));
+  assert.equal(why('https://swimsignal.co.uk/saved/#spots=' + 'a,'.repeat(S.PASTE_MAX)), 'long');
+  assert.equal(why('swimsignal.co.uk/saved/#list=W&spots=a'), 'notlink');   // no https://, so not a link a browser opens
+  assert.equal(why('Windermere'), 'notlink');
+  assert.equal(why('javascript:alert(1)//saved/#spots=a'), 'site');
+  assert.equal(why('ftp://swimsignal.co.uk/saved/#spots=a'), 'site');
+  assert.equal(why('https://example.com/saved/#list=W&spots=a'), 'site');
+  assert.equal(why('https://swimsignal.co.uk.evil.com/saved/#list=W&spots=a'), 'site');   // a look-alike host
+  assert.equal(why('https://evil.com/?https://swimsignal.co.uk/saved/#list=W&spots=a'), 'site');
+  assert.equal(why('http://localhost:9999/saved/#list=W&spots=a'), 'site');   // another port is another site
+  assert.equal(why('https://swimsignal.co.uk/saved/#list=W&spots=a', 'not a page address'), undefined);   // no origin: swimsignal.co.uk still is
+  assert.equal(why('https://swimsignal.co.uk/spot/grasmere/#list=W&spots=a'), 'notlist');   // not the Saved page
+  assert.equal(why('https://swimsignal.co.uk/sites.html#spots=a,b&name=Club'), 'notlist');   // a sites view, not a list
+  assert.equal(why('https://swimsignal.co.uk/saved/'), 'notlist');
+  assert.equal(why('https://swimsignal.co.uk/saved/#spots='), 'notlist');
+  assert.equal(why('https://swimsignal.co.uk/saved/#list=Weekend'), 'notlist');
+  // A name with markup in it stays in the hash, as typed; the page escapes the name it shows (esc in renderShared).
+  const odd = S.pastedList('https://swimsignal.co.uk/saved/#list=%3Cb%3EHi%3C%2Fb%3E&spots=a', here);
+  assert.deepEqual(odd, {hash: '#list=%3Cb%3EHi%3C%2Fb%3E&spots=a'});
+  assert.equal(S.readShared(odd.hash).name, '<b>Hi</b>');
+  // A raw < in a pasted link is percent-encoded by the URL parser, never kept as markup.
+  assert.doesNotMatch(S.pastedList('https://swimsignal.co.uk/saved/#list=<b>Hi</b>&spots=a', here).hash, /</);
+});
+
 // The page loads lists.js as a plain script beside the others: its names must not collide with theirs,
 // or the second declaration stops the page.
 test('lists.js loads beside the page’s other scripts without a clash', () => {

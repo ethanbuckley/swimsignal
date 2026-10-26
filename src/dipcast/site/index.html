@@ -714,6 +714,7 @@
      shared opens as its own read-only page, its one action under the lede. */
   .lists-row { margin:0 -4px 6px; }
   .lists-form { min-width:0; margin:12px 0 0; padding:12px 0 0; border:0; border-top:1px solid var(--hair); }
+  .tile > .lists-form:first-child { margin:0; padding:0; border-top:0; }   /* Open a list from a link, on a tile of its own: no rule above it */
   .lists-form legend { float:left; width:100%; padding:0; }
   .lists-form legend + * { clear:both; }
   .lists-form legend, .lists-form > label { display:block; margin:0 0 6px; font-size:var(--fs-note); font-weight:600; }
@@ -3146,7 +3147,7 @@ function renderSaved() {
   if (sh) { renderShared(sh); return; }
   document.title = `Saved spots · ${BRAND}`;
   const l = listNow(), many = manyLists(), spots = listSpots(l), gone = l.spots.length - spots.length, named = esc(l.name);
-  const from = many ? l.name : 'saved spots';
+  const from = many ? l.name : 'saved spots', listsShown = many || SAVED.size > 0;
   // The opening, under the sky (.lead): with more than one list, the lists as chips, the one shown
   // filled; then the cards on the glass.
   let h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Saved spots</h1>`
@@ -3166,9 +3167,12 @@ function renderSaved() {
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
   else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
     + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
-    + `${navigator.standalone ? ' Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here.' : ''}</p>`
+    + `${navigator.standalone ? ` Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here, or paste a list's link ${listsShown ? 'under Your lists, ' : ''}below.` : ''}</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
     + `${swimsShown(spots) ? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal</button></p>'}</div>`;
+  // Opening a list from its link is in Your lists; with nothing saved, Your lists is not shown (a Home
+  // Screen app just added, say), so it has a tile of its own.
+  if (!listsShown) v += `<section class="sec tile lists">${importForm()}</section>`;
   if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
   v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
@@ -3178,11 +3182,11 @@ function renderSaved() {
     + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p>`
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
-  v += (many || SAVED.size ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
+  v += (listsShown ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
   // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
   // all on a wide desktop, where England's every spot said nothing about an empty list.
   setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));
-  bindBack(); bindSavedPage(l, spots); bindLists(l); bindAlerts(); bindComparison(); bindBestDay(); bindSwims(); bindToAlerts();
+  bindBack(); bindSavedPage(l, spots); bindLists(l); bindImport(); bindAlerts(); bindComparison(); bindBestDay(); bindSwims(); bindToAlerts();
   if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
   if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
@@ -3263,6 +3267,7 @@ function listsCard(l) {
     + `<label>To<select id="mv-to">${LISTS.lists.map(x => `<option value="${esc(x.id)}"${x.id === to.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label></div>`
     + `<div class="actions tight"><button type="button" class="btn" id="mv-move">Move</button><button type="button" class="btn" id="mv-copy">Copy</button></div></fieldset>`;
   h += field('ls-rename', `Rename ${named}`, named, 'Rename') + field('ls-new', 'New list', '', 'Make list', 'A name');
+  h += importForm();
   if (many) h += `<p class="lists-del"><button type="button" class="btn" id="ls-delete">Delete ${named}</button></p>`;
   return h + '<p class="small muted msg" id="lists-msg" role="status"></p></details>';
 }
@@ -3294,6 +3299,24 @@ function bindLists(l) {
     const x = listById(LISTS, l.id), n = x.spots.filter(id => !LISTS.lists.some(y => y.id !== x.id && y.spots.includes(id))).length;
     if (!confirm(`Delete the list ${x.name}?${n ? ` ${n === 1 ? 'One spot in it is' : `${n} spots in it are`} in no other list, so ${n === 1 ? 'it' : 'they'} will no longer be saved.` : ''}`)) return;
     setLists(deleteList(LISTS, x.id)); redraw(`Deleted ${x.name}.`, 'ls-new-name'); });
+}
+// Open a list from its link (lists.js pastedList): the Home Screen app on an iPhone has no address bar,
+// so a list sent to someone, or copied in Safari, is pasted here and opens as a shared list, with its
+// own "Add to my lists". Nothing is read from the clipboard: the reader pastes.
+const importForm = () => `<form class="lists-form" id="ls-import"><label for="ls-import-link">Open a list from a link</label>`
+  + `<p class="small muted below">Paste a link to a list, sent to you or copied with Share this list${navigator.standalone ? ' in Safari' : ''}, to see it and add it here.</p>`
+  + `<div class="field-row"><input type="text" id="ls-import-link" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="${PASTE_MAX}" enterkeyhint="go" placeholder="https://swimsignal.co.uk/saved/#list=…">`
+  + `<button type="submit" class="btn">Open</button></div><p class="small muted msg" id="ls-import-msg" role="status"></p></form>`;
+const IMPORT_WHY = { empty: 'Paste a link to a SwimSignal list first.', long: 'That is too long to be a link to a list.',
+  notlink: 'That is not a link. Paste the whole link, starting https://.', site: 'That is a link to another website, not SwimSignal.',
+  notlist: "That link has no list of spots in it. A list's link has saved/#list= in it." };
+function bindImport() {
+  const f = document.getElementById('ls-import'); if (!f) return;
+  const box = document.getElementById('ls-import-link'), msg = document.getElementById('ls-import-msg');
+  f.addEventListener('submit', e => { e.preventDefault();
+    const got = pastedList(box.value, location.origin);
+    if (got.why) { msg.textContent = IMPORT_WHY[got.why]; box.focus(); return; }
+    keepPlace(); history.pushState({ view: 'saved', from: 'saved' }, '', savedPath() + got.hash); renderSaved(); scrollTop(); focusHeading(); });
 }
 // A list someone shared (saved/#list=...&spots=..., lists.js readShared): read only, with one action,
 // to add it to my lists, since someone else chose it. It stays in the address while it is shown, so
