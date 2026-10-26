@@ -1,15 +1,17 @@
 # Comprehension sessions: execution pack, and what is still waiting on a person
 
-Written on 26 October 2026, at about 23:00 UTC. It is an index for running the sessions in the plan, plus a list of
-every action across SwimSignal that a person has to take. It adds no rule. The rules are in three files, and this
-pack points into them by section:
+Written on 26 October 2026: first version committed at 22:37 UTC (7a805c3), revised after review the same
+evening against main at 6688156 (PR #382 merged). It is an index for running the sessions in the plan, plus a list
+of every action across SwimSignal that is still open. It adds no rule and changes no protocol. The rules are in
+three files, and this pack points into them by section:
 
 - **The plan:** `docs/COMPREHENSION-TEST-2026-10.md` (questions, fail lines, tasks, rubric, what results decide).
 - **The run sheet:** `docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md` (checklist, consent wording, privacy rules,
   defaults A1 to A7, Ethan's decisions D1 to D8).
 - **The records file:** `docs/COMPREHENSION-TEST-2026-10-RECORDS.md` (blank record, tally, public summary).
 
-Where this pack and those files differ, those files win.
+Where this pack and those files differ, those files win. Anything that looks as if it needs a change to them is
+listed in section 10 as a proposed amendment for decision, and is not applied here.
 
 Every statement below is marked. **[read]** means I opened the file, page or log named on 26 October 2026.
 **[inferred]** means it comes from notes or reasoning, not from a source I opened, and needs checking.
@@ -22,23 +24,32 @@ Every statement below is marked. **[read]** means I opened the file, page or log
 - No one has been recruited, and no recruitment message has been drafted or sent by this work. [inferred: no
   record of one in the repository or the private research folder]
 - The privacy notice's "Research sessions" section is live on https://swimsignal.co.uk/privacy. [read: fetched
-  26 Oct, about 22:50 UTC; source `src/dipcast/pages/privacy.html`, merged in PR #380]
+  26 Oct 2026; source `src/dipcast/pages/privacy.html`, merged in PR #380]
+- The scoped headline is already live. On https://swimsignal.co.uk/spot/bw-ukj2310-11945/ (Frensham Great Pond),
+  checked at 22:49 UTC on 26 Oct 2026, the answer reads "Low risk from sewage spills", issued Mon 22:21. That
+  wording is `HEAD_SCOPE` in `levels.js`, from PR #284, merged 20 Oct 2026 at 18:10 UTC (`docs/DESIGN.md`, the
+  answer's headline). [read]
 - SwimSignal is registered with the ICO and the fee is paid. [read: plan section 11, D8; confirmed by Ethan]
 - The spot picker is on main: `scripts/pick_test_spots.py`, ranking fix from PR #375. [read]
 - UK time is UTC until 28 March 2027 (the clocks went back on 25 October). [read: run sheet section 2, step 5]
 
 ## 2. One-off pre-flight, before the first participant is contacted
 
-Each step is Ethan's. Tick it here, or in the private README.
+Items 1 and 4 to 7 are Ethan's: they spend money, speak for SwimSignal to the public, or happen on his own
+computer, where the private folder is. Items 2 and 3 need no decision. Tick them in the private README.
 
 1. **Settle the thank-you** (plan, section 10 item 1). Recommended there: a £10 voucher for swimmers, none for
    leaders, checked against the organiser plan's section 5 first, since money paid may count as trading. Then fill
    the "[Thank-you line, if decided]" in the consent wording (run sheet, section 5), or delete it.
    You will know it worked when the consent text in your private copy has no square brackets left.
-2. **Decide which headline wording each participant sees** (plan, section 10 item 2). Recommended there: the live
-   wording for the first four, then the scoped headline if its PR is merged by then. [inferred: I could not find
-   the headline-scope PR by title search on 26 Oct; check whether it exists before relying on the switch.]
-3. **Choose a note-taker, or none** (plan, section 10 item 3). It must be someone who has not seen the site.
+2. **Headline wording** (plan, section 10 item 2). There is nothing to find or merge: the scoped headline ("Low
+   risk from sewage spills", PR #284) has been live since 20 October, so every participant will see it unless it
+   changes. Keep the run sheet's step: the day before each session, check which wording is live and note it in
+   the record (run sheet, section 1 step 8). [read: section 1 above] What this means for the plan's
+   "first four on the live wording, then the scoped headline" recommendation is in section 10, as a question,
+   not a change.
+3. **A note-taker is optional** (plan, section 10 item 3: "A friend who has not seen the site can take notes").
+   With none, there is no second scorer for task 2 (records file, section 2.3). Not a blocker.
 4. **Approve the recruitment wording and where it goes, specifically.** Recruitment is a Facebook group post, or a
    request through a group's organiser (plan, section 2). No cold email to sole traders or clubs (PECR). No
    message is drafted here. Each post or request needs Ethan's yes to its exact words and its exact destination.
@@ -62,7 +73,7 @@ Each step is Ethan's. Tick it here, or in the private README.
 | Days to book | Wednesday to Friday only, so "this Saturday or Sunday" is in the planner | run sheet s1 step 3 |
 | Swimmer session | 30 minutes, tasks 1 to 4 | plan s3 |
 | Group leader session | 45 minutes, tasks 1 to 5, buyer questions last | plan s3, s4 |
-| Suggested split, swimmer | opening 3, task 1 up to 6, task 2 up to 5, task 3 up to 4, task 4 up to 4, closing 6 | run sheet s3 |
+| Suggested split, swimmer (the run sheet's suggestion, "not from the plan") | opening 3, task 1 up to 6, task 2 up to 5, task 3 up to 4, task 4 up to 4, closing 6 | run sheet s3 |
 | Prompt and help | "What would you try next?" at 1 minute (not help); help only at 2 minutes or later | plan s3, A1 |
 | Fail times | task 1 past 5 minutes; task 5 past 10 minutes | plan s1 |
 | Reload the chosen pages | within 30 minutes of the start | run sheet s2 step 7 |
@@ -110,8 +121,9 @@ two qualifying gaps (run sheet, section 2, step 3). `git pull` first.
 ## 5. Consent and data handling, in order
 
 1. Read the opening sentence word for word (run sheet, section 3).
-2. Read or show the consent wording (run sheet, section 5). Take the four yes/no answers aloud on a call, and write
-   them and the time in the record. No signature: a signed form would hold their name.
+2. Read or show the consent wording (run sheet, section 5). On a video call the participant can answer each line
+   aloud; write their answers and the time in the record. A signature is not needed, and a signed form would hold
+   their name (run sheet, section 5).
 3. Stop if they say no to notes.
 4. Code P01 to P10. The name and contact go only in the separate contact list, never in the record.
 5. No health, home address or precise location. Write the distance chosen in task 1, not the town.
@@ -146,67 +158,81 @@ After the last session, follow the records file, section 2:
 
 ## 8. What "done" looks like
 
-The round is done when all of these are true:
+Gathered from the source files; nothing is added. The round is done when all of these are true:
 
-- 8 to 10 sessions completed, with the mix in plan section 2, or a written note of why fewer.
-- A record per participant in the private folder, each with its consent answers.
-- Day 7 and day 14 follow-ups sent to everyone who said yes, and the answers in the records.
-- The tally table filled, with the wording version each participant saw.
-- One public summary (records file, section 3) that passed the re-identification check.
-- The plan's section 8 decisions taken, each as its own PR or issue.
+- 8 to 10 sessions completed, with the mix in plan section 2 (six swimmers, three or four group leaders).
+- A record per participant in the private folder, each with its consent answers (run sheet, sections 4 and 6).
+- Day 7 and day 14 follow-ups sent to everyone who said yes, and the answers in the records (plan, section 7).
+- The tally table filled, with the wording version each participant saw (records file, sections 2.1 and 3).
+- One public doc or issue holding the summary (records file, section 3), which passed the re-identification check.
+- The decisions under the plan's section 8 taken and listed in that summary (records file, section 3).
 - Contact details deleted (D6), recordings deleted (D7), and raw notes deleted once the summary is written, by
-  31 January 2027 at the latest.
+  31 January 2027 at the latest (plan, section 6).
 
-The plan's own limit applies: eight people give direction, not proof. Write that in the summary.
+The summary says that eight people give direction, not proof (records file, section 2.2).
 
-## 9. Outstanding human actions across SwimSignal
+## 9. Outstanding actions across SwimSignal
 
-Owner "Ethan" means only Ethan can do it, or it needs his yes. "Agent" means a Claude or Codex session can do it
-once the decision in the same row is made. Nothing here is drafted or sent. Dates are those in the source.
+**Who decides.** Ethan delegated routine decisions to Codex on the evening of 26 October 2026. Approval records now
+name the actual reviewer, not Ethan by default. [read: `docs/AI-PROGRAMME-2026-10.md` on `docs/ai-programme-status`
+at 0ea1d4d, "Decisions, 26 October 2026" and "Product brief"] The file does not list the delegation's limits.
+[inferred] So this list keeps Ethan only where an action:
+- spends money,
+- sends a message or post in SwimSignal's name to someone outside,
+- or needs his own computer, where the research records are.
+
+Owners:
+- **Codex** means Codex decides under that delegation.
+- **Agent** means any Claude or Codex session can do the work.
+- **Ethan** means only Ethan can do it.
+
+Nothing here is drafted or sent. Dates are the ones in the source.
 
 ### 9.1 Comprehension sessions
 
 | # | Action | Owner | Unblocks | Date | Source | Basis |
 |---|---|---|---|---|---|---|
-| S1 | Decide the participant thank-you, then fill or delete the consent line | Ethan | Recruitment; the consent text | Before recruiting | plan s10 item 1; run sheet s5 | read (decision not found recorded: inferred open) |
-| S2 | Decide which headline wording participants see; confirm the headline-scope PR exists | Ethan | Task 2 baseline and comparison | Before session 1 | plan s10 item 2 | read; PR not found (inferred) |
-| S3 | Choose a note-taker or none | Ethan | Blind second scoring of task 2 | Before session 1 | plan s10 item 3; records s2.3 | read |
-| S4 | **Approve the exact recruitment post(s) and each group or organiser they go to.** None drafted here | Ethan, specific approval | Every session | Week 1, from 26 Oct | plan s2, s9 | read |
-| S5 | Book sessions, Wednesday to Friday only | Ethan | Sessions | First slots 28 to 30 Oct | run sheet s1 step 3 | read; slots inferred |
+| S1 | Decide the participant thank-you, then fill or delete the consent line | Ethan (money; it may count as trading) | Recruitment; the consent text | Before recruiting | plan s10 item 1; run sheet s5 | read; no recorded decision found, so inferred open |
+| S2 | Headline wording: **nothing to decide or find.** "Low risk from sewage spills" is live (PR #284, merged 20 Oct). Note the live wording in each record, as run sheet s1 step 8 says | Moderator, per session | Task 2 record | Day before each session | section 1 of this pack | read: Frensham page checked 22:49 UTC, 26 Oct |
+| S3 | Note-taker: optional. With none, there is no blind second scorer | None needed | Second scoring of task 2 only | None | plan s10 item 3; records s2.3 | read |
+| S4 | **Approve the exact recruitment post(s), and each group or organiser they go to.** Nothing is drafted here | Ethan, approving each one specifically | Every session | Week 1, from 26 Oct | plan s2, s9 | read |
+| S5 | Book sessions, Wednesday to Friday only | Ethan | Sessions | First possible slots 28 to 30 Oct | run sheet s1 step 3 | read; the slot dates are inferred |
 | S6 | Run 8 to 10 sessions as moderator | Ethan | All results | Weeks 1 and 2 | plan s9, s10 item 3 | read |
-| S7 | Send day 7 and day 14 follow-ups to those who agreed, from hello@ | Ethan | Repeat-use count (D4) | 7 and 14 days after each session | plan s7; D4 | read |
-| S8 | Delete contacts (day 21), recordings (day 7), notes (after summary, by 31 Jan 2027) | Ethan | Keeps to the privacy notice | As stated | D6, D7, plan s6 | read |
-| S9 | Analyse and write the public summary, after the re-identification check | Ethan, or an agent with Ethan's review | Plan s8 decisions | After the round | records s2, s3 | read |
+| S7 | Send the day 7 and day 14 follow-ups to those who agreed, from hello@ | Ethan | Repeat-use count (D4) | 7 and 14 days after each session | plan s7; D4 | read |
+| S8 | Delete recordings (day 7), contacts (day 21 or earlier) and notes (after the summary, by 31 Jan 2027) | Ethan | Keeping to the privacy notice | As stated | D6, D7, plan s6 | read |
+| S9 | Analyse the records and write the public summary, after the re-identification check | Ethan, or an agent working on his computer | Plan s8 decisions | After the round | records s2, s3 | read |
 | S10 | Three prospective customers try the session workflow for a real activity | Ethan | Pilot evidence | Week 2 | plan s9; `docs/PILOT-SESSIONS.md` | read |
-| S11 | Check the private folder is still unsynced and not backed up before session 1 | Ethan | Accuracy of the privacy notice | Before session 1 | run sheet s6 | read |
+| S11 | Before session 1, check the private folder is still not synced and not backed up | Ethan | Accuracy of the privacy notice | Before session 1 | run sheet s6 | read |
 
-### 9.2 AI and data programme (draft PRs #377 to #385)
+### 9.2 AI and data programme
 
-All of these PRs are drafts, by Ethan's decision 16 of 26 October (`docs/AI-PROGRAMME-2026-10.md` on
-`docs/ai-programme-status`, PR #378). Merging any of them is Ethan's call. [read: `gh pr list`, 26 Oct about
-22:45 UTC, open: #377, #378, #379, #381, #382, #383, #384, #385, all drafts]
+State on 26 Oct 2026, read from `gh pr list` and the status map:
+- **#382 is merged.** Codex merged it at 22:45 UTC as 6688156, and it is on main.
+- **Still drafts:** #377 to #381 and #383 to #386. The two prototypes #388 and #390 are drafts too.
+- Under decision 16 these stay drafts "for now". The product brief has Codex coordinating merges.
 
 | # | Action | Owner | Unblocks | Date | Source | Basis |
 |---|---|---|---|---|---|---|
-| P1 | Approve, change or decline the algae-incident test statement | Ethan | Its one fetch and score | None | #385, `docs/LAKE-ALGAE-INCIDENT-TEST-2026-10.md` ("waits for Ethan's approval") | read |
-| P2 | Frensham Great Pond: approve or decline the advisory draft line, by a PR adding an entry to `data/advisories/approved.json` (empty on 26 Oct). Re-run the finder first: the approval must match the current draft | Ethan only | An EA "advice against bathing (harmful algae)" line, once #379's spot-page block is built and merged | EA incident open since 19 Jun, still open 26 Oct | #379, `docs/ADVISORY-FINDER-2026-10.md` | read |
-| P3 | Decide merges of #379 and #382 when the product-brief work on them finishes. #382 needs a real site build and full CI first | Ethan | Advisory block; data-quality page flags | None | AI-PROGRAMME product brief items 1 and 2 | read |
-| P4 | River rises: read the evaluation plan; any change by dated amendment before the run | Ethan | The run | Run not before **2 Nov 2026**; if possible before **21 Nov** | #383, `docs/RIVER-RISES-SCOPE-2026-10.md` | read |
-| P5 | River rises: run once, alone on the machine, offline from the cache | Agent | The verdict; a shadow-log decision for Ethan if C1 or C2 passes | 2 Nov to 21 Nov | same | read |
-| P6 | Missing event ends: measure again; fix only if rule B changes levels at over 1% of spot-builds | Agent; Ethan merges | A fix or a confirmed no-fix | On or after **9 Nov 2026** | #384; AI-PROGRAMME decision 11 | read |
-| P7 | Radar: decide whether to keep the raw files (about 34 GB now, 1.4 GB a month) | Ethan | Radar history for spots added later | Before about **20 Nov 2026**, when the oldest month may start to go | `docs/MET-OFFICE-DATA-2026-10.md` s6, s9 | read |
-| P8 | Lab-chlorophyll test statement: review before any fetch | Ethan | That test | None | AI-PROGRAMME product brief | read (statement "to come") |
-| P9 | Moderation: no action until the trigger fires (over 50 waiting three weeks running, and the other limits) | Ethan | Moderation help | None | #378, decision 15 | read |
-| P10 | Practical guide gaps PR: review the sources and merge or not | Ethan | Guides for popular spots | None | AI-PROGRAMME product brief item 3 (sister PR to this one) | inferred: PR not yet open when written |
+| P1 | Algae-incident test statement. Codex reviewed the protocol as a bounded exploratory question. It is kept unrun in this window | Codex | Its one fetch and score | None | #385; AI-PROGRAMME product brief | read |
+| P2 | Frensham Great Pond advisory. Codex approves the record from the exact line and its evidence, as the recorded reviewer. It is never attributed to Ethan. Re-run the finder first, so the approval matches the current draft. Merge #379 after #382, which is done | Codex | The EA "advice against bathing (harmful algae)" line on the spot page | EA incident open since 19 Jun, still open 26 Oct | #379; AI-PROGRAMME product brief item 1 | read. The note in `data/advisories/approved.json` on `proto/advisory-finder` still said "Only Ethan Buckley approves" at 22:50 UTC; #379 is in progress |
+| P3 | #382 data-quality flags: watch the publishing run (40414855047). Revert on any material regression | Codex | The flags on the live data-quality page | Now | AI-PROGRAMME product brief item 2 | read; the run's result was not checked here |
+| P4 | River rises: any change to the evaluation plan goes in as a dated amendment, before the run | Codex | The run | Not before **2 Nov 2026**; if possible before **21 Nov** | #383, `docs/RIVER-RISES-SCOPE-2026-10.md`; decision 12 | read |
+| P5 | River rises: run it once, alone on the machine, offline from the cache | Agent | The verdict | 2 Nov to 21 Nov | same | read |
+| P6 | Missing event ends: measure again. Fix only if rule B changes levels at more than 1% of spot-builds | Agent; Codex merges | A fix, or a confirmed no-fix | On or after **9 Nov 2026** | #384; decision 11 | read |
+| P7 | Radar: decide whether to keep the raw files (about 34 GB now, 1.4 GB a month) | Codex; Ethan only if disk space on his computer is the issue | Radar history for spots added later | Before about **20 Nov 2026** | `docs/MET-OFFICE-DATA-2026-10.md` s6, s9 | read |
+| P8 | Lab-chlorophyll statement (#386). Kept unrun. First verify EA determinand 7887 from a primary EA source. No 55k-request fetch | Codex | That test | None | AI-PROGRAMME product brief | read |
+| P9 | Moderation: nothing until the trigger fires | None now | Moderation help | None | #378, decision 15 | read |
+| P10 | Practical guide gaps: review the sources and merge or not | Codex | Guides for popular spots | None | #389 | read |
 
-The radar save itself is done. The cell backfill ran 24 to 25 October [read: `docs/RADAR-RAIN-CHECK-2026-10.md`,
-"How it was run"]. The per-overflow save ran 26 October, 00:25 to 07:26 UTC, 704 days from 21 Nov 2024 to 25 Oct
-2026, 14,630 overflows, exit 0 [read: `swimsignal-private/radar-per-overflow/run.log`]. `docs/MET-OFFICE-DATA-2026-10.md`
-section 9 still lists both as to do; that text is out of date. Only P7 is left before 21 November.
+The radar save itself is done:
+- The cell backfill ran 24 to 25 October. [read: `docs/RADAR-RAIN-CHECK-2026-10.md`, "How it was run"]
+- The per-overflow save ran on 26 October, from 00:25 to 07:26 UTC. It covered 704 days, from 21 Nov 2024 to 25 Oct 2026, for 14,630 overflows, and exited 0. [read: `swimsignal-private/radar-per-overflow/run.log`]
+- Section 9 of `docs/MET-OFFICE-DATA-2026-10.md` still lists both as to do. That text is out of date.
+- Only P7 is left before 21 November.
 
 ### 9.3 Model windows already running
 
-These read-outs are dated in the repository. Each result is a decision for Ethan; none deploys itself.
+These read-outs are dated in the repository. None deploys itself.
 
 | # | Read-out | Read on or after | If data falls short | Source | Basis |
 |---|---|---|---|---|---|
@@ -214,16 +240,18 @@ These read-outs are dated in the repository. Each result is a decision for Ethan
 | W2 | Ensemble rain (D4), 23 Oct to 19 Nov | **21 Nov 2026** | to 3 Dec, read 5 Dec | `docs/ENSEMBLE-RAIN-TEST-2026-11.md` | read |
 | W3 | Live-status shadow, 25 Oct to 21 Nov | **23 Nov 2026** | to 5 Dec, read 7 Dec | `docs/LIVE-STATUS-SHADOW-TEST-2026-10.md` | read |
 | W4 | Company calibration (A8), 26 Oct to 22 Nov. Not deployed before option B runs | **25 Nov 2026** | to 6 Dec, read 9 Dec | `docs/COMPANY-CALIBRATION-TEST-2026-11.md` | read |
-| W5 | Upgraded overflows option B: approve the 2026 ERA5-Land fetch with its call count; the run uses window L to 30 Nov | Run on or after **2 Dec 2026** | None stated | `docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, order of work | read (approved by merging #325; whether import and fetch steps are done: not checked) |
+| W5 | Upgraded overflows option B. The 2026 ERA5-Land fetch with its call count needs an approval. The run uses window L to 30 Nov | Run on or after **2 Dec 2026** | None stated | `docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md`, order of work | read. Approved by merging #325. Whether the import and fetch steps are done was not checked |
 
-Scheduled tasks are said to read W1 to W4 [inferred: from notes outside the repository; not checked].
+The read-outs are agent work. Whether adopting a result counts as routine, and so is Codex's decision, is not
+written anywhere. [inferred] Scheduled tasks are said to read W1 to W4. [inferred: from notes outside the
+repository; not checked]
 
 ### 9.4 Partner and licence contacts
 
 | # | Action | Owner | Unblocks | Date | Source | Basis |
 |---|---|---|---|---|---|---|
-| C1 | UKCEH Bloomin' Algae: send the licence enquiry, or not. A draft exists and is marked "not sent". It goes from hello@swimsignal.co.uk | Ethan, specific approval | Algae reports on lake pages | None | `docs/EXPANSION-2026-10.md`, "Draft UKCEH enquiry"; `docs/ROADMAP-2026-10.md` item 9 | read |
-| C2 | Independent-review invitation to Prof. Richard Quilliam (Stirling): send or not | Ethan, specific approval | Outside review of the algae work | None | `docs/EXPANSION-2026-10.md`, same section | read |
+| C1 | UKCEH Bloomin' Algae: send the licence enquiry, or not. A draft exists and is marked "not sent". It would go from hello@swimsignal.co.uk | Ethan, approving it specifically | Algae reports on lake pages | None | `docs/EXPANSION-2026-10.md`, "Draft UKCEH enquiry"; `docs/ROADMAP-2026-10.md` item 9 | read |
+| C2 | Independent-review invitation to Prof. Richard Quilliam (Stirling): send it or not | Ethan, approving it specifically | Outside review of the algae work | None | `docs/EXPANSION-2026-10.md`, same section | read |
 | C3 | Tim Boden: send the model write-up and scripts agreed on 24 Oct | Ethan | The data swap | None | notes outside the repository | inferred |
 
 ### 9.5 Carried from notes, not checked tonight
@@ -231,16 +259,36 @@ Scheduled tasks are said to read W1 to W4 [inferred: from notes outside the repo
 These come from notes kept outside the repository. I did not open a source for them on 26 October, so each needs
 checking before anyone acts on it.
 
-- Hosting move to Cloudflare Pages waits on the `CLOUDFLARE_API_TOKEN` secret (`docs/HOSTING-MOVE-2026-10.md`, PR
-  #270). `gh secret list` printed nothing on 26 Oct, which may mean no access rather than no secrets. [inferred]
+- The hosting move to Cloudflare Pages waits on the `CLOUDFLARE_API_TOKEN` secret (`docs/HOSTING-MOVE-2026-10.md`,
+  PR #270). `gh secret list` printed nothing on 26 Oct. That may mean no access rather than no secrets.
+  [inferred]
 - The push Worker redeploy and `MAIL_WEBHOOK_SECRET` were Ethan's steps on 4 October. [inferred]
-- The API is not deployed since the Fly trial ended; API-only fixes reach no one. [inferred]
+- The API has not been deployed since the Fly trial ended, so API-only fixes reach no one. [inferred]
 - An Ilkley overflow note is owed if a source comes back. [inferred]
 
-## 10. What I could not verify
+## 10. Proposed amendments, for decision (none applied)
 
-- Whether the thank-you, the headline wording and the note-taker have been decided anywhere outside the repository.
-- Whether the headline-scope PR the plan names exists.
+Dated 26 October 2026, before any session. Each is a question about the plan's text. The plan, run sheet and
+records file are unchanged, and the sessions run as written unless one of these is approved and recorded in those
+files, in the way of their section 11 and section 7.
+
+1. **Plan, section 10 item 2 (headline baseline).**
+   - The plan recommends the first four sessions "on the live wording as it is", then the rest "on the scoped
+     headline if that PR is merged by then".
+   - The scoped headline has been live since 20 October (PR #284), so both halves are the same wording.
+   - As written, every participant sees "Low risk from sewage spills", and the record notes it.
+   - Question: is that the intended baseline, or should some sessions show the earlier "Low risk" wording? The
+     second would need a way to show it, which does not exist on the live site. [inferred]
+2. **Plan, section 8, "Task 2 fails".**
+   - The plan names "the headline-scope PR (option A or B)" as the first candidate fix.
+   - Option B is #284, already live. Option A, "Moderate predicted risk from monitored sewage overflows", is
+     recorded in `docs/DESIGN.md`.
+   - Question: if task 2 fails, is option A the first candidate? [inferred]
+
+## 11. What I could not verify
+
+- Whether the thank-you has been decided anywhere outside the repository.
 - Whether scheduled tasks for W1 to W4 still exist.
 - Whether option B's import and 2026 ERA5-Land fetch (W5, steps 2 and 3) have been done.
-- The repository's secrets (no output from `gh secret list`).
+- The result of the #382 publishing run (40414855047).
+- The repository's secrets (`gh secret list` printed nothing).
