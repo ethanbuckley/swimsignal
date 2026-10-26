@@ -24,6 +24,11 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   coverage, how a forecast would be validated, draft emails and tasks. Plans only.
 - [COMPREHENSION-TEST-2026-10.md](COMPREHENSION-TEST-2026-10.md): a plan for 8 to 10 moderated swimmer sessions,
   October to November 2026. Not yet run.
+- [AI-PROGRAMME-2026-10.md](AI-PROGRAMME-2026-10.md): the status map for the autumn 2026 AI and data pieces
+  (satellite algae, advisory finder, sampling priorities, monitoring anomalies, river rises, moderation). Each is
+  its own draft PR.
+- [MODERATION-ASSIST-TRIGGER-2026-10.md](MODERATION-ASSIST-TRIGGER-2026-10.md): when to add help with moderating
+  reviews, and in what order. Nothing built.
 - [SWIMMER_TESTING.md](SWIMMER_TESTING.md): the earlier swimmer test plan. The comprehension test replaces its
   tasks and keeps its recording rules.
 - [SWIMSIGNAL_REVIEW.md](SWIMSIGNAL_REVIEW.md): review notes for the SwimSignal rebrand: scope, compatibility,
