@@ -102,4 +102,124 @@ If only rule A passes, the fix needs a check of what those status-0 starts follo
 
 ## Results
 
-(Not run yet.)
+Run 26 Oct 2026 with `scripts/measure_missing_event_end.py`, on the state downloaded that day. One
+process, 80 s for the replay, about 275 MB while replaying (the trace step's peak was not measured).
+The full figures are in `MISSING-EVENT-END-2026-10-summary.json`.
+
+One change after the first run: UU lists some status changes twice, with status starts under a second
+apart. So rule B's "previous row" is read as the last earlier row with another status. Every figure
+below came out the same with and without this.
+
+### Decision for Ethan: do not fix now (by the thresholds set above)
+
+With rule B, in the primary window, no spot-build changed its right-now level or its headline, and
+every spot-build moved by under 0.01. All three "do not fix" conditions hold. Rule A would pass the
+headline threshold, but every one of its level changes comes from a monitor coming back from
+"offline" with no spill before it. Counting those would add risk for spills that did not happen.
+
+The case for fixing anyway is two real false Lows at Grasmere (below). They are rare: 2 spot-builds in
+six weeks. A fix would be one line in `_counted`, described at the end. It was not made.
+
+### The check against production
+
+- Primary window (17 Oct 09:35 to 26 Oct 11:08 UTC): 7,255 spot-builds, 79 builds, 80 spots.
+  Today's rule on the replayed state gave the same level as `forecast_points.now_risk` in **99.3%**
+  of them (51 differ), and the same risk to 0.005 in 95.0%. That is over the 97% bar, so the
+  measurement went on (read).
+- All 51 mismatches have the replay higher than production. They spread over eight companies, not
+  over status-0 rows with no end. 11 are at the first build in the window, 17 Oct 09:35. Many others
+  are spills that began under 3 h before the build. Likely causes are the history keeping each
+  record's last copy and rows dated before the poll that first saw them (inferred, not checked
+  row by row).
+- Whole window (13 Sep to 26 Oct): 30,458 spot-builds, 85.2% level match. That is expected, since
+  today's trace replaces the model of the time (the transport fit and lake changes). Figures from
+  that window are "what today's model would have said", not what the site said.
+- 25 of the 105 spots have no traced overflow upstream (isolated lakes, upland rivers) and are left
+  out. Their right-now risk is 0 under any rule. Shares below are of the 80 traced spots.
+
+### Records per build (as-of state at each build, mean per build)
+
+Status 0 with no event end:
+
+| Company | no end | with a status start | stopped ≤ 48 h | ≤ 48 h, spill shown before (B) | ≤ 48 h, upstream of a spot | same, B |
+|---|---|---|---|---|---|---|
+| United Utilities | 148 | 120 | 11.3 | 4.0 | 0.26 | 0.09 |
+| Severn Trent | 198 | 198 | 2.5 | 0 | 0.10 | 0 |
+| Thames | 31 | 31 | 0.4 | 0 | 0.44 | 0 |
+| Northumbrian | 41 | 41 | 0.1 | 0 | 0 | 0 |
+| Yorkshire | 41 | 41 | 0 | 0 | 0 | 0 |
+| Anglian | 23 | 0 | 0 | 0 | 0 | 0 |
+| Wessex | 222 | 0 | 0 | 0 | 0 | 0 |
+| South West | 871 | 0 | 0 | 0 | 0 | 0 |
+| Southern | 0 | 0 | 0 | 0 | 0 | 0 |
+
+Primary window. "Upstream of a spot" means it carries weight at one or more of the 80 spots.
+
+- **Only United Utilities has finished spills with no end**, as far as the feeds show (read). The
+  Severn Trent, Thames and Northumbrian rows with a recent status start show no spill before them:
+  no event start, and no status 1 before in the history. The two looked at (UUP00418, SVT02033)
+  follow an offline spell; the rest were not looked at one by one. Anglian, Wessex and South West
+  rows have no status start, so no rule can date them.
+- The UU count is not steady. Records stopped within 48 h with a spill shown before were 1 to 6 per
+  build most days, 14 on 10 Oct, and **16 to 19 on 25 and 26 Oct** (read, daily means). The
+  26 Oct review's 28 fits this: the 11:06 UTC snapshot has 27 UU rows with status 0, an event start
+  and no end (read).
+- Most of these overflows are not upstream of a listed spot. On average 0.09 per build were, in the
+  primary window.
+- A related form, not measured for risk: UU rows with status 0 whose end is older than their event
+  start (a stale end), about 4 per build (read). Today's rule dates those spills from the older end.
+
+### Effect on right now
+
+| | Primary, rule B | Primary, rule A | Whole window, rule B | Whole window, rule A |
+|---|---|---|---|---|
+| Spot-builds | 7,255 | 7,255 | 30,458 | 30,458 |
+| Risk changed (> 0.0005) | 19 (0.26%) | 194 (2.7%) | 479 (1.6%) | 792 (2.6%) |
+| Median change, where changed | +0.003 | +0.006 | +0.016 | +0.016 |
+| Largest change | +0.005 | +0.494 | +0.308 | +0.768 |
+| Moved under 0.01 | 100% | 98.8% | 98.7% | 98.1% |
+| Right-now level changed | 0 | 30 (0.41%) | 8 (0.03%) | 54 (0.18%) |
+| Headline raised from Low | 0 | 28 | 2 | 30 |
+| Spots with a level change | none | 3 | 4 | 7 |
+| Companies adding risk | UU | Thames, UU, Severn Trent | UU | UU, Thames, Severn Trent |
+
+Headline here is the worst spill level of right now, today and tomorrow (an upper bound, as stated).
+
+- **Rule A's changes are not spills.** Its 30 primary-window level changes are at Devil's Bridge and
+  Crook o' Lune on the Lune (16 and 13 spot-builds) and one Severn Trent bathing water. They come
+  from UUP00418, which went offline (-1) on 15 Oct and came back as status 0 at 16:16 on 16 Oct, and
+  SVT02033, offline then status 0 on 25 Oct. Neither row has an event start (read).
+- **Rule B's level changes** (whole window, today's model): Eden at Lazonby and Armathwaite and a
+  UU bathing water, each moving one level up between moderate, high and very high (6 spot-builds).
+  And Grasmere twice, below.
+- **Grasmere, 20 Sep 16:39 and 16 Oct 01:36 UTC.** UUP00829 (weight 0.31, 1.6 h upstream) spills
+  many times a day. Each time it stopped with no end on the record, the record's earlier end was
+  replaced too, so nothing counted. Production showed right-now risk **0.000** at both builds
+  (read). With rule B it would be 0.308, Moderate. Each lasted one build, until the next poll
+  brought a new record. These are the only two headline changes from Low under rule B.
+
+### What a fix would be (not made)
+
+In `transport._counted`, before `hrs_since`: for a row with status 0, no `latest_event_end`, a
+`status_start`, and a `latest_event_start` no later than that `status_start`, use the `status_start`
+as the end. That is rule B's first test. Its second test (previous status 1) needs the history,
+which the build does not read. In this replay the first test alone covers the rule-B records
+upstream of the spots: Grasmere's both have an event start (read); the rest was not checked
+separately. Not rule A: it would count monitors returning from offline as spills.
+
+If it ships, `clear_time` reads `_counted` too and would change with it, and the page's counts follow
+`live_now_risk`'s contributions (read). Map clicks work from `ended_h`, which
+`scripts/build_any_point.py` takes from `latest_event_end` directly (read), so it would need the
+same fill there.
+
+### Limits
+
+- The history keeps each (site, status, status_start) once, as last seen. An end filled in later
+  shows at every earlier build, so the replay may undercount today's gap. The match check shows the
+  replay running high, not low, which suggests this is small (inferred).
+- The primary window is nine days and has only a day and a half of the 25 to 26 Oct rise in UU
+  records. If that rise lasts, the effect at spots could grow. Re-running this script on a later
+  state would settle it.
+- Only the 80 traced listed spots. Map clicks anywhere can sit below any UU overflow, and were
+  not measured.
+- Headline changes leave out E. coli, ratings, samples and algae.
