@@ -1,0 +1,588 @@
+{
+  "face": {
+    "production_sha256": "faa7917e2be725a9441b277fc111091c5bdffe45c80ab4fd042682aa9de4210e",
+    "all_finite": true,
+    "labels_recount_equal": true,
+    "labels_by_company": {
+      "Anglian Water": {
+        "label": 14222,
+        "recount": 14222
+      },
+      "Northumbrian Water": {
+        "label": 19982,
+        "recount": 19982
+      },
+      "Severn Trent Water": {
+        "label": 31334,
+        "recount": 31334
+      },
+      "South West Water": {
+        "label": 30663,
+        "recount": 30663
+      },
+      "Southern Water": {
+        "label": 14043,
+        "recount": 14043
+      },
+      "Thames Water": {
+        "label": 9051,
+        "recount": 9051
+      },
+      "United Utilities": {
+        "label": 29770,
+        "recount": 29770
+      },
+      "Wessex Water": {
+        "label": 20814,
+        "recount": 20814
+      },
+      "Yorkshire Water": {
+        "label": 30855,
+        "recount": 30855
+      }
+    }
+  },
+  "inputs": {
+    "holdout_sha256": "882f9d4fb2c9314943fa861d8c6f4c62d8cd1eb57f1aa25059f4eb27d07068dc",
+    "coverage_sha256": "4cded9b094308372ca016fea8f83ace45dc0c30d1a8a9020836666c880458f48",
+    "zip2026_sha256": "d0dbf32fb8622f98fe072466598d706590e5f8e667619cba7d0639c6555a1a8f",
+    "test_rows": {
+      "edm_50_not_ilkley": 13972,
+      "reference_first": "2026-10-05",
+      "reference_last": "2026-10-24",
+      "reference_days": 20,
+      "days_needed": 14,
+      "candidates": 13972,
+      "pass": 13459
+    },
+    "welsh_rows": {
+      "edm_50_not_ilkley": 121
+    },
+    "rain_2026": {
+      "cells": 1642,
+      "shared_2026_files": 202,
+      "fetched_2026a_files": 1440
+    }
+  },
+  "minimum_data": {
+    "companies": {
+      "Anglian Water": 13384,
+      "Northumbrian Water": 19353,
+      "Severn Trent Water": 31119,
+      "South West Water": 29432,
+      "Southern Water": 14042,
+      "Thames Water": 8502,
+      "United Utilities": 29158,
+      "Wessex Water": 20022,
+      "Yorkshire Water": 30332
+    },
+    "welsh": 1986,
+    "ok": "True"
+  },
+  "conditions": {
+    "(a) pooled": {
+      "1_gain_over_nine": {
+        "difference": -0.00423978530241239,
+        "two_way": [
+          -0.007219326006025603,
+          -0.0018000635151452053
+        ],
+        "pass": true
+      },
+      "2_no_company_clearly_worse": {
+        "Anglian Water": {
+          "pct": -10.83214426935738,
+          "two_way": [
+            -0.006058424501129214,
+            -0.0016956294511141314
+          ],
+          "pass": true
+        },
+        "Northumbrian Water": {
+          "pct": -11.76204268860589,
+          "two_way": [
+            -0.008750744394817324,
+            -0.0022329178168064875
+          ],
+          "pass": true
+        },
+        "Severn Trent Water": {
+          "pct": -15.071713286751109,
+          "two_way": [
+            -0.009806355979348274,
+            -0.0029784607881408608
+          ],
+          "pass": true
+        },
+        "South West Water": {
+          "pct": -7.837684320946547,
+          "two_way": [
+            -0.007338778351905572,
+            -0.0008131050137985751
+          ],
+          "pass": true
+        },
+        "Southern Water": {
+          "pct": -18.357608809560276,
+          "two_way": [
+            -0.01352433799470415,
+            -0.0033244354380009156
+          ],
+          "pass": true
+        },
+        "Thames Water": {
+          "pct": -20.670528556590696,
+          "two_way": [
+            -0.017390566948186255,
+            -0.004090356219988444
+          ],
+          "pass": true
+        },
+        "United Utilities": {
+          "pct": 8.973037085831525,
+          "two_way": [
+            0.001852681844069937,
+            0.005112890518589506
+          ],
+          "pass": false
+        },
+        "Wessex Water": {
+          "pct": -13.211273678135449,
+          "two_way": [
+            -0.010785042824711285,
+            -0.0018445713324031431
+          ],
+          "pass": true
+        },
+        "Yorkshire Water": {
+          "pct": -13.736369897072686,
+          "two_way": [
+            -0.01024731061826253,
+            -0.0026604085720648833
+          ],
+          "pass": true
+        }
+      },
+      "3_skill_vs_baselines": {
+        "Anglian Water": {
+          "brier": 0.030919049587418885,
+          "flat": 0.04010905866614405,
+          "climatology": 0.03889793633526983,
+          "pass": true
+        },
+        "Northumbrian Water": {
+          "brier": 0.0376330978955349,
+          "flat": 0.05074284533771097,
+          "climatology": 0.048161294942753625,
+          "pass": true
+        },
+        "Severn Trent Water": {
+          "brier": 0.035354670785984234,
+          "flat": 0.05078539955007083,
+          "climatology": 0.04821280994337833,
+          "pass": true
+        },
+        "South West Water": {
+          "brier": 0.04456394488840277,
+          "flat": 0.08522036620022179,
+          "climatology": 0.07794735850896116,
+          "pass": true
+        },
+        "Southern Water": {
+          "brier": 0.03519914432052064,
+          "flat": 0.06061272079251507,
+          "climatology": 0.05673116559211491,
+          "pass": true
+        },
+        "Thames Water": {
+          "brier": 0.03899770343445345,
+          "flat": 0.06118408750984645,
+          "climatology": 0.05685136938884284,
+          "pass": true
+        },
+        "United Utilities": {
+          "brier": 0.04112186324962431,
+          "flat": 0.05134153111877591,
+          "climatology": 0.04804237566794026,
+          "pass": true
+        },
+        "Wessex Water": {
+          "brier": 0.037461686296567966,
+          "flat": 0.0614546411416048,
+          "climatology": 0.05721429461931933,
+          "pass": true
+        },
+        "Yorkshire Water": {
+          "brier": 0.038362943415987776,
+          "flat": 0.05667591863601581,
+          "climatology": 0.05310643332171069,
+          "pass": true
+        }
+      },
+      "4_reliability": {
+        "Anglian Water": {
+          "ece": 0.017224870460199066,
+          "ece_production": 0.024150661219661692,
+          "pass": true
+        },
+        "Northumbrian Water": {
+          "ece": 0.021195689671476337,
+          "ece_production": 0.03218046949642069,
+          "pass": true
+        },
+        "Severn Trent Water": {
+          "ece": 0.019794893835961724,
+          "ece_production": 0.030663340012240456,
+          "pass": true
+        },
+        "South West Water": {
+          "ece": 0.002434740422801634,
+          "ece_production": 0.020826120638702424,
+          "pass": true
+        },
+        "Southern Water": {
+          "ece": 0.02150913467472677,
+          "ece_production": 0.03517274715845689,
+          "pass": true
+        },
+        "Thames Water": {
+          "ece": 0.02566210361930318,
+          "ece_production": 0.0400861063085568,
+          "pass": true
+        },
+        "United Utilities": {
+          "ece": 0.023320120935596215,
+          "ece_production": 0.006204705655817799,
+          "pass": false
+        },
+        "Wessex Water": {
+          "ece": 0.0134276568198575,
+          "ece_production": 0.02990442584235709,
+          "pass": true
+        },
+        "Yorkshire Water": {
+          "ece": 0.015059523051984465,
+          "ece_production": 0.029555153412280332,
+          "pass": true
+        }
+      },
+      "5_welsh": {
+        "two_way": [
+          -0.014002453174823971,
+          -0.002794006387363681
+        ],
+        "pct": -15.19130020915842,
+        "pass": true
+      },
+      "passes": false
+    },
+    "(b) offsets": {
+      "1_gain_over_nine": {
+        "difference": -0.005498411170138481,
+        "two_way": [
+          -0.00883392519319695,
+          -0.002684111041548263
+        ],
+        "pass": true
+      },
+      "2_no_company_clearly_worse": {
+        "Anglian Water": {
+          "pct": -13.621858140625154,
+          "two_way": [
+            -0.007934896041487867,
+            -0.0019952742890637534
+          ],
+          "pass": true
+        },
+        "Northumbrian Water": {
+          "pct": -14.133893130782527,
+          "two_way": [
+            -0.01003111142414263,
+            -0.0029946076231985356
+          ],
+          "pass": true
+        },
+        "Severn Trent Water": {
+          "pct": -17.43904947862832,
+          "two_way": [
+            -0.01116940723431924,
+            -0.003526544462145291
+          ],
+          "pass": true
+        },
+        "South West Water": {
+          "pct": -10.95929318039226,
+          "two_way": [
+            -0.00889006130827975,
+            -0.0022665814383397314
+          ],
+          "pass": true
+        },
+        "Southern Water": {
+          "pct": -19.618094826906486,
+          "two_way": [
+            -0.01428736025802164,
+            -0.003679772236566333
+          ],
+          "pass": true
+        },
+        "Thames Water": {
+          "pct": -23.268326928989513,
+          "two_way": [
+            -0.019608796480560676,
+            -0.004490929394729542
+          ],
+          "pass": true
+        },
+        "United Utilities": {
+          "pct": 3.3963712951098124,
+          "two_way": [
+            7.03412611646383e-05,
+            0.0026106213489077443
+          ],
+          "pass": false
+        },
+        "Wessex Water": {
+          "pct": -13.993722260067187,
+          "two_way": [
+            -0.010896958091481947,
+            -0.0022685714670602117
+          ],
+          "pass": true
+        },
+        "Yorkshire Water": {
+          "pct": -17.63641659181483,
+          "two_way": [
+            -0.012821234987265936,
+            -0.003688852867880274
+          ],
+          "pass": true
+        }
+      },
+      "3_skill_vs_baselines": {
+        "Anglian Water": {
+          "brier": 0.029951713311205205,
+          "flat": 0.04010905866614405,
+          "climatology": 0.03889793633526983,
+          "pass": true
+        },
+        "Northumbrian Water": {
+          "brier": 0.03662151418934143,
+          "flat": 0.05074284533771097,
+          "climatology": 0.048161294942753625,
+          "pass": true
+        },
+        "Severn Trent Water": {
+          "brier": 0.03436917590621401,
+          "flat": 0.05078539955007083,
+          "climatology": 0.04821280994337833,
+          "pass": true
+        },
+        "South West Water": {
+          "brier": 0.043054529633908406,
+          "flat": 0.08522036620022179,
+          "climatology": 0.07794735850896116,
+          "pass": true
+        },
+        "Southern Water": {
+          "brier": 0.03465570079085877,
+          "flat": 0.06061272079251507,
+          "climatology": 0.05673116559211491,
+          "pass": true
+        },
+        "Thames Water": {
+          "brier": 0.03772064752236932,
+          "flat": 0.06118408750984645,
+          "climatology": 0.05685136938884284,
+          "pass": true
+        },
+        "United Utilities": {
+          "brier": 0.03901746298541682,
+          "flat": 0.05134153111877591,
+          "climatology": 0.04804237566794026,
+          "pass": true
+        },
+        "Wessex Water": {
+          "brier": 0.03712394838334159,
+          "flat": 0.0614546411416048,
+          "climatology": 0.05721429461931933,
+          "pass": true
+        },
+        "Yorkshire Water": {
+          "brier": 0.036628524513240654,
+          "flat": 0.05667591863601581,
+          "climatology": 0.05310643332171069,
+          "pass": true
+        }
+      },
+      "4_reliability": {
+        "Anglian Water": {
+          "ece": 0.011935373838574917,
+          "ece_production": 0.024150661219661692,
+          "pass": true
+        },
+        "Northumbrian Water": {
+          "ece": 0.018694348011977682,
+          "ece_production": 0.03218046949642069,
+          "pass": true
+        },
+        "Severn Trent Water": {
+          "ece": 0.017527638320458026,
+          "ece_production": 0.030663340012240456,
+          "pass": true
+        },
+        "South West Water": {
+          "ece": 0.004720128660390925,
+          "ece_production": 0.020826120638702424,
+          "pass": true
+        },
+        "Southern Water": {
+          "ece": 0.019791711669297857,
+          "ece_production": 0.03517274715845689,
+          "pass": true
+        },
+        "Thames Water": {
+          "ece": 0.02212242947438562,
+          "ece_production": 0.0400861063085568,
+          "pass": true
+        },
+        "United Utilities": {
+          "ece": 0.016248965778106642,
+          "ece_production": 0.006204705655817799,
+          "pass": true
+        },
+        "Wessex Water": {
+          "ece": 0.014027953347913269,
+          "ece_production": 0.02990442584235709,
+          "pass": true
+        },
+        "Yorkshire Water": {
+          "ece": 0.010937854585680657,
+          "ece_production": 0.029555153412280332,
+          "pass": true
+        }
+      },
+      "5_welsh": {
+        "two_way": [
+          -0.014002453174823971,
+          -0.002794006387363681
+        ],
+        "pct": -15.19130020915842,
+        "pass": true
+      },
+      "passes": false
+    }
+  },
+  "verdict": null,
+  "ece_intervals": {
+    "(a) pooled | Anglian Water": [
+      0.0069044448073195645,
+      0.029030016729844167
+    ],
+    "(a) pooled | Northumbrian Water": [
+      0.012198876814562106,
+      0.031235683575072684
+    ],
+    "(a) pooled | Severn Trent Water": [
+      0.009243642768745038,
+      0.0310126969349859
+    ],
+    "(a) pooled | South West Water": [
+      0.0024243153088037103,
+      0.014737404031452735
+    ],
+    "(a) pooled | Southern Water": [
+      0.0065863369064951185,
+      0.038372947104284315
+    ],
+    "(a) pooled | Thames Water": [
+      0.00783594017518132,
+      0.046553935812363195
+    ],
+    "(a) pooled | United Utilities": [
+      0.012898593292024078,
+      0.03459003245158408
+    ],
+    "(a) pooled | Wessex Water": [
+      0.003574945841696687,
+      0.027348320495709042
+    ],
+    "(a) pooled | Yorkshire Water": [
+      0.00584204249293287,
+      0.025037991669341463
+    ],
+    "(b) offsets | Anglian Water": [
+      0.003540271311938725,
+      0.022219364733677825
+    ],
+    "(b) offsets | Northumbrian Water": [
+      0.009846326536795425,
+      0.02873658738092595
+    ],
+    "(b) offsets | Severn Trent Water": [
+      0.007557366895742576,
+      0.028225221546199938
+    ],
+    "(b) offsets | South West Water": [
+      0.0021826859222588532,
+      0.019073136706791515
+    ],
+    "(b) offsets | Southern Water": [
+      0.005382001918345665,
+      0.036297692669530396
+    ],
+    "(b) offsets | Thames Water": [
+      0.005530331154940784,
+      0.04217851328916949
+    ],
+    "(b) offsets | United Utilities": [
+      0.007274316260761186,
+      0.026414603895724666
+    ],
+    "(b) offsets | Wessex Water": [
+      0.003746874412432733,
+      0.02818709643770635
+    ],
+    "(b) offsets | Yorkshire Water": [
+      0.0038900402758163294,
+      0.020078031940251137
+    ],
+    "production | Anglian Water": [
+      0.010516636849568366,
+      0.039726999860808625
+    ],
+    "production | Northumbrian Water": [
+      0.019928864342004415,
+      0.04582265207574916
+    ],
+    "production | Severn Trent Water": [
+      0.015791274627163183,
+      0.046308713364133884
+    ],
+    "production | South West Water": [
+      0.006131195806087328,
+      0.040038574360078585
+    ],
+    "production | Southern Water": [
+      0.013563425854525912,
+      0.060137227746334544
+    ],
+    "production | Thames Water": [
+      0.014997560683246897,
+      0.06979480065961677
+    ],
+    "production | United Utilities": [
+      0.004385512449610136,
+      0.011832344715138292
+    ],
+    "production | Wessex Water": [
+      0.012540972324263917,
+      0.05110898359940752
+    ],
+    "production | Yorkshire Water": [
+      0.01532758724553364,
+      0.04583000360393696
+    ]
+  },
+  "peak_mb": 4842.668032
+}

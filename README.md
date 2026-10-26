@@ -155,7 +155,8 @@ above 70% (forecast 0.85 verifies at 0.78). The table is the CSV written on
 13 Sep 2026; the two comparisons that follow were measured on the first run of
 12 Sep, when the full model scored 0.0447. Dropping the negative subsampling
 does not change this (Brier 0.0449), and recency-weighting the site
-calibration improves it only slightly (0.0445), so the residual is a year
+calibration improves it only slightly (0.0445; the model files use recency 0.25,
+see docs/MODEL-PROVENANCE-2026-10.md), so the residual is a year
 effect: 2025 had a 7.45% spill-day rate against 10.1% in 2023-24 for the same
 overflows, and a model fitted on the earlier years over-predicts it. On wet days (more than 10 mm in
 48 h, 22% of overflow-days spill) the Brier score is 0.112 against 0.157 for

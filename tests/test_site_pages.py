@@ -165,7 +165,12 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
     # Issued when, without how long ago, which would be wrong by the time the page is read.
     assert '<p class="issued">Issued Tue 08:00</p>' in page
-    assert f"<noscript><p class=\"muted\">{bs.NOSCRIPT}</p></noscript>" in page
+    # Above the answer, for a reader without scripts: the day and time "Today" and "right now" mean.
+    note = "This forecast was issued on Tuesday 29 September 2026 at 08:00 UK time. On this copy, \u201cToday\u201d and " \
+           "\u201cright now\u201d mean then, and the levels may have changed since. With JavaScript on, the page updates it " \
+           "and adds the map, the overflows upstream and the rest of the detail."
+    assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
+    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d">Today</span>')
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
@@ -222,6 +227,35 @@ def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_pictu
     assert "very high" not in re.search(r'<meta name="description" content="([^"]*)"', head)[1].lower()
     for page in ["spot/tarn/index.html", "index.html", "plan/index.html"]:
         assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in (tmp_path / page).read_text(), page
+
+
+PROSE_PAGES = ["organisers.html", "verification.html", "spots.html", "about.html", "methods.html", "clubs.html", "coverage.html",
+               "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html",
+               "quality.html", "support.html"]
+
+
+def test_every_prose_page_has_its_own_share_preview(tmp_path):
+    """A link to a prose page in a post gets the page's own title and description, its address and the
+    shared picture, from one block like the app's (page_meta), with its canonical link at the same address."""
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/", support="https://ko-fi.com/example")
+    for name in PROSE_PAGES:
+        head = (tmp_path / name).read_text().split("</head>")[0]
+        title = re.search(r"<title>([^<]+)</title>", head)[1]
+        description = re.search(r'<meta name="description" content="([^"]+)">', head)[1]
+        url = f"https://example.org/swim/{name}"
+        assert head.count("<title>") == 1 and head.count('name="description"') == 1, name
+        assert f'<meta property="og:title" content="{title}">' in head, name
+        assert f'<meta property="og:description" content="{description}">' in head, name
+        assert f'<meta property="og:url" content="{url}">' in head and f'<link rel="canonical" href="{url}">' in head, name
+        assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in head, name
+        assert '<meta property="og:image:width" content="1200">' in head and '<meta property="og:image:height" content="630">' in head, name
+        assert '<meta property="og:type" content="website">' in head and '<meta name="twitter:card" content="summary_large_image">' in head, name
+        assert "<base" not in head and "{{" not in head, name
+        assert "safe" not in description.lower().replace("unsafe", ""), name
+    assert "Event organisers · SwimSignal" in (tmp_path / "organisers.html").read_text().split("</head>")[0]
+    with pytest.raises(ValueError, match="no canonical link or share tags"):
+        bs.with_share_meta((tmp_path / "about.html").read_text(), "about.html", "https://example.org/swim/")   # never twice
 
 
 def test_the_build_draws_the_share_cards_from_this_runs_levels(tmp_path):
@@ -337,7 +371,7 @@ def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_c
     assert set(c["companies"]) == set(config.LIVE_FEEDS)   # every feed SwimSignal reads, and no Dwr Cymru
     for name, credited in c["companies"].items():
         assert credited.split(" (")[0] in c["attribution"], name
-    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm"}
+    uses = {"overflows", "always", "gauge", "rain", "model", "lake", "osm", "soil"}
     for x in c["sources"]:
         assert x["use"] in uses and x["changed"].startswith("SwimSignal ") and x["changed"].endswith(".")
         assert not x["licence"] or x["licence"] in c["licences"]
@@ -346,7 +380,8 @@ def test_the_printed_pages_credits_come_one_source_a_line_with_what_swimsignal_c
                  "Environment Agency data © Environment Agency copyright and/or database right",
                  "This uses Environment Agency flood and river level data from the real-time data API (Beta)",
                  "Contains OS data © Crown copyright and database right 2026",
-                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES"):
+                 "© OpenStreetMap contributors, openstreetmap.org/copyright", "Copernicus", "HydroLAKES",
+                 "Soil moisture from ECMWF's IFS forecasts"):
         assert must in said, must
     lic = {x["credit"].split(",")[0]: x["licence"] for x in c["sources"]}
     assert lic["Weather data by Open-Meteo.com"] == "CC BY 4.0" and lic["Met Office data © Crown copyright"] == "CC BY-SA 4.0"
@@ -653,7 +688,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert row("links/") == '<td>links/</td><td>Not described here yet.</td><td class="num">3 kB</td>'   # a folder, whole
     assert bs.with_data_files((bs.STATIC / "data.html").read_text(), data)[1] == ["links/", "new.csv"]
     # The documented files each have a section of their own.
-    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "spot_scores.json", "places.json", "waters.json"):
+    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "verification_spots_live.csv", "spot_scores.json", "places.json", "waters.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
     assert '<h2 id="anypoint">anypoint/</h2>' in page and '<h2 id="upstream">upstream/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
@@ -663,7 +698,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 18   # spot_scores.json makes 16, overflows/ 17, waters.json 18
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 19   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -1080,3 +1115,29 @@ def test_every_spot_with_a_page_is_linked_from_a_page_search_engines_can_read(tm
     # Each spot's overflow history names its own address as canonical.
     prof = (tmp_path / "spot" / "tarn" / "profile" / "index.html").read_text().split("</head>")[0]
     assert '<link rel="canonical" href="https://example.org/swim/spot/tarn/profile/">' in prof and '<meta name="description" content="The' in prof
+
+
+def test_the_note_without_scripts_names_the_issue_time_in_uk_time():
+    """The built answer says "Today", "right now" and "Issued Sun 17:48" as at the issue time; a page
+    read days later without scripts had only "This is the forecast as it was issued", under the five
+    days (26 Oct 2026). The note names the day, date and time, in UK time either side of a clock change,
+    and falls back to the old words when the time cannot be read."""
+    bs = _build_site()
+    q = "\u201cToday\u201d and \u201cright now\u201d mean then"
+    gmt = bs.noscript_note(pd.Timestamp("2026-10-25T17:48:31+00:00"))
+    assert gmt.startswith("This forecast was issued on Sunday 25 October 2026 at 17:48 UK time.") and q in gmt
+    assert gmt.endswith("With JavaScript on, the page updates it and adds the map, the overflows upstream and the rest of the detail.")
+    assert bs.noscript_note(pd.Timestamp("2026-07-01T23:30:00+00:00")).startswith("This forecast was issued on Thursday 2 July 2026 at 00:30 UK time.")
+    assert bs.noscript_note(pd.Timestamp("2026-10-25T00:30:00Z")).startswith("This forecast was issued on Sunday 25 October 2026 at 01:30 UK time.")
+    for bad in (None, pd.Timestamp("2026-10-25 17:48"), "not a time", pd.NaT):
+        assert bs.noscript_note(bad) == bs.NOSCRIPT, bad
+
+
+def test_the_issue_time_comes_from_the_file_the_built_answers_are_made_from(tmp_path):
+    bs = _build_site()
+    assert bs.built_issue_time(tmp_path) is None
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "spots.json").write_text("{}")
+    assert bs.built_issue_time(tmp_path) is None
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-10-25T17:48:31+00:00"}))
+    assert bs.built_issue_time(tmp_path) == pd.Timestamp("2026-10-25T17:48:31+00:00")

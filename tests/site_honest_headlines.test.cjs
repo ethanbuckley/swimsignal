@@ -144,7 +144,7 @@ test("today is at least right now's level, and says it comes from the spills und
 
 test('an overflow discharging now says since when, not a chance of a spill, and a long one may be a fault', () => {
   const ctx = page(['esc', 'fmt', 'feedTime', 'endedOn', 'runningAtLastAnswer', 'statusText', 'colourFor', 'drawnStatus', 'sinceTime', 'spillFor', 'statusSaid',
-    'overflowSaid', 'longSpillLine', 'glyph', 'ICON', 'PAGE_ID', 'upgradeDay', 'upgradeNote', 'overflowTile'],
+    'overflowSaid', 'longSpillLine', 'glyph', 'ICON', 'PAGE_ID', 'upgradeDay', 'upgradeNote', 'EA_EVENTS', 'dryWeatherNote', 'overflowTile'],
   { L: { circleMarker: () => ({ bindTooltip: () => ({ addTo: () => {} }) }) }, contribLayer: {} });
   const row = text(vm.runInContext('overflowTile', ctx)(greenholme, 25));
   assert.match(row, /YWS02298 Yorkshire Water · discharging since Tue 6 Oct, 11:46, for over 5 days: a spill this long may be a monitor fault · 4\.4 km upstream, about 2 h away/);

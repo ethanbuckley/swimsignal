@@ -101,7 +101,9 @@ def test_a_cached_forecast_older_than_the_ttl_gives_the_spot_its_age_and_the_bui
     assert a["rain_fallback"] == "no answer" and "rain_mixed" not in a
     issued = pd.Timestamp(a["rain_issued_at"])
     assert issued.second == 0 and abs((pd.Timestamp.now(tz="UTC") - issued).total_seconds() / 3600 - 9) < 0.1
-    assert issued.utcoffset() == pd.Timestamp.now(tz="Europe/London").utcoffset()   # UK time, as query.issued_at
+    # UK time, as query.issued_at: the offset London had at that moment, which is not today's within
+    # 9 h of a clock change (it failed the 25 Oct 2026 builds between 01:00 and 10:00 UTC).
+    assert issued.utcoffset() == issued.tz_convert("Europe/London").utcoffset()
     assert all(d["risk"] is not None for d in out["days"])   # the cached rain still made a forecast
 
     # The build's own warning stays.

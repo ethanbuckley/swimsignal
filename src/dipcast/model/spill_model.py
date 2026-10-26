@@ -42,6 +42,11 @@ class SpillModel:
     site_offset: dict[str, float] = field(default_factory=dict)   # log odds multiplier
     site_n: dict[str, int] = field(default_factory=dict)
     trained_on: str = ""
+    # Layer 2's settings, written by fit_site_offsets. None in files fitted before they were recorded:
+    # main's spill_model.pkl and spill_model_holdout_2025.pkl were fitted at recency 0.25 and prior 15,
+    # shown by reproducing their offsets exactly (scripts/check_model_provenance.py).
+    site_recency: float | None = None
+    site_prior: float | None = None
 
     # ------------------------------------------------------------ layer 1
     def fit_pooled(self, df: pd.DataFrame, neg_frac: float = 0.25, seed: int = 0) -> SpillModel:
@@ -89,6 +94,7 @@ class SpillModel:
         ratio = (agg["n"] + prior_strength) / (agg["e"] + prior_strength)
         self.site_offset = np.log(ratio).to_dict()
         self.site_n = agg["days"].astype(int).to_dict()
+        self.site_recency, self.site_prior = float(recency), float(prior_strength)
         log.info("site offsets: %d sites, ratio median %.2f, IQR %.2f-%.2f",
                  len(ratio), ratio.median(), ratio.quantile(0.25), ratio.quantile(0.75))
         return self

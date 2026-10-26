@@ -1,0 +1,257 @@
+{
+ "face_check": {
+  "england_rows": 1502,
+  "england_rows_without_sm": 0,
+  "reference_vs_ecoli_model_json_max_coef_diff": 0.0,
+  "reference_vs_ecoli_model_json_intercept_diff": 0.0,
+  "welsh_reference_vs_check_estimate_max_diff": 0.0
+ },
+ "candidate_coef_per_sd": {
+  "lrain48": 0.5421,
+  "lrain24": 0.1155,
+  "logit_risk": 0.5287,
+  "lake": -0.5977,
+  "lake_x_lrain48": -1.225,
+  "doy_sin": -0.2162,
+  "doy_cos": -0.02297,
+  "sm": 0.8921
+ },
+ "england_sm_range": [
+  0.052,
+  0.494
+ ],
+ "rows": {
+  "off_network": 3,
+  "rain_window_missing": 0,
+  "exposure_missing": 0,
+  "scored_all_inland": 213,
+  "scored_headline": 185,
+  "rain_gaps": 10,
+  "welsh_sm_missing": 0,
+  "welsh_sm_held_to_range": 0
+ },
+ "welsh_sm": {
+  "mean": 0.2099,
+  "min": 0.141,
+  "max": 0.407
+ },
+ "overflows": {
+  "return_overflows": 2730,
+  "emergency_left_out": 150,
+  "position_doubt_left_out": 23,
+  "snapped": 2469,
+  "english_rows_added": 13682
+ },
+ "headline": {
+  "samples": 185,
+  "samples_exceedance_known": 185,
+  "exceedances": 11,
+  "rate": 0.05946,
+  "sampling_days": 51,
+  "stations": 11,
+  "reference": {
+   "mean": 0.334,
+   "brier": 0.1468,
+   "auc": 0.7388,
+   "spearman": 0.5041,
+   "spearman_within_station": 0.5131
+  },
+  "candidate": {
+   "mean": 0.2253,
+   "brier": 0.1039,
+   "auc": 0.6881,
+   "spearman": 0.5321,
+   "spearman_within_station": 0.4936
+  },
+  "difference": {
+   "brier": -0.04289,
+   "brier_ci": [
+    -0.06778,
+    -0.01502
+   ],
+   "auc": -0.05068,
+   "auc_ci": [
+    -0.1114,
+    -0.001267
+   ],
+   "spearman": 0.02805,
+   "spearman_ci": [
+    -0.03594,
+    0.09525
+   ],
+   "spearman_within_station": -0.01942,
+   "spearman_within_station_ci": [
+    -0.1103,
+    0.06333
+   ]
+  }
+ },
+ "all_inland": {
+  "samples": 213,
+  "samples_exceedance_known": 213,
+  "exceedances": 34,
+  "rate": 0.1596,
+  "sampling_days": 59,
+  "stations": 16,
+  "reference": {
+   "mean": 0.3018,
+   "brier": 0.2165,
+   "auc": 0.3199,
+   "spearman": 0.1125,
+   "spearman_within_station": 0.4845
+  },
+  "candidate": {
+   "mean": 0.2286,
+   "brier": 0.1542,
+   "auc": 0.6218,
+   "spearman": 0.4565,
+   "spearman_within_station": 0.4332
+  },
+  "difference": {
+   "brier": -0.06224,
+   "brier_ci": [
+    -0.09144,
+    -0.03226
+   ],
+   "auc": 0.3018,
+   "auc_ci": [
+    0.1242,
+    0.4597
+   ],
+   "spearman": 0.3441,
+   "spearman_ci": [
+    0.14,
+    0.5563
+   ],
+   "spearman_within_station": -0.05127,
+   "spearman_within_station_ci": [
+    -0.1536,
+    0.04535
+   ]
+  }
+ },
+ "clearly_worse": false,
+ "per_station": [
+  {
+   "station": "S50010",
+   "name": "R.WYE @ WYE BR.NEWB'DGE-ON-WYE",
+   "n": 14,
+   "exceedances": 0,
+   "sm_mean": 0.1685,
+   "mean_reference": 0.2274,
+   "mean_candidate": 0.1294,
+   "rho_reference": 0.3546,
+   "rho_candidate": 0.4229
+  },
+  {
+   "station": "S50014",
+   "name": "R WYE AT ERWOOD BRIDGE",
+   "n": 14,
+   "exceedances": 0,
+   "sm_mean": 0.1736,
+   "mean_reference": 0.3416,
+   "mean_candidate": 0.1892,
+   "rho_reference": 0.5039,
+   "rho_candidate": 0.484
+  },
+  {
+   "station": "S50018",
+   "name": "R WYE AT GLASBURY BRIDGE",
+   "n": 14,
+   "exceedances": 2,
+   "sm_mean": 0.1657,
+   "mean_reference": 0.3332,
+   "mean_candidate": 0.1806,
+   "rho_reference": 0.433,
+   "rho_candidate": 0.3802
+  },
+  {
+   "station": "S50530",
+   "name": "R.WYE U/S LLYSWEN STW OUTFALL",
+   "n": 14,
+   "exceedances": 1,
+   "sm_mean": 0.1611,
+   "mean_reference": 0.3072,
+   "mean_candidate": 0.1597,
+   "rho_reference": 0.473,
+   "rho_candidate": 0.451
+  },
+  {
+   "station": "S5520068",
+   "name": "WYE @ THE WARREN BW",
+   "n": 37,
+   "exceedances": 2,
+   "sm_mean": 0.2144,
+   "mean_reference": 0.3323,
+   "mean_candidate": 0.2748,
+   "rho_reference": 0.6433,
+   "rho_candidate": 0.6817
+  },
+  {
+   "station": "S5520112",
+   "name": "R WYE @ SHEEPHOUSE",
+   "n": 14,
+   "exceedances": 2,
+   "sm_mean": 0.1652,
+   "mean_reference": 0.3375,
+   "mean_candidate": 0.1765,
+   "rho_reference": 0.5897,
+   "rho_candidate": 0.4598
+  },
+  {
+   "station": "S5520113",
+   "name": "R WYE U/S GLASBURY",
+   "n": 14,
+   "exceedances": 0,
+   "sm_mean": 0.1657,
+   "mean_reference": 0.3193,
+   "mean_candidate": 0.1738,
+   "rho_reference": 0.5127,
+   "rho_candidate": 0.5149
+  },
+  {
+   "station": "S5520114",
+   "name": "R WYE @ ABERNANT",
+   "n": 14,
+   "exceedances": 0,
+   "sm_mean": 0.1894,
+   "mean_reference": 0.3698,
+   "mean_candidate": 0.2268,
+   "rho_reference": 0.5941,
+   "rho_candidate": 0.5919
+  },
+  {
+   "station": "S5520115",
+   "name": "R WYE D/S BUILTH WELLS BR",
+   "n": 14,
+   "exceedances": 0,
+   "sm_mean": 0.1685,
+   "mean_reference": 0.3571,
+   "mean_candidate": 0.1909,
+   "rho_reference": 0.5963,
+   "rho_candidate": 0.6315
+  },
+  {
+   "station": "S5520116",
+   "name": "R WYE U/S R IRFON",
+   "n": 14,
+   "exceedances": 0,
+   "sm_mean": 0.1685,
+   "mean_reference": 0.2849,
+   "mean_candidate": 0.1551,
+   "rho_reference": 0.3767,
+   "rho_candidate": 0.3568
+  },
+  {
+   "station": "S6020030",
+   "name": "Tywi Swing Bridge BW",
+   "n": 22,
+   "exceedances": 4,
+   "sm_mean": 0.2769,
+   "mean_reference": 0.4185,
+   "mean_candidate": 0.4253,
+   "rho_reference": 0.2931,
+   "rho_candidate": 0.1948
+  }
+ ]
+}
