@@ -156,6 +156,12 @@ function waterMatches(index, text, n = 4) {
 // group, "Nothing flagged", they read as the same answer, a forecast that looked and found the risk low
 // and one with nothing to look at.
 const PLAN_GROUPS = 4;
+// Whether a spot has reviewed official advice shown (eatoday.js, eaTodayAdvice: spots.json `official`). It
+// never changes the level or the group; within the low group and the plain one, those spots go last, and
+// they are not counted as low risk where the plan suggests an area or a day, or shared as a plan.
+const planAdvised = s => { const f = typeof eaTodayAdvice === 'function' ? eaTodayAdvice
+  : typeof require === 'function' ? require('./eatoday.js').eaTodayAdvice : null;
+  return !!f && f(s).length > 0; };
 function planGroup(level) {
   const R = planRules();
   return level === 'low' ? 0 : R.plainLevel(level) ? 1 : R.rank(level) >= 1 ? 2 : 3;
@@ -170,6 +176,7 @@ function planSpots(spots, p, milesOf) {
   const near = all.filter(o => o.miles <= reach), groups = Array.from({ length: PLAN_GROUPS }, () => []);
   for (const o of near) groups[planGroup(o.level)].push(o);
   for (const g of groups) g.sort((a, b) => a.miles - b.miles);
+  for (const g of [groups[0], groups[1]]) g.sort((a, b) => planAdvised(a.s) - planAdvised(b.s) || a.miles - b.miles);
   groups[2].sort((a, b) => R.rank(a.level) - R.rank(b.level) || a.miles - b.miles);
   const nearest = near.length ? null : all.reduce((a, b) => !a || b.miles < a.miles ? b : a, null);
   return { groups, count: near.length, nearest };
@@ -177,7 +184,9 @@ function planSpots(spots, p, milesOf) {
 // Another of the five days when clearly more of these spots are at low risk than on the day picked
 // (two more, and a quarter more: 19 against 18 is not worth moving a swim for), or null. Only spots
 // whose forecast changes from day to day count (bestDay): the rest are the same every day.
+// Spots with official advice are left out of both counts (planAdvised).
 function betterDay(spots, day, dates) {
+  spots = spots.filter(s => !planAdvised(s));
   const R = planRules(), b = R.bestDay(spots, dates);
   if (!b || b.date === day) return null;
   const low = spots.filter(s => R.daily(s) && R.dayLevel(s, day) === 'low').length;
@@ -193,7 +202,8 @@ const reachFor = miles => RADII.find(r => r >= miles) || 0;
 // hostile, and the privacy notice promises it only on "Near me" or "Use my location". The position is kept
 // in no storage, as the notice says, so a new page load starts without it.
 const planStart = (from, here) => from || (Array.isArray(here) && here.length === 2 ? { here: true } : null);
-// The areas (spots.csv's `area`) with the most spots of the plan's kind at low risk on its day, most first, then
+// The areas (spots.csv's `area`) with the most spots of the plan's kind at low risk on its day (official advice
+// not counted as low: planAdvised), most first, then
 // by name: at most n, and only those with one or more at low risk. Each as a place to start a plan from: the
 // middle of its spots (mean position, rounded for the address), and the distance that reaches all of them,
 // at most the longest offered so a plan from the middle of a wide area still has a ring. None while any spot
@@ -207,7 +217,7 @@ function planAreas(spots, p, milesBetween, n = 3) {
   return [...by].map(([area, ys]) => {
     const lat = round(mean(ys.map(s => s.lat))), lon = round(mean(ys.map(s => s.lon)));
     const far = Math.max(...ys.map(s => milesBetween([lat, lon], [s.lat, s.lon])));
-    return { area, lat, lon, total: ys.length, low: ys.filter(s => R.dayLevel(s, p.day) === 'low').length,
+    return { area, lat, lon, total: ys.length, low: ys.filter(s => R.dayLevel(s, p.day) === 'low' && !planAdvised(s)).length,
       within: reachFor(far) || RADII[RADII.length - 1] };
   }).filter(a => a.low > 0).sort((a, b) => b.low - a.low || a.area.localeCompare(b.area)).slice(0, n);
 }
@@ -218,5 +228,5 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
-    planGroup, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
+    planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
 }

@@ -15,6 +15,11 @@ const Organisers = (() => {
     : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice,
       overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief), above the
+  // day's level and apart from it. Without eatoday.js loaded, none.
+  const brief = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayBrief
+    : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  const official = s => { const o = brief(s); return o ? `<p class="o-tag"><b>Official advice:</b> ${esc(o)}. Not part of the level below; follow it first.</p>` : ''; };
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
   const STALE_MIN = 8 * 60;              // the app's "Stale" notice waits as long (index.html, STALE_MIN)
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -206,6 +211,7 @@ const Organisers = (() => {
     const issued = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     let h = `<h3 id="day-h">${w.state === 'later' ? dateWords(iso) : longDate(iso)}</h3>`;
     if (w.state === 'past') return h + '<p>That day has passed. Pick the day of your event.</p>';
+    h += official(s);
     if (w.state === 'later') return h + later(s, iso, w.from) + eventWeek(s, iso) + alertSlot(data, w);
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: the automatic update has not run since. Treat it as out of date.</p>`;
     return h + within(s, iso, w, data)
