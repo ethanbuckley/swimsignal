@@ -5,17 +5,19 @@ one place that says what each piece is, where it stands and what is waiting on a
 draft PR. None is merged or deployed by this programme, and none changes the live site, the live models, or the A8,
 option B or shadow windows.
 
-Last updated: 26 October 2026, evening. Test counts were rerun by the coordinator on each branch.
+Last updated: 26 October 2026, about 20:00 UTC. Test counts were rerun by the coordinator on each branch. Ethan approved
+the #377 statement at about 19:25 UTC and asked for the rest to be built autonomously.
 
 ## The map
 
 | Piece | PR | What it is | Tests | Evidence | Costs and limits used | State |
 |---|---|---|---|---|---|---|
-| Satellite algae | #377 | statement revised before any run: the CLMS lake product is benchmarked first, with a decision rule; coverage prototype; full harness (stages 1 and 2) | 50 pass | CLMS LWQ 100 m v2 is 10-day composites from Sep 2024, lag up to 4 days, shores not flagged, one granule over Great Britain (in Scotland); inferred: none of our 12 lakes covered. Sentinel-2 C1: scale and offset on all 7,317 items, no C1 items in 2022, Millerground 323 core pixels, Ladies Pond 0. No red or red-edge band read, no check fetched, nothing paired | 522 requests, 113.7 MB (ledger checked: SCL reads only); per-run caps 300 requests and 100 MB, one fired | statement ready for review; stage 1 not run |
+| Satellite algae | #377 | statement revised before any run: the CLMS lake product is benchmarked first, with a decision rule; coverage prototype; full harness (stages 1 and 2) | 50 pass | CLMS LWQ 100 m v2 is 10-day composites from Sep 2024, lag up to 4 days, shores not flagged, one granule over Great Britain (in Scotland); inferred: none of our 12 lakes covered. Sentinel-2 C1: scale and offset on all 7,317 items, no C1 items in 2022, Millerground 323 core pixels, Ladies Pond 0. No red or red-edge band read, no check fetched, nothing paired | 522 requests, 113.7 MB (ledger checked: SCL reads only); per-run caps 300 requests and 100 MB, one fired | **approved 19:25 UTC; stage 1 running** (from 19:30 UTC, under the heavy-run lock, est. 9-10 h); then the features hash is committed, then stage 2 scores once offline |
 | Advisory finder | #379 | dry-run drafts from the EA incident feed and the Irish EPA, plus 4 whitelisted pages; deterministic, no LLM | 33 pass | EA open incidents answered this Mac: 7 open, 1 at a SwimSignal spot (Frensham Great Pond, algae, since 19 Jun); EPA 0 in force (season over) | 11 requests; no account | prototype done |
 | Sampling priorities | #381 | ranking of new sample days by information, high-risk list kept apart; simulation stated before it ran | 7 pass | **fails its stated rule**: beats least-sampled-first in 58.5% of 200 runs (60% needed); beats random in 73% | no network; 112 s | prototype done, rule failed |
 | Monitoring anomalies | #382 | 9 review-only flags beyond today's feed checks, on 39 days of saved polls plus injected failures | 25 pass | long_run 7 (4 look stuck, 1 probable false alarm); quiet_monitor 12 (10 worth a look); future_time 4 (UU starts 22-47 min ahead of the poll); company_freeze, known_share_drop and future_time caught injected failures no current check fired on | no network | prototype done |
-| River rises | #383 | gauge coverage and rise-arrival delays; dated plan against persistence | 21 pass | 66 of 72 river spots have a same-river gauge, 48 an upstream one; 45 of 55 gauges have 15-minute history from before 2015; arrival lag median 1.5 h (308 events, 23 pairs) | 219 EA requests, all 200, 283 MB; no Open-Meteo | scoped, plan not run |
+| River rises | #383 | gauge coverage and rise-arrival delays; dated plan against persistence | 21 pass | 66 of 72 river spots have a same-river gauge, 48 an upstream one; 45 of 55 gauges have 15-minute history from before 2015; arrival lag median 1.5 h (308 events, 23 pairs) | 219 EA requests, all 200, 283 MB; no Open-Meteo | scoped; evaluation harness built (53 tests pass), fetch and scoring refuse to run before 2 Nov |
+| Missing event ends (live-model side finding) | #384 | replay of the right-now rule with finished UU spills given an end time | 4 pass | replay matched production's level in 99.3% of 7,255 spot-builds; stricter rule: 0 level changes in 9 days; longer window: 2 one-build false Lows at Grasmere | one `gh release download`; 80 s | measured: do not fix now (thresholds stated first) |
 | Moderation help | #378 | a trigger based on queue volume, then Worker rules, a local model, an outside model only after a DPIA | none (no code) | 0 published reviews, 0 notes showing (26 Oct) | none | written |
 
 ## Decisions for Ethan
@@ -50,6 +52,13 @@ Last updated: 26 October 2026, evening. Test counts were rerun by the coordinato
 10. Whether to run the stated plan, no earlier than 2 November 2026. It needs about 1.5 GB of EA history over two or
     three capped runs, and radar rain before about 21 November, while the oldest months are still on AWS.
 11. Whether to show an upstream gauge's rise as a plain observation. No model needed; a product call.
+
+**Missing event ends (#384)**
+13. Whether to fix it anyway (the stricter rule is described, not made) or re-run the measurement once more 2026 data
+    builds up; the UU count of such records rose on 25-26 Oct.
+
+**River rises, before the run (#383)**
+14. Eight harness questions are listed in the plan doc ("Questions for Ethan before the run").
 
 **Moderation (#378)**
 12. The trigger numbers.
