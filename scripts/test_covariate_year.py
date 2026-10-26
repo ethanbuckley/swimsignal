@@ -364,7 +364,7 @@ def stage_train() -> None:
 
 # ------------------------------------------------------------------ scoring
 def week_codes(day: pd.Series) -> np.ndarray:
-    """ISO (year, week) of the day, as scripts/train_nn.py's (which imports PyTorch)."""
+    """ISO (year, week) of the UTC day, as scripts/train_nn.py's (which imports PyTorch)."""
     iso = day.dt.isocalendar()
     return pd.factorize(iso["year"].astype(int) * 100 + iso["week"].astype(int), sort=True)[0]
 

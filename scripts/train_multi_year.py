@@ -32,7 +32,7 @@ import pandas as pd
 from dipcast import config
 from dipcast.ingest import rainfall
 from dipcast.ingest.rainfall import _request, _to_frame, cell_key
-from dipcast.model.features import ALL_FEATURES, LOCAL_TZ, daily_rain_features, spill_days
+from dipcast.model.features import ALL_FEATURES, daily_rain_features, spill_days
 from dipcast.model.spill_model import EPS
 from dipcast.model.training import MIN_EDM_PCT, NINE, cells_of, load_events, site_years
 
@@ -686,8 +686,5 @@ def stage_fetch() -> None:
 
 
 if __name__ == "__main__":
-    if LOCAL_TZ != "UTC":   # its day indices count UTC days from T0; local days would land summer days one early
-        sys.exit("train_multi_year.py indexes UTC days and the model now cuts UK local days (docs/DAY-BOUNDARY-TEST-2026-10.md): "
-                 "run it from the commit its record names")
     {"plan": stage_plan, "fetch": stage_fetch, "rows": stage_rows, "time": stage_time, "train": stage_train,
      "score": stage_score}[sys.argv[1]]()

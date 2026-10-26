@@ -18,7 +18,6 @@ from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_ag
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
-    LOCAL_TZ,
     build_site_days,
     daily_rain_features,
     model_covariates,
@@ -49,6 +48,7 @@ from dipcast.overflows import load_overflows
 
 log = logging.getLogger(__name__)
 
+LOCAL_TZ = "Europe/London"   # swimmers think in local days, not UTC days
 MAX_MISSING_SHARE = 0.1      # more transport weight than this from days without rain data: no figure
 ECOLI_SEASON_MONTHS = range(5, 10)   # the EA samples the model was fitted on run May-September
 
@@ -220,7 +220,8 @@ def spill_probabilities(ov: pd.DataFrame, days: pd.DatetimeIndex,
         shape = (len(ov), len(days))
         none = (np.full(shape, np.nan), np.zeros(shape, dtype=bool))
         return (*none, np.full(shape, np.nan), *tail) if return_rain else (*none, *tail)
-    daily = daily_rain_features(rain)   # local days, as the model was trained on
+    rain["time"] = rain["time"].dt.tz_convert(LOCAL_TZ)   # local-midnight day boundaries
+    daily = daily_rain_features(rain)
     # The covariates as filled once over the whole overflow table (features.fill_covariates), not
     # over this spot's upstream overflows alone.
     sites = pd.concat([ov[["site_id", "lat", "lon", "company"]], model_covariates(ov)], axis=1)

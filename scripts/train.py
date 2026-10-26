@@ -16,7 +16,6 @@ import pandas as pd
 from dipcast import config
 from dipcast.model.features import (
     ALL_FEATURES,
-    LOCAL_TZ,
     build_site_days,
     daily_rain_features,
     spill_days,
@@ -97,7 +96,7 @@ def main() -> None:
         if sites_y.empty:
             log.warning("no prior-year annual return for %d; skipping", y)
             continue
-        days = pd.date_range(f"{y}-01-01", f"{y}-12-31", freq="D", tz=LOCAL_TZ)
+        days = pd.date_range(f"{y}-01-01", f"{y}-12-31", freq="D", tz="UTC")
         sd = build_site_days(sites_y.assign(company=COMPANY), daily_rain, days, labels)
         sd["year"] = y
         frames.append(sd)
@@ -165,9 +164,7 @@ def main() -> None:
     # The held-out model is kept under its own name for honest verification later
     # (scripts/verify_leads.py). It also becomes the production model unless
     # --refit-all replaces it with a fit on every year.
-    # "UK local days" names the day boundary, so a lead map fitted for a UTC-day model (lead_calibration.json
-    # records the trained_on it was fitted for) no longer matches this one.
-    m.trained_on = f"{COMPANY} {int(train.year.min())}-{int(train.year.max())}, UK local days; verified on {TEST_YEAR}"
+    m.trained_on = f"{COMPANY} {int(train.year.min())}-{int(train.year.max())}; verified on {TEST_YEAR}"
     holdout_path = config.PROCESSED / f"spill_model_holdout_{TEST_YEAR}.pkl"
     m.save(holdout_path)
     log.info("saved held-out model -> %s", holdout_path)
@@ -177,8 +174,7 @@ def main() -> None:
 
     if "--refit-all" in sys.argv:
         prod = SpillModel().fit_pooled(df, neg_frac=NEG_FRAC).fit_site_offsets(df, recency=RECENCY)
-        prod.trained_on = (f"{COMPANY} {min(years)}-{max(years)}, UK local days "
-                           f"(refit on all years; verified on {TEST_YEAR} before refit)")
+        prod.trained_on = f"{COMPANY} {min(years)}-{max(years)} (refit on all years; verified on {TEST_YEAR} before refit)"
         prod.save()
         log.info("saved refit-on-all-years model -> %s", config.PROCESSED / "spill_model.pkl")
 
@@ -193,7 +189,7 @@ NINE_PATH = config.PROCESSED / "spill_model_nine_2024.pkl"
 
 
 def _frame(sites: pd.DataFrame, year: int, daily: pd.DataFrame, labels: pd.DataFrame) -> pd.DataFrame:
-    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D", tz=LOCAL_TZ)
+    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D", tz="UTC")
     sd = build_site_days(sites, daily, days, labels[labels["day"].dt.year == year])
     sd = sd[sd["rain_d"].notna()].copy()
     sd["company"] = sd["site_id"].map(dict(zip(sites["site_id"], sites["company"], strict=True)))

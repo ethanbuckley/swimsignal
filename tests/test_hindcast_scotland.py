@@ -60,7 +60,7 @@ def test_labels_cut_unknown_duration_day_records_and_repeats():
     ev = _ev([
         ("S", "a", "2025-03-01 10:00", "2025-03-01 10:15:30", None),   # exactly 15 min 30 s: dropped
         ("S", "a", "2025-03-02 10:00", "2025-03-02 10:15:31", None),   # 1 s longer: kept
-        ("S", "a", "2025-03-03 23:30", "2025-03-04 01:00", None),      # two days (GMT: UTC is local)
+        ("S", "a", "2025-03-03 23:30", "2025-03-04 01:00", None),      # two UTC days
         ("S", "a", "2025-03-03 23:30", "2025-03-04 01:00", None),      # the same event in the other file
         ("S", "a", "2025-06-30 23:00", None, 2.0),                     # day record: local midnight, 1 July BST
         ("S", "a", "2025-01-10 00:00", None, None),                    # day record, unknown duration: kept
@@ -186,7 +186,7 @@ def world(tmp_path, monkeypatch):
     ev = []
     for y in (2024, 2025):
         s = hs.sites_for(oy.assign(set=np.where(oy.eligible, "G", None)), cov, y, "G")
-        sd = hs.hw.build_site_days(s.assign(lta_spills=20.0), daily, pd.date_range(f"{y}-01-01", f"{y}-12-31", tz=hs.TZ))
+        sd = hs.hw.build_site_days(s.assign(lta_spills=20.0), daily, pd.date_range(f"{y}-01-01", f"{y}-12-31", tz="UTC"))
         sd = sd[sd.rain_d.notna()]
         hit = sd[rng.random(len(sd)) < StubModel().predict_pooled(hs.hw.features(sd))]
         ev.append(pd.DataFrame({"site_id": hit.site_id, "site_name": "x", "event_start": hit.day + pd.Timedelta(hours=6),
@@ -262,7 +262,7 @@ def test_calibration_fits_on_earlier_years_only(world, monkeypatch):
     oy = hs.overflow_years(cov, set())
     from dipcast.model.features import daily_rain_features
     daily = daily_rain_features(world["rain"])
-    lab = pd.DataFrame({"site_id": "A", "day": pd.date_range("2024-01-01", "2024-12-31", tz=hs.TZ)})
+    lab = pd.DataFrame({"site_id": "A", "day": pd.date_range("2024-01-01", "2024-12-31", tz="UTC")})
     rows = hs.year_rows(oy, cov, lab, daily, 2025, "G", {"holdout": StubModel()}).assign(year=2025)
 
     p = hs.calibration(oy, cov, lab, daily, rows, StubModel())

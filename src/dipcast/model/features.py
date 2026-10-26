@@ -18,10 +18,6 @@ from dipcast.ingest.rainfall import grid_cell
 
 log = logging.getLogger(__name__)
 
-# The model's day: a UK local date, as swimmers read the site and as live spills are scored
-# (forecast_log.observed_spill_days). Training, calibration and the forecast all cut days here, so a model
-# is fed the same days it was fitted on (docs/DAY-BOUNDARY-TEST-2026-10.md).
-LOCAL_TZ = "Europe/London"
 API_DECAY = 0.85  # daily decay of the antecedent precipitation index
 MIN_HOURS_PER_DAY = 20  # fewer finite hourly values than this and the day's rain is unknown (NaN)
 
@@ -39,12 +35,8 @@ MONOTONE = {f: 1 for f in RAIN_FEATURES}
 
 def daily_rain_features(rain_hourly: pd.DataFrame) -> pd.DataFrame:
     """Aggregate hourly cell rainfall to daily features. Input columns:
-    cell_lat, cell_lon, time (tz-aware, any zone), precip_mm. Output one row per cell-day, the day a
-    LOCAL_TZ date: UTC archive stamps and the forecast's local ones give the same days. A value stamped
-    H is the rain in the hour ending at H, as Open-Meteo stamps it, and a day holds its stamps 00:00 to
-    23:00, as Open-Meteo's own daily sums do."""
+    cell_lat, cell_lon, time (UTC), precip_mm. Output one row per cell-day."""
     df = rain_hourly.copy()
-    df["time"] = df["time"].dt.tz_convert(LOCAL_TZ)
     df["day"] = df["time"].dt.floor("D")
     df = df.sort_values(["cell_lat", "cell_lon", "time"])
     df = df[~df.duplicated(["cell_lat", "cell_lon", "time"], keep="last")]
@@ -147,39 +139,22 @@ def site_static_features(sites: pd.DataFrame) -> pd.DataFrame:
 
 
 def spill_days(events: pd.DataFrame, max_span_days: int = 60) -> pd.DataFrame:
-    """Explode events (tz-aware start and end) to the set of (site_id, day) with at least one spill,
-    the days LOCAL_TZ dates."""
+    """Explode events to the set of (site_id, day) with at least one spill."""
     ev = events.dropna(subset=["event_start"]).copy()
-    # Wall-clock dates, so a span across a clock change counts whole days (a 23- or 25-hour day apart).
-    d0 = ev["event_start"].dt.tz_convert(LOCAL_TZ).dt.tz_localize(None).dt.floor("D")
-    d1 = ev["event_end"].fillna(ev["event_start"]).dt.tz_convert(LOCAL_TZ).dt.tz_localize(None).dt.floor("D")
+    d0 = ev["event_start"].dt.floor("D")
+    d1 = ev["event_end"].fillna(ev["event_start"]).dt.floor("D")
     n = ((d1 - d0).dt.days.clip(lower=0, upper=max_span_days) + 1).to_numpy()
     site = np.repeat(ev["site_id"].to_numpy(), n)
-    base = np.repeat(d0.to_numpy().astype("datetime64[D]"), n)
+    base = np.repeat(d0.dt.tz_convert(None).to_numpy().astype("datetime64[D]"), n)
     offs = np.concatenate([np.arange(k) for k in n]) if len(n) else np.array([], dtype=int)
     day = base + offs.astype("timedelta64[D]")
-    out = pd.DataFrame({"site_id": site, "day": pd.to_datetime(day).tz_localize(LOCAL_TZ)})
+    out = pd.DataFrame({"site_id": site, "day": pd.to_datetime(day).tz_localize("UTC")})
     return out.drop_duplicates()
-
-
-def _zone(days) -> str:
-    """The time zone of a column or index of days, "naive" without one, "not dates" for anything else."""
-    days = pd.Series(days)
-    if not pd.api.types.is_datetime64_any_dtype(days):
-        return "not dates"
-    return str(days.dt.tz) if days.dt.tz is not None else "naive"
 
 
 def build_site_days(sites: pd.DataFrame, daily_rain: pd.DataFrame, days: pd.DatetimeIndex,
                     labels: pd.DataFrame | None = None) -> pd.DataFrame:
-    """Cross sites with days, join rain by cell and day, attach labels if given. The three must give
-    their days in one zone: a UTC grid joined to local days finds no rain on any summer day, since local
-    midnight is 23:00 UTC then, and pandas does not complain."""
-    zones = {"days": _zone(days), "rain": _zone(daily_rain["day"])}
-    if labels is not None:
-        zones["labels"] = _zone(labels["day"])
-    if len(set(zones.values())) > 1:
-        raise ValueError(f"build_site_days: days in different zones {zones}; the model's day is {LOCAL_TZ}")
+    """Cross sites with days, join rain by cell and day, attach labels if given."""
     st = site_static_features(sites)
     grid = st.merge(pd.DataFrame({"day": days}), how="cross")
     grid = grid.merge(daily_rain, on=["cell_lat", "cell_lon", "day"], how="left")

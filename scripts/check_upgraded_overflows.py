@@ -201,7 +201,7 @@ def main() -> None:
     ch["day"] = local_days(ch["day"])
     live = ch[ch["scenario"] == "live"]
 
-    # Observed spill days (features.spill_days, UK local days as the model trains on): the EA's start/stop files.
+    # Observed spill days (features.spill_days, UTC days as the model trains on): the EA's start/stop files.
     e26 = read_ea_events([args.ea_2026])
     print(f"EA 2026 file: {len(e26):,} events, starts {e26['event_start'].min()} to {e26['event_start'].max()}")
     ev = pd.concat([pd.read_parquet(args.ea_events), e26], ignore_index=True)

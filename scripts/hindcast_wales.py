@@ -25,7 +25,7 @@ Cymru overflow has a site offset, so predict_pooled is used throughout. The prod
 (spill_model.pkl, refitted on 2023 to 2025) is scored beside it as a check and has no part in the
 gate.
 
-Rain. ERA5-Land hourly rain per 0.1 degree cell, UK local days, features from
+Rain. ERA5-Land hourly rain per 0.1 degree cell, days in UTC, features from
 model/features.daily_rain_features, exactly as train.py builds them. Rows whose day has no rain
 total are dropped, as in train.py. "Lead 0" in this gate means this rain, the rain that fell.
 "Leads 1, 2 and 3" mean Open-Meteo's archived forecasts, built as scripts/verify_leads.py builds
@@ -51,7 +51,7 @@ rain cell is in doubt. In A1 and A2, a site-year whose same-year monitor uptime 
 out, as train.py does; unknown uptime is kept. A return overflow joined to no discharge site is kept
 with no spill-days only if its same-year return counts 0 spills; otherwise its discharges cannot be
 found, and it is left out. A discharge site joined to no return overflow is left out and counted.
-A label is a spill-day: a UK local day touched by a discharge (features.spill_days).
+A label is a spill-day: a UTC day touched by a discharge (features.spill_days).
 
 Arms. "Own covariates", the arm the gate is about: lta_spills, spill_hours and
 edm_operational_pct from the return of the year before (W2's long-term average rule for Hafren
@@ -117,7 +117,7 @@ from scipy.stats import spearmanr
 
 from dipcast import config
 from dipcast.ingest.rainfall import cell_key, grid_cell
-from dipcast.model.features import ALL_FEATURES, LOCAL_TZ, build_site_days, daily_rain_features, spill_days
+from dipcast.model.features import ALL_FEATURES, build_site_days, daily_rain_features, spill_days
 from dipcast.model.spill_model import SpillModel
 from dipcast.model.verify import reliability_table
 
@@ -235,7 +235,7 @@ def with_lead(base: pd.DataFrame, daily_lead: dict[int, pd.DataFrame], k: int) -
         daily_lead[k][key + ["rain_d", "max1h_d", "max3h_d", "max6h_d"]], on=key, how="left")
     for shift, col in ((1, "rain_d1"), (2, "rain_d2")):
         src = daily_lead[max(k - shift, 0)][key + ["rain_d"]].copy()
-        src["day"] = src["day"] + pd.DateOffset(days=shift)   # calendar days: 24 h misses a clock change
+        src["day"] = src["day"] + pd.Timedelta(days=shift)
         df = df.drop(columns=[col]).merge(src.rename(columns={"rain_d": col}), on=key, how="left")
     df["rain_3d"] = df["rain_d"].fillna(0) + df["rain_d1"].fillna(0) + df["rain_d2"].fillna(0)
     return df
@@ -254,17 +254,17 @@ def year_before_rate(prev_spills: pd.Series, ratio: float) -> pd.Series:
 def last_full_day(events: pd.DataFrame) -> pd.Timestamp:
     """The last day an event file is taken to cover in full: the day before its last discharge
     starts, since the file may stop part-way through that day."""
-    return events["event_start"].max().tz_convert(LOCAL_TZ).floor("D") - pd.DateOffset(days=1)
+    return events["event_start"].max().floor("D") - pd.Timedelta(days=1)
 
 
 def site_days(sites: pd.DataFrame, daily: pd.DataFrame, year: int, labels: pd.DataFrame,
               last_day: pd.Timestamp | None = None) -> pd.DataFrame:
     """train.py's site-day table for one year (up to last_day, if that is earlier), rain-less days
     dropped, other gaps filled with 0 as forecast.py and verify_leads.py fill them."""
-    end = pd.Timestamp(f"{year}-12-31", tz=LOCAL_TZ)
+    end = pd.Timestamp(f"{year}-12-31", tz="UTC")
     if last_day is not None:
         end = min(end, last_day)
-    days = pd.date_range(pd.Timestamp(f"{year}-01-01", tz=LOCAL_TZ), end, freq="D")
+    days = pd.date_range(pd.Timestamp(f"{year}-01-01", tz="UTC"), end, freq="D")
     sd = build_site_days(sites, daily, days, labels[labels["day"].dt.year == year])
     sd = sd[sd["rain_d"].notna()].copy()
     sd["year"] = year
@@ -472,7 +472,7 @@ def annual_totals(sites: pd.DataFrame, daily: pd.DataFrame, year: int, model: Sp
     """Per overflow: expected spill-days in `year` for each arm (mean daily probability over days
     with rain x 365), the days with rain, and the counted spills of the year and the year before.
     `sites` needs the covariates of the year before, spills (the year's own count) and prev_spills."""
-    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D", tz=LOCAL_TZ)
+    days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D", tz="UTC")
     out = sites[["site_id", "spills", "prev_spills"]].copy().set_index("site_id")
     for arm, s in ((OWN, sites), (DEFAULT, default_arm(sites))):
         sd = build_site_days(s, daily, days)
@@ -627,7 +627,7 @@ def run_event_set(name: str, sites: pd.DataFrame, events: pd.DataFrame, years: l
         return {"info": {"rain": rinfo, "overflows": 0}, "untested": "no rain cached"}
     df, info = build_event_set(sites, events, _same_year(sites), years, daily, ratio, models, last_day)
     info["rain"] = rinfo
-    year_end = pd.Timestamp(f"{max(years)}-12-31", tz=LOCAL_TZ)
+    year_end = pd.Timestamp(f"{max(years)}-12-31", tz="UTC")
     info["last_day_scored"] = (year_end if last_day is None else min(year_end, last_day)).date().isoformat()
     res = {"info": info}
     if df.empty or df["y"].nunique() < 2:
