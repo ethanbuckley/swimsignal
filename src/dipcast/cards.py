@@ -230,6 +230,7 @@ class WeekendCard:
     rows: list[Row]
     plain: list[tuple[str, str, list[str]]] = field(default_factory=list)   # (headline, level, names)
     missing: list[str] = field(default_factory=list)                        # ids not in the forecast
+    plain_official: list[tuple[str, str]] = field(default_factory=list)     # (name, official_brief) in the plain lines
 
     @property
     def ids(self) -> list[str]:
@@ -259,6 +260,9 @@ def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: d
     card.plain = [(h, lv, names) for h, (lv, names) in plain.items()]
     for r in card.rows:
         r.official = (advice or {}).get(r.id, "")
+    # A spot in a plain line ("No monitored overflow found upstream") with advice: said under it, by name.
+    card.plain_official = [(label, (advice or {})[sid]) for sid, label in area.spots
+                           if (advice or {}).get(sid) and sid in levels and not any(r.id == sid for r in card.rows)]
     if not card.rows and not card.plain:
         return None
     return card
@@ -332,6 +336,8 @@ def weekend_caption(card: WeekendCard, generated_at: str, root: str) -> str:
             lines[-1] += " " + official_words(r.official)
     for headline, _, who in card.plain:
         lines.append(f"{and_list(who)}: {headline[:1].lower() + headline[1:]}.")
+    for label, o in card.plain_official:
+        lines.append(f"{label}: {official_words(o)}")
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         lines += ["", poor_words(poor)]
@@ -513,13 +519,20 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         notes.append((None, MUTED, poor_words(poor)))
-    for r in card.rows:   # official advice under the table, in ink: the row's level is the sewage forecast alone
-        if r.official:
-            notes.append((None, INK, f"{r.label}: {official_words(r.official)}"))
-    note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes)
+    # Official advice, in ink: the level is the sewage forecast alone. In full, or, where that does not fit,
+    # one line naming every spot with a notice (the caption has each in full); never left out.
+    advised = [(label, o) for label, o in [(r.label, r.official) for r in card.rows] + card.plain_official if o]
     text_h = [len(wrap(draw, r.label, name_f, name_w)) * lh(name_f) for r in card.rows]
-    room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes else 0) - sum(text_h)
-    pad = min(st.pad, room // (2 * len(card.rows))) if card.rows else st.pad   # closer rows before none
+    for short in (False, True) if advised else (False,):
+        said = ([(None, INK, f"{and_list([a for a, _ in advised])}: official advice against swimming. Follow it first; "
+                  "the levels are SwimSignal's sewage forecast only.")] if short
+                else [(None, INK, f"{label}: {official_words(o)}") for label, o in advised])
+        note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes + said)
+        room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes + said else 0) - sum(text_h)
+        pad = min(st.pad, room // (2 * len(card.rows))) if card.rows else st.pad   # closer rows before none
+        if pad >= 8:
+            break
+    notes = notes + said if advised else notes
     if pad < 8:
         raise Overflow(f"{card.area.slug}: {len(card.rows)} rows and {len(notes)} notes do not fit the {size} card")
     rows_h = [t + 2 * pad for t in text_h]

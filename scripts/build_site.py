@@ -2351,7 +2351,7 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
         add(e, "link", rel="alternate", type="text/html", href=s["url"])
         add(e, "category", term=s["level"])
         said = f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"]
-        if s.get("official"):
+        if s.get("official") and s["official"] not in said:   # alerts.json's action gives it already (scripts/alerts.js)
             said = f"Official: {s['official']}. Follow it first; the level is {BRAND}'s sewage forecast only. {said}"
         add(e, "summary", said)
     ET.indent(feed)

@@ -148,6 +148,45 @@ test('the organisers\' page: the advice above the day\'s level, inside the forec
   }
 });
 
+test('alerts.json: the level and rank unchanged; what to do is the notice, checked or stale; none without advice', () => {
+  const { execFileSync } = require('node:child_process'), os = require('node:os');
+  const dir = fs.mkdtempSync(join(os.tmpdir(), 'alerts-')), src = join(dir, 'spots.json'), out = join(dir, 'alerts.json');
+  const stale = frensham({ id: 'stale', official: [item({ state: 'unverified', checked: '2026-10-19' })] });
+  fs.writeFileSync(src, JSON.stringify({ generated_at: '2026-10-26T20:00:00+00:00', spots: [frensham(), stale, other()] }));
+  execFileSync(process.execPath, [join(__dirname, '../scripts/alerts.js'), src, out, 'https://example.org/'], { env: { ...process.env, TZ: 'Europe/London' } });
+  const a = JSON.parse(fs.readFileSync(out, 'utf8')), f = a.spots[frensham().id], s = a.spots.stale, o = a.spots[other().id];
+  assert.equal(f.level, o.level);
+  assert.equal(f.rank, o.rank);
+  assert.equal(f.headline, o.headline);
+  assert.equal(f.official, BRIEF);
+  assert.equal(f.action, `Official: ${BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.`);
+  assert.match(s.action, /^Official: EA advice against bathing \(harmful algae\) · since 19 Jun · not re-checked since 19 Oct\. Follow it first/);
+  assert.match(o.action, /^Usual care/);
+  assert.equal(o.official, undefined);
+  // Each day's action is the notice too, for alerts about a date (push/src/dates.js).
+  for (const d of f.days.filter(Boolean)) assert.equal(a.words[d[2]], f.action);
+  for (const d of o.days.filter(Boolean)) assert.match(a.words[d[2]], /^Usual care/);
+});
+
+test('a list the user picked keeps every spot, with its notice; only Share this plan leaves one out, and says so', () => {
+  const Li = require('../src/dipcast/site/lists.js');
+  const hash = Li.shareHash('Surrey', [frensham().id, other().id]);
+  assert.deepEqual(Li.readShared(hash).spots, [frensham().id, other().id]);
+  const src = pageSrc.join('\n');
+  // Saved's Share this list and its sites link take the list's spots as they are.
+  assert.match(src, /bindShareLink\(b, \$\('share-list-msg'\), new URL\(savedPath\(\), location\.origin\)\.href \+ shareHash\(l\.name, spots\.map\(s => s\.id\)\)/);
+  assert.match(src, /bindShareLink\(sl, \$\('sites-link-msg'\), sitesURL\(l, spots\)/);
+  // The shared list's view draws each spot as a Saved card, which carries the tag.
+  assert.match(src, /spots\.map\(s => savedCard\(s, false, sh\.day, true\)\)/);
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'initial', 'VIEW', 'km', 'dist', 'away',
+    'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard'], PAGE_EXTRA);
+  assert.ok(vm.runInContext('savedCard', ctx)(frensham(), false, DATES[1], true).includes(`<p class="o-tag">${BRIEF}</p>`));
+  // Only the plan's share filters, and its tile names the spot left out.
+  const share = src.slice(src.indexOf('function planShare('), src.indexOf('function bindPlan('));
+  assert.equal((share.match(/filter\(o => !?planAdvised\(o\.s\)\)/g) || []).length, 2);
+  assert.match(src, /left out: official advice against swimming\./);
+});
+
 // Second round (integrated review, 26 Oct): Nearby, the comparison's EA row, Saved's grid and best day, the
 // action line, and the Not known row.
 const X = require('../src/dipcast/site/experience.js');
