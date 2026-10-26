@@ -346,8 +346,9 @@ def river_ecoli(mode: str, lat: float, lon: float, X: pd.DataFrame, p_today: np.
 
 def ecoli_provenance(em: ecoli.EcoliModel, soil_state: dict) -> dict:
     """What a spot publishes about the E. coli model that gave its figures (assumptions.ecoli_model): the soil-moisture
-    model's file, size, score, test and soil source when soil_state says it was used, with today's model under
-    `baseline`; otherwise today's model, as before, and why soil moisture was not used."""
+    model's file, size, score and test when soil_state says it was used, with today's model under `baseline`;
+    otherwise today's model, as before, and why soil moisture was not used. `soil_source` names the live request
+    the value came from (soil.fetch); `fitted_on_soil_source` the archive the model was fitted on (its meta)."""
     today = {"file": ecoli.MODEL_PATH.name, "target": em.meta.get("target"), "fitted_on": em.meta.get("sites"),
              "n_samples": em.meta.get("n_samples"),
              "loyo_brier": em.meta.get("loyo", {}).get("rain + spill exposure + season (dipcast)", {}).get("brier")}
@@ -356,7 +357,9 @@ def ecoli_provenance(em: ecoli.EcoliModel, soil_state: dict) -> dict:
     sm = ecoli.load_sm()
     return {"file": ecoli.SM_MODEL_PATH.name, "target": sm.meta.get("target"), "fitted_on": sm.meta.get("fitted_on"),
             "n_samples": sm.meta.get("n_samples"), "loyo_brier": ecoli.SM_MODEL_LOYO_BRIER, "test": ecoli.SM_MODEL_TEST,
-            "soil_source": sm.meta.get("sm_source"), "soil": soil_state, "baseline": today}
+            "soil_source": (f"Open-Meteo Forecast API, models={soil.SOIL_MODEL}, {soil.SOIL_VAR}, "
+                            "00:00 UTC of the issue day"),
+            "fitted_on_soil_source": sm.meta.get("sm_source"), "soil": soil_state, "baseline": today}
 
 
 def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = config.MAX_UPSTREAM_KM,

@@ -361,7 +361,10 @@ def test_a_river_spot_on_the_soil_model_publishes_that_models_provenance(om):
     sm = ecoli.load_sm()
     assert m["file"] == "ecoli_model_sm.json" and m["n_samples"] == sm.meta["n_samples"] == 1502
     assert m["loyo_brier"] == ecoli.SM_MODEL_LOYO_BRIER == 0.0850 and m["test"] == "docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md"
-    assert "models=ecmwf_ifs" in m["soil_source"] and m["soil"]["at"] == "2026-10-26T00:00:00+00:00"
+    # The live request, not the fitting archive: soil.fetch asks config.OPEN_METEO_FORECAST.
+    assert m["soil_source"] == "Open-Meteo Forecast API, models=ecmwf_ifs, soil_moisture_9_to_27cm, 00:00 UTC of the issue day"
+    assert "Previous Runs" not in m["soil_source"] and m["fitted_on_soil_source"] == sm.meta["sm_source"]
+    assert "Previous Runs lead 0" in m["fitted_on_soil_source"] and m["soil"]["at"] == "2026-10-26T00:00:00+00:00"
     assert m["baseline"]["file"] == "ecoli_model.json" and m["baseline"]["loyo_brier"] == 0.0919
     # The score is the leads test's lead-0 figure for this model.
     leads = json.loads((ROOT / "docs" / "SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.json").read_text())
