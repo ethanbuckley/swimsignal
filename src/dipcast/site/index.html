@@ -225,7 +225,7 @@
   .search input { width:100%; font:inherit; font-size:var(--fs-body); color:var(--ink); padding:10px 12px 10px 38px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); -webkit-appearance:none; appearance:none; }
   .search input::placeholder { color:var(--faint); }
   .toolbar { display:flex; align-items:center; gap:8px; margin:8px 0 0; }
-  .toolbar select, .compare-fields select, .plan-go select { display:block; width:100%; min-height:44px; padding:8px 36px 8px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field) var(--arrow) no-repeat right 12px center;
+  .toolbar select, .compare-fields select, .outing-fields select, .plan-go select { display:block; width:100%; min-height:44px; padding:8px 36px 8px 12px; font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field) var(--arrow) no-repeat right 12px center;
                     border:1px solid var(--line); border-radius:var(--radius); -webkit-appearance:none; appearance:none; }
   .toolbar select { flex:1 1 0; min-width:0; font-weight:600; }
   .plan-go select { font-weight:600; }
@@ -624,10 +624,10 @@
   .actions .btn { text-align:center; line-height:1.2; }   /* a label in two lines stays centred and compact */
   /* Folds: a chevron, not a text marker, and a 44 px target. A section that folds keeps its heading
      where an open section's sits: the target reaches up into the section's padding. */
-  details.fold > summary, details.more > summary, details.comparison > summary, details.lists > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
-  details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker { display:none; }
-  details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.lists > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
-  details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].lists > summary::after { transform:rotate(-135deg); }
+  details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
+  details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.outing > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker { display:none; }
+  details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.outing > summary::after, details.lists > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
+  details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].outing > summary::after, details[open].lists > summary::after { transform:rotate(-135deg); }
   details.sec > summary { margin:-10px 0 0; }
   details.sec[open] > summary { margin-bottom:4px; }
   details.more > summary { justify-content:flex-start; gap:8px; color:var(--link); font-size:var(--fs-note); font-weight:600; }
@@ -771,6 +771,23 @@
      otherwise sit in, so the row's padding below moves under it. Muted, the meta size. */
   a.row:has(+ .ev-line) { padding-bottom:4px; }
   .ev-line { margin:0; padding:0 0 12px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  /* Your outing (outing.js): the choices, then the spot and its backup in two equal columns, which on a
+     375 px phone are about 160 px each; one spot alone takes the width. No fills or rules beyond the tile's. */
+  .outing-fields { display:grid; gap:10px; margin:14px 0; }
+  .outing-fields label { font-size:var(--fs-note); font-weight:600; }
+  .outing-fields select { margin-top:4px; }
+  .outing > summary .k { display:block; margin-top:2px; font:400 var(--fs-meta)/1.3 var(--font-text); color:var(--muted); }
+  .outing > summary + .sub { margin-top:10px; }
+  .outing-said { margin:0 0 8px; font-weight:600; }
+  .outing-pair { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin:0 0 10px; }
+  .outing-pair.one { grid-template-columns:minmax(0, 1fr); }
+  .outing-col { min-width:0; }
+  .outing-col p { margin:0 0 4px; }
+  .outing-role { font-size:var(--fs-meta); color:var(--muted); }
+  .outing-nm { margin:0 0 2px; font-size:var(--fs-body); overflow-wrap:anywhere; }
+  .outing-nm a { display:inline-block; padding:10px 0; margin:-10px 0; }   /* 44 px to tap */
+  .outing-col .why { font-size:var(--fs-note); line-height:1.4; }
+  .since-ev { display:block; margin-top:2px; font-size:var(--fs-meta); }
   /* A plan row's Compare tick (planCompare), at the right of its name while the comparison is open. */
   #plan-results ul.spots li { position:relative; }
   .cmp-pick { display:none; }
@@ -811,7 +828,7 @@
   }
   .compare-note { margin:0; padding:0 0 10px; }
   details.comparison { scroll-margin-top:calc(var(--header-h) + 8px); }
-  .comparison > summary, .lists > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
+  .comparison > summary, .outing > summary, .lists > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
 
   .about, .about-line { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-note); }
   /* "About these forecasts" in full on the list. A spot's page and the Saved page give it one line,
@@ -1258,6 +1275,7 @@
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
+<script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
 <script>
@@ -2676,9 +2694,14 @@ const MARKERS = new Map();
 const mapLevel = s => VIEW.day ? dayLevel(s, VIEW.day) : level(s);
 const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
 const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
-const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings. Not a safety check: look at the signs at the water before you swim.`;
+// The low spots with official advice (eatoday.js): still shown, as their level is low, but said here and on their rows.
+const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
+const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} official advice against swimming: follow it first.` : ''; };
+const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
 // A marker's tooltip: the name and the list row's headline, so the map and the list say the same.
-const markerTip = s => `${esc(s.name)}: ${listHeadline(s)}`;
+// With official advice, its compact form on a line of its own (eatoday.js), as under the row's level.
+const markerTip = s => { const o = typeof eaTodayBrief === 'function' ? eaTodayBrief(s) : '';
+  return `${esc(s.name)}: ${listHeadline(s)}${o ? `<br>${esc(o)}` : ''}`; };
 function styleMarkers() {
   for (const s of DATA.spots) {
     const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || lv === 'low'; if (!m) continue;
@@ -2693,7 +2716,7 @@ function styleMarkers() {
   if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low').length; }
   document.querySelectorAll('[data-low]').forEach(x => x.setAttribute('aria-pressed', String(VIEW.lowOnly)));
   document.querySelectorAll('[data-low-t]').forEach(x => { x.textContent = lowLabel(); });
-  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution. Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
+  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
 }
 function setMapDay(iso) {
   VIEW.day = iso || null;
@@ -2836,9 +2859,13 @@ function overview(spots) {
   spots.filter(s => ORDER[mapLevel(s)] === undefined && !plainLevel(mapLevel(s)))
     .forEach(s => { const w = listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
   const none = Object.values(why).reduce((a, b) => a + b, 0);
-  return `Updated ${issued()} · Pollution risk: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
+  // Official advice (eatoday.js) never changes a count above; the spots with it are counted on their own, and
+  // the counts are then named for what they are, the sewage forecast's.
+  const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
+  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''} · ${none} without a level`
-    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`;
+    + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
+    + (advised ? ` ${advised} with official advice against swimming: follow it first.` : '');
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -3104,7 +3131,7 @@ function compareTable(spots, day, meta = null) {
   return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
     + pin + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
     + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
-      + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('')}</tr></thead><tbody>`
+      + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}</th>`).join('')}</tr></thead><tbody>`
     + lab('cmp-days', `Pollution risk, next ${dates.length === 4 ? 'four' : 'five'} days`)
     + dates.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>` + days.map((d, j) => !d.same
         ? `<td${j ? '' : ' class="d0"'}${hd('cmp-days', j)}><span class="day">${dateLabel(iso)}</span>${cell(d.days[i])}</td>`
@@ -3564,6 +3591,10 @@ function planItem(o) {
     + `<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
     + `<label class="cmp-pick"><input type="checkbox" data-compare-pick="${esc(s.id)}"><span>Compare<span class="sr"> ${esc(s.name)}</span></span></label>${ev}</li>`;
 }
+// Under a plan group's heading when n of its spots have official advice: the advice comes first, and the level
+// is the sewage forecast alone. '' for none.
+const planAdviceSub = (n, of) => !n ? '' : `${n === of ? (n === 1 ? 'This spot has' : `All ${n} have`) : `${n} of these ${n === 1 ? 'has' : 'have'}`} official advice against swimming, `
+  + `under ${n === 1 ? 'its' : 'their'} level. Follow it first: the level is SwimSignal's sewage forecast only.`;
 function renderPlan() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'plan';
   setView('plan');
@@ -3625,9 +3656,13 @@ function drawPlan(fit = false) {
     + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '');
   // A low risk and a plain level are told apart in the headings: one is a forecast that
   // looked and found the risk low, the other has nothing upstream to forecast from (levels.js, FOUND_NONE).
-  const head = [`Low risk ${on}`, FOUND_NONE, `Moderate risk or higher ${on}`, 'No level'];
+  // A spot with official advice (plan.js, planAdvised) keeps its level and its group, last in it, with the
+  // advice under its level (eaTodayTag); the low group's heading then says what its level counts, and a line
+  // under it says the advice comes first. It is never shown as a clean "Low risk".
+  const adv = r.groups.map(g => g.filter(o => planAdvised(o.s)).length);
+  const head = [adv[0] ? `Low risk from sewage spills ${on}` : `Low risk ${on}`, FOUND_NONE, `Moderate risk or higher ${on}`, 'No level'];
   const sub = ['', 'Nothing upstream for the forecast to work from, so these spots have no forecast level. Other risks apply: algae, wildlife, runoff and bathers.',
-    '', 'No forecast for the day, or out of the forecast\'s reach.'];
+    '', 'No forecast for the day, or out of the forecast\'s reach.'].map((t, i) => [planAdviceSub(adv[i], r.groups[i].length), t].filter(Boolean).join(' '));
   const next = r.nearest ? reachFor(r.nearest.miles) : null;
   document.getElementById('plan-basis').innerHTML = r.count ? planBasis(r.groups.flat()) : '';
   box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
@@ -3637,6 +3672,7 @@ function drawPlan(fit = false) {
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
+  if (typeof drawOuting === 'function') drawOuting(box, r.groups.flat());   // outing.js: at the top of the results
   planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
   // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
   // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
@@ -3684,13 +3720,17 @@ function planCompare(groups, heads) {
 // plan starts from, which may be your own location.
 const PLAN_SHARE_MAX = 20;
 function planShare(open, on) {
+  // A spot with official advice against swimming is left out, and the tile names it: a shared plan is a list of
+  // places to go, and the friend's copy would otherwise call it low risk (plan.js, planAdvised).
+  const out = open.filter(o => planAdvised(o.s)); open = open.filter(o => !planAdvised(o.s));
+  const left = out.length ? ` ${out.length === 1 ? `${esc(out[0].s.name)} is` : `${out.length} spots are`} left out: official advice against swimming.` : '';
   const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s); if (!pick.length) return;
   const name = planListName(PLAN.day), n = pick.length, box = document.getElementById('plan-results');
   const low = top.filter(o => o.level === 'low').length, none = n - low;
   const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
   box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>`
     + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list called “${esc(name)}”, which a friend can add to their own lists. `
-    + `It holds that name, the day and which spots are in it, nothing else: not where you start from.</p>`
+    + `It holds that name, the day and which spots are in it, nothing else: not where you start from.${left}</p>`
     + `<button type="button" class="btn" id="plan-share">Share this plan</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
   bindShareLink(document.getElementById('plan-share'), document.getElementById('plan-share-msg'),
     new URL(savedPath(), location.origin).href + shareHash(name, pick.map(s => s.id), PLAN.day), `${name} · ${BRAND}`, 'Copy link to this plan');

@@ -21,6 +21,8 @@ const PLAN_DEFAULT = { day: null, from: null, within: 20, kind: 'all' };
 // An open comparison (Compare these spots) is in it too, as the spots it shows:
 // &compare=thames-port-meadow,bw-ukj1403-11947. `compare` is there only while it is open; empty, it is
 // open on the first spots shown (planCompareIds).
+// An outing's time: a part of the day, or an hour ("07"), as outing.js offers them.
+const PLAN_WHEN = /^(morning|afternoon|evening|[01]\d|2[0-3])$/;
 const inGB = (lat, lon) => lat > 49.8 && lat < 61 && lon > -8.7 && lon < 2;
 const COMPARE_MAX = 3;
 function readPlan(hash, dates, was = PLAN_DEFAULT) {
@@ -36,6 +38,12 @@ function readPlan(hash, dates, was = PLAN_DEFAULT) {
   else if (from && at.length === 2 && inGB(at[0], at[1])) p.from = { name: from.slice(0, 80), lat: at[0], lon: at[1] };
   // Ids as lists.js reads a link's (listIds: text of a sane length, each once), at most three.
   if (q.has('compare')) p.compare = [...new Set(q.get('compare').split(',').filter(id => id && id.length <= 100))].slice(0, COMPARE_MAX);
+  // An outing (outing.js): when on the day, the spot, and a backup spot, each only where the address has
+  // it, so a plan from before 27 Oct 2026 (an old link, or the copy kept in dipcast.plan) reads as it did.
+  const when = q.get('when'), one = id => typeof id === 'string' && id.length > 0 && id.length <= 100;
+  if (PLAN_WHEN.test(when || '')) p.when = when;
+  if (one(q.get('spot'))) p.spot = q.get('spot');
+  if (one(q.get('backup')) && q.get('backup') !== p.spot) p.backup = q.get('backup');
   return p;
 }
 function planHash(p) {
@@ -46,6 +54,9 @@ function planHash(p) {
   q.set('within', String(p.within));
   if (p.kind !== 'all') q.set('kind', p.kind);
   if (Array.isArray(p.compare)) q.set('compare', p.compare.join(','));
+  if (p.when) q.set('when', p.when);
+  if (p.spot) q.set('spot', p.spot);
+  if (p.backup) q.set('backup', p.backup);
   return '#' + q.toString();
 }
 // The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the
@@ -55,7 +66,10 @@ function planHash(p) {
 // first day.
 function planKept(hash, dates, listDay = null) {
   const p = readPlan(hash || '', dates), d = new URLSearchParams(String(hash || '').replace(/^#/, '')).get('day');
-  return { ...p, day: dates.includes(listDay) ? listDay : dates.includes(d) ? d : null };
+  const day = dates.includes(listDay) ? listDay : dates.includes(d) ? d : null;
+  // An outing's time was for its own day: on another day it is dropped, and its spots kept.
+  if (p.when && day !== d) delete p.when;
+  return { ...p, day };
 }
 // A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it: a search
 // for "Ilkley" lists the one spot named for it, and Plan a swim should not want the town typed again. base:
@@ -156,6 +170,12 @@ function waterMatches(index, text, n = 4) {
 // group, "Nothing flagged", they read as the same answer, a forecast that looked and found the risk low
 // and one with nothing to look at.
 const PLAN_GROUPS = 4;
+// Whether a spot has reviewed official advice shown (eatoday.js, eaTodayAdvice: spots.json `official`). It
+// never changes the level or the group; within the low group and the plain one, those spots go last, and
+// they are not counted as low risk where the plan suggests an area or a day, or shared as a plan.
+const planAdvised = s => { const f = typeof eaTodayAdvice === 'function' ? eaTodayAdvice
+  : typeof require === 'function' ? require('./eatoday.js').eaTodayAdvice : null;
+  return !!f && f(s).length > 0; };
 function planGroup(level) {
   const R = planRules();
   return level === 'low' ? 0 : R.plainLevel(level) ? 1 : R.rank(level) >= 1 ? 2 : 3;
@@ -170,6 +190,7 @@ function planSpots(spots, p, milesOf) {
   const near = all.filter(o => o.miles <= reach), groups = Array.from({ length: PLAN_GROUPS }, () => []);
   for (const o of near) groups[planGroup(o.level)].push(o);
   for (const g of groups) g.sort((a, b) => a.miles - b.miles);
+  for (const g of [groups[0], groups[1]]) g.sort((a, b) => planAdvised(a.s) - planAdvised(b.s) || a.miles - b.miles);
   groups[2].sort((a, b) => R.rank(a.level) - R.rank(b.level) || a.miles - b.miles);
   const nearest = near.length ? null : all.reduce((a, b) => !a || b.miles < a.miles ? b : a, null);
   return { groups, count: near.length, nearest };
@@ -177,7 +198,9 @@ function planSpots(spots, p, milesOf) {
 // Another of the five days when clearly more of these spots are at low risk than on the day picked
 // (two more, and a quarter more: 19 against 18 is not worth moving a swim for), or null. Only spots
 // whose forecast changes from day to day count (bestDay): the rest are the same every day.
+// Spots with official advice are left out of both counts (planAdvised).
 function betterDay(spots, day, dates) {
+  spots = spots.filter(s => !planAdvised(s));
   const R = planRules(), b = R.bestDay(spots, dates);
   if (!b || b.date === day) return null;
   const low = spots.filter(s => R.daily(s) && R.dayLevel(s, day) === 'low').length;
@@ -193,7 +216,8 @@ const reachFor = miles => RADII.find(r => r >= miles) || 0;
 // hostile, and the privacy notice promises it only on "Near me" or "Use my location". The position is kept
 // in no storage, as the notice says, so a new page load starts without it.
 const planStart = (from, here) => from || (Array.isArray(here) && here.length === 2 ? { here: true } : null);
-// The areas (spots.csv's `area`) with the most spots of the plan's kind at low risk on its day, most first, then
+// The areas (spots.csv's `area`) with the most spots of the plan's kind at low risk on its day (official advice
+// not counted as low: planAdvised), most first, then
 // by name: at most n, and only those with one or more at low risk. Each as a place to start a plan from: the
 // middle of its spots (mean position, rounded for the address), and the distance that reaches all of them,
 // at most the longest offered so a plan from the middle of a wide area still has a ring. None while any spot
@@ -207,7 +231,7 @@ function planAreas(spots, p, milesBetween, n = 3) {
   return [...by].map(([area, ys]) => {
     const lat = round(mean(ys.map(s => s.lat))), lon = round(mean(ys.map(s => s.lon)));
     const far = Math.max(...ys.map(s => milesBetween([lat, lon], [s.lat, s.lon])));
-    return { area, lat, lon, total: ys.length, low: ys.filter(s => R.dayLevel(s, p.day) === 'low').length,
+    return { area, lat, lon, total: ys.length, low: ys.filter(s => R.dayLevel(s, p.day) === 'low' && !planAdvised(s)).length,
       within: reachFor(far) || RADII[RADII.length - 1] };
   }).filter(a => a.low > 0).sort((a, b) => b.low - a.low || a.area.localeCompare(b.area)).slice(0, n);
 }
@@ -217,6 +241,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
-    planGroup, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+    planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
 }

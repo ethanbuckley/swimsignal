@@ -13,8 +13,9 @@
 // A plain script, as levels.js: globals in the page, exports in Node. It asks for the level rules
 // when it is called, so in the page it only has to load before it is used.
 const sinceRules = () => typeof level === 'function'
-  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList }
-  : { ...require('./levels.js'), ...require('./experience.js') };
+  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart,
+      ...(typeof eaTodayAdvice === 'function' ? { eaTodayAdvice, eaTodayBrief } : {}) }
+  : { ...require('./levels.js'), ...require('./experience.js'), ...require('./eatoday.js') };
 
 const SEEN_KEY = 'dipcast.seen';
 const RATED = /^((excellent|good|sufficient|poor) \d{4}|unrated)$/;
@@ -36,8 +37,22 @@ function seenRecord(s, forecast, at) {
   // A discharge counts whatever the feed's state, as in the count itself (forecast.py).
   const known = R.daily(s) && Number.isInteger(k) && k >= 0 && (k > 0 || (!n.feed_down_upstream && !n.stale_upstream));
   const c = s.classification, rating = !c ? null : c.class ? `${String(c.class).toLowerCase()} ${c.year}` : 'unrated';
+  // gap: the count is not known because a feed upstream is down or late (the evidence line says so, rather
+  // than say nothing). Added 26 Oct 2026; a note kept before then has none, and reads as no gap.
+  const gap = !!(R.daily(s) && Number.isInteger(k) && !known);
   return { id: s.id, level: R.ORDER[l] !== undefined || l === R.NO_OVERFLOWS ? l : null, discharging: known ? k : null,
-    rating: rating && RATED.test(rating) ? rating : null, forecast, at };
+    rating: rating && RATED.test(rating) ? rating : null, gap, official: seenOfficial(s), forecast, at };
+}
+// The official advice the spot showed (eatoday.js, #379: the reviewed notices in `official`): null for none,
+// else the first notice as the compact line says it (eaTodayBrief: "EA advice against bathing · since 19 Jun
+// · checked 26 Oct"), its publisher, and a key of what it says and since when, so a new check day alone is
+// not a change. Its state (checked, or not re-checked since) is in the brief. Undefined where the page has
+// no eatoday.js, so nothing is compared. Added 27 Oct 2026; notes from before have none, and compare nothing.
+function seenOfficial(s) {
+  const R = sinceRules();
+  if (typeof R.eaTodayAdvice !== 'function') return undefined;
+  const o = R.eaTodayAdvice(s)[0];
+  return o ? { key: `${o.publisher}|${o.line}|${o.since || ''}`.slice(0, 300), brief: R.eaTodayBrief(s).slice(0, 300), publisher: o.publisher.slice(0, 100) } : null;
 }
 
 // The notes as stored. Anything that is not what this file writes reads as not seen, rather than stop
@@ -48,7 +63,10 @@ function seenOK(x) {
     && typeof x.forecast === 'string' && Number.isFinite(Date.parse(x.forecast))
     && (x.level === null || (typeof x.level === 'string' && (R.ORDER[x.level] !== undefined || x.level === R.NO_OVERFLOWS)))
     && (x.discharging === null || (Number.isInteger(x.discharging) && x.discharging >= 0))
-    && (x.rating === null || (typeof x.rating === 'string' && RATED.test(x.rating)));
+    && (x.rating === null || (typeof x.rating === 'string' && RATED.test(x.rating)))
+    && (x.gap === undefined || typeof x.gap === 'boolean')
+    && (x.official === undefined || x.official === null || (typeof x.official === 'object'
+      && ['key', 'brief', 'publisher'].every(k => typeof x.official[k] === 'string' && x.official[k].length > 0 && x.official[k].length <= 300)));
 }
 const readSeen = text => new Map(sinceRules().storedList(text, seenOK).map(x => [x.id, x]));
 
@@ -60,6 +78,17 @@ function noteSeen(seen, spots, forecast, at) {
     if (r && !(old && Date.parse(old.forecast) > Date.parse(forecast))) seen.set(s.id, r);
   }
   return seen;
+}
+
+// Official advice appearing ('shown'), no longer shown ('gone'), another notice ('other'), or none of these
+// (''). Only where both notes know (a note from before 27 Oct 2026, or a page without eatoday.js, has
+// undefined): never a change made up from a missing field.
+function officialChange(was, now) {
+  const a = was.official, b = now.official;
+  if (a === undefined || b === undefined) return '';
+  if (!a && b) return 'shown';
+  if (a && !b) return 'gone';
+  return a && b && a.key !== b.key ? 'other' : '';
 }
 
 // ------------------------------------------------------------------------------ the line
@@ -83,13 +112,81 @@ const ratingWords = r => r === 'unrated' ? 'not yet rated' : `rated ${r.replace(
 // card's own line says what set the level).
 function sinceLine(was, now) {
   if (!was || !now || !(Date.parse(now.forecast) > Date.parse(was.forecast))) return '';
-  const when = lookedWhen(was.at);
-  if (was.level && now.level && was.level !== now.level) return `Was ${levelWords(was.level)} when you looked ${when}; now ${levelWords(now.level)}.`;
-  if (was.rating && now.rating && was.rating !== now.rating) return `Was ${ratingWords(was.rating)} when you looked ${when}; now ${ratingWords(now.rating)}.`;
-  const a = was.discharging, b = now.discharging;
-  if (a === null || b === null || (a > 0) === (b > 0)) return '';
-  return b > 0 ? `No overflow upstream was discharging when you looked ${when}; now ${b === 1 ? '1 is' : `${b} are`}.`
+  const when = lookedWhen(was.at), o = officialChange(was, now), a = was.discharging, b = now.discharging;
+  let line = '';
+  if (was.level && now.level && was.level !== now.level) line = `Was ${levelWords(was.level)} when you looked ${when}; now ${levelWords(now.level)}.`;
+  else if (was.rating && now.rating && was.rating !== now.rating) line = `Was ${ratingWords(was.rating)} when you looked ${when}; now ${ratingWords(now.rating)}.`;
+  else if (o === 'shown') return `No official advice was shown when you looked ${when}; now: ${now.official.brief}. Follow it first.`;
+  else if (o === 'gone') return `Official advice was shown when you looked ${when} (${was.official.brief}); it is no longer shown here.`;
+  else if (o === 'other') return `Official advice changed since you looked ${when}; now: ${now.official.brief}. Follow it first.`;
+  else if (a !== null && b !== null && (a > 0) !== (b > 0)) line = b > 0 ? `No overflow upstream was discharging when you looked ${when}; now ${b === 1 ? '1 is' : `${b} are`}.`
     : `${a === 1 ? '1 overflow upstream was' : `${a} overflows upstream were`} discharging when you looked ${when}; ${a === 1 ? 'it has' : 'all have'} stopped.`;
+  if (!line) return '';
+  // A level, a rating or a spill that changed while official advice shows: the notice in the same line, in the
+  // shared helper's words (eaTodayBrief, kept in the note), so a lower sewage level never reads as an
+  // all-clear. "Still" only where the note from then had it too.
+  if (now.official) return `${line} Official advice ${o === 'shown' ? 'now' : o === 'other' ? 'changed, now' : was.official ? 'still' : ''} shown: ${now.official.brief}. Follow it first.`.replace('advice  shown', 'advice shown');
+  if (o === 'gone') return `${line} Official advice shown then (${was.official.brief}) is no longer shown here.`;
+  return line;
+}
+
+// The evidence under a line (sinceSaid): a change is never said without it. Which two forecasts were
+// compared, by their issue times ("issued Fri 17:31 and Sun 15:29"); what the overflow feeds upstream
+// report now, against then where both are known; where the count is not known, why; for a rating, whose
+// it is; and a forecast older than the page calls stale (index.html, STALE_MIN: 8 h), said as out of date.
+// No word here says safe: a lower level is a lower forecast risk, nothing more.
+const SINCE_STALE_MIN = 8 * 60;
+const issuedWords = iso => { const d = new Date(iso);
+  return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`; };
+const overflowsWord = n => n === 1 ? '1 overflow upstream' : `${n} overflows upstream`;
+// extra.spills: which overflows are discharging now and since when (sinceSpills), named where the spot's
+// forecast names them; extra.outing: the outing planned at this spot (sinceOuting), so the change is read
+// against it.
+function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
+  if (!was || !now) return '';
+  const out = [`Forecasts compared: issued ${issuedWords(was.forecast)} and ${issuedWords(now.forecast)}.`];
+  const a = was.discharging, b = now.discharging, then = a === null || a === undefined ? '' : `, against ${a} then`;
+  const named = (extra.spills || []).slice(0, 2), more = Number.isInteger(b) ? b - named.length : 0;
+  const which = !named.length || !b ? '' : `: ${named.map(x => `${x.name} since ${issuedWords(new Date(x.since).toISOString())}`).join(', ')}${more > 0 ? `, and ${more} more` : ''}`;
+  if (Number.isInteger(b)) out.push(b ? `${cap1(overflowsWord(b))} reported discharging now${then}${which}.` : `No overflow upstream reported discharging now${then}.`);
+  else if (now.gap) out.push('How many overflows upstream are discharging now is not known: a feed upstream is down or has not updated within six hours.');
+  else if (now.level) out.push('No live overflow count for this spot.');
+  if (was.rating && now.rating && was.rating !== now.rating) out.push("The rating is the Environment Agency's, from its yearly bathing water classification.");
+  // Official advice: the notice now, in the shared compact words with its state (checked, or not re-checked
+  // since); and where one shown before is not shown now, that this is no all-clear. The level never moves for it.
+  const oc = officialChange(was, now);
+  // A notice that has just appeared is in the line already: the evidence adds only whose it is.
+  // The line carries the notice whenever one shows (sinceLine): here only whose it is, said once.
+  if (now.official) out.push(`The official advice is the ${now.official.publisher}'s, not part of this level.`);
+  else if (oc === 'gone') out.push(`That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
+  if (extra.outing) out.push(extra.outing);
+  const age = (nowMs - Date.parse(now.forecast)) / 60000;
+  if (age > SINCE_STALE_MIN) out.push(`This forecast is ${Math.round(age / 60)} hours old, so the change may be out of date.`);
+  return out.join(' ');
+}
+const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+const esc1 = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);   // overflow names are data
+// The spot's overflows discharging now, earliest first, from those its forecast lists (contributors: the
+// ones that matter most, so possibly fewer than the count): [{name, since}], since in ms. Only where the spot
+// carries `contributors`: the Saved page and the list draw from spots-lite.json, which leaves them out (kept
+// lean), so there this is [] and the card links to the spot's page for which overflows (sinceSaid).
+function sinceSpills(s) {
+  const R = sinceRules();
+  return (s.contributors || []).map(c => ({ c, since: R.spillStart(c) })).filter(x => x.since !== null)
+    .sort((x, y) => x.since - y.since).map(x => ({ name: R.overflowNames(x.c).plain.slice(0, 80), since: x.since }));
+}
+// The outing planned on Plan a swim (outing.js), as the plan kept in this browser holds it (index.html,
+// PLAN_KEY, dipcast.plan: the plan's address, with when=, spot= and backup=): a sentence when this spot is
+// its spot or its backup and its day has not passed, else ''.
+const KEPT_PLAN_KEY = 'dipcast.plan', OUTING_WHEN = /^(morning|afternoon|evening|[01]\d|2[0-3])$/;
+function sinceOuting(id, planText) {
+  if (!planText) return '';
+  const R = sinceRules(), q = new URLSearchParams(String(planText).replace(/^#/, ''));
+  const day = q.get('day'), when = q.get('when'), role = q.get('spot') === id ? 'spot' : q.get('backup') === id ? 'backup' : null;
+  if (!role || !/^\d{4}-\d{2}-\d{2}$/.test(day || '') || day < R.today()) return '';
+  const d = R.dayWord(day).replace(/^on /, ''), part = OUTING_WHEN.test(when || '') ? when : null;
+  const w = !part ? d : /^\d/.test(part) ? `${d} at ${part}:00` : d === 'today' ? `this ${part}` : `${d} ${part}`;
+  return role === 'spot' ? `This is the spot of your outing ${w}.` : `This is the backup for your outing ${w}.`;
 }
 
 // ------------------------------------------------------------------------------ in the page
@@ -118,10 +215,18 @@ function lookedAt(spots, forecast, saved) {
 // A card's line, as HTML (the words are this file's own), or ''.
 function sinceSaid(s, forecast) {
   seenStore();
-  const t = sinceLine(LOOKED.get(s.id), seenRecord(s, forecast, Date.now()));
-  return t ? `<p class="place-since">${t}</p>` : '';
+  const was = LOOKED.get(s.id), now = seenRecord(s, forecast, Date.now()), t = sinceLine(was, now);
+  if (!t) return '';
+  let plan = null;
+  try { plan = localStorage.getItem(KEPT_PLAN_KEY); } catch (e) { /* no plan kept: no outing to read against */ }
+  const spills = sinceSpills(s), ev = sinceEvidence(was, now, Date.now(), { spills, outing: sinceOuting(s.id, plan) });
+  // Discharging now but no names in this data (spots-lite.json): which ones, and since when, are on the spot's
+  // page (its "Overflows that matter most"), one tap away, rather than names this card does not have.
+  const which = now.discharging > 0 && !spills.length && typeof spotPath === 'function'
+    ? ` <a href="${esc1(spotPath(s.id))}" data-id="${esc1(s.id)}">Which overflows: the spot's page</a>` : '';
+  return `<p class="place-since">${esc1(t)} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, seenRecord, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }

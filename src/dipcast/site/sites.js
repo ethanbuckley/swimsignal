@@ -26,6 +26,9 @@ const Sites = (() => {
   const Li = node ? require('./lists.js') : { listName, listIds, sitesHash, LINK_SPOTS_MAX };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : typeof Printed === 'undefined' ? null : Printed;
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief): under the
+  // headline, never in it. Without eatoday.js (an older page), none.
+  const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DEFAULT_NAME = 'Sites view';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -88,7 +91,8 @@ const Sites = (() => {
   // overflows upstream are expected to spill today, in the spot page's words.
   // Then what it cannot count or check, short, as under the list's rows: the overflows in Wales, and at a
   // bathing water the EA's advice for today (levels.js, walesWords and eaUnchecked).
-  const gaps = (s, onDay = false) => [R.walesWords(s, true), R.eaUnchecked(s) ? `${onDay ? 'EA advice on the day' : "Today's EA advice"} not checked: see the EA's page` : ''].filter(Boolean).map(w => w + '.').join(' ');
+  // A reviewed notice on the row (brief) says when it was checked, so "not checked" is left out there.
+  const gaps = (s, onDay = false) => [R.walesWords(s, true), R.eaUnchecked(s) && !brief(s) ?`${onDay ? 'EA advice on the day' : "Today's EA advice"} not checked: see the EA's page` : ''].filter(Boolean).map(w => w + '.').join(' ');
   function words(s) {
     const lv = R.level(s), [head, why] = R.headParts(s), g = gaps(s);
     if (R.COVER[lv]) return { head, tone: tone(lv), why: [lv === R.NO_OVERFLOWS || lv === R.NO_RIVER ? R.OTHER_RISKS : '', g].filter(Boolean).join(' ') };
@@ -120,7 +124,8 @@ const Sites = (() => {
       : `<a href="${esc(recordHref(s.id, t))}">today</a>`;
     // With a day, the row says which spot, day and level it drew, for briefing.py to check against alerts.json.
     return `<li class="site"${DAY ? ` data-spot="${esc(s.id)}" data-day="${DAY}" data-level="${esc(w.lv)}"` : ''}><div class="s-place"><a class="s-name" href="${esc(spotHref(s.id))}">${esc(s.name)}</a><span class="s-meta">${meta}</span></div>`
-      + `<div class="s-say"><p class="s-head ${w.tone}">${esc(w.head)}</p>${w.why ? `<p class="s-why">${esc(w.why)}</p>` : ''}`
+      + `<div class="s-say"><p class="s-head ${w.tone}">${esc(w.head)}</p>${brief(s) ? `<p class="o-tag">Official: ${esc(brief(s))}. Follow it first; the level is SwimSignal's sewage forecast only.</p>` : ''}`
+      + `${w.why ? `<p class="s-why">${esc(w.why)}</p>` : ''}`
       + `<p class="s-rec screen-only">Decision record: ${rec}</p></div>`
       + `<div class="s-week">${week(s)}</div></li>`;
   }

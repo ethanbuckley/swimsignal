@@ -1893,6 +1893,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
+SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
+VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
 # Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
 SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
 VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
@@ -1938,6 +1941,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
@@ -2837,14 +2841,14 @@ def write_data_page(site: Path, token: str | None = None, root: str | None = Non
 # rules come from one build, as the app's do (VERSIONED_SCRIPTS). It has no page-view counter: inside
 # another site's page it could not see a visitor's choice not to be counted, which is kept on this one.
 EMBED = TEMPLATE.parent / "embed.html"
-EMBED_SCRIPTS = ('<script src="levels.js"></script>', '<script src="embed.js"></script>')
+EMBED_SCRIPTS = ('<script src="levels.js"></script>', '<script src="eatoday.js"></script>', '<script src="embed.js"></script>')   # eatoday.js: official advice
 
 
 def write_embed(site: Path) -> str:
     """embed.html and embed.js beside the app (which has levels.js, page.css and the fonts). Returns
     the scripts' version."""
     h = hashlib.sha256()
-    for f in ("levels.js", "embed.js"):
+    for f in ("levels.js", "eatoday.js", "embed.js"):
         h.update((TEMPLATE.parent / f).read_bytes())
     v = h.hexdigest()[:8]
     page = EMBED.read_text()
@@ -2868,7 +2872,7 @@ ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
 REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
 # The organisers' page loads lists.js and sites.js too, for "Make a sites link" (sites.js, maker).
-ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "eatoday.js", "organisers.js", "sites.js")   # eatoday.js: official advice
 
 
 def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],
@@ -2905,8 +2909,8 @@ def write_organisers(site: Path, token: str | None = None, root: str | None = No
 # go/no-go decision (record.js). Both reuse organisers.js's words, so they load it, and printed.js gives both
 # their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
 # the sitemap lists both, as it lists that page.
-SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.js")
-RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "record.js")   # eatoday.js: official advice
+SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "eatoday.js", "sites.js")   # eatoday.js: official advice
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "brief.js", "record.js")   # eatoday.js: official advice; brief.js: the version and a read tick
 
 
 def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -2914,7 +2918,7 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
-    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token, root)
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
