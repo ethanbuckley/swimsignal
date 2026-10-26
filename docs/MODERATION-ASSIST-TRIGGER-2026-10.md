@@ -26,7 +26,8 @@ From `reviews/README.md` and `reviews/src/rules.js`:
 
 ## The trigger
 
-Proposed defaults, for Ethan to change. Any one starts a review of this note:
+Set by Ethan on 26 October 2026 ("Adopt all the recommendations as my decisions"). Any one starts a review of this
+note:
 1. **Waiting items:** more than 50 waiting on `/moderate` at a weekly look, three weeks running.
 2. **Time:** moderation takes Ethan more than 30 minutes a week, four weeks running.
 3. **A cap is hit:** the 300-waiting cap or the 300-photos-a-day cap is reached once.

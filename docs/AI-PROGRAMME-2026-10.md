@@ -20,48 +20,32 @@ the #377 statement at about 19:25 UTC and asked for the rest to be built autonom
 | Missing event ends (live-model side finding) | #384 | replay of the right-now rule with finished UU spills given an end time | 4 pass | replay matched production's level in 99.3% of 7,255 spot-builds; stricter rule: 0 level changes in 9 days; longer window: 2 one-build false Lows at Grasmere | one `gh release download`; 80 s | measured: do not fix now (thresholds stated first) |
 | Moderation help | #378 | a trigger based on queue volume, then Worker rules, a local model, an outside model only after a DPIA | none (no code) | 0 published reviews, 0 notes showing (26 Oct) | none | written |
 
-## Decisions for Ethan
+## Decisions, 26 October 2026
 
-**Satellite algae (#377)**
-0. Read and approve the revised statement; nothing is scored before that. Then: whether to make a free Copernicus
-   Data Space account, which CLMS downloads need (catalogue search works without one). Without it, CLMS stays
-   metadata-only and NDCI on Sentinel-2 is the reading. Stage 1 is estimated (not measured) at about 27,000 requests
-   and 2 GB over 7 capped runs.
+Ethan adopted every recommendation on 26 October 2026 (about 20:15 UTC): "Adopt all the recommendations as my
+decisions. Record them in the status map and the relevant PRs, apply the ones that need only docs or harness settings,
+and keep everything as draft PRs." Earlier the same evening he approved the #377 statement ("approved", about 19:25
+UTC). Each decision is recorded in its own PR as well.
 
-**Advisory finder (#379)**
-1. Who may approve a draft, and where approvals are kept.
-2. What counts as a source: council and water-company pages? Closures?
-3. Quote council text (copyright, no open licence) or link only.
-4. Expiry rules: whether an open EA incident older than 28 days with no expiry is "stale" (Frensham is); whether the
-   Irish expected duration becomes a date.
-5. The wording of the line, and whether live runs happen off GitHub's runners (the EA service refuses them).
-
-**Sampling priorities (#381)**
-6. Whether to pursue it. A plain rule, "least-sampled sites on wetter days", may capture most of the value.
-7. Whether to ask a partner about a randomised sampling arm. That is outreach; none was done.
-
-**Monitoring anomalies (#382)**
-8. Which flags go on the data-quality page (proposed: long_run, and quiet_monitor worded as a question to the
-   company), and which go into build warnings only.
-9. **A side finding for the live model, separate from this programme.** `transport._counted` counts a finished
-   spill only from its event end (checked in the code). 28 United Utilities records said "not discharging" with no
-   event end, 5 of them stopped 10 to 19 h before the poll, so those spills do not count in "right now". The effect
-   on forecasts is not measured. Filling the end from the status start would be a model change.
-
-**River rises (#383)**
-10. Whether to run the stated plan, no earlier than 2 November 2026. It needs about 1.5 GB of EA history over two or
-    three capped runs, and radar rain before about 21 November, while the oldest months are still on AWS.
-11. Whether to show an upstream gauge's rise as a plain observation. No model needed; a product call.
-
-**Missing event ends (#384)**
-13. Whether to fix it anyway (the stricter rule is described, not made) or re-run the measurement once more 2026 data
-    builds up; the UU count of such records rose on 25-26 Oct.
-
-**River rises, before the run (#383)**
-14. Eight harness questions are listed in the plan doc ("Questions for Ethan before the run").
-
-**Moderation (#378)**
-12. The trigger numbers.
+| # | Piece | Decision | Applied |
+|---|---|---|---|
+| 0 | Satellite (#377) | No Copernicus Data Space account. Even full Lake District coverage is 3 water bodies, under the statement's 4 | recorded in #377 |
+| 1 | Advisory (#379) | Ethan alone approves; approvals in a file in the repo, changed by PR | code in #379 |
+| 2 | Advisory | Sources: EA, NRW, Irish EPA, council water-quality notices; water companies for their own incidents as "[company] says"; closures are not advisories | code in #379 |
+| 3 | Advisory | Council text: link and own summary; verbatim only from openly licensed sources | code in #379 |
+| 4 | Advisory | EA incident shows while the EA lists it open, re-checked each run, nothing if the feed fails; no 28-day stale flag for EA items; EPA duration shown as "EPA expects until"; page advisories with no end expire 14 days after approval | code in #379 |
+| 5 | Advisory | Wording: "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026" + link; never changes a level | code in #379 |
+| 6 | Advisory | EA history for all 38 waters, once a day | code in #379 |
+| 7 | Advisory | Runs by hand on Ethan's Mac, weekly in season; not in Actions or the build | doc in #379 |
+| 8 | Sampling (#381) | Not pursued; kept as the record. Rule of thumb: least-sampled sites on wetter days | doc in #381 |
+| 9 | Sampling | No randomised arm now; only if a partner plans 2027 sampling | doc in #381 |
+| 10 | Anomalies (#382) | long_run on the data-quality page now; quiet_monitor after a second month, worded as a question; whole-feed checks as build warnings only; record_contradiction not public | doc in #382; wiring is a follow-up PR |
+| 11 | Missing ends (#384) | Do not fix now; measure again on or after 9 Nov 2026; fix if rule B changes levels at more than 1% of spot-builds; fix map clicks in the same PR | doc in #384 |
+| 12 | River rises (#383) | Run the test in early November (after 2 Nov), radar saved before about 21 Nov | doc in #383 |
+| 13 | River rises | No upstream-rise line on the page before the test | doc in #383 |
+| 14 | River rises | The eight harness questions answered: R1 as built; "Possible harm" counts as harm (note added to the near-miss framework in `docs/LAKE-ECOLI-LINE-TEST-2026-10.md`); B = 0.02 and H = 0.01 Brier skill against persistence, "promising" goes to a winter shadow log; radar at t − 1 h; C2's placebo shifts radar only; datum drop rule (median index outside −0.5 to 1.5); tributary-only gauges included and reported apart; gate pooled with per-gauge figures | harness in #383 |
+| 15 | Moderation (#378) | Trigger: over 50 waiting three weeks running, over 30 min a week four weeks running, any cap hit, or over 10 reports a week | this PR |
+| 16 | Merging | All of these stay draft PRs for now | all |
 
 ## What was learned
 
