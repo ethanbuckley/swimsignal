@@ -22,6 +22,11 @@ Inputs, none fetched here:
 
     uv run python scripts/make_eval2027.py --spots <spots.json> --upstream <dir> \\
         --edm <edm_events.parquet> --ecoli-samples <ecoli_validation_rows.parquet>
+
+With --spot-list it makes only data/eval2027/spots.csv, the eligible spots of scores S1 and S2 (amendment 2), from
+--spots and --upstream. That list is made from the tagged build, at the tag (section 15, step 4), not before:
+
+    uv run python scripts/make_eval2027.py --spot-list --spots <spots.json> --upstream <dir>
 """
 
 from __future__ import annotations
@@ -43,6 +48,11 @@ ECOLI_THRESHOLD = 900          # E. coli per 100 ml: forecast_log.verify_ecoli's
 EDM_YEARS = (2023, 2024, 2025)  # the spill model's training years (United Utilities)
 CLIM_YEARS = (2023, 2026)       # E. coli samples before the evaluation season, first and last year
 SITE_COLUMNS = ["unit", "id", "name", "company", "water", "spots"]
+SPOT_FILES = (ROOT / "spots.csv", ROOT / "spots-osm.csv")
+SPOT_LIST_COLUMNS = ["id", "name", "water", "company", "overflows", "share_no_live", "never_observed", "eligible", "reason"]
+# Amendment 1: a spot whose overflows without a live feed carry over 5% of its weight is never observed (a spot-day
+# needs 95% of the weight observed). The same margin as forecast_log.spot_exposure, for float sums of weights.
+NO_LIVE_OVER = 0.05
 
 
 def sha256(p: Path) -> str:
@@ -137,6 +147,43 @@ def ecoli_site_rates(samples: pd.DataFrame, sites: pd.DataFrame, years: tuple[in
     return {"rate": out, "years": list(years), "months_seen": months}
 
 
+def eligible_spots(spots: list[dict], upstream: dict[str, list[dict]], listed: set[str]) -> pd.DataFrame:
+    """Every spot in the build, eligible (1) when it is in spots.csv or spots-osm.csv (`listed`) and has at least one
+    monitored overflow, with or without a live feed, in its upstream file; else 0 with the reason. Each spot's kind of
+    water, the company of its overflow with the largest weight, its overflows, and the share of its weight on
+    overflows with no live feed; over NO_LIVE_OVER it is never observed."""
+    rows = []
+    for s in spots:
+        ovs = upstream.get(s["id"]) or []
+        w = np.array([float(o.get("weight") or 0.0) for o in ovs])
+        live = np.array([bool(o.get("has_live")) for o in ovs], dtype=bool)
+        share = float(w[~live].sum() / w.sum()) if len(w) and w.sum() > 0 else None
+        top = ovs[int(np.argmax(w))] if len(ovs) else {}
+        reason = "not_in_spot_files" if s["id"] not in listed else "" if ovs else "no_overflow_upstream"
+        rows.append({"id": s["id"], "name": s.get("name") or "", "water": s.get("kind") or "",
+                     "company": top.get("company") or "", "overflows": len(ovs),
+                     "share_no_live": "" if share is None else f"{share:.4f}",
+                     "never_observed": int(share is not None and share > NO_LIVE_OVER + 1e-12),
+                     "eligible": int(reason == ""), "reason": reason})
+    return pd.DataFrame(rows, columns=SPOT_LIST_COLUMNS).sort_values("id", kind="stable").reset_index(drop=True)
+
+
+def spot_list_header(spots_path: Path, generated_at: str, up_files: list[Path], counts: dict) -> str:
+    lines = [
+        "SwimSignal 2027 evaluation: the frozen eligible spots of scores S1 and S2 (docs/PREREGISTRATION-2027.md,",
+        "amendments 1 and 2). Made by scripts/make_eval2027.py --spot-list from the tagged build. Do not edit: the protocol",
+        "records this file's SHA-256. id: the spot's id on the site. water: river or lake. company: the company of the",
+        "spot's overflow with the largest weight. overflows: monitored overflows upstream, with or without a live feed.",
+        "share_no_live: the share of the spot's weight on overflows with no live feed. never_observed: 1 when that share",
+        "is over 0.05. eligible: 1, or 0 with the reason (no_overflow_upstream, not_in_spot_files).",
+        f"Inputs: spots.json generated_at {generated_at}, SHA-256 {sha256(spots_path)};",
+        f"{len(up_files)} upstream/<spot id>.json files from the same build, combined SHA-256 {dir_sha256(up_files)}.",
+        f"Counts: {counts['eligible']} eligible, {counts['never_observed']} of them never observed; {counts['excluded']} excluded.",
+        "Lines that start with # are notes: skip them when reading (evaluate_2027.read_published).",
+    ]
+    return "".join(f"# {x}\n" for x in lines)
+
+
 def header(spots_path: Path, generated_at: str, up_files: list[Path], counts: dict) -> str:
     lines = [
         "SwimSignal 2027 evaluation: the frozen eligible sites (docs/PREREGISTRATION-2027.md). Made by",
@@ -160,10 +207,13 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--spots", type=Path, required=True)
     ap.add_argument("--upstream", type=Path, required=True)
-    ap.add_argument("--edm", type=Path, required=True)
-    ap.add_argument("--ecoli-samples", type=Path, required=True)
+    ap.add_argument("--edm", type=Path)
+    ap.add_argument("--ecoli-samples", type=Path)
+    ap.add_argument("--spot-list", action="store_true", help="make only spots.csv, the eligible spots of S1 and S2")
     ap.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args(argv)
+    if not a.spot_list and (a.edm is None or a.ecoli_samples is None):
+        ap.error("the arguments --edm and --ecoli-samples are required")
 
     sj = json.loads(a.spots.read_text())
     spots = sj["spots"]
@@ -177,6 +227,17 @@ def main(argv: list[str] | None = None) -> None:
     unknown = sorted(set(upstream) - {s["id"] for s in spots})
     if unknown:
         raise SystemExit(f"upstream files for spots not in spots.json: {unknown}")
+    if a.spot_list:
+        listed = {i for f in SPOT_FILES if f.exists() for i in pd.read_csv(f, usecols=["id"])["id"].astype(str)}
+        sl = eligible_spots(spots, upstream, listed)
+        ok = sl["eligible"] == 1
+        counts = {"eligible": int(ok.sum()), "never_observed": int((ok & (sl["never_observed"] == 1)).sum()), "excluded": int((~ok).sum())}
+        a.out.mkdir(parents=True, exist_ok=True)
+        with open(a.out / "spots.csv", "w", newline="") as fh:
+            fh.write(spot_list_header(a.spots, sj["generated_at"], up_files, counts))
+            sl.to_csv(fh, index=False, lineterminator="\n")
+        print(f"spots.csv: {counts}; SHA-256 {sha256(a.out / 'spots.csv')}")
+        return
     bathing = json.loads(BATHING.read_text())
     ov = eligible_overflows(spots, upstream)
     bw = eligible_bathing_waters(spots, bathing)

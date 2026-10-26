@@ -1013,6 +1013,65 @@ def publish_scored_csv(site: Path, credits: dict, root: str) -> int | None:
     return n
 
 
+def spots_csv_header(credits: dict, root: str) -> str:
+    """The comment lines above data/verification_spots_live.csv (docs/PREREGISTRATION-2027.md, amendment 1, file D):
+    what a row is, the columns, and the credits, since the observed column is built from the water companies' data."""
+    lic = "; ".join(f"{k} {v}" for k, v in credits["licences"].items())
+    lines = [
+        "SwimSignal live verification of the spot level: one row per spot with a monitored overflow upstream, target day and lead",
+        f"0-4, the rows behind \"How the level itself has done\" on the Accuracy page ({root}verification.html#spot-level).",
+        "Columns: spot_id, the spot's id on the site; day, the target day (Europe/London); lead, days from the issue day to the",
+        "target day (0 is the same day); issued_at, when the forecast was issued (the latest by 08:00 local time on the issue",
+        "day); forecast, the spot's sewage spill exposure index as logged; observed, the same index with the spills that",
+        "happened in place of the forecast ones: 1 - prod(1 - w x e) over the overflows, w each overflow's weight in that",
+        "forecast and e its observed spill days moved later by its logged travel time, empty when not observed; climatology,",
+        "the same index from each overflow's long-run spill rate for the month (the reference); covered, the share of the spot's weight",
+        "whose overflows were observed on every day that reaches the target day (observed needs 0.95); reason, why there is",
+        "no observation, else empty; version, the forecast's model stamp. Empty issued_at, forecast and version: no forecast",
+        "by 08:00 on the issue day. Values have 6 decimal places, and the Accuracy page's figures are computed from them as",
+        "written. A level is the site's: the value rounded to 3 places, times 100, rounded half up; Low risk under 15,",
+        "Moderate risk from 15, High risk from 40, Very high risk from 70.",
+        f"Pre-registered rules: https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md (amendment 1). Method: {root}methods.html",
+        "Lines that start with # are notes: skip them when reading (pandas: comment='#'; R: comment.char='#').",
+        f"Credits: {credits['attribution']}",
+        credits["modified"],
+        f"Licences: {lic}. Full credits: {credits['full']}",
+    ]
+    return "".join(f"# {x}\n" for x in lines)
+
+
+def publish_spots_csv(site: Path, credits: dict, root: str) -> int | None:
+    """data/verification_spots_live.csv: the spot-level rows (forecast_log.SPOTS_CSV in the state directory) under a
+    header comment with the credits. Published only when its row count equals live.spots_live.csv.rows in the
+    verification.json this build has just written; otherwise any old copy is removed and the page's link with it,
+    as publish_scored_csv does. Returns the number of rows published, or None."""
+    from dipcast.forecast_log import SPOTS_CSV
+    dst = site / "data" / SPOTS_CSV
+    ver = site / "data" / "verification.json"
+    spots = (json.loads(ver.read_text()).get("live") or {}).get("spots_live") or {}
+    src = config.state_read(SPOTS_CSV)
+
+    def withdraw():
+        dst.unlink(missing_ok=True)
+        if spots.get("csv"):
+            d = json.loads(ver.read_text())
+            d["live"]["spots_live"].pop("csv", None)
+            ver.write_text(json.dumps(d, default=str))
+
+    if not spots.get("csv") or not src.exists():
+        withdraw()
+        log.info("no spot-level rows to publish: the live scorer has not written %s yet", SPOTS_CSV)
+        return None
+    body = src.read_text()
+    n = max(body.count("\n") - 1, 0)   # rows after the column names; no field holds a line break
+    if n != spots["csv"].get("rows"):
+        withdraw()
+        announce(f"{SPOTS_CSV} has {n} rows but the spot-level scores count {spots['csv'].get('rows')}: not published")
+        return None
+    dst.write_text(spots_csv_header(credits, root) + body)
+    return n
+
+
 CLASSIFICATIONS = config.RAW / "bathing_water_classifications.json"
 
 
@@ -1143,6 +1202,65 @@ def attach_upgrades(results: list[dict], path: Path = UPGRADES, years: dict[str,
                             **({"completed": u["completed"]} if u.get("completed") else {}),
                             **({"returns_to": years[u["site_id"]]} if u["site_id"] in years else {})}
             seen.add(u["site_id"])
+            hit = True
+        spots += hit
+    return {"overflows": len(seen), "spots": spots, "warnings": warnings}
+
+
+DRY_WEATHER = config.RAW / "dry_weather_spills.csv"
+
+
+def read_dry_weather(path: Path = DRY_WEATHER) -> dict[str, dict]:
+    """data/raw/dry_weather_spills.csv (scripts/make_dry_weather_spills.py) by site id: each overflow's dry
+    spill-days and dry days in one year. Raises ValueError on a file the note could not word truthfully: more
+    than one year, a count that is not a whole number, more dry spill-days than dry days, or an overflow listed
+    twice."""
+    import csv
+    rows = list(csv.DictReader(line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")))
+    out: dict[str, dict] = {}
+    years = {r.get("year") for r in rows}
+    if len(years) > 1:
+        raise ValueError(f"{path.name}: more than one year ({', '.join(sorted(map(str, years)))})")
+    for r in rows:
+        sid = (r.get("site_id") or "").strip()
+        try:
+            year, k, n = int(r["year"]), int(r["dry_spill_days"]), int(r["dry_days"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError(f"{path.name}: {sid or 'a row'}: a count or the year is not a whole number") from None
+        bad = ("no site_id" if not sid else "listed twice" if sid in out else "no company" if not (r.get("company") or "").strip()
+               else "more dry spill-days than dry days" if not 0 <= k <= n else "")
+        if bad:
+            raise ValueError(f"{path.name}: {sid or 'a row'}: {bad}")
+        out[sid] = {"company": r["company"], "year": year, "days": k, "dry_days": n}
+    return out
+
+
+def attach_dry_weather(results: list[dict], path: Path = DRY_WEATHER) -> dict:
+    """`dry_weather` ({year, days, dry_days}) on each overflow in a spot's list that spilled on many of its dry days
+    in the file's year, by the rule tested in docs/DRY-WEATHER-SPILLS-TEST-2026-10.md (dry_weather.noted). The page
+    says it beside the overflow in the test's wording (index.html, dryWeatherNote). Runs after the forecasts, and the
+    spill model never reads the file: the test found the history adds nothing to the forecast, so it is a record of
+    the past, not a risk. A row whose company is not the overflow's is passed over and named in the warnings, as a
+    wrong site id would be. Never stops the build: a bad file leaves every page without the note."""
+    from dipcast.dry_weather import noted
+    try:
+        listed = read_dry_weather(path)
+    except Exception as e:  # noqa: BLE001 - a note beside the forecast must not sink the build
+        return {"overflows": 0, "spots": 0, "warnings": [f"dry-weather spills not shown: {e}"]}
+    seen, spots, warnings = set(), 0, []
+    for r in results:
+        hit = False
+        for c in r.get("contributors") or []:
+            d = listed.get(c.get("site_id"))
+            if d is None or not noted(d["days"], d["dry_days"]):
+                continue
+            if d["company"] != c.get("company"):
+                msg = f"{c['site_id']} is {c.get('company')}'s, not {d['company']}'s: no dry-weather note for it ({path.name})"
+                if msg not in warnings:
+                    warnings.append(msg)
+                continue
+            c["dry_weather"] = {"year": d["year"], "days": d["days"], "dry_days": d["dry_days"]}
+            seen.add(c["site_id"])
             hit = True
         spots += hit
     return {"overflows": len(seen), "spots": spots, "warnings": warnings}
@@ -2692,6 +2810,7 @@ def build(refresh: bool = True) -> dict:
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
+    dry = attach_dry_weather(results)   # notes on past dry-weather spills, from a file: the model never reads them
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -2706,6 +2825,8 @@ def build(refresh: bool = True) -> dict:
     health["algae_checks"], health["classifications"] = n_algae, n_classified
     health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
     health["warnings"] += upgrades["warnings"]
+    health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}
+    health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
@@ -2808,6 +2929,7 @@ def build(refresh: bool = True) -> dict:
         log_build(health, generated)
     (SITE / "data" / "verification.json").write_text(json.dumps({**load_verification(), "credits": credits}, default=str))
     health["scored_rows_published"] = publish_scored_csv(SITE, credits, site_url())
+    health["spot_rows_published"] = publish_spots_csv(SITE, credits, site_url())
     # How the forecast has done at each spot's upstream overflows, from that CSV: before the pages, for data.html.
     from dipcast import spot_scores
     health["spot_scores"] = spot_scores.write(SITE, upstream, generated, credits)

@@ -58,6 +58,15 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   16 November. The map: `-map.json`.
 - [LIVE-RECALIBRATION-TEST-2026-10.md](LIVE-RECALIBRATION-TEST-2026-10.md): two corrections for live
   over-forecasting. **Neither passes,** in the first run and the rerun.
+- [COMPANY-CALIBRATION-TEST-2026-11.md](COMPANY-CALIBRATION-TEST-2026-11.md): per-overflow offsets for the eight
+  companies outside United Utilities, fitted on the live labels (review task A8). **No result yet:** the window is
+  26 October to 22 November 2026, read on or after 25 November. Amendment 2 (25 October) decides by two-way
+  bootstrap intervals, not point comparisons. The offsets: `-offsets.json`.
+- [DRY-WEATHER-SPILLS-TEST-2026-10.md](DRY-WEATHER-SPILLS-TEST-2026-10.md): overflows that spill in dry weather, and
+  whether that history predicts what the spill model misses. **Question 1 no** (the 2024 rate loses to production and
+  the flat rate); **Question 2 fails all four conditions.** Top-overflows table and a page-note proposal. Tables:
+  `-checks.json`, `-companies.csv`, `-overflows.csv`, `-q1-differences.csv`, `-q1-scores.csv`, `-q2-differences.csv`,
+  `-q2-leads.csv`, `-q2-reliability.csv`, `-q2-scores.csv`, `-q2-subsets.csv`, `-top.csv`, `-y2026.csv`.
 - [ENSEMBLE-RAIN-TEST-2026-11.md](ENSEMBLE-RAIN-TEST-2026-11.md): ensemble rain for the listed spots. **No
   result yet:** the window runs 23 October to 19 November 2026, read on or after 21 November.
 
@@ -77,6 +86,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   (population equivalent is not in the source). **Fails** (conditions 1 to 4); stays off.
 - [DIEOFF-WEATHER-TEST-2026-10.md](DIEOFF-WEATHER-TEST-2026-10.md): sunlight and temperature in die-off. **Both
   questions fail;** nothing adopted.
+- [FARM-PRESSURE-TEST-2026-10.md](FARM-PRESSURE-TEST-2026-10.md): the Environment Agency's farm-pollution flag
+  per water body as an E. coli input. **Fails conditions 1, 2, 5 and 6;** nothing adopted. Scores: `-score.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with
@@ -123,13 +134,28 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [OVERFLOW-SPOT-CONFLICTS-2026-10.md](OVERFLOW-SPOT-CONFLICTS-2026-10.md): the three open conflicts that change a
   listed spot. **1 of 3 settled** (South Lane, Ash stays at its live position); nothing moves.
 
+### The coast
+
+- [SEA-CURRENTS-SCOPING-2026-10.md](SEA-CURRENTS-SCOPING-2026-10.md): whether sea currents carrying an overflow's
+  water towards a beach can be tested. **Not yet:** 32,874 coastal samples exist, but there is no coastal model to
+  add currents to. A staged plan, if the coast becomes a priority.
+- [UKMCAS-ORDER-DRAFT-2026-10.md](UKMCAS-ORDER-DRAFT-2026-10.md): the Met Office marine data order form and email,
+  drafted for Ethan. **Not sent;** wait unless the coast becomes a priority.
+
 ### The 2027 season
 
 - [PREREGISTRATION-2027.md](PREREGISTRATION-2027.md): how the May to September 2027 forecasts will be scored,
   fixed before the season. **No result until after the season.**
+- [SPOT-SCORING-RULINGS-2026-10.md](SPOT-SCORING-RULINGS-2026-10.md): the eleven points amendment 1 left open in the
+  spot-level score, each with options, a recommendation and its measured effect. **Signed 25 Oct 2026:** all
+  eleven accepted, in force as amendment 2 of the pre-registration.
 
 ## Checks and records
 
+- [NOISE-AUDIT-2026-10.md](NOISE-AUDIT-2026-10.md): which tests decided on point rules with no allowance for noise,
+  the re-tests that follow, and the rule for new statements. No verdict is changed.
+- [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2
+  was fitted at recency 0.25, shown by reproducing every stored offset exactly; `train.py`'s default now matches.
 - [ANYPOINT-LINES-2026-10.md](ANYPOINT-LINES-2026-10.md): map clicks answered differently by page and API because
   the page used lines simplified to 30 m. The build now writes full lines.
 - [LIVE-VS-EDM-LABELS-2026-10.md](LIVE-VS-EDM-LABELS-2026-10.md): live spill labels against the EA's start/stop
@@ -147,6 +173,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   overflow data. The annual files are OGL v3.0; the live API's licence has no name.
 - [PE-SOURCES-2026-10.md](PE-SOURCES-2026-10.md): sources looked for a population equivalent per overflow, and
   why that work is parked.
+- [OVERFLOW-DATA-SOURCES-2026-10.md](OVERFLOW-DATA-SOURCES-2026-10.md): storm overflow data not yet used, ranked.
+  No section 82 river-quality data is published yet; no source gives upgrade completion dates; open EA
+  improvement flags, WINEP deadlines, EA sondes and Wessex E. coli samples; Southern and Yorkshire event files
+  without a licence.
 
 ## Design
 
