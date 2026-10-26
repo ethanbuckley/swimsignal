@@ -1385,7 +1385,7 @@ def ask_flood_list(ask=None, sleep=time.sleep, clock=time.monotonic) -> bool:
 
 
 def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=None, workers: int = 8, now=None,
-                      sleep=time.sleep, clock=time.monotonic, outline=None, lake_at=None) -> dict:
+                      sleep=time.sleep, clock=time.monotonic, outline=None, lake_at=None, outline_store=None) -> dict:
     """"Too high to swim", beside the pollution level and never part of it: a high river and a flood
     are a different hazard. After attach_river_levels, each spot gets `flow_state`, a word from the
     gauge on its own river (flows.flow_state: "high" above the usual range, "rising fast" up more
@@ -1468,8 +1468,8 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
         with ThreadPoolExecutor(max_workers=workers) as pool:
             for i, found in zip(failed, pool.map(again, failed), strict=True):
                 out[i] = (*out[i][:2], found)
-    shapes = flood_outlines({a.get("area_id") for _, _, found in out for a in found or [] if isinstance(a, dict)},
-                            outline, workers, clock) if any(found for _, _, found in out) else {}
+    shapes, capped = flood_outlines({a.get("area_id") for _, _, found in out for a in found or [] if isinstance(a, dict)},
+                                    outline, workers, clock, store=outline_store) if any(found for _, _, found in out) else ({}, [])
     lake_at = lake_at or lake_outline_at
     counts = {"river_high": 0, "river_rising_fast": 0, "flood_alerts": 0, "flood_alerts_unchecked": 0,
               "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0}
@@ -1490,42 +1490,59 @@ def attach_flow_state(results: list[dict], trend=None, alerts=None, any_alerts=N
         counts["flood_alerts_unmatched"] += bool(r["flood_alerts_unmatched"])
     counts["flood_outlines"] = sum(v is not None for v in shapes.values())
     counts["flood_outlines_missing"] = sum(v is None for v in shapes.values())
+    counts["flood_outlines_capped"] = len(capped)
     return counts
 
 
 FLOOD_OUTLINES_DIR = "flood_areas"   # under config.CACHE: the build's own outline cache, and the only place pruned
 
 
-def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.monotonic, prune=None) -> dict:
-    """Each in-force area's outline (flows.flood_area_outline: kept by area id in
-    config.CACHE/flood_areas, asked for again after a week, one GET per area), all within
-    FLOOD_BUDGET_S. An area with no outline by then (a failed fetch with nothing kept under 30 days,
-    no time left, an id that is not one) maps to None: its alerts are never named (rule 4). Then the
-    cache is pruned (flows.prune_flood_outlines), keeping this build's areas. Tests give `outline`
-    (and `prune`): with an `outline` given and no `prune`, nothing on disk is touched."""
+def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.monotonic, prune=None,
+                   store=None) -> tuple[dict, list[str]]:
+    """Each in-force area's outline, and the areas not asked for because of the per-build cap.
+
+    In the build, through the outline cache (flows.OutlineStore, in config.CACHE/flood_areas): each
+    area asked for at most once a week, success or failure; at most FLOOD_OUTLINE_FETCHES_PER_BUILD
+    asked in one build, those with no usable outline first; all within FLOOD_BUDGET_S. An area with no
+    outline by then (asked this week and failed, past the cap, out of time, or nothing kept under 30
+    days) maps to None: its alerts are never named (rule 4). Then the cache is pruned
+    (flows.prune_flood_outlines), keeping this build's areas. Tests give `store` (and `prune`), or
+    `outline` (aid, timeout) for the outlines themselves: with an `outline` given and no `prune`,
+    nothing on disk is touched."""
     from concurrent.futures import ThreadPoolExecutor
 
     from dipcast.ingest import flows
-    if outline is None:
-        cache = config.CACHE / FLOOD_OUTLINES_DIR
-        outline = lambda aid, timeout: flows.flood_area_outline(aid, cache, timeout)  # noqa: E731
-        prune = prune or (lambda keep: flows.prune_flood_outlines(cache, keep))
     ids = sorted(a for a in area_ids if a)
     deadline = clock() + FLOOD_BUDGET_S
+    capped: list[str] = []
+    if outline is None:
+        cache = config.CACHE / FLOOD_OUTLINES_DIR
+        store = store or flows.OutlineStore(cache)
+        prune = prune or (lambda keep: flows.prune_flood_outlines(cache, keep))
+        shapes, ask, capped = store.plan(ids)
+        fallback = dict(store._usable)
+        outline = store.fetch
+    else:
+        shapes, ask, fallback = {}, ids, {}
 
     def one(aid: str):
         left = deadline - clock()
-        if left < 1:
+        if left < 1:   # not started: not asked, so not recorded as asked
             log.warning("flood outline %s: no time left", aid)
-            return None
+            return fallback.get(aid)
         try:
             return outline(aid, min(left, FLOOD_BUDGET_S - FLOOD_RETRY_S))
         except Exception as e:  # noqa: BLE001 - a missing outline is rule 4, not a failed build
             log.warning("flood outline %s: %s", aid, e)
-            return None
+            return fallback.get(aid)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        shapes = dict(zip(ids, pool.map(one, ids), strict=True))
+        shapes.update(zip(ask, pool.map(one, ask), strict=True))
+    if store is not None:
+        store.finish()
+    if capped:
+        log.warning("flood outlines: %d areas not asked this build (at most %d a build)", len(capped),
+                    flows.FLOOD_OUTLINE_FETCHES_PER_BUILD)
     if prune:
         try:
             removed = prune(set(ids))
@@ -1533,19 +1550,23 @@ def flood_outlines(area_ids: set, outline=None, workers: int = 8, clock=time.mon
                 log.info("flood outline cache: %d old entries removed", len(removed))
         except Exception as e:  # noqa: BLE001 - a cache left unpruned is not a failed build
             log.warning("flood outline cache not pruned: %s", e)
-    return shapes
+    return shapes, capped
 
 
 def flood_warnings(counts: dict, n_spots: int) -> list[str]:
     """The build warnings the flood checks raise (announced with the others)."""
+    from dipcast.ingest import flows
     out = []
     if counts.get("flood_alerts_unchecked"):
         out.append(f"flood alerts not checked for {counts['flood_alerts_unchecked']} of {n_spots} spots: "
                    "the Environment Agency did not answer; their pages say so")
-    if counts.get("flood_outlines_missing"):
-        n = counts["flood_outlines_missing"]
-        out.append(f"flood outlines: {n} area{'s' if n != 1 else ''} unavailable (fetch failed, no cached outline under "
-                   "30 days); their alerts are not named, only counted")
+    n, capped = counts.get("flood_outlines_missing", 0), counts.get("flood_outlines_capped", 0)
+    if n or capped:
+        words = f"flood outlines: {n} area{'s' if n != 1 else ''} unavailable (fetch failed or not asked, no cached outline under 30 days)"
+        if capped:
+            words += (f"; {capped} area{'s' if capped != 1 else ''} not asked this build "
+                      f"(at most {flows.FLOOD_OUTLINE_FETCHES_PER_BUILD} a build)")
+        out.append(words + "; alerts without an outline are not named, only counted")
     return out
 
 

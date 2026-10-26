@@ -242,7 +242,8 @@ def test_attach_flow_state_words_and_flood_alerts():
     assert by["down"]["flood_alerts"] is None and by["high"]["flood_alerts"] == []
     assert by["down"]["flood_alerts_other"] is None and by["high"]["flood_alerts_other"] == 0   # unchecked is never "none"
     assert counts == {"river_high": 1, "river_rising_fast": 1, "flood_alerts": 1, "flood_alerts_unchecked": 1,
-                      "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0, "flood_outlines": 1, "flood_outlines_missing": 0}
+                      "flood_alerts_other_water": 0, "flood_alerts_unmatched": 0, "flood_outlines": 1, "flood_outlines_missing": 0,
+                      "flood_outlines_capped": 0}
     assert len(asked_trend) == 1   # asked only where it could set the word: current, own river, not already high
     assert all("days" not in s and "now" not in s for s in spots)   # nothing here touches the pollution level
 
@@ -792,9 +793,10 @@ def test_a_cached_outline_31_days_old_is_not_used_when_the_refresh_fails(tmp_pat
 def test_no_cached_outline_and_a_failed_fetch_is_no_outline(tmp_path):
     asked = []
     assert flows.flood_area_outline("122WAF940", tmp_path, now=0.0, get=_down(asked)) is None and len(asked) == 1
-    assert flows.flood_area_outline("113WACT1B", tmp_path, get=_ea(asked, status=500)) is None
-    assert flows.flood_area_outline("113WACT1B", tmp_path, get=_ea(asked, text="{}")) is None   # unreadable
-    assert not any(tmp_path.iterdir())   # nothing kept from a failure
+    assert flows.flood_area_outline("113WACT1B", tmp_path, now=0.0, get=_ea(asked, status=500)) is None
+    assert flows.flood_area_outline("011WAFDW", tmp_path, now=0.0, get=_ea(asked, text="{}")) is None   # unreadable
+    assert len(asked) == 3
+    assert sorted(p.name for p in tmp_path.iterdir()) == [flows.FLOOD_OUTLINE_ATTEMPTS]   # no outline kept, the attempts are
 
 
 def test_a_redirect_is_a_failure_and_its_location_is_never_asked(tmp_path):
@@ -872,7 +874,7 @@ def test_the_build_prunes_only_its_own_cache_and_never_when_a_test_gives_the_out
     monkeypatch.setattr(bs.config, "CACHE", tmp_path)
     calls = []
     monkeypatch.setattr(flows, "prune_flood_outlines", lambda cache, keep: calls.append((cache, keep)) or [])
-    monkeypatch.setattr(flows, "flood_area_outline", lambda aid, cache, timeout: None)
+    monkeypatch.setattr(flows.OutlineStore, "fetch", lambda self, aid, timeout=None: None)
     bs.flood_outlines({"011WAFDW"}, workers=1)
     assert calls == [(tmp_path / "flood_areas", {"011WAFDW"})]   # the one directory, keeping this build's areas
     calls.clear()
@@ -890,7 +892,8 @@ def test_unavailable_outlines_are_counted_and_announced(monkeypatch):
     assert counts["flood_outlines_missing"] == 1
     assert (spots[0]["flood_alerts"], spots[0]["flood_alerts_unmatched"]) == ([], 1)   # the Wharfe alert, not named
     assert bs.flood_warnings(counts, 1) == [
-        "flood outlines: 1 area unavailable (fetch failed, no cached outline under 30 days); their alerts are not named, only counted"]
+        "flood outlines: 1 area unavailable (fetch failed or not asked, no cached outline under 30 days); "
+        "alerts without an outline are not named, only counted"]
     assert bs.flood_warnings({"flood_alerts_unchecked": 2}, 5)[0].startswith("flood alerts not checked for 2 of 5 spots")
     assert bs.flood_warnings({}, 5) == []
 
@@ -975,7 +978,100 @@ def test_the_outlines_are_all_asked_within_the_budget():
         clock.t += 12.0
         return OUTLINES.get(aid)
 
-    got = bs.flood_outlines({"122WAF940", "122WAF942", "113WACT1B", "011WAFDW"}, slow, workers=1, clock=clock)
+    got, capped = bs.flood_outlines({"122WAF940", "122WAF942", "113WACT1B", "011WAFDW"}, slow, workers=1, clock=clock)
+    assert capped == []
     assert [a for a, _ in asked] == ["011WAFDW", "113WACT1B", "122WAF940"]   # the fourth would start after 30 s
     assert got["122WAF942"] is None and got["011WAFDW"] is not None
     assert [t for _, t in asked] == [10.0, 10.0, 6.0]
+
+
+# ------------------------------------------------------------------------------ at most one try a week
+# Each area is asked for at most once per FLOOD_OUTLINE_REFRESH_S, success or failure, and at most
+# FLOOD_OUTLINE_FETCHES_PER_BUILD in one build. A fake clock (`now`) and a fake get: no network.
+HOUR = 3600.0
+
+
+def test_a_failed_fetch_is_not_asked_again_for_seven_days(tmp_path):
+    asked = []
+    t0 = 1000.0
+    assert flows.flood_area_outline("122WAF940", tmp_path, now=t0, get=_down(asked)) is None and len(asked) == 1
+    for later in (0.5 * HOUR, 6 * DAY + 23 * HOUR):   # the next build, and the last before a week
+        assert flows.flood_area_outline("122WAF940", tmp_path, now=t0 + later, get=_down(asked)) is None
+        assert len(asked) == 1, later   # not asked: its alerts stay counted or neutral, never named
+    flows.flood_area_outline("122WAF940", tmp_path, now=t0 + 7 * DAY, get=_down(asked))
+    assert len(asked) == 2   # a week on, asked once more
+    assert json.loads((tmp_path / flows.FLOOD_OUTLINE_ATTEMPTS).read_text()) == {"122WAF940": t0 + 7 * DAY}
+
+
+def test_a_successful_fetch_is_not_asked_again_for_seven_days(tmp_path):
+    asked = []
+    t0 = 1000.0
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t0, get=_ea(asked)) is not None
+    for later in (0.5 * HOUR, 6 * DAY + 23 * HOUR):
+        assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t0 + later, get=_ea(asked)) is not None
+    assert len(asked) == 1
+    flows.flood_area_outline("011FWFNC6KC", tmp_path, now=t0 + 7 * DAY, get=_ea(asked))
+    assert len(asked) == 2
+
+
+def test_with_the_attempt_blocked_an_outline_is_used_up_to_30_days_old_and_not_after(tmp_path):
+    asked = []
+    flows.flood_area_outline("011FWFNC6KC", tmp_path, now=0.0, get=_ea(asked))   # kept at day 0
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=25 * DAY, get=_down(asked)) is not None   # failed: kept, 25 days
+    assert len(asked) == 2
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=29 * DAY, get=_down(asked)) is not None   # blocked; 29 days: used
+    assert flows.flood_area_outline("011FWFNC6KC", tmp_path, now=31 * DAY, get=_down(asked)) is None   # blocked; 31 days: rule 4
+    assert len(asked) == 2   # neither was asked
+
+
+def test_more_in_force_areas_than_the_cap_asks_exactly_the_cap_missing_outlines_first(tmp_path, monkeypatch):
+    bs = _build_site()
+    now = 100 * DAY
+    _entry(tmp_path, "122WAF910", now - 10 * DAY)   # kept, due a refresh
+    _entry(tmp_path, "122WAF920", now - 20 * DAY)   # kept, older
+    missing = ["011FWFNC6KC", "011WAFDW", "113WACT1B"]   # no outline kept
+    areas = {"122WAF910", "122WAF920", *missing}
+    asked = []
+    store = flows.OutlineStore(tmp_path, now=now, get=_ea(asked), cap=4)
+    shapes, capped = bs.flood_outlines(areas, workers=1, store=store, prune=lambda keep: [])
+    assert sorted(a["url"].split("/")[-2] for a in asked) == sorted([*missing, "122WAF920"])   # missing first, then the oldest
+    assert capped == ["122WAF910"] and shapes["122WAF910"] is not None   # its kept outline, 10 days old
+    record = json.loads((tmp_path / flows.FLOOD_OUTLINE_ATTEMPTS).read_text())
+    assert sorted(record) == sorted([*missing, "122WAF920"])   # the capped area is not recorded as asked
+
+    # Over the cap with no outline kept: not asked, not recorded, no outline, counted and announced.
+    cache = tmp_path / "second"
+    asked.clear()
+    alerts = [{"severity_level": 3, "severity": "Flood alert", "area": f"Area {a}", "area_id": a, "waters": ["River Wharfe"],
+               "tidal": False} for a in ("122WAF940", "122WAF942", "113WACT1B")]
+    spots = [dict(SPOTS["wharfe-burnsall"])]
+    counts = bs.attach_flow_state(spots, trend=lambda m: [], alerts=lambda lat, lon: alerts, any_alerts=lambda: True, workers=1,
+                                  now=NOW, lake_at=_lake_at, outline_store=flows.OutlineStore(cache, now=now, get=_ea(asked), cap=2))
+    assert len(asked) == 2 and counts["flood_outlines_capped"] == 1
+    assert sorted(json.loads((cache / flows.FLOOD_OUTLINE_ATTEMPTS).read_text())) == ["113WACT1B", "122WAF940"]
+    assert spots[0]["flood_alerts"] == []   # the capped one has no outline: never named
+    assert bs.flood_warnings(counts, 1)[0].endswith(
+        "; 1 area not asked this build (at most 32 a build); alerts without an outline are not named, only counted")
+    assert flows.FLOOD_OUTLINE_FETCHES_PER_BUILD == 32
+
+
+def test_prune_drops_old_attempts_for_areas_not_in_force_and_touches_nothing_else(tmp_path):
+    cache = tmp_path / "flood_areas"
+    cache.mkdir()
+    now = 100 * DAY
+    record = cache / flows.FLOOD_OUTLINE_ATTEMPTS
+    record.write_text(json.dumps({"122WAF940": now - 31 * DAY, "122WAF942": now - 29 * DAY, "113WACT1B": now - 90 * DAY,
+                                  "../x": now, "011WAFDW": "soon"}))
+    backup = cache / "_attempts.json.bak"
+    backup.write_text("{}")
+    outside = tmp_path / flows.FLOOD_OUTLINE_ATTEMPTS
+    outside.write_text(json.dumps({"122WAF940": 0.0}))
+    removed = flows.prune_flood_outlines(cache, keep={"113WACT1B"}, now=now)
+    assert removed == [flows.FLOOD_OUTLINE_ATTEMPTS]
+    assert json.loads(record.read_text()) == {"122WAF942": now - 29 * DAY, "113WACT1B": now - 90 * DAY}
+    assert backup.read_text() == "{}" and json.loads(outside.read_text()) == {"122WAF940": 0.0}
+    assert flows.prune_flood_outlines(cache, keep={"113WACT1B"}, now=now) == []   # nothing more to drop: not rewritten
+    # A record that is a link is never followed or rewritten.
+    record.unlink()
+    record.symlink_to(outside)
+    assert flows.prune_flood_outlines(cache, now=now) == [] and json.loads(outside.read_text()) == {"122WAF940": 0.0}
