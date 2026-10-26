@@ -1833,12 +1833,13 @@ def home_lead(n: int) -> str:
 
 
 def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
-              feed: bool = False) -> str:
+              feed: bool = False, issued: pd.Timestamp | None = None) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
     <head>, and its share card (card: path and alt, write_spot_cards) as the preview picture. In the body, top: the spot's answer and five days as the page's script draws them
     (prerender_spots), for crawlers, readers without scripts and the moment before the script runs.
     Without it, its name under the sky, as the answer will be (see home_lead). feed: link its Atom feed
-    (write_feeds)."""
+    (write_feeds). issued: the forecast's issue time, which the note for readers without scripts names
+    (noscript_note)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
@@ -1851,15 +1852,41 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
         # opens as a page"), so each screen asks early for the picture it shows, and only that one.
         page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
-        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet>{top}<noscript><p class="muted">{NOSCRIPT}</p></noscript></div>', 1)
+        # The note goes before the answer: "Today" and "right now" in it are the issue time's, and a reader
+        # without scripts meets them first. The script keeps only the answer's element (overBuilt), so the
+        # note goes wherever it stands.
+        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{escape(noscript_note(issued))}</p></noscript>{top}</div>', 1)
     return page.replace(LOADING, '<div id="result" data-nosnippet><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
                                  f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
 
 
-# Under a built spot page's five days, for a reader without scripts: what they are seeing, and what not.
+# Above a built spot page's answer, for a reader without scripts: what they are seeing, and what not.
 NOSCRIPT = ("This is the forecast as it was issued. With JavaScript on, the page updates it and adds the map, "
             "the overflows upstream and the rest of the detail.")
+
+
+def noscript_note(issued: pd.Timestamp | None) -> str:
+    """The note for readers without scripts. The built answer says "Today", "right now" and "Issued Sun
+    17:48" as at the issue time, and a page can be read days later; so the note names the day, date and
+    time in UK time, and says those words mean then. Without a readable time, NOSCRIPT alone."""
+    try:
+        t = pd.Timestamp(issued).tz_convert("Europe/London") if issued is not None else None
+    except (TypeError, ValueError):
+        t = None
+    if t is None or pd.isna(t):
+        return NOSCRIPT
+    return (f"This forecast was issued on {t:%A} {t.day} {t:%B %Y} at {t:%H:%M} UK time. On this copy, "
+            "“Today” and “right now” mean then, and the levels may have changed since. " + NOSCRIPT.split(". ", 1)[1])
+
+
+def built_issue_time(site: Path) -> pd.Timestamp | None:
+    """The forecast's issue time from this build's data/spots.json, the file prerender_spots reads, so
+    the note and the built words agree. None if it cannot be read."""
+    try:
+        return pd.Timestamp(json.loads((site / "data" / "spots.json").read_text())["generated_at"])
+    except (OSError, KeyError, TypeError, ValueError):
+        return None
 
 
 def prerender_spots(site: Path, root: str) -> dict[str, str]:
@@ -2319,6 +2346,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copy(WATERS, site / "data" / "waters.json")
     shutil.rmtree(site / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
     tops = prerender_spots(site, root)
+    issued = built_issue_time(site)   # the time the built answers are as at (the note without scripts)
     ids = []
     for r in results:
         if not SPOT_ID.fullmatch(str(r["id"])):
@@ -2326,7 +2354,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             continue
         (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
-            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds), token))
+            (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds,
+            issued=issued), token))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     paged = [r for r in results if r["id"] in set(ids)]

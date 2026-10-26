@@ -165,7 +165,12 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
     # Issued when, without how long ago, which would be wrong by the time the page is read.
     assert '<p class="issued">Issued Tue 08:00</p>' in page
-    assert f"<noscript><p class=\"muted\">{bs.NOSCRIPT}</p></noscript>" in page
+    # Above the answer, for a reader without scripts: the day and time "Today" and "right now" mean.
+    note = "This forecast was issued on Tuesday 29 September 2026 at 08:00 UK time. On this copy, \u201cToday\u201d and " \
+           "\u201cright now\u201d mean then, and the levels may have changed since. With JavaScript on, the page updates it " \
+           "and adds the map, the overflows upstream and the rest of the detail."
+    assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
+    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d">Today</span>')
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
@@ -1081,3 +1086,29 @@ def test_every_spot_with_a_page_is_linked_from_a_page_search_engines_can_read(tm
     # Each spot's overflow history names its own address as canonical.
     prof = (tmp_path / "spot" / "tarn" / "profile" / "index.html").read_text().split("</head>")[0]
     assert '<link rel="canonical" href="https://example.org/swim/spot/tarn/profile/">' in prof and '<meta name="description" content="The' in prof
+
+
+def test_the_note_without_scripts_names_the_issue_time_in_uk_time():
+    """The built answer says "Today", "right now" and "Issued Sun 17:48" as at the issue time; a page
+    read days later without scripts had only "This is the forecast as it was issued", under the five
+    days (26 Oct 2026). The note names the day, date and time, in UK time either side of a clock change,
+    and falls back to the old words when the time cannot be read."""
+    bs = _build_site()
+    q = "\u201cToday\u201d and \u201cright now\u201d mean then"
+    gmt = bs.noscript_note(pd.Timestamp("2026-10-25T17:48:31+00:00"))
+    assert gmt.startswith("This forecast was issued on Sunday 25 October 2026 at 17:48 UK time.") and q in gmt
+    assert gmt.endswith("With JavaScript on, the page updates it and adds the map, the overflows upstream and the rest of the detail.")
+    assert bs.noscript_note(pd.Timestamp("2026-07-01T23:30:00+00:00")).startswith("This forecast was issued on Thursday 2 July 2026 at 00:30 UK time.")
+    assert bs.noscript_note(pd.Timestamp("2026-10-25T00:30:00Z")).startswith("This forecast was issued on Sunday 25 October 2026 at 01:30 UK time.")
+    for bad in (None, pd.Timestamp("2026-10-25 17:48"), "not a time", pd.NaT):
+        assert bs.noscript_note(bad) == bs.NOSCRIPT, bad
+
+
+def test_the_issue_time_comes_from_the_file_the_built_answers_are_made_from(tmp_path):
+    bs = _build_site()
+    assert bs.built_issue_time(tmp_path) is None
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "spots.json").write_text("{}")
+    assert bs.built_issue_time(tmp_path) is None
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-10-25T17:48:31+00:00"}))
+    assert bs.built_issue_time(tmp_path) == pd.Timestamp("2026-10-25T17:48:31+00:00")
