@@ -603,3 +603,19 @@ def test_byte_cap_reached_refuses_the_next_request_before_it_starts(tmp_path):
     c2.request("GET", S3)
     with pytest.raises(net.CapReached, match="per run"):
         c2.request("GET", S3)
+
+
+def test_fetch_asks_one_sampling_point_at_a_time(tmp_path, monkeypatch):
+    import dipcast.ingest.wqa as wqa
+    calls = []
+
+    def fake(points, since):
+        calls.append(list(points))
+        return [{"wqa_point": points[0], "sample_time": "2025-07-01T10:00:00", "result": "No material present",
+                 "purpose": "MS"}]
+
+    monkeypatch.setattr(wqa, "fetch_algae", fake)
+    (tmp_path / "features.parquet").write_bytes(b"x")
+    stage2.fetch(tmp_path, pr.sha256(tmp_path / "features.parquet"))
+    assert all(len(c) == 1 for c in calls) and len(calls) == 18
+    assert len(pd.read_parquet(tmp_path / "checks.parquet")) == 18

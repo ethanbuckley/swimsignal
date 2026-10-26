@@ -634,6 +634,13 @@ A record of what was done and seen while the test ran. It changes nothing above 
   Mixed Ponds, and Henleaze Lake. Core pixels per site and tile: `docs/LAKE-ALGAE-SATELLITE-TEST-2026-10-sizes.json`.
   **Features file SHA-256: `41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e`**, committed here before
   stage 2 fetches a single EA check. No reading in the file has been looked at.
+- **26 October, 21:42 UTC: Amendment A3, the EA fetch.** Stage 2's one fetch failed before writing anything: the
+  Water Quality Archive answered HTTP 400 to all 18 points in one request. Its message: "Unless querying a single
+  sampling point's observations, the maximum temporal range is 1 year." (The site's own `refresh_algae` asks only
+  from the current season's 1 May, so it is not affected.) Finding that took a few probe requests, read for status
+  codes, plus two single-point replies whose first 300 characters were printed: they showed Rutland Water Whitwell
+  Creek has 81 algae checks since 1 May 2020 and 16 since 1 May 2026, counts only, no level. **A3:** stage 2 fetches
+  one sampling point a request (`stage2.fetch`, tested). The checks are the same; no check had been fetched or saved.
 
 ---
 

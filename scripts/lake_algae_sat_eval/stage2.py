@@ -34,7 +34,9 @@ def fetch(out: Path, features_sha: str) -> None:
     from dipcast.forecast_log import _local_times
     from dipcast.ingest.wqa import fetch_algae
     sites = pr.lake_sites(SITES)
-    rows = fetch_algae(sites["wqa_point"].tolist(), "2020-05-01T00:00:00")
+    # A3: one sampling point a request. The service refuses several points over more than a year ("Unless querying
+    # a single sampling point's observations, the maximum temporal range is 1 year", HTTP 400, 26 October 2026).
+    rows = [r for p in sites["wqa_point"].tolist() for r in fetch_algae([p], "2020-05-01T00:00:00")]
     df = pd.DataFrame(rows, columns=["wqa_point", "sample_time", "result", "purpose"])
     df = df.assign(sample_time=_local_times(df["sample_time"])).dropna(subset=["sample_time"])
     df = df.sort_values(["wqa_point", "sample_time"]).reset_index(drop=True)
