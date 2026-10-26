@@ -263,3 +263,85 @@ def test_no_rule_changes_or_drops_its_input():
     assert list(flags.columns) == ma.FLAG_COLS
     pd.testing.assert_frame_equal(snap, copies[0])
     pd.testing.assert_frame_equal(pl, copies[1])
+
+
+def test_long_runs_with_nothing_discharging_is_empty():
+    assert ma.long_runs(NORMAL.assign(status=0), pd.Series({"UUP1": 1.0})).empty
+    assert ma.long_runs(NORMAL.iloc[0:0], pd.Series({"UUP1": 1.0})).empty
+
+
+def test_longest_events_table():
+    ev = pd.DataFrame({"site_id": ["B", "A", "A"], "event_start": pd.to_datetime(["2025-01-01 00:00"] * 3, utc=True),
+                       "event_end": pd.to_datetime(["2025-01-01 02:00", "2025-01-01 01:00", "2025-01-02 00:00"], utc=True)})
+    t = ma.longest_events_table(ev)
+    assert list(t["site_id"]) == ["A", "B"] and list(t["longest_h"]) == [24.0, 2.0] and list(t["n_events"]) == [2, 1]
+
+
+# ------------------------------------------------------------------ build warnings (feed_warnings)
+# A normal world at POLL (24 Oct, 10:40 BST): Wessex's 20 overflows, a steady poll log, many status changes and
+# rain at every overflow on the 23rd (the local day before), and the same ids on the 23rd as now.
+W_IDS = [f"WXW{i:05d}" for i in range(20)]
+W_SNAP = _snap([_rec(s, company="Wessex Water") for s in W_IDS])
+W_POLLS = _poll_log("Wessex Water", [0.95] * 12).assign(fetched_at=pd.date_range(end=POLL, periods=12, freq="30min"))
+W_HIST = pd.DataFrame({"site_id": W_IDS * 2, "company": "Wessex Water", "status": 0,
+                       "status_start": pd.date_range("2026-10-23 00:30", periods=40, freq="30min", tz="UTC"),
+                       "latest_event_start": pd.NaT, "latest_event_end": pd.NaT, "fetched_at": POLL})
+W_RAIN = pd.DataFrame({"site_id": W_IDS, "day": "2026-10-23", "rain_mm": 12.0})
+W_COV = pd.DataFrame({"site_id": W_IDS, "day": pd.Timestamp("2026-10-23")})
+
+
+def _warn(snap=W_SNAP, pl=W_POLLS, hist=W_HIST, rain=W_RAIN, cov=W_COV):
+    return ma.feed_warnings(snap, pl, hist, rain, cov)
+
+
+def test_feed_warnings_quiet_on_normal_data():
+    inputs = [x.copy() for x in (W_SNAP, W_POLLS, W_HIST, W_RAIN, W_COV)]
+    w, s = _warn()
+    assert w == [] and s["skipped"] == {}
+    assert sorted(s["checked"]) == sorted(ma.FEED_RULES) and set(s["flags"].values()) == {0}
+    for a, b in zip(inputs, (W_SNAP, W_POLLS, W_HIST, W_RAIN, W_COV)):
+        pd.testing.assert_frame_equal(a, b)   # nothing changed
+
+
+def test_feed_warnings_on_each_failure():
+    ahead = W_SNAP.copy()
+    for c in ma.TIME_COLS:
+        ahead[c] = ahead[c] + pd.Timedelta(hours=1)   # local time labelled UTC
+    w, _ = _warn(snap=ahead)
+    assert len(w) == 1 and w[0].startswith("monitor check (future_time): 20 Wessex Water records carry a time up to")
+    assert "WXW00000, WXW00001, WXW00002, WXW00003, WXW00004 and 15 more" in w[0]
+
+    ms = W_SNAP.copy()
+    for c in ma.TIME_COLS:   # epoch seconds read as milliseconds
+        ms[c] = pd.to_datetime(ms[c].astype("int64") // 10**9 // 1000, unit="ms", utc=True)
+    w, _ = _warn(snap=ms)
+    assert [x.split(":")[0] for x in w] == ["monitor check (time_format)"] and "100% of Wessex Water's 20 records" in w[0]
+
+    pl = W_POLLS.copy()
+    pl.loc[pl.index[-1], "n_known"] = 0   # the status field recoded at the latest poll
+    w, _ = _warn(pl=pl)
+    assert len(w) == 1 and w[0].startswith("monitor check (known_share_drop): Wessex Water's share") and "fell to 0.00" in w[0]
+
+    still = W_HIST.assign(status_start=T("2026-10-20 08:00"))   # no status change on the wet 23rd
+    w, _ = _warn(hist=still)
+    assert len(w) == 1 and w[0].startswith("monitor check (company_freeze): Wessex Water's feed recorded 0 status changes on 2026-10-23")
+
+    renamed = W_SNAP.assign(site_id=[f"WSX{i:05d}" for i in range(20)])
+    w, _ = _warn(snap=renamed, hist=pd.concat([W_HIST, renamed[W_HIST.columns]]))
+    assert len(w) == 1 and w[0].startswith("monitor check (id_turnover): Wessex Water has 20 overflow ids now and had 20 on 2026-10-23")
+
+
+def test_feed_warnings_report_only_what_holds_now():
+    pl = W_POLLS.copy()
+    pl.loc[pl.index[-3], "n_known"] = 0   # a drop two polls ago that has since recovered
+    assert _warn(pl=pl)[0] == []
+    dry = W_RAIN.assign(rain_mm=0.5)   # a quiet feed on a dry day says nothing
+    assert _warn(hist=W_HIST.assign(status_start=T("2026-10-20 08:00")), rain=dry)[0] == []
+
+
+def test_feed_warnings_skip_missing_inputs_without_error():
+    w, s = ma.feed_warnings(None)
+    assert w == [] and s["checked"] == [] and set(s["skipped"]) == set(ma.FEED_RULES)
+    w, s = ma.feed_warnings(W_SNAP, None, None, None, None)
+    assert w == [] and sorted(s["checked"]) == ["future_time", "time_format"]
+    assert s["skipped"]["company_freeze"] == "no live history or forecast rain"

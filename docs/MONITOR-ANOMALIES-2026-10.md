@@ -3,6 +3,9 @@
 Written 26 October 2026. A prototype. Nothing in the build, the site, the forecast or the scorer reads it. No
 level, live-feed code path or test window (A8, Option B, live-status shadow) is changed.
 
+Since section 8 (26 October 2026): long_run is a list on the data-quality page, and five whole-feed rules are build
+warnings. Both are display only. The forecast, the scorer and every level are unchanged.
+
 Code: `src/dipcast/monitor_anomalies.py` (the rules), `scripts/monitor_anomalies.py` (the offline report and the
 failures put in by hand), `tests/test_monitor_anomalies.py`.
 
@@ -277,3 +280,71 @@ in by this PR; each item below is a separate follow-up PR.
   Water later (outreach, not done here).
 - **cadence_change:** not wired in.
 - **United Utilities' missing event ends:** decided separately, in PR #384 (do not fix now; measure again).
+
+## 8. Wired in, 26 October 2026
+
+What section 7's first and third items now do. Nothing here changes a status, a count, a risk or a level. The
+forecast still counts a long-running spill as its company reports it.
+
+### long_run on the data-quality page
+
+A fourth list on `quality.html`, after "Records without a current time": "Monitors reporting a spill far longer than
+any on record" (`quality.long_run_section`). One row per flagged overflow: its name (or its id), its id, its company,
+its receiving water, how long it has reported discharging and since when (UK time), and its longest spill in the
+EA's records. Each row links to the feedback form with the id filled in. The link reads "Is this monitor still
+reporting correctly?". It asks the company; it does not call the monitor broken. Rows are by company, longest run
+first.
+
+Inputs, and whether the build has them:
+- **The live statuses** (status, status start, event start, poll time). Yes: the build's overflow table carries
+  them from `live_latest.parquet`. `write_quality_page` already received that table.
+- **Each overflow's longest EA event.** Not before this change. The EA start/stop files
+  (`data/processed/ea_events_*.parquet`, 9 files, about 51 MB, 2,952,154 events) are not in git and not on CI. The
+  build now reads a small file made from them: `data/processed/longest_events.parquet`, 153,696 bytes, one row per
+  overflow (site_id, longest_h, n_events), 12,908 overflows, sha256 33bc399bd6c7. `scripts/make_longest_events.py`
+  makes it from the 16 Oct EA files. It is committed through a `.gitignore` exception. Rerun the script when
+  `scripts/import_ea_events.py` reads a new year.
+- Without that file, the list is left out with a note on the page, and the build warns "quality.html without the
+  long_run list". It is never an error. Without the overflow table, or without its live columns, the list says so.
+
+A dry run on the 26 Oct 11:06 UTC snapshot (a scratch copy; no build run) flagged 6: YWS00425 (54 days, longest 12.8
+h), UUP00274 (18 days, 43 minutes), SWS00007 (28 days, none on record), SWS00803 (13 days, 12.2 h), YWS02029 (13
+days, none on record) and SWS00628 (10 days, 3.4 days). SWS00628 is still the probable false alarm of section 3. The
+question wording is there for cases like it.
+
+### Whole-feed rules as build warnings
+
+`build_site.monitor_feed_checks` runs `monitor_anomalies.feed_warnings` after `build_health`, on refresh builds only
+(like the live-feed check). Each warning starts "monitor check (<rule>)" and goes out through `announce`, as the
+other health warnings do. None is on the page. None fails the build. A rule reports only what holds now, so it warns
+on the builds that see a fault and stops when it clears:
+- future_time and time_format: on the live snapshot.
+- known_share_drop: at the poll log's latest poll.
+- company_freeze: on yesterday (local day), from the live history's status changes and the forecast log's lead-0
+  rain. That rain covers only overflows upstream of spots, as in section 3.
+- id_turnover: yesterday's ids in `live_coverage.parquet` against the snapshot's.
+
+Inputs: `live_latest.parquet`, `poll_log.parquet`, `live_history.parquet`, `live_coverage.parquet` and
+`dipcast.duckdb`. The build already has all five in its state folder. A missing or unreadable one skips its rules;
+the summary names them. On the 26 Oct snapshot with the 25 Oct poll log and coverage, all five rules ran, gave 0
+warnings and took 0.4 s.
+
+Not wired in, as decided: quiet_monitor (held), record_contradiction, cadence_change.
+
+### How to check after a build
+
+1. Open `quality.html#long-runs` on the built site (locally `site/quality.html`). You should see the list, or "None
+   in this build.", or a note saying the list is left out.
+2. If it says the list is left out, look for "quality.html without the long_run list" in the build log. It names the
+   missing file.
+3. Run `jq .build.monitor_checks site/data/spots.json`. "checked" should list all five rules, "skipped" should be
+   empty, and "flags" gives each rule's count.
+4. On GitHub Actions, any warning shows as a "dipcast build health" annotation starting "monitor check (". Locally,
+   search the build log for that text.
+
+The likely mistake: reading an empty "skipped" in a local `--no-refresh` build. The checks run on refresh builds
+only, so a `--no-refresh` build has no `monitor_checks` at all.
+
+Tests: `tests/test_quality.py` (the list, its escaping, its empty and missing-input cases, inputs unchanged, the
+build carrying on without the file) and `tests/test_monitor_anomalies.py` (each warning on a failure put in by hand,
+none on normal data, none for a fault that has cleared, missing inputs skipped).

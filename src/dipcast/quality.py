@@ -1,16 +1,19 @@
 """The data-quality page, quality.html: the overflow records SwimSignal has had to
 pick between or guess at, listed for the water companies and the Environment Agency to correct.
 
-Three lists. The position conflicts checked on 13 October 2026 (docs/OVERFLOW-POSITIONS-2026-10.md),
+Four lists. The position conflicts checked on 13 October 2026 (docs/OVERFLOW-POSITIONS-2026-10.md),
 from its cases file, each with both positions: the live feed's (the state's live_latest.parquet) and
 the latest annual return's outlet (data/processed/annual_returns.parquet). Then, from this build's
 overflow table, the overflows with no name or no receiving water in either record, and the records
-that have stopped updating in a feed that has not (ingest.live.frozen_records, `record_stale`).
+that have stopped updating in a feed that has not (ingest.live.frozen_records, `record_stale`). Last,
+the monitors reporting one spill far longer than any the overflow has on record (monitor_anomalies.long_runs,
+against data/processed/longest_events.parquet): a display only, which changes no status, count, risk or level.
 Each overflow links to the feedback form with its id filled in. scripts/build_site.py
 (write_quality_page) writes the page; src/dipcast/site/quality.html is its template.
 """
 from __future__ import annotations
 
+import json
 import re
 from html import escape
 from pathlib import Path
@@ -19,17 +22,22 @@ from urllib.parse import urlencode
 import pandas as pd
 
 from dipcast import config
+from dipcast import monitor_anomalies as ma
 from dipcast.ingest.live import FEED_CURRENT_H
 from dipcast.overflow_names import water_name
 
 CASES = config.ROOT / "docs" / "OVERFLOW-POSITIONS-2026-10-cases.csv"
 CASES_DOC = "https://github.com/ethanbuckley/swimsignal/blob/main/docs/OVERFLOW-POSITIONS-2026-10.md"
+LONG_RUN_DOC = "https://github.com/ethanbuckley/swimsignal/blob/main/docs/MONITOR-ANOMALIES-2026-10.md"
+LONG_RUN_COLS = {"site_id", "company", "status", "status_start", "latest_event_start", "fetched_at"}
 RETURNS = config.PROCESSED / "annual_returns.parquet"
 TEMPLATE = Path(__file__).resolve().parent / "site" / "quality.html"
 SLOT = re.compile(r"\{\{(\w+)\}\}")
 CREDITS = ("Live positions, names and record times: the water companies via the National Storm Overflow Hub, "
            "CC BY 4.0. Outlets, names and receiving waters: the Environment Agency's storm overflow annual returns, "
-           "© Environment Agency copyright and/or database right 2025, Open Government Licence v3.0.")
+           "© Environment Agency copyright and/or database right 2025, Open Government Licence v3.0. Longest spills: the "
+           "Environment Agency's storm overflow start and stop records for 2024 and 2025, © Environment Agency copyright "
+           "and/or database right, Open Government Licence v3.0.")
 # The cases file's reasons in plain words. The evidence is the receiving water's name, the WFD water
 # body's name and the place in the site name, each looked for within 3 km of each position.
 REASONS = {
@@ -69,9 +77,9 @@ def reason_words(outcome: str, reason: str) -> str:
     return f"{head}. {why[0].upper()}{why[1:]}."
 
 
-def tell_us(site_id: str, name: str = "") -> str:
+def tell_us(site_id: str, name: str = "", text: str = "Tell us") -> str:
     q = urlencode({"type": "problem", "spot": f"Overflow {site_id}" + (f" ({name})" if name else "")})
-    return f'<a href="feedback.html?{escape(q)}">Tell us</a>'
+    return f'<a href="feedback.html?{escape(q)}">{escape(text)}</a>'
 
 
 def place(lat, lon) -> str:
@@ -188,7 +196,63 @@ def _name(site_name, fallback: str) -> str:
     return site_name.strip() if isinstance(site_name, str) and site_name.strip() else fallback
 
 
-def body(cases: pd.DataFrame, live: pd.DataFrame, outlets: pd.DataFrame, ov: pd.DataFrame | None, generated: str) -> str:
+def _span(h: float) -> str:
+    """A length of time in words: minutes under an hour, hours under two days, days after."""
+    if h < 1:
+        return f"{h * 60:.0f}&nbsp;minutes"
+    if h < 48:
+        return f"{h:.1f}&nbsp;hours"
+    d = h / 24
+    return f"{d:.0f}&nbsp;days" if d >= 10 else f"{d:.1f}&nbsp;days"
+
+
+def long_run_section(ov: pd.DataFrame | None, longest: pd.Series | None) -> str:
+    """The monitors reporting one spill far longer than any on record (monitor_anomalies.long_runs on this build's
+    overflow table, against `longest`, each overflow's longest spill in the EA's records). Display only: it reads
+    the table and changes nothing. Without the table or the record the list is left out, with a note."""
+    h = ('<section id="long-runs" aria-labelledby="long-runs-h">'
+         '<h2 id="long-runs-h">Monitors reporting a spill far longer than any on record</h2>')
+    if ov is None:
+        return h + "<p>This build had no overflow table, so this list is empty.</p></section>"
+    if longest is None:
+        return h + ("<p>This build had no record of each overflow's longest spill, so this list is left out. "
+                    "It needs data/processed/longest_events.parquet.</p></section>")
+    if not LONG_RUN_COLS <= set(ov.columns):
+        return h + "<p>This build's overflow table had no live statuses, so this list is empty.</p></section>"
+    flags = ma.long_runs(ov, longest)
+    times = "twice" if ma.LONG_RUN_FACTOR == 2 else f"{ma.LONG_RUN_FACTOR:g} times"
+    h += (f"<p>Each of these monitors has reported one spill for more than {ma.LONG_RUN_MIN_H / 24:g} days, and for "
+          f"more than {times} as long as the overflow's longest spill in the Environment Agency's records for "
+          "2024 and 2025. A long spill can be real in a wet spell. It can also be a monitor stuck on “discharging”. "
+          "The forecast still counts each one as its company reports it: this list changes nothing on the site. "
+          f'<a href="{LONG_RUN_DOC}">How the list is made</a>.</p>')
+    if flags.empty:
+        return h + "<p>None in this build.</p></section>"
+    info = ov.drop_duplicates("site_id", keep="last").set_index("site_id")
+    rows = []
+    for f in flags.itertuples():
+        e = json.loads(f.evidence)
+        r = info.loc[f.site_id] if f.site_id in info.index else None
+        name = _name(r.get("site_name") if r is not None else None, "")
+        water = r.get("receiving_watercourse") if r is not None else None
+        since = pd.Timestamp(e["status_start"]).tz_convert("Europe/London")
+        ref = e.get("longest_on_record_h")
+        rows.append((str(f.company or ""), -float(e["run_h"]),
+            f'<tr><th class="ov" scope="row">{escape(name or str(f.site_id))}'
+            f'<span class="id">{escape(str(f.site_id))} · {tell_us(f.site_id, name, "Is this monitor still reporting correctly?")}</span></th>'
+            f'<td data-l="Company">{escape(str(f.company)) if f.company else "<span class=muted>not known</span>"}</td>'
+            f'<td data-l="Receiving water">{_water(water)}</td>'
+            f'<td data-l="Reported discharging">{_span(float(e["run_h"]))}<span class="w">since {since.strftime("%-d %b %Y, %H:%M")}</span></td>'
+            f'<td data-l="Longest on record">{_span(float(ref)) if ref is not None else "<span class=muted>none in the records</span>"}</td></tr>'))
+    rows.sort(key=lambda x: (x[0], x[1]))
+    table = ('<div class="tw"><table class="qt"><thead><tr><th>Overflow</th><th>Company</th><th>Receiving water</th>'
+             '<th>Reported discharging</th><th>Longest on record</th></tr></thead>'
+             f'<tbody>{"".join(r[2] for r in rows)}</tbody></table></div>')
+    return h + table + "</section>"
+
+
+def body(cases: pd.DataFrame, live: pd.DataFrame, outlets: pd.DataFrame, ov: pd.DataFrame | None, generated: str,
+         longest: pd.Series | None = None) -> str:
     used = ov.set_index("site_id")["position_source"] if ov is not None and "position_source" in ov else None
     return ('<h1>Overflow records to check</h1>'
             "<p class=\"lead\">Where the water companies' live feeds and the Environment Agency's annual returns disagree "
@@ -197,13 +261,14 @@ def body(cases: pd.DataFrame, live: pd.DataFrame, outlets: pd.DataFrame, ov: pd.
             "<p>Each overflow has a Tell us link to the feedback form, with its id filled in. A correction from the company "
             "that runs it, from the Agency, or from someone who knows where it discharges, settles a case.</p>"
             + positions_section(cases, live, outlets, used) + names_section(ov) + frozen_section(ov)
-            + f'<p class="small muted note">The first list is as checked on 13 October 2026; the other two are from the '
+            + long_run_section(ov, longest)
+            + f'<p class="small muted note">The first list is as checked on 13 October 2026; the others are from the '
               f"build of {escape(generated)}. {escape(CREDITS)}</p>")
 
 
 def site_page(cases: pd.DataFrame, live: pd.DataFrame, outlets: pd.DataFrame, ov: pd.DataFrame | None,
-              generated: str, mark: str, template: str | None = None) -> str:
-    slots = {"mark": mark, "body": body(cases, live, outlets, ov, generated)}
+              generated: str, mark: str, template: str | None = None, longest: pd.Series | None = None) -> str:
+    slots = {"mark": mark, "body": body(cases, live, outlets, ov, generated, longest)}
     html = template if template is not None else TEMPLATE.read_text()
     missing = set(SLOT.findall(html)) - slots.keys()
     if missing:

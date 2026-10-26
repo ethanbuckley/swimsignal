@@ -1,7 +1,14 @@
 """Flags on the live overflow feeds for a person to check: monitors and feeds whose readings look broken in
-ways the ingest rules (ingest/live.py) do not already catch. A prototype: nothing in the build, the site or
-the forecast reads it. docs/MONITOR-ANOMALIES-2026-10.md has the rules, what each adds to the existing
-checks, and the evaluation on saved polls; scripts/monitor_anomalies.py runs them offline.
+ways the ingest rules (ingest/live.py) do not already catch. docs/MONITOR-ANOMALIES-2026-10.md has the rules,
+what each adds to the existing checks, the evaluation on saved polls and what Ethan decided on 26 Oct 2026;
+scripts/monitor_anomalies.py runs them offline.
+
+Wired in (section 8 of that doc), display and warnings only: no rule changes a status, count, risk or level.
+  long_run         a list on the data-quality page (quality.long_run_section), against each overflow's longest
+                   spill in the EA's records (LONGEST_FILE, made by scripts/make_longest_events.py)
+  feed_warnings    future_time, time_format, known_share_drop, company_freeze and id_turnover as build
+                   warnings (build_site.monitor_feed_checks); never on the page, never a failed build
+Not wired in: record_contradiction, quiet_monitor (held), cadence_change.
 
 Every function reads frames and returns a new frame of flags (FLAG_COLS). It never changes its inputs and
 never drops a row from them: a flag is a note beside a reading, not a correction of it. Each flag carries the
@@ -26,6 +33,8 @@ import json
 
 import numpy as np
 import pandas as pd
+
+from dipcast import config
 
 REVIEW = "review"
 FLAG_COLS = ["site_id", "company", "rule", "evidence", "first_seen", "severity"]
@@ -52,6 +61,10 @@ CADENCE_FLOOR_H = 1.0         # ...and over this many hours
 CADENCE_MIN_HISTORY = 20      # polls before the recent ones, at the least
 TURNOVER_SHARE = 0.05         # id_turnover: share of ids new, or gone without a short read
 SHORT_SHARE = 0.9             # ingest.live.SHORT_READ_SHARE: below it the ids missing are a short read
+# Each overflow's longest spill in the EA's start/stop records 2024-2025 (scripts/make_longest_events.py): the
+# reference long_run needs. Small and committed; the build never reads the event files themselves.
+LONGEST_FILE = config.PROCESSED / "longest_events.parquet"
+FEED_RULES = ("future_time", "time_format", "known_share_drop", "company_freeze", "id_turnover")
 
 
 def _evidence(**kv) -> str:
@@ -158,6 +171,21 @@ def longest_event_hours(events: pd.DataFrame) -> pd.Series:
     return d.groupby(events["site_id"]).max().rename("longest_h")
 
 
+def longest_events_table(events: pd.DataFrame) -> pd.DataFrame:
+    """One row per site_id: its longest event in hours (longest_event_hours) and its number of events, sorted by
+    site_id. What LONGEST_FILE holds."""
+    d = (_utc(events["event_end"]) - _utc(events["event_start"])).dt.total_seconds() / 3600
+    g = d.groupby(events["site_id"])
+    out = pd.DataFrame({"longest_h": g.max(), "n_events": g.size()}).reset_index()
+    return out.astype({"site_id": str, "longest_h": "float64", "n_events": "int64"}).sort_values("site_id").reset_index(drop=True)
+
+
+def load_longest(path=None) -> pd.Series:
+    """LONGEST_FILE as a Series, longest_h by site_id. Raises if the file is missing or unreadable."""
+    t = pd.read_parquet(path or LONGEST_FILE, columns=["site_id", "longest_h"])
+    return t.set_index("site_id")["longest_h"]
+
+
 def long_runs(snap: pd.DataFrame, longest_h: pd.Series | None = None, min_h: float = LONG_RUN_MIN_H,
               factor: float = LONG_RUN_FACTOR) -> pd.DataFrame:
     """long_run on each overflow discharging (status 1) for longer than `min_h`, and longer than `factor`
@@ -169,7 +197,7 @@ def long_runs(snap: pd.DataFrame, longest_h: pd.Series | None = None, min_h: flo
     fetched = _utc(s["fetched_at"])
     stamp = _utc(s["last_updated"]) if "last_updated" in s else pd.Series(pd.NaT, index=s.index)
     run_h = (fetched - start).dt.total_seconds() / 3600
-    ref = s["site_id"].map(longest_h) if longest_h is not None else pd.Series(np.nan, index=s.index)
+    ref = (s["site_id"].map(longest_h) if longest_h is not None else pd.Series(np.nan, index=s.index)).astype(float)
     limit = np.maximum(min_h, (factor * ref).fillna(0.0))
     rows = []
     for i in s.index[(run_h > limit).to_numpy()]:
@@ -340,3 +368,105 @@ def id_turnover(previous: pd.DataFrame, current: pd.DataFrame, share: float = TU
                                                examples_new=sorted(b - a)[:5], examples_gone=sorted(a - b)[:5]),
                          "first_seen": at})
     return _frame(rows)
+
+
+# ------------------------------------------------------------------ build warnings
+def _ids(xs, n: int = 5) -> str:
+    xs = sorted({str(x) for x in xs})
+    return ", ".join(xs[:n]) + (f" and {len(xs) - n} more" if len(xs) > n else "")
+
+
+def _company_of(*frames: pd.DataFrame | None) -> pd.Series:
+    parts = [f[["site_id", "company"]] for f in frames if f is not None and {"site_id", "company"} <= set(f.columns)]
+    if not parts:
+        return pd.Series(dtype=object)
+    return pd.concat(parts, ignore_index=True).dropna().drop_duplicates("site_id", keep="last").set_index("site_id")["company"]
+
+
+def _missing(x) -> bool:
+    return x is None or len(x) == 0
+
+
+def feed_warnings(snapshot: pd.DataFrame | None, poll_log: pd.DataFrame | None = None,
+                  history: pd.DataFrame | None = None, rain: pd.DataFrame | None = None,
+                  coverage: pd.DataFrame | None = None, tz: str = "Europe/London") -> tuple[list[str], dict]:
+    """The whole-feed rules (FEED_RULES) on what a build has now, as build warnings: (warnings, summary).
+    Only what holds now is reported, so a fault warns on the builds that see it and stops when it clears:
+      future_time, time_format  the live snapshot (live_latest.parquet)
+      known_share_drop          the poll log, at its latest poll
+      company_freeze            yesterday (local day), from the live history's status changes and the forecast
+                                log's lead-0 rain per overflow (`rain`: site_id, day as YYYY-MM-DD, rain_mm)
+      id_turnover               yesterday's ids (live_coverage.parquet: site_id, day) against the snapshot's
+    A rule whose input is missing is skipped and named in summary["skipped"]. Nothing is changed or dropped."""
+    warns: list[str] = []
+    summary: dict = {"checked": [], "skipped": {}, "flags": {}}
+    have = not _missing(snapshot) and "fetched_at" in snapshot
+    now = _utc(snapshot["fetched_at"]).max() if have else pd.NaT
+    yesterday = (now.tz_convert(tz).normalize() - pd.Timedelta(days=1)).strftime("%Y-%m-%d") if have else None
+    company_of = _company_of(history, snapshot)
+
+    def done(rule: str, n: int) -> None:
+        summary["checked"].append(rule)
+        summary["flags"][rule] = n
+
+    if have:
+        f = implausible_times(snapshot)
+        fut = f[f["rule"] == "future_time"]
+        for c, g in fut.groupby("company"):
+            ahead = max(json.loads(e)["hours_ahead"] for e in g["evidence"])
+            one = len(g) == 1
+            warns.append(f"monitor check (future_time): {len(g)} {c} record{'' if one else 's'} "
+                         f"carr{'ies' if one else 'y'} a time up to {ahead * 60:.0f} minutes after the poll that read "
+                         f"{'it' if one else 'them'} ({_ids(g['site_id'])}): a clock or time zone slip in the feed")
+        done("future_time", len(fut))
+        tf = f[f["rule"] == "time_format"]
+        for r in tf.itertuples():
+            e = json.loads(r.evidence)
+            warns.append(f"monitor check (time_format): {e['share_implausible']:.0%} of {r.company}'s {e['records']} records "
+                         f"carry a time before 2015 or over a day after the poll ({e['before_2015']} before 2015, "
+                         f"{e['over_a_day_ahead']} ahead): the feed's time format may have changed")
+        done("time_format", len(tf))
+    else:
+        summary["skipped"]["future_time"] = summary["skipped"]["time_format"] = "no live snapshot"
+
+    if _missing(poll_log):
+        summary["skipped"]["known_share_drop"] = "no poll log"
+    else:
+        last = _utc(poll_log["fetched_at"]).max()
+        f = known_share_drops(poll_log)
+        f = f[_utc(f["first_seen"]) == last]
+        for r in f.itertuples():
+            e = json.loads(r.evidence)
+            warns.append(f"monitor check (known_share_drop): {r.company}'s share of monitors with a known status fell to "
+                         f"{e['share_known']:.2f} at the poll of {last.strftime('%Y-%m-%d %H:%M')} UTC, from a usual "
+                         f"{e['usual_share']:.2f}: its status field may have been renamed or recoded")
+        done("known_share_drop", len(f))
+
+    lacking = [n for n, x in (("live snapshot", snapshot if have else None), ("live history", history),
+                              ("forecast rain", rain)) if _missing(x)]
+    if lacking:
+        summary["skipped"]["company_freeze"] = "no " + " or ".join(lacking)
+    else:
+        day_rain = rain[rain["day"].astype(str).str[:10] == yesterday].assign(day=yesterday)
+        f = company_freezes(change_times(history), wet_days(day_rain, company_of), tz=tz) if len(day_rain) else _frame([])
+        for r in f.itertuples():
+            e = json.loads(r.evidence)
+            n = e["status_changes"]
+            warns.append(f"monitor check (company_freeze): {r.company}'s feed recorded {n} status change{'' if n == 1 else 's'} "
+                         f"on {e['day']}, a day with {WET_MM:g} mm or more of forecast rain at {e['wet_share']:.0%} of its "
+                         "overflows: its statuses may have stopped updating")
+        done("company_freeze", len(f))
+
+    if not have or _missing(coverage):
+        summary["skipped"]["id_turnover"] = "no " + ("live snapshot" if not have else "coverage file")
+    else:
+        prev = coverage[pd.to_datetime(coverage["day"]).dt.strftime("%Y-%m-%d") == yesterday][["site_id"]]
+        prev = prev.assign(company=prev["site_id"].map(company_of)).dropna(subset=["company"])
+        f = id_turnover(prev, snapshot[["site_id", "company", "fetched_at"]]) if len(prev) else _frame([])
+        for r in f.itertuples():
+            e = json.loads(r.evidence)
+            warns.append(f"monitor check (id_turnover): {r.company} has {e['ids_now']} overflow ids now and had "
+                         f"{e['ids_before']} on {yesterday}; {e['share_new']:.0%} are new (such as {_ids(e['examples_new'])}) "
+                         f"and {e['share_gone']:.0%} gone (such as {_ids(e['examples_gone'])}): the feed may have a new id scheme")
+        done("id_turnover", len(f))
+    return warns, summary

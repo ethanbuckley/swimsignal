@@ -80,7 +80,7 @@ def test_the_names_and_frozen_lists_come_from_the_builds_table():
 
 def test_without_the_overflow_table_the_lists_say_so():
     t = text(quality.site_page(CASES, LIVE, OUTLETS, None, "20 Oct 2026, 06:39", MARK))
-    assert t.count("This build had no overflow table") == 2
+    assert t.count("This build had no overflow table") == 3
     assert "Today's forecast uses" not in t
 
 
@@ -95,3 +95,106 @@ def test_the_build_writes_the_page_lists_it_and_about_links_it(tmp_path):
     assert "51.89384, 0.89496" in page
     assert f"{'https://example.org/'}quality.html" in bs.sitemap("https://example.org/", [], "2026-10-20")
     assert 'href="quality.html">Overflow records to check</a>' in (ROOT / "src/dipcast/pages/about.html").read_text()
+
+
+# ------------------------------------------------------------------ the long_run list (monitor_anomalies.long_runs)
+POLL = pd.Timestamp("2026-10-24 09:41", tz="UTC")
+
+
+def _live(sid, company, status, since, name=None, water=None):
+    return {"site_id": sid, "company": company, "site_name": name, "receiving_watercourse": water, "status": status,
+            "status_start": pd.Timestamp(since, tz="UTC"), "latest_event_start": pd.Timestamp(since, tz="UTC"),
+            "latest_event_end": pd.NaT, "last_updated": POLL, "fetched_at": POLL}
+
+
+LIVE_OV = pd.DataFrame([
+    _live("YWS00425", "Yorkshire Water", 1, "2026-09-02 09:00", "BRECKSFIELD/NO 2 CSO", "Burtree Dam"),   # stuck: 52 days
+    _live("YWS02029", "Yorkshire Water", 1, "2026-10-12 09:00", "WAINGATE/CSO", "River Don"),        # 12 days, none on record
+    _live("UUP00274", "United Utilities", 1, "2026-10-07 09:00", None, "#N/A"),                      # no name, no water
+    _live("UUP01780", "United Utilities", 1, "2026-10-12 09:00", "REAL LONG SPILL"),                 # 12 days, 28 on record
+    _live("SWS00001", "Southern Water", 1, "2026-10-21 09:00", "THREE DAYS"),                        # under a week
+    _live("SWS00002", "Southern Water", 0, "2026-09-01 09:00", "QUIET"),                             # not discharging
+])
+LONGEST = pd.Series({"YWS00425": 12.75, "UUP00274": 0.7136, "UUP01780": 672.4, "SWS00001": 1.0})
+
+
+def page_with(ov=LIVE_OV, longest=LONGEST):
+    return quality.site_page(CASES, LIVE, OUTLETS, ov, "24 Oct 2026, 10:41", MARK, longest=longest)
+
+
+def long_list(page: str) -> str:
+    return page[page.index('<section id="long-runs"'):page.index("</section>", page.index('<section id="long-runs"'))]
+
+
+def test_the_long_run_list_names_each_flagged_monitor_and_asks_the_company():
+    sec = long_list(page_with())
+    t = text(sec)
+    assert "Monitors reporting a spill far longer than any on record" in t
+    assert "for more than 7 days, and for more than twice as long as the overflow's longest spill" in t
+    # Flagged: the stuck one, the one with no spill on record (the week alone), the unnamed one. Not the real long
+    # spill, the one under a week or the one not discharging.
+    for sid in ("YWS00425", "YWS02029", "UUP00274"):
+        assert sid in sec
+    for sid in ("UUP01780", "SWS00001", "SWS00002"):
+        assert sid not in sec
+    assert "BRECKSFIELD/NO 2 CSO" in t and "Burtree Dam" in t and "52 days since 2 Sep 2026, 10:00" in t and "12.8 hours" in t
+    assert "none in the records" in t and "43 minutes" in t and "not named" in t
+    # The question goes to the feedback form with the overflow's id (and its name where it has one).
+    assert ('href="feedback.html?type=problem&amp;spot=Overflow+YWS00425+%28BRECKSFIELD%2FNO+2+CSO%29">'
+            "Is this monitor still reporting correctly?</a>") in sec
+    assert 'href="feedback.html?type=problem&amp;spot=Overflow+UUP00274">Is this monitor still reporting correctly?</a>' in sec
+    # By company, then the longest run first.
+    assert sec.index("UUP00274") < sec.index("YWS00425") < sec.index("YWS02029")
+    assert "this list changes nothing on the site" in t and "{{" not in page_with()
+
+
+def test_the_long_run_list_never_changes_its_inputs():
+    ov, lg = LIVE_OV.copy(), LONGEST.copy()
+    page_with(ov, lg)
+    pd.testing.assert_frame_equal(ov, LIVE_OV)
+    pd.testing.assert_series_equal(lg, LONGEST)
+
+
+def test_the_long_run_list_escapes_the_feeds_text():
+    ov = pd.DataFrame([_live("YWS00425", "Yorkshire & <b>Water</b>", 1, "2026-09-02 09:00",
+                             'CSO <script>alert("x")</script>', "Beck <i>&</i> Dam")])
+    sec = long_list(page_with(ov))
+    assert "<script>" not in sec and "<b>" not in sec and "<i>" not in sec
+    assert "CSO &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;" in sec and "Yorkshire &amp; &lt;b&gt;Water&lt;/b&gt;" in sec
+    assert "Beck &lt;i&gt;&amp;&lt;/i&gt; Dam" in sec
+
+
+def test_the_long_run_list_when_empty_or_without_its_inputs():
+    quiet = LIVE_OV[LIVE_OV["site_id"].isin(["UUP01780", "SWS00001", "SWS00002"])]
+    assert "None in this build." in text(long_list(page_with(quiet)))
+    assert "so this list is left out" in text(long_list(page_with(longest=None)))
+    assert "This build had no overflow table, so this list is empty." in text(long_list(page_with(ov=None)))
+    assert "had no live statuses" in text(long_list(page_with(ov=OV)))   # a table without the live columns
+    assert "None in this build." in text(long_list(page_with(LIVE_OV.iloc[0:0])))
+
+
+def test_the_build_writes_the_long_run_list_and_carries_on_without_its_file(tmp_path):
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_site as bs
+    live = tmp_path / "live.parquet"
+    pd.DataFrame({"site_id": ["AWS01217"], "lat": [51.89384], "lon": [0.89496]}).to_parquet(live)
+    ref = tmp_path / "longest_events.parquet"
+    pd.DataFrame({"site_id": LONGEST.index, "longest_h": LONGEST.values, "n_events": 1}).to_parquet(ref)
+    bs.write_quality_page(tmp_path, LIVE_OV, POLL, live=live, longest_events=ref)
+    assert "YWS00425" in long_list((tmp_path / "quality.html").read_text())
+    bs.write_quality_page(tmp_path, LIVE_OV, POLL, live=live, longest_events=tmp_path / "missing.parquet")
+    page = (tmp_path / "quality.html").read_text()
+    assert "so this list is left out" in text(long_list(page)) and "YWS00425" not in long_list(page)
+
+
+def test_the_build_s_monitor_checks_never_stop_it(tmp_path, monkeypatch):
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import build_site as bs
+    from dipcast import config
+    monkeypatch.setattr(config, "state_read", lambda name: tmp_path / name)
+    monkeypatch.setattr(config, "DUCKDB_PATH", tmp_path / "dipcast.duckdb")
+    warns, summary = bs.monitor_feed_checks(None)   # no state at all
+    assert warns == [] and summary["checked"] == [] and len(summary["skipped"]) == 5
+    (tmp_path / "live_latest.parquet").write_text("not a parquet file")
+    warns, summary = bs.monitor_feed_checks(None)
+    assert warns == [] and summary["skipped"]["future_time"] == "no live snapshot"
