@@ -57,11 +57,11 @@ protocols are reviewed.
 
 | # | Item | PR | State |
 |---|---|---|---|
-| 1 | #379: fix the CI guard (the build never asks the EA for its panel), then an official-advice-first block on spot pages from approved advisories, sourced and dated, separate from the sewage forecast | #379 | in progress |
-| 2 | #382: question wording, no-baseline monitors not described as over twice their record, unknown when stale or unchecked, no file paths on the page; a real site build before merge; full CI | #382 | in progress |
+| 1 | #379: CI guard fixed (finder moved to `scripts/advisories.py`; build reads files only via `official_advice.py`); official-advice block above the level, stale/unread sources keep warnings visible as "Not re-checked since". Decisions (Codex, delegated): Codex may be the recorded reviewer, never attributed to Ethan; a 6-request live finder run creates `last_check.json`; Codex approves the Frensham record from the exact line and evidence. Merges main after #382 | #379 | in progress |
+| 2 | #382: question wording, no-baseline monitors in their own group, unknown when stale or unchecked, no file paths on the page; full CI green on 5a2a90d. A local real build needs about 394 Open-Meteo calls (`--no-refresh` still fetches rain and soil); Codex chose not to spend them: **Codex merges #382 and watches the next normal publishing build, reverting any material regression** | #382 | reviewed; merging |
 | 3 | Practical guides for popular spots from verifiable sources; sessions execution pack; outstanding human actions | to come | in progress |
 | 4 | Catchment replay prototype: last 48 h of reported spills, rain and gauges, modelled arrival; observed, estimated and unavailable kept apart | to come | in progress |
-| 5 | Planner: outing time and backup spot; what changed since I checked, with evidence (extending the existing `since.js`, not duplicating it); club brief versions and leader acknowledgement (local only) | to come | in progress |
+| 5 | Planner (#388): outing time and backup spot; what changed since I checked, with evidence (extending the existing `since.js`, not duplicating it); club brief versions and leader acknowledgement (local only) | #388 | first increment pushed, 166 node tests; browser check next |
 | - | Lab-chlorophyll test statement (no fetch): EA determinand 7887 at 40 lakes chosen by metadata only; pass needs Spearman ≥ 0.5 (lower end > 0.3), within-lake placebo, LOLO calibration Better (B 0.10, H 0.05), no lake type harmed; stage 1 sized at ~55,200 requests / 3.2 GB | #386 | **kept unrun**; first verify 7887's analytical definition from a primary EA source (in progress); if unresolved, the inference stays explicit and nothing claims lab chlorophyll-a validation. No 55k-request fetch |
 | - | Algae incident test statement (no fetch) | #385 | protocol reviewed by Codex as a bounded exploratory question; **kept unrun in this window** |
 
