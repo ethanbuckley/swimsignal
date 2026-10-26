@@ -471,6 +471,18 @@ def test_alerts_are_off_unless_both_settings_are_sound(monkeypatch):
     assert bs.push_config() is None
 
 
+def test_the_privacy_notice_covers_research_sessions_with_their_retention(tmp_path):
+    # docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md, section 6: the notice must match what the sessions keep.
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
+    privacy = (tmp_path / "privacy.html").read_text()
+    assert '<h2 id="research">Research sessions</h2>' in privacy
+    for kept in ["or 21 days after your session, whichever comes first", "no more than 7 days",
+                 "no later than 31 January 2027", "they are still personal data"]:
+        assert kept in privacy, kept
+    assert "Apart from what is kept for research sessions (above), SwimSignal holds none" in privacy
+
+
 def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
@@ -925,7 +937,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     assert ">Support SwimSignal</a>" in spot
     privacy = (tmp_path / "privacy.html").read_text()
     assert '<h2 id="tips">If you leave a tip</h2>' in privacy and bs.SUPPORT_RIGHTS[1] in privacy
-    assert "Last updated 20 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
+    assert "Last updated 26 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
     assert "(tips)" not in (tmp_path / "terms.html").read_text()
     assert 'href="support.html">How to tip' in (tmp_path / "about.html").read_text()
     assert "support.html" in (tmp_path / "sitemap.xml").read_text()
@@ -933,7 +945,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/swim/")   # turned off again
     assert not (tmp_path / "support.html").exists()
     assert not any("Support SwimSignal" in p.read_text() for p in tmp_path.rglob("*.html"))
-    assert "Last updated 20 October 2026." in (tmp_path / "privacy.html").read_text()
+    assert "Last updated 26 October 2026." in (tmp_path / "privacy.html").read_text()
 
 
 def test_map_tiles_stay_on_openstreetmap_unless_a_known_provider_has_a_key(monkeypatch):
@@ -983,7 +995,7 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     privacy = (tmp_path / "privacy.html").read_text()
     assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
     assert '<li><b>CARTO</b>, for the map images. Its <a href="https://carto.com/privacy/">privacy policy</a>' in privacy
-    assert "Last updated 20 October 2026 (page-view counter, map images, tips)." in privacy
+    assert "Last updated 26 October 2026 (page-view counter, map images, tips)." in privacy
     terms = (tmp_path / "terms.html").read_text()
     assert bs.OSM_TERMS not in terms and "map tiles from CARTO:" in terms
 
