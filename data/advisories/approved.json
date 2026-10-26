@@ -1,4 +1,21 @@
 {
  "note": "Approved advisory lines (docs/ADVISORY-FINDER-2026-10.md, decisions of 26 Oct 2026, incl. decision 8). This file changes only by pull request. Each entry holds the draft's evidence (draft_id, spot_id, line, publisher, link, kind, source_url, incident_id, start, expiry, fetched_at) and its review (reviewer, authority, reviewed_at in UTC as 2026-10-26T23:00:00Z). The reviewer and authority must be one of the pairs in src/dipcast/official_advice.py REVIEWERS: Ethan Buckley on his own authority, or Codex under Ethan Buckley's delegation of routine decisions (26 Oct 2026). A Codex review is never recorded as Ethan's. scripts/advisory_finder.py --entry DRAFT_ID prints a ready entry. The finder reads this file and never writes it.",
- "approvals": []
+ "approvals": [
+  {
+   "draft_id": "e8b5832d974a",
+   "spot_id": "bw-ukj2310-11945",
+   "line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
+   "publisher": "Environment Agency",
+   "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
+   "kind": "feed",
+   "source_url": "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100",
+   "incident_id": "ea:11945-20260619-142800",
+   "start": "2026-06-19",
+   "expiry": null,
+   "fetched_at": "2026-10-26T22:45:58Z",
+   "reviewer": "Codex",
+   "authority": "Codex, under Ethan Buckley's delegation of routine decisions, 26 Oct 2026",
+   "reviewed_at": "2026-10-26T22:53:52Z"
+  }
+ ]
 }

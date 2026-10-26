@@ -222,7 +222,8 @@ def test_a_fixture_run_does_not_write_the_check_record(tmp_path, monkeypatch):
     import advisory_finder
     monkeypatch.setattr(advisory_finder.config, "CACHE", tmp_path)
     check = tmp_path / "last_check.json"
-    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat(),
+    empty = write(tmp_path, name="empty.json")
+    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat(), "--approvals", str(empty),
                                  "--check-file", str(check), "--entry", "e8b5832d974a"]) == 0
     assert not check.exists()
 

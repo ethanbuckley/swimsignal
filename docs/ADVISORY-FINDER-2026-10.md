@@ -364,3 +364,13 @@ Before that run, one request each to the EA open-incident list (22:43:12 UTC, th
 record) and to the EA profile page for Frensham (22:43:23 UTC). The profile page's HTML does not
 contain the advice: its scripts fill it in. So the open-incident record is the evidence, not the
 profile page.
+
+## Approvals log
+
+- 26 Oct 2026, 22:53:52 UTC: `e8b5832d974a`, Frensham Great Pond, "Environment Agency: advice against
+  bathing (harmful algae) since 19 Jun 2026". Reviewer: Codex, under Ethan Buckley's delegation of
+  routine decisions (decision 8). Not reviewed by Ethan. Codex's check, in its words: Codex fetched the
+  EA open-incident list and the EA panel for the site itself at 22:53 UTC. The list was complete: 7
+  open incidents, no next page. It had incident 11945-20260619-142800 at Frensham, type 014 harmful
+  algae, start 2026-06-19T14:28, no end. The panel said "Bathing is not advised today ... harmful
+  algae". The entry's evidence is from the finder's run at 22:45:58 UTC.

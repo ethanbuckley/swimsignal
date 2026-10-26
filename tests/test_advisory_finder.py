@@ -129,10 +129,19 @@ def test_real_govuk_notice_is_ambiguous_and_stale(gaz):
     assert {"bw-ukd1203-45625", "bw-ukd1203-45700", "osm-windermere-waterhead", "bw-ukd1230-45750"} <= set(d["candidates"])
 
 
+def no_approvals(tmp_path):
+    """An empty approvals file. The repo's own file holds real reviews with real times, after these
+    fixtures' clock, so the fixture runs read this one instead."""
+    f = tmp_path / "approved.json"
+    f.write_text('{"approvals": []}')
+    return str(f)
+
+
 def test_fixture_run_and_cli(tmp_path, capsys):
     import advisory_finder
     out = tmp_path / "drafts.json"
-    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat(), "--out", str(out)]) == 0
+    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat(), "--out", str(out),
+                                 "--approvals", no_approvals(tmp_path)]) == 0
     result = json.loads(out.read_text())
     assert result["dry_run"] is True and result["published"] is False and result["mode"] == "fixtures"
     assert [s["state"] for s in result["sources"]] == ["ok"] * 5
@@ -525,7 +534,8 @@ def test_fixture_run_does_not_overwrite_the_live_drafts_file(tmp_path, monkeypat
     monkeypatch.setattr(advisory_finder.config, "CACHE", tmp_path)
     live = tmp_path / "advisory_drafts.json"
     live.write_text('{"drafts": []}\n')
-    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat()]) == 0
+    assert advisory_finder.main(["--dry-run", "--fixtures", str(FIX), "--now", NOW.isoformat(),
+                                 "--approvals", no_approvals(tmp_path)]) == 0
     assert live.read_text() == '{"drafts": []}\n'
     assert json.loads((tmp_path / "advisory_drafts_fixtures.json").read_text())["mode"] == "fixtures"
 
