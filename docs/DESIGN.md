@@ -1250,6 +1250,9 @@ gives all four navigation links a single full-width row.
   It said "Saved spots" from a shared list too, though Back went to the shared list. A click still goes
   back in the history; the link's address is the list's, for a new tab. A long name ends in an ellipsis,
   as Save's does, so the row keeps to one line at 320 px.
+- Someone with nothing saved who adds a shared list gets that one list (26 October 2026): it takes the
+  place of the empty "My spots" a first visit makes (lists.js, `addSharedList`), so there is no chip for
+  an empty list beside it. With anything saved, another list, or "My spots" renamed, it is added beside them.
 - The next step after saving (25 October 2026, a 375 px walk through the Facebook post's link). Save on a
   spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
   room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts
