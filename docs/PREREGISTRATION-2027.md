@@ -700,3 +700,15 @@ addendum to that test. If it shows the rule clearly worse, the rule is withdrawn
 |---|---|
 | `scripts/evaluate_2027.py` | `95176d2086f224122d899aff38cf3dd8f6cbbc8fe0dff760368ee5dbe56c5d40` |
 | `data/processed/ecoli_model_sm.json` | `34d1a7aa4b0382113a79133ee2b5f4f873fdabd524b2a8af6f221964347b64e4` |
+
+**Adoption note, 26 October 2026: the clamp.** Added lines only; nothing above is changed.
+- **The plan named 0.059 to 0.489 m³/m³** (`docs/SOIL-MOISTURE-ECOLI-PLAN-2026-10.md`, step 3). That is the range of
+  #344's input: soil moisture 48 hours before the sample.
+- **The model reads a different series:** soil moisture at 00:00 UTC of the issue day. In its 1,502 fitting rows that
+  series runs from 0.052 to 0.494 m³/m³, recorded as `meta.sm_range` in `ecoli_model_sm.json`.
+- **The rivers-only test clipped the input to that fitted range.** So the site's clamp uses the model file's
+  `sm_range`, which is the rule the test passed. The planned range would clip a little inside it, which was never
+  tested.
+- **Today it changes nothing.** At the isolated build of 26 October 2026, 00:17 UTC, the 62 river spot cells read
+  0.278 to 0.485 at 00:00 UTC. None falls between the two ranges, and none falls outside either.
+- **The code is unchanged.**
