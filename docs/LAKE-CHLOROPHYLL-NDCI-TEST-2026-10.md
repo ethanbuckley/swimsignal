@@ -407,6 +407,72 @@ Not yet approved. Ethan approves this statement, or asks for changes, before sta
 
 ---
 
+## Determinand check, 26 October 2026 (after the statement, before review)
+
+Written after the statement above, before Ethan's review and before any run. It changes nothing in the protocol: the
+outcome is still determinand 7887, read and scored as above. No chlorophyll value was read for this check.
+
+**Verdict: partly verified.** The method behind the EA's acetone-extract chlorophyll is now found and read. It
+measures chlorophyll a by acetone extraction and spectrophotometry. Two things stay open: no EA page ties code 7887 to
+that test by name, and no source says whether 7887 is corrected for phaeopigments.
+
+What the sources say (all read 26 October 2026):
+- **The WQA codelist record for 7887** (`https://environment.data.gov.uk/water-quality/codelist/determinand?notation=7887`):
+  notation "7887", prefLabel "Chlorophyll : Acetone Extract", altLabel "CHLOROPHYLL". Nothing else: no definition, no
+  method, no unit. The API description (`/water-quality/api/swagger`, version 1.3.1) has no other determinand
+  endpoint. The old definitions URL (`/water-quality/def/determinands/7887.json`) now returns 404. The downloads and
+  API-docs pages render in the browser and their HTML holds no determinand reference list.
+- **The neighbouring codes** (codelist, prefLabel contains "chlorophyll", 11 codes; contains "phaeo", 11 codes). The
+  EA keeps "Chlorophyll a" (0729), "Chlorophyll a + b" (0947), "Chlorophyll b" (3904) and "Chlorophyll a : HPLC"
+  (8306) as separate codes from 7887. It also has "Phaeophytin, Acetone Extract" (5122), "Phaeophytin A" (3905, 8172)
+  and "Chlorophyll a : Phaeophytin ratio" (9900). 7887 is not labelled as either a + b or total pigment.
+- **The EA's own laboratory accreditation.** UKAS schedule 0754, Environment Agency - National Laboratory Service,
+  issue 116, 9 September 2026 (`https://www.ukas.com/download-schedule/0754/Testing`), Starcross Laboratory, page 5:
+  test "Chlorophyll", "Acetone Extraction and Spectrophotometric Analysis", documented in-house method "SX I
+  Chlorophyll UVV", reference "(ISBN 011 7516740 1980)", Test 19; accredited for surface water, not ground or saline
+  water. It is the only chlorophyll test on the schedule.
+- **The method that ISBN names.** Standing Committee of Analysts, *The Determination of Chlorophyll a in Aquatic
+  Environments 1980*, Methods for the Examination of Waters and Associated Materials, HMSO, ISBN 0 11 751674 0
+  (`https://standingcommitteeofanalysts.co.uk/wp-content/uploads/Blue_Book_Library/65.pdf`, a scanned copy, read page
+  by page). In summary:
+  - A1.1 gives the substance determined as chlorophyll a.
+  - Section A: filter about 1 litre through a glass-fibre filter, extract in 90% v/v acetone, read absorbance at 665 nm
+    and subtract 750 nm for turbidity, then chlorophyll a = 11.9 × A × v ÷ (d × V) µg/l (step A8.24).
+  - Note (t) to that step says the calculation "makes no correction for the presence of degraded matter or of other
+    pigments". Note (r) says the 11.9 factor makes an arbitrary allowance for absorbance by other pigments.
+  - A3.1 and A3.2: chlorophylls b and c, carotenoids and degradation products (phaeophytin, phaeophorbide) add to the
+    absorbance at 665 nm, and A3.2 calls degradation products the more serious effect.
+  - Section D1 is an optional extra step: acidify the acetone extract and read again, giving the undegraded
+    chlorophyll a as 11.9 × 2.43 × (A₆₆₅ before − A₆₆₅ after) × v ÷ (d × V).
+- **EA-commissioned guidance, for context only.** SNIFFER WFD38, *Chlorophyll and Phosphorus Classifications for UK
+  Lakes* (Carvalho et al., October 2006; project manager at the Environment Agency;
+  `https://nora.nerc.ac.uk/id/eprint/3305/1/WFD38_WP2_Final_report_e_version.pdf`), Appendix 2, page 81, recommends
+  cold 90% acetone with an acidification step. That is a recommendation, not a statement of what the laboratory does.
+- **A metadata check, values dropped.** One listing request for determinand 5122 (phaeophytin, acetone extract),
+  May to September 2025, every point type in England, through `wqa_meta.keep_only`. The service answered HTTP 204 No
+  Content: no rows. So in that season the EA published no phaeophytin result from the acetone extract.
+
+What is established and what is inferred:
+- **Established:** the EA's laboratory runs one accredited chlorophyll test. It is acetone extraction with
+  spectrophotometry, following the SCA 1980 chlorophyll a method. That method measures chlorophyll a at 665 nm in 90%
+  acetone. Its standard result is not corrected for degradation products or other pigments.
+- **Inferred, not confirmed:** that 7887 holds the result of that test. The label "Chlorophyll : Acetone Extract"
+  matches the test name, and it is the only chlorophyll code at lakes. But no EA source names code 7887 next to the
+  test.
+- **Unresolved:** whether 7887 is the uncorrected value (step A8.24) or the acid-corrected value (section D1). No
+  phaeophytin row in summer 2025 points weakly to the uncorrected value. The in-house method "SX I Chlorophyll UVV" is
+  not published, and it would settle this. So would an answer from NLS Customer Services (nls@environment-agency.co.uk).
+
+What this means for the test: 7887 is best read as **spectrophotometric chlorophyll a, probably not corrected for
+phaeopigments**. It is not total chlorophyll and not a + b by label. Phaeopigments and chlorophylls b and c may raise
+it. NDCI responds to red-edge absorption by the same pigment group, so this does not change the question. The results
+must still not claim agreement with "laboratory chlorophyll-a" in a stricter sense than this. They should say
+"EA acetone-extract chlorophyll (determinand 7887), spectrophotometric, phaeopigment correction not stated".
+
+Requests for this check: 8 to the EA host (API description, codelist 7887, old definitions URL, downloads page,
+API-docs page, two codelist searches, one 5122 listing), 1 to ukas.com, 1 to standingcommitteeofanalysts.co.uk,
+1 to nora.nerc.ac.uk, 1 to wfduk.org (404), and 5 web searches.
+
 ## Results
 
 None yet.
