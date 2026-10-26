@@ -3322,7 +3322,7 @@ function renderShared(sh) {
   $('back-lists').addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault();
     keepPlace(); history.pushState({ view: 'saved', from: 'saved' }, '', savedPath()); renderSaved(); scrollTop(); focusHeading(); });
   if ($('sh-add')) $('sh-add').addEventListener('click', () => {
-    const kept = setLists(makeList(LISTS, sh.name, spots.map(s => s.id)));
+    const kept = setLists(addSharedList(LISTS, sh.name, spots.map(s => s.id)));
     // The alerts tile is some two screens down on a phone, under the days, the cards and Compare: the
     // note that says the list was added points to it.
     LISTS_UI.said = (kept ? `Added to your lists as ${esc(listNow().name)}.` : 'This browser is not keeping site data, so this list is kept only for this visit.')

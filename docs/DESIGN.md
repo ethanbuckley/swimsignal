@@ -1245,6 +1245,9 @@ gives all four navigation links a single full-width row.
   someone shared it and that it is not kept until added, one button, "Add to my lists", then the cards as
   tiles without the bookmark. This replaces the fifth round's box offering a shared list. A list already
   added says so, with "Show it". A plan's link opens the cards on the plan's day.
+- Someone with nothing saved who adds a shared list gets that one list (26 October 2026): it takes the
+  place of the empty "My spots" a first visit makes (lists.js, `addSharedList`), so there is no chip for
+  an empty list beside it. With anything saved, another list, or "My spots" renamed, it is added beside them.
 - The next step after saving (25 October 2026, a 375 px walk through the Facebook post's link). Save on a
   spot's page says what it did in a muted line straight under the button (`#save-msg`, empty and without
   room until then), with Saved as a link and, where the site has alerts, "There you can also set up alerts
