@@ -294,7 +294,8 @@ def long_run_section(ov: pd.DataFrame | None, longest: pd.Series | None, as_of: 
         h += ('<h3 id="long-runs-no-record">Monitors reporting one spill for more than '
               f"{days} days, with no Environment Agency record to compare against</h3>"
               "<p>The Environment Agency's records for 2024 and 2025 have no spill at these overflows, so there is "
-              "nothing to compare these spills with. That is often because the monitor, or its id, is new. A spill of "
+              "nothing to compare these spills with. That can be because the overflow did not spill in those years, or because "
+              "its monitor or its id is new. A spill of "
               f"more than {days} days is listed here only so that someone can ask whether the monitor is still reporting "
               "correctly; nothing here says the spill is unusual for the overflow.</p>"
               + _long_run_rows(unmatched, info, with_ref=False))
