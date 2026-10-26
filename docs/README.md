@@ -75,6 +75,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   `-q2-leads.csv`, `-q2-reliability.csv`, `-q2-scores.csv`, `-q2-subsets.csv`, `-top.csv`, `-y2026.csv`.
 - [ENSEMBLE-RAIN-TEST-2026-11.md](ENSEMBLE-RAIN-TEST-2026-11.md): ensemble rain for the listed spots. **No
   result yet:** the window runs 23 October to 19 November 2026, read on or after 21 November.
+- [INTERIM-USEFULNESS-2026-10.md](INTERIM-USEFULNESS-2026-10.md): the live spill forecast, 29 September to 23
+  October 2026, against persistence and a rain rule as well as the long-run rate. **No company passes the promise
+  rule:** at leads 1 to 4 every lower bound against the best reference is at or below 0, so the wording this winter
+  is "still being tested". Includes a draft amendment, not filed. Table: `.json`.
 
 ### Transport and the E. coli estimate
 
