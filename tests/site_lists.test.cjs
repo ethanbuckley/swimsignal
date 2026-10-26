@@ -113,6 +113,44 @@ test('a link from before lists, or an odd one, reads safely', () => {
   assert.deepEqual(S.readShared('#list=%3Cb%3EHi%3C%2Fb%3E%0A&spots=a').name, '<b>Hi</b>');   // the page escapes it: esc() in renderShared
 });
 
+// A list's link pasted on the Saved page (the Home Screen app on an iPhone has no address bar, 26 Oct
+// 2026): only a link to this site's Saved page holding a list is taken, and only its hash is kept.
+test('a pasted link opens a list only when it is a link to a list on this site', () => {
+  const live = 'https://swimsignal.co.uk/saved/#list=Windermere&spots=osm-windermere-waterhead,bw-ukd1203-45650';
+  const here = 'http://localhost:8812';
+  assert.deepEqual(S.pastedList(live, here), {hash: '#list=Windermere&spots=osm-windermere-waterhead,bw-ukd1203-45650'});
+  assert.deepEqual(S.pastedList(`  \n${live}\t `, here), S.pastedList(live, here));   // spaces and a line break around it, as a paste brings
+  assert.deepEqual(S.pastedList('https://www.swimsignal.co.uk/saved/#spots=a,b', 'https://swimsignal.co.uk'), {hash: '#spots=a,b'});   // a link from before lists
+  assert.deepEqual(S.pastedList('http://localhost:8812/saved/index.html#list=W&spots=a', here), {hash: '#list=W&spots=a'});   // the page's own host
+  assert.deepEqual(S.pastedList('https://swimsignal.co.uk/saved#list=W&spots=a', here), {hash: '#list=W&spots=a'});   // typed without the last slash
+  assert.deepEqual(S.pastedList('https://example.org/swimsignal/saved/#list=W&spots=a', 'https://example.org/swimsignal/'), {hash: '#list=W&spots=a'});   // under a folder
+  assert.deepEqual(S.pastedList('https://swimsignal.co.uk/saved/' + S.shareHash('Plan', ['a'], '2026-10-27'), here), {hash: '#list=Plan&day=2026-10-27&spots=a'});
+  // What is turned away, and why.
+  const why = (t, origin = here) => S.pastedList(t, origin).why;
+  for (const t of ['', '   \n', null, undefined, 42, {toString: () => live}]) assert.equal(why(t), 'empty', String(t));
+  assert.equal(why('https://swimsignal.co.uk/saved/#spots=' + 'a,'.repeat(S.PASTE_MAX)), 'long');
+  assert.equal(why('swimsignal.co.uk/saved/#list=W&spots=a'), 'notlink');   // no https://, so not a link a browser opens
+  assert.equal(why('Windermere'), 'notlink');
+  assert.equal(why('javascript:alert(1)//saved/#spots=a'), 'site');
+  assert.equal(why('ftp://swimsignal.co.uk/saved/#spots=a'), 'site');
+  assert.equal(why('https://example.com/saved/#list=W&spots=a'), 'site');
+  assert.equal(why('https://swimsignal.co.uk.evil.com/saved/#list=W&spots=a'), 'site');   // a look-alike host
+  assert.equal(why('https://evil.com/?https://swimsignal.co.uk/saved/#list=W&spots=a'), 'site');
+  assert.equal(why('http://localhost:9999/saved/#list=W&spots=a'), 'site');   // another port is another site
+  assert.equal(why('https://swimsignal.co.uk/saved/#list=W&spots=a', 'not a page address'), undefined);   // no origin: swimsignal.co.uk still is
+  assert.equal(why('https://swimsignal.co.uk/spot/grasmere/#list=W&spots=a'), 'notlist');   // not the Saved page
+  assert.equal(why('https://swimsignal.co.uk/sites.html#spots=a,b&name=Club'), 'notlist');   // a sites view, not a list
+  assert.equal(why('https://swimsignal.co.uk/saved/'), 'notlist');
+  assert.equal(why('https://swimsignal.co.uk/saved/#spots='), 'notlist');
+  assert.equal(why('https://swimsignal.co.uk/saved/#list=Weekend'), 'notlist');
+  // A name with markup in it stays in the hash, as typed; the page escapes the name it shows (esc in renderShared).
+  const odd = S.pastedList('https://swimsignal.co.uk/saved/#list=%3Cb%3EHi%3C%2Fb%3E&spots=a', here);
+  assert.deepEqual(odd, {hash: '#list=%3Cb%3EHi%3C%2Fb%3E&spots=a'});
+  assert.equal(S.readShared(odd.hash).name, '<b>Hi</b>');
+  // A raw < in a pasted link is percent-encoded by the URL parser, never kept as markup.
+  assert.doesNotMatch(S.pastedList('https://swimsignal.co.uk/saved/#list=<b>Hi</b>&spots=a', here).hash, /</);
+});
+
 // The page loads lists.js as a plain script beside the others: its names must not collide with theirs,
 // or the second declaration stops the page.
 test('lists.js loads beside the page’s other scripts without a clash', () => {
@@ -234,4 +272,26 @@ test('"Highest risk", "Near me" and "Low risk only" draw rows as before: only A�
   // "Low risk only" keeps low spots alone, so none is behind the line.
   const ctx = listPage(cumbria);
   assert.equal(cumbria.filter(s => vm.runInContext('mapLevel', ctx)(s) === 'low').every(s => s.upstream_summary.overflows > 0), true);
+});
+
+// Add to my lists from a shared link (phone audit, 25 Oct 2026): a newcomer had the empty "My spots" a
+// first visit makes, so adding "Windermere" left two lists and a chip for an empty one beside it.
+test('a shared list takes the place of a first visit’s empty "My spots", and is added beside anything else', () => {
+  const W = ['osm-windermere-waterhead', 'bw-ukd1203-45650'];
+  const fresh = S.readLists(null, null);
+  assert.deepEqual(fresh, {current: 'l1', lists: [{id: 'l1', name: 'My spots', spots: []}]});
+  const one = S.addSharedList(fresh, 'Windermere', W);
+  assert.deepEqual(one, {current: 'l1', lists: [{id: 'l1', name: 'Windermere', spots: W}]});   // one list, shown, Save adds to it
+  assert.deepEqual(fresh.lists[0].spots, []);   // the old state is left as it was
+  // Anything saved, a renamed list, or more than one list: beside them, exactly as makeList.
+  const saved = S.addToList(fresh, 'l1', 'grasmere');
+  const renamed = S.renameList(fresh, 'l1', 'Weekend');
+  const two = S.makeList(fresh, 'Club');
+  for (const st of [saved, renamed, two]) assert.deepEqual(S.addSharedList(st, 'Windermere', W), S.makeList(st, 'Windermere', W));
+  assert.deepEqual(S.addSharedList(saved, 'Windermere', W).lists.map(l => [l.name, l.spots.length]), [['My spots', 1], ['Windermere', 2]]);
+  // From a link before lists (#spots= only), the name a shared list reads: still one list.
+  assert.equal(S.addSharedList(fresh, S.SHARED_LIST, W).lists[0].name, 'Shared list');
+  // The page uses it for Add to my lists.
+  const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  assert.match(page, /setLists\(addSharedList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)\)/);
 });

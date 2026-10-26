@@ -36,6 +36,12 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [NINE-COMPANY-MODEL-TEST-2026-10.md](NINE-COMPANY-MODEL-TEST-2026-10.md): a spill model trained on nine
   companies. **Not adopted:** conditions 1, 3 and 4 fail. Tables: `-coverage.csv`, `-events.csv`,
   `-reliability.csv`, `-scores.csv`.
+- [NINE-COMPANY-MODEL-V2-TEST-2026-11.md](NINE-COMPANY-MODEL-V2-TEST-2026-11.md): the nine-company model again,
+  trained on 2024 and 2025 and tested on January to August 2026, pooled layer alone and with two-year offsets, with
+  conditions that allow for noise. **Not adopted:** both arms fail condition 2 at United Utilities only ((b) +3.4%,
+  interval just above zero); at the other eight companies (b) is 11% to 23% better than production, and 15% better on
+  the Welsh set. Tables: `-checks.json`, `-event-defs.csv`, `-intervals.csv`, `-monthly.csv`, `-reliability.csv`,
+  `-scores.csv`, `-sensitivities.csv`, `-training.csv`.
 - [NEURAL-CHALLENGER-TEST-2026-10.md](NEURAL-CHALLENGER-TEST-2026-10.md): a neural net against the boosted
   trees. **Not adopted:** conditions 1 to 4 fail (Brier 0.0372 against 0.0362). Tables: `-checks.json`,
   `-differences.csv`, `-leads.csv`, `-reliability.csv`, `-scores.csv`, `-training.csv`.
@@ -69,6 +75,14 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   `-q2-leads.csv`, `-q2-reliability.csv`, `-q2-scores.csv`, `-q2-subsets.csv`, `-top.csv`, `-y2026.csv`.
 - [ENSEMBLE-RAIN-TEST-2026-11.md](ENSEMBLE-RAIN-TEST-2026-11.md): ensemble rain for the listed spots. **No
   result yet:** the window runs 23 October to 19 November 2026, read on or after 21 November.
+- [INTERIM-USEFULNESS-2026-10.md](INTERIM-USEFULNESS-2026-10.md): the live spill forecast, 29 September to 23
+  October 2026, against persistence and a rain rule as well as the long-run rate. **No company passes the promise
+  rule:** at leads 1 to 4 every lower bound against the best reference is at or below 0, so the wording this winter
+  is "still being tested". Includes a draft amendment, not filed. Table: `.json`.
+- [CALIBRATION-CHECK-2026-10.md](CALIBRATION-CHECK-2026-10.md): a diagnostic of the same live record, stated
+  before the run. **The chances run too high overall** (observed over expected 0.74 same day, 0.80 in advance),
+  and the higher chances run highest (slope 0.74), but not at every company: Thames, Wessex and Southern too high;
+  Anglian and Yorkshire too extreme, not too high. Nothing is refitted. Tables: `.json`, `-persistence.json`.
 
 ### Transport and the E. coli estimate
 
@@ -88,6 +102,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   questions fail;** nothing adopted.
 - [FARM-PRESSURE-TEST-2026-10.md](FARM-PRESSURE-TEST-2026-10.md): the Environment Agency's farm-pollution flag
   per water body as an E. coli input. **Fails conditions 1, 2, 5 and 6;** nothing adopted. Scores: `-score.json`.
+- [LAKE-ECOLI-LINE-TEST-2026-10.md](LAKE-ECOLI-LINE-TEST-2026-10.md): a lower E. coli line (235 or 500 per 100 ml)
+  to give lakes an estimate. **Both lines fail condition 3** (ranking: lake AUC 0.632 and 0.535 against 0.65);
+  lakes keep no E. coli estimate. Ends with a near-miss framework for later tests, dated before the run. Tables:
+  `-score.json`, `-face.json`, `-model-235.json`, `-model-500.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with
@@ -152,6 +170,10 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 
 ## Checks and records
 
+- [NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md](NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md): the EA files for 2024
+  to August 2026 before the v2 test. January to August 2026 is usable, no month excluded: July is dry, not missing;
+  the EA file matches the companies' own files; the live feeds add short blips. Tables: `-live-feed.csv`,
+  `-monthly.csv`, `-own-feeds.csv`, `-rain.csv`.
 - [NOISE-AUDIT-2026-10.md](NOISE-AUDIT-2026-10.md): which tests decided on point rules with no allowance for noise,
   the re-tests that follow, and the rule for new statements. No verdict is changed.
 - [MODEL-PROVENANCE-2026-10.md](MODEL-PROVENANCE-2026-10.md): why `train.py` did not rebuild main's spill model. Layer 2

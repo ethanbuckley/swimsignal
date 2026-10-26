@@ -1,0 +1,73 @@
+company,month,feed_events,ea_same_day,ea_exact_start,site_has_no_ea26,share_same_day
+Anglian Water,1,26,16,5,9,0.6154
+Anglian Water,2,83,62,1,12,0.747
+Anglian Water,3,50,25,1,13,0.5
+Anglian Water,4,38,5,0,21,0.1316
+Anglian Water,5,45,9,0,20,0.2
+Anglian Water,6,116,32,0,37,0.2759
+Anglian Water,7,66,4,1,30,0.0606
+Anglian Water,8,478,314,12,61,0.6569
+Northumbrian Water,1,6,3,3,3,0.5
+Northumbrian Water,2,28,18,18,10,0.6429
+Northumbrian Water,3,38,29,27,7,0.7632
+Northumbrian Water,4,16,6,5,6,0.375
+Northumbrian Water,5,77,58,58,12,0.7532
+Northumbrian Water,6,158,143,138,8,0.9051
+Northumbrian Water,7,47,28,28,6,0.5957
+Northumbrian Water,8,603,549,525,24,0.9104
+Severn Trent Water,1,18,12,12,5,0.6667
+Severn Trent Water,2,93,87,86,6,0.9355
+Severn Trent Water,3,80,59,56,13,0.7375
+Severn Trent Water,4,17,3,3,5,0.1765
+Severn Trent Water,5,46,32,32,3,0.6957
+Severn Trent Water,6,66,52,51,5,0.7879
+Severn Trent Water,7,13,4,4,7,0.3077
+Severn Trent Water,8,911,829,819,38,0.91
+South West Water,1,65,56,53,9,0.8615
+South West Water,2,120,99,98,13,0.825
+South West Water,3,80,46,46,10,0.575
+South West Water,4,47,2,2,23,0.0426
+South West Water,5,57,13,13,15,0.2281
+South West Water,6,115,44,44,21,0.3826
+South West Water,7,86,8,8,20,0.093
+South West Water,8,338,280,271,17,0.8284
+Southern Water,1,66,52,49,14,0.7879
+Southern Water,2,204,183,178,19,0.8971
+Southern Water,3,32,29,28,1,0.9062
+Southern Water,4,9,4,3,5,0.4444
+Southern Water,5,9,5,5,4,0.5556
+Southern Water,6,145,132,129,12,0.9103
+Southern Water,7,5,4,4,1,0.8
+Southern Water,8,100,86,80,6,0.86
+Thames Water,1,21,17,17,4,0.8095
+Thames Water,2,78,75,74,2,0.9615
+Thames Water,3,57,50,50,2,0.8772
+Thames Water,4,13,3,3,3,0.2308
+Thames Water,5,17,4,4,4,0.2353
+Thames Water,6,149,138,136,5,0.9262
+Thames Water,7,15,2,2,1,0.1333
+Thames Water,8,54,44,44,2,0.8148
+United Utilities,1,20,7,7,13,0.35
+United Utilities,2,29,16,10,8,0.5517
+United Utilities,3,63,49,44,10,0.7778
+United Utilities,4,33,4,3,12,0.1212
+United Utilities,5,48,16,14,11,0.3333
+United Utilities,6,102,66,62,20,0.6471
+United Utilities,7,34,6,6,11,0.1765
+United Utilities,8,436,322,312,43,0.7385
+Wessex Water,1,126,101,84,25,0.8016
+Wessex Water,2,322,293,267,29,0.9099
+Wessex Water,3,118,113,96,5,0.9576
+Wessex Water,4,7,7,2,0,1.0
+Wessex Water,5,31,30,0,1,0.9677
+Wessex Water,6,326,289,1,30,0.8865
+Wessex Water,7,6,4,0,2,0.6667
+Wessex Water,8,565,545,2,8,0.9646
+Yorkshire Water,1,16,10,0,4,0.625
+Yorkshire Water,2,43,34,2,6,0.7907
+Yorkshire Water,3,35,19,1,9,0.5429
+Yorkshire Water,4,15,2,0,4,0.1333
+Yorkshire Water,5,68,47,1,11,0.6912
+Yorkshire Water,6,68,35,5,12,0.5147
+Yorkshire Water,7,21,2,0,7,0.0952
+Yorkshire Water,8,859,703,58,44,0.8184

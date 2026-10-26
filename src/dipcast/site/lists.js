@@ -85,6 +85,15 @@ function makeList(state, name, spots = []) {
   const id = freeListId(state.lists);
   return { current: id, lists: [...state.lists, { id, name: freeListName(state.lists, listName(name) || 'New list'), spots: listIds(spots) }] };
 }
+// A shared list added to my lists (the shared view's Add to my lists). Someone with nothing saved has
+// only the empty "My spots" that readLists makes on a first visit; the shared list takes its place, so a
+// newcomer from a link has one list, not an empty "My spots" chip beside it (phone audit, 25 Oct 2026).
+// Anything saved, another list, or "My spots" renamed: added beside them, as makeList.
+function addSharedList(state, name, spots) {
+  const only = state.lists.length === 1 ? state.lists[0] : null;
+  if (only && !only.spots.length && only.name === FIRST_LIST) return makeList({ current: only.id, lists: [] }, name, spots);
+  return makeList(state, name, spots);
+}
 function renameList(state, id, name) {
   const n = listName(name); if (!n) return state;
   return { ...state, lists: state.lists.map(l => l.id === id ? { ...l, name: freeListName(state.lists, n, id) } : l) };
@@ -125,6 +134,26 @@ function readShared(hash, dates = []) {
   const day = raw('day');
   return { name: name || SHARED_LIST, spots, day: dates.includes(day) ? day : null };
 }
+// A list's link, pasted on the Saved page. The Home Screen app on an iPhone has no address bar to open
+// a link in, and keeps its lists apart from Safari's (phone audit, 25 Oct 2026), so a link someone sent,
+// or one copied with Share this list in Safari, is pasted there and opens as a shared list. Only a
+// link to a Saved page of this site that holds a list is taken: { hash } (the part after the #, read
+// again by readShared when it is shown), or { why } for anything else. origin: the page's own; a link
+// to swimsignal.co.uk is this site's too, wherever the page is served from. The path may be under a
+// folder (the site works at any address) and may lack its last slash, as a link typed by hand can.
+const PASTE_MAX = 8000;   // characters in a pasted link: a list of every spot (about 100 ids) is under this
+const SITE_HOSTS = ['swimsignal.co.uk', 'www.swimsignal.co.uk'];
+function pastedList(text, origin) {
+  const t = typeof text === 'string' ? text.trim() : '';
+  if (!t) return { why: 'empty' };
+  if (t.length > PASTE_MAX) return { why: 'long' };
+  let u = null, here = null;
+  try { u = new URL(t); } catch (e) { return { why: 'notlink' }; }
+  try { here = new URL(origin); } catch (e) { here = null; }
+  if (!/^https?:$/.test(u.protocol) || !(SITE_HOSTS.includes(u.host) || (here && u.host === here.host))) return { why: 'site' };
+  const sh = /\/saved(\/(index\.html)?)?$/.test(u.pathname) ? readShared(u.hash) : null;
+  return sh && sh.spots.length ? { hash: u.hash } : { why: 'notlist' };
+}
 // A list as a sites view (sites.html, sites.js): one printable page with each spot's five days, for a
 // centre, a club or a council. sites.html#spots=wharfe-burnsall,grasmere&name=Club%20launches: the spots
 // and the name, nothing else, after the # as a shared list's link. Without a name, no name part.
@@ -138,5 +167,5 @@ const planListName = iso => 'Plan for ' + new Date(iso + 'T12:00:00').toLocaleDa
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, planListName, sitesHash };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList };
 }

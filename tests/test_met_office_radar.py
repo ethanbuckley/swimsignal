@@ -190,3 +190,84 @@ def test_get_retries_then_gives_up(monkeypatch):
         radar.get(c, "https://x/")
     c = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(404)))
     assert radar.get(c, "https://x/") is None
+
+
+# ------------------------------------------------------------------ the overflows
+def pixel_centre(row, col):
+    """The lat/lon of a radar pixel's centre."""
+    x = radar.X_LEFT + (col + 0.5) * radar.PIXEL_M
+    y = radar.Y_TOP - (row + 0.5) * radar.PIXEL_M
+    lon, lat = radar.Transformer.from_crs(radar.GRID_CRS, "EPSG:4326", always_xy=True).transform(x, y)
+    return float(lat), float(lon)
+
+
+def test_overflow_pixel_is_the_one_that_holds_it():
+    row, col = radar.overflow_pixels([pixel_centre(1200, 900)[0], 30.0], [pixel_centre(1200, 900)[1], -40.0])
+    assert (row[0], col[0]) == (1200, 900)
+    assert (row[1], col[1]) == (-1, -1)   # off the grid
+
+
+def test_block_is_the_pixel_and_its_eight_neighbours_clipped_at_the_edge():
+    idx, lab, n = radar.block_pixels(np.array([1200, 0, -1]), np.array([900, 0, -1]))
+    assert list(n) == [9, 4, 0]
+    rows, cols = np.divmod(idx[lab == 0], radar.NX)
+    assert set(zip(rows, cols)) == {(r, c) for r in (1199, 1200, 1201) for c in (899, 900, 901)}
+    assert set(idx[lab == 1]) == {0, 1, radar.NX, radar.NX + 1}
+    idx, lab, n = radar.block_pixels(np.array([1200]), np.array([900]), half=0)
+    assert list(idx) == [1200 * radar.NX + 900] and list(n) == [1]
+
+
+def overflow_table(tmp_path, rows):
+    lat, lon = zip(*(pixel_centre(r, c) for r, c in rows))
+    df = pd.DataFrame({"site_id": [f"X{k}" for k in range(len(rows))], "lat": lat, "lon": lon,
+                       "network_key": "b5724303", "company": "Test Water"})
+    path = tmp_path / "overflows.parquet"
+    df.to_parquet(path)
+    return path
+
+
+def test_run_writes_overflow_days_and_resumes(tmp_path, monkeypatch):
+    """A grid of 2 mm/h with 9 mm/h on one overflow's own pixel and nodata on one neighbour: the
+    block mean is (9 + 7 x 2) / 8, the centre is 9; another overflow sits in plain 2 mm/h."""
+    rate = grid(2.0).astype(np.float64)
+    rate[1200, 900] = 9.0
+    rate[1199, 899] = np.nan
+    monkeypatch.setattr(radar, "_sleep", lambda s: None)
+    monkeypatch.setattr(radar, "read_composite", lambda data: rate)
+    b = Bucket()
+    client = httpx.Client(transport=httpx.MockTransport(b.handler))
+    ovs, meta = radar.read_overflows(overflow_table(tmp_path, [(1200, 900), (1500, 700)]))
+    assert meta["network_key"] == "b5724303" and len(meta["overflows_sha256"]) == 64
+    out = tmp_path / "out"
+    stats = radar.run("2026-02-06", "2026-02-06", [], out, client=client, pause_s=0,
+                      overflows=ovs, overflow_meta=meta)
+    assert b.files == 96 and stats["overflow_rows"] == 48 and stats["rows"] == 0
+    path = radar.overflow_day_path(out, pd.Timestamp("2026-02-06"))
+    df = pd.read_parquet(path)
+    assert list(df.columns) == ["site_id", "time", "radar_mm", "coverage", "centre_mm", "centre_coverage"]
+    assert list(df.site_id[:24]) == ["X0"] * 24 and str(df.time.dtype) == "datetime64[us, UTC]"
+    x0 = df[df.site_id == "X0"].set_index("time")
+    assert np.allclose(x0.radar_mm, 23 / 8, atol=1e-3) and np.allclose(x0.centre_mm, 9.0)
+    assert x0.coverage[pd.Timestamp("2026-02-06 06:00", tz="UTC")] == pytest.approx(8 / 9, abs=1e-3)
+    assert x0.centre_coverage[pd.Timestamp("2026-02-06 07:00", tz="UTC")] == pytest.approx(0.75)
+    x1 = df[df.site_id == "X1"]
+    assert np.allclose(x1.radar_mm, 2.0) and np.allclose(x1.centre_mm, 2.0)
+    md = radar.pq.read_schema(path).metadata
+    assert md[b"overflows_sha256"].decode() == meta["overflows_sha256"]
+    assert md[b"network_key"] == b"b5724303" and b"3 x 3" in md[b"pixel_rule"] and b"CC BY-SA" in md[b"credit"]
+    px = pd.read_parquet(out / "overflows" / "overflow_pixels.parquet")
+    assert list(px.row) == [1200, 1500] and list(px.col) == [900, 700] and list(px.block_pixels) == [9, 9]
+
+    # Again: nothing to fetch. With cells too, the day is fetched for the cells only.
+    stats = radar.run("2026-02-06", "2026-02-06", [], out, client=client, pause_s=0,
+                      overflows=ovs, overflow_meta=meta)
+    assert b.files == 96 and stats["skipped"] == 1
+    stats = radar.run("2026-02-06", "2026-02-06", CELLS, out, client=client, pause_s=0,
+                      overflows=ovs, overflow_meta=meta)
+    assert b.files == 192 and stats["rows"] == 48 and stats["overflow_rows"] == 0
+
+    # A folder begun from one overflow table refuses another.
+    other = dict(meta, overflows_sha256="0" * 64)
+    with pytest.raises(SystemExit, match="another --out"):
+        radar.run("2026-02-07", "2026-02-07", [], out, client=client, pause_s=0,
+                  overflows=ovs, overflow_meta=other)
