@@ -3,7 +3,7 @@
 Started 26 October 2026, after Ethan accepted Codex's assessment of which AI systems are worth building. This is the
 one place that says what each piece is, where it stands and what is waiting on a decision.
 
-**Final snapshot of the 26 October window, 23:45 UTC.** PR states were read from GitHub at 23:43 UTC. Merges were
+**Snapshot during the 26 October window (updated as work lands; final update near 00:30 UTC).** Merges were
 made by Codex under Ethan's delegation of routine decisions (from about 22:30 UTC); before that, Ethan approved the
 #377 statement (about 19:25 UTC) and adopted the recommendations of 26 October (about 20:15 UTC). No live model,
 level, A8, option B or shadow window was changed by any of this.
@@ -16,13 +16,15 @@ level, A8, option B or shadow window was changed by any of this.
 | #382 | Monitor anomalies; long_run list on the data-quality page | **merged, live** | 6688156 (22:45) | Publishing run 40414855047 succeeded; live page 4 comparative + 2 no-baseline rows; 5 feed checks, 0 flags |
 | #387 | Comprehension sessions pack; H1-H4 clarification; actions list | **merged** | bf0065a (23:04) | No session run; no recruitment sent |
 | #389 | Practical guides, 11 bathing waters | **merged** | 59b60af (23:13) | Private audit `swimsignal-private/guides-audit-2026-10-26/AUDIT.md`, 60 rows; fetch times 22:53:18-22:54:51 and 23:05:51 UTC |
-| #391 | Official advice on every surface that shows a level (round 1) | **merged** | 9f29521 (23:36) | Planner, map, list counts, embed, sites, organisers, cards |
+| #391 | Official advice on every surface that shows a level (round 1) | **merged, live** | 9f29521 (23:36) | Publishing run 40420912535 succeeded |
+| #388 | Planner: outing time + backup; saved changes with evidence and the official notice; local read tick | **merged** | fcb7f00 (23:45:54) | Codex fixed a rendering boundary while reviewing (8f384f1); publishing run 40421963614 was running |
 | #377 | Research: satellite algae (Sentinel-2 NDCI) | **merged (record)** | 41d3afd (23:25) | A fails; B too few; CLMS had no data at the 18 English sites checked in summer 2025. Nothing adopted |
 | #381 | Research: sampling priorities simulation | **merged (record)** | c4006ca (23:26) | Fails its stated rule. Nothing adopted |
 | #384 | Research: missing event ends | **merged (record)** | c581b9f (23:26) | Do not fix now; re-measure on or after 9 Nov |
-| #392 | Official advice, round 2 (Nearby, compare row, Saved grid, feeds, action line, helper keeps the cause) | open, draft, CI green | c3c8fd2 | Ready for Codex review. Merges cleanly with #388 |
-| #388 | Planner: outing time + backup; saved changes with evidence and official notice; local read tick | open, draft | 8f384f1 | main merged (428180a); Codex added an escaping fix (8f384f1); CI on that head was running at 23:43 |
-| #390 | Prototype: catchment replay (`?replay=1` only) | open, draft, CI green | 1d21c4c | Anchored to issue time; benchmark 6.5 s for 105 spots; preview at http://localhost:8793 (folder `swimsignal-private/replay-preview`) |
+| #392 | Official advice, round 2 (Nearby, compare row, Saved grid, feeds, action line, helper keeps the cause) | open, draft | c3c8fd2 | Codex: keep the share-plan exclusion with its reason; explicit user lists keep advised spots with the notice. Merging main (#388) and Codex's review notes |
+| (new) | Alert/push/email/weekly message text and weekend-card groups carry the official line; recipients, triggers, levels and ranks unchanged | in progress | | Text only; no new notification infrastructure |
+| #390 | Prototype: catchment replay (`?replay=1` only) | open, draft | 3a2e935 | Codex added 1685b3e (a lake spot never gets a river arrival). Full CI then failed one existing, clock-dependent ensemble test (not replay code); fixed by pinning the test to noon (3a2e935, also PR #393 for main). Preview http://localhost:8793 |
+| #393 | Test only: pin the ensemble spare-calls test to noon | open | | Fixes the late-night CI flake for every branch; no production change |
 | #383 | Research: river rises scope + evaluation harness | open, draft | 6c3f29d | Fetch and scoring refuse to run before 2 Nov; not reviewed for running yet |
 | #385 | Research: NDCI vs EA harmful-algae incidents (statement) | open, draft, **unrun** | 735e882 | Reviewed as a bounded exploratory question; not approved for fetching |
 | #386 | Research: NDCI vs EA lab chlorophyll (statement) | open, draft, **unrun** | 61ff324 | 7887 partly verified (acetone extract, phaeopigment correction not stated); not approved for fetching |
@@ -30,14 +32,12 @@ level, A8, option B or shadow window was changed by any of this.
 
 ## Open decisions, and whose
 
-- **Codex (delegated):** review and merge #392, #388 and (if wanted) #390; "Share this plan" for an advised spot:
-  leave it out with a note (as now) or include it with the notice; the stray branch `polish/official-consistency`
+- **Codex (delegated):** review and merge #392, #393 and (if wanted) #390; the stray branch `polish/official-consistency`
   (2 commits, superseded by #392) can be deleted.
 - **Ethan (credentials or outside contact):** the push Worker's `GITHUB_DISPATCH_TOKEN` (recommended: not before the
   ensemble-rain read on 21 Nov); recruitment wording and posts for the comprehension sessions; the UKCEH Bloomin'
   Algae licence enquiry; an EA lab question that would settle 7887's definition.
-- **Follow-ups, not started:** alerts.json, push and email alerts still headline a clean Low for an advised spot;
-  embed/map have the notice (#391) but the "Highest risk" sort ranks by the sewage level; guide label "Verified" on
+- **Follow-ups:** alert message text (in progress, above); the "Highest risk" sort ranks by the sewage level; guide label "Verified" on
   dated Defra listings (P1); Saved and Plan without JavaScript stay on "Loading" (P3); sites view heading order (P4);
   where the replay would live and whether it is cached offline.
 
