@@ -1,4 +1,4 @@
-# Rutland Water Whitwell Creek. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# Rutland Water Whitwell Creek. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -69,13 +69,6 @@ source_name = "Anglian Water"
 [[fact]]
 topic = "hours"
 text = "Open water swimming is only during advertised group times. The swim season runs from May to September, with coached small-group sessions on Thursday evenings. Anglian Water's page does not name Whitwell Creek."
-status = "confirmed"
-source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
-source_name = "Anglian Water"
-
-[[fact]]
-topic = "toilets"
-text = "There are toilets for the open water swimming sessions. Anglian Water's page does not name Whitwell Creek or say where the toilets are."
 status = "confirmed"
 source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
 source_name = "Anglian Water"

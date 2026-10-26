@@ -1,4 +1,4 @@
-# Falcon Meadow, River Waveney. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# Falcon Meadow, River Waveney. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026; two February 2026 facility listings added.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -18,22 +18,15 @@ source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukh1406
 source_name = "Environment Agency bathing water profile"
 
 [[fact]]
-topic = "path"
-text = "Defra's February 2026 consultation on designating the site gives its address as Falcon Meadow, Bungay, NR35 1EU."
-status = "confirmed"
-source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
-source_name = "Defra"
-
-[[fact]]
 topic = "parking"
-text = "Defra's February 2026 consultation lists public parking among the facilities near the site. It does not say where."
+text = "Defra's February 2026 designation consultation listed public parking among the facilities near the site. It did not say where. This is a February 2026 listing, not a current check."
 status = "confirmed"
 source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
 source_name = "Defra"
 
 [[fact]]
 topic = "toilets"
-text = "Defra's February 2026 consultation lists public toilets within about 500 metres of the site. It does not say where."
+text = "Defra's February 2026 designation consultation listed public toilets up to about 500 metres from the site. It did not say where. This is a February 2026 listing, not a current check."
 status = "confirmed"
 source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
 source_name = "Defra"

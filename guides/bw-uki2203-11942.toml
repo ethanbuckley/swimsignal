@@ -1,4 +1,4 @@
-# Ham and Kingston, River Thames. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# Ham and Kingston, River Thames. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026; one February 2026 facility listing added.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -54,7 +54,7 @@ source_name = "Royal Borough of Kingston upon Thames"
 
 [[fact]]
 topic = "toilets"
-text = "Defra's February 2026 consultation lists public toilets within about 500 metres of the site. It does not say where."
+text = "Defra's February 2026 designation consultation listed public toilets up to about 500 metres from the site. It did not say where. This is a February 2026 listing, not a current check."
 status = "confirmed"
 source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
 source_name = "Defra"

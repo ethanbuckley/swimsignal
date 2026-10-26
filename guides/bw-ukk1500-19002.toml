@@ -1,4 +1,4 @@
-# River Avon at Queen Elizabeth Gardens. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# River Avon at Queen Elizabeth Gardens. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -30,10 +30,3 @@ text = "Wiltshire Council's Lush House car park (Cranebridge Road, SP2 7TD) has 
 status = "confirmed"
 source = "https://www.wiltshire.gov.uk/parking-salisbury"
 source_name = "Wiltshire Council"
-
-[[fact]]
-topic = "path"
-text = "Defra's February 2026 consultation on designating the site gives its address as Crane Bridge Road, Salisbury, SP2 7TD, in Queen Elizabeth Gardens."
-status = "confirmed"
-source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
-source_name = "Defra"

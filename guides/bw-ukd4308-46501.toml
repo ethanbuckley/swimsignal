@@ -1,4 +1,4 @@
-# River Ribble at Edisford Bridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# River Ribble at Edisford Bridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -51,10 +51,3 @@ text = "Riverside car park is disabled-only, next to the River Ribble at Edisfor
 status = "confirmed"
 source = "https://www.ribblevalley.gov.uk/car-parks/car-parks-parking/15"
 source_name = "Ribble Valley Borough Council"
-
-[[fact]]
-topic = "path"
-text = "Defra's February 2024 consultation gives the site's address as Edisford Road, Clitheroe, BB7 3LA, and says Ribble Valley Borough Council owns and manages the land."
-status = "confirmed"
-source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
-source_name = "Defra"

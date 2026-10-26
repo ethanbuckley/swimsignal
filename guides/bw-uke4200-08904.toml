@@ -1,4 +1,4 @@
-# Wharfe at Wilderness Carpark. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# Wharfe at Wilderness Carpark. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026; one 2024 facility listing added.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -18,22 +18,8 @@ source = "https://www.leeds.gov.uk/parking-roads-and-travel/parking/parking-pric
 source_name = "Leeds City Council"
 
 [[fact]]
-topic = "path"
-text = "Defra's February 2024 consultation lists a ramp next to the bridge among the facilities near the site. It does not say whether the ramp reaches the water."
-status = "confirmed"
-source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
-source_name = "Defra"
-
-[[fact]]
 topic = "toilets"
-text = "Defra's February 2024 consultation lists public toilets among the facilities near the site. It does not say where."
-status = "confirmed"
-source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
-source_name = "Defra"
-
-[[fact]]
-topic = "rules"
-text = "Defra's February 2024 consultation says Leeds City Council owns and manages the land at the site."
+text = "Defra's February 2024 designation consultation listed public toilets among the facilities near the site. It did not say where. This is a 2024 listing, not a current check."
 status = "confirmed"
 source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
 source_name = "Defra"

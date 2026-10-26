@@ -1,4 +1,4 @@
-# River Avon at Fordingbridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 26 October 2026.
+# River Avon at Fordingbridge. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; every fact rechecked against the passage on its source page, 26 October 2026.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-26
 how = "desk"
@@ -16,10 +16,3 @@ text = "New Forest District Council's Fordingbridge Car Park (SP6 1AQ) has 178 s
 status = "confirmed"
 source = "https://www.newforest.gov.uk/article/1399/Fordingbridge-Car-Park-Fordingbridge"
 source_name = "New Forest District Council"
-
-[[fact]]
-topic = "path"
-text = "Defra's February 2024 consultation on designating the site gives its address as the Recreation Ground, Ringwood Road, Fordingbridge, SP6 1AN, and says Fordingbridge Town Council owns and manages the land."
-status = "confirmed"
-source = "https://consult.defra.gov.uk/water/consultation-on-designation-of-27-sites-as-bathing/supporting_documents/February%202024_Consultation%20document_Applications%20for%20the%20designation%20of%2027%20sites%20as%20bathing%20waters.pdf"
-source_name = "Defra"
