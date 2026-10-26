@@ -204,7 +204,7 @@ test('links to the record: the organisers\' page for the picked day, the sites v
   assert.ok(detail.includes('record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a>'));
   const page = fs.readFileSync(path.join(site, 'record.html'), 'utf8');
   assert.ok(page.includes('@page { size:A4 portrait') && page.includes('<title>Decision record · SwimSignal</title>') && page.includes('class="site-foot"'));
-  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="evidence\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="record\.js"><\/script>/.test(page));
+  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="evidence\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="brief\.js"><\/script>\s*<script src="record\.js"><\/script>/.test(page));
 });
 
 // ------------------------------------------------------------------------------ OP2, OP3, OP4 (docs/ORGANISER-PIVOT-2026-10.md)

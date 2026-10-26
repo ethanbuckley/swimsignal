@@ -2834,7 +2834,7 @@ def write_organisers(site: Path, token: str | None = None, root: str | None = No
 # their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
 # the sitemap lists both, as it lists that page.
 SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.js")
-RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "record.js")
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "brief.js", "record.js")   # brief.js: the version and a read tick
 
 
 def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -2842,7 +2842,7 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
-    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token, root)
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
