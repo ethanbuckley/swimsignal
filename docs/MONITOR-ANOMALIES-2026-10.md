@@ -263,3 +263,17 @@ It takes about a minute and writes only PREFIX-flags.csv and PREFIX-summary.json
 
 Contains Environment Agency data (OGL v3.0) and storm overflow status from the English water companies via the
 National Storm Overflow Hub (CC BY 4.0).
+
+## 7. Decisions, 26 October 2026
+
+Ethan adopted the recommendations of 26 October ("Adopt all the recommendations as my decisions"). Nothing is wired
+in by this PR; each item below is a separate follow-up PR.
+- **long_run on the data-quality page:** yes, now. Four monitors look stuck on "discharging".
+- **quiet_monitor:** held until a second month of saved polls confirms its flags; it cannot tell a broken monitor from
+  an upgraded overflow. When it goes on the page, it is worded as a question to the company, not a fault.
+- **Build warnings only (not the page):** company_freeze, known_share_drop, future_time, time_format and id_turnover.
+  They had 0 real flags apart from future_time's four, so they cost nothing.
+- **record_contradiction:** not on the public page; 158 records is too noisy. A note to United Utilities and Anglian
+  Water later (outreach, not done here).
+- **cadence_change:** not wired in.
+- **United Utilities' missing event ends:** decided separately, in PR #384 (do not fix now; measure again).
