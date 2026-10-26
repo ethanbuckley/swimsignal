@@ -142,8 +142,14 @@ Not checked: a real phone, iOS Safari, Firefox, screen-reader output, real keybo
 - An information-based sampling ranking did not clearly beat the simple coverage rule, even in a made-up world built
   to suit it.
 - The overflow feeds held up over 39 days for the failures that would hide every spill at once (freezes, recoded
-  status, new ids): 0 real flags. The real issues are single monitors: stuck "discharging", quiet through storms, or
-  missing event ends.
+  status, new ids): 0 real flags. The real questions are about single monitors: reporting one spill far longer than
+  any on record, quiet through storms, or missing event ends.
+- A Sentinel-2 chlorophyll index did not add to the month and the last EA check for "algae seen" at English lake
+  bathing waters (#377), and the Copernicus lake product had no data at the 18 sites checked.
+- Builds, and so feed polls, ran about every 4 hours, not every 30 minutes: the push Worker's dispatch is not
+  running, and turning it on would change the ensemble-rain study window.
+- An official notice must travel with the level everywhere the level goes (list, plan, share, cards, embed, feeds);
+  the integrated review found 13 places where it did not, now fixed or in #392.
 
 ## Rules every piece follows
 
