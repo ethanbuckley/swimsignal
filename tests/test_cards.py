@@ -269,3 +269,62 @@ def test_write_spot_cards(tmp_path):
     assert sorted(p.name for p in out.iterdir()) == ["a.png"]
     assert cards.write_spot_cards(out, spots, {**alerts, "generated_at": "2026-10-13T08:00:00+01:00"}, GEN) == {}
     assert not out.exists()
+
+
+# Official advice (spots.json `official`): never a clean "Low" on a card. The words are eatoday.js's
+# eaTodayBrief, checked here against the script itself.
+OFFICIAL = {"line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
+            "publisher": "Environment Agency",
+            "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
+            "since": "2026-06-19", "checked": "2026-10-26", "state": "checked"}
+BRIEF = "EA advice against bathing · since 19 Jun · checked 26 Oct"
+
+
+@pytest.mark.parametrize("items", [
+    [OFFICIAL], [{**OFFICIAL, "state": "stale"}], [{**OFFICIAL, "state": "gone"}], [OFFICIAL, {**OFFICIAL, "since": "2026-01-01"}],
+    [{**OFFICIAL, "publisher": "Waverley Borough Council", "since": "2025-08-22",
+      "line": "Waverley Borough Council: advice against swimming (blue-green algae) since 22 Aug 2025"}],
+    [], [{**OFFICIAL, "state": "approved"}], [{**OFFICIAL, "checked": "26 Oct"}],
+])
+def test_official_brief_matches_the_site(items):
+    import json
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    js = Path(__file__).resolve().parents[1] / "src/dipcast/site/eatoday.js"
+    script = f"process.stdout.write(require({json.dumps(str(js))}).eaTodayBrief({json.dumps({'official': items})}))"
+    got = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    assert cards.official_brief({"official": items}) == got
+    if items == [OFFICIAL]:
+        assert got == BRIEF
+
+
+def test_spot_share_card_carries_official_advice(tmp_path):
+    """A low spot with advice: the card's alt text and picture say the advice beside the level, which is
+    unchanged; a spot without advice is as before. The longest names still fit with the line."""
+    spots = [{"id": "f", "name": "Frensham Great Pond", "kind": "lake", "official": [OFFICIAL]},
+             {"id": "o", "name": "Other Pond", "kind": "lake"}]
+    alerts = {"generated_at": GEN, "spots": {s["id"]: {"level": "low", "headline": "Low risk for the next five days"} for s in spots}}
+    made = cards.write_spot_cards(tmp_path / "spot", spots, alerts, GEN)
+    assert made["f"] == (f"Frensham Great Pond: Low risk for the next five days. Official: {BRIEF}. Follow it first; "
+                         "the level is SwimSignal's sewage forecast only. Forecast issued Sun 11 Oct, 14:09.")
+    assert made["o"] == "Other Pond: Low risk for the next five days. Forecast issued Sun 11 Oct, 14:09."
+    for name in ["River Wharfe, Bolton Abbey (Cavendish Pavilion)", "River Lathkill, Lathkill Dale, Over Haddon, Derbyshire Dales"]:
+        for headline in HEADLINES:
+            assert cards.draw_spot(name, "Lake", "low", headline, GEN, BRIEF).size == cards.SHARE_SIZE
+    # The line is drawn: the picture differs from the one without advice.
+    with_line = cards.draw_spot("Frensham Great Pond", "Lake", "low", HEADLINES[0], GEN, BRIEF)
+    assert with_line.tobytes() != cards.draw_spot("Frensham Great Pond", "Lake", "low", HEADLINES[0], GEN).tobytes()
+
+
+def test_weekend_card_and_caption_carry_official_advice():
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": BRIEF})
+    rows = {r.id: r for r in card.rows}
+    assert rows["a"].cells == ["low", "moderate"] and rows["a"].official == BRIEF   # the level is unchanged
+    assert rows["poor"].official == ""
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert f"Upper: low risk on Saturday, moderate risk on Sunday. Official: {BRIEF}. Follow it first" in caption
+    for size in cards.SIZES:
+        cards.draw_weekend(card, GEN, size)   # the note under the table fits
