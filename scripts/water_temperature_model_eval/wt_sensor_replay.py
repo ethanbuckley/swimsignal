@@ -85,7 +85,7 @@ class EAReadings:
 def readings(csv_text: str) -> pd.DataFrame:
     """The readings CSV as (time UTC, value, quality), with Suspect, Missing and Rejected readings dropped. The EA's
     hydrology times are GMT all year (its FAQ)."""
-    d = pd.read_csv(io.StringIO(csv_text))
+    d = pd.read_csv(io.StringIO(csv_text)) if csv_text.strip() else pd.DataFrame()
     if d.empty:
         return pd.DataFrame({"time": pd.Series(dtype="datetime64[ns, UTC]"), "value": [], "quality": []})
     q = d["quality"] if "quality" in d else pd.Series("", index=d.index)
@@ -168,6 +168,9 @@ def cmd_score(a) -> None:
         dm = daily_means(readings(c.get(measure, start, end)), subdaily="subdaily" in measure)
         dm = dm[pd.to_datetime(dm["date"]).dt.month.between(5, 9)]
         obs[key] = dm
+        if dm.empty:      # the two qualified daily series have no published readings (run log)
+            res["part_a"][key] = {"label": label, "daily": {"days": 0}, "note": "no readings"}
+            continue
         # ---- Part A: the deployed estimate, archived 2025 forecast air for the station's cell.
         cell = cell_key(la, lo)
         up = water_temp.upstream_km(net, lo, la)
@@ -256,6 +259,9 @@ def part_b(a, net, obs: dict, elevation: dict) -> dict:
         cells, dates, tas = hz["cells"], pd.to_datetime(hz["dates"]), hz["tas"]
     out, fits = {}, {}
     for key, label, river, _measure, la, lo, years in SENSORS:
+        if obs[key].empty:
+            out[key] = {"label": label, "note": "no readings"}
+            continue
         group, how = group_of(net, la, lo)
         if group is None:
             out[key] = {"label": label, "group": None, "how": how}
