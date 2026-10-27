@@ -14,7 +14,12 @@ import numpy as np
 import pandas as pd
 
 # ---- seasons ------------------------------------------------------------------------------------------------------
-TRAIN_YEARS = (2018, 2019, 2020, 2021, 2022)
+TRAIN_YEARS = tuple(range(2000, 2023))   # amendment 2 (27 Oct, before any score): was 2018-2022
+BRIDGE_YEAR = 2018                       # the Open-Meteo -> HadUK bridge is fitted on this season's air only
+OM_YEARS = (BRIDGE_YEAR, 2023, 2024, 2025)
+ELEV_DAY = "2018-06-01"                  # one-day requests for the elevation of cells with no other answer
+OM_ELEV_CAP = 1_500.0
+HADUK_MAX_M = 10_000.0
 TEST_YEARS = (2023, 2024, 2025)
 MONTHS = (5, 6, 7, 8, 9)                 # rows: 1 May to 30 September, by local date
 AIR_FROM, AIR_TO = "04-01", "09-30"      # air: from 1 April, for the 30-day averages of early May
@@ -254,6 +259,38 @@ def om_weight(n_cells: int, days: int = AIR_DAYS, variables: int = 1) -> float:
     """Open-Meteo's weight for one request (rainfall.call_weight's rule, copied so the harness runs without src)."""
     v = variables / 10
     return n_cells * max(1.0, v, v * days / 14)
+
+
+def plan_open_meteo_narrowed(cells_by_year: dict[int, list[str]], all_cells: Iterable[str]) -> dict:
+    """Amendment 2: the bridge season and the test seasons, each for the cells with a row that year; and one-day
+    elevation requests for every other cell. {"seasons": {year: [cells]}, "elevation_cells": [...], "weight"}."""
+    seasons = {y: sorted(set(cells_by_year.get(y, []))) for y in OM_YEARS if cells_by_year.get(y)}
+    have = set().union(*seasons.values()) if seasons else set()
+    elev = sorted(set(all_cells) - have)
+    weight = sum(om_weight(len(c)) for c in seasons.values()) + om_weight(len(elev), days=1)
+    return {"seasons": seasons, "elevation_cells": elev, "weight": round(weight, 3),
+            "elevation_weight": om_weight(len(elev), days=1), "over_cap": weight > OM_TOTAL_CAP
+            or om_weight(len(elev), days=1) > OM_ELEV_CAP}
+
+
+def fit_bridge(om, hk) -> tuple[float, float]:
+    """The bridge: HadUK = c + d x OpenMeteo, least squares on paired daily values (no water temperature)."""
+    om = np.asarray(om, float)
+    hk = np.asarray(hk, float)
+    ok = np.isfinite(om) & np.isfinite(hk)
+    d, c = np.polyfit(om[ok], hk[ok], 1)
+    return float(c), float(d)
+
+
+def nearest_valid_cell(cx: np.ndarray, cy: np.ndarray, px, py, max_m: float = HADUK_MAX_M) -> tuple:
+    """For points (px, py), the index of the nearest valid grid-cell centre (cx, cy: centres of the cells that have
+    values) within max_m, or -1; and the distance. The cell a point falls in is its nearest centre, so a point in a
+    valid cell gets that cell."""
+    from scipy.spatial import cKDTree
+    tree = cKDTree(np.column_stack([cx, cy]))
+    d, i = tree.query(np.column_stack([np.asarray(px, float), np.asarray(py, float)]), k=1)
+    i = np.where(d <= max_m, i, -1)
+    return i, d
 
 
 def plan_open_meteo(cells_by_season: dict[int, list[str]], train_years=TRAIN_YEARS, cap: float = OM_TOTAL_CAP,

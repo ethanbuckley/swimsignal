@@ -37,12 +37,12 @@ import wt_protocol as wp  # noqa: E402
 
 EA_HOST = "environment.data.gov.uk"
 EA_URL = f"https://{EA_HOST}/water-quality/data/observation"
-EA_MAX_REQUESTS = 300
-EA_MAX_PAGES = 8
+EA_MAX_REQUESTS = 850      # amendment 2: was 300 (121 used for 2018-25; at most 700 more for 2000-17)
+EA_MAX_PAGES = 12          # amendment 2: was 8
 EA_PAUSE_S = 1.5
-EA_MAX_BYTES = 600 * 1024 * 1024
+EA_MAX_BYTES = 1536 * 1024 * 1024   # amendment 2: was 600 MB
 PAGE = 2500
-EA_YEARS = tuple(range(2018, 2026))
+EA_YEARS = tuple(range(2000, 2026))  # amendment 2: was 2018-2025
 SETS = {"fresh": wp.FRESH_CODES, "sea": wp.SEA_CODES}
 
 OM_HOST = "archive-api.open-meteo.com"
@@ -239,16 +239,25 @@ class OMClient:
             print(f"{self.now().isoformat(timespec='seconds')}: another Open-Meteo job runs, waiting: {o}", flush=True)
             self.sleep(600)
 
-    def batch(self, year: int, cells: list[str]) -> list[dict]:
-        key = f"{year}_" + __import__("hashlib").sha1(",".join(cells).encode()).hexdigest()[:16]
+    def elevation_spent(self) -> float:
+        tag = f"start_date={wp.ELEV_DAY}&end_date={wp.ELEV_DAY}"
+        return sum(float(x[3]) for x in self.log.lines() if len(x) >= 5 and tag in x[4])
+
+    def batch(self, year: int, cells: list[str], elevation: bool = False) -> list[dict]:
+        """One season's daily air for up to 25 cells; or, with `elevation`, one day (ELEV_DAY), asked for only for
+        the cells' elevation (amendment 2), weight 1 a cell, within OM_ELEV_CAP."""
+        prefix = "elev" if elevation else str(year)
+        key = f"{prefix}_" + __import__("hashlib").sha1(",".join(cells).encode()).hexdigest()[:16]
         f = self.cache / f"{key}.json"
         if f.exists():
             return json.loads(f.read_text())["answer"]
         if not self.fetch:
             raise Stop(f"{f.name} is not cached; rerun with --fetch")
-        w = wp.om_weight(len(cells))
+        w = wp.om_weight(len(cells), days=1) if elevation else wp.om_weight(len(cells))
         if self.spent() + w > self.total_cap:
             raise Stop(f"Open-Meteo total cap {self.total_cap:.0f} would be passed ({self.spent():.1f} spent)")
+        if elevation and self.elevation_spent() + w > wp.OM_ELEV_CAP:
+            raise Stop(f"Open-Meteo elevation cap {wp.OM_ELEV_CAP:.0f} would be passed")
         self._wait_for_day(w)
         if self._last is not None:
             wait = self.pause_s - (time.monotonic() - self._last)
@@ -256,8 +265,9 @@ class OMClient:
                 self.sleep(wait)
         lat = ",".join(c.split("_")[0] for c in cells)
         lon = ",".join(c.split("_")[1] for c in cells)
-        params = {"latitude": lat, "longitude": lon, "start_date": f"{year}-{wp.AIR_FROM}",
-                  "end_date": f"{year}-{wp.AIR_TO}", "daily": "temperature_2m_mean", "timezone": "Europe/London"}
+        start, end = (wp.ELEV_DAY, wp.ELEV_DAY) if elevation else (f"{year}-{wp.AIR_FROM}", f"{year}-{wp.AIR_TO}")
+        params = {"latitude": lat, "longitude": lon, "start_date": start,
+                  "end_date": end, "daily": "temperature_2m_mean", "timezone": "Europe/London"}
         if self.model:
             params["models"] = self.model
         url = OM_URL + "?" + urlencode(params)
@@ -285,7 +295,8 @@ class OMClient:
         for a in ans:
             if "daily" not in a or "temperature_2m_mean" not in a["daily"]:
                 raise Stop("Open-Meteo answer has no daily temperature_2m_mean: stopping")
-        f.write_text(json.dumps({"year": year, "cells": cells, "model": self.model, "answer": ans}))
+        f.write_text(json.dumps({"year": year, "cells": cells, "model": self.model, "elevation_only": elevation,
+                                 "answer": ans}))
         return ans
 
 
@@ -295,6 +306,10 @@ def fetch_open_meteo(client: OMClient, plan: dict) -> dict:
         for i in range(0, len(cells), wp.OM_BATCH):
             client.batch(int(year), cells[i:i + wp.OM_BATCH])
             n += 1
+    elev = plan.get("elevation_cells") or []
+    for i in range(0, len(elev), wp.OM_BATCH):
+        client.batch(0, elev[i:i + wp.OM_BATCH], elevation=True)
+        n += 1
     return {"batches": n, "spent": client.spent()}
 
 

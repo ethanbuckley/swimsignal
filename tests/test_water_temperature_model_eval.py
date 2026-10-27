@@ -68,7 +68,7 @@ def test_clean_rows_drops_and_counts_and_means_a_day():
 
 
 def test_seasons():
-    s = wp.season_of(pd.Series(pd.to_datetime(["2017-06-01", "2018-06-01", "2022-09-30", "2023-05-01", "2026-06-01"])))
+    s = wp.season_of(pd.Series(pd.to_datetime(["1999-06-01", "2018-06-01", "2022-09-30", "2023-05-01", "2026-06-01"])))
     assert list(s) == [None, "train", "train", "test", None]
 
 
@@ -314,7 +314,7 @@ def test_ea_without_fetch_never_asks(tmp_path):
 
 def test_month_ranges():
     r = wf.month_ranges()
-    assert len(r) == 40 and r[0] == ("2018-05-01", "2018-06-01") and r[-1] == ("2025-09-01", "2025-10-01")
+    assert len(r) == 130 and r[0] == ("2000-05-01", "2000-06-01") and r[-1] == ("2025-09-01", "2025-10-01")
 
 
 # ---- the capped Open-Meteo client ---------------------------------------------------------------------------------
@@ -461,3 +461,54 @@ def test_open_meteo_without_fetch_never_asks(tmp_path):
     with pytest.raises(wf.Stop, match="not cached"):
         wf.fetch_open_meteo(c, {"seasons": {"2020": ["51.000_-1.000"]}})
     assert seen == [] and json.loads("[]") == []
+
+
+# ---- amendment 2: HadUK training, the bridge, the narrowed Open-Meteo plan -----------------------------------------
+def test_amendment_2_seasons():
+    assert wp.TRAIN_YEARS[0] == 2000 and wp.TRAIN_YEARS[-1] == 2022 and len(wp.TRAIN_YEARS) == 23
+    assert list(wp.season_of(pd.Series(pd.to_datetime(["1999-06-01", "2000-05-01", "2023-05-01"])))) == \
+        [None, "train", "test"]
+    assert wf.month_ranges()[0] == ("2000-05-01", "2000-06-01") and len(wf.month_ranges()) == 130
+    assert wf.EA_MAX_REQUESTS == 850 and wf.EA_MAX_PAGES == 12
+
+
+def test_bridge_is_a_straight_line_and_ignores_gaps():
+    om = np.array([5.0, 10, 15, 20, np.nan])
+    c, d = wp.fit_bridge(om, 0.5 + 0.9 * om)
+    assert c == pytest.approx(0.5) and d == pytest.approx(0.9)
+
+
+def test_nearest_valid_cell_takes_own_cell_else_a_neighbour_within_10km():
+    cx = np.array([2500.0, 7500.0, 52500.0])
+    cy = np.array([2500.0, 2500.0, 2500.0])
+    i, _ = wp.nearest_valid_cell(cx, cy, [1000.0, 7000.0, 30000.0], [1000.0, 4000.0, 2500.0])
+    assert list(i) == [0, 1, -1]                           # the third is 22.5 km from any valid centre
+    i, _ = wp.nearest_valid_cell(cx, cy, [16000.0, 18000.0], [2500.0, 2500.0])
+    assert list(i) == [1, -1]                              # 8.5 km: taken; 10.5 km: none
+
+
+def test_narrowed_plan_bridge_test_and_elevation_cells():
+    by = {2005: ["a", "b"], 2018: ["a", "c"], 2020: ["d"], 2023: ["c", "e"], 2025: ["e"]}
+    p = wp.plan_open_meteo_narrowed(by, ["a", "b", "c", "d", "e"])
+    assert p["seasons"] == {2018: ["a", "c"], 2023: ["c", "e"], 2025: ["e"]}
+    assert p["elevation_cells"] == ["b", "d"]
+    assert p["weight"] == pytest.approx(5 * 183 / 140 + 2, abs=1e-3)
+    assert not p["over_cap"]
+
+
+def test_elevation_batches_ask_one_day_at_weight_one(tmp_path):
+    seen = []
+    c = wf.OMClient(tmp_path, fetch=True, transport=om_transport(seen=seen), sleep=lambda s: None, others=lambda: [])
+    out = wf.fetch_open_meteo(c, {"seasons": {}, "elevation_cells": [f"5{i}.000_-1.000" for i in range(30)]})
+    assert out["batches"] == 2
+    assert seen[0].params["start_date"] == seen[0].params["end_date"] == wp.ELEV_DAY
+    assert c.spent() == pytest.approx(30) and c.elevation_spent() == pytest.approx(30)
+    cached = [json.loads(f.read_text()) for f in tmp_path.glob("elev_*.json")]
+    assert len(cached) == 2 and all(x["elevation_only"] for x in cached)
+
+
+def test_elevation_cap(tmp_path, monkeypatch):
+    monkeypatch.setattr(wp, "OM_ELEV_CAP", 26.0)
+    c = wf.OMClient(tmp_path, fetch=True, transport=om_transport(), sleep=lambda s: None, others=lambda: [])
+    with pytest.raises(wf.Stop, match="elevation cap"):
+        wf.fetch_open_meteo(c, {"seasons": {}, "elevation_cells": [f"5{i}.000_-1.000" for i in range(30)]})
