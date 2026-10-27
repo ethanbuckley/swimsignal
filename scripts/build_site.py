@@ -2673,10 +2673,13 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     return len(ids)
 
 
-def write_any_point(site: Path, credits: dict) -> dict | None:
+def write_any_point(site: Path, credits: dict, warnings: list[str] | None = None) -> dict | None:
     """site/data/anypoint/: what the page needs to forecast a click away from the listed spots
     (scripts/build_any_point.py). Run after the spot forecasts, from the same overflow table, model
-    and rain. A failure leaves the files out and is announced; it never stops the spots publishing."""
+    and rain. A failure leaves the files out and is announced; it never stops the spots publishing.
+    It runs after the build's warnings are announced, so its own warning goes into `warnings` (the
+    build health's list) as well: from 26 Oct 2026 11:04 UTC it failed at every build for a day
+    and only the run's annotation said so."""
     import importlib.util
 
     from dipcast.model.forecast import _model, spill_probabilities
@@ -2688,7 +2691,10 @@ def write_any_point(site: Path, credits: dict) -> dict | None:
         return mod.build(site, _net(), _overflows(), lambda ov, days, rain: spill_probabilities(ov, days, model, rain=rain),
                          credits)
     except Exception as e:  # noqa: BLE001 - an addition beside the spots must not sink the site
-        announce(f"click-anywhere data not written: {e}")
+        warning = f"click-anywhere data not written: {e}"
+        announce(warning)
+        if warnings is not None:
+            warnings.append(warning)
         shutil.rmtree(site / "data" / "anypoint", ignore_errors=True)   # never half a set of files
         return None
 
@@ -3264,7 +3270,7 @@ def build(refresh: bool = True) -> dict:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)
     credits = data_credits(site_url())
-    health["anypoint"] = write_any_point(SITE, credits)
+    health["anypoint"] = write_any_point(SITE, credits, health["warnings"])   # its warning is announced there
     health["guide_photos"] = copy_photos(SITE, results)
     from dipcast.coastal import attach_samples
     from dipcast.coastal import fetch as fetch_coastal
