@@ -337,4 +337,93 @@ rule. No other cell has a missing day.
 
 ## Results
 
-*(none yet)*
+Added 27 October 2026 after the one scoring run: 19:12 UTC, 18 s, commit 6edf5a3, under the heavy-run lock, offline.
+The features file's SHA-256 matched the one committed in 6edf5a3. Aggregates only:
+`docs/LAKE-TEMPERATURE-TEST-2026-10-score.json`. Per-row predictions stay in the private folder. No deviation from the
+statement: the run was done once, from the committed code, and nothing above the line was changed after it.
+
+**Verdict, primary arm (held-out lakes, May–September 2026, bridged Open-Meteo air): lakes fail.**
+
+| | 2026 (decides) |
+|---|---|
+| held-out waters / test rows | 220 / 1,336 |
+| candidate RMSE | **1.97 °C** |
+| day-of-year baseline RMSE | 3.26 °C |
+| 7-day air baseline RMSE | 2.01 °C |
+| best longer window (chosen in training: `e5` in all 5 folds) RMSE | 2.02 °C |
+| gain over day of year [95% interval] | 1.29 [0.74, 1.76] |
+| gain over 7-day air [95% interval] | 0.04 [**−0.22**, 0.26] |
+| gain over the longer window [95% interval] | 0.05 [**−0.20**, 0.26] |
+| candidate P90 (90% of errors within) | **3.17 °C** |
+| 1. gate (30 waters, 300 rows) | yes |
+| 2. beats day of year | yes |
+| 3. beats 7-day air | **no** |
+| 4. beats the longer window | **no** |
+| 5. RMSE ≤ 1.5 °C | **no** |
+| 6. P90 ≤ 2.5 °C | **no** |
+| **label** | **fail** |
+
+Candidate bias −0.40 °C (too cold), mean absolute error 1.44 °C. Four of the six conditions fail. The result does not
+hinge on one of them.
+
+**The windows chosen inside training data.** Every fold, in both arms, chose `e5` (an exponential mean with a 5-day
+time constant) for the third baseline and for the candidate. The inner scores ran the other way from the guess in
+this statement: in fold 0 of the primary arm, `e5` 1.99, `a14` 2.19, `e30` 2.63, `a_apr` 2.83, `e90` 2.80 °C. So,
+across the lakes sampled, a straight line on a *short* air memory fits best, and a long one fits worse. The "longer
+window" baseline is in practice a 5-day one. It is no better than the 7-day line (2.02 against 2.01).
+
+**Groups, primary arm (deciding nothing; candidate / longer window / 7-day air / day of year, RMSE in °C):**
+
+| group | waters | rows | candidate | longer window | 7-day air | day of year | candidate P90 |
+|---|---|---|---|---|---|---|---|
+| WFD, 1 km² and over | 13 | 251 | **2.79** | 2.19 | 2.18 | 2.14 | 5.33 |
+| WFD, 0.1 to 1 km² | 54 | 265 | 1.80 | 2.12 | 2.03 | 3.48 | 2.85 |
+| WFD, under 0.1 km² | 22 | 114 | 1.92 | 2.23 | 2.26 | 3.58 | 3.15 |
+| not matched to a WFD polygon | 131 | 706 | 1.67 | 1.88 | 1.89 | 3.45 | 2.62 |
+| reservoirs | 30 | 132 | 1.51 | 1.64 | 1.70 | 2.58 | 2.55 |
+| with a HydroLAKES depth | 52 | 442 | **2.39** | 2.12 | 2.06 | 2.79 | 4.32 |
+| without a depth | 168 | 894 | 1.74 | 1.97 | 1.98 | 3.47 | 2.75 |
+| May | 200 | 237 | 1.98 | 1.98 | 1.79 | 3.44 | 3.22 |
+| June to September | 218 | 1,099 | 1.97 | 2.03 | 2.05 | 3.22 | 3.13 |
+
+- Large lakes are again the worst group, and again the candidate is worse than all three baselines there (2.79 against
+  2.14 to 2.19), and too cold (bias −1.24 °C). Lakes with a HydroLAKES depth are worse with the candidate than with a
+  straight line (2.39 against 2.06). Adding depth did not fix the large-lake fault; on these figures the boosted
+  stage makes those lakes worse.
+- Small and unmatched lakes improve: with an interval above 0 over the 7-day line for WFD lakes of 0.1 to 1 km²
+  (0.23 [0.10, 0.38]) and for unmatched lakes (0.22 [0.13, 0.31]). None of them reaches 1.5 °C RMSE.
+- Months (candidate RMSE, bias): May 1.98 (−0.34), June 1.88 (−0.15), July 2.39 (−0.78), August 1.94 (−0.60),
+  September 1.44 (−0.06). The day-of-year baseline was 3.18 °C too cold in July 2026. *Inferred:* July 2026 was much
+  warmer than the 2000–2025 average, and every model was too cold that month.
+- By fold, candidate RMSE 1.42 to 2.38. The worst fold (4, 2.38) is the one where the candidate is worse than the
+  7-day line (2.08).
+- Un-bridged Open-Meteo air (reported only): candidate 2.01, longer window 2.05, 7-day air 2.04, P90 3.13. The bridge
+  does not decide anything here.
+
+**Secondary arm, 2023–25 (seen rows; deciding nothing).** 306 waters, 2,973 rows. Candidate **2.00 °C**, longer
+window 1.93, 7-day air 1.92, day of year 2.46; P90 3.28. Gain over 7-day air −0.08 [−0.30, 0.13]. On the same seasons
+the first test's candidate scored 1.82 °C (on 2,967 rows; this arm has 2,973, as 2026 moved a few points' type), so this lake-only model with the new inputs is *worse* than the first
+test's model, not better. It is worse in May (2.26 against 1.90 for the 7-day line, bias −1.22) and on large lakes
+(2.54 against 1.96).
+
+**What this does not show.**
+- Every test row is an EA spot sample, mostly in the working day, not a swim-spot reading.
+- The 2026 set is what the archive held on 27 October; September may still be filling in.
+- HydroLAKES depth is modelled for most lakes, and covers 133 of the waters with rows. A measured depth might act
+  differently. That was not tested.
+- The long windows start on 1 April. A true 60-day memory in May was not tested (no March air on disk).
+- Whether a different model (for example a lake-only straight line with a depth term, or training with river rows as
+  the first test did) would pass was not tested. Any such model would now be chosen after seeing 2026, so it could be
+  judged fairly only on May–September 2027.
+
+### What follows from this result
+
+- **Lakes failed again.** Lake spots get no estimate. Nothing on the live site changes.
+- **What the test found that was not expected** *(established from the scores above)*: across sampled lakes, the
+  best single air window is a short one (5 days), not a long one; and both the longer windows and the depth figure
+  left the large lakes worse than plain baselines.
+- *Inferred, not tested:* most sampled lakes are small and shallow and track recent air. The few large, deep lakes
+  need a different model, and they are too few (11 to 13 waters with rows) to train one by holding out whole lakes.
+- **If a third test is wanted**, it can only be judged on May–September 2027, since 2026 is now seen. Inputs it would
+  need first: HadUK March files (a real 30- to 90-day memory in May, downloaded by Ethan with his CEDA account), and a
+  measured depth for the large lakes. It would be Ethan's decision to run it.
