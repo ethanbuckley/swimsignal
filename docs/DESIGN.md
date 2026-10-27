@@ -1367,6 +1367,9 @@ gives all four navigation links a single full-width row.
   margins 9 by 11 mm, rows 4 px apart, no site foot, since the issue line says what it said. Nine rows and
   the credits fit one page; ten rows did before the credits (5 October 2026), and now carry the credits' end
   to a second page for 13 of 41 lists of ten (live data of 20 October 2026).
+  Headings (27 October 2026): the name is the h1, each spot's name an h2 and "Data credits" an h2, so no
+  level is skipped and a screen reader steps from spot to spot. Both h2s keep the look they had: the name's
+  h2 (`.s-h`) takes no size or margins of its own, and the credits' heading is set at the notes size.
 - The link comes from "Make a sites link": under "Share this list" on the Saved page, for the list shown
   (`lists.js`, `sitesHash`), and in a fold on the organisers' page, where several spots are ticked in a box
   that scrolls on its own, in the order they were picked.

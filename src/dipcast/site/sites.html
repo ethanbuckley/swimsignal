@@ -16,6 +16,8 @@
   ol.sites { list-style:none; padding:0; margin:8px 0 0; border-top:1px solid var(--line); }
   .site { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; gap:4px 20px; align-items:start; padding:12px 0; border-bottom:1px solid var(--line); margin:0; }
   .s-place { min-width:0; }
+  /* The name is an h2 (sites.js, row) for the outline, set as the link it holds: no h2 size or margins. */
+  main.doc h2.s-h { font:inherit; margin:0; }
   .s-name { display:block; font:600 var(--fs-body)/1.3 var(--font-display); }
   .s-meta { display:block; font-size:var(--fs-meta); color:var(--muted); margin-top:2px; }
   main.doc .s-say p { margin:0; }
@@ -40,7 +42,7 @@
   .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
   .s-missing { font-size:var(--fs-note); margin:12px 0 0; }
   /* The data credits (printed.js): one source a line, at the meta size. */
-  main.doc .credits-h { font-size:var(--fs-note); margin:24px 0 4px; }
+  main.doc .credits-h { font:600 var(--fs-note)/1.3 var(--font-display); margin:24px 0 4px; }   /* an h2 (printed.js), at the h3 size it had */
   main.doc .credits { font-size:var(--fs-meta); color:var(--muted); }
   main.doc .credits ul { margin:0 0 6px; }
   main.doc .credits li { margin:2px 0; }
@@ -71,7 +73,7 @@
     main.doc .credits { columns:2; column-gap:24px; margin:0 0 4px; line-height:1.3; }
     main.doc .credits ul, main.doc .credits li { display:inline; margin:0; padding:0; }
     main.doc .credits p { margin:2px 0 0; }
-    main.doc h3.credits-h { display:none; }
+    main.doc .credits-h { display:none; }
     .credits-run { display:inline; font-weight:600; color:var(--ink); }
     a { color:var(--ink); text-decoration:none; }
   }
