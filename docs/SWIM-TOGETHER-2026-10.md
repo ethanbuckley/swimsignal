@@ -1,6 +1,6 @@
 # Swim Together and river days: a plan (27 October 2026)
 
-Two outside proposals (both pasted by Ethan on 27 Oct 2026) ask for social features: shared outings, "I'm here" check-ins, a map of other swimmers, paddling and SUP, a shared "river day" with lift sharing, an access-point atlas and club pages.
+Three outside proposals (all pasted by Ethan on 27 Oct 2026) ask for social features: shared outings, "I'm here" check-ins, a map of other swimmers, paddling and SUP, a shared "river day" with lift sharing, an access-point atlas and club pages. The third adds a business model: a paid personal tier and a paid club tier. Section 5 takes that one.
 
 **The plan in one line:** build shared outings as links first, with no server, no accounts and no user words on the site; add a stored outing with a list of who is coming only for a pilot, after an Online Safety Act check and a DPIA; grow the access atlas from the guides and visit notes that already exist; leave check-ins, public discovery, messaging and lift matching until a pilot shows clubs use the rest.
 
@@ -121,15 +121,65 @@ Built on guides and visit notes, so it stays within the exemption.
 ## 4. Decisions for Ethan
 
 1. Stage 1 links carry fixed choices only, no free text. (Recommended.)
-2. Ship S1 (official advice counts as news for date alerts) now, independent of the rest.
+2. Done: S1 (official advice counts as news for date alerts) merged as #411 and the Worker deployed, 27 Oct.
 3. Add the five stage 0 questions to the interview script.
 4. Which river and which two clubs for the pilot.
 5. Stage 2: names visible to the organiser only, or to everyone with the link.
 6. Whether stage 2 is worth the Ofcom check and DPIA at all, or stage 1 plus the atlas is enough for 2027.
+7. Clubs: keep them free as a channel (the 20 Oct plan), or test a club price in the interviews (section 5).
+8. A paid personal tier: recommended no, for 2027 (section 5).
 
-## 5. Sources and checks
+## 5. Money: the third proposal
+
+The proposal: Free (forecasts, notices, basic access, joining outings); Personal Plus at £25–40 a year (advanced planning, offline trip packs, synced plans, custom alerts, trip history); Club at £15–30 a month (recurring outings, attendance, waiting lists, updates, briefings, cancellation); operator tools and booking referrals later. Its strongest bet is the club product, piloted with a swim club, a SUP group and a kayak club in one region.
+
+**In short:** the club bet fits this plan's stage 2 and is worth testing, but it reverses a standing decision. The personal tier conflicts with two others and sells what competitors already sell. No paid feature gets built before a club commits in writing, as the 24 Oct rule already says.
+
+### Where it meets decisions already made
+
+| Proposal | Standing decision | Where |
+|---|---|---|
+| Club tier at £15–30 a month | "Clubs stay free, as a channel." Centres and event organisers are the ones asked to pay | `docs/ORGANISER-PIVOT-2026-10.md` §2 |
+| Personal Plus | "Swimmers stay free. Nothing a swimmer sees today goes behind a payment." Plus would add new features, not lock old ones, so it may not break the letter of this. It breaks its intent | `docs/MARKETS-2026-10.md` §2; ORGANISER-PIVOT, revision item 4 |
+| Synced plans, trip history | "No accounts, no cookies and no advertising" on the privacy page. Syncing needs accounts | `pages/privacy.html` line 22 |
+| Asking clubs to pay for a pilot | "No pre-invoice spending until someone commits" in writing | ORGANISER-PIVOT, revision item 2 |
+| Paid placement for lessons and hire | Open-Meteo's free API excludes sites with advertising; ask Open-Meteo first, as for a sponsor | ORGANISER-PIVOT, revision item 3 |
+
+**The cost floor.** Taking any money brings in Open-Meteo Professional (€99 a month), insurance, the ICO fee and CARTO's commercial terms: about £100–130 a month before a solicitor or a company (ORGANISER-PIVOT §3, inferred there). At £15–30 a month per club, that is 4 to 9 paying clubs to cover running costs alone (arithmetic). River Truth, the nearest UK price, sells clubs a live dashboard at £15 a month (checked 3 Oct 2026).
+
+### What competitors sell (checked 27 Oct 2026 in the browser)
+
+- **PaddleWays** (paddleways.com, its pricing page). Free: water access, rapids and hazards, live weather and streamflow, trip tracking, private waypoints and routes, public comments and images. Plus, $49.99 a year: offline and 3D maps, unlimited "My Waters" conditions monitoring, geofenced alerts, private property parcels. It lists English rivers (the Thames, Lea, Mole and others showed as "Waters near you").
+- **PaddlePoints** (gopaddling.info, Paddle UK's site). Free without an account: launch points, routes, hazards, comments and images, river and canal pages with licence information. Its page says "Many waterways in England and Wales require a licence to paddle".
+- **Windfinder** (windfinder.com/apps). Has a paid tier, Windfinder Plus. The page lists wind alerts under the Plus upgrade, but the wind alerts section itself is not marked Plus, and no prices are shown. Not settled.
+
+What follows, inferred:
+- **Personal Plus would sell what PaddleWays sells**, against a free tier that already covers the basics. SwimSignal already gives its offline copy (`sw.js`) and its alerts free. What nobody else has is the sewage forecast and official notices tied to a plan. That belongs in the club product and the free site, not a personal paywall.
+- **The paddlers' launch atlas exists, free, from the governing body.** Rebuilding PaddlePoints would be slow and second-best. Link to it from paddling spots, and ask Paddle UK whether the two can link both ways. Keep atlas work (stage 3) on swim spots, where SwimSignal's 49 guides are ahead.
+- **Licences.** A SUP or kayak plan on a navigation should say a licence may be needed and link PaddlePoints' river page. The site says nothing about licences now (grep of `src/dipcast`, 27 Oct).
+
+### The proposal's other ideas, against what exists
+
+| Idea | Exists now | Gap |
+|---|---|---|
+| "Find a window": Sunday afternoon, a board, 45 minutes' travel | Plan a swim: a day, a place and a straight-line radius of 5, 10, 20, 30 or 50 miles, and the kind of water (`plan.js`, `RADII`) | Activity: cheap. Travel time: needs a routing service, not checked. Afternoon: the forecast gives one level a day (`outing.js` says so) |
+| Access journey: parking, carry, launch, exit | Guide facts by topic: parking 84, path 50, entry 42, exit 1. No photos | Order them as a journey on the spot page; `carry` and `launch` topics (stage 3) |
+| Trip organiser with seats and checklists | Stages 1 and 2 | Seats and checklists wait (section 3, "Not now") |
+| Conditions notebook | Visit notes, with expiry and reconfirmation | Paddlers' ticks (stage 3) |
+| Club-maintained guides | Guides keep "Verified" apart from a swimmer's suggestion, each fact sourced and dated | A club as a named source, reviewed by Ethan. A cheap pilot perk |
+| Lessons and hire beside a plan | Nothing | Advertising question to Open-Meteo first; later |
+
+### What to do
+
+1. Add three questions to the stage 0 interviews: what the club uses to organise now and whether it pays for it; what an organiser's time on it costs them each week; and whether the club would pay £15, £30 or nothing for stage 2's list and change prompts. Record the answers as they come; quote no price before the question.
+2. Widen the stage 2 pilot to a swim club, a SUP group and a kayak club in one region, as proposed, if the interviews find them. Free during the pilot.
+3. Ask for money only when one club says in writing it will pay a named price for a named scope (the 24 Oct rule). Then the costs in ORGANISER-PIVOT §3 start.
+4. No personal tier in 2027.
+
+## 6. Sources and checks
 
 - Online Safety Act 2023, Schedule 1 paragraph 4, legislation.gov.uk, read 27 Oct 2026.
 - Code on main at c8eac36, read 27 Oct 2026: files named in section 1.
 - Usage figures: Cloudflare Web Analytics and the push KV, 24 Oct 2026, not rechecked.
-- Not checked: Strava Beacon (cited in the first proposal); Ofcom's checker; Open-Meteo's cost for wind; car-share insurance.
+- PaddleWays home and pricing pages, PaddlePoints' UK page and Windfinder's apps page, read in the browser pane on 27 Oct 2026.
+- Not checked: Strava Beacon (cited in the first proposal); Ofcom's checker; Open-Meteo's cost for wind; car-share insurance; the cost of a routing service for travel time.
