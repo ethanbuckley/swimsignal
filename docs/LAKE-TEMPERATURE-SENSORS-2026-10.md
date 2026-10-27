@@ -18,7 +18,7 @@ This note is research, not a test. It was written after the second lake test fai
 | EA Flood Monitoring API ([reference](https://environment.data.gov.uk/flood-monitoring/doc/reference)) | Its "Temperature" parameter is dry-bulb **air** temperature; its scope is levels and flows. | No: air, not water. Excluded. |
 | EA Water Quality Archive / Explorer ([FAQ](https://environment.data.gov.uk/support/faqs/275879249/275879414)) | Lab and field **samples**, lakes included, updated within two working days of a new sample. The two lake tests trained on it (determinand 0076). | Not real time. A possible future source for checking estimates, never a live safety signal. |
 | UKCEH Upland Waters Monitoring Network ([data](https://uwmn.uk/data)) | "UWMN datasets are available on request for non-commercial purposes" (page read 27 Oct). | Not open; on request. |
-| UKCEH lake buoys (Cumbria, Loch Leven, Llyn Conwy) ([long-term lakes monitoring](https://www.ceh.ac.uk/our-science/projects/long-term-lakes-monitoring)) | From Ethan's research, 27 Oct, not re-checked here: real-time viewing, data on request. | Best lead for Windermere and Esthwaite, by agreement. |
+| UKCEH lake buoys (Cumbria, Loch Leven, Llyn Conwy) ([long-term lakes monitoring](https://www.ceh.ac.uk/our-science/projects/long-term-lakes-monitoring)) | UKCEH's page (checked by Ethan, 27 Oct) says six automatic buoys (four in Cumbria, plus Loch Leven and Llyn Conwy) measure temperature at 12 depths, and real-time viewing is available. It does not state the licence of the raw data: **reuse and access terms need confirmation with UKCEH** (its "Work with us" section gives a Cumbrian lakes contact). Separate from the UWMN's non-commercial request terms above. | Best lead for Windermere and Esthwaite, on terms still to be confirmed. |
 
 ## The Hydrology API sondes within 100 m of a lake
 
@@ -57,7 +57,7 @@ Each has a water-temperature measure (`-temp-i-subdaily-C`, parameter "Temperatu
   2. the sonde's readings must be compared with samples or a buoy at the spot;
   3. the unchecked status must be stated on the page, as the river sensor tile already does.
 - **For the lake spots that matter most (Windermere, Coniston, Ullswater, Derwentwater, Rutland Water)**, the routes are:
-  - a UKCEH buoy-data request for Windermere and Esthwaite;
+  - asking UKCEH about access to, and reuse terms for, its Windermere and Esthwaite buoy data;
   - an operator's own sensor, such as a water company at a reservoir;
   - or the swimmers' own thermometer readings.
   None is an open feed today.
