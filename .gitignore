@@ -67,6 +67,9 @@ data/raw/*
 !data/raw/rnags.json
 # Each overflow's dry-weather spill-days in a year (EA start/stop records, OGL v3.0): read by the page's note only, never the model (scripts/make_dry_weather_spills.py).
 !data/raw/dry_weather_spills.csv
+# Each spot's spill days upstream by month, 2021-2025 (EA start/stop records, OGL v3.0; Northumbrian, Wessex and United Utilities
+# layers, CC BY 4.0): read by the page's history fold only, never the model (scripts/make_seasonal_spills.py).
+!data/raw/seasonal_spills.json
 /site/
 .claude/
 /state/
