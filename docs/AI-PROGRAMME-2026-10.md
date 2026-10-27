@@ -43,6 +43,31 @@ level, A8, option B or shadow window was changed by any of this.
 
 Live check, 00:20 UTC: `data/spots.json` build commit **7602610**, generated 00:15:57, 105 spots; Frensham carries the reviewed EA line (state checked, 26 Oct); `outing.js`, `replay.js`, `brief.js`, `eatoday.js` all HTTP 200; live `alerts.json` has Frensham at level low, rank 0 (unchanged) with the official text in `action` and `official`, which the deployed push Worker (version 4d73da26) reads.
 
+## After the snapshot (27 October, 00:23-01:30 UTC)
+
+Ethan approved #386 and #385 as written, asked for the three follow-ups as draft PRs (then "merge them"), and asked
+for new feature and research ideas to be built as drafts ("do all except 4"). No live model, level, A8, option B or
+shadow window was changed.
+
+| PR | What | State | Head / merge | Notes |
+|---|---|---|---|---|
+| #386 | Research: NDCI vs EA lab chlorophyll | open, draft, **run: fails as stated** | a03bcb7 | Approval 49bf309; one scoring run, network attempts 0. Pooled ρ 0.502, interval lower end 0.2997 vs 0.3 needed; placebo beaten 200 of 200; calibration "Too uncertain" overall, "Better" in shallow lakes. A near miss in the right direction |
+| #385 | Research: NDCI vs EA harmful-algae incidents | open, draft, **run: too few to judge** | d560798 | Approval bac9c34; network attempts 0. Incidents at 3 water bodies; the gate needs 4 |
+| #396 | 2027 forward test for satellite algae | open, draft, **withdrawn** | 5538699 | #386 failed by its own rule, so the forward test is withdrawn unless Ethan decides otherwise |
+| #397 | Source dates on five Defra facts (Nidd, Wharfe) | **merged, live** | 00:54:50 | Closes the #395 follow-up |
+| #398 | Sites view: spot names as h2, no skipped heading levels (P4) | **merged, live** | 00:54:55 | |
+| #399 | "Highest risk" puts spots with official advice against swimming first | **merged, live** | 0929fd0 (00:55:00) | Publishing run 40429395084 succeeded (01:12:51) |
+| #400 | Water temperature: coverage check and note | open, draft | e5cdac18 | The tile has been live since 3 Oct (1ec864d); 3 of 105 spots have a live same-river sensor. Re-check coverage in May-June 2027 |
+| #401 | Past spills upstream by month (history panel) | open, draft | ec06493 | Ethan: "any overflow" count or the forecast's weighted rule; 80% coverage floor; check the fingerprint on the first build |
+| #402 | Outing alerts for the planned day, and a calendar file | open, draft | 23d94ef | No `push/` change. Date alerts need the build variable `DIPCAST_PUSH_DATES`, which is not set; setting it also turns on organiser date alerts |
+| #403 | Research: sonde readings in the river E. coli estimate (statement) | open, draft, **cannot run** | 7292f73 | 71 covered rows at 4 sites vs a gate of 150; the gate was set after the coverage counts were seen (disclosed). Grow the rows (Wessex CC BY samples, 2027) or drop it |
+| #404 | Research: flow-based dilution (statement + harness) | open, draft, **not approved, nothing run** | c0c71e2 | 2 EA metadata requests; 17 of 20 river bathing waters have a spot gauge (8 real-time). Five questions for Ethan at the end of the statement; the run fetch is capped at 200 requests |
+
+#403 flagged the terms page's Hydrology API credit ("All rights reserved") as a mismatch with the API's OGL v3.
+Checked 27 Oct: no mismatch. The credit sits under the page's "all under the Open Government Licence v3.0" heading, and
+"© Environment Agency copyright and/or database right <year>. All rights reserved." is the EA's own attribution
+statement for OGL data (the `attributionStatement` on its dataset records). Nothing to change.
+
 ## Open decisions, and whose
 
 - **Codex (delegated):** the stray branch `polish/official-consistency`
@@ -50,8 +75,10 @@ Live check, 00:20 UTC: `data/spots.json` build commit **7602610**, generated 00:
 - **Ethan (credentials or outside contact):** the push Worker's `GITHUB_DISPATCH_TOKEN` (recommended: not before the
   ensemble-rain read on 21 Nov); recruitment wording and posts for the comprehension sessions; the UKCEH Bloomin'
   Algae licence enquiry; an EA lab question that would settle 7887's definition.
-- **Follow-ups:** the "Highest risk" sort ranks by the sewage level; sites view heading order (P4);
-  where the replay would live and whether it is cached offline.
+- **Ethan (27 Oct drafts):** merge or not, and the questions in the table above, for #400-#404; whether a new
+  shallow-lake test follows #386's near miss.
+- **Follow-ups:** where the replay would live and whether it is cached offline; ("Highest risk" and P4 were fixed in
+  #399 and #398.)
 
 ## Dated next actions
 
