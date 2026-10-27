@@ -68,6 +68,19 @@ Checked 27 Oct: no mismatch. The credit sits under the page's "all under the Ope
 "© Environment Agency copyright and/or database right <year>. All rights reserved." is the EA's own attribution
 statement for OGL data (the `attributionStatement` on its dataset records). Nothing to change.
 
+### Ethan's decisions of 27 October, about 09:50 UTC ("okay approved")
+
+| PR | Outcome |
+|---|---|
+| #405, #400 | **merged** (docs and a coverage script) |
+| #401 | **merged, live**: publishing run 40483978433 succeeded (10:03); build health `seasonal`: shown 77, none 22, too few 3, missing 0, **changed 0** (every fingerprint matched); "any overflow" metric and 80% floor kept |
+| #402 | **merged** (f44b8c0); `DIPCAST_PUSH_DATES` stays unset until one real-phone test passes (iPhone Home Screen app: alerts on in Saved, ask for an outing, receive one notice); the calendar file works without it |
+| #403 | **merged as a record, parked unrun**: revisit after the 2027 season; the 150-row gate stays as written |
+| #404 | **approved and run: fails as stated** (c75a1eb, open as a record). Lag check (9 requests): archive-only gauges 11-14 days behind, so 315 h lag; fetch 84 requests; face checks passed; primary +0.00011, Too uncertain; placebo not beaten; real-time-gauge rows Possible harm (−0.0024). Production dilution unchanged |
+
+After #386's near miss: no new satellite test now; a shallow-lake statement, if wanted, in spring 2027 on 2027 data
+only.
+
 ## Open decisions, and whose
 
 - **Codex (delegated):** the stray branch `polish/official-consistency`
@@ -75,8 +88,7 @@ statement for OGL data (the `attributionStatement` on its dataset records). Noth
 - **Ethan (credentials or outside contact):** the push Worker's `GITHUB_DISPATCH_TOKEN` (recommended: not before the
   ensemble-rain read on 21 Nov); recruitment wording and posts for the comprehension sessions; the UKCEH Bloomin'
   Algae licence enquiry; an EA lab question that would settle 7887's definition.
-- **Ethan (27 Oct drafts):** merge or not, and the questions in the table above, for #400-#404; whether a new
-  shallow-lake test follows #386's near miss.
+- **Ethan:** the real-phone test, then `DIPCAST_PUSH_DATES`; whether to merge #404 as a record.
 - **Follow-ups:** where the replay would live and whether it is cached offline; ("Highest risk" and P4 were fixed in
   #399 and #398.)
 
