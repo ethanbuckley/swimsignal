@@ -2149,6 +2149,16 @@ def prerender_spots(site: Path, root: str) -> dict[str, str]:
         return {}
 
 
+# The Saved and Plan pages are drawn by their scripts alone. Without JavaScript they would say
+# "Loading…" for ever, so a <noscript> note says what the page needs, in the record page's words, and
+# points to spots.html, whose links to every spot's page work without it; and its style hides the
+# loading line (data-wait), which the script replaces when it runs. Both pages have <base href="../">.
+def noscript_needs(needs: str) -> str:
+    return ('<noscript><style>#result [data-wait]{display:none}</style>'
+            f'<p class="notice">This page needs JavaScript {needs}. '
+            '<a href="spots.html">Every spot</a> has a page of its own with its forecast, which works without it.</p></noscript>')
+
+
 def saved_page(template: str, root: str) -> str:
     """The Saved page, saved/: the map page, where the script shows the lists of spots this browser
     has saved, or a list someone shared (saved/#list=...&spots=..., lists.js). The lists live in the
@@ -2157,7 +2167,8 @@ def saved_page(template: str, root: str) -> str:
     page = PAGE_META.sub(lambda m: page_meta(SAVED_TITLE, SAVED_DESCRIPTION, f"{root}saved/", root, base="../",
                                              noindex=True), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Saved spots</h1>'
-                                 '<p class="muted">Loading your saved spots…</p></div>', 1)
+                                 + noscript_needs("to show your saved spots, which are kept in this browser")
+                                 + '<p class="muted" data-wait>Loading your saved spots…</p></div>', 1)
 
 
 # The places Plan a swim can start from: OS Open Names' cities, towns, districts and villages in England
@@ -2174,7 +2185,8 @@ def plan_page(template: str, root: str) -> str:
     address, so every plan is this one page."""
     page = PAGE_META.sub(lambda m: page_meta(PLAN_TITLE, PLAN_DESCRIPTION, f"{root}plan/", root, base="../"), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Plan a swim</h1>'
-                                 f'<p class="muted">{escape(PLAN_DESCRIPTION)} Loading the forecasts…</p></div>', 1)
+                                 + noscript_needs("to read the forecasts and find the spots within reach")
+                                 + f'<p class="muted">{escape(PLAN_DESCRIPTION)} <span data-wait>Loading the forecasts…</span></p></div>', 1)
 
 
 # The Accuracy page's five boxes, which its script fills from data/verification.json.
