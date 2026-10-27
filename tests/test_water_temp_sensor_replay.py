@@ -28,7 +28,7 @@ def test_readings_drop_suspect_missing_and_rejected_and_keep_unchecked():
     assert str(r["time"].dt.tz) == "UTC"
 
 
-def test_a_day_needs_87_readings_and_is_a_london_day_with_a_daytime_mean():
+def test_a_day_needs_90_percent_of_its_readings_and_is_a_london_day_with_a_daytime_mean():
     # 1 June 2025 in London (BST) runs 23:00 UTC on 31 May to 23:00 UTC on 1 June: 96 quarter-hours.
     t = pd.date_range("2025-05-31T23:00Z", periods=96, freq="15min")
     v = np.where((t.tz_convert(sr.LONDON).hour >= 10) & (t.tz_convert(sr.LONDON).hour < 16), 18.0, 14.0)
@@ -37,6 +37,11 @@ def test_a_day_needs_87_readings_and_is_a_london_day_with_a_daytime_mean():
     assert d["daytime"].iloc[0] == 18.0 and d["mean"].iloc[0] == pytest.approx((24 * 18 + 72 * 14) / 96)
     short = sr.daily_means(sr.readings(_csv([x.strftime("%Y-%m-%dT%H:%M:%S") for x in t[:86]], v[:86])), subdaily=True)
     assert short.empty                                           # 86 of 96: not a day
+    # An hourly series needs 22 of 24 (amendment 1); 21 is not a day.
+    h = pd.date_range("2025-05-31T23:00Z", periods=24, freq="h")
+    hours = [x.strftime("%Y-%m-%dT%H:%M:%S") for x in h]
+    assert sr.daily_means(sr.readings(_csv(hours[:22], [15.0] * 22)), subdaily=True)["n"].tolist() == [22]
+    assert sr.daily_means(sr.readings(_csv(hours[:21], [15.0] * 21)), subdaily=True).empty
 
 
 def test_a_daily_series_is_taken_as_given():

@@ -74,4 +74,21 @@ There are no pass or fail rules. Daily readings are correlated, and six sensors 
 
 ## Run log and results
 
-(None yet. Added below this line after the one run.)
+### Fetch, 27 October 2026, 22:35 UTC, and an amendment before any score
+
+**Requests.** 8 EA requests, all HTTP 200: the 6 stated readings requests, and 2 `readings.csv?latest` requests made after the first 6 to see where the qualified series end. No Open-Meteo request.
+
+**What came back:**
+- **The four sondes:**
+  - Lugg Meadows: 3,579 readings, hourly;
+  - Teme at Ludlow: 3,681, hourly;
+  - Nidd at Knaresborough Lido: 7,382, every 30 minutes;
+  - Nidd upstream of Harrogate WwTW: 6,967, every 30 minutes.
+  - Every reading is "Unchecked".
+- **The two qualified daily series** (Lugwardine on the River Lugg, Three Elms on Yazor Brook) returned **no readings** for 1 May 2023–1 October 2025, and none at all from `?latest`. Their daily-mean temperature measures exist in the station list but have no published readings. So **Part B's 2023–2025 long-record arm cannot run**. Part B runs on the four sondes for 2025 only.
+
+**Amendment 1, before any score.** The statement's day rule ("at least 87 of its 96 readings") assumed 15-minute series. None of the four is 15-minute. The rule becomes: a day counts with at least 90% of its expected readings at the series' own interval (the most common step), rounded up. That is 87 of 96 at 15 minutes (as stated), 44 of 48 at 30 minutes, and 22 of 24 hourly. Nothing else changes.
+
+### Results
+
+(Added after the one scoring run.)

@@ -34,7 +34,7 @@ import wt_protocol as wp  # noqa: E402
 BASE = "https://environment.data.gov.uk/hydrology/id/measures"
 MAX_REQUESTS = 12
 LONDON = "Europe/London"
-DAY_MIN_READINGS = 87          # of 96 a day, for a 15-minute series
+DAY_SHARE = 0.9               # a day needs this share of its expected readings at the series' own step (amendment 1)
 DAYTIME = (10, 16)             # local hours [from, to) for the daytime mean, reported only
 DROP_QUALITY = {"Suspect", "Missing", "Rejected"}
 
@@ -95,18 +95,21 @@ def readings(csv_text: str) -> pd.DataFrame:
 
 
 def daily_means(r: pd.DataFrame, subdaily: bool) -> pd.DataFrame:
-    """London-day means: a 15-minute series needs DAY_MIN_READINGS readings that day; a daily series is taken as
-    given (its time is the day). Also the 10:00-16:00 local mean of a 15-minute series (NaN for a daily one)."""
+    """London-day means: a sub-daily series needs ceil(DAY_SHARE x the day's expected readings) at its own step (the
+    most common gap: 87 of 96 at 15 minutes, 44 of 48 at 30, 22 of 24 hourly); a daily series is taken as given.
+    Also the 10:00-16:00 local mean of a sub-daily series (NaN for a daily one)."""
     if r.empty:
         return pd.DataFrame(columns=["date", "mean", "daytime", "n"])
     local = r["time"].dt.tz_convert(LONDON)
     if not subdaily:
         return pd.DataFrame({"date": local.dt.normalize().dt.tz_localize(None), "mean": r["value"].to_numpy(),
                              "daytime": np.nan, "n": 1}).groupby("date", as_index=False).first()
+    step = float(r["time"].sort_values().diff().dt.total_seconds().round(-1).mode().iloc[0])
+    need = math.ceil(DAY_SHARE * 86400 / step)
     g = r.assign(date=local.dt.normalize().dt.tz_localize(None), hour=local.dt.hour)
     out = []
     for day, x in g.groupby("date"):
-        if len(x) < DAY_MIN_READINGS:
+        if len(x) < need:
             continue
         dt = x[(x["hour"] >= DAYTIME[0]) & (x["hour"] < DAYTIME[1])]["value"]
         out.append({"date": day, "mean": float(x["value"].mean()), "daytime": float(dt.mean()) if len(dt) else np.nan, "n": len(x)})
