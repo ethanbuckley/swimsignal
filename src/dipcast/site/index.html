@@ -791,6 +791,11 @@
   .outing-nm { margin:0 0 2px; font-size:var(--fs-body); overflow-wrap:anywhere; }
   .outing-nm a { display:inline-block; padding:10px 0; margin:-10px 0; }   /* 44 px to tap */
   .outing-col .why { font-size:var(--fs-note); line-height:1.4; }
+  /* Keeping the outing (outing.js, outingKeep): alerts for its day, then the calendar file, under a hairline. */
+  .outing-keep { margin-top:12px; padding-top:12px; border-top:1px solid var(--hair); }
+  .outing-keep p { margin:0 0 8px; }
+  .outing-keep details.fold { margin:0 0 8px; }
+  .outing-acts { display:flex; flex-wrap:wrap; gap:8px; }
   .since-ev { display:block; margin-top:2px; font-size:var(--fs-meta); }
   /* A plan row's Compare tick (planCompare), at the right of its name while the comparison is open. */
   #plan-results ul.spots li { position:relative; }
@@ -1280,7 +1285,8 @@
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
-<script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js -->
+<script src="spotdate.js"></script>   <!-- a spot on a date: the calendar file and alerts for a date, shared with the organisers' page -->
+<script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js and spotdate.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
 <script>

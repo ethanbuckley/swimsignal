@@ -23,3 +23,18 @@ def test_the_page_loads_outing_js_from_its_build_and_the_offline_copy_keeps_it(t
     assert (tmp_path / "outing.js").read_bytes() == (bs.TEMPLATE.parent / "outing.js").read_bytes()
     assert "`outing.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert bs.TEMPLATE.parent / "outing.js" in bs.SHELL_SOURCES   # a change to it renames the offline cache
+
+
+def test_spotdate_js_comes_before_outing_js_and_organisers_js_and_the_offline_copy_keeps_it(tmp_path):
+    # spotdate.js (the calendar file and alerts for a date) is shared by the outing and the organisers' page.
+    bs = _build_site()
+    bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
+    stamp = bs.shell_stamp()
+    html = (tmp_path / "index.html").read_text()
+    assert f'<script src="spotdate.js?v={stamp}" defer></script>' in html
+    assert html.index('src="spotdate.js') < html.index('src="outing.js')
+    assert (tmp_path / "spotdate.js").read_bytes() == (bs.TEMPLATE.parent / "spotdate.js").read_bytes()
+    assert "`spotdate.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert bs.TEMPLATE.parent / "spotdate.js" in bs.SHELL_SOURCES
+    organisers = (tmp_path / "organisers.html").read_text()
+    assert organisers.index('src="spotdate.js?v=') < organisers.index('src="organisers.js?v=')

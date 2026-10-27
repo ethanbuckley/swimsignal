@@ -15,6 +15,9 @@ const Organisers = (() => {
     : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice,
       overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
+  // spotdate.js: the calendar file and the alerts for a date, shared with a plan's outing (outing.js). Asked
+  // for when used, so the sites view and the decision record, which load this file for its words, need not load it.
+  const SD = () => typeof module === 'object' && module.exports ? require('./spotdate.js') : SpotDate;
   // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief), above the
   // day's level and apart from it. Without eatoday.js loaded, none.
   const brief = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayBrief
@@ -135,20 +138,12 @@ const Organisers = (() => {
       + '<p class="small muted screen-only">A calendar file for Apple Calendar, Google Calendar or Outlook, made in this browser: nothing is sent.</p>';
   }
 
-  // The dates as an iCalendar file (RFC 5545): all-day events, the tests that have not passed, the day
-  // the forecast first covers the event, and the event. Lines end in CRLF and fold at 75 octets; text
-  // escapes \ ; , and new lines. A UID per event and spot, so importing the file again updates the
-  // calendar's copies rather than adding more.
-  const icsEsc = v => String(v).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
-  const octets = ch => { const c = ch.codePointAt(0); return c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4; };
-  function icsFold(line) {
-    const out = []; let cur = '', n = 0;
-    for (const ch of line) { const b = octets(ch); if (n + b > 75) { out.push(cur); cur = ' '; n = 1; } cur += ch; n += b; }
-    return [...out, cur].join('\r\n');
-  }
-  const icsDay = iso => iso.replace(/-/g, '');
-  const stamp = ms => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  // The dates as an iCalendar file (RFC 5545; the lines, folding and escapes are spotdate.js's): all-day
+  // events, the tests that have not passed, the day the forecast first covers the event, and the event. A
+  // UID per event and spot, so importing the file again updates the calendar's copies rather than adding more.
+  const icsFold = line => SD().icsFold(line);
   function ics(s, iso, base, now = Date.now()) {
+    const { icsEsc, icsDay, icsStamp: stamp, icsCalendar } = SD();
     const t = R.today(), link = `${base}organisers.html${toHash(s.id, iso)}`, host = new URL(base).hostname;
     const say = {
       test: `${TESTS_SAY} Ask a UKAS-accredited laboratory what is worth doing. The event is on ${dateWords(iso)}.`,
@@ -157,8 +152,7 @@ const Organisers = (() => {
     const events = eventDates(iso).filter(d => d.date >= t).map(d => ['BEGIN:VEVENT', `UID:${iso}-${d.kind}-${s.id}@${host}`, `DTSTAMP:${stamp(now)}`,
       `DTSTART;VALUE=DATE:${icsDay(d.date)}`, `DTEND;VALUE=DATE:${icsDay(addDays(d.date, 1))}`, `SUMMARY:${icsEsc(`${d.summary}: ${s.name}`)}`,
       `DESCRIPTION:${icsEsc(`${say[d.kind.replace(/\d$/, '')]} ${link}`)}`, `URL:${link}`, 'TRANSP:TRANSPARENT', 'END:VEVENT']);
-    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SwimSignal//Event dates//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', ...events.flat(), 'END:VCALENDAR']
-      .map(icsFold).join('\r\n') + '\r\n';
+    return icsCalendar('-//SwimSignal//Event dates//EN', events);
   }
 
   // ------------------------------------------------------------------ alerts for the date
@@ -167,15 +161,13 @@ const Organisers = (() => {
   // where the site's alerts are on and the build says the Worker takes dates (spots.json's
   // push.dates, set by the repository variable DIPCAST_PUSH_DATES),
   // and only in a browser that has alerts on already: turning them on, and its consent, is the Saved
-  // page's. The page sends the whole list each time, as the app sends its saved spots, and keeps it
-  // here to know what is on; the Worker keeps the saved spots and the weekly note as they were.
-  const DATES_KEY = 'dipcast.pushdates', MAX_DATES = 10;   // the Worker's cap (push/src/shared.js)
-  const dateAlertsOn = data => !!(data.push && data.push.url && data.push.dates === true);
-  // The list kept for this push address, without dates that have passed.
-  const keptDates = (raw, endpoint, t) => { let v = null; try { v = JSON.parse(raw || 'null'); } catch (e) { /* none */ }
-    return v && v.endpoint === endpoint && Array.isArray(v.dates) ? v.dates.filter(d => d && typeof d.spot === 'string' && realDate(d.date) && d.date >= t) : []; };
-  const hasDate = (list, spot, date) => list.some(d => d.spot === spot && d.date === date);
-  const withDate = (list, spot, date, on) => on ? (hasDate(list, spot, date) ? list : [...list, { spot, date }]) : list.filter(d => !(d.spot === spot && d.date === date));
+  // page's. The list, its cap, what is kept in this browser and the request are spotdate.js's, which a
+  // plan's outing (outing.js) shares, so the two add to and stop from one list of up to MAX_DATES.
+  const MAX_DATES = 10;   // SpotDate.MAX_DATES (the Worker's cap, push/src/dates.js), a test checks they agree
+  const dateAlertsOn = data => SD().dateAlertsOn(data);
+  const keptDates = (raw, endpoint, t) => SD().keptDates(raw, endpoint, t);
+  const hasDate = (list, spot, date) => SD().hasDate(list, spot, date);
+  const withDate = (list, spot, date, on) => SD().withDate(list, spot, date, on);
   // What the control says: sub, whether this browser has alerts on; list, the dates it has asked for.
   function dateAlert(sub, list, spot, iso, from) { return '<h3 id="alert-h">Alerts for this date</h3>' + dateAlertBody(sub, list, spot, iso, from); }
   function dateAlertBody(sub, list, spot, iso, from) {
@@ -333,7 +325,7 @@ const Organisers = (() => {
     let sub = null, mem = null;
     try { sub = await pushSubNow(); } catch (e) { sub = null; }
     if (!el.isConnected) return;   // the page was drawn again meanwhile
-    const read = () => { if (mem) return mem; try { return keptDates(localStorage.getItem(DATES_KEY), sub && sub.endpoint, t); } catch (e) { return []; } };
+    const read = () => { if (mem) return mem; try { return keptDates(localStorage.getItem(SD().DATES_KEY), sub && sub.endpoint, t); } catch (e) { return []; } };
     const paint = () => {
       el.innerHTML = dateAlert(sub, read(), s.id, iso, from);
       const b = document.getElementById('date-alert-btn'); if (!b) return;
@@ -341,11 +333,8 @@ const Organisers = (() => {
         const on = !b.dataset.on, dates = withDate(read(), s.id, iso, on);
         b.disabled = true; msg.textContent = '';
         try {
-          const res = await fetch(data.push.url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subscription: sub.toJSON(), dates }) }).catch(() => { throw new Error('the alert service could not be reached. Check your connection and try again'); });
-          if (!res.ok) { const why = (await res.text().catch(() => '')).slice(0, 120); throw new Error(res.status === 400 && why ? why : `the alert service answered ${res.status}`); }
-          mem = dates;
-          try { localStorage.setItem(DATES_KEY, JSON.stringify({ endpoint: sub.endpoint, dates })); } catch (e) { /* kept in memory for this page */ }
+          await SD().sendDates(data.push.url, sub, dates);
+          mem = dates; SD().storeDates(sub, dates);
           paint(); msg.textContent = on ? 'Alerts are on for this date.' : 'Alerts for this date are off.';
         } catch (e) { b.disabled = false; msg.textContent = `Could not change alerts for this date: ${e.message}.`; }
       });

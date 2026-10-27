@@ -515,6 +515,12 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     for before, after in bs.PUSH_DATES_SWAPS:
         assert after in dated and before not in dated, after
     assert "up to 10 pairs of a spot and a date" in dated
+    # A plan's outing asks for the same pairs (outing.js): the Alerts section and the plan's own sentence say so,
+    # only once date alerts are on.
+    assert "about an outing on Plan a swim" in dated and "about an outing on Plan a swim" not in on
+    for before, after in bs.PUSH_DATES_PAGE_SWAPS:
+        assert before in off and before in on and after not in on, before
+        assert after in dated and before not in dated, after
     assert (tmp_path / "levels.js").exists()
 
 

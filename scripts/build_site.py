@@ -346,6 +346,8 @@ def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> 
     push_section = PUSH_PRIVACY
     for a, b in PUSH_DATES_SWAPS if on and dates else []:
         push_section = push_section.replace(a, b)
+    for a, b in PUSH_DATES_PAGE_SWAPS if on and dates else []:
+        html = html.replace(a, b)
     section = (push_section + "\n" if on else "<h2>Alerts</h2>\n") + (EMAIL_PRIVACY if email else "")
     return re.sub(r"<h2>If alerts are added</h2>\s*<p>.*?</p>", lambda _: section.rstrip("\n"), html, count=1, flags=re.DOTALL)
 
@@ -373,22 +375,35 @@ PUSH_PRIVACY = (
 
 # Alerts for a date (push/README.md, "Alerts for a date"), once DIPCAST_PUSH_DATES is set: the record
 # can also hold up to 10 pairs of a spot and a date, for one more use, and is kept while it has any.
+# A plan's outing (outing.js, "Alert me about this outing") asks for the same pairs the same way: its spot
+# and its backup, each on the plan's day, counted in the same 10 and deleted after the same date.
 # Each "before" is in PUSH_PRIVACY (a test checks), so a rewrite cannot leave one unswapped.
 PUSH_DATES_SWAPS = [
     ("saved spots and, if you tick the weekly note, that you asked for it, and nothing else",
-     "saved spots, if you tick the weekly note, that you asked for it, and, if you ask on the organisers' page "
-     "for alerts about a date, up to 10 pairs of a spot and a date, and nothing else"),
+     "saved spots, if you tick the weekly note, that you asked for it, and, if you ask for alerts about a date on "
+     "the organisers' page or about an outing on Plan a swim, up to 10 pairs of a spot and a date (for an outing, "
+     "its spot and its backup, each with the outing's day, but not its time or where you start from), and nothing else"),
     ("with the days of lowest pollution risk ahead at those spots. ",
      "with the days of lowest pollution risk ahead at those spots, and, for each spot and date you asked about, a "
      "notification when that day's forecast first appears and again each time its level changes. Each spot and date "
      "is deleted once the date has passed. "),
+    ("so that an unchanged list is sent again only about once a week. ",
+     "so that an unchanged list is sent again only about once a week, and of the spots and dates it asked about, "
+     "so that the page can show which are on. "),
     ("you can turn them off on the Saved page at any time, which withdraws it.",
      "you can turn them off on the Saved page at any time, which withdraws it; the alerts for a date can also be "
-     "stopped on the organisers' page."),
+     "stopped on the organisers' page, and those for an outing on its plan."),
     ("until you turn alerts off, remove all your saved spots or turn off the offline copy",
      "until you turn alerts off, remove all your saved spots and dates, or turn off the offline copy"),
     ("turn alerts on or off or change your saved spots",
      "turn alerts on or off, change your saved spots or change the dates you asked about"),
+]
+# The kept plan's sentence in the notice's own text (pages/privacy.html, Plan a swim), which would say an
+# outing is never sent: with date alerts on, it says when it is. The "before" is in privacy.html (a test checks).
+PUSH_DATES_PAGE_SWAPS = [
+    ("It stays on your device and is not sent anywhere; clearing this site's data removes it.",
+     "It stays on your device and is not sent anywhere, unless you ask for alerts about the outing: then its spot, "
+     "its backup and its day are sent, as described under Alerts. Clearing this site's data removes the plan."),
 ]
 
 
@@ -1897,6 +1912,10 @@ VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
 # A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
 VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
+# A spot on a date (spotdate.js): the calendar file and the alerts for a date, which the outing and the
+# organisers' page share.
+SHELL_SOURCES.append(TEMPLATE.parent / "spotdate.js")
+VERSIONED_SCRIPTS += ('<script src="spotdate.js"></script>',)
 # Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
 SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
 VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
@@ -1946,6 +1965,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
     shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
+    shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
@@ -2895,7 +2915,7 @@ ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
 REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
 # The organisers' page loads lists.js and sites.js too, for "Make a sites link" (sites.js, maker).
-ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "eatoday.js", "organisers.js", "sites.js")   # eatoday.js: official advice
+ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "eatoday.js", "spotdate.js", "organisers.js", "sites.js")   # eatoday.js: official advice; spotdate.js: the calendar file and date alerts
 
 
 def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],

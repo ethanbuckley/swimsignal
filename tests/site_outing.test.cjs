@@ -165,9 +165,14 @@ test('storage keys: the code, the doc and the privacy notice agree', () => {
   assert.match(since, /const SEEN_KEY = 'dipcast\.seen';/);
   assert.match(since, /const KEPT_PLAN_KEY = 'dipcast\.plan'/);   // reads the plan's key, never another
   assert.match(brief, /const ACK_KEY = 'dipcast\.briefacks'/);
-  for (const k of ['dipcast.plan', 'dipcast.seen', 'dipcast.briefacks']) assert.ok(doc.includes('`' + k + '`'), k);
-  // No other key is written by the new code: outing.js keeps the outing in the plan's address only.
-  assert.doesNotMatch(read('src/dipcast/site/outing.js'), /localStorage/);
+  for (const k of ['dipcast.plan', 'dipcast.seen', 'dipcast.briefacks', 'dipcast.pushdates', 'dipcast.outingdates']) assert.ok(doc.includes('`' + k + '`'), k);
+  // outing.js keeps the outing in the plan's address. It writes one key of its own, the pairs its alerts asked
+  // for (only once someone presses "Alert me about this outing"), and the alerts' list through spotdate.js's
+  // storeDates, the organisers' page's key.
+  const outing = read('src/dipcast/site/outing.js');
+  assert.match(outing, /const OUTING_ASKED_KEY = 'dipcast\.outingdates';/);
+  assert.equal((outing.match(/localStorage\.setItem\(([^,]+),/g) || []).join(), 'localStorage.setItem(OUTING_ASKED_KEY,');
+  assert.match(read('src/dipcast/site/spotdate.js'), /const DATES_KEY = 'dipcast\.pushdates'/);
   assert.equal((brief.match(/localStorage\.setItem\(([^,]+),/g) || []).join(), 'localStorage.setItem(ACK_KEY,');
   // The privacy notice names both: the outing in the kept plan, and the read tick.
   assert.match(privacy, /the time, spot and backup spot of an outing you chose/);
