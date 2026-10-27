@@ -29,6 +29,12 @@ const Record = (() => {
   const E = node ? require('./evidence.js') : { evidenceAge, evidenceOverflows, evidenceSample };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : Printed;
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief).
+  const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  // Its first item's link, "Open the Environment Agency page", as the spot page's notice gives it (eaTodayOfficial).
+  const advice = node ? require('./eatoday.js').eaTodayAdvice : typeof eaTodayAdvice === 'function' ? eaTodayAdvice : () => [];
+  const officialLink = s => { const o = advice(s)[0];
+    return o && /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? ` <a href="${esc(o.link)}">Open the ${esc(o.publisher)} page</a>.` : ''; };
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
   const TZ = 'Europe/London';
@@ -237,7 +243,9 @@ const Record = (() => {
     h += `<p class="r-meta">Issue id <b>${esc(issue)}</b>: the build and the forecast's issue time in UTC, to match this copy to SwimSignal's forecast log.</p>`;
     const m = (now - Date.parse(data.generated_at)) / 60000;
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
-    return h + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
+    const official = brief(s);
+    return h + (official ? `<p class="r-official"><b>Official advice:</b> ${esc(official)}. Not part of the level below; follow it first.${officialLink(s)}</p>` : '')
+      + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
       + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`
       + decide(org)
@@ -273,6 +281,8 @@ const Record = (() => {
       document.title = s ? `${s.name}, ${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: decision record · SwimSignal` : 'Decision record · SwimSignal';
       out.innerHTML = view(s, iso, data, ver, base, Date.now(), st.spot || '', st.org || '');
       const pr = document.getElementById('print'); if (pr) pr.addEventListener('click', () => window.print());
+      // brief.js: the version of this record and the leader's "read" tick, on screen only, kept in this browser.
+      if (s && typeof BriefAck === 'object' && document.getElementById('r-decide')) BriefAck.draw(out, s, iso, data, P.issueId(data));
     };
     const go = () => { const addr = location.pathname + location.search + toHash(sel.value || null, ISO.test(date.value) ? date.value : null, fromHash(location.hash).org);
       if (addr !== location.pathname + location.search + location.hash) { history.replaceState(null, '', addr); draw(); } };

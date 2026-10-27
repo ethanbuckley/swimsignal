@@ -7,6 +7,9 @@ how to check a fact). Every fact says where it came from, and the page shows it:
 - **confirmed**: the landowner's, operator's or council's own published page says so (``source``,
   an https address), or someone from SwimSignal saw it on site (``seen``, the day). A desk check of
   a page is not an inspection: the page says which it was.
+  A confirmed fact from a dated record rather than a page kept current (a designation consultation,
+  say) also has ``source_date``, the record's month (2026-02): the page then says "Source", with
+  the month, not "Verified".
 - **suggested**: a swimmer told us (``from``, who, in words they agreed to; ``on``, the day). It
   has not been checked, and the page says so beside it.
 
@@ -52,6 +55,7 @@ MAX_TEXT, MAX_CAPTION, MAX_LABEL, MAX_LABELS, MAX_PHOTOS = 400, 160, 60, 9, 6
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]{1,80}")   # the site's rule for a spot's id
 PHOTO = re.compile(r"[a-z0-9][a-z0-9-]{0,78}\.jpe?g")
 HTTPS = re.compile(r"https://[^\s<>\"']+")
+MONTH = re.compile(r"(\d{4})-(0[1-9]|1[0-2])")   # source_date: a dated record's month, 2026-02
 
 
 class GuideError(ValueError):
@@ -108,6 +112,19 @@ def _provenance(raw: dict, what: str, today: date) -> dict:
     return out
 
 
+def _source_date(v, fact: dict, what: str, today: date) -> str:
+    """A dated record's month ("2026-02"): the fact is as that record listed it, not a current
+    check, so the page says "Source", not "Verified". Only beside a source page."""
+    if fact["status"] != "confirmed" or "source" not in fact:
+        raise GuideError(f"{what}: source_date is the month of the source page's record; it needs a confirmed fact with a source")
+    m = MONTH.fullmatch(v) if isinstance(v, str) else None
+    if not m:
+        raise GuideError(f"{what}: source_date must be a month written as \"2026-02\", not {v!r}")
+    if (int(m[1]), int(m[2])) > (today.year, today.month):
+        raise GuideError(f"{what}: source_date is in the future ({v})")
+    return v
+
+
 def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = None) -> dict:
     """One guide file, read and checked, in the shape the page draws. Raises GuideError."""
     today = today or datetime.now(ZoneInfo("Europe/London")).date()
@@ -124,10 +141,12 @@ def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = 
         what = f"fact {i}"
         if not isinstance(f, dict):
             raise GuideError(f"{what} is not a table")
-        _only(f, {"topic", "text", "status", "source", "source_name", "seen", "from", "on", "lat", "lon"}, what)
+        _only(f, {"topic", "text", "status", "source", "source_name", "source_date", "seen", "from", "on", "lat", "lon"}, what)
         if f.get("topic") not in TOPICS:
             raise GuideError(f"{what}: topic must be one of {', '.join(TOPICS)}, not {f.get('topic')!r}")
         fact = {"topic": f["topic"], "text": _text(f.get("text"), f"{what}: text", MAX_TEXT), **_provenance(f, what, today)}
+        if "source_date" in f:
+            fact["source_date"] = _source_date(f["source_date"], fact, what, today)
         if ("lat" in f) != ("lon" in f):
             raise GuideError(f"{what}: give both lat and lon, or neither")
         if "lat" in f:

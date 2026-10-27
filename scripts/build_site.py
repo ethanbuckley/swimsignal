@@ -29,6 +29,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, copy_photos
+from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
@@ -114,8 +115,8 @@ SITE_URL_ENV = "DIPCAST_SITE_URL"
 # string is the privacy notice's own lead, so the terms page's date is not touched.
 COUNTER_TOKEN_ENV = "DIPCAST_CF_BEACON_TOKEN"
 COUNTER_JS = TEMPLATE.parent / "counter.js"
-NO_COUNTER = ("and what it does not. Last updated 20 October 2026.", "There is no analytics script and no third-party tracking.")
-WITH_COUNTER = ("and what it does not. Last updated 20 October 2026 (page-view counter).",
+NO_COUNTER = ("and what it does not. Last updated 26 October 2026.", "There is no analytics script and no third-party tracking.")
+WITH_COUNTER = ("and what it does not. Last updated 26 October 2026 (page-view counter).",
                 ("Page views are counted with Cloudflare Web Analytics. Cloudflare states that it sets no cookies, "
                  "uses no local storage and does not fingerprint visitors. It sees your IP address when the counter "
                  "loads, as any web server would, and its "
@@ -524,7 +525,7 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
 
 
 def privacy_updated(html: str, what: str) -> str:
-    """Say after the privacy notice's date what a setting added: "Last updated 20 October 2026
+    """Say after the privacy notice's date what a setting added: "Last updated 26 October 2026
     (page-view counter, tips)"."""
     return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
                   html, count=1)
@@ -663,6 +664,51 @@ def snapshot_duplicates() -> list[str]:
     """Overflow ids the live snapshot lists more than once; build_overflows keeps one row of each."""
     p = config.state_read("live_latest.parquet")
     return duplicate_site_ids(pd.read_parquet(p, columns=["site_id"])) if p.exists() else []
+
+
+def lead0_rain(db: Path, since: str) -> pd.DataFrame | None:
+    """Lead-0 forecast rain per overflow and target day from `since` (YYYY-MM-DD), the latest issue of each, from
+    the forecast log (forecast_overflows): what company_freeze judges a wet day by. None without the log."""
+    if not db.exists():
+        return None
+    import duckdb
+    con = duckdb.connect(str(db), read_only=True)
+    try:
+        return con.execute("""
+            SELECT site_id, CAST(target_day AS VARCHAR) AS day, rain_mm FROM forecast_overflows
+            WHERE lead = 0 AND rain_mm IS NOT NULL AND target_day >= CAST(? AS DATE)
+            QUALIFY row_number() OVER (PARTITION BY site_id, target_day ORDER BY issued_at DESC) = 1""", [since]).fetchdf()
+    finally:
+        con.close()
+
+
+def monitor_feed_checks(poll_log: pd.DataFrame | None) -> tuple[list[str], dict]:
+    """The whole-feed monitor checks decided on 26 Oct 2026 (docs/MONITOR-ANOMALIES-2026-10.md, sections 7 and 8):
+    future_time, time_format, known_share_drop, company_freeze and id_turnover, as build warnings
+    (monitor_anomalies.feed_warnings), each starting "monitor check (<rule>)". Never on the page; never a failed
+    build. Reads the state's live snapshot, live history and coverage, and the forecast log's rain; a rule whose
+    file is missing is skipped and named in the summary."""
+    from dipcast import monitor_anomalies as ma
+    from dipcast.ingest.live import COVERAGE_FILE
+
+    def read(name: str, columns: list[str] | None = None) -> pd.DataFrame | None:
+        p = config.state_read(name)
+        try:
+            return pd.read_parquet(p, columns=columns) if p.exists() else None
+        except Exception as e:  # noqa: BLE001
+            log.warning("monitor checks: %s unreadable: %s", name, e)
+            return None
+    try:
+        since = (pd.Timestamp.now(tz="Europe/London").normalize() - pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+        try:
+            rain = lead0_rain(config.DUCKDB_PATH, since)
+        except Exception as e:  # noqa: BLE001
+            log.warning("monitor checks: forecast log unreadable: %s", e)
+            rain = None
+        return ma.feed_warnings(read("live_latest.parquet"), poll_log, read("live_history.parquet"), rain,
+                                read(COVERAGE_FILE, ["site_id", "day"]))
+    except Exception as e:  # noqa: BLE001 - checks beside the forecast must never stop it
+        return [f"monitor checks not run: {e}"], {"error": str(e)}
 
 
 def build_health(results: list[dict], ecoli_samples: dict | None = None, poll_log: pd.DataFrame | None = None,
@@ -1118,6 +1164,31 @@ def attach_classifications(results: list[dict], path: Path = CLASSIFICATIONS) ->
             r["classification"] = {k: c[k] for k in ("class", "year", "history", "url") if k in c}
             n += "class" in c
     return n
+
+
+def attach_official_advice(results: list[dict], approvals: Path | None = None, check: Path | None = None,
+                           now=None) -> dict:
+    """Reviewed official advice for each spot's page (`official`: [{line, publisher, link, since, checked,
+    state}], newest first), from data/advisories/approved.json and the advisory finder's last check,
+    data/advisories/last_check.json (dipcast.official_advice). Files only: the build asks no publisher
+    for anything, and the advice never changes a level. An approvals file with any mistake (or none at
+    all) raises BuildUnhealthy, naming the problem: a site that silently dropped a reviewed advisory
+    would look clean where it is not. A valid file with no entries is fine. Returns {"shown": n,
+    "states": {...}} for the build's health record."""
+    now = now or pd.Timestamp.now(tz="UTC").to_pydatetime()
+    try:
+        approved = official_advice.load_approvals(approvals, now=now)
+    except official_advice.ApprovalError as e:
+        raise BuildUnhealthy(f"official advice: {e}; fix data/advisories/approved.json by PR; not publishing") from None
+    by_spot = official_advice.shown(approved, official_advice.load_check(check), now)
+    n, states = 0, Counter()
+    for r in results:
+        items = by_spot.get(r["id"])
+        if items:
+            r["official"] = items
+            n += len(items)
+            states.update(x["state"] for x in items)
+    return {"shown": n, "states": dict(states)}
 
 
 RNAGS = config.RAW / "rnags.json"
@@ -1822,6 +1893,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
+SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
+VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
 # Since you last looked: since.js, what changed at a saved spot since this browser last showed it.
 SHELL_SOURCES.append(TEMPLATE.parent / "since.js")
 VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
@@ -1844,6 +1918,10 @@ VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
 VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
+# The catchment replay (prototype, ?replay=1 only, src/dipcast/replay.py): index.html adds replay.js itself
+# when asked, so it has no tag; it asks at levels.js's ?v=<stamp> (mountReplay), and the offline copy
+# stores it with the other scripts.
+SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -1863,6 +1941,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
@@ -1870,6 +1949,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
+    shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -2069,6 +2149,16 @@ def prerender_spots(site: Path, root: str) -> dict[str, str]:
         return {}
 
 
+# The Saved and Plan pages are drawn by their scripts alone. Without JavaScript they would say
+# "Loading…" for ever, so a <noscript> note says what the page needs, in the record page's words, and
+# points to spots.html, whose links to every spot's page work without it; and its style hides the
+# loading line (data-wait), which the script replaces when it runs. Both pages have <base href="../">.
+def noscript_needs(needs: str) -> str:
+    return ('<noscript><style>#result [data-wait]{display:none}</style>'
+            f'<p class="notice">This page needs JavaScript {needs}. '
+            '<a href="spots.html">Every spot</a> has a page of its own with its forecast, which works without it.</p></noscript>')
+
+
 def saved_page(template: str, root: str) -> str:
     """The Saved page, saved/: the map page, where the script shows the lists of spots this browser
     has saved, or a list someone shared (saved/#list=...&spots=..., lists.js). The lists live in the
@@ -2077,7 +2167,8 @@ def saved_page(template: str, root: str) -> str:
     page = PAGE_META.sub(lambda m: page_meta(SAVED_TITLE, SAVED_DESCRIPTION, f"{root}saved/", root, base="../",
                                              noindex=True), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Saved spots</h1>'
-                                 '<p class="muted">Loading your saved spots…</p></div>', 1)
+                                 + noscript_needs("to show your saved spots, which are kept in this browser")
+                                 + '<p class="muted" data-wait>Loading your saved spots…</p></div>', 1)
 
 
 # The places Plan a swim can start from: OS Open Names' cities, towns, districts and villages in England
@@ -2094,7 +2185,8 @@ def plan_page(template: str, root: str) -> str:
     address, so every plan is this one page."""
     page = PAGE_META.sub(lambda m: page_meta(PLAN_TITLE, PLAN_DESCRIPTION, f"{root}plan/", root, base="../"), template, count=1)
     return page.replace(LOADING, '<div id="result"><h1 class="page-h">Plan a swim</h1>'
-                                 f'<p class="muted">{escape(PLAN_DESCRIPTION)} Loading the forecasts…</p></div>', 1)
+                                 + noscript_needs("to read the forecasts and find the spots within reach")
+                                 + f'<p class="muted">{escape(PLAN_DESCRIPTION)} <span data-wait>Loading the forecasts…</span></p></div>', 1)
 
 
 # The Accuracy page's five boxes, which its script fills from data/verification.json.
@@ -2270,11 +2362,15 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
     for s in entries:
         e = add(feed, "entry")
         add(e, "id", f"tag:{host},{when.date().isoformat()}:spot/{s['id']}/{when.strftime('%Y%m%dT%H%M%SZ')}")
-        add(e, "title", f"{s['name']} · {s['headline']}")
+        # Official advice (spots.json `official`, cards.official_brief) beside the level, never in it.
+        add(e, "title", f"{s['name']} · {s['headline']}" + (f" · Official: {s['official']}" if s.get("official") else ""))
         add(e, "updated", stamp)
         add(e, "link", rel="alternate", type="text/html", href=s["url"])
         add(e, "category", term=s["level"])
-        add(e, "summary", f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"])
+        said = f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"]
+        if s.get("official") and s["official"] not in said:   # alerts.json's action gives it already (scripts/alerts.js)
+            said = f"Official: {s['official']}. Follow it first; the level is {BRAND}'s sewage forecast only. {said}"
+        add(e, "summary", said)
     ET.indent(feed)
     return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
 
@@ -2291,7 +2387,9 @@ def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
     except (OSError, ValueError):
         return None
     generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
-    spots = [{"id": sid, **a} for sid, a in alerts["spots"].items()]
+    from dipcast.cards import official_brief
+    advice = {r["id"]: official_brief(r) for r in results}
+    spots = [{"id": sid, **a, **({"official": advice[sid]} if advice.get(sid) else {})} for sid, a in alerts["spots"].items()]
     area_of = {r["id"]: r.get("area") for r in results}
     (site / "feed.xml").write_text(atom_feed(
         f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "
@@ -2761,14 +2859,14 @@ def write_data_page(site: Path, token: str | None = None, root: str | None = Non
 # rules come from one build, as the app's do (VERSIONED_SCRIPTS). It has no page-view counter: inside
 # another site's page it could not see a visitor's choice not to be counted, which is kept on this one.
 EMBED = TEMPLATE.parent / "embed.html"
-EMBED_SCRIPTS = ('<script src="levels.js"></script>', '<script src="embed.js"></script>')
+EMBED_SCRIPTS = ('<script src="levels.js"></script>', '<script src="eatoday.js"></script>', '<script src="embed.js"></script>')   # eatoday.js: official advice
 
 
 def write_embed(site: Path) -> str:
     """embed.html and embed.js beside the app (which has levels.js, page.css and the fonts). Returns
     the scripts' version."""
     h = hashlib.sha256()
-    for f in ("levels.js", "embed.js"):
+    for f in ("levels.js", "eatoday.js", "embed.js"):
         h.update((TEMPLATE.parent / f).read_bytes())
     v = h.hexdigest()[:8]
     page = EMBED.read_text()
@@ -2792,7 +2890,7 @@ ORGANISERS = TEMPLATE.parent / "organisers.html"
 REWRITES += [('href="/organisers.html"', 'href="organisers.html"')]   # About links it
 REWRITES += [('href="/privacy#tips"', 'href="privacy.html#tips"')]   # the support page links it
 # The organisers' page loads lists.js and sites.js too, for "Make a sites link" (sites.js, maker).
-ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "sites.js")
+ORGANISERS_SCRIPTS = ("levels.js", "lists.js", "eatoday.js", "organisers.js", "sites.js")   # eatoday.js: official advice
 
 
 def write_scripted_page(site: Path, name: str, scripts: tuple[str, ...], own: tuple[str, ...],
@@ -2829,8 +2927,8 @@ def write_organisers(site: Path, token: str | None = None, root: str | None = No
 # go/no-go decision (record.js). Both reuse organisers.js's words, so they load it, and printed.js gives both
 # their issue id and data credits. Neither is in the offline copy, for the organisers' page's reasons, and
 # the sitemap lists both, as it lists that page.
-SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "sites.js")
-RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "record.js")
+SITES_SCRIPTS = ("levels.js", "lists.js", "organisers.js", "printed.js", "eatoday.js", "sites.js")   # eatoday.js: official advice
+RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "eatoday.js", "brief.js", "record.js")   # eatoday.js: official advice; brief.js: the version and a read tick
 
 
 def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -2838,7 +2936,7 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
-    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "record.js"), token, root)
+    return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
@@ -2852,10 +2950,11 @@ REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, cen
 
 def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
                        token: str | None = None, live: Path | None = None, returns: Path | None = None,
-                       root: str | None = None) -> None:
+                       root: str | None = None, longest_events: Path | None = None) -> None:
     """quality.html: the overflow records to correct, from the position conflicts' cases
-    file, the live snapshot's positions, the annual returns' outlets and this build's overflow table
-    (src/dipcast/quality.py). A missing input leaves its part of the page saying so; nothing here stops
+    file, the live snapshot's positions, the annual returns' outlets, this build's overflow table
+    (src/dipcast/quality.py) and each overflow's longest spill on record (monitor_anomalies.LONGEST_FILE,
+    for the long_run list). A missing input leaves its part of the page saying so; nothing here stops
     the build."""
     from dipcast import quality
     try:
@@ -2875,8 +2974,21 @@ def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd
     except Exception as e:  # noqa: BLE001
         announce(f"quality.html without the annual returns' outlets: {e}")
         outlets = empty
-    when = (generated or pd.Timestamp.now(tz="UTC")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
-    page = quality.site_page(cases, positions, outlets, overflows, when, MARK)
+    from dipcast import monitor_anomalies
+    try:   # each overflow's longest spill on record, for the long_run list: without it the list is left out
+        longest = monitor_anomalies.load_longest(longest_events)
+    except Exception as e:  # noqa: BLE001
+        announce(f"quality.html without the long_run list (no {longest_events or monitor_anomalies.LONGEST_FILE}): {e}")
+        longest = None
+    as_of = generated or pd.Timestamp.now(tz="UTC")
+    when = as_of.tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    try:   # as_of: live readings over FEED_CURRENT_H older than the build leave the long_run list "could not be checked"
+        page = quality.site_page(cases, positions, outlets, overflows, when, MARK, longest=longest, as_of=as_of)
+    except Exception as e:  # noqa: BLE001 - a display-only list must not stop the page or the build
+        if longest is None:
+            raise
+        announce(f"quality.html without the long_run list: {e}")
+        page = quality.site_page(cases, positions, outlets, overflows, when, MARK)
     (site / "quality.html").write_text(with_counter(with_share_meta(page, "quality.html", root or site_url()), token))
 
 
@@ -2994,6 +3106,23 @@ def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> N
     (site / "spot" / spot["id"] / "qr.svg").write_text(qr_file(page_url(root, spot["id"])))
 
 
+def replay_files(site: Path, results: list[dict], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                 write=None) -> dict:
+    """data/spot/<id>-replay.json, the last 48 hours upstream (prototype, ?replay=1 only, src/dipcast/replay.py):
+    from the poll history, the poll log, the rain cache and this build's results, so no request. After
+    write_app_data, which clears data/spot/. A failure is announced and recorded in the build health,
+    {"written": 0, "warning": ...}: a replay must never stop the site publishing."""
+    try:
+        if write is None:
+            from dipcast.replay import write_replays as write
+        out = write(site, results, upstream, generated.tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001
+        out = {"written": 0, "warning": f"catchment replay not written: {e}"}
+    if out.get("warning"):
+        announce(out["warning"])
+    return out
+
+
 def build(refresh: bool = True) -> dict:
     t0 = time.time()
     require_spill_model()
@@ -3031,6 +3160,7 @@ def build(refresh: bool = True) -> dict:
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
     dry = attach_dry_weather(results)   # notes on past dry-weather spills, from a file: the model never reads them
+    official = attach_official_advice(results)   # reviewed official advice, from two files: no request, never a level
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
@@ -3040,9 +3170,14 @@ def build(refresh: bool = True) -> dict:
     n_weather = attach_weather(results) if refresh else 0
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
-    health = build_health(results, samples_status(), load_poll_log() if refresh else None,
+    poll_log = load_poll_log() if refresh else None
+    health = build_health(results, samples_status(), poll_log,
                           duplicate_overflow_ids=snapshot_duplicates(), rain_fallback=fallback_summary())
+    if refresh:   # whole-feed monitor checks: warnings only (monitor_feed_checks); like the live check, they need this run's poll
+        feed_warns, health["monitor_checks"] = monitor_feed_checks(poll_log)
+        health["warnings"] += feed_warns
     health["algae_checks"], health["classifications"] = n_algae, n_classified
+    health["official_advice"] = official
     health["upgrade_notes"] = {"overflows": upgrades["overflows"], "spots": upgrades["spots"]}
     health["warnings"] += upgrades["warnings"]
     health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}
@@ -3134,6 +3269,7 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
+    health["replay_files"] = replay_files(SITE, results, upstream, generated)   # ?replay=1 only; never stops the build
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)

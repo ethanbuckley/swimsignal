@@ -751,6 +751,10 @@ Since 4 October 2026:
 - **One word.** "Verified" is the notes' word for checked against an official source, so the guide
   uses it too. Before that the tile said "Confirmed". The notes keep "confirm" for a swimmer saying
   something is still so. The files keep `status = "confirmed"`.
+- **A dated record says "Source".** A fact from a record of a past date, such as a Defra designation
+  consultation, says it is "a February 2026 listing, not a current check". Under it, "Verified"
+  would contradict it, so its line is "**Source**: Defra, February 2026." (the page linked), from the
+  file's `source_date` (since 27 October 2026).
 - **One line for a run.** Facts next to each other under one topic, with the same line of who says
   so, share it. It shows once, after the last of them. Facts in a run sit 4 px apart, closer than the
   10 px between runs, so the line reads as theirs. A new topic, page, day or swimmer starts a new

@@ -89,7 +89,7 @@ test('one line a spot: the level first, then the rating, then a spill', () => {
 test('a note is kept for the newest forecast seen, and a failed one leaves the last', () => {
   const m = new Map();
   S.noteSeen(m, [spot('low')], OLD, FRIDAY);
-  assert.deepEqual(m.get('wharfe'), {id: 'wharfe', level: 'low', discharging: 0, rating: null, forecast: OLD, at: FRIDAY});
+  assert.deepEqual(m.get('wharfe'), {id: 'wharfe', level: 'low', discharging: 0, rating: null, gap: false, official: null, forecast: OLD, at: FRIDAY});
   S.noteSeen(m, [{...spot('high'), error: 'forecast failed: timeout'}], NEW, FRIDAY + 1);
   assert.equal(m.get('wharfe').level, 'low');
   S.noteSeen(m, [spot('high')], NEW, FRIDAY + 2);
@@ -134,7 +134,9 @@ const eden = (l, now = {}) => ({...spot(l, now), id: 'eden', name: 'Eden'});
 test('the page keeps a note for each saved spot shown, and the line stays for the visit', () => {
   const p = page(JSON.stringify([seen(spot('low')), seen(eden('high'))]));
   const saved = new Set(['wharfe', 'eden']);
-  assert.equal(p.run('sinceSaid', spot('moderate'), NEW), '<p class="place-since">Was low risk when you looked on Friday at 18:20; now moderate risk.</p>');
+  // The line, then its evidence (sinceEvidence, tested in site_since_evidence): never a change without it.
+  assert.match(p.run('sinceSaid', spot('moderate'), NEW),
+    /^<p class="place-since">Was low risk when you looked on Friday at 18:20; now moderate risk\. <span class="since-ev">Forecasts compared: issued .+\.<\/span><\/p>$/);
   assert.equal(p.run('sinceSaid', eden('high'), NEW), '');   // no change: no line
   p.run('lookedAt', [spot('moderate'), eden('high'), {...spot('low'), id: 'unsaved'}], NEW, saved);
   assert.deepEqual(p.stored().map(x => [x.id, x.level, x.forecast]), [['wharfe', 'moderate', NEW], ['eden', 'high', NEW]]);
