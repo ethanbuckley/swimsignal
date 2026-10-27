@@ -200,13 +200,46 @@ const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>
   + 'The shared link holds the day, the time and the spots, with the plan around your spot: not where you start from.</p>'
   + '<p class="small muted msg" id="outing-alert-msg" aria-live="polite"></p></div>';
 
+// ------------------------------------------------------------------------------ access at each spot
+// The spot's own practical guide (guide.js, from guides/<id>.toml) for the four topics a trip turns on: parking,
+// the path to the water, getting in and getting out. The facts in their own words, each run with who says so
+// (guideRuns: the linked source, or a swimmer's suggestion, who and when), under the guide's checked line
+// (guideChecked). The four it lacks are named, so a missing topic reads as unknown, not as none, and the rest of
+// the guide (toilets, fees, who can swim) is left to the spot's page, which the last line names. Nothing is added
+// to a fact. The desk check of permission (access.py, `access`, for the spots from OpenStreetMap and the Peak),
+// where there is one, comes first, in its own words, as on the spot's page.
+// The guide is in data/spot/<id>.json, not spots-lite.json: until it arrives the block says it is loading, and
+// a file that did not arrive says so, never "no guide" (guide.js, guideTile, detail_missing).
+const OUTING_ACCESS = ['parking', 'path', 'entry', 'exit'];
+const outingGuide = () => typeof guideRuns === 'function' ? { guideRuns, guideChecked, GUIDE_TOPICS } : require('./guide.js');
+function outingAccess(s, today) {
+  if (!s) return '';
+  const G = outingGuide(), label = new Map(G.GUIDE_TOPICS);
+  const a = s.access && typeof s.access.text === 'string' && s.access.text ? s.access : null;
+  const permit = a ? `<p class="g-text">${outEsc(a.text)}</p><p class="g-src">${a.checked_at ? `Desk check ${outEsc(a.checked_at)}; current signs not inspected.` : 'Not known when it was checked.'}</p>` : '';
+  if (s.detail_missing) return permit + '<p class="small muted">The access guide could not be loaded here. The spot\'s page has it, if there is one.</p>';
+  if (s.detail_file && !s.detail_loaded) return permit + '<p class="small muted">Loading the access guide…</p>';
+  const g = s.guide, facts = g && Array.isArray(g.facts) ? g.facts : [];
+  if (!facts.length) return permit + '<p class="small muted">No access guide for this spot yet.</p>';
+  const by = new Map(OUTING_ACCESS.map(k => [k, facts.filter(f => f && f.topic === k)]));
+  const have = OUTING_ACCESS.filter(k => by.get(k).length), gaps = OUTING_ACCESS.filter(k => !by.get(k).length);
+  const rest = G.GUIDE_TOPICS.map(([k]) => k).filter(k => !OUTING_ACCESS.includes(k) && facts.some(f => f && f.topic === k));
+  return permit + `<p class="g-src">${G.guideChecked(g, today)}</p>`
+    + (have.length ? '<dl class="g-facts">' + have.map(k => `<div class="g-row"><dt>${label.get(k)}</dt>`
+      + G.guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${outEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
+      + '</div>').join('') + '</dl>' : '')
+    + (gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '')
+    + (rest.length ? `<p class="small muted">Also in the guide on the spot's page: ${rest.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '');
+}
+const outingAccessBox = (id, inner) => `<div class="outing-access" data-outing-access="${outEsc(id)}"><p class="outing-role">Access</p>${inner}</div>`;
+
 // ------------------------------------------------------------------------------ the tile
 // A column for a spot: c = { id, name, href, tone, headline, why, ev, meta }, headline/why/ev already
 // HTML (the page's own words, escaped where they were made), the rest text.
 const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">${role}</p>`
   + `<h3 class="outing-nm"><a href="${outEsc(c.href)}" data-id="${outEsc(c.id)}">${outEsc(c.name)}</a></h3>`
   + (c.meta ? `<p class="k">${outEsc(c.meta)}</p>` : '')
-  + (c.official || '') + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + '</div>';
+  + (c.official || '') + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + (c.access ? outingAccessBox(c.id, c.access) : '') + '</div>';
 // The whole tile. o = { day, when, spot, backup, groups (outingOptions for the spot), backupGroups,
 // main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
 // site's alerts for a date are on, so the outing can be sent if asked) }.
@@ -246,6 +279,7 @@ function drawOuting(box, shown) {
     return { id: s.id, name: s.name, href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), tone: tone(dayLevel(s, PLAN.day)),
       headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), notice: outingBrief(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
       level: dayLevel(s, PLAN.day), advised: typeof eaTodayRestricts === 'function' && eaTodayRestricts(s),   // a notice that restricts swimming
+      access: outingAccess(s, today()),
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   if (OUTING_OPEN === null) OUTING_OPEN = !!(PLAN.spot || PLAN.when);
@@ -265,6 +299,10 @@ function drawOuting(box, shown) {
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, pair, DATA.generated_at);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
+  // Each spot's guide, once its own file is in (index.html, spotDetail), into its column's access block.
+  for (const s of [pair.main, pair.backup].filter(Boolean)) if (typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded)
+    spotDetail(s).then(() => { const el = tile.querySelector(`[data-outing-access="${CSS.escape(s.id)}"]`);
+      if (el) el.innerHTML = '<p class="outing-role">Access</p>' + outingAccess(s, today()); });
   if (typeof OutingPack === 'object') OutingPack.draw(pair);   // outingpack.js: keep this outing for offline use
   // The calendar file, made here when asked (organisers.html's way of handing a file over).
   document.getElementById('outing-ics').addEventListener('click', () => {
@@ -326,6 +364,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingAccess, OUTING_ACCESS, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }
