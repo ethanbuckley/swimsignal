@@ -98,10 +98,10 @@ function compareAdvice(s) {
   if (s.source === 'designated') return 'Not known: this update has no Environment Agency page for this bathing water.';
   return 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.';
 }
-// Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap):
-// what it found, in its own words, and when. A plan's row gives the status in a few words (ACCESS_WORDS,
+// Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap
+// and the curated ones in the Peak District): what it found, in its own words, and when. A plan's row gives the status in a few words (ACCESS_WORDS,
 // index.html's planWhy). A spot without a check says so.
-const ACCESS_WORDS = { restricted_guidance: 'Swimming here is restricted: check the signs.', unconfirmed: 'Permission to swim at this point is not confirmed.' };
+const ACCESS_WORDS = { restricted_guidance: 'Park guidance restricts river swimming; not checked here.', unconfirmed: 'Permission to swim at this point is not confirmed.' };
 function compareAccess(s) {
   const a = s.access;
   if (!a) return 'No access information.';
