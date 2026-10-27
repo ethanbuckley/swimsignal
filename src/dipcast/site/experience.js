@@ -83,12 +83,13 @@ function compareNow(s, generatedAt = null) {
 // page cannot read it (eatoday.js), so at a designated bathing water the cell says it was not checked and
 // links to the EA's page, which has it. The EA gives none elsewhere.
 const eaPageFor = () => typeof eaTodayPage === 'function' ? { eaTodayPage, eaTodayId, eaTodayAdvice: typeof eaTodayAdvice === 'function' ? eaTodayAdvice : () => [],
-  eaTodayBrief: typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '' } : require('./eatoday.js');
+  eaTodayBrief: typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '',
+  eaTodayFirst: typeof eaTodayFirst === 'function' ? eaTodayFirst : () => 'Read the official notice first' } : require('./eatoday.js');
 // A reviewed notice (spots.json `official`) is said in its compact form, with its publisher's page, in place
 // of "could not be checked", as the spot page's coverage line does (eatoday.js, eaTodayCover).
 function compareAdvice(s) {
   const R = rules(), E = eaPageFor(), o = E.eaTodayAdvice(s)[0];
-  if (o) return `Official: ${htmlText(E.eaTodayBrief(s))}. Follow it first.`
+  if (o) return `Official: ${htmlText(E.eaTodayBrief(s))}. ${E.eaTodayFirst(s)}.`   // follow only a restricting notice
     + (/^https:\/\/[^\s"<>]+$/.test(o.link || '') ? ` <a href="${htmlText(o.link)}">The ${htmlText(o.publisher)}'s page</a> has the latest.` : '');
   if (R.eaUnchecked(s)) {
     const id = E.eaTodayId(s), url = /^https:\/\//.test(s.classification.url || '') ? s.classification.url : id ? E.eaTodayPage('', id) : '';

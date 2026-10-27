@@ -127,3 +127,17 @@ test('the action line: "Follow" only for a restricting notice, "Read" for any ot
   assert.ok(Embed.card(legacy(), DATA, NOW).includes('. Read the official notice first; the level'));
   assert.ok(Embed.card(restricting(), DATA, NOW).includes(`<p class="o-tag">Official: ${ea.eaTodayBrief(restricting())}. Follow it first; the level is SwimSignal's sewage forecast only.</p>`));
 });
+
+test('the sites view, the organisers\' page, the record and the comparison: "follow" only for a restricting notice', () => {
+  const S = require('../src/dipcast/site/sites.js'), Org = require('../src/dipcast/site/organisers.js');
+  const Rec = require('../src/dipcast/site/record.js'), X = require('../src/dipcast/site/experience.js');
+  const DATA = { generated_at: '2026-10-28T08:00:00Z', spots: [] }, NOW = Date.parse('2026-10-28T08:30:00Z');
+  const tail = "; the level is SwimSignal's sewage forecast only.</p>";
+  for (const [s, word] of [[restricting(), 'Follow it first'], [neutral(), 'Read the official notice first'], [legacy(), 'Read the official notice first']]) {
+    const b = ea.eaTodayBrief(s);
+    assert.ok(S.row(s).includes(`<p class="o-tag">Official: ${b}. ${word}${tail}`), s.name);
+    assert.ok(Org.forecast(s, DATES[1], DATA, NOW).includes(`<p class="o-tag"><b>Official advice:</b> ${b}. Not part of the level below; ${word.toLowerCase()}.</p>`), s.name);
+    assert.ok(Rec.view(s, DATES[1], DATA, null, 'https://swimsignal.co.uk/', NOW).includes(`. Not part of the level below; ${word.toLowerCase()}.`), s.name);
+    assert.ok(X.compareAdvice(s).startsWith(`Official: ${b}. ${word}.`), s.name);
+  }
+});

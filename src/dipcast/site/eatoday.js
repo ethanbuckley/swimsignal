@@ -119,6 +119,9 @@ const eaTodayAct = d => !eaTodayAdvice(d).length ? ''
 // goes by this; what they show (the notice, its tag, the map's ring) goes by eaTodayAdvice, every notice. Only an
 // explicit true counts: a notice without the field (a spots.json from before 28 Oct 2026) changes no selection.
 const eaTodayRestricts = d => eaTodayAdvice(d).some(o => o.restricts === true);
+// What the pages ask beside a notice's compact form, "Official: … . Follow it first": follow it only where it
+// restricts swimming, else read it (the sites view, the organisers' page, the record, the comparison).
+const eaTodayFirst = d => eaTodayRestricts(d) ? 'Follow it first' : 'Read the official notice first';
 // The compact form for the places a spot is one row among many: the list, Saved, Plan a swim's rows and
 // the decision record. "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct", in a line of its own
 // beside the level, never in it. One shared helper, so every surface says the same. '' without advice.
@@ -171,5 +174,5 @@ if (typeof document === 'object' && document && typeof document.addEventListener
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
-    eaTodayAdvice, eaTodayRestricts, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
+    eaTodayAdvice, eaTodayRestricts, eaTodayFirst, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
 }
