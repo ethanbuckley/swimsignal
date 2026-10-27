@@ -506,4 +506,85 @@ any status is still never retried. It changes no feature and no score, and was n
 
 ## Results
 
-Not run yet.
+Added 27 October 2026 after the one scoring run: 18:28 UTC, 31 s, commit 4b3c3dc, under the heavy-run lock, offline.
+The features file's SHA-256 matched the one committed in d15670a before the run. Aggregates only:
+`docs/WATER-TEMPERATURE-MODEL-TEST-2026-10-score.json`. The per-row predictions stay in the private folder.
+
+**Verdict, primary input (bridged Open-Meteo air for 2023–25): rivers pass; lakes fail.**
+
+| | rivers | lakes |
+|---|---|---|
+| held-out waters / test rows | 3,798 / 66,577 | 307 / 2,967 |
+| candidate RMSE | **1.56 °C** | **1.82 °C** |
+| day-of-year baseline RMSE | 2.19 °C | 2.46 °C |
+| 7-day air baseline RMSE | 1.85 °C | 1.92 °C |
+| gain over day of year [95% interval] | 0.63 [0.59, 0.67] | 0.64 [0.34, 0.92] |
+| gain over 7-day air [95% interval] | 0.29 [0.27, 0.31] | 0.10 [**−0.02**, 0.23] |
+| 1. beats day of year | yes | yes |
+| 2. beats 7-day air | yes | **no** (interval reaches below 0) |
+| 3. RMSE limit (2.0 rivers, 1.5 lakes) | yes | **no** (1.82 > 1.5) |
+| 4. gate (30 waters, 300 rows) | yes | yes |
+| **label** | **pass** | **fail** |
+
+Other figures for the candidate: rivers bias +0.27 °C, mean absolute error 1.19 °C, 90% of errors within 2.51 °C;
+lakes bias −0.40 °C (too cold), mean absolute error 1.36 °C, 90% within 3.01 °C.
+
+**Sea** (reported, decides nothing): 227 waters, 22,303 rows; candidate 1.55 °C, day of year 2.13, 7-day air 1.63.
+
+**Secondary inputs (decide nothing):**
+
+| input for 2023–25 | rivers: candidate / 7-day air | lakes: candidate / 7-day air |
+|---|---|---|
+| bridged Open-Meteo (primary) | 1.56 / 1.85 | 1.82 / 1.92 |
+| HadUK (91,825 rows) | 1.52 / 1.82 | 1.69 / 1.85 |
+| Open-Meteo, no bridge | 1.55 / 1.83 | 1.87 / 1.96 |
+
+With HadUK air the lake gain over 7-day air is 0.15 [0.06, 0.24], so condition 2 would hold, but the RMSE (1.69)
+still misses 1.5. *Inferred:* the input source moves lakes by about 0.1 to 0.2 °C; it does not decide the lake
+verdict. The bridge made rivers a little worse than no bridge (1.56 against 1.55) and lakes a little better.
+
+**Groups (primary input; candidate / day of year / 7-day air, RMSE in °C):**
+
+| group | waters | rows | candidate | day of year | 7-day air |
+|---|---|---|---|---|---|
+| small upland streams (< 20 km upstream, cell ≥ 200 m) | 410 | 5,684 | 1.57 | 2.41 | 1.88 |
+| rivers, under 20 km upstream | 2,495 | 36,499 | 1.61 | 2.10 | 1.88 |
+| rivers, 20 to 200 km | 912 | 19,153 | 1.41 | 2.08 | 1.64 |
+| rivers, 200 km and over | 203 | 6,898 | 1.36 | 2.72 | 2.01 |
+| rivers, not on the network (catchment unknown) | 724 | 4,027 | 2.02 | 2.41 | 2.20 |
+| lakes, WFD, under 1 km² | 73 | 619 | 1.70 | 2.68 | 2.05 |
+| lakes, WFD, 1 km² and over | 11 | 691 | **2.18** | 1.86 | 1.96 |
+| lakes, not matched to a WFD polygon | 223 | 1,657 | 1.70 | 2.59 | 1.86 |
+
+Small upland streams gain 0.83 [0.72, 0.95] over day of year and 0.30 [0.24, 0.37] over 7-day air. They are not
+worse than other rivers, against the plan's expectation. The worst river group is points that did not snap to the
+network (2.02).
+
+The 11 large lakes are the one group where the candidate is worse than both baselines (2.18 against 1.86 and 1.96).
+*Inferred:* a deep lake's surface lags the air by more than 30 days, and the model has no depth.
+
+**By year and month (candidate RMSE):** rivers 2023 1.55, 2024 1.48, 2025 1.66; May 1.57, June 1.68, July 1.61,
+August 1.57, September 1.37. Lakes 2023 1.91, 2024 1.76, 2025 1.83; May 2.03, June 2.09, July 1.82, August 1.66,
+September 1.44. Lakes are too cold early in the season (bias −1.04 °C in May) and slightly too warm in September
+(+0.37 °C). The 30-day air average does not carry enough of a lake's memory. Rivers by fold: 1.51 to 1.63; lakes by
+fold: 1.54 to 2.00.
+
+**The stage 1 curve:** in every fold the river and lake curves hit the upper bound for alpha (35 °C), with gamma
+about 0.08 to 0.11. In the May–September range the logistic is close to a straight line. So stage 1 alone equals
+the 7-day air baseline to 0.01 °C. All the gain over that baseline comes from the boosted correction (the 1- and
+30-day averages, day of year, type, size and elevation). The sea curve fitted inside its bounds. All 15 fits
+converged.
+
+**What this does not show.** Every test row is an EA spot sample, mostly taken in the working day. These are not
+swim-spot readings, and the estimate is of a daytime spot reading. The bridge was fitted on archive air. The live site
+would feed forecast-API air (model analyses for past days, a forecast for today). That gap is not measured here. It
+is the check stated under "What follows", before any display.
+
+### What follows from this result
+
+- **Rivers passed.** As stated, a separate draft PR may add the estimate for river spots only, "about N °C
+  (estimated, typically within 2 °C)": 1.56 °C rounded up to the next 0.5 °C. It comes after the live sensor where a
+  sensor exists. First comes the check of forecast-API air against ERA5-Land at spot cells. Ethan decides whether it
+  ships.
+- **Lakes failed.** Lake spots get no estimate. The large-lake result says what a lake model would need first: a
+  longer air memory or depth.
