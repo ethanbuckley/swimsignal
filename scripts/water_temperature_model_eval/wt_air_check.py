@@ -7,6 +7,13 @@ requests): Open-Meteo's forecast-API air (as the site would ask for it) against 
 Three requests per batch of at most 25 cells, through wt_fetch.OMClient.check_get (the fetch's caps, pace, retries
 and stop rules): forecast with precipitation and temperature, forecast with precipitation only, and the archive.
 Pass: |mean a7 difference| <= 0.5 C and RMS a7 difference <= 1.0 C.
+
+Amendment 3 (the in-season check on the 2025 season), with --historical 2025: the Historical Forecast API's air
+(archived forecast-API air) against ERA5-Land at the same cells, London days 1 May to 30 September 2025 scored, the
+same measures and pass rule, two requests per batch, its own cap of 150 under the log tag check=hist2025:
+
+    python -I wt_air_check.py --cache <private>/water-temperature/open-meteo --spots spots.csv spots-osm.csv \
+        --out <dir> --historical 2025 [--fetch]
 """
 
 from __future__ import annotations
@@ -27,6 +34,79 @@ CHECK_CAP = 250.0
 PAST_DAYS, FORECAST_DAYS = 31, 6
 BIAS_MAX, RMS_MAX = 0.5, 1.0
 LONDON = "Europe/London"
+# Amendment 3: the in-season check on archived forecasts.
+HIST_CAP, HIST_TAG = 150.0, "check=hist2025"
+HIST_FIRST_LEAD_DAYS = 6       # 25 April, for early May's a7; the hourly request starts a day earlier (BST)
+
+
+def weight(n_cells: int, days: int, variables: int = 1) -> float:
+    """Open-Meteo's weight for a request (wt_fetch's rule): max(1, V/10 x max(1, D/14)) per location."""
+    return n_cells * max(1.0, variables / 10 * max(1.0, days / 14))
+
+
+def hist_window(year: int) -> dict:
+    """The dates of amendment 3's requests and its scored London days."""
+    first = pd.Timestamp(f"{year}-05-01") - pd.Timedelta(days=HIST_FIRST_LEAD_DAYS)
+    return {"forecast_start": (first - pd.Timedelta(days=1)).date().isoformat(), "archive_start": first.date().isoformat(),
+            "end": f"{year}-09-30", "scored_from": pd.Timestamp(f"{year}-05-01"), "scored_to": pd.Timestamp(f"{year}-09-30")}
+
+
+def scored_only(res_fc: dict[str, pd.Series], res_ar: dict[str, pd.Series], w: dict) -> dict:
+    """measures(), with a7 built on the full series (so early May has its a7) and then the daily and a7 pairs cut to
+    the scored days, scored_from..scored_to; plus the a7 difference by month, which decides nothing."""
+    keep = lambda s: s[(s.index >= w["scored_from"]) & (s.index <= w["scored_to"])]   # noqa: E731
+    daily, seven, per_cell = [], [], {}
+    for cell, f in res_fc.items():
+        a = res_ar.get(cell)
+        if a is None or not len(a) or not len(f):
+            continue
+        both = pd.concat([f.rename("f"), a.rename("a")], axis=1, join="inner").dropna()
+        j = pd.concat([a7(both["f"]).rename("f"), a7(both["a"]).rename("a")], axis=1, join="inner").dropna()
+        both, j = keep(both), keep(j)
+        if not len(both):
+            continue
+        daily.append((both["f"] - both["a"]).rename(cell))
+        seven.append((j["f"] - j["a"]).rename(cell))
+        per_cell[cell] = float((both["f"] - both["a"]).mean())
+    d = pd.concat(daily) if daily else pd.Series(dtype=float)
+    s7 = pd.concat(seven) if seven else pd.Series(dtype=float)
+    pc = np.array(list(per_cell.values()))
+    res = {"cells_compared": len(per_cell), "daily_pairs": int(len(d)), "a7_pairs": int(len(s7)),
+           "daily_mean": float(d.mean()) if len(d) else None, "daily_rms": float(np.sqrt(np.mean(d ** 2))) if len(d) else None,
+           "a7_mean": float(s7.mean()) if len(s7) else None, "a7_rms": float(np.sqrt(np.mean(s7 ** 2))) if len(s7) else None,
+           "cell_mean_min": float(pc.min()) if len(pc) else None, "cell_mean_max": float(pc.max()) if len(pc) else None,
+           "by_month": {f"{m:02d}": {"a7_mean": float(g.mean()), "a7_rms": float(np.sqrt(np.mean(g ** 2))), "a7_pairs": int(len(g))}
+                        for m, g in s7.groupby(s7.index.month)} if len(s7) else {}}
+    res["pass"] = bool(len(s7) and abs(res["a7_mean"]) <= BIAS_MAX and res["a7_rms"] <= RMS_MAX)
+    return res
+
+
+def historical(c, cells: list[str], year: int) -> dict:
+    """Amendment 3's check: two requests a batch of at most 25 cells, through c.check_get (caps, pace, retries)."""
+    w = hist_window(year)
+    days_fc = (pd.Timestamp(w["end"]) - pd.Timestamp(w["forecast_start"])).days + 1
+    days_ar = (pd.Timestamp(w["end"]) - pd.Timestamp(w["archive_start"])).days + 1
+    fc, ar = {}, {}
+    for i in range(0, len(cells), 25):
+        batch = cells[i:i + 25]
+        lat = ",".join(x.split("_")[0] for x in batch)
+        lon = ",".join(x.split("_")[1] for x in batch)
+        tag = f"hist{year}_{i:03d}"
+        ft = c.check_get(f"histforecast_{tag}", wf.HISTORICAL_FORECAST_URL,
+                         {"latitude": lat, "longitude": lon, "start_date": w["forecast_start"], "end_date": w["end"],
+                          "hourly": "temperature_2m", "timezone": "UTC"}, len(batch), weight(len(batch), days_fc), HIST_CAP, HIST_TAG)
+        aa = c.check_get(f"histarchive_{tag}", wf.OM_URL,
+                         {"latitude": lat, "longitude": lon, "start_date": w["archive_start"], "end_date": w["end"],
+                          "daily": "temperature_2m_mean", "timezone": LONDON, "models": wf.OM_MODEL},
+                         len(batch), weight(len(batch), days_ar), HIST_CAP, HIST_TAG)
+        for cell, x, y in zip(batch, ft, aa, strict=True):
+            fc[cell] = london_daily(x["hourly"]["time"], x["hourly"]["temperature_2m"])
+            ar[cell] = pd.Series(y["daily"]["temperature_2m_mean"], index=pd.to_datetime(y["daily"]["time"]), dtype=float).dropna()
+    res = scored_only(fc, ar, w)
+    res.update(cells=len(cells), window=[w["scored_from"].date().isoformat(), w["scored_to"].date().isoformat()],
+               requests_from=[w["forecast_start"], w["archive_start"]],
+               weighted_calls=round(weight(len(cells), days_fc) + weight(len(cells), days_ar), 1))
+    return res
 
 
 def river_cells(spot_files: list[Path]) -> list[str]:
@@ -111,8 +191,15 @@ def main(argv=None) -> None:
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--fetch", action="store_true")
     ap.add_argument("--today", help="London date the check ran on (YYYY-MM-DD); default today")
+    ap.add_argument("--historical", type=int, help="amendment 3: the in-season check on this season's archived forecasts")
     a = ap.parse_args(argv)
     cells = river_cells(a.spots)
+    if a.historical:
+        res = historical(wf.OMClient(a.cache, a.fetch), cells, a.historical)
+        a.out.mkdir(parents=True, exist_ok=True)
+        (a.out / f"air_check_hist{a.historical}.json").write_text(json.dumps(res, indent=1))
+        print(json.dumps(res, indent=1))
+        return
     today = pd.Timestamp(a.today) if a.today else pd.Timestamp(datetime.now(UTC)).tz_convert(LONDON).normalize()
     today = pd.Timestamp(today.date())
     start, end = (today - timedelta(days=PAST_DAYS)).date().isoformat(), (today - timedelta(days=1)).date().isoformat()
