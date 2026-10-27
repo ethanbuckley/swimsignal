@@ -112,4 +112,15 @@ the lowland hint rests on two lakes.
 
 ## Results
 
-None yet. Not before 1 October 2027.
+None yet.
+
+### Withdrawn, 27 October 2026, by its own rule
+
+#386 was run on 27 October 2026 and labelled **Fails** (`docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md`). The section
+"A condition that comes first" says this statement is then withdrawn, so it is.
+
+The fail was narrow and the signal pointed the right way: pooled Spearman 0.50 with the interval's lower end 0.2997
+against 0.30; the within-lake placebo beaten in all 200 shuffles; calibration "Better" in shallow lakes and "Too
+uncertain" in deeper ones. #385 (harmful-algae incidents) was too few to judge. Whether to state a new forward test,
+for example limited to shallow lakes and to lab chlorophyll in 2027, is Ethan's decision. It would be a new statement
+on new data, not a revival of this one.
