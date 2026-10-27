@@ -1014,6 +1014,7 @@ def data_credits(root: str) -> dict:
             "real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by "
             "Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures "
             "stay under CC BY-SA 4.0. Soil moisture from ECMWF's IFS forecasts, served by Open-Meteo, CC BY 4.0. "
+            "The river water-temperature estimate was trained on Met Office HadUK-Grid air temperature, OGL v3.0. "
             "Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature "
             "Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): "
             "contains modified Copernicus "
@@ -1857,6 +1858,43 @@ def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=N
         n += 1
     log.info("water temperature: %d of %d river spots have an EA sensor on their river within %.0f km "
              "(%d sensors read in the last day)", n, len(rivers), max_km, len(sensors))
+    return n
+
+
+def attach_water_temperature_estimate(results: list[dict], forecast=None, model=None, upstream=None, now=None) -> int:
+    """Beside the sensor (attach_water_temperature): an estimate of a river spot's water temperature today, from
+    the air temperature in the spot cell's forecast (the rain request's `air_c`, so no extra Open-Meteo call), the
+    date, the river's network length upstream and the cell's elevation (dipcast.model.water_temp). Rivers only, May
+    to September only: the model passed its test for rivers in those months (typically within 1.56 C,
+    docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md) and failed for lakes, so a lake never gets one. A spot without
+    30 whole days of air gets none. Never part of the level. Returns how many spots got one; nothing here can stop
+    a build. `forecast(cells)`, `model` and `upstream(spot)` are for the tests."""
+    from dipcast.model import water_temp
+    model = water_temp.load() if model is None else model
+    if model is None:
+        return 0
+    today = (now or pd.Timestamp.now(tz="Europe/London")).tz_convert("Europe/London").normalize().tz_localize(None)
+    if today.month not in model.months:
+        return 0
+    forecast = forecast or fetch_forecast
+    upstream = upstream or (lambda r: water_temp.upstream_km(_net(), float(r["lon"]), float(r["lat"])))
+    n = 0
+    for r in results:
+        if r.get("kind") != "river" or str(r.get("error") or "").startswith("forecast failed"):
+            continue
+        try:
+            cell = cells_for_sites(pd.Series([r["lat"]], dtype=float), pd.Series([r["lon"]], dtype=float))
+            hourly = forecast(cell)
+            elev = hourly["elevation_m"].dropna() if "elevation_m" in hourly else pd.Series(dtype=float)
+            est = water_temp.estimate(model, hourly, today, upstream(r), float(elev.iloc[0]) if len(elev) else None,
+                                      kind="river")
+        except Exception as e:  # noqa: BLE001 - an estimate beside the forecast must not sink the build
+            log.warning("water temperature estimate for %s: %s", r.get("name"), e)
+            continue
+        if est:
+            r["water_temp_est"] = est
+            n += 1
+    log.info("water temperature estimate: %d river spots", n)
     return n
 
 
@@ -3201,6 +3239,7 @@ def build(refresh: bool = True) -> dict:
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
+    n_water_est = attach_water_temperature_estimate(results) if refresh else 0   # rivers, May-September; cached rain cells
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
     n_weather = attach_weather(results) if refresh else 0
@@ -3256,6 +3295,7 @@ def build(refresh: bool = True) -> dict:
     health.update(n_flows)
     health["warnings"] += flood_warnings(n_flows, len(results))
     health["water_temperature"] = n_water_temp
+    health["water_temperature_estimate"] = n_water_est
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
     health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}
