@@ -122,6 +122,9 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   to give lakes an estimate. **Both lines fail condition 3** (ranking: lake AUC 0.632 and 0.535 against 0.65);
   lakes keep no E. coli estimate. Ends with a near-miss framework for later tests, dated before the run. Tables:
   `-score.json`, `-face.json`, `-model-235.json`, `-model-500.json`.
+- [LAKE-ALGAE-2027-FORWARD-TEST.md](LAKE-ALGAE-2027-FORWARD-TEST.md): the same satellite reading on summer 2027 only:
+  objectionable algae (Q1) and lowland lakes (Q2), the hints from #377 tested on unseen data. **Draft, not approved; withdrawn if
+  #386 fails.**
 - [LAKE-ALGAE-SATELLITE-TEST-2026-10.md](LAKE-ALGAE-SATELLITE-TEST-2026-10.md): a Sentinel-2 chlorophyll index
   (NDCI) at lake bathing waters, scored against the EA's visual algae checks, 2020–26. **"Algae seen" fails
   (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS had no data
