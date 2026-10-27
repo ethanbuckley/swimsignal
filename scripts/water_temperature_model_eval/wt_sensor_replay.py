@@ -201,7 +201,7 @@ def _unrounded(model, hourly, today, upstream, elevation) -> float:
     s = day.reindex(days)
     c, d = model.bridge
     s = c + d * s
-    ang = 2 * np.pi * today.dayofyear / 365.25
+    ang = 2 * np.pi * today.day_of_year / 365.25
     up = np.log10(upstream) if upstream is not None and upstream > 0 else np.nan
     feats = {"a1": s.iloc[-1], "a7": s.iloc[-7:].mean(), "a30": s.mean(), "doy_sin": np.sin(ang), "doy_cos": np.cos(ang),
              "type_code": model.type_code["river"], "log_lake_area": np.nan, "log_upstream_km": up,
