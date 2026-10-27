@@ -488,4 +488,45 @@ API-docs page, two codelist searches, one 5122 listing), 1 to ukas.com, 1 to sta
 
 ## Results
 
-None yet.
+Added 27 October 2026 after the one scoring run. Everything above the line is as approved (49bf309), with the run log
+recorded before the values were fetched.
+
+**Verdict: fails as stated.** It fails narrowly, and the signal points the right way. The outcome is EA acetone-extract
+chlorophyll (determinand 7887), phaeopigment correction not stated.
+
+### The run
+- Values fetched once: 1,774 rows at 40 points (40 requests, 0.76 MB), SHA-256
+  `8327417da5c5e512fd81cdbf4f2e71239560573b57e257240a46549b9f2648fa`. 839 measured, 6 "<" values (halved, as stated),
+  10 ">" values, 0 dropped; 855 samples in season, 813 at the 38 points in the test, 120 in 2022 (no imagery).
+- Scoring: `run.sh score` from the archive of 49bf309, under the heavy-run lock, **network attempts: 0**. Both hashes
+  matched.
+
+### The gate
+207 pairs at 38 lakes; 30 lakes with 3 or more pairs; 5 seasons with 10 or more (2021 19, 2023 43, 2024 41, 2025 38,
+2026 66). Judged.
+
+### The four conditions
+
+| Condition | Figure | Holds |
+|---|---|---|
+| 1. Pooled Spearman ≥ 0.5, interval lower end > 0.3 | ρ = 0.502, 95% interval **0.2997** to 0.667 | **no, by 0.0003 on the lower end** |
+| 2. Placebo (shuffled within lake and season, 200 times) | real 0.502 vs 95th percentile 0.469; 0 of 200 at or above (highest 0.498) | yes |
+| 3. Leave-one-lake-out calibration, skill vs lake-mean reference, labelled Better | skill 0.159, interval −0.058 to 0.325 (B 0.10, H 0.05): **"Too uncertain"** | no |
+| 4. Neither lake type Possible harm or Harm | shallow (14 lakes, 89 pairs): skill 0.301, interval 0.052 to 0.475, **Better**; deeper (19 lakes, 92 pairs): 0.069, interval −0.246 to 0.263, Too uncertain | yes |
+
+### Description (decides nothing)
+- Same-day scenes only: 76 pairs, ρ 0.38. With "<" values left out: 204 pairs, ρ 0.49.
+- By season: 2021 0.61, 2023 0.44, 2024 0.35, 2025 0.70, 2026 0.51.
+- By lake: mostly positive; 6 lakes negative, several with only 2-5 pairs. Table in
+  `docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10-score.json`.
+
+### What it means
+- **Established:** the NDCI reading does track measured chlorophyll in English lakes, pooled (ρ about 0.5) and
+  within lake and season: the placebo, which keeps each lake's level and season, was beaten in all 200 shuffles. That
+  is the day-to-day signal #377's visual-check test could not find.
+- **Established:** it misses the stated bar on condition 1 by 0.0003 on the interval's lower end, and its calibration
+  across all lakes is too uncertain. In shallow lakes the calibration is labelled Better; in deeper lakes it is not.
+- **As stated, a fail, near misses included, ends Sentinel-2 L2A NDCI work for now.** Under its own rule, the 2027
+  forward draft (#396) is withdrawn unless Ethan decides otherwise. Continuing would be his decision, as with soil
+  moisture; the honest route would be new data (a 2027 test limited to shallow lakes, stated in advance), not
+  re-reading these rows.
