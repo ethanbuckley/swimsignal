@@ -183,6 +183,26 @@ def test_the_floors_fit_the_free_tier_at_a_build_every_30_minutes():
     assert day["calls"] <= rainfall.DAILY_CALLS < 10_000
 
 
+def test_the_planned_hour_and_month_fit_the_free_tier():
+    """Open-Meteo's free tier has an hourly cap (5,000), a minute cap (600) and a monthly one (300,000) beside the
+    daily one; planned_day is a day only. The month follows from the day's ration. The hour: with two builds in
+    an hour each asking for everything, floors and caps ignored, it is 4,966, 34 under the cap (the review of 27
+    Oct 2026 made it 4,302 without the ensemble's 332 cells); with the floors and the per-build caps, 1,898. Only
+    the day is enforced in the code; the hour and the minute are kept by the floors and caps (rainfall.py)."""
+    from dipcast import scottish_shadow
+    from dipcast.ingest import soil
+    assert 31 * rainfall.DAILY_CALLS == 279_000 < rainfall.FREE_MONTH_CALLS
+    assert 31 * rainfall.planned_day(332, 1270, 105, 320, 62, **_floors())["calls"] == 275_063
+    h = rainfall.planned_hour(332, 1270, 105, 320, 62, 332, anypoint_per_build=_bap().RAIN_CELLS_PER_BUILD,
+                              scotland_per_build=scottish_shadow.RAIN_CELLS_PER_BUILD, soil_attempts=soil.MAX_ATTEMPTS)
+    assert h["crude"] == 2 * (332 + 1270 + 105 + 320 + 124 + 332) == 4966 < rainfall.FREE_HOUR_CALLS
+    assert h["by"] == {"spots": 332, "anypoint": 600, "weather": 210, "scotland": 300, "soil": 124, "ensemble": 332}
+    assert h["floors"] == 1898
+    # A build's largest single step asks for under the minute's 600 (spots 332, ensemble 332, click-anywhere 300,
+    # Scotland 150); two steps run back to back could pass it. Not enforced: a 429 is retried (rainfall._request).
+    assert max(332, 332, _bap().RAIN_CELLS_PER_BUILD, scottish_shadow.RAIN_CELLS_PER_BUILD) < rainfall.FREE_MINUTE_CALLS
+
+
 def _floors(*keep):
     bap, bs = _bap(), _build_site()
     from dipcast import scottish_shadow

@@ -187,6 +187,33 @@ def planned_day(spot_cells: int, anypoint_cells: int, weather_points: int, scotl
     return {"by": by, "calls": sum(by.values()), "spare": DAILY_CALLS - sum(by.values())}
 
 
+# Open-Meteo's free limits besides the day's, from its terms and pricing pages (read 27 Oct 2026): 5,000 calls an
+# hour, 600 a minute and 300,000 a month, counted by IP address and application, and for non-commercial use only.
+# Its terms count subscriptions, advertising and commercial promotion as commercial; a tip jar is allowed. So
+# this capacity is for a non-commercial prototype: a commercial launch needs a paid plan, and the ensemble and
+# archive APIs need Professional, not Standard (pricing page).
+# Only the day is enforced here (may_spend against DAILY_CALLS). The month follows from it: 31 days at
+# DAILY_CALLS is 279,000. The hour and the minute are neither enforced nor counted: the floors and the per-build
+# caps keep the builds under them (planned_hour), and a 429 is retried after its Retry-After (_request). A
+# GitHub runner's address may be shared with other users' jobs, whose calls this cannot see (inferred).
+FREE_HOUR_CALLS, FREE_MINUTE_CALLS, FREE_MONTH_CALLS = 5000, 600, 300_000
+
+
+def planned_hour(spot_cells: int, anypoint_cells: int, weather_points: int, scotland_cells: int, soil_cells: int,
+                 ensemble_cells: int, *, anypoint_per_build: int, scotland_per_build: int, soil_attempts: int,
+                 builds_per_hour: int = 2) -> dict:
+    """The most the builds can ask for in one hour, two ways. `crude`: every build in the hour asks for every
+    cell and point, floors and caps ignored. `floors`: what the floors and the per-build caps allow. Each floor
+    is 2 hours or more, so a cell is asked for once in an hour at most; click-anywhere and the Scottish shadow
+    ask for at most their per-build cap a build; the weather can be asked for twice (once more when the local
+    day turns); soil each attempt. The ensemble is counted, though it runs on spare calls alone."""
+    every = spot_cells + anypoint_cells + weather_points + scotland_cells + soil_cells * soil_attempts + ensemble_cells
+    by = {"spots": spot_cells, "anypoint": min(anypoint_cells, builds_per_hour * anypoint_per_build),
+          "weather": 2 * weather_points, "scotland": min(scotland_cells, builds_per_hour * scotland_per_build),
+          "soil": soil_cells * soil_attempts, "ensemble": ensemble_cells}
+    return {"crude": builds_per_hour * every, "floors": sum(by.values()), "by": by}
+
+
 def new_spot_calls(new_cells: int, new_cells_from_anypoint: int, new_soil_cell: bool, *, anypoint_refresh_h: float,
                    weather_refresh_h: float, soil_attempts: int) -> float:
     """What one more listed spot adds to planned_day: its weather point; each rain cell no listed spot
