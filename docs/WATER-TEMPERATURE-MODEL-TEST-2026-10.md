@@ -464,6 +464,44 @@ elevation batches are not done. The log holds 241 answers, 7,808.9 weighted call
 hour. Under the stop rule the fetch resumes no earlier than the next UTC day: from 00:05 UTC on 28 October, from its
 cache (the first of at most two resumes). The rest is about 412 weighted calls.
 
+**Not as written:** the fetch did not wait for the next UTC day. The coordinating session found the archive answering
+again at 17:25 UTC and restarted it at 17:26. I cancelled my own midnight resume so that only one fetch ran. The
+restart paused on its other-job check while my features dry run ran (that run's command line names `open-meteo`).
+It stopped again on a connection error at 17:50 (251 answers, 8,099 weighted). The coordinating session restarted it
+at 18:09 through a wrapper that reruns it after 120 s, up to 12 times. It finished at 18:10:50 UTC after one run. The
+Mac's connection was dropping in short bursts. *Inferred:* a network fault cannot bias the air values; an answer is
+either cached whole or not at all.
+
+**Open-Meteo totals:** 255 answers, all HTTP 200, 2 connection errors, **8,192.2 weighted calls** (the plan's figure;
+cap 20,000). By clock hour: 14:00 850; 15:00 2,748; 16:00 4,212; 17:00 290; 18:00 93. All on 27 October, under the
+day's 9,500. Answers by season: 2018 54, 2023 63, 2024 68, 2025 65, elevation 5.
+
+**Fetch tool change, after the fetch (commit 4948dbd), approved by Ethan:** a network error (no answer: connection,
+DNS, TLS, timeout) is now tried again after 30 s, 2 min and 5 min, each retry logged, then the run stops. An answer of
+any status is still never retried. It changes no feature and no score, and was not used for any request here.
+
+**Features file** (`wt_score.py features`, 18:12 to 18:26 UTC, commit 4948dbd, under the heavy-run lock, 15 min):
+
+- **SHA-256: `4e9ca630a8658aaea7eb69890571def6ab55f5e5e7d95c985d261ff7a77f936d`**, 784,409 rows. Committed here
+  before any model is fitted or scored. `wt_score.py score` refuses any other file.
+- **The bridge** (2018, no water temperature): `HadUK = 0.5013 + 0.9792 × OpenMeteo`, from 446,337 daily pairs at
+  2,449 (HadUK cell, Open-Meteo cell) pairs. Root-mean-square difference 0.939 °C before, 0.914 °C after.
+- Rows kept:
+
+  | type | training (2000–22, HadUK air) | test (2023–25, bridged Open-Meteo air) |
+  |---|---|---|
+  | river | 583,916 | 66,577 |
+  | lake | 12,371 | 2,967 |
+  | sea | 96,275 | 22,303 |
+
+- Dropped for want of air: training river 3,379, lake 365, sea 1,070 (no HadUK cell within 10 km); test river 426,
+  lake 15, sea 532 (no Open-Meteo value).
+- 91,825 test rows also have HadUK air (the secondary arm). Every row has an elevation (1,957 cells).
+- Checks on inputs only: no infinite value; no missing `a1`, `a7`, `a30`, day of year or elevation; lake area on
+  10,874 lake rows; every water in exactly one fold. Waters with rows: 7,799 river, 616 lake, 314 sea.
+- A dry run of the same stage at 17:26 UTC, on a copy before the fetch had finished, was used only to find faults in
+  the code. It fitted nothing and scored nothing. Its file (hash 763d0c25…) is not used.
+
 ---
 
 ## Results
