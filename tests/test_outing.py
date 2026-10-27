@@ -38,3 +38,19 @@ def test_spotdate_js_comes_before_outing_js_and_organisers_js_and_the_offline_co
     assert bs.TEMPLATE.parent / "spotdate.js" in bs.SHELL_SOURCES
     organisers = (tmp_path / "organisers.html").read_text()
     assert organisers.index('src="spotdate.js?v=') < organisers.index('src="organisers.js?v=')
+
+
+def test_outingwatch_js_comes_after_since_js_and_the_offline_copy_keeps_it(tmp_path):
+    # outingwatch.js (what would change the outing, and what has since it was planned) uses since.js's rules.
+    bs = _build_site()
+    bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
+    stamp = bs.shell_stamp()
+    html = (tmp_path / "index.html").read_text()
+    assert f'<script src="outingwatch.js?v={stamp}" defer></script>' in html
+    assert html.index('src="since.js') < html.index('src="outingwatch.js')
+    assert (tmp_path / "outingwatch.js").read_bytes() == (bs.TEMPLATE.parent / "outingwatch.js").read_bytes()
+    assert "`outingwatch.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert bs.TEMPLATE.parent / "outingwatch.js" in bs.SHELL_SOURCES
+    # The privacy notice names the note it keeps in this browser.
+    privacy = (tmp_path / "privacy.html").read_text()
+    assert "So that the outing can say what has changed since you planned it, your browser also keeps a note" in privacy
