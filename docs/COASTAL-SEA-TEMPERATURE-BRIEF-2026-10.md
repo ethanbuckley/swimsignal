@@ -2,7 +2,7 @@
 
 This is research only. Nothing is built, nothing on the site changes, and no build makes a new request.
 
-**Where it comes from.** The expansion plan Ethan approved on 27 Oct puts water temperature first. Rivers passed and are built (#418, held until the May re-check), and lakes failed twice (#414, #419). The plan's remaining piece is the coast: "Coastal spots take Open-Meteo Marine sea temperature directly, labelled as modelled". On the site that means the English coastal directory on the coverage page: 426 coastal and estuary bathing waters in `data/coastal.json`.
+**Where it comes from.** The expansion plan Ethan approved on 27 Oct puts water temperature first. The river forecast-air input check passed against the in-season 2025 archive under the rule fixed in advance (#421), clearing the wait to repeat that check in May. The estimate feature itself (#418) is still a draft, is not on the live site, and remains limited to May–September; the historical check did not validate today's forecast input or confirm that Open-Meteo's models are unchanged. Lakes failed twice (#414, #419). The plan's remaining piece is the coast: "Coastal spots take Open-Meteo Marine sea temperature directly, labelled as modelled". On the site that means the English coastal directory on the coverage page: 426 coastal and estuary bathing waters in `data/coastal.json`.
 
 **In short: it does not fit the free budget as it stands, and one measurement decides whether a reduced version can.**
 - Each beach costs at least one Open-Meteo call per refresh.
