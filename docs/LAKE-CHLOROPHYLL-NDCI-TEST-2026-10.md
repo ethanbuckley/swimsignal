@@ -530,3 +530,20 @@ chlorophyll (determinand 7887), phaeopigment correction not stated.
   forward draft (#396) is withdrawn unless Ethan decides otherwise. Continuing would be his decision, as with soil
   moisture; the honest route would be new data (a 2027 test limited to shallow lakes, stated in advance), not
   re-reading these rows.
+
+### Classification, added 27 October 2026 (Ethan's decision)
+
+**Verdict unchanged: fails as stated. Classification: promising, not validated.**
+
+- The fail stands. The rules were committed before the values were fetched, and they are not re-read or re-run.
+- The 0.0003 miss on condition 1 carries little scientific weight on its own. The interval comes from 2,000 bootstrap
+  resamples, and its lower end has simulation noise of its own, likely larger than 0.0003 (inferred, not computed).
+  That is a reason not to read the fourth decimal place as decisive, not a reason to rerun until it passes.
+- "A fail ends the work" was a stop on spending, not evidence that the idea does not work. The signal is real
+  (placebo beaten in all 200 shuffles), and in shallow lakes the calibration was labelled Better.
+- The shallow-lake result was seen after the fact, so it needs new data: a statement written in spring 2027 and scored
+  on 2027 observations only.
+- Not tested here, and not to be inferred: harmful algae or any risk to swimmers. No chlorophyll estimate from this
+  work is shown on the site or used in advice.
+- Merged as a record on 27 October 2026 (a13d88c); the 2027 forward draft (#396) was closed unmerged.
+
