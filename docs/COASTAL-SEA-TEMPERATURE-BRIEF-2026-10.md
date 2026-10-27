@@ -29,7 +29,7 @@ This is research only. Nothing is built, nothing on the site changes, and no bui
   1. **Distinct sea cells at or under about 120:** refresh once a day, booked in the ledger as its own user, on spare calls only.
   2. **More than about 120:** rotate. Ask about 120 cells a day, so each beach's value is 1 to N days old, always shown with its date. The field itself updates only once a day.
   3. **Neither acceptable:** leave it until a paid plan exists.
-- **Clash with the rain-ensemble study (D4).** The ensemble also runs on spare calls, and its live window runs to 21 Nov. A new spare-call user could starve it and change that window. So any build makes no sea-temperature request before **22 November 2026**, after the D4 read.
+- **Clash with the rain-ensemble study (D4).** The ensemble also runs on spare calls. A new spare-call user could starve it and change its window. The window's dates are recorded in `docs/ENSEMBLE-RAIN-TEST-2026-11.md`: target days 23 Oct to 19 Nov 2026, read on or after 21 Nov. Its read fetches ERA5-Land for the window's days, about one call per cell. **If its minimum data falls short, the window extends to 3 Dec, read on or after 5 Dec.** So any build makes no sea-temperature request before **22 November 2026**, or before **6 December 2026** if D4 extends. In either case that is after the D4 read.
 
 ## Accuracy limits, to state wherever a value is shown
 
@@ -41,7 +41,7 @@ This is research only. Nothing is built, nothing on the site changes, and no bui
 
 ## The next step, and what it costs
 
-**Not scheduled, and not authorised by the session that wrote this brief.** Ethan decided on 27 Oct that the check below is not run that night, nor before 22 November 2026. It runs only after the D4 window, and only once it has a confirmed budget allocation within the site's 9,000-calls-a-day cap.
+**Not scheduled, and not authorised by the session that wrote this brief.** Ethan decided on 27 Oct that the check below is not run that night, nor before 22 November 2026 (6 December if D4's window extends). It runs only after the D4 window and its read, and only once it has a confirmed budget allocation within the site's 9,000-calls-a-day cap.
 
 1. **The deciding check (not scheduled).**
    - What it asks: the Marine API's `current=sea_surface_temperature` at the 426 official sampling points.
@@ -50,7 +50,7 @@ This is research only. Nothing is built, nothing on the site changes, and no bui
 2. **Decide by the count, before writing code:** daily, rotating, or wait for a paid plan (above). Distances over a stated limit (for example 20 km) mean no value is shown for that beach.
 3. **Only then build:**
    - commit the official coordinates;
-   - add a spare-calls fetch with its own daily cap, from 22 Nov at the earliest;
+   - add a spare-calls fetch with its own daily cap, from 22 Nov at the earliest (6 Dec if D4 extends);
    - add the directory line, worded as above;
    - credit Copernicus Marine and Open-Meteo on the terms page, and document the field on the data page;
    - add tests, including the ration rule.
