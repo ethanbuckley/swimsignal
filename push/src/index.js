@@ -10,7 +10,7 @@ import {
 } from './shared.js';
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 import { runWeekly } from './weekly.js';
-import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, pairKey } from './dates.js';
+import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, noticesOf, pairKey } from './dates.js';
 import { DISPATCH_CRON, runDispatch } from './dispatch.js';
 
 export { forecastExpiry };
@@ -240,8 +240,8 @@ async function runPush(env, { fetch, log, now }, seen) {
   for (const [id, spot] of Object.entries(alerts.spots)) ranks[id] = Number.isInteger(spot?.rank) ? spot.rank : -1;
 
   const alerted = Object.fromEntries(Object.entries(prev?.alerted ?? {}).filter(([, at]) => t - Date.parse(at) < QUIET_MS));
-  // Each spot's level on each day (dates.js): what the next build's days are compared with.
-  const days = dayLevels(alerts, prev?.days);
+  // Each spot's level on each day, and its official notice (dates.js): what the next build's are compared with.
+  const days = dayLevels(alerts, prev?.days), notices = noticesOf(alerts);
   let risen = [], items = [], tidy = [];
   if (!prev) {
     // A first run has nothing to compare with; alerting now would alert everyone.
@@ -249,7 +249,7 @@ async function runPush(env, { fetch, log, now }, seen) {
   } else {
     risen = Object.keys(ranks).filter((id) => ranks[id] >= HIGH && (prev.ranks?.[id] ?? -1) < HIGH && !alerted[id]);
     for (const id of risen) alerted[id] = new Date(t).toISOString();
-    const news = dateNews(alerts, prev.days);
+    const news = dateNews(alerts, prev.days, prev.notices);
     if (risen.length || news.size) ({ items, tidy } = await queueFor(env, alerts, new Set(risen), news, londonToday(t), tally, log));
     // Before the state below, like the push queue: if the state is not written, the rise is found
     // again next run, and queueEmails merges it with what is already queued for each address.
@@ -257,7 +257,7 @@ async function runPush(env, { fetch, log, now }, seen) {
     const dated = items.filter((x) => x.dates).length;
     log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high, ${items.length - dated} alerts to send${dated ? `, ${dated} date notices` : ''}${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
   }
-  const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}), ...(Object.keys(days).length ? { days } : {}) };
+  const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}), ...(Object.keys(days).length ? { days } : {}), ...(notices ? { notices } : {}) };
   // Persist the complete queue BEFORE advancing the comparison state. If this write fails,
   // the previous ranks remain and the next run can discover the rise again. Sending begins
   // next run: putting and then checkpointing the same KV key within a second is rate-limited.
@@ -269,7 +269,7 @@ async function runPush(env, { fetch, log, now }, seen) {
 }
 
 // One alert per subscriber of a risen spot, [{key, spots}], and one notice per subscriber with a
-// date that is news (dates.js), [{key, dates: [{spot, date, from}]}]. The spots and dates come
+// date that is news (dates.js), [{key, dates: [{spot, date, from, notice?}]}]. The spots and dates come
 // from each key's metadata; a record without them (too many to fit) is read. Also the records that
 // still hold a date before today, to forget it (tidy), at most TIDY_PER_RUN a run.
 async function queueFor(env, alerts, risen, news, today, tally, log) {
@@ -289,7 +289,7 @@ async function queueFor(env, alerts, risen, news, today, tally, log) {
     }
     const hits = spots.filter((id) => risen.has(id));
     if (hits.length) items.push({ key, spots: Object.fromEntries(hits.map(id => [id, alerts.spots[id]])) });
-    const told = dates.filter((d) => news.has(pairKey(d.spot, d.date))).map((d) => ({ ...d, from: news.get(pairKey(d.spot, d.date)) }));
+    const told = dates.filter((d) => news.has(pairKey(d.spot, d.date))).map((d) => ({ ...d, ...news.get(pairKey(d.spot, d.date)) }));
     if (told.length) items.push({ key, dates: told });
     if (tidy.length < TIDY_PER_RUN && dates.some((d) => d.date < today)) tidy.push(key);
   }

@@ -75,7 +75,7 @@ test('the cap is the Worker\'s, and the spot goes before the backup when only on
 // ------------------------------------------------------------------------------ what the tile says
 test('alerts on: what is stored, that it is forgotten after the day, and a way to stop it', () => {
   const ask = O.outingAlert({state: 'on', pairs, list: []});
-  assert.ok(ask.includes('A notification each time tomorrow\'s level changes at Frensham Great Pond and River Wey at Waverley.'));
+  assert.ok(ask.includes('A notification each time tomorrow\'s level or official advice changes at Frensham Great Pond and River Wey at Waverley.'));
   assert.ok(ask.indexOf('What asking sends') < ask.indexOf('Alert me about this outing'));   // consent before the button
   assert.ok(ask.includes('not the time, where you start from or the rest of the plan'));
   assert.ok(ask.includes('up to 10 in all, and forgets each one after its date'));

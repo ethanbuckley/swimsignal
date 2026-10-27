@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { handleRequest, runCron, subKey } from '../src/index.js';
-import { cleanDates, dateNews, dayLevels, dayOf } from '../src/dates.js';
+import { cleanDates, dateFor, dateNews, dayLevels, dayOf, noticesOf } from '../src/dates.js';
+import { noticeKey } from '../src/shared.js';
 import { FakeKV, makeUserAgent, makeVapidEnv } from './helpers.js';
 
 const SITE = 'https://swimsignal.example/', ORIGIN = 'https://swimsignal.example';
@@ -232,7 +233,7 @@ test('the news is decided from the levels alone: new days, changed days, and day
   const next = build('2027-06-08', { a: ['low', 'low', 'high', null, 'low'] });
   const news = dateNews(next, prev);
   // 10 June changed; 11 June has no level in either build; 12 June is new.
-  assert.deepEqual([...news].filter(([k]) => k.startsWith('a ')), [['a 2027-06-10', 'moderate'], ['a 2027-06-12', null]]);
+  assert.deepEqual([...news].filter(([k]) => k.startsWith('a ')), [['a 2027-06-10', { from: 'moderate' }], ['a 2027-06-12', { from: null }]]);
   assert.deepEqual(dayLevels(next, prev).a, { '2027-06-08': 'low', '2027-06-09': 'low', '2027-06-10': 'high', '2027-06-12': 'low' });
   // A day missing from one build keeps its last level, so it is not new in the next.
   const gap = dayLevels(build('2027-06-08', { a: ['low', null, 'high', null, 'low'] }), dayLevels(next, prev));
@@ -259,4 +260,88 @@ test('date notices share the alerts\' queue: SENDS_PER_RUN a run, and no KV writ
   let listed = 0; const list = t.kv.list.bind(t.kv); t.kv.list = (o) => { listed++; return list(o); };
   await t.run({ ...build('2027-06-08'), generated_at: '2027-06-08T09:00:00.000Z' });
   assert.equal(listed, 0);
+});
+
+// Official advice (#379, #392), as scripts/alerts.js writes `official`: the brief with its check.
+const NOTICE = 'EA advice against bathing (harmful algae) · since 19 Jun';
+const advised = (b, id, brief) => ({ ...b, spots: { ...b.spots, [id]: { ...b.spots[id], official: brief } } });
+
+test('noticeKey: the notice without its check, so a re-check or a stale check is the same notice', () => {
+  assert.equal(noticeKey({ official: `${NOTICE} · checked 26 Oct` }), NOTICE);
+  assert.equal(noticeKey({ official: `${NOTICE} · not re-checked since 19 Oct` }), NOTICE);
+  assert.equal(noticeKey({ official: `${NOTICE} · checked 27 Oct · 1 more` }), `${NOTICE} · 1 more`);
+  for (const s of [{}, { official: '' }, { official: 3 }, null]) assert.equal(noticeKey(s), '');
+});
+
+test('a notice appearing, lifting or changing is news on each day already seen, at the same level', () => {
+  const prev = dayLevels(build('2027-06-07'));
+  const plain = build('2027-06-08');
+  const on = advised(plain, 'a', `${NOTICE} · checked 8 Jun`);
+  // Before notices were kept (a state from the last Worker): nothing about notices is news.
+  assert.equal([...dateNews(on, prev, undefined).keys()].filter((k) => k.startsWith('a ') && k !== 'a 2027-06-12').length, 0);
+  assert.equal(noticesOf({ spots: on.spots }), null);   // an alerts.json from before dates keeps none
+  assert.deepEqual(noticesOf(on), { a: NOTICE });
+  // Appears: the four days already seen are news, with the notice before (none); 12 June is only new.
+  const news = dateNews(on, prev, noticesOf(plain));
+  assert.deepEqual([...news].filter(([k]) => k.startsWith('a ')), [
+    ['a 2027-06-08', { from: 'low', notice: '' }], ['a 2027-06-09', { from: 'low', notice: '' }],
+    ['a 2027-06-10', { from: 'low', notice: '' }], ['a 2027-06-11', { from: 'low', notice: '' }], ['a 2027-06-12', { from: null }]]);
+  assert.equal([...news.keys()].some((k) => k.startsWith('b ') && k !== 'b 2027-06-12'), false);
+  // Re-checked, or gone stale: the same notice, nothing to say.
+  const seen = dayLevels(on, prev);
+  for (const brief of [`${NOTICE} · checked 9 Jun`, `${NOTICE} · not re-checked since 8 Jun`]) {
+    assert.equal(dateNews(advised(build('2027-06-08'), 'a', brief), seen, noticesOf(on)).size, 0);
+  }
+  // Lifted, and changed.
+  assert.deepEqual(dateNews(plain, seen, noticesOf(on)).get('a 2027-06-09'), { from: 'low', notice: NOTICE });
+  const other = advised(plain, 'a', 'EA advice against bathing (pollution incident) · since 8 Jun · checked 8 Jun');
+  assert.deepEqual(dateNews(other, seen, noticesOf(on)).get('a 2027-06-09'), { from: 'low', notice: NOTICE });
+  // A level change and a notice together: one entry with both.
+  const both = advised(build('2027-06-08', { a: ['low', 'high', 'low', 'low', 'low'] }), 'a', `${NOTICE} · checked 8 Jun`);
+  assert.deepEqual(dateNews(both, prev, noticesOf(plain)).get('a 2027-06-09'), { from: 'low', notice: '' });
+});
+
+test('the cron tells who asked when a notice appears and when it lifts; a re-check sends nothing', async () => {
+  const t = await setup();
+  await t.subscribe('ann', { dates: [{ spot: 'a', date: '2027-06-10' }] });
+  await t.subscribe('bob', { dates: [{ spot: 'b', date: '2027-06-10' }] });
+  await t.run(build('2027-06-07'));
+  t.at(at('2027-06-08'));
+  const on = advised(build('2027-06-08'), 'a', `${NOTICE} · checked 8 Jun`);
+  const r = await t.deliver(on);
+  assert.deepEqual([r.first.queued, r.second.sent], [1, 1]);
+  assert.deepEqual(t.pushes.map((p) => p.to), ['ann']);
+  const p = t.pushes[0].payload;
+  assert.equal(p.title, 'Wharfe at Cromwheel, Ilkley · Thursday 10 June');
+  assert.ok(p.body.startsWith('Official notice shown · Low risk.'), p.body);
+  assert.ok(p.body.includes('An official notice is new since the last forecast.'), p.body);
+  assert.ok(!p.body.includes('Was low risk'), p.body);
+  assert.match(p.tag, /^dipspot-a-2027-06-10-low-n[0-9a-f]{8}$/);
+  assert.deepEqual((await t.kv.get('state', 'json')).notices, { a: NOTICE });
+  // The next build re-checks it: the same notice, nothing queued.
+  t.at(Date.parse('2027-06-08T09:10:00Z'));
+  assert.equal((await t.run({ ...advised(build('2027-06-08'), 'a', `${NOTICE} · checked 9 Jun`), generated_at: '2027-06-08T09:00:00.000Z' })).queued, 0);
+  // Lifted: told again, under a tag of its own, so it does not silently replace the first.
+  t.at(Date.parse('2027-06-08T13:10:00Z'));
+  await t.deliver({ ...build('2027-06-08'), generated_at: '2027-06-08T13:00:00.000Z' });
+  assert.equal(t.pushes.length, 2);
+  const lifted = t.pushes[1].payload;
+  assert.ok(lifted.body.startsWith('Low risk.'), lifted.body);
+  assert.ok(lifted.body.includes('The official notice shown before is no longer shown.'), lifted.body);
+  assert.notEqual(lifted.tag, p.tag);
+  assert.deepEqual((await t.kv.get('state', 'json')).notices, {});
+});
+
+test('a queued notice is dropped if the notice is back as it was before sending', () => {
+  const plain = build('2027-06-08'), record = { dates: [{ spot: 'a', date: '2027-06-10' }] };
+  const item = { dates: [{ spot: 'a', date: '2027-06-10', from: 'low', notice: '' }] };
+  assert.equal(dateFor(plain, SITE)(record, item), null);
+  const msg = dateFor(advised(plain, 'a', `${NOTICE} · checked 8 Jun`), SITE)(record, item);
+  assert.ok(msg.body.includes('An official notice is new since the last forecast.'));
+  // In a list of several dates, the line says so too.
+  const two = { dates: [...item.dates, { spot: 'b', date: '2027-06-10', from: 'low', notice: '' }] };
+  const both = advised(advised(plain, 'a', `${NOTICE} · checked 8 Jun`), 'b', `${NOTICE} · checked 8 Jun`);
+  const list = dateFor(both, SITE)({ dates: [{ spot: 'a', date: '2027-06-10' }, { spot: 'b', date: '2027-06-10' }] }, two);
+  assert.equal(list.title, 'New forecasts for 2 of your dates');
+  assert.equal(list.body.split('\n').filter((l) => l.includes('An official notice is new since the last forecast.')).length, 2);
 });

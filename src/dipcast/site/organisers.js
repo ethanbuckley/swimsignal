@@ -157,7 +157,7 @@ const Organisers = (() => {
 
   // ------------------------------------------------------------------ alerts for the date
   // "Alert me about this date" (push/README.md, "Alerts for a date"): the push Worker tells this
-  // browser when the day's forecast first appears and again each time its level changes. Shown only
+  // browser when the day's forecast first appears and again each time its level or official advice changes. Shown only
   // where the site's alerts are on and the build says the Worker takes dates (spots.json's
   // push.dates, set by the repository variable DIPCAST_PUSH_DATES),
   // and only in a browser that has alerts on already: turning them on, and its consent, is the Saved
@@ -171,8 +171,8 @@ const Organisers = (() => {
   // What the control says: sub, whether this browser has alerts on; list, the dates it has asked for.
   function dateAlert(sub, list, spot, iso, from) { return '<h3 id="alert-h">Alerts for this date</h3>' + dateAlertBody(sub, list, spot, iso, from); }
   function dateAlertBody(sub, list, spot, iso, from) {
-    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level changes.`
-      : 'A notification each time this day\'s level changes.';
+    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level or official advice changes.`
+      : 'A notification each time this day\'s level or official advice changes.';
     if (!sub) return '<p class="small">First turn on alerts in this browser, from the <a href="saved/">Saved page</a>.</p>';
     if (hasDate(list, spot, iso)) return `<p class="ev-say"><b>Alerts are on for this date.</b> ${what}</p>`
       + '<p class="actions"><button type="button" class="btn" id="date-alert-btn" data-on="1">Stop alerts for this date</button></p>';

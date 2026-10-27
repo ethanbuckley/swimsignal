@@ -171,10 +171,10 @@ test('what the date alert control says, and the list it sends', () => {
   assert.match(O.dateAlert(null, [], id, '2027-06-12', '2027-06-08'), /First turn on alerts in this browser, from the <a href="saved\/">Saved page<\/a>\./);
   const ask = O.dateAlert(sub, [], id, '2027-06-12', '2027-06-08');
   assert.ok(ask.startsWith('<h3 id="alert-h">Alerts for this date</h3>'));
-  assert.ok(ask.includes('A notification when the forecast for this day first appears, on Tuesday 8 June 2027, and again each time its level changes.'));
+  assert.ok(ask.includes('A notification when the forecast for this day first appears, on Tuesday 8 June 2027, and again each time its level or official advice changes.'));
   assert.ok(ask.indexOf('What asking sends') < ask.indexOf('Alert me about this date'));   // consent before the button
   assert.ok(ask.includes('It keeps up to 10 dates and forgets each one after it has passed.'));
-  assert.ok(O.dateAlert(sub, [], id, '2026-10-06', '').includes('A notification each time this day\'s level changes.'));
+  assert.ok(O.dateAlert(sub, [], id, '2026-10-06', '').includes('A notification each time this day\'s level or official advice changes.'));
   const on = O.dateAlert(sub, [{spot: id, date: '2027-06-12'}], id, '2027-06-12', '2027-06-08');
   assert.ok(on.includes('<b>Alerts are on for this date.</b>') && on.includes('data-on="1">Stop alerts for this date'));
   const ten = Array.from({length: 10}, (_, i) => ({spot: id, date: `2027-07-${String(i + 1).padStart(2, '0')}`}));
