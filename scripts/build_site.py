@@ -1941,6 +1941,10 @@ VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
 VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
+# A plan's outing kept for offline use (outingpack.js): the plan's page, its spots' pages and files, and the
+# offline copy's own files, in a cache of their own that sw.js answers from and a new build leaves alone.
+SHELL_SOURCES.append(TEMPLATE.parent / "outingpack.js")
+VERSIONED_SCRIPTS += ('<script src="outingpack.js"></script>',)
 # The catchment replay (prototype, ?replay=1 only, src/dipcast/replay.py): index.html adds replay.js itself
 # when asked, so it has no tag; it asks at levels.js's ?v=<stamp> (mountReplay), and the offline copy
 # stores it with the other scripts.
@@ -1974,6 +1978,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
+    shutil.copy(TEMPLATE.parent / "outingpack.js", site / "outingpack.js")   # a plan's outing kept for offline use
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.

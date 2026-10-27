@@ -25,6 +25,21 @@ def test_the_page_loads_outing_js_from_its_build_and_the_offline_copy_keeps_it(t
     assert bs.TEMPLATE.parent / "outing.js" in bs.SHELL_SOURCES   # a change to it renames the offline cache
 
 
+def test_outingpack_js_is_loaded_versioned_and_kept_by_the_offline_copy(tmp_path):
+    # outingpack.js keeps a plan's outing for offline use, in a cache of its own beside the offline copy's.
+    bs = _build_site()
+    bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
+    stamp = bs.shell_stamp()
+    html = (tmp_path / "plan" / "index.html").read_text()
+    assert f'<script src="outingpack.js?v={stamp}" defer></script>' in html
+    assert html.index('src="outing.js') < html.index('src="outingpack.js')
+    assert (tmp_path / "outingpack.js").read_bytes() == (bs.TEMPLATE.parent / "outingpack.js").read_bytes()
+    sw = (tmp_path / "sw.js").read_text()
+    assert "`outingpack.js?v=${BUILD}`" in sw and "const PACK = 'swimsignal-outing'" in sw
+    assert "k.startsWith('dipcast-') && k !== CACHE" in sw   # the pack's name is not one the worker deletes
+    assert bs.TEMPLATE.parent / "outingpack.js" in bs.SHELL_SOURCES
+
+
 def test_spotdate_js_comes_before_outing_js_and_organisers_js_and_the_offline_copy_keeps_it(tmp_path):
     # spotdate.js (the calendar file and alerts for a date) is shared by the outing and the organisers' page.
     bs = _build_site()

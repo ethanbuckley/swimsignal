@@ -796,6 +796,8 @@
   .outing-keep p { margin:0 0 8px; }
   .outing-keep details.fold { margin:0 0 8px; }
   .outing-acts { display:flex; flex-wrap:wrap; gap:8px; }
+  /* Keeping the outing for offline use (outingpack.js), after the calendar file. */
+  .outing-pack { margin-top:4px; }
   .since-ev { display:block; margin-top:2px; font-size:var(--fs-meta); }
   /* A plan row's Compare tick (planCompare), at the right of its name while the comparison is open. */
   #plan-results ul.spots li { position:relative; }
@@ -1289,6 +1291,7 @@
 <script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js and spotdate.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
+<script src="outingpack.js"></script>   <!-- a plan's outing kept for offline use, in a cache of its own that sw.js answers from -->
 <script>
 const BRAND = 'SwimSignal';
 const REPO = 'https://github.com/ethanbuckley/swimsignal';
@@ -2775,6 +2778,7 @@ function freshness(spot = false) {
   let h = '';
   // After midnight, before the next build (setDays): a spot's page says it where it gives the issue time.
   if (!spot && m <= STALE_MIN && nextDay()) h += `<p class="issued">${yesterdayLine()}</p>`;
+  if (typeof OutingPack === 'object') h += OutingPack.notice();   // a page of an outing kept for offline use, read from a stored copy
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${new Date(DATA.generated_at).toLocaleString('en-GB')}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
@@ -4424,6 +4428,7 @@ async function main() {
   const res = await (window.FORECAST || fetch('data/spots-lite.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
   DATA = await res.json();
+  if (typeof OutingPack === 'object') OutingPack.seen(res);   // a stored copy, which the kept outing's pages then say
   setDays();
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
   for (const s of DATA.spots) {
@@ -4502,6 +4507,7 @@ async function setOffline(on) {   // returns false when the browser would not ke
   if (on) { registerSW(); return kept; }
   for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
   if ('caches' in window) for (const k of await caches.keys()) if (k.startsWith('dipcast-')) await caches.delete(k);
+  if (typeof OutingPack === 'object') await OutingPack.drop().catch(() => {});   // a kept outing: nothing would answer from it
   return kept;
 }
 if ('serviceWorker' in navigator) {
