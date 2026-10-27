@@ -42,7 +42,7 @@ READINGS_LIMIT = 100_000     # the Hydrology soft limit per call; a season of 15
 REF_FROM, REF_TO = "2014-01-01", "2023-12-31"
 SEASONS = (2024, 2025, 2026)
 LATEST_MAX_REQUESTS = 12     # the lag check: one request per archive-only spot gauge (9 expected)
-SEASON_FROM, SEASON_TO = "04-29", "10-01"   # a few days either side of May-September, for the look-back
+SEASON_FROM, SEASON_TO = "04-15", "10-01"   # May-September plus the archive lag (315 h) and the 24 h window
 STOP_STATUS = (403, 429)
 
 
@@ -149,7 +149,8 @@ def latest(client: CappedClient, station_cache: Path, coverage_csv: Path) -> lis
         last = max((i["dateTime"] for i in items), default=None)
         age_h = None
         if last:
-            end = datetime.fromisoformat(last.replace("Z", "+00:00")) + pd.Timedelta(minutes=15)
+            end = datetime.fromisoformat(last.replace("Z", "+00:00"))
+            end = (end if end.tzinfo else end.replace(tzinfo=UTC)) + pd.Timedelta(minutes=15)   # EA times are UTC
             age_h = round((asked - end).total_seconds() / 3600, 2)
         out.append({"gauge": r.gauge, "status": r.status, "q15": q15, "asked": asked.isoformat(timespec="seconds"),
                     "latest": last, "age_h": age_h})

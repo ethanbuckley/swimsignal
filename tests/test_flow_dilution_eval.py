@@ -89,11 +89,11 @@ def test_flow_at_issue_reads_nothing_after_the_published_window():
     assert fp.flow_at_issue(q3, issue, fp.LAG_REALTIME_H) > 10.0
 
 
-def test_archive_gauges_wait_36_hours():
+def test_archive_gauges_wait_the_measured_lag():
     issue = pd.Timestamp("2025-07-10 08:00", tz="UTC")
-    q = series("2025-07-06", "2025-07-11")
-    q[q.index > pd.Timestamp("2025-07-08 20:00", tz="UTC")] = 50.0     # rise inside the last 36 h only
-    assert fp.lag_for(False) == 36.0 and fp.lag_for(True) == 1.0
+    q = series("2025-06-20", "2025-07-11")
+    q[q.index > pd.Timestamp("2025-06-28 00:00", tz="UTC")] = 50.0     # rise inside the last 315 h only
+    assert fp.lag_for(False) == 315.0 and fp.lag_for(True) == 1.0
     assert fp.flow_at_issue(q, issue, fp.lag_for(False)) == pytest.approx(10.0)
     assert fp.flow_at_issue(q, issue, fp.lag_for(True)) == pytest.approx(50.0)
 

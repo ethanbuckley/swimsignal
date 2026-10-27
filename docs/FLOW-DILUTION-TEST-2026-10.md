@@ -92,6 +92,7 @@ writing" are the expectation from metadata, not the gate.
 - **Publication lag:** 1 hour for a gauge on the real-time feed. The river-rises scope (PR #383) measured one snapshot
   on 26 October 2026: median age 0.5 h, 75th percentile 0.75 h. **36 hours** for a gauge only in the Hydrology
   archive. The same work found the Hydrology series "current to within a day". 36 h adds a margin.
+  *Replaced before the run, under Ethan's answer 3, by the lag check: 315 h (see "The lag check, result").*
 - **Window:** the 24 hours ending at issue time minus lag, `(t − lag − 24 h, t − lag]`. Readings marked Suspect,
   Rejected or Missing are dropped. Unchecked and Estimated are kept. At least 90% of the 96 quarter-hour slots must
   hold a reading, or the row has no factor and falls back (`flow_protocol.flow_at_issue`).
@@ -340,6 +341,36 @@ The run may start before the river-rises fetch (PR #383, after 2 November), so t
   `LAG_ARCHIVE_H` in `flow_protocol.py` before the run, in its own commit.
 - **Limitation:** one snapshot, on one day. It measures how far behind the archive is now, not on each past sample
   day. No flow value from these requests is used in the test.
+
+### The lag check, result (27 October 2026, 09:54 UTC; recorded before the run)
+
+9 requests, all HTTP 200, 09:54:06 to 09:54:38 UTC (the first answer was cached by a run that then failed on a
+time-zone bug in the step, fixed before the other 8; its age is computed at the rerun, about 20 s later).
+
+| Gauge | Status | Latest 15-minute reading (UTC) | Age, h | In the maximum |
+|---|---|---|---|---|
+| Addingham | Active | 2026-10-14 06:45 | 314.91 | yes |
+| Catterick Bridge | Active | 2026-10-14 06:45 | 314.91 | yes |
+| Henthorn | Active | 2026-10-14 07:15 | 314.41 | yes |
+| East Mills Combined | Active | 2026-10-16 07:15 | 266.41 | yes |
+| Taunton Market | Active | 2026-10-27 09:00 | 0.66 | yes |
+| Tellisford | Active | 2026-10-27 09:00 | 0.66 | yes |
+| Amesbury | Active | 2026-10-27 09:15 | 0.41 | yes |
+| Lamarsh | Active | 2026-10-13 07:00 | 338.66 | no: over 14 days |
+| Hunsingore | Flow Suspended | 2025-07-14 06:00 | 11,283.66 | no: suspended |
+
+- **Lag used for archive-only gauges: 315 hours** (the largest remaining age, 314.91 h, rounded up; larger than 36 h).
+  `LAG_ARCHIVE_H` is 315 in `flow_protocol.py`.
+- To keep the look-back inside the fetched data, each season's 15-minute request now starts on 15 April, not 29 April
+  (`SEASON_FROM`). Same number of requests; larger answers.
+- **What this shows, inferred:** the archive is loaded in batches by area. The Wessex-area gauges were current; the
+  northern and eastern ones were last loaded 13 to 16 October. Lamarsh is in the same batch pattern and is left out
+  only by the 14-day rule written before the check; with it the lag would be 339 h. The batch interval, and so the
+  worst lag, is not known from one snapshot.
+- **What it means for the test:** for archive-only gauges the candidate uses flow from about 13 days before issue,
+  which can say little about the day. The primary arm is therefore close to a test of the 8 real-time gauges. The
+  sensitivity arm `spot_k05_lag1` (every gauge at 1 h) shows what timely flow everywhere would give. It decides
+  nothing.
 
 ---
 
