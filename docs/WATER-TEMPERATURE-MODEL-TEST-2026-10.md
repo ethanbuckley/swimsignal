@@ -302,6 +302,41 @@ clients) and `wt_score.py` (rows, groups, features, fit and score). Its tests ar
   `surfobs.climate.copernicus.eu`, 1 product listing from `api.os.uk`. None returned a temperature.
 - No WQA request, no Open-Meteo request.
 
+## Run log (written before any score)
+
+Code: this branch. Data and caches: `~/Documents/GitHub/swimsignal-private/water-temperature/`, outside the repo.
+
+**EA fetch, 27 October 2026, 14:18 to 14:25 UTC, under the heavy-run lock.** 121 requests in all (cap 300), 67.3 MB
+(cap 600 MB), `environment.data.gov.uk` only:
+- 1 answered **405**. The multi-point endpoint is POST only (its OpenAPI document lists `post /data/observation`).
+  The client stopped, as it should. It now sends POST with an empty body (commit d93e921).
+- 2 answered 200 but were superseded: **`dateTo` is exclusive.** `dateTo=2018-05-31` returned nothing after 30 May
+  18:35. Each month's `dateTo` is now the first day of the next month (d93e921). The two files are kept aside, unused.
+- 5 answered **204** (no rows). The first, sea water in May 2020, stopped the run. A 204 is now an empty page
+  (9174426), and the run resumed from the cache.
+- 113 answered 200 and are used: 117 pages counting the 204s, 170,183 rows.
+
+**Rows** (`wt_score.py rows`): 165,181 point-days kept. Dropped: 0 duplicate ids, 0 other materials, 0 not Celsius,
+0 not a number, 4 out of range. 2,965 point-days had more than one reading. Rows by type and season:
+
+| type | training (2018–22) | test (2023–25) | points |
+|---|---|---|---|
+| river | 67,330 | 67,010 | 10,342 |
+| lake | 2,221 | 2,974 | 495 |
+| sea | 2,810 | 22,836 | 782 |
+
+**2020 is nearly empty.** 64 cells have a row in May to September 2020, against 1,253 to 1,686 in the other
+seasons. *Inferred:* sampling stopped in spring 2020, as the chlorophyll test found.
+
+**Water bodies** (`wt_score.py groups`, 12 s, 0.8 GB peak). River points: 7,849 on a named link, 1,234 joined to
+the first named river downstream, 1,259 a water of their own (no river link within 250 m, or no named river
+downstream). Lake points: 207 in or within 100 m of a WFD polygon, 70 on an OS lake link, 218 their own water. Sea:
+782 points in 253 squares. Waters: 5,134 river, 421 lake, 253 sea; 1,093 to 1,202 per fold. 1,872 cells of 0.1°.
+
+**Open-Meteo plan** (`wt_score.py plan`, before any Open-Meteo request): 424 requests, **13,680.6 weighted calls**
+(cap 20,000), so **nothing is dropped**. Cells by season: 2018 1,327; 2019 1,541; 2020 64; 2021 1,431; 2022 1,253;
+2023 1,561; 2024 1,686; 2025 1,603. 91 cells hold only sea points. At 6,000 a UTC day this takes three UTC days.
+
 ---
 
 ## Results
