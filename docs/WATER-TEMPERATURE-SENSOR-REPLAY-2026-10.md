@@ -91,4 +91,37 @@ There are no pass or fail rules. Daily readings are correlated, and six sensors 
 
 ### Results
 
-(Added after the one scoring run.)
+One scoring run, 27 Oct 2026, 22:4x UTC, from the committed tool (`wt_sensor_replay.py score`, after b90d99f). It read only files on disk, and amendment 1's day rule applied. Full figures: `docs/WATER-TEMPERATURE-SENSOR-REPLAY-2026-10.json`. Observed values are London-day means of unchecked sonde readings. Errors are estimate − observed, in °C.
+
+**Part A: the deployed estimate, archived 2025 forecast air (held out by time only).**
+
+| Sensor | Days | RMSE | Bias | P90 | Within 2 °C | As shown (whole degrees) RMSE | vs 10:00–16:00 mean, RMSE |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Lugg Meadows | 125 | 1.15 | +0.97 | 1.75 | 94% | 1.22 | 1.42 |
+| Teme at Ludlow | 130 | 0.53 | −0.04 | 0.83 | 100% | 0.58 | 0.56 |
+| Nidd at Knaresborough Lido | 130 | 0.69 | −0.17 | 1.13 | 99% | 0.72 | 0.68 |
+| Nidd upstream of Harrogate WwTW | 119 | 0.59 | +0.27 | 0.89 | 100% | 0.67 | 0.69 |
+| **Pooled** | **504** | **0.78** | **+0.25** | | **98%** | | |
+
+- May has only 8 scored days per sensor. The archived air starts on 24 April 2025, and the 30-day rule first allows an estimate on 24 May.
+- At Lugg Meadows the estimate ran warm, by +1.5 to +1.1 °C in May–July and +0.6 to +0.7 °C in August–September.
+- Lugwardine and Three Elms: no readings, so no score.
+
+**Part B: river held out of fitting, HadUK air (#414 fold model refitted from the committed harness).**
+
+| Sensor | River group (fold) | Days | Candidate RMSE (bias) | 7-day air RMSE (bias) | Day-of-year RMSE |
+|---|---|---:|---:|---:|---:|
+| Lugg Meadows | River Lugg (2) | 148 | 1.15 (+0.97) | 1.09 (−0.57) | 2.44 |
+| Teme at Ludlow | River Teme / Afon Tefeidiad (0) | 153 | 0.98 (+0.80) | 1.17 (−0.49) | 2.06 |
+| Nidd at Knaresborough Lido | River Nidd (0) | 153 | 0.81 (−0.08) | 1.68 (−1.08) | 2.39 |
+| Nidd upstream of Harrogate WwTW | River Nidd (0) | 142 | 0.69 (+0.08) | 1.31 (−0.81) | 1.79 |
+
+- Each station's river group was found by #414's rule (a named link within 250 m). In every case that group was not in its fold's training rows.
+- The candidate beat the 7-day air line at three of four sensors, and was level with it at Lugg Meadows (1.15 against 1.09).
+
+**What this does and does not show:**
+- **Supports the river wording.** At four river sensors in 2025, the shipped estimate's typical error was well inside the "typically within 2 °C" it would show. With the river held out of fitting it was also inside 2 °C, and better than a plain air line at three of four.
+- **Small and local.** Four sensors on three rivers, all lowland or mid-catchment (232–633 km of network upstream), one summer. Daily readings are correlated, and no interval is given.
+- **Not the live input.** Part A's air for "today" is archived analysis, not a live forecast for today. Nothing here checks today's forecast, or any change to Open-Meteo's models since 2025.
+- **Not a swimmer's reading.** These are daily means of unchecked sonde readings near, not at, the swim spots. The 10:00–16:00 comparison is close to the daily one.
+- Nothing was refitted to these data, and the river verdict of 27 October stands as scored.
