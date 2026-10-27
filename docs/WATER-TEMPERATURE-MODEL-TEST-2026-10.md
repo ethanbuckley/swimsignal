@@ -588,3 +588,43 @@ is the check stated under "What follows", before any display.
   ships.
 - **Lakes failed.** Lake spots get no estimate. The large-lake result says what a lake model would need first: a
   longer air memory or depth.
+
+Ethan, 27 October, after the result: "okay rivers go ahead now and the lets do more tests for lakes". Lakes go to a
+separate piece of work. This document covers rivers only from here.
+
+### Forecast-air check, stated before its requests (27 October 2026)
+
+**Why.** The model was tested on archive air (ERA5-Land) passed through the bridge. The site would feed it the
+forecast API's air: its past days are model analyses, and today is a forecast. If those differ from ERA5-Land by more
+than the bridge allows for, the tested error does not carry over to the site.
+
+**Cells:** the 0.1° rain cells (`rainfall.grid_cell`) of the 72 river spots in `spots.csv` and `spots-osm.csv`:
+62 cells.
+
+**Requests** (`wt_air_check.py`, through the test's capped Open-Meteo client: its log, its day and rolling-hour caps,
+25 s apart, network errors retried after 30 s, 2 min and 5 min, any answer other than 200 a stop):
+1. **Forecast, as the site would ask:** `api.open-meteo.com/v1/forecast`, `hourly=precipitation,temperature_2m`,
+   `past_days=31`, `forecast_days=6`, `timezone=UTC`. Weight `call_weight(n, 38, 2)` = 1 a cell.
+2. **Forecast, rain only,** the same request with `hourly=precipitation`, to check that adding temperature leaves the
+   rain values unchanged. Weight 1 a cell.
+3. **Archive:** ERA5-Land daily mean, `timezone=Europe/London`, for the same 31 past days. Weight 1 a cell.
+
+In batches of at most 25 cells: 9 requests, **186 weighted calls**. Cap for this check: **250**. Hosts:
+`api.open-meteo.com` and `archive-api.open-meteo.com` only.
+
+**Measures.** Forecast daily means are London calendar days built from the hourly values. A day counts only if all
+24 hours are present (25 or 23 on the clock-change day, 25 October). Archive days are those ERA5-Land has; it runs
+about five days behind. For each cell and day with both: d = forecast − archive. Then `a7` from each source on days
+whose 7 days are all present in both, and the difference.
+
+**Pass rule, fixed now:** the mean `a7` difference over all cells and days is within ±0.5 °C, **and** the
+root-mean-square `a7` difference is at most 1.0 °C. Why these limits: the model's response to `a7` is below 1 °C per
+°C (the 7-day air baseline's slope), so a 0.5 °C input bias moves an estimate by under 0.5 °C. Added to the test's
+1.56 °C error in quadrature, that gives about 1.64 °C, still inside the 2 °C that would be shown. *Inferred, not
+tested.* Also reported, deciding nothing: the daily differences, their spread by cell, and whether any rain value
+differs between requests 1 and 2.
+
+**If it fails:** nothing is built. Nothing is refitted: no bridge, no model. It is reported to Ethan.
+
+**Limits, stated now:** one window (late September to late October), outside the May–September season the model was
+tested on. 62 cells. The forecast for today itself is not checked, since ERA5-Land has no today.
