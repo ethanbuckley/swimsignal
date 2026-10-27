@@ -49,6 +49,7 @@ OM_HOST = "archive-api.open-meteo.com"
 OM_URL = f"https://{OM_HOST}/v1/archive"
 OM_PAUSE_S = 60.0
 OM_MODEL = "era5_land"
+OWN_DIR = "swimsignal-private/water-temperature"   # this test's own wrappers and log watchers
 UA = "swimsignal-research (water temperature model test; hello@swimsignal.co.uk)"
 
 
@@ -181,7 +182,7 @@ def other_open_meteo_jobs(me: int | None = None) -> list[str]:
         return []
     mine = {me, os.getppid()}
     return [ln for ln in out.splitlines() if ln.strip() and int(ln.split()[0]) not in mine
-            and "pgrep" not in ln and "wt_fetch.py" not in ln]
+            and "pgrep" not in ln and "wt_fetch.py" not in ln and OWN_DIR not in ln]
 
 
 class OMClient:

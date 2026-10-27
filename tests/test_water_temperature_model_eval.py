@@ -421,7 +421,8 @@ def test_open_meteo_waits_while_another_job_runs(tmp_path):
 
 def test_other_jobs_ignore_this_fetch(monkeypatch):
     class R:
-        stdout = "11 python wt_fetch.py open_meteo --fetch\n12 zsh -c x wt_fetch.py open_meteo\n13 other open-meteo job\n"
+        stdout = ("11 python wt_fetch.py open_meteo --fetch\n12 zsh -c x wt_fetch.py open_meteo\n13 other open-meteo job\n"
+                  "14 zsh -c until grep -q open_meteo swimsignal-private/water-temperature/logs/open_meteo.log\n")
     monkeypatch.setattr(wf.subprocess, "run", lambda *a, **k: R())
     assert wf.other_open_meteo_jobs(me=1) == ["13 other open-meteo job"]
 
