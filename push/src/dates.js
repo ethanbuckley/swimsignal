@@ -13,7 +13,7 @@
 // each spot whose level changes from day to day, each day's [level, headline, action] (`days`, the
 // sentences as places in `words`). Elsewhere a day's level is the spot's own.
 
-import { check, isObject, officialWords } from './shared.js';
+import { check, isObject, officialMark, officialWords } from './shared.js';
 
 export const MAX_DATES = 10;        // pairs a browser may ask about
 export const MAX_AHEAD_DAYS = 400;  // about a year ahead, and a season's bookings
@@ -110,11 +110,18 @@ export function datePayload(lines, spots, siteUrl, issued) {
     const [{ spot, date, from, day }] = lines;
     const what = from === null ? 'This is the first forecast for this day, and it can change.'
       : ORDER[from] !== undefined ? `Was ${from} risk.` : 'Changed since the last forecast.';
-    // While official advice shows, the day's action is that advice (scripts/alerts.js): not added again.
-    return { title: `${name(spot)} · ${dayWords(date)}`, body: from === null ? join(sentence(day.headline), sentence(day.action), what) : join(sentence(day.headline), what, sentence(day.action)),
+    // While official advice shows, the day's action is that advice (scripts/alerts.js): not added again,
+    // but its marker goes first, so a body cut short never shows a bare "Low risk".
+    const mark = officialMark(spots[spot]);
+    return { title: `${name(spot)} · ${dayWords(date)}`, body: (mark ? `${mark} · ` : '') + (from === null ? join(sentence(day.headline), sentence(day.action), what) : join(sentence(day.headline), what, sentence(day.action))),
       url: link(lines[0]), tag: `dipspot-${spot}-${date}-${day.level.replace(/ /g, '')}` };
   }
-  const body = lines.map(({ spot, date, day }) => join(`${name(spot)} · ${shortDay(date)}: ${sentence(day.headline)}`, officialWords(spots[spot]))).join('\n');
+  // A list gives headlines only: an advised line starts with its marker and ends with the notice, and
+  // advised lines come first, so the 600-character cut never leaves a bare level behind a notice.
+  const marked = (p) => (officialMark(spots[p.spot]) ? 0 : 1);
+  const body = [...lines].sort((a, b) => marked(a) - marked(b)).map(({ spot, date, day }) => join(
+    (officialMark(spots[spot]) ? `${officialMark(spots[spot])} · ` : '') + `${name(spot)} · ${shortDay(date)}: ${sentence(day.headline)}`,
+    officialWords(spots[spot]))).join('\n');
   return { title: `New forecasts for ${lines.length} of your dates`, body: body.length > 600 ? body.slice(0, 599) + '…' : body,
     url: link(lines[0]), tag: `dipspot-dates-${issued}` };
 }

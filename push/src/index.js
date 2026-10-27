@@ -5,7 +5,7 @@
 
 import { importEcdhPublic, sendPush, unb64url, vapidSigner } from './webpush.js';
 import {
-  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, officialWords, readJson, reply,
+  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, officialMark, readJson, reply,
   retryAfter,
 } from './shared.js';
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
@@ -409,10 +409,15 @@ export function alertPayload(ids, spots, siteUrl) {
     const [id] = ids;
     const spot = spots[id];
     // While official advice shows, `action` is that advice (scripts/alerts.js), so it is not added again here.
-    const body = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
-    return { title: spot.name ?? id, body, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
+    // The marker goes first, so a body cut short on a lock screen still says there is a notice.
+    const said = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
+    const mark = officialMark(spot);
+    return { title: spot.name ?? id, body: mark ? `${mark} · ${said}` : said, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
   }
-  const names = ids.map((id) => `${spots[id].name ?? id}${officialWords(spots[id]) ? ' (official advice in force)' : ''}`).join(', ');
+  // Advised spots first, each with its marker in front, so the 200-character cut never drops a marker.
+  const advised = ids.filter((id) => officialMark(spots[id]));
+  const names = [...advised, ...ids.filter((id) => !advised.includes(id))]
+    .map((id) => (officialMark(spots[id]) ? `${officialMark(spots[id])} · ` : '') + (spots[id].name ?? id)).join(', ');
   return {
     title: `${ids.length} of your saved spots are at high or very high risk`,
     body: names.length > 200 ? names.slice(0, 199) + '…' : names,

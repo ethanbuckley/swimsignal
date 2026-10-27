@@ -42,8 +42,16 @@ export async function readJson(request) {
 // the texts that do not carry `action` (which already says it): the weekly note, a list of dates, a
 // combined push and the email. '' when the spot has none, and in an alerts.json from before the field.
 // Words only: it never decides who is told or when.
-export const officialWords = (spot) => (isObject(spot) && typeof spot.official === 'string' && spot.official
-  ? `Official: ${spot.official}. Follow it first; the level is SwimSignal's sewage forecast only.` : '');
+const officialBrief = (spot) => (isObject(spot) && typeof spot.official === 'string' ? spot.official : '');
+export const officialWords = (spot) => (officialBrief(spot)
+  ? `Official: ${officialBrief(spot)}. Follow it first; the level is SwimSignal's sewage forecast only.` : '');
+// The short marker that goes in front of an advised spot's name wherever a text may be cut short, so a
+// cut never leaves a bare level: "Official notice shown", or, when eaTodayBrief says the check is old or
+// failed (stale, unverified, gone, changed), "Official notice, not re-checked since 19 Oct". '' without.
+export function officialMark(spot) {
+  const brief = officialBrief(spot), old = /not re-checked since ([^·]+?)\s*(?:·|$)/.exec(brief);
+  return !brief ? '' : old ? `Official notice, not re-checked since ${old[1]}` : 'Official notice shown';
+}
 
 export function cleanSpots(spots) {
   check(Array.isArray(spots), 'spots must be an array');

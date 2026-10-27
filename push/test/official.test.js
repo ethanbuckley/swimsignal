@@ -9,7 +9,7 @@ import { alertPayload, runCron, subKey } from '../src/index.js';
 import { datePayload } from '../src/dates.js';
 import { weeklyPayload } from '../src/weekly.js';
 import { alertEmail } from '../src/email.js';
-import { officialWords } from '../src/shared.js';
+import { officialMark, officialWords } from '../src/shared.js';
 import { FakeKV, makeUserAgent, makeVapidEnv } from './helpers.js';
 
 const SITE = 'https://swimsignal.co.uk/';
@@ -25,24 +25,42 @@ test('officialWords: alerts.js\'s own line, or nothing for a missing, empty or o
   for (const s of [{}, { official: '' }, { official: 3 }, { official: [BRIEF] }, null, undefined]) assert.equal(officialWords(s), '');
 });
 
+test('officialMark follows the check: shown when checked, "not re-checked since" when stale, unverified, gone or changed', () => {
+  assert.equal(officialMark({ official: BRIEF }), 'Official notice shown');
+  const old = BRIEF.replace('checked 26 Oct', 'not re-checked since 19 Oct');
+  assert.equal(officialMark({ official: old }), 'Official notice, not re-checked since 19 Oct');
+  assert.equal(officialMark({ official: `${old} · 1 more` }), 'Official notice, not re-checked since 19 Oct');
+  for (const s of [{}, { official: '' }, { official: 3 }, null]) assert.equal(officialMark(s), '');
+  // Nowhere does the Worker claim more than the notice: no "in force".
+  const many = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`s${i}`, { ...frensham(false), name: `A long spot name number ${i}` }]));
+  const stale = { ...frensham(true), official: old };
+  const body = alertPayload([...Object.keys(many), 'f'], { ...many, f: stale }, SITE).body;
+  assert.ok(body.length <= 200 && body.startsWith('Official notice, not re-checked since 19 Oct · Frensham Great Pond, '));   // the cut keeps it
+  assert.doesNotMatch(body, /in force/);
+  const lines = Object.keys(many).map((spot) => ({ spot, date: '2026-10-31', from: null, day: { level: 'low', headline: 'Low risk forecast: no overflow upstream reports live', action: 'x' } }));
+  const list = datePayload([...lines, { spot: 'f', date: '2026-10-31', from: null, day: { level: 'low', headline: 'Low risk', action: OFFICIAL } }],
+    { ...many, f: stale }, SITE, 'x').body;
+  assert.ok(list.length <= 600 && list.startsWith('Official notice, not re-checked since 19 Oct · Frensham Great Pond · Sat 31 Oct: Low risk. Official:'));
+});
+
 test('a push for one spot says the notice once, through `action`; several spots mark the advised name', () => {
   assert.equal(alertPayload(['f'], { f: frensham(false) }, SITE).body, 'High risk today: sewage spills. Best not to swim today.');
   const one = alertPayload(['f'], { f: frensham(true) }, SITE).body;
-  assert.equal(one, `High risk today: sewage spills. ${OFFICIAL}`);
+  assert.equal(one, `Official notice shown · High risk today: sewage spills. ${OFFICIAL}`);
   assert.equal(count(one, 'Official:'), 1);
   const other = { ...frensham(false), name: 'Other' };
-  assert.equal(alertPayload(['f', 'o'], { f: frensham(true), o: other }, SITE).body, 'Frensham Great Pond (official advice in force), Other');
+  assert.equal(alertPayload(['o', 'f'], { f: frensham(true), o: other }, SITE).body, 'Official notice shown · Frensham Great Pond, Other');   // advised first
   assert.equal(alertPayload(['f', 'o'], { f: frensham(false), o: other }, SITE).body, 'Frensham Great Pond, Other');
 });
 
 test('dated notices: one pair says it once through the day\'s action; a list adds it to the advised line', () => {
   const line = { spot: 'f', date: '2026-10-31', from: null, day: { level: 'low', headline: 'Low risk', action: OFFICIAL } };
   const one = datePayload([line], { f: frensham(true) }, SITE, 'x').body;
-  assert.equal(one, `Low risk. ${OFFICIAL} This is the first forecast for this day, and it can change.`);
+  assert.equal(one, `Official notice shown · Low risk. ${OFFICIAL} This is the first forecast for this day, and it can change.`);
   assert.equal(count(one, 'Official:'), 1);
   const plain = { spot: 'o', date: '2026-10-31', from: null, day: { level: 'low', headline: 'Low risk', action: 'Usual care' } };
   const two = datePayload([line, plain], { f: frensham(true), o: { name: 'Other' } }, SITE, 'x').body;
-  assert.equal(two, `Frensham Great Pond · Sat 31 Oct: Low risk. ${OFFICIAL}\nOther · Sat 31 Oct: Low risk.`);
+  assert.equal(two, `Official notice shown · Frensham Great Pond · Sat 31 Oct: Low risk. ${OFFICIAL}\nOther · Sat 31 Oct: Low risk.`);
   assert.equal(datePayload([line, plain], { f: frensham(false), o: { name: 'Other' } }, SITE, 'x').body,
     'Frensham Great Pond · Sat 31 Oct: Low risk.\nOther · Sat 31 Oct: Low risk.');
 });
@@ -52,7 +70,7 @@ test('the weekly note: "low risk every day" carries the notice once; order, link
   const spots = (o) => ({ f: { name: 'Frensham Great Pond', url: `${SITE}spot/f/`, best, ...o }, o: { name: 'Other', best: { ...best, level: 'moderate', words: 'Saturday, moderate risk' } } });
   const was = weeklyPayload(['o', 'f'], spots({}), SITE), now = weeklyPayload(['o', 'f'], spots({ official: BRIEF }), SITE);
   assert.equal(was.body, 'Frensham Great Pond: low risk every day from tomorrow to Friday.\nOther: Saturday, moderate risk.');
-  assert.deepEqual(now, { ...was, body: `Frensham Great Pond: low risk every day from tomorrow to Friday. ${OFFICIAL}\nOther: Saturday, moderate risk.` });
+  assert.deepEqual(now, { ...was, body: `Official notice shown · Frensham Great Pond: low risk every day from tomorrow to Friday. ${OFFICIAL}\nOther: Saturday, moderate risk.` });
   assert.equal(count(now.body, 'Official:'), 1);
 });
 

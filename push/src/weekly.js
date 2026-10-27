@@ -11,7 +11,7 @@
 // Thursday's, and the window bounds a week's cost (README.md): 180 runs, so at most 181 KV writes and
 // 180 × SENDS_PER_RUN notes. Outside the window the cron reads nothing for it.
 
-import { isObject, listKeys, officialWords } from './shared.js';
+import { isObject, listKeys, officialMark, officialWords } from './shared.js';
 
 export const WEEKLY_DAY = 'Thu', WEEKLY_HOUR = 18;   // UK time
 const MAX_LINES = 5;   // one line a spot; the rest are on the Saved page
@@ -30,7 +30,9 @@ export function weeklyPayload(ids, spots, siteUrl) {
   const rows = ids.map((id, i) => ({ id, i, best: spots[id].best }))
     .sort((a, b) => (ORDER[a.best.level] ?? 9) - (ORDER[b.best.level] ?? 9) || String(a.best.date).localeCompare(String(b.best.date)) || a.i - b.i);
   // A spot with official advice says it beside its level: "Saturday, low risk" alone would read as clean.
-  const lines = rows.slice(0, MAX_LINES).map(({ id, best }) => `${spots[id].name ?? id}: ${best.words}.${officialWords(spots[id]) ? ` ${officialWords(spots[id])}` : ''}`);
+  // Its marker leads the line, so a lock screen that cuts the line still shows it.
+  const lines = rows.slice(0, MAX_LINES).map(({ id, best }) => (officialMark(spots[id]) ? `${officialMark(spots[id])} · ` : '')
+    + `${spots[id].name ?? id}: ${best.words}.${officialWords(spots[id]) ? ` ${officialWords(spots[id])}` : ''}`);
   if (rows.length > MAX_LINES) lines.push(`And ${rows.length - MAX_LINES} more on your Saved page.`);
   const url = ids.length === 1 ? spots[ids[0]].url ?? `${siteUrl}spot/${ids[0]}/` : `${siteUrl}saved/`;
   return { title: 'Lowest pollution risk this week', body: lines.join('\n'), url, tag: 'dipspot-week' };
