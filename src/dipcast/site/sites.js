@@ -123,7 +123,9 @@ const Sites = (() => {
     const rec = days.length ? days.map(iso => `<a href="${esc(recordHref(s.id, iso))}">${DAY ? dated(iso) : iso === t ? 'today' : 'tomorrow'}</a>`).join(' · ')
       : `<a href="${esc(recordHref(s.id, t))}">today</a>`;
     // With a day, the row says which spot, day and level it drew, for briefing.py to check against alerts.json.
-    return `<li class="site"${DAY ? ` data-spot="${esc(s.id)}" data-day="${DAY}" data-level="${esc(w.lv)}"` : ''}><div class="s-place"><a class="s-name" href="${esc(spotHref(s.id))}">${esc(s.name)}</a><span class="s-meta">${meta}</span></div>`
+    // The name is the row's h2, under the page's h1, so a screen reader can step from spot to spot; it looks as
+    // it did (sites.html, .s-h).
+    return `<li class="site"${DAY ? ` data-spot="${esc(s.id)}" data-day="${DAY}" data-level="${esc(w.lv)}"` : ''}><div class="s-place"><h2 class="s-h"><a class="s-name" href="${esc(spotHref(s.id))}">${esc(s.name)}</a></h2><span class="s-meta">${meta}</span></div>`
       + `<div class="s-say"><p class="s-head ${w.tone}">${esc(w.head)}</p>${brief(s) ? `<p class="o-tag">Official: ${esc(brief(s))}. Follow it first; the level is SwimSignal's sewage forecast only.</p>` : ''}`
       + `${w.why ? `<p class="s-why">${esc(w.why)}</p>` : ''}`
       + `<p class="s-rec screen-only">Decision record: ${rec}</p></div>`
@@ -152,7 +154,7 @@ const Sites = (() => {
     if (st.day && !DAY && found.length) h += `<p class="s-missing">${esc(dated(st.day))} is not in this forecast's five days, so the levels above are the usual ones, from today.</p>`;
     if (missing.length) h += `<p class="s-missing">Not found in this forecast: ${missing.map(id => `<b>${esc(id)}</b>`).join(', ')}. ${missing.length === 1 ? 'The spot may have been renamed or removed' : 'They may have been renamed or removed'}; the link still works for the rest.</p>`;
     if (!found.length) return h;
-    return h + P.credits(data, found, base)
+    return h + P.credits(data, found, base, [], 2)   // an h2, as the spots' names are
       + '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this page</button></p>';
   }
 

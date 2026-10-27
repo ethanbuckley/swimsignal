@@ -151,3 +151,38 @@ test('the sites view carries an issue id and the credits for the listed spots al
   // A file from before upstream_summary.companies: every company is credited, never none.
   assert.ok(text(S.view({...DATA, credits}, S.fromHash('#spots=thames-henley'), NOW, '')).includes('from Thames Water, United Utilities and Wessex Water (© 2024 Wessex Water), via'));
 });
+
+// ------------------------------------------------------------------------------ heading order (review of 26 Oct 2026, P4)
+// The page went from its h1 to an h3 ("Data credits"), and no spot's name was a heading, so a screen reader
+// could not step from spot to spot. Now: the h1, an h2 a spot, the credits an h2; no level is skipped.
+test('the sites view\'s headings never skip a level, and each spot\'s name is an h2', () => {
+  const page = fs.readFileSync(path.join(SITE, 'sites.html'), 'utf8');
+  const shell = '<div id="sites" aria-live="polite"></div>';
+  assert.ok(page.includes(shell));
+  const outline = h => [...page.replace(shell, `<div id="sites">${h}</div>`).matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/g)]
+    .map(m => ({level: +m[1], text: text(m[2]).trim()}));
+  const credits = {attribution: 'Old line.', modified: 'Changed.', full: 'https://swimsignal.co.uk/terms.html#data'};
+  const data = {...DATA, credits};
+  const cases = [
+    ['#spots=thames-henley', ['River Thames, Henley-on-Thames']],
+    ['#spots=eden-lazonby,thames-henley,buttermere&name=Club%20launches', ['River Eden, Lazonby', 'River Thames, Henley-on-Thames', 'Buttermere']],
+    [`#spots=eden-lazonby,gone-spot,buttermere&day=${DAYS[2]}`, ['River Eden, Lazonby', 'Buttermere']],   // a briefing's sheet, with a missing id
+  ];
+  for (const [hash, names] of cases) {
+    const o = outline(S.view(data, S.fromHash(hash), NOW, 'https://swimsignal.co.uk/'));
+    assert.equal(o.filter(x => x.level === 1).length, 1, hash);
+    assert.equal(o[0].level, 1, hash);
+    for (let i = 1; i < o.length; i++) assert.ok(o[i].level <= o[i - 1].level + 1, `${hash}: h${o[i - 1].level} "${o[i - 1].text}" then h${o[i].level} "${o[i].text}"`);
+    assert.deepEqual(o.filter(x => x.level === 2).map(x => x.text), [...names, 'Data credits'], hash);
+  }
+  // The name's h2 holds the link to the spot's page, as the bare link did.
+  const h = S.view(data, S.fromHash('#spots=eden-lazonby'), NOW, '');
+  assert.ok(h.includes('<h2 class="s-h"><a class="s-name" href="spot/eden-lazonby/">River Eden, Lazonby</a></h2>'));
+  // They look as they did: the name's h2 takes no h2 size or margins, the credits' heading keeps the h3's face at
+  // the notes size, and printed it still gives way to the run-in "Data credits."
+  assert.ok(page.includes('main.doc h2.s-h { font:inherit; margin:0; }'));
+  assert.ok(page.includes('main.doc .credits-h { font:600 var(--fs-note)/1.3 var(--font-display); margin:24px 0 4px; }'));
+  assert.ok(/@media print \{[\s\S]*main\.doc \.credits-h \{ display:none; \}/.test(page) && !page.includes('h3.credits-h'));
+  // The decision record keeps its credits as an h3, under its own h2s.
+  assert.ok(require('../src/dipcast/site/printed.js').credits(data, [henley], '').startsWith('<h3 class="credits-h">Data credits</h3>'));
+});
