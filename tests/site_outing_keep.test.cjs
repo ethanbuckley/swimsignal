@@ -162,7 +162,7 @@ test('the calendar file, field by field: the time window, the spot, links back, 
   assert.equal(p.SUMMARY.value, 'Swim: Frensham Great Pond');
   assert.equal(p.LOCATION.value, 'Frensham Great Pond');
   assert.equal(p.URL.value, CAL.main.url);
-  assert.equal(unescape(p.DESCRIPTION.value), ['Check SwimSignal and any official advice before you go.', `Your spot: Frensham Great Pond, ${CAL.main.url}`,
+  assert.equal(unescape(p.DESCRIPTION.value), ['Check SwimSignal and any official notice before you go.', `Your spot: Frensham Great Pond, ${CAL.main.url}`,
     `Backup: River Wey at Waverley, ${CAL.backup.url}`, `Your plan: ${CAL.plan}`].join('\n'));
   assert.ok(!('TRANSP' in p));
   // No forecast level anywhere in the event: it would be stale by the time the calendar shows it.

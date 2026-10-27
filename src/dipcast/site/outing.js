@@ -181,7 +181,7 @@ function outingAlert(a) {
 // never a forecast level, which would be out of date by the time the calendar shows it. One UID per day
 // and spot, so importing the file again after changing the time updates the event rather than adding one.
 // c = { day, when, main: {id, name, url}, backup: {name, url} | null, plan (the plan's address), host }.
-const OUTING_CHECK = 'Check SwimSignal and any official advice before you go.';
+const OUTING_CHECK = 'Check SwimSignal and any official notice before you go.';
 function outingIcs(c, now = Date.now()) {
   const D = outingDates(), span = outingSpan(c.when), hh = h => String(h).padStart(2, '0') + '0000';
   const next = (() => { const d = new Date(c.day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); })();
