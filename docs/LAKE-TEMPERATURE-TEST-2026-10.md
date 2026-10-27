@@ -296,7 +296,42 @@ Harness: `scripts/lake_temperature_eval/` (`lt_fetch.py`, `lt_protocol.py`, `lt_
 
 ## Run log (written before any score)
 
-*(empty)*
+Code: this branch. Data: `~/Documents/GitHub/swimsignal-private/water-temperature/`, outside the repo; this test's
+work files in `lake-test/work/`, its logs in `lake-test/logs/`.
+
+**Statement** committed in 02940dc (18:44 UTC) and pushed. **Harness** committed in 323ef14, before any stage below.
+
+**Rows** (`lt_score.py rows`, 18:46 UTC, under the heavy-run lock, 5 s). 482 non-empty pages (469 from the first test's
+cache, 13 for 2026). 838,962 raw rows; dropped 4 duplicate ids, 6 not a number, 17 out of range; 814,771 point-days
+kept. Lake point-days: 12,735 in 2000–22, 2,988 in 2023–25, **1,341 in 2026** (at 251 points). Against the first
+test, 6 points changed from lake to river and 2 from river to lake once 2026 rows were counted; 504 points are new.
+
+**Water bodies** (`lt_score.py groups`, 18:47 UTC, under the lock, 12 s, 0.9 GB). Lake points: 368 in or within
+100 m of a WFD polygon, 106 on an OS lake link, 442 their own water. 750 lake waters in all. **2026: 224 lake waters,
+1,341 rows** (89 WFD, 40 OS lake link, 95 own). The gate (30, 300) is cleared before the air rule.
+
+**Open-Meteo plan** (`lt_score.py plan`): 168 cells, 7 requests, **219.6 weighted calls** (cap 600).
+
+**Open-Meteo fetch** (`lt_fetch.py open_meteo`, 18:47:20 to 18:49:51 UTC). Before it, the first test's log held
+8,378.2 weighted calls for 27 October (that includes the rivers session's check), and `pgrep` showed no other
+Open-Meteo job. 7 requests, all HTTP 200, `models=era5_land`, 219.6 weighted calls. The day's total on this Mac is
+then about 8,598, under 9,500. Every answer runs to 30 September 2026. One cell, 49.90 N 0.60 W (in the English
+Channel, so a sampling point with wrong coordinates), came back with no value on any day; its rows fall to the air
+rule. No other cell has a missing day.
+
+**Features file** (`lt_score.py features`, 18:50 to 19:04 UTC, commit 323ef14, under the lock, 14 min):
+
+- **SHA-256: `fe42bd203ed50251909bab23220547843224177eccd6f03171cfd1befb436dc3`**, 16,679 lake rows. Committed here
+  before any model is fitted or scored. `lt_score.py score` refuses any other file and any file this statement does
+  not name.
+- Rows with air: training (HadUK) 12,370 in 2000–22 and 2,973 in 2023–25; test (bridged Open-Meteo) 2,973 in 2023–25
+  and **1,336 in 2026 at 220 waters**.
+- Dropped for want of air: 380 training rows (no HadUK cell within 10 km), 15 rows of 2023–25 and 5 of 2026 (no
+  Open-Meteo value). 385 rows had neither and were removed.
+- Lake facts: WFD area on 11,502 rows; HydroLAKES depth on 9,284 rows at 133 waters; elevation on every row.
+- Checks on inputs only: no infinite value; every water in exactly one fold. No water temperature was summarised.
+- *Not a deviation, noted:* the stage took 14 minutes because the first test's HadUK loader reads its compressed array
+  once per cell. It changes no value.
 
 ---
 
