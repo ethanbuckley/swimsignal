@@ -2934,7 +2934,7 @@ function renderList() {
     // phone's screen, so a declined or failed location changed nothing you could see.
     + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
-    + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="count" id="count" role="status"></p></section>`;
+    + `<p class="overview" id="overview"></p><p class="overview" id="risk-first" hidden></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="count" id="count" role="status"></p></section>`;
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
@@ -3018,6 +3018,14 @@ function areaRows(a, xs, item, open, fold = true) {
 }
 const bindClear = () => { const clear = document.getElementById('clear-filters');
   if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); }); };
+// Highest risk: a spot whose row shows official advice against swimming (eatoday.js, eaTodayAdvice: checked,
+// or shown though not re-checked; an ended or withdrawn notice is not shown) comes first, whatever its sewage
+// level, as the advice says not to swim there. Those spots by their level then name, then the rest as before.
+// No level, label or count changes. A line over the list says so while such a spot is in it (riskFirstNote).
+const listRank = s => ORDER[mapLevel(s)] ?? -1;
+const listAdvised = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).length > 0;
+const riskOrder = (a, b) => listAdvised(b) - listAdvised(a) || listRank(b) - listRank(a) || a.name.localeCompare(b.name);
+const riskFirstNote = items => items.some(listAdvised) ? 'Spots with official advice against swimming come first.' : '';
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -3025,10 +3033,10 @@ function drawSpots() {
   const found = s => { const t = searchText(s); return words.every(w => t.includes(w)); };
   const keep = s => found(s) && (VIEW.filter === 'all'
     || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
-  const rank = s => ORDER[mapLevel(s)] ?? -1;
+  const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
     // Near me before a position has arrived keeps the risk order, which a failed location returns to.
-    : VIEW.sort !== 'name' ? rank(b) - rank(a) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name));
+    : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
   const savedGroup = document.getElementById('saved-group');
   if (savedGroup) {
     savedGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
@@ -3047,6 +3055,8 @@ function drawSpots() {
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overview(items);
+  const first = document.getElementById('risk-first'), firstNote = byRisk ? riskFirstNote(items) : '';
+  if (first) { first.textContent = firstNote; first.hidden = !firstNote; }
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
