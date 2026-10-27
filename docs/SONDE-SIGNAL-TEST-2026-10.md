@@ -49,9 +49,11 @@ already has. Most deployments are short and away from bathing waters.
   Open Government Licence v3. The reference page's footer: "All content is available under the Open Government
   Licence v3.0, except where otherwise stated". Credit, if anything is ever shown: "Contains Environment Agency data
   licensed under the Open Government Licence v3.0."
-- **A mismatch, not fixed here.** The site's terms page credits its existing Hydrology API uses (flows, water
-  temperature) as "All rights reserved". That is stricter than the licence and does no harm, but it is not what the
-  API states. Ethan's call.
+- **The terms page's credit is consistent with this.** It lists the existing Hydrology API uses (flows, water
+  temperature) under "Environment Agency data, all under the Open Government Licence v3.0", each with "© Environment
+  Agency copyright and/or database right <year>. All rights reserved." That sentence is the EA's own attribution
+  statement for OGL data (the `attributionStatement` on its dataset records), so it is not a mismatch (checked 27 Oct
+  2026; an earlier version of this note called it one).
 - **Property names, checked against the API's reference page.** `observedProperty` takes `dissolved-oxygen`, `fdom`,
   `bga`, `turbidity`, `chlorophyll`, `conductivity`, `temperature`, `ammonium`, `nitrate`, `ph` (also `waterFlow`,
   `waterLevel`, `rainfall`, `groundwaterLevel`). The page lists turbidity as "15min instantaneous NTU" and ammonium as
