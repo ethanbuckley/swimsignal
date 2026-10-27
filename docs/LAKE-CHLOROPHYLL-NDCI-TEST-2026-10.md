@@ -407,6 +407,17 @@ Ethan approved this statement on 27 October 2026 at 00:35 UTC, in the coordinati
 
 Context: on 26 October Codex had kept this test unrun during the product window and asked that 7887's definition be checked first; that check is the section below (partly verified). The results must name the outcome as "EA acetone-extract chlorophyll (determinand 7887), phaeopigment correction not stated".
 
+
+## Run log, after approval
+
+- **27 October, 00:36-00:59 UTC: stage 1** from a `git archive` of 49bf309 in a private folder, under the group's
+  heavy-run lock (released after), with the stated caps: 3 runs of the masks step (two stopped at the per-run cap of
+  20,000 requests and resumed, as stated) and one readings run. Totals: 56,676 requests (56,392 HTTP 206, 284 HTTP
+  200, no errors), 2.12 GB, inside the 70,000-request and 4.5 GiB caps; the estimate was about 55,200 and 3.2 GB.
+- **Size rule:** 38 of 40 points pass. Out: AN-UPT010 (water body GB30536202) and NW-88010013 (GB31229222).
+- **Readings:** 1,561 scene rows, 414 usable.
+- **Features file SHA-256: `58bce46681d7b9dd8e1cb2851528dd38f2d28bee0b5ed4d9095f367464af9f44`**, committed here before
+  the one fetch of chlorophyll values. No reading in the file has been looked at.
 ---
 
 ## Determinand check, 26 October 2026 (after the statement, before review)
