@@ -109,9 +109,7 @@ def measure_ids(station: dict) -> dict[str, str | None]:
     '...-flow-i-900-m3s-qualified'), or None for a missing one."""
     out = {"daily": None, "q15": None}
     for m in station.get("measures") or []:
-        mid = m.get("notation") or str(m.get("@id", "")).rsplit("/", 1)[-1]
-        if not isinstance(mid, str):
-            continue
+        mid = str(m.get("notation") or m.get("@id") or "").rsplit("/", 1)[-1]
         if mid.endswith("-flow-m-86400-m3s-qualified"):
             out["daily"] = mid
         elif mid.endswith("-flow-i-900-m3s-qualified"):
