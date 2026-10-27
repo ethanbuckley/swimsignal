@@ -22,7 +22,7 @@ const RISK = {low: 0.05, moderate: 0.2, high: 0.5, 'very high': 0.8};
 // Frensham Great Pond's reviewed notice, as data/advisories/approved.json has it.
 const APPROVED = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/advisories/approved.json'), 'utf8')).approvals
   .find(a => a.spot_id === 'bw-ukj2310-11945');
-const notice = (line = APPROVED.line) => ({line, publisher: APPROVED.publisher, link: APPROVED.link, since: APPROVED.start, checked: '2026-10-26', state: 'checked'});
+const notice = (line = APPROVED.line) => ({line, publisher: APPROVED.publisher, link: APPROVED.link, since: APPROVED.start, checked: '2026-10-26', state: 'checked', restricts: true});
 // A spot with overflows upstream, at level l on the outing's day (Wednesday 28 Oct), low on the others.
 const spot = (id, name, l = 'low', extra = {}) => ({id, name, kind: 'river', source: 'designated', upstream_summary: {overflows: 2}, location: {mode: 'river'},
   now: {label: 'low', risk: 0, discharging_upstream: 0, feed_down_upstream: 0, stale_upstream: 0}, official: [],
@@ -44,7 +44,7 @@ test('nothing changed: each thing as it is, "No change since then", and the fore
   const r = lines(wey('low'), wey('low'));
   assert.equal(r.compared, true);
   assert.equal(r.changed, 0);
-  assert.deepEqual(r.lines, ['Official advice: none shown. No change since then.', 'Level for Wednesday: low risk. No change since then.',
+  assert.deepEqual(r.lines, ['Official notice: none shown. No change since then.', 'Level for Wednesday: low risk. No change since then.',
     'River at the gauge at Tilford: low water. No change since then.']);
   const h = text(section([{name: 'River Wey, Waverley', role: 'your spot', was: rec(wey('low'), OLD, PLANNED), now: rec(wey('low'), NEW, NOW)}]));
   assert.ok(h.startsWith('What would change this plan Nothing has changed since you planned this outing.'), h);
@@ -82,7 +82,7 @@ test('the river at the gauge: rising fast, high water, a stale reading and a gau
   const r = lines(frensham('low'), frensham('low'));
   assert.equal(r.lines.length, 2);
   const h = text(section([{name: 'Frensham Great Pond', role: 'your spot', was: rec(frensham('low'), OLD, PLANNED), now: rec(frensham('low'), NEW, NOW)}]));
-  assert.ok(h.includes('look again at the official advice, Wednesday\'s level: both can change'), h);
+  assert.ok(h.includes('look again at any official notice, Wednesday\'s level: both can change'), h);
   assert.doesNotMatch(h, /river/i);
 });
 
@@ -98,7 +98,7 @@ test('official advice comes first, appears, changes and goes, and is never softe
   const changed = lines(frensham('low', [notice()]), frensham('low', [other]));
   assert.equal(changed.lines[0], `Official advice: ${E.eaTodayBrief(frensham('low', [other]))}. Follow it first. Changed: was ${brief}.`);
   const gone = lines(frensham('low', [notice()]), frensham('low'));
-  assert.equal(gone.lines[0], `Official advice: none shown here now. Changed: was ${brief}. That is not an all-clear: check the Environment Agency's own page before you swim.`);
+  assert.equal(gone.lines[0], `Official notice: none shown here now. Changed: was ${brief}. That is not an all-clear: check the Environment Agency's own page before you swim.`);
   // A lower level beside a notice still has the notice first; the level never moves for it.
   const both = lines(frensham('moderate', [notice()]), frensham('low', [notice()]));
   assert.deepEqual(both.lines, [`Official advice: ${brief}. Follow it first. No change since then.`, 'Level for Wednesday: low risk. Changed: was moderate risk.']);
@@ -115,7 +115,7 @@ test('a page without eatoday.js, or a note from it, compares no official advice 
 test('the same forecast, as the outing is planned: what each shows now, and that later visits will compare', () => {
   const r = W.outingWatchLines(rec(wey('low'), NEW, NOW), rec(wey('low'), NEW, NOW));
   assert.equal(r.compared, false);
-  assert.deepEqual(r.lines, ['Official advice: none shown.', 'Level for Wednesday: low risk.', 'River at the gauge at Tilford: low water.']);
+  assert.deepEqual(r.lines, ['Official notice: none shown.', 'Level for Wednesday: low risk.', 'River at the gauge at Tilford: low water.']);
   const h = text(section([{name: 'Wey', role: 'your spot', was: null, now: rec(wey('low'), NEW, NOW)}]));
   assert.ok(h.includes('This browser has noted what each shows now. When a newer forecast is issued, this says what has changed.'), h);
   assert.ok(h.includes(`Checked against the forecast issued ${issuedNew}.`), h);
@@ -165,9 +165,9 @@ test('the outing\'s day has passed: a plain line, and the same spots followed fr
 test('before the day: what to look at again before leaving, in the day\'s own words', () => {
   const one = d => text(W.outingWatchSection({day: d, today: L.today(), kept: true, forecast: NEW, passed: null,
     spots: [{name: 'Wey', role: 'your spot', was: null, now: W.outingWatchRecord(wey('low'), d, NEW, NOW, NOW)}]}));
-  assert.ok(one(DATES[0]).includes("Before you leave, look again at the official advice, today's level and the river: each can change, and a newer forecast may be issued. Then check the signs at the water."));
-  assert.ok(one(DATES[1]).includes("Before you leave tomorrow, look again at the official advice, tomorrow's level and the river"));
-  assert.ok(one(DAY).includes("Before you leave on Wednesday, look again at the official advice, Wednesday's level and the river"));
+  assert.ok(one(DATES[0]).includes("Before you leave, look again at any official notice, today's level and the river: each can change, and a newer forecast may be issued. Then check the signs at the water."));
+  assert.ok(one(DATES[1]).includes("Before you leave tomorrow, look again at any official notice, tomorrow's level and the river"));
+  assert.ok(one(DAY).includes("Before you leave on Wednesday, look again at any official notice, Wednesday's level and the river"));
 });
 
 test('the spot and the backup each get their own list; no backup, only the spot', () => {

@@ -25,7 +25,9 @@ const Organisers = (() => {
   // "Follow it first" only for a notice that restricts swimming (eatoday.js, eaTodayFirst); an older eatoday.js, read it.
   const first = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayFirst
     : typeof eaTodayFirst === 'function' ? eaTodayFirst : () => 'Read the official notice first';
-  const official = s => { const o = brief(s); return o ? `<p class="o-tag"><b>Official advice:</b> ${esc(o)}. Not part of the level below; ${first(s).toLowerCase()}.</p>` : ''; };
+  const label = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayLabel
+    : typeof eaTodayLabel === 'function' ? eaTodayLabel : () => 'Official notice';   // "Official advice" only where it restricts swimming
+  const official = s => { const o = brief(s); return o ? `<p class="o-tag"><b>${label(s)}:</b> ${esc(o)}. Not part of the level below; ${first(s).toLowerCase()}.</p>` : ''; };
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
   const STALE_MIN = 8 * 60;              // the app's "Stale" notice waits as long (index.html, STALE_MIN)
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -160,7 +162,7 @@ const Organisers = (() => {
 
   // ------------------------------------------------------------------ alerts for the date
   // "Alert me about this date" (push/README.md, "Alerts for a date"): the push Worker tells this
-  // browser when the day's forecast first appears and again each time its level or official advice changes. Shown only
+  // browser when the day's forecast first appears and again each time its level or official notice changes. Shown only
   // where the site's alerts are on and the build says the Worker takes dates (spots.json's
   // push.dates, set by the repository variable DIPCAST_PUSH_DATES),
   // and only in a browser that has alerts on already: turning them on, and its consent, is the Saved
@@ -174,8 +176,8 @@ const Organisers = (() => {
   // What the control says: sub, whether this browser has alerts on; list, the dates it has asked for.
   function dateAlert(sub, list, spot, iso, from) { return '<h3 id="alert-h">Alerts for this date</h3>' + dateAlertBody(sub, list, spot, iso, from); }
   function dateAlertBody(sub, list, spot, iso, from) {
-    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level or official advice changes.`
-      : 'A notification each time this day\'s level or official advice changes.';
+    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level or official notice changes.`
+      : 'A notification each time this day\'s level or official notice changes.';
     if (!sub) return '<p class="small">First turn on alerts in this browser, from the <a href="saved/">Saved page</a>.</p>';
     if (hasDate(list, spot, iso)) return `<p class="ev-say"><b>Alerts are on for this date.</b> ${what}</p>`
       + '<p class="actions"><button type="button" class="btn" id="date-alert-btn" data-on="1">Stop alerts for this date</button></p>';

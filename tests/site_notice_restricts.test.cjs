@@ -41,9 +41,15 @@ test('only a notice marked restricts: true restricts; false, missing or none do 
 });
 
 test('every notice still shows: the compact tag and the spot page\'s block, restricting or not', () => {
-  for (const s of [restricting(), neutral(), legacy()]) {
+  for (const [s, label, ask] of [[restricting(), 'Official advice', 'Follow this advice first'], [neutral(), 'Official notice', 'Read this notice first'],
+    [legacy(), 'Official notice', 'Read this notice first']]) {
     assert.ok(ea.eaTodayBrief(s), s.name);
-    assert.match(ea.eaTodayOfficial(s), /<h2 id="official-h">Official advice<\/h2>/);
+    // "Advice" and "follow" only for a restricting notice; the notice's own line either way.
+    assert.ok(ea.eaTodayOfficial(s).includes(`<h2 id="official-h">${label}</h2>`), s.name);
+    assert.ok(ea.eaTodayOfficial(s).includes(`<p class="o-sep">${ask}. It is not SwimSignal's`), s.name);
+    assert.ok(ea.eaTodayOfficial(s).includes(`<p class="o-line">${s.official[0].line}</p>`), s.name);
+    assert.equal(ea.eaTodayLabel(s), label);
+    assert.match(ea.eaTodayApart(s), label === 'Official advice' ? /The official advice above is separate/ : /The official notice above is separate/);
     assert.equal(ea.eaTodayAdvice(s).length, 1);
   }
 });
@@ -133,11 +139,50 @@ test('the sites view, the organisers\' page, the record and the comparison: "fol
   const Rec = require('../src/dipcast/site/record.js'), X = require('../src/dipcast/site/experience.js');
   const DATA = { generated_at: '2026-10-28T08:00:00Z', spots: [] }, NOW = Date.parse('2026-10-28T08:30:00Z');
   const tail = "; the level is SwimSignal's sewage forecast only.</p>";
-  for (const [s, word] of [[restricting(), 'Follow it first'], [neutral(), 'Read the official notice first'], [legacy(), 'Read the official notice first']]) {
+  for (const [s, word, label] of [[restricting(), 'Follow it first', 'Official advice'], [neutral(), 'Read the official notice first', 'Official notice'],
+    [legacy(), 'Read the official notice first', 'Official notice']]) {
     const b = ea.eaTodayBrief(s);
     assert.ok(S.row(s).includes(`<p class="o-tag">Official: ${b}. ${word}${tail}`), s.name);
-    assert.ok(Org.forecast(s, DATES[1], DATA, NOW).includes(`<p class="o-tag"><b>Official advice:</b> ${b}. Not part of the level below; ${word.toLowerCase()}.</p>`), s.name);
-    assert.ok(Rec.view(s, DATES[1], DATA, null, 'https://swimsignal.co.uk/', NOW).includes(`. Not part of the level below; ${word.toLowerCase()}.`), s.name);
+    assert.ok(Org.forecast(s, DATES[1], DATA, NOW).includes(`<p class="o-tag"><b>${label}:</b> ${b}. Not part of the level below; ${word.toLowerCase()}.</p>`), s.name);
+    assert.ok(Rec.view(s, DATES[1], DATA, null, 'https://swimsignal.co.uk/', NOW).includes(`<b>${label}:</b> ${b}. Not part of the level below; ${word.toLowerCase()}.`), s.name);
     assert.ok(X.compareAdvice(s).startsWith(`Official: ${b}. ${word}.`), s.name);
   }
+});
+
+test('Saved and the outing\'s notes: a reviewer reclassifying the same notice is a change; a note without the field is not', () => {
+  const S = require('../src/dipcast/site/since.js');
+  const note = (restricts, extra = {}) => ({ id: 'n', level: 'low', discharging: 0, rating: null, gap: false,
+    forecast: '2026-10-28T07:00:00Z', at: Date.parse('2026-10-28T07:05:00Z'),
+    official: { key: `City of London|${STATUS.line}|${STATUS.since}`, brief: 'City of London swimming status notice', publisher: 'City of London',
+      ...(restricts === undefined ? {} : { restricts }) }, ...extra });
+  const later = { forecast: '2026-10-28T15:00:00Z', at: Date.parse('2026-10-28T15:05:00Z') };
+  // Same notice, reclassified either way: "other", and the line names the new class in its own words.
+  assert.equal(S.officialChange(note(false), note(true)), 'other');
+  assert.equal(S.officialChange(note(true), note(false)), 'other');
+  assert.match(S.sinceLine(note(false), note(true, later)), /^Official advice changed since you looked .*; now: City of London swimming status notice\. Follow it first\.$/);
+  assert.match(S.sinceLine(note(true), note(false, later)), /^Official notice changed since you looked .*; now: City of London swimming status notice\. Read it first\.$/);
+  // Unchanged class, or a legacy note on either side: no change made up.
+  assert.equal(S.officialChange(note(true), note(true)), '');
+  assert.equal(S.officialChange(note(false), note(false)), '');
+  assert.equal(S.officialChange(note(undefined), note(true)), '');
+  assert.equal(S.officialChange(note(true), note(undefined)), '');
+  assert.equal(S.sinceLine(note(undefined), note(true, later)), '');
+  // The stored note keeps the class, and a note with a non-boolean class is not read.
+  assert.equal(S.seenOfficial(restricting()).restricts, true);
+  assert.equal(S.seenOfficial(neutral()).restricts, false);
+  assert.equal(S.readSeen(JSON.stringify([note('yes')])).size, 0);
+  assert.equal(S.readSeen(JSON.stringify([note(false)])).size, 1);
+});
+
+test('the outing\'s watch: a reclassified notice says what changed, not the same words twice', () => {
+  const W = require('../src/dipcast/site/outingwatch.js');
+  const rec = (s, forecast, at) => W.outingWatchRecord(s, DATES[1], forecast, at);
+  const was = rec(neutral(), '2026-10-28T07:00:00Z', Date.parse('2026-10-28T07:05:00Z'));
+  const s2 = neutral(); s2.official = [{ ...STATUS, restricts: true }];
+  const now = rec(s2, '2026-10-28T15:00:00Z', Date.parse('2026-10-28T15:05:00Z'));
+  const r = W.outingWatchLines(was, now);
+  assert.match(r.lines[0], /^Official advice: City of London swimming status notice .*\. Follow it first\. Changed: it was shown as an official notice to read then\.$/);
+  // Back the other way.
+  const back = W.outingWatchLines(now, rec(neutral(), '2026-10-28T20:00:00Z', Date.parse('2026-10-28T20:05:00Z')));
+  assert.match(back.lines[0], /^Official notice: .*\. Read it first\. Changed: it was shown as official advice to follow then\.$/);
 });

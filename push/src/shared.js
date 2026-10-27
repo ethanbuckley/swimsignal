@@ -47,7 +47,7 @@ const officialBrief = (spot) => (isObject(spot) && typeof spot.official === 'str
 // or a check going stale is not news, while a notice appearing, lifting or changing is. '' without one.
 export const noticeKey = (spot) => officialBrief(spot).split(' · ').filter((p) => !/^(checked|not re-checked since) /.test(p)).join(' · ');
 export const officialWords = (spot) => (officialBrief(spot)
-  ? `Official: ${officialBrief(spot)}. Follow it first; the level is SwimSignal's sewage forecast only.` : '');
+  ? `Official: ${officialBrief(spot)}. ${spot.official_restricts === true ? 'Follow it first' : 'Read the official notice first'}; the level is SwimSignal's sewage forecast only.` : '');   // alerts.json official_restricts (scripts/alerts.js)
 // The short marker that goes in front of an advised spot's name wherever a text may be cut short, so a
 // cut never leaves a bare level: "Official notice shown", or, when eaTodayBrief says the check is old or
 // failed (stale, unverified, gone, changed), "Official notice, not re-checked since 19 Oct". '' without.

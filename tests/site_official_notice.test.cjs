@@ -16,10 +16,10 @@ const O = require('../src/dipcast/site/outing.js');
 const SITE = join(__dirname, '../src/dipcast/site');
 const PAGE = fs.readFileSync(join(SITE, 'index.html'), 'utf8');
 const AGAINST = { line: 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026', publisher: 'Environment Agency',
-  link: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945', since: '2026-06-19', checked: '2026-10-26', state: 'checked' };
+  link: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945', since: '2026-06-19', checked: '2026-10-26', state: 'checked', restricts: true };
 // A notice that is not advice against swimming: a fixture only, in the shape a page notice may take.
 const NEUTRAL = { line: 'City of London: swimming status notice (members only this week) since 20 Oct 2026', publisher: 'City of London',
-  link: 'https://www.cityoflondon.gov.uk/', since: '2026-10-20', checked: '2026-10-26', state: 'checked' };
+  link: 'https://www.cityoflondon.gov.uk/', since: '2026-10-20', checked: '2026-10-26', state: 'checked', restricts: false };
 const BRIEF = 'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct';
 const NEUTRAL_BRIEF = 'City of London swimming status notice (members only this week) · since 20 Oct · checked 26 Oct';
 L.setToday('2026-10-27');
@@ -83,7 +83,7 @@ test('the share picture says the notice in the server card\'s words, and nothing
   const say = vm.runInContext('shareNotice', ctx);
   // The same sentence as cards.py official_words (tests/test_cards.py, test_spot_share_card_carries_official_advice).
   assert.equal(say({ official: [AGAINST] }), `Official: ${BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.`);
-  assert.equal(say({ official: [NEUTRAL] }), `Official: ${NEUTRAL_BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.`);
+  assert.equal(say({ official: [NEUTRAL] }), `Official: ${NEUTRAL_BRIEF}. Read the official notice first; the level is SwimSignal's sewage forecast only.`);
   assert.equal(say({ official: [] }), '');
   assert.equal(say({}), '');
   // It is drawn under the name, before the level.

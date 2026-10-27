@@ -34,7 +34,7 @@ function pageContext(withAdvice = true) {
   vm.runInContext(fs.readFileSync(join(SITE, 'experience.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(join(SITE, 'levels.js'), 'utf8') + `\nsetToday("${DATES[0]}");`, ctx);
   if (withAdvice) vm.runInContext(fs.readFileSync(join(SITE, 'eatoday.js'), 'utf8'), ctx);
-  vm.runInContext(pageDefs(['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'overview',
+  vm.runInContext(pageDefs(['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'noticeVerb', 'overview',
     'listRank', 'listAdvised', 'riskOrder', 'riskFirstNote']), ctx);
   return ctx;
 }

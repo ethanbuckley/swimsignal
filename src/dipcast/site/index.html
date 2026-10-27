@@ -2463,7 +2463,7 @@ function wrapText(g, text, x, y, maxW, lh) {
 function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
 // The share picture's notice line: '' without one.
 const shareNotice = d => { const o = typeof eaTodayBrief === 'function' ? eaTodayBrief(d) : '';
-  return o ? `Official: ${o}. Follow it first; the level is SwimSignal's sewage forecast only.` : ''; };
+  return o ? `Official: ${o}. ${typeof eaTodayFirst === 'function' ? eaTodayFirst(d) : 'Read the official notice first'}; the level is SwimSignal's sewage forecast only.` : ''; };
 async function shareImage(d) {
   const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d'), F = '"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif', FD = '"Source Serif 4", Georgia, serif';
@@ -2743,7 +2743,9 @@ const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
 const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
 // The low spots with official advice (eatoday.js): still shown, as their level is low, but said here and on their rows.
 const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
-const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: follow it first.` : ''; };
+// "Follow" only where every one counted restricts swimming (eatoday.js, eaTodayRestricts); else "read".
+const noticeVerb = spots => typeof eaTodayRestricts === 'function' && spots.every(s => eaTodayRestricts(s)) ? 'follow it first' : 'read it first';
+const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length))}.` : ''; };
 const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
 // A spot with an official notice (eatoday.js) keeps its level's colour, ringed in the notice's amber: a cue
 // to open the spot and read the notice, not a level or a safety score. The map shows it before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
@@ -2920,7 +2922,7 @@ function overview(spots) {
   return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''} · ${none} without a level`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
-    + (advised ? ` ${advised} with an official notice: follow it first.` : '');
+    + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);

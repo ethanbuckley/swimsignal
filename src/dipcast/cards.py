@@ -131,11 +131,22 @@ def _short_day(iso) -> str:
     return f"{int(m[3])} {MONTHS[int(m[2]) - 1]}" if m and 1 <= int(m[2]) <= 12 else ""
 
 
+def _shown_items(spot: dict) -> list[dict]:
+    """The notices a page shows (eatoday.js eaTodayAdvice): a line, a publisher, a known state and a real day."""
+    return [o for o in (spot.get("official") or []) if isinstance(o, dict) and isinstance(o.get("line"), str) and o["line"]
+            and isinstance(o.get("publisher"), str) and o["publisher"] and o.get("state") in OFFICIAL_STATES
+            and _short_day(o.get("checked"))]
+
+
+def official_restricts(spot: dict) -> bool:
+    """Whether a shown notice is marked as restricting swimming (restricts true, set by its reviewer), as
+    eatoday.js eaTodayRestricts: only an explicit true; a notice without the field restricts nothing."""
+    return any(o.get("restricts") is True for o in _shown_items(spot))
+
+
 def official_brief(spot: dict) -> str:
     """'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct', or '' without advice."""
-    items = [o for o in (spot.get("official") or []) if isinstance(o, dict) and isinstance(o.get("line"), str) and o["line"]
-             and isinstance(o.get("publisher"), str) and o["publisher"] and o.get("state") in OFFICIAL_STATES
-             and _short_day(o.get("checked"))]
+    items = _shown_items(spot)
     if not items:
         return ""
     o = items[0]
@@ -148,9 +159,11 @@ def official_brief(spot: dict) -> str:
     return " · ".join(p for p in parts if p)
 
 
-def official_words(brief: str) -> str:
-    """The advice as a card or caption says it, apart from the level."""
-    return f"Official: {brief}. Follow it first; the level is SwimSignal's sewage forecast only."
+def official_words(brief: str, restricts: bool) -> str:
+    """The notice as a card or caption says it, apart from the level: "Follow it first" only where it restricts
+    swimming (official_restricts), else "Read the official notice first", as eatoday.js eaTodayFirst."""
+    ask = "Follow it first" if restricts else "Read the official notice first"
+    return f"Official: {brief}. {ask}; the level is SwimSignal's sewage forecast only."
 
 
 def and_list(words: list[str]) -> str:
@@ -221,6 +234,7 @@ class Row:
     cells: list[str | None]   # a level on each day, or None for no forecast that day
     poor: bool = False        # rated poor: at least high on every day, whatever the forecast
     official: str = ""        # official_brief: advice beside the level, never in it
+    official_restricts: bool = False   # official_restricts: "Follow" rather than "Read" beside it
 
 
 @dataclass
@@ -230,17 +244,20 @@ class WeekendCard:
     rows: list[Row]
     plain: list[tuple[str, str, list[str]]] = field(default_factory=list)   # (headline, level, names)
     missing: list[str] = field(default_factory=list)                        # ids not in the forecast
-    plain_official: list[tuple[str, str]] = field(default_factory=list)     # (name, official_brief) in the plain lines
+    plain_official: list[tuple[str, str, bool]] = field(default_factory=list)   # (name, official_brief, restricts) in the plain lines
 
     @property
     def ids(self) -> list[str]:
         return [sid for sid, _ in self.area.spots if sid not in self.missing]
 
 
-def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: dict[str, str] | None = None) -> WeekendCard | None:
+def weekend_card(area: Area, levels: dict[str, dict], days: list[str],
+                 advice: dict[str, str | tuple[str, bool]] | None = None) -> WeekendCard | None:
     """An area's card for two days, or None when none of its spots is in the forecast. A spot whose
     level is one of the four goes in a row; one with a plain level ("No monitored overflow found upstream")
-    goes in a line under the table, in the page's words."""
+    goes in a line under the table, in the page's words. advice: {id: (official_brief, official_restricts)};
+    a bare brief reads as not restricting."""
+    pairs = {k: v if isinstance(v, tuple) else (v, False) for k, v in (advice or {}).items()}
     card = WeekendCard(area, days, [])
     plain: dict[str, tuple[str, list[str]]] = {}
     for sid, label in area.spots:
@@ -259,10 +276,10 @@ def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: d
         card.rows.append(Row(sid, label, cells, poor=any(x and "rated poor" in x[1] for x in got)))
     card.plain = [(h, lv, names) for h, (lv, names) in plain.items()]
     for r in card.rows:
-        r.official = (advice or {}).get(r.id, "")
+        r.official, r.official_restricts = pairs.get(r.id, ("", False))
     # A spot in a plain line ("No monitored overflow found upstream") with advice: said under it, by name.
-    card.plain_official = [(label, (advice or {})[sid]) for sid, label in area.spots
-                           if (advice or {}).get(sid) and sid in levels and not any(r.id == sid for r in card.rows)]
+    card.plain_official = [(label, *pairs[sid]) for sid, label in area.spots
+                           if pairs.get(sid, ("",))[0] and sid in levels and not any(r.id == sid for r in card.rows)]
     if not card.rows and not card.plain:
         return None
     return card
@@ -333,11 +350,11 @@ def weekend_caption(card: WeekendCard, generated_at: str, root: str) -> str:
         else:
             lines.append(f"{r.label}: " + ", ".join(f"{cell_words(c)} on {n}" for c, n in zip(r.cells, names)) + ".")
         if r.official:
-            lines[-1] += " " + official_words(r.official)
+            lines[-1] += " " + official_words(r.official, r.official_restricts)
     for headline, _, who in card.plain:
         lines.append(f"{and_list(who)}: {headline[:1].lower() + headline[1:]}.")
-    for label, o in card.plain_official:
-        lines.append(f"{label}: {official_words(o)}")
+    for label, o, restricts in card.plain_official:
+        lines.append(f"{label}: {official_words(o, restricts)}")
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         lines += ["", poor_words(poor)]
@@ -521,13 +538,14 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
         notes.append((None, MUTED, poor_words(poor)))
     # Official advice, in ink: the level is the sewage forecast alone. In full, or, where that does not fit,
     # one line naming every spot with a notice (the caption has each in full); never left out.
-    advised = [(label, o) for label, o in [(r.label, r.official) for r in card.rows] + card.plain_official if o]
+    advised = [(label, o, rs) for label, o, rs in [(r.label, r.official, r.official_restricts) for r in card.rows] + card.plain_official if o]
     text_h = [len(wrap(draw, r.label, name_f, name_w)) * lh(name_f) for r in card.rows]
     for short in (False, True) if advised else (False,):
-        said = ([(None, INK, f"{and_list([a for a, _ in advised])}: "
+        follow = all(rs for _, _, rs in advised)   # "Follow" only where every one restricts swimming, else "Read"
+        said = ([(None, INK, f"{and_list([a for a, _, _ in advised])}: "
                   f"{'an official notice' if len(advised) == 1 else 'official notices'}, in full in the caption. "
-                  f"Follow {'it' if len(advised) == 1 else 'them'} first; the levels are SwimSignal's sewage forecast only.")] if short
-                else [(None, INK, f"{label}: {official_words(o)}") for label, o in advised])
+                  f"{'Follow' if follow else 'Read'} {'it' if len(advised) == 1 else 'them'} first; the levels are SwimSignal's sewage forecast only.")] if short
+                else [(None, INK, f"{label}: {official_words(o, rs)}") for label, o, rs in advised])
         note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes + said)
         room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes + said else 0) - sum(text_h)
         pad = min(st.pad, room // (2 * len(card.rows))) if card.rows else st.pad   # closer rows before none
@@ -704,7 +722,7 @@ def write_spot_cards(out: Path, spots: list[dict], alerts: dict | None, generate
             o = official_brief(s)
             draw_spot(s["name"], spot_where(s), a.get("level"), a.get("headline") or "", generated_at, o).save(
                 out / f"{s['id']}.png", "PNG", optimize=True)
-            made[s["id"]] = f"{s['name']}: {official_words(o) + ' ' if o else ''}{a.get('headline')}. {issued(generated_at)}."
+            made[s["id"]] = f"{s['name']}: {official_words(o, official_restricts(s)) + ' ' if o else ''}{a.get('headline')}. {issued(generated_at)}."
         except Exception as e:  # noqa: BLE001 - one card must not stop the others, or the site
             log.warning("share card for %s not made: %s", s["id"], e)
     return made
@@ -782,7 +800,7 @@ def write_cards(out: Path, spots: list[dict], alerts: dict | None, generated_at:
     else:
         for area in areas:
             try:
-                card = weekend_card(area, levels, days, {s["id"]: official_brief(s) for s in spots})
+                card = weekend_card(area, levels, days, {s["id"]: (official_brief(s), official_restricts(s)) for s in spots})
                 if card is None:
                     warnings.append(f"card {area.slug}: none of its spots is in the forecast")
                     continue

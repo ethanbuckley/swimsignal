@@ -72,7 +72,7 @@ function pageContext(names, extra = {}, withAdvice = true) {
   vm.runInContext(pageDefs(names), ctx);
   return ctx;
 }
-const BASE = ['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'markerTip', 'overview'];
+const BASE = ['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'markerTip', 'noticeVerb', 'overview'];
 const EXTRA = { DATA: { generated_at: '2026-10-26T20:00:00Z', spots: [] } };
 
 test('the map tooltip: the advice first, then the level on a line of its own; none without advice', () => {

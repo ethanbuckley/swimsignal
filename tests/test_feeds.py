@@ -156,7 +156,7 @@ def test_an_entry_carries_reviewed_official_advice_beside_the_level(tmp_path):
     site = _site(tmp_path, bs)
     official = [{"line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
                  "publisher": "Environment Agency", "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901",
-                 "since": "2026-06-19", "checked": "2026-10-26", "state": "checked"}]
+                 "since": "2026-06-19", "checked": "2026-10-26", "state": "checked", "restricts": True}]
     results = [{**r, "official": official} if r["id"] == "wharfe-ilkley" else r for r in RESULTS]
     bs.write_feeds(site, results, SITE)
     brief = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
@@ -167,3 +167,20 @@ def test_an_entry_carries_reviewed_official_advice_beside_the_level(tmp_path):
     ww = _valid(site / "spot" / "warleigh-weir" / "feed.xml").entries[0]
     assert ww.title == "Warleigh Weir · High risk right now: recent sewage spills"
     assert json.loads((site / "data" / "alerts.json").read_text()) == _alerts(bs)
+
+
+def test_a_notice_not_marked_restricting_is_read_not_followed_in_a_feed(tmp_path):
+    """Only a notice its reviewer marked restricts: true says "Follow it first" in a feed (28 Oct 2026); one marked
+    false says "Read the official notice first". The title and the level are as for any notice."""
+    bs = _build_site()
+    site = _site(tmp_path, bs)
+    official = [{"line": "City of London: swimming status notice (members only this week) since 20 Oct 2026",
+                 "publisher": "City of London", "link": "https://www.cityoflondon.gov.uk/",
+                 "since": "2026-10-20", "checked": "2026-10-26", "state": "checked", "restricts": False}]
+    results = [{**r, "official": official} if r["id"] == "wharfe-ilkley" else r for r in RESULTS]
+    bs.write_feeds(site, results, SITE)
+    e = _valid(site / "spot" / "wharfe-ilkley" / "feed.xml").entries[0]
+    assert e.title.startswith('Wharfe at "Cromwheel" & Ilkley · Official: City of London swimming status notice')
+    assert ". Read the official notice first; the level is SwimSignal's sewage forecast only. Low risk" in e.summary
+    assert "Follow" not in e.summary
+    assert e.tags[0].term == "low"

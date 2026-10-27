@@ -2409,7 +2409,8 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
         add(e, "category", term=s["level"])
         said = f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"]
         if s.get("official") and s["official"] not in said:   # alerts.json's action gives it already (scripts/alerts.js)
-            said = f"Official: {s['official']}. Follow it first; the level is {BRAND}'s sewage forecast only. {said}"
+            ask = "Follow it first" if s.get("official_restricts") is True else "Read the official notice first"   # as eatoday.js eaTodayFirst
+            said = f"Official: {s['official']}. {ask}; the level is {BRAND}'s sewage forecast only. {said}"
         add(e, "summary", said)
     ET.indent(feed)
     return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
@@ -2427,9 +2428,11 @@ def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
     except (OSError, ValueError):
         return None
     generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
-    from dipcast.cards import official_brief
+    from dipcast.cards import official_brief, official_restricts
     advice = {r["id"]: official_brief(r) for r in results}
-    spots = [{"id": sid, **a, **({"official": advice[sid]} if advice.get(sid) else {})} for sid, a in alerts["spots"].items()]
+    restricts = {r["id"]: official_restricts(r) for r in results}
+    spots = [{"id": sid, **a, **({"official": advice[sid], "official_restricts": restricts[sid]} if advice.get(sid) else {})}
+             for sid, a in alerts["spots"].items()]
     area_of = {r["id"]: r.get("area") for r in results}
     (site / "feed.xml").write_text(atom_feed(
         f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "
