@@ -637,6 +637,10 @@
   tr:last-child td { border-bottom:0; }
   th { color:var(--muted); font-weight:600; font-size:var(--fs-meta); }
   td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  /* Past spills upstream by month (seasonal.js): a thin bar before the share, decorative; the number carries it. */
+  table.seasonal th[scope=row] { color:var(--ink); font-weight:400; font-size:inherit; }
+  .s-bar { display:inline-block; width:56px; height:6px; margin-right:8px; vertical-align:middle; background:var(--line); }
+  .s-bar > span { display:block; height:100%; background:var(--muted); }
   /* A level in a table, a log or the key: the word in its level's text colour, never a filled label. */
   .badge { font-weight:700; white-space:nowrap; color:var(--k-na); }
   .b-low { color:var(--k-low); } .b-moderate { color:var(--k-moderate); } .b-high { color:var(--k-high); } .b-veryhigh { color:var(--k-veryhigh); } .b-na { color:var(--k-na); }
@@ -1268,6 +1272,7 @@
 <script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
 <script src="measured.js"></script>   <!-- lab results an organisation sent (samples/): uses evidence.js's ages -->
 <script src="spotscores.js"></script>   <!-- how the forecast has done here: the live scores of the spot's upstream overflows -->
+<script src="seasonal.js"></script>   <!-- past spills upstream by month: history, not a forecast -->
 <script src="eatoday.js"></script>   <!-- today's EA advice: the EA's own panel, loaded when its fold is opened -->
 <script src="visits.js"></script>   <!-- quick notes on a visit: uses reviews.js, so after it -->
 <script src="illness.js"></script>   <!-- reports of illness after a swim, as counts: uses reviews.js too -->
@@ -4315,7 +4320,8 @@ function render(d) {
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
-    + (typeof scoresHost === 'function' ? scoresHost(d) : '');   // how the forecast has done here (spotscores.js), filled when its file arrives
+    + (typeof scoresHost === 'function' ? scoresHost(d) : '')   // how the forecast has done here (spotscores.js), filled when its file arrives
+    + (typeof seasonalTile === 'function' ? seasonalTile(d) : '');   // past spills upstream by month (seasonal.js): history, folded
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
