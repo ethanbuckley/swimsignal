@@ -463,6 +463,59 @@ def test_open_meteo_without_fetch_never_asks(tmp_path):
     assert seen == [] and json.loads("[]") == []
 
 
+# ---- network errors are retried with backoff, then the run stops ---------------------------------------------------
+def flaky(inner: httpx.MockTransport, failures: int, exc=httpx.ConnectError):
+    state = {"n": 0}
+
+    def h(req: httpx.Request) -> httpx.Response:
+        state["n"] += 1
+        if state["n"] <= failures:
+            raise exc("[Errno 8] nodename nor servname provided, or not known", request=req)
+        return inner.handle_request(req)
+    return httpx.MockTransport(h), state
+
+
+def test_open_meteo_retries_a_network_error_twice_then_answers(tmp_path):
+    t, state = flaky(om_transport(), failures=2)
+    slept = []
+    c = wf.OMClient(tmp_path, fetch=True, transport=t, sleep=slept.append, others=lambda: [])
+    wf.fetch_open_meteo(c, {"seasons": {"2020": ["51.000_-1.000"]}})
+    assert state["n"] == 3 and slept[:2] == [30.0, 120.0]
+    status = [ln.split("\t")[1] for ln in c.log.path.read_text().splitlines()]
+    assert status == ["RETRY1:ConnectError", "RETRY2:ConnectError", "200"]
+    assert c.spent() == pytest.approx(wp.om_weight(1))         # retries weigh nothing
+    assert len(list(tmp_path.glob("2020_*.json"))) == 1
+
+
+@pytest.mark.parametrize("exc", [httpx.ConnectError, httpx.ReadTimeout, httpx.ConnectTimeout])
+def test_open_meteo_stops_after_the_last_backoff(tmp_path, exc):
+    t, state = flaky(om_transport(), failures=10, exc=exc)
+    slept = []
+    c = wf.OMClient(tmp_path, fetch=True, transport=t, sleep=slept.append, others=lambda: [])
+    with pytest.raises(wf.Stop, match="after 4 attempts"):
+        wf.fetch_open_meteo(c, {"seasons": {"2020": ["51.000_-1.000"]}})
+    assert state["n"] == 4 and slept == [30.0, 120.0, 300.0]
+    assert c.log.path.read_text().splitlines()[-1].split("\t")[1] == "ERR"
+
+
+def test_an_answer_is_never_retried(tmp_path):
+    seen = []
+    c = wf.OMClient(tmp_path, fetch=True, transport=om_transport(status=503, seen=seen), sleep=lambda s: None,
+                    others=lambda: [])
+    with pytest.raises(wf.Stop, match="503"):
+        wf.fetch_open_meteo(c, {"seasons": {"2020": ["51.000_-1.000"]}})
+    assert len(seen) == 1
+
+
+def test_ea_retries_a_network_error_and_counts_every_attempt(tmp_path):
+    t, state = flaky(ea_transport(1), failures=2)
+    slept = []
+    c = wf.EAClient(tmp_path, fetch=True, transport=t, sleep=slept.append)
+    assert wf.fetch_ea(c, ranges=[("2020-06-01", "2020-07-01")])["pages"] == 2
+    assert state["n"] == 4 and 30.0 in slept and 120.0 in slept
+    assert c.n == 4                                            # attempts count against the request cap
+
+
 # ---- amendment 2: HadUK training, the bridge, the narrowed Open-Meteo plan -----------------------------------------
 def test_amendment_2_seasons():
     assert wp.TRAIN_YEARS[0] == 2000 and wp.TRAIN_YEARS[-1] == 2022 and len(wp.TRAIN_YEARS) == 23

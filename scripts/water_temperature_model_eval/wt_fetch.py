@@ -56,6 +56,30 @@ class Stop(SystemExit):
     pass
 
 
+# A network error (no answer at all: connection refused or dropped, DNS, TLS, a timeout) is tried again after these
+# waits, then the run stops. Approved by Ethan on 27 Oct after this Mac's connection dropped in short bursts (stops at
+# 17:04 and 17:50 UTC). An answer of any status is never retried: the stop rules on statuses are unchanged.
+NET_BACKOFF_S = (30.0, 120.0, 300.0)
+
+
+def send_with_retries(send, log: "Log", url: str, sleep, backoff=NET_BACKOFF_S):
+    """send() until it returns a response; after a network error, wait the next backoff and try again, logging each
+    retry (weight 0). Returns (response, attempts). After the last wait's attempt fails too: Stop."""
+    for i in range(len(backoff) + 1):
+        try:
+            return send(), i + 1
+        except httpx.TransportError as e:
+            if i == len(backoff):
+                log.add("ERR", 0, 0, url)
+                raise Stop(f"{url}: {type(e).__name__} after {i + 1} attempts: stopping") from e
+            log.add(f"RETRY{i + 1}:{type(e).__name__}", 0, 0, url)
+            sleep(backoff[i])
+        except httpx.HTTPError as e:            # anything else httpx raises: stop at once, as before
+            log.add("ERR", 0, 0, url)
+            raise Stop(f"{url}: {type(e).__name__}: stopping") from e
+    raise AssertionError("unreachable")
+
+
 def _now() -> datetime:
     return datetime.now(UTC)
 
@@ -112,16 +136,16 @@ class EAClient:
         wait = EA_PAUSE_S - (time.monotonic() - self._last)
         if self._last and wait > 0:
             self.sleep(wait)
-        self.n += 1
         try:
             # The multi-point endpoint is POST only (the OpenAPI document lists `post /data/observation`; a GET
             # answered 405 on 27 Oct). The filters go in the query string and the body is empty, as there.
-            r = self.http.post(url, content=b"")
-        except httpx.HTTPError as e:
-            self.log.add("ERR", 0, 0, url)
-            raise Stop(f"{url}: {type(e).__name__}: stopping") from e
+            r, tries = send_with_retries(lambda: self.http.post(url, content=b""), self.log, url, self.sleep)
+        except Stop:
+            self.n += len(NET_BACKOFF_S) + 1
+            raise
         finally:
             self._last = time.monotonic()
+        self.n += tries
         self.bytes += len(r.content)
         self.log.add(str(r.status_code), len(r.content), 0, url)
         if r.status_code in (403, 429) or r.status_code >= 500 or 300 <= r.status_code < 400:
@@ -275,10 +299,7 @@ class OMClient:
         if u.scheme != "https" or u.hostname != OM_HOST:
             raise Stop(f"refused: {url}")
         try:
-            r = self.http.get(url)
-        except httpx.HTTPError as e:
-            self.log.add("ERR", 0, 0, url)
-            raise Stop(f"Open-Meteo: {type(e).__name__}: stopping") from e
+            r, _ = send_with_retries(lambda: self.http.get(url), self.log, url, self.sleep)
         finally:
             self._last = time.monotonic()
         # Counted by Open-Meteo whatever the status once it answers; logged at the request's weight.
