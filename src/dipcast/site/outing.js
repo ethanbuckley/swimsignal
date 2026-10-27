@@ -172,7 +172,7 @@ const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>
 const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">${role}</p>`
   + `<h3 class="outing-nm"><a href="${outEsc(c.href)}" data-id="${outEsc(c.id)}">${outEsc(c.name)}</a></h3>`
   + (c.meta ? `<p class="k">${outEsc(c.meta)}</p>` : '')
-  + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.official || '') + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + '</div>';
+  + (c.official || '') + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + '</div>';
 // The whole tile. o = { day, when, spot, backup, groups (outingOptions for the spot), backupGroups,
 // main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
 // site's alerts for a date are on, so the outing can be sent if asked) }.

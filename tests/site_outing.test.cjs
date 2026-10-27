@@ -179,9 +179,9 @@ test('storage keys: the code, the doc and the privacy notice agree', () => {
   assert.match(privacy, /"I have read version …" keeps a note in your browser's local storage/);
 });
 
-test('official advice: whatever eatoday.js\'s compact line gives, under the level, before the reasons', () => {
+test('official advice: whatever eatoday.js\'s compact line gives, above the level and the reasons', () => {
   assert.equal(O.outingOfficial({id: 'a', official: [{text: 'not what the build writes'}]}), '');   // eatoday.js drops odd items
   const h = O.outingSection({day: '2026-11-01', when: undefined, spot: 'a', groups: [], backupGroups: [], missing: [], issued: 'x', open: true,
     main: {id: 'a', name: 'A', href: 'spot/a/', tone: 'low', headline: 'Low risk', official: '<p class="o-mark">MARK</p>', why: 'Why.', ev: ''}, alt: null});
-  assert.match(h, /Low risk<\/p><p class="o-mark">MARK<\/p><p class="why">/);
+  assert.match(h, /<p class="o-mark">MARK<\/p><p class="hl low">Low risk<\/p><p class="why">/);
 });

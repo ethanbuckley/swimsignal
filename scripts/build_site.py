@@ -2396,8 +2396,8 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
     for s in entries:
         e = add(feed, "entry")
         add(e, "id", f"tag:{host},{when.date().isoformat()}:spot/{s['id']}/{when.strftime('%Y%m%dT%H%M%SZ')}")
-        # Official advice (spots.json `official`, cards.official_brief) beside the level, never in it.
-        add(e, "title", f"{s['name']} · {s['headline']}" + (f" · Official: {s['official']}" if s.get("official") else ""))
+        # Official advice (spots.json `official`, cards.official_brief) before the level, never in it.
+        add(e, "title", f"{s['name']} · " + (f"Official: {s['official']} · " if s.get("official") else "") + s["headline"])
         add(e, "updated", stamp)
         add(e, "link", rel="alternate", type="text/html", href=s["url"])
         add(e, "category", term=s["level"])

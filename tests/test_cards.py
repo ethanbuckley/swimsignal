@@ -302,14 +302,14 @@ def test_official_brief_matches_the_site(items):
 
 
 def test_spot_share_card_carries_official_advice(tmp_path):
-    """A low spot with advice: the card's alt text and picture say the advice beside the level, which is
+    """A low spot with advice: the card's alt text and picture say the advice before the level, which is
     unchanged; a spot without advice is as before. The longest names still fit with the line."""
     spots = [{"id": "f", "name": "Frensham Great Pond", "kind": "lake", "official": [OFFICIAL]},
              {"id": "o", "name": "Other Pond", "kind": "lake"}]
     alerts = {"generated_at": GEN, "spots": {s["id"]: {"level": "low", "headline": "Low risk for the next five days"} for s in spots}}
     made = cards.write_spot_cards(tmp_path / "spot", spots, alerts, GEN)
-    assert made["f"] == (f"Frensham Great Pond: Low risk for the next five days. Official: {BRIEF}. Follow it first; "
-                         "the level is SwimSignal's sewage forecast only. Forecast issued Sun 11 Oct, 14:09.")
+    assert made["f"] == (f"Frensham Great Pond: Official: {BRIEF}. Follow it first; the level is SwimSignal's sewage "
+                         "forecast only. Low risk for the next five days. Forecast issued Sun 11 Oct, 14:09.")
     assert made["o"] == "Other Pond: Low risk for the next five days. Forecast issued Sun 11 Oct, 14:09."
     for name in ["River Wharfe, Bolton Abbey (Cavendish Pavilion)", "River Lathkill, Lathkill Dale, Over Haddon, Derbyshire Dales"]:
         for headline in HEADLINES:

@@ -126,7 +126,7 @@ const Sites = (() => {
     // The name is the row's h2, under the page's h1, so a screen reader can step from spot to spot; it looks as
     // it did (sites.html, .s-h).
     return `<li class="site"${DAY ? ` data-spot="${esc(s.id)}" data-day="${DAY}" data-level="${esc(w.lv)}"` : ''}><div class="s-place"><h2 class="s-h"><a class="s-name" href="${esc(spotHref(s.id))}">${esc(s.name)}</a></h2><span class="s-meta">${meta}</span></div>`
-      + `<div class="s-say"><p class="s-head ${w.tone}">${esc(w.head)}</p>${brief(s) ? `<p class="o-tag">Official: ${esc(brief(s))}. Follow it first; the level is SwimSignal's sewage forecast only.</p>` : ''}`
+      + `<div class="s-say">${brief(s) ? `<p class="o-tag">Official: ${esc(brief(s))}. Follow it first; the level is SwimSignal's sewage forecast only.</p>` : ''}<p class="s-head ${w.tone}">${esc(w.head)}</p>`
       + `${w.why ? `<p class="s-why">${esc(w.why)}</p>` : ''}`
       + `<p class="s-rec screen-only">Decision record: ${rec}</p></div>`
       + `<div class="s-week">${week(s)}</div></li>`;

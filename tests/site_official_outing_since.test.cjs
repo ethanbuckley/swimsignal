@@ -36,7 +36,7 @@ test('the real approved entry reads in the shared compact words', () => {
 });
 
 // ------------------------------------------------------------------------------ the outing
-test('each outing column shows the shared compact notice under its level, and only where there is one', () => {
+test('each outing column shows the shared compact notice above its level, and only where there is one', () => {
   assert.equal(O.outingOfficial(frensham([notice()])), E.eaTodayTag(frensham([notice()]), 'p'));   // the shared helper, as is
   assert.match(O.outingOfficial(frensham([notice()])), /^<p class="o-tag">.*checked 26 Oct<\/p>$/);
   assert.equal(O.outingOfficial(frensham([])), '');
@@ -45,8 +45,8 @@ test('each outing column shows the shared compact notice under its level, and on
   const col = (id, name, s) => ({id, name, href: `spot/${id}/`, tone: 'low', headline: 'Low risk', official: O.outingOfficial(s), why: '', ev: ''});
   const h = O.outingSection({day: '2026-10-27', when: 'morning', spot: 'bw-ukj2310-11945', backup: 'b', groups: [], backupGroups: [], missing: [], issued: 'x', open: true,
     main: col('bw-ukj2310-11945', 'Frensham Great Pond', frensham([notice()])), alt: col('b', 'Backup water', frensham([]))});
-  // The level stays the forecast's: the notice is a line of its own after it, in the spot's column only.
-  assert.match(h, /Frensham Great Pond.*<p class="hl low">Low risk<\/p><p class="o-tag">[^<]+<\/p>.*Backup water.*<p class="hl low">Low risk<\/p><\/div>/s);
+  // The level stays the forecast's: the notice is a line of its own before it, in the spot's column only.
+  assert.match(h, /Frensham Great Pond.*<p class="o-tag">[^<]+<\/p><p class="hl low">Low risk<\/p>.*Backup water.*<p class="hl low">Low risk<\/p><\/div>/s);
   assert.ok(h.includes(E.eaTodayTag(frensham([notice()]), 'p')));
   assert.equal((h.match(/o-tag/g) || []).length, 1);
 });
