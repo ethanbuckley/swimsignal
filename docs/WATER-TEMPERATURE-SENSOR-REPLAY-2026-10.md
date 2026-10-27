@@ -91,7 +91,7 @@ There are no pass or fail rules. Daily readings are correlated, and six sensors 
 
 ### Results
 
-One scoring run, 27 Oct 2026, 22:4x UTC, from the committed tool (`wt_sensor_replay.py score`, after b90d99f). It read only files on disk, and amendment 1's day rule applied. Full figures: `docs/WATER-TEMPERATURE-SENSOR-REPLAY-2026-10.json`. Observed values are London-day means of unchecked sonde readings. Errors are estimate − observed, in °C.
+One scoring run, 27 Oct 2026, finished 22:37:45 UTC, from the committed tool (`wt_sensor_replay.py score`, after b90d99f). It read only files on disk, and amendment 1's day rule applied. Full figures: `docs/WATER-TEMPERATURE-SENSOR-REPLAY-2026-10.json`. Observed values are London-day means of unchecked sonde readings. Errors are estimate − observed, in °C.
 
 **Part A: the deployed estimate, archived 2025 forecast air (held out by time only).**
 
