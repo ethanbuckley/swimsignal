@@ -74,6 +74,9 @@ test('a river spot with no sensor shows the estimate, said as an estimate, with 
   assert.equal(t.say, 'About 17&nbsp;°C (estimated, typically within 2&nbsp;°C).');
   assert.ok(!t.live);
   assert.match(t.more, /not a measurement/);
+  assert.match(t.more, /weather model's air temperature/);
+  assert.match(t.more, /today's forecast itself was not checked/);
+  assert.doesNotMatch(t.more, /air temperature here/);
   assert.match(t.more, /Not part of the pollution level\./);
   assert.match(t.more, /no estimate for lakes/);
   setToday(null);
