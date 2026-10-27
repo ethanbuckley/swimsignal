@@ -418,6 +418,35 @@ downstream). Lake points: 207 in or within 100 m of a WFD polygon, 70 on an OS l
 (cap 20,000), so **nothing is dropped**. Cells by season: 2018 1,327; 2019 1,541; 2020 64; 2021 1,431; 2022 1,253;
 2023 1,561; 2024 1,686; 2025 1,603. 91 cells hold only sea points. At 6,000 a UTC day this takes three UTC days.
 
+**Open-Meteo, first run** (14:26 to 14:46 UTC): 26 requests for the 2018 season, all HTTP 200, 849.6 weighted calls.
+It paused once at 14:27 on its own log watchers (the other-job check, fixed under the pace amendment) and was stopped
+twice by me between requests: once for the pace amendment, once for amendment 2. All 26 answers are cached and used.
+
+**After amendment 2.**
+
+*EA extension, 14:51 to 15:07 UTC, under the heavy-run lock:* 356 requests, all HTTP 200, 252.7 MB (caps: 700 more
+requests, 1.5 GB in all). The log now holds 477 requests, 320 MB. No month needed more than 12 pages.
+
+*Rows, all years* (2000–2025): 813,733 raw rows; dropped 4 duplicate ids, 6 not a number, 17 out of range; 790,196
+point-days kept, 10,175 with more than one reading.
+
+| type | training (2000–22) | test (2023–25) | points |
+|---|---|---|---|
+| river | 587,295 | 67,003 | 18,096 |
+| lake | 12,736 | 2,982 | 826 |
+| sea | 97,345 | 22,835 | 1,508 |
+
+The test rows differ slightly from the first count (river 67,003 not 67,010; lake 2,982 not 2,974; sea 22,835 not
+22,836). A point's type is the type most of its rows have, and older rows changed the majority at a few points.
+
+*Water bodies, all years:* river points 12,900 on a named link, 2,177 named downstream, 3,019 their own water; lake
+points 340 WFD polygon, 87 OS lake link, 399 their own; 1,508 sea points. Waters: 8,093 river, 671 lake, 334 sea;
+1,723 to 1,871 a fold. 1,957 cells of 0.1°.
+
+*Open-Meteo plan, narrowed* (before its first request): 2018 1,327 cells, 2023 1,561, 2024 1,686, 2025 1,603, and
+118 elevation-only cells. 255 requests, **8,192.2 weighted calls** in all (849.6 already spent), elevation 118 (cap
+1,500).
+
 ---
 
 ## Results
