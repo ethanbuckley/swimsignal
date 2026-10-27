@@ -30,6 +30,11 @@ itself is the record. CSV and JSON files are the result tables of the test they 
 - [COMPREHENSION-TEST-2026-10-RECORDS.md](COMPREHENSION-TEST-2026-10-RECORDS.md): the blank record for one
   session and how to analyse 8 to 10 of them against the plan's fail lines. Filled records stay out of the
   repository.
+- [AI-PROGRAMME-2026-10.md](AI-PROGRAMME-2026-10.md): the status map for the autumn 2026 AI and data pieces
+  (satellite algae, advisory finder, sampling priorities, monitoring anomalies, river rises, moderation). Each is
+  its own draft PR.
+- [MODERATION-ASSIST-TRIGGER-2026-10.md](MODERATION-ASSIST-TRIGGER-2026-10.md): when to add help with moderating
+  reviews, and in what order. Nothing built.
 - [SWIMMER_TESTING.md](SWIMMER_TESTING.md): the earlier swimmer test plan. The comprehension test replaces its
   tasks and keeps its recording rules.
 - [SWIMSIGNAL_REVIEW.md](SWIMSIGNAL_REVIEW.md): review notes for the SwimSignal rebrand: scope, compatibility,
@@ -119,8 +124,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   `-score.json`, `-face.json`, `-model-235.json`, `-model-500.json`.
 - [LAKE-ALGAE-SATELLITE-TEST-2026-10.md](LAKE-ALGAE-SATELLITE-TEST-2026-10.md): a Sentinel-2 chlorophyll index
   (NDCI) at lake bathing waters, scored against the EA's visual algae checks, 2020–26. **"Algae seen" fails
-  (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS covers no
-  English site. Tables: `-score.json`, `-sizes.json`, `-clms-tiles.json`, `-coverage.json`.
+  (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS had no data
+  at the 18 English sites checked in summer 2025. Tables: `-score.json`, `-sizes.json`, `-clms-tiles.json`, `-coverage.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with
