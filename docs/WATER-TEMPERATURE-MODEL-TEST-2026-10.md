@@ -9,6 +9,10 @@ rows has been read for it. No air temperature has been fetched. No model has bee
 Results go below the line at the end. Nothing above the line changes after a result is seen. If anything is changed
 after a result is seen, both results are kept and the change is stated.
 
+**Two amendments, both on 27 October 2026 and both before any score:** the Open-Meteo pace (in "Caps"), and
+training on 2000–2022 with HadUK-Grid air temperature ("Amendment 2", below "Caps"). Where Amendment 2 differs from
+the text above it, Amendment 2 holds.
+
 ## The approved test (Ethan, 27 October 2026)
 
 Copied from the plan he approved:
@@ -295,6 +299,65 @@ answer is never asked for again. A run stopped at a cap resumes from the cache.
 
 **Compute.** The network snap, the fit and the bootstrap run under the group's `heavy-run.lock`, and so does the EA
 fetch. The Open-Meteo fetch is a slow trickle over days and light on the machine; it runs without the lock.
+
+## Amendment 2, 27 October 2026: training on 2000–2022 with HadUK-Grid (before any score; no outcome seen)
+
+**Ethan's decision, his words:** "Hold the scoring. I'll register at CEDA and make a token; then give me the download
+command, and amend the test to train on 2000–2022 before any score."
+
+When this was written: the EA fetch for 2018–2025 was done, and 26 Open-Meteo answers for 2018 were cached. No
+features file had been built. No model had been fitted. No water temperature had been summarised, plotted or
+compared with any air temperature.
+
+What changes:
+
+- **Training seasons:** 1 May to 30 September of every year from **2000 to 2022**. Test seasons unchanged: May to
+  September 2023–25.
+- **Training air input: Met Office HadUK-Grid v1.3.2, 5 km, daily mean `tas`** (OGL v3, per CEDA's catalogue). Files
+  `tas_hadukgrid_uk_5km_day_YYYYMM01-YYYYMMDD.nc`, April to September, 2000 to 2025: 156 files. **Ethan downloads them
+  himself** with his own CEDA token, into `~/Documents/GitHub/swimsignal-private/water-temperature/haduk/`, with the
+  script `get_haduk.sh` in that folder. I do not run it and never handle his token. The run waits until the folder
+  holds all 156 files and each one opens (its `tas` has one step per day of its month).
+  - Each point takes the 5 km grid cell it falls in (British National Grid). If that cell has no value (sea or a
+    coastal edge), the nearest cell with values within 10 km. Otherwise the point has no HadUK air and its training
+    rows are dropped and counted.
+  - `a1`, `a7` and `a30` are computed from the HadUK series exactly as stated under "Inputs".
+  - *Stated now, not checked:* HadUK's daily mean is built from daily maximum and minimum, whose day runs from 09:00
+    to 09:00 UTC. Open-Meteo's daily mean is the London calendar day. The two days are offset by up to 9 hours.
+- **Test-season air input, and which decides the verdict.** **[choice]**
+  - **Primary, decides the verdict:** Open-Meteo's ERA5-Land daily mean for 2023–25, as already stated, because it
+    is closest to what the live site would feed the model (the site's weather comes from Open-Meteo at the same
+    cells). The model is trained on HadUK, so the Open-Meteo values pass through a **bridge** first: one national
+    straight line, `HadUK = c + d × OpenMeteo`, fitted by least squares on daily values from 1 April to 30 September
+    2018. One pair per day for each distinct (HadUK cell, Open-Meteo cell) of the points with a row in May to
+    September 2018. No water temperature enters the bridge. The bridged daily values then give `a1`, `a7`, `a30`.
+    Both the candidate and the 7-day air baseline are fed the bridged values.
+  - Why 2018 only: one hot season spans the range of 2023–25, and it is already half fetched. Why a straight line and
+    not a per-cell offset: 2018 lacks a fifth of the test cells.
+  - **Secondary, reported, decides nothing:** the same test with HadUK air for 2023–25 (no bridge), on the test rows
+    that have HadUK air. Also reported: Open-Meteo with no bridge. And the bridge itself: c, d, the number of pairs,
+    and the root-mean-square difference before and after.
+- **Elevation** stays Open-Meteo's cell elevation. Cells whose points have rows only before 2018 have no Open-Meteo
+  answer. For them: one request per batch of at most 25 cells for a single day (1 June 2018, the same variable and
+  model). Its weight is 1 a cell (`om_weight(n, 1)` = n). Only the elevation is used. Cap: at most **1,500** weighted
+  calls for these.
+- **Open-Meteo, narrowed:** the 2018 season (for the bridge; 54 requests, 26 already done), the test seasons 2023,
+  2024 and 2025, and the elevation-only requests. **2019 to 2022 are not fetched.** Expected: 1,327 × 1.307 + 4,850 ×
+  1.307 + up to 1,500 = about **9,600** weighted calls in all, of which 850 were spent before this amendment. The
+  total cap stays 20,000, the day cap 9,500, the rolling-hour cap 4,700, the pause 25 s, the stop rules unchanged.
+- **EA archive, extended** to May–September 2000–2017: 90 more months, same queries, same client (POST, `dateTo`
+  exclusive, a 204 as an empty page), one request in flight, at least 1.5 s apart, same stop rules.
+  - Expected: 3 to 5 pages a month (June 2005's first page of fresh water was full) and 1 for sea, so about 300 to
+    550 requests.
+  - **Caps for the extension, sized now:** at most **700 more requests** (so at most **850** in this test's EA log
+    all told, which holds 121 already); at most **12 pages** for one month and set (was 8); stop past **1.5 GB** in
+    all (was 600 MB). Wall time: about 550 × 3 s, about 30 minutes, under the heavy-run lock.
+- **Unchanged:** hold-out by water body and the 5 folds, both baselines, the thresholds (2.0 °C rivers, 1.5 °C lakes),
+  the gate, the groups, the inputs other than the air source, the model and its settings, the reported groups.
+
+Order from here: push this amendment; the EA extension; rows and water bodies again over all years (a water's fold
+depends only on its id, so existing waters keep their folds); the narrowed Open-Meteo fetch; wait for the 156 HadUK
+files; the bridge; the features file and its SHA-256, committed; then one score.
 
 ## Order of work
 
