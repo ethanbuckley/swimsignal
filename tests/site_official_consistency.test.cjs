@@ -251,6 +251,9 @@ test('the Not known row and the algae tile: the checked date once, in the answer
     `Open <a href="${PROFILE}">the Environment Agency page</a> for the latest`);
   assert.equal(ea.eaTodayLatest(other()), '');
   const src = pageSrc.join('\n');
-  assert.match(src, /rows\.push\(\["Today's EA advice", 'Notice shown above', `\$\{eaTodayLatest\(d\) \|\| 'See the notice above'\}\.`\]\)/);
+  // The row names the EA only where the spot has the EA's panel; another publisher's notice is an official notice.
+  assert.match(src, /rows\.push\(\[typeof eaTodayId === 'function' && eaTodayId\(d\) \? "Today's EA advice" : 'Official notice', 'Notice shown above', `\$\{eaTodayLatest\(d\) \|\| 'See the notice above'\}\.`\]\)/);
+  assert.ok(ea.eaTodayId(frensham()), 'Frensham has the EA panel, so its row says EA');
+  assert.equal(ea.eaTodayId({ ...frensham(), id: 'council-pond', classification: null }), null);   // elsewhere: 'Official notice'
   assert.match(src, /notice above is about harmful algae; this tile is the sampler's last visual check\./);
 });
