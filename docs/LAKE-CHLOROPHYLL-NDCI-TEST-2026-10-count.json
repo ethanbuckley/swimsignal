@@ -1,0 +1,399 @@
+{
+ "points": {
+  "NW-88023689": {
+   "items": 864,
+   "tiles": [
+    "MGRS-30UVF",
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 36,
+   "items_within_1": 140,
+   "items_within_3": 302
+  },
+  "NW-88004556": {
+   "items": 862,
+   "tiles": [
+    "MGRS-30UVF",
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 40,
+   "items_within_1": 134,
+   "items_within_3": 294
+  },
+  "AN-THR030A": {
+   "items": 1287,
+   "tiles": [
+    "MGRS-30UYD",
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 48,
+   "items_within_1": 90,
+   "items_within_3": 243
+  },
+  "AN-ANT160": {
+   "items": 858,
+   "tiles": [
+    "MGRS-30UYD",
+    "MGRS-31UCU"
+   ],
+   "items_within_0": 14,
+   "items_within_1": 66,
+   "items_within_3": 138
+  },
+  "AN-THR020": {
+   "items": 858,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 26,
+   "items_within_1": 56,
+   "items_within_3": 150
+  },
+  "AN-THR061": {
+   "items": 858,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 30,
+   "items_within_1": 54,
+   "items_within_3": 148
+  },
+  "AN-BUR170A": {
+   "items": 862,
+   "tiles": [
+    "MGRS-30UYD",
+    "MGRS-31UCU"
+   ],
+   "items_within_0": 14,
+   "items_within_1": 60,
+   "items_within_3": 128
+  },
+  "AN-BUR300": {
+   "items": 862,
+   "tiles": [
+    "MGRS-30UYD",
+    "MGRS-31UCU"
+   ],
+   "items_within_0": 14,
+   "items_within_1": 64,
+   "items_within_3": 128
+  },
+  "AN-ROL010": {
+   "items": 860,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 28,
+   "items_within_1": 60,
+   "items_within_3": 128
+  },
+  "NW-88016157": {
+   "items": 864,
+   "tiles": [
+    "MGRS-30UVF",
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 18,
+   "items_within_1": 62,
+   "items_within_3": 140
+  },
+  "NW-88021658": {
+   "items": 434,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 8,
+   "items_within_1": 24,
+   "items_within_3": 62
+  },
+  "AN-ORM010": {
+   "items": 860,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 26,
+   "items_within_1": 58,
+   "items_within_3": 122
+  },
+  "AN-ROL020": {
+   "items": 860,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 26,
+   "items_within_1": 58,
+   "items_within_3": 124
+  },
+  "AN-FIL010": {
+   "items": 860,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 24,
+   "items_within_1": 56,
+   "items_within_3": 118
+  },
+  "SW-50900003": {
+   "items": 427,
+   "tiles": [
+    "MGRS-30UWB"
+   ],
+   "items_within_0": 5,
+   "items_within_1": 23,
+   "items_within_3": 59
+  },
+  "AN-UPT010": {
+   "items": 1293,
+   "tiles": [
+    "MGRS-30UYD",
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 24,
+   "items_within_1": 84,
+   "items_within_3": 168
+  },
+  "AN-FRT020E": {
+   "items": 862,
+   "tiles": [
+    "MGRS-31UCU",
+    "MGRS-31UDU"
+   ],
+   "items_within_0": 20,
+   "items_within_1": 54,
+   "items_within_3": 118
+  },
+  "MD-27942900": {
+   "items": 211,
+   "tiles": [
+    "MGRS-30UWD"
+   ],
+   "items_within_0": 7,
+   "items_within_1": 11,
+   "items_within_3": 27
+  },
+  "NE-40000385": {
+   "items": 426,
+   "tiles": [
+    "MGRS-30UWE",
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 6,
+   "items_within_1": 24,
+   "items_within_3": 52
+  },
+  "NW-88010023": {
+   "items": 864,
+   "tiles": [
+    "MGRS-30UVF",
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 10,
+   "items_within_1": 40,
+   "items_within_3": 110
+  },
+  "MD-28548100": {
+   "items": 424,
+   "tiles": [
+    "MGRS-30UWD"
+   ],
+   "items_within_0": 6,
+   "items_within_1": 19,
+   "items_within_3": 46
+  },
+  "NW-88010126": {
+   "items": 432,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 6,
+   "items_within_1": 23,
+   "items_within_3": 55
+  },
+  "NW-88022930": {
+   "items": 211,
+   "tiles": [
+    "MGRS-30UWE"
+   ],
+   "items_within_0": 4,
+   "items_within_1": 12,
+   "items_within_3": 22
+  },
+  "NE-44100119": {
+   "items": 428,
+   "tiles": [
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 2,
+   "items_within_1": 24,
+   "items_within_3": 40
+  },
+  "NW-88010011": {
+   "items": 434,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 5,
+   "items_within_1": 22,
+   "items_within_3": 50
+  },
+  "NW-88005133": {
+   "items": 431,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 4,
+   "items_within_1": 24,
+   "items_within_3": 51
+  },
+  "NW-88016103": {
+   "items": 431,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 8,
+   "items_within_1": 21,
+   "items_within_3": 50
+  },
+  "NE-40000443": {
+   "items": 235,
+   "tiles": [
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 5,
+   "items_within_1": 8,
+   "items_within_3": 28
+  },
+  "NW-LSN0028": {
+   "items": 212,
+   "tiles": [
+    "MGRS-30UWE"
+   ],
+   "items_within_0": 4,
+   "items_within_1": 9,
+   "items_within_3": 26
+  },
+  "NW-88010024": {
+   "items": 864,
+   "tiles": [
+    "MGRS-30UVF",
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 14,
+   "items_within_1": 42,
+   "items_within_3": 106
+  },
+  "NW-88010089": {
+   "items": 211,
+   "tiles": [
+    "MGRS-30UWE"
+   ],
+   "items_within_0": 2,
+   "items_within_1": 12,
+   "items_within_3": 22
+  },
+  "NW-88010013": {
+   "items": 431,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 8,
+   "items_within_1": 25,
+   "items_within_3": 54
+  },
+  "NW-88010015": {
+   "items": 432,
+   "tiles": [
+    "MGRS-30UVF"
+   ],
+   "items_within_0": 8,
+   "items_within_1": 23,
+   "items_within_3": 45
+  },
+  "NE-45100109": {
+   "items": 430,
+   "tiles": [
+    "MGRS-30UWF"
+   ],
+   "items_within_0": 7,
+   "items_within_1": 23,
+   "items_within_3": 46
+  },
+  "AN-TMNRSFFD": {
+   "items": 214,
+   "tiles": [
+    "MGRS-30UXD"
+   ],
+   "items_within_0": 3,
+   "items_within_1": 9,
+   "items_within_3": 26
+  },
+  "SO-E0004611": {
+   "items": 858,
+   "tiles": [
+    "MGRS-30UYB",
+    "MGRS-31UCS"
+   ],
+   "items_within_0": 16,
+   "items_within_1": 38,
+   "items_within_3": 92
+  },
+  "AN-RAVENWFD": {
+   "items": 850,
+   "tiles": [
+    "MGRS-30UXC",
+    "MGRS-30UXD"
+   ],
+   "items_within_0": 8,
+   "items_within_1": 48,
+   "items_within_3": 94
+  },
+  "TH-PGWL0034": {
+   "items": 214,
+   "tiles": [
+    "MGRS-30UXB"
+   ],
+   "items_within_0": 0,
+   "items_within_1": 8,
+   "items_within_3": 21
+  },
+  "AN-SWANHWFD": {
+   "items": 850,
+   "tiles": [
+    "MGRS-30UXD",
+    "MGRS-30UXE"
+   ],
+   "items_within_0": 12,
+   "items_within_1": 46,
+   "items_within_3": 96
+  },
+  "MD-47301190": {
+   "items": 424,
+   "tiles": [
+    "MGRS-30UXD"
+   ],
+   "items_within_0": 4,
+   "items_within_1": 16,
+   "items_within_3": 41
+  }
+ },
+ "total": {
+  "items": 25148,
+  "items_within_0": 550,
+  "items_within_1": 1670,
+  "items_within_3": 3770
+ },
+ "requests": {
+  "requests": 284,
+  "bytes": 5090367,
+  "requests_all_runs": 284,
+  "bytes_all_runs": 5090367
+ }
+}
