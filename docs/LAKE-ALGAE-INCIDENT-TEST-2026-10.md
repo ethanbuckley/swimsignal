@@ -268,7 +268,7 @@ Whatever the verdict:
 
 ## Approval
 
-Not yet given.
+Ethan approved this statement on 27 October 2026 at 00:36 UTC, in the coordinating session, in his words: "I approve the #386 and #385 statements as written. Run #386 then #385 under their stated protocols and caps, record the approval and results in each PR, and draft the 2027 forward statement for the third question without running anything." He had the statement at 735e882. Codex had reviewed it on 26 October as a bounded exploratory question and kept it unrun during the product window. Nothing above this section changes after approval. Nothing had been fetched: no incident history, and the features file was not opened. It runs after #386, as he asked.
 
 ## Run log, after approval
 
