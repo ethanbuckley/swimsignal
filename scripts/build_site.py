@@ -1918,6 +1918,10 @@ VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
 VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
+# The catchment replay (prototype, ?replay=1 only, src/dipcast/replay.py): index.html adds replay.js itself
+# when asked, so it has no tag; it asks at levels.js's ?v=<stamp> (mountReplay), and the offline copy
+# stores it with the other scripts.
+SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -1945,6 +1949,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
+    shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -2345,11 +2350,15 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
     for s in entries:
         e = add(feed, "entry")
         add(e, "id", f"tag:{host},{when.date().isoformat()}:spot/{s['id']}/{when.strftime('%Y%m%dT%H%M%SZ')}")
-        add(e, "title", f"{s['name']} · {s['headline']}")
+        # Official advice (spots.json `official`, cards.official_brief) beside the level, never in it.
+        add(e, "title", f"{s['name']} · {s['headline']}" + (f" · Official: {s['official']}" if s.get("official") else ""))
         add(e, "updated", stamp)
         add(e, "link", rel="alternate", type="text/html", href=s["url"])
         add(e, "category", term=s["level"])
-        add(e, "summary", f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"])
+        said = f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"]
+        if s.get("official") and s["official"] not in said:   # alerts.json's action gives it already (scripts/alerts.js)
+            said = f"Official: {s['official']}. Follow it first; the level is {BRAND}'s sewage forecast only. {said}"
+        add(e, "summary", said)
     ET.indent(feed)
     return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
 
@@ -2366,7 +2375,9 @@ def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
     except (OSError, ValueError):
         return None
     generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
-    spots = [{"id": sid, **a} for sid, a in alerts["spots"].items()]
+    from dipcast.cards import official_brief
+    advice = {r["id"]: official_brief(r) for r in results}
+    spots = [{"id": sid, **a, **({"official": advice[sid]} if advice.get(sid) else {})} for sid, a in alerts["spots"].items()]
     area_of = {r["id"]: r.get("area") for r in results}
     (site / "feed.xml").write_text(atom_feed(
         f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "
@@ -3083,6 +3094,23 @@ def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> N
     (site / "spot" / spot["id"] / "qr.svg").write_text(qr_file(page_url(root, spot["id"])))
 
 
+def replay_files(site: Path, results: list[dict], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                 write=None) -> dict:
+    """data/spot/<id>-replay.json, the last 48 hours upstream (prototype, ?replay=1 only, src/dipcast/replay.py):
+    from the poll history, the poll log, the rain cache and this build's results, so no request. After
+    write_app_data, which clears data/spot/. A failure is announced and recorded in the build health,
+    {"written": 0, "warning": ...}: a replay must never stop the site publishing."""
+    try:
+        if write is None:
+            from dipcast.replay import write_replays as write
+        out = write(site, results, upstream, generated.tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001
+        out = {"written": 0, "warning": f"catchment replay not written: {e}"}
+    if out.get("warning"):
+        announce(out["warning"])
+    return out
+
+
 def build(refresh: bool = True) -> dict:
     t0 = time.time()
     require_spill_model()
@@ -3229,6 +3257,7 @@ def build(refresh: bool = True) -> dict:
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
+    health["replay_files"] = replay_files(SITE, results, upstream, generated)   # ?replay=1 only; never stops the build
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)
