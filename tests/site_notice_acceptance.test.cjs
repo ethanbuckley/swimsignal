@@ -139,3 +139,13 @@ test('Saved\'s "since you looked" and the outing\'s watch follow the kind kept i
     assert.ok(w.lines[0].includes(brief), kind); says(kind, w.lines[0], brief);
   }
 });
+
+test('Find a window on Saved: the notice in its own words before the levels, "follow" only for a restricting one', () => {
+  const FW = require('../src/dipcast/site/findwindow.js');
+  for (const [kind, make] of KINDS) {
+    const s = make(), brief = ea.eaTodayBrief(s), h = FW.fwSection([s], DATES, x => `spot/${x.id}/`);
+    assert.ok(h.includes(`<p class="o-tag">${brief}</p>`), kind);
+    says(kind, h, brief);
+    if (kind === 'restricting') assert.match(h, /The official advice is not part of these levels: follow it first\./);
+  }
+});

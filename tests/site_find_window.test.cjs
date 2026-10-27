@@ -87,3 +87,23 @@ test('the page draws it on Saved, after the comparison, from the five days it ha
   // No request: the script fetches nothing and stores nothing.
   assert.doesNotMatch(fs.readFileSync(join(SITE, 'findwindow.js'), 'utf8'), /fetch\(|localStorage|sessionStorage/);
 });
+
+
+test('the notice line follows its kind: a restricting notice says advice and follow; any other stays a notice to read', () => {
+  const restricting = spot(['low', 'low', 'high', 'high', 'high'], { id: 'r', name: 'Frensham Great Pond', official: [{ ...NOTICE, restricts: true }] });
+  const neutral = spot(['low', 'low', 'high', 'high', 'high'], { id: 'n', name: 'Status Pond', official: [{ ...NOTICE,
+    line: 'City of London: swimming status notice (members only this week) since 20 Oct 2026', publisher: 'City of London', restricts: false }] });
+  const legacy = spot(['low', 'low', 'high', 'high', 'high'], { id: 'l', name: 'Legacy Pond', official: [{ ...NOTICE }] });
+  assert.equal(W.fwApart(restricting), 'The official advice is not part of these levels: follow it first.');
+  assert.equal(W.fwApart(neutral), 'The official notice is not part of these levels: read it first.');
+  assert.equal(W.fwApart(legacy), 'The official notice is not part of these levels: read it first.');
+  const h = W.fwSection([restricting, neutral, legacy], DATES, s => `spot/${s.id}/`);
+  // Each notice in its own words, before its levels; the windows themselves are the same whatever the notice.
+  for (const s of [restricting, neutral, legacy]) {
+    const at = h.indexOf(`<p class="o-tag">${ea.eaTodayBrief(s)}</p>`);
+    assert.ok(at > 0 && at < h.indexOf('Low risk: Wed 28 Oct to Thu 29 Oct.', at), s.name);
+  }
+  assert.equal((h.match(/follow it first/g) || []).length, 1);   // the restricting one only
+  assert.equal((h.match(/Low risk: Wed 28 Oct to Thu 29 Oct\./g) || []).length, 3);
+  assert.doesNotMatch(h, /\bsafer?\b(?! check)|\bbest\b|\bbetter\b/i);
+});
