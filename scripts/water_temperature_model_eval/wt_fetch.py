@@ -47,9 +47,8 @@ SETS = {"fresh": wp.FRESH_CODES, "sea": wp.SEA_CODES}
 
 OM_HOST = "archive-api.open-meteo.com"
 OM_URL = f"https://{OM_HOST}/v1/archive"
-OM_PAUSE_S = 60.0
+OM_PAUSE_S = 25.0          # amended 27 Oct (was 60 s): 4,700 an hour at 32.7 a request is one every 25 s
 OM_MODEL = "era5_land"
-OWN_DIR = "swimsignal-private/water-temperature"   # this test's own wrappers and log watchers
 UA = "swimsignal-research (water temperature model test; hello@swimsignal.co.uk)"
 
 
@@ -173,28 +172,48 @@ def fetch_ea(client: EAClient, ranges=None) -> dict:
 
 # ================================================================== Open-Meteo
 def other_open_meteo_jobs(me: int | None = None) -> list[str]:
-    """Other local processes whose command line names Open-Meteo (pgrep -fl). This fetch's own processes (any line
-    naming wt_fetch.py, so its shell wrappers too) are left out."""
+    """Other local Python processes that fetch from Open-Meteo: a second `wt_fetch.py open_meteo`, or any Python job
+    whose command line names Open-Meteo. Shells and log watchers (zsh `until` loops, `tail`, `grep`) and this process
+    and its parent are left out. On 27 Oct the first version matched this test's own watcher shells, whose command
+    lines name open_meteo.log, and waited on them. Nothing here ever stops another process."""
     me = os.getpid() if me is None else me
     try:
-        out = subprocess.run(["pgrep", "-fl", "open-meteo|open_meteo|openmeteo"], capture_output=True, text=True).stdout
+        out = subprocess.run(["pgrep", "-fl", "wt_fetch.py open_meteo|open-meteo|open_meteo|openmeteo"],
+                             capture_output=True, text=True).stdout
     except OSError:
         return []
     mine = {me, os.getppid()}
-    return [ln for ln in out.splitlines() if ln.strip() and int(ln.split()[0]) not in mine
-            and "pgrep" not in ln and "wt_fetch.py" not in ln and OWN_DIR not in ln]
+    found = []
+    for ln in out.splitlines():
+        parts = ln.split()
+        if len(parts) < 2 or not parts[0].isdigit() or int(parts[0]) in mine:
+            continue
+        if not Path(parts[1]).name.lower().startswith("python"):
+            continue
+        found.append(ln)
+    return found
 
 
 class OMClient:
     def __init__(self, cache: Path, fetch: bool, transport: httpx.BaseTransport | None = None, sleep=time.sleep,
                  now=_now, total_cap: float = wp.OM_TOTAL_CAP, day_cap: float = wp.OM_DAY_CAP,
-                 pause_s: float = OM_PAUSE_S, others=other_open_meteo_jobs, model: str | None = OM_MODEL):
+                 pause_s: float = OM_PAUSE_S, others=other_open_meteo_jobs, model: str | None = OM_MODEL,
+                 hour_cap: float = wp.OM_HOUR_CAP):
         self.cache, self.fetch, self.sleep, self.now = Path(cache), fetch, sleep, now
         self.cache.mkdir(parents=True, exist_ok=True)
         self.log = Log(self.cache / "requests.log")
         self.total_cap, self.day_cap, self.pause_s, self.others, self.model = total_cap, day_cap, pause_s, others, model
+        self.hour_cap = hour_cap
         self.http = httpx.Client(timeout=120, follow_redirects=False, transport=transport, headers={"User-Agent": UA})
         self._last = None
+
+    def spent_since(self, t0: datetime) -> float:
+        """Weight logged after t0 (the rolling-hour cap)."""
+        tot = 0.0
+        for x in self.log.lines():
+            if len(x) >= 4 and datetime.fromisoformat(x[0]) > t0:
+                tot += float(x[3])
+        return tot
 
     def spent(self, day: str | None = None) -> float:
         tot = 0.0
@@ -212,6 +231,10 @@ class OMClient:
             print(f"{t.isoformat(timespec='seconds')}: the day's {self.day_cap:.0f} spent; sleeping to {nxt}",
                   flush=True)
             self.sleep(max(60.0, (nxt - t).total_seconds()))
+        while self.spent_since(self.now() - timedelta(hours=1)) + weight > self.hour_cap:
+            print(f"{self.now().isoformat(timespec='seconds')}: {self.hour_cap:.0f} spent in the last hour; waiting",
+                  flush=True)
+            self.sleep(60)
         while (o := self.others()):
             print(f"{self.now().isoformat(timespec='seconds')}: another Open-Meteo job runs, waiting: {o}", flush=True)
             self.sleep(600)

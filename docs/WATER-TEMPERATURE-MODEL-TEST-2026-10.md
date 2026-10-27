@@ -269,6 +269,24 @@ Guesses, not results.
   running, the fetch waits. The process name carries `open_meteo`, so other sessions' checks see it.
 - Wall time: about 14,600 ÷ 6,000 = **3 UTC days**.
 
+**Amendment, 27 October 2026, before any score.** Ethan asked for the air fetch to go faster. His reason is
+speed only. No outcome has been seen: no model has been fitted, and no water temperature has been summarised. This
+Mac's free Open-Meteo quota (10,000 a day, 5,000 an hour, 600 a minute, per IP) is separate from the site's GitHub
+builds, so the caps above were more cautious than needed. From the restart on 27 October:
+- at most **9,500** weighted calls in one UTC day, counted from this fetch's own log, including what it had already
+  used that day (was 6,000);
+- at most **4,700** weighted calls in any rolling hour; at 32.7 a request that is one request every 25 s or more, so
+  the pause is now **25 s** (was 60 s);
+- the total cap stays **20,000**;
+- the stop rules are unchanged: stop at the first 4xx, 5xx, redirect, connection error or body that is not JSON, with
+  no retry. After a 429 the fetch resumes no earlier than the next UTC day.
+- The other-job check now looks only for Python processes that fetch from Open-Meteo (a second `wt_fetch.py
+  open_meteo`, or a Python command line naming Open-Meteo), leaving out this process and its parent. The first
+  version also matched this test's own log-watching shells, whose command lines name `open_meteo.log`, and paused the
+  fetch at 14:27 UTC. The check never stops another process.
+- Wall time becomes: about 9,500 by the evening of 27 October, the rest from 00:10 UTC on 28 October, done about
+  01:00 UTC.
+
 **Other hosts:** none. No request to any other host.
 
 **Cache.** Every answer is kept outside git, in `~/Documents/GitHub/swimsignal-private/water-temperature/`, one folder

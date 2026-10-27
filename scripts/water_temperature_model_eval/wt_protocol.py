@@ -50,7 +50,8 @@ SMALL_UPSTREAM_KM, UPLAND_M = 20.0, 200.0
 
 # ---- Open-Meteo ---------------------------------------------------------------------------------------------------
 OM_TOTAL_CAP = 20_000.0
-OM_DAY_CAP = 6_000.0
+OM_DAY_CAP = 9_500.0                     # amended 27 Oct, before any score (was 6,000): Ethan, for speed
+OM_HOUR_CAP = 4_700.0                    # rolling hour, under the free tier's 5,000 an hour
 OM_BATCH = 25
 MIN_TRAIN_SEASONS = 3
 

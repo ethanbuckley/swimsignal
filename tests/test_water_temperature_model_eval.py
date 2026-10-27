@@ -419,12 +419,40 @@ def test_open_meteo_waits_while_another_job_runs(tmp_path):
     assert 600 in slept
 
 
-def test_other_jobs_ignore_this_fetch(monkeypatch):
+def test_other_jobs_are_python_fetches_only(monkeypatch):
     class R:
-        stdout = ("11 python wt_fetch.py open_meteo --fetch\n12 zsh -c x wt_fetch.py open_meteo\n13 other open-meteo job\n"
-                  "14 zsh -c until grep -q open_meteo swimsignal-private/water-temperature/logs/open_meteo.log\n")
+        stdout = ("11 /venv/bin/python -I wt_fetch.py open_meteo --fetch\n"            # this process
+                  "12 /bin/zsh -c run_open_meteo.sh\n"                                 # shells: never
+                  "39461 /bin/zsh -c until grep -q open_meteo /x/logs/open_meteo.log\n"
+                  "39549 tail -n 0 -F /x/logs/open_meteo.log\n"
+                  "20 /venv/bin/python3.12 -I wt_fetch.py open_meteo --fetch\n"        # a second fetch
+                  "21 python fetch_rain_archive.py --open-meteo\n")
     monkeypatch.setattr(wf.subprocess, "run", lambda *a, **k: R())
-    assert wf.other_open_meteo_jobs(me=1) == ["13 other open-meteo job"]
+    assert wf.other_open_meteo_jobs(me=11) == ["20 /venv/bin/python3.12 -I wt_fetch.py open_meteo --fetch",
+                                               "21 python fetch_rain_archive.py --open-meteo"]
+
+
+def test_open_meteo_rolling_hour_cap(tmp_path):
+    clock = Clock(datetime(2026, 10, 27, 15, 0, tzinfo=UTC))
+    slept = []
+
+    def sleep(s):
+        slept.append(s)
+        clock.t = clock.t.replace(minute=clock.t.minute + 1) if clock.t.minute < 59 else clock.t.replace(
+            hour=clock.t.hour + 1, minute=0)
+
+    c = wf.OMClient(tmp_path, fetch=True, transport=om_transport(), sleep=sleep, now=clock, others=lambda: [],
+                    hour_cap=wp.om_weight(25) + 1, pause_s=0)
+    c.log.add = lambda status, size, weight, url: open(c.log.path, "a").write(
+        f"{clock.t.isoformat(timespec='seconds')}\t{status}\t{size}\t{weight}\t{url}\n")
+    wf.fetch_open_meteo(c, {"seasons": {"2020": [f"5{i}.000_-1.000" for i in range(30)]}})
+    times = [datetime.fromisoformat(ln.split("\t")[0]) for ln in c.log.path.read_text().splitlines()]
+    assert len(times) == 2 and (times[1] - times[0]).total_seconds() >= 3600
+
+
+def test_amended_pace_fits_the_free_tier():
+    assert wp.OM_DAY_CAP == 9_500 and wp.OM_HOUR_CAP == 4_700 and wp.OM_TOTAL_CAP == 20_000
+    assert 3600 / wf.OM_PAUSE_S * wp.om_weight(wp.OM_BATCH) <= 4_800   # the pause alone stays near the hour cap
 
 
 def test_open_meteo_without_fetch_never_asks(tmp_path):
