@@ -60,19 +60,19 @@ const frensham = (extra = {}) => ({ id: 'bw-ukj2310-11945', name: 'Frensham Grea
   location: { mode: 'lake' }, now: { label: 'low', discharging_upstream: 0 }, contributors: [],
   days: DATES.map(date => ({ date, risk: 0.01, label: 'low', rain_48h_mm: 1 })), ...extra });
 
-test('the list, Saved and Plan a swim show the compact form beside the level, and change nothing else', () => {
+test('the list, Saved and Plan a swim show the compact form above the level, and change nothing else', () => {
   const ctx = pageContext(NAMES, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const on = frensham({ official: [item()] }), off = frensham();
   const tag = `<span class="o-tag">${BRIEF}</span>`;
   const row = run('spotItem', on);
-  assert.ok(row.includes(`<span class="hl low">Low risk for the next five days</span>${tag}<span class="k">`), row);
+  assert.ok(row.includes(`${tag}<span class="hl low">Low risk for the next five days</span><span class="k">`), row);
   assert.equal(row.replace(tag, ''), run('spotItem', off));   // the level and the rest are the same
   const card = run('savedCard', on);
   assert.ok(card.includes(`<p class="o-tag">${BRIEF}</p>`), card);
-  assert.ok(card.indexOf('class="big low">Low risk') < card.indexOf('o-tag'));
+  assert.ok(card.indexOf('o-tag') < card.indexOf('class="big low">Low risk'));
   assert.equal(card.replace(`<p class="o-tag">${BRIEF}</p>`, ''), run('savedCard', off));
   const plan = run('planItem', { s: on, miles: 3, level: 'low' });
-  assert.ok(plan.includes(`</span>${tag}<span class="k">`), plan);
+  assert.ok(plan.includes(`</span>${tag}<span class="hl low">`), plan);
   assert.equal(plan.replace(tag, ''), run('planItem', { s: off, miles: 3, level: 'low' }));
   for (const f of ['spotItem', 'savedCard']) assert.doesNotMatch(run(f, off), /o-tag/);
 });

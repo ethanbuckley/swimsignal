@@ -161,7 +161,7 @@ def test_an_entry_carries_reviewed_official_advice_beside_the_level(tmp_path):
     bs.write_feeds(site, results, SITE)
     brief = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
     e = _valid(site / "spot" / "wharfe-ilkley" / "feed.xml").entries[0]
-    assert e.title == f'Wharfe at "Cromwheel" & Ilkley · Low risk for the next five days · Official: {brief}'
+    assert e.title == f'Wharfe at "Cromwheel" & Ilkley · Official: {brief} · Low risk for the next five days'
     assert e.summary.startswith(f"Official: {brief}. Follow it first; the level is SwimSignal's sewage forecast only. Low risk")
     assert e.tags[0].term == "low"
     ww = _valid(site / "spot" / "warleigh-weir" / "feed.xml").entries[0]

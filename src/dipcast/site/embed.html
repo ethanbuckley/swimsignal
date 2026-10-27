@@ -54,8 +54,10 @@
   html.screen, html.screen body { background:var(--bg); }
   html.screen body { display:flex; align-items:center; justify-content:center; min-height:100vh; overflow:hidden; }
   .screen .card { width:960px; max-width:none; min-height:540px; padding:28px 40px 22px; border:0; border-radius:0;
-                  display:grid; grid-template-columns:minmax(0, 1fr) 330px; grid-template-rows:auto auto auto auto auto auto 1fr auto auto; column-gap:48px;
-                  grid-template-areas:"notice notice" "name lab" "hl days" "next days" "official days" "check days" "scan days" "foot status" "credit credit"; }
+                  display:grid; grid-template-columns:minmax(0, 1fr) 330px; grid-template-rows:auto auto auto auto auto auto auto 1fr auto auto; column-gap:48px;
+                  grid-template-areas:"notice notice" "name lab" "official days" "hl days" "next days" "act days" "check days" "scan days" "foot status" "credit credit"; }
+  /* What to do, under the level: without an area of its own it would sit above the name. */
+  .screen .card .act { grid-area:act; margin:10px 0 0; font-size:var(--fs-body); }
   .screen .card .o-tag { grid-area:official; margin:10px 0 0; font-size:var(--fs-body); }
   .screen .card .notice { grid-area:notice; margin:0 0 16px; font-size:var(--fs-head); }
   .screen .card .name { grid-area:name; align-self:end; font-size:var(--fs-title); line-height:1.1; }

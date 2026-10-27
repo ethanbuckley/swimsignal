@@ -75,11 +75,10 @@ function pageContext(names, extra = {}, withAdvice = true) {
 const BASE = ['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'markerTip', 'overview'];
 const EXTRA = { DATA: { generated_at: '2026-10-26T20:00:00Z', spots: [] } };
 
-test('the map tooltip: the level, then the advice on a line of its own; none without advice', () => {
+test('the map tooltip: the advice first, then the level on a line of its own; none without advice', () => {
   const ctx = pageContext(BASE, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const tip = run('markerTip', frensham());
-  assert.ok(tip.startsWith('Frensham Great Pond: Low risk'), tip);
-  assert.ok(tip.endsWith(`<br>${BRIEF}`), tip);
+  assert.ok(tip.startsWith(`Frensham Great Pond: ${BRIEF}<br>Low risk`), tip);
   assert.doesNotMatch(run('markerTip', other()), /<br>|advice/);
   const bare = pageContext(BASE, EXTRA, false);
   assert.doesNotMatch(vm.runInContext('markerTip', bare)(frensham()), /advice/);
@@ -112,10 +111,10 @@ test('Plan a swim: the group line says how many have advice, and that it comes f
 const DATA = { generated_at: '2026-10-26T20:00:00Z', spots: [frensham(), other()] };
 const NOW = Date.parse('2026-10-26T20:30:00Z');
 
-test('the embed and the live sign: the advice under the level, apart from it', () => {
+test('the embed and the live sign: the advice above the level, apart from it', () => {
   const card = Embed.card(frensham(), DATA, NOW);
   assert.ok(card.includes(`<p class="o-tag">Official: ${BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.</p>`), card);
-  assert.ok(card.indexOf('class="hl low"') < card.indexOf('o-tag'));
+  assert.ok(card.indexOf('o-tag') < card.indexOf('class="hl low"'));
   assert.ok(card.indexOf('o-tag') < card.indexOf('class="act"'));
   assert.doesNotMatch(Embed.card(other(), DATA, NOW), /o-tag|Official/);
   // The level and the five days are the same with or without it; only "could not be checked" goes, as the
@@ -126,14 +125,15 @@ test('the embed and the live sign: the advice under the level, apart from it', (
   assert.doesNotMatch(card, /could not be checked/);
   const html = fs.readFileSync(join(SITE, 'embed.html'), 'utf8');
   assert.match(html, /<script src="levels\.js"><\/script>\s*<script src="eatoday\.js"><\/script>\s*<script src="embed\.js"><\/script>/);
-  assert.match(html, /"next days" "official days"/);
+  assert.match(html, /"name lab" "official days" "hl days" "next days" "act days"/);
+  assert.match(html, /\.screen \.card \.act \{ grid-area:act;/);
 });
 
-test('the sites view and its briefing: the advice under the headline, on a day too', () => {
+test('the sites view and its briefing: the advice above the headline, on a day too', () => {
   const row = S.row(frensham());
   const tag = `<p class="o-tag">Official: ${BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.</p>`;
   assert.ok(row.includes(tag), row);
-  assert.match(row.slice(0, row.indexOf(tag)), /<p class="s-head low">Low risk[^<]*<\/p>$/);
+  assert.match(row.slice(row.indexOf(tag) + tag.length), /^<p class="s-head low">Low risk/);
   assert.doesNotMatch(S.row(other()), /o-tag/);
   const page = S.view(DATA, { ids: [frensham().id], day: DATES[2] }, NOW);
   assert.match(page, /data-level="low"/);   // the briefing's check reads the level, which is unchanged

@@ -643,8 +643,8 @@ def level_colours(level: str | None) -> tuple[str, str]:
 
 
 def draw_spot(name: str, where: str, level: str | None, headline: str, generated_at: str, official: str = ""):
-    """A spot's share card as a Pillow image: its name, where it is, the headline from levels.js
-    (alerts.json) beside the level's mark, any official advice (official_brief) on its own line under it,
+    """A spot's share card as a Pillow image: its name, where it is, any official advice (official_brief) on
+    its own line first, then the headline from levels.js (alerts.json) beside the level's mark,
     when it was issued, and the caveat. The name steps down a
     size before it takes a third line; raises Overflow if it still does not fit."""
     from PIL import Image, ImageDraw
@@ -676,10 +676,10 @@ def draw_spot(name: str, where: str, level: str | None, headline: str, generated
         raise Overflow(f"{name}: the name and headline do not fit the share card")
     y = text_block(draw, M, top + (foot_top - 24 - top - need) // 2, name, name_f, INK, width)   # in the middle of the room
     y = (text_block(draw, M, y + 8, where, where_f, MUTED, width) if show_where else y) + 24
+    if said:   # first, in ink, never the level's colour: it is not part of the level
+        y = text_block(draw, M + 44, y, said, said_f, INK, width - 44) + 10
     dot(img, M + 12, y + lh(head_f) * 0.56, 24, mark)   # on the words' middle, a little under the line's
     y = text_block(draw, M + 44, y, headline, head_f, text, width - 44) + 8
-    if said:   # in ink, never the level's colour: it is not part of the level
-        y = text_block(draw, M + 44, y + 2, said, said_f, INK, width - 44) + 8
     draw.text((M + 44, y), issued(generated_at), font=when_f, fill=INK)
     return img
 
@@ -703,7 +703,7 @@ def write_spot_cards(out: Path, spots: list[dict], alerts: dict | None, generate
             o = official_brief(s)
             draw_spot(s["name"], spot_where(s), a.get("level"), a.get("headline") or "", generated_at, o).save(
                 out / f"{s['id']}.png", "PNG", optimize=True)
-            made[s["id"]] = f"{s['name']}: {a.get('headline')}.{' ' + official_words(o) if o else ''} {issued(generated_at)}."
+            made[s["id"]] = f"{s['name']}: {official_words(o) + ' ' if o else ''}{a.get('headline')}. {issued(generated_at)}."
         except Exception as e:  # noqa: BLE001 - one card must not stop the others, or the site
             log.warning("share card for %s not made: %s", s["id"], e)
     return made
