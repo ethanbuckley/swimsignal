@@ -233,7 +233,7 @@ function drawOuting(box, shown) {
   const col = s => { const m = away(s);
     return { id: s.id, name: s.name, href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), tone: tone(dayLevel(s, PLAN.day)),
       headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
-      level: dayLevel(s, PLAN.day), advised: !!outingOfficial(s),
+      level: dayLevel(s, PLAN.day), advised: typeof eaTodayRestricts === 'function' && eaTodayRestricts(s),   // a notice that restricts swimming
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   if (OUTING_OPEN === null) OUTING_OPEN = !!(PLAN.spot || PLAN.when);

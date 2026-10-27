@@ -12,7 +12,7 @@ const { join } = require('node:path');
 const SITE = join(__dirname, '../src/dipcast/site');
 const PROFILE = 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945';
 const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
-const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', ...extra });
+const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', restricts: true, ...extra });
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
 const RISK = { low: 0.01, moderate: 0.2, high: 0.5 };
 const spot = (id, name, label = 'low', extra = {}) => ({ id, name, kind: 'lake', source: 'designated', lat: 51.15, lon: -0.79, area: 'Surrey',

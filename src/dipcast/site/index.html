@@ -2399,7 +2399,7 @@ const coverLine = (d, iso = null) => { const w = coverWords(d, iso); return w.le
 // keeps the picker's name. The list says the week's best day in its answer's form instead (mostLine).
 // Spots with official advice (eatoday.js) are left out of the counts, and the note names them.
 function bestDayNote(spots, yours = false) {
-  const out = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length) : [];
+  const out = typeof eaTodayRestricts === 'function' ? spots.filter(s => eaTodayRestricts(s)) : [];   // a notice that restricts swimming
   spots = spots.filter(s => !out.includes(s));
   const dates = fiveDays(), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
@@ -3057,7 +3057,7 @@ const bindClear = () => { const clear = document.getElementById('clear-filters')
 // level, as the advice says not to swim there. Those spots by their level then name, then the rest as before.
 // No level, label or count changes. A line over the list says so while such a spot is in it (riskFirstNote).
 const listRank = s => ORDER[mapLevel(s)] ?? -1;
-const listAdvised = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).length > 0;
+const listAdvised = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
 const riskOrder = (a, b) => listAdvised(b) - listAdvised(a) || listRank(b) - listRank(a) || a.name.localeCompare(b.name);
 const riskFirstNote = items => items.some(listAdvised) ? 'Spots with official advice against swimming come first.' : '';
 function drawSpots() {
@@ -4266,7 +4266,7 @@ const otherAsWell = (d, near) => { const three = near.slice(0, 3);
 // A spot with official advice (eatoday.js) is never offered as lower risk; in a plain "Nearby" it carries its tag.
 function nearby(d) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
-  const officialShown = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).length > 0;
+  const officialShown = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
   const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
     .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]));

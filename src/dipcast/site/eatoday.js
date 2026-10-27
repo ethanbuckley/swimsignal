@@ -109,8 +109,16 @@ function eaTodayLatest(d) {
     : /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `Open <a href="${eaTodayEsc(o.link)}">the ${eaTodayEsc(o.publisher)} page</a> for the latest` : '';
 }
 // What to do, in place of the level's line ("Usual care: …", which read as leave to swim), while a reviewed
-// notice shows: the notice comes first. '' without one, and the level's own line stands.
-const eaTodayAct = d => eaTodayAdvice(d).length ? 'Follow the official advice above first.' : '';
+// notice shows: the notice comes first. "Follow" only for a notice its reviewer marked as restricting swimming
+// (eaTodayRestricts); any other is to be read, in its own words above, not obeyed as a restriction it may not be.
+// '' without one, and the level's own line stands.
+const eaTodayAct = d => !eaTodayAdvice(d).length ? ''
+  : eaTodayRestricts(d) ? 'Follow the official advice above first.' : 'Read the official notice above first.';
+// Whether a spot's notices include one its reviewer marked as restricting swimming (`restricts: true`,
+// src/dipcast/official_advice.py). What the pages leave out of counts, shared plans and suggestions, and put first,
+// goes by this; what they show (the notice, its tag, the map's ring) goes by eaTodayAdvice, every notice. Only an
+// explicit true counts: a notice without the field (a spots.json from before 28 Oct 2026) changes no selection.
+const eaTodayRestricts = d => eaTodayAdvice(d).some(o => o.restricts === true);
 // The compact form for the places a spot is one row among many: the list, Saved, Plan a swim's rows and
 // the decision record. "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct", in a line of its own
 // beside the level, never in it. One shared helper, so every surface says the same. '' without advice.
@@ -163,5 +171,5 @@ if (typeof document === 'object' && document && typeof document.addEventListener
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
-    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
+    eaTodayAdvice, eaTodayRestricts, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
 }

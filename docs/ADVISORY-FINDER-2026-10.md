@@ -192,7 +192,9 @@ nothing is quoted, and decides:
 
 An approval is one entry in `data/advisories/approved.json`, added by pull request. It holds the
 line, the evidence it rests on, and the review. `--entry DRAFT_ID` prints the first two parts for a
-draft; the reviewer fills in the last three fields:
+draft; the reviewer fills in the last four fields. `restricts` is true when the notice's own words restrict
+swimming (advice against bathing, a closure) and false otherwise (a status page, say). Only true leaves a spot out
+of the pages' counts, shared plans and suggestions and puts it first; every notice shows either way (28 Oct 2026):
 
 ```
 {"draft_id": "e8b5832d974a", "spot_id": "bw-ukj2310-11945",
@@ -203,14 +205,14 @@ draft; the reviewer fills in the last three fields:
  "source_url": "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100",
  "incident_id": "ea:11945-20260619-142800", "start": "2026-06-19", "expiry": null,
  "fetched_at": "2026-10-26T22:45:58Z",
- "reviewer": "<name>", "authority": "<authority>", "reviewed_at": "<UTC time>"}
+ "reviewer": "<name>", "authority": "<authority>", "reviewed_at": "<UTC time>", "restricts": true}
 ```
 
 The loader refuses the whole file, and the finder run and the site build both stop, if any entry has an unknown draft id (not in
 this run or `--previous`), a missing field, a reviewer and authority pair not in `REVIEWERS`, a
 `reviewed_at` or `fetched_at` that is not UTC in that form (or a `reviewed_at` in the future), a
 `start` or `expiry` that is not a day, a link or source address that is not https, a line that is not
-one clean line, a repeated id or another key. The build reads the same file with the same loader.
+one clean line, a `restricts` that is not true or false, a repeated id or another key. The build reads the same file with the same loader.
 The site build checks no draft ids: the finder's drafts are not in CI. An approval
 holds only for the exact line: if the draft's line changes, the draft is `changed` and needs
 approving again. When an advisory has ended and left the drafts, its entry has to be removed by PR.

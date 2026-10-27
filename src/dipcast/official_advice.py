@@ -43,8 +43,12 @@ _DRAFT_ID = re.compile(r"[0-9a-f]{12}\Z")
 _UTC = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
 _DAY = re.compile(r"\d{4}-\d{2}-\d{2}\Z")
 _SPOT = re.compile(r"[a-z0-9][a-z0-9-]{1,60}\Z")
+# restricts: whether the notice restricts swimming, true or false, set by the reviewer from the notice's own words
+# (28 Oct 2026). Required: a notice is never taken to restrict swimming for want of it, and a file without it
+# approves nothing. Only true changes which spots the pages leave out of counts, shared plans and suggestions, and
+# put first (eatoday.js, eaTodayRestricts); every notice shows either way.
 REQUIRED = ("draft_id", "spot_id", "line", "publisher", "link", "kind", "source_url", "start", "fetched_at",
-            "reviewer", "authority", "reviewed_at")
+            "reviewer", "authority", "reviewed_at", "restricts")
 OPTIONAL = ("incident_id", "expiry")
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
@@ -141,6 +145,8 @@ def load_approvals(path: Path | None = None, known: set[str] | None = None, now:
             problems.append(f"{here}: kind must be one of {', '.join(KINDS)}")
         if e.get("spot_id") and not (isinstance(e["spot_id"], str) and _SPOT.fullmatch(e["spot_id"])):
             problems.append(f"{here}: spot_id is not a spot id")
+        if e.get("restricts") is not None and not isinstance(e["restricts"], bool):
+            problems.append(f"{here}: restricts must be true or false")
         if e.get("incident_id") is not None and not _plain(e.get("incident_id")):
             problems.append(f"{here}: incident_id must be one clean line")
         if len(problems) == before:
@@ -249,7 +255,8 @@ def shown(approvals: dict, check: dict | None, now: datetime) -> dict[str, list[
             state, checked = "stale", max(filter(None, (run_at if isinstance(d, dict) else None, confirmed)))
         out.setdefault(a["spot_id"], []).append({
             "line": a["line"], "publisher": a["publisher"], "link": a["link"], "since": a["start"],
-            "checked": _local(checked).isoformat(), "state": state, "_order": (a["start"], a["reviewed_at"])})
+            "checked": _local(checked).isoformat(), "state": state, "_order": (a["start"], a["reviewed_at"]),
+            "restricts": a["restricts"]})
     for items in out.values():
         items.sort(key=lambda x: x.pop("_order"), reverse=True)
     return out
