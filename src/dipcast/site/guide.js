@@ -7,6 +7,8 @@
 // when, and that it has not been checked. The two are told apart in words, not colour: a colour on
 // this page means a risk level. "Verified" is the word the notes on a visit (visits.js) use for a
 // fact checked against an official source; there "confirmed" means a swimmer saying it is still so.
+// A fact from a dated record (source_date, a consultation's month, say) is as that record listed it,
+// not a current check, so it says "Source" and the month instead of "Verified".
 //
 // A plain script, like reviews.js: in the page its names are globals (each begins guide or GUIDE,
 // clear of the page's own), and in Node the last lines export them (tests/site_guide.test.cjs).
@@ -25,6 +27,10 @@ const guideHttps = u => /^https:\/\/[^\s<>"']+$/.test(String(u || ''));
 const guideFile = f => /^[a-z0-9][a-z0-9-]{0,78}\.jpe?g$/.test(String(f || ''));
 const guideNum = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
 
+// "2026-02" as "February 2026": a dated record's month (source_date).
+const guideMonth = ym => /^\d{4}-(0[1-9]|1[0-2])$/.test(String(ym || ''))
+  ? new Date(ym + '-15T12:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
+
 // Days between two ISO dates, b minus a.
 const guideDays = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5);
 
@@ -42,7 +48,8 @@ function guideChecked(g, today) {
 }
 
 // Under a fact or a photo: who says so. A verified fact names the page it came from, linked (the
-// guide's first line gives the day they were checked), or the day it was seen; a swimmer's
+// guide's first line gives the day they were checked), or the day it was seen; a fact from a dated
+// record names the page and the record's month, as "Source", not "Verified"; a swimmer's
 // suggestion says who, when, and that it is not checked.
 function guideSource(x) {
   if (x.status === 'suggested') {
@@ -50,6 +57,8 @@ function guideSource(x) {
   }
   const parts = [];
   if (guideHttps(x.source)) parts.push(`<a href="${guideEsc(x.source)}">${guideEsc(x.source_name || 'Source')}</a>`);
+  const month = guideMonth(x.source_date);
+  if (month && parts.length) return `<span class="g-who">Source</span>: ${parts[0]}, ${month}.`;
   if (x.seen) parts.push(`seen on site ${guideDay(x.seen)}`);
   return `<span class="g-who">Verified</span>: ${parts.join('; ')}.`;
 }

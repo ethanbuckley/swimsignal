@@ -87,6 +87,13 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert '<base href="../">' in head and "noindex" not in head and "<title>Plan a swim · SwimSignal</title>" in head
     assert '<link rel="canonical" href="https://example.org/swim/plan/">' in head and "<loc>https://example.org/swim/plan/</loc>" in sm
     assert '<h1 class="page-h">Plan a swim</h1>' in plan
+    # Without JavaScript, both say what they need and point to every spot's page, not "Loading…" for ever.
+    for page, needs in [(saved, "to show your saved spots"), (plan, "to read the forecasts")]:
+        body = page.split("</head>")[1]
+        note = re.search(r"<noscript>(.*?)</noscript>", body.split('<div id="result">')[1]).group(1)
+        assert f'<p class="notice">This page needs JavaScript {needs}' in note and '<a href="spots.html">Every spot</a>' in note
+        assert "<style>#result [data-wait]{display:none}</style>" in note and "data-wait>Loading" in body
+    assert (tmp_path / "spots.html").exists()
     places = json.loads((tmp_path / "data" / "places.json").read_text())
     assert places["credit"].startswith("Contains OS data") and len(places["places"]) > 20000
     assert ["Kendal", 54.33, -2.75] in places["places"]

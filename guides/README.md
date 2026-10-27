@@ -20,6 +20,13 @@ The file says `confirmed`, and the page says "Verified". "Verified" is the word 
 use for a fact checked against an official source. There, "confirmed" means a swimmer saying a note
 is still true.
 
+A fact from a dated record rather than a page kept current, such as a Defra designation
+consultation, is still `confirmed` with its `source`, and also has `source_date`, the record's month
+as a quoted string (`source_date = "2026-02"`). The page then says "Source: Defra, February 2026."
+instead of "Verified": the fact is as that record listed it, not a current check. Use it whenever the
+fact's words say it is a listing from a past date. `tests/test_guides.py` fails any fact that says
+"not a current check" without it.
+
 Facts next to each other under one topic, with the same line, share it: the page shows it once, after
 the last of them. A guide with more than five topics shows the first four, and "Show all" opens the
 rest.
@@ -52,6 +59,14 @@ source = "https://www.example.gov.uk/ilkley-bathing"
 source_name = "Bradford Council"
 lat = 53.9317            # optional: adds an "On a map" link (OpenStreetMap). Only from the source, or seen
 lon = -1.8163
+
+[[fact]]
+topic = "toilets"
+text = "Defra's February 2026 designation consultation listed public toilets near the site. This is a February 2026 listing, not a current check."
+status = "confirmed"
+source = "https://consult.defra.gov.uk/example.pdf"
+source_name = "Defra"
+source_date = "2026-02"  # a dated record's month: the page says "Source", not "Verified"
 
 [[fact]]
 topic = "entry"
