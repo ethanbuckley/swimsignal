@@ -47,6 +47,7 @@ SETS = {"fresh": wp.FRESH_CODES, "sea": wp.SEA_CODES}
 
 OM_HOST = "archive-api.open-meteo.com"
 OM_URL = f"https://{OM_HOST}/v1/archive"
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"   # the forecast-air check only
 OM_PAUSE_S = 25.0          # amended 27 Oct (was 60 s): 4,700 an hour at 32.7 a request is one every 25 s
 OM_MODEL = "era5_land"
 UA = "swimsignal-research (water temperature model test; hello@swimsignal.co.uk)"
@@ -318,6 +319,46 @@ class OMClient:
                 raise Stop("Open-Meteo answer has no daily temperature_2m_mean: stopping")
         f.write_text(json.dumps({"year": year, "cells": cells, "model": self.model, "elevation_only": elevation,
                                  "answer": ans}))
+        return ans
+
+    def check_get(self, name: str, base: str, params: dict, n_cells: int, weight: float, check_cap: float) -> list:
+        """One request of the forecast-air check (statement, "Forecast-air check"): the same caps, pace, retries and
+        stop rules as the fetch, cached under <cache>/check/<name>.json. `base` must be the archive or forecast URL.
+        The check's own total (log lines tagged by its hosts' check parameters) stays within check_cap."""
+        f = self.cache / "check" / f"{name}.json"
+        if f.exists():
+            return json.loads(f.read_text())["answer"]
+        if not self.fetch:
+            raise Stop(f"check/{f.name} is not cached; rerun with --fetch")
+        if base not in (OM_URL, FORECAST_URL):
+            raise Stop(f"refused: {base}")
+        spent_check = sum(float(x[3]) for x in self.log.lines() if len(x) >= 5 and "check=1" in x[4])
+        if spent_check + weight > check_cap:
+            raise Stop(f"forecast-air check cap {check_cap:.0f} would be passed ({spent_check:.1f} spent)")
+        if self.spent() + weight > self.total_cap:
+            raise Stop(f"Open-Meteo total cap {self.total_cap:.0f} would be passed")
+        self._wait_for_day(weight)
+        if self._last is not None:
+            wait = self.pause_s - (time.monotonic() - self._last)
+            if wait > 0:
+                self.sleep(wait)
+        url = base + "?" + urlencode(params)
+        try:
+            r, _ = send_with_retries(lambda: self.http.get(url), self.log, url + "#check=1", self.sleep)
+        finally:
+            self._last = time.monotonic()
+        self.log.add(str(r.status_code), len(r.content), weight if r.status_code == 200 else 0, url + "#check=1")
+        if r.status_code != 200:
+            raise Stop(f"Open-Meteo answered {r.status_code}: {r.text[:200]!r}: stopping")
+        try:
+            body = r.json()
+        except ValueError as e:
+            raise Stop("Open-Meteo body is not JSON: stopping") from e
+        ans = body if isinstance(body, list) else [body]
+        if len(ans) != n_cells:
+            raise Stop(f"Open-Meteo returned {len(ans)} locations for {n_cells}: stopping")
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps({"params": params, "answer": ans}))
         return ans
 
 

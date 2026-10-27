@@ -565,3 +565,53 @@ def test_elevation_cap(tmp_path, monkeypatch):
     c = wf.OMClient(tmp_path, fetch=True, transport=om_transport(), sleep=lambda s: None, others=lambda: [])
     with pytest.raises(wf.Stop, match="elevation cap"):
         wf.fetch_open_meteo(c, {"seasons": {}, "elevation_cells": [f"5{i}.000_-1.000" for i in range(30)]})
+
+
+# ---- the forecast-air check ----------------------------------------------------------------------------------------
+import wt_air_check as wa  # noqa: E402
+
+
+def test_london_daily_needs_every_hour_including_the_clock_change_day():
+    t = pd.date_range("2026-10-24T23:00Z", "2026-10-26T23:59Z", freq="h")     # 24, 25 and 26 Oct in London
+    v = list(np.arange(len(t), dtype=float))
+    d = wa.london_daily([x.isoformat() for x in t], v)
+    assert list(d.index) == [pd.Timestamp("2026-10-25"), pd.Timestamp("2026-10-26")]   # 24 Oct starts at 23:00 BST
+    assert d[pd.Timestamp("2026-10-25")] == pytest.approx(np.mean(v[0:25]))       # 25 hours on 25 Oct
+    v[30] = None
+    assert pd.Timestamp("2026-10-26") not in wa.london_daily([x.isoformat() for x in t], v).index
+
+
+def test_air_check_measures_and_pass_rule():
+    idx = pd.date_range("2026-10-01", periods=20)
+    ar = {"c": pd.Series(np.linspace(8, 14, 20), index=idx)}
+    assert wa.measures({"c": ar["c"] + 0.3}, ar)["pass"]
+    r = wa.measures({"c": ar["c"] + 0.6}, ar)
+    assert not r["pass"] and r["a7_mean"] == pytest.approx(0.6) and r["a7_pairs"] == 14
+    noisy = ar["c"] + np.where(np.arange(20) % 2, 1.5, -1.5)
+    r = wa.measures({"c": noisy}, ar)                          # daily noise that averages out over 7 days
+    assert r["daily_rms"] == pytest.approx(1.5) and r["a7_rms"] < 0.25 and r["pass"]
+
+
+def test_rain_identical():
+    a = [{"hourly": {"time": ["t1", "t2"], "precipitation": [0.0, 1.2]}}]
+    assert wa.rain_identical(a, a)["values_or_cells_differing"] == 0
+    b = [{"hourly": {"time": ["t1", "t2"], "precipitation": [0.0, 1.3]}}]
+    assert wa.rain_identical(a, b)["values_or_cells_differing"] == 1
+
+
+def test_check_get_hosts_cap_and_cache(tmp_path):
+    seen = []
+
+    def h(req):
+        seen.append(req.url)
+        return httpx.Response(200, json=[{"x": 1}, {"x": 2}])
+    c = wf.OMClient(tmp_path, fetch=True, transport=httpx.MockTransport(h), sleep=lambda s: None, others=lambda: [])
+    with pytest.raises(wf.Stop, match="refused"):
+        c.check_get("x", "https://example.com/v1/forecast", {}, 2, 2.0, 10.0)
+    assert c.check_get("a", wf.FORECAST_URL, {"latitude": "1,2"}, 2, 2.0, 3.0) == [{"x": 1}, {"x": 2}]
+    assert "check=1" not in str(seen[0])                       # the tag is for the log only
+    assert c.check_get("a", wf.FORECAST_URL, {"latitude": "1,2"}, 2, 2.0, 3.0) == [{"x": 1}, {"x": 2}]
+    assert len(seen) == 1                                      # cached
+    with pytest.raises(wf.Stop, match="check cap"):
+        c.check_get("b", wf.OM_URL, {"latitude": "1,2"}, 2, 2.0, 3.0)
+    assert c.spent() == pytest.approx(2.0)
