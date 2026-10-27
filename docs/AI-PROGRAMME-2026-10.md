@@ -63,8 +63,10 @@ shadow window was changed.
 | #403 | Research: sonde readings in the river E. coli estimate (statement) | open, draft, **cannot run** | 7292f73 | 71 covered rows at 4 sites vs a gate of 150; the gate was set after the coverage counts were seen (disclosed). Grow the rows (Wessex CC BY samples, 2027) or drop it |
 | #404 | Research: flow-based dilution (statement + harness) | open, draft, **not approved, nothing run** | c0c71e2 | 2 EA metadata requests; 17 of 20 river bathing waters have a spot gauge (8 real-time). Five questions for Ethan at the end of the statement; the run fetch is capped at 200 requests |
 
-Found while checking #403: the terms page credits the EA Hydrology API "All rights reserved", while the API states
-OGL v3. Not changed yet.
+#403 flagged the terms page's Hydrology API credit ("All rights reserved") as a mismatch with the API's OGL v3.
+Checked 27 Oct: no mismatch. The credit sits under the page's "all under the Open Government Licence v3.0" heading, and
+"© Environment Agency copyright and/or database right <year>. All rights reserved." is the EA's own attribution
+statement for OGL data (the `attributionStatement` on its dataset records). Nothing to change.
 
 ## Open decisions, and whose
 
@@ -75,8 +77,8 @@ OGL v3. Not changed yet.
   Algae licence enquiry; an EA lab question that would settle 7887's definition.
 - **Ethan (27 Oct drafts):** merge or not, and the questions in the table above, for #400-#404; whether a new
   shallow-lake test follows #386's near miss.
-- **Follow-ups:** where the replay would live and whether it is cached offline; the Hydrology credit on the terms
-  page. ("Highest risk" and P4 were fixed in #399 and #398.)
+- **Follow-ups:** where the replay would live and whether it is cached offline; ("Highest risk" and P4 were fixed in
+  #399 and #398.)
 
 ## Dated next actions
 
