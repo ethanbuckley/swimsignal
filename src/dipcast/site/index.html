@@ -2352,7 +2352,9 @@ function unknowns(d) {
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
   // The answer says what was checked and when (coverLine); here only where the latest is.
-  if (reviewed) rows.push(["Today's EA advice", 'Notice shown above', `${eaTodayLatest(d) || 'See the notice above'}.`]);
+  // Labelled as the EA's only where the spot has the EA's panel (a bathing water); another publisher's notice
+  // elsewhere is an official notice, not the EA's advice.
+  if (reviewed) rows.push([typeof eaTodayId === 'function' && eaTodayId(d) ? "Today's EA advice" : 'Official notice', 'Notice shown above', `${eaTodayLatest(d) || 'See the notice above'}.`]);
   else if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
   if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
   if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
