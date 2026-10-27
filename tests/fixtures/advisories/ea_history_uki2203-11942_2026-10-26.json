@@ -1,0 +1,53 @@
+{ "format" : "linked-data-api", "version" : "0.2", "result" : {"_about" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?_pageSize=50&bathingWater.eubwidNotation=uki2203-11942", "definition" : "https://environment.data.gov.uk/meta/doc/bathing-water-quality/pollution-incident.json?bathingWater.eubwidNotation=uki2203-11942", "extendedMetadataVersion" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?_pageSize=50&bathingWater.eubwidNotation=uki2203-11942&_metadata=all", "first" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?_pageSize=50&_page=0&bathingWater.eubwidNotation=uki2203-11942", "isPartOf" : {"_about" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?bathingWater.eubwidNotation=uki2203-11942", "definition" : "https://environment.data.gov.uk/meta/doc/bathing-water-quality/pollution-incident.json?bathingWater.eubwidNotation=uki2203-11942", "hasPart" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident.json?_pageSize=50&bathingWater.eubwidNotation=uki2203-11942", "type" : ["http://purl.org/linked-data/api/vocab#ListEndpoint"]}
+    , "items" : [{"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/11942-20260910-100100/recordDateTime/20260911122044", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/uki2203-11942", "eubwidNotation" : "uki2203-11942", "label" : [{"_value" : "Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "uki2203-11942", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/RiverBathingWater"]}
+      , "endOfIncident" : {"_value" : "2026-09-11T12:20:00", "_datatype" : "dateTime"}
+      , "incidentNotation" : "11942-20260910-100100", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/015", "label" : [{"_value" : "oil or fuel", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "oil or fuel", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "015", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 11942-20260910-100100", "_datatype" : "string"}
+      ], "nirsRef" : "02560500", "notation" : ["11942-20260910-100100", "11942-20260910-100100"], "replaces" : {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/11942-20260910-100100/recordDateTime/20260910100146", "label" : [{"_value" : "Pollution Incident - 11942-20260910-100100", "_datatype" : "string"}
+        ], "notation" : ["11942-20260910-100100", "11942-20260910-100100"], "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+          ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+          , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+        ]}
+      , "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/11942", "label" : [{"_value" : "Sampling point at Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "11942", "samplePointNotation" : "11942", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-09-11T12:20:44", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-09-11_12-20-43_821-0038.csv#row=000002", "startOfIncident" : {"_value" : "2026-09-10T10:01:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/11942-20260817-144800/recordDateTime/20261020131104", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/uki2203-11942", "eubwidNotation" : "uki2203-11942", "label" : [{"_value" : "Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "uki2203-11942", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/RiverBathingWater"]}
+      , "endOfIncident" : {"_value" : "2026-10-19T16:00:00", "_datatype" : "dateTime"}
+      , "incidentNotation" : "11942-20260817-144800", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/014", "label" : [{"_value" : "harmful algae", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "harmful algae", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "014", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 11942-20260817-144800", "_datatype" : "string"}
+      ], "nirsRef" : "02547898", "notation" : ["11942-20260817-144800", "11942-20260817-144800"], "replaces" : {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/11942-20260817-144800/recordDateTime/20260817145051", "label" : [{"_value" : "Pollution Incident - 11942-20260817-144800", "_datatype" : "string"}
+        ], "notation" : ["11942-20260817-144800", "11942-20260817-144800"], "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+          ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+          , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+        ]}
+      , "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/11942", "label" : [{"_value" : "Sampling point at Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Ham and Kingston, River Thames", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "11942", "samplePointNotation" : "11942", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-10-20T13:11:04", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-10-20_13-11-03_962-0002.csv#row=000002", "startOfIncident" : {"_value" : "2026-08-17T14:48:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    ], "itemsPerPage" : 50, "page" : 0, "startIndex" : 1, "type" : ["http://purl.org/linked-data/api/vocab#Page"]}
+}

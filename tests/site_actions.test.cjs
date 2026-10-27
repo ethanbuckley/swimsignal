@@ -196,5 +196,5 @@ test('the embed card and the alerts file carry the line', () => {
   assert.match(h, /<p class="hl high">High risk today: sewage spills<\/p><p class="next">Low risk tomorrow<\/p><p class="act">Better to choose a lower day or spot\. If you do swim, try not to swallow any water\.<\/p>/);
   L.setToday('2026-09-30');   // the card sets the day from its data; put it back for the tests after
   const src = fs.readFileSync(path.join(__dirname, '../scripts/alerts.js'), 'utf8');
-  assert.match(src, /action: L\.levelAction\(s\)/);   // the file itself is built and checked in tests/test_site_pages.py
+  assert.match(src, /action: officialAction\(s\) \|\| L\.levelAction\(s\)/);   // the level's line unless a notice shows (site_official_consistency); the file itself is built and checked in tests/test_site_pages.py
 });

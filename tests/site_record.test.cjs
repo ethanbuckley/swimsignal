@@ -204,7 +204,7 @@ test('links to the record: the organisers\' page for the picked day, the sites v
   assert.ok(detail.includes('record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a>'));
   const page = fs.readFileSync(path.join(site, 'record.html'), 'utf8');
   assert.ok(page.includes('@page { size:A4 portrait') && page.includes('<title>Decision record · SwimSignal</title>') && page.includes('class="site-foot"'));
-  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="evidence\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="record\.js"><\/script>/.test(page));
+  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="evidence\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="eatoday\.js"><\/script>\s*<script src="brief\.js"><\/script>\s*<script src="record\.js"><\/script>/.test(page));
 });
 
 // ------------------------------------------------------------------------------ OP2, OP3, OP4 (docs/ORGANISER-PIVOT-2026-10.md)
@@ -283,4 +283,18 @@ test('the record is one input to the organisation\'s own risk assessment, names 
   // Never certified or verified, in any state.
   for (const [s, d] of [[ilkley, DAYS[0]], [ilkley, DAYS[1]], [lake, DAYS[0]], [null, DAYS[0]]])
     assert.doesNotMatch(text(Rec.view(s, d, FULL, VER, BASE, NOW, 'x', 'Org')), /\b(certif\w*|verified)\b/i);
+});
+
+// Reviewed official advice (eatoday.js, eaTodayBrief) sits above the level, apart from it; fixture item only.
+test('the record shows reviewed official advice above the level, apart from it, and nothing without it', () => {
+  const official = [{line: 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026', publisher: 'Environment Agency',
+    link: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901', since: '2026-06-19', checked: '2026-10-03', state: 'checked'}];
+  const h = Rec.view({...ilkley, official}, DAYS[1], DATA, VER, BASE, NOW);
+  assert.ok(h.includes('<p class="r-official"><b>Official advice:</b> EA advice against bathing (harmful algae) · since 19 Jun · checked 3 Oct. '
+    + 'Not part of the level below; follow it first. <a href="https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901">'
+    + 'Open the Environment Agency page</a>.</p>'));
+  assert.ok(h.indexOf('class="r-official"') < h.indexOf('<h3>The level and why</h3>'));
+  assert.equal(text(Rec.view({...ilkley, official}, DAYS[1], DATA, VER, BASE, NOW).split('<h3>The level and why</h3>')[1]),
+    text(Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW).split('<h3>The level and why</h3>')[1]));   // the level and the rest are unchanged
+  assert.doesNotMatch(Rec.view(ilkley, DAYS[1], DATA, VER, BASE, NOW), /r-official|Official advice/);
 });

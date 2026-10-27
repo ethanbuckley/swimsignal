@@ -655,8 +655,8 @@ to the 2027 forward step, and nothing on the site changes.
 ### The run
 
 - Stage 1: 28,317 requests, 5.18 GB, features SHA-256 `41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e`
-  (committed in 4ec237b before any check was fetched). Stage 0 (CLMS) not run: no account, and no English site
-  covered.
+  (committed in 4ec237b before any check was fetched). Stage 0 (CLMS) not run: no account, and no CLMS data at the
+  18 English sites checked in summer 2025 (wording narrowed 26 Oct, 23:45 UTC; the run log above has the counts).
 - Stage 2 fetch: 1,857 checks, one sampling point a request (A3), checks SHA-256
   `f036b6ebf62e29a2569a9c6334f2305d1bed20068296b44322f29783e9a70413`.
 - Scoring: `run.sh score` from a `git archive` of 70f67c2, under the group's heavy-run lock, nothing else running,

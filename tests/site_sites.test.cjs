@@ -121,7 +121,7 @@ test('the page, its links from the Saved page and the organisers\' page, and its
   const page = fs.readFileSync(path.join(SITE, 'sites.html'), 'utf8');
   assert.ok(page.includes('<title>Sites view · SwimSignal</title>') && page.includes('<header class="top">') && page.includes('class="site-foot"'));
   assert.ok(page.includes('@page { size:A4 portrait') && page.includes('break-inside:avoid'));
-  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="lists\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="sites\.js"><\/script>/.test(page));
+  assert.ok(/<script src="levels\.js"><\/script>\s*<script src="lists\.js"><\/script>\s*<script src="organisers\.js"><\/script>\s*<script src="printed\.js"><\/script>\s*<script src="eatoday\.js"><\/script>\s*<script src="sites\.js"><\/script>/.test(page));
   const org = fs.readFileSync(path.join(SITE, 'organisers.html'), 'utf8');
   assert.ok(org.includes('id="sites-maker"') && org.includes('Make a sites link') && org.includes('<script src="sites.js"></script>'));
   const app = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8');

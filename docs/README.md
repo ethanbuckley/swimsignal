@@ -24,6 +24,17 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   coverage, how a forecast would be validated, draft emails and tasks. Plans only.
 - [COMPREHENSION-TEST-2026-10.md](COMPREHENSION-TEST-2026-10.md): a plan for 8 to 10 moderated swimmer sessions,
   October to November 2026. Not yet run.
+- [COMPREHENSION-TEST-2026-10-RUN-SHEET.md](COMPREHENSION-TEST-2026-10-RUN-SHEET.md): the moderator's checklist for
+  one Lake District session (day before, morning, during, after), the consent wording, where participants' data
+  is kept and for how long, the defaults it takes from the plan, and Ethan's decisions of 26 October 2026.
+- [COMPREHENSION-TEST-2026-10-RECORDS.md](COMPREHENSION-TEST-2026-10-RECORDS.md): the blank record for one
+  session and how to analyse 8 to 10 of them against the plan's fail lines. Filled records stay out of the
+  repository.
+- [AI-PROGRAMME-2026-10.md](AI-PROGRAMME-2026-10.md): the status map for the autumn 2026 AI and data pieces
+  (satellite algae, advisory finder, sampling priorities, monitoring anomalies, river rises, moderation). Each is
+  its own draft PR.
+- [MODERATION-ASSIST-TRIGGER-2026-10.md](MODERATION-ASSIST-TRIGGER-2026-10.md): when to add help with moderating
+  reviews, and in what order. Nothing built.
 - [SWIMMER_TESTING.md](SWIMMER_TESTING.md): the earlier swimmer test plan. The comprehension test replaces its
   tasks and keeps its recording rules.
 - [SWIMSIGNAL_REVIEW.md](SWIMSIGNAL_REVIEW.md): review notes for the SwimSignal rebrand: scope, compatibility,
@@ -83,6 +94,11 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   before the run. **The chances run too high overall** (observed over expected 0.74 same day, 0.80 in advance),
   and the higher chances run highest (slope 0.74), but not at every company: Thames, Wessex and Southern too high;
   Anglian and Yorkshire too extreme, not too high. Nothing is refitted. Tables: `.json`, `-persistence.json`.
+- [CALIBRATION-TEST-PROPOSAL-2026-11.md](CALIBRATION-TEST-PROPOSAL-2026-11.md): a recalibration of the live spill
+  forecast (intercept and slope per lead, pooled or with a company term), fitted to 6 December 2026 and judged on
+  14 December to 7 March 2027 against production, with a non-inferiority route, company guardrails and a staged
+  switch-on. **Approved 26 October 2026, not run:** the fit is on or after 10 December. A pass leads to a separate
+  rollout review, not a switch-on. For 2027 it stays a labelled secondary.
 
 ### Transport and the E. coli estimate
 
@@ -108,8 +124,8 @@ itself is the record. CSV and JSON files are the result tables of the test they 
   `-score.json`, `-face.json`, `-model-235.json`, `-model-500.json`.
 - [LAKE-ALGAE-SATELLITE-TEST-2026-10.md](LAKE-ALGAE-SATELLITE-TEST-2026-10.md): a Sentinel-2 chlorophyll index
   (NDCI) at lake bathing waters, scored against the EA's visual algae checks, 2020–26. **"Algae seen" fails
-  (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS covers no
-  English site. Tables: `-score.json`, `-sizes.json`, `-clms-tiles.json`, `-coverage.json`.
+  (Possible harm; AUC 0.60); "objectionable" too few to judge.** Lakes keep the EA check only. CLMS had no data
+  at the 18 English sites checked in summer 2025. Tables: `-score.json`, `-sizes.json`, `-clms-tiles.json`, `-coverage.json`.
 - [LAKE-PATH-TEST-2026-10.md](LAKE-PATH-TEST-2026-10.md): a lake on the way at lake speed, with lake dilution.
   **All five conditions hold;** switched on, then replaced by `residence_spill`.
 - [LAKE-RESIDENCE-TEST-2026-10.md](LAKE-RESIDENCE-TEST-2026-10.md): a lake on the way as a well-mixed lake with

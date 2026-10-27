@@ -146,3 +146,24 @@ def test_the_home_and_spot_pages_link_their_feeds_only_when_there_are_feeds(tmp_
     page = (tmp_path / "spot" / "warleigh-weir" / "index.html").read_text()
     assert f'title="SwimSignal · Warleigh Weir" href="{SITE}spot/warleigh-weir/feed.xml">' in page
     assert (tmp_path / "spot" / "warleigh-weir" / "feed.xml").is_file() and (tmp_path / "feed.xml").is_file()
+
+
+def test_an_entry_carries_reviewed_official_advice_beside_the_level(tmp_path):
+    """A spot with official advice (spots.json `official`) is never a clean "Low risk… Usual care" in a
+    feed: its title and summary carry the compact form (cards.official_brief, eatoday.js's words). The
+    level, its category and alerts.json are unchanged; a spot without advice is as before."""
+    bs = _build_site()
+    site = _site(tmp_path, bs)
+    official = [{"line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
+                 "publisher": "Environment Agency", "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901",
+                 "since": "2026-06-19", "checked": "2026-10-26", "state": "checked"}]
+    results = [{**r, "official": official} if r["id"] == "wharfe-ilkley" else r for r in RESULTS]
+    bs.write_feeds(site, results, SITE)
+    brief = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
+    e = _valid(site / "spot" / "wharfe-ilkley" / "feed.xml").entries[0]
+    assert e.title == f'Wharfe at "Cromwheel" & Ilkley · Low risk for the next five days · Official: {brief}'
+    assert e.summary.startswith(f"Official: {brief}. Follow it first; the level is SwimSignal's sewage forecast only. Low risk")
+    assert e.tags[0].term == "low"
+    ww = _valid(site / "spot" / "warleigh-weir" / "feed.xml").entries[0]
+    assert ww.title == "Warleigh Weir · High risk right now: recent sewage spills"
+    assert json.loads((site / "data" / "alerts.json").read_text()) == _alerts(bs)

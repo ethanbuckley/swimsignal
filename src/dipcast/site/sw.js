@@ -26,11 +26,13 @@ const TIMEOUT_MS = 4000;
 const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, `lists.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots-lite.json', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/fells.webp', 'icons/fells-wide.webp',
   `since.js?v=${BUILD}`,   // what changed at a saved spot since you last looked
+  `outing.js?v=${BUILD}`,   // a plan's outing: when, the spot and a backup
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', `reviews.js?v=${BUILD}`, `visits.js?v=${BUILD}`, `illness.js?v=${BUILD}`, `guide.js?v=${BUILD}`, `evidence.js?v=${BUILD}`,
   `spotscores.js?v=${BUILD}`,   // how the forecast has done here; its data file is stored when a spot first asks for it
   `measured.js?v=${BUILD}`,   // lab results an organisation sent (samples/)
   `journal.js?v=${BUILD}`,
+  `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 
 self.addEventListener('install', e => {
@@ -89,7 +91,7 @@ async function networkFirst(req) {
 const SPOT_FILE = /\/data\/spot\/([A-Za-z0-9_-]+)\.json$/;
 function withTrace(cache, k) {
   const u = new URL(k), m = u.pathname.match(SPOT_FILE);
-  if (!m || m[1].endsWith('-trace')) return;
+  if (!m || /-(trace|replay)$/.test(m[1])) return;   // a trace, or a replay (replay.js): neither has a trace of its own
   u.pathname = u.pathname.replace(SPOT_FILE, '/data/spot/$1-trace.json'); u.search = '';
   fetch(u.href, { cache: 'no-cache', credentials: 'omit' }).then(res => { if (res.ok) cache.put(u.href, res); }).catch(() => {});
 }

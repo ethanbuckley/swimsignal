@@ -6,6 +6,13 @@
 const fs = require('fs');
 const path = require('path');
 const L = require(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'levels.js'));
+// Reviewed official advice (spots.json `official`, eatoday.js): never a clean "Low risk… Usual care" in an
+// alert. The level, its rank and so when an alert is sent are unchanged; while a notice shows, what to do
+// (`action`, and each day's) is the notice, so every message that gives the headline gives it too, and
+// `official` holds the compact form for whoever reads the file.
+const EA = require(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'eatoday.js'));
+const officialAction = s => { const b = EA.eaTodayBrief(s);
+  return b ? `Official: ${b}. Follow it first; the level is SwimSignal's sewage forecast only.` : ''; };
 
 const [src, out, root] = process.argv.slice(2);
 if (!src || !out || !root || !root.endsWith('/')) {
@@ -42,12 +49,14 @@ const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDa
 const dates = [0, 1, 2, 3, 4].map(n => addDays(L.today(), n)), words = [], at = new Map();
 const word = w => { if (!at.has(w)) { at.set(w, words.length); words.push(w); } return at.get(w); };
 const daysOf = s => dates.map(iso => { const l = L.dayLevel(s, iso);
-  return L.ORDER[l] === undefined ? null : [l, word(L.dayHeadline(s, iso)), word(L.dayAction(s, iso))]; });
+  return L.ORDER[l] === undefined ? null : [l, word(L.dayHeadline(s, iso)), word(officialAction(s) || L.dayAction(s, iso))]; });
 const spots = {};
 for (const s of data.spots) {
   const level = L.level(s), b = best(s);
   const clears = L.clearWords(s);   // "The spills upstream should have passed and died off by Saturday 22:47."
-  spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: L.levelAction(s), ...(clears ? { clears } : {}),
+  const official = EA.eaTodayBrief(s);
+  spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: officialAction(s) || L.levelAction(s), ...(clears ? { clears } : {}),
+    ...(official ? { official } : {}),
     url: PAGE_ID.test(s.id) ? `${root}spot/${s.id}/` : `${root}?spot=${encodeURIComponent(s.id)}`, ...(b ? { best: b } : {}),
     ...(L.daily(s) ? { days: daysOf(s) } : {}) };
 }

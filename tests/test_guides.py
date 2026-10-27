@@ -95,6 +95,41 @@ def test_a_bad_guide_says_what_is_wrong(change, message):
         parse(GOOD.replace(*change, 1))
 
 
+DATED = 'source_name = "Example Council"\n'
+
+
+def test_a_fact_from_a_dated_record_keeps_its_month():
+    g = parse(GOOD.replace(DATED, DATED + 'source_date = "2026-02"\n', 1))
+    assert g["facts"][0]["source_date"] == "2026-02" and g["facts"][0]["source"].startswith("https://")
+    assert "source_date" not in parse(GOOD)["facts"][0]
+
+
+@pytest.mark.parametrize("value, message", [
+    ('"February 2026"', "must be a month"), ('2026-02-01', "must be a month"), ('"2026-13"', "must be a month"),
+    ('"2026-11"', "in the future"),
+])
+def test_a_bad_source_date_says_what_is_wrong(value, message):
+    with pytest.raises(gd.GuideError, match=message):
+        parse(GOOD.replace(DATED, DATED + f"source_date = {value}\n", 1))
+
+
+def test_a_source_date_needs_a_confirmed_fact_with_a_source():
+    seen_only = GOOD.replace('seen = 2026-08-20', 'seen = 2026-08-20\nsource_date = "2026-02"', 1)
+    with pytest.raises(gd.GuideError, match="needs a confirmed fact with a source"):
+        parse(seen_only)
+    suggested = GOOD.replace('on = 2026-09-12', 'on = 2026-09-12\nsource_date = "2026-02"', 1)
+    with pytest.raises(gd.GuideError, match="needs a confirmed fact with a source"):
+        parse(suggested)
+
+
+def test_every_fact_that_says_it_is_not_a_current_check_has_its_records_month():
+    """A fact whose words say it is a dated listing must not be labelled "Verified" on the page."""
+    for path in sorted((ROOT / "guides").glob("*.toml")):
+        for f in tomllib.loads(path.read_text()).get("fact", []):
+            if "not a current check" in f["text"]:
+                assert "source_date" in f, (path.name, f["text"])
+
+
 def test_a_photo_needs_its_file_size_credit_and_labels_on_the_picture(tmp_path):
     (tmp_path / "steps.jpg").write_bytes(b"\xff\xd8\xff")
     photo = """
