@@ -79,7 +79,9 @@ statement for OGL data (the `attributionStatement` on its dataset records). Noth
 | #404 | **approved and run: fails as stated** (c75a1eb, open as a record). Lag check (9 requests): archive-only gauges 11-14 days behind, so 315 h lag; fetch 84 requests; face checks passed; primary +0.00011, Too uncertain; placebo not beaten; real-time-gauge rows Possible harm (−0.0024). Production dilution unchanged |
 
 After #386's near miss: no new satellite test now; a shallow-lake statement, if wanted, in spring 2027 on 2027 data
-only.
+only. **#386 is classified "promising, not validated"** (27 Oct): the fail stands; the signal is real; no chlorophyll
+estimate is shown or used in advice. #386 (a13d88c) and #385 (c8eac36) merged as records; #396 closed unmerged; #404
+(a10a643) and #406 merged.
 
 ## Open decisions, and whose
 

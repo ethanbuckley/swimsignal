@@ -98,7 +98,7 @@ On a Thursday after 18:00 UK time, `npx wrangler tail` shows `weekly: 2026-10-08
 
 ## Alerts for a date
 
-"Tell me when 12 June enters the forecast, and again if its level changes." An event organiser picks a spot and a day on the organisers' page. A browser that already has alerts on can then ask for a notification when that day first enters the forecast, four days before it, and one more each time that day's level changes. It may ask about up to 10 pairs of a spot and a date. Each pair is forgotten once its date has passed. The code is `src/dates.js`; the page's side is in `src/dipcast/site/organisers.js`.
+"Tell me when 12 June enters the forecast, and again if its level or the official advice changes." An event organiser picks a spot and a day on the organisers' page. A browser that already has alerts on can then ask for a notification when that day first enters the forecast, four days before it, and one more each time that day's level changes or official advice at the spot appears, lifts or changes. It may ask about up to 10 pairs of a spot and a date. Each pair is forgotten once its date has passed. The code is `src/dates.js`; the page's side is in `src/dipcast/site/organisers.js`.
 
 ### What it says
 
@@ -110,13 +110,17 @@ Moderate risk: sewage spills. Take more care: young children, older people and a
 weakened immune system may want a lower day or spot. This is the first forecast for this day, and it can change.
 ```
 
-A change says what it was: `High risk: sewage spills. Was moderate risk. Better to choose a lower day or spot. …`. Several pairs with news in one build make one notification, a line each. Tapping opens the organisers' page at that spot and day. A spot with nothing upstream (or an isolated lake) has the same level every day, so it is told once, when the day enters the forecast.
+A change says what it was: `High risk: sewage spills. Was moderate risk. Better to choose a lower day or spot. …`. Several pairs with news in one build make one notification, a line each. Tapping opens the organisers' page at that spot and day. A spot with nothing upstream (or an isolated lake) has the same level every day, so it is told once, when the day enters the forecast, and again only if official advice there changes.
+
+Official advice (the EA's advice against bathing, `official` in `alerts.json`) holds for the spot, not one day, so a notice that appears, lifts or changes is news on every asked-for day already in the forecast, whether or not the level moved. The line says which: `An official notice is new since the last forecast.`, `The official notice shown before is no longer shown.` or `The official notice has changed since the last forecast.` While a notice shows, the body starts with its marker and what to do is the notice, as for a level change. Its tag carries a short mark of the notice, so it does not silently replace the earlier notification for the same level on the device.
 
 ### How it decides
 
-Once a build, for everyone at once, as the high-risk alerts are. `alerts.json` now carries the forecast's five `dates`, and at each spot whose level changes from day to day each day's `[level, headline, action]` (the sentences as places in `words`, to keep the file small: 45 KB against 38 KB on 6 Oct 2026's data). `state` keeps each spot's level on each day. When a new build arrives and the queue is empty, a day whose level is new or different is news, and each browser that asked about that pair gets one notice in the alerts' own queue. Sending checks the latest `alerts.json` again, as an alert does: a pair no longer asked for, or a day back at the level it was, sends nothing.
+Once a build, for everyone at once, as the high-risk alerts are. `alerts.json` now carries the forecast's five `dates`, and at each spot whose level changes from day to day each day's `[level, headline, action]` (the sentences as places in `words`, to keep the file small: 45 KB against 38 KB on 6 Oct 2026's data). `state` keeps each spot's level on each day, and each spot's official notice (`notices`). When a new build arrives and the queue is empty, a day whose level is new or different, or whose spot's notice appeared, lifted or changed, is news, and each browser that asked about that pair gets one notice in the alerts' own queue. Sending checks the latest `alerts.json` again, as an alert does: a pair no longer asked for, or a day back at the level and notice it had, sends nothing.
 
 A day with no level in one build (its rain forecast late) keeps its last level in `state`, so it is not "new" again in the next. A pair asked for while its day is already in the forecast hears only of changes after that: the page already shows the day.
+
+A notice is compared without its check (`noticeKey` in `src/shared.js`): the daily "checked 26 Oct" moving on, or the check going stale ("not re-checked since"), is the same notice and not news. A `state` from before notices has no `notices`, so the first build after deploying compares none and only records them; notices are news from the build after.
 
 ### The API
 

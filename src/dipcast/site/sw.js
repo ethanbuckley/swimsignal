@@ -31,6 +31,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   'icons/icon.svg', 'icons/icon-192.png', 'icons/fells.webp', 'icons/fells-wide.webp',
   `since.js?v=${BUILD}`,   // what changed at a saved spot since you last looked
   `outing.js?v=${BUILD}`,   // a plan's outing: when, the spot and a backup
+  `outingwatch.js?v=${BUILD}`,   // what would change the outing, and what has since it was planned
   `spotdate.js?v=${BUILD}`,   // the outing's calendar file and the alerts for its date
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', `reviews.js?v=${BUILD}`, `visits.js?v=${BUILD}`, `illness.js?v=${BUILD}`, `guide.js?v=${BUILD}`, `evidence.js?v=${BUILD}`,

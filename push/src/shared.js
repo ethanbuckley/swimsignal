@@ -41,8 +41,11 @@ export async function readJson(request) {
 // since 19 Jun · checked 26 Oct. Follow it first; the level is SwimSignal's sewage forecast only." For
 // the texts that do not carry `action` (which already says it): the weekly note, a list of dates, a
 // combined push and the email. '' when the spot has none, and in an alerts.json from before the field.
-// Words only: it never decides who is told or when.
+// Words only: it never decides who is told or when, except through noticeKey below, for alerts for a date.
 const officialBrief = (spot) => (isObject(spot) && typeof spot.official === 'string' ? spot.official : '');
+// The notice itself, to tell when it changes (dates.js): the brief without its check, so a daily re-check
+// or a check going stale is not news, while a notice appearing, lifting or changing is. '' without one.
+export const noticeKey = (spot) => officialBrief(spot).split(' · ').filter((p) => !/^(checked|not re-checked since) /.test(p)).join(' · ');
 export const officialWords = (spot) => (officialBrief(spot)
   ? `Official: ${officialBrief(spot)}. Follow it first; the level is SwimSignal's sewage forecast only.` : '');
 // The short marker that goes in front of an advised spot's name wherever a text may be cut short, so a

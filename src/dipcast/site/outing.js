@@ -119,10 +119,10 @@ function outingAlert(a) {
   if (!pairs.length) return '';
   const day = pairs[0].date, whose = `${outDay(day)}'s`;   // "today's", "Saturday's"
   let h = '';
-  if (k.on.length) h += `<p class="outing-alert-on"><b>Alerts are on for ${k.on.length === pairs.length ? 'this outing' : outNames(k.on)}.</b> A notification each time ${whose} level changes at ${outNames(k.on)}.</p>`
+  if (k.on.length) h += `<p class="outing-alert-on"><b>Alerts are on for ${k.on.length === pairs.length ? 'this outing' : outNames(k.on)}.</b> A notification each time ${whose} level or official advice changes at ${outNames(k.on)}.</p>`
     + `<p class="small">Stored by SwimSignal's alert service: this browser's push address, with ${outNames(k.on)} on ${outLong(day)}. ${k.on.length > 1 ? 'Each is' : 'It is'} forgotten after that day.</p>`;
   if (k.add.length) {
-    if (!k.on.length) h += `<p>A notification each time ${whose} level changes at ${outNames(k.add)}.</p>`;
+    if (!k.on.length) h += `<p>A notification each time ${whose} level or official advice changes at ${outNames(k.add)}.</p>`;
     h += '<details class="fold"><summary>What asking sends</summary><p class="small">Asking sends the spot'
       + `${pairs.length > 1 ? 's' : ''} and the day of this outing, with your browser's push address, to SwimSignal's alert service, and nothing else about you: `
       + `not the time, where you start from or the rest of the plan. It keeps them with any dates you asked about on the organisers' page, up to ${D.MAX_DATES} in all, `
@@ -228,6 +228,7 @@ function drawOuting(box, shown) {
     const again = document.querySelector(`[data-outing="${k}"]`); if (again) again.focus();
   }));
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
+  if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, pair, DATA.generated_at);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
   if (typeof OutingPack === 'object') OutingPack.draw(pair);   // outingpack.js: keep this outing for offline use
   // The calendar file, made here when asked (organisers.html's way of handing a file over).
