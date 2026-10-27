@@ -4330,6 +4330,7 @@ function render(d) {
   else h += `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
   h += tiles + `</div><div class="col-more">${more}`;
   if (d.contributors.length) h += overflowTile(d, allUpstream(d));   // the list has any too far away to count (levels.js)
+  if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);
@@ -4337,6 +4338,26 @@ function render(d) {
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
+  if (REPLAY) mountReplay(d);
+}
+// Catchment replay (prototype, docs/CATCHMENT-REPLAY-2026-10.md): the last 48 hours upstream, only with
+// ?replay=1 in the address, so the page is unchanged without it. replay.js and the spot's
+// data/spot/<id>-replay.json (src/dipcast/replay.py) are asked for then, and not before.
+const REPLAY = new URLSearchParams(location.search).get('replay') === '1';
+let replayScript = null;
+function mountReplay(d) {
+  const host = document.getElementById('replay-host');
+  if (!host) return;
+  // At the build's stamp, read off levels.js's tag (build_site.with_build), as the offline copy stores it.
+  const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
+  replayScript = replayScript || new Promise((ok, no) => { const s = document.createElement('script');
+    s.src = `replay.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  const said = t => { if (host.isConnected) host.innerHTML = `<section class="tile"><p class="t-say">${t}</p></section>`; };
+  Promise.all([replayScript, fetch(`data/${d.detail_file.replace(/\.json$/, '-replay.json')}`, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null))])
+    .then(([, r]) => { if (!host.isConnected) return;
+      if (!r) return said('No replay of the last 48 hours upstream for this spot in this update.');
+      replayStyle(document); host.innerHTML = replayTile(r, Date.now(), host.clientWidth - 32); })   // the tile's inner width
+    .catch(() => said('The replay of the last 48 hours upstream could not be loaded.'));
 }
 // Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those
 // scripts arrived: without them the rest of the spot still draws.
