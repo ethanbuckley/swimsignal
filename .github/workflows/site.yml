@@ -12,8 +12,11 @@ on:
     branches: [main]
     # The two hand-checked data files change what is counted where, so a push of either builds too
     # (until 12 Oct 2026 they waited for the next scheduled run, a median 2.9 h).
+    # The four scripts build_site.py runs as files are listed too: #413's fix to build_any_point.py
+    # (27 Oct 2026) did not rebuild the site.
     paths: [spots.csv, spots-osm.csv, "src/**", scripts/build_site.py, .github/workflows/site.yml,
-            data/raw/overflow_joins.csv, data/raw/network_fixes.csv]
+            data/raw/overflow_joins.csv, data/raw/network_fixes.csv,
+            scripts/build_any_point.py, scripts/alerts.js, scripts/prerender_spots.js, scripts/prerender_verification.js]
 
 concurrency:
   group: site
