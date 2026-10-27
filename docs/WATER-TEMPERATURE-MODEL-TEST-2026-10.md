@@ -168,10 +168,10 @@ Two stages, fitted on the training rows of each fold.
 1. **Mohseni curve, one per water type**, on `a7`:
    `T = mu + (alpha - mu) / (1 + exp(gamma × (beta - a7)))`. Least squares (`scipy.optimize.curve_fit`), starting at
    mu 0, alpha 25, beta 13, gamma 0.2, within bounds mu -5 to 10, alpha 15 to 35, beta 0 to 30, gamma 0.01 to 2. If the
-   fit fails, the starting values are used and the failure is reported.
+   fit fails, or the type has fewer than 20 training rows, the starting values are used and the failure is reported.
 2. **A gradient-boosted correction** of the stage 1 residual, one model across all types: scikit-learn
    `HistGradientBoostingRegressor` on every input in the table above (water type as a categorical; missing values
-   handled natively). Settings fixed now, never tuned on any result: squared error, learning rate 0.05, 400
+   handled natively; an input with no value at all in a fold's training rows is left out of that fold's fit). Settings fixed now, never tuned on any result: squared error, learning rate 0.05, 400
    iterations, 31 leaves at most, at least 100 rows a leaf, L2 1.0, no early stopping, `random_state` 0. **[choice]**
 
 The estimate is stage 1 plus stage 2.
