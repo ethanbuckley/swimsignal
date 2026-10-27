@@ -253,6 +253,8 @@ def ea_transport(pages_per_month: int, status: int = 200, seen=None):
     def h(req: httpx.Request) -> httpx.Response:
         if seen is not None:
             seen.append(str(req.url))
+        if req.method != "POST":
+            return httpx.Response(405, text="Method Not Allowed")
         if status != 200:
             return httpx.Response(status, text="no")
         skip = int(req.url.params["skip"])
@@ -303,7 +305,7 @@ def test_ea_without_fetch_never_asks(tmp_path):
 
 def test_month_ranges():
     r = wf.month_ranges()
-    assert len(r) == 40 and r[0] == ("2018-05-01", "2018-05-31") and r[-1] == ("2025-09-01", "2025-09-30")
+    assert len(r) == 40 and r[0] == ("2018-05-01", "2018-06-01") and r[-1] == ("2025-09-01", "2025-10-01")
 
 
 # ---- the capped Open-Meteo client ---------------------------------------------------------------------------------

@@ -21,7 +21,6 @@ Every answer is cached under --cache and never asked for again; every request is
 from __future__ import annotations
 
 import argparse
-import calendar
 import json
 import os
 import subprocess
@@ -92,10 +91,10 @@ class EAClient:
 
     @staticmethod
     def name(params: dict) -> str:
-        return (f"{params['set']}_{params['dateFrom']}_{int(params['skip']):06d}.csv")
+        return f"{params['set']}_{params['dateFrom']}_{params['dateTo']}_{int(params['skip']):06d}.csv"
 
     def page(self, set_name: str, date_from: str, date_to: str, skip: int) -> str:
-        f = self.cache / self.name({"set": set_name, "dateFrom": date_from, "skip": skip})
+        f = self.cache / self.name({"set": set_name, "dateFrom": date_from, "dateTo": date_to, "skip": skip})
         if f.exists():
             return f.read_text()
         if not self.fetch:
@@ -115,7 +114,9 @@ class EAClient:
             self.sleep(wait)
         self.n += 1
         try:
-            r = self.http.get(url)
+            # The multi-point endpoint is POST only (the OpenAPI document lists `post /data/observation`; a GET
+            # answered 405 on 27 Oct). The filters go in the query string and the body is empty, as there.
+            r = self.http.post(url, content=b"")
         except httpx.HTTPError as e:
             self.log.add("ERR", 0, 0, url)
             raise Stop(f"{url}: {type(e).__name__}: stopping") from e
@@ -132,10 +133,14 @@ class EAClient:
 
 
 def month_ranges(years=EA_YEARS, months=wp.MONTHS) -> list[tuple[str, str]]:
+    """(dateFrom, dateTo) per month. dateTo is the first day of the next month: the archive's dateTo is exclusive.
+    On 27 Oct, dateTo=2018-05-31 returned nothing later than 30 May 18:35, and dateTo=2025-06-30 nothing later than
+    29 June. A reading at 00:00 on the first of the next month can come in both months; ids are de-duplicated."""
     out = []
     for y in years:
         for m in months:
-            out.append((f"{y}-{m:02d}-01", f"{y}-{m:02d}-{calendar.monthrange(y, m)[1]:02d}"))
+            ny, nm = (y + 1, 1) if m == 12 else (y, m + 1)
+            out.append((f"{y}-{m:02d}-01", f"{ny}-{nm:02d}-01"))
     return out
 
 
