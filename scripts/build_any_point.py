@@ -90,6 +90,7 @@ import shapely
 
 from dipcast import config
 from dipcast.model import lake_water, transport
+from dipcast.model.forecast import day_grid
 from dipcast.model.transport import (
     ADOPT_MIN_M,
     ADOPT_RADIUS_M,
@@ -1054,7 +1055,9 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
     """overflow_days.json. `probabilities(ov, days, rain)` is forecast.spill_probabilities with the
     model bound, the same call the spots use, given the rain from `rain(ov)`."""
     sub = ov.drop_duplicates("site_id").set_index("site_id").loc[ids].reset_index()
-    days = pd.date_range(now.floor("D") - pd.Timedelta(days=past), periods=past + DAYS_AHEAD + 1, freq="D")
+    # Calendar days, as the spots count them: 48 h back from the midnight after the clocks go back is 01:00
+    # on the repeated hour, which pandas cannot place, so no click-anywhere file was written from 25 Oct 2026.
+    days = day_grid(now, past, DAYS_AHEAD)
     hourly, rstats = rain(sub)
     if len(hourly):
         p, ok = probabilities(sub, days, hourly)

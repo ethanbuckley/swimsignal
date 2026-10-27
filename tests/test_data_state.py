@@ -210,3 +210,26 @@ def test_a_feed_that_stamps_only_on_change_is_told_from_a_frozen_one():
     st = df[["company"]].join(data_states(df)).groupby("company")
     assert st["feed_on_change"].all().to_dict() == {"AllOld": False, "AllRecent": False, "OnChange": True}
     assert st["data_state"].first().to_dict() == {"AllOld": "stale", "AllRecent": "stale", "OnChange": "stale"}
+
+
+def test_click_anywhere_days_are_calendar_days_across_the_clock_change(tmp_path):
+    """Two days back from 27 Oct 2026 is local midnight on 25 Oct, the day the clocks went back, not 48 hours
+    (01:00 on the repeated hour, which pandas cannot place: no click-anywhere file was written from 25 Oct)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("bap", Path(__file__).resolve().parents[1] / "scripts" / "build_any_point.py")
+    bap = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bap)
+    seen = {}
+
+    def probabilities(sub, days, hourly):
+        seen["days"] = days
+        return np.zeros((len(sub), len(days))), np.ones(len(days), dtype=bool)
+    now = pd.Timestamp("2026-10-27 13:30", tz="Europe/London")
+    df = _table().assign(lat=52.0, lon=-1.0, latest_event_start=pd.NaT, latest_event_end=pd.NaT, snap_confidence="high")
+    hourly = pd.DataFrame({"cell_lat": 52.0, "cell_lon": -1.0, "precip_mm": 0.0,
+                           "time": pd.date_range("2026-10-22", periods=24 * 12, freq="h", tz="UTC")})
+    bap.write_overflow_days(tmp_path, df, df["site_id"].tolist(), "v", 2, now, probabilities=probabilities,
+                            rain=lambda sub: (hourly, {}))
+    days = seen["days"]
+    assert [d.strftime("%Y-%m-%d %H:%M") for d in days[:3]] == ["2026-10-25 00:00", "2026-10-26 00:00", "2026-10-27 00:00"]
+    assert all(d.hour == 0 for d in days)
