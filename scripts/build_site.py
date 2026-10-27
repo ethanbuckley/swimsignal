@@ -2345,11 +2345,15 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
     for s in entries:
         e = add(feed, "entry")
         add(e, "id", f"tag:{host},{when.date().isoformat()}:spot/{s['id']}/{when.strftime('%Y%m%dT%H%M%SZ')}")
-        add(e, "title", f"{s['name']} · {s['headline']}")
+        # Official advice (spots.json `official`, cards.official_brief) beside the level, never in it.
+        add(e, "title", f"{s['name']} · {s['headline']}" + (f" · Official: {s['official']}" if s.get("official") else ""))
         add(e, "updated", stamp)
         add(e, "link", rel="alternate", type="text/html", href=s["url"])
         add(e, "category", term=s["level"])
-        add(e, "summary", f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"])
+        said = f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"]
+        if s.get("official") and s["official"] not in said:   # alerts.json's action gives it already (scripts/alerts.js)
+            said = f"Official: {s['official']}. Follow it first; the level is {BRAND}'s sewage forecast only. {said}"
+        add(e, "summary", said)
     ET.indent(feed)
     return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
 
@@ -2366,7 +2370,9 @@ def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
     except (OSError, ValueError):
         return None
     generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
-    spots = [{"id": sid, **a} for sid, a in alerts["spots"].items()]
+    from dipcast.cards import official_brief
+    advice = {r["id"]: official_brief(r) for r in results}
+    spots = [{"id": sid, **a, **({"official": advice[sid]} if advice.get(sid) else {})} for sid, a in alerts["spots"].items()]
     area_of = {r["id"]: r.get("area") for r in results}
     (site / "feed.xml").write_text(atom_feed(
         f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "

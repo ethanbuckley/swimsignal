@@ -13,16 +13,16 @@ const SITE = join(__dirname, '../src/dipcast/site');
 const PROFILE = 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945';
 const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
 const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', ...extra });
-const BRIEF = 'EA advice against bathing · since 19 Jun · checked 26 Oct';
+const BRIEF = 'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct';
 
 test('the compact form: who, what, since when, and when it was checked', () => {
   assert.equal(ea.eaTodayBrief({ official: [item()] }), BRIEF);
-  assert.equal(ea.eaTodayBrief({ official: [item({ state: 'stale' })] }), 'EA advice against bathing · since 19 Jun · not re-checked since 26 Oct');
-  assert.equal(ea.eaTodayBrief({ official: [item({ state: 'gone' })] }), 'EA advice against bathing · since 19 Jun · not re-checked since 26 Oct');
+  assert.equal(ea.eaTodayBrief({ official: [item({ state: 'stale' })] }), 'EA advice against bathing (harmful algae) · since 19 Jun · not re-checked since 26 Oct');
+  assert.equal(ea.eaTodayBrief({ official: [item({ state: 'gone' })] }), 'EA advice against bathing (harmful algae) · since 19 Jun · not re-checked since 26 Oct');
   assert.equal(ea.eaTodayBrief({ official: [item(), item({ since: '2026-01-01' })] }), BRIEF + ' · 1 more');
   assert.equal(ea.eaTodayBrief({ official: [item({ publisher: 'Waverley Borough Council',
     line: 'Waverley Borough Council: advice against swimming (blue-green algae) since 22 Aug 2025', since: '2025-08-22' })] }),
-  'Waverley Borough Council advice against swimming · since 22 Aug · checked 26 Oct');
+  'Waverley Borough Council advice against swimming (blue-green algae) · since 22 Aug · checked 26 Oct');
   assert.equal(ea.eaTodayTag({ official: [item()] }), `<span class="o-tag">${BRIEF}</span>`);
   assert.equal(ea.eaTodayTag({ official: [item()] }, 'p'), `<p class="o-tag">${BRIEF}</p>`);
   assert.match(ea.eaTodayTag({ official: [item({ publisher: '<b>x</b>', line: '<b>x</b>: <i>y</i> since 1 Jan 2026' })] }), /&lt;b&gt;x&lt;\/b&gt; &lt;i&gt;y&lt;\/i&gt;/);
@@ -89,7 +89,7 @@ test('the "Not known here" row follows the reviewed notice, and says "Not checke
   const ctx = pageContext(have, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const row = d => JSON.parse(JSON.stringify(run('unknowns', d).find(r => r[0] === "Today's EA advice")));   // out of the page's realm
   assert.deepEqual(row(frensham({ official: [item()] })), ["Today's EA advice", 'Notice shown above',
-    'The Environment Agency\'s notice above was last checked 26 Oct. Open <a href="#ea-today">today\'s EA advice</a> for the latest.']);
+    'Open <a href="#ea-today">today\'s EA advice</a> for the latest.']);   // when it was checked is said once, in the answer (coverLine)
   assert.deepEqual(row(frensham({ official: [item({ state: 'unverified', checked: '2026-10-19' })] })).slice(0, 2), ["Today's EA advice", 'Notice shown above']);
   assert.equal(row(frensham())[1], 'Not checked');
 });

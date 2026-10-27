@@ -98,19 +98,27 @@ function eaTodayCover(d) {
   const o = items[0], what = items.length > 1 ? 'The notices above' : `The ${eaTodayEsc(o.publisher)}'s notice above`;
   const when = o.state === 'checked' ? `${items.length > 1 ? 'were' : 'was'} last checked ${eaTodayShort(o.checked)}`
     : `${items.length > 1 ? 'have' : 'has'} not been re-checked since ${eaTodayShort(o.checked)}`;
-  const id = eaTodayId(d);   // a bathing water: the fold in its rating tile (eaTodayFold)
-  const open = id ? `Open <a href="#ea-today">today's EA advice</a> for the latest`
-    : /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `Open <a href="${eaTodayEsc(o.link)}">the ${eaTodayEsc(o.publisher)} page</a> for the latest` : '';
+  const open = eaTodayLatest(d);
   return `${what} ${when}${open ? `. ${open}` : ''}`;
 }
+// Where the latest is, for a spot with a reviewed notice: the fold in its rating tile (eaTodayFold) at a
+// bathing water, else the publisher's page. The Not known here tile says only this, as the answer has the rest.
+function eaTodayLatest(d) {
+  const o = eaTodayAdvice(d)[0]; if (!o) return '';
+  return eaTodayId(d) ? `Open <a href="#ea-today">today's EA advice</a> for the latest`
+    : /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `Open <a href="${eaTodayEsc(o.link)}">the ${eaTodayEsc(o.publisher)} page</a> for the latest` : '';
+}
+// What to do, in place of the level's line ("Usual care: …", which read as leave to swim), while a reviewed
+// notice shows: the notice comes first. '' without one, and the level's own line stands.
+const eaTodayAct = d => eaTodayAdvice(d).length ? 'Follow the official advice above first.' : '';
 // The compact form for the places a spot is one row among many: the list, Saved, Plan a swim's rows and
-// the decision record. "EA advice against bathing · since 19 Jun · checked 26 Oct", in a line of its own
+// the decision record. "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct", in a line of its own
 // beside the level, never in it. One shared helper, so every surface says the same. '' without advice.
 const eaTodayWho = p => p === 'Environment Agency' ? 'EA' : p;
 function eaTodayBrief(d) {
   const items = eaTodayAdvice(d);
   if (!items.length) return '';
-  const o = items[0], said = o.line.replace(/^[^:]*:\s*/, '').replace(/\s*\(.*$/, '').replace(/\s+since\s.*$/, '');
+  const o = items[0], said = o.line.replace(/^[^:]*:\s*/, '').replace(/\s+since\s.*$/, '');   // the cause, "(harmful algae)", stays
   const since = eaTodayShort(o.since);
   return [`${eaTodayWho(o.publisher)} ${said}`, since ? `since ${since}` : '',
     o.state === 'checked' ? `checked ${eaTodayShort(o.checked)}` : `not re-checked since ${eaTodayShort(o.checked)}`,
@@ -155,5 +163,5 @@ if (typeof document === 'object' && document && typeof document.addEventListener
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
-    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayBrief, eaTodayTag };
+    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
 }

@@ -277,7 +277,7 @@ OFFICIAL = {"line": "Environment Agency: advice against bathing (harmful algae) 
             "publisher": "Environment Agency",
             "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
             "since": "2026-06-19", "checked": "2026-10-26", "state": "checked"}
-BRIEF = "EA advice against bathing · since 19 Jun · checked 26 Oct"
+BRIEF = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
 
 
 @pytest.mark.parametrize("items", [
@@ -328,3 +328,17 @@ def test_weekend_card_and_caption_carry_official_advice():
     assert f"Upper: low risk on Saturday, moderate risk on Sunday. Official: {BRIEF}. Follow it first" in caption
     for size in cards.SIZES:
         cards.draw_weekend(card, GEN, size)   # the note under the table fits
+
+
+def test_weekend_card_plain_line_spot_with_advice_is_named_with_it():
+    """A spot in a plain line ("No monitored overflow found upstream") with advice, stale or checked, is
+    named with its notice under the table and in the caption; one without advice is not."""
+    stale = BRIEF.replace("checked 26 Oct", "not re-checked since 19 Oct")
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"lake": stale, "a": BRIEF})
+    assert card.plain_official == [("Quiet Lake", stale)]
+    assert card.plain == [("No monitored overflow found upstream", "no overflows", ["Quiet Lake", "Quiet Tarn"])]   # unchanged
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert f"Quiet Lake: Official: {stale}. Follow it first" in caption
+    assert "Quiet Tarn: Official" not in caption
+    for size in cards.SIZES:
+        cards.draw_weekend(card, GEN, size)   # both notes fit
