@@ -1,6 +1,7 @@
 # Dilution scaled by the river's measured flow: the test, stated before any score
 
-Written 27 October 2026. **Not approved and not run.** Ethan approves this statement first. Nothing below has been
+Written 27 October 2026. **Approved by Ethan on 27 October 2026** (answers below "Questions for Ethan"); not yet
+run. Ethan approved this statement before any run. Nothing below has been
 scored. No E. coli value was read in writing it, no flow reading was fetched, and no model was fitted. Results go
 below the line at the end. Nothing above the line changes after a result is seen. If anything is changed after a
 result is seen, both results are kept and the change is stated.
@@ -313,6 +314,32 @@ Whatever the verdict:
    which the gate's 60% would likely fail)?
 4. **Issue time.** 09:00 London on the sample day?
 5. **B and H.** The predictions-only rule above, or fixed values as in the river-rises answers (B = 0.02 skill)?
+
+## Ethan's answers and approval (27 October 2026)
+
+Ethan approved the statement on 27 October 2026 ("okay approved", to Claude's recommendations), with these answers:
+
+1. **Gauge rule:** spot gauge as primary; the per-overflow rule stays a reported arm.
+2. **k:** fixed at 0.5; the k = 1 arm stays reported.
+3. **Archive-only gauges:** the 36 h lag, after checking it against the gauges' own latest readings (below). If the
+   measured lag is longer, the longer one is used.
+4. **Issue time:** 09:00 London on the sample day, or 1 h before the sample if earlier, as written.
+5. **B and H:** the predictions-only rule, as written.
+
+The run may start before the river-rises fetch (PR #383, after 2 November), so the two EA fetches do not overlap.
+
+### The lag check, stated before its requests
+
+- **Requests:** one per archive-only spot gauge in the metadata coverage (9 gauges), its 15-minute flow measure's
+  `readings?latest`, through `flow_fetch.py latest` (the same capped client: one in flight, 1.5 s apart, stop on the
+  first 403, 429, 5xx, redirect or connection error). 9 requests; the step's cap is 12.
+- **Age:** the request's UTC time minus the end of the latest reading's quarter hour.
+- **Left out of the maximum:** a gauge whose status is suspended (Hunsingore, "Flow Suspended"), and a gauge whose
+  latest reading is more than 14 days old (not publishing). Each is reported.
+- **Lag used:** the larger of 36 h and the largest remaining age, rounded up to the whole hour. It replaces
+  `LAG_ARCHIVE_H` in `flow_protocol.py` before the run, in its own commit.
+- **Limitation:** one snapshot, on one day. It measures how far behind the archive is now, not on each past sample
+  day. No flow value from these requests is used in the test.
 
 ---
 

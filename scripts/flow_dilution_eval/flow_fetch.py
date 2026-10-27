@@ -2,6 +2,7 @@
 
     python scripts/flow_dilution_eval/flow_fetch.py stations --cache <dir> [--fetch]
     python scripts/flow_dilution_eval/flow_fetch.py flows --cache <dir> --gauges <gauges.csv> [--fetch]
+    python scripts/flow_dilution_eval/flow_fetch.py latest --cache <dir> --stations <station cache> --coverage <csv> --fetch
 
 `stations` (outcome-blind prep, allowed before approval): the EA Hydrology flow station list and the
 real-time flood-monitoring flow station list, two requests. Metadata only: no reading.
@@ -40,6 +41,7 @@ FM = f"https://{HOST}/flood-monitoring"
 READINGS_LIMIT = 100_000     # the Hydrology soft limit per call; a season of 15-minute readings is about 14,700
 REF_FROM, REF_TO = "2014-01-01", "2023-12-31"
 SEASONS = (2024, 2025, 2026)
+LATEST_MAX_REQUESTS = 12     # the lag check: one request per archive-only spot gauge (9 expected)
 SEASON_FROM, SEASON_TO = "04-29", "10-01"   # a few days either side of May-September, for the look-back
 STOP_STATUS = (403, 429)
 
@@ -131,11 +133,36 @@ def flows(client: CappedClient, gauges_csv: Path) -> None:
                                  "_limit": READINGS_LIMIT})
 
 
+def latest(client: CappedClient, station_cache: Path, coverage_csv: Path) -> list[dict]:
+    """The lag check (statement, "The lag check"): each archive-only spot gauge's latest 15-minute flow reading.
+    One request a gauge; the age is the request time minus the end of that reading's quarter hour."""
+    import pandas as pd
+    hy = json.loads(next(Path(station_cache).glob("*hydrology_id_stations*")).read_text())
+    by_label = {str(st.get("label")): st for st in hy["items"]}
+    cov = pd.read_csv(coverage_csv)
+    out = []
+    for r in cov[cov["gauge"].notna() & ~cov["realtime"].astype(bool)].drop_duplicates("gauge").itertuples():
+        q15 = measure_ids(by_label[r.gauge])["q15"]
+        asked = datetime.now(UTC)
+        js = client.get_json(f"{HY}/id/measures/{q15}/readings.json", {"latest": ""})
+        items = js.get("items") or []
+        last = max((i["dateTime"] for i in items), default=None)
+        age_h = None
+        if last:
+            end = datetime.fromisoformat(last.replace("Z", "+00:00")) + pd.Timedelta(minutes=15)
+            age_h = round((asked - end).total_seconds() / 3600, 2)
+        out.append({"gauge": r.gauge, "status": r.status, "q15": q15, "asked": asked.isoformat(timespec="seconds"),
+                    "latest": last, "age_h": age_h})
+    return out
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["stations", "flows"])
+    ap.add_argument("step", choices=["stations", "flows", "latest"])
     ap.add_argument("--cache", type=Path, required=True)
     ap.add_argument("--gauges", type=Path)
+    ap.add_argument("--stations", type=Path)
+    ap.add_argument("--coverage", type=Path)
     ap.add_argument("--fetch", action="store_true")
     a = ap.parse_args(argv)
     if a.step == "stations":
@@ -143,6 +170,10 @@ def main(argv=None) -> None:
         hy, fm = stations(c)
         print(f"hydrology flow stations: {len(hy.get('items', []))}; real-time flow stations: "
               f"{len(fm.get('items', []))}; requests made: {c.n}")
+    elif a.step == "latest":
+        c = CappedClient(a.cache, a.fetch, max_requests=LATEST_MAX_REQUESTS)
+        print(json.dumps(latest(c, a.stations, a.coverage), indent=1))
+        print(f"requests made: {c.n}", file=sys.stderr)
     else:
         c = CappedClient(a.cache, a.fetch)
         try:
