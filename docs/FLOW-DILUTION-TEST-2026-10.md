@@ -1,7 +1,7 @@
 # Dilution scaled by the river's measured flow: the test, stated before any score
 
-Written 27 October 2026. **Approved by Ethan on 27 October 2026** (answers below "Questions for Ethan"); not yet
-run. Ethan approved this statement before any run. Nothing below has been
+Written 27 October 2026. **Approved by Ethan on 27 October 2026** (answers below "Questions for Ethan"); **run
+the same day: fails as stated** (Results, at the end). Ethan approved this statement before any run. Nothing below has been
 scored. No E. coli value was read in writing it, no flow reading was fetched, and no model was fitted. Results go
 below the line at the end. Nothing above the line changes after a result is seen. If anything is changed after a
 result is seen, both results are kept and the change is stated.
@@ -395,4 +395,40 @@ time-zone bug in the step, fixed before the other 8; its age is computed at the 
 
 ## Results
 
-Not run.
+Added 27 October 2026 after the one scoring run (10:08 UTC, from the archive of 1290013, under the heavy-run lock,
+**network attempts: 0**; the predictions hash matched the one committed in 8e9103d). Full output:
+`docs/FLOW-DILUTION-TEST-2026-10-score.json`.
+
+**Verdict: fails as stated.** Conditions 1, 4 and 5 fail. Production's dilution term stays as it is.
+
+| Condition | Figure | Holds |
+|---|---|---|
+| 1. Primary (leave one site out, site-week bootstrap) labelled Better | Brier gain +0.00011, 95% interval −0.00089 to +0.00110 (B 0.001, H 0.0005): **Too uncertain** | **no** |
+| 2. Leave one year out above 0 pooled and in 2 of 3 years | pooled +0.00076; 2024 +0.00263, 2025 −0.00051, 2026 +0.00020 | yes |
+| 3. Forward (fit 2024, score 2025-26) above 0 | +0.00048 | yes |
+| 4. Beats the 190th of 200 placebos | real +0.00011 vs 95th percentile +0.00163 (placebo median +0.00075, max +0.00260) | **no** |
+| 5. No secondary check labelled Possible harm or Harm | rows at real-time gauges: −0.00237, interval −0.00429 to −0.00079, **Possible harm** | **no** |
+| 6. Gate | 765 of 907 river rows (84%), 17 sites, 156 exceedances | yes |
+
+### Description (decides nothing)
+- **Where flow was timely, it did harm.** Rows at the 8 real-time gauges (1 h lag): Brier −0.0024 (interval −0.0043
+  to −0.0008), AUC 0.891 to 0.880. The arm with every gauge at a 1 h lag (`spot_k05_lag1`) is also Possible harm
+  (−0.00105, interval −0.00232 to +0.00012).
+- **Where flow was 13 days old, it looked slightly better.** Rows at archive-only gauges (315 h lag): +0.0011
+  (interval −0.0003 to +0.0025). Flow that old says little about the day; the placebos, which move flow by 14 to 139
+  days, did better on average (median +0.00075) than the real flow (+0.00011). So this small gain is not evidence of
+  a same-day dilution effect.
+- k = 1 instead of 0.5: same picture (leave one site out +0.00011, Too uncertain). The per-overflow gauge rule:
+  −0.00028, Possible harm.
+- Groups flagged Possible harm: Severn Trent and Yorkshire Water rows, and the real-time gauge rows.
+- Adoption checks (not reached): calibration unchanged (mean forecast 0.2147 vs 0.2145, observed 0.2161); misses at
+  0.25 rose from 33.7% to 34.7%, false alarms from 19.7% to 19.8%.
+
+### What it means
+- **Established:** scaling dilution by the gauge's measured flow does not improve the river E. coli estimate on these
+  rows, and where the flow is current it makes it worse.
+- **Inferred, as expected before the run:** high flow and high E. coli come together after rain. A candidate that
+  can only lower exposure on high-flow days works against that. The length-based dilution term already in production
+  stays.
+- This answers the flow-based dilution point in the Sheffield review (9 October) for this model and these rows. It
+  does not test flow as a separate input (for example a "river is up" term), which would be a different statement.
