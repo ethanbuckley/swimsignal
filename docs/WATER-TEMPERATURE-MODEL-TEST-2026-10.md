@@ -628,3 +628,26 @@ differs between requests 1 and 2.
 
 **Limits, stated now:** one window (late September to late October), outside the May–September season the model was
 tested on. 62 cells. The forecast for today itself is not checked, since ERA5-Land has no today.
+
+### Forecast-air check, result (27 October 2026, 18:37 to 18:41 UTC)
+
+`wt_air_check.py` at commit 20667ce: 9 requests, all HTTP 200, no network error, **186 weighted calls** (cap 250).
+The test's Open-Meteo log now totals 8,378.2, all on 27 October (day cap 9,500). Window: London days 26 September to
+26 October 2026.
+
+| | value | limit | |
+|---|---|---|---|
+| cells compared | 62 of 62 | | |
+| mean `a7` difference, forecast − ERA5-Land | **−0.48 °C** | within ±0.5 | pass, narrowly |
+| root-mean-square `a7` difference | **0.61 °C** | ≤ 1.0 | pass |
+| daily: mean / RMS (1,550 cell-days) | −0.50 / 0.78 °C | reported | |
+| per-cell mean daily difference | −1.12 to +0.21 °C | reported | |
+| rain values, temperature asked for or not | 0 of 55,056 hourly values differ, in 62 cells | reported | |
+
+**Pass, by 0.02 °C on the bias.** The forecast API's past days ran about half a degree cooler than ERA5-Land in this
+window. *Inferred, not tested:* fed to the model, that makes a river estimate about 0.4 °C cooler than the tested
+inputs would. The test's river bias was +0.27 °C (too warm), so the two partly offset. One autumn window says nothing
+firm about May to September. The check should be repeated in the season. Nothing was refitted: not the bridge, not
+the model.
+
+Adding `temperature_2m` to the rain request left every rain value the same.
