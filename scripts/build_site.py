@@ -604,14 +604,10 @@ def _river_of(row) -> str | None:
     return spot_hints(getattr(row, "kind", ""), getattr(row, "river", ""))[1]
 
 
-def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
-    """One pass over every spot's upstream overflows to collect the rainfall cells,
-    then a handful of 50-cell requests. Per-spot fetching would mean up to one request
-    per spot, each risking a slow TLS handshake on shared CI runners. A request that
-    fails its retries does not stop the build (a 503 at 00:29 UTC on 6 Oct 2026 would
-    have): fetch_forecast serves those cells' cached forecast up to a day old, or leaves
-    them without rain data, and build_health reports it (fallback_summary)."""
-    net, ov = _net(), _overflows()
+def spot_rain_cells(spots: pd.DataFrame, net, ov: pd.DataFrame) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
+    """The rain cells the spots' forecasts read (each spot's own and its upstream overflows'), and the
+    soil cells (river spots' own; ingest/soil.py). prefetch_rain asks for these, and scripts/spot_cost.py
+    prices a new spot against them. A spot that cannot be placed is logged and left out."""
     lat, lon = list(spots["lat"]), list(spots["lon"])
     river_cells = []   # the soil moisture the river E. coli model reads (ingest/soil.py): river spots' own cells
     for r in spots.itertuples(index=False):
@@ -624,7 +620,17 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
             lat += list(up["lat"]); lon += list(up["lon"])
         except Exception as e:  # noqa: BLE001
             log.warning("prefetch: %s: %s", r.name, e)
-    cells = cells_for_sites(pd.Series(lat, dtype=float), pd.Series(lon, dtype=float))
+    return cells_for_sites(pd.Series(lat, dtype=float), pd.Series(lon, dtype=float)), river_cells
+
+
+def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
+    """One pass over every spot's upstream overflows to collect the rainfall cells,
+    then a handful of 50-cell requests. Per-spot fetching would mean up to one request
+    per spot, each risking a slow TLS handshake on shared CI runners. A request that
+    fails its retries does not stop the build (a 503 at 00:29 UTC on 6 Oct 2026 would
+    have): fetch_forecast serves those cells' cached forecast up to a day old, or leaves
+    them without rain data, and build_health reports it (fallback_summary)."""
+    cells, river_cells = spot_rain_cells(spots, _net(), _overflows())
     t0 = time.time()
     df = fetch_forecast(cells)
     fb = fallback_summary()

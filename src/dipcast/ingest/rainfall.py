@@ -170,6 +170,34 @@ def may_spend(weight: float, what: str, now: float | None = None) -> bool:
     return False
 
 
+# ------------------------------------------------------------------ the planned day
+def planned_day(spot_cells: int, anypoint_cells: int, weather_points: int, scotland_cells: int, soil_cells: int, *,
+                anypoint_refresh_h: float, weather_refresh_h: float, scotland_refresh_h: float,
+                soil_attempts: int) -> dict:
+    """The most each user of the forecast API can ask for in one UTC day at a build every 30 minutes,
+    by its refresh floor, and the total: what the ration (DAILY_CALLS) has to hold whatever the schedule
+    does. Each cell or point weighs one call a request (call_weight). `anypoint_cells` are the
+    click-anywhere cells the spots do not share: a spot cell is never 12 hours old, so click-anywhere
+    never asks for it. The weather can be asked for once more when the local day turns. The floors are
+    passed in because they live with their users (scripts/build_any_point.py, scripts/build_site.py,
+    scottish_shadow, soil). The ensemble is left out: it runs on spare calls alone (spare_for)."""
+    by = {"spots": spot_cells * 24 * 3600 / FORECAST_TTL_S, "anypoint": anypoint_cells * 24 / anypoint_refresh_h,
+          "weather": weather_points * (24 / weather_refresh_h + 1), "scotland": scotland_cells * 24 / scotland_refresh_h,
+          "soil": soil_cells * soil_attempts}
+    return {"by": by, "calls": sum(by.values()), "spare": DAILY_CALLS - sum(by.values())}
+
+
+def new_spot_calls(new_cells: int, new_cells_from_anypoint: int, new_soil_cell: bool, *, anypoint_refresh_h: float,
+                   weather_refresh_h: float, soil_attempts: int) -> float:
+    """What one more listed spot adds to planned_day: its weather point; each rain cell no listed spot
+    has yet, at the spots' floor, less what click-anywhere paid for it where it was one of its cells
+    (`new_cells_from_anypoint`, a share of `new_cells`); and, for a river spot in a cell no river spot
+    has, its soil cell. Cells the spots already ask for cost nothing more."""
+    spots = 24 * 3600 / FORECAST_TTL_S
+    return ((24 / weather_refresh_h + 1) + new_cells * spots - new_cells_from_anypoint * 24 / anypoint_refresh_h
+            + (soil_attempts if new_soil_cell else 0))
+
+
 def api_key() -> str:
     """The paid plan's key from KEY_ENV, "" when unset. Read at each request, not at import."""
     return os.environ.get(KEY_ENV, "").strip()

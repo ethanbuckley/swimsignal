@@ -177,13 +177,59 @@ def test_the_floors_fit_the_free_tier_at_a_build_every_30_minutes():
     weather can be asked for once more when the local day turns. And the soil moisture the river E. coli
     estimate reads: at most soil.MAX_ATTEMPTS calls per river spot cell per UTC day (one, and one retry after a
     failure; soil.fetch), 62 cells on 26 Oct 2026."""
+    day = rainfall.planned_day(332, 1270, 105, 320, 62, **_floors())
+    assert day["by"] == {"spots": 3984, "anypoint": 2540, "weather": 945, "scotland": 1280, "soil": 124}
+    assert day["calls"] == 8873 and day["spare"] == 127
+    assert day["calls"] <= rainfall.DAILY_CALLS < 10_000
+
+
+def _floors(*keep):
     bap, bs = _bap(), _build_site()
     from dipcast import scottish_shadow
     from dipcast.ingest import soil
-    per_day = (332 * 24 / (rainfall.FORECAST_TTL_S / 3600) + 1270 * 24 / bap.RAIN_REFRESH_H
-               + 105 * (24 / bs.WEATHER_REFRESH_H + 1) + 320 * 24 / scottish_shadow.RAIN_REFRESH_H + 62 * soil.MAX_ATTEMPTS)
-    assert per_day == 8873
-    assert per_day <= rainfall.DAILY_CALLS < 10_000
+    f = {"anypoint_refresh_h": bap.RAIN_REFRESH_H, "weather_refresh_h": bs.WEATHER_REFRESH_H,
+         "scotland_refresh_h": scottish_shadow.RAIN_REFRESH_H, "soil_attempts": soil.MAX_ATTEMPTS}
+    return {k: v for k, v in f.items() if not keep or k in keep}
+
+
+def test_what_one_more_listed_spot_adds_to_the_planned_day():
+    """A spot whose cells the spots already ask for adds its weather point alone, 9 calls a day. Each
+    new cell adds the spots' 12 a day, less the 2 click-anywhere paid where it was one of its cells; a
+    river spot in a new cell adds its soil, 2. The counts below are what planned_day gives when the
+    spot is added to the counts, so the two can never disagree."""
+    f = _floors("anypoint_refresh_h", "weather_refresh_h", "soil_attempts")
+    assert rainfall.new_spot_calls(0, 0, False, **f) == 9
+    assert rainfall.new_spot_calls(1, 1, True, **f) == 9 + 12 - 2 + 2 == 21
+    assert rainfall.new_spot_calls(1, 0, False, **f) == 21   # a pin cell with no overflow in it
+    base = rainfall.planned_day(332, 1270, 105, 320, 62, **_floors())["calls"]
+    for new, from_anypoint, soil_cell in ((0, 0, False), (1, 1, True), (4, 4, True), (15, 15, True)):
+        after = rainfall.planned_day(332 + new, 1270 - from_anypoint, 106, 320, 62 + soil_cell, **_floors())["calls"]
+        assert after - base == rainfall.new_spot_calls(new, from_anypoint, soil_cell, **f)
+    # Today's spare, 127 calls: 14 spots that share every cell, or 6 that each add one click-anywhere cell and a soil cell.
+    assert 127 // rainfall.new_spot_calls(0, 0, False, **f) == 14 and 127 // rainfall.new_spot_calls(1, 1, True, **f) == 6
+
+
+def test_the_spots_rain_cells_are_their_own_and_their_upstream_overflows(monkeypatch):
+    """build_site.spot_rain_cells, what prefetch_rain asks for and scripts/spot_cost.py prices a new spot
+    against: each spot's own cell and its upstream overflows' cells, once each; a soil cell for a river
+    spot only; a spot that cannot be placed keeps its own cell and adds nothing else."""
+    from types import SimpleNamespace
+    bs = _build_site()
+    up = {"river": pd.DataFrame({"lat": [54.41, 54.52], "lon": [-2.96, -2.96]}),
+          "lake": pd.DataFrame({"lat": [54.36], "lon": [-2.94]})}
+
+    def pin(net, lon, lat, kind_hint=None, river_hint=None, name=None):
+        if name == "nowhere":
+            raise ValueError("no link within 1 km")
+        return SimpleNamespace(mode="lake" if kind_hint == "lake" else "river")
+    monkeypatch.setattr(bs, "locate_pin", pin)
+    monkeypatch.setattr(bs, "upstream_overflows", lambda net, p, ov, velocity_ms: up[p.mode])
+    spots = pd.DataFrame({"name": ["a river", "a lake", "nowhere"], "kind": ["river", "lake", "river"],
+                          "river": ["River Rothay", "", "River Brathay"],
+                          "lat": [54.43, 54.36, 52.0], "lon": [-2.97, -2.94, -1.0]})
+    cells, soil_cells = bs.spot_rain_cells(spots, None, None)
+    assert cells == [(52.0, -1.0), (54.4, -3.0), (54.4, -2.9), (54.5, -3.0)]
+    assert soil_cells == [(54.4, -3.0)]
 
 
 # ------------------------------------------------------------------ the weather
