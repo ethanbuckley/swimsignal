@@ -793,6 +793,12 @@
   .outing-pair { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin:0 0 10px; }
   .outing-pair.one { grid-template-columns:minmax(0, 1fr); }
   .outing-col { min-width:0; }
+  /* Find a window (findwindow.js): one row a saved spot, its notice on a line of its own (.o-tag), then its Low days. */
+  .fw-list { list-style:none; margin:8px 0 0; padding:0; }
+  .fw-list li { padding:10px 0; border-top:1px solid var(--hair); }
+  .fw-list p { margin:2px 0 0; }
+  .fw-nm { font-weight:600; }
+  .fw-apart, .fw-note { font-size:var(--fs-meta); color:var(--muted); }
   .outing-col p { margin:0 0 4px; }
   .outing-role { font-size:var(--fs-meta); color:var(--muted); }
   .outing-nm { margin:0 0 2px; font-size:var(--fs-body); overflow-wrap:anywhere; }
@@ -1303,6 +1309,7 @@
 <script src="spotdate.js"></script>   <!-- a spot on a date: the calendar file and alerts for a date, shared with the organisers' page -->
 <script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js and spotdate.js -->
 <script src="outingwatch.js"></script>   <!-- what would change the outing, and what has since it was planned: uses since.js -->
+<script src="findwindow.js"></script>   <!-- Find a window on Saved: each spot's Low days, as ranges; uses levels.js and eatoday.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
 <script src="outingpack.js"></script>   <!-- a plan's outing kept for offline use, in a cache of its own that sw.js answers from -->
@@ -3293,6 +3300,8 @@ function renderSaved() {
   if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
   v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
+  // Find a window (findwindow.js, a prototype): each spot's Low days in the next five, as ranges, in the list's order.
+  if (spots.length && typeof fwSection === 'function') v += fwSection(spots, fiveDays(), s => spotPath(s.id));
   if (DATA.spots.some(s => SAVED.has(s.id))) v += alertsCard();   // alerts cover every list
   if (spots.length) v += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
     + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`

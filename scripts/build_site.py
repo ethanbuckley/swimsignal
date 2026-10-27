@@ -1928,6 +1928,9 @@ VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
 # What would change a plan's outing (outingwatch.js), and what has since it was planned: uses since.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outingwatch.js")
 VERSIONED_SCRIPTS += ('<script src="outingwatch.js"></script>',)
+# Find a window on Saved (findwindow.js): each saved spot's Low days in the next five, as ranges.
+SHELL_SOURCES.append(TEMPLATE.parent / "findwindow.js")
+VERSIONED_SCRIPTS += ('<script src="findwindow.js"></script>',)
 # Named lists of saved spots, and the links that share a list or a plan (saved/): lists.js, likewise.
 SHELL_SOURCES.append(TEMPLATE.parent / "lists.js")
 VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
@@ -1981,6 +1984,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "outingwatch.js", site / "outingwatch.js")   # what would change a plan's outing
+    shutil.copy(TEMPLATE.parent / "findwindow.js", site / "findwindow.js")   # Find a window on Saved
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
     shutil.copy(TEMPLATE.parent / "spotscores.js", site / "spotscores.js")   # how the forecast has done here
