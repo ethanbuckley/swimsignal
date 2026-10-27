@@ -170,6 +170,68 @@ def may_spend(weight: float, what: str, now: float | None = None) -> bool:
     return False
 
 
+# ------------------------------------------------------------------ the planned day
+def planned_day(spot_cells: int, anypoint_cells: int, weather_points: int, scotland_cells: int, soil_cells: int, *,
+                anypoint_refresh_h: float, weather_refresh_h: float, scotland_refresh_h: float,
+                soil_attempts: int) -> dict:
+    """The most each user of the forecast API can ask for in one UTC day at a build every 30 minutes,
+    by its refresh floor, and the total: what the ration (DAILY_CALLS) has to hold whatever the schedule
+    does. Each cell or point weighs one call a request (call_weight). `anypoint_cells` are the
+    click-anywhere cells the spots do not share: a spot cell is never 12 hours old, so click-anywhere
+    never asks for it. The weather can be asked for once more when the local day turns. The floors are
+    passed in because they live with their users (scripts/build_any_point.py, scripts/build_site.py,
+    scottish_shadow, soil). The ensemble is left out: it runs on spare calls alone (spare_for)."""
+    by = {"spots": spot_cells * 24 * 3600 / FORECAST_TTL_S, "anypoint": anypoint_cells * 24 / anypoint_refresh_h,
+          "weather": weather_points * (24 / weather_refresh_h + 1), "scotland": scotland_cells * 24 / scotland_refresh_h,
+          "soil": soil_cells * soil_attempts}
+    return {"by": by, "calls": sum(by.values()), "spare": DAILY_CALLS - sum(by.values())}
+
+
+# Open-Meteo's free limits besides the day's, from its terms and pricing pages (read 27 Oct 2026): 5,000 calls an
+# hour, 600 a minute and 300,000 a month, counted by IP address and application, and for non-commercial use only.
+# Its terms count subscriptions, advertising and commercial promotion as commercial; a tip jar is allowed. So
+# this capacity is for a non-commercial prototype: a commercial launch needs a paid plan, and the ensemble and
+# archive APIs need Professional, not Standard (pricing page).
+# Only the day is enforced here (may_spend against DAILY_CALLS). The month follows from it: 31 days at
+# DAILY_CALLS is 279,000. The hour and the minute are NOT enforced, and not counted. planned_hour bounds the hour
+# from the floors; nothing bounds the minute, where two steps of one build run back to back can pass 600, and the
+# only answer is a 429 retried after its Retry-After (_request). A GitHub runner's address may be shared with
+# other users' jobs, whose calls this cannot see (inferred).
+FREE_HOUR_CALLS, FREE_MINUTE_CALLS, FREE_MONTH_CALLS = 5000, 600, 300_000
+
+
+def planned_hour(spot_cells: int, anypoint_cells: int, weather_points: int, scotland_cells: int, soil_cells: int,
+                 ensemble_cells: int, *, anypoint_per_build: int, scotland_per_build: int, soil_attempts: int,
+                 builds_per_hour: int = 2) -> dict:
+    """The most the builds can ask for in one hour. A bound, not a limit: nothing in the code stops an hour
+    passing it. Each floor is 2 hours or more, so a cell is asked for once in an hour at most, however many
+    builds run; the weather can be asked for twice (once more when the local day turns); soil each attempt.
+    The ensemble is counted, though it runs on spare calls alone.
+    - `any_builds`: from the floors alone, so it holds for any number of builds in the hour (schedule, push
+      or workflow_dispatch). It rests on each build starting from the last one's cache: site.yml runs one
+      build at a time and saves its state even when it fails; a runner lost before that save would break it.
+    - `scheduled`: `builds_per_hour` builds (2: the cron's every 30 minutes), also using the per-build caps of
+      click-anywhere and the Scottish shadow.
+    - `scheduled_crude`: `builds_per_hour` builds each asking for every cell and point, floors and caps ignored."""
+    every = spot_cells + anypoint_cells + weather_points + scotland_cells + soil_cells * soil_attempts + ensemble_cells
+    by = {"spots": spot_cells, "anypoint": min(anypoint_cells, builds_per_hour * anypoint_per_build),
+          "weather": 2 * weather_points, "scotland": min(scotland_cells, builds_per_hour * scotland_per_build),
+          "soil": soil_cells * soil_attempts, "ensemble": ensemble_cells}
+    return {"any_builds": every + weather_points, "scheduled": sum(by.values()), "scheduled_crude": builds_per_hour * every,
+            "by_scheduled": by}
+
+
+def new_spot_calls(new_cells: int, new_cells_from_anypoint: int, new_soil_cell: bool, *, anypoint_refresh_h: float,
+                   weather_refresh_h: float, soil_attempts: int) -> float:
+    """What one more listed spot adds to planned_day: its weather point; each rain cell no listed spot
+    has yet, at the spots' floor, less what click-anywhere paid for it where it was one of its cells
+    (`new_cells_from_anypoint`, a share of `new_cells`); and, for a river spot in a cell no river spot
+    has, its soil cell. Cells the spots already ask for cost nothing more."""
+    spots = 24 * 3600 / FORECAST_TTL_S
+    return ((24 / weather_refresh_h + 1) + new_cells * spots - new_cells_from_anypoint * 24 / anypoint_refresh_h
+            + (soil_attempts if new_soil_cell else 0))
+
+
 def api_key() -> str:
     """The paid plan's key from KEY_ENV, "" when unset. Read at each request, not at import."""
     return os.environ.get(KEY_ENV, "").strip()
