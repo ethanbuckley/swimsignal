@@ -272,7 +272,11 @@ Ethan approved this statement on 27 October 2026 at 00:36 UTC, in the coordinati
 
 ## Run log, after approval
 
-Empty.
+- **27 October 2026, 01:03 UTC: the one fetch**, from a `git archive` of bac9c34 (the approved statement): 14 sites,
+  14 requests, 65,422 bytes, no stop. **Incidents file SHA-256:
+  `68ca1552bea27546ad87256043e719e0c95cc223c718661b5548822a1b458d1b`**, committed here before scoring. Nothing in the
+  histories was read beyond the counts the fetch prints. The features file is #377's
+  (`41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e`).
 
 ---
 
