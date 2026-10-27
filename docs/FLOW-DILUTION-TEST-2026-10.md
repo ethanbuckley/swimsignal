@@ -372,6 +372,25 @@ time-zone bug in the step, fixed before the other 8; its age is computed at the 
   sensitivity arm `spot_k05_lag1` (every gauge at 1 h) shows what timely flow everywhere would give. It decides
   nothing.
 
+## Run log (written before the score)
+
+- **Code:** `git archive` of 1290013 (approval, answers and lag check), in `swimsignal-private/flow-dilution/`.
+- **Data:** the frozen data folder of 23 October 2026 (the one the soil and transport tests used), with the tracked
+  `data/` files of 1290013 laid over it; soil from the main checkout's `data/cache/soil`. Hash of `processed` and
+  `raw`: `c78b10af0f39ce9273da513fd81795b070d1fcce6517a48d44f8ed5d388c973d`.
+- **A first attempt** at 09:57 UTC stopped in `prepare` before any request: the main checkout's own overflow table
+  predates the 12 October network, and `load_overflows` refused it. The data folder was rebuilt as above.
+- **prepare** 09:58-10:02 UTC, network attempts 0 (validate, replay, map). Map: 20 river bathing waters, 17 with a
+  spot gauge, 21 gauges to fetch (spot and per-overflow).
+- **fetch** 10:02:45-10:05:34 UTC: **84 requests, all HTTP 200** (cap 200), EA Hydrology only, no Open-Meteo.
+- **predict** 10:05-10:07 UTC, network attempts 0. Face checks passed: exposure against the replay, 1,672 pairs, max
+  difference 4.4e-16; the reference fit against `ecoli_model_sm.json`, max coefficient difference 4.4e-16.
+- **Gate: met.** 765 of 907 river rows have a flow factor (84.3%), at 17 sites, with 156 exceedances.
+- **Margins, from predictions alone:** mean squared change 0.000225, so **B = 0.001** (the floor) and **H = 0.0005**.
+  Mean absolute change in probability 0.0082; 3.0% of river rows change band, 0.8% change the warning.
+- **Predictions SHA-256:** `cd83e65992294e77c13028546552e7d88301823730c092340fcc007678692f80`. No score had been
+  computed when this was committed.
+
 ---
 
 ## Results
