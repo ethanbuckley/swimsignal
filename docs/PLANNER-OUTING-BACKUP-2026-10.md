@@ -89,8 +89,18 @@ This PR uses #379's one shared helper, from `eatoday.js`. It adds no display of 
 | `dipcast.plan` | The plan's address string, now with `when`, `spot` and `backup` when set | Extended |
 | `dipcast.seen` | One note per saved spot; gains `gap` and `official` | Extended |
 | `dipcast.briefacks` | Read ticks for decision-record versions | New |
+| `dipcast.pushdates` | The organisers' page's list of spot and date pairs asked for alerts, with the push address; the outing adds to and stops from the same list (`spotdate.js`) | Shared |
+| `dipcast.outingdates` | The pairs the outing tile itself asked for, with the push address, so it can say when an earlier choice is still on | New |
 
 The privacy notice (`pages/privacy.html`) now names the outing in the kept plan and the read tick. Ethan should check that wording.
+
+## 4. Alerts and a calendar file for the outing (27 Oct 2026)
+
+Under the two columns, once a spot is chosen:
+
+- **Alert me about this outing.** Only where the build has date alerts on (`push.dates` in `spots.json`, set by `DIPCAST_PUSH_DATES`). It asks the push Worker for the outing's spot and its backup, each on the plan's day, through the same `dates` list, request and 10-pair cap as the organisers' page (`spotdate.js`, moved there from `organisers.js`). The plan's day is always in the forecast, so the Worker tells of each change in that day's level, and forgets each pair after the date. With room for one pair only, the spot goes first and the tile says the backup is left out. Turning alerts on stays the Saved page's: a browser without them gets a link there. A browser that cannot show notifications (no push, iPhone outside the Home Screen app, Facebook's or Instagram's browser, notifications blocked) is told so and pointed at the calendar file. A notification opens the organisers' page for that spot and day (the Worker's link, unchanged).
+- **Add to calendar.** One event: the chosen time as a local time (morning 06–12, afternoon 12–17, evening 17–21, or the hour), or the whole day; the spot's name; "Check SwimSignal and any official advice before you go."; links to the spot's page, the backup's and the plan. No level, which would be stale. Made in the browser, sent nowhere.
+- **Privacy notice:** with date alerts on, the Alerts section names outings beside the organisers' page (same pairs, same deletion after the date), says the browser keeps a note of the pairs it asked about, and the Plan a swim paragraph says the outing's spot, backup and day are sent only if alerts are asked for.
 
 ## Tests
 
