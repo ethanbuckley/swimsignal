@@ -447,6 +447,23 @@ points 340 WFD polygon, 87 OS lake link, 399 their own; 1,508 sea points. Waters
 118 elevation-only cells. 255 requests, **8,192.2 weighted calls** in all (849.6 already spent), elevation 118 (cap
 1,500).
 
+*HadUK-Grid files:* Ethan downloaded all 156 at about 15:30 UTC with his own CEDA token (546 MB; each begins with the
+HDF5 signature, so NetCDF-4). I never saw the token. SHA-256 of the sorted list of the 156 files' SHA-256s
+(`shasum -a 256 tas_*.nc`, saved as `work/haduk_files.sha256`):
+`7eadc03d0a23c1ff50f1239899f4c19d3611fc81399447649d15cdb602b30d2e`.
+`wt_score.py haduk` (15:40 UTC, h5py in a throwaway environment, no water temperature read) opened every file: each
+`tas` has one step per day of its month (4,758 days in all), and all share one 180 × 290 grid of 5 km cells. Of those
+cells, 10,432 have values. Points: 413 have no valued cell within 10 km and get no HadUK air; 738 took a neighbouring
+cell; the 4,586 cells used have no missing day. `tas` is labelled "Mean air temperature" at 1.5 m, with
+`cell_methods: time: mid_range` (the mean of the day's maximum and minimum). Its time bounds are calendar days. Whether
+the maximum and minimum behind it run 09:00 to 09:00 was not checked.
+
+*Open-Meteo, narrowed fetch* (15:07 to 17:04 UTC): 215 requests answered HTTP 200; then one **connection error** at
+17:04, and the fetch stopped, as its rule says. 2018, 2023 and 2024 are complete; 2025 has 56 of 65 batches; the 5
+elevation batches are not done. The log holds 241 answers, 7,808.9 weighted calls, and at most 4,248 in any clock
+hour. Under the stop rule the fetch resumes no earlier than the next UTC day: from 00:05 UTC on 28 October, from its
+cache (the first of at most two resumes). The rest is about 412 weighted calls.
+
 ---
 
 ## Results
