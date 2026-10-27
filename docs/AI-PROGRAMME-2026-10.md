@@ -3,7 +3,7 @@
 Started 26 October 2026, after Ethan accepted Codex's assessment of which AI systems are worth building. This is the
 one place that says what each piece is, where it stands and what is waiting on a decision.
 
-**Snapshot during the 26 October window (updated as work lands; final update near 00:30 UTC).** Merges were
+**Snapshot at the close of the 26 October window, 27 October 00:05 UTC** (PR and run states read from GitHub at 00:03-00:05). Merges were
 made by Codex under Ethan's delegation of routine decisions (from about 22:30 UTC); before that, Ethan approved the
 #377 statement (about 19:25 UTC) and adopted the recommendations of 26 October (about 20:15 UTC). No live model,
 level, A8, option B or shadow window was changed by any of this.
@@ -17,13 +17,13 @@ level, A8, option B or shadow window was changed by any of this.
 | #387 | Comprehension sessions pack; H1-H4 clarification; actions list | **merged** | bf0065a (23:04) | No session run; no recruitment sent |
 | #389 | Practical guides, 11 bathing waters | **merged** | 59b60af (23:13) | Private audit `swimsignal-private/guides-audit-2026-10-26/AUDIT.md`, 60 rows; fetch times 22:53:18-22:54:51 and 23:05:51 UTC |
 | #391 | Official advice on every surface that shows a level (round 1) | **merged, live** | 9f29521 (23:36) | Publishing run 40420912535 succeeded |
-| #388 | Planner: outing time + backup; saved changes with evidence and the official notice; local read tick | **merged** | fcb7f00 (23:45:54) | Codex fixed a rendering boundary while reviewing (8f384f1). Publishing run 40421963614 **failed at its test step** on the late-night ensemble-test flake (1,386 passed, 1 failed), so it was not deployed then; it publishes with the next successful build |
+| #388 | Planner: outing time + backup; saved changes with evidence and the official notice; local read tick | **merged** | fcb7f00 (23:45:54) | Codex fixed a rendering boundary while reviewing (8f384f1). Its own publishing run 40421963614 failed at the test step on the late-night ensemble flake (fixed by #393); it ships with the 00:00 builds of #392/#390 |
 | #377 | Research: satellite algae (Sentinel-2 NDCI) | **merged (record)** | 41d3afd (23:25) | A fails; B too few; CLMS had no data at the 18 English sites checked in summer 2025. Nothing adopted |
 | #381 | Research: sampling priorities simulation | **merged (record)** | c4006ca (23:26) | Fails its stated rule. Nothing adopted |
 | #384 | Research: missing event ends | **merged (record)** | c581b9f (23:26) | Do not fix now; re-measure on or after 9 Nov |
-| #392 | Official advice, rounds 2-3 (Nearby, compare row, Saved grid, feeds, action line, alerts.json text, weekend-card plain groups; helper keeps the cause) | open, draft, **CI green, ready** | 5abb470 | Includes main + #388 + #393. Share-plan exclusion kept with its reason; user-picked lists keep advised spots with the notice. Merge before #394 |
-| #394 | Alert/push/email/weekly text and weekend-card groups (text only) | open, draft | 4ee086b, being rebased on #392 | Overlaps #392 (which already covers alerts.json and weekend groups); keeps only what #392 lacks; merge after #392, or close if nothing remains |
-| #390 | Prototype: catchment replay (`?replay=1` only) | open, draft, **CI green, ready** | 51aad5f (main incl. #388 and #393 merged; 571 site JS + 124 Python checks pass locally) | Codex added 1685b3e (a lake spot never gets a river arrival). Full CI then failed one existing, clock-dependent ensemble test (not replay code); fixed by pinning the test to noon (3a2e935, also PR #393 for main). Preview http://localhost:8793 |
+| #392 | Official advice, rounds 2-3 (Nearby, compare row, Saved grid, feeds, action line, alerts.json text, weekend-card plain groups; helper keeps the cause) | **merged** | 671a319 (00:00:11) | Publishing run 40423520622 was in progress at 00:03 |
+| #394 | Push Worker message text: weekly note, alert email, dated notices and combined push carry the official notice; recipients, triggers, levels, ranks and KV unchanged | open, draft | 852f482 (CI green); final wording fix in progress | Now only 6 files in `push/` (#392 already covers alerts.json and weekend cards). Codex review: state-aware words (no "in force" for stale notices), marker before any truncatable Low, notice once per message. **Not live until the push Worker is deployed** (`wrangler deploy` from `push/`, Ethan's Cloudflare credentials); merging alone changes nothing users receive |
+| #390 | Prototype: catchment replay (`?replay=1` only) | **merged (opt-in)** | ea91fae (00:00:21) | Publishing run 40423541773 queued at 00:03; the replay shows only with `?replay=1` |
 | #395 | Polish: guide "Source: <page>, <month>" for dated historical facts (schema `source_date`); Saved and Plan say what they need without JavaScript | open, draft, **CI green, ready** | fd5b317 | Includes main + #393; merges cleanly with #390, #392, #394. Not seen rendered with JavaScript off (checked by tests and reading). Five older Defra-sourced facts without "not a current check" still say Verified: for review |
 | #393 | Test only: pin the ensemble spare-calls test to noon | **merged** | 6b5b575 (23:55) | Fixed the late-night flake that also blocked publishing; no production change |
 | #383 | Research: river rises scope + evaluation harness | open, draft | 6c3f29d | Fetch and scoring refuse to run before 2 Nov; not reviewed for running yet |
@@ -33,12 +33,12 @@ level, A8, option B or shadow window was changed by any of this.
 
 ## Open decisions, and whose
 
-- **Codex (delegated):** review and merge #392, #393 and (if wanted) #390; the stray branch `polish/official-consistency`
+- **Codex (delegated):** review and merge #394 (after its final wording fix) and #395; confirm publishing runs 40423520622 and 40423541773 succeed and that #388's files (`outing.js`) are live; the stray branch `polish/official-consistency`
   (2 commits, superseded by #392) can be deleted.
-- **Ethan (credentials or outside contact):** the push Worker's `GITHUB_DISPATCH_TOKEN` (recommended: not before the
+- **Ethan (credentials or outside contact):** deploying the push Worker once #394 is merged (until then push, email and weekly-note text is unchanged for subscribers); the push Worker's `GITHUB_DISPATCH_TOKEN` (recommended: not before the
   ensemble-rain read on 21 Nov); recruitment wording and posts for the comprehension sessions; the UKCEH Bloomin'
   Algae licence enquiry; an EA lab question that would settle 7887's definition.
-- **Follow-ups:** alert message text (in progress, above); the "Highest risk" sort ranks by the sewage level; sites view heading order (P4);
+- **Follow-ups:** the "Highest risk" sort ranks by the sewage level; sites view heading order (P4);
   where the replay would live and whether it is cached offline.
 
 ## Dated next actions
