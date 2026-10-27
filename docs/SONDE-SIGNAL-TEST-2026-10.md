@@ -1,5 +1,9 @@
 # EA sonde readings in the river E. coli estimate: the test, stated before any score
 
+**Parked, 27 October 2026 (Ethan's decision).** Merged unrun, as a record. Revisit after the 2027 bathing season
+(October 2027). If rows are added later, the gate stays exactly as written below (150 rows at 4 sites): it was set
+after the coverage counts were seen, so it is not moved a second time. The Wessex samples are not being pursued now.
+
 Written 27 October 2026. **Not approved and not run.** Ethan approves before any readings fetch or score. No E. coli
 value has been read for this test, and no sonde reading has been fetched. Results go below the line at the end.
 Nothing above it changes after a result is seen.
