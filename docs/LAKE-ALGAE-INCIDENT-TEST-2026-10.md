@@ -282,4 +282,24 @@ Ethan approved this statement on 27 October 2026 at 00:36 UTC, in the coordinati
 
 ## Results
 
-None yet.
+Added 27 October 2026 after the one scoring run, from the archive of bac9c34, under the heavy-run lock, **network
+attempts: 0**; both hashes matched.
+
+**Verdict: too few to judge.** The gate needs incidents at 4 or more water bodies; there were 3 (Colwick Country Park
+West Lake, Frensham Great Pond, Windermere). Everything below is description and decides nothing.
+
+- **Incidents:** 13 harmful-algae incidents (type 014) in the histories of the 14 sites, 9 of them on days with
+  a satellite reading; 415 incident days, 106 with a reading; 14,579 control days, 4,277 with a reading. One open
+  incident: Frensham Great Pond, since 19 June 2026.
+- **Gate:** 106 incident days with a reading (30 needed: met); 9 incidents (5: met); 3 water bodies (4: **not met**);
+  7 lake-seasons (6: met).
+- **Primary (description):** stratified S = 0.64, 95% interval 0.33 to 0.73, label "Too uncertain".
+- **Shift placebo: not beaten.** Real S 0.64 against a 95th percentile of 0.72; 35 of 200 shifted patterns scored at
+  or above it.
+- **Seasonal anomaly:** S = 0.48 (interval 0.23 to 0.53): no signal once the usual time-of-year pattern is removed.
+- **By group:** Lake District S 0.33 ("Possible harm", 2 lake-seasons); lowland S 0.71 ("Too uncertain", 5).
+- **Leave one water body out:** Colwick 0.65, Frensham 0.34, Windermere 0.71.
+
+**What it means:** too few lakes have had harmful-algae incidents to judge. On what there is, the reading does not
+beat moving the incident around the season, and nothing remains once the usual seasonal rise is taken out. Nothing on
+the site changes. Full tables: `docs/LAKE-ALGAE-INCIDENT-TEST-2026-10-score.json`.

@@ -1,0 +1,1127 @@
+{
+ "sites": [
+  "ukd1101-45800",
+  "ukd1203-45625",
+  "ukd1203-45650",
+  "ukd1203-45675",
+  "ukd1203-45700",
+  "ukd1230-45725",
+  "ukd1230-45750",
+  "ukd1230-45775",
+  "ukf1400-09750",
+  "ukf2208-09701",
+  "ukf2208-09702",
+  "uki1106-11940",
+  "ukj2310-11945",
+  "ukk1302-11760"
+ ],
+ "fetch_day": "2026-10-27",
+ "scenes": 1305,
+ "result": {
+  "gate": {
+   "incident_days_with_reading": 106,
+   "incidents_with_a_day": 9,
+   "water_bodies": 3,
+   "strata": 7,
+   "judged": false
+  },
+  "strata": [
+   {
+    "bw_id": "ukd1101-45800",
+    "season": 2020,
+    "water_body": "Derwent Water",
+    "incident_days": 0,
+    "control_days": 33,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1101-45800",
+    "season": 2021,
+    "water_body": "Derwent Water",
+    "incident_days": 0,
+    "control_days": 48,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1101-45800",
+    "season": 2023,
+    "water_body": "Derwent Water",
+    "incident_days": 0,
+    "control_days": 58,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1101-45800",
+    "season": 2024,
+    "water_body": "Derwent Water",
+    "incident_days": 0,
+    "control_days": 36,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1101-45800",
+    "season": 2025,
+    "water_body": "Derwent Water",
+    "incident_days": 0,
+    "control_days": 54,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1101-45800",
+    "season": 2026,
+    "water_body": "Derwent Water",
+    "incident_days": 0,
+    "control_days": 81,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "season": 2020,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 48,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "season": 2021,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 44,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "season": 2023,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 53,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "season": 2024,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 44,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "season": 2025,
+    "water_body": "Windermere",
+    "incident_days": 4,
+    "control_days": 53,
+    "U": 32.0,
+    "pairs": 212,
+    "auc": 0.1509433962264151
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "season": 2026,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 76,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "season": 2020,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 47,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "season": 2021,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 50,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "season": 2023,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 61,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "season": 2024,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 39,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "season": 2025,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 54,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45650",
+    "season": 2026,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 79,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "season": 2020,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 53,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "season": 2021,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 55,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "season": 2023,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 60,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "season": 2024,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 31,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "season": 2025,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 60,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45675",
+    "season": 2026,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 83,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "season": 2020,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 44,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "season": 2021,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 21,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "season": 2023,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 37,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "season": 2024,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 26,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "season": 2025,
+    "water_body": "Windermere",
+    "incident_days": 0,
+    "control_days": 24,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "season": 2026,
+    "water_body": "Windermere",
+    "incident_days": 5,
+    "control_days": 48,
+    "U": 116.0,
+    "pairs": 240,
+    "auc": 0.48333333333333334
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "season": 2020,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 51,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "season": 2021,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 39,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "season": 2023,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 56,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "season": 2024,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 48,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "season": 2025,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 62,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45725",
+    "season": 2026,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 60,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "season": 2020,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 35,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "season": 2021,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 51,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "season": 2023,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 61,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "season": 2024,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 42,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "season": 2025,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 55,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "season": 2026,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 64,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "season": 2020,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 42,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "season": 2021,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 48,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "season": 2023,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 55,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "season": 2024,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 38,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "season": 2025,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 63,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukd1230-45775",
+    "season": 2026,
+    "water_body": "Coniston Water",
+    "incident_days": 0,
+    "control_days": 52,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "season": 2020,
+    "water_body": "Colwick Country Park, West Lake",
+    "incident_days": 0,
+    "control_days": 50,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "season": 2021,
+    "water_body": "Colwick Country Park, West Lake",
+    "incident_days": 0,
+    "control_days": 29,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "season": 2023,
+    "water_body": "Colwick Country Park, West Lake",
+    "incident_days": 3,
+    "control_days": 37,
+    "U": 43.5,
+    "pairs": 111,
+    "auc": 0.3918918918918919
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "season": 2024,
+    "water_body": "Colwick Country Park, West Lake",
+    "incident_days": 0,
+    "control_days": 33,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "season": 2025,
+    "water_body": "Colwick Country Park, West Lake",
+    "incident_days": 0,
+    "control_days": 59,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "season": 2026,
+    "water_body": "Colwick Country Park, West Lake",
+    "incident_days": 0,
+    "control_days": 65,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "season": 2020,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 53,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "season": 2021,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 39,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "season": 2023,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 41,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "season": 2024,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 30,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "season": 2025,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 46,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09701",
+    "season": 2026,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 70,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "season": 2020,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 77,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "season": 2021,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 47,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "season": 2023,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 70,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "season": 2024,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 49,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "season": 2025,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 63,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukf2208-09702",
+    "season": 2026,
+    "water_body": "Rutland Water",
+    "incident_days": 0,
+    "control_days": 78,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "uki1106-11940",
+    "season": 2020,
+    "water_body": "The Serpentine",
+    "incident_days": 0,
+    "control_days": 60,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "uki1106-11940",
+    "season": 2021,
+    "water_body": "The Serpentine",
+    "incident_days": 0,
+    "control_days": 49,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "uki1106-11940",
+    "season": 2023,
+    "water_body": "The Serpentine",
+    "incident_days": 0,
+    "control_days": 59,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "uki1106-11940",
+    "season": 2024,
+    "water_body": "The Serpentine",
+    "incident_days": 0,
+    "control_days": 67,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "uki1106-11940",
+    "season": 2025,
+    "water_body": "The Serpentine",
+    "incident_days": 0,
+    "control_days": 75,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "uki1106-11940",
+    "season": 2026,
+    "water_body": "The Serpentine",
+    "incident_days": 0,
+    "control_days": 83,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "season": 2020,
+    "water_body": "Frensham Great Pond",
+    "incident_days": 0,
+    "control_days": 47,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "season": 2021,
+    "water_body": "Frensham Great Pond",
+    "incident_days": 0,
+    "control_days": 32,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "season": 2023,
+    "water_body": "Frensham Great Pond",
+    "incident_days": 8,
+    "control_days": 28,
+    "U": 144.0,
+    "pairs": 224,
+    "auc": 0.6428571428571429
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "season": 2024,
+    "water_body": "Frensham Great Pond",
+    "incident_days": 20,
+    "control_days": 28,
+    "U": 368.0,
+    "pairs": 560,
+    "auc": 0.6571428571428571
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "season": 2025,
+    "water_body": "Frensham Great Pond",
+    "incident_days": 24,
+    "control_days": 16,
+    "U": 280.0,
+    "pairs": 384,
+    "auc": 0.7291666666666666
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "season": 2026,
+    "water_body": "Frensham Great Pond",
+    "incident_days": 42,
+    "control_days": 14,
+    "U": 492.0,
+    "pairs": 588,
+    "auc": 0.8367346938775511
+   },
+   {
+    "bw_id": "ukk1302-11760",
+    "season": 2020,
+    "water_body": "Cotswold Country Park lake",
+    "incident_days": 0,
+    "control_days": 46,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukk1302-11760",
+    "season": 2021,
+    "water_body": "Cotswold Country Park lake",
+    "incident_days": 0,
+    "control_days": 48,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukk1302-11760",
+    "season": 2023,
+    "water_body": "Cotswold Country Park lake",
+    "incident_days": 0,
+    "control_days": 49,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukk1302-11760",
+    "season": 2024,
+    "water_body": "Cotswold Country Park lake",
+    "incident_days": 0,
+    "control_days": 59,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukk1302-11760",
+    "season": 2025,
+    "water_body": "Cotswold Country Park lake",
+    "incident_days": 0,
+    "control_days": 71,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   },
+   {
+    "bw_id": "ukk1302-11760",
+    "season": 2026,
+    "water_body": "Cotswold Country Park lake",
+    "incident_days": 0,
+    "control_days": 88,
+    "U": 0.0,
+    "pairs": 0,
+    "auc": NaN
+   }
+  ],
+  "primary": {
+   "S": 0.636265631737818,
+   "L": 0.3274336283185841,
+   "U": 0.7312072892938497,
+   "d": 0.13626563173781803,
+   "label": "Too uncertain",
+   "strata": 7,
+   "pairs": 2319,
+   "B": 0.15,
+   "H": 0.05
+  },
+  "groups": {
+   "Lake District": {
+    "S": 0.3274336283185841,
+    "L": 0.3274336283185841,
+    "U": 0.3274336283185841,
+    "d": -0.17256637168141592,
+    "label": "Possible harm",
+    "strata": 2,
+    "pairs": 452
+   },
+   "lowland": {
+    "S": 0.7110337439742903,
+    "L": 0.3918918918918919,
+    "U": 0.7312072892938497,
+    "d": 0.2110337439742903,
+    "label": "Too uncertain",
+    "strata": 5,
+    "pairs": 1867
+   }
+  },
+  "placebo": {
+   "real": 0.636265631737818,
+   "p95": 0.7212203638804693,
+   "rank_190th": 0.7210207612456747,
+   "at_or_above_real": 35,
+   "without_value": 0,
+   "lowest": 0.14331355545413055,
+   "median": 0.4949560806596124,
+   "highest": 0.8530559167750326,
+   "holds": false
+  },
+  "anomaly": {
+   "S": 0.47569906790945404,
+   "L": 0.22727272727272727,
+   "U": 0.5285451197053407,
+   "strata": 7,
+   "holds": false
+  },
+  "lolo": {
+   "by_water_body_left_out": {
+    "Colwick Country Park, West Lake": 0.6485507246376812,
+    "Frensham Great Pond": 0.3401420959147424,
+    "Windermere": 0.7110337439742903
+   },
+   "holds": false
+  },
+  "groups_hold": false,
+  "verdict": "Too few to judge"
+ },
+ "description": {
+  "incidents_by_kind": [
+   {
+    "kind": "algae",
+    "code": "014",
+    "n": 13
+   }
+  ],
+  "algae_incidents": [
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "01535685-20170630-163800",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2017-06-30",
+    "end": "2017-08-31",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "incident": "09750-20230927-081600",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2023-09-27",
+    "end": "2023-09-27",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "incident": "09750-20230928-150200",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2023-09-28",
+    "end": "2023-12-20",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukf1400-09750",
+    "incident": "09750-20230928-150300",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2023-09-28",
+    "end": "2023-09-28",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20220822-143100",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2022-08-22",
+    "end": "2022-11-23",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20221125-132300",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2022-11-25",
+    "end": "2022-12-16",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20230707-101300",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2023-07-07",
+    "end": "2023-11-17",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20240719-101600",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2024-07-19",
+    "end": "2024-11-09",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20250630-121500",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2025-06-30",
+    "end": "2025-10-03",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20260619-142800",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2026-06-19",
+    "end": "2026-10-27",
+    "open_ended": true,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukd1203-45625",
+    "incident": "45625-20250521-140700",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2025-05-21",
+    "end": "2025-05-27",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukd1203-45700",
+    "incident": "45700-20260717-094800",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2026-07-17",
+    "end": "2026-07-21",
+    "open_ended": false,
+    "malformed": false
+   },
+   {
+    "bw_id": "ukd1230-45750",
+    "incident": "45750-20250619-175400",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2025-06-19",
+    "end": "2025-06-20",
+    "open_ended": false,
+    "malformed": false
+   }
+  ],
+  "open_ended": [
+   {
+    "bw_id": "ukj2310-11945",
+    "incident": "11945-20260619-142800",
+    "kind": "algae",
+    "code": "014",
+    "words": "harmful algae",
+    "start": "2026-06-19",
+    "end": "2026-10-27",
+    "open_ended": true,
+    "malformed": false
+   }
+  ],
+  "malformed_non_algae": 0,
+  "days_by_label": {
+   "control": {
+    "days": 14579,
+    "with_reading": 4277
+   },
+   "incident": {
+    "days": 415,
+    "with_reading": 106
+   }
+  },
+  "control_days_with_incident_elsewhere_on_lake": 40,
+  "window_0": {
+   "S": 0.6203208556149733,
+   "strata": 6,
+   "incident_days": 30
+  },
+  "window_7": {
+   "S": 0.650871024452613,
+   "strata": 8,
+   "incident_days": 177
+  },
+  "without_frensham_2026": {
+   "S": 0.5681686886192953,
+   "strata": 6
+  }
+ },
+ "hashes": {
+  "features": "41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e",
+  "incidents": "68ca1552bea27546ad87256043e719e0c95cc223c718661b5548822a1b458d1b"
+ }
+}
