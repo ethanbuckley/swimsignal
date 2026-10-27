@@ -55,12 +55,12 @@ test('a spot with advice against swimming comes first, its level unchanged, and 
   const xs = [...others(), frensham()];
   // Before this change Frensham (low) sat last but for name: after Cotswold Lake. Now it leads.
   assert.deepEqual(order(xs), ['Frensham Great Pond', 'Ashford Weir', 'Dart Reach', 'Bray Lock', 'Cotswold Lake']);
-  assert.equal(run('riskFirstNote', xs), 'Spots with official advice against swimming come first.');
+  assert.equal(run('riskFirstNote', xs), 'Spots with an official notice come first.');
   // Levels and counts are the same as without the advice, and as before the sort.
   const bare = [...others(), frensham({ official: [] })];
   assert.deepEqual(levels(xs), levels(bare));
   assert.equal(run('mapLevel', frensham()), 'low');
-  assert.equal(run('overview', xs).replace('Sewage pollution risk', 'Pollution risk').replace(/ 1 with official advice against swimming: follow it first\.$/, ''),
+  assert.equal(run('overview', xs).replace('Sewage pollution risk', 'Pollution risk').replace(/ 1 with an official notice: follow it first\.$/, ''),
     run('overview', bare));
   assert.match(run('overview', xs), /Sewage pollution risk: 2 low · 1 moderate · 2 high or very high/);
 });

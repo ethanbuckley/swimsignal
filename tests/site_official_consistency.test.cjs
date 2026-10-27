@@ -88,7 +88,7 @@ test('the list\'s counts stay the sewage forecast\'s, are named so, and count th
   const ctx = pageContext(BASE, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const with_ = run('overview', [frensham(), other()]), without = run('overview', [other(), other({ id: 'x' })]);
   assert.match(with_, /Sewage pollution risk: 2 low · 0 moderate · 0 high or very high/);
-  assert.match(with_, / 1 with official advice against swimming: follow it first\.$/);
+  assert.match(with_, / 1 with an official notice: follow it first\.$/);
   assert.match(without, /· Pollution risk: 2 low/);
   assert.doesNotMatch(without, /advice/);
 });
@@ -96,14 +96,14 @@ test('the list\'s counts stay the sewage forecast\'s, are named so, and count th
 test('Plan a swim: the group line says how many have advice, and that it comes first', () => {
   const ctx = pageContext(['planAdviceSub']), sub = vm.runInContext('planAdviceSub', ctx);
   assert.equal(sub(0, 3), '');
-  assert.equal(sub(1, 3), '1 of these has official advice against swimming, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
-  assert.equal(sub(1, 1), 'This spot has official advice against swimming, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
-  assert.match(sub(2, 2), /^All 2 have official advice against swimming, under their level\./);
+  assert.equal(sub(1, 3), '1 of these has an official notice, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
+  assert.equal(sub(1, 1), 'This spot has an official notice, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
+  assert.match(sub(2, 2), /^All 2 have an official notice, under their level\./);
   // The planner's heading for the low group is scoped when it holds one, and the shared plan leaves it out.
   const src = pageSrc.join('\n');
   assert.match(src, /adv\[0\] \? `Low risk from sewage spills \$\{on\}` : `Low risk \$\{on\}`/);
   assert.match(src, /const out = open\.filter\(o => planAdvised\(o\.s\)\); open = open\.filter\(o => !planAdvised\(o\.s\)\);/);
-  assert.match(src, /left out: official advice against swimming\./);
+  assert.match(src, /left out: \$\{out\.length === 1 \? 'it has an official notice' : 'they have official notices'\}\./);
   // The comparison's heads carry the tag under each name.
   assert.match(src, /<span class="k">\$\{esc\(meta\(s\)\)\}<\/span>` : ''\}\$\{typeof eaTodayTag === 'function' \? eaTodayTag\(s\) : ''\}<\/th>/);
 });
@@ -184,7 +184,7 @@ test('a list the user picked keeps every spot, with its notice; only Share this 
   // Only the plan's share filters, and its tile names the spot left out.
   const share = src.slice(src.indexOf('function planShare('), src.indexOf('function bindPlan('));
   assert.equal((share.match(/filter\(o => !?planAdvised\(o\.s\)\)/g) || []).length, 2);
-  assert.match(src, /left out: official advice against swimming\./);
+  assert.match(src, /left out: \$\{out\.length === 1 \? 'it has an official notice' : 'they have official notices'\}\./);
 });
 
 // Second round (integrated review, 26 Oct): Nearby, the comparison's EA row, Saved's grid and best day, the
@@ -227,7 +227,7 @@ test('Saved: the grid tags the spot, and the best day leaves it out of the count
   assert.ok(grid.includes(`>Frensham Great Pond</a><span class="o-tag">${BRIEF}</span></span>`), grid);
   assert.equal((grid.match(/o-tag/g) || []).length, 1);
   const note = vm.runInContext('bestDayNote', ctx)([frensham(), other(), other({ id: 'calm', name: 'Calm Pond' })], true);
-  assert.match(note, /when 2 of your 2 spots are at low risk \(Frensham Great Pond has official advice against swimming, so is not counted\)\./);
+  assert.match(note, /when 2 of your 2 spots are at low risk \(Frensham Great Pond has an official notice, so is not counted\)\./);
   assert.doesNotMatch(vm.runInContext('bestDayNote', ctx)([other(), other({ id: 'calm', name: 'Calm Pond' })], true), /official/);
 });
 

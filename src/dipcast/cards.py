@@ -524,8 +524,9 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     advised = [(label, o) for label, o in [(r.label, r.official) for r in card.rows] + card.plain_official if o]
     text_h = [len(wrap(draw, r.label, name_f, name_w)) * lh(name_f) for r in card.rows]
     for short in (False, True) if advised else (False,):
-        said = ([(None, INK, f"{and_list([a for a, _ in advised])}: official advice against swimming. Follow it first; "
-                  "the levels are SwimSignal's sewage forecast only.")] if short
+        said = ([(None, INK, f"{and_list([a for a, _ in advised])}: "
+                  f"{'an official notice' if len(advised) == 1 else 'official notices'}, in full in the caption. "
+                  f"Follow {'it' if len(advised) == 1 else 'them'} first; the levels are SwimSignal's sewage forecast only.")] if short
                 else [(None, INK, f"{label}: {official_words(o)}") for label, o in advised])
         note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes + said)
         room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes + said else 0) - sum(text_h)

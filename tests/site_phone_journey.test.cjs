@@ -18,7 +18,7 @@ test('an outing where neither choice looks good says so, with why, and only then
   L.setToday('2026-10-27');
   const pond = col('a', 'Frensham Great Pond', {advised: true}), wey = col('b', 'River Wey, Waverley', {tone: 'vhigh', level: 'very high'});
   const h = tile({main: pond, alt: wey});
-  assert.match(h, /<p class="outing-poor"><b>Neither spot looks good tomorrow\.<\/b> Frensham Great Pond has official advice against swimming, and River Wey, Waverley is at Very high risk\. Look at the other spots in this plan, or another day\.<\/p>/);
+  assert.match(h, /<p class="outing-poor"><b>Neither spot looks good tomorrow\.<\/b> Frensham Great Pond has an official notice, and River Wey, Waverley is at Very high risk\. Look at the other spots in this plan, or another day\.<\/p>/);
   assert.ok(h.indexOf('outing-poor') < h.indexOf('outing-pair'));   // above the two columns
   // One of the two is fine: nothing said.
   assert.ok(!tile({main: pond, alt: col('c', 'Shepperton Lake')}).includes('outing-poor'));
@@ -64,7 +64,7 @@ test('a spot with official advice is ringed on the map, and the key says what th
   const body = PAGE.slice(PAGE.indexOf('function styleMarkers('), PAGE.indexOf('function setMapDay('));
   assert.match(body, /color: adv \? ADVICE_RING : PAPER, weight: adv \? 3\.5 : 2, fillColor: colour\(lv\)/);   // the level's colour kept
   assert.match(body, /\.advkey'\)\.forEach\(k => \{ k\.hidden = !DATA\.spots\.some\(mapAdvised\); \}\)/);
-  assert.match(PAGE, /<span class="advkey" hidden><span class="dot adv"><\/span>Ringed: official advice against swimming<\/span>/);
+  assert.match(PAGE, /<span class="advkey" hidden><span class="dot adv"><\/span>Ringed: an official notice; open the spot to read it<\/span>/);
   assert.match(PAGE, /const ADVICE_RING = '#e5a53a';/);
   assert.match(PAGE, /--notice-line:#e5a53a;/);   // the same amber as the advice's own line
 });

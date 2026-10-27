@@ -68,15 +68,27 @@ function outingPair(plan, byId) {
 // form, a line of its own under the column's level, never in it: the level is the forecast's alone. The same
 // helper as the list, Saved and the plan's rows, so the outing says what they say. '' without advice.
 const outingOfficial = s => outingTag()(s, 'p');
+const outingBriefOf = () => typeof eaTodayBrief === 'function' ? eaTodayBrief : require('./eatoday.js').eaTodayBrief;
+const outingBrief = s => outingBriefOf()(s);
 
-// When neither choice looks good on the day: each chosen spot has official advice against swimming or is at
-// High risk or above. On the phone, 27 Oct 2026, an outing to an advised pond with a Very high risk backup said
-// nothing of it. A column's `level` is the day's (levels.js, dayLevel) and `advised` its advice. '' otherwise.
+// When the spot and the backup both have an official notice: one line over the columns that says so, naming
+// each with its own notice in its reviewed words (eatoday.js, eaTodayBrief), so the pair is not read as the
+// levels alone. It says what each notice is, never more: no notice is called a restriction here, since only its
+// own words say what it is. A column's `notice` is that brief. '' unless both have one.
+function outingBoth(o) {
+  if (!o.main || !o.alt || !o.main.notice || !o.alt.notice) return '';
+  return '<div class="outing-notices"><p><b>Your spot and your backup both have an official notice.</b> Read each before you go; neither is part of the levels below.</p>'
+    + `<ul><li>Your spot, ${outEsc(o.main.name)}: ${outEsc(o.main.notice)}</li><li>Backup, ${outEsc(o.alt.name)}: ${outEsc(o.alt.notice)}</li></ul></div>`;
+}
+
+// When neither choice looks good on the day: each chosen spot has an official notice or is at High risk or
+// above. Where both have a notice, outingBoth says so instead, naming each notice. On the phone, 27 Oct 2026,
+// an outing to an advised pond with a Very high risk backup said nothing of it. A column's `level` is the day's (levels.js, dayLevel) and `advised` its advice. '' otherwise.
 const OUTING_POOR = { high: 'High risk', 'very high': 'Very high risk' };
 const outingPoor = c => !!c && (!!c.advised || c.level in OUTING_POOR);
 function outingNeither(o) {
-  if (!o.main || !outingPoor(o.main) || (o.alt && !outingPoor(o.alt))) return '';
-  const why = c => `${outEsc(c.name)} ${c.advised ? 'has official advice against swimming' : `is at ${OUTING_POOR[c.level]}`}`;
+  if (!o.main || !outingPoor(o.main) || (o.alt && !outingPoor(o.alt)) || outingBoth(o)) return '';
+  const why = c => `${outEsc(c.name)} ${c.advised ? 'has an official notice' : `is at ${OUTING_POOR[c.level]}`}`;
   const cols = o.alt ? [o.main, o.alt] : [o.main], day = outDay(o.day);
   return `<p class="outing-poor"><b>${o.alt ? 'Neither spot looks good' : 'Your spot does not look good'} ${day === 'today' || day === 'tomorrow' ? day : `on ${day}`}.</b> `
     + `${cols.map(why).join(', and ')}. Look at the other spots in this plan, or another day.</p>`;
@@ -208,7 +220,7 @@ function outingSection(o) {
   const notes = outingTimeNote(o.day, o.when, o.nowMs);
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
-    : `<p class="outing-said">${said}</p>${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
+    : `<p class="outing-said">${said}</p>${outingBoth(o)}${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
   return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary><span>Your outing${o.main ? `<span class="k">${outEsc(o.main.name)}${o.alt ? `, backup ${outEsc(o.alt.name)}` : ''}</span>` : ''}</span></summary>`
@@ -232,7 +244,7 @@ function drawOuting(box, shown) {
   const away = s => miles.has(s.id) ? miles.get(s.id) : from ? km(from, [s.lat, s.lon]) / MILE_KM : null;
   const col = s => { const m = away(s);
     return { id: s.id, name: s.name, href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), tone: tone(dayLevel(s, PLAN.day)),
-      headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
+      headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), notice: outingBrief(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
       level: dayLevel(s, PLAN.day), advised: typeof eaTodayRestricts === 'function' && eaTodayRestricts(s),   // a notice that restricts swimming
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
@@ -314,6 +326,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }

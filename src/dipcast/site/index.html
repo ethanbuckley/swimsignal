@@ -786,6 +786,10 @@
   .outing > summary .k { display:block; margin-top:2px; font:400 var(--fs-meta)/1.3 var(--font-text); color:var(--muted); }
   .outing > summary + .sub { margin-top:10px; }
   .outing-said { margin:0 0 8px; font-weight:600; }
+  /* Both choices with an official notice (outing.js, outingBoth): marked by the notice's rule, as .o-tag. */
+  .outing-notices { margin:0 0 10px; padding-left:9px; border-left:3px solid var(--notice-line); font-size:var(--fs-note); line-height:1.4; }
+  .outing-notices p { margin:0 0 4px; }
+  .outing-notices ul { margin:0; padding-left:1.1em; }
   .outing-pair { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin:0 0 10px; }
   .outing-pair.one { grid-template-columns:minmax(0, 1fr); }
   .outing-col { min-width:0; }
@@ -1519,7 +1523,8 @@ function miniMap(s) {
   tiles().addTo(MINI);
   MINI_WATCH = keepOutOfTabOrder(el);   // after the tiles, whose credit is the links
   L.circleMarker([s.lat, s.lon], { radius: 15, color: RING(), weight: 3, fill: false, interactive: false }).addTo(MINI);
-  L.circleMarker([s.lat, s.lon], { radius: 9, color: PAPER, weight: 2, fillColor: colour(level(s)), fillOpacity: 1, interactive: false }).addTo(MINI);
+  // Ringed as on the main map (mapAdvised): a cue that the spot has an official notice to read, not a level.
+  L.circleMarker([s.lat, s.lon], { radius: 9, color: mapAdvised(s) ? ADVICE_RING : PAPER, weight: mapAdvised(s) ? 3.5 : 2, fillColor: colour(level(s)), fillOpacity: 1, interactive: false }).addTo(MINI);
   const open = () => { setMapMode(true); map.setView([s.lat, s.lon], 13, MOTION()); };
   MINI.on('click', open); document.getElementById('loc-open').addEventListener('click', open);
 }
@@ -1550,7 +1555,7 @@ const tone = l => l === NO_OVERFLOWS || l === NO_RIVER ? 'clear' : ORDER[l] === 
 const colour = l => ({low:'#3b7d4f', moderate:'#b7791f', high:'#c2552a', 'very high':'#a32d2d', [NO_OVERFLOWS]:'#4aa39a', [NO_RIVER]:'#4aa39a'})[l] || '#98a2aa';   // --low, --moderate, --high, --veryhigh, --clear, --unknown
 const PAPER = '#f6f4ee';   // --bg: the ring round each marker, which parts it from the grey tiles
 const RING = () => '#0f5a61';   // --brand: the ring round the open spot
-const ADVICE_RING = '#e5a53a';   // --notice-line: the ring round a spot with official advice against swimming
+const ADVICE_RING = '#e5a53a';   // --notice-line: the ring round a spot with an official notice
 const SCROLL = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
   if (iso === t) return 'Today'; if (iso === addDays(t, 1)) return 'Tomorrow';
@@ -2403,7 +2408,7 @@ function bestDayNote(spots, yours = false) {
   spots = spots.filter(s => !out.includes(s));
   const dates = fiveDays(), b = bestDay(spots, dates), wk = weekendWords(spots, dates, yours);
   if (!b || (yours ? b.known < 2 : !b.low)) return '';
-  const left = out.length ? ` (${esc(out.map(s => s.name).join(', '))} ${out.length === 1 ? 'has' : 'have'} official advice against swimming, so ${out.length === 1 ? 'is' : 'are'} not counted)` : '';
+  const left = out.length ? ` (${esc(out.map(s => s.name).join(', '))} ${out.length === 1 ? 'has an official notice' : 'have official notices'}, so ${out.length === 1 ? 'is' : 'are'} not counted)` : '';
   return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk${left}.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
 }
@@ -2456,6 +2461,9 @@ function wrapText(g, text, x, y, maxW, lh) {
   return y;
 }
 function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+// The share picture's notice line: '' without one.
+const shareNotice = d => { const o = typeof eaTodayBrief === 'function' ? eaTodayBrief(d) : '';
+  return o ? `Official: ${o}. Follow it first; the level is SwimSignal's sewage forecast only.` : ''; };
 async function shareImage(d) {
   const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d'), F = '"Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif', FD = '"Source Serif 4", Georgia, serif';
@@ -2467,6 +2475,11 @@ async function shareImage(d) {
   g.fillStyle = v('--muted'); g.font = `600 30px ${F}`; g.textAlign = 'right'; g.fillText(location.host, W - 60, 96); g.textAlign = 'left';
   g.fillStyle = v('--line'); g.fillRect(0, 148, W, 2);
   g.fillStyle = v('--ink'); g.font = `600 66px ${FD}`; let y = wrapText(g, d.name, 60, 270, W - 120, 78);
+  // An official notice first, in its own reviewed words (eatoday.js, eaTodayBrief) and the server card's sentence
+  // (cards.py, official_words), apart from the level under it: a picture in a chat is read as the answer.
+  const notice = shareNotice(d);
+  if (notice) { const top = y + 44; g.fillStyle = v('--ink'); g.font = `600 34px ${F}`; y = wrapText(g, notice, 84, top, W - 144, 44);
+    g.fillStyle = v('--notice-line'); g.fillRect(60, top - 32, 6, y - top - 2); }   // the notice's rule beside it, as .o-tag
   // The headline as the list gives it, with a worse later day (levels.js, headParts), then what it cannot
   // count or check, short: the overflows in Wales, and the EA's advice for today at a bathing water. Where
   // the spills set the level, the answer's own words instead (answerParts): "Moderate risk
@@ -2664,7 +2677,7 @@ const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very hig
 const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
   el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
-    + '<span class="advkey" hidden><span class="dot adv"></span>Ringed: official advice against swimming</span></div>'
+    + '<span class="advkey" hidden><span class="dot adv"></span>Ringed: an official notice; open the spot to read it</span></div>'
     + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`
     + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
   L.DomEvent.disableClickPropagation(el); return el; };
@@ -2730,10 +2743,10 @@ const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
 const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
 // The low spots with official advice (eatoday.js): still shown, as their level is low, but said here and on their rows.
 const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
-const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} official advice against swimming: follow it first.` : ''; };
+const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: follow it first.` : ''; };
 const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
-// A spot with official advice against swimming (eatoday.js) keeps its level's colour, ringed in the advice's
-// amber, so the map shows the advice before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
+// A spot with an official notice (eatoday.js) keeps its level's colour, ringed in the notice's amber: a cue
+// to open the spot and read the notice, not a level or a safety score. The map shows it before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
 // The key's line for the ring shows only while a spot has one.
 const mapAdvised = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).length > 0;
 // A marker's tooltip: the name and the list row's headline, so the map and the list say the same.
@@ -2907,7 +2920,7 @@ function overview(spots) {
   return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''} · ${none} without a level`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
-    + (advised ? ` ${advised} with official advice against swimming: follow it first.` : '');
+    + (advised ? ` ${advised} with an official notice: follow it first.` : '');
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -3052,14 +3065,14 @@ function areaRows(a, xs, item, open, fold = true) {
 }
 const bindClear = () => { const clear = document.getElementById('clear-filters');
   if (clear) clear.addEventListener('click', () => { VIEW.q = ''; VIEW.filter = 'all'; VIEW.lowOnly = false; styleMarkers(); renderList(); document.getElementById('q').focus(); }); };
-// Highest risk: a spot whose row shows official advice against swimming (eatoday.js, eaTodayAdvice: checked,
+// Highest risk: a spot whose row shows an official notice (eatoday.js, eaTodayAdvice: checked,
 // or shown though not re-checked; an ended or withdrawn notice is not shown) comes first, whatever its sewage
 // level, as the advice says not to swim there. Those spots by their level then name, then the rest as before.
 // No level, label or count changes. A line over the list says so while such a spot is in it (riskFirstNote).
 const listRank = s => ORDER[mapLevel(s)] ?? -1;
 const listAdvised = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
 const riskOrder = (a, b) => listAdvised(b) - listAdvised(a) || listRank(b) - listRank(a) || a.name.localeCompare(b.name);
-const riskFirstNote = items => items.some(listAdvised) ? 'Spots with official advice against swimming come first.' : '';
+const riskFirstNote = items => items.some(listAdvised) ? 'Spots with an official notice come first.' : '';
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -3646,7 +3659,7 @@ function planItem(o) {
 }
 // Under a plan group's heading when n of its spots have official advice: the advice comes first, and the level
 // is the sewage forecast alone. '' for none.
-const planAdviceSub = (n, of) => !n ? '' : `${n === of ? (n === 1 ? 'This spot has' : `All ${n} have`) : `${n} of these ${n === 1 ? 'has' : 'have'}`} official advice against swimming, `
+const planAdviceSub = (n, of) => !n ? '' : `${n === of ? (n === 1 ? 'This spot has' : `All ${n} have`) : `${n} of these ${n === 1 ? 'has' : 'have'}`} an official notice, `
   + `under ${n === 1 ? 'its' : 'their'} level. Follow it first: the level is SwimSignal's sewage forecast only.`;
 function renderPlan() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'plan';
@@ -3773,16 +3786,16 @@ function planCompare(groups, heads) {
 // plan starts from, which may be your own location.
 const PLAN_SHARE_MAX = 20;
 function planShare(open, on) {
-  // A spot with official advice against swimming is left out, and the tile names it: a shared plan is a list of
+  // A spot with an official notice is left out, and the tile names it: a shared plan is a list of
   // places to go, and the friend's copy would otherwise call it low risk (plan.js, planAdvised).
   const out = open.filter(o => planAdvised(o.s)); open = open.filter(o => !planAdvised(o.s));
-  const left = out.length ? ` ${out.length === 1 ? `${esc(out[0].s.name)} is` : `${out.length} spots are`} left out: official advice against swimming.` : '';
+  const left = out.length ? ` ${out.length === 1 ? `${esc(out[0].s.name)} is` : `${out.length} spots are`} left out: ${out.length === 1 ? 'it has an official notice' : 'they have official notices'}.` : '';
   const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s), box = document.getElementById('plan-results');
   // Every spot that would be shared has advice: the tile says why there is nothing, rather than not being there
   // (on the phone, 27 Oct 2026, Frensham was the plan's only low spot and the share was simply missing).
   if (!pick.length) { if (out.length) box.insertAdjacentHTML('beforeend', '<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>'
     + `<p class="sub">Nothing to share ${on}: ${out.length === 1 ? `the only spot it would hold, ${esc(out[0].s.name)}, has` : `the ${out.length} spots it would hold all have`} `
-    + 'official advice against swimming. A shared plan is a list of places to go.</p></section>'); return; }
+    + `${out.length === 1 ? 'an official notice' : 'official notices'}. A shared plan is a list of places to go.</p></section>`); return; }
   const name = planListName(PLAN.day), n = pick.length;
   const low = top.filter(o => o.level === 'low').length, none = n - low;
   const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
