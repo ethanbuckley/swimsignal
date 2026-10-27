@@ -1,11 +1,13 @@
 // Alerts for a date (README.md, "Alerts for a date"): a browser with alerts on asks about up to
 // MAX_DATES pairs of a spot and a date, from the organisers' page. The cron tells it when that day
-// first enters the forecast, and again each time the day's level changes; a pair is forgotten once
-// its date has passed.
+// first enters the forecast, and again each time the day's level or the spot's official notice
+// changes; a pair is forgotten once its date has passed.
 //
 // Who to tell is decided once a build, for everyone at once, as the high-risk alerts are: `state`
-// keeps each spot's level on each of the forecast's days (`days`), and a day whose level is new or
-// different in the next build is news to everyone who asked about it. So the cron writes nothing
+// keeps each spot's level on each of the forecast's days (`days`) and each spot's official notice
+// (`notices`, shared.js noticeKey), and a day whose level is new or different in the next build, or
+// whose spot's notice appeared, lifted or changed, is news to everyone who asked about it. A notice
+// holds for the spot, so it is news on every day of the forecast already seen. So the cron writes nothing
 // for a subscriber it tells, and nothing more than it already wrote for `state`. One consequence: a
 // pair asked for while its day is already in the forecast hears only of changes after that.
 //
@@ -13,7 +15,7 @@
 // each spot whose level changes from day to day, each day's [level, headline, action] (`days`, the
 // sentences as places in `words`). Elsewhere a day's level is the spot's own.
 
-import { check, isObject, officialMark, officialWords } from './shared.js';
+import { check, isObject, noticeKey, officialMark, officialWords } from './shared.js';
 
 export const MAX_DATES = 10;        // pairs a browser may ask about
 export const MAX_AHEAD_DAYS = 400;  // about a year ahead, and a season's bookings
@@ -81,17 +83,48 @@ export function dayLevels(alerts, prev = {}) {
   return out;
 }
 
-// The days that are news in this build: Map of pairKey -> the level before (null: first seen).
-export function dateNews(alerts, prev = {}) {
+// Every spot's official notice in this build, {id: noticeKey}, for `state`; null for an alerts.json from
+// before dates, which keeps none, so the first build with them is not taken for every notice appearing.
+export function noticesOf(alerts) {
+  if (!Array.isArray(alerts.dates)) return null;
+  const out = {};
+  for (const [id, spot] of Object.entries(alerts.spots)) { const k = noticeKey(spot); if (k) out[id] = k; }
+  return out;
+}
+
+// The days that are news in this build: Map of pairKey -> {from: the level before (null: first seen)},
+// with `notice`, the notice before ('' for none), where the spot's notice changed on a day already seen.
+// notices: the last build's noticesOf; undefined in a state from before notices, which compares none.
+export function dateNews(alerts, prev = {}, notices = undefined) {
   const news = new Map();
   if (!Array.isArray(alerts.dates)) return news;
   for (const id of Object.keys(alerts.spots)) {
+    const was = isObject(notices) ? notices[id] ?? '' : undefined;
+    const moved = was !== undefined && noticeKey(alerts.spots[id]) !== was;
     for (const date of alerts.dates) {
       const d = dayOf(alerts, id, date), before = isObject(prev[id]) ? prev[id][date] ?? null : null;
-      if (d && d.level !== before) news.set(pairKey(id, date), before);
+      if (!d) continue;
+      const notice = moved && before !== null ? { notice: was } : {};
+      if (d.level !== before || 'notice' in notice) news.set(pairKey(id, date), { from: before, ...notice });
     }
   }
   return news;
+}
+// Whether a queued pair's notice is still different from the one before, in this run's forecast.
+const noticeMoved = (spot, p) => typeof p.notice === 'string' && noticeKey(spot) !== p.notice;
+// What became of the notice, as a sentence; '' when the pair is not about one.
+function noticeNews(spot, p) {
+  if (!noticeMoved(spot, p)) return '';
+  return !p.notice ? 'An official notice is new since the last forecast.'
+    : !noticeKey(spot) ? 'The official notice shown before is no longer shown.' : 'The official notice has changed since the last forecast.';
+}
+// A short mark of the notice for a tag, so a notice's news never silently replaces the notification for
+// the same level (sw.js sets no renotify): FNV-1a over the key, eight hex digits ('' gives one value too).
+function noticeTag(spot) {
+  const text = noticeKey(spot);
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16).padStart(8, '0');
 }
 
 const dayWords = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' });
@@ -108,31 +141,33 @@ export function datePayload(lines, spots, siteUrl, issued) {
   const name = (id) => spots[id]?.name ?? id;
   if (lines.length === 1) {
     const [{ spot, date, from, day }] = lines;
-    const what = from === null ? 'This is the first forecast for this day, and it can change.'
-      : ORDER[from] !== undefined ? `Was ${from} risk.` : 'Changed since the last forecast.';
+    const level = from === null ? 'This is the first forecast for this day, and it can change.'
+      : from === day.level ? '' : ORDER[from] !== undefined ? `Was ${from} risk.` : 'Changed since the last forecast.';
+    const what = join(level, noticeNews(spots[spot], lines[0]));
     // While official advice shows, the day's action is that advice (scripts/alerts.js): not added again,
     // but its marker goes first, so a body cut short never shows a bare "Low risk".
     const mark = officialMark(spots[spot]);
     return { title: `${name(spot)} · ${dayWords(date)}`, body: (mark ? `${mark} · ` : '') + (from === null ? join(sentence(day.headline), sentence(day.action), what) : join(sentence(day.headline), what, sentence(day.action))),
-      url: link(lines[0]), tag: `dipspot-${spot}-${date}-${day.level.replace(/ /g, '')}` };
+      url: link(lines[0]), tag: `dipspot-${spot}-${date}-${day.level.replace(/ /g, '')}${noticeMoved(spots[spot], lines[0]) ? `-n${noticeTag(spots[spot])}` : ''}` };
   }
   // A list gives headlines only: an advised line starts with its marker and ends with the notice, and
   // advised lines come first, so the 600-character cut never leaves a bare level behind a notice.
   const marked = (p) => (officialMark(spots[p.spot]) ? 0 : 1);
-  const body = [...lines].sort((a, b) => marked(a) - marked(b)).map(({ spot, date, day }) => join(
-    (officialMark(spots[spot]) ? `${officialMark(spots[spot])} · ` : '') + `${name(spot)} · ${shortDay(date)}: ${sentence(day.headline)}`,
-    officialWords(spots[spot]))).join('\n');
+  const body = [...lines].sort((a, b) => marked(a) - marked(b)).map((p) => join(
+    (officialMark(spots[p.spot]) ? `${officialMark(spots[p.spot])} · ` : '') + `${name(p.spot)} · ${shortDay(p.date)}: ${sentence(p.day.headline)}`,
+    noticeNews(spots[p.spot], p), officialWords(spots[p.spot]))).join('\n');
   return { title: `New forecasts for ${lines.length} of your dates`, body: body.length > 600 ? body.slice(0, 599) + '…' : body,
     url: link(lines[0]), tag: `dipspot-dates-${issued}` };
 }
 
-// The notice for a queued item ({key, dates: [{spot, date, from}]}), from this run's forecast: only
-// the pairs still asked for, still in the forecast, and still different from what they were; null
-// when none is left.
+// The notice for a queued item ({key, dates: [{spot, date, from, notice?}]}), from this run's forecast:
+// only the pairs still asked for, still in the forecast, and whose level or official notice is still
+// different from what it was; null when none is left.
 export const dateFor = (alerts, siteUrl) => (record, item) => {
   const asked = new Set(datesOf(record).map((d) => pairKey(d.spot, d.date)));
   const lines = (item.dates ?? []).filter((p) => asked.has(pairKey(p.spot, p.date)))
-    .map((p) => ({ ...p, day: dayOf(alerts, p.spot, p.date) })).filter((p) => p.day && p.day.level !== p.from)
+    .map((p) => ({ ...p, day: dayOf(alerts, p.spot, p.date) }))
+    .filter((p) => p.day && (p.day.level !== p.from || noticeMoved(alerts.spots[p.spot], p)))
     .sort((a, b) => a.date.localeCompare(b.date) || a.spot.localeCompare(b.spot));
   return lines.length ? datePayload(lines, alerts.spots, siteUrl, alerts.generated_at) : null;
 };
