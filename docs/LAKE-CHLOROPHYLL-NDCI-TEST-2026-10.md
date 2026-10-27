@@ -403,7 +403,9 @@ All on 26 October 2026, between 22:06 and 22:31 UTC (EA host), plus the STAC cou
 
 ## Approval
 
-Not yet approved. Ethan approves this statement, or asks for changes, before stage 1 runs.
+Ethan approved this statement on 27 October 2026 at 00:35 UTC, in the coordinating session, in his words: "I approve the #386 and #385 statements as written. Run #386 then #385 under their stated protocols and caps, record the approval and results in each PR, and draft the 2027 forward statement for the third question without running anything." He had the statement at 61ff324 (statement f20bf05 plus the dated determinand check). Nothing above this section changes after approval, and nothing had been run: no B4/B5/SCL pixel read, no chlorophyll value read.
+
+Context: on 26 October Codex had kept this test unrun during the product window and asked that 7887's definition be checked first; that check is the section below (partly verified). The results must name the outcome as "EA acetone-extract chlorophyll (determinand 7887), phaeopigment correction not stated".
 
 ---
 
