@@ -49,6 +49,15 @@ data (CC BY 4.0). So it carries HydroLAKES' CC BY 4.0 terms and both credits.
 Lake path `residence_spill`, the default (docs/LAKE-RESIDENCE-SPILL-2026-10.md), reads it. The terms page, the
 README's Data section and the `credits` field of the published data carry the credits.
 
+## data/raw/seasonal_spills.json is EA (OGL v3.0) and company (CC BY 4.0) data
+
+`data/raw/seasonal_spills.json` holds, for each spot, monthly counts of days with a spill recorded at its
+upstream storm overflows, 2021 to 2025 (`scripts/make_seasonal_spills.py`). It is made from the Environment
+Agency's Event Duration Monitoring start/stop records and annual returns (© Environment Agency copyright and/or
+database right, Open Government Licence v3.0) and, before 2024, from Northumbrian Water's, Wessex Water's and
+United Utilities' own event layers (each CC BY 4.0). The file's `sources` field carries the credits, as does the
+terms page.
+
 ## Other data
 
 The other data sources, their licences and the credits they ask for are listed on the site's terms

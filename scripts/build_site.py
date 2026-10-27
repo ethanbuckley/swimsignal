@@ -1320,6 +1320,7 @@ def attach_upgrades(results: list[dict], path: Path = UPGRADES, years: dict[str,
 
 
 DRY_WEATHER = config.RAW / "dry_weather_spills.csv"
+SEASONAL = config.RAW / "seasonal_spills.json"   # scripts/make_seasonal_spills.py, off CI
 
 
 def read_dry_weather(path: Path = DRY_WEATHER) -> dict[str, dict]:
@@ -1927,6 +1928,9 @@ VERSIONED_SCRIPTS += ('<script src="evidence.js"></script>',)
 # How the forecast has done here: spotscores.js draws it from data/spot_scores.json (src/dipcast/spot_scores.py).
 SHELL_SOURCES.append(TEMPLATE.parent / "spotscores.js")
 VERSIONED_SCRIPTS += ('<script src="spotscores.js"></script>',)
+# Past spills upstream by month: seasonal.js draws d.seasonal (src/dipcast/seasonal.py, from data/raw/seasonal_spills.json).
+SHELL_SOURCES.append(TEMPLATE.parent / "seasonal.js")
+VERSIONED_SCRIPTS += ('<script src="seasonal.js"></script>',)
 # Today's EA advice: eatoday.js, the fold that loads the EA's own panel in the reader's browser (no build request).
 SHELL_SOURCES.append(TEMPLATE.parent / "eatoday.js")
 VERSIONED_SCRIPTS += ('<script src="eatoday.js"></script>',)
@@ -1966,6 +1970,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
     shutil.copy(TEMPLATE.parent / "spotscores.js", site / "spotscores.js")   # how the forecast has done here
+    shutil.copy(TEMPLATE.parent / "seasonal.js", site / "seasonal.js")   # past spills upstream by month
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
@@ -2821,7 +2826,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked")   # linked: spot_links, the Nearby card's
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal")   # linked: spot_links, the Nearby card's; seasonal: past spills by month
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3180,6 +3185,8 @@ def build(refresh: bool = True) -> dict:
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
     upgrades = attach_upgrades(results)   # notes on announced upgrades, after the forecasts: the model never reads them
     dry = attach_dry_weather(results)   # notes on past dry-weather spills, from a file: the model never reads them
+    from dipcast import seasonal   # past spills upstream by month, from a committed table: no request, the model never reads it
+    past = seasonal.attach(results, upstream, SEASONAL)
     official = attach_official_advice(results)   # reviewed official advice, from two files: no request, never a level
     # Network only, like the levels, and before their EA requests: one request for the national flood
     # list, two for the water temperatures.
@@ -3210,6 +3217,8 @@ def build(refresh: bool = True) -> dict:
         if water_body[1]:
             health["warnings"].append(f"{len(water_body[1])} spot{'' if len(water_body[1]) == 1 else 's'} not in data/raw/rnags.json "
                                       f"(rerun scripts/make_rnags.py): {', '.join(water_body[1][:10])}")
+    health["seasonal"] = {k: v for k, v in past.items() if k != "warnings"}
+    health["warnings"].extend(past.get("warnings", []))
     near = near_uncounted(results, upstream, _overflows())
     if near:
         health["near_uncounted"] = near
