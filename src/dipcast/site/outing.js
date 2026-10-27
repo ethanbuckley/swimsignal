@@ -228,6 +228,7 @@ function drawOuting(box, shown) {
     const again = document.querySelector(`[data-outing="${k}"]`); if (again) again.focus();
   }));
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
+  if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, pair, DATA.generated_at);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
   // The calendar file, made here when asked (organisers.html's way of handing a file over).
   document.getElementById('outing-ics').addEventListener('click', () => {

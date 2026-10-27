@@ -228,5 +228,5 @@ function sinceSaid(s, forecast) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, SINCE_STALE_MIN, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { SEEN_KEY, SINCE_STALE_MIN, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }
