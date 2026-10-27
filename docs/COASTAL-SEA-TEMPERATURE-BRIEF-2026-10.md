@@ -23,7 +23,7 @@ This is research only. Nothing is built, nothing on the site changes, and no bui
 
 ## Cost against the budget
 
-- **All 426 sites at one call each:** 426 calls a refresh. A daily refresh is 426 a day, more than three times the 127 spare.
+- **All 426 sites at one location-weighted call each:** at least 426 calls a refresh, however few HTTP requests carry them. A daily refresh is 426 a day, more than three times the 127 spare.
 - **De-duplicated by the cell the API actually answers from:** unknown. Many neighbouring beaches probably share a sea cell (inferred), but the shared cells can only be found by asking each beach once. An earlier count of 212 cells assumed each beach's own cell. It is wrong, because the API answers from a different, offshore cell.
 - **What would fit, if the measurement allows it:**
   1. **Distinct sea cells at or under about 120:** refresh once a day, booked in the ledger as its own user, on spare calls only.
@@ -41,17 +41,20 @@ This is research only. Nothing is built, nothing on the site changes, and no bui
 
 ## The next step, and what it costs
 
-1. **The deciding measurement, off CI, from this Mac, once.**
-   - Ask the Marine API for `current=sea_surface_temperature` at the 426 official sampling points, in batches.
-   - Cost: 426 calls (at least 1 per location).
-   - Record each beach's answering cell and its distance from the sampling point, then count the distinct cells.
-   - Run it at the start of a fresh UTC day: this Mac had used about 8,600 calls on 27 Oct for the water-temperature work.
+**Not scheduled, and not authorised by the session that wrote this brief.** Ethan decided on 27 Oct that the check below is not run that night, nor before 22 November 2026. It runs only after the D4 window, and only once it has a confirmed budget allocation within the site's 9,000-calls-a-day cap.
+
+1. **The deciding check (not scheduled).**
+   - What it asks: the Marine API's `current=sea_surface_temperature` at the 426 official sampling points.
+   - **Requests and calls are different things.** Locations go comma-separated in one batched request, or a few if the free API limits batch size (undocumented). Open-Meteo weights each location as at least 1 call. So it is **one or a few HTTP requests, weighted as at least 426 calls**: about 4.7% of the 9,000-a-day cap, or more than three days of today's 127 spare.
+   - What it records: each beach's answering cell and its distance from the sampling point, then the count of distinct cells.
 2. **Decide by the count, before writing code:** daily, rotating, or wait for a paid plan (above). Distances over a stated limit (for example 20 km) mean no value is shown for that beach.
 3. **Only then build:**
    - commit the official coordinates;
-   - add a spare-calls fetch with its own daily cap, starting 22 Nov;
+   - add a spare-calls fetch with its own daily cap, from 22 Nov at the earliest;
    - add the directory line, worded as above;
    - credit Copernicus Marine and Open-Meteo on the terms page, and document the field on the data page;
    - add tests, including the ration rule.
 
-Nothing in steps 1 to 3 is started. Step 1 is a small use of Open-Meteo calls, within the free tier, from this Mac. It is listed for Ethan's go-ahead because it uses Open-Meteo calls for a feature not yet agreed in this form.
+Nothing in steps 1 to 3 is started.
+
+**Calls used for this brief:** three location-weighted Marine calls from this Mac on 27 Oct, in two requests: Ainsdale (1), then Spittal and Seaton Carew (2). No other Open-Meteo calls were made for it.
