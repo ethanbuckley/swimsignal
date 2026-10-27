@@ -189,6 +189,8 @@
   .map-say[hidden] { display:none; }
   .map-legend .ovkey { margin-top:4px; padding-top:4px; border-top:1px solid var(--line); color:var(--muted); }
   .map-legend .ovkey[hidden] { display:none; }
+  .map-legend .advkey[hidden] { display:none; }
+  .map-legend .dot.adv { background:transparent; box-shadow:inset 0 0 0 3px var(--notice-line); }
   /* The traced river's key (drawTrace): a short stroke of the line itself, the brand teal, 2 px. */
   .map-legend .trkey { margin-top:4px; padding-top:4px; border-top:1px solid var(--line); color:var(--muted); }
   .trkey[hidden] { display:none; }
@@ -1548,6 +1550,7 @@ const tone = l => l === NO_OVERFLOWS || l === NO_RIVER ? 'clear' : ORDER[l] === 
 const colour = l => ({low:'#3b7d4f', moderate:'#b7791f', high:'#c2552a', 'very high':'#a32d2d', [NO_OVERFLOWS]:'#4aa39a', [NO_RIVER]:'#4aa39a'})[l] || '#98a2aa';   // --low, --moderate, --high, --veryhigh, --clear, --unknown
 const PAPER = '#f6f4ee';   // --bg: the ring round each marker, which parts it from the grey tiles
 const RING = () => '#0f5a61';   // --brand: the ring round the open spot
+const ADVICE_RING = '#e5a53a';   // --notice-line: the ring round a spot with official advice against swimming
 const SCROLL = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
   if (iso === t) return 'Today'; if (iso === addDays(t, 1)) return 'Tomorrow';
@@ -2660,7 +2663,8 @@ map.on('moveend', () => loadOverflows().catch(() => { ovLayer.clearLayers(); ovK
 const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very high','Very high'], [NO_OVERFLOWS, COVER[NO_OVERFLOWS]], ['', 'No level']];
 const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
-  el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}</div>`
+  el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
+    + '<span class="advkey" hidden><span class="dot adv"></span>Ringed: official advice against swimming</span></div>'
     + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`
     + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
   L.DomEvent.disableClickPropagation(el); return el; };
@@ -2728,6 +2732,10 @@ const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map'
 const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
 const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} official advice against swimming: follow it first.` : ''; };
 const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
+// A spot with official advice against swimming (eatoday.js) keeps its level's colour, ringed in the advice's
+// amber, so the map shows the advice before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
+// The key's line for the ring shows only while a spot has one.
+const mapAdvised = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).length > 0;
 // A marker's tooltip: the name and the list row's headline, so the map and the list say the same.
 // With official advice, its compact form on a line of its own (eatoday.js), as under the row's level.
 const markerTip = s => { const o = typeof eaTodayBrief === 'function' ? eaTodayBrief(s) : '';
@@ -2736,11 +2744,14 @@ function styleMarkers() {
   for (const s of DATA.spots) {
     const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || lv === 'low'; if (!m) continue;
     m.setTooltipContent(markerTip(s));
-    m.setStyle(on ? { color: PAPER, weight: 2, fillColor: colour(lv), fillOpacity: 1 } : { color: PAPER, weight: 1, fillColor: '#98a2aa', fillOpacity: .45 });
+    const adv = mapAdvised(s);
+    m.setStyle(on ? { color: adv ? ADVICE_RING : PAPER, weight: adv ? 3.5 : 2, fillColor: colour(lv), fillOpacity: 1 }
+      : { color: adv ? ADVICE_RING : PAPER, weight: adv ? 2 : 1, fillColor: '#98a2aa', fillOpacity: .45 });
     // No monitored overflow upstream: its teal at a smaller dot, as its row is quieter in the list.
-    m.setRadius(on ? (VIEW.lowOnly ? 10 : plainLevel(lv) ? 6 : 9) : 4);
+    m.setRadius(on ? (VIEW.lowOnly ? 10 : plainLevel(lv) && !adv ? 6 : 9) : adv ? 5 : 4);
     if (on) m.bringToFront();
   }
+  document.querySelectorAll('.map-legend .advkey').forEach(k => { k.hidden = !DATA.spots.some(mapAdvised); });
   const ln = document.getElementById('low-note-list'); if (ln) { ln.hidden = !VIEW.lowOnly; ln.textContent = lowListNote(); }
   const b = document.getElementById('lowbtn');
   if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low').length; }
@@ -3766,8 +3777,13 @@ function planShare(open, on) {
   // places to go, and the friend's copy would otherwise call it low risk (plan.js, planAdvised).
   const out = open.filter(o => planAdvised(o.s)); open = open.filter(o => !planAdvised(o.s));
   const left = out.length ? ` ${out.length === 1 ? `${esc(out[0].s.name)} is` : `${out.length} spots are`} left out: official advice against swimming.` : '';
-  const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s); if (!pick.length) return;
-  const name = planListName(PLAN.day), n = pick.length, box = document.getElementById('plan-results');
+  const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s), box = document.getElementById('plan-results');
+  // Every spot that would be shared has advice: the tile says why there is nothing, rather than not being there
+  // (on the phone, 27 Oct 2026, Frensham was the plan's only low spot and the share was simply missing).
+  if (!pick.length) { if (out.length) box.insertAdjacentHTML('beforeend', '<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>'
+    + `<p class="sub">Nothing to share ${on}: ${out.length === 1 ? `the only spot it would hold, ${esc(out[0].s.name)}, has` : `the ${out.length} spots it would hold all have`} `
+    + 'official advice against swimming. A shared plan is a list of places to go.</p></section>'); return; }
+  const name = planListName(PLAN.day), n = pick.length;
   const low = top.filter(o => o.level === 'low').length, none = n - low;
   const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
   box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>`

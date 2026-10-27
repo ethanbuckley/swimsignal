@@ -51,7 +51,7 @@ function outingForDay(plan, lastDay) {
 // ------------------------------------------------------------------------------ which spots
 // The spots offered for the outing and its backup, as [[heading, spots]]: your saved spots first, then the
 // plan's own (shown, in the page's order) that are not saved, each once. except: an id left out (the
-// outing's spot, from the backup's choices). Saved spots no longer listed are skipped.
+// outing's spot from the backup's choices, and the backup from the spot's). Saved spots no longer listed are skipped.
 function outingOptions(shown, savedIds, byId, except = null) {
   const saved = [...(savedIds || [])].map(id => byId.get(id)).filter(s => s && s.id !== except);
   const ids = new Set(saved.map(s => s.id)), plan = shown.filter(s => s.id !== except && !ids.has(s.id));
@@ -68,6 +68,27 @@ function outingPair(plan, byId) {
 // form, a line of its own under the column's level, never in it: the level is the forecast's alone. The same
 // helper as the list, Saved and the plan's rows, so the outing says what they say. '' without advice.
 const outingOfficial = s => outingTag()(s, 'p');
+
+// When neither choice looks good on the day: each chosen spot has official advice against swimming or is at
+// High risk or above. On the phone, 27 Oct 2026, an outing to an advised pond with a Very high risk backup said
+// nothing of it. A column's `level` is the day's (levels.js, dayLevel) and `advised` its advice. '' otherwise.
+const OUTING_POOR = { high: 'High risk', 'very high': 'Very high risk' };
+const outingPoor = c => !!c && (!!c.advised || c.level in OUTING_POOR);
+function outingNeither(o) {
+  if (!o.main || !outingPoor(o.main) || (o.alt && !outingPoor(o.alt))) return '';
+  const why = c => `${outEsc(c.name)} ${c.advised ? 'has official advice against swimming' : `is at ${OUTING_POOR[c.level]}`}`;
+  const cols = o.alt ? [o.main, o.alt] : [o.main], day = outDay(o.day);
+  return `<p class="outing-poor"><b>${o.alt ? 'Neither spot looks good' : 'Your spot does not look good'} ${day === 'today' || day === 'tomorrow' ? day : `on ${day}`}.</b> `
+    + `${cols.map(why).join(', and ')}. Look at the other spots in this plan, or another day.</p>`;
+}
+
+// "Share this outing": a link to the plan with this outing in it, for someone going with you. It is the plan
+// as it is, except where it starts from, which may be your own location or your home town: the link's plan
+// starts from the outing's spot instead, so whoever opens it sees the outing and the spots around it.
+const outingShared = (plan, main) => {
+  const { compare, ...rest } = plan;
+  return { ...rest, from: { name: main.name, lat: main.lat, lon: main.lon } };
+};
 
 // ------------------------------------------------------------------------------ alerts for the outing
 // "Alert me about this outing": the outing's spot and its backup, each on the plan's day, asked for through
@@ -162,8 +183,9 @@ function outingIcs(c, now = Date.now()) {
 // The part of the tile that keeps the outing: the alerts (filled in once this browser's push state is
 // known: outingAlert), then the calendar file.
 const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>'
-  + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button></p>'
-  + '<p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date.</p>'
+  + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button></p>'
+  + '<p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
+  + 'The shared link holds the day, the time and the spots, with the plan around your spot: not where you start from.</p>'
   + '<p class="small muted msg" id="outing-alert-msg" aria-live="polite"></p></div>';
 
 // ------------------------------------------------------------------------------ the tile
@@ -186,7 +208,7 @@ function outingSection(o) {
   const notes = outingTimeNote(o.day, o.when, o.nowMs);
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
-    : `<p class="outing-said">${said}</p><div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
+    : `<p class="outing-said">${said}</p>${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
   return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary><span>Your outing${o.main ? `<span class="k">${outEsc(o.main.name)}${o.alt ? `, backup ${outEsc(o.alt.name)}` : ''}</span>` : ''}</span></summary>`
@@ -211,11 +233,12 @@ function drawOuting(box, shown) {
   const col = s => { const m = away(s);
     return { id: s.id, name: s.name, href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), tone: tone(dayLevel(s, PLAN.day)),
       headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
+      level: dayLevel(s, PLAN.day), advised: !!outingOfficial(s),
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   if (OUTING_OPEN === null) OUTING_OPEN = !!(PLAN.spot || PLAN.when);
   box.insertAdjacentHTML('afterbegin', outingSection({ day: PLAN.day, when: PLAN.when, spot: PLAN.spot, backup: PLAN.backup,
-    groups: outingOptions(list, SAVED, byId), backupGroups: outingOptions(list, SAVED, byId, PLAN.spot),
+    groups: outingOptions(list, SAVED, byId, PLAN.backup), backupGroups: outingOptions(list, SAVED, byId, PLAN.spot),
     main: pair.main && col(pair.main), alt: pair.backup && col(pair.backup), missing: pair.missing,
     issued: `${issued()}, ${ago(ageMin())} ago`, open: OUTING_OPEN, nowMs: Date.now(), dateAlerts: outingDates().dateAlertsOn(DATA) }));
   const tile = document.getElementById('outing');
@@ -241,6 +264,8 @@ function drawOuting(box, shown) {
     a.download = `swimsignal-outing-${PLAN.day}.ics`; document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
+  bindShareLink(document.getElementById('outing-share'), document.getElementById('outing-alert-msg'),
+    new URL(planPath() + planHash(outingShared(PLAN, pair.main)), location.href).href, `Swim: ${pair.main.name} · ${BRAND}`, 'Copy link to this outing');
   bindOutingAlert(byId);
 }
 
@@ -289,6 +314,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }

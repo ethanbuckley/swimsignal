@@ -581,13 +581,19 @@ function bestDay(spots, dates) {
 // best day. `n` is every listed spot, as the lede counts them ("forecasts for 105 spots"); a spot with
 // no daily level is never counted low, so the line claims only what it counts. Null when no day has a
 // level (bestDay). With a day picked (one of `dates`), that day's, so the line under "On Monday" is
-// Monday's count.
+// Monday's count. `weekend`: the day was chosen as the weekend's, with no day picked.
 function lowAnswerDay(spots, dates, picked = null) {
   const weekend = dates.filter(iso => [0, 6].includes(new Date(iso + 'T12:00:00').getDay()));
-  const b = bestDay(spots, picked && dates.includes(picked) ? [picked] : weekend.length ? weekend : dates);
-  return b && { ...b, n: spots.length };
+  const one = picked && dates.includes(picked);
+  const b = bestDay(spots, one ? [picked] : weekend.length ? weekend : dates);
+  return b && { ...b, n: spots.length, weekend: !one && weekend.length > 0 };
 }
-const lowAnswerWords = a => `${cap(dayName(a.date))}: ${a.low || 'none'} of ${a.n} spot${a.n === 1 ? '' : 's'} at low risk`;
+// Under the list's "Today and tomorrow", a weekend day past tomorrow is said to be the weekend's: on the
+// phone, 27 Oct 2026, "Saturday: 61 of 105 spots at low risk" under that filter read as a mismatch.
+const lowAnswerWords = a => {
+  const d = dayName(a.date), ahead = a.weekend && !['today', 'tomorrow'].includes(d);
+  return `${ahead ? `This weekend, ${d}` : cap(d)}: ${a.low || 'none'} of ${a.n} spot${a.n === 1 ? '' : 's'} at low risk`;
+};
 // The line under it, when another of the five days has more spots at low risk: the same form, "Today:
 // 43 of 105, the most this week". Without the count, under "Saturday: 19 of 105 spots at low risk",
 // which never says it is the weekend's day, the two lines look to disagree.
