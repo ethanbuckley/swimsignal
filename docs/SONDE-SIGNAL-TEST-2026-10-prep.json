@@ -1,0 +1,119 @@
+{
+ "stations_listed": 1887,
+ "stations_with": {
+  "turbidity": 1737,
+  "ammonium": 1818
+ },
+ "river_spots": 20,
+ "by_spot": {
+  "Wharfe at Cromwheel, Ilkley": {
+   "samples_may_sep_2024_26": 57,
+   "turbidity_samples_covered_upper_bound": 20,
+   "ammonium_samples_covered_upper_bound": 20
+  },
+  "Nidd at the Lido, Knaresborough": {
+   "samples_may_sep_2024_26": 57,
+   "turbidity_samples_covered_upper_bound": 20,
+   "ammonium_samples_covered_upper_bound": 20
+  },
+  "Wharfe at Wilderness Carpark": {
+   "samples_may_sep_2024_26": 56,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "Swale above Richmond Falls": {
+   "samples_may_sep_2024_26": 17,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "Sheep's Green, River Cam": {
+   "samples_may_sep_2024_26": 58,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "Falcon Meadow, River Waveney": {
+   "samples_may_sep_2024_26": 17,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "Friars Meadow, River Stour": {
+   "samples_may_sep_2024_26": 59,
+   "turbidity_samples_covered_upper_bound": 59,
+   "ammonium_samples_covered_upper_bound": 59
+  },
+  "Pangbourne Meadow, River Thames": {
+   "samples_may_sep_2024_26": 16,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "Ham and Kingston, River Thames": {
+   "samples_may_sep_2024_26": 18,
+   "turbidity_samples_covered_upper_bound": 18,
+   "ammonium_samples_covered_upper_bound": 18
+  },
+  "Wolvercote Mill Stream": {
+   "samples_may_sep_2024_26": 55,
+   "turbidity_samples_covered_upper_bound": 14,
+   "ammonium_samples_covered_upper_bound": 14
+  },
+  "Wallingford Beach, River Thames": {
+   "samples_may_sep_2024_26": 57,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "River Avon at Fordingbridge": {
+   "samples_may_sep_2024_26": 57,
+   "turbidity_samples_covered_upper_bound": 17,
+   "ammonium_samples_covered_upper_bound": 17
+  },
+  "River Avon at Queen Elizabeth Gardens": {
+   "samples_may_sep_2024_26": 17,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "River Tone at French Weir Park": {
+   "samples_may_sep_2024_26": 59,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "River Frome at Farleigh Hungerford": {
+   "samples_may_sep_2024_26": 56,
+   "turbidity_samples_covered_upper_bound": 20,
+   "ammonium_samples_covered_upper_bound": 20
+  },
+  "River Teme in Ludlow": {
+   "samples_may_sep_2024_26": 59,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "River Severn at Ironbridge": {
+   "samples_may_sep_2024_26": 59,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "River Severn in Shrewsbury": {
+   "samples_may_sep_2024_26": 57,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "Sandy Lane, Chester": {
+   "samples_may_sep_2024_26": 17,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  },
+  "River Ribble at Edisford Bridge": {
+   "samples_may_sep_2024_26": 59,
+   "turbidity_samples_covered_upper_bound": 0,
+   "ammonium_samples_covered_upper_bound": 0
+  }
+ },
+ "totals": {
+  "samples_may_sep_2024_26": 907,
+  "turbidity_samples_covered_upper_bound": 168,
+  "ammonium_samples_covered_upper_bound": 168
+ },
+ "spots_with_any": {
+  "turbidity": 7,
+  "ammonium": 7
+ }
+}
