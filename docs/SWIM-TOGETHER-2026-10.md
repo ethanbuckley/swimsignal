@@ -126,7 +126,7 @@ Built on guides and visit notes, so it stays within the exemption.
 4. Which river and which two clubs for the pilot.
 5. Stage 2: names visible to the organiser only, or to everyone with the link.
 6. Whether stage 2 is worth the Ofcom check and DPIA at all, or stage 1 plus the atlas is enough for 2027.
-7. Clubs: keep them free as a channel (the 20 Oct plan), or test a club price in the interviews (section 5).
+7. Decided 27 Oct: test a club price in the interviews (section 5). The three questions are in the launch kit's interview script, version 21.
 8. A paid personal tier: recommended no, for 2027 (section 5).
 
 ## 5. Money: the third proposal
@@ -171,7 +171,7 @@ What follows, inferred:
 
 ### What to do
 
-1. Add three questions to the stage 0 interviews: what the club uses to organise now and whether it pays for it; what an organiser's time on it costs them each week; and whether the club would pay £15, £30 or nothing for stage 2's list and change prompts. Record the answers as they come; quote no price before the question.
+1. Done 27 Oct: three questions added to the interview script, for clubs and centres with group sessions. They ask what the club uses to organise now and whether it pays for it; how much of the organiser's time it took last week; and what a shared list with change alerts would be worth a month. The script's rule against naming a price stands, so the price is tested as an open question: the club names a figure, and the record sheet notes whether it falls under, inside or above £15–30.
 2. Widen the stage 2 pilot to a swim club, a SUP group and a kayak club in one region, as proposed, if the interviews find them. Free during the pilot.
 3. Ask for money only when one club says in writing it will pay a named price for a named scope (the 24 Oct rule). Then the costs in ORGANISER-PIVOT §3 start.
 4. No personal tier in 2027.
