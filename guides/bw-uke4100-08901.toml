@@ -51,6 +51,7 @@ text = "Defra's 2020 consultation on the designation says there are public toile
 status = "confirmed"
 source = "https://consult.defra.gov.uk/water/bathing-water-river-wharfe-ilkley/supporting_documents/Consultation%20Document%20for%20the%20River%20Wharfe.pdf"
 source_name = "Defra"
+source_date = "2020-08"
 
 [[fact]]
 topic = "rules"
@@ -58,6 +59,7 @@ text = "Defra's 2020 decision says that in the bathing season Bradford Council i
 status = "confirmed"
 source = "https://www.gov.uk/government/consultations/bathing-waters-designation-of-an-area-of-the-river-wharfe-ilkley/outcome/summary-of-responses-and-government-response"
 source_name = "Defra"
+source_date = "2020-12"
 
 [[fact]]
 topic = "rules"
