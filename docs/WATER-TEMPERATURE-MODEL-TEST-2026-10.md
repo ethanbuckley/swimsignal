@@ -499,7 +499,7 @@ any status is still never retried. It changes no feature and no score, and was n
 - 91,825 test rows also have HadUK air (the secondary arm). Every row has an elevation (1,957 cells).
 - Checks on inputs only: no infinite value; no missing `a1`, `a7`, `a30`, day of year or elevation; lake area on
   10,874 lake rows; every water in exactly one fold. Waters with rows: 7,799 river, 616 lake, 314 sea.
-- A dry run of the same stage at 17:26 UTC, on a copy before the fetch had finished, was used only to find faults in
+- A dry run of the same stage (about 17:26 to 17:41 UTC), on a copy before the fetch had finished, was used only to find faults in
   the code. It fitted nothing and scored nothing. Its file (hash 763d0c25…) is not used.
 
 ---
