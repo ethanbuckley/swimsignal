@@ -24,6 +24,7 @@ level, A8, option B or shadow window was changed by any of this.
 | #392 | Official advice, rounds 2-3 (Nearby, compare row, Saved grid, feeds, action line, alerts.json text, weekend-card plain groups; helper keeps the cause) | open, draft, **CI green, ready** | 5abb470 | Includes main + #388 + #393. Share-plan exclusion kept with its reason; user-picked lists keep advised spots with the notice. Merge before #394 |
 | #394 | Alert/push/email/weekly text and weekend-card groups (text only) | open, draft | 4ee086b, being rebased on #392 | Overlaps #392 (which already covers alerts.json and weekend groups); keeps only what #392 lacks; merge after #392, or close if nothing remains |
 | #390 | Prototype: catchment replay (`?replay=1` only) | open, draft, **CI green, ready** | 51aad5f (main incl. #388 and #393 merged; 571 site JS + 124 Python checks pass locally) | Codex added 1685b3e (a lake spot never gets a river arrival). Full CI then failed one existing, clock-dependent ensemble test (not replay code); fixed by pinning the test to noon (3a2e935, also PR #393 for main). Preview http://localhost:8793 |
+| #395 | Polish: guide "Source: <page>, <month>" for dated historical facts (schema `source_date`); Saved and Plan say what they need without JavaScript | open, draft, **CI green, ready** | fd5b317 | Includes main + #393; merges cleanly with #390, #392, #394. Not seen rendered with JavaScript off (checked by tests and reading). Five older Defra-sourced facts without "not a current check" still say Verified: for review |
 | #393 | Test only: pin the ensemble spare-calls test to noon | **merged** | 6b5b575 (23:55) | Fixed the late-night flake that also blocked publishing; no production change |
 | #383 | Research: river rises scope + evaluation harness | open, draft | 6c3f29d | Fetch and scoring refuse to run before 2 Nov; not reviewed for running yet |
 | #385 | Research: NDCI vs EA harmful-algae incidents (statement) | open, draft, **unrun** | 735e882 | Reviewed as a bounded exploratory question; not approved for fetching |
@@ -37,8 +38,7 @@ level, A8, option B or shadow window was changed by any of this.
 - **Ethan (credentials or outside contact):** the push Worker's `GITHUB_DISPATCH_TOKEN` (recommended: not before the
   ensemble-rain read on 21 Nov); recruitment wording and posts for the comprehension sessions; the UKCEH Bloomin'
   Algae licence enquiry; an EA lab question that would settle 7887's definition.
-- **Follow-ups:** alert message text (in progress, above); the "Highest risk" sort ranks by the sewage level; guide label "Verified" on
-  dated Defra listings (P1); Saved and Plan without JavaScript stay on "Loading" (P3); sites view heading order (P4);
+- **Follow-ups:** alert message text (in progress, above); the "Highest risk" sort ranks by the sewage level; sites view heading order (P4);
   where the replay would live and whether it is cached offline.
 
 ## Dated next actions
