@@ -275,13 +275,22 @@ def test_ea_pages_until_a_short_page_and_caches(tmp_path):
     assert wf.fetch_ea(c2, ranges=[("2020-06-01", "2020-06-30")])["pages"] == 6   # all from the cache
 
 
-@pytest.mark.parametrize("status", [403, 429, 500, 503, 301, 400])
+@pytest.mark.parametrize("status", [403, 429, 500, 503, 301, 400, 202])
 def test_ea_stops_without_retry(tmp_path, status):
     seen = []
     c = wf.EAClient(tmp_path, fetch=True, transport=ea_transport(1, status=status, seen=seen), sleep=lambda s: None)
     with pytest.raises(wf.Stop):
         wf.fetch_ea(c, ranges=[("2020-06-01", "2020-06-30")])
     assert len(seen) == 1
+
+
+def test_ea_204_is_an_empty_page(tmp_path):
+    seen = []
+    c = wf.EAClient(tmp_path, fetch=True, transport=ea_transport(1, status=204, seen=seen), sleep=lambda s: None)
+    assert wf.fetch_ea(c, ranges=[("2020-05-01", "2020-06-01")]) == {"pages": 2, "rows": 0}
+    assert len(seen) == 2
+    c2 = wf.EAClient(tmp_path, fetch=False)
+    assert wf.fetch_ea(c2, ranges=[("2020-05-01", "2020-06-01")])["rows"] == 0     # cached
 
 
 def test_ea_stops_at_too_many_pages_and_at_the_cap(tmp_path):

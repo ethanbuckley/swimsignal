@@ -41,6 +41,8 @@ def cmd_rows(ea: Path, out: Path) -> None:
     files = sorted(ea.glob("*.csv"))
     frames = []
     for f in files:
+        if f.stat().st_size == 0:          # an HTTP 204 page: no rows
+            continue
         d = pd.read_csv(f, dtype=str)
         if len(d):
             frames.append(d)

@@ -126,6 +126,10 @@ class EAClient:
         self.log.add(str(r.status_code), len(r.content), 0, url)
         if r.status_code in (403, 429) or r.status_code >= 500 or 300 <= r.status_code < 400:
             raise Stop(f"{url} answered {r.status_code}: stopping")
+        if r.status_code == 204:
+            # No rows for that month and set (first seen for sea water, May 2020): an empty page, cached as such.
+            f.write_text("")
+            return ""
         if r.status_code != 200:
             raise Stop(f"{url} answered {r.status_code}: stopping")
         f.write_text(r.text)
