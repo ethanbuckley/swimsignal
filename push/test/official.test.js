@@ -1,6 +1,8 @@
-// Official advice in the messages (alerts.json `official`, scripts/alerts.js from eatoday.js eaTodayBrief).
-// Words only: with or without the field the same browsers are told at the same runs, and an alerts.json
-// from before the field gives the same messages as before.
+// Official advice in the messages. scripts/alerts.js (#392) writes `official` (eatoday.js eaTodayBrief)
+// and, while a notice shows, makes `action` (and each day's) the notice itself. The texts that give the
+// action already say it once; the Worker adds it only to those that do not: the weekly note, a list of
+// dates, a combined push and the email. Words only: with or without the field the same browsers are told
+// at the same runs, and an alerts.json from before the field gives the same messages as before.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { alertPayload, runCron, subKey } from '../src/index.js';
@@ -11,58 +13,63 @@ import { officialWords } from '../src/shared.js';
 import { FakeKV, makeUserAgent, makeVapidEnv } from './helpers.js';
 
 const SITE = 'https://swimsignal.co.uk/';
-const BRIEF = 'EA advice against bathing · since 19 Jun · checked 26 Oct';
-const OFFICIAL = `Official: ${BRIEF}. Follow it first.`;
-const frensham = (extra = {}) => ({ name: 'Frensham Great Pond', rank: 2, level: 'high', headline: 'High risk today: sewage spills',
-  action: 'Best not to swim today.', url: `${SITE}spot/f/`, ...extra });
+const BRIEF = 'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct';
+const OFFICIAL = `Official: ${BRIEF}. Follow it first; the level is SwimSignal's sewage forecast only.`;
+const count = (text, s) => text.split(s).length - 1;
+// A spot as scripts/alerts.js writes it: with advice, `official` and an `action` that is the notice.
+const frensham = (advised, extra = {}) => ({ name: 'Frensham Great Pond', rank: 2, level: 'high', headline: 'High risk today: sewage spills',
+  action: advised ? OFFICIAL : 'Best not to swim today.', url: `${SITE}spot/f/`, ...(advised ? { official: BRIEF } : {}), ...extra });
 
-test('officialWords: the line, or nothing for a missing, empty or odd field', () => {
+test('officialWords: alerts.js\'s own line, or nothing for a missing, empty or odd field', () => {
   assert.equal(officialWords({ official: BRIEF }), OFFICIAL);
   for (const s of [{}, { official: '' }, { official: 3 }, { official: [BRIEF] }, null, undefined]) assert.equal(officialWords(s), '');
 });
 
-test('a push for one spot puts the official line first; without the field it is as before', () => {
-  const was = alertPayload(['f'], { f: frensham() }, SITE);
-  assert.equal(was.body, 'High risk today: sewage spills. Best not to swim today.');
-  const now = alertPayload(['f'], { f: frensham({ official: BRIEF }) }, SITE);
-  assert.deepEqual(now, { ...was, body: `${OFFICIAL} High risk today: sewage spills. Best not to swim today.` });
-  const both = alertPayload(['f', 'o'], { f: frensham({ official: BRIEF }), o: { ...frensham(), name: 'Other' } }, SITE);
-  assert.equal(both.body, 'Frensham Great Pond (official advice in force), Other');
-  assert.equal(alertPayload(['f', 'o'], { f: frensham(), o: { ...frensham(), name: 'Other' } }, SITE).body, 'Frensham Great Pond, Other');
+test('a push for one spot says the notice once, through `action`; several spots mark the advised name', () => {
+  assert.equal(alertPayload(['f'], { f: frensham(false) }, SITE).body, 'High risk today: sewage spills. Best not to swim today.');
+  const one = alertPayload(['f'], { f: frensham(true) }, SITE).body;
+  assert.equal(one, `High risk today: sewage spills. ${OFFICIAL}`);
+  assert.equal(count(one, 'Official:'), 1);
+  const other = { ...frensham(false), name: 'Other' };
+  assert.equal(alertPayload(['f', 'o'], { f: frensham(true), o: other }, SITE).body, 'Frensham Great Pond (official advice in force), Other');
+  assert.equal(alertPayload(['f', 'o'], { f: frensham(false), o: other }, SITE).body, 'Frensham Great Pond, Other');
 });
 
-test('a dated notice at low risk never reads as clean beside official advice', () => {
-  const day = { level: 'low', headline: 'Low risk', action: 'Usual care' };
-  const line = { spot: 'f', date: '2026-10-31', from: null, day };
-  const was = datePayload([line], { f: frensham() }, SITE, 'x');
-  assert.equal(was.body, 'Low risk. Usual care. This is the first forecast for this day, and it can change.');
-  const now = datePayload([line], { f: frensham({ official: BRIEF }) }, SITE, 'x');
-  assert.deepEqual(now, { ...was, body: `${OFFICIAL} ${was.body}` });
-  const two = datePayload([line, { ...line, spot: 'o' }], { f: frensham({ official: BRIEF }), o: { name: 'Other' } }, SITE, 'x');
-  assert.equal(two.body, `Frensham Great Pond · Sat 31 Oct: Low risk. ${OFFICIAL}\nOther · Sat 31 Oct: Low risk.`);
+test('dated notices: one pair says it once through the day\'s action; a list adds it to the advised line', () => {
+  const line = { spot: 'f', date: '2026-10-31', from: null, day: { level: 'low', headline: 'Low risk', action: OFFICIAL } };
+  const one = datePayload([line], { f: frensham(true) }, SITE, 'x').body;
+  assert.equal(one, `Low risk. ${OFFICIAL} This is the first forecast for this day, and it can change.`);
+  assert.equal(count(one, 'Official:'), 1);
+  const plain = { spot: 'o', date: '2026-10-31', from: null, day: { level: 'low', headline: 'Low risk', action: 'Usual care' } };
+  const two = datePayload([line, plain], { f: frensham(true), o: { name: 'Other' } }, SITE, 'x').body;
+  assert.equal(two, `Frensham Great Pond · Sat 31 Oct: Low risk. ${OFFICIAL}\nOther · Sat 31 Oct: Low risk.`);
+  assert.equal(datePayload([line, plain], { f: frensham(false), o: { name: 'Other' } }, SITE, 'x').body,
+    'Frensham Great Pond · Sat 31 Oct: Low risk.\nOther · Sat 31 Oct: Low risk.');
 });
 
-test('the weekly note: "Saturday, low risk" carries the official line; order and link unchanged', () => {
-  const best = { date: '2026-10-31', level: 'low', words: 'Saturday, low risk' };
+test('the weekly note: "low risk every day" carries the notice once; order, link and tag unchanged', () => {
+  const best = { date: '2026-10-27', level: 'low', words: 'low risk every day from tomorrow to Friday' };
   const spots = (o) => ({ f: { name: 'Frensham Great Pond', url: `${SITE}spot/f/`, best, ...o }, o: { name: 'Other', best: { ...best, level: 'moderate', words: 'Saturday, moderate risk' } } });
   const was = weeklyPayload(['o', 'f'], spots({}), SITE), now = weeklyPayload(['o', 'f'], spots({ official: BRIEF }), SITE);
-  assert.equal(was.body, 'Frensham Great Pond: Saturday, low risk.\nOther: Saturday, moderate risk.');
-  assert.deepEqual(now, { ...was, body: `Frensham Great Pond: Saturday, low risk. ${OFFICIAL}\nOther: Saturday, moderate risk.` });
+  assert.equal(was.body, 'Frensham Great Pond: low risk every day from tomorrow to Friday.\nOther: Saturday, moderate risk.');
+  assert.deepEqual(now, { ...was, body: `Frensham Great Pond: low risk every day from tomorrow to Friday. ${OFFICIAL}\nOther: Saturday, moderate risk.` });
+  assert.equal(count(now.body, 'Official:'), 1);
 });
 
-test('the alert email says the official line above the level, in text and HTML; same subject and recipient', () => {
+test('the alert email says the notice once, above the level, in text and HTML; same subject, recipient, headers', () => {
   const env = { SITE_URL: SITE };
-  const was = alertEmail(env, 'a@example.com', ['f'], { f: frensham() }, '2026-10-26T22:00:00Z', 'https://u');
-  const now = alertEmail(env, 'a@example.com', ['f'], { f: frensham({ official: BRIEF }) }, '2026-10-26T22:00:00Z', 'https://u');
+  const was = alertEmail(env, 'a@example.com', ['f'], { f: frensham(false) }, '2026-10-26T22:00:00Z', 'https://u');
+  const now = alertEmail(env, 'a@example.com', ['f'], { f: frensham(true) }, '2026-10-26T22:00:00Z', 'https://u');
   assert.equal(now.to, was.to); assert.equal(now.subject, was.subject); assert.deepEqual(now.headers, was.headers);
   assert.doesNotMatch(was.text, /Official/); assert.doesNotMatch(was.html, /Official/);
-  assert.match(now.text, new RegExp(`^Frensham Great Pond\n${OFFICIAL}\nHigh risk today: sewage spills\\.\n`));
-  assert.ok(now.html.includes(`<p style="margin:0 0 4px;font-weight:600;">${OFFICIAL}</p>`));
+  assert.ok(now.text.startsWith(`Frensham Great Pond\n${OFFICIAL}\nHigh risk today: sewage spills.\n`));
+  assert.equal(count(now.text, 'Official:'), 1);
+  assert.equal(count(now.html, 'Official:'), 1);
 });
 
-// The cron with and without `official`: the same browsers get a push at the same runs, and state is the same.
+// The cron with and without advice: the same browsers get a push at the same runs, and state is the same.
 const vapid = await makeVapidEnv();
-async function day(withOfficial) {
+async function day(advised) {
   const kv = new FakeKV(), agents = {}, pushes = [];
   for (const [name, spots] of Object.entries({ ann: ['f'], bob: ['o'], cat: ['f', 'o'], dan: ['q'] })) {
     const ua = makeUserAgent(`https://fcm.googleapis.com/fcm/send/${name}`);
@@ -77,8 +84,8 @@ async function day(withOfficial) {
     return new Response(null, { status: 201 });
   };
   const env = { PUSH: kv, SITE_URL: SITE, ...vapid };
-  const o = withOfficial ? { official: BRIEF } : {};
-  const spot = (rank, extra = {}) => ({ name: 'S', rank, level: ['low', 'moderate', 'high', 'very high'][rank], headline: 'H', ...extra });
+  const o = advised ? { official: BRIEF, action: OFFICIAL } : { action: 'A' };
+  const spot = (rank, extra = { action: 'A' }) => ({ name: 'S', rank, level: ['low', 'moderate', 'high', 'very high'][rank], headline: 'H', ...extra });
   const builds = [
     ['2026-10-26T21:00:00Z', { f: spot(0, o), o: spot(1), q: spot(0) }],
     ['2026-10-26T22:00:00Z', { f: spot(2, o), o: spot(3), q: spot(1) }],
@@ -97,7 +104,7 @@ test('same recipients, runs, tags and state with or without official advice; onl
   const who = (p) => p.map(({ run, to, tag }) => `${run} ${to} ${tag}`).sort();
   assert.deepEqual(who(now.pushes), who(was.pushes));
   assert.deepEqual(now.state, was.state);
-  const ann = now.pushes.find((p) => p.to === 'ann');
-  assert.ok(ann.body.startsWith(OFFICIAL));
-  assert.ok(!was.pushes.find((p) => p.to === 'ann').body.includes('Official'));
+  for (const p of now.pushes) assert.ok(count(p.body, 'Official:') <= 1);
+  assert.equal(count(now.pushes.find((p) => p.to === 'ann').body, 'Official:'), 1);
+  assert.ok(!was.pushes.some((p) => p.body.includes('Official')));
 });

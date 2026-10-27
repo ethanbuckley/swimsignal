@@ -408,9 +408,9 @@ export function alertPayload(ids, spots, siteUrl) {
   if (ids.length === 1) {
     const [id] = ids;
     const spot = spots[id];
-    const said = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
-    const official = officialWords(spot);   // official advice first, as the page shows it above the level
-    return { title: spot.name ?? id, body: official ? `${official} ${said}` : said, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
+    // While official advice shows, `action` is that advice (scripts/alerts.js), so it is not added again here.
+    const body = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
+    return { title: spot.name ?? id, body, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
   }
   const names = ids.map((id) => `${spots[id].name ?? id}${officialWords(spots[id]) ? ' (official advice in force)' : ''}`).join(', ');
   return {

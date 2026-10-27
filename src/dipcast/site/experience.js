@@ -82,11 +82,16 @@ function compareNow(s, generatedAt = null) {
 // Today's advice from the Environment Agency, against bathing after pollution or algae: the build and the
 // page cannot read it (eatoday.js), so at a designated bathing water the cell says it was not checked and
 // links to the EA's page, which has it. The EA gives none elsewhere.
-const eaPageFor = () => typeof eaTodayPage === 'function' ? { eaTodayPage, eaTodayId } : require('./eatoday.js');
+const eaPageFor = () => typeof eaTodayPage === 'function' ? { eaTodayPage, eaTodayId, eaTodayAdvice: typeof eaTodayAdvice === 'function' ? eaTodayAdvice : () => [],
+  eaTodayBrief: typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '' } : require('./eatoday.js');
+// A reviewed notice (spots.json `official`) is said in its compact form, with its publisher's page, in place
+// of "could not be checked", as the spot page's coverage line does (eatoday.js, eaTodayCover).
 function compareAdvice(s) {
-  const R = rules();
+  const R = rules(), E = eaPageFor(), o = E.eaTodayAdvice(s)[0];
+  if (o) return `Official: ${htmlText(E.eaTodayBrief(s))}. Follow it first.`
+    + (/^https:\/\/[^\s"<>]+$/.test(o.link || '') ? ` <a href="${htmlText(o.link)}">The ${htmlText(o.publisher)}'s page</a> has the latest.` : '');
   if (R.eaUnchecked(s)) {
-    const E = eaPageFor(), id = E.eaTodayId(s), url = /^https:\/\//.test(s.classification.url || '') ? s.classification.url : id ? E.eaTodayPage('', id) : '';
+    const id = E.eaTodayId(s), url = /^https:\/\//.test(s.classification.url || '') ? s.classification.url : id ? E.eaTodayPage('', id) : '';
     return htmlText(R.EA_UNCHECKED) + (url ? ` <a href="${htmlText(url)}">The EA's page</a> has any advice against bathing there today.` : '');
   }
   if (s.source === 'designated') return 'Not known: this update has no Environment Agency page for this bathing water.';

@@ -110,8 +110,8 @@ export function datePayload(lines, spots, siteUrl, issued) {
     const [{ spot, date, from, day }] = lines;
     const what = from === null ? 'This is the first forecast for this day, and it can change.'
       : ORDER[from] !== undefined ? `Was ${from} risk.` : 'Changed since the last forecast.';
-    const official = officialWords(spots[spot]);   // official advice first, as the page shows it above the level
-    return { title: `${name(spot)} · ${dayWords(date)}`, body: from === null ? join(official, sentence(day.headline), sentence(day.action), what) : join(official, sentence(day.headline), what, sentence(day.action)),
+    // While official advice shows, the day's action is that advice (scripts/alerts.js): not added again.
+    return { title: `${name(spot)} · ${dayWords(date)}`, body: from === null ? join(sentence(day.headline), sentence(day.action), what) : join(sentence(day.headline), what, sentence(day.action)),
       url: link(lines[0]), tag: `dipspot-${spot}-${date}-${day.level.replace(/ /g, '')}` };
   }
   const body = lines.map(({ spot, date, day }) => join(`${name(spot)} · ${shortDay(date)}: ${sentence(day.headline)}`, officialWords(spots[spot]))).join('\n');

@@ -132,15 +132,14 @@ def _short_day(iso) -> str:
 
 
 def official_brief(spot: dict) -> str:
-    """'EA advice against bathing · since 19 Jun · checked 26 Oct', or '' without advice."""
+    """'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct', or '' without advice."""
     items = [o for o in (spot.get("official") or []) if isinstance(o, dict) and isinstance(o.get("line"), str) and o["line"]
              and isinstance(o.get("publisher"), str) and o["publisher"] and o.get("state") in OFFICIAL_STATES
              and _short_day(o.get("checked"))]
     if not items:
         return ""
     o = items[0]
-    said = re.sub(r"^[^:]*:\s*", "", o["line"], count=1)
-    said = re.sub(r"\s+since\s.*$", "", re.sub(r"\s*\(.*$", "", said, count=1), count=1)
+    said = re.sub(r"\s+since\s.*$", "", re.sub(r"^[^:]*:\s*", "", o["line"], count=1), count=1)   # the cause stays
     who = "EA" if o["publisher"] == "Environment Agency" else o["publisher"]
     since, checked = _short_day(o.get("since")), _short_day(o["checked"])
     parts = [f"{who} {said}", f"since {since}" if since else "",
@@ -231,7 +230,7 @@ class WeekendCard:
     rows: list[Row]
     plain: list[tuple[str, str, list[str]]] = field(default_factory=list)   # (headline, level, names)
     missing: list[str] = field(default_factory=list)                        # ids not in the forecast
-    plain_official: list[tuple[str, str]] = field(default_factory=list)     # (label, official_brief) in a plain group
+    plain_official: list[tuple[str, str]] = field(default_factory=list)     # (name, official_brief) in the plain lines
 
     @property
     def ids(self) -> list[str]:
@@ -254,8 +253,6 @@ def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: d
                 card.rows.append(Row(sid, label, [s["level"]] * len(days), poor="rated poor" in s["headline"]))
             else:
                 plain.setdefault(s["headline"], (s["level"], []))[1].append(label)
-                if (advice or {}).get(sid):   # a plain group reads as clean: its advice gets a line, as a row's does
-                    card.plain_official.append((label, advice[sid]))
             continue
         got = [s["days"].get(iso) for iso in days]
         cells = [x[0] if x and x[0] in LEVELS else None for x in got]
@@ -263,6 +260,9 @@ def weekend_card(area: Area, levels: dict[str, dict], days: list[str], advice: d
     card.plain = [(h, lv, names) for h, (lv, names) in plain.items()]
     for r in card.rows:
         r.official = (advice or {}).get(r.id, "")
+    # A spot in a plain line ("No monitored overflow found upstream") with advice: said under it, by name.
+    card.plain_official = [(label, (advice or {})[sid]) for sid, label in area.spots
+                           if (advice or {}).get(sid) and sid in levels and not any(r.id == sid for r in card.rows)]
     if not card.rows and not card.plain:
         return None
     return card
@@ -336,8 +336,8 @@ def weekend_caption(card: WeekendCard, generated_at: str, root: str) -> str:
             lines[-1] += " " + official_words(r.official)
     for headline, _, who in card.plain:
         lines.append(f"{and_list(who)}: {headline[:1].lower() + headline[1:]}.")
-    for label, brief in card.plain_official:
-        lines.append(f"{label}: {official_words(brief)}")
+    for label, o in card.plain_official:
+        lines.append(f"{label}: {official_words(o)}")
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         lines += ["", poor_words(poor)]
@@ -519,14 +519,20 @@ def draw_weekend(card: WeekendCard, generated_at: str, size: str):
     poor = [r.label for r in card.rows if r.poor]
     if poor:
         notes.append((None, MUTED, poor_words(poor)))
-    for r in card.rows:   # official advice under the table, in ink: the row's level is the sewage forecast alone
-        if r.official:
-            notes.append((None, INK, f"{r.label}: {official_words(r.official)}"))
-    notes += [(None, INK, f"{label}: {official_words(brief)}") for label, brief in card.plain_official]
-    note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes)
+    # Official advice, in ink: the level is the sewage forecast alone. In full, or, where that does not fit,
+    # one line naming every spot with a notice (the caption has each in full); never left out.
+    advised = [(label, o) for label, o in [(r.label, r.official) for r in card.rows] + card.plain_official if o]
     text_h = [len(wrap(draw, r.label, name_f, name_w)) * lh(name_f) for r in card.rows]
-    room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes else 0) - sum(text_h)
-    pad = min(st.pad, room // (2 * len(card.rows))) if card.rows else st.pad   # closer rows before none
+    for short in (False, True) if advised else (False,):
+        said = ([(None, INK, f"{and_list([a for a, _ in advised])}: official advice against swimming. Follow it first; "
+                  "the levels are SwimSignal's sewage forecast only.")] if short
+                else [(None, INK, f"{label}: {official_words(o)}") for label, o in advised])
+        note_h = sum(len(wrap(draw, t, note_f, w - 2 * M - (40 if m else 0))) * lh(note_f) + 12 for m, _, t in notes + said)
+        room = foot_top - st.gap // 2 - y - (st.gap // 2 + note_h if notes + said else 0) - sum(text_h)
+        pad = min(st.pad, room // (2 * len(card.rows))) if card.rows else st.pad   # closer rows before none
+        if pad >= 8:
+            break
+    notes = notes + said if advised else notes
     if pad < 8:
         raise Overflow(f"{card.area.slug}: {len(card.rows)} rows and {len(notes)} notes do not fit the {size} card")
     rows_h = [t + 2 * pad for t in text_h]
@@ -652,11 +658,15 @@ def draw_spot(name: str, where: str, level: str | None, headline: str, generated
     head_f, when_f, where_f = font("sans", 44, 700), font("sans", 32, 500), font("sans", 30, 400)
     mark, text = level_colours(level)
     head = wrap(draw, headline, head_f, width - 44)
-    said, said_f = f"Official: {official}." if official else "", font("sans", 30, 600)   # one line: the alt text has the rest
-    said_h = len(wrap(draw, said, said_f, width - 44)) * lh(said_f) + 10 if said else 0
-    # With the advice line, a name that still does not fit at the smallest size loses where it is (the page
-    # says it), rather than the card being left out: the advice must not cost the card.
-    for size, show_where in [(s, True) for s in (60, 52, 44)] + ([(44, False)] if said else []):
+    said_f = font("sans", 30, 600)
+    # The advice in full, then, where a long name and headline leave no room, the line up to its start
+    # ("Official: EA advice against bathing (harmful algae) · since 19 Jun."), and only then without where the
+    # spot is (the page says it): the advice must never cost the card. The alt text has it all.
+    short = official.split(" · checked")[0].split(" · not re-checked")[0] if official else ""
+    tries = [(s, True, official) for s in (60, 52, 44)] + ([(44, True, short), (44, False, short)] if official else [])
+    for size, show_where, o in tries:
+        said = f"Official: {o}." if o else ""
+        said_h = len(wrap(draw, said, said_f, width - 44)) * lh(said_f) + 10 if said else 0
         name_f = font("serif", size)
         lines = wrap(draw, name, name_f, width)
         need = len(lines) * lh(name_f) + (8 + lh(where_f) if show_where else 0) + 24 + len(head) * lh(head_f) + said_h + 8 + lh(when_f)
