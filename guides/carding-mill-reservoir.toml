@@ -1,0 +1,41 @@
+# Carding Mill Valley Reservoir, Long Mynd. Desk check of the National Trust's own pages, 28 October 2026, read in a
+# browser. The Trust's walk page gives grid ref SO411949 for the reservoir, which is on the plateau about 2.5 km west and
+# disagrees with its own route; the spot's position is OS Open Rivers' lake link instead (spots.csv, tests/test_carding_mill.py).
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-28
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Pay and display parking at Carding Mill Valley, Church Stretton (SatNav SY6 6JG)."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/shropshire-staffordshire/carding-mill-valley-on-the-long-mynd/new-pool-hollow-walk"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "From the Chalet Pavilion, follow the stream uphill to the top car park, cross the stream on the vehicle bridge opposite the green ticket machine, and follow the path along New Pool Hollow. Within about 400 metres the path climbs the reservoir's retaining bank."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/shropshire-staffordshire/carding-mill-valley-on-the-long-mynd/new-pool-hollow-walk"
+source_name = "National Trust"
+
+[[fact]]
+topic = "path"
+text = "The route is a wide footpath, with steps up the reservoir bank."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/shropshire-staffordshire/carding-mill-valley-on-the-long-mynd/new-pool-hollow-walk"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "Carding Mill Valley has toilets, a tea-room and a shop, down the valley from the reservoir."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/shropshire-staffordshire/carding-mill-valley-on-the-long-mynd/new-pool-hollow-walk"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The National Trust invites a dip in the reservoir. It asks swimmers to read the information at the reservoir before going in, and not to swim alone in winter."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/shropshire-staffordshire/carding-mill-valley-on-the-long-mynd/things-to-do-at-carding-mill-valley-and-the-long-mynd"
+source_name = "National Trust"
