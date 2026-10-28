@@ -1,0 +1,13 @@
+# Bassenthwaite Lake. Desk check of the park authority's lakes guide, 28 October 2026, read in a browser. The guide
+# links a map of jetties, parking and facilities, which was not read, so parking is left out; no entry point is named,
+# so getting in and out are left out too (the page says so).
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-28
+how = "desk"
+
+[[fact]]
+topic = "rules"
+text = "The park authority's lakes guide lists swimming at Bassenthwaite as allowed. Canoes, kayaks, paddleboards, rowing and sailing boats need a boating permit; powered craft are generally not allowed under the small lakes byelaws. It asks visitors to be mindful that the lake is a National Nature Reserve and a Site of Special Scientific Interest."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

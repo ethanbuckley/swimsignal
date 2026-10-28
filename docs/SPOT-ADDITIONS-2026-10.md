@@ -72,7 +72,7 @@ The page says "No monitored overflow found upstream" and gives no spill forecast
 - parking at Cow Bridge and the nearest toilets, from the National Trust's [Hayeswater Gill trail](https://www.nationaltrust.org.uk/visit/lake-district/aira-force-and-gowbarrow-park/hartsop-to-hayeswater-gill-trail);
 - the park authority's rules, from the guide above.
 
-**Tests.** `tests/test_brothers_water.py`.
+**Tests.** `tests/test_lake_district_additions.py` (parametrized, with Loweswater and Bassenthwaite).
 
 **For a human:** the entry point at Cow Bridge or elsewhere on the shore, on site.
 
@@ -95,15 +95,52 @@ This is lake-wide permission, as for Brothers Water. No entry point is named. No
 
 **Guide.** `guides/loweswater.toml`: Maggie's Bridge car park, from the National Trust's [Corpse road and tumuli walk](https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/corpse-road-and-tumuli-walk), and the park's rules.
 
-**Tests.** `tests/test_loweswater.py`.
+**Tests.** `tests/test_lake_district_additions.py`.
 
 **For a human:** the entry point, on site.
 
-## Together, and what was left out
+## Bassenthwaite Lake (`bassenthwaite`), 28 October 2026
 
-The three spots add 9 + 9 + 19 = **37 calls a day**: #416's planned day goes from 8,873 to about 8,910 of 9,000,
-leaving about 90 spare. None has a spill forecast, so none bears on the ensemble-rain test (D4).
+**Access (rule 4).** The park authority's [lakes activities guide](https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/), read 28 Oct:
+- "Bassenthwaite: Swimming: yes".
+- Canoes, kayaks, paddleboards, rowing and sailing boats with a boating permit; powered craft generally not allowed (small lakes byelaws).
+- The guide asks visitors to be mindful that the lake is a National Nature Reserve and an SSSI.
 
-**Left out on purpose: Bassenthwaite Lake.** The same guide lists swimming there. But it has 16 United Utilities
-overflows upstream, so it would carry a spill forecast from the company where the nine-company model failed its test
-(#357), and it costs 49 calls a day. Listing it is a separate decision.
+This is lake-wide permission. The guide links a map of jetties, parking and facilities, which was not read, so the spot's guide gives only the rules. No entry point is named. Not a paid venue (rule 1). No listed spot is on Bassenthwaite (rule 2); Derwent Water at Crow Park is 7.5 km away.
+
+**Position.** The EA's WFD lake polygon `GB31228847` (`data/processed/lakes.parquet`), 5.092 km².
+- The spot is its representative point, **54.65310, −3.21357**.
+
+**Placement and cost.** `scripts/spot_cost.py` on main c11c02e, 27 Oct 2026, on the real network, at 54.65263, −3.21363 (in the same polygon and the same 0.1° cell, 54.7 −3.2; the test checks both):
+- mode `lake`;
+- **16 monitored overflows upstream, all United Utilities**;
+- 4 new rain cells, all ones click-anywhere already asks for;
+- **49 calls a day.**
+
+**What the 16 monitored overflows mean, and what they do not.**
+- **They give the spot a daily spill forecast.** These are the storm overflows the river network links upstream of the lake, through the Derwent and the becks that feed it, each with its live status from United Utilities' feed. The page gives a level for each of five days from those overflows, the rain forecast and the spill model, as at every listed spot with overflows upstream.
+- **The level is a forecast of sewage reaching the lake from those overflows,** weighted by how far the water travels and how long it takes. It is not a measurement of the lake's water, and not a safety check.
+- **They are not every source of pollution.** Unmonitored outfalls, treated effluent, farm runoff, birds, algae and boats are not in the forecast. Overflows not linked by the network are not counted either.
+- **A lake this size dilutes and delays.** The forecast's lake rules (residence time and spill timing) apply. The level is for the lake as a whole, not for any one shore.
+- **No monitored overflow upstream (the other three spots in this file) means no spill forecast.** It does not mean no pollution.
+- **Live log.** The forecast log records overflow rows per listed spot (`forecast_log`, `forecast_overflows`). From the merge, the live scores include these United Utilities overflow-days, as for any new spot with overflows upstream. A8's window (`docs/COMPANY-CALIBRATION-TEST-2026-11.md`) covers the other eight companies only.
+
+**Guide.** `guides/bassenthwaite.toml`: the park's rules only.
+
+**Tests.** `tests/test_lake_district_additions.py`.
+
+**For a human:** the entry point, and the parking and jetties from the park's map, on site or from the map.
+
+## Together
+
+| Spot | Monitored overflows upstream | Calls a day |
+|---|---:|---:|
+| Carding Mill Valley Reservoir | 0 | 9 |
+| Brothers Water | 0 | 9 |
+| Loweswater | 0 | 19 |
+| Bassenthwaite Lake | 16 (United Utilities) | 49 |
+| **All four** | | **86** |
+
+#416's planned day goes from 8,873 to about 8,959 of 9,000, leaving about 41 a day spare: the free tier's daily cap
+holds, with the agreed headroom of about 40. Every lake the park authority's guide marks "Swimming: yes" is now listed.
+Ennerdale, Haweswater and Thirlmere are marked "no". Esthwaite is a private fishery.
