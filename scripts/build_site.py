@@ -1987,6 +1987,9 @@ VERSIONED_SCRIPTS += ('<script src="eatoday.js"></script>',)
 # The swim journal (journal.js): kept on the device, so its script is stored and versioned as the rest.
 SHELL_SOURCES.append(TEMPLATE.parent / "journal.js")
 VERSIONED_SCRIPTS += ('<script src="journal.js"></script>',)
+# The swim passport (passport.js): from the journal, on the device only; stored and versioned as the rest.
+SHELL_SOURCES.append(TEMPLATE.parent / "passport.js")
+VERSIONED_SCRIPTS += ('<script src="passport.js"></script>',)
 # Lab results an organisation sent (src/dipcast/samples.py, samples/README.md): measured.js draws a spot's,
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
@@ -2029,6 +2032,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "seasonal.js", site / "seasonal.js")   # past spills upstream by month
     shutil.copy(TEMPLATE.parent / "eatoday.js", site / "eatoday.js")   # today's EA advice, the EA's own panel
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
+    shutil.copy(TEMPLATE.parent / "passport.js", site / "passport.js")   # the swim passport, from the journal
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
     shutil.copy(TEMPLATE.parent / "outingpack.js", site / "outingpack.js")   # a plan's outing kept for offline use
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)

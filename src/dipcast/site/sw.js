@@ -41,6 +41,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   `outingpack.js?v=${BUILD}`,   // keeping a plan's outing for offline use (PACK, below)
   `measured.js?v=${BUILD}`,   // lab results an organisation sent (samples/)
   `journal.js?v=${BUILD}`,
+  `passport.js?v=${BUILD}`,   // the swim passport on Saved
   `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 

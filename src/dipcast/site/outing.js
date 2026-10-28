@@ -309,6 +309,8 @@ function drawOuting(box, shown) {
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, pair, DATA.generated_at);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
+  // The swim passport's Prepared planner badge (passport.js): the first day an outing has a spot and a backup.
+  if (pair.backup && typeof passportPlanned === 'function') passportPlanned(today());
   // Each spot's guide, once its own file is in (index.html, spotDetail), into its column's access block.
   for (const s of [pair.main, pair.backup].filter(Boolean)) if (typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded)
     spotDetail(s).then(() => { const el = tile.querySelector(`[data-outing-access="${CSS.escape(s.id)}"]`);

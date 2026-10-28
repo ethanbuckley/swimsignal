@@ -793,6 +793,11 @@
   .outing-pair { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin:0 0 10px; }
   .outing-pair.one { grid-template-columns:minmax(0, 1fr); }
   .outing-col { min-width:0; }
+  /* The swim passport (passport.js): a summary line, then the badges, earned or not yet, as a quiet list. */
+  .pp-sum { margin:8px 0; }
+  .pp-badges { list-style:none; margin:0 0 8px; padding:0; }
+  .pp-badge { padding:8px 0; border-top:1px solid var(--hair); }
+  .pp-badge:not(.on) b { color:var(--muted); font-weight:600; }
   /* Find a window (findwindow.js): one row a saved spot, its notice on a line of its own (.o-tag), then its Low days. */
   .fw-list { list-style:none; margin:8px 0 0; padding:0; }
   .fw-list li { padding:10px 0; border-top:1px solid var(--hair); }
@@ -1315,6 +1320,7 @@
 <script src="findwindow.js"></script>   <!-- Find a window on Saved: each spot's Low days, as ranges; uses levels.js and eatoday.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
 <script src="journal.js"></script>   <!-- the swim journal, on this device only: uses reviews.js's photo shrinking and levels.js -->
+<script src="passport.js"></script>   <!-- the swim passport on Saved, from the journal, on this device only -->
 <script src="outingpack.js"></script>   <!-- a plan's outing kept for offline use, in a cache of its own that sw.js answers from -->
 <script>
 const BRAND = 'SwimSignal';
@@ -2473,7 +2479,8 @@ const swimsCard = () => typeof journalCard === 'function' ? journalCard() : '';
 let SWIMS_ASKED = false;
 const swimsShown = spots => spots.length > 0 || SWIMS_ASKED || location.hash === '#journal'
   || (typeof journalNow === 'function' && journalNow().length > 0);
-const bindSwims = () => { if (typeof journalBindSection === 'function') journalBindSection(); };
+const bindSwims = () => { if (typeof journalBindSection === 'function') journalBindSection();
+  if (typeof passportBind === 'function') passportBind(); };   // the swim passport's share buttons (passport.js)
 
 // ------------------------------------------------------------------------------ a picture to share
 // The forecast drawn into an image on the device, for a swim group's chat: the spot, the headline,
@@ -3326,6 +3333,8 @@ function renderSaved() {
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
   v += (listsShown ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
+  // The swim passport (passport.js), under the journal: only once a swim is logged; private, on this device.
+  if (typeof passportSection === 'function') v += passportSection(DATA.spots);
   // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
   // all on a wide desktop, where England's every spot said nothing about an empty list.
   setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));
