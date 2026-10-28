@@ -25,6 +25,7 @@ data/processed/*
 !data/processed/ecoli_model.json
 !data/processed/ecoli_model_sm.json
 !data/processed/ecoli_model_eval.json
+!data/processed/water_temp_model.json
 !data/processed/verification_2025.csv
 !data/processed/reliability_2025.csv
 !data/processed/verification_leads_2025.csv

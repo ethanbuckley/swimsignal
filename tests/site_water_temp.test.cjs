@@ -60,3 +60,46 @@ test('only the Environment Agency is linked, and the words are escaped', () => {
   assert.match(waterTile({ ...bures, where: 'at <b>Mill</b>' }).say, /at &lt;b&gt;Mill&lt;\/b&gt;/);
   assert.doesNotMatch(waterTile({ ...bures, quality: 'Good' }).more, /not yet checked/);
 });
+
+// The estimate (build_site.attach_water_temperature_estimate): river spots, May to September, for one day.
+const setToday = vm.runInContext('setToday', ctx);
+const est = { temp_c: 17, within_c: 2.0, date: '2026-07-14' };
+
+test('a river spot with no sensor shows the estimate, said as an estimate, with its typical error', () => {
+  setToday('2026-07-14');
+  const t = waterTile(null, est, 'river');
+  assert.equal(t.label, 'Water temperature');
+  assert.equal(t.fig, '17°');
+  assert.equal(t.unit, 'C, estimated');
+  assert.equal(t.say, 'About 17&nbsp;°C (estimated, typically within 2&nbsp;°C).');
+  assert.ok(!t.live);
+  assert.match(t.more, /not a measurement/);
+  assert.match(t.more, /weather model's air temperature/);
+  assert.match(t.more, /today's forecast itself was not checked/);
+  assert.doesNotMatch(t.more, /air temperature here/);
+  assert.match(t.more, /Not part of the pollution level\./);
+  assert.match(t.more, /no estimate for lakes/);
+  setToday(null);
+});
+
+test('with a sensor, the reading comes first and the estimate after it, in the same tile', () => {
+  setToday('2026-07-14');
+  const t = waterTile(bures, est, 'river');
+  assert.equal(t.fig, '16°');
+  assert.ok(t.live);
+  assert.match(t.say, /^Measured at Bures Mill on the Stour, 10\.9&nbsp;km downstream, 2 h ago\. At the spot: about 17&nbsp;°C \(estimated, typically within 2&nbsp;°C\)\.$/);
+  assert.match(t.more, /not a measurement/);
+  setToday(null);
+});
+
+test('never on a lake or the sea, never on another day, never without its figures', () => {
+  setToday('2026-07-14');
+  assert.equal(waterTile(null, est, 'lake'), null);
+  assert.equal(waterTile(null, est, 'sea'), null);
+  assert.equal(waterTile(null, est), null);                                        // kind unknown
+  assert.equal(waterTile(null, { ...est, date: '2026-07-13' }, 'river'), null);   // a page built yesterday
+  assert.equal(waterTile(null, { ...est, temp_c: null }, 'river'), null);
+  assert.equal(waterTile(null, { ...est, within_c: undefined }, 'river'), null);
+  assert.doesNotMatch(waterTile(bures, est, 'lake').say, /estimated/);             // the reading stays
+  setToday(null);
+});

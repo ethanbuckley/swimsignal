@@ -76,6 +76,10 @@ OUTAGE_COOLOFF_S = 600
 # 8,700 at a build every 30 minutes, and the rest is room for answers the ledger cannot see (a
 # request that timed out after Open-Meteo had counted it).
 DAILY_CALLS = float(os.environ.get("DIPCAST_OPEN_METEO_DAILY_CALLS", "9000"))
+# What the forecast request asks for: the rain, and the air temperature for the river water-temperature estimate
+# (model/water_temp.py). Adding the second leaves every rain value the same (checked on 62 cells, 27 Oct 2026) and
+# the weight at 1 a cell (forecast_weight).
+FORECAST_VARIABLES = "precipitation,temperature_2m"
 LEDGER_NAME = "open_meteo_calls.json"
 # A paid plan (OP1, docs/ORGANISER-PIVOT-2026-10.md): the free API is for non-commercial use only.
 # With KEY_ENV set, every request goes to the same path on the host with "customer-" in front
@@ -111,8 +115,10 @@ def call_weight(n_locations: int, days: float, variables: int = 1) -> float:
 
 def forecast_weight(n_cells: int, past_days: int = config.FORECAST_PAST_DAYS,
                     forecast_days: int = config.FORECAST_DAYS) -> float:
-    """What fetch_forecast's request for n_cells costs: one variable over past + forecast + 1 days."""
-    return call_weight(n_cells, past_days + forecast_days + 1)
+    """What fetch_forecast's request for n_cells costs: its FORECAST_VARIABLES over past + forecast + 1 days. Two
+    variables over 38 days are max(1, 0.2, 0.2 x 38/14 = 0.54) = 1 a cell, as one was: the air temperature rides on
+    the rain request free (docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md, "What follows")."""
+    return call_weight(n_cells, past_days + forecast_days + 1, variables=len(FORECAST_VARIABLES.split(",")))
 
 
 def _utc_day(now: float | None = None) -> str:
@@ -380,10 +386,16 @@ def reset_requests() -> None:
 
 
 def _to_frame(res: dict, cell_lat: float, cell_lon: float) -> pd.DataFrame:
+    """One cell's hourly rain, and, where the answer has them, its air temperature (`air_c`, for the river
+    water-temperature estimate, model/water_temp.py) and Open-Meteo's elevation for the cell (`elevation_m`). An answer
+    without them (the archive's, an older cached forecast) gets NaN there; the rain is the same either way."""
     h = res["hourly"]
     t = pd.to_datetime(h["time"], utc=True)
     p = np.asarray(h["precipitation"], dtype=float)
-    return pd.DataFrame({"cell_lat": cell_lat, "cell_lon": cell_lon, "time": t, "precip_mm": p})
+    air = np.asarray(h["temperature_2m"], dtype=float) if "temperature_2m" in h else np.full(len(p), np.nan)
+    elev = res.get("elevation")
+    return pd.DataFrame({"cell_lat": cell_lat, "cell_lon": cell_lon, "time": t, "precip_mm": p, "air_c": air,
+                         "elevation_m": float(elev) if isinstance(elev, (int, float)) else np.nan})
 
 
 # ------------------------------------------------------------------ archive
@@ -499,6 +511,7 @@ def fetch_errors() -> list[str]:
 def _empty_forecast() -> pd.DataFrame:
     return pd.DataFrame({"cell_lat": pd.Series(dtype=float), "cell_lon": pd.Series(dtype=float),
                          "time": pd.Series(dtype="datetime64[ns, UTC]"), "precip_mm": pd.Series(dtype=float),
+                         "air_c": pd.Series(dtype=float), "elevation_m": pd.Series(dtype=float),
                          "issued_at": pd.Series(dtype="datetime64[ns, UTC]")})
 
 
@@ -566,7 +579,7 @@ def fetch_forecast(cells: list[tuple[float, float]],
             params = {
                 "latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
                 "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
-                "hourly": "precipitation",
+                "hourly": FORECAST_VARIABLES,
                 "past_days": past_days,
                 # One UTC day more than the local days shown. In summer time, from 23:00 UTC the
                 # local date is a day ahead of the UTC one, so the fifth local day ends an hour into
