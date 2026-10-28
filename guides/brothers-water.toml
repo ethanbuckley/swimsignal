@@ -1,0 +1,26 @@
+# Brothers Water. Desk check of the park authority's lakes guide and the National Trust's trail page, 28 October 2026,
+# read in a browser. Neither names an entry point, so getting in and out are left out (the page says so).
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-28
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Pay and display parking at Cow Bridge, next to Brothers Water; free for National Trust members."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/aira-force-and-gowbarrow-park/hartsop-to-hayeswater-gill-trail"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "The nearest public toilets are in Patterdale and Glenridding."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/aira-force-and-gowbarrow-park/hartsop-to-hayeswater-gill-trail"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The park authority's lakes guide lists swimming at Brotherswater as allowed, and canoes, kayaks, paddleboards, sailing boats and powered craft as not allowed. The small lakes byelaws apply. It names the National Trust as the contact."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

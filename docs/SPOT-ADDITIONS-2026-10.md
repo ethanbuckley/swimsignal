@@ -46,3 +46,37 @@ This is the small-unmapped-lake rule (`transport._locate_lake`).
 **For a human:**
 - an on-site look at the entry point and the information board;
 - whether a fenced upland reservoir suits the product.
+
+## Brothers Water (`brothers-water`), 28 October 2026
+
+**Access (rule 4).** The Lake District National Park Authority's [lakes activities guide](https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/), read 28 Oct:
+- "Brotherswater: Swimming: Yes".
+- Canoes, kayaks and paddleboards, sailing boats and powered craft: no.
+- Small lakes byelaws apply; the contact is the National Trust North West.
+
+This is lake-wide permission from the park authority, the same footing as the curated Buttermere and Crummock Water. No page names an entry point, so the guide leaves getting in and out out, and the page says so. Not a paid venue (rule 1). The nearest listed spot is on Ullswater, a different lake, more than 4 km away (rule 2).
+
+**Position.** The EA's WFD lake polygon `GB30229116` (`data/processed/lakes.parquet`, OGL), 0.197 km².
+- The spot is its representative point, **54.50759, −2.92391**, on the water.
+
+**Placement (rule 3).** The build finds this polygon at the spot, both by place and by name (`transport._lake_polygon_at`, `_named_lake_polygon`), and places the spot in the lake.
+
+**Overflows and cost.** `scripts/spot_cost.py` on main c11c02e, run 27 Oct 2026 on the real network with the 12 Sep 2026 live snapshot, at a point in the same polygon and the same 0.1° cell (54.50815, −2.92426):
+- mode `lake`, **no monitored overflow upstream**;
+- 0 new rain cells;
+- **9 calls a day.**
+
+The page says "No monitored overflow found upstream" and gives no spill forecast.
+
+**Guide.** `guides/brothers-water.toml`, desk-checked 28 Oct:
+- parking at Cow Bridge and the nearest toilets, from the National Trust's [Hayeswater Gill trail](https://www.nationaltrust.org.uk/visit/lake-district/aira-force-and-gowbarrow-park/hartsop-to-hayeswater-gill-trail);
+- the park authority's rules, from the guide above.
+
+**Tests.** `tests/test_brothers_water.py`.
+
+**For a human:** the entry point at Cow Bridge or elsewhere on the shore, on site.
+
+## Together
+
+The two spots add 18 calls a day: #416's planned day goes from 8,873 to about 8,891 of 9,000, leaving about 109
+spare. Neither has a spill forecast, so neither bears on the ensemble-rain test (D4).
