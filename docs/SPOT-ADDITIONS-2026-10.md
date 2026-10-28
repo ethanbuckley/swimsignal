@@ -144,3 +144,13 @@ This is lake-wide permission. The guide links a map of jetties, parking and faci
 #416's planned day goes from 8,873 to about 8,959 of 9,000, leaving about 41 a day spare: the free tier's daily cap
 holds, with the agreed headroom of about 40. Every lake the park authority's guide marks "Swimming: yes" is now listed.
 Ennerdale, Haweswater and Thirlmere are marked "no". Esthwaite is a private fishery.
+
+## Entry points: desk check, 28 October 2026 (after the merge)
+
+Looked for an owner's or authority's own statement of where to get into the water at the four new lakes:
+- [Park authority's swimming page](https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/): names no entry point at any of them. General rules only: enter slowly, work out where you will get out, keep clear of moorings, jetties used by boats and boating channels.
+- **Bassenthwaite.** The lakes guide's "Bassenthwaite map: jetties, parking, facilities" link (`lakedistrict.gov.uk/__data/assets/pdf_file/0016/28141/Bassenthwaite-map.pdf`) answers HTTP 404. So its parking and jetties are still unread.
+- **Loweswater.** The National Trust's [Buttermere Valley page](https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley) gives an accessible path from Maggie's Bridge car park along Loweswater's far shore. That is now in its guide as a path fact. It is a way to the shore, not a stated entry point.
+- **Brothers Water and Carding Mill.** The Trust's pages read for their guides name no entry point. Carding Mill's own page asks swimmers to read the information at the reservoir before going in.
+
+**Conclusion.** No owner publishes swim entry points for these lakes. Only someone on site, or a swimmer's suggestion through the guide's "something wrong or missing?" link, can add them. The guides say "Not in this guide yet: getting in, getting out" until then.

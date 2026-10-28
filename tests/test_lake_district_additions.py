@@ -27,7 +27,7 @@ LAKES = [
     ("brothers-water", "GB30229116", "Brothers Water", (54.50815, -2.92426), (54.5, -2.9),
      "swimming at Brotherswater as allowed", {"parking", "toilets", "rules"}),
     ("loweswater", "GB31228986", "Loweswater", (54.58302, -3.35446), (54.6, -3.4),
-     "swimming at Loweswater as allowed", {"parking", "rules"}),
+     "swimming at Loweswater as allowed", {"parking", "path", "rules"}),
     ("bassenthwaite", "GB31228847", "Bassenthwaite Lake", (54.65263, -3.21363), (54.7, -3.2),
      "swimming at Bassenthwaite as allowed", {"rules"}),
 ]
