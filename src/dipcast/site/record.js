@@ -31,6 +31,8 @@ const Record = (() => {
   const P = node ? require('./printed.js') : Printed;
   // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief).
   const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  const label = node ? require('./eatoday.js').eaTodayLabel : typeof eaTodayLabel === 'function' ? eaTodayLabel : () => 'Official notice';   // "Official advice" only where it restricts
+  const heed = node ? require('./eatoday.js').eaTodayFirst : typeof eaTodayFirst === 'function' ? eaTodayFirst : () => 'Read the official notice first';   // follow only a restricting notice
   // Its first item's link, "Open the Environment Agency page", as the spot page's notice gives it (eaTodayOfficial).
   const advice = node ? require('./eatoday.js').eaTodayAdvice : typeof eaTodayAdvice === 'function' ? eaTodayAdvice : () => [];
   const officialLink = s => { const o = advice(s)[0];
@@ -244,7 +246,7 @@ const Record = (() => {
     const m = (now - Date.parse(data.generated_at)) / 60000;
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
     const official = brief(s);
-    return h + (official ? `<p class="r-official"><b>Official advice:</b> ${esc(official)}. Not part of the level below; follow it first.${officialLink(s)}</p>` : '')
+    return h + (official ? `<p class="r-official"><b>${label(s)}:</b> ${esc(official)}. Not part of the level below; ${heed(s).toLowerCase()}.${officialLink(s)}</p>` : '')
       + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
       + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`

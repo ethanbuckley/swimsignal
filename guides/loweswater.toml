@@ -1,0 +1,19 @@
+# Loweswater. Desk check of the park authority's lakes guide and the National Trust's walk page, 28 October 2026, read in
+# a browser. Neither names an entry point, so getting in and out are left out (the page says so).
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-28
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Maggie's Bridge car park, Loweswater (CA13 0RU, grid ref NY134210), has limited spaces."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/corpse-road-and-tumuli-walk"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The park authority's lakes guide lists swimming at Loweswater as allowed. Canoes, kayaks, paddleboards and rowing boats under 4 m need a permit; sailing boats and powered craft are not allowed. The small lakes byelaws apply. It names the National Trust as the contact."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

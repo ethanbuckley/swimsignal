@@ -18,7 +18,7 @@ const APPROVED = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/adviso
   .find(a => a.spot_id === 'bw-ukj2310-11945');
 // As the build writes it (src/dipcast/official_advice.py, shown): one item, newest first.
 const notice = (state = 'checked', checked = '2026-10-26') => ({line: APPROVED.line, publisher: APPROVED.publisher, link: APPROVED.link,
-  since: APPROVED.start, checked, state});
+  since: APPROVED.start, checked, state, restricts: APPROVED.restricts});   // true in the file: advice against bathing
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
 const frensham = (official = [], l = 'low') => ({id: 'bw-ukj2310-11945', name: 'Frensham Great Pond', kind: 'lake', source: 'designated',
   upstream_summary: {overflows: 2}, location: {mode: 'river'},
@@ -61,9 +61,9 @@ test('the page loads eatoday.js before the outing and since scripts use it', () 
 test('a notice appearing is a change of its own, with its words, its state and that the level is not it', () => {
   const [a, b] = pair(frensham([]), frensham([notice()]));
   assert.equal(a.official, null);
-  assert.deepEqual(b.official, {key: `Environment Agency|${APPROVED.line}|2026-06-19`, brief: brief(frensham([notice()])), publisher: 'Environment Agency'});
+  assert.deepEqual(b.official, {key: `Environment Agency|${APPROVED.line}|2026-06-19`, brief: brief(frensham([notice()])), publisher: 'Environment Agency', restricts: true});
   assert.equal(a.level, b.level);   // the level never moves for it
-  assert.equal(S.sinceLine(a, b), `No official advice was shown when you looked today at 07:05; now: ${brief(frensham([notice()]))}. Follow it first.`);
+  assert.equal(S.sinceLine(a, b), `No official notice was shown when you looked today at 07:05; now: ${brief(frensham([notice()]))}. Follow it first.`);
   // Said once: the line has the notice, the evidence whose it is.
   const ev = S.sinceEvidence(a, b, NOW);
   assert.match(ev, /The official advice is the Environment Agency's, not part of this level\./);
@@ -120,7 +120,7 @@ test('on a Saved card in the page: the notice appearing, escaped, with eatoday.j
   for (const f of ['experience.js', 'eatoday.js', 'levels.js', 'since.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
   vm.runInContext('setToday("2026-10-26")', ctx);
   const h = vm.runInContext('sinceSaid', ctx)(frensham([notice()]), NEW);
-  assert.ok(h.startsWith(`<p class="place-since">No official advice was shown when you looked today at 07:05; now: ${brief(frensham([notice()])).replace(/'/g, '&#39;')}. Follow it first.`), h);
+  assert.ok(h.startsWith(`<p class="place-since">No official notice was shown when you looked today at 07:05; now: ${brief(frensham([notice()])).replace(/'/g, '&#39;')}. Follow it first.`), h);
   assert.match(h, /The official advice is the Environment Agency&#39;s, not part of this level\./);
   assert.equal((h.match(/since 19 Jun/g) || []).length, 1);
 });

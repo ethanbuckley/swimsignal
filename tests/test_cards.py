@@ -276,7 +276,7 @@ def test_write_spot_cards(tmp_path):
 OFFICIAL = {"line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
             "publisher": "Environment Agency",
             "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
-            "since": "2026-06-19", "checked": "2026-10-26", "state": "checked"}
+            "since": "2026-06-19", "checked": "2026-10-26", "state": "checked", "restricts": True}
 BRIEF = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
 
 
@@ -320,7 +320,7 @@ def test_spot_share_card_carries_official_advice(tmp_path):
 
 
 def test_weekend_card_and_caption_carry_official_advice():
-    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": BRIEF})
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": (BRIEF, True)})
     rows = {r.id: r for r in card.rows}
     assert rows["a"].cells == ["low", "moderate"] and rows["a"].official == BRIEF   # the level is unchanged
     assert rows["poor"].official == ""
@@ -334,11 +334,33 @@ def test_weekend_card_plain_line_spot_with_advice_is_named_with_it():
     """A spot in a plain line ("No monitored overflow found upstream") with advice, stale or checked, is
     named with its notice under the table and in the caption; one without advice is not."""
     stale = BRIEF.replace("checked 26 Oct", "not re-checked since 19 Oct")
-    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"lake": stale, "a": BRIEF})
-    assert card.plain_official == [("Quiet Lake", stale)]
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"lake": (stale, True), "a": (BRIEF, True)})
+    assert card.plain_official == [("Quiet Lake", stale, True)]
     assert card.plain == [("No monitored overflow found upstream", "no overflows", ["Quiet Lake", "Quiet Tarn"])]   # unchanged
     caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
     assert f"Quiet Lake: Official: {stale}. Follow it first" in caption
     assert "Quiet Tarn: Official" not in caption
     for size in cards.SIZES:
         cards.draw_weekend(card, GEN, size)   # both notes fit
+
+
+def test_a_notice_not_marked_restricting_is_read_not_followed_on_cards_and_captions(tmp_path):
+    """Only a notice its reviewer marked restricts: true says "Follow it first" (28 Oct 2026); any other, or one
+    from before the field, "Read the official notice first". The notice's own words and the level are unchanged."""
+    neutral = {**OFFICIAL, "restricts": False}
+    assert cards.official_restricts({"official": [OFFICIAL]}) is True
+    assert cards.official_restricts({"official": [neutral]}) is False
+    assert cards.official_restricts({"official": [{k: v for k, v in OFFICIAL.items() if k != "restricts"}]}) is False
+    assert cards.official_restricts({"official": [{**OFFICIAL, "state": "approved"}]}) is False   # not shown, so not counted
+    assert cards.official_words(BRIEF, False) == f"Official: {BRIEF}. Read the official notice first; the level is SwimSignal's sewage forecast only."
+    spots = [{"id": "f", "name": "Frensham Great Pond", "kind": "lake", "official": [neutral]}]
+    alerts = {"generated_at": GEN, "spots": {"f": {"level": "low", "headline": "Low risk for the next five days"}}}
+    made = cards.write_spot_cards(tmp_path / "spot", spots, alerts, GEN)
+    assert made["f"].startswith(f"Frensham Great Pond: Official: {BRIEF}. Read the official notice first;")
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": (BRIEF, False)})
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert f"Official: {BRIEF}. Read the official notice first" in caption and "Follow it first" not in caption
+    # A bare brief, as an older caller passes it, reads as not restricting.
+    assert cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": BRIEF}).rows[0].official_restricts is False
+    for size in cards.SIZES:
+        cards.draw_weekend(card, GEN, size)

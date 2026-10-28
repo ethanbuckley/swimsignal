@@ -12,7 +12,7 @@ const { join } = require('node:path');
 const SITE = join(__dirname, '../src/dipcast/site');
 const PROFILE = 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945';
 const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
-const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', ...extra });
+const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', restricts: true, ...extra });
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
 const RISK = { low: 0.01, moderate: 0.2, high: 0.5 };
 const spot = (id, name, label = 'low', extra = {}) => ({ id, name, kind: 'lake', source: 'designated', lat: 51.15, lon: -0.79, area: 'Surrey',
@@ -34,7 +34,7 @@ function pageContext(withAdvice = true) {
   vm.runInContext(fs.readFileSync(join(SITE, 'experience.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(join(SITE, 'levels.js'), 'utf8') + `\nsetToday("${DATES[0]}");`, ctx);
   if (withAdvice) vm.runInContext(fs.readFileSync(join(SITE, 'eatoday.js'), 'utf8'), ctx);
-  vm.runInContext(pageDefs(['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'overview',
+  vm.runInContext(pageDefs(['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'noticeVerb', 'overview',
     'listRank', 'listAdvised', 'riskOrder', 'riskFirstNote']), ctx);
   return ctx;
 }
@@ -55,12 +55,12 @@ test('a spot with advice against swimming comes first, its level unchanged, and 
   const xs = [...others(), frensham()];
   // Before this change Frensham (low) sat last but for name: after Cotswold Lake. Now it leads.
   assert.deepEqual(order(xs), ['Frensham Great Pond', 'Ashford Weir', 'Dart Reach', 'Bray Lock', 'Cotswold Lake']);
-  assert.equal(run('riskFirstNote', xs), 'Spots with official advice against swimming come first.');
+  assert.equal(run('riskFirstNote', xs), 'Spots with an official notice come first.');
   // Levels and counts are the same as without the advice, and as before the sort.
   const bare = [...others(), frensham({ official: [] })];
   assert.deepEqual(levels(xs), levels(bare));
   assert.equal(run('mapLevel', frensham()), 'low');
-  assert.equal(run('overview', xs).replace('Sewage pollution risk', 'Pollution risk').replace(/ 1 with official advice against swimming: follow it first\.$/, ''),
+  assert.equal(run('overview', xs).replace('Sewage pollution risk', 'Pollution risk').replace(/ 1 with an official notice: follow it first\.$/, ''),
     run('overview', bare));
   assert.match(run('overview', xs), /Sewage pollution risk: 2 low · 1 moderate · 2 high or very high/);
 });

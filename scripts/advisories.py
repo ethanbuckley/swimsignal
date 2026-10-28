@@ -907,14 +907,15 @@ def apply_approvals(drafts: list[dict], approvals: dict, now: datetime) -> list[
 
 def review_entry(d: dict) -> dict:
     """A draft as an entry for the approvals file, for a reviewer to check and complete: the line and
-    the evidence it rests on, with reviewer, authority and reviewed_at left empty. Writes nothing."""
+    the evidence it rests on, with reviewer, authority, reviewed_at and restricts (true or false: whether the
+    notice's own words restrict swimming) left empty. Writes nothing."""
     fetched = datetime.fromisoformat(d["fetched_at"]).astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
     return {"draft_id": d["draft_id"], "spot_id": d["spot_id"], "line": d["draft_line"],
             "publisher": d["source"]["publisher"], "link": d["link"],
             "kind": "page" if _kind(d) == "page" else "feed",
             "source_url": d["source"]["url"], "incident_id": d.get("feed_id"),
             "start": d.get("notice_date"), "expiry": d.get("expiry"), "fetched_at": fetched,
-            "reviewer": None, "authority": None, "reviewed_at": None}
+            "reviewer": None, "authority": None, "reviewed_at": None, "restricts": None}
 
 
 # ---- reading -----------------------------------------------------------------------------------

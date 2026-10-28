@@ -19,7 +19,7 @@ const O = require('../src/dipcast/site/organisers.js');
 const SITE = join(__dirname, '../src/dipcast/site');
 const PROFILE = 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945';
 const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
-const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', ...extra });
+const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', restricts: true, ...extra });
 const BRIEF = 'EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct';
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
 const spot = (id, name, extra = {}) => ({ id, name, kind: 'lake', source: 'designated', lat: 51.15, lon: -0.79, area: 'Surrey',
@@ -72,7 +72,7 @@ function pageContext(names, extra = {}, withAdvice = true) {
   vm.runInContext(pageDefs(names), ctx);
   return ctx;
 }
-const BASE = ['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'markerTip', 'overview'];
+const BASE = ['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'markerTip', 'noticeVerb', 'overview'];
 const EXTRA = { DATA: { generated_at: '2026-10-26T20:00:00Z', spots: [] } };
 
 test('the map tooltip: the advice first, then the level on a line of its own; none without advice', () => {
@@ -88,7 +88,7 @@ test('the list\'s counts stay the sewage forecast\'s, are named so, and count th
   const ctx = pageContext(BASE, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const with_ = run('overview', [frensham(), other()]), without = run('overview', [other(), other({ id: 'x' })]);
   assert.match(with_, /Sewage pollution risk: 2 low · 0 moderate · 0 high or very high/);
-  assert.match(with_, / 1 with official advice against swimming: follow it first\.$/);
+  assert.match(with_, / 1 with an official notice: follow it first\.$/);
   assert.match(without, /· Pollution risk: 2 low/);
   assert.doesNotMatch(without, /advice/);
 });
@@ -96,14 +96,14 @@ test('the list\'s counts stay the sewage forecast\'s, are named so, and count th
 test('Plan a swim: the group line says how many have advice, and that it comes first', () => {
   const ctx = pageContext(['planAdviceSub']), sub = vm.runInContext('planAdviceSub', ctx);
   assert.equal(sub(0, 3), '');
-  assert.equal(sub(1, 3), '1 of these has official advice against swimming, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
-  assert.equal(sub(1, 1), 'This spot has official advice against swimming, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
-  assert.match(sub(2, 2), /^All 2 have official advice against swimming, under their level\./);
+  assert.equal(sub(1, 3), '1 of these has an official notice, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
+  assert.equal(sub(1, 1), 'This spot has an official notice, under its level. Follow it first: the level is SwimSignal\'s sewage forecast only.');
+  assert.match(sub(2, 2), /^All 2 have an official notice, under their level\./);
   // The planner's heading for the low group is scoped when it holds one, and the shared plan leaves it out.
   const src = pageSrc.join('\n');
   assert.match(src, /adv\[0\] \? `Low risk from sewage spills \$\{on\}` : `Low risk \$\{on\}`/);
   assert.match(src, /const out = open\.filter\(o => planAdvised\(o\.s\)\); open = open\.filter\(o => !planAdvised\(o\.s\)\);/);
-  assert.match(src, /left out: official advice against swimming\./);
+  assert.match(src, /left out: \$\{out\.length === 1 \? 'it has an official notice' : 'they have official notices'\}\./);
   // The comparison's heads carry the tag under each name.
   assert.match(src, /<span class="k">\$\{esc\(meta\(s\)\)\}<\/span>` : ''\}\$\{typeof eaTodayTag === 'function' \? eaTodayTag\(s\) : ''\}<\/th>/);
 });
@@ -184,7 +184,7 @@ test('a list the user picked keeps every spot, with its notice; only Share this 
   // Only the plan's share filters, and its tile names the spot left out.
   const share = src.slice(src.indexOf('function planShare('), src.indexOf('function bindPlan('));
   assert.equal((share.match(/filter\(o => !?planAdvised\(o\.s\)\)/g) || []).length, 2);
-  assert.match(src, /left out: official advice against swimming\./);
+  assert.match(src, /left out: \$\{out\.length === 1 \? 'it has an official notice' : 'they have official notices'\}\./);
 });
 
 // Second round (integrated review, 26 Oct): Nearby, the comparison's EA row, Saved's grid and best day, the
@@ -227,7 +227,7 @@ test('Saved: the grid tags the spot, and the best day leaves it out of the count
   assert.ok(grid.includes(`>Frensham Great Pond</a><span class="o-tag">${BRIEF}</span></span>`), grid);
   assert.equal((grid.match(/o-tag/g) || []).length, 1);
   const note = vm.runInContext('bestDayNote', ctx)([frensham(), other(), other({ id: 'calm', name: 'Calm Pond' })], true);
-  assert.match(note, /when 2 of your 2 spots are at low risk \(Frensham Great Pond has official advice against swimming, so is not counted\)\./);
+  assert.match(note, /when 2 of your 2 spots are at low risk \(Frensham Great Pond has an official notice, so is not counted\)\./);
   assert.doesNotMatch(vm.runInContext('bestDayNote', ctx)([other(), other({ id: 'calm', name: 'Calm Pond' })], true), /official/);
 });
 
@@ -251,6 +251,9 @@ test('the Not known row and the algae tile: the checked date once, in the answer
     `Open <a href="${PROFILE}">the Environment Agency page</a> for the latest`);
   assert.equal(ea.eaTodayLatest(other()), '');
   const src = pageSrc.join('\n');
-  assert.match(src, /rows\.push\(\["Today's EA advice", 'Notice shown above', `\$\{eaTodayLatest\(d\) \|\| 'See the notice above'\}\.`\]\)/);
+  // The row names the EA only where the spot has the EA's panel; another publisher's notice is an official notice.
+  assert.match(src, /rows\.push\(\[typeof eaTodayId === 'function' && eaTodayId\(d\) \? "Today's EA advice" : 'Official notice', 'Notice shown above', `\$\{eaTodayLatest\(d\) \|\| 'See the notice above'\}\.`\]\)/);
+  assert.ok(ea.eaTodayId(frensham()), 'Frensham has the EA panel, so its row says EA');
+  assert.equal(ea.eaTodayId({ ...frensham(), id: 'council-pond', classification: null }), null);   // elsewhere: 'Official notice'
   assert.match(src, /notice above is about harmful algae; this tile is the sampler's last visual check\./);
 });

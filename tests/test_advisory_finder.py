@@ -440,7 +440,7 @@ def entry_for(d, **change):
             "kind": "page" if d["source"]["kind"] == "page" else "feed", "source_url": d["source"]["url"],
             "incident_id": d["feed_id"], "start": d["notice_date"] or "2026-10-22", "expiry": d["expiry"],
             "fetched_at": "2026-10-26T18:00:00Z", "reviewer": "Ethan Buckley", "authority": "Ethan Buckley",
-            "reviewed_at": "2026-10-26T18:00:00Z", **change}
+            "reviewed_at": "2026-10-26T18:00:00Z", "restricts": True, **change}
 
 
 def test_sources_roles_and_licences():
@@ -560,6 +560,9 @@ def test_approval_marks_only_that_draft_and_only_its_exact_line(tmp_path, gaz):
     ({"reviewer": None}, "missing reviewer"),
     ({"reviewer": ""}, "missing reviewer"),
     ({"authority": None}, "missing authority"),
+    ({"restricts": None}, "missing restricts"),             # the reviewer says, every time (28 Oct 2026)
+    ({"restricts": "yes"}, "restricts must be true or false"),
+    ({"restricts": 1}, "restricts must be true or false"),
     ({"reviewer": "Someone Else"}, "may not review"),
     ({"reviewer": "Codex"}, "may not review"),             # Codex only on the delegated authority
     ({"authority": "Ethan said so"}, "may not review"),

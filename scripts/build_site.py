@@ -1928,6 +1928,9 @@ VERSIONED_SCRIPTS += ('<script src="since.js"></script>',)
 # What would change a plan's outing (outingwatch.js), and what has since it was planned: uses since.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outingwatch.js")
 VERSIONED_SCRIPTS += ('<script src="outingwatch.js"></script>',)
+# Find a window on Saved (findwindow.js): each saved spot's Low days in the next five, as ranges.
+SHELL_SOURCES.append(TEMPLATE.parent / "findwindow.js")
+VERSIONED_SCRIPTS += ('<script src="findwindow.js"></script>',)
 # Named lists of saved spots, and the links that share a list or a plan (saved/): lists.js, likewise.
 SHELL_SOURCES.append(TEMPLATE.parent / "lists.js")
 VERSIONED_SCRIPTS += ('<script src="lists.js"></script>',)
@@ -1981,6 +1984,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "outingwatch.js", site / "outingwatch.js")   # what would change a plan's outing
+    shutil.copy(TEMPLATE.parent / "findwindow.js", site / "findwindow.js")   # Find a window on Saved
     shutil.copy(TEMPLATE.parent / "lists.js", site / "lists.js")   # named lists of saved spots
     shutil.copy(TEMPLATE.parent / "evidence.js", site / "evidence.js")   # what the level rests on
     shutil.copy(TEMPLATE.parent / "spotscores.js", site / "spotscores.js")   # how the forecast has done here
@@ -2409,7 +2413,8 @@ def atom_feed(url: str, alternate: str, title: str, subtitle: str, entries: list
         add(e, "category", term=s["level"])
         said = f"{s['headline']}. {s['action']}" if s.get("action") else s["headline"]
         if s.get("official") and s["official"] not in said:   # alerts.json's action gives it already (scripts/alerts.js)
-            said = f"Official: {s['official']}. Follow it first; the level is {BRAND}'s sewage forecast only. {said}"
+            ask = "Follow it first" if s.get("official_restricts") is True else "Read the official notice first"   # as eatoday.js eaTodayFirst
+            said = f"Official: {s['official']}. {ask}; the level is {BRAND}'s sewage forecast only. {said}"
         add(e, "summary", said)
     ET.indent(feed)
     return '<?xml version="1.0" encoding="utf-8"?>\n' + ET.tostring(feed, encoding="unicode") + "\n"
@@ -2427,9 +2432,11 @@ def write_feeds(site: Path, results: list[dict], root: str) -> dict | None:
     except (OSError, ValueError):
         return None
     generated, credits = pd.Timestamp(alerts["generated_at"]), alerts.get("credits")
-    from dipcast.cards import official_brief
+    from dipcast.cards import official_brief, official_restricts
     advice = {r["id"]: official_brief(r) for r in results}
-    spots = [{"id": sid, **a, **({"official": advice[sid]} if advice.get(sid) else {})} for sid, a in alerts["spots"].items()]
+    restricts = {r["id"]: official_restricts(r) for r in results}
+    spots = [{"id": sid, **a, **({"official": advice[sid], "official_restricts": restricts[sid]} if advice.get(sid) else {})}
+             for sid, a in alerts["spots"].items()]
     area_of = {r["id"]: r.get("area") for r in results}
     (site / "feed.xml").write_text(atom_feed(
         f"{root}feed.xml", root, f"{BRAND} · every spot", "The pollution risk forecast at every river and lake swim spot, "

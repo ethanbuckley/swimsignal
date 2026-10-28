@@ -14,7 +14,8 @@
 // when it is called, so in the page it only has to load before it is used.
 const sinceRules = () => typeof level === 'function'
   ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart,
-      ...(typeof eaTodayAdvice === 'function' ? { eaTodayAdvice, eaTodayBrief } : {}) }
+      ...(typeof eaTodayAdvice === 'function' ? { eaTodayAdvice, eaTodayBrief } : {}),
+      ...(typeof eaTodayRestricts === 'function' ? { eaTodayRestricts } : {}) }
   : { ...require('./levels.js'), ...require('./experience.js'), ...require('./eatoday.js') };
 
 const SEEN_KEY = 'dipcast.seen';
@@ -52,8 +53,15 @@ function seenOfficial(s) {
   const R = sinceRules();
   if (typeof R.eaTodayAdvice !== 'function') return undefined;
   const o = R.eaTodayAdvice(s)[0];
-  return o ? { key: `${o.publisher}|${o.line}|${o.since || ''}`.slice(0, 300), brief: R.eaTodayBrief(s).slice(0, 300), publisher: o.publisher.slice(0, 100) } : null;
+  return o ? { key: `${o.publisher}|${o.line}|${o.since || ''}`.slice(0, 300), brief: R.eaTodayBrief(s).slice(0, 300), publisher: o.publisher.slice(0, 100),
+    restricts: typeof R.eaTodayRestricts === 'function' && R.eaTodayRestricts(s) } : null;
 }
+// How a note's notice is named and what it asks (28 Oct 2026): "advice" and "follow" only for one its reviewer
+// marked as restricting swimming (eatoday.js, eaTodayRestricts); a note from before has no `restricts`, and reads
+// as a notice to read. A reviewer reclassifying the same notice is a change (officialChange), but only where both
+// notes say true or false: a note without the field is never given a past classification.
+const seenNoun = o => o && o.restricts === true ? 'advice' : 'notice';
+const seenAsk = o => o && o.restricts === true ? 'Follow it first.' : 'Read it first.';
 
 // The notes as stored. Anything that is not what this file writes reads as not seen, rather than stop
 // the page, as the saved list does (experience.js, storedList): the spot then gets no line this time.
@@ -66,7 +74,8 @@ function seenOK(x) {
     && (x.rating === null || (typeof x.rating === 'string' && RATED.test(x.rating)))
     && (x.gap === undefined || typeof x.gap === 'boolean')
     && (x.official === undefined || x.official === null || (typeof x.official === 'object'
-      && ['key', 'brief', 'publisher'].every(k => typeof x.official[k] === 'string' && x.official[k].length > 0 && x.official[k].length <= 300)));
+      && ['key', 'brief', 'publisher'].every(k => typeof x.official[k] === 'string' && x.official[k].length > 0 && x.official[k].length <= 300)
+      && (x.official.restricts === undefined || typeof x.official.restricts === 'boolean')));
 }
 const readSeen = text => new Map(sinceRules().storedList(text, seenOK).map(x => [x.id, x]));
 
@@ -88,7 +97,8 @@ function officialChange(was, now) {
   if (a === undefined || b === undefined) return '';
   if (!a && b) return 'shown';
   if (a && !b) return 'gone';
-  return a && b && a.key !== b.key ? 'other' : '';
+  const reclassified = typeof a?.restricts === 'boolean' && typeof b?.restricts === 'boolean' && a.restricts !== b.restricts;
+  return a && b && (a.key !== b.key || reclassified) ? 'other' : '';
 }
 
 // ------------------------------------------------------------------------------ the line
@@ -116,17 +126,17 @@ function sinceLine(was, now) {
   let line = '';
   if (was.level && now.level && was.level !== now.level) line = `Was ${levelWords(was.level)} when you looked ${when}; now ${levelWords(now.level)}.`;
   else if (was.rating && now.rating && was.rating !== now.rating) line = `Was ${ratingWords(was.rating)} when you looked ${when}; now ${ratingWords(now.rating)}.`;
-  else if (o === 'shown') return `No official advice was shown when you looked ${when}; now: ${now.official.brief}. Follow it first.`;
-  else if (o === 'gone') return `Official advice was shown when you looked ${when} (${was.official.brief}); it is no longer shown here.`;
-  else if (o === 'other') return `Official advice changed since you looked ${when}; now: ${now.official.brief}. Follow it first.`;
+  else if (o === 'shown') return `No official notice was shown when you looked ${when}; now: ${now.official.brief}. ${seenAsk(now.official)}`;
+  else if (o === 'gone') return `Official ${seenNoun(was.official)} was shown when you looked ${when} (${was.official.brief}); it is no longer shown here.`;
+  else if (o === 'other') return `Official ${seenNoun(now.official)} changed since you looked ${when}; now: ${now.official.brief}. ${seenAsk(now.official)}`;
   else if (a !== null && b !== null && (a > 0) !== (b > 0)) line = b > 0 ? `No overflow upstream was discharging when you looked ${when}; now ${b === 1 ? '1 is' : `${b} are`}.`
     : `${a === 1 ? '1 overflow upstream was' : `${a} overflows upstream were`} discharging when you looked ${when}; ${a === 1 ? 'it has' : 'all have'} stopped.`;
   if (!line) return '';
   // A level, a rating or a spill that changed while official advice shows: the notice in the same line, in the
   // shared helper's words (eaTodayBrief, kept in the note), so a lower sewage level never reads as an
   // all-clear. "Still" only where the note from then had it too.
-  if (now.official) return `${line} Official advice ${o === 'shown' ? 'now' : o === 'other' ? 'changed, now' : was.official ? 'still' : ''} shown: ${now.official.brief}. Follow it first.`.replace('advice  shown', 'advice shown');
-  if (o === 'gone') return `${line} Official advice shown then (${was.official.brief}) is no longer shown here.`;
+  if (now.official) return `${line} Official ${seenNoun(now.official)} ${o === 'shown' ? 'now' : o === 'other' ? 'changed, now' : was.official ? 'still' : ''} shown: ${now.official.brief}. ${seenAsk(now.official)}`.replace(/ {2}shown:/, ' shown:');
+  if (o === 'gone') return `${line} Official ${seenNoun(was.official)} shown then (${was.official.brief}) is no longer shown here.`;
   return line;
 }
 
@@ -157,7 +167,7 @@ function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
   const oc = officialChange(was, now);
   // A notice that has just appeared is in the line already: the evidence adds only whose it is.
   // The line carries the notice whenever one shows (sinceLine): here only whose it is, said once.
-  if (now.official) out.push(`The official advice is the ${now.official.publisher}'s, not part of this level.`);
+  if (now.official) out.push(`The official ${seenNoun(now.official)} is the ${now.official.publisher}'s, not part of this level.`);
   else if (oc === 'gone') out.push(`That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
   if (extra.outing) out.push(extra.outing);
   const age = (nowMs - Date.parse(now.forecast)) / 60000;

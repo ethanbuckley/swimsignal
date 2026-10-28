@@ -1,5 +1,5 @@
 {
- "note": "Approved advisory lines (docs/ADVISORY-FINDER-2026-10.md, decisions of 26 Oct 2026, incl. decision 8). This file changes only by pull request. Each entry holds the draft's evidence (draft_id, spot_id, line, publisher, link, kind, source_url, incident_id, start, expiry, fetched_at) and its review (reviewer, authority, reviewed_at in UTC as 2026-10-26T23:00:00Z). The reviewer and authority must be one of the pairs in src/dipcast/official_advice.py REVIEWERS: Ethan Buckley on his own authority, or Codex under Ethan Buckley's delegation of routine decisions (26 Oct 2026). A Codex review is never recorded as Ethan's. scripts/advisory_finder.py --entry DRAFT_ID prints a ready entry. The finder reads this file and never writes it.",
+ "note": "Approved advisory lines (docs/ADVISORY-FINDER-2026-10.md, decisions of 26 Oct 2026, incl. decision 8). This file changes only by pull request. Each entry holds the draft's evidence (draft_id, spot_id, line, publisher, link, kind, source_url, incident_id, start, expiry, fetched_at) and its review (reviewer, authority, reviewed_at in UTC as 2026-10-26T23:00:00Z, and restricts: true when the notice's own words restrict swimming, as advice against bathing does, else false). The reviewer and authority must be one of the pairs in src/dipcast/official_advice.py REVIEWERS: Ethan Buckley on his own authority, or Codex under Ethan Buckley's delegation of routine decisions (26 Oct 2026). A Codex review is never recorded as Ethan's. scripts/advisory_finder.py --entry DRAFT_ID prints a ready entry. The finder reads this file and never writes it.",
  "approvals": [
   {
    "draft_id": "e8b5832d974a",
@@ -15,7 +15,8 @@
    "fetched_at": "2026-10-26T22:45:58Z",
    "reviewer": "Codex",
    "authority": "Codex, under Ethan Buckley's delegation of routine decisions, 26 Oct 2026",
-   "reviewed_at": "2026-10-26T22:53:52Z"
+   "reviewed_at": "2026-10-26T22:53:52Z",
+   "restricts": true
   }
  ]
 }

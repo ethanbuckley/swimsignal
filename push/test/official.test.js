@@ -18,10 +18,13 @@ const OFFICIAL = `Official: ${BRIEF}. Follow it first; the level is SwimSignal's
 const count = (text, s) => text.split(s).length - 1;
 // A spot as scripts/alerts.js writes it: with advice, `official` and an `action` that is the notice.
 const frensham = (advised, extra = {}) => ({ name: 'Frensham Great Pond', rank: 2, level: 'high', headline: 'High risk today: sewage spills',
-  action: advised ? OFFICIAL : 'Best not to swim today.', url: `${SITE}spot/f/`, ...(advised ? { official: BRIEF } : {}), ...extra });
+  action: advised ? OFFICIAL : 'Best not to swim today.', url: `${SITE}spot/f/`, ...(advised ? { official: BRIEF, official_restricts: true } : {}), ...extra });
 
 test('officialWords: alerts.js\'s own line, or nothing for a missing, empty or odd field', () => {
-  assert.equal(officialWords({ official: BRIEF }), OFFICIAL);
+  assert.equal(officialWords({ official: BRIEF, official_restricts: true }), OFFICIAL);
+  // "Follow" only for a notice alerts.js marked as restricting; any other, or a file from before the field, "Read".
+  for (const r of [false, undefined, 'true']) assert.equal(officialWords({ official: BRIEF, official_restricts: r }),
+    `Official: ${BRIEF}. Read the official notice first; the level is SwimSignal's sewage forecast only.`);
   for (const s of [{}, { official: '' }, { official: 3 }, { official: [BRIEF] }, null, undefined]) assert.equal(officialWords(s), '');
 });
 
@@ -68,7 +71,7 @@ test('dated notices: one pair says it once through the day\'s action; a list add
 test('the weekly note: "low risk every day" carries the notice once; order, link and tag unchanged', () => {
   const best = { date: '2026-10-27', level: 'low', words: 'low risk every day from tomorrow to Friday' };
   const spots = (o) => ({ f: { name: 'Frensham Great Pond', url: `${SITE}spot/f/`, best, ...o }, o: { name: 'Other', best: { ...best, level: 'moderate', words: 'Saturday, moderate risk' } } });
-  const was = weeklyPayload(['o', 'f'], spots({}), SITE), now = weeklyPayload(['o', 'f'], spots({ official: BRIEF }), SITE);
+  const was = weeklyPayload(['o', 'f'], spots({}), SITE), now = weeklyPayload(['o', 'f'], spots({ official: BRIEF, official_restricts: true }), SITE);
   assert.equal(was.body, 'Frensham Great Pond: low risk every day from tomorrow to Friday.\nOther: Saturday, moderate risk.');
   assert.deepEqual(now, { ...was, body: `Official notice shown · Frensham Great Pond: low risk every day from tomorrow to Friday. ${OFFICIAL}\nOther: Saturday, moderate risk.` });
   assert.equal(count(now.body, 'Official:'), 1);

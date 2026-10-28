@@ -35,7 +35,7 @@ def feed_draft(result):
 
 def entry(result, **change):
     e = adv.review_entry(feed_draft(result))
-    return {**e, "reviewer": "Ethan Buckley", "authority": "Ethan Buckley", "reviewed_at": "2026-10-26T18:50:00Z", **change}
+    return {**e, "reviewer": "Ethan Buckley", "authority": "Ethan Buckley", "reviewed_at": "2026-10-26T18:50:00Z", "restricts": True, **change}
 
 
 def write(tmp_path, *entries, name="approved.json"):
@@ -53,8 +53,8 @@ def test_review_entry_carries_the_evidence_and_leaves_the_review_empty(run):
     assert e == {"draft_id": "e8b5832d974a", "spot_id": FRENSHAM, "line": LINE, "publisher": "Environment Agency",
                  "link": PROFILE, "kind": "feed", "source_url": adv.EA_OPEN, "incident_id": "ea:11945-20260619-142800",
                  "start": "2026-06-19", "expiry": None, "fetched_at": "2026-10-26T18:37:19Z",
-                 "reviewer": None, "authority": None, "reviewed_at": None}
-    with pytest.raises(oa.ApprovalError, match="missing reviewer, authority, reviewed_at"):
+                 "reviewer": None, "authority": None, "reviewed_at": None, "restricts": None}
+    with pytest.raises(oa.ApprovalError, match="missing reviewer, authority, reviewed_at, restricts"):
         oa.load_approvals(write(Path(__import__("tempfile").mkdtemp()), e), now=NOW)
 
 
@@ -72,7 +72,7 @@ def test_reviewers_and_their_authority_are_a_short_configured_list(tmp_path, run
 def test_a_checked_advisory_shows_with_its_publisher_start_link_and_check(tmp_path, run):
     got = shown(tmp_path, [entry(run)], oa.check_record(run))
     assert got == {FRENSHAM: [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
-                               "checked": "2026-10-26", "state": "checked"}]}
+                               "checked": "2026-10-26", "state": "checked", "restricts": True}]}
 
 
 def test_nothing_without_an_approval(tmp_path, run):
@@ -115,7 +115,7 @@ def test_a_failed_check_keeps_the_advisory_marked_unverified(tmp_path, run):
     assert "unverified" in next(d for d in again["drafts"] if d["draft_id"] == "e8b5832d974a")["flags"]
     got = shown(tmp_path, [entry(run)], oa.check_record(again), week)[FRENSHAM]
     assert got == [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
-                    "checked": "2026-10-26", "state": "unverified"}]
+                    "checked": "2026-10-26", "state": "unverified", "restricts": True}]
 
 
 @pytest.mark.parametrize("status", ["withdrawn", "lifted"])
@@ -272,7 +272,7 @@ def test_an_incident_that_leaves_the_open_list_with_no_end_stays_shown(tmp_path,
     assert d["status"] == "withdrawn" and "gone" in d["flags"]
     got = shown(tmp_path, [entry(run)], oa.check_record(again), week)[FRENSHAM]
     assert got == [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
-                    "checked": "2026-10-26", "state": "gone"}]
+                    "checked": "2026-10-26", "state": "gone", "restricts": True}]
     # It stays so after it drops out of the drafts (the record carries it).
     week2 = oa.check_record(dict(again, drafts=[]), previous=oa.check_record(again))
     assert shown(tmp_path, [entry(run)], week2, week)[FRENSHAM][0]["state"] == "gone"
@@ -294,7 +294,7 @@ def test_a_changed_line_is_not_shown_as_reviewed_or_current(tmp_path, run):
     check = oa.check_record(dict(run, drafts=[newer]))
     got = oa.shown(approvals, check, NOW)[FRENSHAM]
     assert got == [{"line": LINE, "publisher": "Environment Agency", "link": PROFILE, "since": "2026-06-19",
-                    "checked": "2026-10-26", "state": "changed"}]
+                    "checked": "2026-10-26", "state": "changed", "restricts": True}]
     assert all(x["line"] != newer["draft_line"] for x in got)   # the unreviewed line never reaches the page
 
 
@@ -311,3 +311,21 @@ def test_a_synthesized_withdrawal_never_ends_an_older_reviewed_warning(tmp_path,
     check["drafts"]["aaaaaaaaaaaa"]["flags"] = []
     assert shown(tmp_path, [entry(run)], check) == {}
 
+
+
+def test_restricts_is_the_reviewers_explicit_true_or_false_and_is_carried_as_given(tmp_path, run):
+    """Whether a notice restricts swimming is the reviewer's call from its own words (28 Oct 2026). It must be
+    given: an entry without it, as every entry was before the field, approves nothing, so a notice is never
+    taken to restrict swimming (or not) for want of it. True and false are both shown, carried as given."""
+    check = oa.check_record(run)
+    for value in (True, False):
+        got = shown(tmp_path, [entry(run, restricts=value)], check)
+        assert got[FRENSHAM][0]["restricts"] is value
+        assert got[FRENSHAM][0]["line"] == LINE   # shown either way
+    legacy = {k: v for k, v in entry(run).items() if k != "restricts"}
+    with pytest.raises(oa.ApprovalError, match="missing restricts"):
+        oa.load_approvals(write(tmp_path, legacy, name="legacy.json"), now=NOW)
+    # The repo's own file gives its one approval, advice against bathing, as restricting.
+    mine = oa.load_approvals(oa.APPROVALS_FILE, now=datetime.now(oa.TZ))
+    assert [a["restricts"] for a in mine.values()] == [True]
+    assert [a["line"] for a in mine.values()] == [LINE]

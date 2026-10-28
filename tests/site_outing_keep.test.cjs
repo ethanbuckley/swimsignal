@@ -75,7 +75,7 @@ test('the cap is the Worker\'s, and the spot goes before the backup when only on
 // ------------------------------------------------------------------------------ what the tile says
 test('alerts on: what is stored, that it is forgotten after the day, and a way to stop it', () => {
   const ask = O.outingAlert({state: 'on', pairs, list: []});
-  assert.ok(ask.includes('A notification each time tomorrow\'s level or official advice changes at Frensham Great Pond and River Wey at Waverley.'));
+  assert.ok(ask.includes('A notification each time tomorrow\'s level or official notice changes at Frensham Great Pond and River Wey at Waverley.'));
   assert.ok(ask.indexOf('What asking sends') < ask.indexOf('Alert me about this outing'));   // consent before the button
   assert.ok(ask.includes('not the time, where you start from or the rest of the plan'));
   assert.ok(ask.includes('up to 10 in all, and forgets each one after its date'));
@@ -162,7 +162,7 @@ test('the calendar file, field by field: the time window, the spot, links back, 
   assert.equal(p.SUMMARY.value, 'Swim: Frensham Great Pond');
   assert.equal(p.LOCATION.value, 'Frensham Great Pond');
   assert.equal(p.URL.value, CAL.main.url);
-  assert.equal(unescape(p.DESCRIPTION.value), ['Check SwimSignal and any official advice before you go.', `Your spot: Frensham Great Pond, ${CAL.main.url}`,
+  assert.equal(unescape(p.DESCRIPTION.value), ['Check SwimSignal and any official notice before you go.', `Your spot: Frensham Great Pond, ${CAL.main.url}`,
     `Backup: River Wey at Waverley, ${CAL.backup.url}`, `Your plan: ${CAL.plan}`].join('\n'));
   assert.ok(!('TRANSP' in p));
   // No forecast level anywhere in the event: it would be stale by the time the calendar shows it.
@@ -200,4 +200,27 @@ test('the page loads spotdate.js before outing.js and organisers.js, and the off
   const org = read('src/dipcast/site/organisers.html');
   assert.ok(org.indexOf('<script src="spotdate.js"></script>') > 0 && org.indexOf('<script src="spotdate.js"></script>') < org.indexOf('<script src="organisers.js"></script>'));
   assert.match(read('src/dipcast/site/sw.js'), /`spotdate\.js\?v=\$\{BUILD\}`/);
+});
+
+test('the calendar file carries each spot\'s verified parking and getting-in facts, with the guide\'s date, and nothing else', () => {
+  const guide = {checked: '2026-10-28', how: 'desk', facts: [
+    {topic: 'parking', status: 'confirmed', text: 'Pay and display parking at Carding Mill Valley (SatNav SY6 6JG).'},
+    {topic: 'entry', status: 'confirmed', text: 'Steps down the bank by the dam.'},
+    {topic: 'entry', status: 'suggested', text: 'A swimmer says the shallow end is easier.', from: 'Sam', on: '2026-10-20'},
+    {topic: 'rules', status: 'confirmed', text: 'The National Trust invites a dip in the reservoir.'}]};
+  assert.deepEqual(O.outingPractical({guide}), [
+    'Parking, from its guide (checked 2026-10-28): Pay and display parking at Carding Mill Valley (SatNav SY6 6JG).',
+    'Getting in, from its guide (checked 2026-10-28): Steps down the bank by the dam.']);
+  // No guide, or one with neither topic: nothing, and no made-up meeting point or put-in.
+  assert.deepEqual(O.outingPractical({}), []);
+  assert.deepEqual(O.outingPractical({guide: {checked: '2026-10-28', facts: [guide.facts[3]]}}), []);
+  const p = unfold(O.outingIcs({...CAL, main: {...CAL.main, practical: O.outingPractical({guide})}, backup: {...CAL.backup, practical: []}}, 0));
+  assert.equal(unescape(p.DESCRIPTION.value), ['Check SwimSignal and any official notice before you go.', `Your spot: Frensham Great Pond, ${CAL.main.url}`,
+    'Parking, from its guide (checked 2026-10-28): Pay and display parking at Carding Mill Valley (SatNav SY6 6JG).',
+    'Getting in, from its guide (checked 2026-10-28): Steps down the bank by the dam.',
+    `Backup: River Wey at Waverley, ${CAL.backup.url}`, `Your plan: ${CAL.plan}`].join('\n'));
+  // The page passes each spot's guide in when it makes the file.
+  const src = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/outing.js'), 'utf8');
+  assert.match(src, /practical: outingPractical\(pair\.main\)/);
+  assert.match(src, /practical: outingPractical\(pair\.backup\)/);
 });

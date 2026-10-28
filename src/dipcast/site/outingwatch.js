@@ -56,7 +56,8 @@ const owText = (x, n) => typeof x === 'string' && x.length > 0 && x.length <= n;
 function outingWatchOK(r, day) {
   return !!r && typeof r === 'object' && owText(r.id, 100) && r.day === day && owLevels().has(r.level)
     && Number.isFinite(r.at) && typeof r.forecast === 'string' && Number.isFinite(Date.parse(r.forecast))
-    && (r.official === undefined || r.official === null || (typeof r.official === 'object' && ['key', 'brief', 'publisher'].every(k => owText(r.official[k], 300))))
+    && (r.official === undefined || r.official === null || (typeof r.official === 'object' && ['key', 'brief', 'publisher'].every(k => owText(r.official[k], 300))
+      && (r.official.restricts === undefined || typeof r.official.restricts === 'boolean')))
     && (r.river === null || (typeof r.river === 'object' && owText(r.river.word, 60) && owText(r.river.gauge, 100) && typeof r.river.lake === 'boolean'));
 }
 function outingWatchRead(text) {
@@ -101,15 +102,19 @@ function outingWatchLines(was, now) {
   if (now.official !== undefined) {
     const o = compared ? S.officialChange(was, now) : '';
     if (now.official) {
-      const lead = `Official advice: ${now.official.brief}. Follow it first.`;
+      // "Official advice" and "follow" only for a notice that restricts swimming (since.js, seenOfficial's restricts).
+      const lead = now.official.restricts === true ? `Official advice: ${now.official.brief}. Follow it first.` : `Official notice: ${now.official.brief}. Read it first.`;
       if (!compared || was.official === undefined) out.push(lead);
       else if (o === 'shown') { changed++; out.push(`${lead} Changed: none was shown then.`); }
+      // The same notice, reclassified by its reviewer (since.js, officialChange): say what changed, not the same words twice.
+      else if (o === 'other' && was.official.brief === now.official.brief) { changed++;
+        out.push(`${lead} Changed: it was shown as ${was.official.restricts === true ? 'official advice to follow' : 'an official notice to read'} then.`); }
       else if (o === 'other') { changed++; out.push(`${lead} Changed: was ${was.official.brief}.`); }
       else out.push(`${lead} No change since then.`);
     } else if (o === 'gone') {
       changed++;
-      out.push(`Official advice: none shown here now. Changed: was ${was.official.brief}. That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
-    } else say('Official advice', 'none shown', compared && was.official !== undefined ? 'none shown' : null);
+      out.push(`Official notice: none shown here now. Changed: was ${was.official.brief}. That is not an all-clear: check the ${was.official.publisher}'s own page before you swim.`);
+    } else say('Official notice', 'none shown', compared && was.official !== undefined ? 'none shown' : null);
   }
   say(`Level for ${owDay(day)}`, owLevel(now.level, day), compared ? owLevel(was.level, day) : null);
   // The river now, at the gauge. A gauge with no reading in this update, where the note had one, says so.
@@ -147,7 +152,7 @@ function outingWatchSection(w) {
   if (none.length) notes.push(`This update has no forecast for ${owDay(w.day)} at ${none.join(' or ')}: look again before you go.`);
   const river = parts.some(p => p.now.river), d = owDay(w.day);
   if (river) notes.push('The river is a separate hazard, not part of the pollution level.');
-  notes.push(`Before you leave${d === 'today' ? '' : ` ${/^[A-Z]/.test(d) ? 'on ' : ''}${d}`}, look again at the official advice, ${d}'s level${river ? ' and the river' : ''}: `
+  notes.push(`Before you leave${d === 'today' ? '' : ` ${/^[A-Z]/.test(d) ? 'on ' : ''}${d}`}, look again at any official notice, ${d}'s level${river ? ' and the river' : ''}: `
     + `${river ? 'each' : 'both'} can change, and a newer forecast may be issued. Then check the signs at the water.`);
   return `<div class="outing-watch">${head}${passed}${lead ? `<p>${owEsc(lead)}</p>` : ''}${spots}<p class="small muted">${owEsc(notes.join(' '))}</p></div>`;
 }

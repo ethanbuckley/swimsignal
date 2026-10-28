@@ -12,7 +12,7 @@ const L = require(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'levels.j
 // `official` holds the compact form for whoever reads the file.
 const EA = require(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'eatoday.js'));
 const officialAction = s => { const b = EA.eaTodayBrief(s);
-  return b ? `Official: ${b}. Follow it first; the level is SwimSignal's sewage forecast only.` : ''; };
+  return b ? `Official: ${b}. ${EA.eaTodayFirst(s)}; the level is SwimSignal's sewage forecast only.` : ''; };   // follow only a restricting notice
 
 const [src, out, root] = process.argv.slice(2);
 if (!src || !out || !root || !root.endsWith('/')) {
@@ -56,7 +56,7 @@ for (const s of data.spots) {
   const clears = L.clearWords(s);   // "The spills upstream should have passed and died off by Saturday 22:47."
   const official = EA.eaTodayBrief(s);
   spots[s.id] = { name: s.name, rank: L.rank(level), level, headline: L.headline(s), action: officialAction(s) || L.levelAction(s), ...(clears ? { clears } : {}),
-    ...(official ? { official } : {}),
+    ...(official ? { official } : {}), ...(official && EA.eaTodayRestricts(s) ? { official_restricts: true } : {}),
     url: PAGE_ID.test(s.id) ? `${root}spot/${s.id}/` : `${root}?spot=${encodeURIComponent(s.id)}`, ...(b ? { best: b } : {}),
     ...(L.daily(s) ? { days: daysOf(s) } : {}) };
 }

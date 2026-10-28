@@ -222,7 +222,7 @@ test("no other script of the page defines one of eatoday.js's names, and the pag
 // Official advice (eaTodayOfficial): reviewed lines the build writes into spots.json from data/advisories/
 // (src/dipcast/official_advice.py). Fixture items only: no real approval is used here.
 const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
-const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', ...extra });
+const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', restricts: true, ...extra });
 
 test('official advice: the line, its link and when it was last checked, in a block of its own above the level', () => {
   const html = ea.eaTodayOfficial(frensham({ official: [item()] }));

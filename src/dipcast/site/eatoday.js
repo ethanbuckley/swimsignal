@@ -83,11 +83,12 @@ function eaTodayChecked(o) {
 function eaTodayOfficial(d) {
   const items = eaTodayAdvice(d);
   if (!items.length) return '';
-  return `<section class="notice official" id="official" aria-labelledby="official-h"><h2 id="official-h">Official advice</h2><ul>`
+  const r = eaTodayRestricts(d);   // "advice" and "follow" only for a notice its reviewer marked as restricting swimming
+  return `<section class="notice official" id="official" aria-labelledby="official-h"><h2 id="official-h">${r ? 'Official advice' : 'Official notice'}</h2><ul>`
     + items.map(o => `<li><p class="o-line">${eaTodayEsc(o.line)}</p><p class="o-src">`
       + (/^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `<a href="${eaTodayEsc(o.link)}">Open the ${eaTodayEsc(o.publisher)} page</a>. ` : '')
       + `${eaTodayEsc(eaTodayChecked(o))}</p></li>`).join('')
-    + `</ul><p class="o-sep">Follow this advice first. It is not SwimSignal's, and the forecast below does not include it.</p></section>`;
+    + `</ul><p class="o-sep">${r ? 'Follow this advice first' : 'Read this notice first'}. It is not SwimSignal's, and the forecast below does not include it.</p></section>`;
 }
 // In the answer's coverage line, in place of "Today's EA advice not checked: open it before you swim"
 // when a reviewed notice shows above: what was checked and when, then where the latest is. '' without one.
@@ -109,8 +110,21 @@ function eaTodayLatest(d) {
     : /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? `Open <a href="${eaTodayEsc(o.link)}">the ${eaTodayEsc(o.publisher)} page</a> for the latest` : '';
 }
 // What to do, in place of the level's line ("Usual care: …", which read as leave to swim), while a reviewed
-// notice shows: the notice comes first. '' without one, and the level's own line stands.
-const eaTodayAct = d => eaTodayAdvice(d).length ? 'Follow the official advice above first.' : '';
+// notice shows: the notice comes first. "Follow" only for a notice its reviewer marked as restricting swimming
+// (eaTodayRestricts); any other is to be read, in its own words above, not obeyed as a restriction it may not be.
+// '' without one, and the level's own line stands.
+const eaTodayAct = d => !eaTodayAdvice(d).length ? ''
+  : eaTodayRestricts(d) ? 'Follow the official advice above first.' : 'Read the official notice above first.';
+// Whether a spot's notices include one its reviewer marked as restricting swimming (`restricts: true`,
+// src/dipcast/official_advice.py). What the pages leave out of counts, shared plans and suggestions, and put first,
+// goes by this; what they show (the notice, its tag, the map's ring) goes by eaTodayAdvice, every notice. Only an
+// explicit true counts: a notice without the field (a spots.json from before 28 Oct 2026) changes no selection.
+const eaTodayRestricts = d => eaTodayAdvice(d).some(o => o.restricts === true);
+// What the pages ask beside a notice's compact form, "Official: … . Follow it first": follow it only where it
+// restricts swimming, else read it (the sites view, the organisers' page, the record, the comparison).
+const eaTodayFirst = d => eaTodayRestricts(d) ? 'Follow it first' : 'Read the official notice first';
+// The label a page puts before a notice's compact form: "Official advice" only where it restricts swimming.
+const eaTodayLabel = d => eaTodayRestricts(d) ? 'Official advice' : 'Official notice';
 // The compact form for the places a spot is one row among many: the list, Saved, Plan a swim's rows and
 // the decision record. "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct", in a line of its own
 // beside the level, never in it. One shared helper, so every surface says the same. '' without advice.
@@ -126,7 +140,7 @@ function eaTodayBrief(d) {
 }
 const eaTodayTag = (d, el = 'span') => { const t = eaTodayBrief(d); return t ? `<${el} class="o-tag">${eaTodayEsc(t)}</${el}>` : ''; };
 // The line under the level when there is official advice, so the two are not read as one.
-const eaTodayApart = d => eaTodayAdvice(d).length ? '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>' : '';
+const eaTodayApart = d => eaTodayAdvice(d).length ? `<p class="gaps o-apart">This level is SwimSignal's forecast. The official ${eaTodayRestricts(d) ? 'advice' : 'notice'} above is separate.</p>` : '';
 
 // Fills an opened fold with the EA's panel and the line under it; false if its site id is not one.
 function eaTodayOpen(fold, nowMs) {
@@ -163,5 +177,5 @@ if (typeof document === 'object' && document && typeof document.addEventListener
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { EA_TODAY_WIDGET, EA_TODAY_SITE, eaTodayId, eaTodayUrl, eaTodayWhen, eaTodayPage, eaTodayFold, eaTodayOpen, eaTodayListen,
-    eaTodayAdvice, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
+    eaTodayAdvice, eaTodayRestricts, eaTodayFirst, eaTodayLabel, eaTodayChecked, eaTodayOfficial, eaTodayApart, eaTodayCover, eaTodayLatest, eaTodayAct, eaTodayBrief, eaTodayTag };
 }

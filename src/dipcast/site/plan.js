@@ -170,12 +170,13 @@ function waterMatches(index, text, n = 4) {
 // group, "Nothing flagged", they read as the same answer, a forecast that looked and found the risk low
 // and one with nothing to look at.
 const PLAN_GROUPS = 4;
-// Whether a spot has reviewed official advice shown (eatoday.js, eaTodayAdvice: spots.json `official`). It
+// Whether a spot has reviewed official advice shown that restricts swimming (eatoday.js, eaTodayRestricts:
+// spots.json `official`, all but a notice marked not restricting). It
 // never changes the level or the group; within the low group and the plain one, those spots go last, and
 // they are not counted as low risk where the plan suggests an area or a day, or shared as a plan.
-const planAdvised = s => { const f = typeof eaTodayAdvice === 'function' ? eaTodayAdvice
-  : typeof require === 'function' ? require('./eatoday.js').eaTodayAdvice : null;
-  return !!f && f(s).length > 0; };
+const planAdvised = s => { const f = typeof eaTodayRestricts === 'function' ? eaTodayRestricts
+  : typeof require === 'function' ? require('./eatoday.js').eaTodayRestricts : null;
+  return !!f && f(s); };
 function planGroup(level) {
   const R = planRules();
   return level === 'low' ? 0 : R.plainLevel(level) ? 1 : R.rank(level) >= 1 ? 2 : 3;

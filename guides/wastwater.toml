@@ -1,0 +1,33 @@
+# Wastwater. Desk check of the park authority's lakes guide and the National Trust's Wasdale parking page, 28 October
+# 2026, read in a browser. Neither names an entry point, so getting in and out are left out (the page says so).
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-28
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Lake Head car park, north of Wastwater (CA20 1EX, grid ref NY182075), is the National Trust's largest in Wasdale; Overbeck is another. Both are pay and display, free for National Trust members."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/wasdale/car-parks-in-wasdale"
+source_name = "National Trust"
+
+[[fact]]
+topic = "fees"
+text = "Overbeck: £7 up to 2 hours, £8 up to 4 hours, £9.50 all day. Lake Head: £7 up to 2 hours, £8.50 up to 4 hours, £10 all day. Mobile signal is very limited, so card or phone payment is not possible at every car park: bring change, or set up the JustPark app beforehand."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/wasdale/car-parks-in-wasdale"
+source_name = "National Trust"
+
+[[fact]]
+topic = "toilets"
+text = "Lake Head car park has a large toilet block and a welcome centre."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/wasdale/car-parks-in-wasdale"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The park authority's lakes guide lists swimming at Wastwater as allowed, and canoes, kayaks, paddleboards and rowing boats too; sailing boats and powered craft are not allowed. The small lakes byelaws apply."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

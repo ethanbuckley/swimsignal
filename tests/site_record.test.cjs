@@ -288,7 +288,7 @@ test('the record is one input to the organisation\'s own risk assessment, names 
 // Reviewed official advice (eatoday.js, eaTodayBrief) sits above the level, apart from it; fixture item only.
 test('the record shows reviewed official advice above the level, apart from it, and nothing without it', () => {
   const official = [{line: 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026', publisher: 'Environment Agency',
-    link: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901', since: '2026-06-19', checked: '2026-10-03', state: 'checked'}];
+    link: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901', since: '2026-06-19', checked: '2026-10-03', state: 'checked', restricts: true}];
   const h = Rec.view({...ilkley, official}, DAYS[1], DATA, VER, BASE, NOW);
   assert.ok(h.includes('<p class="r-official"><b>Official advice:</b> EA advice against bathing (harmful algae) · since 19 Jun · checked 3 Oct. '
     + 'Not part of the level below; follow it first. <a href="https://environment.data.gov.uk/bwq/profiles/profile.html?site=uke4100-08901">'
