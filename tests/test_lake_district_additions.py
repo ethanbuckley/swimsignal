@@ -77,3 +77,15 @@ def test_lake_spot(lakes, sid, wfd, name, costed, cell, words, topics):
     assert set(by) == topics and not {"entry", "exit"} & set(by)
     assert by["rules"]["source"] == GUIDE and words in by["rules"]["text"]
     assert all(f["status"] == "confirmed" for f in found[sid]["facts"]) and found[sid]["checked"] == "2026-10-28"
+
+
+@pytest.mark.parametrize("sid, topics", [("crummock-water", {"parking", "rules"}), ("wastwater", {"parking", "fees", "toilets", "rules"})])
+def test_guides_added_for_listed_lakes(sid, topics):
+    # Guides for two listed lakes that had none (28 Oct 2026): the park authority's rules and the National Trust's car parks.
+    found, warnings = guides.load_guides({sid}, root=ROOT / "guides")
+    assert not [w for w in warnings if sid in w], warnings
+    by = {f["topic"]: f for f in found[sid]["facts"]}
+    assert set(by) == topics and not {"entry", "exit"} & set(by)
+    assert by["rules"]["source"] == GUIDE and "as allowed" in by["rules"]["text"]
+    assert by["parking"]["source"].startswith("https://www.nationaltrust.org.uk/")
+    assert all(f["status"] == "confirmed" for f in found[sid]["facts"]) and found[sid]["checked"] == "2026-10-28"

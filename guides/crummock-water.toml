@@ -1,0 +1,19 @@
+# Crummock Water. Desk check of the park authority's lakes guide and the National Trust's walk page, 28 October 2026,
+# read in a browser. Neither names an entry point, so getting in and out are left out (the page says so).
+# Prices and hours change by season: recheck every confirmed fact before changing "checked".
+checked = 2026-10-28
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Lanthwaite Wood National Trust car park, Loweswater (CA13 0RT, grid ref NY149215), has 30 spaces and is free for National Trust members."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/lanthwaite-wood-and-crummock-water-walk"
+source_name = "National Trust"
+
+[[fact]]
+topic = "rules"
+text = "The park authority's lakes guide lists swimming at Crummock Water as allowed. Canoes, kayaks, paddleboards and rowing boats need a permit, sold as day permits at the Buttermere and Lanthwaite Wood car parks; sailing boats and powered craft are not allowed. The small lakes byelaws apply."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
