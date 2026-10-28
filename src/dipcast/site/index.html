@@ -3756,6 +3756,14 @@ function drawPlan(fit = false) {
   if (r.count) planCompare(r.groups, head);
   if (typeof drawOuting === 'function') drawOuting(box, r.groups.flat());   // outing.js: at the top of the results
   planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
+  // Find a window (findwindow.js): the plan's spots, its area and activity, over the five days, nearest first by distance
+  // and never by level, with why each other day is not low risk and any official notice apart from the levels.
+  if (r.count && typeof fwPlanSection === 'function') {
+    const mi = new Map(r.groups.flat().map(o => [o.s.id, o.miles]));
+    box.insertAdjacentHTML('beforeend', fwPlanSection(r.groups.flat(), fiveDays(), s => spotPath(s.id), `${planNoun(2)} ${reach}`,
+      s => `${cap(milesAway(mi.get(s.id)))} · ${cap(s.kind)}`));
+    box.querySelectorAll('ul.fw-list').forEach(bindItems);
+  }
   // On the map: where you start, ringed at the distance chosen. Not your own location, which the map
   // never moves to (as "Near me" does not), since its images would then show OpenStreetMap where you are.
   if (PLAN.from.here) return;
