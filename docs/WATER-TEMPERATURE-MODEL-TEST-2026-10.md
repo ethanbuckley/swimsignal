@@ -651,3 +651,98 @@ firm about May to September. The check should be repeated in the season. Nothing
 the model.
 
 Adding `temperature_2m` to the rain request left every rain value the same.
+
+## Amendment 3, 27 October 2026: the in-season forecast-air check, on the 2025 season (before any of its requests)
+
+**Why.** The forecast-air check above passed by 0.02 °C on the bias, in one autumn window. Its result said the check should be repeated in the season, and #418 was held for it until May 2027. Ethan chose on 27 October to run the in-season check now on archived data instead. His words: "The user explicitly wants the historical-data route rather than waiting for May."
+
+**What is unchanged.**
+- The model, the bridge and the features file.
+- The river verdict and its scores.
+- The forecast-air check's pass rule and its limits (±0.5 °C mean, 1.0 °C RMS).
+- Every other frozen rule in this statement.
+- Nothing is refitted, whatever the result.
+
+**The input under test.** Open-Meteo's Historical Forecast API (`https://historical-forecast-api.open-meteo.com/v1/forecast`), described by Open-Meteo as "historical forecasts archived from the Weather Forecast API — same models, same parameters, same response format", with "each run's first few hours … stitched into a continuous hourly timeseries". That is what the forecast API's past days are. Parameters:
+- `hourly=temperature_2m`, `timezone=UTC`, `start_date=2025-04-24`, `end_date=2025-09-30`;
+- the default model, as the site asks;
+- `latitude`/`longitude` = the cell centres.
+
+One variable only: adding `precipitation`, as the site does, would double the weight. Inferred, not checked: the variable list does not change the temperature values. The first check found the rain values unchanged when temperature was added.
+
+**The reference.** ERA5-Land daily mean (`archive-api.open-meteo.com/v1/archive`, `models=era5_land`, `daily=temperature_2m_mean`, `timezone=Europe/London`, `start_date=2025-04-25`, `end_date=2025-09-30`), as in the first check.
+
+**Cells.** The same 62 cells as the first check: the 0.1° rain cells of the 72 river spots in `spots.csv` and `spots-osm.csv` (`wt_air_check.river_cells`), at this commit.
+
+**Window and measures.**
+- The same measures as the first check (`wt_air_check.measures`).
+- Forecast daily means are London calendar days built from the hourly values. A day counts only if all its hours are present.
+- `a7` is taken from each source on days whose 7 days are all present in both.
+- The **pairs scored are London days 1 May to 30 September 2025**. The days from 25 April serve only for early May's `a7`.
+
+**Pass rule: the first check's, unchanged.** The mean `a7` difference over all cells and days is within ±0.5 °C, and the root-mean-square `a7` difference is at most 1.0 °C.
+
+**Also reported, deciding nothing:**
+- the daily differences;
+- the spread by cell;
+- the mean and RMS `a7` difference by month, May to September.
+
+**Requests and cap.**
+- Batches of at most 25 cells, so 3 batches × 2 requests = 6 requests, 25 s apart, through the test's capped client (its log, day and hour caps, network retries, any answer other than 200 a stop).
+- Weight by Open-Meteo's rule, max(1, V/10 × max(1, D/14)) per location:
+  - historical forecast: 160 days, so 1.143 a cell;
+  - archive: 159 days, so 1.136 a cell.
+  - Total about **141.3 weighted calls**.
+- **Cap for this check: 150**, authorised by Ethan for this one check only, from this Mac. It is counted on its own log tag (`check=hist2025`), apart from the first check's 186.
+- Hosts: `historical-forecast-api.open-meteo.com` and `archive-api.open-meteo.com` only.
+- No GitHub runner request.
+- No change to the site's ration or the D4 window.
+- Nothing paid: Open-Meteo's plan matrix lists the Historical Forecast API under Free / Open-Access (non-commercial).
+
+**Outcomes.**
+- **Pass:** the in-season question the first check left open is answered for the 2025 season. #418 no longer waits for May for this reason. Whether and when it merges stays Ethan's decision, and the estimate still shows only May to September.
+- **Fail:** nothing is built or refitted. #418 stays a draft. The result is reported to Ethan, and the in-season check on live data (early June 2026, once the forecast API's 92 past days cover May) stays the gate.
+
+**Limits, stated now.**
+- One season, 2025, and 62 cells.
+- Open-Meteo says the Historical Forecast API is "not suitable for long time series due to model version changes". So 2025 stands for the current models only as far as they have not changed since. Inferred, not checked.
+- The forecast for today is not checked, as before.
+
+### Amendment 3, result (27 October 2026, 20:56 to 20:58 UTC)
+
+`wt_air_check.py --historical 2025` at commit 167858b, from Ethan's Mac:
+- 6 requests, all HTTP 200, no network error.
+- **141.3 weighted calls** (cap 150), on the log tag `check=hist2025`.
+- Hosts: `historical-forecast-api.open-meteo.com` and `archive-api.open-meteo.com`.
+- No GitHub runner request.
+- This Mac's day before the check: 8,378.2 calls in the test's log, 219.6 in the lake test's log, and 3 Marine calls (coastal brief, #420): 8,600.8 in all. About 8,742 after it, under the client's 9,500 day cap and Open-Meteo's free 10,000.
+- Full figures: `docs/WATER-TEMPERATURE-MODEL-TEST-2026-10-air-check-hist2025.json`.
+
+| | value | limit | |
+|---|---|---|---|
+| cells compared | 62 of 62 | | |
+| London days scored | 1 May to 30 September 2025 | | |
+| mean `a7` difference, archived forecast − ERA5-Land | **−0.25 °C** | within ±0.5 | pass |
+| root-mean-square `a7` difference | **0.56 °C** | ≤ 1.0 | pass |
+| `a7` pairs (cell-days) | 9,486 | reported | |
+| daily: mean / RMS | −0.27 / 0.72 °C | reported | |
+| per-cell mean daily difference | −1.15 to +0.53 °C | reported | |
+
+By month (`a7` mean / RMS, reported, deciding nothing):
+
+| | May | June | July | August | September |
+|---|---|---|---|---|---|
+| mean | −0.19 | −0.11 | −0.16 | −0.35 | −0.43 |
+| RMS | 0.57 | 0.51 | 0.46 | 0.61 | 0.62 |
+
+**Pass.** Over the 2025 season the archived forecast air ran about a quarter of a degree cooler than ERA5-Land. That is about half the late-September to October gap of the first check (−0.48 °C), with a margin of 0.25 °C on the bias.
+- The gap grows towards autumn: September's −0.43 °C is close to the first check's figure.
+- *Inferred, not tested:* the cooling is seasonal, smallest in early summer.
+
+Nothing was refitted: not the bridge, not the model.
+
+**What follows, as amendment 3 states:** the in-season question the first check left open is answered for the 2025 season, so #418 no longer waits for May for this reason. Whether and when it merges is Ethan's decision. The estimate still shows only May to September.
+
+**Limits, as stated:**
+- One season, 62 cells.
+- Archived forecasts stand for today's models only as far as those have not changed since 2025. Inferred, not checked.

@@ -48,6 +48,7 @@ SETS = {"fresh": wp.FRESH_CODES, "sea": wp.SEA_CODES}
 OM_HOST = "archive-api.open-meteo.com"
 OM_URL = f"https://{OM_HOST}/v1/archive"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"   # the forecast-air check only
+HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"   # amendment 3's check only
 OM_PAUSE_S = 25.0          # amended 27 Oct (was 60 s): 4,700 an hour at 32.7 a request is one every 25 s
 OM_MODEL = "era5_land"
 UA = "swimsignal-research (water temperature model test; hello@swimsignal.co.uk)"
@@ -321,18 +322,20 @@ class OMClient:
                                  "answer": ans}))
         return ans
 
-    def check_get(self, name: str, base: str, params: dict, n_cells: int, weight: float, check_cap: float) -> list:
+    def check_get(self, name: str, base: str, params: dict, n_cells: int, weight: float, check_cap: float,
+                  tag: str = "check=1") -> list:
         """One request of the forecast-air check (statement, "Forecast-air check"): the same caps, pace, retries and
         stop rules as the fetch, cached under <cache>/check/<name>.json. `base` must be the archive or forecast URL.
-        The check's own total (log lines tagged by its hosts' check parameters) stays within check_cap."""
+        The check's own total (log lines tagged `tag`) stays within check_cap. Amendment 3's in-season check uses
+        tag "check=hist2025" and the historical-forecast host, so its 150 are counted apart from the first check's."""
         f = self.cache / "check" / f"{name}.json"
         if f.exists():
             return json.loads(f.read_text())["answer"]
         if not self.fetch:
             raise Stop(f"check/{f.name} is not cached; rerun with --fetch")
-        if base not in (OM_URL, FORECAST_URL):
+        if base not in (OM_URL, FORECAST_URL, HISTORICAL_FORECAST_URL):
             raise Stop(f"refused: {base}")
-        spent_check = sum(float(x[3]) for x in self.log.lines() if len(x) >= 5 and "check=1" in x[4])
+        spent_check = sum(float(x[3]) for x in self.log.lines() if len(x) >= 5 and x[4].endswith("#" + tag))
         if spent_check + weight > check_cap:
             raise Stop(f"forecast-air check cap {check_cap:.0f} would be passed ({spent_check:.1f} spent)")
         if self.spent() + weight > self.total_cap:
@@ -344,10 +347,10 @@ class OMClient:
                 self.sleep(wait)
         url = base + "?" + urlencode(params)
         try:
-            r, _ = send_with_retries(lambda: self.http.get(url), self.log, url + "#check=1", self.sleep)
+            r, _ = send_with_retries(lambda: self.http.get(url), self.log, url + "#" + tag, self.sleep)
         finally:
             self._last = time.monotonic()
-        self.log.add(str(r.status_code), len(r.content), weight if r.status_code == 200 else 0, url + "#check=1")
+        self.log.add(str(r.status_code), len(r.content), weight if r.status_code == 200 else 0, url + "#" + tag)
         if r.status_code != 200:
             raise Stop(f"Open-Meteo answered {r.status_code}: {r.text[:200]!r}: stopping")
         try:

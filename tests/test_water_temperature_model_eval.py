@@ -615,3 +615,66 @@ def test_check_get_hosts_cap_and_cache(tmp_path):
     with pytest.raises(wf.Stop, match="check cap"):
         c.check_get("b", wf.OM_URL, {"latitude": "1,2"}, 2, 2.0, 3.0)
     assert c.spent() == pytest.approx(2.0)
+
+
+# ---- amendment 3: the in-season check on archived forecasts ------------------------------------------------------
+def test_historical_window_weight_and_cap_match_the_amendment():
+    w = wa.hist_window(2025)
+    assert (w["forecast_start"], w["archive_start"], w["end"]) == ("2025-04-24", "2025-04-25", "2025-09-30")
+    assert wa.weight(62, 160) + wa.weight(62, 159) == pytest.approx(141.27, abs=0.01) and wa.HIST_CAP == 150
+    assert wa.weight(25, 3) == 25 and wa.weight(1, 160, 2) == pytest.approx(2 / 10 * 160 / 14)   # precipitation would double it
+
+
+def test_historical_scores_only_may_to_september_and_reports_months():
+    """a7 on 1 May uses 25 April to 1 May; nothing before 1 May is scored; the pass rule is the first check's."""
+    w = wa.hist_window(2025)
+    idx = pd.date_range("2025-04-25", "2025-09-30")
+    ar = {"c": pd.Series(np.linspace(9, 18, len(idx)), index=idx)}
+    off = pd.Series(np.where(idx < pd.Timestamp("2025-05-01"), 5.0, 0.3), index=idx)   # wild before May, +0.3 after
+    r = wa.scored_only({"c": ar["c"] + off}, ar, w)
+    assert r["daily_pairs"] == 153 and r["daily_mean"] == pytest.approx(0.3)
+    assert r["a7_pairs"] == 153 and r["a7_mean"] > 0.3     # early May's a7 carries late April, so the a7 mean is above 0.3
+    assert sorted(r["by_month"]) == ["05", "06", "07", "08", "09"]
+    assert r["by_month"]["06"]["a7_mean"] == pytest.approx(0.3)
+    clean = wa.scored_only({"c": ar["c"] + 0.3}, ar, w)
+    assert clean["pass"] and clean["a7_mean"] == pytest.approx(0.3)
+    assert not wa.scored_only({"c": ar["c"] - 0.6}, ar, w)["pass"]
+
+
+def test_historical_requests_hosts_tags_and_cap(tmp_path):
+    """Two requests a batch through check_get: the historical-forecast host for the input, the archive for the
+    reference, both tagged check=hist2025 in the log and counted against 150 apart from the first check's 186."""
+    seen = []
+    hours = pd.date_range("2025-04-23T23:00Z", "2025-09-30T22:00Z", freq="h")
+    days = pd.date_range("2025-04-25", "2025-09-30")
+
+    def h(req):
+        seen.append(str(req.url))
+        n = len(req.url.params["latitude"].split(","))
+        if req.url.host == "historical-forecast-api.open-meteo.com":
+            one = {"hourly": {"time": [t.strftime("%Y-%m-%dT%H:%M") for t in hours], "temperature_2m": [12.0] * len(hours)}}
+        else:
+            one = {"daily": {"time": [d.date().isoformat() for d in days], "temperature_2m_mean": [11.8] * len(days)}}
+        return httpx.Response(200, json=[one] * n if n > 1 else one)
+    c = wf.OMClient(tmp_path, fetch=True, transport=httpx.MockTransport(h), sleep=lambda s: None, others=lambda: [])
+    for i in range(9):                                                   # the first check's 186, already in the log
+        c.log.add("200", 1, 186 / 9, f"https://api.open-meteo.com/v1/forecast?x={i}#check=1")
+    cells = [f"5{i // 10}.{i % 10}00_-1.000" for i in range(30)]
+    r = wa.historical(c, cells, 2025)
+    hosts = [httpx.URL(u).host for u in seen]
+    assert hosts == ["historical-forecast-api.open-meteo.com", "archive-api.open-meteo.com"] * 2
+    tagged = [x for x in c.log.lines() if len(x) >= 5 and x[4].endswith("#check=hist2025")]
+    assert len(tagged) == 4 and sum(float(x[3]) for x in tagged) == pytest.approx(wa.weight(30, 160) + wa.weight(30, 159))
+    assert r["pass"] and r["a7_mean"] == pytest.approx(0.2) and r["window"] == ["2025-05-01", "2025-09-30"]
+    # A second run reads the cache: no request.
+    wa.historical(c, cells, 2025)
+    assert len(seen) == 4
+    # The cap: 150 for this check, whatever the first check spent.
+    c2 = wf.OMClient(tmp_path / "b", fetch=True, transport=httpx.MockTransport(h), sleep=lambda s: None, others=lambda: [])
+    c2.log.add("200", 1, 140.0, "https://historical-forecast-api.open-meteo.com/v1/forecast?x#check=hist2025")
+    with pytest.raises(wf.Stop, match="check cap 150"):
+        wa.historical(c2, cells, 2025)
+
+
+def test_the_historical_forecast_host_is_the_only_new_one():
+    assert wf.HISTORICAL_FORECAST_URL == "https://historical-forecast-api.open-meteo.com/v1/forecast"
