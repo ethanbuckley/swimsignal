@@ -180,14 +180,24 @@ function outingAlert(a) {
 // event is the whole day. It carries the spot's name and links back to the spot's page and the plan,
 // never a forecast level, which would be out of date by the time the calendar shows it. One UID per day
 // and spot, so importing the file again after changing the time updates the event rather than adding one.
-// c = { day, when, main: {id, name, url}, backup: {name, url} | null, plan (the plan's address), host }.
+// c = { day, when, main: {id, name, url, practical}, backup: {name, url, practical} | null, plan (the plan's address), host }.
+// `practical` (outingPractical): the spot's guide's confirmed parking and getting-in facts, which help at the car park
+// with no signal. Only what the guide verified, with its checked date; never a swimmer's suggestion, and never a
+// meeting point or a put-in the guide does not give.
+const outingPractical = s => {
+  const g = s && s.guide, facts = g && Array.isArray(g.facts) ? g.facts.filter(f => f && f.status === 'confirmed') : [];
+  const say = (topic, label) => { const t = facts.filter(f => f.topic === topic).map(f => f.text).slice(0, 2);
+    return t.length ? `${label}, from its guide (checked ${g.checked}): ${t.join(' ')}` : ''; };
+  return [say('parking', 'Parking'), say('entry', 'Getting in')].filter(Boolean);
+};
 const OUTING_CHECK = 'Check SwimSignal and any official notice before you go.';
 function outingIcs(c, now = Date.now()) {
   const D = outingDates(), span = outingSpan(c.when), hh = h => String(h).padStart(2, '0') + '0000';
   const next = (() => { const d = new Date(c.day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); })();
   const when = span ? [`DTSTART:${D.icsDay(c.day)}T${hh(span[0])}`, `DTEND:${D.icsDay(c.day)}T${hh(span[1])}`]
     : [`DTSTART;VALUE=DATE:${D.icsDay(c.day)}`, `DTEND;VALUE=DATE:${D.icsDay(next)}`];
-  const text = [OUTING_CHECK, `Your spot: ${c.main.name}, ${c.main.url}`, ...(c.backup ? [`Backup: ${c.backup.name}, ${c.backup.url}`] : []), `Your plan: ${c.plan}`].join('\n');
+  const text = [OUTING_CHECK, `Your spot: ${c.main.name}, ${c.main.url}`, ...(c.main.practical || []),
+    ...(c.backup ? [`Backup: ${c.backup.name}, ${c.backup.url}`, ...(c.backup.practical || [])] : []), `Your plan: ${c.plan}`].join('\n');
   return D.icsCalendar('-//SwimSignal//Outing//EN', [['BEGIN:VEVENT', `UID:outing-${c.day}-${c.main.id}@${c.host}`, `DTSTAMP:${D.icsStamp(now)}`, ...when,
     `SUMMARY:${D.icsEsc(`Swim: ${c.main.name}`)}`, `LOCATION:${D.icsEsc(c.main.name)}`, `DESCRIPTION:${D.icsEsc(text)}`, `URL:${c.main.url}`,
     ...(span ? [] : ['TRANSP:TRANSPARENT']), 'END:VEVENT']]);
@@ -307,8 +317,8 @@ function drawOuting(box, shown) {
   // The calendar file, made here when asked (organisers.html's way of handing a file over).
   document.getElementById('outing-ics').addEventListener('click', () => {
     const abs = p => new URL(p, location.href).href, link = s => abs(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''));
-    const text = outingIcs({ day: PLAN.day, when: PLAN.when, main: { id: pair.main.id, name: pair.main.name, url: link(pair.main) },
-      backup: pair.backup && { name: pair.backup.name, url: link(pair.backup) }, plan: abs(planPath() + planHash(PLAN)), host: location.hostname });
+    const text = outingIcs({ day: PLAN.day, when: PLAN.when, main: { id: pair.main.id, name: pair.main.name, url: link(pair.main), practical: outingPractical(pair.main) },
+      backup: pair.backup && { name: pair.backup.name, url: link(pair.backup), practical: outingPractical(pair.backup) }, plan: abs(planPath() + planHash(PLAN)), host: location.hostname });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }));
     a.download = `swimsignal-outing-${PLAN.day}.ics`; document.body.append(a); a.click(); a.remove();
@@ -364,6 +374,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingAccess, OUTING_ACCESS, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }
