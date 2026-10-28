@@ -76,7 +76,34 @@ The page says "No monitored overflow found upstream" and gives no spill forecast
 
 **For a human:** the entry point at Cow Bridge or elsewhere on the shore, on site.
 
-## Together
+## Loweswater (`loweswater`), 28 October 2026
 
-The two spots add 18 calls a day: #416's planned day goes from 8,873 to about 8,891 of 9,000, leaving about 109
-spare. Neither has a spill forecast, so neither bears on the ensemble-rain test (D4).
+**Access (rule 4).** The park authority's [lakes activities guide](https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/), read 28 Oct:
+- "Loweswater: Swimming: yes".
+- Canoes, kayaks, paddleboards and rowing boats under 4 m with a permit; sailing boats and powered craft: no.
+- Small lakes byelaws apply; the contact is the National Trust North West.
+
+This is lake-wide permission, as for Brothers Water. No entry point is named. Not a paid venue (rule 1). The nearest listed spot is Crummock Water, a different lake, more than 4 km away (rule 2).
+
+**Position.** The EA's WFD lake polygon `GB31228986` (`data/processed/lakes.parquet`), 0.614 km².
+- The spot is its representative point, **54.58336, −3.35492**.
+
+**Placement and cost.** `scripts/spot_cost.py` on main c11c02e, 27 Oct 2026, on the real network, at 54.58302, −3.35446 (in the same polygon and the same 0.1° cell, 54.6 −3.4; the test checks both):
+- mode `lake`, **no monitored overflow upstream**;
+- 1 new rain cell, which click-anywhere already asks for;
+- **19 calls a day.**
+
+**Guide.** `guides/loweswater.toml`: Maggie's Bridge car park, from the National Trust's [Corpse road and tumuli walk](https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/corpse-road-and-tumuli-walk), and the park's rules.
+
+**Tests.** `tests/test_loweswater.py`.
+
+**For a human:** the entry point, on site.
+
+## Together, and what was left out
+
+The three spots add 9 + 9 + 19 = **37 calls a day**: #416's planned day goes from 8,873 to about 8,910 of 9,000,
+leaving about 90 spare. None has a spill forecast, so none bears on the ensemble-rain test (D4).
+
+**Left out on purpose: Bassenthwaite Lake.** The same guide lists swimming there. But it has 16 United Utilities
+overflows upstream, so it would carry a spill forecast from the company where the nine-company model failed its test
+(#357), and it costs 49 calls a day. Listing it is a separate decision.
