@@ -165,7 +165,8 @@ async function mountVisits(d) {
   if (typeof reviewable !== 'function' || !reviewable(d)) return;
   const data = await reviewsLoad();
   if (turn !== visitTurn || !data || !data.on || !data.submit) return;
-  const after = document.querySelector('#result .stack #guide') || document.querySelector('#result .stack .tiles');   // after the practical guide (guide.js)
+  const after = document.querySelector('#result .stack #guide') || document.querySelector('#fold-water .fold-body > :last-child')
+    || document.querySelector('#result .stack .tiles');   // after the practical guide (guide.js), or at the end of a phone's "At the water" (index.html, phoneFolds)
   if (!after || document.getElementById('visits')) return;
   const today = vnLocal(), mine = visitsNow(), tidy = visitsTidy(mine, data, today);
   if (tidy.length < mine.length) visitsKeep(tidy);

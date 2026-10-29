@@ -216,7 +216,7 @@ test('the answer names what its level covers where the spills set it, and every 
   }
   // The rendered answer: one heading, every word at one size (the .big class), then when.
   const h = vm.runInContext('answerWords', page(ANSWER, { DATA: { generated_at: GEN } }))(spill);
-  assert.match(h, /^<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><p class="why">Tomorrow<\/p>/);
+  assert.match(h, /^<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p>/);
   // A saved card keeps "High risk" beside the week, with the cause in its line, as a list row does.
   assert.equal(parts(spill).sub, 'Sewage spills tomorrow');
   // The list, the map's tooltips, Nearby and the alerts keep headline(): the cause after a colon.

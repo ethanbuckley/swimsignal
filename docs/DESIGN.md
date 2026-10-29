@@ -633,6 +633,17 @@ days began 739 px down at Long Bridges and 802 px down at Ludlow, below the scre
   clear the bar went from 7 to 3: Waterhead 777 to 706, Tonbridge 749 to 701, the three Windermere
   bathing waters 716 to 669. Still below it: Frensham Great Pond (the EA's advice against bathing comes
   first, on purpose), River Dart at Spitchwick (two overflows discharging now, 734) and Waterhead by 4 px.
+- **Later on 29 October 2026 (the v2 mock-up, Ethan: "Build all of it"):** the spot's name comes first
+  and the place (kind, water, size, `.kind`) moves under the issue time; why and when share a line
+  ("Right now · Low risk tomorrow", `.wn`), as do what the forecast could read and the issue time
+  (`.ci`). Words unchanged. On a phone the page is then the answer, the five days and "Lower risk
+  nearby"; everything else goes in three folds named for the question each answers (`phoneFolds`):
+  *Why this level* (where the risk comes from, the Upstream map, the day's tiles), *At the water*
+  (readings now, the phone's small map, the rating, the practical guide, then reviews, visit notes
+  and illness reports), *What this forecast cannot see* ("Not known here", what the level counts,
+  the water-test line, the folded detail). Waterhead at 375 x 812 went from 8.7 screens to 3.3, Henley
+  from 5.8 to 2.9. A desktop keeps its columns; crossing 800 px draws the page again. The Upstream map
+  is closed by default on a phone: the trade-off Ethan accepted for a short page.
 
 ### River high and flood alerts (3 October 2026)
 
@@ -1018,6 +1029,20 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
   coverage page, which links to Natural Resources Wales and the Scottish Environment Protection Agency.
   The words say who publishes what, and nothing about the water.
 
+### The list's order: lowest risk first (29 October 2026)
+
+The list opens lowest risk first, the question a swimmer asks ("where can I go?"), in place of A–Z by area.
+Four sorts: Lowest risk, Highest risk, A–Z, Near me (`SORTS`; Ethan: "surely we want to be able to sort for
+lowest risk, and even lowest risk near me?"). The order (`lowOrder`): low, moderate, high, very high, then
+spots with no level, then spots whose official notice restricts swimming, last of all whatever their level
+(the reverse of Highest risk, where they lead); the nearer first among equals once a place is given; then the
+name. A line over the list says "Spots with an official notice come last." while one is in it. A–Z keeps the
+areas; the other sorts are one list. Once a place is given, the cards over the list are the lowest-risk spots
+within 30 miles in that order (`nearCards`, "Lowest risk within 30 miles"); with none so near, the three
+nearest ("Near you"). Before, the three nearest of any level put River Avon, Warleigh Weir (high, 13 miles)
+above the Wye at Symonds Yat (low, 27 miles) for a Bristol location. The trade-off: a close moderate spot is
+not among the cards when low ones lie within 30 miles; the list, nearest first under Near me, still has it.
+
 ### A swimmer's order (6 October 2026)
 
 A spot's page had grown to 7,087 px at 375 px wide (Wharfe at Cromwheel, about nine screens), and its
@@ -1165,9 +1190,11 @@ gives all four navigation links a single full-width row.
 
 ## Plan a swim (3 October 2026)
 
-- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header: on a phone the
-  header's one link (the bar at the bottom keeps its three), hidden over the full map, where Back
-  needs the room. Its choices sit on the sky as the list's do: the day and the distance side by side,
+- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header. On a phone it
+  was the header's one link until 29 October 2026; it is now "Plan" in the bar at the bottom, which has
+  four places: Explore, Map, Plan, Saved, home on the left and yours on the right, each icon over its
+  label, as phone apps have them (Jakob's law: people expect an app to work like the ones they know).
+  A phone's header is the wordmark alone, and Map's "Back" over the full map. Its choices sit on the sky as the list's do: the day and the distance side by side,
   the starting place as a field with the pin icon where the search has the glass, the kinds of water
   as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
   320 px phone; the count under the chips says "within".

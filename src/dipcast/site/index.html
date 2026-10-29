@@ -277,6 +277,7 @@
   .chip-btn[aria-pressed=true] { background:var(--brand); color:var(--on-fill); }
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
+  .sortseg { flex-wrap:wrap; }   /* four sorts since 29 October 2026: a phone takes them under the heading, each label whole */
   /* The list's Filter button and its sheet (29 October 2026): sort, water, Low risk only; from the foot of a
      phone's screen, centred on a wider one. */
   .filter-btn { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:var(--radius);
@@ -294,7 +295,7 @@
   .group-head { font-size:var(--fs-head); line-height:1.2; margin:0; }
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
-  .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
+  .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; white-space:nowrap; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
   /* Hover only where there is a pointer, here and on every hover in this page bar the map's own controls: on
      a phone a tapped button kept its hover shade, so after Near me failed it looked pressed beside A–Z
      (iOS Safari). */
@@ -438,14 +439,20 @@
   .top-row .save { margin-top:0; }
   .save-msg { margin:8px 0 4px; } .save-msg:empty { margin:0; }   /* what Save did, under it; empty, no room */
   .answer { text-align:center; padding:4px 0 0; }
-  .answer .kind { margin:0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
-  .answer .spot-name { margin:6px auto 0; max-width:16em; text-wrap:balance; }
+  .answer .kind { margin:8px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
+  .answer .spot-name { margin:0 auto;  max-width:16em; text-wrap:balance; }
   .big { margin:12px auto 0; max-width:15em; font:600 var(--fs-title)/1.1 var(--font-text); letter-spacing:-.01em; color:var(--k-na); text-wrap:balance; }
   .big-head { margin:14px auto 0; max-width:12em; font:700 var(--fs-level)/1.12 var(--font-text); color:var(--k-na); text-wrap:balance; }
   .big.low, .big-head.low { color:var(--k-low); } .big.moderate, .big-head.moderate { color:var(--k-moderate); } .big.high, .big-head.high { color:var(--k-high); }
   .big.veryhigh, .big-head.veryhigh { color:var(--k-veryhigh); } .big.clear, .big-head.clear { color:var(--k-clear); }
   .answer .why { margin:8px 0 0; font-weight:600; line-height:1.35; }
   .answer .next { margin:2px 0 0; line-height:1.35; }
+  /* Why and when on one line, "Right now · Low risk tomorrow"; the live count and the issue time on another. */
+  .answer .wn { margin:8px 0 0; line-height:1.35; }
+  .answer .wn > p, .answer .ci > p { display:inline; margin:0; }
+  .answer .wn > .why + .next::before { content:" · "; font-weight:400; }
+  .answer .ci { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; text-wrap:balance; }
+  .answer .ci > .cover + .issued::before { content:" · "; }
   /* What to do at the level: in ink, as a sentence, never a level's colour or a box (levels.js, levelAction). */
   .answer .act { margin:10px auto 0; max-width:24em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   .answer .issued { margin:10px 0 0; }
@@ -968,7 +975,7 @@
     .lead > * { max-width:760px; }
     .answer { text-align:left; }
     .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
-      .answer .cover, .big, .big-head { margin-left:0; margin-right:0; }
+      .answer .cover, .answer .ci, .big, .big-head { margin-left:0; margin-right:0; }
     /* A shorter opening, so the first spots and most of the map's tile are on a
        1,440 x 900 screen: the search and Near me share a row, as do the day and "Low risk only". */
     .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
@@ -1009,6 +1016,13 @@
   @media (max-width: 800px) {
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
     html { scroll-padding-bottom:var(--nav-h); }   /* a control reached by Tab scrolls clear of the bottom bar, not under it */
+    /* A spot's three folds (phoneFolds): the question as the title, what is inside in a line under it. */
+    .fold-group > summary { min-height:56px; }
+    .fold-group .fg-t { display:block; font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); }
+    .fold-group .fg-s { display:block; margin-top:2px; font-size:var(--fs-note); font-weight:400; color:var(--muted); }
+    .fold-group[open] > summary { margin-bottom:8px; }
+    .fold-body > * + * { margin-top:12px; }
+    .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
@@ -1018,19 +1032,20 @@
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
     body.map-mode #panel { display:none; }
-    /* Saved and Map are in the bar at the bottom. The header keeps Map only as the full map's way
+    /* Plan, Saved and Map are in the bar at the bottom. The header keeps Map only as the full map's way
        back to the spot it was opened from, where it reads "Back". */
-    #savedbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn, body.map-mode #planbtn { display:none; }
+    #savedbtn, #planbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn { display:none; }
     #panel { padding:16px calc(16px + env(safe-area-inset-right)) calc(32px + var(--nav-h)) calc(16px + env(safe-area-inset-left)); }
-    /* The thumb's reach: Explore, Map and Saved on every page. */
-    .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;
-      padding:8px max(16px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    /* The thumb's reach: Explore, Map, Plan and Saved on every page, home on the left and yours on the right,
+       each icon over its label, as phone apps have them (29 October 2026; Plan was the header's one link). */
+    .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(4, 1fr); gap:2px;
+      padding:8px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
       background:var(--card); border-top:1px solid var(--line); }
-    .bottom-nav a, .bottom-nav button { display:flex; align-items:center; justify-content:center; gap:7px; min-height:48px; border:0; border-radius:var(--radius);
-      font:inherit; font-size:var(--fs-note); font-weight:600; background:none; color:var(--muted); text-decoration:none; cursor:pointer; }
+    .bottom-nav a, .bottom-nav button { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:48px; border:0; border-radius:var(--radius);
+      font:inherit; font-size:var(--fs-meta); font-weight:600; background:none; color:var(--muted); text-decoration:none; cursor:pointer; }
     .bottom-nav svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
     .bottom-nav [aria-current=page], .bottom-nav [aria-pressed=true] { background:var(--brand-tint); color:var(--link); }
-    .bottom-nav .n { min-width:20px; padding:0 6px; border-radius:999px; background:var(--brand); color:var(--on-fill); font-size:var(--fs-meta); line-height:20px; text-align:center; }
+    .bottom-nav .n { position:absolute; top:2px; left:calc(50% + 6px); min-width:20px; padding:0 6px; border-radius:999px; background:var(--brand); color:var(--on-fill); font-size:var(--fs-meta); line-height:20px; text-align:center; }
     .bottom-nav .n[hidden] { display:none; }
     /* A spot's Upstream map: no legend, and none of the list's controls (the day, low risk only),
        which covered the ringed spot at the top of so small a map. */
@@ -1242,7 +1257,7 @@
 <a class="skip" href="#panel">Skip to forecasts</a>
 <header class="top" id="top">
   <a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-  <!-- A phone shows only Plan a swim: Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
+  <!-- A phone shows none of these: Plan, Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
   <nav aria-label="Site">
     <a href="plan/" class="hbtn" id="planbtn">Plan a swim</a>
     <a href="saved/" class="hbtn" id="savedbtn" aria-label="Saved spots">Saved<span class="n" id="saved-n" hidden></span></a>
@@ -1316,6 +1331,7 @@
 <nav class="bottom-nav" aria-label="Main">
   <a href="./" id="nav-list"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>
   <button type="button" id="nav-map" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</button>
+  <a href="plan/" id="nav-plan" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
 </nav>
 <!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
@@ -1519,7 +1535,7 @@ document.getElementById('mapbtn').addEventListener('click', () => setMapMode(!ma
 function syncNav() {
   const on = mapMode(), view = ['list', 'saved', 'spot', 'plan'].find(v => document.body.classList.contains('view-' + v));
   document.getElementById('nav-map').setAttribute('aria-pressed', String(on));
-  for (const [id, v] of [['nav-list', 'list'], ['nav-saved', 'saved']]) {
+  for (const [id, v] of [['nav-list', 'list'], ['nav-plan', 'plan'], ['nav-saved', 'saved']]) {
     const el = document.getElementById(id);
     if (!on && view === v) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
   }
@@ -1578,7 +1594,7 @@ window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, current = null, shown = null;
-const VIEW = { q: '', filter: 'all', sort: 'name', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // A–Z until a place is given
+const VIEW = { q: '', filter: 'all', sort: 'low', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // lowest risk first (29 October 2026; it was A–Z by area)
 const SORT0 = VIEW.sort;   // how the list opens: the Filter button counts a sort that differs
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
@@ -2344,9 +2360,10 @@ function riverTile(rs) {
 // (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
   return (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.why ? `<p class="why">${m.why}</p>` : '') + (m.next ? `<p class="next">${m.next}</p>` : '')
+    + (m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
     + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
-    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d) + coverLine(d, iso) + `<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p>`
+    + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d)
+    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p></div>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
@@ -2645,6 +2662,7 @@ function showDay(d, iso) {
   const alt = document.getElementById('nearby-host'); if (alt) alt.innerHTML = nearby(d);   // the spots nearby, on this day
   const src = document.getElementById('sources-host'); if (src) src.innerHTML = whereFrom(d);   // where that day's risk comes from
   const fc = document.getElementById('day-tiles'); if (fc) fc.outerHTML = dayTiles(d, DAY);   // the forecast's tiles, on that day
+  phoneFolds();   // what the level counts, back in its fold on a phone
   document.querySelectorAll('#day-strip [data-day]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.day === DAY)));
   const close = document.getElementById('day-close');
   if (close) close.addEventListener('click', () => { showDay(d, null); document.querySelector(`#day-strip [data-day="${iso}"]`).focus(); });
@@ -2941,7 +2959,7 @@ function patchNode(old, neu) {
 
 // ------------------------------------------------------------------------------ the list
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };
-const SORTS = { risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
+const SORTS = { low: 'Lowest risk', risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
 const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>';
 // Under the opening of the list, Saved and Plan a swim: the view, then the full map's tile, which a wide
 // desktop shows beside it and the map's frame moves into (placeWrap). Elsewhere the tile is not shown
@@ -3088,7 +3106,7 @@ const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').f
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 const offerNear = () => 'geolocation' in navigator && !VIEW.here;
 function locate(at = 'sort') {
-  const before = VIEW.sort === 'near' ? 'name' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : 'in A–Z order';
+  const before = VIEW.sort === 'near' ? 'low' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : before === 'low' ? 'lowest risk first' : 'in A–Z order';
   // Said where it was asked: under the button under the search ('cta'), or under the sort buttons.
   VIEW.geoAt = at;
   // One message at a time: a refusal under the button, then another under the sorts, showed both.
@@ -3148,6 +3166,21 @@ const listRank = s => ORDER[mapLevel(s)] ?? -1;
 const listAdvised = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
 const riskOrder = (a, b) => listAdvised(b) - listAdvised(a) || listRank(b) - listRank(a) || a.name.localeCompare(b.name);
 const riskFirstNote = items => items.some(listAdvised) ? 'Spots with an official notice come first.' : '';
+// "Lowest risk", the list's first order since 29 October 2026, as a swimmer asks it: where can I go? Low before
+// moderate before high, then spots with no level (a plain level such as "No monitored overflow found upstream" is
+// not a forecast that found nothing), and spots whose official notice restricts swimming last of all, whatever their level;
+// the nearer first among equals once a place is given, then the name.
+const lowRank = s => { const r = listRank(s); return r < 0 ? 99 : r; };
+const lowOrder = (a, b) => listAdvised(a) - listAdvised(b) || lowRank(a) - lowRank(b)
+  || (VIEW.here ? dist(a) - dist(b) : 0) || a.name.localeCompare(b.name);
+const lowLastNote = items => items.some(listAdvised) ? 'Spots with an official notice come last.' : '';
+// Once a place is given, the cards over the list: the lowest-risk spots within 30 miles, in that order; with
+// none so near, the three nearest. Until 29 October 2026 the three nearest of any level, which put a high-risk
+// river 13 miles from Bristol above a low one at 27.
+const CARDS_KM = 30 * MILE_KM;
+const nearCards = () => { const close = DATA.spots.filter(s => dist(s) <= CARDS_KM);
+  return close.length ? { title: 'Lowest risk within 30 miles', spots: [...close].sort(lowOrder).slice(0, NEAR_N) }
+    : { title: 'Near you', spots: [...DATA.spots].sort((a, b) => dist(a) - dist(b)).slice(0, NEAR_N) }; };
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -3157,8 +3190,8 @@ function drawSpots() {
     || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
   const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
-    // Near me before a position has arrived keeps the risk order, which a failed location returns to.
-    : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
+    // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
+    : VIEW.sort === 'low' || VIEW.sort === 'near' ? lowOrder(a, b) : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
   const savedGroup = document.getElementById('saved-group');
   if (savedGroup) {
     savedGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
@@ -3171,8 +3204,9 @@ function drawSpots() {
   if (nearGroup) {   // the nearest spots as cards, once a place is given; not while the list is narrowed
     nearGroup.hidden = !VIEW.here || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
     const nearList = document.getElementById('near-list');
-    nearList.innerHTML = nearGroup.hidden ? '' : [...DATA.spots].sort((a, b) => dist(a) - dist(b)).slice(0, NEAR_N)
-      .map(s => savedCard(s, false, VIEW.day, false, 'spots near you', true)).join('');
+    const near = nearGroup.hidden ? { title: 'Near you', spots: [] } : nearCards();
+    document.getElementById('near-h').textContent = near.title;
+    nearList.innerHTML = near.spots.map(s => savedCard(s, false, VIEW.day, false, 'spots near you', true)).join('');
     bindItems(nearList);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
@@ -3181,7 +3215,7 @@ function drawSpots() {
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
   document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
-  const first = document.getElementById('risk-first'), firstNote = byRisk ? riskFirstNote(items) : '';
+  const first = document.getElementById('risk-first'), firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   if (first) { first.textContent = firstNote; first.hidden = !firstNote; }
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
@@ -3977,7 +4011,8 @@ function openPlan(hash = '') {
   renderPlan(); scrollTop();
   if (push) focusHeading();
 }
-document.getElementById('planbtn').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
+for (const id of ['planbtn', 'nav-plan'])
+  document.getElementById(id).addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
 
 // ------------------------------------------------------------------------------ one spot
 // Opening a spot is a history entry, so a phone's back button returns to the list, not off the site.
@@ -4418,11 +4453,12 @@ function spotTop(d) {
   // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
   h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
   h += notices(d);
-  // The answer, under the sky: the place, its name, then any official advice (eatoday.js, eaTodayOfficial),
-  // above the level and apart from it, then its words (answerWords).
+  // The answer, under the sky: its name, then any official advice (eatoday.js, eaTodayOfficial), above the
+  // level and apart from it, then its words (answerWords), then the place (kind, water, size; under the issue
+  // time since 29 October 2026, so the name is the first thing read).
   const official = typeof eaTodayOfficial === 'function' ? eaTodayOfficial(d) : '';
-  return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><p class="kind">${tags.join(' · ')}</p><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
-    + `${official}<div id="answer-words">${answerWords(d)}</div></section>`;
+  return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
+    + `${official}<div id="answer-words">${answerWords(d)}</div><p class="kind">${tags.join(' · ')}</p></section>`;
 }
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
@@ -4494,7 +4530,36 @@ function render(d) {
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
   if (REPLAY) mountReplay(d);
+  phoneFolds();
 }
+// On a phone a spot's page is the answer, the five days and the lower-risk spots nearby; the rest goes in
+// three folds named for the question each answers (29 October 2026: Waterhead had 15 headings over 8.7
+// screens of a 375 px phone; folded, 3.3). A desktop keeps its columns. What the level counts and the
+// water-test line join the limits fold from under the five days, where showDay puts them back (phoneFolds
+// moves them again). Reviews, visit notes and illness reports mount at the end of "At the water".
+const FOLDS = [
+  ['why', 'Why this level', 'The overflows upstream, the rain, and the map', ['#sources-host', '.spot-map-tile', '#day-tiles']],
+  ['water', 'At the water', 'Readings now, the water level and the practical guide', ['#now-tiles', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
+  ['limits', 'What this forecast cannot see', 'Its limits here, and how it has done', ['#unknowns', '.col-more > *']],
+];
+function phoneFolds() {
+  const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
+  if (!PHONE.matches || !at0) return;
+  let at = at0;
+  for (const [k, t, sub, sels] of FOLDS) {
+    let f = document.getElementById('fold-' + k);
+    const els = sels.flatMap(q => [...stack.querySelectorAll(q)]).filter(e => !e.closest('.fold-group'));
+    if (!f) { if (!els.length) continue;
+      at.insertAdjacentHTML('afterend', `<details class="tile fold fold-group" id="fold-${k}"><summary><span><span class="fg-t">${t}</span>`
+        + `<span class="fg-s">${sub}</span></span></summary><div class="fold-body"></div></details>`);
+      f = document.getElementById('fold-' + k);
+      f.addEventListener('toggle', () => { if (k === 'why' && f.open) placeMap(); }); }   // the map, drawn at its size once shown
+    f.querySelector('.fold-body').append(...els); at = f;
+  }
+  const lim = document.querySelector('#fold-limits .fold-body');
+  if (lim) for (const q of ['#answer-after .scope', '#result .stack p.check']) { const e = document.querySelector(q); if (e && !lim.contains(e)) lim.prepend(e); }
+}
+PHONE.addEventListener('change', () => { if (current && document.querySelector('#result .stack')) render(current); });   // folds on, or columns back
 // Catchment replay (prototype, docs/CATCHMENT-REPLAY-2026-10.md): the last 48 hours upstream, only with
 // ?replay=1 in the address, so the page is unchanged without it. replay.js and the spot's
 // data/spot/<id>-replay.json (src/dipcast/replay.py) are asked for then, and not before.

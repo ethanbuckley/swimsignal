@@ -94,7 +94,8 @@ test('without eatoday.js the order is the sewage level alone', () => {
 test('the list uses the order only where it shows Highest risk, and the line only with it', () => {
   const src = pageSrc.join('\n'), draw = src.slice(src.indexOf('function drawSpots() {'), src.indexOf('\n}\n', src.indexOf('function drawSpots() {')));
   assert.match(draw, /const byRisk = VIEW\.sort !== 'name' && !\(VIEW\.sort === 'near' && VIEW\.here\);/);
-  assert.match(draw, /: byRisk \? riskOrder\(a, b\) : a\.name\.localeCompare\(b\.name\)\);/);
-  assert.match(draw, /firstNote = byRisk \? riskFirstNote\(items\) : ''/);
+  // Lowest risk (and Near me before a place arrives) takes its own order first (29 Oct 2026, site_lowest_first).
+  assert.match(draw, /: VIEW\.sort === 'low' \|\| VIEW\.sort === 'near' \? lowOrder\(a, b\) : byRisk \? riskOrder\(a, b\) : a\.name\.localeCompare\(b\.name\)\);/);
+  assert.match(draw, /firstNote = VIEW\.sort === 'low' \|\| \(VIEW\.sort === 'near' && !VIEW\.here\) \? lowLastNote\(items\) : byRisk \? riskFirstNote\(items\) : ''/);
   assert.match(src, /<p class="overview" id="overview"><\/p><p class="overview" id="risk-first" hidden><\/p><ul class="spots" id="spots">/);
 });
