@@ -412,7 +412,7 @@ test('a lake reached by its unnamed centreline says the lake\'s own name', () =>
   assert.equal(A.lakeName(lakes, 0), null);   // no name in the file: the page says "Unnamed lake"
   assert.equal(A.lakeName({}, 1), null);
   const src = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/anypoint.js'), 'utf8');
-  assert.match(src, /const named = at\.link\.name \|\| \(lake && entry && entry\.lake !== undefined \? lakeName\(lakes, entry\.lake\) : null\);/);
+  assert.match(src, /const named = \(lake && entry && entry\.lake !== undefined \? lakeName\(lakes, entry\.lake\) : null\) \|\| at\.link\.name;/);
   assert.match(src, /name: named \|\| \(lake \? 'Unnamed lake' : 'Unnamed watercourse'\)/);
 });
 

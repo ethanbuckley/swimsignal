@@ -548,10 +548,11 @@ const AnyPoint = (() => {
     const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake], a.dilution_power ?? 1,
       a.lake_direction === 'down' ? a.lake_down_margin_m : null))
       : !(entry.o || entry.s) ? [] : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m, a.dilution_power ?? 1);   // an entry can hold only ws
-    // A lake reached by its centreline, from a click just off its outline: the link has no name of its own, so the
-    // lake's name in lakes.json is said (the build fills it from the WFD outline), not "Unnamed lake". Before, a tap
-    // just off Coniston Water's outline said "Unnamed lake" (29 Oct 2026).
-    const named = at.link.name || (lake && entry && entry.lake !== undefined ? lakeName(lakes, entry.lake) : null);
+    // A lake reached by its centreline, from a click just off its outline: the lake's name in lakes.json (the build
+    // takes it from the WFD outline), not "Unnamed lake" (Coniston Water before, 29 Oct 2026).
+    // A lake's own name first: a lake link's name in OS is often a stream through it (29 Oct 2026, "Elder Beck" for a tap
+    // by Ullswater); the link's name only where the lake has none.
+    const named = (lake && entry && entry.lake !== undefined ? lakeName(lakes, entry.lake) : null) || at.link.name;
     return { mode: at.mode, kind: at.mode, name: named || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
       ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
       ...(!lake && entry && entry.ws > 0 ? { wales_share: entry.ws } : {}),
