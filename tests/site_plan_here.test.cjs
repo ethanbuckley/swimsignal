@@ -28,7 +28,7 @@ test('it replaces nothing silently: an outing still to come keeps it waiting for
   assert.equal(P.planHasOuting(P.planKept(`#day=2026-10-20&spot=thames-henley`, DATES), DATES), false);       // its day has gone
   const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   assert.match(app, /PLAN_PREVIEW = planInvited\(PLAN, keptNow, location\.hash\.length > 1, PLAN_PREVIEW\) && !\(PLAN_NEW && !planHasOuting\(keptNow, planDates\(\)\)\);/);
-  assert.match(app, /e\.preventDefault\(\); PLAN_NEW = true; openPlan\(planHereHash\(d\)\); \}\)\);/);
+  assert.match(app, /e\.preventDefault\(\); PLAN_NEW = true; openPlan\(planHereHash\(d, a\.dataset\.finish \|\| null\)\); \}\)\);/);
   // The page's actions: the plan first, then sharing; and a line under the five days. A spot with no position has neither.
   assert.match(app, /<a class="btn primary" id="plan-here" href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>Plan an outing here<\/a>/);
   assert.match(app, /Going\? <a href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>Plan an outing here<\/a>: a time, a backup, and a link to share\./);

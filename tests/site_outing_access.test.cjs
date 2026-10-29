@@ -91,7 +91,7 @@ test('the outing draws an access block in each column and fills it when the spot
   assert.equal((h.match(/<div class="outing-access" data-outing-access="[ab]"><p class="outing-role">Access<\/p>/g) || []).length, 2);
   assert.ok(h.indexOf('data-outing-access="a"') < h.indexOf('data-outing-access="b"'));
   const src = fs.readFileSync(join(SITE, 'outing.js'), 'utf8');
-  assert.match(src, /\n      access: outingAccess\(s, today\(\)\),\n/);   // each column's access, beside its notice and level
+  assert.match(src, /\n      access: outingAccess\(s, today\(\), PLAN\.act\),\n/);   // each column's access, beside its notice and level
   assert.match(src, /spotDetail\(s\)\.then\(\(\) => \{ const el = tile\.querySelector\(`\[data-outing-access="\$\{CSS\.escape\(s\.id\)\}"\]`\);/);
   // guide.js is in the page before outing.js, which reads its names.
   const page = fs.readFileSync(join(SITE, 'index.html'), 'utf8');

@@ -3366,6 +3366,24 @@ function refreshComparison() {
 }
 // Whether "Your lists" is open, and what the opening says once after a shared list is added (said).
 const LISTS_UI = { open: false, said: '' };
+// What you do on the water: optional, any of three, kept in this browser (plan.js, ACTS_KEY). It changes what is
+// offered first, never a level, and the line under the chips says so.
+const ACT_CHIPS = [['swim', 'Swim'], ['paddle', 'Paddle'], ['sup', 'Paddleboard']];
+const actsChips = (on = typeof ACTS === 'undefined' ? [] : ACTS) => `<div class="chips-row acts-row" role="group" aria-label="What you do on the water">`
+  + ACT_CHIPS.map(([k, w]) => `<button type="button" class="chip-btn" data-act="${k}" aria-pressed="${on.includes(k)}">${w}</button>`).join('')
+  + `</div><p class="small muted acts-note">${on.length ? 'Kept in this browser. ' : 'Optional: what you do on the water. '}`
+  + 'For a paddle or a board, new outings start as one, a spot offers the spots downstream to finish at, and access shows launching and carrying. '
+  + 'The level is for the water, the same for everyone in it, and official advice always shows.</p>';
+function bindActs() {
+  document.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.act, next = ACTS.includes(k) ? ACTS.filter(a => a !== k) : [...ACTS, k];
+    ACTS = readActs(JSON.stringify(next));
+    try { if (ACTS.length) localStorage.setItem('dipcast.acts', JSON.stringify(ACTS)); else localStorage.removeItem('dipcast.acts'); } catch (e) { /* for this visit only */ }
+    document.querySelectorAll('[data-act]').forEach(x => x.setAttribute('aria-pressed', String(ACTS.includes(x.dataset.act))));
+    const row = document.querySelector('.acts-row'), note = document.querySelector('.acts-note');   // the note's first words follow the choice
+    if (row && note) { row.insertAdjacentHTML('afterend', actsChips().replace(/^[\s\S]*?<\/div>/, '')); note.remove(); }
+  }));
+}
 function renderSaved() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'saved';
   setView('saved');
@@ -3382,6 +3400,7 @@ function renderSaved() {
       : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
+  h += actsChips();
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
@@ -3429,6 +3448,7 @@ function bindToAlerts() {
   b.addEventListener('click', () => { h.tabIndex = -1; h.scrollIntoView({ block: 'start' }); h.focus({ preventScroll: true }); });
 }
 function bindSavedPage(l, spots) {
+  bindActs();   // what you do on the water (actsChips)
   const ul = document.getElementById('scards'), $ = id => document.getElementById(id), from = manyLists() ? l.name : 'saved spots';
   if (ul) ul.addEventListener('click', e => {
     const a = e.target.closest('a[data-id]'), un = e.target.closest('[data-unsave]'), undo = e.target.closest('[data-undo]'), day = e.target.closest('[data-day]');
@@ -4115,17 +4135,32 @@ function bindSave(d) {
 }
 // "Plan an outing here": Plan a swim on this spot as the outing's, for the day shown (plan.js, planFromSpot). A spot
 // the forecast cannot place (no position) has none. It is the planner as it is, with the outing tile open on the spot.
-const planHereHash = d => planFromSpot(d, PLAN_READ ? PLAN : planKept(stored(PLAN_KEY), planDates()), planDates().includes(DAY) ? DAY : null);
+// What you do on the water, if you said (plan.js, readActs; the Saved page's chips): a new outing starts as it.
+let ACTS = typeof readActs === 'function' ? readActs(stored('dipcast.acts')) : [];
+const acts = () => typeof ACTS === 'undefined' ? [] : ACTS;   // a test that runs part of the page has no ACTS
+const planBase = () => { const b = PLAN_READ ? PLAN : planKept(stored(PLAN_KEY), planDates()), a = actDefault(acts());
+  return a ? { ...b, act: a } : b; };
+const planHereHash = (d, finish = null) => planFromSpot(d, planBase(), planDates().includes(DAY) ? DAY : null, finish);
 const canPlanHere = d => typeof planFromSpot === 'function' && Number.isFinite(d.lat) && Number.isFinite(d.lon) && !d.unlisted;   // plan.js loaded: not in a prerender
 // Under the five days, where someone deciding when to go already is, the same way to plan it: added here once the page
 // is drawn, not in daysTile, which the build's prerender copies (scripts/prerender_spots.js) without the planner. The
 // button among the page's actions is 1,700 px further down on a phone (Port Meadow at 375 px, 29 Oct 2026).
-const planHereLine = d => `<p class="small plan-here-line">Going? <a href="${esc(planPath() + planHereHash(d))}" data-plan-here>Plan an outing here</a>: a time, a backup, and a link to share.</p>`;
+const planHereLine = d => `<p class="small plan-here-line">Going? <a href="${esc(planPath() + planHereHash(d))}" data-plan-here>Plan an outing here</a>: a time, a backup, and a link to share.</p>`
+  + paddleFromHere(d);
+// For someone who said they paddle or paddleboard (ACTS): the listed spots downstream they can finish at (stretches.py,
+// the lite file's `downstream`), each opening the plan with that finish. The level is the same; this is what is offered.
+const paddleFromHere = d => {
+  if (!actDefault(acts()) || !Array.isArray(d.downstream) || !d.downstream.length) return '';
+  const named = d.downstream.map(([id, km]) => [DATA.spots.find(s => s.id === id), km]).filter(([s]) => s).slice(0, 3);
+  if (!named.length) return '';
+  return `<p class="small plan-here-line">Paddle from here, finishing at ${named.map(([s, km]) =>
+    `<a href="${esc(planPath() + planHereHash(d, s.id))}" data-plan-here data-finish="${esc(s.id)}">${esc(s.name)}</a> (${km < 10 ? km : Math.round(km)} km down)`).join(', ')}.</p>`;
+};
 function planHere(d) {
   const days = document.getElementById('days-h');
   if (days && canPlanHere(d) && !document.querySelector('.plan-here-line')) days.closest('section').insertAdjacentHTML('beforeend', planHereLine(d));
   document.querySelectorAll('[data-plan-here]').forEach(a => a.addEventListener('click', e => {
-    if (!plainClick(e)) return; e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d)); }));
+    if (!plainClick(e)) return; e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d, a.dataset.finish || null)); }));
 }
 function actions(d) {
   const fb = `${esc(FEEDBACK)}&amp;spot=${encodeURIComponent(d.name)}`;
