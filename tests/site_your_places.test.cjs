@@ -12,11 +12,20 @@ test('a saved card gives the change since your last look for no day or today, ne
 });
 
 test('Explore\'s saved spots end with the activity choice, bound as on Saved', () => {
-  assert.match(app, /id="saved-list">\$\{saved\.map\(s => savedCard\(s, false, VIEW\.day\)\)\.join\(''\)\}<\/ul>\$\{actsChips\(undefined, true\)\}<\/section>`/);
+  assert.match(app, /id="saved-list">\$\{saved\.map\(s => savedCard\(s, false, VIEW\.day\)\)\.join\(''\)\}<\/ul>\$\{actsChips\(undefined, true\)\}<\/div>` : ''\);/);
   assert.match(app, /if \(saved\.length\) \{ bindItems\(document\.getElementById\('saved-list'\)\); bindActs\(\); \}/);
 });
 
 test('Explore says it in one line; Saved in full', () => {
   assert.match(app, /What you do on the water, if you like: a boat or a board gets launching, carrying and places to finish\. The level is the same for everyone\./);
   assert.match(app, /The level is for the water, the same for everyone in it, and official advice always shows\./);
+});
+
+test('the next outing and the saved spots are one tile, Your places, hidden with both its parts', () => {
+  assert.match(app, /<section class="group tile" id="places-group" aria-labelledby="places-h"><h2 class="group-head" id="places-h">Your places<\/h2>\$\{places\}<\/section>`/);
+  assert.match(app, /<div class="places-part" id="outing-group" data-day="\$\{esc\(o\.day\)\}"><h3 class="places-sub" id="outing-h">Next outing<\/h3>`/);
+  assert.match(app, /<div class="places-part" id="saved-group"><h3 class="places-sub" id="saved-h">Saved spots<\/h3>/);
+  assert.match(app, /if \(placesGroup\) placesGroup\.hidden = \[outingGroup, savedGroup\]\.every\(g => !g \|\| g\.hidden\);/);
+  // Nothing saved or planned: the hint, after a spot has been opened, never on a first look.
+  assert.match(app, /: OPENED \? `<p class="save-hint tile">\$\{BOOKMARK\}<span>Open a spot and press Save to keep it here\.<\/span><\/p>` : '';/);
 });
