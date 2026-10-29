@@ -8,19 +8,21 @@ CHECKED = "2026-10-03"
 PEAK = "https://www.peakdistrict.gov.uk/visiting/planning-your-visit/swimming"
 LAKES = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 OXFORD = "https://www.oxford.gov.uk/news/article/1860/new-signage-to-be-installed-to-improve-water-safety-in-oxford"
+# Inside the Peak District National Park, so its swimming guidance applies: the five from OpenStreetMap and
+# two curated spots, Dovedale and Slippery Stones (Upper Derwent).
 PEAK_SPOTS = {"osm-burbage-padley-gorge", "osm-wye-chee-dale", "osm-dane-three-shires-head",
-              "osm-lathkill-dale", "osm-bradford-youlgrave"}
+              "osm-lathkill-dale", "osm-bradford-youlgrave", "dove-dovedale", "derwent-slippery-stones"}
 LAKE_SPOTS = {"osm-ullswater-sandwick", "osm-windermere-waterhead"}
 
 
 def access_note(spot: dict) -> dict | None:
-    if spot.get("source") != "openstreetmap":
+    if spot.get("source") != "openstreetmap" and spot.get("id") not in PEAK_SPOTS:
         return None
     note = {"status": "unconfirmed", "checked_at": CHECKED,
             "text": "Permission to enter the water at this point has not been confirmed. A mapped swimming place or public footpath does not establish swimming permission. Check current signs and the landowner's rules."}
     if spot["id"] in PEAK_SPOTS:
         note.update(status="restricted_guidance", url=PEAK,
-                    text="The Peak District authority says river swimming requires explicit on-site signs and designated areas. Permission at this point has not been confirmed. Check the signs and the landowner's rules before entering.")
+                    text="The Peak District National Park Authority says river swimming is not permitted unless on-site signs allow it in a designated area, and advises entering open water only as part of a supervised, organised event. No such sign or designated area has been confirmed at this point. Check the signs and the landowner's rules before entering.")
     elif spot["id"] in LAKE_SPOTS:
         note.update(url=LAKES,
                     text="The Lake District authority allows swimming in this lake. Access and permission at this particular entry point have not been confirmed; check the bank, current signs and boat traffic.")

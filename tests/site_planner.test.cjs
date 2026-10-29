@@ -115,7 +115,7 @@ test('the comparison says a day, a live status, advice or access is not known, r
   assert.equal(compareAccess({}), 'No access information.');
   assert.equal(compareAccess({access: {status: 'unconfirmed', checked_at: '2026-10-03', text: 'Check the <b>signs</b> & the bank.', url: 'https://example.org/a"b'}}),
     'Check the &lt;b&gt;signs&lt;/b&gt; &amp; the bank. Desk check 2026-10-03; current signs not inspected. <a href="https://example.org/a&quot;b">Authority guidance</a>.');
-  assert.equal(compareAccess({access: {status: 'restricted_guidance'}}), 'Swimming here is restricted: check the signs. Not known when it was checked.');
+  assert.equal(compareAccess({access: {status: 'restricted_guidance'}}), 'Park guidance restricts river swimming; not checked here. Not known when it was checked.');
   assert.equal(compareAccess({access: {status: 'something new', checked_at: '2026-10-03', url: 'http://not-https.example'}}),
     'Not known whether swimming is allowed at this point. Desk check 2026-10-03; current signs not inspected.');
   // Every row of every column says something, and nothing calls a spot safe or the best.
