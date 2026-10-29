@@ -1154,9 +1154,11 @@ gives all four navigation links a single full-width row.
 
 ## Plan a swim (3 October 2026)
 
-- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header: on a phone the
-  header's one link (the bar at the bottom keeps its three), hidden over the full map, where Back
-  needs the room. Its choices sit on the sky as the list's do: the day and the distance side by side,
+- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header. On a phone it
+  was the header's one link until 29 October 2026; it is now "Plan" in the bar at the bottom, which has
+  four places: Explore, Map, Plan, Saved, home on the left and yours on the right, each icon over its
+  label, as phone apps have them (Jakob's law: people expect an app to work like the ones they know).
+  A phone's header is the wordmark alone, and Map's "Back" over the full map. Its choices sit on the sky as the list's do: the day and the distance side by side,
   the starting place as a field with the pin icon where the search has the glass, the kinds of water
   as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
   320 px phone; the count under the chips says "within".

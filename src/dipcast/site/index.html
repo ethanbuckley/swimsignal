@@ -1003,19 +1003,20 @@
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
     body.map-mode #panel { display:none; }
-    /* Saved and Map are in the bar at the bottom. The header keeps Map only as the full map's way
+    /* Plan, Saved and Map are in the bar at the bottom. The header keeps Map only as the full map's way
        back to the spot it was opened from, where it reads "Back". */
-    #savedbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn, body.map-mode #planbtn { display:none; }
+    #savedbtn, #planbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn { display:none; }
     #panel { padding:16px calc(16px + env(safe-area-inset-right)) calc(32px + var(--nav-h)) calc(16px + env(safe-area-inset-left)); }
-    /* The thumb's reach: Explore, Map and Saved on every page. */
-    .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;
-      padding:8px max(16px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    /* The thumb's reach: Explore, Map, Plan and Saved on every page, home on the left and yours on the right,
+       each icon over its label, as phone apps have them (29 October 2026; Plan was the header's one link). */
+    .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(4, 1fr); gap:2px;
+      padding:8px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
       background:var(--card); border-top:1px solid var(--line); }
-    .bottom-nav a, .bottom-nav button { display:flex; align-items:center; justify-content:center; gap:7px; min-height:48px; border:0; border-radius:var(--radius);
-      font:inherit; font-size:var(--fs-note); font-weight:600; background:none; color:var(--muted); text-decoration:none; cursor:pointer; }
+    .bottom-nav a, .bottom-nav button { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:48px; border:0; border-radius:var(--radius);
+      font:inherit; font-size:var(--fs-meta); font-weight:600; background:none; color:var(--muted); text-decoration:none; cursor:pointer; }
     .bottom-nav svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
     .bottom-nav [aria-current=page], .bottom-nav [aria-pressed=true] { background:var(--brand-tint); color:var(--link); }
-    .bottom-nav .n { min-width:20px; padding:0 6px; border-radius:999px; background:var(--brand); color:var(--on-fill); font-size:var(--fs-meta); line-height:20px; text-align:center; }
+    .bottom-nav .n { position:absolute; top:2px; left:calc(50% + 6px); min-width:20px; padding:0 6px; border-radius:999px; background:var(--brand); color:var(--on-fill); font-size:var(--fs-meta); line-height:20px; text-align:center; }
     .bottom-nav .n[hidden] { display:none; }
     /* A spot's Upstream map: no legend, and none of the list's controls (the day, low risk only),
        which covered the ringed spot at the top of so small a map. */
@@ -1227,7 +1228,7 @@
 <a class="skip" href="#panel">Skip to forecasts</a>
 <header class="top" id="top">
   <a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-  <!-- A phone shows only Plan a swim: Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
+  <!-- A phone shows none of these: Plan, Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
   <nav aria-label="Site">
     <a href="plan/" class="hbtn" id="planbtn">Plan a swim</a>
     <a href="saved/" class="hbtn" id="savedbtn" aria-label="Saved spots">Saved<span class="n" id="saved-n" hidden></span></a>
@@ -1301,6 +1302,7 @@
 <nav class="bottom-nav" aria-label="Main">
   <a href="./" id="nav-list"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>
   <button type="button" id="nav-map" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</button>
+  <a href="plan/" id="nav-plan" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
 </nav>
 <!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
@@ -1504,7 +1506,7 @@ document.getElementById('mapbtn').addEventListener('click', () => setMapMode(!ma
 function syncNav() {
   const on = mapMode(), view = ['list', 'saved', 'spot', 'plan'].find(v => document.body.classList.contains('view-' + v));
   document.getElementById('nav-map').setAttribute('aria-pressed', String(on));
-  for (const [id, v] of [['nav-list', 'list'], ['nav-saved', 'saved']]) {
+  for (const [id, v] of [['nav-list', 'list'], ['nav-plan', 'plan'], ['nav-saved', 'saved']]) {
     const el = document.getElementById(id);
     if (!on && view === v) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
   }
@@ -3947,7 +3949,8 @@ function openPlan(hash = '') {
   renderPlan(); scrollTop();
   if (push) focusHeading();
 }
-document.getElementById('planbtn').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
+for (const id of ['planbtn', 'nav-plan'])
+  document.getElementById(id).addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
 
 // ------------------------------------------------------------------------------ one spot
 // Opening a spot is a history entry, so a phone's back button returns to the list, not off the site.
