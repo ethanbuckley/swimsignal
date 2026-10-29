@@ -1,0 +1,32 @@
+# River Ribble, Stainforth Force. Desk check of the Yorkshire Dales National Park Authority's pages, 29 October 2026.
+# Its car park charges change by season and year: recheck every confirmed fact before changing "checked".
+checked = 2026-10-29
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "The National Park Authority's Stainforth car park, in the village (what3words ///tribes.hardly.pounces). Its machines take cards only."
+status = "confirmed"
+source = "https://www.yorkshiredales.org.uk/plan-your-visit/essential-information/car-parks-and-toilets/"
+source_name = "Yorkshire Dales National Park Authority"
+
+[[fact]]
+topic = "path"
+text = "From the National Park car park, follow the Pennine Bridleway signs under the road, through a picnic area and over the railway. Cross the narrow packhorse bridge and take the footpath through the fields to the falls."
+status = "confirmed"
+source = "https://www.yorkshiredales.org.uk/places/stainforth_force/"
+source_name = "Yorkshire Dales National Park Authority"
+
+[[fact]]
+topic = "toilets"
+text = "The Authority's car parks have toilets, open 24 hours, including a toilet with RADAR facilities (Linton Falls is the one exception, not Stainforth)."
+status = "confirmed"
+source = "https://www.yorkshiredales.org.uk/plan-your-visit/essential-information/car-parks-and-toilets/"
+source_name = "Yorkshire Dales National Park Authority"
+
+[[fact]]
+topic = "fees"
+text = "Parking: up to 2 hours £3.80 (an extra hour with a Blue Badge displayed), over 2 hours £6.00, up to 24 hours £7.00."
+status = "confirmed"
+source = "https://www.yorkshiredales.org.uk/plan-your-visit/essential-information/car-parks-and-toilets/"
+source_name = "Yorkshire Dales National Park Authority"
