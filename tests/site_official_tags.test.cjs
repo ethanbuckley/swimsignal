@@ -51,7 +51,7 @@ function pageContext(names, extra = {}, withAdvice = true) {
 }
 const NAMES = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'initial', 'VIEW', 'km', 'dist', 'away',
   'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
-  'listHeadline', 'listPath', 'headNote', 'spotItem', 'planItem'];
+  'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem', 'planItem'];
 const EXTRA = { ROOT: { pathname: '/' }, DATA: { generated_at: '2026-10-26T20:00:00Z' }, PLAN: { day: '2026-10-26' },
   planWhy: () => '', planEvidence: () => '', milesAway: m => `${m} miles away` };
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];

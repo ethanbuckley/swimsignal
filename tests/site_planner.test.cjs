@@ -302,7 +302,7 @@ test('the day table’s † note shows only while a cell carries a †', () => {
 // river flows into. The level says so in words of its own, with one line under it and the rain.
 const PAGE = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'initial', 'VIEW', 'km', 'dist', 'away',
   'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
-  'listHeadline', 'listPath', 'headNote', 'spotItem', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'ecoliCheck', 'dayTable'];
+  'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'ecoliCheck', 'dayTable'];
 const plainCtx = () => pageContext(PAGE, {ROOT: {pathname: '/'}});
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 // A river with days but no contributors: the build still computes an E. coli figure for it (35% here).

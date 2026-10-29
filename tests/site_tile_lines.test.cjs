@@ -148,7 +148,7 @@ test('the list counts the spots without a level by why; a spot\'s page notes onl
 
 test('a list row gives no water figure: out of season it is untested, and it had no unit', () => {
   const ctx = pageContext(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath',
-    'week', 'rainMeta', 'mapLevel', 'listHeadline', 'listPath', 'headNote', 'spotItem'], {ROOT: {pathname: '/'}});
+    'week', 'rainMeta', 'mapLevel', 'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem'], {ROOT: {pathname: '/'}});
   const row = text(vm.runInContext('spotItem', ctx)(wharfe));
   assert.match(row, /High risk: rated poor/);
   assert.doesNotMatch(row, /E\. ?coli|%/);

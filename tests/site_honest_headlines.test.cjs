@@ -424,7 +424,7 @@ test('overflows in Wales are said not to be counted, with how much of the river 
   assert.equal(L.walesWords({ ...hereford, upstream_summary: { overflows: 14, wales_share: 0.004 } }, true), 'Overflows in Wales not counted (1% of the river above)');
   const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
   assert.match(text(vm.runInContext('answerWords', ctx)(hereford)), /Forecast only: no overflow upstream reports live .* Overflows in Wales not counted \(29% of the river above\)\. Issued/);
-  const row = page(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath', 'week', 'rainMeta', 'mapLevel', 'listHeadline', 'listPath', 'headNote', 'spotItem']);
+  const row = page(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath', 'week', 'rainMeta', 'mapLevel', 'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem']);
   assert.match(vm.runInContext('spotItem', row)(hereford), /<span class="hl-note">Overflows in Wales not counted \(29% of the river above\)<\/span>/);
   assert.match(text(Embed.card(hereford, { generated_at: GEN }, NOW)), /Overflows in Wales are not counted: about 29%/);
   L.setToday(DATES[0]);

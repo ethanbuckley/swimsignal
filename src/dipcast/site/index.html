@@ -2971,7 +2971,11 @@ function overviewTop(spots) {
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
-const listPath = s => spotPath(s.id) + (VIEW.day && VIEW.day !== today() && daily(s) ? '#day=' + VIEW.day : '');
+// The day a spot opens on from the list, the map or a card: the list's day, unless it is today. Since the list
+// opens on today (29 October 2026) today is no choice, and a spot opened on it showed today's detail with the
+// day picked, in place of its own answer (where the week goes); every tap from Explore did.
+const openDay = () => VIEW.day && VIEW.day !== today() ? VIEW.day : null;
+const listPath = s => spotPath(s.id) + (openDay() && daily(s) ? '#day=' + openDay() : '');
 const dist = s => VIEW.here ? km(VIEW.here, [s.lat, s.lon]) : null;
 const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as in Plan a swim (DESIGN.md, Words)
 // No water-quality figure in a row. Out of season, as "E. coli estimate 43%†", it is untested and does
@@ -2988,7 +2992,7 @@ function spotItem(s) {
 function bindItems(ul) {
   ul.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;   // new tab or window: let the link work
-    e.preventDefault(); select(a.dataset.id, true, true, VIEW.day); }));
+    e.preventDefault(); select(a.dataset.id, true, true, openDay()); }));
 }
 function setView(v) {
   document.body.classList.remove('view-list', 'view-saved', 'view-spot', 'view-plan', 'about-open'); document.body.classList.add('view-' + v);
@@ -3208,7 +3212,7 @@ function drawSpots() {
 // shows them without it, each a tile. With no day picked, what changed since you last looked (since.js).
 function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots', far = false) {
   const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, far && dist(s) !== null ? away(dist(s)) : null].filter(Boolean).join(' · ');
-  return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
+  return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && iso !== today() && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + (typeof eaTodayTag === 'function' ? eaTodayTag(s, 'p') : '')   // official advice first, above the level
@@ -4568,7 +4572,7 @@ async function main() {
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
   for (const s of DATA.spots) {
     MARKERS.set(s.id, L.circleMarker([s.lat, s.lon], { radius: 9 })
-      .bindTooltip('').on('click', () => select(s.id, false, true, VIEW.day)).addTo(spotLayer));
+      .bindTooltip('').on('click', () => select(s.id, false, true, openDay())).addTo(spotLayer));
   }
   const kept = keptView();
   // Words typed into the built home page's search while the forecast came (home_lead) carry over.
