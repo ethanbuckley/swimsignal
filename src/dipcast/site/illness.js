@@ -81,7 +81,7 @@ async function mountIllness(d) {
   const data = await reviewsLoad();
   if (turn !== illnessTurn || !data || !data.on || !data.submit || !data.illness || data.illness.on !== true) return;
   const after = document.getElementById('reviews') || document.getElementById('visits')
-    || document.querySelector('#result .stack #guide') || document.querySelector('#result .stack .tiles');
+    || document.querySelector('#result .stack #guide') || document.querySelector('#fold-water .fold-body > :last-child') || document.querySelector('#result .stack .tiles');
   if (!after || document.getElementById('illness')) return;
   const sec = document.createElement('section');
   sec.className = 'tile rv-tile'; sec.id = 'illness'; sec.tabIndex = -1; sec.setAttribute('aria-labelledby', 'il-h');

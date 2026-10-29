@@ -44,7 +44,7 @@ test("a spot's opening: its name, its headline from levels.js, its five days, is
   assert.ok(h.startsWith('<div class="top-row"><a href="/swim/" class="back" id="back">All spots</a><button type="button" class="save" id="save" aria-pressed="false">'), h);
   assert.ok(h.includes('<h1 class="spot-name" tabindex="-1">A &amp; B</h1>'));
   // The headline names what it covers, the level keeping its noun (20 Oct 2026, levels.js HEAD_SCOPE).
-  assert.match(h, /<h2 class="big low" id="risk-headline">Low risk from sewage spills<\/h2><p class="why">Today and tomorrow<\/p>/);
+  assert.match(h, /<h2 class="big low" id="risk-headline">Low risk from sewage spills<\/h2><div class="wn"><p class="why">Today and tomorrow<\/p>/);
   assert.ok(h.includes('<p class="next">High risk on Thursday</p>'));   // the week, as levels.js weekNext says it
   assert.ok(h.includes('<p class="t-sent">Low risk today. High risk on Thursday. Back to low risk on Friday.</p>'));   // levels.js backToLow
   assert.equal((h.match(/<button class="drow /g) || []).length, 5);
@@ -54,11 +54,11 @@ test("a spot's opening: its name, its headline from levels.js, its five days, is
   // Raised by tomorrow's spills: the line under it says when, not the cause again.
   const raised = {...SPOT, days: SPOT.days.map((x, i) => i === 1 ? {...x, risk: 0.5, label: 'high'} : x)};
   assert.match(spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [raised]}, 'https://example.org/swim/').a,
-    /<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><p class="why">Tomorrow<\/p>/);
+    /<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p>/);
   // Raised by a poor rating, which is not a forecast of spills: "High risk" over its cause, as before.
   const poor = {...SPOT, source: 'designated', classification: {class: 'poor', year: 2025}};
   assert.match(spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [poor]}, 'https://example.org/swim/').a,
-    /<h2 class="big high" id="risk-headline">High risk<\/h2><p class="why">Rated poor, advice against bathing<\/p>/);   // 29 Sept: in the bathing season
+    /<h2 class="big high" id="risk-headline">High risk<\/h2><div class="wn"><p class="why">Rated poor, advice against bathing<\/p>/);   // 29 Sept: in the bathing season
 });
 
 // The Accuracy page's script, as tests/site_verification.test.cjs runs it, with <main>'s data-built.
