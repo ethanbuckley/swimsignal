@@ -120,14 +120,18 @@ Built on guides and visit notes, so it stays within the exemption.
 
 ## 4. Decisions for Ethan
 
-1. Stage 1 links carry fixed choices only, no free text. (Recommended.)
+Answered 29 Oct 2026: Ethan accepted the recommendations for 1, 3, 5, 6 and 8. Decision 4 stays open.
+
+1. **Decided 29 Oct: fixed choices only.** Stage 1 links carry no free text; the group's own chat carries the words.
 2. Done: S1 (official advice counts as news for date alerts) merged as #411 and the Worker deployed, 27 Oct.
-3. Add the five stage 0 questions to the interview script.
-4. Which river and which two clubs for the pilot.
-5. Stage 2: names visible to the organiser only, or to everyone with the link.
-6. Whether stage 2 is worth the Ofcom check and DPIA at all, or stage 1 plus the atlas is enough for 2027.
+3. **Decided 29 Oct: yes.** The five stage 0 questions go in the interview script. Question 5 (shuttles) is asked of paddling groups only.
+4. **Open.** Which river and which two clubs for the pilot. Suggested tests for the river: it already has guides and overflow coverage, Ethan can reach it, and a swim group and a paddling group use the same stretch. Club names stay out of this repo.
+5. **Decided 29 Oct, if stage 2 is ever built:** the organiser sees names; everyone else with the link sees counts ("4 going, 1 maybe"). Links get forwarded.
+6. **Decided 29 Oct: not for 2027 unless the gate is met.** Stage 1 plus the access atlas is the 2027 plan. Stage 2, with its Ofcom check and DPIA, is reconsidered only if the stage 0 gate passes (at least two groups say yes to questions 3 and 4, and at least one uses stage 1 for real outings).
 7. Decided 27 Oct: test a club price in the interviews (section 5). The three questions are in the launch kit's interview script, version 21.
-8. A paid personal tier: recommended no, for 2027 (section 5).
+8. **Decided 29 Oct: no paid personal tier in 2027** (section 5).
+
+Next build: stage 1, one PR each, S2 to S5 in order (section 3).
 
 ## 5. Money: the third proposal
 
