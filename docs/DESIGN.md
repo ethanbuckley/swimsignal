@@ -625,6 +625,14 @@ days began 739 px down at Long Bridges and 802 px down at Ludlow, below the scre
 - Measured on the live data of 20 October 2026, the top of the five days' rows, before and after: Long
   Bridges 739 to 576 px at 375 x 812 and 684 to 543 px at 1440 x 900; River Dart, Spitchwick (low) 669 to
   529 and 677 to 558; Ludlow 802 to 600 and 740 to 585.
+- **29 October 2026:** the sentence over the five days had grown again where an overflow too far away
+  to count is named ("Grasmere sewage works overflow is upstream too, but too little of its water would
+  reach here to count"), and with a flood alert the rows fell below the bottom bar at Waterhead (777 px at
+  375 x 812, the bar at 748). That clause now ends what the level counts, under the five days
+  (`answerAfter`), word for word. On the live data of 29 October, spots whose first day row did not
+  clear the bar went from 7 to 3: Waterhead 777 to 706, Tonbridge 749 to 701, the three Windermere
+  bathing waters 716 to 669. Still below it: Frensham Great Pond (the EA's advice against bathing comes
+  first, on purpose), River Dart at Spitchwick (two overflows discharging now, 734) and Waterhead by 4 px.
 
 ### River high and flood alerts (3 October 2026)
 

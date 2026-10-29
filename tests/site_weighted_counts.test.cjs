@@ -55,7 +55,9 @@ test('the counts leave out an overflow that carries too little weight to count, 
   ctx.DATA_IN = {generated_at: BUILT, spots: [ctx.S]};
   vm.runInContext('DATA = DATA_IN;', ctx);
   const days = text(vm.runInContext('daysTile(S)', ctx)), tiles = text(vm.runInContext('dayTiles(S) + nowTiles(S)', ctx));
-  assert.match(days, /About 1 of the 3 overflows upstream is expected to spill today, about 2 tomorrow\. Grasmere sewage works overflow is upstream too, but too little of its water would reach here to count\./);
+  assert.equal(text(vm.runInContext('daysSentence(S)', ctx)), 'About 1 of the 3 overflows upstream is expected to spill today, about 2 tomorrow.');
+  // Under the five days, with what the level counts, so the sentence over them stays short on a phone (29 Oct 2026).
+  assert.match(days, /This forecast counts .* Grasmere sewage works overflow is upstream too, but too little of its water would reach here to count\./);
   assert.doesNotMatch(days + tiles, /of the 4 overflows|0 of 4|4 of 4/);
   assert.equal((days + tiles).split('would reach here to count').length - 1, 1);   // once
   assert.match(tiles, /0 of 3 discharging/);

@@ -62,6 +62,9 @@ a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 a:focus-visible { border-radius: var(--radius-ring); }   /* a rounded ring on text links; controls keep their own radius */
+/* The app's skip link (index.html, .skip): out of sight until Tab reaches it, then over the header. */
+.skip { position: fixed; top: -100px; left: 16px; z-index: 3000; background: var(--card); border: 1px solid var(--line); padding: 12px 16px; border-radius: var(--radius); }
+.skip:focus { top: 8px; }
 b, strong { font-weight: 600; }
 code { font: var(--fs-note) var(--font-mono); }   /* file names on the terms page, at the note size: at the body size the monospaced face looks larger than the text round it */
 pre { margin: 0 0 14px; padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }   /* code to copy (the embed on About): wrapped, between hairlines, as a table */
