@@ -278,6 +278,20 @@
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
   .sortseg { flex-wrap:wrap; }   /* four sorts since 29 October 2026: a phone takes them under the heading, each label whole */
+  /* The list's Filter button and its sheet (29 October 2026): sort, water, Low risk only; from the foot of a
+     phone's screen, centred on a wider one. */
+  .filter-btn { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--field); color:var(--ink); font:inherit; font-size:var(--fs-note); font-weight:600; cursor:pointer; }
+  @media (hover: hover) { .filter-btn:hover { background:var(--hover); } }
+  .filter-btn svg { width:18px; height:18px; }
+  .filter-btn .n { min-width:20px; padding:0 6px; border-radius:999px; background:var(--brand); color:var(--on-fill); font-size:var(--fs-meta); line-height:20px; text-align:center; }
+  .filter-btn .n[hidden] { display:none; }
+  dialog.sheet { width:min(100%, 520px); max-width:100%; margin:auto; padding:8px 16px 20px; border:0; border-radius:var(--radius); background:var(--card); color:var(--ink); }
+  dialog.sheet::backdrop { background:var(--scrim); }
+  .sheet h2 { font:600 var(--fs-head)/1.3 var(--font-display); margin:12px 0 4px; }
+  .sheet-h { font:600 var(--fs-note)/1.3 var(--font-text); color:var(--muted); margin:16px 0 6px; }   /* a label, in the sans */
+  .sheet .sortseg, .sheet .chips-row { display:flex; flex-wrap:wrap; overflow:visible; margin:0; }
+  .sheet-done { width:100%; margin-top:20px; }
   .group-head { font-size:var(--fs-head); line-height:1.2; margin:0; }
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
@@ -1009,6 +1023,7 @@
     .fold-group[open] > summary { margin-bottom:8px; }
     .fold-body > * + * { margin-top:12px; }
     .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }
+    dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
@@ -1580,6 +1595,7 @@ window.addEventListener('resize', setHeaderHeight);
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, current = null, shown = null;
 const VIEW = { q: '', filter: 'all', sort: 'low', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // lowest risk first (29 October 2026; it was A–Z by area)
+const SORT0 = VIEW.sort;   // how the list opens: the Filter button counts a sort that differs
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
 const fmt = (x, d=0) => (x === null || x === undefined) ? '–' : Number(x).toFixed(d);
@@ -2962,6 +2978,7 @@ const NEAR_CTA = '<button type="button" class="btn primary near-cta" data-near-c
 const HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>';
 const NEAR_N = 3;   // the nearest spots shown as cards once a place is given
 let OPENED = false;   // a spot has been opened this visit: only then does the list say how to save one (kept nowhere)
+const SLIDERS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10m4 0h2M4 17h4m4 0h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>';
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
 // The counts over the list, after when the forecast was issued: freshness where the list begins.
 // The spots without a level are counted by why, in their rows' own words up to the colon: "1 without a
@@ -3032,8 +3049,7 @@ function renderList() {
     // Until a place is given, Near me; then the nearest spots, as cards above the list (drawSpots).
     + (offerNear() ? NEAR_CTA : '') + ('geolocation' in navigator ? HERE_CTA : '')
     + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
-    + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${fiveDays().map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select>`
-    + `<button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
+    + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${fiveDays().map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></div>`
     + `<div id="answer-lines">${answerLines()}</div>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
@@ -3041,12 +3057,19 @@ function renderList() {
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
+  // The list's choices behind one Filter button, in a sheet (29 October 2026): the sorts, the kinds of water and
+  // Low risk only were nine controls between the opening and the first spot. The button says how many differ
+  // from how the list opens; the sheet's last button, how many spots it shows.
   v += `<section class="group tile" id="all-group" aria-labelledby="all-h"><div class="group-bar"><h2 class="group-head" id="all-h">All spots</h2>`
-    + `<div class="sortseg" role="group" aria-label="Sort">${sorts.map(([k, t]) => `<button type="button" data-sort="${k}" aria-pressed="${VIEW.sort === k}">${t}</button>`).join('')}</div></div>`
+    + `<button type="button" class="filter-btn" id="filter-btn" aria-haspopup="dialog" aria-controls="filter-sheet">${SLIDERS}Filter<span class="n" id="filter-n" hidden></span></button></div>`
+    + `<dialog class="sheet" id="filter-sheet" aria-labelledby="filter-h"><h2 id="filter-h">Filter spots</h2>`
+    + `<h3 class="sheet-h">Sort</h3><div class="sortseg" role="group" aria-label="Sort">${sorts.map(([k, t]) => `<button type="button" data-sort="${k}" aria-pressed="${VIEW.sort === k}">${t}</button>`).join('')}</div>`
+    + `<h3 class="sheet-h">Water</h3><div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
+    + `<h3 class="sheet-h">Risk</h3><div class="sheet-low"><button type="button" class="chip-btn low" data-low aria-pressed="${VIEW.lowOnly}" aria-describedby="low-note-list"><span class="dot" style="background:${colour('low')}"></span><span data-low-t>${lowLabel()}</span></button></div>`
+    + `<button type="button" class="btn primary sheet-done" id="filter-done">Show spots</button></dialog>`
     // Under the sort buttons, where the eye is after pressing Near me: below the overview it was off a
     // phone's screen, so a declined or failed location changed nothing you could see.
     + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
-    + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
     + `<p class="overview" id="overview"></p><p class="overview" id="risk-first" hidden></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="overview foot" id="overview-foot"></p><p class="count" id="count" role="status"></p></section>`;
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
@@ -3073,6 +3096,10 @@ function renderList() {
   document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.sort === 'near' && !VIEW.here) { locate(); return; }
     setSort(b.dataset.sort); drawSpots(); }));
+  const sheet = document.getElementById('filter-sheet');
+  document.getElementById('filter-btn').addEventListener('click', () => sheet.showModal());
+  document.getElementById('filter-done').addEventListener('click', () => sheet.close());
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });   // a tap on the backdrop
   drawSpots(); placeMap();
 }
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
@@ -3184,6 +3211,9 @@ function drawSpots() {
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overviewTop(items);
+  const changed = [VIEW.sort !== SORT0, VIEW.filter !== 'all', VIEW.lowOnly].filter(Boolean).length, fn = document.getElementById('filter-n');
+  if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
+  const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
   document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
   const first = document.getElementById('risk-first'), firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   if (first) { first.textContent = firstNote; first.hidden = !firstNote; }
