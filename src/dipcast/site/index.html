@@ -875,6 +875,7 @@
   body.view-list .about-line, body.about-open .about-line, body:not(.view-list):not(.about-open) .about { display:none; }
   #about:focus { outline:none; }
   .about h2 { font-size:var(--fs-head); line-height:1.25; margin:0 0 8px; }   /* serif (h2), the size of every section heading */
+  #about, #levels, #about-exposure, #about-ecoli, #your-data { scroll-margin-top:calc(var(--header-h) + 8px); }   /* "What the levels mean" and the rest land clear of a phone's sticky header */
   .about dl { margin:6px 0 0; } .about dt { font-weight:600; margin-top:10px; } .about dd { margin:2px 0 0; color:var(--muted); }
   .about dl.levels dt { display:flex; align-items:center; gap:8px; }
   .about dl.levels .badge { white-space:normal; }   /* the plain levels are phrases, wider than a phone */
@@ -990,6 +991,7 @@
   /* Phones: the list first, the map one tap away; a spot's page carries its own small map. */
   @media (max-width: 800px) {
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
+    html { scroll-padding-bottom:var(--nav-h); }   /* a control reached by Tab scrolls clear of the bottom bar, not under it */
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
@@ -2068,9 +2070,8 @@ function answerParts(d, iso = null) {
 // which the rows show only as a colour.
 function daysSentence(d) {
   const total = overflows(d), known = d.days.slice(0, 5).filter(hasData), back = backToLow(d) ? ' ' + backToLow(d) : '';   // the first day back at low (levels.js)
-  const far = tooFarSaid(d) ? ' ' + esc(tooFarSaid(d)) : '';   // overflows too far away to count (levels.js), said once, here
   if (!total) return summary(d).join(' ');
-  if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ') + back + far;
+  if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ') + back;
   const e = known.map(x => x.expected_spilling_overflows ?? 0), most = Math.max(...e), peak = known[e.indexOf(most)];
   const down = e.every((v, i) => !i || v <= e[i - 1] + .05), up = e.every((v, i) => !i || v >= e[i - 1] - .05);
   const trend = most < 1 || e.length < 2 ? '' : down ? ', fewer each day after' : up ? ', more each day after'
@@ -2079,7 +2080,7 @@ function daysSentence(d) {
     : `. About ${Math.round(most)} of the ${total} ${Math.round(most) === 1 ? 'is' : 'are'} expected to spill ${dayWord(peak.date)}`;
   return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. ` : '')
     + ((d.now || {}).discharging_upstream ? summary(d)[0] + ' ' : '')
-    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}${far}`;
+    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}`;
 }
 // A day's place on its bar, 0 to 1: four equal bands, the day in its level's band, placed in it by
 // what set the level: the exposure index (bands at SPILL_CUTS, 15, 40 and 70 of 100), the E. coli estimate
@@ -2331,8 +2332,11 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
 // and below the screen at Ludlow. iso as answerWords; showDay fills it again.
+// The overflows too far away to count (levels.js, tooFarSaid) are said once, here with what the level
+// counts: over the five days they pushed the rows below a phone's first screen (Windermere, Tonbridge).
 const answerAfter = (d, iso = null) => { if (d.error) return ''; const m = answerParts(d, iso);
-  return (m.act ? `<p class="act">${m.act}</p>` : '') + (m.scope ? `<p class="scope">${m.scope}</p>` : ''); };
+  const far = overflows(d) && tooFarSaid(d) ? esc(tooFarSaid(d)) : '', scope = [m.scope, far].filter(Boolean).join(' ');
+  return (m.act ? `<p class="act">${m.act}</p>` : '') + (scope ? `<p class="scope">${scope}</p>` : ''); };
 // An overflow's spill under way, from its event's start (levels.js, spillStart): "since Tue 6 Oct, 11:46"
 // in UK time, and for how long.
 const sinceTime = ms => new Date(ms).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
@@ -4566,6 +4570,20 @@ function reload() {
 // Not while something being written would be lost (a review: data-keep-page).
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - LOADED > 30 * 60 * 1000
   && !document.querySelector('[data-keep-page]')) reload(); });
+// Words typed into a review, a visit note, a journal entry or an illness report (data-keep-page) are lost by
+// leaving, so the page asks first: the browser's own question for closing, reloading or another page, and
+// this one for the controls that change the view in the page (Back, the header, the bottom bar, another
+// spot). The browser's Back button is not asked about: a popstate cannot be held.
+const unsent = () => [...document.querySelectorAll('form[data-keep-page]')].some(f =>
+  [...f.querySelectorAll('textarea, input[type=text]')].some(e => e.value.trim() && e.value !== e.defaultValue));
+let leaving = false;   // asked once already: a link to another page is not asked about again on unload
+document.addEventListener('input', () => { leaving = false; });   // typing again after a move in the page asks again
+window.addEventListener('beforeunload', e => { if (!leaving && unsent()) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('click', e => {
+  const c = e.target.closest('#back, .top a, .top button, .bottom-nav a, .bottom-nav button, a[href*="spot/"]');
+  if (!c || c.closest('form[data-keep-page]') || !plainClick(e) || !unsent()) return;
+  if (confirm('Leave this page? What you have written here will be lost.')) { leaving = true; return; }
+  e.preventDefault(); e.stopImmediatePropagation(); }, true);
 // Back online after opening the page offline: fetch the current forecast.
 if (!navigator.onLine) window.addEventListener('online', reload, { once: true });
 // Add to Home Screen. Browsers that offer an install prompt (Chrome, Edge, Samsung Internet) get a

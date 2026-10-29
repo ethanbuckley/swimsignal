@@ -2295,12 +2295,12 @@ def with_verification_figures(html: str, verification: Path) -> str:
     except (OSError, ValueError, subprocess.SubprocessError) as e:
         log.warning("Accuracy page without its figures in the HTML (%s)", getattr(e, "stderr", "") or e)
         return html
-    if not all(box in html for box in VERIFICATION_BOXES.values()) or '<main class="doc">' not in html:
+    if not all(box in html for box in VERIFICATION_BOXES.values()) or '<main class="doc" id="main">' not in html:
         log.warning("Accuracy page without its figures in the HTML: its boxes have changed")
         return html
     for key, box in VERIFICATION_BOXES.items():
         html = html.replace(box, f'<div id="{key}">{out[key]}</div>', 1)
-    return html.replace('<main class="doc">', f'<main class="doc" data-built="{escape(out["built"])}">' if out["built"] else '<main class="doc">', 1)
+    return html.replace('<main class="doc" id="main">', f'<main class="doc" id="main" data-built="{escape(out["built"])}">' if out["built"] else '<main class="doc" id="main">', 1)
 
 
 def with_counts(html: str, results: list[dict]) -> str:

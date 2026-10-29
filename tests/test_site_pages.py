@@ -208,7 +208,7 @@ def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_ne
     (tmp_path / "data" / "verification.json").write_text(json.dumps(ver))
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
     page = (tmp_path / "verification.html").read_text()
-    assert '<main class="doc" data-built="2026-10-04T00:15:52+01:00">' in page
+    assert '<main class="doc" id="main" data-built="2026-10-04T00:15:52+01:00">' in page
     assert "the spill forecast warned of 21% of spills." in page and "Loading the scores…" not in page
     assert '<dl class="stats">' in page and '<h2 id="short-h">In short</h2>' in page   # the figure tiles and the list
     assert 'href="/' not in page.split("<script>")[0]   # the links in the figures are the static site's too
@@ -218,7 +218,7 @@ def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_ne
     (tmp_path / "data" / "verification.json").unlink()
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
     page = (tmp_path / "verification.html").read_text()
-    assert '<main class="doc">' in page and "Loading the scores…" in page
+    assert '<main class="doc" id="main">' in page and "Loading the scores…" in page
 
 
 def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_picture(tmp_path):
