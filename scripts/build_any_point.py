@@ -530,8 +530,8 @@ def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, froz
 
 
 def outline_names(wfd: list[dict], link_comp: dict[str, str]) -> dict[str, str]:
-    """A name for each centreline lake (comp id) from the WFD outlines its links lie in (wfd[].links), for the
-    page to say where OS gives the centreline none: a tap just off Coniston Water's outline was placed on its
+    """A name for each centreline lake (comp id) from the WFD outlines its links lie in (wfd[].links), the only name
+    the page says for it (OS's names on lake links are streams'): a tap just off Coniston Water's outline was placed on its
     centreline, which has no name, and said "Unnamed lake" (29 Oct 2026). Where its links lie in more than one
     named outline, the name they share before a bracket ("Windermere (N Basin)" and "(S Basin)" are
     "Windermere"), else none: a guess between two lakes would be worse than no name."""
@@ -1012,8 +1012,10 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             past = max(past, history_days(np.array([travel])))
         name = None
         if k.startswith("c"):
-            own = [own_name[j] for j in sorted(links.index.get_indexer(list(comp)))]
-            name = next((n for n in own if isinstance(n, str) and n), None) or from_outline.get(k)
+            # The outline's name only: OS names a lake's centreline after a stream through it ("Fusedale Beck" in
+            # Ullswater, "Little Ings Sike" in Semer Water): of the 102 centreline lakes with both names on 29 Oct
+            # 2026, every OS name was a stream's, and of the 4,927 with only OS's, 96% end Brook, Burn, Beck and so on.
+            name = from_outline.get(k)
         else:   # a WFD lake: its own outline's name
             name = table["wfd"][int(k[1:])].get("name")
         outlet, out_way = {}, {}
