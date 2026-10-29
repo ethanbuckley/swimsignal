@@ -123,8 +123,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class=\"lede-map\">, and for any river or lake you ",
                  " on the map</span>. <a href=\"#about\">How it works</a></p>",
                  'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
-                 '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>',
-                 '<button type="button" class="chip-btn low" data-low aria-pressed="']:
+                 '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>']:
         assert part in lead and part.split("${")[0] in body, part
     # Near me under the search, the script's own markup; the row of controls is the last thing built in,
     # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
@@ -136,7 +135,8 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
-    assert "<span data-low-t>Low\u00a0risk only</span>" in body
+    # Low risk only is in the list's Filter sheet since 29 Oct 2026, not in the opening.
+    assert "data-low" not in body and '<button type="button" class="chip-btn low" data-low aria-pressed="' in page.split('id="filter-sheet"', 1)[1]
     spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
     assert '<section class="answer"><h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in spot
     # Under the opening, the script's two columns (cols): the list's shape, then the map's empty tile,

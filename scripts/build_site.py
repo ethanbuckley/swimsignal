@@ -2155,8 +2155,7 @@ def home_lead(n: int) -> str:
             'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
             f'{NEAR_CTA}{HERE_CTA}</section>'
             '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
-            '<option value="">Today and tomorrow</option></select><button type="button" class="chip-btn low" data-low aria-pressed="false">'
-            '<span class="dot" style="background:#3b7d4f"></span><span data-low-t>Low\u00a0risk only</span></button></div>'
+            '<option value="">Today and tomorrow</option></select></div>'   # Low risk only is in the list's Filter sheet (29 Oct 2026)
             f'</div><div class="cols"><div class="col-list"><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>'
             # The map's tile, as index.html's MAP_TILE frames it, empty until the script moves the map in.
             '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')

@@ -1102,6 +1102,17 @@ left four layout questions. Each was mocked up beside the current page, and Etha
   page's opening is ink and every summary unboxed. From 1,100 px "On this page" sits beside the text
   and stays in view while reading (Method only). Rejected: the same without the contents beside.
 
+### The list's choices in one sheet (29 October 2026)
+
+The sorts, the kinds of water and Low risk only were nine controls between the opening and the first spot
+(Hick's law: the more choices in view, the longer each decision). They are now behind one Filter button
+beside "All spots", in a sheet that rises from the foot of a phone's screen and sits centred on a wider one
+(`#filter-sheet`, a `<dialog>`; Escape or a tap on the backdrop closes it). Inside: Sort, Water, Risk, as
+labels in the sans, then "Show 13 spots", the count the list will show. The button carries a count of the
+choices that differ from how the list opens ("Filter, 2 on"). The day picker stays in the opening: it
+changes every level on the page, not just the list. "Low risk only" left the opening (and the build's copy
+of it, `home_lead`); the note under the opening that explains it still shows while it is on.
+
 ### What was kept on purpose
 
 The information architecture (list → spot → day), every word of the terms and privacy notice, the
