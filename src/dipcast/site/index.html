@@ -246,6 +246,7 @@
   .list-days { flex:1 1 auto; background:var(--field); border:1px solid var(--line); border-radius:var(--radius); }
   .list-days .dd { line-height:1.2; text-align:center; }
   .list-days .dd b { font-weight:600; color:var(--k-low); }
+  .list-days .nw { white-space:nowrap; }   /* "low risk" whole: on a 320 px phone the count takes a line of its own */
   .list-days input:checked + span .dd b { color:var(--on-fill); }
   .strip-note { margin:6px 2px 0; }
   /* A phone's opening, shorter: the lede without the map's clause, and the search at the height of a thumb. */
@@ -265,7 +266,7 @@
   .chip-btn[aria-pressed=true] { background:var(--brand); color:var(--on-fill); }
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
-  .sortseg { flex-wrap:wrap; }   /* four sorts since 29 October 2026: a phone takes them under the heading, each label whole */
+  .sortseg { flex-wrap:wrap; }   /* four sorts since 29 October 2026, in the Filter sheet: they wrap, each label whole */
   /* The list's Filter button and its sheet (29 October 2026): sort, water, Low risk only; from the foot of a
      phone's screen, centred on a wider one. */
   .filter-btn { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:var(--radius);
@@ -3040,7 +3041,7 @@ function renderList() {
     // choice and its answer in one place (29 October 2026: a select, "Today and tomorrow" first, and the
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
-      + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> low risk</span></span></label>`).join('')}</fieldset></div>`
+      + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
     + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
@@ -3061,7 +3062,7 @@ function renderList() {
     // Under the sort buttons, where the eye is after pressing Near me: below the overview it was off a
     // phone's screen, so a declined or failed location changed nothing you could see.
     + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
-    + `<p class="overview" id="overview"></p><p class="overview" id="risk-first" hidden></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="overview foot" id="overview-foot"></p><p class="count" id="count" role="status"></p></section>`;
+    + `<p class="overview" id="overview"></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="overview foot" id="overview-foot"></p><p class="count" id="count" role="status"></p></section>`;
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
@@ -3212,8 +3213,10 @@ function drawSpots() {
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
   document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
-  const first = document.getElementById('risk-first'), firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
-  if (first) { first.textContent = firstNote; first.hidden = !firstNote; }
+  const firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
+  // Where the notice's spots go in this order, in the line over the list that names them (29 October 2026: a
+  // paragraph of its own under it, two lines about notices one after the other on a phone's first screen).
+  if (firstNote) document.getElementById('overview').textContent += ' ' + firstNote;
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
@@ -3813,7 +3816,7 @@ function drawPlan(fit = false) {
   // A low risk and a plain level are told apart in the headings: one is a forecast that
   // looked and found the risk low, the other has nothing upstream to forecast from (levels.js, FOUND_NONE).
   // A spot with official advice (plan.js, planAdvised) keeps its level and its group, last in it, with the
-  // advice under its level (eaTodayTag); the low group's heading then says what its level counts, and a line
+  // advice above its level (eaTodayTag); the low group's heading then says what its level counts, and a line
   // under it says the advice comes first. It is never shown as a clean "Low risk".
   const adv = r.groups.map(g => g.filter(o => planAdvised(o.s)).length);
   const head = [adv[0] ? `Low risk from sewage spills ${on}` : `Low risk ${on}`, FOUND_NONE, `Moderate risk or higher ${on}`, 'No level'];
@@ -4511,23 +4514,27 @@ function render(d) {
 // water-test line join the limits fold from under the five days, where showDay puts them back (phoneFolds
 // moves them again). Reviews, visit notes and illness reports mount at the end of "At the water".
 const FOLDS = [
-  ['why', 'Why this level', 'The overflows upstream, the rain, and the map', ['#sources-host', '.spot-map-tile', '#day-tiles']],
-  ['water', 'At the water', 'Readings now, the water level and the practical guide', ['#now-tiles', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
-  ['limits', 'What this forecast cannot see', 'Its limits here, and how it has done', ['#unknowns', '.col-more > *']],
+  ['why', 'Why this level', ['#sources-host', '.spot-map-tile', '#day-tiles']],
+  ['water', 'At the water', ['#now-tiles', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
+  ['limits', 'What this forecast cannot see', ['#unknowns', '.col-more > *']],
 ];
+// The line under a fold's title: the headings of what it holds, as this spot has them, so it never promises a
+// guide, a gauge or a map the spot does not have (29 October 2026: a fixed line did). Three, then "and more".
+const foldSaid = body => { const t = [...new Set([...body.children].map(e => (e.querySelector('.t-lab span, h2, h3, summary') || {}).textContent)
+  .filter(Boolean).map(x => x.trim().replace(/\s+/g, ' ')))]; return t.slice(0, 3).join(' · ') + (t.length > 3 ? ' and more' : ''); };
 function phoneFolds() {
   const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
   if (!PHONE.matches || !at0) return;
   let at = at0;
-  for (const [k, t, sub, sels] of FOLDS) {
+  for (const [k, t, sels] of FOLDS) {
     let f = document.getElementById('fold-' + k);
     const els = sels.flatMap(q => [...stack.querySelectorAll(q)]).filter(e => !e.closest('.fold-group'));
     if (!f) { if (!els.length) continue;
       at.insertAdjacentHTML('afterend', `<details class="tile fold fold-group" id="fold-${k}"><summary><span><span class="fg-t">${t}</span>`
-        + `<span class="fg-s">${sub}</span></span></summary><div class="fold-body"></div></details>`);
+        + `<span class="fg-s"></span></span></summary><div class="fold-body"></div></details>`);
       f = document.getElementById('fold-' + k);
       f.addEventListener('toggle', () => { if (k === 'why' && f.open) placeMap(); }); }   // the map, drawn at its size once shown
-    f.querySelector('.fold-body').append(...els); at = f;
+    f.querySelector('.fold-body').append(...els); f.querySelector('.fg-s').textContent = foldSaid(f.querySelector('.fold-body')); at = f;
   }
   const lim = document.querySelector('#fold-limits .fold-body');
   if (lim) for (const q of ['#answer-after .scope', '#result .stack p.check']) { const e = document.querySelector(q); if (e && !lim.contains(e)) lim.prepend(e); }

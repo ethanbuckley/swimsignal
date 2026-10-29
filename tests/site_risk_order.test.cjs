@@ -96,6 +96,8 @@ test('the list uses the order only where it shows Highest risk, and the line onl
   assert.match(draw, /const byRisk = VIEW\.sort !== 'name' && !\(VIEW\.sort === 'near' && VIEW\.here\);/);
   // Lowest risk (and Near me before a place arrives) takes its own order first (29 Oct 2026, site_lowest_first).
   assert.match(draw, /: VIEW\.sort === 'low' \|\| VIEW\.sort === 'near' \? lowOrder\(a, b\) : byRisk \? riskOrder\(a, b\) : a\.name\.localeCompare\(b\.name\)\);/);
-  assert.match(draw, /firstNote = VIEW\.sort === 'low' \|\| \(VIEW\.sort === 'near' && !VIEW\.here\) \? lowLastNote\(items\) : byRisk \? riskFirstNote\(items\) : ''/);
-  assert.match(src, /<p class="overview" id="overview"><\/p><p class="overview" id="risk-first" hidden><\/p><ul class="spots" id="spots">/);
+  assert.match(draw, /const firstNote = VIEW\.sort === 'low' \|\| \(VIEW\.sort === 'near' && !VIEW\.here\) \? lowLastNote\(items\) : byRisk \? riskFirstNote\(items\) : ''/);
+  // The note ends the line over the list that names the notices (29 Oct 2026), not a paragraph of its own.
+  assert.match(draw, /if \(firstNote\) document\.getElementById\('overview'\)\.textContent \+= ' ' \+ firstNote;/);
+  assert.match(src, /<p class="overview" id="overview"><\/p><ul class="spots" id="spots">/);
 });
