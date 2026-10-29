@@ -576,3 +576,26 @@ def test_each_rain_square_gets_the_48_hours_to_midday_a_listed_spot_shows():
     r48, _ = ecoli.rain_windows(s, days + pd.Timedelta(hours=ecoli.SAMPLE_HOUR))
     assert got["54.5,-3.2"] == [round(float(v), 1) for v in r48]
     assert bap.cell_rain_48h(pd.DataFrame(), days) == {}
+
+
+def test_a_welsh_river_name_is_shown_in_english_where_os_gives_one():
+    bap = _bap()
+    links = pd.DataFrame({
+        "watercourse_name": ["Afon Hafren", "Afon Hafren", "Afon Hafren", "Afon Lwyd", "Afon Cwm", "River Test"],
+        "watercourse_name_alternative": ["River Severn", "River Severn", None, "Afon Llwyd", "Cwm Brook", "Test"],
+        "length": [1000.0, 800.0, 5000.0, 300.0, 100.0, 50.0]})
+    # Most of the named length with an alternative says "River Severn"; links with none do not count against it.
+    # A Welsh alternative stays Welsh, and an English name is never changed.
+    assert bap.english_names(links) == {"Afon Hafren": "River Severn", "Afon Cwm": "Cwm Brook"}
+    assert bap.english_names(links.drop(columns="watercourse_name_alternative")) == {}
+
+
+def test_a_centreline_lake_takes_the_name_of_the_outline_it_lies_in():
+    bap = _bap()
+    wfd = [{"name": "Coniston Water", "links": frozenset({"a", "b"})},
+           {"name": "Windermere (N Basin)", "links": frozenset({"n"})}, {"name": "Windermere (S Basin)", "links": frozenset({"s"})},
+           {"name": "Rydal Water", "links": frozenset({"r"})}, {"name": "Grasmere", "links": frozenset({"g"})},
+           {"name": None, "links": frozenset({"x"})}, {"name": "Tarn", "links": None}]
+    link_comp = {"a": "c1", "b": "c1", "n": "c2", "s": "c2", "r": "c3", "g": "c3", "x": "c4"}
+    # One outline: its name. Two basins of one lake: the name they share. Two lakes: none, rather than a guess.
+    assert bap.outline_names(wfd, link_comp) == {"c1": "Coniston Water", "c2": "Windermere"}

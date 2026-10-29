@@ -509,6 +509,9 @@ const AnyPoint = (() => {
   const ISOLATED = 'An isolated lake: the river network links no monitored storm overflow to it, '
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
     + 'Risk from wildlife, runoff and bathers is not modelled.';
+  // A lake's own name in lakes.json (`lakes[].name`): OS's for its centreline, else its WFD outline's
+  // (build_any_point.outline_names), or null.
+  const lakeName = (lakes, id) => ((lakes.lakes || [])[id] || {}).name || null;
   function place(lat, lon, files) {
     const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {} } = files, a = od.assumptions;
     const where = outsideWhere(lat, lon, outside);
@@ -545,9 +548,13 @@ const AnyPoint = (() => {
     const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake], a.dilution_power ?? 1,
       a.lake_direction === 'down' ? a.lake_down_margin_m : null))
       : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m, a.dilution_power ?? 1);
-    return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
+    // A lake reached by its centreline, from a click just off its outline: the link has no name of its own, so the
+    // lake's name in lakes.json is said (the build fills it from the WFD outline), not "Unnamed lake". Before, a tap
+    // just off Coniston Water's outline said "Unnamed lake" (29 Oct 2026).
+    const named = at.link.name || (lake && entry && entry.lake !== undefined ? lakeName(lakes, entry.lake) : null);
+    return { mode: at.mode, kind: at.mode, name: named || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
       ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
-      location: { mode: at.mode, watercourse: at.link.name, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
+      location: { mode: at.mode, watercourse: named, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
         lake_source: lake ? 'centreline' : null, adopted_main_channel: !!at.adopted } };
   }
 
@@ -679,7 +686,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt,
-    frame, nearestOnLine, waterWay, decodeIndex, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
+    frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

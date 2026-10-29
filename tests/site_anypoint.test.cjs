@@ -405,3 +405,13 @@ test('a tap on the map puts the first-tap line away for good, whether it zooms i
     assert.equal(tapped, 1);
   } finally { for (const [k, v] of Object.entries(was)) { if (v === undefined) delete global[k]; else global[k] = v; } }
 });
+
+test('a lake reached by its unnamed centreline says the lake\'s own name', () => {
+  const lakes = { lakes: [{ id: 'c1', name: null }, { id: 'c293', name: 'Coniston Water' }] };
+  assert.equal(A.lakeName(lakes, 1), 'Coniston Water');
+  assert.equal(A.lakeName(lakes, 0), null);   // no name in the file: the page says "Unnamed lake"
+  assert.equal(A.lakeName({}, 1), null);
+  const src = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/anypoint.js'), 'utf8');
+  assert.match(src, /const named = at\.link\.name \|\| \(lake && entry && entry\.lake !== undefined \? lakeName\(lakes, entry\.lake\) : null\);/);
+  assert.match(src, /name: named \|\| \(lake \? 'Unnamed lake' : 'Unnamed watercourse'\)/);
+});

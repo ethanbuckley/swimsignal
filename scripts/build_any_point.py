@@ -175,6 +175,26 @@ def reach_of(net: RiverNetwork, end_nodes, cap_m: float) -> set[str]:
     return out
 
 
+def english_names(links: pd.DataFrame) -> dict[str, str]:
+    """For a Welsh river name ("Afon Hafren"), the English one OS gives as its alternative ("River Severn"), as the
+    search box shows it (scripts/make_waters.py): the alternative on the greater length of that name's links that
+    have one, if it covers at least half of them, and is not itself Welsh. A click in England on the Severn at Upton
+    said "Afon Hafren" before (29 Oct 2026). Names with no such alternative are left out."""
+    if "watercourse_name_alternative" not in links:
+        return {}
+    named = links["watercourse_name"].astype(str).str.strip()
+    alt = links["watercourse_name_alternative"].where(links["watercourse_name_alternative"].notna(), "").astype(str).str.strip()
+    m = named.str.startswith("Afon ") & (alt != "")
+    df = pd.DataFrame({"name": named[m], "alt": alt[m], "length": links.loc[m, "length"]})
+    out: dict[str, str] = {}
+    for name, g in df.groupby("name"):
+        by = g.groupby("alt")["length"].sum().sort_values(ascending=False)
+        best, total = by.index[0], float(by.sum())
+        if not best.startswith("Afon ") and float(by.iloc[0]) >= 0.5 * total:
+            out[name] = best
+    return out
+
+
 def link_names(net: RiverNetwork, lids) -> dict[str, str | None]:
     """transport._link_name for many links: the link's own name, else the first named link
     downstream within 12 steps, following the first successor at a fork."""
@@ -466,6 +486,29 @@ def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, froz
             wfd.append({"wb_id": str(poly.get("wb_id") or ""), "name": str(name) if isinstance(name, str) else None,
                         "area_km2": float(poly["area_km2"]), "geometry": poly.geometry, "links": ll or None})
     return wfd, comp_sets, link_comp
+
+
+def outline_names(wfd: list[dict], link_comp: dict[str, str]) -> dict[str, str]:
+    """A name for each centreline lake (comp id) from the WFD outlines its links lie in (wfd[].links), for the
+    page to say where OS gives the centreline none: a tap just off Coniston Water's outline was placed on its
+    centreline, which has no name, and said "Unnamed lake" (29 Oct 2026). Where its links lie in more than one
+    named outline, the name they share before a bracket ("Windermere (N Basin)" and "(S Basin)" are
+    "Windermere"), else none: a guess between two lakes would be worse than no name."""
+    by_comp: dict[str, set[str]] = {}
+    for w in wfd:
+        if w.get("name") and w.get("links"):
+            for lid in w["links"]:
+                c = link_comp.get(lid)
+                if c is not None:
+                    by_comp.setdefault(c, set()).add(w["name"])
+    out = {}
+    for c, names in by_comp.items():
+        bases = {n.split(" (")[0].strip() for n in names}
+        if len(names) == 1:
+            out[c] = next(iter(names))
+        elif len(bases) == 1:
+            out[c] = next(iter(bases))
+    return out
 
 
 def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
@@ -792,6 +835,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     own_name = links["watercourse_name"].to_numpy()
     in_tiles = sorted({i for ix in by_tile.values() for i in ix})
     river_names = link_names(net, [lids[i] for i in in_tiles if form_code[i] != 2])
+    english = english_names(links)   # "Afon Hafren" as "River Severn", as the search box says it
     upstream = links["start_node"].map(net.upstream_m).fillna(0.0).to_numpy()
     name_of = {}   # by position
     for i in in_tiles:
@@ -799,14 +843,15 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             n = own_name[i]
             name_of[i] = n if isinstance(n, str) and n else None
         else:
-            name_of[i] = river_names[lids[i]]
+            n = river_names[lids[i]]
+            name_of[i] = english.get(n, n)
     # Side arms: where a click on one goes (arm_heads, encode_arm), in each square the arm is in.
     arms = arm_heads(net, [lids[i] for i in in_tiles])
     tiles_of: dict[str, list[str]] = {}
     for t, ix in sorted(by_tile.items()):
         for i in ix:
             tiles_of.setdefault(lids[i], []).append(t)
-    arm_names = link_names(net, sorted({ch for moves in arms.values() for ch in moves}))
+    arm_names = {k: english.get(n, n) for k, n in link_names(net, sorted({ch for moves in arms.values() for ch in moves})).items()}
 
     for d in ("link_index", "links"):
         (out / d).mkdir(parents=True, exist_ok=True)
@@ -855,6 +900,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     held = max((hh for rec in records.values() for _, hh, _ in rec.get("hold", {}).values()), default=0.0)
     past = history_days(np.array([((cap - crossed) / v + crossed / v_lake) / 3600.0 + held]))   # held: an upper bound
     lakes_json = []
+    from_outline = outline_names(table["wfd"], table["link_comp"])   # a centreline lake's name where OS gives none
     (out / "lake_water").mkdir(parents=True, exist_ok=True)
     for f in (out / "lake_water").iterdir():
         f.unlink()
@@ -920,7 +966,9 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         name = None
         if k.startswith("c"):
             own = [own_name[j] for j in sorted(links.index.get_indexer(list(comp)))]
-            name = next((n for n in own if isinstance(n, str) and n), None)
+            name = next((n for n in own if isinstance(n, str) and n), None) or from_outline.get(k)
+        else:   # a WFD lake: its own outline's name
+            name = table["wfd"][int(k[1:])].get("name")
         outlet, out_way = {}, {}
         if out_xy:
             (olon,), (olat,) = _to_lonlat(np.array([out_xy[0]]), np.array([out_xy[1]]))
