@@ -15,7 +15,10 @@
 
 // The topics in the order a swimmer meets them, as src/dipcast/guides.py lists them.
 const GUIDE_TOPICS = [['parking', 'Parking'], ['path', 'Path to the water'], ['entry', 'Getting in'], ['exit', 'Getting out'],
-  ['toilets', 'Toilets'], ['changing', 'Changing'], ['fees', 'Fees and booking'], ['hours', 'Opening times'], ['rules', 'Who can swim']];
+  ['toilets', 'Toilets'], ['changing', 'Changing'], ['fees', 'Fees and booking'], ['hours', 'Opening times'], ['rules', 'Who can swim'],
+  ['launch', 'Launching a boat or board'], ['carry', 'Carrying to the water'], ['paddle', 'Paddling here']];
+// The topics for boats and boards (guides.py, TOPICS): shown where a guide has them, never listed as missing.
+const GUIDE_PADDLE = new Set(['launch', 'carry', 'paddle']);
 const GUIDE_STALE_DAYS = 365;   // fees, hours and paths change: older than this, the guide says so
 const GUIDE_SHOW = 4;           // topics shown before "Show all", when at least two more would fold
 const guideEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -114,7 +117,7 @@ if (typeof document === 'object' && document.addEventListener) document.addEvent
 // "Not in this guide yet: toilets, changing." So a missing topic reads as unknown, not as none.
 function guideGaps(g) {
   const have = new Set((g.facts || []).map(f => f.topic));
-  const gaps = GUIDE_TOPICS.filter(([k]) => !have.has(k)).map(([, label]) => label.toLowerCase());
+  const gaps = GUIDE_TOPICS.filter(([k]) => !have.has(k) && !GUIDE_PADDLE.has(k)).map(([, label]) => label.toLowerCase());
   return gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.join(', ')}.</p>` : '';
 }
 
