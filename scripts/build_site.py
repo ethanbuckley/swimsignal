@@ -81,7 +81,8 @@ REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type
             ('href="/static/fonts/SourceSerif4-latin.woff2"', 'href="fonts/SourceSerif4-latin.woff2"'),
             ("fetch('/api/verification')", "fetch('data/verification.json')"),
             ('href="/methods"', 'href="methods.html"'), ('href="/methods#', 'href="methods.html#'),
-            ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"')]
+            ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"'),
+            ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"')]   # the header's links, as the app's (29 Oct 2026)
 BRAND = "SwimSignal"
 # The home page leads with the name, for search; every other page is "Page · SwimSignal" (docs/DESIGN.md, Words).
 HOME_TITLE = f"{BRAND} · pollution risk forecasts for swim spots"
@@ -2381,7 +2382,7 @@ def not_found_page(root: str) -> str:
         f'<link rel="preload" href="{r}fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>'
         f'<link rel="preload" href="{r}fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>\n'
         f'</head><body>\n<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a>'
-        f'<nav aria-label="Site"><a href="{r}">Explore</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a href="{r}feedback.html">Feedback</a></nav></header>\n'
+        f'<nav aria-label="Site"><a href="{r}plan/">Plan a swim</a><a href="{r}saved/">Saved</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a class="desk-only" href="{r}feedback.html">Feedback</a></nav></header>\n'
         '<main class="doc"><h1>No page at this address</h1>\n'
         '<p class="lead">A spot changes address when it is renamed or removed, and a link can be copied or typed wrongly.</p>\n'
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'

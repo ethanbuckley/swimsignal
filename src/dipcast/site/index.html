@@ -287,6 +287,8 @@
   @media (hover: hover) { .sortseg button:hover { background:var(--hover); color:var(--ink); } }
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
+  .overview.foot { margin:12px 0 0; }   /* the counts, under the list (29 October 2026) */
+  .overview.foot:empty { display:none; }
   .geo { margin:0 0 8px; }
   #all-group { scroll-margin-top:calc(var(--header-h) + 8px); }   /* Near me in the first-run line brings it up clear of the sticky header */
   /* The list: rows between hairlines on the paper, with no box round them. */
@@ -947,8 +949,12 @@
     #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
     #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1180px; margin-left:auto; margin-right:auto; }
     .about > * { max-width:720px; }   /* a prose column, as the prose pages' */
-    .lead { text-align:center; }
-    .lead > * { max-width:760px; margin-left:auto; margin-right:auto; }
+    /* The opening on the tiles' left edge, not centred over them (29 October 2026): a centred block over
+       left-aligned columns gave a wide screen four left edges. Phones keep the centred answer. */
+    .lead > * { max-width:760px; }
+    .answer { text-align:left; }
+    .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
+      .answer .cover, .big, .big-head { margin-left:0; margin-right:0; }
     /* A shorter opening, so the first spots and most of the map's tile are on a
        1,440 x 900 screen: the search and Near me share a row, as do the day and "Low risk only". */
     .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
@@ -956,13 +962,10 @@
     .intro > .search { grid-column:1; }
     .intro > .search input { min-height:48px; }   /* Near me's height */
     .intro > .near-cta { grid-column:2; width:auto; margin-top:16px; padding:8px 18px; }
-    .intro > .here-cta { justify-self:center; }
+    .intro > .here-cta { justify-self:start; }
     .lead .lede { text-wrap:balance; }
-    .lead .toolbar { justify-content:center; }
     .lead .toolbar select { flex:0 1 320px; }
-    .lead > .back { display:flex; width:max-content; max-width:none; margin-left:0; }   /* the way back keeps the left edge, as on a spot */
-    .lead .notice { text-align:left; }
-    .lead .chips-row { justify-content:center; }
+    .lead > .back { display:flex; width:max-content; max-width:none; }
     .lead::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
     .cols { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); gap:24px; align-items:start; }
@@ -2961,6 +2964,12 @@ function overview(spots) {
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
 }
+// Over the list, since 29 October 2026: when the forecast was issued and any official notice. The counts
+// (overview, less its issue time) are at the list's foot, so a phone's first screen reaches the first spot.
+function overviewTop(spots) {
+  const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length) : [];
+  return `Updated ${issued()}.` + (advised.length ? ` ${advised.length} with an official notice: ${noticeVerb(advised)}.` : '');
+}
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
 const listPath = s => spotPath(s.id) + (VIEW.day && daily(s) ? '#day=' + VIEW.day : '');
@@ -3020,7 +3029,7 @@ function renderList() {
     // phone's screen, so a declined or failed location changed nothing you could see.
     + `<p class="small muted geo" id="geo" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'sort' ? '' : ' hidden'}>${VIEW.geoAt === 'sort' ? esc(VIEW.geoMsg) : ''}</p>`
     + `<div class="chips-row" role="group" aria-label="Show">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-filter="${k}" aria-pressed="${VIEW.filter === k}">${t}</button>`).join('')}</div>`
-    + `<p class="overview" id="overview"></p><p class="overview" id="risk-first" hidden></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="count" id="count" role="status"></p></section>`;
+    + `<p class="overview" id="overview"></p><p class="overview" id="risk-first" hidden></p><ul class="spots" id="spots"></ul><ul class="spots on-map" id="on-map" hidden></ul><p class="overview foot" id="overview-foot"></p><p class="count" id="count" role="status"></p></section>`;
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
@@ -3140,7 +3149,8 @@ function drawSpots() {
     bindItems(nearList);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
-  document.getElementById('overview').textContent = overview(items);
+  document.getElementById('overview').textContent = overviewTop(items);
+  document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
   const first = document.getElementById('risk-first'), firstNote = byRisk ? riskFirstNote(items) : '';
   if (first) { first.textContent = firstNote; first.hidden = !firstNote; }
   const groups = areaGroups(items);
