@@ -105,5 +105,6 @@ def test_committed_table_is_small_and_well_formed():
 
 def test_the_build_puts_it_in_the_spot_file_only():
     src = (Path(__file__).parents[1] / "scripts" / "build_site.py").read_text()
-    assert '"seasonal")' in src.split("DETAIL_FIELDS = ", 1)[1].split("\n", 1)[0]
+    fields = src.split("DETAIL_FIELDS = ", 1)[1].split(")", 1)[0]   # the tuple, whatever follows "seasonal" in it
+    assert '"seasonal"' in fields
     assert "seasonal.attach(results, upstream, SEASONAL)" in src
