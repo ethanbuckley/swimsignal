@@ -1081,6 +1081,27 @@ of the Wharfe at Burnsall, and Hurley the Wey at Waverley in place of Wallingfor
 influence" is not a row's reason: under "Lower risk nearby" every row is lower by the card's own rule,
 and the note under the rows says so.
 
+### Four picks from mock-ups (29 October 2026)
+
+A review that day (Vercel's interface guidelines and the "taste" skill's rules, each finding checked)
+left four layout questions. Each was mocked up beside the current page, and Ethan picked:
+
+- **The counts go under the list.** Over the list: "Updated Thu 15:42." and any official notice
+  (`overviewTop`); the full counts (`overview`, less its issue time) follow the last row
+  (`#overview-foot`). The day's answer line above already gives the overall picture. At 375 x 812 the
+  first spot moved from 732 to 664 px down, clear of the bottom bar at 748; at 320 x 640 from 843 to 753,
+  still below the bar (576), where no option fitted. Rejected: three counts kept above (687 px).
+- **The opening on the left edge from 1,100 px.** The spot's answer and the list's, Saved's and Plan's
+  openings line up with the tiles below instead of centring over them, which gave a wide screen four
+  left edges. Phones keep the centred answer. Rejected: left on phones too.
+- **The prose pages take the app's links:** Plan a swim, Saved, Accuracy, About, Feedback. Explore
+  went (the wordmark goes home, as in the app). On a phone Feedback leaves the header row, so four fit,
+  and stays in every page's foot. Rejected: Explore added to every page, the app included.
+- **The Method page's opening:** the lead paragraph in ink, and "In short" on the paper under a hairline
+  instead of a white box (Rules for changes, 3). `p.lead` and `.summary` are shared, so every prose
+  page's opening is ink and every summary unboxed. From 1,100 px "On this page" sits beside the text
+  and stays in view while reading (Method only). Rejected: the same without the contents beside.
+
 ### What was kept on purpose
 
 The information architecture (list → spot → day), every word of the terms and privacy notice, the
