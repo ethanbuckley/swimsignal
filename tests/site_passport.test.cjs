@@ -77,7 +77,7 @@ test('the page draws it under the journal on Saved, binds its shares, and Plan a
   assert.ok(page.indexOf('<script src="journal.js">') < page.indexOf('<script src="passport.js">'));
   assert.match(page, /if \(typeof passportSection === 'function'\) v \+= passportSection\(DATA\.spots\);/);
   assert.match(page, /const bindSwims = \(\) => \{ if \(typeof journalBindSection === 'function'\) journalBindSection\(\);\n  if \(typeof passportBind === 'function'\) passportBind\(\); \};/);
-  assert.match(fs.readFileSync(join(SITE, 'outing.js'), 'utf8'), /if \(pair\.backup && typeof passportPlanned === 'function'\) passportPlanned\(today\(\)\);/);
+  assert.match(fs.readFileSync(join(SITE, 'outing.js'), 'utf8'), /if \(pair\.backup && !preview && typeof passportPlanned === 'function'\) passportPlanned\(today\(\)\);/);
   // Nothing in it asks a server for anything.
   assert.doesNotMatch(fs.readFileSync(join(SITE, 'passport.js'), 'utf8'), /fetch\(|XMLHttpRequest|sendBeacon/);
 });

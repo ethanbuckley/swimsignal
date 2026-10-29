@@ -74,7 +74,7 @@ const tile = (o = {}) => O.outingSection({day: '2026-11-01', when: 'morning', sp
 test('the tile opens as an invitation while the link\'s stamp stands', () => {
   const h = tile({shared: 'Sat 07:00'});
   assert.match(h, /<summary><span>Outing shared with you<span class="k">Port Meadow, backup Wolvercote<\/span><\/span><\/summary>/);
-  assert.match(h, /<p class="sub">Shared with you, from the forecast issued Sat 07:00\. Under the two spots: what has changed since\. At the end: alerts and a calendar file for it\. Change anything here and it becomes your own plan, kept in this browser and in this page's link; sent nowhere\.<\/p>/);
+  assert.match(h, /<p class="sub">Shared with you, from the forecast issued Sat 07:00\. Under the two spots: what has changed since\. At the end: alerts and a calendar file for it\. Kept in this browser and in this page's link; sent nowhere\. Change anything here and it becomes your own plan\.<\/p>/);
   assert.match(h, /id="outing-ics"/);   // the calendar file, and the alerts' place, as for one's own outing
   assert.match(h, /id="outing-alert"/);
   const own = tile({shared: ''});
@@ -85,8 +85,8 @@ test('the tile opens as an invitation while the link\'s stamp stands', () => {
 
 test('the page compares a shared link with its stamp, and says when it was sent', () => {
   const ow = fs.readFileSync(path.join(SITE, 'outingwatch.js'), 'utf8'), out = fs.readFileSync(path.join(SITE, 'outing.js'), 'utf8');
-  assert.match(ow, /const shared = outingWatchShared\(plan\);\n  const was = shared \? shared\.items : old && old\.day === plan\.day \? old\.items : \[\]/);
-  assert.match(ow, /outingWatchSection\(\{ day: plan\.day, today: t, spots, kept, forecast, shared: !!shared,/);
+  assert.match(ow, /const shared = outingWatchShared\(plan\);\n  const was = shared \? shared\.items : !preview && old && old\.day === plan\.day \? old\.items : \[\]/);
+  assert.match(ow, /outingWatchSection\(\{ day: plan\.day, today: t, spots, kept, forecast, shared: !!shared, preview,/);
   assert.match(out, /const sent = PLAN\.sent && typeof outingWatchShared === 'function' && outingWatchShared\(PLAN\);/);
   assert.match(out, /shared: sent \? issuedWords\(sent\.forecast\) : '',/);
   // The stamp goes with any change (S2, outingChanged), so the invitation's words go with it.
