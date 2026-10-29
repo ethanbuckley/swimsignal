@@ -143,11 +143,11 @@ test('the page keeps a preview out of storage until Keep this outing', () => {
   assert.match(app, /const keepPlan = \(\) => \{ PLAN_PREVIEW = false; planAddress\(\); \};/);
   // A link opened while Plan a swim is open: its day is the link's, not a change of day that drops its time and stamp.
   assert.match(app, /if \(location\.hash\.length > 1 && typeof OUTING_DAY !== 'undefined'\) OUTING_DAY = null;/);
-  assert.match(out, /outingWatchDraw\(tile, PLAN, pair, DATA\.generated_at, Date\.now\(\), !!preview\)/);
+  assert.match(out, /outingWatchDraw\(tile, PLAN, \{ \.\.\.pair, finish: fin \}, DATA\.generated_at, Date\.now\(\), !!preview\)/);
   assert.match(out, /keepPlan\(\); drawOuting\(box, shown\);/);
   // Looking at a friend's outing earns no badge and keeps nothing offline.
   assert.match(out, /if \(pair\.backup && !preview && typeof passportPlanned === 'function'\)/);
-  assert.match(out, /if \(typeof OutingPack === 'object' && !preview\) OutingPack\.draw\(pair\);/);
+  assert.match(out, /if \(typeof OutingPack === 'object' && !preview\) OutingPack\.draw\(\{ \.\.\.pair, finish: fin \}\);/);
 });
 
 test('the privacy notice says what an outing link holds and that opening one keeps nothing', () => {

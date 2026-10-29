@@ -31,6 +31,7 @@ const OutingPack = (() => {
     const need = ['plan/', 'data/spots-lite.json'], may = [];
     for (const s of o.spots || []) {
       if (s.page) need.push(`spot/${s.id}/`);
+      if (s.upstream) may.push(`data/upstream/${s.id}.json`);   // a paddle's finish: what drains into the water between (outing.js, outingStretch)
       if (s.file) { need.push(`data/${s.file}`); may.push(`data/${s.file.replace(/\.json$/, '-trace.json')}`); }
     }
     may.push(...EXTRAS, ...(o.shell || []));
@@ -47,10 +48,11 @@ const OutingPack = (() => {
   }
   // After the outing's day on this device's clock, a pack is dropped (sw.js, fromPack, by the same rule).
   const expired = (m, nowMs) => !m || localDay(new Date(nowMs)) > m.day;
-  // The pack is this outing's: the same day, spot and backup. want = { day, spot, backup }.
-  const same = (m, want) => !!m && m.day === want.day && m.spot === want.spot && (m.backup || null) === (want.backup || null);
+  // The pack is this outing's: the same day, spot, backup and a paddle's finish. want = { day, spot, backup, finish }.
+  const same = (m, want) => !!m && m.day === want.day && m.spot === want.spot && (m.backup || null) === (want.backup || null)
+    && (m.finish || null) === (want.finish || null);
   // The page (rel: its address under the site's root) is one the pack holds: the plan's, or its spot's or backup's.
-  const covers = (m, rel) => !!m && [`plan/`, `spot/${m.spot}/`, ...(m.backup ? [`spot/${m.backup}/`] : [])].includes(rel.replace(/\/?$/, '/'));
+  const covers = (m, rel) => !!m && [`plan/`, `spot/${m.spot}/`, ...(m.backup ? [`spot/${m.backup}/`] : []), ...(m.finish ? [`spot/${m.finish}/`] : [])].includes(rel.replace(/\/?$/, '/'));
 
   // ------------------------------------------------------------------ the words
   const hm = ms => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });   // 07:12, 21:40
@@ -73,7 +75,7 @@ const OutingPack = (() => {
   }
   const CHECK = 'Check again before you leave if you have signal.';
   const dayOf = day => R().dayWord(day).replace(/^on /, '');   // "today", "tomorrow", "Saturday"
-  const named = m => `${esc((m.names || [])[0] || m.spot)}${m.backup ? `, backup ${esc((m.names || [])[1] || m.backup)}` : ''}`;
+  const named = m => `${esc((m.names || [])[0] || m.spot)}${m.finish ? `, finish ${esc((m.names || [])[2] || m.finish)}` : ''}${m.backup ? `, backup ${esc((m.names || [])[1] || m.backup)}` : ''}`;
 
   // The pack's part of the outing tile, as HTML. t = { state, meta, want, names: [spot, backup], newer (a later
   // forecast's issue time, ISO), nowMs, ios, app (an in-app browser's name) }. state: 'none' (this browser cannot
@@ -190,11 +192,13 @@ const OutingPack = (() => {
     if (!box || !pair || !pair.main) return;
     box.insertAdjacentHTML('beforeend', '<div class="outing-pack" id="outing-pack"></div><p class="small muted msg" id="outing-pack-msg" aria-live="polite"></p>');
     const el = document.getElementById('outing-pack'), msg = document.getElementById('outing-pack-msg');
-    const spots = [pair.main, pair.backup].filter(Boolean);
-    const want = { day: PLAN.day, spot: pair.main.id, backup: pair.backup ? pair.backup.id : null };
+    const spots = [pair.main, pair.backup, pair.finish].filter(Boolean);
+    // names: [spot, backup, finish], each in its place, null where there is none (an older pack has two).
+    const names = [pair.main.name, pair.backup ? pair.backup.name : null, pair.finish ? pair.finish.name : null];
+    const want = { day: PLAN.day, spot: pair.main.id, backup: pair.backup ? pair.backup.id : null, ...(pair.finish ? { finish: pair.finish.id } : {}) };
     const paint = () => {
       const s = state(want);
-      el.innerHTML = tile({ ...s, want, names: spots.map(x => x.name), newer: DATA.generated_at, nowMs: Date.now(), ios: IOS, app: IN_APP });
+      el.innerHTML = tile({ ...s, want, names: names.filter(Boolean), newer: DATA.generated_at, nowMs: Date.now(), ios: IOS, app: IN_APP });
       el.querySelectorAll('[data-outing-pack]').forEach(b => b.addEventListener('click', async () => {
         el.querySelectorAll('button').forEach(x => { x.disabled = true; });
         if (b.dataset.outingPack === 'stop') {
@@ -205,9 +209,9 @@ const OutingPack = (() => {
         msg.textContent = 'Keeping this outing on this device…';
         try {
           const sh = await shell();
-          const list = files({ shell: sh.shell, spots: spots.map(x => ({ id: x.id, page: PAGE_ID.test(x.id), file: x.detail_file || null })) });
+          const list = files({ shell: sh.shell, spots: spots.map(x => ({ id: x.id, page: PAGE_ID.test(x.id), file: x.detail_file || null, upstream: !!pair.finish && x.id === pair.finish.id })) });
           await store(list, p => fetch(new URL(p, ROOT).href, { cache: 'no-cache', credentials: 'omit' }), ROOT.href,
-            { v: 1, ...want, names: spots.map(x => x.name), keptAt: Date.now(), issuedAt: DATA.generated_at, build: sh.build });
+            { v: 1, ...want, names, keptAt: Date.now(), issuedAt: DATA.generated_at, build: sh.build });
           paint(); msg.textContent = 'Kept for offline use.';
         } catch (e) { paint(); msg.textContent = `Could not keep this outing: ${e.message}.`; }
       }));

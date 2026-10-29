@@ -135,6 +135,6 @@ test('the calendar file says what for and where to meet, never a level', () => {
 test('the page keeps the outing\'s changes through outingChanged and stamps the shared link from the live data', () => {
   const js = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/outing.js'), 'utf8');
   assert.match(js, /const k = el\.dataset\.outing, next = outingChanged\(PLAN, k\);/);
-  assert.match(js, /outingShared\(PLAN, pair\.main, \{ sent: outingSent\(DATA\.generated_at\),\s+lv: dayLevel\(pair\.main, PLAN\.day\), blv: pair\.backup && dayLevel\(pair\.backup, PLAN\.day\) \}\)/);
+  assert.match(js, /outingShared\(PLAN, pair\.main, \{ sent: outingSent\(DATA\.generated_at\),\s+lv: dayLevel\(pair\.main, PLAN\.day\), blv: pair\.backup && dayLevel\(pair\.backup, PLAN\.day\), flv: fin && dayLevel\(fin, PLAN\.day\) \}\)/);
   assert.match(js, /`\$\{outingVerb\(PLAN\.act\)\}: \$\{pair\.main\.name\} · \$\{BRAND\}`/);
 });

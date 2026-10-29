@@ -55,14 +55,14 @@ function outingTimeNote(day, when, nowMs = Date.now()) {
 // A shared outing's stamp (plan.js: sent=, lv=, blv=) goes too: its levels were that day's.
 function outingForDay(plan, lastDay) {
   if (!(plan.when || plan.sent) || lastDay === null || lastDay === plan.day) return plan;
-  const { when, sent, lv, blv, ...rest } = plan;
+  const { when, sent, lv, blv, flv, ...rest } = plan;
   return rest;
 }
 // After the swimmer changes the outing: a shared stamp no longer says what was sent, and a meeting place was
 // at the spot it was picked for. k: the field changed ('when', 'spot', 'backup', 'act', 'meet').
 function outingChanged(plan, k) {
-  const { sent, lv, blv, ...rest } = plan;
-  if (k === 'spot' || !rest.spot) delete rest.meet;
+  const { sent, lv, blv, flv, ...rest } = plan;
+  if (k === 'spot' || !rest.spot) { delete rest.meet; delete rest.finish; }   // a finish is downstream of its own start
   return rest;
 }
 
@@ -127,13 +127,13 @@ function outingNeither(o) {
 // "Share this outing": a link to the plan with this outing in it, for someone going with you. It is the plan
 // as it is, except where it starts from, which may be your own location or your home town: the link's plan
 // starts from the outing's spot instead, so whoever opens it sees the outing and the spots around it. It is
-// stamped with the forecast it was sent from and each spot's level then (stamp: { sent, lv, blv }), so the
+// stamped with the forecast it was sent from and each spot's level then (stamp: { sent, lv, blv, flv }), so the
 // page can tell whoever opens it what has changed since; a stamp that is not whole is left off.
 const outingShared = (plan, main, stamp = {}) => {
-  const { compare, sent, lv, blv, ...rest } = plan;
-  const ok = stamp.sent && stamp.lv && (!rest.backup || stamp.blv);
+  const { compare, sent, lv, blv, flv, ...rest } = plan;
+  const ok = stamp.sent && stamp.lv && (!rest.backup || stamp.blv) && (!rest.finish || stamp.flv);
   return { ...rest, from: { name: main.name, lat: main.lat, lon: main.lon },
-    ...(ok ? { sent: stamp.sent, lv: stamp.lv, ...(rest.backup ? { blv: stamp.blv } : {}) } : {}) };
+    ...(ok ? { sent: stamp.sent, lv: stamp.lv, ...(rest.backup ? { blv: stamp.blv } : {}), ...(rest.finish ? { flv: stamp.flv } : {}) } : {}) };
 };
 
 // ------------------------------------------------------------------------------ alerts for the outing
@@ -152,11 +152,11 @@ const outLong = iso => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', 
 const outNames = ps => { const n = [...new Set(ps.map(p => outEsc(p.name || p.spot)))]; return n.length > 1 ? `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}` : n[0] || ''; };
 // The outing's pairs: its spot, then its backup, on its day. byId: names, and only spots still listed.
 function outingPairs(plan, byId = null) {
-  const ids = [plan.spot, plan.backup !== plan.spot ? plan.backup : null].filter(id => id && (!byId || byId.has(id)));
+  const ids = [plan.spot, plan.finish, plan.backup !== plan.spot ? plan.backup : null].filter((id, i, all) => id && all.indexOf(id) === i && (!byId || byId.has(id)));
   return plan.day ? ids.map(id => ({ spot: id, date: plan.day, ...(byId ? { name: byId.get(id).name } : {}) })) : [];
 }
-// Against the list this browser asked for: the pairs already on, those that fit under the cap (the spot
-// before the backup), and those left out by it.
+// Against the list this browser asked for: the pairs already on, those that fit under the cap (the spot, then a
+// paddle's finish, then the backup), and those left out by it.
 function outingAsk(list, pairs, max = outingDates().MAX_DATES) {
   const D = outingDates(), on = pairs.filter(p => D.hasDate(list, p.spot, p.date)), want = pairs.filter(p => !D.hasDate(list, p.spot, p.date));
   const room = Math.max(0, max - list.length);
@@ -214,7 +214,7 @@ function outingAlert(a) {
 // event is the whole day. It carries the spot's name and links back to the spot's page and the plan,
 // never a forecast level, which would be out of date by the time the calendar shows it. One UID per day
 // and spot, so importing the file again after changing the time updates the event rather than adding one.
-// c = { day, when, act, meet, main: {id, name, url, practical}, backup: {name, url, practical} | null, plan (the plan's address), host }.
+// c = { day, when, act, meet, main: {id, name, url, practical}, finish: {name, url} | null, backup: {name, url, practical} | null, plan (the plan's address), host }.
 // `practical` (outingPractical): the spot's guide's confirmed parking and getting-in facts, which help at the car park
 // with no signal. Only what the guide verified, with its checked date; never a swimmer's suggestion, and never a
 // meeting point or a put-in the guide does not give.
@@ -231,6 +231,7 @@ function outingIcs(c, now = Date.now()) {
   const when = span ? [`DTSTART:${D.icsDay(c.day)}T${hh(span[0])}`, `DTEND:${D.icsDay(c.day)}T${hh(span[1])}`]
     : [`DTSTART;VALUE=DATE:${D.icsDay(c.day)}`, `DTEND;VALUE=DATE:${D.icsDay(next)}`];
   const text = [OUTING_CHECK, `Your spot: ${c.main.name}, ${c.main.url}`, ...(OUTING_MEET_WORDS[c.meet] ? [`Meet ${OUTING_MEET_WORDS[c.meet]}.`] : []), ...(c.main.practical || []),
+    ...(c.finish ? [`Finish: ${c.finish.name}, ${c.finish.url}`] : []),
     ...(c.backup ? [`Backup: ${c.backup.name}, ${c.backup.url}`, ...(c.backup.practical || [])] : []), `Your plan: ${c.plan}`].join('\n');
   return D.icsCalendar('-//SwimSignal//Outing//EN', [['BEGIN:VEVENT', `UID:outing-${c.day}-${c.main.id}@${c.host}`, `DTSTAMP:${D.icsStamp(now)}`, ...when,
     `SUMMARY:${D.icsEsc(`${outingVerb(c.act)}: ${c.main.name}`)}`, `LOCATION:${D.icsEsc(c.main.name)}`, `DESCRIPTION:${D.icsEsc(text)}`, `URL:${c.main.url}`,
@@ -278,6 +279,49 @@ function outingAccess(s, today) {
 }
 const outingAccessBox = (id, inner) => `<div class="outing-access" data-outing-access="${outEsc(id)}"><p class="outing-role">Access</p>${inner}</div>`;
 
+// ------------------------------------------------------------------------------ a paddle's finish
+// For a paddle or a board, a finish: another listed river spot downstream (Swim Together S4). The build finds the route
+// down the river between the two and which monitored overflows are on it (src/dipcast/stretches.py): the start's
+// lite `downstream` ([[id, km]]) offers the finishes, and its data/spot/<id>.json `stretches` holds, for each, the
+// overflows on the route ([site_id, km below the start]), those on a side stream or another arm of the river that the
+// finish's forecast counts ([site_id, km below the start where it joins, or null where it reaches the finish another
+// way]) and how many are above the start. The names come from the finish's data/upstream/<id>.json. Neither spot's
+// level is one for the water between, and the block says so.
+const OUTING_STRETCH_SHOWN = 8;
+// The finishes a start offers: [{ id, name, km }], listed spots only, nearest first (byId: the listed spots).
+const outingFinishes = (s, byId) => (s && Array.isArray(s.downstream) ? s.downstream : [])
+  .filter(([id, km]) => byId.has(id) && Number.isFinite(km)).map(([id, km]) => ({ id, name: byId.get(id).name, km }));
+const outingKm = km => `${km < 10 ? Math.round(km * 10) / 10 : Math.round(km)} km`;
+// The block, as HTML. o = { start, finish (names), st (the start's stretch to the finish, or null), rows (the
+// finish's upstream file's overflows, by site_id: a Map), state ('loading', 'ok', 'missing') }.
+function outingStretch(o) {
+  const head = `<h3 class="outing-watch-h">Between ${outEsc(o.start)} and ${outEsc(o.finish)}</h3>`;
+  if (o.state === 'loading') return `<div class="outing-watch outing-stretch">${head}<p class="small muted">Loading what drains into the water between…</p></div>`;
+  if (o.state !== 'ok' || !o.st) return `<div class="outing-watch outing-stretch">${head}<p class="small muted">What drains into the water between could not be loaded here. Each spot's page has its own overflows.</p></div>`;
+  const st = o.st;
+  const named = id => { const r = o.rows && o.rows.get(id); return r ? { name: r.site_name || id, company: r.company, water: r.receiving_watercourse, live: r.has_live } : { name: id }; };
+  const list = (items, line) => {
+    if (!items.length) return '';
+    const shown = items.slice(0, OUTING_STRETCH_SHOWN).map(line), more = items.length - shown.length;
+    return `<ul class="outing-watch-list">${shown.map(t => `<li>${t}</li>`).join('')}${more > 0 ? `<li>and ${more} more.</li>` : ''}</ul>`;
+  };
+  const feed = r => r.live === false ? ', no live feed' : '';
+  const route = st.route || [], side = st.side || [], n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
+  const onRoute = list(route, ([id, km]) => { const r = named(id);
+    return `${outEsc(r.name)}${r.company ? ` (${outEsc(r.company)})` : ''}, ${km === null ? 'on the route' : `${outingKm(km)} below the start`}${feed(r)}`; });
+  const fromSide = list(side, ([id, km]) => { const r = named(id);
+    return `${outEsc(r.name)}${r.water ? `, on ${outEsc(r.water)}` : ''}, ${km === null ? 'reaching the finish another way' : `joining ${outingKm(km)} below the start`}${feed(r)}`; });
+  return `<div class="outing-watch outing-stretch">${head}`
+    + `<p>About ${outingKm(st.km)} down the river, by the way the water goes.</p>`
+    + `<p><b>On the route: ${route.length ? n(route.length, 'monitored overflow', 'monitored overflows') : 'no monitored overflow that SwimSignal knows of'}.</b></p>${onRoute}`
+    + (side.length ? `<p><b>From side streams or another arm of the river: ${side.length}.</b> Their water reaches the finish, and the route below where each joins.</p>${fromSide}` : '')
+    + (st.above ? `<p>Above the start: ${n(st.above, 'more', 'more')}, counted in both spots' levels.</p>` : '')
+    + '<p class="small muted">The finish\'s level counts all of these; the start\'s counts only those above it. Neither is a level for the water between: '
+    + 'just below an overflow that is spilling, the water can be worse than at either end. These are the monitored storm overflows SwimSignal has placed on the river, '
+    + 'and from side streams only those within 60 km of the finish by water: not unmonitored outfalls, or farm and road runoff. '
+    + 'Nothing here is about weirs, flow, or where you can get in and out.</p></div>';
+}
+
 // ------------------------------------------------------------------------------ the tile
 // A column for a spot: c = { id, name, href, tone, headline, why, ev, meta }, headline/why/ev already
 // HTML (the page's own words, escaped where they were made), the rest text.
@@ -290,7 +334,8 @@ const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">$
 // main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
 // site's alerts for a date are on, so the outing can be sent if asked), preview (opened from a link and not
 // kept: index.html, PLAN_PREVIEW; then { mine: what keeping it replaces, outingReplaces's, or ''; off: the link's own
-// day where it is no longer one of the five (plan.js, planDayOff), or null }; else null) }.
+// day where it is no longer one of the five (plan.js, planDayOff), or null }; else null), finishes (for a paddle or a
+// board: outingFinishes, or null), finish (its id), fin (its column, or null), stretch (outingStretch's HTML) }.
 function outingSection(o) {
   const opt = (groups, sel) => groups.map(([h, g]) => `<optgroup label="${outEsc(h)}">`
     + g.map(s => `<option value="${outEsc(s.id)}"${s.id === sel ? ' selected' : ''}>${outEsc(s.name)}</option>`).join('') + '</optgroup>').join('');
@@ -306,6 +351,7 @@ function outingSection(o) {
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
     : `<p class="outing-said">${said}</p>${meet}${outingBoth(o)}${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
+      + (o.fin ? `<div class="outing-pair one">${outingCol(o.fin, 'Finish')}</div><div id="outing-stretch">${o.stretch || ''}</div>` : '')
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
   // Opened from a link someone shared (plan.js, sent=): said so, with what is below for it. Until it is kept
@@ -324,7 +370,10 @@ function outingSection(o) {
     + `<label>Spot<select data-outing="spot"><option value="">Choose a spot</option>${opt(o.groups, o.spot)}</select></label>`
     + `<label>Backup (optional)<select data-outing="backup"><option value="">No backup</option>${opt(o.backupGroups, o.backup)}</select></label>`
     + `<label>What for<select data-outing="act">${acts}</select></label>`
-    + (o.main ? `<label>Meet (optional)<select data-outing="meet">${meets}</select></label>` : '') + '</div>'
+    + (o.main ? `<label>Meet (optional)<select data-outing="meet">${meets}</select></label>` : '')
+    + (o.main && o.finishes ? (o.finishes.length
+      ? `<label>Finish (optional)<select data-outing="finish"><option value="">Not set</option>${o.finishes.map(f => `<option value="${outEsc(f.id)}"${f.id === o.finish ? ' selected' : ''}>${outEsc(f.name)}, ${outingKm(f.km)} down</option>`).join('')}</select></label>`
+      : `<p class="small muted">No listed spot downstream of ${outEsc(o.main.name)} that SwimSignal can trace the route to, so there is no finish to pick.</p>`) : '') + '</div>'
     + gone + body + '</details>';
 }
 
@@ -350,7 +399,7 @@ let OUTING_OPEN = null, OUTING_DAY = null;
 function drawOuting(box, shown) {
   const old = document.getElementById('outing'); if (old) old.remove();
   const kept = outingForDay(PLAN, OUTING_DAY); OUTING_DAY = PLAN.day;
-  if (kept !== PLAN) { for (const k of ['when', 'sent', 'lv', 'blv']) if (!(k in kept)) delete PLAN[k]; planAddress(); }   // a time, or a shared stamp, for another day
+  if (kept !== PLAN) { for (const k of ['when', 'sent', 'lv', 'blv', 'flv']) if (!(k in kept)) delete PLAN[k]; planAddress(); }   // a time, or a shared stamp, for another day
   const byId = new Map(DATA.spots.map(s => [s.id, s])), miles = new Map(shown.map(o => [o.s.id, o.miles])), from = planFrom();
   const away = s => miles.has(s.id) ? miles.get(s.id) : from ? km(from, [s.lat, s.lon]) / MILE_KM : null;
   const col = s => { const m = away(s);
@@ -360,12 +409,16 @@ function drawOuting(box, shown) {
       access: outingAccess(s, today()),
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
+  // A paddle's finish, while the spot still offers it.
+  const paddle = OUTING_FINISH_ACTS.includes(PLAN.act), finishes = paddle && pair.main ? outingFinishes(pair.main, byId) : null;
+  const fin = finishes && finishes.some(f => f.id === PLAN.finish) ? byId.get(PLAN.finish) : null;
   if (OUTING_OPEN === null) OUTING_OPEN = !!(PLAN.spot || PLAN.when);
   // outingwatch.js reads the stamp (outingWatchShared); since.js says its time.
   const sent = PLAN.sent && typeof outingWatchShared === 'function' && outingWatchShared(PLAN);
   // Opened from a link and not kept (index.html, PLAN_PREVIEW): nothing below writes to this browser until it is.
   const preview = typeof PLAN_PREVIEW === 'boolean' && PLAN_PREVIEW && pair.main ? { mine: outingReplaces(keptPlan(), byId), off: PLAN_OFF } : null;
-  box.insertAdjacentHTML('afterbegin', outingSection({ preview, day: PLAN.day, when: PLAN.when, spot: PLAN.spot, backup: PLAN.backup, act: PLAN.act, meet: PLAN.meet,
+  box.insertAdjacentHTML('afterbegin', outingSection({ preview, finishes, finish: PLAN.finish, fin: fin && col(fin),
+    stretch: fin ? outingStretch({ start: pair.main.name, finish: fin.name, state: 'loading' }) : '', day: PLAN.day, when: PLAN.when, spot: PLAN.spot, backup: PLAN.backup, act: PLAN.act, meet: PLAN.meet,
     shared: sent ? issuedWords(sent.forecast) : '',
     groups: outingOptions(list, SAVED, byId, PLAN.backup), backupGroups: outingOptions(list, SAVED, byId, PLAN.spot),
     main: pair.main && col(pair.main), alt: pair.backup && col(pair.backup), missing: pair.missing,
@@ -377,11 +430,12 @@ function drawOuting(box, shown) {
     for (const x of Object.keys(PLAN)) if (!(x in next)) delete PLAN[x];
     if (el.value) PLAN[k] = el.value; else delete PLAN[k];
     if (PLAN.backup && PLAN.backup === PLAN.spot) delete PLAN.backup;
+    if (!OUTING_FINISH_ACTS.includes(PLAN.act)) delete PLAN.finish;   // a finish is for a paddle or a board
     planAddress(); drawOuting(box, shown);
     const again = document.querySelector(`[data-outing="${k}"]`); if (again) again.focus();
   }));
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
-  if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, pair, DATA.generated_at, Date.now(), !!preview);   // outingwatch.js: what would change this plan, and what has
+  if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, { ...pair, finish: fin }, DATA.generated_at, Date.now(), !!preview);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
   const keepIt = document.getElementById('outing-keep-it');
   if (keepIt) keepIt.addEventListener('click', () => {
@@ -393,14 +447,16 @@ function drawOuting(box, shown) {
   // planned here or kept from a link; never for one only looked at.
   if (pair.backup && !preview && typeof passportPlanned === 'function') passportPlanned(today());
   // Each spot's guide, once its own file is in (index.html, spotDetail), into its column's access block.
-  for (const s of [pair.main, pair.backup].filter(Boolean)) if (typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded)
+  for (const s of [pair.main, pair.backup, fin].filter(Boolean)) if (typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded)
     spotDetail(s).then(() => { const el = tile.querySelector(`[data-outing-access="${CSS.escape(s.id)}"]`);
       if (el) el.innerHTML = '<p class="outing-role">Access</p>' + outingAccess(s, today()); });
-  if (typeof OutingPack === 'object' && !preview) OutingPack.draw(pair);   // outingpack.js: keep this outing for offline use, once it is kept
+  if (fin) outingStretchDraw(pair.main, fin);
+  if (typeof OutingPack === 'object' && !preview) OutingPack.draw({ ...pair, finish: fin });   // outingpack.js: keep this outing for offline use, once it is kept
   // The calendar file, made here when asked (organisers.html's way of handing a file over).
   document.getElementById('outing-ics').addEventListener('click', () => {
     const abs = p => new URL(p, location.href).href, link = s => abs(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''));
-    const text = outingIcs({ day: PLAN.day, when: PLAN.when, act: PLAN.act, meet: PLAN.meet, main: { id: pair.main.id, name: pair.main.name, url: link(pair.main), practical: outingPractical(pair.main) },
+    const text = outingIcs({ day: PLAN.day, when: PLAN.when, act: PLAN.act, meet: PLAN.meet, finish: fin && { name: fin.name, url: link(fin) },
+      main: { id: pair.main.id, name: pair.main.name, url: link(pair.main), practical: outingPractical(pair.main) },
       backup: pair.backup && { name: pair.backup.name, url: link(pair.backup), practical: outingPractical(pair.backup) }, plan: abs(planPath() + planHash(PLAN)), host: location.hostname });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }));
@@ -409,9 +465,23 @@ function drawOuting(box, shown) {
   });
   bindShareLink(document.getElementById('outing-share'), document.getElementById('outing-alert-msg'),
     new URL(planPath() + planHash(outingShared(PLAN, pair.main, { sent: outingSent(DATA.generated_at),
-      lv: dayLevel(pair.main, PLAN.day), blv: pair.backup && dayLevel(pair.backup, PLAN.day) })), location.href).href,
+      lv: dayLevel(pair.main, PLAN.day), blv: pair.backup && dayLevel(pair.backup, PLAN.day), flv: fin && dayLevel(fin, PLAN.day) })), location.href).href,
     `${outingVerb(PLAN.act)}: ${pair.main.name} · ${BRAND}`, 'Copy link to this outing');
   bindOutingAlert(byId);
+}
+
+// The stretch's block, once the start's own file (its `stretches`) and the finish's list of overflows are in.
+async function outingStretchDraw(start, fin) {
+  let st = null, rows = null, state = 'ok';
+  try {
+    if (typeof spotDetail === 'function' && start.detail_file && !start.detail_loaded) await spotDetail(start);
+    st = (start.stretches || []).find(x => x && x.to === fin.id) || null;
+    const r = await fetch(new URL(`data/upstream/${encodeURIComponent(fin.id)}.json`, ROOT).href);
+    if (!r.ok) throw new Error(`the finish's overflows answered ${r.status}`);
+    rows = new Map(((await r.json()).overflows || []).map(o => [o.site_id, o]));
+  } catch (e) { state = 'missing'; }
+  const el = document.getElementById('outing-stretch');
+  if (el && PLAN.finish === fin.id && PLAN.spot === start.id) el.innerHTML = outingStretch({ start: start.name, finish: fin.name, st, rows, state });
 }
 
 // What this browser can do about alerts (index.html's canPush, pushSub, IOS and IN_APP, as the Saved page's
@@ -459,6 +529,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { outingResumeSaid, outingReplaces, outingOff, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }

@@ -175,7 +175,7 @@ test('storage keys: the code, the doc and the privacy notice agree', () => {
   assert.match(read('src/dipcast/site/spotdate.js'), /const DATES_KEY = 'dipcast\.pushdates'/);
   assert.equal((brief.match(/localStorage\.setItem\(([^,]+),/g) || []).join(), 'localStorage.setItem(ACK_KEY,');
   // The privacy notice names both: the outing in the kept plan, and the read tick.
-  assert.match(privacy, /the time, spot, backup spot, what it is for and where to meet of an outing you chose/);
+  assert.match(privacy, /the time, spot, backup spot, finish, what it is for and where to meet of an outing you chose/);
   assert.match(privacy, /"I have read version …" keeps a note in your browser's local storage/);
 });
 
