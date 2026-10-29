@@ -1018,6 +1018,20 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
   coverage page, which links to Natural Resources Wales and the Scottish Environment Protection Agency.
   The words say who publishes what, and nothing about the water.
 
+### The list's order: lowest risk first (29 October 2026)
+
+The list opens lowest risk first, the question a swimmer asks ("where can I go?"), in place of A–Z by area.
+Four sorts: Lowest risk, Highest risk, A–Z, Near me (`SORTS`; Ethan: "surely we want to be able to sort for
+lowest risk, and even lowest risk near me?"). The order (`lowOrder`): low, moderate, high, very high, then
+spots with no level, then spots whose official notice restricts swimming, last of all whatever their level
+(the reverse of Highest risk, where they lead); the nearer first among equals once a place is given; then the
+name. A line over the list says "Spots with an official notice come last." while one is in it. A–Z keeps the
+areas; the other sorts are one list. Once a place is given, the cards over the list are the lowest-risk spots
+within 30 miles in that order (`nearCards`, "Lowest risk within 30 miles"); with none so near, the three
+nearest ("Near you"). Before, the three nearest of any level put River Avon, Warleigh Weir (high, 13 miles)
+above the Wye at Symonds Yat (low, 27 miles) for a Bristol location. The trade-off: a close moderate spot is
+not among the cards when low ones lie within 30 miles; the list, nearest first under Near me, still has it.
+
 ### A swimmer's order (6 October 2026)
 
 A spot's page had grown to 7,087 px at 375 px wide (Wharfe at Cromwheel, about nine screens), and its
