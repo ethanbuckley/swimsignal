@@ -70,10 +70,11 @@ test('the line on what the forecast could read: live readings, days with no fore
 test('the answer is one block, the five days straight under it, and what to do and what it counts under them', () => {
   const s = spot(['low', 'moderate', 'moderate', 'moderate', 'high'], {now: {label: 'low', risk: 0.03, discharging_upstream: 2, monitored_upstream: 44}});
   const h = spots.prerender({generated_at: GEN, spots: [s]}, 'https://example.org/swim/').a;
-  // The answer: name, level, why and when, where the week goes, what was read, the issue time; nothing else.
+  // The answer: name, level, why and when, where the week goes, what was read, the issue time, then the place
+  // (kind, under the issue time since 29 Oct 2026); nothing else.
   const answer = h.slice(h.indexOf('<section class="answer"'), h.indexOf('</section>', h.indexOf('<section class="answer"')));
   assert.deepEqual([...answer.matchAll(/<(?:h1|h2|p) class="([\w-]+)/g)].map(m => m[1]),
-    ['kind', 'spot-name', 'big', 'why', 'next', 'cover', 'issued']);
+    ['spot-name', 'big', 'why', 'next', 'cover', 'issued', 'kind']);
   // Then the five days' tile, first in the stack: its sentence, the rows, what to do, what the level counts.
   assert.ok(h.indexOf('</section><div class="stack"><section class="tile" aria-labelledby="days-h">') > 0);
   const tile = h.slice(h.indexOf('aria-labelledby="days-h"'));

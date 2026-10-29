@@ -56,7 +56,7 @@ const opening = assumptions => spots.prerender({generated_at: '2026-09-29T08:00:
 
 test("the spot's opening has the sentence straight under Issued when the rain is over 6 hours old, and not under", () => {
   const old = opening({max_upstream_km: 60, rain_issued_at: '2026-09-28T09:00:00+01:00', rain_age_h: 23, rain_fallback: 'no answer'});
-  assert.ok(old.includes('<p class="issued">Issued Tue 08:00</p><p class="issued">Rain forecast from 09:00 yesterday: Open-Meteo did not send a newer one.</p>'),
+  assert.ok(old.includes('<p class="issued">Issued Tue 08:00</p></div><p class="issued">Rain forecast from 09:00 yesterday: Open-Meteo did not send a newer one.</p>'),
     old.match(/<p class="issued">.*?<\/p>(<p[^>]*>.*?<\/p>)?/)[0]);
   const fresh = opening({max_upstream_km: 60, rain_issued_at: '2026-09-29T06:30:00+01:00', rain_age_h: 1.5});
   assert.ok(fresh.includes('<p class="issued">Issued Tue 08:00</p>') && !fresh.includes('Rain forecast from'));
