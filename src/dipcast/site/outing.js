@@ -31,11 +31,13 @@ function outingWhen(day, when) {
 }
 // The line on Explore's "Your outing" (index.html, outingResume; plan.js, planOuting): when and what for, in
 // the plan's own words, then the backup by name. With an activity other than swimming, the plan's own note
-// that the level is the water's, whatever you do on it. Plain text: the page escapes it.
-function outingResumeSaid(o, backupName = null) {
+// that the level is the water's, whatever you do on it; and, on the day, the plan's own note when its time has
+// passed (outingTimeNote). Plain text: the page escapes it. nowMs: the device's clock.
+function outingResumeSaid(o, backupName = null, nowMs = Date.now()) {
   const ing = o.act && o.act !== 'swim' && OUTING_ACT_WORDS[o.act] ? `, ${OUTING_ACT_WORDS[o.act][1]}` : '';
   const when = outingWhen(o.day, o.when).replace(/^./, c => c.toUpperCase()) + ing;
-  return [`${when}${backupName ? `, with ${backupName} as a backup` : ''}.`, ...(ing ? ['The level is for the water, the same whatever you do on it.'] : [])];
+  return [`${when}${backupName ? `, with ${backupName} as a backup` : ''}.`, ...outingTimeNote(o.day, o.when, nowMs).slice(1),
+    ...(ing ? ['The level is for the water, the same whatever you do on it.'] : [])];
 }
 // What the time does and does not mean, as sentences: the level is for the whole day; and on today, a
 // time already past. nowMs: the device's clock.

@@ -38,9 +38,14 @@ test("the line is the plan's own words, and another activity is told the level i
   try {
     assert.deepEqual(O.outingResumeSaid({ day: '2026-10-31', when: 'morning', act: null }, 'River Thames, Henley'),
       ['Saturday morning, with River Thames, Henley as a backup.']);
-    assert.deepEqual(O.outingResumeSaid({ day: '2026-10-29', when: '07', act: 'sup' }),
+    assert.deepEqual(O.outingResumeSaid({ day: '2026-10-29', when: '07', act: 'sup' }, null, new Date(2026, 9, 29, 6, 30).getTime()),
       ['Today at 07:00, paddleboarding.', 'The level is for the water, the same whatever you do on it.']);
     assert.deepEqual(O.outingResumeSaid({ day: '2026-10-30', when: null, act: 'swim' }), ['Tomorrow.']);
+    // On the day, a time gone by says so, as the plan does (outingTimeNote); before it, nothing extra.
+    const at = h => new Date(2026, 9, 29, h, 30).getTime();
+    assert.deepEqual(O.outingResumeSaid({ day: '2026-10-29', when: 'morning', act: null }, null, at(20)),
+      ['This morning.', 'That time has already passed today.']);
+    assert.deepEqual(O.outingResumeSaid({ day: '2026-10-29', when: 'evening', act: null }, null, at(15)), ['This evening.']);
   } finally { L.setToday(null); }
 });
 
