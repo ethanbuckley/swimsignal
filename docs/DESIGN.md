@@ -633,6 +633,17 @@ days began 739 px down at Long Bridges and 802 px down at Ludlow, below the scre
   clear the bar went from 7 to 3: Waterhead 777 to 706, Tonbridge 749 to 701, the three Windermere
   bathing waters 716 to 669. Still below it: Frensham Great Pond (the EA's advice against bathing comes
   first, on purpose), River Dart at Spitchwick (two overflows discharging now, 734) and Waterhead by 4 px.
+- **Later on 29 October 2026 (the v2 mock-up, Ethan: "Build all of it"):** the spot's name comes first
+  and the place (kind, water, size, `.kind`) moves under the issue time; why and when share a line
+  ("Right now · Low risk tomorrow", `.wn`), as do what the forecast could read and the issue time
+  (`.ci`). Words unchanged. On a phone the page is then the answer, the five days and "Lower risk
+  nearby"; everything else goes in three folds named for the question each answers (`phoneFolds`):
+  *Why this level* (where the risk comes from, the Upstream map, the day's tiles), *At the water*
+  (readings now, the phone's small map, the rating, the practical guide, then reviews, visit notes
+  and illness reports), *What this forecast cannot see* ("Not known here", what the level counts,
+  the water-test line, the folded detail). Waterhead at 375 x 812 went from 8.7 screens to 3.3, Henley
+  from 5.8 to 2.9. A desktop keeps its columns; crossing 800 px draws the page again. The Upstream map
+  is closed by default on a phone: the trade-off Ethan accepted for a short page.
 
 ### River high and flood alerts (3 October 2026)
 
