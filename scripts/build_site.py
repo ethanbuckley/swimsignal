@@ -2130,32 +2130,34 @@ def spot_blurb(spot: dict) -> str:
 # later paint would count instead; so it holds only what does not depend on the forecast.
 SEARCH_ICON = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
                'aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>')   # index.html's
-# Near me, under the search (index.html's NEAR_CTA, word for word). The line for groups is at the
-# foot of the list, so the opening ends with the row of controls.
-NEAR_CTA = ('<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span class="cta-l">Show spots near me</span><span class="cta-s">Near me</span></button>')
-# Under it, the forecast for the water where you are (index.html's HERE_CTA, word for word).
-HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>'
+# Near me, a pin at the end of the search field (index.html's NEAR_PIN, word for word; 29 Oct 2026).
+NEAR_PIN = ('<button type="button" class="search-loc" data-near-cta aria-label="Spots near me">'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg></button>')
 # Under the opening, the first tile's place in hairline grey, so that nothing but the opening's words
 # sits on the picture (docs/DESIGN.md, the sky and the glass) and the page does not jump when it comes.
 SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="skel-r"></span>' * 4 + '</div>'
 
 
-def home_lead(n: int) -> str:
+def home_lead(n: int, days: list[str] | None = None) -> str:
     """The list's opening as index.html's renderList draws it, down to the row of controls, for n spots,
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
-    typed carries over. The day picker has only its first choice until the forecast's dates are known.
+    typed carries over.
     data-built: the script updates this .lead where it stands rather than replacing it (index.html,
     overBuilt), so its picture is painted once, at the first paint. data-nosnippet: search engines may index
     what is in #result but not quote it in a result, where a level would outlive its forecast; they quote
-    the page's description instead, which gives none (the script keeps #result, so the mark stays)."""
+    the page's description instead, which gives none (the script keeps #result, so the mark stays).
+    days: the forecast's five dates, for the strip of days (index.html's list-days), today checked; its
+    counts wait for the forecast."""
     return ('<div id="result" data-built data-nosnippet><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
             f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England<span class="lede-map">, and for any river or lake you '
             '<span class="w-touch">tap</span><span class="w-click">click</span> on the map</span>. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
-            'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value=""></div>'
-            f'{NEAR_CTA}{HERE_CTA}</section>'
-            '<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday">'
-            '<option value="">Today and tomorrow</option></select></div>'   # Low risk only is in the list's Filter sheet (29 Oct 2026)
+            f'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="">{NEAR_PIN}</div>'
+            '</section>'
+            '<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>'
+            + ''.join(f'<label><input type="radio" name="list-day" value="{d}"{" checked" if i == 0 else ""}><span>'
+                      f'{"Today" if i == 0 else pd.Timestamp(d).strftime("%a")} <span class="dd">\u00a0</span></span></label>' for i, d in enumerate(days or []))
+            + f'</fieldset></div><p class="small muted strip-note">Under each day: the spots at low risk, of {n}.</p>'
             f'</div><div class="cols"><div class="col-list"><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>'
             # The map's tile, as index.html's MAP_TILE frames it, empty until the script moves the map in.
             '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')
@@ -2685,7 +2687,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
-    home = home.replace(LOADING, home_lead(len(results)), 1)
+    five = [(pd.Timestamp(day) + pd.Timedelta(days=i)).date().isoformat() for i in range(5)] if day else None
+    home = home.replace(LOADING, home_lead(len(results), five), 1)
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
     (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))

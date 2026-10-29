@@ -1285,6 +1285,26 @@ gives all four navigation links a single full-width row.
   what is not known rather than stay blank. The note above the table: "A lower forecast level does not
   mean safe water: check the signs at the water." No column is called the best.
 
+## The home page's opening, shorter (29 October 2026)
+
+The v2 mock-up's opening, built (Ethan: "Build all of it"). Before it a phone met 14 controls before the
+first spot's answer; the first row began 732 px down a 375 x 812 screen, under the tab bar at 748.
+
+- **Near me is a pin at the end of the search field** (`NEAR_PIN`, `.search-loc`, "Spots near me"), as a
+  maps app has it, in place of a full-width button. It stays once a place is given.
+- **"Or check the river or lake where you are" went**, with `hereForecast`: the map's tap on any river or
+  lake does the same. The trade-off Ethan accepted.
+- **The five days are a strip**, Plan's (`list-days`), each day with how many spots are at low risk that
+  day (`lowOn`, the same count Low risk only gives), and a line under it: "Under each day: the spots at
+  low risk, of 109." It replaced the select ("Today and tomorrow" first) and the line under it ("This
+  weekend, Sunday: 66 of 109 spots at low risk · Show", `answerLines`, removed). The list opens on today,
+  not today and tomorrow together (the other trade-off accepted); the map's own picker keeps both. A
+  link from the list carries `#day=` only for a day that is not today, so a spot opens on its own answer.
+- The build's copy (`home_lead`) has the pin and the strip, today checked, the counts waiting for the
+  forecast.
+
+At 375 x 812 the first spot now begins 544 px down (320 x 640: 555, the bar at 576).
+
 ## Since you last looked (4 October 2026)
 
 - A saved spot's card says what changed since this browser last showed it, in one line under the
