@@ -3690,7 +3690,9 @@ let PLAN_READ = false;
 // PLAN_PREVIEW: the plan shown is an outing opened from a link (plan.js, planInvited), so it is in the address
 // only, and the plan kept here is left as it was until keepPlan. keptPlan: that plan, as planKept reads it.
 // PLAN_OFF: such an outing's own day, where its address named one that is no longer among the five (plan.js, planDayOff).
-let PLAN_PREVIEW = false, PLAN_OFF = null;
+// PLAN_NEW: the plan about to be shown was started here, from "Plan an outing here" (planHere), not opened from a link:
+// it is kept at once unless it would replace an outing still to come (plan.js, planHasOuting).
+let PLAN_PREVIEW = false, PLAN_OFF = null, PLAN_NEW = false, PLAN_FRESH = false;
 const keptPlan = () => planKept(stored(PLAN_KEY), planDates());
 const planAddress = () => { const h = planHash(PLAN); history.replaceState(history.state, '', planPath() + h);
   if (!PLAN_PREVIEW) try { localStorage.setItem(PLAN_KEY, h); } catch (e) { /* kept for this visit only */ } };
@@ -3766,7 +3768,9 @@ function renderPlan() {
   document.title = `Plan a swim · ${BRAND}`;
   if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
-  PLAN_PREVIEW = planInvited(PLAN, keptPlan(), location.hash.length > 1, PLAN_PREVIEW);
+  const keptNow = keptPlan();
+  PLAN_PREVIEW = planInvited(PLAN, keptNow, location.hash.length > 1, PLAN_PREVIEW) && !(PLAN_NEW && !planHasOuting(keptNow, planDates()));
+  PLAN_FRESH = PLAN_PREVIEW && (PLAN_NEW || PLAN_FRESH); PLAN_NEW = false;   // fresh: started here, not from a link (outing.js says so)
   if (location.hash.length > 1) PLAN_OFF = planDayOff(location.hash, planDates());
   if (!PLAN_PREVIEW) PLAN_OFF = null;
   // A plan from an address is read on its own (plan.js, readPlan): its day is not a change of day, so a link
@@ -4109,9 +4113,24 @@ function bindSave(d) {
     if (a) a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved(); });
   });
 }
+// "Plan an outing here": Plan a swim on this spot as the outing's, for the day shown (plan.js, planFromSpot). A spot
+// the forecast cannot place (no position) has none. It is the planner as it is, with the outing tile open on the spot.
+const planHereHash = d => planFromSpot(d, PLAN_READ ? PLAN : planKept(stored(PLAN_KEY), planDates()), planDates().includes(DAY) ? DAY : null);
+const canPlanHere = d => typeof planFromSpot === 'function' && Number.isFinite(d.lat) && Number.isFinite(d.lon) && !d.unlisted;   // plan.js loaded: not in a prerender
+// Under the five days, where someone deciding when to go already is, the same way to plan it: added here once the page
+// is drawn, not in daysTile, which the build's prerender copies (scripts/prerender_spots.js) without the planner. The
+// button among the page's actions is 1,700 px further down on a phone (Port Meadow at 375 px, 29 Oct 2026).
+const planHereLine = d => `<p class="small plan-here-line">Going? <a href="${esc(planPath() + planHereHash(d))}" data-plan-here>Plan an outing here</a>: a time, a backup, and a link to share.</p>`;
+function planHere(d) {
+  const days = document.getElementById('days-h');
+  if (days && canPlanHere(d) && !document.querySelector('.plan-here-line')) days.closest('section').insertAdjacentHTML('beforeend', planHereLine(d));
+  document.querySelectorAll('[data-plan-here]').forEach(a => a.addEventListener('click', e => {
+    if (!plainClick(e)) return; e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d)); }));
+}
 function actions(d) {
   const fb = `${esc(FEEDBACK)}&amp;spot=${encodeURIComponent(d.name)}`;
-  return `<div class="actions"><button type="button" class="btn primary" id="share">Copy link to this spot</button>`
+  const here = canPlanHere(d) ? `<a class="btn primary" id="plan-here" href="${esc(planPath() + planHereHash(d))}" data-plan-here>Plan an outing here</a>` : '';
+  return `<div class="actions">${here}<button type="button" class="btn${here ? '' : ' primary'}" id="share">Copy link to this spot</button>`
     + `<button type="button" class="btn" id="share-img">Share as a picture</button>`
     + `<button type="button" class="btn" id="swam" aria-expanded="false">Log a swim</button>`   // the swim journal's form (journal.js)
     + `<a class="btn" href="${fb}">Tell us how you used this</a></div>`
@@ -4490,7 +4509,7 @@ function render(d) {
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
     h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
       + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
-    setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
+    setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
   }
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
   // phone, where they are display:contents and the order is the stack's. What the page could not see
@@ -4512,7 +4531,7 @@ function render(d) {
   if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
-  setPanel(h); bindBack(); bindSave(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);
+  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);
   const moreBtn = document.getElementById('more-contrib');
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });

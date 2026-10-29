@@ -342,7 +342,8 @@ const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">$
 // main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
 // site's alerts for a date are on, so the outing can be sent if asked), preview (opened from a link and not
 // kept: index.html, PLAN_PREVIEW; then { mine: what keeping it replaces, outingReplaces's, or ''; off: the link's own
-// day where it is no longer one of the five (plan.js, planDayOff), or null }; else null), finishes (for a paddle or a
+// day where it is no longer one of the five (plan.js, planDayOff), or null; fresh: started here with "Plan an outing
+// here" while another outing is kept, not opened from a link }; else null), finishes (for a paddle or a
 // board: outingFinishes, or null), finish (its id), fin (its column, or null), stretch (outingStretch's HTML) }.
 function outingSection(o) {
   const opt = (groups, sel) => groups.map(([h, g]) => `<optgroup label="${outEsc(h)}">`
@@ -367,12 +368,12 @@ function outingSection(o) {
   // (o.preview), it is in this page's link only, and the line says what keeping it replaces.
   const shared = o.shared && o.main ? `Shared with you, from the forecast issued ${outEsc(o.shared)}. Under the two spots: what has changed since. At the end: alerts and a calendar file for it. ` : '';
   const intro = o.preview
-    ? `<p class="sub">${shared || 'From a link. '}${o.preview.off ? `${outingOff(o.preview.off, o.day)} ` : ''}Not kept in this browser until you keep it.</p>`
+    ? `<p class="sub">${shared || (o.preview.fresh ? 'A new outing. ' : 'From a link. ')}${o.preview.off ? `${outingOff(o.preview.off, o.day)} ` : ''}Not kept in this browser until you keep it.</p>`
       + `<p class="outing-acts"><button type="button" class="btn" id="outing-keep-it">Keep this outing</button></p>`
       + `<p class="small muted">${o.preview.mine ? `Until then, ${outEsc(o.preview.mine)} stays as it is. Keeping this one puts it in its place` : 'Keeping it makes it the plan Plan a swim opens on'}, in this browser, sent nowhere.</p>`
     : shared ? `<p class="sub">${shared}Kept in this browser and in this page's link; sent nowhere. Change anything here and it becomes your own plan.</p>`
     : `<p class="sub">When you mean to go, where, and somewhere else to go instead. Kept in this browser and in this plan's link; sent nowhere${o.dateAlerts ? ' unless you ask for alerts about it' : ''}.</p>`;
-  const head = o.main && o.preview ? (o.shared ? 'Outing shared with you' : 'Outing from a link') : o.shared && o.main ? 'Outing shared with you' : 'Your outing';
+  const head = o.main && o.preview ? (o.shared ? 'Outing shared with you' : o.preview.fresh ? 'New outing' : 'Outing from a link') : o.shared && o.main ? 'Outing shared with you' : 'Your outing';
   return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary><span>${head}${o.main ? `<span class="k">${outEsc(o.main.name)}${o.alt ? `, backup ${outEsc(o.alt.name)}` : ''}</span>` : ''}</span></summary>`
     + intro
     + `<div class="outing-fields"><label>When<select data-outing="when">${times}</select></label>`
@@ -425,7 +426,8 @@ function drawOuting(box, shown) {
   // outingwatch.js reads the stamp (outingWatchShared); since.js says its time.
   const sent = PLAN.sent && typeof outingWatchShared === 'function' && outingWatchShared(PLAN);
   // Opened from a link and not kept (index.html, PLAN_PREVIEW): nothing below writes to this browser until it is.
-  const preview = typeof PLAN_PREVIEW === 'boolean' && PLAN_PREVIEW && pair.main ? { mine: outingReplaces(keptPlan(), byId), off: PLAN_OFF } : null;
+  const preview = typeof PLAN_PREVIEW === 'boolean' && PLAN_PREVIEW && pair.main
+    ? { mine: outingReplaces(keptPlan(), byId), off: PLAN_OFF, fresh: typeof PLAN_FRESH === 'boolean' && PLAN_FRESH } : null;
   box.insertAdjacentHTML('afterbegin', outingSection({ preview, finishes, finish: PLAN.finish, fin: fin && col(fin),
     stretch: fin ? outingStretch({ start: pair.main.name, finish: fin.name, state: 'loading' }) : '', day: PLAN.day, when: PLAN.when, spot: PLAN.spot, backup: PLAN.backup, act: PLAN.act, meet: PLAN.meet,
     shared: sent ? issuedWords(sent.forecast) : '',
