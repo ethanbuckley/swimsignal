@@ -3045,7 +3045,9 @@ function renderList() {
     + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
-  let v = outingResume() + (saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
+  // What you do on the water (actsChips) at the foot of the saved spots, where a returning visitor sees it; a first look
+  // keeps the search and the list first.
+  let v = outingResume() + (saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul>${actsChips(undefined, true)}</section>`
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '');   // not on a first look
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
@@ -3068,7 +3070,7 @@ function renderList() {
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
     + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`;
   setPanel(h + cols(v));
-  if (saved.length) bindItems(document.getElementById('saved-list'));
+  if (saved.length) { bindItems(document.getElementById('saved-list')); bindActs(); }   // and what you do on the water (actsChips)
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
   bindBestDay();
   // Only the list redraws as you type; redrawing the box itself dropped the focus after one letter.
@@ -3196,7 +3198,7 @@ function drawSpots() {
     const savedList = document.getElementById('saved-list');
     savedList.innerHTML = DATA.spots.filter(s => SAVED.has(s.id)).map(s => savedCard(s, false, VIEW.day)).join('');
     bindItems(savedList);
-    if (!savedGroup.hidden && !VIEW.day && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
+    if (!savedGroup.hidden && (!VIEW.day || VIEW.day === today()) && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
   }
   const nearGroup = document.getElementById('near-group');
   if (nearGroup) {   // the nearest spots as cards, once a place is given; not while the list is narrowed
@@ -3250,7 +3252,9 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
     + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
-    + `${!iso && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
+    // What has changed since you last looked, where the card gives the answer: no day picked, or today (Explore opens
+    // on today, so until 29 Oct 2026 its saved cards never said it).
+    + `${(!iso || iso === today()) && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
 }
 // A list's spots that the forecast has, in the list's order.
 const listSpots = (l = listNow()) => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
@@ -3369,11 +3373,14 @@ const LISTS_UI = { open: false, said: '' };
 // What you do on the water: optional, any of three, kept in this browser (plan.js, ACTS_KEY). It changes what is
 // offered first, never a level, and the line under the chips says so.
 const ACT_CHIPS = [['swim', 'Swim'], ['paddle', 'Paddle'], ['sup', 'Paddleboard']];
-const actsChips = (on = typeof ACTS === 'undefined' ? [] : ACTS) => `<div class="chips-row acts-row" role="group" aria-label="What you do on the water">`
+// short: Explore's one line, under the saved spots; the Saved page says it in full.
+const actsChips = (on = typeof ACTS === 'undefined' ? [] : ACTS, short = false) => `<div class="chips-row acts-row" role="group" aria-label="What you do on the water">`
   + ACT_CHIPS.map(([k, w]) => `<button type="button" class="chip-btn" data-act="${k}" aria-pressed="${on.includes(k)}">${w}</button>`).join('')
-  + `</div><p class="small muted acts-note">${on.length ? 'Kept in this browser. ' : 'Optional: what you do on the water. '}`
-  + 'For a paddle or a board, new outings start as one, a spot offers the spots downstream to finish at, and access shows launching and carrying. '
-  + 'The level is for the water, the same for everyone in it, and official advice always shows.</p>';
+  + `</div><p class="small muted acts-note${short ? ' short' : ''}">` + (short
+    ? 'What you do on the water, if you like: a boat or a board gets launching, carrying and places to finish. The level is the same for everyone.'
+    : `${on.length ? 'Kept in this browser. ' : 'Optional: what you do on the water. '}`
+      + 'For a paddle or a board, new outings start as one, a spot offers the spots downstream to finish at, and access shows launching and carrying. '
+      + 'The level is for the water, the same for everyone in it, and official advice always shows.') + '</p>';
 function bindActs() {
   document.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.act, next = ACTS.includes(k) ? ACTS.filter(a => a !== k) : [...ACTS, k];
@@ -3381,7 +3388,7 @@ function bindActs() {
     try { if (ACTS.length) localStorage.setItem('dipcast.acts', JSON.stringify(ACTS)); else localStorage.removeItem('dipcast.acts'); } catch (e) { /* for this visit only */ }
     document.querySelectorAll('[data-act]').forEach(x => x.setAttribute('aria-pressed', String(ACTS.includes(x.dataset.act))));
     const row = document.querySelector('.acts-row'), note = document.querySelector('.acts-note');   // the note's first words follow the choice
-    if (row && note) { row.insertAdjacentHTML('afterend', actsChips().replace(/^[\s\S]*?<\/div>/, '')); note.remove(); }
+    if (row && note && !note.classList.contains('short')) { row.insertAdjacentHTML('afterend', actsChips().replace(/^[\s\S]*?<\/div>/, '')); note.remove(); }
   }));
 }
 function renderSaved() {
