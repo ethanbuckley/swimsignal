@@ -139,7 +139,7 @@ test('a preview leaves the kept note alone and compares only with the link\'s st
 test('the page keeps a preview out of storage until Keep this outing', () => {
   const app = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8'), out = fs.readFileSync(path.join(SITE, 'outing.js'), 'utf8');
   assert.match(app, /if \(!PLAN_PREVIEW\) try \{ localStorage\.setItem\(PLAN_KEY, h\); \}/);
-  assert.match(app, /PLAN_PREVIEW = planInvited\(PLAN, keptPlan\(\), location\.hash\.length > 1, PLAN_PREVIEW\);/);
+  assert.match(app, /PLAN_PREVIEW = planInvited\(PLAN, keptNow, location\.hash\.length > 1, PLAN_PREVIEW\)/);   // and planHere's exception (site_plan_here)
   assert.match(app, /const keepPlan = \(\) => \{ PLAN_PREVIEW = false; planAddress\(\); \};/);
   // A link opened while Plan a swim is open: its day is the link's, not a change of day that drops its time and stamp.
   assert.match(app, /if \(location\.hash\.length > 1 && typeof OUTING_DAY !== 'undefined'\) OUTING_DAY = null;/);

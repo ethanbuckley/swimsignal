@@ -132,6 +132,17 @@ function planOuting(hash, dates, has = () => true) {
 // was: this page's plan was already one.
 const planOutingKey = p => p && p.spot ? [p.day, p.spot, p.backup, p.when, p.act, p.meet, p.finish].map(x => x || '').join('|') : '';
 const planInvited = (plan, kept, address, was = false) => !!plan.spot && planOutingKey(plan) !== planOutingKey(kept) && (address || was);
+// "Plan an outing here", on a spot's page (index.html, actions): the plan with that spot as the outing's, starting
+// from the spot (as a shared outing does: outing.js, outingShared), on the day the page shows if it is one of the
+// five, else the plan's own day. How far, the kind and what the outing is for carry over from base (the plan kept).
+// The planner is the one Plan a swim already is: nothing new is drawn for it.
+function planFromSpot(s, base, day = null) {
+  return planHash({ ...PLAN_DEFAULT, day: day || base.day, within: base.within || PLAN_DEFAULT.within,
+    from: { name: s.name, lat: s.lat, lon: s.lon }, spot: s.id, ...(OUTING_ACTS.includes(base.act) ? { act: base.act } : {}) });
+}
+// Whether the plan kept here holds an outing that is still to come (its day one of the five, with a spot), which a
+// new outing started here would replace: then it waits for "Keep this outing", as one from a link does.
+const planHasOuting = (kept, dates) => !!(kept && kept.spot && dates.includes(kept.day));
 // A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it: a search
 // for "Ilkley" lists the one spot named for it, and Plan a swim should not want the town typed again. base:
 // the plan to start from (the one shown last, or planKept), for how far and its day; kind: the list's chip,
@@ -305,6 +316,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
 }
