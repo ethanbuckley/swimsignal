@@ -277,10 +277,11 @@
   .chip-btn[aria-pressed=true] { background:var(--brand); color:var(--on-fill); }
   .group { margin:32px 0 0; }
   .group-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; margin:0 0 8px; }
+  .sortseg { flex-wrap:wrap; }   /* four sorts since 29 October 2026: a phone takes them under the heading, each label whole */
   .group-head { font-size:var(--fs-head); line-height:1.2; margin:0; }
   .group > .group-head { margin:0 0 8px; }
   .sortseg { display:inline-flex; gap:2px; }
-  .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
+  .sortseg button { min-height:44px; font-size:var(--fs-note); font-weight:600; white-space:nowrap; padding:6px 10px; border:0; border-radius:var(--radius); background:transparent; color:var(--muted); cursor:pointer; }
   /* Hover only where there is a pointer, here and on every hover in this page bar the map's own controls: on
      a phone a tapped button kept its hover shade, so after Near me failed it looked pressed beside A–Z
      (iOS Safari). */
@@ -1578,7 +1579,7 @@ window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, current = null, shown = null;
-const VIEW = { q: '', filter: 'all', sort: 'name', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // A–Z until a place is given
+const VIEW = { q: '', filter: 'all', sort: 'low', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // lowest risk first (29 October 2026; it was A–Z by area)
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
 const fmt = (x, d=0) => (x === null || x === undefined) ? '–' : Number(x).toFixed(d);
@@ -2942,7 +2943,7 @@ function patchNode(old, neu) {
 
 // ------------------------------------------------------------------------------ the list
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };
-const SORTS = { risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
+const SORTS = { low: 'Lowest risk', risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
 const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>';
 // Under the opening of the list, Saved and Plan a swim: the view, then the full map's tile, which a wide
 // desktop shows beside it and the map's frame moves into (placeWrap). Elsewhere the tile is not shown
@@ -3078,7 +3079,7 @@ const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').f
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 const offerNear = () => 'geolocation' in navigator && !VIEW.here;
 function locate(at = 'sort') {
-  const before = VIEW.sort === 'near' ? 'name' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : 'in A–Z order';
+  const before = VIEW.sort === 'near' ? 'low' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : before === 'low' ? 'lowest risk first' : 'in A–Z order';
   // Said where it was asked: under the button under the search ('cta'), or under the sort buttons.
   VIEW.geoAt = at;
   // One message at a time: a refusal under the button, then another under the sorts, showed both.
@@ -3138,6 +3139,21 @@ const listRank = s => ORDER[mapLevel(s)] ?? -1;
 const listAdvised = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
 const riskOrder = (a, b) => listAdvised(b) - listAdvised(a) || listRank(b) - listRank(a) || a.name.localeCompare(b.name);
 const riskFirstNote = items => items.some(listAdvised) ? 'Spots with an official notice come first.' : '';
+// "Lowest risk", the list's first order since 29 October 2026, as a swimmer asks it: where can I go? Low before
+// moderate before high, then spots with no level (a plain level such as "No monitored overflow found upstream" is
+// not a forecast that found nothing), and spots whose official notice restricts swimming last of all, whatever their level;
+// the nearer first among equals once a place is given, then the name.
+const lowRank = s => { const r = listRank(s); return r < 0 ? 99 : r; };
+const lowOrder = (a, b) => listAdvised(a) - listAdvised(b) || lowRank(a) - lowRank(b)
+  || (VIEW.here ? dist(a) - dist(b) : 0) || a.name.localeCompare(b.name);
+const lowLastNote = items => items.some(listAdvised) ? 'Spots with an official notice come last.' : '';
+// Once a place is given, the cards over the list: the lowest-risk spots within 30 miles, in that order; with
+// none so near, the three nearest. Until 29 October 2026 the three nearest of any level, which put a high-risk
+// river 13 miles from Bristol above a low one at 27.
+const CARDS_KM = 30 * MILE_KM;
+const nearCards = () => { const close = DATA.spots.filter(s => dist(s) <= CARDS_KM);
+  return close.length ? { title: 'Lowest risk within 30 miles', spots: [...close].sort(lowOrder).slice(0, NEAR_N) }
+    : { title: 'Near you', spots: [...DATA.spots].sort((a, b) => dist(a) - dist(b)).slice(0, NEAR_N) }; };
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
@@ -3147,8 +3163,8 @@ function drawSpots() {
     || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
   const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
-    // Near me before a position has arrived keeps the risk order, which a failed location returns to.
-    : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
+    // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
+    : VIEW.sort === 'low' || VIEW.sort === 'near' ? lowOrder(a, b) : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
   const savedGroup = document.getElementById('saved-group');
   if (savedGroup) {
     savedGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
@@ -3161,14 +3177,15 @@ function drawSpots() {
   if (nearGroup) {   // the nearest spots as cards, once a place is given; not while the list is narrowed
     nearGroup.hidden = !VIEW.here || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
     const nearList = document.getElementById('near-list');
-    nearList.innerHTML = nearGroup.hidden ? '' : [...DATA.spots].sort((a, b) => dist(a) - dist(b)).slice(0, NEAR_N)
-      .map(s => savedCard(s, false, VIEW.day, false, 'spots near you', true)).join('');
+    const near = nearGroup.hidden ? { title: 'Near you', spots: [] } : nearCards();
+    document.getElementById('near-h').textContent = near.title;
+    nearList.innerHTML = near.spots.map(s => savedCard(s, false, VIEW.day, false, 'spots near you', true)).join('');
     bindItems(nearList);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
   document.getElementById('overview').textContent = overviewTop(items);
   document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
-  const first = document.getElementById('risk-first'), firstNote = byRisk ? riskFirstNote(items) : '';
+  const first = document.getElementById('risk-first'), firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   if (first) { first.textContent = firstNote; first.hidden = !firstNote; }
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
