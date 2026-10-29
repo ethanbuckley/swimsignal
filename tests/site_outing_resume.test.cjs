@@ -57,5 +57,7 @@ test('the page draws it above Saved spots as a saved card for its day, and hides
   assert.match(html, /let v = outingResume\(\) \+ \(saved\.length \?/);
   assert.match(html, /outingGroup\.hidden = Boolean\(VIEW\.q\.trim\(\) \|\| VIEW\.filter !== 'all' \|\| VIEW\.lowOnly\)/);
   assert.doesNotMatch(fn, /localStorage\.setItem/);   // nothing new is kept
-  assert.match(fn, /eaTodayApart\(s\)/);   // with official advice, the line that says the level is not the advice
+  assert.match(fn, /eaTodayApart\(s\)/);
+  // A tap on its spot opens the outing's day, as its link says, not the list's (bindItems passes the list's).
+  assert.match(html, /select\(a\.dataset\.id, true, true, outing\.dataset\.day === today\(\) \? null : outing\.dataset\.day\)/);   // with official advice, the line that says the level is not the advice
 });

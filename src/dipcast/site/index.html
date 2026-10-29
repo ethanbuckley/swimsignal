@@ -3008,7 +3008,7 @@ function outingResume() {
   if (!o) return '';
   const s = DATA.spots.find(x => x.id === o.spot), b = o.backup ? DATA.spots.find(x => x.id === o.backup) : null;
   const said = typeof outingResumeSaid === 'function' ? outingResumeSaid(o, b && b.name) : [];
-  return `<section class="group tile" id="outing-group" aria-labelledby="outing-h"><h2 class="group-head" id="outing-h">Your outing</h2>`
+  return `<section class="group tile" id="outing-group" aria-labelledby="outing-h" data-day="${esc(o.day)}"><h2 class="group-head" id="outing-h">Your outing</h2>`
     + said.map(t => `<p class="small resume-said">${esc(t)}</p>`).join('')
     + `<ul class="places">${savedCard(s, false, o.day)}</ul>`
     // With official advice for the spot, the spot page's own line under its level: the two are not one.
@@ -3084,7 +3084,10 @@ function renderList() {
     setSort(b.dataset.sort); drawSpots(); }));
   const og = document.querySelector('#outing-group .resume-open');
   if (og) og.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openPlan(og.dataset.planHash); });
-  bindItems(document.getElementById('outing-group') || document.createElement('div'));
+  // The card's spot opens on the outing's day, as its link says, not the list's (bindItems); on today, its own answer.
+  const outing = document.getElementById('outing-group');
+  if (outing) outing.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => {
+    if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, outing.dataset.day === today() ? null : outing.dataset.day); }));
   const sheet = document.getElementById('filter-sheet');
   document.getElementById('filter-btn').addEventListener('click', () => sheet.showModal());
   document.getElementById('filter-done').addEventListener('click', () => sheet.close());
