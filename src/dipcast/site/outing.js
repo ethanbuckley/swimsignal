@@ -71,6 +71,14 @@ function outingChanged(plan, k) {
 // whatever is done on it (the clubs page says the same), so an activity changes only the words.
 const OUTING_ACT_WORDS = { swim: ['Swim', 'swimming'], paddle: ['Paddle', 'paddling'], sup: ['Paddleboard', 'paddleboarding'] };
 const OUTING_MEET_WORDS = { parking: 'at the parking', entry: 'where you get in' };
+// For a paddle or a board: some waters need a licence and some do not, and SwimSignal does not know which this is.
+// Paddle UK's own pages say which bodies' waterways need one and list launches and licences river by river
+// (gopaddling.info, read 29 Oct 2026: Canal & River Trust and Environment Agency waterways need one; some Lake
+// District lakes do not). docs/SWIM-TOGETHER-2026-10.md, section 5, "Licences".
+const OUTING_LICENCE = '<p class="small">Paddling some rivers, canals and lakes in England and Wales needs a licence, including '
+  + 'Canal &amp; River Trust and Environment Agency waterways; others need none. SwimSignal does not know which this is: see '
+  + '<a href="https://gopaddling.info/blog/tips-and-advice/general-paddling/the-river-licence-explained/" rel="noopener">Paddle UK\'s guide to licences</a> '
+  + 'and its <a href="https://gopaddling.info/rivers/" rel="noopener">river pages</a>.</p>';
 const outingVerb = act => (OUTING_ACT_WORDS[act] || OUTING_ACT_WORDS.swim)[0];   // the calendar's and the share's "Swim: …"
 // The forecast's issue time as a shared link carries it (plan.js, PLAN_SENT): "20261029T1216Z"; null if unreadable.
 function outingSent(generatedAt) {
@@ -347,10 +355,11 @@ function outingSection(o) {
   const ing = o.act && o.act !== 'swim' ? `, ${OUTING_ACT_WORDS[o.act][1]}` : '';
   const said = o.main ? `${outingWhen(o.day, o.when).replace(/^./, c => c.toUpperCase())}${ing}: ${o.alt ? 'your spot and a backup, side by side' : 'your spot'}.` : '';
   const meet = o.main && OUTING_MEET_WORDS[o.meet] ? `<p class="small">Meet ${OUTING_MEET_WORDS[o.meet]} at ${outEsc(o.main.name)}: the Access part under it says what its guide knows.</p>` : '';
+  const licence = o.main && o.act && o.act !== 'swim' ? OUTING_LICENCE : '';
   const notes = [...outingTimeNote(o.day, o.when, o.nowMs), ...(ing ? ['The level is for the water, the same whatever you do on it.'] : [])];
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
-    : `<p class="outing-said">${said}</p>${meet}${outingBoth(o)}${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
+    : `<p class="outing-said">${said}</p>${meet}${licence}${outingBoth(o)}${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + (o.fin ? `<div class="outing-pair one">${outingCol(o.fin, 'Finish')}</div><div id="outing-stretch">${o.stretch || ''}</div>` : '')
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
@@ -529,6 +538,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { OUTING_LICENCE, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }
