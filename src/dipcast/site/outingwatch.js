@@ -76,6 +76,22 @@ function outingWatchNote(old, plan, pair, forecast, nowMs) {
     .map(s => kept.find(r => r.id === s.id) || outingWatchRecord(s, plan.day, forecast, nowMs)) };
 }
 
+// ------------------------------------------------------------------------------ a shared outing
+// An outing someone shared (plan.js: sent=, lv=, blv=; outing.js, outingShared) says what the spot and the backup
+// showed when it was sent: their level for the day and the forecast's issue time. That stands in for this
+// browser's note, so whoever opens the link is told what has changed since it was shared, not since they opened
+// it (Swim Together S3, docs/SWIM-TOGETHER-2026-10.md). The link carries no official notice and no river, so
+// those are said as they are now, never as changed. Null when the plan carries no whole stamp.
+const owSentISO = sent => /^\d{8}T\d{4}Z$/.test(sent || '')
+  ? `${sent.slice(0, 4)}-${sent.slice(4, 6)}-${sent.slice(6, 8)}T${sent.slice(9, 11)}:${sent.slice(11, 13)}:00Z` : null;
+function outingWatchShared(plan) {
+  const forecast = owSentISO(plan.sent), at = forecast ? Date.parse(forecast) : NaN;
+  if (!forecast || !Number.isFinite(at) || !OW_ISO.test(plan.day || '')) return null;
+  const rec = (id, level) => id && owLevels().has(level) ? { id, day: plan.day, level, official: undefined, river: null, forecast, at } : null;
+  const items = [rec(plan.spot, plan.lv), rec(plan.backup, plan.blv)].filter(Boolean);
+  return items.length && items[0].id === plan.spot ? { day: plan.day, items, forecast } : null;
+}
+
 // ------------------------------------------------------------------------------ the words
 // A level in its own words, with its noun (docs/DESIGN.md, Words): since.js's for the four and "no monitored
 // overflow found upstream"; the others from levels.js's COVER; no forecast for the day said as that.
@@ -126,7 +142,8 @@ function outingWatchLines(was, now) {
 
 // The whole section, as HTML. w = { day (the outing's), today, spots: [{ name, role ('your spot' or 'your
 // backup'), was, now }], passed (an earlier outing's day that has gone by, or null), kept (false where this
-// browser could not keep the note), forecast (the issue time on screen) }.
+// browser could not keep the note), forecast (the issue time on screen), shared (true where each `was` is a
+// shared link's stamp, outingWatchShared: then the words are about when it was shared, not planned) }.
 function outingWatchSection(w) {
   const S = owSince(), R = owRules();
   if (!w.spots.length) return '';
@@ -137,15 +154,17 @@ function outingWatchSection(w) {
   const compared = parts.filter(p => p.compared), changed = parts.reduce((n, p) => n + p.changed, 0);
   const older = parts.find(p => p.was && Date.parse(p.now.forecast) < Date.parse(p.was.forecast));
   let lead = '';
-  if (compared.length) lead = changed ? `${changed === 1 ? '1 thing has' : `${changed} things have`} changed since you planned this outing.` : 'Nothing has changed since you planned this outing.';
+  const since = w.shared ? 'this outing was shared with you' : 'you planned this outing';
+  if (compared.length) lead = changed ? `${changed === 1 ? '1 thing has' : `${changed} things have`} changed since ${since}.` : `Nothing has changed since ${since}.`;
+  else if (w.shared && !older) lead = 'This is the forecast it was shared from. When a newer forecast is issued, this says what has changed since.';
   else if (!w.kept) lead = 'This browser cannot keep a note, so it cannot say later what has changed.';
   else if (!older) lead = `${w.passed ? `It now follows the same spots for ${owDay(w.day)}. ` : 'This browser has noted what each shows now. '}When a newer forecast is issued, this says what has changed.`;
-  const spots = parts.map(p => `<p class="outing-watch-who"><b>${owEsc(p.name)}</b>, ${p.role}${p.was && p.compared ? `, planned ${owEsc(owWhen(p.was.at))}` : ''}</p>`
+  const spots = parts.map(p => `<p class="outing-watch-who"><b>${owEsc(p.name)}</b>, ${p.role}${p.was && p.compared && !w.shared ? `, planned ${owEsc(owWhen(p.was.at))}` : ''}</p>`
     + `<ul class="outing-watch-list">${p.lines.map(t => `<li>${owEsc(t)}</li>`).join('')}</ul>`).join('');
   // Which forecast: the one on screen, against the one planned with; an older copy compares nothing.
   const first = compared.length ? compared.map(p => p.was.forecast).sort((a, b) => Date.parse(a) - Date.parse(b))[0] : null;
-  const notes = [older ? `This copy shows the forecast issued ${S.issuedWords(w.forecast)}, older than the one you planned against (${S.issuedWords(older.was.forecast)}), so nothing is compared. Open the site online for the latest.`
-    : first ? `Checked against the forecast issued ${S.issuedWords(w.forecast)}; you planned against the one issued ${S.issuedWords(first)}.`
+  const notes = [older ? `This copy shows the forecast issued ${S.issuedWords(w.forecast)}, older than the one ${w.shared ? 'it was shared from' : 'you planned against'} (${S.issuedWords(older.was.forecast)}), so nothing is compared. Open the site online for the latest.`
+    : first ? `Checked against the forecast issued ${S.issuedWords(w.forecast)}; ${w.shared ? 'it was shared from' : 'you planned against'} the one issued ${S.issuedWords(first)}.`
     : `Checked against the forecast issued ${S.issuedWords(w.forecast)}.`];
   // No forecast for the day at a spot whose level changes from day to day: said, never guessed.
   const none = parts.filter(p => p.now.level === R.NO_FORECAST).map(p => p.name);
@@ -172,13 +191,15 @@ function outingWatchDraw(tile, plan, pair, forecast, nowMs = Date.now()) {
   catch (e) { kept = false; }
   const box = tile && tile.querySelector('.outing-pair');
   if (!note || !box) return;
-  const was = old && old.day === plan.day ? old.items : [], t = owRules().today();
+  // A shared link's stamp, while the plan still carries it, stands in for this browser's note (outingWatchShared).
+  const shared = outingWatchShared(plan);
+  const was = shared ? shared.items : old && old.day === plan.day ? old.items : [], t = owRules().today();
   const spots = [[pair.main, 'your spot'], [pair.backup, 'your backup']].filter(([s]) => s)
     .map(([s, role]) => ({ name: s.name, role, was: was.find(r => r.id === s.id) || null, now: outingWatchRecord(s, plan.day, forecast, nowMs) }));
-  box.insertAdjacentHTML('afterend', outingWatchSection({ day: plan.day, today: t, spots, kept, forecast,
+  box.insertAdjacentHTML('afterend', outingWatchSection({ day: plan.day, today: t, spots, kept, forecast, shared: !!shared,
     passed: OUTING_WATCH_OPENED && OUTING_WATCH_OPENED.day !== plan.day && OUTING_WATCH_OPENED.day < t ? OUTING_WATCH_OPENED.day : null }));
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_WATCH_KEY, outingWatchRecord, outingWatchOK, outingWatchRead, outingWatchNote, outingWatchLines, outingWatchSection, outingWatchDraw, owRiver, owLevel };
+  module.exports = { OUTING_WATCH_KEY, outingWatchShared, outingWatchRecord, outingWatchOK, outingWatchRead, outingWatchNote, outingWatchLines, outingWatchSection, outingWatchDraw, owRiver, owLevel };
 }

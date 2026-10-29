@@ -275,7 +275,8 @@ const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">$
   + `<h3 class="outing-nm"><a href="${outEsc(c.href)}" data-id="${outEsc(c.id)}">${outEsc(c.name)}</a></h3>`
   + (c.meta ? `<p class="k">${outEsc(c.meta)}</p>` : '')
   + (c.official || '') + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + (c.access ? outingAccessBox(c.id, c.access) : '') + '</div>';
-// The whole tile. o = { day, when, spot, backup, act, meet, groups (outingOptions for the spot), backupGroups,
+// The whole tile. o = { day, when, spot, backup, act, meet, shared (a shared link's forecast time in words,
+// "Thu 13:27", while the plan still carries its stamp; else ''), groups (outingOptions for the spot), backupGroups,
 // main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
 // site's alerts for a date are on, so the outing can be sent if asked) }.
 function outingSection(o) {
@@ -295,8 +296,13 @@ function outingSection(o) {
     : `<p class="outing-said">${said}</p>${meet}${outingBoth(o)}${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
-  return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary><span>Your outing${o.main ? `<span class="k">${outEsc(o.main.name)}${o.alt ? `, backup ${outEsc(o.alt.name)}` : ''}</span>` : ''}</span></summary>`
-    + `<p class="sub">When you mean to go, where, and somewhere else to go instead. Kept in this browser and in this plan's link; sent nowhere${o.dateAlerts ? ' unless you ask for alerts about it' : ''}.</p>`
+  // Opened from a link someone shared (plan.js, sent=): said so, with what is below for it and when it stops being theirs.
+  const intro = o.shared && o.main
+    ? `<p class="sub">Shared with you, from the forecast issued ${outEsc(o.shared)}. Under the two spots: what has changed since. At the end: alerts and a calendar file for it. `
+      + 'Change anything here and it becomes your own plan, kept in this browser and in this page\'s link; sent nowhere.</p>'
+    : `<p class="sub">When you mean to go, where, and somewhere else to go instead. Kept in this browser and in this plan's link; sent nowhere${o.dateAlerts ? ' unless you ask for alerts about it' : ''}.</p>`;
+  return `<details class="sec tile outing" id="outing"${o.open ? ' open' : ''}><summary><span>${o.shared && o.main ? 'Outing shared with you' : 'Your outing'}${o.main ? `<span class="k">${outEsc(o.main.name)}${o.alt ? `, backup ${outEsc(o.alt.name)}` : ''}</span>` : ''}</span></summary>`
+    + intro
     + `<div class="outing-fields"><label>When<select data-outing="when">${times}</select></label>`
     + `<label>Spot<select data-outing="spot"><option value="">Choose a spot</option>${opt(o.groups, o.spot)}</select></label>`
     + `<label>Backup (optional)<select data-outing="backup"><option value="">No backup</option>${opt(o.backupGroups, o.backup)}</select></label>`
@@ -324,7 +330,10 @@ function drawOuting(box, shown) {
       meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   if (OUTING_OPEN === null) OUTING_OPEN = !!(PLAN.spot || PLAN.when);
+  // outingwatch.js reads the stamp (outingWatchShared); since.js says its time.
+  const sent = PLAN.sent && typeof outingWatchShared === 'function' && outingWatchShared(PLAN);
   box.insertAdjacentHTML('afterbegin', outingSection({ day: PLAN.day, when: PLAN.when, spot: PLAN.spot, backup: PLAN.backup, act: PLAN.act, meet: PLAN.meet,
+    shared: sent ? issuedWords(sent.forecast) : '',
     groups: outingOptions(list, SAVED, byId, PLAN.backup), backupGroups: outingOptions(list, SAVED, byId, PLAN.spot),
     main: pair.main && col(pair.main), alt: pair.backup && col(pair.backup), missing: pair.missing,
     issued: `${issued()}, ${ago(ageMin())} ago`, open: OUTING_OPEN, nowMs: Date.now(), dateAlerts: outingDates().dateAlertsOn(DATA) }));
