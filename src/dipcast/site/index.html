@@ -3113,9 +3113,10 @@ function locate(at = 'sort') {
   navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg('');
       drawSpots(); },
     // A browser remembers a refusal and does not ask again, so say where to undo it, and name the button
-    // that was pressed: "Show spots near me" under the search, "Near me" among the sorts (15 Oct 2026).
+    // that was pressed: the location pin in the search box (NEAR_PIN; until 29 Oct 2026 a button, "Show spots
+    // near me", which the message still named after it went), "Near me" among the sorts (15 Oct 2026).
     e => { setSort(before); msg(e.code === 1
-      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press ${at === 'cta' ? 'Show spots near me' : 'Near me'} again.`
+      ? `Location is blocked for this site, so the list stays ${order}. Allow it in your browser’s settings, then press ${at === 'cta' ? 'the location pin in the search box' : 'Near me'} again.`
       : `Your device could not find where you are, so the list stays ${order}. Check that location services are on for your browser, then try again.`); drawSpots(); },
     { maximumAge: 10 * 60 * 1000, timeout: 10000 });
 }
