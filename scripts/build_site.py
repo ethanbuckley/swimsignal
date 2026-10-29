@@ -48,6 +48,7 @@ from dipcast.model.spill_model import MODEL_PATH
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows
 from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
+from dipcast.stretches import attach as attach_stretches
 from dipcast.trace import SIMPLIFY_M, spot_trace
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -2899,7 +2900,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal")   # linked: spot_links, the Nearby card's; seasonal: past spills by month
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3317,6 +3318,13 @@ def build(refresh: bool = True) -> dict:
     except Exception as e:  # noqa: BLE001
         health["spot_links"] = 0
         health["warnings"].append(f"Nearby reasons not made this update: {e}")
+    # A paddle from one listed river spot to another downstream, and the overflows on the way (stretches.py): for an
+    # outing's finish. Like the Nearby reasons, it must never sink the site: if it fails, no finish is offered.
+    try:
+        health["stretches"] = attach_stretches(results, spots, upstream, _net(), _overflows())
+    except Exception as e:  # noqa: BLE001
+        health["stretches"] = 0
+        health["warnings"].append(f"Outing finishes not made this update: {e}")
     health["river_levels"], health["weather"] = n_levels, n_weather
     health.update(n_flows)
     health["warnings"] += flood_warnings(n_flows, len(results))
