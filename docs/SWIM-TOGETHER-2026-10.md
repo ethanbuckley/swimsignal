@@ -114,7 +114,7 @@ Built on guides and visit notes, so it stays within the exemption.
 | Messaging | Clubs already have chats; full OSA duties | No sign it is wanted |
 | Lift and shuttle matching | Names, cars and seats between strangers; insurance and payment questions not checked | A page-only seat counter (3 paddlers, 2 cars, 1 spare seat) is possible with no names, if paddlers ask in stage 0 |
 | Club pages with membership links | Needs club consent and content outside the public repo | Two pilot clubs ask for it |
-| Wind for SUP | Not fetched now. Open-Meteo's call budget for adding wind not checked (ration rules: PR #243) | A paddling club asks, and the cost is checked |
+| Wind for SUP | Not fetched now. Cost checked 29 Oct 2026 by Open-Meteo's own rule (`rainfall.call_weight`): the forecast request has 2 variables over 38 days, 1 call a cell. Gusts alone (3 variables, 0.3 x 38/14 = 0.81) stay at 1 call a cell, so they are free; speed and gusts (4, 1.09) cost 9% more on every cell, past the 9,000 a day | A paddling club asks. Then gusts only, at the forecast cell, said as a reading, not a verdict on a route |
 | Route suitability for paddlers | Needs its own evidence and expert review | Not planned |
 | Cleanup and stewardship events | A separate audience; same stage 2 machinery would serve it | After stage 2 |
 
@@ -132,6 +132,8 @@ Answered 29 Oct 2026: Ethan accepted the recommendations for 1, 3, 5, 6 and 8. D
 8. **Decided 29 Oct: no paid personal tier in 2027** (section 5).
 
 Next build: stage 1, one PR each, S2 to S5 in order (section 3).
+
+**Status, 29 Oct 2026.** S2 (#426) and S3 (#428) are merged. S5 is in #439, with a fix found on the way: opening a shared outing replaced the plan kept in that browser, so an outing from a link is now shown, not kept, until "Keep this outing". S4 is in #440: the finish is another listed river spot downstream, and the build finds the route down the river network between the two (`src/dipcast/stretches.py`). Its overflows are given in three groups: on the route; on a side stream or another arm, with where each joins; and above the start. It is not a list of everything upstream of the finish less everything upstream of the start, which cannot say what is on the route. Pairs whose pin was moved to a main channel are left out (Ethan, 29 Oct: keep refusing them). The finish is followed like the spot: in the shared stamp, the change note, the alerts and the offline copy. #441 adds the licence line (section 5). None of these is merged; the order is #435, #439, #440, #441.
 
 ## 5. Money: the third proposal
 
@@ -160,7 +162,7 @@ The proposal: Free (forecasts, notices, basic access, joining outings); Personal
 What follows, inferred:
 - **Personal Plus would sell what PaddleWays sells**, against a free tier that already covers the basics. SwimSignal already gives its offline copy (`sw.js`) and its alerts free. What nobody else has is the sewage forecast and official notices tied to a plan. That belongs in the club product and the free site, not a personal paywall.
 - **The paddlers' launch atlas exists, free, from the governing body.** Rebuilding PaddlePoints would be slow and second-best. Link to it from paddling spots, and ask Paddle UK whether the two can link both ways. Keep atlas work (stage 3) on swim spots, where SwimSignal's 49 guides are ahead.
-- **Licences.** A SUP or kayak plan on a navigation should say a licence may be needed and link PaddlePoints' river page. The site says nothing about licences now (grep of `src/dipcast`, 27 Oct).
+- **Licences.** A SUP or kayak plan on a navigation should say a licence may be needed and link PaddlePoints' river page. The site says nothing about licences now (grep of `src/dipcast`, 27 Oct). Done in #441 (29 Oct): a paddle or board outing says some waters need a licence and others none, that SwimSignal does not know which, and links Paddle UK's licence guide and river pages (read 29 Oct: Canal & River Trust and Environment Agency waterways need one; some Lake District lakes do not). Which spots are on licensed water needs a source SwimSignal does not have.
 
 ### The proposal's other ideas, against what exists
 

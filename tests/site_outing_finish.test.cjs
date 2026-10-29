@@ -109,3 +109,14 @@ test('the note, the alerts and the offline copy follow the finish', () => {
   assert.equal(K.same({day, spot: 'a', backup: null, finish: 'f'}, {day, spot: 'a', backup: null, finish: 'f'}), true);
   assert.equal(K.covers({day, spot: 'a', finish: 'f'}, 'spot/f'), true);
 });
+
+test('a paddle or a board says a licence may be needed, without saying whether here', () => {
+  const tile = act => O.outingSection({day: DATES[2], spot: 'a', act, groups: [], backupGroups: [], missing: [], issued: '', open: true,
+    main: {id: 'a', name: 'Ilkley', href: '', tone: 'low', headline: 'Low', meta: ''}, finishes: null, nowMs: 0});
+  for (const act of ['paddle', 'sup']) {
+    assert.ok(tile(act).includes(O.OUTING_LICENCE));
+    assert.match(tile(act), /SwimSignal does not know which this is/);
+  }
+  assert.ok(!tile('').includes('licence') && !tile('swim').includes('licence'));   // a swim says nothing of it
+  assert.match(O.OUTING_LICENCE, /href="https:\/\/gopaddling\.info\/rivers\/"/);
+});
