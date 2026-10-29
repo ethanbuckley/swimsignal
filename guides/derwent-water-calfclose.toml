@@ -1,4 +1,4 @@
-# Derwent Water, Calfclose Bay. Desk check of the National Trust's, the park authority's and the launch operator's pages, 20 October 2026.
+# Derwent Water, Calfclose Bay. Desk check of the National Trust's, the park authority's and the launch operator's pages, 20 October 2026. Paddling facts (launch, paddle) added from the National Trust's page, 29 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-20
 how = "desk"
@@ -62,6 +62,34 @@ source_name = "National Trust"
 [[fact]]
 topic = "rules"
 text = "The National Trust says New Zealand pigmyweed, an invasive plant, is thriving in Derwent Water. It asks everyone who swims, paddles or sails there not to take the weed with them when they go: checking, cleaning and drying kit, including wetsuits and swimming costumes, helps stop it spreading."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
+source_name = "National Trust"
+
+[[fact]]
+topic = "launch"
+text = "Canoes, kayaks, stand-up paddleboards, rowing boats and small motor boats can be hired from outdoor providers at the foreshore, Lodore, Nichol End and Portinscale. The page names no public launch point for your own boat or board."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
+source_name = "National Trust"
+
+[[fact]]
+topic = "paddle"
+text = "You can land on St Herbert's and Rampsholme islands for a picnic; no camping, fires or barbecues on the islands."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
+source_name = "National Trust"
+
+[[fact]]
+topic = "paddle"
+text = "Do not land on Lord's Island, and keep out of the no-paddle zone between it and the main shore, to protect nesting geese and other wildlife."
+status = "confirmed"
+source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
+source_name = "National Trust"
+
+[[fact]]
+topic = "paddle"
+text = "Derwent Island is a private residence: admire it from afar unless booked on one of the Trust's open days."
 status = "confirmed"
 source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
 source_name = "National Trust"

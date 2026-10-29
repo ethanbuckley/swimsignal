@@ -48,6 +48,11 @@ TOPICS = {
     "fees": "Fees and booking",
     "hours": "Opening times",
     "rules": "Who can swim",
+    # For boats and boards (Swim Together stage 3, docs/SWIM-TOGETHER-2026-10.md): after the swimmer's topics, and never
+    # listed as missing where a guide has none of them (guide.js, GUIDE_PADDLE), as most spots are swim spots.
+    "launch": "Launching a boat or board",
+    "carry": "Carrying to the water",
+    "paddle": "Paddling here",
 }
 STATUSES = ("confirmed", "suggested")
 HOW = ("desk", "visit")

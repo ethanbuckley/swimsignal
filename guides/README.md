@@ -78,8 +78,10 @@ on = 2026-09-12
 
 Topics and their headings on the page, in this order: `parking` Parking, `path` Path to the water,
 `entry` Getting in, `exit` Getting out, `toilets` Toilets, `changing` Changing, `fees` Fees and booking,
-`hours` Opening times, `rules` Who can swim. A topic with no fact is listed under "Not in this guide
-yet", so a reader takes it as unknown rather than as none. Write "There are no toilets" only when a
+`hours` Opening times, `rules` Who can swim; then, for boats and boards, `launch` Launching a boat or board,
+`carry` Carrying to the water and `paddle` Paddling here (where you may land, zones to keep out of). A topic with
+no fact is listed under "Not in this guide yet", so a reader takes it as unknown rather than as none; the three
+paddling topics are not, since most spots are swim spots. Write "There are no toilets" only when a
 source says so.
 
 There is no free text without a source: every sentence on the tile is a fact with its status, or
