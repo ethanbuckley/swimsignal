@@ -67,7 +67,7 @@ const page = (nowMs, spots) => {
   const ctx = vm.createContext({Date: FixedDate, navigator: {onLine: true}});
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
   vm.runInContext(`let DATA = ${JSON.stringify({generated_at: BUILT, spots})}, VIEW = {day: null};\n`
-    + pageDefs(['esc', 'tone', 'dateLabel', 'setDays', 'fiveDays', 'nextDay', 'yesterdayLine', 'mostLine', 'lowAnswer', 'answerLines',
+    + pageDefs(['esc', 'tone', 'dateLabel', 'setDays', 'fiveDays', 'nextDay', 'yesterdayLine', 'lowOn',
       'inBand', 'levelPlace', 'BAND_FROM', 'SPILL_EDGES', 'bandPlace', 'spillWord', 'bandSaid', 'dayRows', 'STALE_MIN', 'ageMin', 'ago', 'issued', 'freshness']), ctx);
   for (const f of ['experience.js', 'since.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
   vm.runInContext('setDays()', ctx);
@@ -89,13 +89,10 @@ test('at 00:30 the day after the build, a spot\'s second row is Today, and one l
   assert.equal(text(run('freshness()')), "Issued yesterday at 23:24; today's update is due.");
   assert.equal(run('freshness(true)'), '');
   assert.match(html, /<p class="issued">\$\{nextDay\(\) \? yesterdayLine\(\) : `Issued \$\{issued\(\)\}, \$\{ago\(ageMin\(\)\)\} ago`\}<\/p>/);
-  // The days on offer are four, from today; the answer line is about today and the weekend as the phone has them.
+  // The days on offer are four, from today; the list's strip names them as the phone has them, each with its
+  // count at low risk (lowOn, 29 Oct 2026; it replaced the answer line): Saturday is Today, not "Tomorrow".
   assert.equal(run('fiveDays().join()'), DAYS.slice(1).join());
-  // Sunday, the weekend's better day, is tomorrow; on the build's days it would read "Sunday", and Saturday "Tomorrow".
-  assert.equal(text(run('answerLines()')).replace(/ · Show$/, ''), 'Tomorrow: 2 of 2 spots at low risk');
-  run('VIEW.day = "2026-10-17"');
-  assert.match(text(run('answerLines()')), /^Today: 1 of 2 spots at low risk · Show Tomorrow ?: 2 of 2, the most this week · Show$/);
-  assert.match(run('answerLines()'), /<p class="low-answer">.*<span class="pick" hidden>/);   // the day shown: its own Show is hidden
+  assert.equal(run('fiveDays().map(d => shortDay(d) + " " + lowOn(d)).join()'), 'Today 1,Sun 2,Mon 0,Tue 0');
   assert.equal(run('dayWord("2026-10-18")'), 'tomorrow');
   // Since you last looked: a look at 23:50 on Friday was yesterday's, not "today".
   assert.match(run(`lookedWhen(${Date.parse('2026-10-16T23:50:00+01:00')})`), /^on Friday at 23:50$/);

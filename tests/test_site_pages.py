@@ -123,16 +123,14 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class=\"lede-map\">, and for any river or lake you ",
                  " on the map</span>. <a href=\"#about\">How it works</a></p>",
                  'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
-                 '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>']:
+                 '<fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>']:
         assert part in lead and part.split("${")[0] in body, part
-    # Near me under the search, the script's own markup; the row of controls is the last thing built in,
-    # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
-    assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
-    assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
-    # Under it, the forecast for the water where you are (hereForecast), likewise word for word.
-    assert f"const HERE_CTA = '{bs.HERE_CTA}';" in page and "'geolocation' in navigator ? HERE_CTA" in lead
-    assert body.index(bs.NEAR_CTA) < body.index(bs.HERE_CTA) < body.index('<div class="toolbar">')
-    assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
+    # Near me is a pin at the end of the search field, the script's own markup, word for word (29 Oct 2026);
+    # the link for the water where you are went with it, and the line for groups is at the foot of the list.
+    assert f"const NEAR_PIN = '{bs.NEAR_PIN}';" in page and "${'geolocation' in navigator ? NEAR_PIN : ''}</div>" in lead and bs.NEAR_PIN in body
+    assert body.index(bs.NEAR_PIN) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
+    assert "HERE_CTA" not in page and "here-cta" not in body
+    assert '<div id="answer-lines">' not in lead   # the strip's counts answer it (29 Oct 2026)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
     # Low risk only is in the list's Filter sheet since 29 Oct 2026, not in the opening.

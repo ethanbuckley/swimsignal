@@ -235,35 +235,23 @@
   .best-day b { color:var(--k-low); }
   /* The list's answer: how many spots are at low risk on the weekend's better day,
      or the week's best, in the display face at the heading size, the count in the low colour. */
-  .low-answer { font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); margin:12px 0 0; }
-  .low-answer .n { color:var(--k-low); }
-  .low-answer .pick { font:400 var(--fs-note) var(--font-text); white-space:nowrap; }
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
   /* Near me, the way most people come in: one full-width button under the search. */
-  .near-cta { display:flex; width:100%; margin-top:10px; min-height:48px; font-size:var(--fs-body); }
-  .near-cta svg { width:18px; height:18px; flex:none; }
-  .here-cta { margin-top:4px; }   /* under Near me: the forecast for the water where you are (hereForecast) */
-  .near-cta .cta-s { display:none; }
-  /* A phone's opening, shorter: with the introduction and controls in full, the first spot began at
-     759 px on a 375 x 812 phone, under the tab bar. Near me
-     beside the search as "Near me", as a desktop's shares its row, and the lede without the map's clause:
-     "Or check the river or lake where you are" says it under them. */
+  /* Near me as a pin at the end of the search field; the list's five days as Plan's strip, with a count. */
+  .search input { padding-right:52px; }
+  .search .search-loc { position:absolute; right:2px; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:44px; height:44px;
+    border:0; border-radius:var(--radius); background:none; color:var(--link); cursor:pointer; }
+  .search .search-loc svg { position:static; transform:none; width:20px; height:20px; color:var(--link); pointer-events:none; }
+  @media (hover: hover) { .search .search-loc:hover { background:var(--hover); } }
+  .list-days { flex:1 1 auto; background:var(--field); border:1px solid var(--line); border-radius:var(--radius); }
+  .list-days .dd { line-height:1.2; text-align:center; }
+  .list-days .dd b { font-weight:600; color:var(--k-low); }
+  .list-days input:checked + span .dd b { color:var(--on-fill); }
+  .strip-note { margin:6px 2px 0; }
+  /* A phone's opening, shorter: the lede without the map's clause, and the search at the height of a thumb. */
   @media (max-width: 800px) {
-    .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
-    .intro > * { grid-column:1 / -1; }
-    .intro > .search { grid-column:1; }
-    .intro > .search input { min-height:48px; }   /* Near me's height */
-    .intro > .near-cta { grid-column:2; width:auto; margin-top:16px; padding:8px 14px; }
-    .intro > .here-cta { justify-self:start; }
-    .near-cta .cta-l, .lede-map { display:none; }
-    .near-cta .cta-s { display:inline; }
-  }
-  /* The smallest phones: no room for both, so Near me keeps its own row, and its full words. */
-  @media (max-width: 360px) {
-    .intro > .search, .intro > .near-cta { grid-column:1 / -1; }
-    .intro > .near-cta { width:100%; margin-top:10px; }
-    .near-cta .cta-l { display:inline; }
-    .near-cta .cta-s { display:none; }
+    .lede-map { display:none; }
+    .intro > .search input { min-height:48px; }
   }
   .intro .geo { margin:8px 0 0; }
   .save-hint .ic { margin-top:3px; }   /* centred on the first line (22.5 px) when the text wraps */
@@ -969,16 +957,10 @@
     .answer { text-align:left; }
     .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
       .answer .cover, .big, .big-head { margin-left:0; margin-right:0; }
-    /* A shorter opening, so the first spots and most of the map's tile are on a
-       1,440 x 900 screen: the search and Near me share a row, as do the day and "Low risk only". */
-    .intro { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:8px; }
-    .intro > * { grid-column:1 / -1; }
-    .intro > .search { grid-column:1; }
-    .intro > .search input { min-height:48px; }   /* Near me's height */
-    .intro > .near-cta { grid-column:2; width:auto; margin-top:16px; padding:8px 18px; }
-    .intro > .here-cta { justify-self:start; }
+    /* A shorter opening, so the first spots and most of the map's tile are on a 1,440 x 900 screen:
+       Near me is the search field's pin, and the five days one strip (29 October 2026). */
+    .intro > .search input { min-height:48px; }
     .lead .lede { text-wrap:balance; }
-    .lead .toolbar select { flex:0 1 320px; }
     .lead > .back { display:flex; width:max-content; max-width:none; }
     .lead::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
@@ -1013,7 +995,6 @@
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
-    .low-answer { font-size:var(--fs-body); margin-top:10px; }   /* one line on a 375 px phone, so the first spot still shows */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
     body.map-mode #map-wrap { display:block; position:fixed; left:0; right:0; bottom:var(--nav-h); top:var(--header-h); z-index:1000; }
@@ -1202,7 +1183,7 @@
     .top { position:static; padding:0 0 8px; background:var(--card); color:var(--ink); border-bottom:1px solid var(--line); }
     .top .brand { color:var(--ink); }
     .top nav, .skip, .bottom-nav, #map-wrap, .loc, .tile:has(#spot-map), .top-row, .actions, .below,
-      .search, .near-cta, .here-cta, .toolbar, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
+      .search, .toolbar, .strip-note, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
       .about-line, #your-data, #home-screen, details.ea-today, details.consent, details.lists, form, .btn, .unsave,
       .pick, details > summary::after, .quiet-btn::after { display:none !important; }
     .answer::before, .lead::before { display:none; }
@@ -2456,7 +2437,7 @@ const coverLine = (d, iso = null) => { const w = coverWords(d, iso); return w.le
 // away, as a phrase, on the Saved page, with how many of your spots are low. While the five days
 // reach a weekend, how it looks comes first (levels.js, weekendWords), so the Show button stays last,
 // beside its day. The day is in words, as in a sentence ("tomorrow", "Friday"); the button's label
-// keeps the picker's name. The list says the week's best day in its answer's form instead (mostLine).
+// keeps the picker's name. The list shows every day's count in its strip of days instead (lowOn).
 // Spots with official advice (eatoday.js) are left out of the counts, and the note names them.
 function bestDayNote(spots, yours = false) {
   const out = typeof eaTodayRestricts === 'function' ? spots.filter(s => eaTodayRestricts(s)) : [];   // a notice that restricts swimming
@@ -2467,30 +2448,14 @@ function bestDayNote(spots, yours = false) {
   return `${wk ? wk + ' ' : ''}Lowest pollution risk this week: <b>${dayName(b.date)}</b>${yours ? `, when ${b.low} of your ${b.known} spots${yoursLevelled(b, spots)} ${b.low === 1 ? 'is' : 'are'} at low risk${left}.` : ''}`
     + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}>${yours ? ' ' : ' · '}<button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
 }
-// The list's second line (levels.js, mostWords): the week's best day in the answer's form, "Today: 43
-// of 105, the most this week", the day in bold and a Show button. Empty when no spot is low on any day.
-function mostLine(spots) {
-  const b = bestDay(spots, fiveDays()); if (!b || !b.low) return '';
-  return mostWords({ ...b, n: spots.length }).replace(/^([^:]+)/, '<b>$1</b>')
-    + `<span class="pick"${VIEW.day === b.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${b.date}" aria-label="Show ${dateLabel(b.date)}">Show</button></span>`;
-}
-// The list's answer line (levels.js, lowAnswerDay): "Saturday: 64 of 105 spots at low risk", with a
-// Show button. The week's best day follows it (mostLine) only when that is another day with more
-// spots at low risk. With a day picked the answer is that day's, and setMapDay redraws both lines
-// (answerLines).
-function lowAnswer(spots) {
-  const dates = fiveDays(), a = lowAnswerDay(spots, dates, VIEW.day);
-  if (!a) return { html: '', note: mostLine(spots) };
-  const w = bestDay(spots, dates), words = lowAnswerWords(a).replace(/: (\S+ of \d+)/, ': <span class="n">$1</span>');
-  return { html: `<p class="low-answer">${words}<span class="pick"${VIEW.day === a.date ? ' hidden' : ''}> · <button type="button" class="linkbtn small" data-pick-day="${a.date}" aria-label="Show ${dateLabel(a.date)}">Show</button></span></p>`,
-           note: w && w.date !== a.date && w.low > a.low ? mostLine(spots) : '' };
-}
-const answerLines = () => { const a = lowAnswer(DATA.spots); return a.html + (a.note ? `<p class="planner-note best-day">${a.note}</p>` : ''); };
+// The strip's count for a day: the spots at low risk that day, as Low risk only would show them (29 October
+// 2026: it replaced the line under the day picker, "This weekend, Sunday: 66 of 109 spots at low risk").
+const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low').length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
 // The button hides once pressed, so the focus goes to the day picker, which now shows its day.
 const bindBestDay = (root = document) => root.querySelectorAll('[data-pick-day]').forEach(b => b.addEventListener('click', () => {
-  setMapDay(b.dataset.pickDay); const sel = document.getElementById('listday'); if (sel) sel.focus(); }));
+  setMapDay(b.dataset.pickDay); const sel = document.querySelector('input[name="list-day"]:checked'); if (sel) sel.focus(); }));
 
 // ------------------------------------------------------------------------------ swim journal
 // "Log a swim" on a spot's page, and the journal on the Saved page: journal.js, which keeps both on this
@@ -2832,9 +2797,9 @@ function styleMarkers() {
 }
 function setMapDay(iso) {
   VIEW.day = iso || null;
-  document.querySelectorAll('#mapday, #listday').forEach(el => { el.value = VIEW.day || ''; });
+  document.querySelectorAll('#mapday').forEach(el => { el.value = VIEW.day || ''; });
+  document.querySelectorAll('input[name="list-day"]').forEach(r => { r.checked = r.value === VIEW.day; });
   styleMarkers(); syncBestDay();
-  const ans = document.getElementById('answer-lines'); if (ans) { ans.innerHTML = answerLines(); bindBestDay(ans); }
   if (document.getElementById('spots')) drawSpots();
 }
 // The five days, once the forecast has loaded: its dates, from the page's day (setDays).
@@ -2953,11 +2918,10 @@ const solo = h => `<div class="solo">${h}</div>`;
 // With more than one list, Save says which list it adds to: the one the Saved page shows.
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
-// Near me under the search: the way most people come in. Also in the built page (home_lead).
-// On a phone it sits beside the search as "Near me" (cta-s), so the first spots reach the first screen.
-const NEAR_CTA = '<button type="button" class="btn primary near-cta" data-near-cta><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg><span class="cta-l">Show spots near me</span><span class="cta-s">Near me</span></button>';
-// Under it, the forecast for the water where you are (hereForecast). Also in home_lead.
-const HERE_CTA = '<button type="button" class="linkbtn here-cta" data-here-cta>Or check the river or lake where you are</button>';
+// Near me: a pin at the end of the search field, as a maps app has it (29 October 2026; it was a full-width
+// button, with "Or check the river or lake where you are" under it, which the map's tap now covers). Also in
+// the built page (home_lead).
+const NEAR_PIN = '<button type="button" class="search-loc" data-near-cta aria-label="Spots near me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></svg></button>';
 const NEAR_N = 3;   // the nearest spots shown as cards once a place is given
 let OPENED = false;   // a spot has been opened this visit: only then does the list say how to save one (kept nowhere)
 const SLIDERS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10m4 0h2M4 17h4m4 0h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>';
@@ -2989,7 +2953,7 @@ function overviewTop(spots) {
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
-const listPath = s => spotPath(s.id) + (VIEW.day && daily(s) ? '#day=' + VIEW.day : '');
+const listPath = s => spotPath(s.id) + (VIEW.day && VIEW.day !== today() && daily(s) ? '#day=' + VIEW.day : '');
 const dist = s => VIEW.here ? km(VIEW.here, [s.lat, s.lon]) : null;
 const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as in Plan a swim (DESIGN.md, Words)
 // No water-quality figure in a row. Out of season, as "E. coli estimate 43%†", it is untested and does
@@ -3017,6 +2981,8 @@ function setView(v) {
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
+  // The list opens on today, a day of the strip (29 October 2026; it opened on today and tomorrow together).
+  if (!VIEW.day) { VIEW.day = today(); const md = document.getElementById('mapday'); if (md) md.value = VIEW.day; styleMarkers(); }
   document.title = `${BRAND} · pollution risk forecasts for swim spots`;
   const saved = DATA.spots.filter(s => SAVED.has(s.id));
   const sorts = Object.entries(SORTS).filter(([k]) => k !== 'near' || 'geolocation' in navigator);
@@ -3027,12 +2993,14 @@ function renderList() {
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
   let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class="lede-map">, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
-    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}"></div>`
-    // Until a place is given, Near me; then the nearest spots, as cards above the list (drawSpots).
-    + (offerNear() ? NEAR_CTA : '') + ('geolocation' in navigator ? HERE_CTA : '')
+    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}">${'geolocation' in navigator ? NEAR_PIN : ''}</div>`
     + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
-    + `<div class="toolbar"><label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>${fiveDays().map(iso => `<option value="${iso}"${VIEW.day === iso ? ' selected' : ''}>${dateLabel(iso)}</option>`).join('')}</select></div>`
-    + `<div id="answer-lines">${answerLines()}</div>`
+    // The five days as a strip, as Plan has them, each with how many spots are at low risk that day: the day's
+    // choice and its answer in one place (29 October 2026: a select, "Today and tomorrow" first, and the
+    // weekend's best day in a line under it). It opens on today (renderList).
+    + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
+      + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> low risk</span></span></label>`).join('')}</fieldset></div>`
+    + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   let v = saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
@@ -3074,7 +3042,6 @@ function renderList() {
     steady(b, drawSpots); }));
   document.querySelector('[data-low]').addEventListener('click', () => setLowOnly(!VIEW.lowOnly));
   const nearCta = document.querySelector('[data-near-cta]'); if (nearCta) nearCta.addEventListener('click', () => locate('cta'));
-  const hereCta = document.querySelector('[data-here-cta]'); if (hereCta) hereCta.addEventListener('click', hereForecast);
   document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.sort === 'near' && !VIEW.here) { locate(); return; }
     setSort(b.dataset.sort); drawSpots(); }));
@@ -3086,7 +3053,6 @@ function renderList() {
 }
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
 // The position stays in this page: it only orders the list, and is not sent anywhere.
-const offerNear = () => 'geolocation' in navigator && !VIEW.here;
 function locate(at = 'sort') {
   const before = VIEW.sort === 'near' ? 'name' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : 'in A–Z order';
   // Said where it was asked: under the button under the search ('cta'), or under the sort buttons.
@@ -3098,7 +3064,6 @@ function locate(at = 'sort') {
   // Near me shows as chosen while the position is found, so the press is seen to take.
   setSort('near'); msg('Finding your location…');
   navigator.geolocation.getCurrentPosition(p => { VIEW.here = [p.coords.latitude, p.coords.longitude]; setSort('near'); msg('');
-      const cta = document.querySelector('[data-near-cta]'); if (cta) cta.hidden = true;   // its answer is the cards below
       drawSpots(); },
     // A browser remembers a refusal and does not ask again, so say where to undo it, and name the button
     // that was pressed: "Show spots near me" under the search, "Near me" among the sorts (15 Oct 2026).
@@ -3634,30 +3599,6 @@ function showOnMap(at, zoom, say, name = null) {
   if (name) L.circleMarker(at, { radius: 14, color: RING(), weight: 3, fill: false, interactive: false })
     .bindTooltip(esc(name), { permanent: true, direction: 'top', offset: [0, -14] }).addTo(selLayer);
   mapSay(say);
-}
-// The water where you are: the forecast for the nearest river or lake to your position, as
-// a tap there on the map gives it (anypoint.js). With none within its reach (1.5 km), the map opens on
-// where you are, to tap the nearest. The position stays on the device, as for Near me (locate), and it
-// orders the list by distance when you come back to it.
-function hereForecast() {
-  const say = t => { VIEW.geoAt = 'cta'; VIEW.geoMsg = t; const g = document.getElementById('geo-cta'); if (g) { g.textContent = t; g.hidden = !t; } };
-  say('Finding your location…');
-  navigator.geolocation.getCurrentPosition(async p => {
-    const at = [p.coords.latitude, p.coords.longitude]; VIEW.here = at; say('');
-    let d = null;
-    try { d = await AnyPoint.point(at[0], at[1]); } catch (e) { /* open() says what went wrong */ }
-    if (d && d.mode === 'none' && !d.outside) {
-      if (PHONE.matches) setMapMode(true, [at[0], at[1], PLACE_ZOOM]); else { map.setView(at, PLACE_ZOOM, MOTION()); mapInView(); }
-      selLayer.clearLayers();   // where you are, as a dot: the water to tap is at least 1.5 km from it
-      L.circleMarker(at, { radius: 6, color: '#fff', weight: 2, fillColor: RING(), fillOpacity: 1, interactive: false }).addTo(selLayer);
-      mapSay(`No river or lake within 1.5 km of you. ${TAP()} the nearest one on the map.`);
-      return;
-    }
-    if (!PHONE.matches) map.setView(at, PLACE_ZOOM, MOTION());   // beside the forecast, where it is for
-    AnyPoint.open(at[0], at[1]);
-  }, e => say(e.code === 1 ? 'Location is blocked for this site. Allow it in your browser’s settings, then try again.'
-    : 'Your device could not find where you are. Check that location services are on for your browser, then try again.'),
-  { maximumAge: 60 * 1000, timeout: 10000 });
 }
 
 // ------------------------------------------------------------------------------ plan a swim

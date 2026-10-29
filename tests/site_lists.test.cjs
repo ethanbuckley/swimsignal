@@ -170,49 +170,6 @@ test('lists.js loads beside the page’s other scripts without a clash', () => {
 // "Mon 19 Oct" turned the list to "On Monday" while the line above it still said "Tomorrow: 67 of 105
 // spots at low risk". With a day picked the line is that day's; with none, the weekend's better day
 // stays the rule (Ethan, PR #216).
-test('the answer line follows the picked day, and keeps the weekend rule with none', () => {
-  const dir = path.join(__dirname, '../src/dipcast/site/');
-  const html = fs.readFileSync(dir + 'index.html', 'utf8');
-  const src = html.slice(html.indexOf('<script>\nconst BRAND') + 9, html.lastIndexOf('</script>')).split('\n');
-  const defs = names => names.map(n => { const i = src.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`));
-    assert.ok(i >= 0, `no ${n} in index.html`);
-    let j = i + 1; while (j < src.length && /^[\s})\]+]/.test(src[j])) j++;
-    return src.slice(i, j).join('\n'); }).join('\n');
-  const fri = '2026-10-16', days = ['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'];   // Fri to Tue
-  const spot = labels => ({upstream_summary: {overflows: 1}, location: {mode: 'river'}, now: {label: labels[0]},
-    days: labels.map((l, i) => ({date: days[i], label: l, risk: l === 'low' ? 0.01 : 0.5}))});
-  //                      Fri     Sat     Sun     Mon     Tue
-  const spots = [spot(['low', 'high', 'low', 'low', 'high']), spot(['low', 'low', 'high', 'low', 'high']),
-                 spot(['high', 'high', 'high', 'low', 'high']), {days: [], upstream_summary: {overflows: 0}}];
-  const ctx = vm.createContext({});
-  vm.runInContext(fs.readFileSync(dir + 'levels.js', 'utf8') + `\nsetToday("${fri}");`, ctx);
-  vm.runInContext(`let VIEW = {day: null}; const DATA = {generated_at: '2026-10-16T09:12:00+01:00', spots: ${JSON.stringify(spots)}};\n` + defs(['esc', 'dateLabel', 'fiveDays', 'mostLine', 'lowAnswer', 'answerLines']), ctx);
-  const line = day => { vm.runInContext(`VIEW.day = ${JSON.stringify(day)}`, ctx);
-    return vm.runInContext('answerLines()', ctx).match(/<p class="low-answer">(.*?)<span class="pick"/)[1].replace(/<[^>]+>/g, ''); };
-  assert.equal(line(null), 'Tomorrow: 1 of 4 spots at low risk');   // the weekend's better day: Saturday and Sunday tie, so the earlier
-  assert.equal(line('2026-10-19'), 'Monday: 3 of 4 spots at low risk');
-  assert.equal(line('2026-10-20'), 'Tuesday: none of 4 spots at low risk');
-  assert.equal(line(fri), 'Today: 2 of 4 spots at low risk');
-  assert.equal(line('2026-10-18'), 'Sunday: 1 of 4 spots at low risk');
-  // A picked day worse than the week's best keeps the best-day line under it, in the answer's form.
-  vm.runInContext('VIEW.day = "2026-10-20"', ctx);
-  assert.match(vm.runInContext('answerLines()', ctx), /<p class="planner-note best-day"><b>Monday<\/b>: 3 of 4, the most this week<span class="pick"> · <button[^>]* data-pick-day="2026-10-19"/);
-  // The week's best day itself: no second line.
-  vm.runInContext('VIEW.day = "2026-10-19"', ctx);
-  assert.doesNotMatch(vm.runInContext('answerLines()', ctx), /best-day/);
-  // The rule itself (levels.js), and a picked day outside the five read as none picked.
-  const L = require('../src/dipcast/site/levels.js');
-  L.setToday(fri);
-  try {
-    assert.equal(L.lowAnswerDay(spots, days, '2026-10-19').date, '2026-10-19');
-    assert.equal(L.lowAnswerDay(spots, days, '2026-10-30').date, '2026-10-17');
-    assert.equal(L.lowAnswerDay(spots, days).date, '2026-10-17');
-  } finally { L.setToday(null); }
-  // Picking a day redraws the line: setMapDay fills #answer-lines again, and the list draws it there.
-  const setMapDay = html.slice(html.indexOf('function setMapDay(iso) {'), html.indexOf('\n}\n', html.indexOf('function setMapDay(iso) {')));
-  assert.match(setMapDay, /getElementById\('answer-lines'\); if \(ans\) \{ ans\.innerHTML = answerLines\(\); bindBestDay\(ans\); \}/);
-  assert.match(html, /<div id="answer-lines">\$\{answerLines\(\)\}<\/div>/);
-});
 
 // ------------------------------------------------------------------------------ the home list, A–Z by area
 // The rows with no monitored overflow upstream go at the end of their area behind one line (review of
