@@ -3679,8 +3679,14 @@ let PLAN = { ...PLAN_DEFAULT }, PLACES = null, planNote = '', planTyped = 0, PLA
 // sent nowhere. PLAN_READ: this page has started its plan.
 const PLAN_KEY = 'dipcast.plan';
 let PLAN_READ = false;
+// PLAN_PREVIEW: the plan shown is an outing opened from a link (plan.js, planInvited), so it is in the address
+// only, and the plan kept here is left as it was until keepPlan. keptPlan: that plan, as planKept reads it.
+// PLAN_OFF: such an outing's own day, where its address named one that is no longer among the five (plan.js, planDayOff).
+let PLAN_PREVIEW = false, PLAN_OFF = null;
+const keptPlan = () => planKept(stored(PLAN_KEY), planDates());
 const planAddress = () => { const h = planHash(PLAN); history.replaceState(history.state, '', planPath() + h);
-  try { localStorage.setItem(PLAN_KEY, h); } catch (e) { /* kept for this visit only */ } };
+  if (!PLAN_PREVIEW) try { localStorage.setItem(PLAN_KEY, h); } catch (e) { /* kept for this visit only */ } };
+const keepPlan = () => { PLAN_PREVIEW = false; planAddress(); };
 // The plan's reach on the map: the ring, or the start and the nearest spots at any distance. The full
 // map on a phone opens on it too (setMapMode).
 const fitPlan = () => map.fitBounds(PLAN_BOUNDS, { padding: [30, 30], ...MOTION() });
@@ -3752,6 +3758,12 @@ function renderPlan() {
   document.title = `Plan a swim · ${BRAND}`;
   if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
+  PLAN_PREVIEW = planInvited(PLAN, keptPlan(), location.hash.length > 1, PLAN_PREVIEW);
+  if (location.hash.length > 1) PLAN_OFF = planDayOff(location.hash, planDates());
+  if (!PLAN_PREVIEW) PLAN_OFF = null;
+  // A plan from an address is read on its own (plan.js, readPlan): its day is not a change of day, so a link
+  // opened while Plan a swim is open keeps its time and stamp (outing.js, outingForDay).
+  if (location.hash.length > 1 && typeof OUTING_DAY !== 'undefined') OUTING_DAY = null;
   PLAN.from = planStart(PLAN.from, VIEW.here);   // "Near me" on the list has already asked; else areas are suggested
   planCompareGo = !!PLAN.compare;   // a link to a comparison opens on it (drawPlan)
   const typed = PLAN.from && !PLAN.from.here ? PLAN.from.name : '';

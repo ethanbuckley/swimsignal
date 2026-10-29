@@ -143,7 +143,8 @@ function outingWatchLines(was, now) {
 // The whole section, as HTML. w = { day (the outing's), today, spots: [{ name, role ('your spot' or 'your
 // backup'), was, now }], passed (an earlier outing's day that has gone by, or null), kept (false where this
 // browser could not keep the note), forecast (the issue time on screen), shared (true where each `was` is a
-// shared link's stamp, outingWatchShared: then the words are about when it was shared, not planned) }.
+// shared link's stamp, outingWatchShared: then the words are about when it was shared, not planned), preview
+// (from a link and not kept: nothing is noted) }.
 function outingWatchSection(w) {
   const S = owSince(), R = owRules();
   if (!w.spots.length) return '';
@@ -157,6 +158,7 @@ function outingWatchSection(w) {
   const since = w.shared ? 'this outing was shared with you' : 'you planned this outing';
   if (compared.length) lead = changed ? `${changed === 1 ? '1 thing has' : `${changed} things have`} changed since ${since}.` : `Nothing has changed since ${since}.`;
   else if (w.shared && !older) lead = 'This is the forecast it was shared from. When a newer forecast is issued, this says what has changed since.';
+  else if (w.preview) lead = 'Nothing is noted in this browser until you keep this outing, so it cannot say later what has changed.';
   else if (!w.kept) lead = 'This browser cannot keep a note, so it cannot say later what has changed.';
   else if (!older) lead = `${w.passed ? `It now follows the same spots for ${owDay(w.day)}. ` : 'This browser has noted what each shows now. '}When a newer forecast is issued, this says what has changed.`;
   const spots = parts.map(p => `<p class="outing-watch-who"><b>${owEsc(p.name)}</b>, ${p.role}${p.was && p.compared && !w.shared ? `, planned ${owEsc(owWhen(p.was.at))}` : ''}</p>`
@@ -182,22 +184,24 @@ function outingWatchSection(w) {
 // The note as it was when the page opened is kept for the visit (OUTING_WATCH_OPENED, as since.js keeps
 // LOOKED): the page draws the tile more than once, and an earlier outing's day that has passed is said each time.
 let OUTING_WATCH_OPENED;
-function outingWatchDraw(tile, plan, pair, forecast, nowMs = Date.now()) {
+// preview: the outing is from a link and not kept (index.html, PLAN_PREVIEW). The note kept here is the kept
+// outing's, so it is neither changed nor compared with; only a shared link's stamp is.
+function outingWatchDraw(tile, plan, pair, forecast, nowMs = Date.now(), preview = false) {
   let text = null, kept = true;
   try { text = localStorage.getItem(OUTING_WATCH_KEY); } catch (e) { kept = false; }
-  const old = outingWatchRead(text), note = outingWatchNote(old, plan, pair, forecast, nowMs);
+  const old = outingWatchRead(text), note = outingWatchNote(preview ? null : old, plan, pair, forecast, nowMs);
   if (OUTING_WATCH_OPENED === undefined) OUTING_WATCH_OPENED = old;
-  try { if (note) localStorage.setItem(OUTING_WATCH_KEY, JSON.stringify(note)); else localStorage.removeItem(OUTING_WATCH_KEY); }
+  if (!preview) try { if (note) localStorage.setItem(OUTING_WATCH_KEY, JSON.stringify(note)); else localStorage.removeItem(OUTING_WATCH_KEY); }
   catch (e) { kept = false; }
   const box = tile && tile.querySelector('.outing-pair');
   if (!note || !box) return;
   // A shared link's stamp, while the plan still carries it, stands in for this browser's note (outingWatchShared).
   const shared = outingWatchShared(plan);
-  const was = shared ? shared.items : old && old.day === plan.day ? old.items : [], t = owRules().today();
+  const was = shared ? shared.items : !preview && old && old.day === plan.day ? old.items : [], t = owRules().today();
   const spots = [[pair.main, 'your spot'], [pair.backup, 'your backup']].filter(([s]) => s)
     .map(([s, role]) => ({ name: s.name, role, was: was.find(r => r.id === s.id) || null, now: outingWatchRecord(s, plan.day, forecast, nowMs) }));
-  box.insertAdjacentHTML('afterend', outingWatchSection({ day: plan.day, today: t, spots, kept, forecast, shared: !!shared,
-    passed: OUTING_WATCH_OPENED && OUTING_WATCH_OPENED.day !== plan.day && OUTING_WATCH_OPENED.day < t ? OUTING_WATCH_OPENED.day : null }));
+  box.insertAdjacentHTML('afterend', outingWatchSection({ day: plan.day, today: t, spots, kept, forecast, shared: !!shared, preview,
+    passed: !preview && OUTING_WATCH_OPENED && OUTING_WATCH_OPENED.day !== plan.day && OUTING_WATCH_OPENED.day < t ? OUTING_WATCH_OPENED.day : null }));
 }
 
 if (typeof module === 'object' && module.exports) {
