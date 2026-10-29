@@ -31,7 +31,7 @@ const OUTING_MEETS = ['parking', 'entry'];
 const OUTING_FINISH_ACTS = ['paddle', 'sup'];
 // In a shared outing (outing.js, outingShared): the forecast it was sent from, as its issue time in UTC to
 // the minute ("20261029T1216Z", printed.js's form), and the level the spot and the backup had then, so the
-// one who opens it can be told what has changed since. Only the levels a spot can have (levels.js).
+// one who opens it can be told what has changed since; a paddle's finish has its own (flv). Only the levels a spot can have (levels.js).
 const PLAN_SENT = /^\d{8}T\d{4}Z$/;
 const PLAN_LEVELS = ['low', 'moderate', 'high', 'very high', 'no forecast', 'no overflows', 'not covered', 'no river connection'];
 const inGB = (lat, lon) => lat > 49.8 && lat < 61 && lon > -8.7 && lon < 2;
@@ -64,10 +64,11 @@ function readPlan(hash, dates, was = PLAN_DEFAULT) {
     p.sent = q.get('sent');
     if (PLAN_LEVELS.includes(q.get('lv'))) p.lv = q.get('lv');
     if (p.backup && PLAN_LEVELS.includes(q.get('blv'))) p.blv = q.get('blv');
+    if (p.finish && PLAN_LEVELS.includes(q.get('flv'))) p.flv = q.get('flv');
   }
   // A day the address names that is not one of the five (a shared outing opened after its day): the plan is
   // shown for the first day, so the time and the stamp, which were that day's, go, as planKept drops them.
-  if (planDayOff(hash, dates)) { delete p.when; delete p.sent; delete p.lv; delete p.blv; }
+  if (planDayOff(hash, dates)) { delete p.when; delete p.sent; delete p.lv; delete p.blv; delete p.flv; }
   return p;
 }
 // That day, if the address names one outside the five; else null. The page says so on an outing from a link.
@@ -93,6 +94,7 @@ function planHash(p) {
   if (p.sent) q.set('sent', p.sent);
   if (p.lv) q.set('lv', p.lv);
   if (p.blv) q.set('blv', p.blv);
+  if (p.flv) q.set('flv', p.flv);
   return '#' + q.toString();
 }
 // The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the
@@ -105,7 +107,7 @@ function planKept(hash, dates, listDay = null) {
   const day = dates.includes(listDay) ? listDay : dates.includes(d) ? d : null;
   // An outing's time was for its own day: on another day it is dropped, and its spots kept.
   if (p.when && day !== d) delete p.when;
-  if (p.sent && day !== d) { delete p.sent; delete p.lv; delete p.blv; }   // the levels sent were that day's
+  if (p.sent && day !== d) { delete p.sent; delete p.lv; delete p.blv; delete p.flv; }   // the levels sent were that day's
   return { ...p, day };
 }
 // The outing to come back to on Explore (index.html, outingResume): the kept plan's spot, backup, time and

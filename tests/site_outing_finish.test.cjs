@@ -71,3 +71,41 @@ test('the build puts the stretches in each spot\'s own file and the finishes in 
   const privacy = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/privacy.html'), 'utf8');
   assert.ok(privacy.includes('the spot where a paddle finishes'));
 });
+
+// ------------------------------------------------------------------------------ the finish is followed like the spot
+const W = require('../src/dipcast/site/outingwatch.js');
+const K = require('../src/dipcast/site/outingpack.js');
+
+test('a shared link stamps the finish\'s level, and the invitation compares it', () => {
+  const plan = P.readPlan(`${BASE}&act=paddle&finish=wharfe-greenholme`, DATES);
+  const main = {name: 'Ilkley', lat: 53.92, lon: -1.82};
+  const shared = O.outingShared(plan, main, {sent: '20261026T0700Z', lv: 'low', flv: 'moderate'});
+  assert.equal(shared.flv, 'moderate');
+  // No stamp at all when the finish's level is missing: a stamp that is not whole would compare half the outing.
+  assert.equal('sent' in O.outingShared(plan, main, {sent: '20261026T0700Z', lv: 'low'}), false);
+  const back = P.readPlan(P.planHash(shared), DATES);
+  assert.equal(back.flv, 'moderate');
+  assert.deepEqual(W.outingWatchShared(back).items.map(i => [i.id, i.level]), [['wharfe-ilkley', 'low'], ['wharfe-greenholme', 'moderate']]);
+  // Any change drops it with the rest of the stamp; a finish without its own level reads none.
+  assert.equal('flv' in O.outingChanged(back, 'when'), false);
+  assert.equal('flv' in P.readPlan(`${BASE}&sent=20261026T0700Z&lv=low&flv=low`, DATES), false);
+});
+
+test('the note, the alerts and the offline copy follow the finish', () => {
+  const day = DATES[2], mk = (id, name) => ({id, name, kind: 'river', upstream_summary: {overflows: 1}, location: {mode: 'river'}, official: [],
+    now: {label: 'low', risk: 0}, days: DATES.map(date => ({date, label: 'low', risk: 0.05}))});
+  const a = mk('a', 'Ilkley'), f = mk('f', 'Greenholme'), b = mk('b', 'Backup');
+  const note = W.outingWatchNote(null, {day}, {main: a, finish: f, backup: b}, new Date(2026, 9, 26, 7).toISOString(), Date.now());
+  assert.deepEqual(note.items.map(i => i.id), ['a', 'f', 'b']);
+  assert.equal(W.outingWatchRead(JSON.stringify(note)).items.length, 3);   // all three read back
+  // Alerts for a date: the spot, then the finish, then the backup, each once.
+  assert.deepEqual(O.outingPairs({day, spot: 'a', finish: 'f', backup: 'b'}).map(p => p.spot), ['a', 'f', 'b']);
+  assert.deepEqual(O.outingPairs({day, spot: 'a', finish: 'a'}).map(p => p.spot), ['a']);
+  // The offline copy: the finish's page, its file and its list of overflows; a pack without the finish is another outing's.
+  const fl = K.files({shell: [], spots: [{id: 'a', page: true, file: 'spot/a.json'}, {id: 'f', page: true, file: 'spot/f.json', upstream: true}]});
+  assert.ok(fl.need.includes('spot/f/') && fl.need.includes('data/spot/f.json') && fl.may.includes('data/upstream/f.json'));
+  assert.equal(fl.may.includes('data/upstream/a.json'), false);
+  assert.equal(K.same({day, spot: 'a', backup: null}, {day, spot: 'a', backup: null, finish: 'f'}), false);
+  assert.equal(K.same({day, spot: 'a', backup: null, finish: 'f'}, {day, spot: 'a', backup: null, finish: 'f'}), true);
+  assert.equal(K.covers({day, spot: 'a', finish: 'f'}, 'spot/f'), true);
+});

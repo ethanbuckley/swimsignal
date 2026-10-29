@@ -63,16 +63,16 @@ function outingWatchOK(r, day) {
 function outingWatchRead(text) {
   let v; try { v = JSON.parse(text || 'null'); } catch (e) { return null; }
   if (!v || typeof v !== 'object' || !OW_ISO.test(v.day || '') || !Array.isArray(v.items)) return null;
-  const items = v.items.filter(r => outingWatchOK(r, v.day)).slice(0, 2);
+  const items = v.items.filter(r => outingWatchOK(r, v.day)).slice(0, 3);
   return items.length ? { day: v.day, items } : null;
 }
 // The note for the outing now: plan = { day, ... }, pair = outing.js's outingPair (main, backup, either
-// null). A spot noted before for the same day keeps its note; a new spot, or a new day, is noted now.
+// null), with a paddle's finish (finish, or none). A spot noted before for the same day keeps its note; a new spot, or a new day, is noted now.
 // Null with no spot: nothing kept.
 function outingWatchNote(old, plan, pair, forecast, nowMs) {
   if (!pair.main || !OW_ISO.test(plan.day || '')) return null;
   const kept = old && old.day === plan.day ? old.items : [];
-  return { day: plan.day, items: [pair.main, pair.backup].filter(Boolean)
+  return { day: plan.day, items: [pair.main, pair.finish, pair.backup].filter(Boolean)
     .map(s => kept.find(r => r.id === s.id) || outingWatchRecord(s, plan.day, forecast, nowMs)) };
 }
 
@@ -88,7 +88,7 @@ function outingWatchShared(plan) {
   const forecast = owSentISO(plan.sent), at = forecast ? Date.parse(forecast) : NaN;
   if (!forecast || !Number.isFinite(at) || !OW_ISO.test(plan.day || '')) return null;
   const rec = (id, level) => id && owLevels().has(level) ? { id, day: plan.day, level, official: undefined, river: null, forecast, at } : null;
-  const items = [rec(plan.spot, plan.lv), rec(plan.backup, plan.blv)].filter(Boolean);
+  const items = [rec(plan.spot, plan.lv), rec(plan.finish, plan.flv), rec(plan.backup, plan.blv)].filter(Boolean);
   return items.length && items[0].id === plan.spot ? { day: plan.day, items, forecast } : null;
 }
 
@@ -198,7 +198,7 @@ function outingWatchDraw(tile, plan, pair, forecast, nowMs = Date.now(), preview
   // A shared link's stamp, while the plan still carries it, stands in for this browser's note (outingWatchShared).
   const shared = outingWatchShared(plan);
   const was = shared ? shared.items : !preview && old && old.day === plan.day ? old.items : [], t = owRules().today();
-  const spots = [[pair.main, 'your spot'], [pair.backup, 'your backup']].filter(([s]) => s)
+  const spots = [[pair.main, 'your spot'], [pair.finish, 'your finish'], [pair.backup, 'your backup']].filter(([s]) => s)
     .map(([s, role]) => ({ name: s.name, role, was: was.find(r => r.id === s.id) || null, now: outingWatchRecord(s, plan.day, forecast, nowMs) }));
   box.insertAdjacentHTML('afterend', outingWatchSection({ day: plan.day, today: t, spots, kept, forecast, shared: !!shared, preview,
     passed: !preview && OUTING_WATCH_OPENED && OUTING_WATCH_OPENED.day !== plan.day && OUTING_WATCH_OPENED.day < t ? OUTING_WATCH_OPENED.day : null }));
