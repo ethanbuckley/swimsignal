@@ -291,6 +291,8 @@
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
   .overview.foot { margin:12px 0 0; }   /* the counts, under the list (29 October 2026) */
+  .resume-said, .resume-apart { margin:0 0 6px; font-weight:400; color:var(--ink); }   /* Your outing: when, what for, the backup (outingResume) */
+  .resume-open { display:inline-flex; align-items:center; min-height:44px; margin-top:4px; }
   .overview.foot:empty { display:none; }
   .geo { margin:0 0 8px; }
   #all-group { scroll-margin-top:calc(var(--header-h) + 8px); }   /* Near me in the first-run line brings it up clear of the sticky header */
@@ -2996,6 +2998,23 @@ function setView(v) {
     const b = document.getElementById(id); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
   syncNav();
 }
+// Your outing, back on Explore while its day is still one of the five (29 October 2026; it was found only by
+// opening Plan a swim): the plan kept in this browser (PLAN_KEY; plan.js, planOuting), its spot as a saved card
+// for the outing's day (official advice first, then that day's level), a line for when, what for and the
+// backup (outing.js, outingResumeSaid), and the way back to the plan. Nothing new is kept.
+function outingResume() {
+  const has = id => DATA.spots.some(s => s.id === id);
+  const o = typeof planOuting === 'function' ? planOuting(stored(PLAN_KEY), planDates(), has) : null;
+  if (!o) return '';
+  const s = DATA.spots.find(x => x.id === o.spot), b = o.backup ? DATA.spots.find(x => x.id === o.backup) : null;
+  const said = typeof outingResumeSaid === 'function' ? outingResumeSaid(o, b && b.name) : [];
+  return `<section class="group tile" id="outing-group" aria-labelledby="outing-h"><h2 class="group-head" id="outing-h">Your outing</h2>`
+    + said.map(t => `<p class="small resume-said">${esc(t)}</p>`).join('')
+    + `<ul class="places">${savedCard(s, false, o.day)}</ul>`
+    // With official advice for the spot, the spot page's own line under its level: the two are not one.
+    + (typeof eaTodayApart === 'function' ? eaTodayApart(s).replace('class="gaps o-apart"', 'class="small resume-apart"') : '')
+    + `<a class="linkbtn resume-open" href="${esc(planPath() + o.hash)}" data-plan-hash="${esc(o.hash)}">Open your plan</a></section>`;
+}
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
@@ -3021,8 +3040,8 @@ function renderList() {
     + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
-  let v = saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
-    : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
+  let v = outingResume() + (saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></section>`
+    : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '');   // not on a first look
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
   // The list's choices behind one Filter button, in a sheet (29 October 2026): the sorts, the kinds of water and
@@ -3063,6 +3082,9 @@ function renderList() {
   document.querySelectorAll('[data-sort]').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.sort === 'near' && !VIEW.here) { locate(); return; }
     setSort(b.dataset.sort); drawSpots(); }));
+  const og = document.querySelector('#outing-group .resume-open');
+  if (og) og.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openPlan(og.dataset.planHash); });
+  bindItems(document.getElementById('outing-group') || document.createElement('div'));
   const sheet = document.getElementById('filter-sheet');
   document.getElementById('filter-btn').addEventListener('click', () => sheet.showModal());
   document.getElementById('filter-done').addEventListener('click', () => sheet.close());
@@ -3157,6 +3179,8 @@ function drawSpots() {
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
     // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
     : VIEW.sort === 'low' || VIEW.sort === 'near' ? lowOrder(a, b) : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
+  const outingGroup = document.getElementById('outing-group');
+  if (outingGroup) outingGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
   const savedGroup = document.getElementById('saved-group');
   if (savedGroup) {
     savedGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
