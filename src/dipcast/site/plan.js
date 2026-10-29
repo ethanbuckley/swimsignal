@@ -23,6 +23,16 @@ const PLAN_DEFAULT = { day: null, from: null, within: 20, kind: 'all' };
 // open on the first spots shown (planCompareIds).
 // An outing's time: a part of the day, or an hour ("07"), as outing.js offers them.
 const PLAN_WHEN = /^(morning|afternoon|evening|[01]\d|2[0-3])$/;
+// What the outing is for, and where to meet: fixed choices only, never words (docs/SWIM-TOGETHER-2026-10.md,
+// decision 1 of 29 Oct 2026), so a link can carry nothing anyone typed. Where to meet is at the spot, as its
+// guide gives it: the parking or where you get in.
+const OUTING_ACTS = ['swim', 'paddle', 'sup'];
+const OUTING_MEETS = ['parking', 'entry'];
+// In a shared outing (outing.js, outingShared): the forecast it was sent from, as its issue time in UTC to
+// the minute ("20261029T1216Z", printed.js's form), and the level the spot and the backup had then, so the
+// one who opens it can be told what has changed since. Only the levels a spot can have (levels.js).
+const PLAN_SENT = /^\d{8}T\d{4}Z$/;
+const PLAN_LEVELS = ['low', 'moderate', 'high', 'very high', 'no forecast', 'no overflows', 'not covered', 'no river connection'];
 const inGB = (lat, lon) => lat > 49.8 && lat < 61 && lon > -8.7 && lon < 2;
 const COMPARE_MAX = 3;
 function readPlan(hash, dates, was = PLAN_DEFAULT) {
@@ -44,6 +54,14 @@ function readPlan(hash, dates, was = PLAN_DEFAULT) {
   if (PLAN_WHEN.test(when || '')) p.when = when;
   if (one(q.get('spot'))) p.spot = q.get('spot');
   if (one(q.get('backup')) && q.get('backup') !== p.spot) p.backup = q.get('backup');
+  if (OUTING_ACTS.includes(q.get('act'))) p.act = q.get('act');
+  if (p.spot && OUTING_MEETS.includes(q.get('meet'))) p.meet = q.get('meet');
+  // A send's stamp only with a spot to say it of; each level only with its spot.
+  if (p.spot && PLAN_SENT.test(q.get('sent') || '')) {
+    p.sent = q.get('sent');
+    if (PLAN_LEVELS.includes(q.get('lv'))) p.lv = q.get('lv');
+    if (p.backup && PLAN_LEVELS.includes(q.get('blv'))) p.blv = q.get('blv');
+  }
   return p;
 }
 function planHash(p) {
@@ -57,6 +75,11 @@ function planHash(p) {
   if (p.when) q.set('when', p.when);
   if (p.spot) q.set('spot', p.spot);
   if (p.backup) q.set('backup', p.backup);
+  if (p.act) q.set('act', p.act);
+  if (p.meet) q.set('meet', p.meet);
+  if (p.sent) q.set('sent', p.sent);
+  if (p.lv) q.set('lv', p.lv);
+  if (p.blv) q.set('blv', p.blv);
   return '#' + q.toString();
 }
 // The plan kept in this browser (index.html, PLAN_KEY: planHash's string for the plan last shown), as the
@@ -69,6 +92,7 @@ function planKept(hash, dates, listDay = null) {
   const day = dates.includes(listDay) ? listDay : dates.includes(d) ? d : null;
   // An outing's time was for its own day: on another day it is dropped, and its spots kept.
   if (p.when && day !== d) delete p.when;
+  if (p.sent && day !== d) { delete p.sent; delete p.lv; delete p.blv; }   // the levels sent were that day's
   return { ...p, day };
 }
 // A plan from a town typed in the list's search (index.html, offerOnMap), as the address says it: a search
@@ -242,6 +266,6 @@ const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, PLAN_SENT, PLAN_LEVELS, readPlan, planHash, planKept, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
 }
