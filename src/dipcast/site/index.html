@@ -292,6 +292,9 @@
   .sortseg button[aria-pressed=true] { background:var(--active); color:var(--ink); }
   .overview { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
   .overview.foot { margin:12px 0 0; }   /* the counts, under the list (29 October 2026) */
+  /* Your places on Explore (renderList): one tile, the next outing then the saved spots, each with a plain heading. */
+  .places-sub { font-size:var(--fs-body); font-weight:600; line-height:1.3; margin:0 0 6px; }
+  .places-part + .places-part { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
   .resume-said, .resume-apart { margin:0 0 6px; font-weight:400; color:var(--ink); }   /* Your outing: when, what for, the backup (outingResume) */
   .resume-open { display:inline-flex; align-items:center; min-height:44px; margin-top:4px; }
   .overview.foot:empty { display:none; }
@@ -3013,12 +3016,12 @@ function outingResume() {
   if (!o) return '';
   const s = DATA.spots.find(x => x.id === o.spot), b = o.backup ? DATA.spots.find(x => x.id === o.backup) : null;
   const said = typeof outingResumeSaid === 'function' ? outingResumeSaid(o, b && b.name) : [];
-  return `<section class="group tile" id="outing-group" aria-labelledby="outing-h" data-day="${esc(o.day)}"><h2 class="group-head" id="outing-h">Your outing</h2>`
+  return `<div class="places-part" id="outing-group" data-day="${esc(o.day)}"><h3 class="places-sub" id="outing-h">Next outing</h3>`
     + said.map(t => `<p class="small resume-said">${esc(t)}</p>`).join('')
     + `<ul class="places">${savedCard(s, false, o.day)}</ul>`
     // With official advice for the spot, the spot page's own line under its level: the two are not one.
     + (typeof eaTodayApart === 'function' ? eaTodayApart(s).replace('class="gaps o-apart"', 'class="small resume-apart"') : '')
-    + `<a class="linkbtn resume-open" href="${esc(planPath() + o.hash)}" data-plan-hash="${esc(o.hash)}">Open your plan</a></section>`;
+    + `<a class="linkbtn resume-open" href="${esc(planPath() + o.hash)}" data-plan-hash="${esc(o.hash)}">Open your plan</a></div>`;
 }
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
@@ -3047,8 +3050,11 @@ function renderList() {
   h += notices(null, true) + '</div>';
   // What you do on the water (actsChips) at the foot of the saved spots, where a returning visitor sees it; a first look
   // keeps the search and the list first.
-  let v = outingResume() + (saved.length ? `<section class="group tile" id="saved-group" aria-labelledby="saved-h"><h2 class="group-head" id="saved-h">Saved spots</h2><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul>${actsChips(undefined, true)}</section>`
-    : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '');   // not on a first look
+  // Your places (29-30 Oct 2026): the next outing and the saved spots in one tile, so a returning visitor sees their
+  // water and their plans together; the activity choice at its foot. Before anything is saved or planned, the hint.
+  const places = outingResume() + (saved.length ? `<div class="places-part" id="saved-group"><h3 class="places-sub" id="saved-h">Saved spots</h3><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul>${actsChips(undefined, true)}</div>` : '');
+  let v = places ? `<section class="group tile" id="places-group" aria-labelledby="places-h"><h2 class="group-head" id="places-h">Your places</h2>${places}</section>`
+    : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
   // The list's choices behind one Filter button, in a sheet (29 October 2026): the sorts, the kinds of water and
@@ -3200,6 +3206,8 @@ function drawSpots() {
     bindItems(savedList);
     if (!savedGroup.hidden && (!VIEW.day || VIEW.day === today()) && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
   }
+  const placesGroup = document.getElementById('places-group');   // Your places: hidden with both its parts
+  if (placesGroup) placesGroup.hidden = [outingGroup, savedGroup].every(g => !g || g.hidden);
   const nearGroup = document.getElementById('near-group');
   if (nearGroup) {   // the nearest spots as cards, once a place is given; not while the list is narrowed
     nearGroup.hidden = !VIEW.here || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);

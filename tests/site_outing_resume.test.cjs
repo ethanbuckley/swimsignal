@@ -54,7 +54,7 @@ test('the page draws it above Saved spots as a saved card for its day, and hides
   const fn = html.slice(html.indexOf('function outingResume() {'), html.indexOf('\n}\n', html.indexOf('function outingResume() {')));
   assert.match(fn, /planOuting\(stored\(PLAN_KEY\), planDates\(\), has\)/);
   assert.match(fn, /savedCard\(s, false, o\.day\)/);   // advice first, then the outing day's level (savedCard, eaTodayTag)
-  assert.match(html, /let v = outingResume\(\) \+ \(saved\.length \?/);
+  assert.match(html, /const places = outingResume\(\) \+ \(saved\.length \?/);   // first in Your places (renderList)
   assert.match(html, /outingGroup\.hidden = Boolean\(VIEW\.q\.trim\(\) \|\| VIEW\.filter !== 'all' \|\| VIEW\.lowOnly\)/);
   assert.doesNotMatch(fn, /localStorage\.setItem/);   // nothing new is kept
   assert.match(fn, /eaTodayApart\(s\)/);
