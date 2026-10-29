@@ -1305,6 +1305,19 @@ first spot's answer; the first row began 732 px down a 375 x 812 screen, under t
 
 At 375 x 812 the first spot now begins 544 px down (320 x 640: 555, the bar at 576).
 
+## Your outing, back on Explore (29 October 2026)
+
+An outing made on Plan a swim (a spot, a backup, a time, what for) was kept in this browser (`dipcast.plan`),
+but found again only by opening Plan. Explore now shows it above Saved spots, "Your outing", while its day is
+one of the five days, its spot is still listed and it has a starting place (`planOuting` in plan.js; without
+a starting place Plan draws no outing, so its link would open an empty plan). Under the heading, the plan's
+own words for when and what for and the backup by name (`outingResumeSaid`), then the spot as a saved card
+for the outing's day (`savedCard`: official advice first, then that day's level), then, where the spot has
+official advice, the spot page's line "This level is SwimSignal's forecast. The official advice above is
+separate." With paddling or paddleboarding, the plan's note "The level is for the water, the same whatever
+you do on it." "Open your plan" opens Plan a swim on the kept plan. Hidden while the list is narrowed, as
+Saved spots is. Nothing new is stored, and a day gone by takes it away.
+
 ## Since you last looked (4 October 2026)
 
 - A saved spot's card says what changed since this browser last showed it, in one line under the
