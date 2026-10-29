@@ -281,7 +281,7 @@ const walesPct = s => Math.max(1, Math.round(walesShare(s) * 100));
 function walesWords(s, short = false) {
   if (!walesShare(s)) return '';
   if (short) return `Overflows in Wales not counted (${walesPct(s)}% of the river above)`;
-  return `Overflows in Wales are not counted: about ${walesPct(s)}% of the river within ${((s.assumptions || {}).max_upstream_km) ?? 60} km above this spot is in Wales.`;
+  return `Overflows in Wales are not counted: about ${walesPct(s)}% of the river within ${((s.assumptions || {}).max_upstream_km) ?? 60} km above this ${s.unlisted ? 'point' : 'spot'} is in Wales.`;   // a clicked point too (anypoint.js)
 }
 // What the E. coli estimate is, said wherever it shows on a spot's page (all year, labelled with what
 // is true today). check is spots.json's ecoli_check (build_site.ecoli_check): its record on live

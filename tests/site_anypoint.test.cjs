@@ -415,3 +415,30 @@ test('a lake reached by its unnamed centreline says the lake\'s own name', () =>
   assert.match(src, /const named = at\.link\.name \|\| \(lake && entry && entry\.lake !== undefined \? lakeName\(lakes, entry\.lake\) : null\);/);
   assert.match(src, /name: named \|\| \(lake \? 'Unnamed lake' : 'Unnamed watercourse'\)/);
 });
+
+test('a click below Welsh river says the share of it in Wales, with or without overflows here', () => {
+  const c = syn.clicks.find(x => x.mode === 'river' && x.rows.length);
+  const first = placeAt(c);
+  const tile = files.tiles[first.link.tile], key = String(first.link.lno), kept = tile.links[key];
+  try {
+    tile.links[key] = { ...kept, ws: 0.44 };
+    const got = placeAt(c);
+    assert.equal(got.wales_share, 0.44);
+    assert.equal(got.rows.length, first.rows.length);   // the overflows here are unchanged
+    tile.links[key] = { ws: 0.88 };   // a link with Welsh river above and no monitored overflow
+    const only = placeAt(c);
+    assert.equal(only.wales_share, 0.88);
+    assert.deepEqual(only.rows, []);
+  } finally { tile.links[key] = kept; }
+  assert.equal(placeAt(c).wales_share, undefined);
+  const src = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/anypoint.js'), 'utf8');
+  assert.match(src, /if \(at\.wales_share\) f\.upstream_summary = \{ \.\.\.f\.upstream_summary, wales_share: at\.wales_share \};/);
+});
+
+test('a clicked point says the share in Wales in its own words', () => {
+  const L = require('../src/dipcast/site/levels.js');
+  const point = { unlisted: true, upstream_summary: { wales_share: 0.88 }, assumptions: { max_upstream_km: 60 } };
+  assert.equal(L.walesWords(point).replace(/\u00a0/g, ' '), 'Overflows in Wales are not counted: about 88% of the river within 60 km above this point is in Wales.');
+  assert.equal(L.walesWords(point, true), 'Overflows in Wales not counted (88% of the river above)');
+  assert.match(L.walesWords({ ...point, unlisted: false }), /above this spot is in Wales/);
+});
