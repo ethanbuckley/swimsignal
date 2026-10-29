@@ -1000,14 +1000,14 @@
   /* Phones: the list first, the map one tap away; a spot's page carries its own small map. */
   @media (max-width: 800px) {
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
-    html { scroll-padding-bottom:var(--nav-h); }
+    html { scroll-padding-bottom:var(--nav-h); }   /* a control reached by Tab scrolls clear of the bottom bar, not under it */
     /* A spot's three folds (phoneFolds): the question as the title, what is inside in a line under it. */
     .fold-group > summary { min-height:56px; }
     .fold-group .fg-t { display:block; font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); }
     .fold-group .fg-s { display:block; margin-top:2px; font-size:var(--fs-note); font-weight:400; color:var(--muted); }
     .fold-group[open] > summary { margin-bottom:8px; }
     .fold-body > * + * { margin-top:12px; }
-    .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }   /* a control reached by Tab scrolls clear of the bottom bar, not under it */
+    .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
