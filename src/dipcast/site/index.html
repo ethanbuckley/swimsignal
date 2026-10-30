@@ -3477,7 +3477,8 @@ function renderSaved() {
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
   v += (listsShown ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
-  // The swim passport (passport.js), under the journal: only once a swim is logged; private, on this device.
+  // The swim passport (passport.js), under the journal, once a swim is logged; before that, its Water-wise questions on
+  // their own, so a new visitor can learn to read the forecast first. Private, on this device.
   if (typeof passportSection === 'function') v += passportSection(DATA.spots);
   // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
   // all on a wide desktop, where England's every spot said nothing about an empty list.

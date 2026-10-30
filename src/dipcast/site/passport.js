@@ -32,8 +32,12 @@ const PASSPORT_BADGES = [
 const PP_POOR = new Set(['high', 'very high']);   // the forecast's levels at which a swim earns nothing
 const PP_ISO = /^\d{4}-\d{2}-\d{2}$/;
 const ppEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const ppJournal = () => typeof journalEntries === 'function' ? { journalEntries, journalNow: typeof journalNow === 'function' ? journalNow : () => [] }
-  : require('./journal.js');
+// In Node (the tests), journal.js's reader of this browser's swims is made from its exports, as the page's journalNow reads them.
+const ppJournal = () => {
+  if (typeof journalEntries === 'function') return { journalEntries, journalNow: typeof journalNow === 'function' ? journalNow : () => [] };
+  const J = require('./journal.js');
+  return { ...J, journalNow: () => { try { return J.journalEntries(localStorage.getItem(J.JOURNAL_KEY)); } catch (e) { return []; } } };
+};
 const ppDay = iso => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
 
 // The passport from the journal's swims (journal.js entries) and kindOf(spot id): 'river', 'lake' or null (a spot no
@@ -134,15 +138,30 @@ function ppNameForm(name) {
     + `<p class="outing-acts"><button type="submit" class="btn">Save name</button>${name ? ' <button type="button" class="linkbtn small" id="pp-name-clear">Remove name</button>' : ''}</p></form></details>`;
 }
 // The questions: to answer, until all are right once; then, kept to read again, with why each answer is right.
-function ppLesson(learned) {
-  if (learned) return `<details class="fold" id="pp-lesson"><summary>Water-wise: reading the forecast</summary><p class="small">You answered all four on ${ppEsc(ppDay(learned))}.</p>`
+// ask, done: the fold's summary before and after (the tile's own words, or the learning card's).
+function ppLesson(learned, ask = 'Water-wise: reading the forecast (4 questions)', done = 'Water-wise: reading the forecast') {
+  if (learned) return `<details class="fold" id="pp-lesson"><summary>${done}</summary><p class="small">You answered all four on ${ppEsc(ppDay(learned))}.</p>`
     + `<ol class="small">${PASSPORT_LESSON.map(x => `<li><b>${ppEsc(x.q)}</b> ${ppEsc(x.a[x.right])} ${ppEsc(x.why)}</li>`).join('')}</ol></details>`;
-  return '<details class="fold" id="pp-lesson"><summary>Water-wise: reading the forecast (4 questions)</summary><form class="rv-form" id="pp-lesson-form">'
+  return `<details class="fold" id="pp-lesson"><summary>${ask}</summary><form class="rv-form" id="pp-lesson-form">`
     + PASSPORT_LESSON.map((x, i) => `<fieldset><legend class="rv-q">${i + 1}. ${ppEsc(x.q)}</legend><div class="rv-choice">`
       + x.a.map((t, j) => `<label><input type="radio" name="pp-q${i}" value="${j}"><span>${ppEsc(t)}</span></label>`).join('')
       + `</div><p class="small muted" data-pp-why="${i}" hidden></p></fieldset>`).join('')
     + '<p class="outing-acts"><button type="submit" class="btn">Check my answers</button></p></form></details>';
 }
+// Before a swim is logged (30 Oct 2026): the questions on their own, where the passport will be, so a new visitor can
+// learn to read the forecast first. No history, no points and no badges here; the same `learned` day is kept, and the
+// passport shows Water-wise from it once the first swim is logged, when this card gives way to the passport tile.
+function passportLessonCard(kept = {}) {
+  const invite = kept.learned
+    ? 'Water-wise will be on your swim passport from your first swim logged in the journal. The passport is private, on this device.'
+    : 'Log a swim in your journal and your swim passport starts here: private, on this device. Get all four right first and Water-wise is on it from the start.';
+  return '<section class="sec tile pp pp-learn" id="passport" aria-labelledby="pp-h"><h2 class="sec-h" id="pp-h">Water-wise: reading the forecast</h2>'
+    + '<p class="sub">Four questions, each answered in the site\'s own words. No points, and nothing sent: this browser keeps only the day you get all four right.</p>'
+    + ppLesson(kept.learned, 'Answer the four questions', 'The four answers, to read again')
+    + `<p class="small muted">${invite}</p>`
+    + '<p class="small muted msg" id="pp-msg" aria-live="polite"></p></section>';
+}
+
 // The tile on Saved, under the journal: '' until a swim is logged. kept: passportRead's (the name and the learned day).
 function passportCard(p, kept = {}) {
   if (!p || !p.outings) return '';
@@ -169,8 +188,8 @@ let PP_SPOTS = [];
 function passportSection(spots) {
   PP_SPOTS = spots || [];
   const kind = new Map(PP_SPOTS.map(s => [s.id, s.kind === 'lake' ? 'lake' : s.kind === 'river' ? 'river' : null]));
-  const kept = passportNow();
-  return passportCard(passportFrom(ppJournal().journalNow(), id => kind.get(id) || null, kept), kept);
+  const kept = passportNow(), p = passportFrom(ppJournal().journalNow(), id => kind.get(id) || null, kept);
+  return p.outings ? passportCard(p, kept) : passportLessonCard(kept);
 }
 // Drawn again in place after a change, with a line said in it.
 function ppRedraw(said) {
@@ -204,11 +223,12 @@ function passportBind() {
       p.hidden = !bad; p.textContent = bad ? (answers[i] === null ? 'Not answered yet.' : `Not quite. ${PASSPORT_LESSON[i].why}`) : ''; });
     if (!c.done) { const msg = document.getElementById('pp-msg'); if (msg) msg.textContent = `${c.right} of ${PASSPORT_LESSON.length} right. Try the others again.`; return; }
     passportLearned(ppToday());
-    ppRedraw(passportNow().learned ? 'All four right: Water-wise is on your passport.' : 'All four right, but this browser could not keep the badge.');
+    const kept = passportNow().learned, before = !!document.querySelector('#passport.pp-learn');
+    ppRedraw(!kept ? 'All four right, but this browser could not keep it.' : before ? 'All four right. Water-wise will be on your passport from your first logged swim.' : 'All four right: Water-wise is on your passport.');
   });
 }
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { PASSPORT_KEY, PASSPORT_XP, PASSPORT_RIVERS, PASSPORT_NAME_MAX, PASSPORT_BADGES, PASSPORT_LESSON, passportFrom, passportRead, passportMerge,
-    passportName, passportLessonCheck, passportCard, passportShareText, passportPlanned, passportLearned, passportNow };
+    passportName, passportLessonCheck, passportCard, passportLessonCard, passportSection, passportShareText, passportPlanned, passportLearned, passportNow };
 }
