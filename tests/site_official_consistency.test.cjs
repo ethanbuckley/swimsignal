@@ -105,7 +105,7 @@ test('Plan a swim: the group line says how many have advice, and that it comes f
   assert.match(src, /const out = open\.filter\(o => planAdvised\(o\.s\)\); open = open\.filter\(o => !planAdvised\(o\.s\)\);/);
   assert.match(src, /left out: \$\{out\.length === 1 \? 'it has an official notice' : 'they have official notices'\}\./);
   // The comparison's heads carry the tag under each name.
-  assert.match(src, /<span class="k">\$\{esc\(meta\(s\)\)\}<\/span>` : ''\}\$\{typeof eaTodayTag === 'function' \? eaTodayTag\(s\) : ''\}<\/th>/);
+  assert.match(src, /<span class="k">\$\{esc\(meta\(s\)\)\}<\/span>` : ''\}\$\{typeof eaTodayTag === 'function' \? eaTodayTag\(s\) : ''\}`/);
 });
 
 const DATA = { generated_at: '2026-10-26T20:00:00Z', spots: [frensham(), other()] };

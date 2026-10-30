@@ -58,7 +58,7 @@ test('every list-like surface shows the shared tag, the notice\'s own words and 
   // Search and list rows, Saved cards, Plan a swim's rows, Nearby, the comparison's heads and the outing's columns
   // all draw eatoday.js's tag and nothing else for the notice.
   for (const [name, re] of [['search and list rows', /function spotItem[\s\S]*?eaTodayTag\(s\)/], ['Saved cards', /function savedCard[\s\S]*?eaTodayTag\(s, 'p'\)/],
-    ['Nearby', /function nearby[\s\S]*?eaTodayTag\(s\)/], ['the comparison', /eaTodayTag\(s\) : ''\}<\/th>/],
+    ['Nearby', /function nearby[\s\S]*?eaTodayTag\(s\)/], ['the comparison', /eaTodayTag\(s\) : ''\}`/],
     ['Plan a swim rows', /eaTodayTag\(s\) : ''\}<span class="hl \$\{tone\(o\.level\)\}">\$\{dayHeadline\(s, PLAN\.day\)\}/]]) assert.match(PAGE, re, name);
   for (const [kind, make] of KINDS) {
     const s = make(), brief = ea.eaTodayBrief(s), tag = ea.eaTodayTag(s);
