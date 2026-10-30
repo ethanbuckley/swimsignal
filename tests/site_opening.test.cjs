@@ -40,26 +40,26 @@ const J = x => JSON.parse(JSON.stringify(x));   // out of the page's realm
 test('the line on what the forecast could read: live readings, days with no forecast, Wales, the EA advice', () => {
   const ctx = page(), words = (s, iso = null) => J(vm.runInContext('coverWords', ctx)(s, iso));
   const lb = spot(['low', 'moderate', 'moderate', 'moderate', 'high'], {now: {label: 'low', risk: 0.03, discharging_upstream: 2, monitored_upstream: 44}});
-  assert.deepEqual(words(lb), ['44 of 45 overflows upstream report live; 1 does not']);
-  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', monitored_upstream: 42}})), ['42 of 45 overflows upstream report live; 3 do not']);
-  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'])), ['All 45 overflows upstream report live']);   // said every time
+  assert.deepEqual(words(lb), ['44 of 45 overflows upstream report live, 2 spilling now; 1 does not, so could be spilling unseen']);
+  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', monitored_upstream: 42}})), ['42 of 45 overflows upstream report live, none spilling now; 3 do not, so could be spilling unseen']);
+  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'])), ['All 45 overflows upstream report live, none spilling now']);   // said every time
   assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {upstream_summary: {overflows: 1}, now: {label: 'low', monitored_upstream: 1}})),
-    ['The overflow upstream reports live']);
+    ['The overflow upstream reports live, not spilling now']);
   // None reports, and the level is raised by a forecast day: said here. At low, the line under the level
   // already says "Forecast only: no overflow upstream reports live", so not twice.
   const none = {label: null, discharging_upstream: 0, monitored_upstream: 0, no_feed_upstream: 45};
-  assert.deepEqual(words(spot(['low', 'moderate', 'low', 'low', 'low'], {now: none})), ['None of the 45 overflows upstream report live']);
+  assert.deepEqual(words(spot(['low', 'moderate', 'low', 'low', 'low'], {now: none})), ['None of the 45 overflows upstream report live, so whether they are spilling is not known']);
   assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {now: none})), []);
   // A picked later day rests on the rain: no live count. Today keeps it.
   assert.deepEqual(words(lb, DAYS[2]), []);
-  assert.deepEqual(words(lb, DAYS[0]), ['44 of 45 overflows upstream report live; 1 does not']);
+  assert.deepEqual(words(lb, DAYS[0]), ['44 of 45 overflows upstream report live, 2 spilling now; 1 does not, so could be spilling unseen']);
   // Days with no forecast, by name; never said as low.
-  assert.deepEqual(words(spot(['low', 'low', 'low', null, null])), ['All 45 overflows upstream report live', 'No forecast for Friday or Saturday']);
+  assert.deepEqual(words(spot(['low', 'low', 'low', null, null])), ['All 45 overflows upstream report live, none spilling now', 'No forecast for Friday or Saturday']);
   // Overflows in Wales, short; today's EA advice at a bathing water, with where to look.
   const ludlow = spot(['high', 'high', 'high', 'high', 'high'], {source: 'designated', upstream_summary: {overflows: 11, wales_share: 0.12},
     now: {label: 'low', discharging_upstream: 0, monitored_upstream: 10},
     classification: {class: 'poor', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36060'}});
-  assert.equal(text(vm.runInContext('coverLine', ctx)(ludlow)), '10 of 11 overflows upstream report live; 1 does not. Overflows in Wales not counted '
+  assert.equal(text(vm.runInContext('coverLine', ctx)(ludlow)), '10 of 11 overflows upstream report live, none spilling now; 1 does not, so could be spilling unseen. Overflows in Wales not counted '
     + "(12% of the river above). Today's EA advice not checked: open it before you swim.");
   assert.match(vm.runInContext('coverLine', ctx)(ludlow), /<a href="#ea-today">open it<\/a>/);
   // Nothing to say, no line: a plain level with nothing upstream, not a bathing water.
