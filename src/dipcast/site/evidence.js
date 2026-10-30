@@ -229,6 +229,6 @@ const evidenceWarnings = () => EVIDENCE_WARNINGS || (EVIDENCE_WARNINGS = fetch(E
   .then(r => (r.ok ? r.json() : null)).then(v => ((v || {}).live || {}).warning_table || null).catch(() => null));
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
+  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceSince, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
     evidenceNowGap, evidenceCompanyLine };
 }

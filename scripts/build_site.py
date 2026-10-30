@@ -2004,6 +2004,9 @@ VERSIONED_SCRIPTS += ('<script src="outingpack.js"></script>',)
 # when asked, so it has no tag; it asks at levels.js's ?v=<stamp> (mountReplay), and the offline copy
 # stores it with the other scripts.
 SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
+# The evidence map (prototype, ?evidence=1 only, docs/EVIDENCE-MAP-2026-10.md): index.html adds evmap.js itself
+# when asked, as it does replay.js, at levels.js's ?v=<stamp> (mountEvMap). Not in the offline copy.
+SHELL_SOURCES.append(TEMPLATE.parent / "evmap.js")
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -2038,6 +2041,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
     shutil.copy(TEMPLATE.parent / "outingpack.js", site / "outingpack.js")   # a plan's outing kept for offline use
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
+    shutil.copy(TEMPLATE.parent / "evmap.js", site / "evmap.js")   # evidence map, ?evidence=1 only (prototype)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)

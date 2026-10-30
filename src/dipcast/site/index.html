@@ -4617,7 +4617,7 @@ function render(d) {
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
   // phone, where they are display:contents and the order is the stack's. What the page could not see
   // (unknownTile) comes straight after the five days.
-  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${where}`
+  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
@@ -4640,6 +4640,7 @@ function render(d) {
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
   if (REPLAY) mountReplay(d);
+  if (EV_MAP) mountEvMap(d);
   phoneFolds();
 }
 // On a phone a spot's page is the answer, the five days and the lower-risk spots nearby; the rest goes in
@@ -4692,6 +4693,27 @@ function mountReplay(d) {
       if (!r) return said('No replay of the last 48 hours upstream for this spot in this update.');
       replayStyle(document); host.innerHTML = replayTile(r, Date.now(), host.clientWidth - 32); })   // the tile's inner width
     .catch(() => said('The replay of the last 48 hours upstream could not be loaded.'));
+}
+// Evidence map (prototype, docs/EVIDENCE-MAP-2026-10.md): where the forecast has evidence upstream and
+// where its knowledge ends, only with ?evidence=1 in the address, so the page is unchanged without it. As the
+// replay: evmap.js at the build's stamp, then the spot's trace and its upstream file (build_site.write_traces,
+// write_upstream), asked for then and not before. Under the five days on a phone, where the folds leave it,
+// and in the first column on a desktop. Without the upstream file it still draws, from the trace's positions.
+const EV_MAP = new URLSearchParams(location.search).get('evidence') === '1';
+let evMapScript = null;
+function mountEvMap(d) {
+  const host = document.getElementById('evmap-host');
+  if (!host) return;
+  const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
+  evMapScript = evMapScript || new Promise((ok, no) => { const s = document.createElement('script');
+    s.src = `evmap.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  const said = t => { if (host.isConnected) host.innerHTML = `<section class="tile"><p class="t-say">${t}</p></section>`; };
+  const get = p => fetch(p, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+  Promise.all([evMapScript, get(`data/${d.detail_file.replace(/\.json$/, '-trace.json')}`), get(`data/upstream/${encodeURIComponent(d.id)}.json`)])
+    .then(([, trace, up]) => { if (!host.isConnected) return;
+      const w = host.clientWidth - 28, now = Date.now();   // the tile's inner width
+      evmapStyle(document); host.innerHTML = evmapTile(d, trace, up, now, DATA.generated_at, w); evmapBind(host, d, trace, up, now, DATA.generated_at, w); })
+    .catch(() => said('The evidence map could not be loaded.'));
 }
 // Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those
 // scripts arrived: without them the rest of the spot still draws.
