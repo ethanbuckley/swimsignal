@@ -795,6 +795,25 @@ Since 4 October 2026:
   the rest, as the reviews and the notes do. At five or fewer all show, so the button never hides a
   single topic. "Not in this guide yet" and the photos stay below it. Farleigh Hungerford's tile was
   2,136 px tall on a 320 px phone; folded it is 789 px.
+- **Bus and train** (30 October 2026), after Parking, from an operator's or a council's own page. Not
+  listed under "Not in this guide yet", as the guides written before it would all gain the same gap.
+- **The arrival guide** (prototype, `?arrive=1` only, `arrive.js`; docs/ARRIVAL-GUIDE-2026-10.md). The
+  same facts and lines of who says so, in the guide tile's place, as a journey: getting there (by bus or
+  train, by car), the path, getting in, getting out, toilets and changing, seasons and fees, each step
+  numbered in the sans with its facts as the guide's rows. Then "Who can swim here", "The water" (a
+  link to the forecast, nothing restated) and "What nobody has checked", each under a serif heading at
+  the body size over a hairline, so that permission, the way in and the water read as three separate
+  things. A step with no fact says "Nothing in this guide yet."; a step a photo would make findable
+  says "No photo yet of the place to get in." beside a camera from the stroke set, muted, not boxed.
+  A photo sits in the step of its `topic` and no other; an overview leads the journey; a sign's photo
+  sits under "Who can swim here", after a line saying its wording now and its scope are not verified.
+- **Historical photos** (30 October 2026): Geograph's, under CC BY-SA 2.0. The line under one says
+  "**Historical photo** by Oliver Dixon, taken 16 May 2023", the title linked to its page, the licence
+  linked to its deed, the changes, that this copy is under the same licence, and that it is not
+  SwimSignal's and shows that day only, not today's access, permission, water level or conditions. No
+  labels on it, and no "Photo:" credit in the caption, which the line already gives.
+- **Who can swim stays in view** (30 October 2026). Past the fold, the first four topics and Who can
+  swim show, wherever it falls; the fold still opens only when two or more topics would go.
 
 ### Notes on a visit (3 October 2026)
 

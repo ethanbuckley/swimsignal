@@ -1,6 +1,7 @@
 # Wharfe at Cromwheel, Ilkley. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
+# Bus and train added from Northern's and First Bus's own pages, and every other fact rechecked against its page, 30 October 2026 (docs/ARRIVAL-GUIDE-2026-10.md).
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-20
+checked = 2026-10-30
 how = "desk"
 
 [[fact]]
@@ -30,6 +31,20 @@ text = "Denton Road car park, LS29 0BZ: 93 spaces, 4 for disabled drivers. £1 a
 status = "confirmed"
 source = "https://www.bradford.gov.uk/transport-and-travel/parking/car-parks-in-ilkley-addingham-and-burley-in-wharfedale/"
 source_name = "Bradford Council"
+
+[[fact]]
+topic = "transport"
+text = "Northern's page for Ilkley station (Station Plaza, LS29 8HF) lists direct trains to Leeds and to Bradford Forster Square, and says there is level access to both platforms. It lists no toilets at the station. The page does not mention the river or the bathing site."
+status = "confirmed"
+source = "https://www.northernrailway.co.uk/stations/ilkley"
+source_name = "Northern"
+
+[[fact]]
+topic = "transport"
+text = "First Bus says its X84 runs from Ilkley to Leeds city centre, and gives the usual travel time between them as 1 hour 25 minutes. The page names no stop near the bathing site."
+status = "confirmed"
+source = "https://www.firstbus.co.uk/west-yorkshire/your-services/featured-services/x84"
+source_name = "First Bus"
 
 [[fact]]
 topic = "toilets"
@@ -67,3 +82,54 @@ text = "Bradford Council's parks site says an event in its parks needs permissio
 status = "confirmed"
 source = "https://bradforddistrictparks.org/things-to-do/event-enquiries/"
 source_name = "Bradford Council (Bradford District Parks)"
+
+# Historical photos from Geograph under CC BY-SA 2.0 (30 October 2026, docs/ARRIVAL-GUIDE-2026-10.md): each place checked
+# against the photo's title, words, grid reference and picture, and the Environment Agency's profile ("upstream of the
+# suspension bridge"). They show the day they were taken; the page says they are not current access, permission,
+# water level or conditions. Prepared with scripts/guide_photo.py from Geograph's 640 x 480 copies.
+[[photo]]
+file = "cromwheel-upstream-2021.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "The river looking upstream from near the suspension bridge, a gravel bank on the left, in June 2021."
+credit = "Malc McDonald"
+taken = 2021-06-14
+status = "historical"
+title = "River Wharfe, Ilkley"
+source = "https://www.geograph.org.uk/photo/6979159"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."
+
+[[photo]]
+file = "cromwheel-gravel-bridge-2023.jpg"
+width = 640
+height = 480
+# Overview, not entry: the place is verified (camera on the gravel, the bridge downstream in shot), but no
+# source says this gravel is where people get in, so the photo does not fill "Getting in" (review, 30 Oct 2026).
+topic = "overview"
+caption = "Gravel at the water's edge, with the suspension bridge downstream of it, in May 2023."
+credit = "Oliver Dixon"
+taken = 2023-05-16
+status = "historical"
+title = "Foot suspension bridge over the River Wharfe"
+source = "https://www.geograph.org.uk/photo/7486475"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."
+
+[[photo]]
+file = "cromwheel-council-sign-2024.jpg"
+width = 640
+height = 480
+topic = "rules"
+caption = "A Bradford Council sign about water quality below the suspension bridge, in November 2024. Its current wording and scope are not verified."
+credit = "Mrs W J Sutherland"
+taken = 2024-11-13
+status = "historical"
+title = "Warning sign regarding bathing in the River Wharfe"
+source = "https://www.geograph.org.uk/photo/7922212"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

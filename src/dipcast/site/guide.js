@@ -14,11 +14,14 @@
 // clear of the page's own), and in Node the last lines export them (tests/site_guide.test.cjs).
 
 // The topics in the order a swimmer meets them, as src/dipcast/guides.py lists them.
-const GUIDE_TOPICS = [['parking', 'Parking'], ['path', 'Path to the water'], ['entry', 'Getting in'], ['exit', 'Getting out'],
+const GUIDE_TOPICS = [['parking', 'Parking'], ['transport', 'Bus and train'], ['path', 'Path to the water'], ['entry', 'Getting in'], ['exit', 'Getting out'],
   ['toilets', 'Toilets'], ['changing', 'Changing'], ['fees', 'Fees and booking'], ['hours', 'Opening times'], ['rules', 'Who can swim'],
   ['launch', 'Launching a boat or board'], ['carry', 'Carrying to the water'], ['paddle', 'Paddling here']];
 // The topics for boats and boards (guides.py, TOPICS): shown where a guide has them, never listed as missing.
 const GUIDE_PADDLE = new Set(['launch', 'carry', 'paddle']);
+// Bus and train (30 October 2026): shown where a guide has it, and not listed as missing here either, since the
+// guides written before it would all grow the same new gap. The arrival guide (arrive.js, ?arrive=1) does list it.
+const GUIDE_OPTIONAL = new Set(['transport']);
 const GUIDE_STALE_DAYS = 365;   // fees, hours and paths change: older than this, the guide says so
 const GUIDE_SHOW = 4;           // topics shown before "Show all", when at least two more would fold
 const guideEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -90,8 +93,11 @@ function guideRuns(facts) {
 function guideFacts(g) {
   const by = new Map();
   for (const f of g.facts || []) { if (!by.has(f.topic)) by.set(f.topic, []); by.get(f.topic).push(f); }
-  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), fold = topics.length > GUIDE_SHOW + 1;
-  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && i >= GUIDE_SHOW ? ' hidden' : ''}><dt>${label}</dt>`
+  // Who can swim stays in view wherever it falls (30 October 2026): with bus and train a sixth topic, Cromwheel's
+  // rules went behind "Show all", and permission is the one thing a first-time reader must not have to open.
+  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), shown = (k, i) => i < GUIDE_SHOW || k === 'rules';
+  const fold = topics.filter(([k], i) => !shown(k, i)).length >= 2;
+  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && !shown(k, i) ? ' hidden' : ''}><dt>${label}</dt>`
     + guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
     + '</div>').join('') + '</dl>'
     + (fold ? `<button type="button" class="btn quiet" id="g-all" aria-expanded="false">Show all ${topics.length} topics</button>` : '');
@@ -117,8 +123,23 @@ if (typeof document === 'object' && document.addEventListener) document.addEvent
 // "Not in this guide yet: toilets, changing." So a missing topic reads as unknown, not as none.
 function guideGaps(g) {
   const have = new Set((g.facts || []).map(f => f.topic));
-  const gaps = GUIDE_TOPICS.filter(([k]) => !have.has(k) && !GUIDE_PADDLE.has(k)).map(([, label]) => label.toLowerCase());
+  const gaps = GUIDE_TOPICS.filter(([k]) => !have.has(k) && !GUIDE_PADDLE.has(k) && !GUIDE_OPTIONAL.has(k)).map(([, label]) => label.toLowerCase());
   return gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.join(', ')}.</p>` : '';
+}
+
+// A historical photo (status "historical", guides.py): someone else's published photograph under an open licence,
+// Geograph's under CC BY-SA 2.0. Its line names the photographer, the day it was taken, its title linked to its page,
+// the licence linked to its deed, what was changed, and that the copy here is under the same licence. Then, beside it
+// every time, what it cannot show: it is not SwimSignal's, and it shows that day, not today's access, permission,
+// water level or conditions. A licence the page does not know is not linked or named.
+const GUIDE_LICENCES = { 'https://creativecommons.org/licenses/by-sa/2.0/': 'CC BY-SA 2.0' };
+function guideHistorical(p) {
+  const lic = GUIDE_LICENCES[p.licence], page = guideHttps(p.source)
+    ? `<a href="${guideEsc(p.source)}">${guideEsc(p.title || 'the photo')}</a> on ${guideEsc(p.source_name || 'its publisher')}` : guideEsc(p.title || '');
+  const terms = lic ? ` Licensed under <a href="${guideEsc(p.licence)}">${lic}</a>; ${guideEsc(String(p.changes || '').replace(/[.\s]+$/, ''))}. `
+    + `This copy is also under ${lic}.` : '';
+  return `<span class="g-who">Historical photo</span> by ${guideEsc(p.credit)}, taken ${guideDay(p.taken)}: ${page}.${terms} `
+    + 'Not taken by SwimSignal. It shows that day only, not today\'s access, permission, water level or conditions.';
 }
 
 // A photo at the tile's width, its numbered labels placed on it, and the key beneath: a number on the
@@ -131,10 +152,10 @@ function guidePhoto(p, i, g) {
   const key = labels.length ? `<ol class="g-key">${labels.map(l => `<li>${guideEsc(l.text)}</li>`).join('')}</ol>` : '';
   const alt = guideEsc(String(p.caption || '').replace(/[.\s]+$/, '')) + (labels.length ? `. Labelled: ${labels.map((l, n) => `${n + 1}, ${guideEsc(l.text)}`).join('; ')}.` : '.');
   const by = p.status === 'suggested' ? `A swimmer's photo, from ${guideEsc(p.from)}; the labels are theirs and not yet checked.`
-    : guideSource(p);
+    : p.status === 'historical' ? guideHistorical(p) : guideSource(p);
   return `<figure class="g-photo"><div class="g-pic" style="aspect-ratio:${w} / ${h}">`
     + `<img src="guides/photos/${p.file}" width="${w}" height="${h}" loading="lazy" decoding="async" alt="${alt}">${pins}</div>`
-    + `<figcaption>${key}<p class="g-cap">${guideEsc(p.caption)} Photo: ${guideEsc(p.credit)}, ${guideDay(p.taken)}.</p>`
+    + `<figcaption>${key}<p class="g-cap">${guideEsc(p.caption)}${p.status === 'historical' ? '' : ` Photo: ${guideEsc(p.credit)}, ${guideDay(p.taken)}.`}</p>`
     + `<p class="g-src">${by}</p></figcaption></figure>`;
 }
 
@@ -205,5 +226,5 @@ function knowOpen(kind, sec) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick, showRest };
+  module.exports = { GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
 }

@@ -52,7 +52,7 @@ checked = 2026-10-03     # a bare date, no quotes
 how = "desk"             # "desk" or "visit"
 
 [[fact]]
-topic = "parking"        # parking, path, entry, exit, toilets, changing, fees, hours, rules
+topic = "parking"        # parking, transport, path, entry, exit, toilets, changing, fees, hours, rules
 text = "Pay and display car park on Denton Road, a few minutes' walk from the river."
 status = "confirmed"
 source = "https://www.example.gov.uk/ilkley-bathing"
@@ -76,13 +76,20 @@ from = "Sam R."
 on = 2026-09-12
 ```
 
-Topics and their headings on the page, in this order: `parking` Parking, `path` Path to the water,
+Topics and their headings on the page, in this order: `parking` Parking, `transport` Bus and train, `path` Path to the water,
 `entry` Getting in, `exit` Getting out, `toilets` Toilets, `changing` Changing, `fees` Fees and booking,
 `hours` Opening times, `rules` Who can swim; then, for boats and boards, `launch` Launching a boat or board,
 `carry` Carrying to the water and `paddle` Paddling here (where you may land, zones to keep out of). A topic with
 no fact is listed under "Not in this guide yet", so a reader takes it as unknown rather than as none; the three
-paddling topics are not, since most spots are swim spots. Write "There are no toilets" only when a
-source says so.
+paddling topics are not, since most spots are swim spots, and nor is `transport`, which came later (30 October
+2026): listing it on every guide written before it would add the same gap to all of them. Write "There are no toilets"
+only when a source says so.
+
+`transport` is getting there without a car: a rail or bus operator's own page, or a council's or transport authority's
+timetable. Say what the page says (the station, the route, the usual journey time) and, as for parking, whether it
+names the swim spot; most do not. A journey planner such as Traveline is a link, not a source: it computes a
+journey rather than saying a fact. The arrival guide (`?arrive=1` on a spot's page, `src/dipcast/site/arrive.js`,
+docs/ARRIVAL-GUIDE-2026-10.md) shows the topics as a journey and lists `transport` as unknown where a guide lacks it.
 
 There is no free text without a source: every sentence on the tile is a fact with its status, or
 the page's own words. Keep each fact to one or two plain sentences (400 characters at most). Put prices and hours in the
@@ -95,7 +102,7 @@ list under it.
 
 1. Take the photo on site, or have the swimmer's agreement in writing (the email they sent it with)
    that they took it, that it may be published with their credit, and that anyone recognisable in it
-   is happy to be online.
+   is happy to be online. Or use a historical photo from Geograph (below, "Historical photos").
 2. Prepare it. This turns it upright, shrinks it to 1600 px on the long side, and removes everything
    else in the file, including where it was taken and the phone's details:
 
@@ -111,6 +118,7 @@ list under it.
    file = "cromwheel-shingle.jpg"
    width = 1600
    height = 1200
+   topic = "entry"   # the topic it shows, or "overview" for the whole place
    caption = "The shingle beach from the riverside path, looking upstream."
    credit = "Ethan Buckley"
    taken = 2026-08-20
@@ -131,6 +139,48 @@ list under it.
    A swimmer's photo is `status = "suggested"` with `from` and `on`; the page then says the labels are
    theirs and not checked. Up to six photos a guide and nine labels a photo. To find `x` and `y`,
    open the photo in Preview, hover over the point and read its position against the size.
+
+Every photo names the `topic` it shows: one of the topics above, or `overview`. The arrival guide
+(`?arrive=1`) puts a photo in its own step only, so an overview never stands in for a missing photo of
+the path, the way in or the way out.
+
+### Historical photos (30 October 2026)
+
+A third kind, besides SwimSignal's and a swimmer's: a photo someone else published under an open licence.
+For now that is Geograph (geograph.org.uk), whose photos are under CC BY-SA 2.0: they may be reused with
+the photographer's credit, and a changed copy must be under the same licence. Ethan's reviewer checked
+Geograph's terms and the licence's deed before this was allowed.
+
+- Use one only when its place and what it shows are checked against the photo's title, its words, its
+  grid reference and the picture itself, and against an official page (the Environment Agency's
+  profile, the council's leaflet). Say in the pull request how.
+- Download the 640 px copy into a new, empty folder of its own and prepare it with
+  `scripts/guide_photo.py` as above (run Python with `-I` on downloaded files). It does not enlarge a
+  small photo.
+- No labels: a label would be SwimSignal's word for where to go, at a place with no on-site check
+  recorded. The caption describes what the picture shows, not what to do there.
+
+```toml
+[[photo]]
+file = "cromwheel-gravel-bridge-2023.jpg"
+width = 640
+height = 480
+topic = "entry"
+caption = "Gravel at the water's edge, with the suspension bridge downstream of it, in May 2023."
+credit = "Oliver Dixon"            # the photographer, as Geograph names them
+taken = 2023-05-16                 # the day taken, as Geograph gives it
+status = "historical"
+title = "Foot suspension bridge over the River Wharfe"   # the photo's own title
+source = "https://www.geograph.org.uk/photo/7486475"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"   # the deed's exact link
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."
+```
+
+The page says "Historical photo by Oliver Dixon, taken 16 May 2023", links the title to its page and
+the licence to its deed, gives the changes, says the copy here is under the same licence, and says
+beside it that it is not SwimSignal's and shows that day only: not today's access, permission, water
+level or conditions. It never says "Verified" or "seen on site".
 
 ## Where facts come from
 

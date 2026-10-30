@@ -42,6 +42,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   `measured.js?v=${BUILD}`,   // lab results an organisation sent (samples/)
   `journal.js?v=${BUILD}`,
   `passport.js?v=${BUILD}`,   // the swim passport on Saved
+  `arrive.js?v=${BUILD}`,   // the arrival guide (prototype, ?arrive=1 only); the guide is in the spot's own file
   `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
   `evmap.js?v=${BUILD}`,   // the evidence map (prototype, ?evidence=1 only); offline it draws from the spot's stored trace, or says it could not load
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored

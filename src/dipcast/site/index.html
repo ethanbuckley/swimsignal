@@ -1172,6 +1172,32 @@
   ol.g-key li::marker { font-weight:700; }
   .g-cap { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
   .g-ask { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.45; }
+  /* The arrival guide (arrive.js, ?arrive=1 only): the guide's anatomy as a journey. Its parts (the way there and
+     back, who can swim, the water, what nobody has checked) open with a serif heading at the body size, as a prose
+     page's h3, over a hairline, so the three are seen to be separate. A step is numbered in the sans, its facts the
+     guide's rows; a step without a fact, or without a photo, says so in a muted line, never in a box. */
+  .arr-count { margin:4px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  .arr-sec { margin:16px 0 0; padding-top:12px; border-top:1px solid var(--line); }
+  .arr-h { margin:0; font:600 var(--fs-body)/1.25 var(--font-display); }
+  .arr-say { margin:4px 0 0; font-size:var(--fs-note); line-height:1.45; }
+  ol.arr-steps { list-style:none; margin:4px 0 0; padding:0; }
+  .arr-step { padding:10px 0; }
+  .arr-step + .arr-step { border-top:1px solid var(--hair); }
+  .arr-t { display:flex; gap:8px; align-items:baseline; margin:0; font:600 var(--fs-note)/1.3 var(--font-text); }
+  .arr-n { min-width:1.1em; font-variant-numeric:tabular-nums; color:var(--muted); }
+  dl.arr-facts { margin:4px 0 0; padding-left:calc(1.1em + 8px); }
+  .arr-part + .arr-part { margin-top:10px; }
+  .arr-part dt { font-size:var(--fs-meta); font-weight:600; line-height:1.3; color:var(--muted); }
+  .arr-part dd { margin:4px 0 0; }
+  .arr-part dd + dd { margin-top:10px; }
+  .arr-none, .arr-shot, .arr-plan { margin:4px 0 0 calc(1.1em + 8px); font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  .arr-part .arr-none { margin-left:0; }
+  .arr-shot { display:flex; gap:6px; align-items:baseline; }
+  .arr-shot .ic { width:15px; height:15px; vertical-align:0; align-self:center; }
+  .arr-plan a { color:var(--muted); }
+  .arr-step .g-photo { margin-left:calc(1.1em + 8px); }   /* a step's own photo, under its facts */
+  ul.arr-unk { margin:6px 0 0; padding-left:20px; font-size:var(--fs-note); line-height:1.45; }
+  ul.arr-unk li + li { margin-top:4px; }
   /* "Know this spot?" (guide.js, knowTile): a line for each thing swimmers have not added yet, the way
      to add it (a 44 px target), then what it is, muted. Hairlines between, as the guide's rows. */
   .know-list { list-style:none; margin:4px 0 0; padding:0; }
@@ -4628,7 +4654,8 @@ function render(d) {
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
     h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
       + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
-    setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d); return;
+    setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
+    if (ARRIVE) mountArrival(d); return;
   }
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
   // phone, where they are display:contents and the order is the stack's. What the page could not see
@@ -4658,6 +4685,7 @@ function render(d) {
   if (REPLAY) mountReplay(d);
   if (EV_MAP) mountEvMap(d);
   phoneFolds();
+  if (ARRIVE) mountArrival(d);   // ?arrive=1 only, after the folds, so its tile stays where the guide's was
 }
 // On a phone a spot's page is the answer, the five days and the lower-risk spots nearby; the rest goes in
 // three folds named for the question each answers (29 October 2026: Waterhead had 15 headings over 8.7
@@ -4691,6 +4719,21 @@ function phoneFolds() {
   if (lim) for (const q of ['#answer-after .scope', '#result .stack p.check']) { const e = document.querySelector(q); if (e && !lim.contains(e)) lim.prepend(e); }
 }
 PHONE.addEventListener('change', () => { if (current && document.querySelector('#result .stack')) render(current); });   // folds on, or columns back
+// The arrival guide (prototype, docs/ARRIVAL-GUIDE-2026-10.md): the practical guide as a journey, from the stop or
+// the car park to the water, in and out, then who can swim and what nobody has checked. Only with ?arrive=1 in the
+// address, so the page is unchanged without it. arrive.js is asked for then, at the build's stamp as replay.js is,
+// and its tile takes the guide tile's place; on a phone the fold that holds it opens.
+const ARRIVE = new URLSearchParams(location.search).get('arrive') === '1';
+let arrivalScript = null;
+function mountArrival(d) {
+  const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
+  arrivalScript = arrivalScript || new Promise((ok, no) => { const s = document.createElement('script');
+    s.src = `arrive.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  arrivalScript.then(() => { const el = document.getElementById('guide'), html = el && current === d ? arrivalTile(d, serverToday) : '';
+    if (!html) return;
+    el.outerHTML = html; const box = document.getElementById('guide').closest('details'); if (box) box.open = true; })
+    .catch(() => {});   // without the script the usual guide stays
+}
 // Catchment replay (prototype, docs/CATCHMENT-REPLAY-2026-10.md): the last 48 hours upstream, only with
 // ?replay=1 in the address, so the page is unchanged without it. replay.js and the spot's
 // data/spot/<id>-replay.json (src/dipcast/replay.py) are asked for then, and not before.
