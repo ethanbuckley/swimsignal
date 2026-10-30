@@ -716,7 +716,7 @@
   .linkbtn { font-size:var(--fs-note); font-weight:600; color:var(--link); background:none; border:0; padding:6px 0; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
   .linkbtn:not(.small) { display:inline-flex; align-items:center; min-height:44px; }   /* on its own: a 44 px target */
   .linkbtn[hidden] { display:none; }
-  .linkbtn.small { font-size:inherit; padding:0; }   /* inside a sentence */
+  .linkbtn.small { font-size:inherit; padding:10px 0; margin:-10px 0; }   /* inside a sentence: a 43 px tap area, the line unmoved (23 px before, 30 Oct 2026) */
   /* Day by day (savedGrid): a row a spot, the name then five equal day columns. Each level cell is its words
      in the level's text colour under its 4 px rule; "No forecast" and a plain level have no rule. Each cell
      is a link at least 44 px tall. Where the grid is narrow (a phone) the name takes its own line over the
@@ -2860,7 +2860,7 @@ function freshness(spot = false) {
   if (typeof OutingPack === 'object') h += OutingPack.notice();   // a page of an outing kept for offline use, read from a stored copy
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
-  if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${new Date(DATA.generated_at).toLocaleString('en-GB')}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
+  if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${issued()}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
   return h;
 }
 // What this update lacks, said once where it matters. On the list (list), the spots with no
@@ -3415,7 +3415,7 @@ function renderSaved() {
       : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
-  h += actsChips();
+  h += actsChips(undefined, !spots.length);   // with nothing saved, one line, so the way to save one comes first
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
