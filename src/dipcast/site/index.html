@@ -3494,7 +3494,7 @@ function renderSaved() {
       : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
-  h += actsChips(undefined, !spots.length);   // with nothing saved, one line, so the way to save one comes first
+  if (spots.length || many) h += actsChips(undefined, !spots.length);
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
@@ -3513,10 +3513,12 @@ function renderSaved() {
     + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
     + `${navigator.standalone ? ` Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here, or paste a list's link ${listsShown ? 'under Your lists, ' : ''}below.` : ''}</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
-    + `${swimsShown(spots) ? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal</button></p>'}</div>`;
+    + `${many && !swimsShown(spots) ? '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>' : ''}</div>`;
+  if (!spots.length && !many) v += `<details class="sec tile"><summary>Activity preferences and swim journal</summary>${actsChips(undefined, true)}`
+    + `${swimsShown(spots) ? '' : '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>'}</details>`;
   // Opening a list from its link is in Your lists; with nothing saved, Your lists is not shown (a Home
   // Screen app just added, say), so it has a tile of its own.
-  if (!listsShown) v += `<section class="sec tile lists">${importForm()}</section>`;
+  if (!listsShown) v += `<details class="sec tile lists"><summary>Open a shared list</summary>${importForm()}</details>`;
   if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
   v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
@@ -3531,7 +3533,10 @@ function renderSaved() {
   v += (listsShown ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
   // The swim passport (passport.js), under the journal, once a swim is logged; before that, its Water-wise questions on
   // their own, so a new visitor can learn to read the forecast first. Private, on this device.
-  if (typeof passportSection === 'function') v += passportSection(DATA.spots);
+  if (typeof passportSection === 'function') {
+    const passport = passportSection(DATA.spots);
+    v += !spots.length && !many && !swimsShown(spots) ? `<details class="sec tile"><summary>Learn about water conditions</summary>${passport}</details>` : passport;
+  }
   // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
   // all on a wide desktop, where England's every spot said nothing about an empty list.
   setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));

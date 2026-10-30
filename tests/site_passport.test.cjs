@@ -75,7 +75,7 @@ test('sharing a badge says its name and nothing about where or when', () => {
 test('the page draws it under the journal on Saved, binds its shares, and Plan a swim notes a planned backup', () => {
   const page = fs.readFileSync(join(SITE, 'index.html'), 'utf8');
   assert.ok(page.indexOf('<script src="journal.js">') < page.indexOf('<script src="passport.js">'));
-  assert.match(page, /if \(typeof passportSection === 'function'\) v \+= passportSection\(DATA\.spots\);/);
+  assert.match(page, /if \(typeof passportSection === 'function'\) \{/ );
   assert.match(page, /const bindSwims = \(\) => \{ if \(typeof journalBindSection === 'function'\) journalBindSection\(\);\n  if \(typeof passportBind === 'function'\) passportBind\(\); \};/);
   assert.match(fs.readFileSync(join(SITE, 'outing.js'), 'utf8'), /if \(pair\.backup && !preview && typeof passportPlanned === 'function'\) passportPlanned\(today\(\)\);/);
   // Nothing in it asks a server for anything.
