@@ -39,6 +39,7 @@ Additive changes raise the minor version; removing or renaming a field raises th
 | `freshness_rules` | object | the day limits below, as numbers |
 | `release` | object | `scope` (`"historical"` until a regular refresh runs and its coverage is measured; then `"latest"`), `historical_to`, `refreshed_sites`, `regular_refresh`, and a `label` the page shows prominently |
 | `attribution` | list | notices the UI must show: "Contains modified Copernicus Sentinel data [years]" and the EA's Open Government Licence line |
+| `season_reasons` | object | plain-language notes for each season `reason`, for the page to show (1.2) |
 | `lab_definition` | object | what every `lab` value is: `target`, `determinand`, `unit`, `method_note`, `censoring`, `source` (below) |
 | `quality` | object | how far one reading can be trusted, measured on the data: `same_date_pairs`, `same_date_abs_difference_median` and `_p90` (two usable scenes of one site on one date), `within_site_sd_median`, and a `note` |
 | `lakes` | list | one record per lake site (below) |
@@ -61,7 +62,7 @@ Additive changes raise the minor version; removing or renaming a field raises th
 | `coverage_label` | string | plain words for `series_scope`; for `near_lab_samples`: "selected historical coverage: only images within a day of a lab sample" |
 | `processed_to` | string | the last date this site's images were processed to (a refresh can extend it) |
 | `latest` | object | the most recent primary reading **in this dataset** (`scope: "latest_in_dataset"`), not the latest image available: `date`, `datetime`, `item_id`, `ndci`, `clear_share`, `season`, `experimental`, `age_days`, `freshness` (`recent`, `older`, `stale`, `none`), and `reasons` (list, below) |
-| `seasons` | list | per year: `scenes` (images over the site), `usable`, `usable_share`, `median_ndci` of usable readings, `first`, `last` usable dates |
+| `seasons` | list | **every season the tests searched, 2020 to 2026, once each** (sites past the size rule; `too_small` sites have none): `scenes` (images over the site), `usable`, `usable_share`, `median_ndci` of usable readings, `first`, `last` usable dates, and `reason`: null when the season has scenes, else `no_source_images` (the catalogue the tests read has no May-September image there: 2022 at every site) or `no_lab_sample_dates` (a `near_lab_samples` site whose images exist but no lab sample fell within a day of one); an empty season also gives `source_images` |
 | `series` | list | every shown reading: `date`, `datetime`, `item_id`, `tile`, `processing_baseline`, `clear_core`, `n_core`, `ndci`, `primary` (true for one reading a date: the most clear core pixels, then the first item id, the test's own rule), `season` (`in_season` or `out_of_season`), `experimental`, `source` (`test_cache` or `refresh:<root>`); refreshed readings add `sun_elevation_deg` and `clear_water_share` |
 | `excluded` | list | refreshed scenes that were clear but not shown, each with `date`, `item_id`, `reason` (`invalid_band_values`, `snow_or_ice_in_core`, `sun_too_low`, `core_not_classed_water`) and `source` |
 | `refreshes` | list | each refresh applied to this site: `source`, `from`, `to`, `scenes`, `shown`, its features file's SHA-256, requests and bytes |
@@ -131,3 +132,10 @@ correctly extracted index from another month cannot be shown. So:
   one case, as a display-quality rule; it is not a test result and changes no earlier reading.
 - **Unchanged:** the historical May-September series and its rule; the 2027 confirmation population and season
   (`docs/SATELLITE-RECOVERY-2026-10.md`, section 5), which stays May-September.
+
+## Version 1.2 (30 October 2026): every season listed
+
+Additive, at the product owner's request: `seasons` lists every searched season with a `reason` for an empty one, and
+`season_reasons` explains each. 2022 is empty at every site because Earth Search's `sentinel-2-c1-l2a` collection
+holds no May-September image there (`docs/LAKE-ALGAE-SATELLITE-TEST-2026-10.md`); the older collection is not mixed in,
+since its processing differs. The page no longer needs to infer gaps.

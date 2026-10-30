@@ -171,3 +171,16 @@ def test_a_latest_release_needs_a_running_refresh():
     bad["release"] = {"scope": "latest", "label": "Latest", "regular_refresh": False}
     assert any("regular refresh" in e for e in m.check(bad))
     assert "Not the latest images" in m.release([], "2026-09-30")["label"]
+
+
+def test_every_searched_season_is_listed_and_an_empty_one_says_why():
+    f = _features([("2021-06-01", "A", "T1", 95, 100, True, 0.01), ("2023-06-01", "B", "T1", 95, 100, True, 0.02)])
+    base = {"lake_id": "wqa-p", "name": "P", "water_body": "P", "lat": 52.0, "lon": 1.5, "site_ids": {}}
+    sizes = {"tiles": {"T1": {"n_core": 100, "passes": True}}}
+    images = {2020: 50, 2021: 50, 2023: 50, 2024: 50, 2025: 70, 2026: 70}   # 2022: the catalogue has none
+    lk = m.lake_record(base, f, sizes, {}, "near_lab_samples", [], date(2026, 10, 30), "2026-09-30", images=images)
+    by = {x["year"]: x for x in lk["seasons"]}
+    assert list(by) == list(m.YEARS)
+    assert by[2022]["reason"] == "no_source_images" and by[2022]["source_images"] == 0
+    assert by[2020]["reason"] == "no_lab_sample_dates"        # images exist, no lab sample near any
+    assert by[2021]["reason"] is None and by[2021]["usable"] == 1

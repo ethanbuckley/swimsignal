@@ -37,7 +37,7 @@ BATHING = ROOT / "data" / "raw" / "bathing_waters_inland.json"
 CHL_LAKES = ROOT / "docs" / "LAKE-CHLOROPHYLL-NDCI-TEST-2026-10-lakes.json"
 OUT = ROOT / "data" / "research" / "lake_observations.v1.json"
 
-SCHEMA, VERSION = "swimsignal.lake-observations", "1.1.0"
+SCHEMA, VERSION = "swimsignal.lake-observations", "1.2.0"
 PROCESSING = "s2c1-l2a.ndci-core-median.v1"
 SEASON = (5, 6, 7, 8, 9)
 RECENT_DAYS, OLDER_DAYS = 14, 60
@@ -47,6 +47,15 @@ MIN_SUN_DEG = 15.0        # amendment 1.1: a refreshed reading needs the sun at 
 MIN_WATER_SHARE = 0.90    # amendment 1.1: out of season, this share of clear core pixels must be classed water
 COVERAGE_LABEL = {"every_scene": "every image, May to September, of the years covered",
                   "near_lab_samples": "selected historical coverage: only images within a day of a lab sample"}
+YEARS = tuple(range(2020, 2027))   # the seasons the tests searched (protocol.YEARS)
+# Why a season has no reading row (contract 1.2): the catalogue the tests searched has no image over the site that
+# May-September; or (a near-lab-samples site) images exist but no lab sample was taken within a day of one.
+SEASON_REASONS = ("no_source_images", "no_lab_sample_dates")
+SEASON_NOTES = {"no_source_images": "Earth Search's sentinel-2-c1-l2a collection, the one the tests read, holds no "
+                                    "image over this site from May to September that year (for 2022 at every site; "
+                                    "docs/LAKE-ALGAE-SATELLITE-TEST-2026-10.md). The older collection is not mixed in.",
+                "no_lab_sample_dates": "Images exist, but this site's record keeps only images within a day of an EA "
+                                       "lab sample, and none was taken in May-September that year."}
 REASONS = ("too_small", "no_usable_scene", "season_closed", "not_refreshed", "series_partial")
 FRESHNESS = ("recent", "older", "stale", "none")
 CLAIM = {
@@ -120,14 +129,38 @@ def freshness(latest: str | None, as_of: date) -> tuple[int | None, str]:
     return age, "recent" if age <= RECENT_DAYS else "older" if age <= OLDER_DAYS else "stale"
 
 
-def seasons(f: pd.DataFrame) -> list[dict]:
+def item_years(items_dir: Path) -> dict[str, dict[int, int]]:
+    """site -> {year: images in May-September} from the STAC items the tests saved (one file per site)."""
+    out = {}
+    for f in sorted(items_dir.glob("*.json")):
+        c: dict[int, int] = {}
+        for it in json.loads(f.read_text()):
+            d = it.get("properties", {}).get("datetime") or ""
+            if d[:4].isdigit() and int(d[5:7]) in SEASON:
+                c[int(d[:4])] = c.get(int(d[:4]), 0) + 1
+        out[f.stem] = c
+    return out
+
+
+def seasons(f: pd.DataFrame, scope: str = "every_scene", images: dict[int, int] | None = None) -> list[dict]:
+    """One entry for every season the tests searched: its counts, or none with the reason why."""
+    images = images or {}
     out = []
-    for y, g in f.groupby(f["scene_date"].str[:4]):
-        u = g[g["usable"] & g["reading"].notna()]
-        out.append({"year": int(y), "scenes": int(len(g)), "usable": int(len(u)),
-                    "usable_share": round(len(u) / len(g), 4) if len(g) else None,
-                    "median_ndci": round(float(u["reading"].median()), 4) if len(u) else None,
-                    "first": u["scene_date"].min() if len(u) else None, "last": u["scene_date"].max() if len(u) else None})
+    years = f["scene_date"].str[:4].astype(int) if len(f) else pd.Series(dtype=int)
+    for y in YEARS:
+        g = f[years == y] if len(f) else f
+        if len(g):
+            u = g[g["usable"] & g["reading"].notna()]
+            out.append({"year": y, "scenes": int(len(g)), "usable": int(len(u)),
+                        "usable_share": round(len(u) / len(g), 4),
+                        "median_ndci": round(float(u["reading"].median()), 4) if len(u) else None,
+                        "first": u["scene_date"].min() if len(u) else None,
+                        "last": u["scene_date"].max() if len(u) else None, "reason": None})
+        else:
+            why = "no_source_images" if images.get(y, 0) == 0 else (
+                "no_lab_sample_dates" if scope == "near_lab_samples" else "no_source_images")
+            out.append({"year": y, "scenes": 0, "usable": 0, "usable_share": None, "median_ndci": None,
+                        "first": None, "last": None, "reason": why, "source_images": int(images.get(y, 0))})
     return out
 
 
@@ -164,7 +197,8 @@ def load_refresh(path: Path) -> tuple[pd.DataFrame, dict]:
 
 
 def lake_record(base: dict, f: pd.DataFrame, sizes: dict, meta: dict, scope: str, lab: list[dict], as_of: date,
-                processed_to: str, refresh: list[tuple[pd.DataFrame, dict]] = ()) -> dict:
+                processed_to: str, refresh: list[tuple[pd.DataFrame, dict]] = (),
+                images: dict[int, int] | None = None) -> dict:
     tiles = {t: {"n_core": v["n_core"], "passes": bool(v["passes"])} for t, v in (sizes.get("tiles") or {}).items()}
     passes = any(v["passes"] for v in tiles.values())
     use = f[f["usable"] & f["reading"].notna()]
@@ -225,7 +259,7 @@ def lake_record(base: dict, f: pd.DataFrame, sizes: dict, meta: dict, scope: str
             "mask": {**MASK, "tiles": tiles, "passes_size_rule": passes}, "series_scope": scope,
             "coverage_label": COVERAGE_LABEL[scope], "processed_to": lake_to,
             "latest": {**latest, "scope": "latest_in_dataset", "age_days": age, "freshness": fresh, "reasons": reasons},
-            "seasons": seasons(f) if len(f) else [], "series": series, "excluded": excluded, "refreshes": refreshes,
+            "seasons": seasons(f, scope, images) if passes else [], "series": series, "excluded": excluded, "refreshes": refreshes,
             "lab": lab}
 
 
@@ -262,6 +296,7 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
     sat_f, chl_f = pd.read_parquet(SAT / "features.parquet"), pd.read_parquet(CHL / "features.parquet")
     sat_sizes, chl_sizes = json.loads((SAT / "sizes.json").read_text()), json.loads((CHL / "sizes.json").read_text())
     meta = {**item_meta(SAT / "items"), **item_meta(CHL / "items")}
+    sat_years, chl_years = item_years(SAT / "items"), item_years(CHL / "items")
     values = pd.read_parquet(CHL / "values.parquet")
     bathing = {s["id"]: s for s in json.loads(BATHING.read_text()) if s["kind"] == "lake"}
     chl_pts = {p["wqa_point"]: p for p in json.loads(CHL_LAKES.read_text())["points"]}
@@ -281,7 +316,7 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
                 "depth_m": p.get("depth_m"), "lake_type": p.get("lake_type")}
         lakes.append(lake_record(base, sat_f[sat_f["bw_id"] == bid], sat_sizes.get(bid, {}), meta, "every_scene",
                                  lab_rows(values, wqa) if wqa in chl_pts else [], as_of, processed_to,
-                                 refresh_for(bid) + (refresh_for(wqa) if wqa else [])))
+                                 refresh_for(bid) + (refresh_for(wqa) if wqa else []), sat_years.get(bid, {})))
     for wqa, p in sorted(chl_pts.items()):
         if wqa in by_wqa:
             continue   # a bathing water: its full series is above, with these lab values
@@ -289,7 +324,7 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
                 "water_body": p.get("lake_name"), "wfd_waterbody_id": p.get("wb_id"), "lat": p["lat"], "lon": p["lon"],
                 "site_ids": {"wqa_point": wqa}, "depth_m": p.get("depth_m"), "lake_type": p.get("lake_type")}
         lakes.append(lake_record(base, chl_f[chl_f["bw_id"] == wqa], chl_sizes.get(wqa, {}), meta, "near_lab_samples",
-                                 lab_rows(values, wqa), as_of, processed_to, refresh_for(wqa)))
+                                 lab_rows(values, wqa), as_of, processed_to, refresh_for(wqa), chl_years.get(wqa, {})))
     by_wb = {}
     for lk in lakes:
         by_wb.setdefault(lk["water_body_key"], []).append(lk["lake_id"])
@@ -307,6 +342,7 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
                            "sources": [{"input": k, "sha256": v} for k, v in before.items()],
                            "refreshes": [info for _, info in refreshed]},
             "claim": CLAIM, "freshness_rules": {"recent_days": RECENT_DAYS, "older_days": OLDER_DAYS},
+            "season_reasons": SEASON_NOTES,
             "release": release(lakes, processed_to),
             "attribution": attribution(sat_f, chl_f),
             "lab_definition": LAB_DEFINITION, "quality": quality(sat_f), "lakes": lakes, "coverage": coverage(lakes)}
@@ -440,6 +476,15 @@ def check(doc: dict) -> list[str]:
             err.append(f"{lid}: negative age_days")
         if lt.get("scope") != "latest_in_dataset":
             err.append(f"{lid}: latest.scope must be latest_in_dataset")
+        if lk.get("mask", {}).get("passes_size_rule"):
+            yrs = [x["year"] for x in lk.get("seasons", [])]
+            if yrs != list(YEARS):
+                err.append(f"{lid}: seasons are not exactly {YEARS[0]}-{YEARS[-1]}, once each")
+            for x in lk.get("seasons", []):
+                if x["scenes"] == 0 and x.get("reason") not in SEASON_REASONS:
+                    err.append(f"{lid}: empty season {x['year']} without a reason")
+                if x["scenes"] > 0 and x.get("reason") is not None:
+                    err.append(f"{lid}: season {x['year']} has scenes and a reason")
         prim = [x for x in s if x.get("primary")]
         if s and (not prim or lt.get("item_id") != prim[-1]["item_id"]):
             err.append(f"{lid}: latest is not the last primary series reading")
