@@ -102,7 +102,7 @@ applies. It says the rule is worth a prospective look. It does not say how it wi
 - **Too few known labels** (under 10,000 known overflow-days at the eight companies): extend by one further
   28-day window, stated now, then read.
 
-## Settled before the window opened (30 October 2026, about 23:10 UTC)
+## Settled before the window opened (30 October 2026, 22:57 UTC)
 
 Recorded before the first possible window day (31 October, UK time), with no shadow row read:
 - **Useful margin: 5%,** as proposed in section 4: the routed lead-0 Brier at the eight companies at least 5% below
