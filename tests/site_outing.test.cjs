@@ -185,3 +185,8 @@ test('official advice: whatever eatoday.js\'s compact line gives, above the leve
     main: {id: 'a', name: 'A', href: 'spot/a/', tone: 'low', headline: 'Low risk', official: '<p class="o-mark">MARK</p>', why: 'Why.', ev: ''}, alt: null});
   assert.match(h, /<p class="o-mark">MARK<\/p><p class="hl low">Low risk<\/p><p class="why">/);
 });
+
+test('past-time warning uses the swim spot time, including summer time', () => {
+  assert.doesNotMatch(O.outingTimeNote('2026-07-01', '07', Date.parse('2026-07-01T06:59:00Z')).join(' '), /passed/);
+  assert.match(O.outingTimeNote('2026-07-01', '07', Date.parse('2026-07-01T07:00:00Z')).join(' '), /passed/);
+});
