@@ -78,7 +78,13 @@ test('every gap says why, and how far one reading can be trusted is said under t
   assert.match(t, /too narrow for the satellite's 20 m pixels/);
   assert.match(t, /No images after 30 Sept 2026 have been read here\./);
   assert.match(plain(K.lakesQuality(DOC)), /^Two readings of one location on the same date differ by 0\.03 in the middle case, and by 0\.17 or more one time in ten \(393 pairs\)\. So a small change between dates may be the measurement, not the water\.$/);
-  assert.match(plain(K.lakesSeasons(FULL)), /2022No images read this season\./);
+  // 1.2: every season searched, an empty one with its reason, said on its row and once under the table in the export's words.
+  assert.match(plain(K.lakesSeasons(FULL, DOC)), /2022No images in the collection read\./);
+  assert.ok(plain(K.lakesSeasons(FULL, DOC)).includes(DOC.season_reasons.no_source_images));
+  assert.match(plain(K.lakesSeasons(SEL, DOC)), /2020No laboratory sample that season, so no images read\./);
+  // A file from before 1.2, with no entry for 2022: the gap is still said.
+  const old = { ...FULL, seasons: FULL.seasons.filter(y => !y.reason) };
+  assert.match(plain(K.lakesSeasons(old)), /2022No images read this season\./);
 });
 
 test('laboratory values are measurements, shown apart, in their own unit, with censoring said', () => {

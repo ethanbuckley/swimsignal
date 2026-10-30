@@ -93,8 +93,8 @@ function lakesLatest(lake, doc, todayISO) {
     + `<p class="lk-value">NDCI <b>${lakesNum(L.ndci)}</b>, the median over the clear water within 300 m (${lakesPct(L.clear_share)} of it clear in that image).</p>`
     + `<p class="lk-claim">${lakesEsc((doc.claim || {}).public_wording)}</p>` + why;
 }
-// The seasons from the first to the last, with any year between that has no images said as such rather than left out
-// (2022 has none in the collection read): [{year, missing}] or the export's own season.
+// The seasons from the first to the last. From 1.2 the export lists every season searched, an empty one with its
+// `reason`; for a file from before, a year between with no entry is filled in here as missing, rather than left out.
 function lakesYears(seasons) {
   const by = new Map((seasons || []).map(y => [+y.year, y])), ys = [...by.keys()].sort();
   if (!ys.length) return [];
@@ -102,13 +102,17 @@ function lakesYears(seasons) {
   for (let y = ys[0]; y <= ys[ys.length - 1]; y++) out.push(by.get(y) || { year: y, missing: true });
   return out;
 }
-// Each season: images over the site, how many were clear enough, and the median of those readings.
-function lakesSeasons(lake) {
+// Each season: images over the site, how many were clear enough, and the median of those readings. An empty season says
+// why in a few words on its row, and the export's own note for each reason (season_reasons) once under the table.
+const LAKES_EMPTY = { no_source_images: 'No images in the collection read.', no_lab_sample_dates: 'No laboratory sample that season, so no images read.' };
+function lakesSeasons(lake, doc = {}) {
   const s = lakesYears(lake.seasons), sel = lakesSelected(lake);
   if (!s.length) return '';
+  const why = [...new Set(s.map(y => y.reason).filter(Boolean))].map(r => (doc.season_reasons || {})[r]).filter(Boolean);
+  const empty = y => (y.reason && LAKES_EMPTY[y.reason]) || 'No images read this season.';
   return `<table class="lk-seasons"><caption>${sel ? 'The selected images each season (near laboratory sample dates, not every image)' : 'Images read each season, May to September'}</caption><thead><tr><th scope="col">Year</th><th scope="col">${sel ? 'Selected images' : 'Images'}</th><th scope="col">Clear enough</th><th scope="col">${sel ? 'Median of these' : 'Median NDCI'}</th><th scope="col">First and last clear</th></tr></thead><tbody>`
-    + s.map(y => y.missing ? `<tr><th scope="row">${y.year}</th><td colspan="4">No images read this season.</td></tr>` : `<tr><th scope="row">${y.year}</th><td>${y.scenes}</td><td>${y.usable} (${lakesPct(y.usable_share || 0)})</td><td>${y.usable ? lakesNum(y.median_ndci) : 'none'}</td><td>${y.first ? `${lakesEsc(lakesDate(y.first)).replace(/ \d{4}$/, '')} to ${lakesEsc(lakesDate(y.last)).replace(/ \d{4}$/, '')}` : 'none'}</td></tr>`).join('')
-    + '</tbody></table>';
+    + s.map(y => y.missing || (y.reason && !y.scenes) ? `<tr><th scope="row">${y.year}</th><td colspan="4">${lakesEsc(empty(y))}</td></tr>` : `<tr><th scope="row">${y.year}</th><td>${y.scenes}</td><td>${y.usable} (${lakesPct(y.usable_share || 0)})</td><td>${y.usable ? lakesNum(y.median_ndci) : 'none'}</td><td>${y.first ? `${lakesEsc(lakesDate(y.first)).replace(/ \d{4}$/, '')} to ${lakesEsc(lakesDate(y.last)).replace(/ \d{4}$/, '')}` : 'none'}</td></tr>`).join('')
+    + '</tbody></table>' + why.map(w => `<p class="lk-more">${lakesEsc(w)}</p>`).join('');
 }
 // The readings shown, one a date (`primary`: the test's own rule picks it where two images share a date; a series from
 // before 1.1 has no `primary`, and all of it is shown).
@@ -188,7 +192,7 @@ function lakesLake(lake, doc, todayISO, width, index = null) {
   return `<article class="lk-lake"><h2 id="lk-h">${lakesEsc(lake.name)}</h2>`
     + `<p class="lk-meta">${[lake.water_body, lake.lake_type ? `${lake.lake_type} lake${lake.depth_m ? `, mean depth about ${lakesNum(lake.depth_m, 0)} m` : ''}` : '', spot].filter(Boolean).join(' · ')}</p>`
     + lakesLatest(lake, doc, todayISO) + (scope ? `<p class="lk-scope">${lakesEsc(scope)}</p>` : '') + lakesRefreshed(lake) + lakesShares(lake, index || doc)
-    + lakesSeasons(lake) + lakesChart(lake.series, width, lakesSelected(lake)) + lakesQuality(doc) + lakesLab(lake, doc) + '</article>';
+    + lakesSeasons(lake, doc) + lakesChart(lake.series, width, lakesSelected(lake)) + lakesQuality(doc) + lakesLab(lake, doc) + '</article>';
 }
 // What the file is, over the whole list: monitoring locations (each a 300 m circle of water round a point; several can
 // share one lake, so they are not counted as lakes), how many named waters they are on, how many have a reading, the
