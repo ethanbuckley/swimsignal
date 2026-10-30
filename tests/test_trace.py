@@ -13,7 +13,7 @@ from shapely.geometry import LineString
 
 from dipcast.model.transport import PinLocation, traced_lines
 from dipcast.network.rivers import RiverNetwork, Snap, bng_to_lonlat
-from dipcast.trace import decode, encode, encoded_lines
+from dipcast.trace import cut_ends, decode, encode, encoded_lines
 
 ROOT = Path(__file__).resolve().parents[1]
 X0, Y0 = 400_000, 300_000   # in England, so the lines turn into sensible latitudes and longitudes
@@ -65,6 +65,23 @@ def test_the_trace_is_what_upstream_overflows_counts_cut_at_the_cap_with_the_pin
     assert sum(line.length for line in traced_lines(net, _pin(net), max_km=1.5)) == 500 + 500 + 1_000   # m0, t, own link
 
 
+def test_the_cut_ends_are_where_the_cap_stops_a_river_that_goes_on():
+    """The evidence map's bars (review of PR #463, 30 Oct 2026): from the build's own truncation, not guessed
+    from line lengths in the page. At 60 km only `far` is cut, 1 km along it from its upper end (58 km of its
+    59 kept); at 1.5 km, m0 and t are cut 500 m above n1 and far, wholly past the cap, adds nothing."""
+    net = _net()
+    lon, lat = bng_to_lonlat(X0 - 59_000, Y0)
+    got = cut_ends(net, _pin(net), max_km=60)
+    assert len(got) == 1 and abs(got[0][0] - lat) < 2e-5 and abs(got[0][1] - lon) < 2e-5
+    short = cut_ends(net, _pin(net), max_km=1.5)
+    assert len(short) == 2
+    for wlon, wlat in [bng_to_lonlat(X0 - 500, Y0), bng_to_lonlat(X0, Y0 + 500)]:
+        assert any(abs(a - wlat) < 2e-5 and abs(b - wlon) < 2e-5 for a, b in short)
+    # A source inside the cap is not a cut: with a cap past everything, none.
+    assert cut_ends(net, _pin(net), max_km=200) == []
+    assert cut_ends(net, PinLocation("none", 0, 0, None)) == []
+
+
 def test_lines_are_joined_where_they_meet_without_a_fork_and_drawn_in_latitude_and_longitude():
     net = _net()
     enc = encoded_lines(traced_lines(net, _pin(net)))
@@ -91,7 +108,12 @@ def test_write_traces_one_file_a_spot_beside_its_own_with_the_counted_overflows(
     assert doc["lines"] == traces["a"] and doc["simplified_m"] == 25.0
     assert doc["overflows"] == [["WW1", 51.12346, -2.65432]]   # one without a position is left out
     assert doc["credits"] == credits
+    assert "cut_ends" not in doc   # not given: not written, so the page says it does not know
     assert sorted(p.name for p in (tmp_path / "data" / "spot").iterdir()) == ["a-trace.json"]
+    bs.write_traces(tmp_path, traces, upstream, gen, credits, {"a": [[54.20334, -2.27147]]})
+    assert json.loads((tmp_path / "data" / "spot" / "a-trace.json").read_text())["cut_ends"] == [[54.20334, -2.27147]]
+    bs.write_traces(tmp_path, traces, upstream, gen, credits, {})
+    assert json.loads((tmp_path / "data" / "spot" / "a-trace.json").read_text())["cut_ends"] == []   # given, and none cut
 
 
 def test_a_trace_over_50_kb_is_announced(tmp_path, monkeypatch):
@@ -105,5 +127,5 @@ def test_a_trace_over_50_kb_is_announced(tmp_path, monkeypatch):
 def test_the_build_writes_the_traces_after_the_spot_files_and_with_the_forecast_s_placing():
     src = (ROOT / "scripts" / "build_site.py").read_text()
     build = src[src.index("def build("):]
-    assert build.index("write_app_data(SITE, doc)") < build.index("write_traces(SITE, traces, upstream, generated, credits)")
-    assert "spot_trace(_net(), float(r.lat), float(r.lon), r.kind, r.river, r.name)" in build
+    assert build.index("write_app_data(SITE, doc)") < build.index("write_traces(SITE, traces, upstream, generated, credits, cuts)")
+    assert "traces[r.id], cuts[r.id] = spot_trace_parts(_net(), float(r.lat), float(r.lon), r.kind, r.river, r.name)" in build

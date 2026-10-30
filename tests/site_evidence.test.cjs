@@ -262,9 +262,9 @@ test('the evidence line: whose overflows, and the live warnings\' share at that 
 
 test('the evidence line: forecast only today where right now is not known, and nothing without a forecast', () => {
   const blind = yorkshire({ now: { ...cromwheel().now, monitored_upstream: 0 } });
-  assert.match(ev.evidenceCoverage(blind, W, true), /^Forecast only: no overflow upstream reports live\. Yorkshire Water's overflows\. /);
-  assert.doesNotMatch(ev.evidenceCoverage(blind, W, false), /Forecast only/);              // another day: not a question of right now
-  assert.equal(ev.evidenceCoverage(blind, null, true), 'Forecast only: no overflow upstream reports live.');   // the table not loaded
+  assert.match(ev.evidenceCoverage(blind, W, true), /^Live sewage spill status unavailable: forecast only\. Yorkshire Water's overflows\. /);
+  assert.doesNotMatch(ev.evidenceCoverage(blind, W, false), /forecast only/i);              // another day: not a question of right now
+  assert.equal(ev.evidenceCoverage(blind, null, true), 'Live sewage spill status unavailable: forecast only.');   // the table not loaded
   assert.equal(ev.evidenceCoverage(yorkshire(), null), '');
   assert.equal(ev.evidenceCoverage(cromwheel(), W), '');                                    // no overflows' companies to go on
   assert.equal(ev.evidenceCoverage(yorkshire({ error: 'forecast failed: x' }), W), '');
@@ -279,7 +279,10 @@ test('the evidence line: forecast only today where right now is not known, and n
 // (index.html, planBasis): the row's own forecast-only part, and whose overflows with the warnings' share.
 test('the evidence line in its two parts', () => {
   const blind = yorkshire({ now: { ...cromwheel().now, monitored_upstream: 0 } });
-  assert.equal(ev.evidenceNowGap(blind, true), 'Forecast only: no overflow upstream reports live.');
+  assert.equal(ev.evidenceNowGap(blind, true), 'Live sewage spill status unavailable: forecast only.');
+  // Some report, but not the overflows that carry most of the model's weight: the counts lead (levels.js, liveHead).
+  const few = yorkshire({ upstream_summary: { overflows: 13 }, now: { ...cromwheel().now, monitored_upstream: 1, monitored_weight: 0.01, upstream_weight: 2.8 } });
+  assert.equal(ev.evidenceNowGap(few, true), 'Live status from 1 of 13 overflows upstream: forecast only.');
   assert.equal(ev.evidenceNowGap(blind, false), '');
   assert.equal(ev.evidenceCompanyLine(blind, W), ev.evidenceCompanyLine(yorkshire(), W));   // not the row's own
   assert.equal(ev.evidenceCoverage(blind, W, true), `${ev.evidenceNowGap(blind, true)} ${ev.evidenceCompanyLine(blind, W)}`);

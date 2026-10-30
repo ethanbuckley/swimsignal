@@ -14,7 +14,7 @@
 
 const EVIDENCE_TZ = 'Europe/London';
 // The level rules (levels.js): the page loads them before this file, Node requires them.
-const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, companyName } : require('./levels.js');
+const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, companyName, liveHead } : require('./levels.js');
 const evidenceEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const evidenceNil = v => v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v));
 const evidenceCap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
@@ -174,7 +174,7 @@ function evidenceTile(d, nowMs, generatedAt) {
 // evidence coverage are two things. Plan a swim gives it under each row. Two parts, each only where it
 // applies:
 //  - live: on a plan for today, a low level whose right now is not known (levels.js, nowUnknown) is a forecast
-//    only, in the words a saved card uses;
+//    only, after the live status in counts, as a saved card and the answer lead with it (liveHead);
 //  - the track record: whose overflows these are, by their reach (evidenceCompanies), and the share of spills
 //    the live warnings caught there, from the Accuracy page's own figures (verification.json,
 //    live.warning_table: by_company and trained_on), the share linking to its table. The spill model learned
@@ -204,7 +204,7 @@ function evidenceCompanies(s) {
 const evidenceForecasts = s => Boolean(s && !s.unlisted && !s.error && evidenceRules().daily(s));
 function evidenceNowGap(s, isToday = false) {
   const R = evidenceRules();
-  return evidenceForecasts(s) && isToday && R.nowUnknown(s) ? `Forecast only: ${R.nowUnknownWhy(s)}.` : '';
+  return evidenceForecasts(s) && isToday && R.nowUnknown(s) ? `${R.liveHead(s) || 'Live sewage spill status not known'}: forecast only.` : '';   // levels.js, liveHead
 }
 function evidenceCompanyLine(s, W) {
   if (!evidenceForecasts(s)) return '';

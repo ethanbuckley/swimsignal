@@ -2,7 +2,7 @@
 // The level rules (levels.js): the page loads them after this file, so they are looked up when a
 // summary is made; Node requires them.
 const rules = () => typeof headParts === 'function'
-  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank } : require('./levels.js');
+  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank, liveHead } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
 // The latest lab sample in the words of a spot's "What the level rests on" (evidence.js, evidenceSample),
 // as plain text; the page loads that file before this one, and Node requires it. Where there is none, it
@@ -76,7 +76,7 @@ function compareNow(s, generatedAt = null) {
   if (!total) return `${R.FOUND_NONE}, so no spills to report. Other pollution sources may still affect this water.`;
   if (n.monitored_upstream == null) return `Not known: this update has no live status for the ${total} overflow${total === 1 ? '' : 's'} upstream.`;
   const mon = Math.min(total, n.monitored_upstream);
-  return (R.nowUnknown(s) && mon ? `Not known here: ${R.nowUnknownWhy(s)}. ` : '') + overflowWords()(s, generatedAt).say
+  return (R.nowUnknown(s) && mon ? `${R.liveHead(s)}: right now not known here. ` : '') + overflowWords()(s, generatedAt).say
     + (mon < total ? ' Missing reports do not mean no spills.' : '');
 }
 // Today's advice from the Environment Agency, against bathing after pollution or algae: the build and the

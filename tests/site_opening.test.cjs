@@ -38,28 +38,34 @@ function page(now = NOW) {
 const J = x => JSON.parse(JSON.stringify(x));   // out of the page's realm
 
 test('the line on what the forecast could read: live readings, days with no forecast, Wales, the EA advice', () => {
-  const ctx = page(), words = (s, iso = null) => J(vm.runInContext('coverWords', ctx)(s, iso));
+  const ctx = page(), words = (s, iso = null) => J(vm.runInContext('coverWords', ctx)(s, iso)), live = s => vm.runInContext('liveLine', ctx)(s);
+  // Since the review of PR #463 (30 Oct 2026) the live status is the answer's first line (levels.js, liveLine), in
+  // counts, before the level; the line by the issue time keeps the rest, so the counts are not said twice.
   const lb = spot(['low', 'moderate', 'moderate', 'moderate', 'high'], {now: {label: 'low', risk: 0.03, discharging_upstream: 2, monitored_upstream: 44}});
-  assert.deepEqual(words(lb), ['44 of 45 overflows upstream report live, 2 spilling now; 1 does not, so could be spilling unseen']);
-  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', monitored_upstream: 42}})), ['42 of 45 overflows upstream report live, none spilling now; 3 do not, so could be spilling unseen']);
-  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'])), ['All 45 overflows upstream report live, none spilling now']);   // said every time
-  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {upstream_summary: {overflows: 1}, now: {label: 'low', monitored_upstream: 1}})),
-    ['The overflow upstream reports live, not spilling now']);
-  // None reports, and the level is raised by a forecast day: said here. At low, the line under the level
-  // already says "Forecast only: no overflow upstream reports live", so not twice.
+  assert.equal(live(lb), 'Live status from 44 of 45 overflows upstream: 2 spilling at the last poll; 1 does not report, so could be spilling unseen');
+  assert.deepEqual(words(lb), []);
+  assert.equal(live(spot(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low', monitored_upstream: 42}})),
+    'Live status from 42 of 45 overflows upstream: none spilling at the last poll; 3 do not report, so could be spilling unseen');
+  assert.equal(live(spot(['low', 'low', 'low', 'low', 'low'])), 'Live status from all 45 overflows upstream: none spilling at the last poll');   // said every time
+  assert.equal(live(spot(['low', 'low', 'low', 'low', 'low'], {upstream_summary: {overflows: 1}, now: {label: 'low', monitored_upstream: 1}})),
+    'Live status from the overflow upstream: not spilling at the last poll');
+  // None reports: unavailable, at any level, and never as dry.
   const none = {label: null, discharging_upstream: 0, monitored_upstream: 0, no_feed_upstream: 45};
-  assert.deepEqual(words(spot(['low', 'moderate', 'low', 'low', 'low'], {now: none})), ['None of the 45 overflows upstream report live, so whether they are spilling is not known']);
-  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {now: none})), []);
-  // A picked later day rests on the rain: no live count. Today keeps it.
+  for (const days of [['low', 'moderate', 'low', 'low', 'low'], ['low', 'low', 'low', 'low', 'low']]) {
+    assert.equal(live(spot(days, {now: none})), 'Live sewage spill status unavailable: none of the 45 overflows upstream reports live, so whether any is spilling is not known');
+    assert.deepEqual(words(spot(days, {now: none})), []);
+  }
+  // An update with no count keeps the old clause here (no live line to replace it).
+  assert.deepEqual(words(spot(['low', 'low', 'low', 'low', 'low'], {now: {label: 'low'}})), ['All 45 overflows upstream report live, none spilling now']);
+  // A picked later day rests on the rain: nothing about the live status.
   assert.deepEqual(words(lb, DAYS[2]), []);
-  assert.deepEqual(words(lb, DAYS[0]), ['44 of 45 overflows upstream report live, 2 spilling now; 1 does not, so could be spilling unseen']);
   // Days with no forecast, by name; never said as low.
-  assert.deepEqual(words(spot(['low', 'low', 'low', null, null])), ['All 45 overflows upstream report live, none spilling now', 'No forecast for Friday or Saturday']);
+  assert.deepEqual(words(spot(['low', 'low', 'low', null, null])), ['No forecast for Friday or Saturday']);
   // Overflows in Wales, short; today's EA advice at a bathing water, with where to look.
   const ludlow = spot(['high', 'high', 'high', 'high', 'high'], {source: 'designated', upstream_summary: {overflows: 11, wales_share: 0.12},
     now: {label: 'low', discharging_upstream: 0, monitored_upstream: 10},
     classification: {class: 'poor', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36060'}});
-  assert.equal(text(vm.runInContext('coverLine', ctx)(ludlow)), '10 of 11 overflows upstream report live, none spilling now; 1 does not, so could be spilling unseen. Overflows in Wales not counted '
+  assert.equal(text(vm.runInContext('coverLine', ctx)(ludlow)), 'Overflows in Wales not counted '
     + "(12% of the river above). Today's EA advice not checked: open it before you swim.");
   assert.match(vm.runInContext('coverLine', ctx)(ludlow), /<a href="#ea-today">open it<\/a>/);
   // Nothing to say, no line: a plain level with nothing upstream, not a bathing water.
@@ -74,7 +80,7 @@ test('the answer is one block, the five days straight under it, and what to do a
   // (kind, under the issue time since 29 Oct 2026); nothing else.
   const answer = h.slice(h.indexOf('<section class="answer"'), h.indexOf('</section>', h.indexOf('<section class="answer"')));
   assert.deepEqual([...answer.matchAll(/<(?:h1|h2|p) class="([\w-]+)/g)].map(m => m[1]),
-    ['spot-name', 'big', 'why', 'next', 'cover', 'issued', 'kind']);
+    ['spot-name', 'live', 'big', 'why', 'next', 'issued', 'kind']);   // the live status first (review of PR #463)
   // Then the five days' tile, first in the stack: its sentence, the rows, what to do, what the level counts.
   assert.ok(h.indexOf('</section><div class="stack"><section class="tile" aria-labelledby="days-h">') > 0);
   const tile = h.slice(h.indexOf('aria-labelledby="days-h"'));

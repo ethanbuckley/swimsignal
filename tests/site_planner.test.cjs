@@ -102,7 +102,7 @@ test('the comparison says a day, a live status, advice or access is not known, r
     'Whether any is discharging is not known. None of 2 report live. Not reporting: 2 offline or with no live feed. Missing reports do not mean no spills.');
   const thin = {...spot, upstream_summary: {overflows: 13}, now: {label: 'low', discharging_upstream: 0, monitored_upstream: 1, monitored_weight: 0.01, upstream_weight: 3,
     no_feed_upstream: 0, stale_upstream: 12, feed_stale: [{company: 'United Utilities', overflows: 12, records: true}]}};
-  assert.match(compareNow(thin), /^Not known here: the overflows that matter most here do not report live\. 0 discharging\. 1 of 13 report live\. Not reporting: 12 whose records on United Utilities's feed give no update time\. Missing reports do not mean no spills\.$/);
+  assert.match(compareNow(thin), /^Live status from 1 of 13 overflows upstream: right now not known here\. 0 discharging\. 1 of 13 report live\. Not reporting: 12 whose records on United Utilities's feed give no update time\. Missing reports do not mean no spills\.$/);
   assert.equal(compareNow({...spot, now: {label: 'low', monitored_upstream: 2, discharging_upstream: 1}}), '1 of 2 discharging. All 2 report live.');
   // Today's EA advice: never read, so never said to be clear.
   const bw = {source: 'designated', classification: {class: 'good', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947'}};

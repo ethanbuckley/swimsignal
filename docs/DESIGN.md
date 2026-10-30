@@ -264,6 +264,15 @@ those sizes; they were taken off to keep the rule simple.)
   October" (or "Forecast for today"). The readings, Right now, River level, Water temperature and the
   algae check, sit apart under "Latest readings", which says they do not change with the day. An
   outside review had picked Saturday at Long Bridges and found the tiles below still on today.
+- The live status before the level (30 October 2026, review of PR #463; docs/EVIDENCE-MAP-2026-10.md). A
+  spot's answer opens, on today's view, with how many overflows upstream gave a status at the last poll, in
+  ink: "Live status from 13 of 16 overflows upstream: none spilling at the last poll; 3 do not report, so
+  could be spilling unseen." Where none did, it leads in bold with "Live sewage spill status unavailable",
+  and the level under it is labelled "Modelled forecast" with its inputs. The compact headline leads with
+  the status where right now is not known ("Live sewage spill status unavailable: low risk forecast"), and
+  a raised day with nothing reporting says "(modelled, no live status)". The words are `liveHead` and
+  `liveLine` in `levels.js`. "Forecast only: no overflow upstream reports live", under a big green "Low
+  risk", was read as an observation at the Wye at Symonds Yat.
 
 ### Icons
 

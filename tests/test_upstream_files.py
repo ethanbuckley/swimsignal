@@ -36,6 +36,24 @@ def test_one_file_a_spot_with_every_overflow_most_reach_first(tmp_path):
     assert d["id"] == "thames-henley" and d["generated_at"] == GEN.isoformat() and d["credits"] == CREDITS
     assert [o["site_id"] for o in d["overflows"]] == ["T1", "T3", "T0", "T2"]
     assert set(d["overflows"][0]) == set(bs.UPSTREAM_FIELDS)   # the organisers' fields, nothing of the day's forecast
+    assert "p_spill_days" not in d["overflows"][0] and "now_contribution" not in d["overflows"][0]
+
+
+def test_each_overflow_carries_its_own_status_as_the_last_poll_gave_it(tmp_path):
+    """For the evidence map (review of PR #463, 30 Oct 2026): every overflow's status, data state, feed time and
+    last spill's end, so the page draws each one's and never works one out from the spot's counts. A field the
+    forecast did not give stays null, which the page reads as not known."""
+    rows = [_contrib("L", 0.9, data_state="live", feed_updated_at="2026-10-30T17:19:03+00:00", latest_event_end="2026-10-28T10:32:26+00:00"),
+            _contrib("O", 0.5, status=-1, data_state="offline", feed_updated_at="2026-10-30T17:19:03+00:00"),
+            _contrib("N", 0.2, status=-2, has_live=False, data_state="no_feed", feed_updated_at=None),
+            _contrib("Q", 0.1)]   # an older forecast's row, with no data state
+    bs.write_upstream(tmp_path, {"wharfe": rows}, GEN, CREDITS)
+    d = {o["site_id"]: o for o in json.loads((tmp_path / "data" / "upstream" / "wharfe.json").read_text())["overflows"]}
+    assert {k: d["L"][k] for k in ("status", "data_state", "feed_updated_at", "latest_event_end")} == {
+        "status": 0, "data_state": "live", "feed_updated_at": "2026-10-30T17:19:03+00:00", "latest_event_end": "2026-10-28T10:32:26+00:00"}
+    assert (d["O"]["status"], d["O"]["data_state"]) == (-1, "offline")
+    assert (d["N"]["status"], d["N"]["data_state"], d["N"]["feed_updated_at"]) == (-2, "no_feed", None)
+    assert d["Q"]["data_state"] is None and d["Q"]["latest_event_end"] is None
 
 
 def test_the_build_asks_for_every_overflow_and_keeps_ten_in_spots_json():

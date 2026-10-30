@@ -49,7 +49,7 @@ from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upst
 from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
 from dipcast.stretches import attach as attach_stretches
-from dipcast.trace import SIMPLIFY_M, spot_trace
+from dipcast.trace import SIMPLIFY_M, spot_trace_parts
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -67,7 +67,11 @@ MAX_OPEN_METEO_REQUESTS = 40
 # listed spot was 185 on 4 Oct 2026, at Warleigh Weir.
 ALL_CONTRIBUTORS = 10_000
 UPSTREAM_FIELDS = ("site_id", "site_name", "company", "receiving_watercourse", "distance_km", "lake_distance_km",
-                   "travel_h", "weight", "lta_spills", "spill_hours", "has_live", "lat", "lon")
+                   "travel_h", "weight", "lta_spills", "spill_hours", "has_live", "lat", "lon",
+                   # Each overflow's own status as the last poll before the update gave it (ingest.live.data_states),
+                   # so the evidence map (evmap.js) shows every one's, not only the ten spots.json keeps, and never
+                   # works one out from the spot's counts. About 120 bytes an overflow: Warleigh Weir's 185 add about 22 kB.
+                   "status", "data_state", "feed_updated_at", "latest_event_end")
 MIN_OK_SHARE = 0.8        # fewer spots with a forecast than this and the build fails (no publish)
 MAX_NO_DATA_SHARE = 0.5   # more of today's forecasts without rainfall data than this: fail
 # The pages link to server-style routes (/about, /static/...); rewrite them for flat files. Their
@@ -1452,6 +1456,8 @@ def attach_river_levels(results: list[dict], lookup=None, workers: int = 8, now=
             return None
         return {**reading_fields(st, now, MAX_READING_AGE_H), "rloi": st.rloi, "measure": st.measure,
                 "distance_km": round(_km(r["lat"], r["lon"], st.lat, st.lon), 1),
+                # Where the gauge is, from the EA's own station record the lookup matched, for the evidence map.
+                "station_lat": round(st.lat, 5) if st.lat is not None else None, "station_lon": round(st.lon, 5) if st.lon is not None else None,
                 "same_river": same_river(river, st.river) if river else None}
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -2005,7 +2011,7 @@ VERSIONED_SCRIPTS += ('<script src="outingpack.js"></script>',)
 # stores it with the other scripts.
 SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
 # The evidence map (prototype, ?evidence=1 only, docs/EVIDENCE-MAP-2026-10.md): index.html adds evmap.js itself
-# when asked, as it does replay.js, at levels.js's ?v=<stamp> (mountEvMap). Not in the offline copy.
+# when asked, as it does replay.js, at levels.js's ?v=<stamp> (mountEvMap); the offline copy stores it (sw.js SHELL).
 SHELL_SOURCES.append(TEMPLATE.parent / "evmap.js")
 
 
@@ -2869,12 +2875,13 @@ def write_upstream(site: Path, upstream: dict[str, list[dict]], generated: pd.Ti
 
 # The river each spot's forecast traced upstream (src/dipcast/trace.py), drawn on its map at zoom 10 or
 # more: data/spot/<id>-trace.json, beside the spot's own file, which sw.js stores it with. `lines` are
-# encoded polylines (trace.encode); `overflows` the monitored overflows counted on them, [site_id, lat, lon].
+# encoded polylines (trace.encode); `overflows` the monitored overflows counted on them, [site_id, lat, lon];
+# `cut_ends` where the trace stops a river that goes on, at max_upstream_km, [lat, lon] (trace.cut_ends).
 TRACE_MAX_BYTES = 50_000   # a trace file's limit; Warleigh Weir's, with the most overflows, is the largest
 
 
 def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, list[dict]], generated: pd.Timestamp,
-                 credits: dict) -> dict:
+                 credits: dict, cuts: dict[str, list[list[float]]] | None = None) -> dict:
     """data/spot/<id>-trace.json for each spot with a traced river and an id that can be a file name.
     Returns the number written and the largest file's size; a file over TRACE_MAX_BYTES is announced."""
     out = site / "data" / "spot"
@@ -2886,7 +2893,8 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
         ovs = [[o.get("site_id"), round(o["lat"], 5), round(o["lon"], 5)] for o in upstream.get(sid, [])
                if o.get("lat") is not None and o.get("lon") is not None]
         body = json.dumps({"id": sid, "generated_at": generated.isoformat(), "max_upstream_km": config.MAX_UPSTREAM_KM,
-                           "simplified_m": SIMPLIFY_M, "lines": lines, "overflows": ovs, "credits": credits},
+                           "simplified_m": SIMPLIFY_M, "lines": lines, "overflows": ovs,
+                           **({"cut_ends": cuts.get(sid) or []} if cuts is not None else {}), "credits": credits},
                           separators=(",", ":"), default=str)
         (out / f"{sid}-trace.json").write_text(body)
         n += 1
@@ -3234,7 +3242,7 @@ def build(refresh: bool = True) -> dict:
         reload_caches()
     spots = load_spots()
     prefetch_rain(spots)
-    results, upstream, traces = [], {}, {}
+    results, upstream, traces, cuts = [], {}, {}, {}
     for r in spots.itertuples(index=False):
         try:
             kind, river = spot_hints(r.kind, r.river)
@@ -3246,7 +3254,7 @@ def build(refresh: bool = True) -> dict:
             log.error("%s: %s", r.name, e)
             f = {"error": f"forecast failed: {e}"}
         try:   # the river the forecast traced, for the spot's map (write_traces)
-            traces[r.id] = spot_trace(_net(), float(r.lat), float(r.lon), r.kind, r.river, r.name)
+            traces[r.id], cuts[r.id] = spot_trace_parts(_net(), float(r.lat), float(r.lon), r.kind, r.river, r.name)
         except Exception as e:  # noqa: BLE001 - a map line must not sink the site
             log.warning("%s: no upstream trace (%s)", r.name, e)
         results.append({"id": r.id, "name": r.name, "kind": r.kind, "river": _river_of(r), "source": r.source,
@@ -3384,7 +3392,7 @@ def build(refresh: bool = True) -> dict:
            "commit": code_commit(), "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
-    health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
+    health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits, cuts)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
     health["replay_files"] = replay_files(SITE, results, upstream, generated)   # ?replay=1 only; never stops the build
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
