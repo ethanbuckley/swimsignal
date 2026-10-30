@@ -64,7 +64,8 @@ test('the outing: no combined line unless both choices have a notice', () => {
 test('the page builds each outing column\'s notice from the shared helper', () => {
   const src = fs.readFileSync(join(SITE, 'outing.js'), 'utf8');
   assert.match(src, /official: outingOfficial\(s\), notice: outingBrief\(s\),/);
-  assert.match(src, /\$\{outingBoth\(o\)\}\$\{outingNeither\(o\)\}<div class="outing-pair/);
+  // Above the columns, with only the line on how the backup is joined to the spot (outingJoin) between.
+  assert.match(src, /\$\{outingBoth\(o\)\}\$\{outingNeither\(o\)\}(?:\$\{o\.alt \? `<p class="outing-join"[^\n]*\n\s*\+ `)?<div class="outing-pair/);
 });
 
 // The page's own functions, run beside eatoday.js, as in the browser (tests/site_official_consistency.test.cjs).
