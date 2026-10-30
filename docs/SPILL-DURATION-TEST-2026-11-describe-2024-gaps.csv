@@ -1,0 +1,41 @@
+gap_h,company,spills,median_h,p90_h,share_over_24h
+0.0,Anglian Water,290172,0.1,2.5,0.0
+0.0,Northumbrian Water,106346,0.25,4.02,0.0175
+0.0,Severn Trent Water,223400,0.227,3.17,0.0143
+0.0,South West Water,237036,0.1,1.77,0.0148
+0.0,Southern Water,73295,0.209,8.62,0.0351
+0.0,Thames Water,31856,1.25,17.5,0.0669
+0.0,United Utilities,216376,0.267,3.5,0.0132
+0.0,Wessex Water,445625,0.034,0.47,0.0068
+0.0,Yorkshire Water,213899,0.25,3.0,0.0125
+0.0,all nine,1838005,0.133,2.5,0.0119
+0.25,Anglian Water,84208,0.5,8.25,0.0419
+0.25,Northumbrian Water,65618,0.642,7.69,0.0294
+0.25,Severn Trent Water,114581,0.595,7.91,0.0308
+0.25,South West Water,107597,0.333,6.13,0.0333
+0.25,Southern Water,37295,1.23,18.3,0.0711
+0.25,Thames Water,28103,1.75,19.0,0.0764
+0.25,United Utilities,127728,0.667,6.83,0.0242
+0.25,Wessex Water,91854,0.3,7.3,0.0372
+0.25,Yorkshire Water,140382,0.5,5.25,0.02
+0.25,all nine,797366,0.5,7.75,0.0335
+1.0,Anglian Water,44123,1.4,20.36,0.0855
+1.0,Northumbrian Water,45124,1.25,12.6,0.0473
+1.0,Severn Trent Water,70288,1.394,15.03,0.0553
+1.0,South West Water,60178,1.0,14.14,0.0615
+1.0,Southern Water,25463,3.152,25.8,0.1094
+1.0,Thames Water,20527,3.25,27.0,0.1078
+1.0,United Utilities,91067,1.2,10.37,0.0369
+1.0,Wessex Water,42552,1.25,20.0,0.0853
+1.0,Yorkshire Water,83780,1.0,10.0,0.0376
+1.0,all nine,483102,1.269,15.13,0.0593
+3.0,Anglian Water,32318,2.767,31.0,0.1235
+3.0,Northumbrian Water,37185,1.9,16.66,0.0633
+3.0,Severn Trent Water,54152,2.292,19.23,0.0796
+3.0,South West Water,43835,2.067,20.5,0.0885
+3.0,Southern Water,20929,4.55,31.82,0.1373
+3.0,Thames Water,15036,5.0,41.25,0.1542
+3.0,United Utilities,73431,1.767,14.0,0.0525
+3.0,Wessex Water,32417,2.533,28.41,0.1151
+3.0,Yorkshire Water,63233,1.75,14.5,0.0564
+3.0,all nine,372536,2.25,19.75,0.0829
