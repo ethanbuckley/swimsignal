@@ -110,3 +110,21 @@ def test_ece_is_zero_when_each_bin_matches():
     p = np.array([0.05, 0.05, 0.95, 0.95])
     y = np.array([0, 0, 1, 1], float)
     assert m.ece(p, y) < 0.06
+
+
+def test_active_at_is_false_inside_a_pause_that_merging_joins():
+    # The reviewer's case: stops at 10:40, restarts at 11:10. Joined into one spill, but not discharging at 11:00.
+    ev = _events([("a", "X", "2024-03-01 10:00", "2024-03-01 10:40"),
+                  ("a", "X", "2024-03-01 11:10", "2024-03-01 12:30"),
+                  ("b", "X", "2024-03-01 10:30", "2024-03-01 11:30")])
+    assert len(m.merge_spells(ev, 1.0).query("site_id == 'a'")) == 1
+    raw = m.merge_spells(ev, 0.0)
+    t = pd.to_datetime(["2024-03-01 10:00", "2024-03-01 11:00", "2024-03-01 12:00", "2024-03-01 11:00", "2024-03-01 12:30"], utc=True)
+    got = m.active_at(raw, np.array(["a", "a", "a", "b", "a"]), t.to_numpy())
+    assert got.tolist() == [True, False, True, True, False]
+
+
+def test_active_at_unknown_overflow_is_never_discharging():
+    raw = m.merge_spells(_events([("a", "X", "2024-03-01 10:00", "2024-03-01 11:00")]), 0.0)
+    t = pd.to_datetime(["2024-03-01 10:30"], utc=True).to_numpy()
+    assert m.active_at(raw, np.array(["zz"]), t).tolist() == [False]
