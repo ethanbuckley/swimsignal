@@ -3323,13 +3323,31 @@ function compareTable(spots, day, meta = null) {
   return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
     + pin + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
     + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
-      + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}</th>`).join('')}</tr></thead><tbody>`
+      + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}`
+      // From comparing to planning without choosing the spot again (compareToPlan): not for a spot the planner cannot place.
+      + `${typeof canPlanHere === 'function' && canPlanHere(s) ? `<button type="button" class="linkbtn cmp-plan" data-compare-plan="${esc(s.id)}" aria-label="Plan an outing at ${esc(s.name)}">Plan here</button>` : ''}</th>`).join('')}</tr></thead><tbody>`
     + lab('cmp-days', `Pollution risk, next ${dates.length === 4 ? 'four' : 'five'} days`)
     + dates.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>` + days.map((d, j) => !d.same
         ? `<td${j ? '' : ' class="d0"'}${hd('cmp-days', j)}><span class="day">${dateLabel(iso)}</span>${cell(d.days[i])}</td>`
         : i ? '' : `<td class="same" rowspan="${dates.length}"${hd('cmp-days', j)}>${cell(d.days[0])}. The same on every day.</td>`).join('') + '</tr>').join('')
     + facts[0].map(([label], k) => lab(`cmp-r${k}`, label) + `<tr>${facts.map((f, j) => `<td${hd(`cmp-r${k}`, j)}>${f[k][1]}</td>`).join('')}</tr>`).join('')
     + '</tbody></table></div>';
+}
+// "Plan here" in a comparison's column: on Plan a swim, that spot becomes the outing's in the plan shown (its meeting
+// place, finish and a shared stamp go, as with any new spot: outing.js, outingChanged), and the outing opens; elsewhere
+// (Saved), the planner opens on it for the day compared, as "Plan an outing here" does (planHere).
+function compareToPlan(s, day) {
+  if (!s) return;
+  if (onPlanPage()) {
+    const next = outingChanged(PLAN, 'spot');
+    for (const k of Object.keys(PLAN)) if (!(k in next)) delete PLAN[k];
+    PLAN.spot = s.id; if (PLAN.backup === s.id) delete PLAN.backup;
+    if (typeof OUTING_OPEN !== 'undefined') OUTING_OPEN = true;
+    drawPlan();
+    const t = document.getElementById('outing'); if (t) { t.scrollIntoView({ block: 'start', ...MOTION() }); const h = t.querySelector('summary'); if (h) h.focus({ preventScroll: true }); }
+    return;
+  }
+  PLAN_NEW = true; openPlan(planFromSpot(s, planBase(), planDates().includes(day) ? day : null));
 }
 function drawComparison() {
   const box = document.getElementById('compare-result'), c = COMPARING; if (!box || !c) return;
@@ -3341,6 +3359,7 @@ function drawComparison() {
   document.getElementById('compare-status').textContent = spots.length < 2 ? 'Choose at least two different spots.'
     : `${spots.length} spots side by side.${wide ? ' Scroll sideways to see every column.' : ''}`;
   box.querySelectorAll('[data-compare-spot]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.compareSpot, true, true, c.day); }));
+  box.querySelectorAll('[data-compare-plan]').forEach(b => b.addEventListener('click', () => compareToPlan(DATA.spots.find(s => s.id === b.dataset.comparePlan), c.day)));
   comparePin();
 }
 // The pinned names (.compare-pin): on a phone, shown while the table's own heads are above the header and the
