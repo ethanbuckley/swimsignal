@@ -249,3 +249,14 @@ horizon.
    example how often a spill already running is still running six hours later. That is a description, not a
    forecast, and needs its own wording check.
 3. **Leave it.** The present wording already says "if it stops now".
+
+### Correction and diagnostics, 30 October 2026 (after the verdict; the verdict is unchanged)
+
+- **"The one firm product finding" above was wrong.** The page says "if it stops now", a stated scenario. Scoring B0
+  as a forecast that every spill stops at once is a deliberately weak baseline, and it does not measure how accurate
+  the page's clearing times are. The firm evidence is C1 against B1. How long the water takes to recover is a
+  separate question this test does not touch.
+- **The target joined events across pauses under an hour.** 6.9% of the 2025 issue hours fall in such a pause, when a
+  monitor would show "not discharging". On rows a monitor would show as discharging, C1 still gains 11.7% over B1
+  (10.7% with "monitor reports a discharge" as the label). Details, the calibration breakdown, the January-August
+  2026 records and a draft follow-up: `docs/SPILL-DURATION-DIAGNOSTICS-2026-11.md`.

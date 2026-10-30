@@ -3,6 +3,7 @@
     uv run python scripts/spill_duration_test.py describe   # 2024 only: how long spills run; nothing on 2025
     uv run python scripts/spill_duration_test.py check      # 2024 only: the whole pipeline, first half -> second half
     uv run python scripts/spill_duration_test.py run        # fit on 2024, score on 2025 (needs approval first)
+    uv run python scripts/spill_duration_test.py diagnose   # after the verdict: development diagnostics only
 
 Run with DIPCAST_ROOT pointing at a checkout that holds data/processed and the rain caches (data/cache/rain, data/cache/rain_nine).
 
@@ -201,15 +202,17 @@ def rain_sums(grid: dict, cell: np.ndarray, t: np.ndarray, spans: list[tuple[int
     return out
 
 
-def build_grid(sites: pd.DataFrame) -> dict:
-    rain = load_rain(cells_of(sites))
+def build_grid(sites: pd.DataFrame, tags=("2023", "2023dec", "2024", "2025"), end: str = "2026-01-02") -> dict:
+    """Hourly ERA5-Land rain for the sites' cells as running sums, from 2023-12-01 to `end`. The defaults are what
+    PR #459's run used; the calibration test (spill_duration_calibration_test.py) adds the 2026 tags."""
+    rain = load_rain(cells_of(sites), tags=tags)
     rain = rain.sort_values(["cell_lat", "cell_lon", "time"])
     rain = rain[~rain.duplicated(["cell_lat", "cell_lon", "time"], keep="last")]
     key = (np.round(rain["cell_lat"].to_numpy() * 10).astype(np.int64) * 100_000
            + np.round(rain["cell_lon"].to_numpy() * 10).astype(np.int64))
     keys = pd.Index(np.unique(key))
     t0 = pd.Timestamp("2023-12-01", tz="UTC")
-    n = int((pd.Timestamp("2026-01-02", tz="UTC") - t0) / pd.Timedelta(hours=1))
+    n = int((pd.Timestamp(end, tz="UTC") - t0) / pd.Timedelta(hours=1))
     mm = np.full((len(keys), n), np.nan, np.float32)
     hi = ((rain["time"] - t0) // pd.Timedelta(hours=1)).to_numpy()
     ok = (hi >= 0) & (hi < n)
@@ -352,6 +355,132 @@ def stage_run() -> None:
     score_and_write(preds, yte, te, cte)
 
 
+# ------------------------------------------------------------------ diagnose (after the verdict; development only)
+def active_at(raw: pd.DataFrame, site_id: np.ndarray, t: np.ndarray) -> np.ndarray:
+    """True where a raw event (overlaps joined, no gap rule) of that overflow runs at t: start <= t < end. This is what
+    a monitor reports, as against a spill joined across a short pause. raw: merge_spells(events, 0.0)."""
+    codes = pd.Index(np.unique(raw["site_id"].to_numpy()))
+    t0 = pd.Timestamp("2000-01-01", tz="UTC")
+    hrs = lambda x: (pd.DatetimeIndex(x) - t0).total_seconds().to_numpy() / H   # noqa: E731
+    big = 1e7
+    rc = codes.get_indexer(raw["site_id"].to_numpy())
+    o = np.lexsort((hrs(raw["start"]), rc))
+    ks = rc[o] * big + hrs(raw["start"])[o]
+    ke = rc[o] * big + hrs(raw["end"])[o]
+    qc = codes.get_indexer(site_id)
+    q = qc * big + hrs(t)
+    j = np.searchsorted(ks, q, side="right") - 1
+    ok = (qc >= 0) & (j >= 0)
+    jj = np.clip(j, 0, None)
+    return ok & (ks[jj] // big == qc) & (ke[jj] > q)
+
+
+def reliability(p: np.ndarray, y: np.ndarray, company: np.ndarray, model: str) -> pd.DataFrame:
+    """Per company (and all nine) and horizon: mean forecast, observed share, signed gap (forecast minus observed),
+    ECE, and the ten-bin table, so over- and under-forecasting can be told apart."""
+    out = []
+    for c in [*NINE, "all nine"]:
+        m = np.ones(len(y), bool) if c == "all nine" else company == c
+        for j, h in enumerate(HORIZONS):
+            pj, yj = p[m, j], y[m, j]
+            b = np.clip((pj * 10).astype(int), 0, 9)
+            for k in range(10):
+                mk = b == k
+                out.append({"model": model, "company": c, "horizon_h": h, "bin": k, "rows": int(mk.sum()),
+                            "mean_forecast": float(pj[mk].mean()) if mk.any() else None,
+                            "observed": float(yj[mk].mean()) if mk.any() else None})
+            out.append({"model": model, "company": c, "horizon_h": h, "bin": "all", "rows": int(m.sum()),
+                        "mean_forecast": float(pj.mean()), "observed": float(yj.mean()), "ece": ece(pj, yj)})
+    return pd.DataFrame(out)
+
+
+def stage_diagnose() -> None:
+    """After the verdict, development only (docs/SPILL-DURATION-DIAGNOSTICS-2026-11.md): reproduce C1 exactly, save its
+    2025 predictions, break its reliability down by over- and under-forecasting, and measure how much of the target
+    rests on joining events across short pauses. The verdict above the line in SPILL-DURATION-TEST is unchanged."""
+    out_dir = config.PROCESSED / "spill_duration"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stem = Path(__file__).resolve().parents[1] / "docs" / "SPILL-DURATION-DIAGNOSTICS-2026-11"
+    ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet")
+    ev = load_events(NINE)
+    sp, raw = merge_spells(ev, GAP_H), merge_spells(ev, 0.0)
+    sites = site_table(ar, ev)
+    grid = build_grid(sites)
+    tr, te = issue_rows(sp, *TRAIN), issue_rows(sp, *TEST)
+    def keep(rows):
+        k = pd.MultiIndex.from_arrays([sp["site_id"].to_numpy()[rows["spell"].to_numpy()], rows["t"].dt.year.to_numpy()])
+        return rows[k.isin(pd.MultiIndex.from_frame(sites[["site_id", "year"]]))].reset_index(drop=True)
+    tr, te = keep(tr), keep(te)
+    before = history_hours(sp)
+    Xtr, Xte = features(tr, sp, sites, grid, before), features(te, sp, sites, grid, before)
+    ytr, yte = labels(tr), labels(te)
+    ctr = sp["company"].to_numpy()[tr["spell"].to_numpy()]
+    cte = sp["company"].to_numpy()[te["spell"].to_numpy()]
+    step(f"rows: train {len(tr)}, test {len(te)}")
+
+    # 1. The target: issue hours inside a joined pause, and labels that differ between "in the spill" and "a monitor
+    # reports a discharge" at t + h.
+    def active_cols(rows):
+        sid = sp["site_id"].to_numpy()[rows["spell"].to_numpy()]
+        now = active_at(raw, sid, rows["t"].to_numpy())
+        later = np.column_stack([active_at(raw, sid, (rows["t"] + pd.Timedelta(hours=h)).to_numpy()) for h in HORIZONS])
+        return now, later.astype(np.float32)
+    now_tr, act_tr = active_cols(tr)
+    now_te, act_te = active_cols(te)
+    aud = []
+    for name, now, y, act, comp in (("2024", now_tr, ytr, act_tr, ctr), ("2025", now_te, yte, act_te, cte)):
+        for c in [*NINE, "all nine"]:
+            m = np.ones(len(y), bool) if c == "all nine" else comp == c
+            aud.append({"year": name, "company": c, "rows": int(m.sum()),
+                        "share_in_a_pause": float(1 - now[m].mean()),
+                        **{f"label_differs_{h}h": float((y[m, j] != act[m, j]).mean()) for j, h in enumerate(HORIZONS)},
+                        **{f"in_spill_{h}h": float(y[m, j].mean()) for j, h in enumerate(HORIZONS)},
+                        **{f"discharging_{h}h": float(act[m, j].mean()) for j, h in enumerate(HORIZONS)}})
+    pd.DataFrame(aud).to_csv(f"{stem}-target.csv", index=False)
+    step("target audit written")
+
+    # 2. C1 as run (same rows, settings and seed), its 2025 predictions saved, and B1's.
+    b1 = monotone(predict_empirical(empirical_survival(ctr, elapsed_bin(tr["elapsed_h"].to_numpy()), ytr),
+                                    cte, elapsed_bin(te["elapsed_h"].to_numpy())))
+    c1 = predict(fit(Xtr, ytr, C1), Xte, C1)
+    ib = float(((c1 - yte) ** 2).mean())
+    step(f"C1 reproduced: integrated Brier {ib:.4f} (the run: 0.1507)")
+    pd.DataFrame({"spell": te["spell"], "t": te["t"], "elapsed_h": te["elapsed_h"], "company": cte, "discharging_now": now_te,
+                  **{f"y_{h}h": yte[:, j] for j, h in enumerate(HORIZONS)},
+                  **{f"b1_{h}h": b1[:, j] for j, h in enumerate(HORIZONS)},
+                  **{f"c1_{h}h": c1[:, j] for j, h in enumerate(HORIZONS)}}).to_parquet(out_dir / "predictions_2025.parquet")
+    rel = pd.concat([reliability(b1, yte, cte, "B1"), reliability(c1, yte, cte, "C1")], ignore_index=True)
+    # Where the elapsed bins matter: C1's signed gap by elapsed bin, all nine.
+    eb = elapsed_bin(te["elapsed_h"].to_numpy())
+    byb = [{"model": n, "elapsed_bin": f"{ELAPSED_EDGES[b]}-{ELAPSED_EDGES[b + 1]}h", "horizon_h": h, "rows": int((eb == b).sum()),
+            "mean_forecast": float(p[eb == b, j].mean()), "observed": float(yte[eb == b, j].mean())}
+           for n, p in (("B1", b1), ("C1", c1)) for b in range(len(ELAPSED_EDGES) - 1) for j, h in enumerate(HORIZONS)]
+    rel.to_csv(f"{stem}-reliability.csv", index=False)
+    pd.DataFrame(byb).to_csv(f"{stem}-by-elapsed.csv", index=False)
+    step("reliability written")
+
+    # 3. Only rows a live monitor would show as discharging, on both labels. B1 and C1 refitted on the same kind of
+    # 2024 rows and label, so each version is trained on what it is scored on.
+    rs = []
+    for lab, ytr_l, yte_l in (("in the spill", ytr, yte), ("discharging", act_tr, act_te)):
+        mtr, mte = now_tr, now_te
+        b = monotone(predict_empirical(empirical_survival(ctr[mtr], elapsed_bin(tr["elapsed_h"].to_numpy()[mtr]), ytr_l[mtr]),
+                                       cte[mte], elapsed_bin(te["elapsed_h"].to_numpy()[mte])))
+        c = predict(fit(Xtr[mtr], ytr_l[mtr], C1), Xte[mte], C1)
+        yy = yte_l[mte]
+        for c_ in [*NINE, "all nine"]:
+            m = np.ones(len(yy), bool) if c_ == "all nine" else cte[mte] == c_
+            ibb, ibc = ((b[m] - yy[m]) ** 2).mean(), ((c[m] - yy[m]) ** 2).mean()
+            rs.append({"rows": "discharging at t", "label": lab, "company": c_, "n": int(m.sum()),
+                       "B1": float(ibb), "C1": float(ibc), "gain": float(1 - ibc / ibb),
+                       **{f"ece_c1_{h}h": ece(c[m, j], yy[m, j]) for j, h in enumerate(HORIZONS)},
+                       **{f"ece_b1_{h}h": ece(b[m, j], yy[m, j]) for j, h in enumerate(HORIZONS)}})
+        step(f"live-reproducible rows, label '{lab}' done")
+    pd.DataFrame(rs).to_csv(f"{stem}-live-rows.csv", index=False)
+    print(pd.DataFrame(aud).to_string(index=False))
+    print(pd.DataFrame(rs)[["label", "company", "n", "B1", "C1", "gain"]].to_string(index=False))
+
+
 def stage_check() -> None:
     """2024 only: build every input and fit both candidates on the first half of 2024, then score the second half,
     so the harness is known to run before the 2025 score. Writes nothing to docs; reads nothing from 2025."""
@@ -435,4 +564,4 @@ def score_and_write(preds: dict, y: np.ndarray, rows: pd.DataFrame, company: np.
 
 
 if __name__ == "__main__":
-    {"describe": stage_describe, "check": stage_check, "run": stage_run}[sys.argv[1]]()
+    {"describe": stage_describe, "check": stage_check, "run": stage_run, "diagnose": stage_diagnose}[sys.argv[1]]()

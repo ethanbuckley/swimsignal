@@ -1,0 +1,19 @@
+{
+  "rows_hash_matches_gate": true,
+  "spills": 536992,
+  "spills_in_two_or_more_quarters": 2987,
+  "share_of_spills": 0.005562466479947559,
+  "rows": 4038032,
+  "rows_in_split_spills": 82150,
+  "share_of_rows": 0.02034406859579122,
+  "share_of_rows_by_fold": {
+    "0": 0.0023,
+    "1": 0.0145,
+    "2": 0.0606,
+    "3": 0.0441,
+    "4": 0.0512,
+    "5": 0.0014,
+    "6": 0.0001,
+    "7": 0.0
+  }
+}
