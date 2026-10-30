@@ -119,8 +119,13 @@ const overflows = s => (s.upstream_summary || {}).overflows || 0;
 const tooFar = s => (s.upstream_summary || {}).too_far || 0;
 const allUpstream = s => overflows(s) + tooFar(s);
 const tooFarSaid = s => { const n = tooFar(s), o = (s.upstream_summary || {}).too_far_overflow;
-  return !n ? '' : n > 1 ? `${n} more overflows are upstream, but too little of their water would reach here to count.`
-    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but too little of its water would reach here to count.`; };
+  return !n ? '' : n > 1 ? `${n} more overflows are upstream, but their model weight here is too small to count.`
+    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but its model weight here is too small to count.`; };
+// An overflow's weight in words, the one definition the pages give (the overflows tile, the organisers' table): a
+// modelled relative contribution weight from the transport assumptions (transport.py: travel time and die-off, and
+// dilution), not a measured concentration and not a calibrated chance. Until 30 Oct 2026 the pages called it "reach",
+// "the share of a spill's bacteria the model expects to arrive" or "the chance a spill there affects the spot".
+const WEIGHT_SAID = 'Weight: a modelled relative contribution weight, from 0 to 1 and shown as a percentage, for how much a spill there counts here. It comes from the model\'s assumptions on travel time and die-off on the way, and dilution by the river. It is neither a measured bacterial concentration nor a calibrated chance of contamination.';
 const classOf = s => s.classification && s.classification.class ? String(s.classification.class).toLowerCase() : null;
 const advisedAgainst = s => classOf(s) === 'poor';
 const daily = s => !s.error && overflows(s) > 0;   // a forecast that changes from day to day
@@ -822,7 +827,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,

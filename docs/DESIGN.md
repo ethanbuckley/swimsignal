@@ -236,8 +236,12 @@ those sizes; they were taken off to keep the rule simple.)
     "It is a score, not a probability." Not "spill risk", "overflow exposure" or "the modelled
     chance", and not called a probability. Until 11 October 2026 the definition said "how likely
     sewage from upstream is to reach the spot", which read as a probability beside the Method
-    page's "not a probability". An overflow's reach is likewise a weight, the share of a spill's
-    bacteria the model expects to arrive, not "the chance a spill affects this spot".
+    page's "not a probability". An overflow's **weight** (30 October 2026; until then "reach", "the share of
+    a spill's bacteria the model expects to arrive") is a modelled relative contribution weight, from the
+    transport assumptions (travel time and die-off, and dilution): neither a measured bacterial
+    concentration nor a calibrated chance of contamination. Pages say "22% weight" or "model weight", define it
+    once in `levels.js` (`WEIGHT_SAID`), and never call it reach or a chance. File and column names
+    (`weight`, `reach` in the organisers' CSV) are kept.
     Its tile and rows keep their labels, "Sewage spills" and "Sewage spills upstream".
   - The E. coli figure is the **E. coli estimate** in prose, and its tile is **Water quality**.
     Not "E. coli chance", "E. coli risk", "E. coli > 900" or "water-quality estimate".

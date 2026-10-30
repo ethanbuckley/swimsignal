@@ -33,8 +33,11 @@ CREDITS = ("Storm overflow annual returns: © Environment Agency copyright and/o
            "Overflow Hub, CC BY 4.0. River network: contains OS data © Crown copyright and database right "
            "2026 (OS Open Rivers). Traced and weighted by SwimSignal (swimsignal.co.uk), whose method is at "
            "swimsignal.co.uk/methods.html.")
-REACH_NOTE = ("Reach is the share of a spill's bacteria SwimSignal's model expects to arrive here, after die-off "
-              "on the way and dilution by the river. Weighting by it counts an hour of spilling just upstream for "
+# The weight in words, as the app says it (levels.js, WEIGHT_SAID): until 30 Oct 2026 this note called it reach,
+# "the share of a spill's bacteria SwimSignal's model expects to arrive here". The name REACH_NOTE is kept.
+REACH_NOTE = ("Weight is SwimSignal's modelled relative contribution weight for each overflow here, from its assumptions on "
+              "travel time and die-off on the way and dilution by the river: neither a measured bacterial concentration nor a "
+              "calibrated chance of contamination. Weighting by it counts an hour of spilling just upstream for "
               "far more than one 40 km away. Spills are counted by the Environment Agency's 12/24 method: any "
               "discharge in the first 12 hours counts as one spill, then one more for each 24 hours with any discharge.")
 
@@ -193,11 +196,11 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
                    f"{'away, across the lake' if s['nearest_in_lake'] else 'upstream'}.</li></ul></aside>")
         out.append("<h2>Each year, all overflows upstream</h2>")
         out.append(_table([("Year", False), ("Overflows with a return", True), ("Spills", True), ("Spill hours", True),
-                           ("Spill hours, weighted by reach", True)],
+                           ("Spill hours, weighted by model weight", True)],
                           [[str(r["year"]), str(r["with_return"]), f"{r['spills']:,}", fmt(r["hours"]), fmt(r["reach_hours"])]
                            for r in years], "yearly totals"))
-        out.append(f'<p class="small muted">{escape(REACH_NOTE)} <a href="methods.html#how">How reach is worked out</a>.</p>')
-        out.append(f"<h2>The overflows, by reach</h2><p>All {s['n']}, the one whose spills matter most here first. "
+        out.append(f'<p class="small muted">{escape(REACH_NOTE)} <a href="methods.html#weight">How the weight is worked out</a>.</p>')
+        out.append(f"<h2>The overflows, by model weight</h2><p>All {s['n']}, the one whose spills matter most here first. "
                    "km away is along the river network, through any lake on the way, or across the lake for one that drains "
                    "into the same lake. Hours away is how long sewage takes to arrive, at the model's river speed, and "
                    "across a lake at its slower lake speed.</p>")
@@ -212,7 +215,7 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
                  fmt(r.get("spills_2023")), fmt(r.get("spills_2024")), fmt(r.get("spills_2025")),
                  fmt(r.get("spill_hours_2025")), uptime(r.get("edm_operational_pct_2025"))] for (_, r), on_lake in zip(t.iterrows(), lake.to_numpy())]
         out.append(_table([("Overflow and id", False), ("Company", False), ("km away", True), ("Hours away", True),
-                           ("Reach", True), ("Spills 2023", True), ("Spills 2024", True), ("Spills 2025", True),
+                           ("Weight", True), ("Spills 2023", True), ("Spills 2024", True), ("Spills 2025", True),
                            ("Spill hours 2025", True), ("Monitor uptime 2025", True)], rows, "overflows"))
         out.append('<p class="small muted">A dash: no annual return for that overflow in that year.</p>')
     out.append(f'<h2>Sources and credits</h2><p>{escape(CREDITS)} <a href="terms.html#data">All credits and licences</a>.</p>')

@@ -2599,14 +2599,14 @@ const share = p => p > 0 && p < 0.005 ? 'under 1%' : Math.round(p * 100) + '%';
 // An overflow's chance of a spill on day j of the forecast. Forecasts built before 30 Sep 2026
 // carry today and tomorrow only.
 const spillOn = (c, j) => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spill_today : j === 1 ? c.p_spill_tomorrow : undefined;
-// The overflows most likely to affect the spot that day: chance of a spill times its reach. Each dot is
+// The overflows that count most that day: chance of a spill times its model weight. Each dot is
 // its live status as the overflows tile draws it (drawnStatus: a stale "not discharging" in the grey of
 // no current reading), with the status in words for a screen reader.
 function dayOverflows(d, j) {
   const top = (d.contributors || []).map(c => [c, spillOn(c, j)]).filter(([c, p]) => !nil(p) && c.weight * p >= 0.001)
     .sort((a, b) => b[0].weight * b[1] - a[0].weight * a[1]).slice(0, 3);
   return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><span><span class="sr">${esc(statusText(c.status, c))}: </span><b>${esc(overflowNames(c).plain)}</b>${ownName(c)}: `
-    + `spill chance ${share(p)}, reach ${share(c.weight)}</span></li>`).join('')}</ul>` : '';
+    + `spill chance ${share(p)}, weight ${share(c.weight)}</span></li>`).join('')}</ul>` : '';
 }
 // How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json).
 // The figures stay in view; how they were measured, and that the rain can change, are folded.
@@ -4445,20 +4445,20 @@ function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
     L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
-      .bindTooltip(`${esc(nm.plain)}: ${far} km, reach ${reach}%`).addTo(contribLayer);
+      .bindTooltip(`${esc(nm.plain)}: ${far} km, weight ${reach}%`).addTo(contribLayer);
     return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}${dryWeatherNote(c)}</div>`
-      + `<div class="ov-reach"><b>${reach}%<small> reach</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too little reaches here to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
+      + `<div class="ov-reach"><b>${reach}%<small> weight</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too small to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
   // Folded whole, as the day-by-day numbers are: "Where the risk comes from" and the map say it in brief.
   // Opened, what the figures mean sits under the rows, since the corner's fold would sit on the fold's own.
   return `<details class="tile fold" id="overflows"><summary><span class="t-lab">${ICON.spills}<span>Overflows that matter most</span></span></summary><ul class="ovs" id="contrib">${rows}</ul>`
     + (n > SHOW ? `<button type="button" class="btn quiet" id="more-contrib" aria-controls="contrib" aria-expanded="false">Show all ${n}</button>` : '')
     + (PAGE_ID.test(d.id) ? `<p class="t-say"><a href="spot/${d.id}/profile/">Overflow history, 2021 to 2025</a></p>` : '')   // spot/<id>/profile/ (build_site.write_profiles)
     + `<p class="sub">${total > n ? `The ${n} of the ${total} overflows upstream that matter most this week` : `The ${n === 1 ? 'overflow' : `${n} overflows`} upstream`}, most first: `
-    + 'one matters more the more of a spill would reach here, the likelier it is to spill this week, and if it is discharging now. '
+    + 'one matters more the larger its model weight here, the likelier it is to spill this week, and if it is discharging now. '
     + 'Each with its live status and today\'s modelled chance of a spill. '
-    + 'Reach: the share of a spill\'s bacteria the model expects to arrive here, after die-off over the travel time and dilution by the size of the river network upstream. An estimate, not a measured chance.</p></details>';
+    + `${WEIGHT_SAID}</p></details>`;   // levels.js
 }
 // "Nearby": up to three other spots within 40 km, nearest first, each opening on the day shown (DAY,
 // or else the headline). At a spot that is moderate or worse that day, or rated poor, it becomes
@@ -4634,7 +4634,7 @@ function render(d) {
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
   if (total) h += `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
-    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means more of a spill would reach here.</p>`
+    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
     + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
   // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column:

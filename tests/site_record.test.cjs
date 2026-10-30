@@ -66,8 +66,8 @@ test('the level and why follow levels.js, with the overflows that matter most, h
   assert.equal(L.dayHeadline(ilkley, DAYS[1]), 'High risk: rated poor');
   assert.ok(h.includes('<p class="r-level high">High risk</p><p class="r-why">Rated poor</p>'));
   assert.ok(h.includes('Low risk: about 1 of the 15 overflows upstream is expected to spill. Sewage spill risk <b>8</b> of 100'));
-  assert.match(h, /<b>Rivadale View storm overflow<\/b> \(Rivadale View\/CSO\): 0\.5\skm upstream, sewage arrives in under an hour\. Spill chance 2%, reach 98%\./);
-  assert.match(h, /<b>Burnsall CAR PK storm overflow<\/b> \(Burnsall CAR PK\/CSO\): 21\.8\skm upstream, sewage arrives in about 12 h\. Spill chance 7%, reach 21%\./);
+  assert.match(h, /<b>Rivadale View storm overflow<\/b> \(Rivadale View\/CSO\): 0\.5\skm upstream, sewage arrives in under an hour\. Spill chance 2%, model weight 98%\./);
+  assert.match(h, /<b>Burnsall CAR PK storm overflow<\/b> \(Burnsall CAR PK\/CSO\): 21\.8\skm upstream, sewage arrives in about 12 h\. Spill chance 7%, model weight 21%\./);
   assert.ok(h.includes('<dt>Discharging when the forecast was issued</dt><dd>0 of 15 discharging. All 15 report live.</dd>'));
   assert.ok(h.includes('6 mm in the 48 hours to midday on Monday, 5 October 2026.'));
   assert.ok(h.includes('1 day. In tests on past years, spill forecasts this far ahead were about 85% as good as same-day ones'));

@@ -150,7 +150,7 @@ test('an overflow discharging now says since when, not a chance of a spill, and 
   { L: { circleMarker: () => ({ bindTooltip: () => ({ addTo: () => {} }) }) }, contribLayer: {} });
   const row = text(vm.runInContext('overflowTile', ctx)(greenholme, 25));
   assert.match(row, /YWS02298 Yorkshire Water · discharging since Tue 6 Oct, 11:46, for over 5 days: a spill this long may be a monitor fault · 4\.4 km upstream, about 2 h away/);
-  assert.match(row, /75% reach discharging now/);
+  assert.match(row, /75% weight discharging now/);
   assert.doesNotMatch(row, /spill 1% today/);
   // Under two days: since when, and nothing about a fault.
   const fresh = { ...YWS, latest_event_start: '2026-10-11T15:00:00+00:00' };

@@ -185,16 +185,53 @@ spots:
 - Right now is not known, so the compact headline is "Live status from 1 of 13 overflows upstream: low
   risk forecast".
 
+## 3. An overflow's weight, in words (second review round, 30 Oct 2026)
+
+Every page now calls an overflow's weight a **modelled relative contribution weight**. It comes from the
+transport assumptions: travel time and die-off on the way, and dilution. It is neither a measured
+bacterial concentration nor a calibrated chance of contamination.
+
+- **Definition.** Given once, in `levels.js` (`WEIGHT_SAID`), and shown on the overflows tile and the
+  organisers' table. `profile.py` and `scripts/site_profile.py` carry the same words in Python.
+- **Labels.** "22% weight" and "model weight" replace "reach" and "% reach".
+- **Methods page.** methods.html now says the index combines the weights "as if they were probabilities, is
+  an approximation" (the formula in `transport.combine_daily` is 1 − Π(1 − chance × weight)).
+- **Unchanged.** Numbers, thresholds, ordering, file and column names (`weight`, and the organisers' CSV
+  column `reach`, whose description now says the column keeps its name) and the model files. The model
+  code's own comments (`src/dipcast/model/transport.py`, `forecast.py`) still say "0% reach" and that the
+  product "is treated as the probability", because those files are out of bounds here.
+
+### Checked on the build's own writers, with cached records (no forecast, no network)
+
+`scratchpad/evmap-proto/real_writers.py` reads the main checkout's caches. It calls:
+- `RiverNetwork.load` on `data/processed/river_network.pkl`;
+- `overflows.build_overflows` on `data/processed/live_latest.parquet`, which is from 12 Sep 2026 15:13 UTC;
+- for each spot, `trace.spot_trace_parts`, `transport.upstream_overflows` and `with_data_states`, as
+  `forecast_point` does;
+- the real `build_site.write_traces` (with cuts) and `build_site.write_upstream`.
+
+`readback.cjs` then reads the files back through `evmap.js`, and the page was rendered at 375 px from them.
+
+| Spot | `cut_ends` written | Bars drawn | Per-overflow statuses (12 Sep cache) |
+| --- | --- | --- | --- |
+| Cromwheel | `[]` | 0 (with the note "Every river traced reaches its source within 60 km") | 15 `live` + 1 `offline`. For example, YWS00176 status 0, `feed_updated_at` 2026-09-12T14:40:27+00:00, `latest_event_end` 2026-03-31T04:18:39+00:00 |
+| Symonds Yat | 6, e.g. [52.02173, -2.67037] | 6 | 14 `no_feed`, `feed_updated_at` null |
+| Sandy Lane | 8, e.g. [53.12818, -3.22566] | 8 | 12 `no_feed` + 1 `live` (UUP00125, 2026-09-12T14:56:44+00:00) |
+
+Read back an hour after the cached poll, the statuses come out as current. Read back at 30 Oct 18:49, the
+same statuses are shown as over 6 hours old.
+
+The gauge position could not be checked on real records. `river_state.station_lat/lon` come from the EA
+station that `flows.level_lookup` matches. That lookup needs `data/cache/ea_level_stations.json` and the
+EA's latest-readings request, and neither is in the local caches. A build run, or that cache file, would
+supply it.
+
 ## Not done
 
 - **Upstream statuses are not yet published.** The live files predate this change, so until the next build
-  Cromwheel's 6 overflows outside the ten show "status not in this update's file". The tests use synthetic
-  rows for the new fields.
-- **Station positions are not published yet either**, so the screenshots show the gauge in words only. The
-  drawing of it is tested with given coordinates.
-- **`data.html` still calls `weight` "Reach, 0 to 1: the chance a spill there affects the spot".** That is
-  the wording the review objects to on the map. Changing it needs agreement on what the public data page
-  should say, so I left it.
+  Cromwheel's 6 overflows outside the ten show "status not in this update's file".
+- **Station positions are not published yet either**, so the gauge is shown in words only. Drawing it is
+  tested with given coordinates.
 - **The colour of a list row** still follows the level, so "Live sewage spill status unavailable: low risk
   forecast" shows in the low-risk green.
 - **`last_status`** (a spill running when a company's feed last answered) is in the ten listed overflows

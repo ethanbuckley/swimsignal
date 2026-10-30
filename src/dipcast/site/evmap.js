@@ -103,7 +103,7 @@ function evmapOverflow(o, c, d, nowMs) {
   const lately = x.latest_event_end && nowMs - evmapMs(x.latest_event_end) < 7 * 864e5 ? ` Its last reported spill ended ${E.evidenceSince(x.latest_event_end)}.` : '';
   let at = x.feed_updated_at || null, say, src = feed;
   if (bare) { say = 'Counted by the forecast; this page could not load its details, so its status is not shown.'; src = "SwimSignal's trace"; at = null; }
-  else if (mark === 'far') { say = 'Upstream, but too little of its water would reach here to count.'; src = returns; at = null; }
+  else if (mark === 'far') { say = 'Upstream, but its model weight here is too small to count.'; src = returns; at = null; }
   else if (mark === 'nofeed') {
     const none = x.data_state === 'no_feed' || ((d.contributors || []).find(k => k.company === x.company) || {}).data_state === 'no_feed';
     say = `No live status: ${none ? `${co} has no live feed SwimSignal reads` : x.has_live === false && !x.data_state ? 'it is not in any live feed SwimSignal reads' : `it is not in ${evmapOwn(co)} live feed`}. `
@@ -250,7 +250,7 @@ const EVMAP_KEY = {
   dark: 'in a live feed, no current status',
   unheld: 'status not in this update\'s file',
   nofeed: 'not in any live feed: no status',
-  far: 'too far to count',
+  far: 'model weight too small to count',
 };
 const evmapSwatch = mark => `<svg class="em-sw" viewBox="0 0 22 18" width="22" height="18" aria-hidden="true">${
   mark === 'river' ? '<path d="M1 12C6 4 12 16 21 6" class="em-river"/>'

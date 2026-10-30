@@ -34,7 +34,7 @@ function scoresWords(s, g) {
   const rules = '<a href="verification.html#live-scoring">scoring rules</a>';
   const more = `An overflow-day is one overflow on one day. Each spill counts once for every forecast made for it, from four days ahead to that morning, as on the Accuracy page. `
     + `A warning is a spill chance of ${Math.round(100 * (g.warn_at ?? 0.4))}% or more at the overflow: where a spot right beside it reads High risk. `
-    + `A share is given from ${min} spill days. Each overflow counts the same, however much of a spill would reach here. `
+    + `A share is given from ${min} spill days. Each overflow counts the same, whatever its model weight here. `
     + `An overflow with no live feed, or with no day that passed the ${rules}, cannot be scored.`;
   if (!K) return { more, say: [M === 1
     ? `The overflow upstream has not been scored yet. It has no live feed, or no day that passed the ${rules}.`

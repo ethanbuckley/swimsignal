@@ -80,7 +80,7 @@ const AnyPoint = (() => {
   }
   // transport.risk_label: from the score the page shows, the 3 dp risk times 100, rounded.
   const riskLabel = r => { const v = Math.round(r3(r) * 100); return v < 15 ? 'low' : v < 40 ? 'moderate' : v < 70 ? 'high' : 'very high'; };
-  const COUNT_WEIGHT = 0.005;   // transport.COUNT_WEIGHT: a weight under it shows as 0% reach and is not counted
+  const COUNT_WEIGHT = 0.005;   // transport.COUNT_WEIGHT: a weight under it shows as "0% weight" and is not counted
   const r3 = x => Math.round(x * 1000) / 1000, r1 = x => Math.round(x * 10) / 10;
 
   // WFD lakes crossed on the way (transport.upstream_overflows, lake path "lake"): k = flat triples

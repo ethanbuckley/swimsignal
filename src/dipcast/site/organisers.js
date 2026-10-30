@@ -57,8 +57,8 @@ const Organisers = (() => {
   const r5 = x => Math.round(x * 20) * 5 + '%';
   const howSure = (k, j, water) => `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
     + (water ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '.';
-  // An overflow's chance of a spill on day j, and the three most likely to affect the spot that day
-  // (chance times reach), as index.html's dayOverflows() picks them.
+  // An overflow's chance of a spill on day j, and the three that count most that day (chance times
+  // model weight), as index.html's dayOverflows() picks them.
   const spillOn = (c, j) => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spill_today : j === 1 ? c.p_spill_tomorrow : undefined;
   const topOn = (s, j) => (s.contributors || []).map(c => [c, spillOn(c, j)]).filter(([c, p]) => !nil(p) && c.weight * p >= 0.001)
     .sort((a, b) => b[0].weight * b[1] - a[0].weight * a[1]).slice(0, 3);
@@ -96,7 +96,7 @@ const Organisers = (() => {
       if (nil(x.risk)) rows.push(row('Sewage spills upstream', 'The rainfall forecast for this day has not arrived, so there is no figure.'));
       else { const i = x.risk * 100, top = topOn(s, w.j);
         rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
-          + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
+          + (top.length ? ` Counting most that day: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, weight ${pct(c.weight)})`).join('; ')}.` : ''))); }
       // What the overflows upstream are doing at the issue time, whatever day is picked: a release can change things
       // quickly, and its water takes hours to days to arrive (30 Oct 2026, from an event organiser's comment). The ones
       // not reporting are said as unknown, never as dry; the forecast's own issue time is under the rows.
@@ -256,17 +256,17 @@ const Organisers = (() => {
       : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${all} could not be loaded. Try again later.</p>`;
     const cell = (l, v, cls = '') => `<td${cls ? ` class="${cls}"` : ''} data-l="${l}">${v}</td>`;
     h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
-      + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
+      + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Weight</th>'
       + '<th scope="col" class="num">Spills a year</th><th scope="col" class="num">Hours spilling</th><th scope="col">Live feed</th></tr></thead><tbody>'
       + list.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
         + cell('Distance', `${num(o.km, 1)} km${o.in_lake ? ' across the lake' : ''}`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
-        + cell('Reach', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
+        + cell('Weight', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
         + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
         + cell('Live feed', o.live ? 'Yes' : 'No') + '</tr>').join('') + '</tbody></table></div>';
     if (PAGE_ID.test(s.id)) h += `<p><a href="spot/${esc(s.id)}/profile/">Overflow history, 2021 to 2025</a>: each overflow's spills and spill hours a year.</p>`;   // build_site.write_profiles
     return h + '<p class="small muted"><b>Distance</b>: upstream along the river network, through any lake on the way; "across the lake" for one that drains into the same lake. '
       + '<b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed, and across a lake at its slower lake speed. '
-      + '<b>Reach</b>: the share of a spill\'s bacteria the model expects to arrive here, after die-off over the travel time and dilution by the size of the river network upstream. An estimate, not a measured chance. '
+      + `<b>Weight</b>: ${R.WEIGHT_SAID.replace(/^Weight: /, '')} `
       + '<b>Spills a year</b>: its long-term average, from the Environment Agency\'s annual returns. <b>Hours spilling</b>: the total in its latest annual return. '
       + '<b>Live feed</b>: whether its water company reports its status as it happens.</p>';
   }
@@ -287,7 +287,9 @@ const Organisers = (() => {
       'Columns: site_id and site_name, the water company\'s id and name for the overflow; plain_name, SwimSignal\'s plain words for that name;',
       'company; receiving_watercourse, as the company names it;',
       'km_upstream, along the river network and through any lake, or across the lake for one in the same lake;',
-      'travel_hours, at the model\'s river speed and its slower lake speed; reach, 0 to 1, the chance a spill there affects the spot;',
+      'travel_hours, at the model\'s river speed and its slower lake speed; reach (the column keeps its name), 0 to 1, the model\'s relative',
+      'contribution weight for the spot, from its travel time, die-off and dilution assumptions: neither a measured bacterial concentration',
+      'nor a calibrated chance of contamination;',
       'spills_a_year, its long-term average from the Environment Agency\'s annual returns; spill_hours_latest_return, the hours it spilled in its',
       'latest annual return; live_feed, 1 if its water company reports its status live; lat, lon.',
       'Lines that start with # are notes: skip them when reading (pandas: comment=\'#\'; R: comment.char=\'#\').',
