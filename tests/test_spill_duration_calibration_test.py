@@ -71,3 +71,12 @@ def test_poll_elapsed_breaks_at_a_pause_over_an_hour_mark_and_ignores_one_betwee
     e = m.poll_elapsed(idx, np.array(["a", "b"]), t)
     assert np.isclose(e[0], 1 + 50 / 60)          # a: only back to 11:10, the true spill began 08:20
     assert np.isclose(e[1], 4 + 40 / 60)          # b: the 10:00 and 11:00 polls both saw a discharge, back to 08:20
+
+
+def test_fold_overlap_counts_spills_and_rows_on_both_sides_of_a_quarter_boundary():
+    spell = np.array([0, 0, 0, 1, 1, 2])
+    fold = np.array([0, 0, 1, 1, 1, 2])          # spell 0 crosses from quarter 0 into quarter 1
+    o = m.fold_overlap(spell, fold)
+    assert o["spills"] == 3 and o["spills_in_two_or_more_quarters"] == 1
+    assert o["rows_in_split_spills"] == 3 and np.isclose(o["share_of_rows"], 0.5)
+    assert o["share_of_rows_by_fold"] == {0: 1.0, 1: 0.3333, 2: 0.0}

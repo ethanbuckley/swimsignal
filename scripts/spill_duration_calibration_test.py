@@ -216,6 +216,42 @@ def stage_gate() -> None:
     print(json.dumps(info, indent=2))
 
 
+def fold_overlap(spell: np.ndarray, fold: np.ndarray) -> dict:
+    """How much of the out-of-fold design is shared across folds: spills whose rows fall in more than one quarter, and
+    the rows of those spills. A held-out row whose spill also has rows in a training quarter was predicted by a model
+    that saw part of the same spill."""
+    d = pd.DataFrame({"spell": spell, "fold": fold})
+    n_folds = d.groupby("spell")["fold"].nunique()
+    split = n_folds.index[n_folds > 1]
+    in_split = d["spell"].isin(split).to_numpy()
+    by_fold = d.assign(split=in_split).groupby("fold")["split"].agg(["size", "mean"])
+    return {"spills": int(len(n_folds)), "spills_in_two_or_more_quarters": int(len(split)),
+            "share_of_spills": float(len(split) / max(len(n_folds), 1)),
+            "rows": int(len(d)), "rows_in_split_spills": int(in_split.sum()), "share_of_rows": float(in_split.mean()),
+            "share_of_rows_by_fold": {int(k): round(float(v), 4) for k, v in by_fold["mean"].items()}}
+
+
+def stage_overlap() -> None:
+    """2024-25 only, no model: the gate's training rows, and how many sit in spills split across quarters
+    (review of 30 October 2026). Reported as a limitation of the gate; the frozen conditions are unchanged."""
+    ev = load_events(NINE)
+    ev = ev[ev["event_start"] < pd.Timestamp("2026-01-01", tz="UTC")]
+    ar = pd.read_parquet(config.PROCESSED / "annual_returns.parquet")
+    sp, raw = base.merge_spells(ev, base.GAP_H), base.merge_spells(ev, 0.0)
+    sites = site_table(ar, ev, (2024, 2025))
+    rows = base.issue_rows(sp, *TRAIN)
+    k = pd.MultiIndex.from_arrays([sp["site_id"].to_numpy()[rows["spell"].to_numpy()], rows["t"].dt.year.to_numpy()])
+    rows = rows[k.isin(pd.MultiIndex.from_frame(sites[["site_id", "year"]]))].reset_index(drop=True)
+    run, _ = RawIndex(raw).lookup(sp["site_id"].to_numpy()[rows["spell"].to_numpy()], RawIndex._h(rows["t"]))
+    rows = rows[run].reset_index(drop=True)
+    y = base.labels(rows)
+    info = {"rows_hash_matches_gate": rows_hash(rows, y) == json.loads(Path(f"{DOCS}-gate.json").read_text())["rows_hash"],
+            **fold_overlap(rows["spell"].to_numpy(), quarter_fold(rows["t"]))}
+    with open(f"{DOCS}-fold-overlap.json", "w") as f:
+        json.dump(info, f, indent=2)
+    print(json.dumps(info, indent=2))
+
+
 # ------------------------------------------------------------------ run (2026)
 def stage_run() -> None:
     with open(OUT / "calibration_fits.pkl", "rb") as f:
@@ -307,4 +343,4 @@ def score(preds: dict, y: np.ndarray, act: np.ndarray, rows: pd.DataFrame, compa
 
 
 if __name__ == "__main__":
-    {"gate": stage_gate, "run": stage_run}[sys.argv[1]]()
+    {"gate": stage_gate, "run": stage_run, "overlap": stage_overlap}[sys.argv[1]]()

@@ -163,3 +163,43 @@ forecast. The gate needed 0.03. By the statement, the 2026 file is not downloade
   might address. Testing that now would mean choosing a new gate after seeing these numbers, so it needs a new reason
   and a new statement, and should not reuse this gate's figures to set its rule.
 - The January to August 2026 duration figures are still unseen. They remain a fresh period for any later attempt.
+
+### Stage reached, runtime and audit files (added after a review of 30 October 2026; nothing above changed)
+
+**Stage reached:** the gate, completed and failed. A status review written while the gate was at fold 3 said the
+download and the one 2026 score could proceed as written. As written, they follow only a passed gate, so neither was
+done. No 2026 event file exists on this machine; the scratch root prepared for it is empty.
+
+**Runtime.** The gate's Python process ran from about 19:03 to 19:58 UTC and exited 0. Fold times from its log:
+fold 0 161 s, fold 1 168 s, fold 2 594 s, fold 3 1,205 s, folds 4 to 7 144 to 170 s each, then the final fit.
+*Inferred:* folds 2 and 3 were slowed by other load on the machine; nothing failed. **One real fault, in the waiting,
+not the run:** four shells waiting for the gate used `pgrep -f` with a pattern that their own command lines matched,
+so they would never have ended. They were found after the gate had exited (no `spill_duration` Python process left)
+and stopped by PID (74920, 76361, 76563, 77834). The training process was never signalled.
+
+**Spills split across quarter folds** (`overlap` step, 2024-25 events only, no model; `-fold-overlap.json`). The
+folds assign rows by issue time, so a spill running over a quarter boundary has rows on both sides: a held-out row
+can come from a spill whose other hours were in training. On the gate's exact rows (the row hash matches):
+
+| | Count | Share |
+|---|---|---|
+| Spills with rows in two or more quarters | 2,987 of 536,992 | 0.56% |
+| Rows in those spills | 82,150 of 4,038,032 | 2.0% |
+| By held-out quarter | from 0.0% (Q4 2025) to 6.1% (Q3 2024) | |
+
+This is a limitation of the gate. *Inferred:* a model that saw part of a spill should predict its other hours a
+little better, so the out-of-fold forecasts may be slightly more accurate than truly held-out ones. Whether it moved
+the gate's 0.027 is not measured: that would need refitting with folds grouped by spill, which would be rerunning
+the gate after a fail, and is not done. Nothing about the verdict changes. The independent test would have been 2026.
+
+**Kept for audit:**
+- `-gate-reliability.csv` (committed): mean forecast and observed share per company, horizon and ten-bin, so every
+  signed gap above can be recomputed. `-gate.json`, `-fold-overlap.json` (committed).
+- `data/processed/spill_duration/calibration_fits.pkl` in the main checkout, not committed (6.0 MB, SHA-256
+  `79ebf550b199403b62c340dba976d2ab8ff4f3fec937f1270443141f81319317`): the final C1, the 45 calibrators, B1 and the
+  gate's figures. Unused.
+- `data/processed/spill_duration/predictions_2025.parquet`, not committed (76.5 MB, SHA-256
+  `86ff3447801659fee0b17f8f738a671ff242236e9b8178b203feb628af05ae74`): PR #461's 2025 predictions with labels.
+- **Not kept:** the gate's row-level out-of-fold forecasts. The gate saved only their summaries. They can be
+  regenerated exactly (fixed seeds, the row hash in `-gate.json`) in about 25 minutes if an audit needs them; doing so
+  would not change the verdict.
