@@ -4871,12 +4871,36 @@ function reload() {
 // Not while something being written would be lost (a review: data-keep-page).
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - LOADED > 30 * 60 * 1000
   && !document.querySelector('[data-keep-page]')) reload(); });
+// Drafts live only in this page's memory, keyed by spot and form; a full reload or tab close
+// clears them. Photos are not retained and must be selected again. Nothing is submitted.
+const DRAFTS = new Map();
+const draftKey = (form, spot) => `${spot}:${form.id}`;
+const draftFields = form => [...form.querySelectorAll('textarea, input:not([type=file]), select')]
+  .filter(el => el.name !== 'website' && el.name !== 'consent');
+function draftTrack(form, spot) {
+  const key = draftKey(form, spot), fields = draftFields(form), saved = DRAFTS.get(key);
+  const restored = saved && saved.fields.length === fields.length;
+  if (restored) {
+    fields.forEach((el, i) => { const v = saved.fields[i]; if (el.type === 'checkbox' || el.type === 'radio') el.checked = v.checked; else el.value = v.value; });
+    fields.forEach(el => el.dispatchEvent(new Event('change', {bubbles: true})));
+  }
+  form.insertAdjacentHTML('afterbegin', `<p class="small muted" role="status">${restored ? `Draft restored.${saved.photos ? ' Please add photos again.' : ''} ` : ''}Unsent answers stay in this tab's memory until it is closed or reloaded. Photos must be added again after leaving the page.</p>`);
+  let photos = !!(saved && saved.photos);
+  const save = () => DRAFTS.set(key, {photos, fields: fields.map(el => ({value: el.value, checked: !!el.checked}))});
+  form.addEventListener('input', save);
+  form.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) photos = true; save(); }, true);
+  form.addEventListener('click', e => { if (e.target.closest('button[id$="-cancel"]')) DRAFTS.delete(key); }, true);
+}
+const draftForget = (form, spot) => DRAFTS.delete(draftKey(form, spot));
 // Words typed into a review, a visit note, a journal entry or an illness report (data-keep-page) are lost by
 // leaving, so the page asks first: the browser's own question for closing, reloading or another page, and
 // this one for the controls that change the view in the page (Back, the header, the bottom bar, another
 // spot). The browser's Back button is not asked about: a popstate cannot be held.
 const unsent = () => [...document.querySelectorAll('form[data-keep-page]')].some(f =>
-  [...f.querySelectorAll('textarea, input[type=text]')].some(e => e.value.trim() && e.value !== e.defaultValue));
+  [...f.querySelectorAll('textarea, input, select')].some(e => e.type === 'checkbox' || e.type === 'radio'
+    ? e.checked !== e.defaultChecked : e.tagName === 'SELECT'
+      ? e.value !== ((e.querySelector('option[selected]') || e.options[0]) || {}).value
+      : e.type !== 'file' && e.value !== e.defaultValue) || !!f.querySelector('.rv-previews img'));
 let leaving = false;   // asked once already: a link to another page is not asked about again on unload
 document.addEventListener('input', () => { leaving = false; });   // typing again after a move in the page asks again
 window.addEventListener('beforeunload', e => { if (!leaving && unsent()) { e.preventDefault(); e.returnValue = ''; } });
