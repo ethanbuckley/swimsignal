@@ -79,21 +79,64 @@ test('a step with nothing says so, a step a photo would help says there is none,
   assert.ok(u.includes('No photo yet of the path to the water, the place to get in or the place to get out.'));
   for (const q of A.ARRIVAL_ASKED) assert.ok(u.includes(q), q);
   assert.ok(u.includes("1 fact above is a swimmer's word that SwimSignal has not checked."));
-  assert.ok(u.includes('Nobody from SwimSignal has been here: every verified fact comes from a published page, not a visit.'));
+  assert.ok(u.includes('No on-site check is recorded for this guide: every verified fact comes from a published page.'));
+  assert.ok(!u.some(t => /Nobody/.test(t)));
+  const src = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/arrive.js'), 'utf8');
+  assert.doesNotMatch(src, /Nobody from SwimSignal/, 'the old wording is gone everywhere');
   // Getting there names whichever way has nothing.
   const carOnly = A.arrivalUnknowns(guide([FACTS[0]]));
   assert.ok(carOnly.includes('Getting there by bus or train: nothing in this guide.'));
   assert.ok(!carOnly.some(t => /by car/.test(t)));
   assert.ok(carOnly.includes('Who can swim here: nothing in this guide.'));
   // A visit: the last line goes.
-  assert.ok(!A.arrivalUnknowns(guide(FACTS, { how: 'visit' })).some(t => /Nobody from SwimSignal/.test(t)));
+  assert.ok(!A.arrivalUnknowns(guide(FACTS, { how: 'visit' })).some(t => /No on-site check/.test(t)));
 });
 
-test('with photos the steps do not claim theirs are missing, and the photos show', () => {
-  const photo = { file: 'cromwheel-shingle.jpg', w: 1600, h: 1200, caption: 'The shingle.', credit: 'E B', taken: '2026-08-20', status: 'confirmed', seen: '2026-08-20', labels: [] };
-  const g = guide(FACTS, { photos: [photo] });
-  assert.deepEqual(A.arrivalSteps(g).filter(s => s.noPhoto), []);
-  assert.match(A.arrivalTile(spot(g), '2026-10-30'), /guides\/photos\/cromwheel-shingle\.jpg/);
+// Geograph's, as guides.py passes them: historical, with title, page, licence and changes.
+const GEO = { status: 'historical', source: 'https://www.geograph.org.uk/photo/1', source_name: 'Geograph', title: 'Gravel bank',
+  licence: 'https://creativecommons.org/licenses/by-sa/2.0/', changes: 'Re-encoded, metadata removed.', w: 640, h: 480, labels: [] };
+const pic = (file, topic, extra = {}) => ({ ...GEO, file, topic, caption: `${file}.`, credit: 'Oliver Dixon', taken: '2023-05-16', ...extra });
+
+test('a photo fills only its own step: an overview does not hide the missing path, entry or exit photos', () => {
+  const over = guide(FACTS, { photos: [pic('over.jpg', 'overview')] });
+  assert.deepEqual(A.arrivalSteps(over).filter(s => s.noPhoto).map(s => s.key), ['path', 'entry', 'exit']);
+  const entry = guide(FACTS, { photos: [pic('over.jpg', 'overview'), pic('in.jpg', 'entry')] });
+  const steps = A.arrivalSteps(entry);
+  assert.deepEqual(steps.filter(s => s.noPhoto).map(s => s.key), ['path', 'exit'], 'the entry photo fills the entry step alone');
+  assert.deepEqual(steps.find(s => s.key === 'entry').photos.map(p => p.file), ['in.jpg']);
+  const html = A.arrivalTile(spot(entry), '2026-10-30');
+  const at = s => html.indexOf(s);
+  assert.ok(at('over.jpg') > at('id="arr-way-h"') && at('over.jpg') < at('id="arr-there"'), 'the overview leads the journey');
+  assert.ok(at('in.jpg') > at('id="arr-entry"') && at('in.jpg') < at('id="arr-exit"'), 'the entry photo sits in its step');
+  assert.match(html, /No photo yet of the path to the water\./);
+  assert.match(html, /No photo yet of the place to get out\./);
+  assert.doesNotMatch(html, /No photo yet of the place to get in\./);
+  assert.ok(A.arrivalUnknowns(entry).includes('No photo yet of the path to the water or the place to get out.'));
+});
+
+test('a historical photo says whose it is, when, its licence and changes, and that it shows that day only', () => {
+  const g = guide(FACTS, { photos: [pic('in.jpg', 'entry')] });
+  const html = A.arrivalTile(spot(g), '2026-10-30');
+  assert.match(html, /<span class="g-who">Historical photo<\/span> by Oliver Dixon, taken 16 May 2023: <a href="https:\/\/www\.geograph\.org\.uk\/photo\/1">Gravel bank<\/a> on Geograph\./);
+  assert.match(html, /Licensed under <a href="https:\/\/creativecommons\.org\/licenses\/by-sa\/2\.0\/">CC BY-SA 2\.0<\/a>; Re-encoded, metadata removed\. This copy is also under CC BY-SA 2\.0\./);
+  assert.match(html, /Not taken by SwimSignal\. It shows that day only, not today's access, permission, water level or conditions\./);
+  assert.doesNotMatch(html, /seen on site/, 'never "seen on site"');
+  assert.equal(A.arrivalCountsSaid(g), "In this guide: 5 facts verified, 1 from dated records, 1 a swimmer's word, not checked; 4 published pages in all. "
+    + 'Photos: 1 historical, by other photographers; none taken by SwimSignal.');
+  assert.ok(A.arrivalUnknowns(g).includes('Whether the places in the historical photos look the same today: each shows only the day it was taken.'));
+  // A licence the page does not know is neither named nor linked.
+  assert.doesNotMatch(G.guideHistorical({ ...pic('x.jpg', 'entry'), licence: 'https://example.org/any' }), /CC BY|Licensed/);
+});
+
+test('a sign in a historical photo sits under who can swim, its wording and scope unverified, and is not a rule', () => {
+  const sign = pic('sign.jpg', 'rules', { credit: 'Mrs W J Sutherland', taken: '2024-11-13', caption: 'A council sign by the bridge.' });
+  const g = guide(FACTS, { photos: [sign] });
+  const html = A.arrivalTile(spot(g), '2026-10-30');
+  const who = html.indexOf('id="arr-who-h"'), water = html.indexOf('id="arr-water-h"');
+  assert.ok(html.indexOf('sign.jpg') > who && html.indexOf('sign.jpg') < water, 'beside the permission part, not in the journey');
+  assert.match(html.slice(who, water), /A sign in a historical photo is as it was that day: what it says now, and what stretch it covers, are not verified\./);
+  assert.ok(A.arrivalUnknowns(g).includes("What the sign or notice in Mrs W J Sutherland's photo of November 2024 says now, what it covers, and whether it is still there."));
+  assert.deepEqual(A.arrivalSteps(g).filter(s => s.noPhoto).map(s => s.key), ['path', 'entry', 'exit'], 'a sign fills no step');
 });
 
 test('no guide, a point off the list, or a file that did not arrive', () => {

@@ -62,6 +62,11 @@ function arrivalBy(g) {
   return by;
 }
 
+// The guide's photos, each with the topic it shows (guides.py: one of the topics, or "overview").
+const arrivalPhotos = g => (g && Array.isArray(g.photos) ? g.photos.filter(p => p && typeof p.topic === 'string') : []);
+const arrivalMonth = iso => (/^\d{4}-\d{2}-\d{2}$/.test(String(iso || ''))
+  ? new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'an unknown month');
+
 // How many facts are of each kind, and from how many pages: the tile's second line. A fact from a dated record
 // (source_date) is counted apart from a current page, as guide.js labels it "Source", not "Verified".
 function arrivalCounts(g) {
@@ -83,17 +88,21 @@ function arrivalCountsSaid(g) {
   const parts = [`${arrivalPlural(n.verified, 'fact')} verified`];
   if (n.dated) parts.push(`${n.dated} from dated records`);
   parts.push(n.suggested ? `${n.suggested} a swimmer's word, not checked` : 'none a swimmer\'s word');
-  return `In this guide: ${parts.join(', ')}; ${arrivalPlural(n.pages, 'published page')} in all.`;
+  const ph = arrivalPhotos(g), old = ph.filter(x => x.status === 'historical').length, ours = ph.filter(x => x.status === 'confirmed').length;
+  const photos = ph.length ? ` Photos: ${[ours && `${ours} taken by SwimSignal`, old && `${old} historical, by other photographers`,
+    ph.length - ours - old && `${ph.length - ours - old} from swimmers`].filter(Boolean).join(', ')}${ours ? '' : '; none taken by SwimSignal'}.` : '';
+  return `In this guide: ${parts.join(', ')}; ${arrivalPlural(n.pages, 'published page')} in all.${photos}`;
 }
 
-// The steps, each with its topics' facts or the fact that it has none, and its photo line. Pure: the tests read it.
-// A photo in the guide is not yet tied to a step (the format has no field for it), so with any photo at all the
-// steps do not claim theirs is missing; the photos show after the journey.
+// The steps, each with its topics' facts or the fact that it has none, its own photos, and the line that says it has
+// none where one would help. Pure: the tests read it. A photo belongs to the step of its topic only: an overview,
+// or the entry's photo, never fills the path's or the exit's gap.
 function arrivalSteps(g) {
-  const by = arrivalBy(g), photos = !!(g && Array.isArray(g.photos) && g.photos.length);
+  const by = arrivalBy(g), photos = arrivalPhotos(g);
   return ARRIVAL_STEPS.map(s => {
     const parts = s.topics.map(k => ({ topic: k, facts: by.get(k) || [] }));
-    return { ...s, parts, empty: parts.every(p => !p.facts.length), noPhoto: !!s.photo && !photos };
+    const mine = photos.filter(p => s.topics.includes(p.topic));
+    return { ...s, parts, photos: mine, empty: parts.every(p => !p.facts.length), noPhoto: !!s.photo && !mine.length };
   });
 }
 
@@ -113,7 +122,10 @@ function arrivalUnknowns(g, d = {}) {
   out.push(...ARRIVAL_ASKED);
   const n = arrivalCounts(g);
   if (n.suggested) out.push(`${arrivalPlural(n.suggested, 'fact')} above ${n.suggested === 1 ? 'is' : 'are'} a swimmer's word that SwimSignal has not checked.`);
-  if (g && g.how === 'desk') out.push('Nobody from SwimSignal has been here: every verified fact comes from a published page, not a visit.');
+  const old = arrivalPhotos(g).filter(p => p.status === 'historical');
+  for (const p of old.filter(x => x.topic === 'rules')) out.push(`What the sign or notice in ${p.credit || 'a photographer'}'s photo of ${arrivalMonth(p.taken)} says now, what it covers, and whether it is still there.`);
+  if (old.some(x => x.topic !== 'rules')) out.push('Whether the places in the historical photos look the same today: each shows only the day it was taken.');
+  if (g && g.how === 'desk') out.push('No on-site check is recorded for this guide: every verified fact comes from a published page.');
   return out;
 }
 
@@ -129,22 +141,30 @@ function arrivalStep(s, i) {
     ? '<dl class="g-facts arr-facts">' + s.parts.map(p => `<div class="arr-part"><dt>${arrivalEsc(arrivalSub(p.topic))}</dt>`
       + (p.facts.length ? arrivalRuns(p.facts) : `<dd>${arrivalNone('Nothing in this guide yet.')}</dd>`) + '</div>').join('') + '</dl>'
     : s.empty ? arrivalNone('Nothing in this guide yet.') : `<dl class="g-facts arr-facts"><div class="arr-part">${arrivalRuns(s.parts[0].facts)}</div></dl>`;
+  const pics = s.photos.map((p, n) => arrivalGuide().guidePhoto(p, n)).join('');
   const shot = s.noPhoto ? `<p class="arr-shot">${ARRIVAL_CAMERA}<span>No photo yet of ${s.photo}.</span></p>` : '';
   const plan = s.key === 'there' ? '<p class="arr-plan">Times and routes: <a href="https://www.traveline.info/">Traveline journey planner</a>.</p>' : '';
-  return `<li class="arr-step" id="arr-${s.key}"><h4 class="arr-t"><span class="arr-n">${i + 1}</span>${s.title}</h4>${body}${plan}${shot}</li>`;
+  return `<li class="arr-step" id="arr-${s.key}"><h4 class="arr-t"><span class="arr-n">${i + 1}</span>${s.title}</h4>${body}${pics}${plan}${shot}</li>`;
 }
 
-// Who can swim here: the guide's rules, word for word, and the desk check of access where the build has one.
-// Nothing is concluded from the way in: a path, a car park or a beach is not permission.
+// Who can swim here: the guide's rules, word for word, the desk check of access where the build has one, and any
+// photo of a sign, with a line before it saying a sign in a photo is as it was that day: its wording now and the
+// stretch it covers are not verified. Nothing is concluded from the way in: a path, a car park or a beach is not
+// permission, and a sign in an old photo is not a rule.
 function arrivalPermission(g, d = {}) {
   const rules = arrivalBy(g).get('rules') || [];
+  const signs = arrivalPhotos(g).filter(p => p.topic === 'rules');
+  const signSaid = signs.some(p => p.status === 'historical')
+    ? '<p class="arr-say">A sign in a historical photo is as it was that day: what it says now, and what stretch it covers, are not verified.</p>' : '';
+  const pics = signs.map((p, n) => arrivalGuide().guidePhoto(p, n)).join('');
   const a = d && d.access && typeof d.access.text === 'string' && d.access.text ? d.access : null;
   const desk = a ? `<dd><p class="g-text">${arrivalEsc(a.text)}</p><p class="g-src">${/^https:\/\//.test(a.url || '') ? `<a href="${arrivalEsc(a.url)}">Authority guidance</a>. ` : ''}`
     + `Desk check ${arrivalEsc(a.checked_at || '')}; current signs have not been inspected.</p></dd>` : '';
   const body = rules.length || desk ? `<dl class="g-facts arr-facts"><div class="arr-part">${desk}${rules.length ? arrivalRuns(rules) : ''}</div></dl>`
     : arrivalNone('Nothing in this guide says who may swim here.');
   return '<section class="arr-sec" aria-labelledby="arr-who-h"><h3 class="arr-h" id="arr-who-h">Who can swim here</h3>'
-    + '<p class="arr-say">A path, a car park or a beach is not permission to swim. This part says only what its sources say.</p>' + body + '</section>';
+    + '<p class="arr-say">A path, a car park or a beach is not permission to swim. This part says only what its sources say.</p>' + body
+    + signSaid + pics + '</section>';
 }
 
 // The water: the forecast above answers it. Nothing here restates a level, a reading or advice.
@@ -162,13 +182,16 @@ function arrivalTile(d, today) {
   const checked = g ? `<p class="t-say">${G.guideChecked(g, today)}</p><p class="arr-count">${arrivalCountsSaid(g)}</p>`
     : '<p class="t-say">There is no practical guide for this spot yet: every step below is unknown.</p>';
   const steps = arrivalSteps(g || { facts: [] });
-  const photos = g && Array.isArray(g.photos) && g.photos.length
-    ? `<div class="arr-photos">${g.photos.map((p, i) => G.guidePhoto(p, i, g)).join('')}</div>` : '';
+  // An overview leads the journey; a photo of a topic with no step here (boats and boards) follows it. The rest sit
+  // in their steps, and a sign in who can swim.
+  const stepped = new Set(ARRIVAL_STEPS.flatMap(s => s.topics)), ph = arrivalPhotos(g);
+  const lead = ph.filter(p => p.topic === 'overview').map((p, n) => G.guidePhoto(p, n)).join('');
+  const rest = ph.filter(p => p.topic !== 'overview' && p.topic !== 'rules' && !stepped.has(p.topic)).map((p, n) => G.guidePhoto(p, n)).join('');
   const ask = '<p class="g-ask">Been here? <a href="feedback.html?type=guide&amp;spot=' + encodeURIComponent(d.name || '')
     + '">Tell us what you found</a>: the way down, where you got in and out, and photos.</p>';
   return `<section class="tile g-tile arr" id="guide" aria-labelledby="guide-h">${head}${checked}`
     + '<section class="arr-sec" aria-labelledby="arr-way-h"><h3 class="arr-h" id="arr-way-h">The way there and back</h3>'
-    + `<ol class="arr-steps">${steps.map(arrivalStep).join('')}</ol>${photos}</section>`
+    + `${lead}<ol class="arr-steps">${steps.map(arrivalStep).join('')}</ol>${rest}</section>`
     + arrivalPermission(g || {}, d) + arrivalWater()
     + '<section class="arr-sec" aria-labelledby="arr-unk-h"><h3 class="arr-h" id="arr-unk-h">What nobody has checked</h3>'
     + `<ul class="arr-unk">${arrivalUnknowns(g || { facts: [] }, d).map(t => `<li>${arrivalEsc(t)}</li>`).join('')}</ul></section>`
@@ -176,5 +199,5 @@ function arrivalTile(d, today) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { ARRIVAL_STEPS, ARRIVAL_ASKED, arrivalCounts, arrivalCountsSaid, arrivalSteps, arrivalUnknowns, arrivalPermission, arrivalTile };
+  module.exports = { ARRIVAL_STEPS, ARRIVAL_ASKED, arrivalPhotos, arrivalCounts, arrivalCountsSaid, arrivalSteps, arrivalUnknowns, arrivalPermission, arrivalTile };
 }

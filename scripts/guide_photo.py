@@ -46,8 +46,9 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     w, h = prepare(a.source, PHOTOS / a.name)
     print(f"Saved guides/photos/{a.name}, {w} x {h}. Paste into the guide and fill in the rest:\n")
-    print(f'[[photo]]\nfile = "{a.name}"\nwidth = {w}\nheight = {h}\ncaption = ""\ncredit = ""\ntaken = YYYY-MM-DD\n'
-          'status = "confirmed"   # with seen = YYYY-MM-DD; or "suggested" with from and on\n'
+    print(f'[[photo]]\nfile = "{a.name}"\nwidth = {w}\nheight = {h}\ntopic = ""   # the topic it shows, or "overview"\n'
+          'caption = ""\ncredit = ""\ntaken = YYYY-MM-DD\n'
+          'status = "confirmed"   # with seen = YYYY-MM-DD; "suggested" with from and on; or "historical" (guides/README.md)\n'
           '# [[photo.label]]\n# x = 50   # per cent across, from the left\n# y = 50   # per cent down, from the top\n# text = ""')
     return 0
 

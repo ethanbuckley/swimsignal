@@ -93,8 +93,11 @@ function guideRuns(facts) {
 function guideFacts(g) {
   const by = new Map();
   for (const f of g.facts || []) { if (!by.has(f.topic)) by.set(f.topic, []); by.get(f.topic).push(f); }
-  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), fold = topics.length > GUIDE_SHOW + 1;
-  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && i >= GUIDE_SHOW ? ' hidden' : ''}><dt>${label}</dt>`
+  // Who can swim stays in view wherever it falls (30 October 2026): with bus and train a sixth topic, Cromwheel's
+  // rules went behind "Show all", and permission is the one thing a first-time reader must not have to open.
+  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), shown = (k, i) => i < GUIDE_SHOW || k === 'rules';
+  const fold = topics.filter(([k], i) => !shown(k, i)).length >= 2;
+  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && !shown(k, i) ? ' hidden' : ''}><dt>${label}</dt>`
     + guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
     + '</div>').join('') + '</dl>'
     + (fold ? `<button type="button" class="btn quiet" id="g-all" aria-expanded="false">Show all ${topics.length} topics</button>` : '');
@@ -124,6 +127,21 @@ function guideGaps(g) {
   return gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.join(', ')}.</p>` : '';
 }
 
+// A historical photo (status "historical", guides.py): someone else's published photograph under an open licence,
+// Geograph's under CC BY-SA 2.0. Its line names the photographer, the day it was taken, its title linked to its page,
+// the licence linked to its deed, what was changed, and that the copy here is under the same licence. Then, beside it
+// every time, what it cannot show: it is not SwimSignal's, and it shows that day, not today's access, permission,
+// water level or conditions. A licence the page does not know is not linked or named.
+const GUIDE_LICENCES = { 'https://creativecommons.org/licenses/by-sa/2.0/': 'CC BY-SA 2.0' };
+function guideHistorical(p) {
+  const lic = GUIDE_LICENCES[p.licence], page = guideHttps(p.source)
+    ? `<a href="${guideEsc(p.source)}">${guideEsc(p.title || 'the photo')}</a> on ${guideEsc(p.source_name || 'its publisher')}` : guideEsc(p.title || '');
+  const terms = lic ? ` Licensed under <a href="${guideEsc(p.licence)}">${lic}</a>; ${guideEsc(String(p.changes || '').replace(/[.\s]+$/, ''))}. `
+    + `This copy is also under ${lic}.` : '';
+  return `<span class="g-who">Historical photo</span> by ${guideEsc(p.credit)}, taken ${guideDay(p.taken)}: ${page}.${terms} `
+    + 'Not taken by SwimSignal. It shows that day only, not today\'s access, permission, water level or conditions.';
+}
+
 // A photo at the tile's width, its numbered labels placed on it, and the key beneath: a number on the
 // picture, the same number in the list. The box holds the photo's shape while it loads.
 function guidePhoto(p, i, g) {
@@ -134,10 +152,10 @@ function guidePhoto(p, i, g) {
   const key = labels.length ? `<ol class="g-key">${labels.map(l => `<li>${guideEsc(l.text)}</li>`).join('')}</ol>` : '';
   const alt = guideEsc(String(p.caption || '').replace(/[.\s]+$/, '')) + (labels.length ? `. Labelled: ${labels.map((l, n) => `${n + 1}, ${guideEsc(l.text)}`).join('; ')}.` : '.');
   const by = p.status === 'suggested' ? `A swimmer's photo, from ${guideEsc(p.from)}; the labels are theirs and not yet checked.`
-    : guideSource(p);
+    : p.status === 'historical' ? guideHistorical(p) : guideSource(p);
   return `<figure class="g-photo"><div class="g-pic" style="aspect-ratio:${w} / ${h}">`
     + `<img src="guides/photos/${p.file}" width="${w}" height="${h}" loading="lazy" decoding="async" alt="${alt}">${pins}</div>`
-    + `<figcaption>${key}<p class="g-cap">${guideEsc(p.caption)} Photo: ${guideEsc(p.credit)}, ${guideDay(p.taken)}.</p>`
+    + `<figcaption>${key}<p class="g-cap">${guideEsc(p.caption)}${p.status === 'historical' ? '' : ` Photo: ${guideEsc(p.credit)}, ${guideDay(p.taken)}.`}</p>`
     + `<p class="g-src">${by}</p></figcaption></figure>`;
 }
 
@@ -208,5 +226,5 @@ function knowOpen(kind, sec) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick, showRest };
+  module.exports = { GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
 }

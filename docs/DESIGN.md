@@ -792,6 +792,15 @@ Since 4 October 2026:
   the body size over a hairline, so that permission, the way in and the water read as three separate
   things. A step with no fact says "Nothing in this guide yet."; a step a photo would make findable
   says "No photo yet of the place to get in." beside a camera from the stroke set, muted, not boxed.
+  A photo sits in the step of its `topic` and no other; an overview leads the journey; a sign's photo
+  sits under "Who can swim here", after a line saying its wording now and its scope are not verified.
+- **Historical photos** (30 October 2026): Geograph's, under CC BY-SA 2.0. The line under one says
+  "**Historical photo** by Oliver Dixon, taken 16 May 2023", the title linked to its page, the licence
+  linked to its deed, the changes, that this copy is under the same licence, and that it is not
+  SwimSignal's and shows that day only, not today's access, permission, water level or conditions. No
+  labels on it, and no "Photo:" credit in the caption, which the line already gives.
+- **Who can swim stays in view** (30 October 2026). Past the fold, the first four topics and Who can
+  swim show, wherever it falls; the fold still opens only when two or more topics would go.
 
 ### Notes on a visit (3 October 2026)
 

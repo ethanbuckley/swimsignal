@@ -199,3 +199,31 @@ test('a different page, day, name or kind of source starts a new line; so does a
   const html = g.guideFacts(guide({ facts: [{ topic: 'entry', text: 'a', ...src, lat: 53.93, lon: -1.82 }, { topic: 'entry', text: 'b', ...src, lat: 53.94, lon: -1.82 }] }));
   assert.equal((html.match(/On a map/g) || []).length, 2, 'two places on a map keep a link each');
 });
+
+// 30 October 2026: with bus and train a sixth topic, Who can swim must never go behind "Show all".
+test('who can swim stays in view wherever it falls, and the fold still never hides a single topic', () => {
+  const fact = k => ({ topic: k, text: `About ${k}.`, status: 'confirmed', source: `https://www.example.gov.uk/${k}`, source_name: 'Example Council' });
+  const shownRow = (html, label) => new RegExp(`<div class="g-row"><dt>${label}</dt>`).test(html);
+  // Cromwheel's six: parking, bus and train, path, getting in, toilets, who can swim. Only toilets would fold: so none does.
+  const six = g.guideTile(spot({ guide: guide({ facts: ['parking', 'transport', 'path', 'entry', 'toilets', 'rules'].map(fact) }) }), '2026-10-30');
+  assert.equal(hiddenRows(six), 0);
+  assert.doesNotMatch(six, /Show all/);
+  // Ten topics: the first four and who can swim show, the other five fold.
+  const ten = g.guideTile(spot({ guide: guide({ facts: g.GUIDE_TOPICS.slice(0, 10).map(([k]) => fact(k)) }) }), '2026-10-30');
+  assert.ok(shownRow(ten, 'Who can swim'), 'who can swim in view');
+  assert.equal(hiddenRows(ten), 5);
+  assert.match(ten, /Show all 10 topics/);
+  for (const label of ['Parking', 'Bus and train', 'Path to the water', 'Getting in']) assert.ok(shownRow(ten, label), label);
+});
+
+test('a historical photo is credited, licensed and limited to its day on the usual tile too', () => {
+  const photo = { file: 'gravel.jpg', w: 640, h: 480, topic: 'entry', caption: 'Gravel by the bridge.', credit: 'Oliver Dixon', taken: '2023-05-16',
+    status: 'historical', title: 'Foot suspension bridge', source: 'https://www.geograph.org.uk/photo/7486475', source_name: 'Geograph',
+    licence: 'https://creativecommons.org/licenses/by-sa/2.0/', changes: 'Re-encoded at the same size, metadata removed.', labels: [] };
+  const html = g.guideTile(spot({ guide: guide({ photos: [photo] }) }), '2026-10-30');
+  assert.match(html, /Historical photo<\/span> by Oliver Dixon, taken 16 May 2023: <a href="https:\/\/www\.geograph\.org\.uk\/photo\/7486475">Foot suspension bridge<\/a> on Geograph\./);
+  assert.match(html, /<a href="https:\/\/creativecommons\.org\/licenses\/by-sa\/2\.0\/">CC BY-SA 2\.0<\/a>; Re-encoded at the same size, metadata removed\. This copy is also under CC BY-SA 2\.0\./);
+  assert.match(html, /not today's access, permission, water level or conditions/);
+  assert.doesNotMatch(html.slice(html.indexOf("<figure")), /Verified|seen on site/, "the photo is not called verified");
+  assert.doesNotMatch(html, / Photo: Oliver Dixon/, 'the credit is said once, in the line');
+});
