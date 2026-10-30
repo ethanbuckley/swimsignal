@@ -304,17 +304,18 @@ test('a live error above the long-run rate is said as higher, never as a negativ
 });
 
 // The page as the build writes it: the boxes filled in place, in the page's own order.
-test('the four figure tiles come first, before any h2, then the by-company line, then the contents (review C5)', async () => {
+test('live and historical headline results are grouped before the full report', async () => {
   const prerender = require('../scripts/prerender_verification.js').prerender;
   const out = await prerender(html, {live: OCT24, holdout: [{model: 'dipcast', n: 826725, auc: 0.9296, brier_skill_vs_clim: 0.3347}]});
   let page = html;
   for (const id of ['top', 'answer', 'short', 'live', 'offline']) page = page.replace(new RegExp(`<div id="${id}">[\\s\\S]*?</div>`), () => `<div id="${id}">${out[id]}</div>`);
   const body = page.slice(page.indexOf('<main'), page.indexOf('<script>'));
-  const firstH2 = body.indexOf('<h2'), tiles = [...body.matchAll(/<div class="stat">/g)].map(m => m.index);
+  const tiles = [...body.matchAll(/<div class="stat">/g)].map(m => m.index);
+  const liveHead = body.indexOf('id="live-summary-h"'), historicalHead = body.indexOf('id="history-summary-h"'), toc = body.indexOf('id="toc-h"');
   assert.equal(tiles.length, 4);
-  assert.ok(tiles.every(i => i < firstH2), 'a tile after the first h2');
-  assert.ok(body.indexOf('<p>By company,') > tiles[3] && body.indexOf('<p>By company,') < firstH2);
-  assert.match(body.slice(firstH2), /^<h2 id="toc-h">On this page<\/h2>/);
+  assert.ok(liveHead < tiles[0] && tiles[2] < historicalHead && historicalHead < tiles[3] && tiles[3] < toc);
+  assert.ok(body.indexOf('<p>By company,') > tiles[2] && body.indexOf('<p>By company,') < historicalHead);
+  assert.match(body, /A warning can miss a spill/);
   // Then everything else in the order it had: the warnings, In short, how to read the numbers, live, offline.
   const at = s => body.indexOf(s);
   assert.ok(at('id="warnings-h"') < at('id="short-h"') && at('id="short-h"') < at('id="reading"') && at('id="reading"') < at('id="live-scoring"')
