@@ -40,4 +40,32 @@ gets a summary: samples, over 900, below the limit, hindsight misses and false a
 
 ## Results
 
-Not run.
+Run 30 October 2026 (`concentration_study.py lake`), offline on the main checkout's caches, after the statement was
+pushed. Every fit converged. File: `-scores.json`. **Exploratory, reused data.**
+
+**Lakes are much noisier than rivers.** The fitted lake noise level is 0.66-0.76 log10 units in every fold, against
+0.36-0.42 for rivers: about a factor of 4.6 against 2.5 in counts. One shared level was too narrow for lakes and too
+wide for rivers.
+
+| Scheme | Water | Inside the central 80%: #466 → lake spread | Mean log score: #466 → lake spread | Difference, 95% interval |
+|---|---|---|---|---|
+| Forward | lakes (407) | 64.4% → **73.2%** | −1.179 → −1.044 | +0.084 to +0.183 |
+| Leave one year out | lakes (637) | 64.4% → **77.6%** | −1.133 → −1.024 | +0.067 to +0.149 |
+| Group and year held out | lakes (637) | 55.1% → **69.4%** | −1.441 → −1.222 | +0.178 to +0.258 |
+| Forward | rivers (616) | 85.1% → 77.3% | −0.658 → −0.693 | −0.094 to +0.014 |
+| Leave one year out | rivers (900) | 88.9% → 80.9% | −0.615 → −0.587 | +0.002 to +0.051 |
+| Group and year held out | rivers (900) | 89.8% → 84.6% | −0.700 → −0.657 | +0.026 to +0.060 |
+
+- **The stated direction holds, with one shortfall:** lake coverage moves into 70-90% forward and leave-one-year-out,
+  and to 69.4% at held-out groups (just under); the lake log score improves in every scheme with the interval above
+  zero. Rivers move towards the nominal 80% and their log score improves in two schemes (forward: interval spans zero).
+- **Lake PIT deciles** still lean high forward (the top two tenths hold 58 and 71 of 407): some lake results still
+  sit above the predicted range; held out by group, both tails are heavy (113 and 82 of 637 in the end tenths).
+- **Over-900 Brier** changes little: rivers 0.1051 → 0.1020 forward, 0.1245 → 0.1212 leave one year out; lakes
+  0.0312 → 0.0305 forward. Within-site rho at lakes stays about 0.2-0.3.
+
+**What it means.** A lake-specific spread is the better development model: its intervals are much closer to honest at
+lakes, with no clear cost at rivers (forward, the river log score is slightly lower, interval spanning zero). It is not a lake forecast. The next step is a lake statement for data it never read: 2027
+lake samples (collect from May), or earlier lake seasons once their rain and exposure can be rebuilt within the
+Open-Meteo budget. Heavy tails remain; a heavier-tailed lake distribution is the next candidate, judged on those
+fresh data, not tuned on these.
