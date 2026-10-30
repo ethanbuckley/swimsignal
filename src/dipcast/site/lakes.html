@@ -1,0 +1,73 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Satellite lake observations, from the Research page: a prose page with the shared head, header and foot, written
+     by scripts/build_site.py (write_lakes) beside the app. lakes.js fills #lakes from data/research/ (the research
+     export, docs/LAKE-OBSERVATIONS-CONTRACT-v1.md, split by write_lake_observations). What it may say is the
+     contract's: lakes.js puts the export's own approved sentence and its list of what is not claimed into #lk-claim and
+     #lk-not; the words here are the fallback for a page without them. -->
+<title>Satellite lake observations · SwimSignal</title>
+<meta name="description" content="Dated Sentinel-2 satellite readings of an index of how green the water looks at English lakes: how many images were clear enough to read, and how old the latest is. Research, not a test for harmful algae.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's. One lake: the latest reading, the seasons, the dots, the lab values. */
+  .lk-pick { display:flex; flex-direction:column; gap:4px; margin:12px 0 16px; font-size:var(--fs-note); color:var(--muted); }
+  .lk-pick select { font:inherit; font-size:16px; color:var(--ink); max-width:100%; padding:8px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); }
+  main.doc .lk-lake h2 { margin-top:8px; }
+  main.doc .lk-meta, main.doc .lk-scope, main.doc .lk-sum, main.doc .lk-more { font-size:var(--fs-note); color:var(--muted); }
+  main.doc .lk-latest { margin-bottom:4px; }
+  main.doc .lk-claim { font-size:var(--fs-note); border-left:3px solid var(--line); padding-left:8px; }
+  main.doc .lk-reasons { font-size:var(--fs-note); }
+  main.doc .lk-scope-sel { font-size:var(--fs-note); }   /* a selected historical series: said beside its headline, plain */
+  .lk-seasons, .lk-labt { border-collapse:collapse; width:100%; font-size:var(--fs-note); margin:8px 0 16px; }
+  .lk-seasons caption { text-align:left; color:var(--muted); padding-bottom:4px; }
+  .lk-seasons th, .lk-seasons td, .lk-labt th, .lk-labt td { text-align:left; padding:5px 8px 5px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+  .lk-fig { margin:0 0 16px; max-width:100%; overflow:hidden; }
+  .lk-fig svg { display:block; max-width:100%; height:auto; }
+  .lk-fig figcaption { font-size:var(--fs-meta); color:var(--muted); margin-top:4px; }
+  .lk-band { fill:var(--hover); }
+  .lk-zero { stroke:var(--line); stroke-width:1; }
+  .lk-dot { fill:var(--brand); }
+  .lk-yr, .lk-mo { font:600 11px var(--font-text); fill:var(--muted); }
+  main.doc .lk-lab h3 { margin-top:8px; }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<p class="small"><a href="research.html">Research</a></p>
+<h1>Satellite lake observations</h1>
+<p class="lead" id="lk-claim">A satellite reading of how green the water looked from space on the date shown: an index that rises with chlorophyll and floating or suspended plant material. It is not a test for harmful algae or toxins, and it is not swimming advice.</p>
+<noscript><p class="notice">This page needs JavaScript to read the observations.</p></noscript>
+<div id="lakes" aria-live="polite"></div>
+
+<h2>What it does not tell you</h2>
+<ul id="lk-not">
+<li>harmful, toxic or blue-green algae (cyanobacteria)</li>
+<li>algae-free or clear water</li>
+<li>a chlorophyll concentration</li>
+<li>swimming advice or safety</li>
+<li>a forecast</li>
+</ul>
+<p>For algae at a bathing water, the Environment Agency's own checks are on each spot's page. Look at the water and the signs before you swim.</p>
+
+<h2>How the readings are made</h2>
+<p>From Sentinel-2 images (Collection 1, Level-2A surface reflectance), May to September of each year read. Around each site, the water within 300 m is found from the images' own scene classification; a reading is made only where at least 9 of its 20 m pixels are open water with open water all round them, and only from an image in which at least 80% of those pixels are clear of cloud, haze and shadow. The reading is the median of the normalised difference chlorophyll index, NDCI = (B5 − B4) ÷ (B5 + B4), over those clear pixels. Each reading keeps its image's own date and time.</p>
+<p>Two tests compared the index with what was found in the water. Against laboratory chlorophyll at 38 lakes, it followed the measurements (correlation about 0.5) but missed its stated bar, so it is called promising, not validated. Against the samplers' visual algae checks and reported incidents, it was weak. So no reading here is turned into a chlorophyll figure or a warning.</p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md">The laboratory chlorophyll test</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-ALGAE-SATELLITE-TEST-2026-10.md">The visual algae test</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-ALGAE-INCIDENT-TEST-2026-10.md">The algae incident test</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-OBSERVATIONS-CONTRACT-v1.md">What this page's data holds</a></li>
+</ul>
+
+<h2>Sources</h2>
+<p>Contains modified Copernicus Sentinel data 2020 to 2026, read from Earth Search's Sentinel-2 Collection 1 Level-2A archive and processed by SwimSignal. Laboratory values: Environment Agency Water Quality Archive, © Environment Agency, Open Government Licence v3.0. <a href="terms.html#data">Data credits</a>.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="lakes.js"></script>
+</body></html>
