@@ -74,7 +74,9 @@ def test_lake_spot(lakes, sid, wfd, name, costed, cell, words, topics):
     found, warnings = guides.load_guides({sid}, root=ROOT / "guides")
     assert not [w for w in warnings if sid in w], warnings
     by = {f["topic"]: f for f in found[sid]["facts"]}
-    assert set(by) == topics and not {"entry", "exit"} & set(by)
+    # Besides these, the park authority's rules for boats and boards ("paddle", from its lakes activities guide, 30 Oct 2026).
+    assert set(by) - {"paddle"} == topics and not {"entry", "exit"} & set(by)
+    assert "paddle" not in by or by["paddle"]["source_name"] == "Lake District National Park Authority"
     assert by["rules"]["source"] == GUIDE and words in by["rules"]["text"]
     assert all(f["status"] == "confirmed" for f in found[sid]["facts"]) and found[sid]["checked"] == "2026-10-28"
 
@@ -85,7 +87,9 @@ def test_guides_added_for_listed_lakes(sid, topics):
     found, warnings = guides.load_guides({sid}, root=ROOT / "guides")
     assert not [w for w in warnings if sid in w], warnings
     by = {f["topic"]: f for f in found[sid]["facts"]}
-    assert set(by) == topics and not {"entry", "exit"} & set(by)
+    # Besides these, the park authority's rules for boats and boards ("paddle", from its lakes activities guide, 30 Oct 2026).
+    assert set(by) - {"paddle"} == topics and not {"entry", "exit"} & set(by)
+    assert "paddle" not in by or by["paddle"]["source_name"] == "Lake District National Park Authority"
     assert by["rules"]["source"] == GUIDE and "as allowed" in by["rules"]["text"]
     assert by["parking"]["source"].startswith("https://www.nationaltrust.org.uk/")
     assert all(f["status"] == "confirmed" for f in found[sid]["facts"]) and found[sid]["checked"] == "2026-10-28"
