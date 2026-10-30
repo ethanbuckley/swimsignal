@@ -89,7 +89,11 @@ test('one line a spot: the level first, then the rating, then a spill', () => {
 test('a note is kept for the newest forecast seen, and a failed one leaves the last', () => {
   const m = new Map();
   S.noteSeen(m, [spot('low')], OLD, FRIDAY);
-  assert.deepEqual(m.get('wharfe'), {id: 'wharfe', level: 'low', discharging: 0, rating: null, gap: false, official: null, forecast: OLD, at: FRIDAY});
+  const {days, ...rest} = m.get('wharfe');
+  assert.deepEqual(rest, {id: 'wharfe', level: 'low', discharging: 0, rating: null, gap: false, official: null, forecast: OLD, at: FRIDAY,
+    recent: null, nowLevel: 'low', nowScore: 0, clears: null, sample: null, algae: null, model: null});
+  // Each day's inputs, for why a level moved (whyFacts): the spot's first day here, with no rain or spills in it.
+  assert.deepEqual(days[0], {date: DATES[0], level: 'low', by: 'sewage spills', score: 5, rain: null, expect: null, missing: null});
   S.noteSeen(m, [{...spot('high'), error: 'forecast failed: timeout'}], NEW, FRIDAY + 1);
   assert.equal(m.get('wharfe').level, 'low');
   S.noteSeen(m, [spot('high')], NEW, FRIDAY + 2);
