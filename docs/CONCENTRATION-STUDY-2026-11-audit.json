@@ -1,0 +1,32 @@
+{
+  "raw_rows": 2165,
+  "raw_distinct_samples": 2151,
+  "raw_repeated_rows": 14,
+  "raw_qualifiers": {
+    "=": 1813,
+    "<": 340,
+    ">": 12
+  },
+  "raw_censored_values": {
+    "<": [
+      10
+    ],
+    ">": [
+      10000
+    ]
+  },
+  "raw_years": {
+    "2023": 322,
+    "2024": 626,
+    "2025": 610,
+    "2026": 607
+  },
+  "study_rows_before_repeats": 1548,
+  "study_rows": 1537,
+  "study_repeat_rows_dropped": 11,
+  "study_samples_listed_more_than_once": 9,
+  "study_qual_missing": 0,
+  "study_sites": 32,
+  "study_groups": 18,
+  "study_site_years": 84
+}
