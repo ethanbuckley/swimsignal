@@ -174,4 +174,5 @@ end to end. It is not evidence for or against the conditions, which are judged o
 
 ## Results
 
-Not run.
+**Approval.** Ethan approved the statement as written, 30 October 2026 about 17:50 UTC ("Approved, run it"), on
+statement head 2c8cae0. Nothing above the line was changed after that.
