@@ -1318,6 +1318,21 @@ separate." With paddling or paddleboarding, the plan's note "The level is for th
 you do on it." "Open your plan" opens Plan a swim on the kept plan. Hidden while the list is narrowed, as
 Saved spots is. Nothing new is stored, and a day gone by takes it away.
 
+## How an outing's backup is joined to its spot (30 October 2026)
+
+A backup on the same water as the spot can be hit by the same spill, and the outing tile did not say so.
+The spot page's Nearby card already works out how two spots are joined (`joined`, `nearWhy`, from
+`src/dipcast/spot_links.py`), so the tile now says it in the card's words, in one plain line over the two
+columns (`outingJoin` in outing.js): "Backup: shares overflows with your spot." (with "same river" where
+both are on a river of one name), "same river, further downstream" or "upstream", "same catchment, another
+branch", or "different catchment". The line sits over the columns, not under them: each column runs on
+through its access guide, so under them it would be two phone screens from the names. A different catchment
+or branch gets a plain fact, never a reassuring word: "It has overflows and runoff of its own." Nothing is
+said where either spot has no catchment, or while a shared overflow cannot yet be ruled out (same catchment,
+neither spot's own file in). In the backup's list, a spot in another catchment than the spot's carries
+", different catchment" after its name; a long name loses the end of it in a closed select on a phone, and
+the line says it in full.
+
 ## Since you last looked (4 October 2026)
 
 - A saved spot's card says what changed since this browser last showed it, in one line under the

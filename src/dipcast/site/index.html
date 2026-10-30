@@ -811,6 +811,9 @@
   .outing-pair { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; margin:0 0 10px; }
   .outing-pair.one { grid-template-columns:minmax(0, 1fr); }
   .outing-col { min-width:0; }
+  /* How the backup's water is joined to the spot's (outing.js, outingJoin): a plain line over both columns, empty until known. */
+  .outing-join { margin:0 0 10px; font-size:var(--fs-note); line-height:1.4; }
+  .outing-join:empty { display:none; }
   /* The swim passport (passport.js): a summary line, then the badges, earned or not yet, as a quiet list. */
   .pp-sum { margin:8px 0; }
   .pp-badges { list-style:none; margin:0 0 8px; padding:0; }

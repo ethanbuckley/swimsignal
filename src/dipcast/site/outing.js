@@ -144,6 +144,43 @@ const outingShared = (plan, main, stamp = {}) => {
     ...(ok ? { sent: stamp.sent, lv: stamp.lv, ...(rest.backup ? { blv: stamp.blv } : {}), ...(rest.finish ? { flv: stamp.flv } : {}) } : {}) };
 };
 
+// ------------------------------------------------------------------------------ how the two are joined
+// How the backup's water is joined to the spot's, in the spot page's Nearby words (index.html, joined and
+// nearWhy), from the build (src/dipcast/spot_links.py): each spot's `catchment` (spots-lite.json) and the
+// spots it is `linked` to (data/spot/<id>.json): "s" at least one monitored overflow counts at both, "d"
+// downstream and "u" upstream with none counted at both. The build writes `linked` both ways, so either
+// spot's file says it: the backup's, read the other way round, while the spot's is still on its way.
+// Same catchment and linked to neither: another branch, said only once one of the two files is in (until
+// then a shared overflow cannot be ruled out). A different catchment is known from the lite file alone.
+// Null where either has no place on the network (an isolated lake) or the forecast is older than these fields.
+const OUTING_FLIP = { s: 's', d: 'u', u: 'd' };
+const outingLinksIn = s => !!s.linked || (!s.detail_file || !!s.detail_loaded) && !s.detail_missing;
+function outingJoined(m, b) {
+  if (!m || !b || !m.catchment || !b.catchment) return null;
+  if (m.catchment !== b.catchment) return 'apart';
+  const j = (m.linked || {})[b.id] || OUTING_FLIP[(b.linked || {})[m.id]];
+  return j || (outingLinksIn(m) || outingLinksIn(b) ? 'branch' : null);
+}
+// The line over the pair: under it, each column runs on through its access guide, so a line below both would be
+// two screens from the names on a phone. As on the Nearby card, a different catchment or branch gets a plain fact, never a
+// reassuring word: it has overflows and runoff of its own (runoff alone where none is upstream). "Same river" where both
+// are river spots on a river of one name; the forecast's counting is said only where both have overflows upstream.
+const outingOver = s => (s.upstream_summary || {}).overflows || 0;
+function outingJoin(m, b) {
+  const j = outingJoined(m, b);
+  if (!j) return '';
+  const river = m.kind === 'river' && b.kind === 'river' && !!m.river && m.river === b.river, out = [];
+  if (j === 's') out.push(river ? 'same river, shares overflows with your spot' : 'shares overflows with your spot',
+    'At least one overflow upstream counts in both levels');
+  else if (j === 'd' || j === 'u') { const way = j === 'd' ? 'downstream' : 'upstream';
+    out.push(river ? `same river, further ${way}` : `${way} of your spot`);
+    if (outingOver(m) && outingOver(b)) out.push('The forecast counts none of the same overflows'); }
+  else out.push(j === 'branch' ? 'same catchment, another branch' : 'different catchment', `It has ${outingOver(b) ? 'overflows and runoff' : 'runoff'} of its own`);
+  return `Backup: ${out.map(t => t + '.').join(' ')}`;
+}
+// In the backup's list: the spots in another catchment than the spot's, from the lite file (outingJoined's 'apart').
+const outingApart = (m, s) => !!(m && m.catchment && s.catchment && m.catchment !== s.catchment);
+
 // ------------------------------------------------------------------------------ alerts for the outing
 // "Alert me about this outing": the outing's spot and its backup, each on the plan's day, asked for through
 // the push Worker's alerts for a date (push/README.md, "Alerts for a date"), exactly as the organisers' page
@@ -344,15 +381,16 @@ const outingCol = (c, role) => `<div class="outing-col"><p class="outing-role">$
   + (c.official || '') + `<p class="hl ${outEsc(c.tone)}">${c.headline}</p>` + (c.why ? `<p class="why">${c.why}</p>` : '') + (c.ev || '') + (c.access ? outingAccessBox(c.id, c.access) : '') + '</div>';
 // The whole tile. o = { day, when, spot, backup, act, meet, shared (a shared link's forecast time in words,
 // "Thu 13:27", while the plan still carries its stamp; else ''), groups (outingOptions for the spot), backupGroups,
-// main, alt (columns, or null), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
+// main, alt (columns, or null), join (outingJoin's line, text), missing (ids), issued (text: "15:29, 2 h ago"), open, nowMs, dateAlerts (the
 // site's alerts for a date are on, so the outing can be sent if asked), preview (opened from a link and not
 // kept: index.html, PLAN_PREVIEW; then { mine: what keeping it replaces, outingReplaces's, or ''; off: the link's own
 // day where it is no longer one of the five (plan.js, planDayOff), or null; fresh: started here with "Plan an outing
 // here" while another outing is kept, not opened from a link }; else null), finishes (for a paddle or a
 // board: outingFinishes, or null), finish (its id), fin (its column, or null), stretch (outingStretch's HTML) }.
 function outingSection(o) {
-  const opt = (groups, sel) => groups.map(([h, g]) => `<optgroup label="${outEsc(h)}">`
-    + g.map(s => `<option value="${outEsc(s.id)}"${s.id === sel ? ' selected' : ''}>${outEsc(s.name)}</option>`).join('') + '</optgroup>').join('');
+  const opt = (groups, sel, note = () => '') => groups.map(([h, g]) => `<optgroup label="${outEsc(h)}">`
+    + g.map(s => `<option value="${outEsc(s.id)}"${s.id === sel ? ' selected' : ''}>${outEsc(s.name)}${note(s)}</option>`).join('') + '</optgroup>').join('');
+  const apart = s => outingApart(o.main, s) ? ', different catchment' : '';
   const times = `<option value="">Any time</option>` + Object.keys(OUTING_PARTS).map(p => `<option value="${p}"${o.when === p ? ' selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`).join('')
     + `<optgroup label="An hour">${OUTING_HOURS.map(h => `<option value="${h}"${o.when === h ? ' selected' : ''}>${h}:00</option>`).join('')}</optgroup>`;
   const acts = `<option value="">Swim</option>` + ['paddle', 'sup'].map(a => `<option value="${a}"${o.act === a ? ' selected' : ''}>${OUTING_ACT_WORDS[a][0]}</option>`).join('');
@@ -365,7 +403,8 @@ function outingSection(o) {
   const notes = [...outingTimeNote(o.day, o.when, o.nowMs), ...(ing ? ['The level is for the water, the same whatever you do on it.'] : [])];
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
-    : `<p class="outing-said">${said}</p>${meet}${licence}${outingBoth(o)}${outingNeither(o)}<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
+    : `<p class="outing-said">${said}</p>${meet}${licence}${outingBoth(o)}${outingNeither(o)}${o.alt ? `<p class="outing-join" id="outing-join">${outEsc(o.join)}</p>` : ''}`
+      + `<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + (o.fin ? `<div class="outing-pair one">${outingCol(o.fin, 'Finish')}</div><div id="outing-stretch">${o.stretch || ''}</div>` : '')
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
@@ -383,7 +422,7 @@ function outingSection(o) {
     + intro
     + `<div class="outing-fields"><label>When<select data-outing="when">${times}</select></label>`
     + `<label>Spot<select data-outing="spot"><option value="">Choose a spot</option>${opt(o.groups, o.spot)}</select></label>`
-    + `<label>Backup (optional)<select data-outing="backup"><option value="">No backup</option>${opt(o.backupGroups, o.backup)}</select></label>`
+    + `<label>Backup (optional)<select data-outing="backup"><option value="">No backup</option>${opt(o.backupGroups, o.backup, apart)}</select></label>`
     + `<label>What for<select data-outing="act">${acts}</select></label>`
     + (o.main ? `<label>Meet (optional)<select data-outing="meet">${meets}</select></label>` : '')
     + (o.main && o.finishes ? (o.finishes.length
@@ -422,7 +461,7 @@ function drawOuting(box, shown) {
       headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), notice: outingBrief(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
       level: dayLevel(s, PLAN.day), advised: typeof eaTodayRestricts === 'function' && eaTodayRestricts(s),   // a notice that restricts swimming
       access: outingAccess(s, today(), PLAN.act),
-      meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · ') }; };
+      meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · '), catchment: s.catchment }; };
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   // A paddle's finish, while the spot still offers it.
   const paddle = OUTING_FINISH_ACTS.includes(PLAN.act), finishes = paddle && pair.main ? outingFinishes(pair.main, byId) : null;
@@ -437,7 +476,7 @@ function drawOuting(box, shown) {
     stretch: fin ? outingStretch({ start: pair.main.name, finish: fin.name, state: 'loading' }) : '', day: PLAN.day, when: PLAN.when, spot: PLAN.spot, backup: PLAN.backup, act: PLAN.act, meet: PLAN.meet,
     shared: sent ? issuedWords(sent.forecast) : '',
     groups: outingOptions(list, SAVED, byId, PLAN.backup), backupGroups: outingOptions(list, SAVED, byId, PLAN.spot),
-    main: pair.main && col(pair.main), alt: pair.backup && col(pair.backup), missing: pair.missing,
+    main: pair.main && col(pair.main), alt: pair.backup && col(pair.backup), join: outingJoin(pair.main, pair.backup), missing: pair.missing,
     issued: `${issued()}, ${ago(ageMin())} ago`, open: OUTING_OPEN, nowMs: Date.now(), dateAlerts: outingDates().dateAlertsOn(DATA) }));
   const tile = document.getElementById('outing');
   tile.addEventListener('toggle', () => { OUTING_OPEN = tile.open; });
@@ -462,10 +501,12 @@ function drawOuting(box, shown) {
   // The swim passport's Prepared planner badge (passport.js): the first day an outing has a spot and a backup,
   // planned here or kept from a link; never for one only looked at.
   if (pair.backup && !preview && typeof passportPlanned === 'function') passportPlanned(today());
-  // Each spot's guide, once its own file is in (index.html, spotDetail), into its column's access block.
+  // Each spot's guide, once its own file is in (index.html, spotDetail), into its column's access block; and the
+  // line on how the two are joined, which the spot's or the backup's `linked` settles.
   for (const s of [pair.main, pair.backup, fin].filter(Boolean)) if (typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded)
     spotDetail(s).then(() => { const el = tile.querySelector(`[data-outing-access="${CSS.escape(s.id)}"]`);
-      if (el) el.innerHTML = '<p class="outing-role">Access</p>' + outingAccess(s, today(), PLAN.act); });
+      if (el) el.innerHTML = '<p class="outing-role">Access</p>' + outingAccess(s, today(), PLAN.act);
+      const j = tile.querySelector('#outing-join'); if (j) j.textContent = outingJoin(pair.main, pair.backup); });
   if (fin) outingStretchDraw(pair.main, fin);
   if (typeof OutingPack === 'object' && !preview) OutingPack.draw({ ...pair, finish: fin });   // outingpack.js: keep this outing for offline use, once it is kept
   // The calendar file, made here when asked (organisers.html's way of handing a file over).
@@ -545,6 +586,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }
