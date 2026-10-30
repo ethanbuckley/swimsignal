@@ -29,8 +29,8 @@ test('a paddler planning from a spot can start with a finish downstream; a swim 
 
 test('a paddle outing shows carrying and launching where the guides know them, else the swimmer\'s four', () => {
   const all = new Set(['parking', 'path', 'entry', 'exit', 'launch', 'carry', 'paddle']), old = new Set(['parking', 'path', 'entry', 'exit']);
-  assert.deepEqual(O.outingAccessTopics('paddle', all), ['parking', 'path', 'carry', 'launch', 'exit']);
-  assert.deepEqual(O.outingAccessTopics('sup', all), ['parking', 'path', 'carry', 'launch', 'exit']);
+  assert.deepEqual(O.outingAccessTopics('paddle', all), ['paddle', 'parking', 'path', 'carry', 'launch', 'exit']);   // the rules first
+  assert.deepEqual(O.outingAccessTopics('sup', all), ['paddle', 'parking', 'path', 'carry', 'launch', 'exit']);
   assert.deepEqual(O.outingAccessTopics('swim', all), ['parking', 'path', 'entry', 'exit']);
   assert.deepEqual(O.outingAccessTopics('paddle', old), ['parking', 'path', 'entry', 'exit']);   // before #446
 });
