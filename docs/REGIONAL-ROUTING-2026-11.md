@@ -12,8 +12,8 @@ option B, winter recalibration, the 2027 primary evaluation).
 | Identity | REGIONAL; owner: Claude session "SwimSignal pollution event lifecycle"; this PR; code `scripts/regional_routing.py`, `scripts/regional_routing_rebuild.py`; models in `swimsignal-private/baselines/regional-routing/` |
 | Evidence | v2 (#357) arm (b), trained on 2024-25, scored on January-August 2026: all nine Brier 0.03654 against production 0.04204; better at eight companies by 11-23%; **United Utilities worse**, 0.03902 against 0.03774 (+3.4%, interval wholly above zero). The historical verdict stands: not adopted. Every January-August 2026 row has been seen |
 | Stage and claim | Development: a frozen routing candidate and a prospective shadow plan. No claim of improvement until the shadow reads |
-| Next deliverable | The shadow logger (section 4): routed and production probabilities written by each build to a separate versioned log, with no change to anything shown |
-| Milestone and budget | Logger PR by **6 November 2026**; shadow window 28 UK days from its first logged build; read on the day after the window ends (about early December). No fetch, no Open-Meteo call, no new account; one extra model prediction per overflow-day in the build |
+| Next deliverable | **Built in this PR** (section 4): `src/dipcast/shadow_regional.py`, hooked into the forecast behind guards, writing table `shadow_regional_v1`; `scripts/regional_shadow_check.py`. Next: the read harness (labels and scores), before the window ends |
+| Milestone and budget | Logger built 30 October 2026 (due 6 November). The window opens on the first full UK day after the first build that logs shadow rows once this merges, runs 28 days, and is read the next day (about early December). Read harness due one week before the window ends. No fetch, no Open-Meteo call, no new account; one extra model prediction per overflow-day in the build; the v2 file adds 1.1 MB to the repository |
 | Release route | If the shadow is useful (section 5), a limited-rollout proposal for the eight companies with United Utilities and every other site on production, staged after the frozen windows close and stated against the 2027 tag date. Rollback: the routing table falls back to production for every company |
 
 ## 1. The candidate's files (recovered and verified)
@@ -61,13 +61,22 @@ applies. It says the rule is worth a prospective look. It does not say how it wi
 
 ## 4. The shadow plan (draft for review before the logger merges)
 
-- **What runs.** In each site build, for every overflow-day and lead the forecast already computes, the routed raw
-  probability (`regional-v1`, model hash and production hash stamped on every row) beside production's raw and its
-  shown (lead-calibrated) probability. Written to a **separate versioned log**, `shadow_regional_v1.parquet` in the
-  state release, never to the issued-forecast history (owned by the product chat) and never into any displayed
-  value, alert, score or level.
-- **Check before the window opens.** On the first logged build: routed equals production at every United Utilities
-  row and every non-nine row; production's logged values equal what the build published.
+- **What runs (built).** In each site build, for every overflow-day and lead 0 or later that a spot's forecast
+  computes, the routed raw chance (`regional-v1`; the rule and the v2 file's hash on every row; production's version
+  stamp too) beside production's raw and shown (lead-calibrated) chance. Both models read production's own site-day
+  frame, so the shadow makes no rain request. Written to its **own table, `shadow_regional_v1`,** in the state
+  database (`dipcast.duckdb`, which the build already uploads to the `state` release): not the issued-forecast table
+  (`forecast_overflows`, whose history the product chat owns), and never into any displayed value, alert, score or
+  level. The module returns new arrays, never alters its inputs, runs only behind guards that log and carry on, and
+  is off when the committed v2 file (`data/processed/regional/`) is missing or has another hash. Rows repeat where
+  several spots share an overflow, as the issued table's do; the read takes one per build, overflow, day and lead.
+- **Checked on 30 October** (offline, archived rain passed in, no Open-Meteo call): 16 real overflows at four
+  companies; the four United Utilities overflows identical to production; the twelve others from v2 (mean absolute
+  difference 0.013); every value finite where production's is; production's arrays and frame unaltered; shared
+  inputs hashed the same before and after.
+- **Check before the window opens** (`scripts/regional_shadow_check.py` on a copy of the state database): every
+  production-routed row carries production's raw chance; the eight companies, and only they, are routed to v2; the
+  rule and model stamp are the frozen ones. It prints the window the first logged build implies.
 - **Labels.** Spill-days from SwimSignal's own polls, with the live-status shadow's rule for a known status (no gap
   between current readings over 8 hours). A missing or stale status is unknown, never a dry day.
 - **Window.** 28 UK days from the first full day after the first logged build. Not extended or cut after it starts.
