@@ -44,7 +44,7 @@ function seenRecord(s, forecast, at) {
   return { id: s.id, level: R.ORDER[l] !== undefined || l === R.NO_OVERFLOWS ? l : null, discharging: known ? k : null,
     rating: rating && RATED.test(rating) ? rating : null, gap, official: seenOfficial(s), forecast, at, ...seenInputs(s) };
 }
-// What each day's level rested on, for why it changed (whyFacts). Added 30 Oct 2026; a note from before has
+// What each day's level rested on, for what changed in the inputs (whyFacts). Added 30 Oct 2026; a note from before has
 // none of these, and is explained by nothing. Per day: its level and the part that set it, in the page's words
 // (levels.js, risk and dayBecause: "sewage spills", "rated poor"); the sewage spill risk as the day's sheet shows
 // it, 0 to 100; the rain forecast here for the 48 hours to midday; the overflows upstream expected to spill that
@@ -238,17 +238,18 @@ function sinceOuting(id, planText) {
   return role === 'spot' ? `This is the spot of your outing ${w}.` : `This is the backup for your outing ${w}.`;
 }
 
-// ------------------------------------------------------------------------------ why it changed
+// ------------------------------------------------------------------------------ what changed in the inputs
 // Prototype, shown only with ?why=1 in the address (sinceWhyOn), so the page is unchanged without it
-// (docs/FORECAST-CHANGES-2026-10.md). A day whose level moved between the note and the forecast on screen
-// is explained from the inputs both notes kept (seenInputs), and from nothing else: a fact either note lacks
-// is not said, and no fact is said to have caused the move. Each fact is one of three kinds, because a
-// reader needs to know whether the water may have changed or only what SwimSignal knows about it:
+// (docs/FORECAST-CHANGES-2026-10.md). Under a day whose level moved between the note and the forecast on
+// screen, the inputs both notes kept (seenInputs) that changed, and nothing else: a fact either note lacks is
+// not said. The model has no breakdown of a level by input, so these are what changed beside the level, never
+// proof of why it moved. Each fact is one of four kinds, because a reader needs to know whether the water may
+// have changed or only what SwimSignal knows about it:
 //   reported   something observed: overflows reported discharging or stopped, a new lab sample, a new algae
 //              check, a new rating, an official notice shown or gone
 //   forecast   the weather forecast and the spill forecast made from it, for that day and the day before
-//              (a spill's water takes hours to a couple of days to arrive)
-//   time       right now, worked out from spills upstream as their water moves on and dies off: it changes
+//              (the model's travel times run from hours to a couple of days)
+//   time       right now, modelled from spills upstream as their water moves on and dies off: it changes
 //              between forecasts with nothing new reported, and the model's own clearing time says when
 //   ours       SwimSignal's own information: a feed upstream back or lost, rain data missing or complete, a
 //              new model
@@ -282,7 +283,7 @@ function whyFacts(was, now, date) {
     const p = was.nowScore, n = now.nowScore;
     if (Number.isInteger(p) && Number.isInteger(n) && p !== n) {
       const back = was.clears && n < p && Date.parse(was.clears) <= Date.parse(now.forecast) ? ` The model expected it back to low risk by ${issuedWords(was.clears)}.` : '';
-      fact('time', `Right now, worked out from spills upstream as their water moves on and dies off, was ${p} of 100 then and is ${n} now.${back}`);
+      fact('time', `Right now, as modelled from spills upstream while their water moves on and dies off, was ${p} of 100 then and is ${n} now.${back}`);
     }
     if (typeof was.gap === 'boolean' && typeof now.gap === 'boolean' && was.gap !== now.gap) fact('ours', was.gap
       ? 'A feed upstream was down or late then; every feed is reporting now.' : 'A feed upstream is down or late now, so its overflows are not counted.');
@@ -301,8 +302,8 @@ function whyFacts(was, now, date) {
     .filter(([x, y]) => x && y && x.expect !== null && y.expect !== null && Math.abs(y.expect - x.expect) >= WHY_EXPECT);
   if (spills.length) fact('forecast', `Overflows upstream expected to spill ${spills.map(([x, y, w]) => `${w}: ${x.expect} then, ${y.expect} now`).join('; ')}.`);
   if (a.missing !== null && b.missing !== null && Math.abs(b.missing - a.missing) >= WHY_MISSING) fact('ours', a.missing > b.missing
-    ? `Rain data was missing for ${Math.round(a.missing * 100)}% of the water upstream then, ${b.missing ? `${Math.round(b.missing * 100)}%` : 'none'} now.`
-    : `Rain data is missing for ${Math.round(b.missing * 100)}% of the water upstream now, against ${Math.round(a.missing * 100)}% then.`);
+    ? `Rain data was missing for overflows carrying ${Math.round(a.missing * 100)}% of the model's weight here then, ${b.missing ? `${Math.round(b.missing * 100)}%` : 'none'} now.`
+    : `Rain data is missing for overflows carrying ${Math.round(b.missing * 100)}% of the model's weight here now, against ${Math.round(a.missing * 100)}% then.`);
   if (was.model && now.model && was.model !== now.model) {
     const m = whyStamp(was.model), n = whyStamp(now.model), parts = [...new Set([...m.keys(), ...n.keys()])].filter(k => m.get(k) !== n.get(k));
     fact('ours', `SwimSignal changed its ${parts.map(k => WHY_MODEL[k] || 'forecast').join(' and ')} between the two forecasts.`);
@@ -311,7 +312,7 @@ function whyFacts(was, now, date) {
 }
 // The facts as one passage, or ''. First what set the level, where that changed; then the facts, under what
 // kind of change they are; and where no fact was found, the spill risk itself, called small where it moved by
-// WHY_SMALL or less across the line between two levels, and otherwise said to be unexplained by these inputs.
+// WHY_SMALL or less across the line between two levels, and otherwise said plainly to have no kept input beside it.
 function whySaid(was, now, date) {
   const f = whyFacts(was, now, date);
   if (!f) return '';
@@ -319,17 +320,17 @@ function whySaid(was, now, date) {
   if (a.by !== b.by) out.push(`The level was set by ${a.by} then; it is now set by ${b.by}.`);
   const of = k => f.facts.filter(x => x.kind === k).map(x => x.text), time = of('time'), ours = of('ours');
   const real = [...of('reported'), ...of('forecast')];
-  if (real.length) out.push(`What changed: ${real.join(' ')}`);
-  if (time.length) out.push(`${real.length ? 'And time passed' : 'Time passed, with nothing new reported'}: ${time.join(' ')}`);
-  if (ours.length) out.push(`${real.length || time.length ? 'What SwimSignal knows changed too' : 'What SwimSignal knows changed, not necessarily the water'}: ${ours.join(' ')}`);
+  if (real.length) out.push(`Reported or forecast: ${real.join(' ')}`);
+  if (time.length) out.push(`${real.length ? 'With time' : 'With time, and nothing new reported'}: ${time.join(' ')}`);
+  if (ours.length) out.push(`In what SwimSignal knows, not necessarily the water: ${ours.join(' ')}`);
   const sc = a.score !== null && b.score !== null && a.score !== b.score;
   if (!f.facts.length && sc) {
     const lo = Math.min(a.score, b.score), hi = Math.max(a.score, b.score), cut = WHY_CUTS.find(([c]) => lo < c && c <= hi);
     out.push(hi - lo <= WHY_SMALL && cut && a.by === b.by
       ? `A small change: sewage spill risk ${a.score} of 100 then, ${b.score} now, and ${cut[1]} risk starts at ${cut[0]}.`
-      : `None of the inputs kept here moved enough to explain it. Sewage spill risk: ${a.score} of 100 then, ${b.score} now.`);
+      : `No other input kept here changed by enough to show. Sewage spill risk: ${a.score} of 100 then, ${b.score} now.`);
   } else if (sc && Math.abs(b.score - a.score) >= WHY_SMALL) out.push(`Sewage spill risk: ${a.score} of 100 then, ${b.score} now.`);
-  else if (!f.facts.length && a.by === b.by) out.push('None of the inputs kept here moved enough to explain it.');
+  else if (!f.facts.length && a.by === b.by) out.push('No input kept here changed by enough to show.');
   return out.join(' ');
 }
 // Which day to explain under a line about the headline (sinceLine): today or tomorrow, whichever now has the
@@ -408,7 +409,7 @@ function sinceSaid(s, forecast) {
   // page (its "Overflows that matter most"), one tap away, rather than names this card does not have.
   const which = now.discharging > 0 && !spills.length && typeof spotPath === 'function'
     ? ` <a href="${esc1(spotPath(s.id))}" data-id="${esc1(s.id)}">Which overflows: the spot's page</a>` : '';
-  return `<p class="place-since">${esc1(t)}${said ? ` <span class="since-why">Why: ${esc1(said)}</span>` : ''} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
+  return `<p class="place-since">${esc1(t)}${said ? ` <span class="since-why">What changed in the inputs: ${esc1(said)}</span>` : ''} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
 }
 
 if (typeof module === 'object' && module.exports) {

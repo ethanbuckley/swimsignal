@@ -1,6 +1,6 @@
-// Why a forecast changed (src/dipcast/site/since.js, whyFacts and whySaid; prototype, ?why=1): a day whose level
-// moved between the note kept on the device and the forecast on screen, explained from the inputs both notes
-// kept, and from nothing else. First on two real issues of the live site (tests/fixtures/forecast_why: three spots
+// What changed in a forecast's inputs (src/dipcast/site/since.js, whyFacts and whySaid; prototype, ?why=1): under a
+// day whose level moved between the note kept on the device and the forecast on screen, the inputs both notes kept
+// that changed, and nothing else; never said to be the cause. First on two real issues of the live site (tests/fixtures/forecast_why: three spots
 // from 29 Oct 18:57 and 30 Oct 17:49 UTC), then on made-up spots for the kinds those 23 hours did not have.
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
@@ -25,9 +25,9 @@ test('real issues: the day became today, a spill stopped, and right now fell, ea
   assert.deepEqual([f.was.level, f.now.level], ['low', 'very high']);
   assert.deepEqual(f.facts.map(x => x.kind), ['time', 'reported', 'time']);
   assert.equal(S.whySaid(was, now, '2026-10-30'), 'The level was set by sewage spills then; it is now set by recent sewage spills.'
-    + ' What changed: Overflows upstream reported discharging: 1 then, 0 now.'
-    + " And time passed: Then this day was tomorrow; today's level also counts right now, from spills upstream."
-    + ' Right now, worked out from spills upstream as their water moves on and dies off, was 81 of 100 then and is 77 now.');
+    + ' Reported or forecast: Overflows upstream reported discharging: 1 then, 0 now.'
+    + " With time: Then this day was tomorrow; today's level also counts right now, from spills upstream."
+    + ' Right now, as modelled from spills upstream while their water moves on and dies off, was 81 of 100 then and is 77 now.');
   // The headline (worst of right now, today and tomorrow) moved with today: today is the day explained.
   assert.equal(S.whyHeadlineDay(was, now), '2026-10-30');
 });
@@ -35,7 +35,7 @@ test('real issues: the day became today, a spill stopped, and right now fell, ea
 test('real issues: a spill forecast revised for the day before, and a small move across a line', () => {
   L.setToday('2026-10-30');
   assert.equal(S.whySaid(WAS.get('avon-warleigh-weir'), NOW.get('avon-warleigh-weir'), '2026-11-02'),
-    'What changed: Overflows upstream expected to spill on Sunday, the day before: 2 then, 1.4 now.');
+    'Reported or forecast: Overflows upstream expected to spill on Sunday, the day before: 2 then, 1.4 now.');
   // Nothing kept moved: the spill risk itself, which crossed the line between moderate and low by 2.
   assert.equal(S.whySaid(WAS.get('osm-dart-dartington'), NOW.get('osm-dart-dartington'), '2026-11-02'),
     'A small change: sewage spill risk 16 of 100 then, 14 now, and moderate risk starts at 15.');
@@ -69,21 +69,21 @@ const kinds = (was, now, d = '2026-10-31') => S.whyFacts(note(was), note(now, NE
 test('a revised rain and spill forecast is a change in conditions', () => {
   const now = spot([0.05, 0.45, 0.1, 0.1, 0.1], {day: {'2026-10-31': {rain_48h_mm: 14.2, expected_spilling_overflows: 2.1}}});
   assert.deepEqual(kinds(spot(BASE), now), ['forecast', 'forecast']);
-  assert.equal(why(spot(BASE), now), 'What changed: Rain here in the 48 hours to midday: 2 mm forecast then, 14 mm now.'
+  assert.equal(why(spot(BASE), now), 'Reported or forecast: Rain here in the 48 hours to midday: 2 mm forecast then, 14 mm now.'
     + ' Overflows upstream expected to spill tomorrow: 0.4 then, 2.1 now. Sewage spill risk: 10 of 100 then, 45 now.');
   // Under the sizes the page shows (whole millimetres, one decimal place of spills): not said.
   const slight = spot([0.05, 0.16, 0.1, 0.1, 0.1], {day: {'2026-10-31': {rain_48h_mm: 3.4, expected_spilling_overflows: 0.7}}});
   // And a move of 6 is more than the small one (5): said as not explained by what is kept, not as small.
-  assert.equal(why(spot(BASE), slight), 'None of the inputs kept here moved enough to explain it. Sewage spill risk: 10 of 100 then, 16 now.');
+  assert.equal(why(spot(BASE), slight), 'No other input kept here changed by enough to show. Sewage spill risk: 10 of 100 then, 16 now.');
 });
 
 test('a feed back, rain data filled in, or a new model is what SwimSignal knows, not necessarily the water', () => {
   // Today: a feed upstream was down, so the count was not known; now it reports, and right now is raised.
   const down = spot(BASE, {now: {feed_down_upstream: 2}}), back = spot([0.2, 0.1, 0.1, 0.1, 0.1]);
   assert.deepEqual(kinds(down, back, '2026-10-30'), ['ours']);
-  assert.match(why(down, back, '2026-10-30'), /^What SwimSignal knows changed, not necessarily the water: A feed upstream was down or late then; every feed is reporting now\./);
+  assert.match(why(down, back, '2026-10-30'), /^In what SwimSignal knows, not necessarily the water: A feed upstream was down or late then; every feed is reporting now\./);
   const gap = spot(BASE, {day: {'2026-10-31': {rain_missing_share: 0.3}}}), full = spot([0.05, 0.2, 0.1, 0.1, 0.1]);
-  assert.match(why(gap, full), /^What SwimSignal knows changed, not necessarily the water: Rain data was missing for 30% of the water upstream then, none now\./);
+  assert.match(why(gap, full), /^In what SwimSignal knows, not necessarily the water: Rain data was missing for overflows carrying 30% of the model's weight here then, none now\./);
   // A new spill model and calibration, named; a new build of the page alone (code=) is no model change.
   const model = {...spot([0.05, 0.2, 0.1, 0.1, 0.1]), assumptions: {version: 'spill=dddd;cal=eeee;ecoli=cccc;code=0.1.0+2222;rain=open-meteo-forecast'}};
   assert.match(why(spot(BASE), model), /SwimSignal changed its spill model and calibration between the two forecasts\./);
@@ -91,18 +91,18 @@ test('a feed back, rain data filled in, or a new model is what SwimSignal knows,
   assert.doesNotMatch(why(spot(BASE), code), /SwimSignal changed/);
   // Both kinds: the conditions first, then what SwimSignal knows, "too".
   const both = {...spot([0.05, 0.45, 0.1, 0.1, 0.1], {day: {'2026-10-31': {rain_48h_mm: 14}}}), assumptions: model.assumptions};
-  assert.match(why(spot(BASE), both), /^What changed: Rain here .* What SwimSignal knows changed too: SwimSignal changed its spill model/);
+  assert.match(why(spot(BASE), both), /^Reported or forecast: Rain here .* In what SwimSignal knows, not necessarily the water: SwimSignal changed its spill model/);
 });
 
 test('reported things: a spill starting, a new sample, a new rating', () => {
   const on = spot([0.45, 0.1, 0.1, 0.1, 0.1], {now: {label: 'high', risk: 0.45, discharging_upstream: 2}});
-  assert.match(why(spot(BASE), on, '2026-10-30'), /What changed: Overflows upstream reported discharging: 0 then, 2 now\./);
+  assert.match(why(spot(BASE), on, '2026-10-30'), /Reported or forecast: Overflows upstream reported discharging: 0 then, 2 now\./);
   const sampled = spot(BASE, {lab_sample: {taken_at: '2026-10-29T10:00+00:00', ecoli: 1200}});
   assert.match(why(spot(BASE, {lab_sample: {taken_at: '2026-09-24T10:00+00:00', ecoli: 80}}), sampled, '2026-10-30'),
     /A new Environment Agency lab sample has arrived\./);
   const poor = spot(BASE, {classification: {class: 'Poor', year: 2026}});
   assert.match(why(spot(BASE, {classification: {class: 'Good', year: 2025}}), poor),
-    /^The level was set by sewage spills then; it is now set by rated poor\. What changed: The Environment Agency rating changed: rated good for 2025 then, rated poor for 2026 now\./);
+    /^The level was set by sewage spills then; it is now set by rated poor\. Reported or forecast: The Environment Agency rating changed: rated good for 2025 then, rated poor for 2026 now\./);
 });
 
 test('nothing is said that a note does not hold', () => {
@@ -130,7 +130,7 @@ test('the outing day gets a line of its own when only it moved', () => {
   const now = spot([0.05, 0.1, 0.5, 0.1, 0.1], {day: {'2026-11-01': {rain_48h_mm: 20, expected_spilling_overflows: 3}}});
   const was = {...note(spot(BASE)), at: new Date(2026, 9, 30, 9, 5).getTime()};
   assert.equal(S.whyDayLine(was, note(now, NEW), '2026-11-01'), 'Sunday, the day of your outing, was low risk when you looked today at 09:05; now high risk.');
-  assert.match(S.whySaid(was, note(now, NEW), '2026-11-01'), /^What changed: Rain here in the 48 hours to midday: 2 mm forecast then, 20 mm now\./);
+  assert.match(S.whySaid(was, note(now, NEW), '2026-11-01'), /^Reported or forecast: Rain here in the 48 hours to midday: 2 mm forecast then, 20 mm now\./);
 });
 
 test('no word says safe, clean or caused', () => {
