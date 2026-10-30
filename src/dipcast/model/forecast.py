@@ -16,6 +16,7 @@ from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
+from dipcast import shadow_regional
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
@@ -197,6 +198,7 @@ def reload_caches() -> None:
         _overflows_uncached.cache_clear(); _model.cache_clear(); _lead_calibration.cache_clear(); ecoli.load.cache_clear()
         ecoli.load_sm.cache_clear()
         model_version.cache_clear(); code_commit.cache_clear(); live_status.clear_cache()
+        shadow_regional.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 
@@ -458,6 +460,14 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             shadow = live_status.shadow_forecast(frame, ov, days, today_idx, now, p)
         except Exception as e:  # noqa: BLE001 - a shadow must never fail the forecast
             log.warning("live-status shadow skipped: %s", e)
+    # The regional routing shadow (docs/REGIONAL-ROUTING-2026-11.md): regional-v1's chance from the same frame, for
+    # its own table only. Nothing below reads it but its logger.
+    regional = None
+    if log_to_store and frame is not None:
+        try:
+            regional = shadow_regional.routed(frame, ov, days, p_raw)
+        except Exception as e:  # noqa: BLE001 - a shadow must never fail the forecast
+            log.warning("regional shadow skipped: %s", e)
     risk = combine_daily(p, weights, travel)
     # Which overflows each day's risk comes from (the page's "where the risk comes from"), and the
     # part of it from spills on the days after today alone: new spills, not ones under way or over,
@@ -624,6 +634,11 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                          available=avail, rain_mm=rain_mm, version=model_version(), members=members, shadow=shadow)
         except Exception as e:  # noqa: BLE001 - logging must never fail a forecast
             log.warning("forecast log failed: %s", e)
+        if regional is not None:
+            try:
+                shadow_regional.log_shadow(now, lat, lon, days, ov, p_raw, p, regional, model_version())
+            except Exception as e:  # noqa: BLE001 - a shadow must never fail a forecast
+                log.warning("regional shadow log failed: %s", e)
     return out
 
 
