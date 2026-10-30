@@ -4161,7 +4161,16 @@ const canPlanHere = d => typeof planFromSpot === 'function' && Number.isFinite(d
 // is drawn, not in daysTile, which the build's prerender copies (scripts/prerender_spots.js) without the planner. The
 // button among the page's actions is 1,700 px further down on a phone (Port Meadow at 375 px, 29 Oct 2026).
 const planHereLine = d => `<p class="small plan-here-line">Going? <a href="${esc(planPath() + planHereHash(d))}" data-plan-here>Plan an outing here</a>: a time, a backup, and a link to share.</p>`
-  + paddleFromHere(d);
+  + paddleRules(d) + paddleFromHere(d);
+// For someone who said they paddle or paddleboard (ACTS): the spot's guide's rules for boats and boards ("Paddling here",
+// guides' `paddle` topic), the first of them and who says so, before they plan (30 Oct 2026: Brothers Water allows none).
+// More are in the guide on the page. Only a guide's own words; nothing is added.
+const paddleRules = d => {
+  const f = actDefault(acts()) && d.guide && Array.isArray(d.guide.facts) ? d.guide.facts.find(x => x && x.topic === 'paddle' && x.status === 'confirmed') : null;
+  if (!f) return '';
+  const more = d.guide.facts.filter(x => x && x.topic === 'paddle').length - 1;
+  return `<p class="small plan-here-line paddle-rule"><b>Paddling here:</b> ${esc(f.text)} <span class="muted">(${esc(f.source_name || 'the guide')}${more > 0 ? `; ${more} more in the guide below` : ''})</span></p>`;
+};
 // For someone who said they paddle or paddleboard (ACTS): the listed spots downstream they can finish at (stretches.py,
 // the lite file's `downstream`), each opening the plan with that finish. The level is the same; this is what is offered.
 const paddleFromHere = d => {

@@ -267,7 +267,7 @@ const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>
 const OUTING_ACCESS = ['parking', 'path', 'entry', 'exit'];
 // For a boat or a board: carrying it to the water and launching it in place of getting in, where the guides have those
 // topics (guide.js, GUIDE_TOPICS, from #446); before then, the swimmer's four.
-const OUTING_ACCESS_PADDLE = ['parking', 'path', 'carry', 'launch', 'exit'];
+const OUTING_ACCESS_PADDLE = ['paddle', 'parking', 'path', 'carry', 'launch', 'exit'];   // the rules for boats and boards first (guides' "Paddling here")
 const OUTING_BOAT = ['paddle', 'sup'];   // plan.js's OUTING_FINISH_ACTS, here so Node needs no plan.js
 const outingAccessTopics = (act, have) => (OUTING_BOAT.includes(act) && have.has('launch') ? OUTING_ACCESS_PADDLE : OUTING_ACCESS).filter(k => have.has(k));
 const outingGuide = () => typeof guideRuns === 'function' ? { guideRuns, guideChecked, GUIDE_TOPICS } : require('./guide.js');
