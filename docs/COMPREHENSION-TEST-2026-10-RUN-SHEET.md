@@ -385,3 +385,22 @@ checklist above is left as written, with a dated line at section 1 step 8.
 - **H4. If task 2 fails.** A prototype of clearer explanatory wording, informed by the errors observed, is
   evaluated (option A, in `docs/DESIGN.md`, may be the first candidate), with a focused retest before any
   wider promotion (D5). No wording is rolled out automatically.
+
+## 9. Amendment, 30 October 2026, before any session: task 3b
+
+The plan records it in its section 13 (T1 to T7). The checklist above is left as written.
+
+**The day before**
+1. Find a spot page whose right-now level is raised with an overflow upstream discharging, so it shows "If the
+   overflow discharging upstream stops now, ...". Save a static copy of that page with its "Issued" line, as a
+   fallback for wording A.
+2. Make wording B from the same saved page, changing only that sentence (plan, T3). Keep both copies in the private
+   folder, named with the page's spot id and issue time.
+3. Write in the record which wording the participant will see: A for odd codes, B for even.
+
+**During the session**, straight after task 3: open the page (live for A where one qualifies; otherwise the saved
+copy), let them look, then read the two questions word for word (plan, T4). Do not explain the sentence.
+⚠ Why it goes wrong: the natural follow-up is "Did you see the 'if'?", which turns an unprompted reading into a
+prompted one. Use only "What makes you say that?".
+
+**After the session:** task 3b's answers go in their own block of the record and are tallied apart from tasks 1 to 5.

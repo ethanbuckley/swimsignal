@@ -85,6 +85,14 @@ session.
 - Treated a gap as good news? (quote):
 - Moderator's reading:
 
+## Task 3b: the clearing time (amendment of 30 October 2026, plan section 13; exploratory)
+- Wording seen: A (live) / B (static copy)    Page: live / saved copy (spot id, "Issued" line):
+- Sentence as shown, verbatim: "  "
+- "Will the water here be back to low risk by [time shown]?" Said, verbatim: "  "
+  - Carries the condition / "yes" without one / other:
+- "Has the overflow stopped?" Said, verbatim: "  "    Answered "no": yes / no
+- Moderator's reading:
+
 ## Task 4: save and find again
 - Time (min:sec):
 - First half, save and find from the home page:

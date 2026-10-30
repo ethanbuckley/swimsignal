@@ -237,3 +237,42 @@ merged.
   observed. Option A ("Moderate predicted risk from monitored sewage overflows", `docs/DESIGN.md`) may be the
   first candidate. A focused retest comes before any wider promotion (D5); section 8's retest with three new
   people still applies. No wording is rolled out automatically.
+
+## 13. Amendment, 30 October 2026, before any session: task 3b, the clearing time
+
+Added on 30 October 2026, before any participant was recruited and before any session was arranged or run (the
+private check-in log and record sheet hold header rows only). Approved the same day by Codex, coordinating at
+Ethan's explicit request, under the delegation of routine decisions of 26 October 2026. Everything above, sections
+11 and 12 included, is left as written. How it is applied: `docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md`, section 9.
+Background: `docs/CLEAR-TIME-WORDING-2026-11.md`.
+
+Why: the spot page's "When will it clear?" gives a clock time that holds only if the overflows discharging upstream
+stop now. A precise time may be read as a prediction. The failed spill-duration test (PRs #459 and #461) authorises
+no change to the wording or the model; this task only asks how people read it.
+
+- **T1. Where.** Task 3b comes straight after task 3, for every participant who did task 3. It adds about three
+  minutes. It does not move tasks 1 to 5 or the closing questions.
+- **T2. The page.** A spot page whose right-now level is raised while an overflow upstream is discharging, so the
+  clearing sentence shows. If no live page qualifies on the day, a static copy of one real page saved beforehand,
+  with its "Issued" line, and the record says so.
+- **T3. Two wordings, alternated.** Odd-numbered participants (P01, P03, ...) see wording A, the live sentence as the
+  page shows it. Even-numbered participants see wording B, the same page with only that sentence changed, from a
+  static copy made beforehand:
+  > The overflow upstream is still discharging. If it stopped now, low risk from spills would come back by about
+  > [part of day, as the page's other clearing sentence gives it]. It may run for hours yet, and the time moves
+  > later for as long as it does.
+
+  Variants C and D of the background note ("about N hours after it stops") are not shown in this round.
+- **T4. The questions, word for word, after they have looked at the page:**
+  1. "Will the water here be back to low risk by [the time or part of day shown]?"
+  2. "Has the overflow stopped?"
+  Neutral follow-up only: "What makes you say that?"
+- **T5. Recording.** Each answer verbatim; the wording seen (A or B); whether the answer to question 1 carries the
+  condition (for example "only if it stops", "it depends when it stops"), says "yes" without one, or is something
+  else; and whether question 2 is answered "no".
+- **T6. Exploratory only.** With 8 to 10 people, four or five see each wording. Task 3b has no fail line and decides
+  nothing by itself: its counts are reported as direction, apart from tasks 1 to 5. Any wording change it suggests
+  is a proposal with its own test, and nothing goes live from it. Alerts would follow whatever conditional meaning
+  the page uses.
+- **T7. Nothing else changes.** Tasks 1 to 5, the rubric (section 5), every fail line (section 1), D1 to D8 and H1 to
+  H4 stay exactly as written.

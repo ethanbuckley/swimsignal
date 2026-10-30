@@ -56,7 +56,24 @@ Where nothing upstream is discharging (spills finished, water still passing), th
 present sentence ("The spill upstream should have passed and died off by …") can stay, though the minute could
 still become a part of the day.
 
+**Added 30 October 2026: C and D are drafts only, and are not equivalent to A or B in every case.** "About N hours
+after it stops" equals `clear_time`'s answer only with one overflow discharging, no finished spills still counted,
+and N measured from the time `clear_time` ran. Before C or D is shown to anyone, each of these needs checking against
+`transport.clear_time`:
+- **Several overflows discharging.** `clear_time` assumes they all stop now. If they stop at different times, the
+  lag after the last one stops is not N: each spill has its own travel time and weight.
+- **Spills already ended but still counted.** Their end times are fixed, so their part of the risk keeps falling
+  whatever the running spill does. "N hours after it stops" then overstates the wait once it stops later.
+- **The reference time.** N is `clears_at` minus the forecast's own `now`. A reader sees the page later, and the page
+  holds only the build's `generated_at`. And when `clears_by` is "window", part of N is the counting rule (a spill
+  stops counting 48 hours after its water passed), not travel or die-off.
+
 ## How to test it
+
+**Superseded on 30 October 2026** by the amendment as approved: `docs/COMPREHENSION-TEST-2026-10.md`, section 13.
+The first round compares A (live) and B only, alternated by participant, with questions 1 and 2 below; it is
+exploratory, with no fail line. Alerts follow the same conditional meaning as the page. No live wording or model
+change is authorised. The text below is kept as first proposed.
 
 Inside the comprehension sessions (`docs/COMPREHENSION-TEST-2026-10.md`). Their protocol is fixed and this pack
 does not change it. This is a **proposed amendment for Ethan's decision**, to add after task 3, on a spot whose
