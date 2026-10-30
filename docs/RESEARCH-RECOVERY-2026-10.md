@@ -29,13 +29,14 @@ Document dates are names, not proof of when an analysis ran: several “2026-11�
 
 Session names identify the existing Claude chats; these are working assignments, not new human staffing.
 Codex sent both assignments on 30 October. Both chats have started: the research chat has fingerprinted caches
-and is building the contract/exporter on `research/satellite-recovery`; the product chat acknowledged
+and has opened [#468](https://github.com/ethanbuckley/swimsignal/pull/468) for the contract/exporter on
+`research/satellite-recovery` (work in progress); the product chat acknowledged
 UI/integration ownership and adoption of that single contract. Update this table with implementation PRs and
 actual public URLs as they appear.
 
 | Order / ID | Owner | Next reviewable deliverable | Completion check and subsequent route |
 |---|---|---|---|
-| 1 / SAT-OBS | Claude: **SwimSignal pollution event lifecycle** | Cached artifact manifest; one versioned observation contract and reproducible exporter; small historical dataset; operational coverage/missingness checks | Match source hashes and lake/date identities; disclose NDCI vs lab target; hand a committed contract/PR to product owner. Cached-first; state a capped refresh budget before fetching, no bulk imagery refetch |
+| 1 / SAT-OBS | Claude: **SwimSignal pollution event lifecycle** | [#468](https://github.com/ethanbuckley/swimsignal/pull/468), in progress: cached artifact manifest; one versioned observation contract and reproducible exporter; small historical dataset; operational coverage/missingness checks | Match source hashes and lake/date identities; disclose NDCI vs lab target; hand committed data/contract to product owner. Cached-first; state a capped refresh budget before fetching, no bulk imagery refetch |
 | 1 / LABS | Claude: **Outing tile: say how the backup's water is joined to the spot's** | Finish current publishing verification and issued-history #467, then a discoverable Research page/nav and satellite observation viewer | Use SAT-OBS contract; check exporter→file→page, mobile, cloudy/stale/empty states and wording; publish historical observations first if no refresh yet. Verify deployed URL/version before calling it live |
 | 2 / REGIONAL | Research chat, after SAT-OBS handoff | Regional nine-company v2 routing candidate, old-model fallback at UU and unsupported sites, versioned shadow plan | Treat eight-company selection as exploratory; freeze whole routing rule; prospective comparison with production and simple references before limited rollout |
 | 3 / LAKE-CONC | Research chat, next bounded modelling package | Lake-specific concentration/variance candidate, censoring and interval-coverage diagnostics, misses/false-alert tradeoff | Reused 2024–26 data are development only. Publish an evidence/misses explorer if useful; concentrations in guidance require calibration and new confirmation |

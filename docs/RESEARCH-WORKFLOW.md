@@ -34,6 +34,10 @@ becoming a forecast. A candidate can collect shadow predictions while its model 
 For satellite work, the first public output can be an **historical, dated NDCI observation series**, not an estimate
 of harmful algae. A historical release must say so prominently; becoming “latest observations” requires an actual
 refresh pipeline and measured coverage. A public feature is not “live” merely because a research record is merged.
+A biological model's validated season does not automatically prohibit an off-season **index observation**: state
+the new display scope prospectively, check extraction quality (including low light, snow/ice and water masks),
+and disclose that biological interpretation outside the tested season is unvalidated. Do not extend a seasonal
+forecast claim merely because its underlying observations can be displayed.
 
 ## Design a test for the decision it must support
 
