@@ -61,11 +61,12 @@ At 320, 375 and 1440 px (screenshots listed at the end):
 1. **Arriving for the first time** (the tile's label, with the guide's signpost icon). The guide's checked line,
    then a count: "In this guide: 9 facts verified, 2 from dated records, none a swimmer's word; 9 published pages
    in all. Photos: 3 historical, by other photographers; none taken by SwimSignal."
-2. **The way there and back**: the overview photo (Geograph 6979159), then the numbered steps:
+2. **The way there and back**: the two overview photos (Geograph 6979159 and 7486475), then the numbered steps:
    1. Getting there: "By bus or train" (2 facts), "By car" (2 facts), then a link to Traveline's journey planner
       for times. The link is not a fact.
    2. From the road to the water (2 facts). "No photo yet of the path to the water."
-   3. Getting in (1 fact), and its own photo (Geograph 7486475).
+   3. Getting in (1 fact). "No photo yet of the place to get in." Geograph 7486475 shows gravel upstream of the
+      bridge, but no source says that is where people get in, so it is an overview photo, not this step's.
    4. Getting out: "Nothing in this guide yet." "No photo yet of the place to get out."
    5. Toilets and changing: Toilets (2 facts, one a dated record); Changing, nothing yet.
    6. Seasons, opening times and fees: nothing yet. (The toilets' summer and winter hours stay under Toilets,
@@ -153,7 +154,7 @@ script does not enlarge, so the only change is a re-encode with all metadata rem
 | File, step | Geograph photo | Photographer, taken | What it shows | Why the place is verified |
 | --- | --- | --- | --- | --- |
 | `cromwheel-upstream-2021.jpg`, overview | 6979159 "River Wharfe, Ilkley" | Malc McDonald, 14 Jun 2021 | The river looking upstream ("This view looks upstream"), a gravel bank on the left bank, from a raised point. | Camera at SE 1224 4848, the suspension bridge's square (other photos of the bridge are within 10 m); facing WSW, upstream; the EA profile puts the site "upstream of the suspension bridge". |
-| `cromwheel-gravel-bridge-2023.jpg`, Getting in | 7486475 "Foot suspension bridge over the River Wharfe" | Oliver Dixon, 16 May 2023 | A gravel bank at the water's edge in the foreground, the suspension bridge behind it. | Camera at SE 12224 48476 facing ESE, on the gravel, with the bridge in the picture: the gravel is upstream (west) of the bridge, as the EA profile places the site; the profile describes a "gently sloping shingle beach" exposed when the river is low. |
+| `cromwheel-gravel-bridge-2023.jpg`, overview (was Getting in; moved in review because its role is not verified) | 7486475 "Foot suspension bridge over the River Wharfe" | Oliver Dixon, 16 May 2023 | A gravel bank at the water's edge in the foreground, the suspension bridge behind it. | Camera at SE 12224 48476 facing ESE, on the gravel, with the bridge in the picture: the gravel is upstream (west) of the bridge, as the EA profile places the site; the profile describes a "gently sloping shingle beach" exposed when the river is low. |
 | `cromwheel-council-sign-2024.jpg`, Who can swim | 7922212 "Warning sign regarding bathing in the River Wharfe" | Mrs W J Sutherland, 13 Nov 2024 | A Bradford Council sign headed "River Wharfe, Suspension Bridge, Ilkley"; at 640 px a line reads "water quality below suspension bridge"; there is a no-swimming pictogram; the rest is not legible. | Camera at SE 1224 4845, beside the bridge; the sign's own heading names the bridge; the Bradford logo is on it. |
 
 What is inferred, not established: that the gravel in 7486475 is where most people get in (the EA profile names a

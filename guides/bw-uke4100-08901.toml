@@ -106,7 +106,9 @@ changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata r
 file = "cromwheel-gravel-bridge-2023.jpg"
 width = 640
 height = 480
-topic = "entry"
+# Overview, not entry: the place is verified (camera on the gravel, the bridge downstream in shot), but no
+# source says this gravel is where people get in, so the photo does not fill "Getting in" (review, 30 Oct 2026).
+topic = "overview"
 caption = "Gravel at the water's edge, with the suspension bridge downstream of it, in May 2023."
 credit = "Oliver Dixon"
 taken = 2023-05-16
