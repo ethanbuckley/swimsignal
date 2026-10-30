@@ -48,6 +48,8 @@ test('an out-of-season reading is experimental, said before its figure, and draw
   assert.equal(plain(K.lakesRefreshed(RUT)),
     'Images from 1 Oct 2026 to 30 Oct 2026 were read later: 18 images, 4 shown. 1 clear image left out (1 for too little of the water classed as water): not shown, and not an observation of the water.');
   assert.equal(K.lakesRefreshed(FULL), '');
+  // The season's own line keeps to the season: October is the refresh's sentence, not "May to September up to 30 Oct".
+  assert.match(plain(K.lakesLake(RUT, DOC, '2026-10-30', 600, DOC)), /Every image from May to September was read here, up to 30 Sept 2026\./);
 });
 
 test("only one reading a date is drawn: the test's primary rule", () => {
