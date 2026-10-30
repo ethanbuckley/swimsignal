@@ -1,4 +1,4 @@
-# Brothers Water. Desk check of the park authority's lakes guide and the National Trust's trail page, 28 October 2026,
+# Brothers Water. Desk check of the park authority's lakes guide and the National Trust's trail page, 28 October 2026, The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # read in a browser. Neither names an entry point, so getting in and out are left out (the page says so).
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-28
@@ -21,6 +21,13 @@ source_name = "National Trust"
 [[fact]]
 topic = "rules"
 text = "The park authority's lakes guide lists swimming at Brotherswater as allowed, and canoes, kayaks, paddleboards, sailing boats and powered craft as not allowed. The small lakes byelaws apply. It names the National Trust as the contact."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are not allowed on Brothers Water."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

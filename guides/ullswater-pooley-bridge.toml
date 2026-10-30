@@ -1,4 +1,4 @@
-# Ullswater, Pooley Bridge. Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Ullswater, Pooley Bridge. Desk check of the landowners' and park authorities' pages, 3 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-03
 how = "desk"
@@ -50,4 +50,11 @@ topic = "rules"
 text = "The park authority lists Ullswater among the busier lakes, with motorboats, sailing boats and other craft. It recommends swimming along the shoreline and making yourself visible."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Ullswater; powered craft have a 10 mph speed limit."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"
