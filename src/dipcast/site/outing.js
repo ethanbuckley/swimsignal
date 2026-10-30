@@ -298,9 +298,9 @@ function outingIcs(c, now = Date.now()) {
 // known: outingAlert), then the calendar file.
 const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>'
   + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button></p>'
-  + '<p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
+  + '<details class="fold"><summary>What the calendar and shared link contain</summary><p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
   + 'The shared link holds the day, the time, the spots, what for and where to meet, as you picked them, with the forecast\'s issue time and each spot\'s level when you share it, '
-  + 'and the plan around your spot: not where you start from, and no words of yours.</p>'
+  + 'and the plan around your spot: not where you start from, and no words of yours.</p></details>'
   + '<p class="small muted msg" id="outing-alert-msg" aria-live="polite"></p></div>';
 
 // ------------------------------------------------------------------------------ access at each spot
