@@ -1,4 +1,4 @@
-# Derwent Water, Calfclose Bay. Desk check of the National Trust's, the park authority's and the launch operator's pages, 20 October 2026. Paddling facts (launch, paddle) added from the National Trust's page, 29 October 2026; the other facts were not rechecked then, so "checked" stays.
+# Derwent Water, Calfclose Bay. Desk check of the National Trust's, the park authority's and the launch operator's pages, 20 October 2026. Paddling facts (launch, paddle) added from the National Trust's page, 29 October 2026; the other facts were not rechecked then, so "checked" stays. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-20
 how = "desk"
@@ -93,3 +93,10 @@ text = "Derwent Island is a private residence: admire it from afar unless booked
 status = "confirmed"
 source = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/activities-on-derwent-water"
 source_name = "National Trust"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Derwentwater; powered craft have a 10 mph speed limit. The park authority's guide says there is no access to the islands in Derwentwater, where the National Trust's page lets you land on St Herbert's and Rampsholme: the two pages differ."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"

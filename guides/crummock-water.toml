@@ -1,4 +1,4 @@
-# Crummock Water. Desk check of the park authority's lakes guide and the National Trust's walk page, 28 October 2026,
+# Crummock Water. Desk check of the park authority's lakes guide and the National Trust's walk page, 28 October 2026, The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # read in a browser. Neither names an entry point, so getting in and out are left out (the page says so).
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-28
@@ -14,6 +14,13 @@ source_name = "National Trust"
 [[fact]]
 topic = "rules"
 text = "The park authority's lakes guide lists swimming at Crummock Water as allowed. Canoes, kayaks, paddleboards and rowing boats need a permit, sold as day permits at the Buttermere and Lanthwaite Wood car parks; sailing boats and powered craft are not allowed. The small lakes byelaws apply."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards need a permit on Crummock Water. Day permits are sold at the car parks at Buttermere and Lanthwaite Wood."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

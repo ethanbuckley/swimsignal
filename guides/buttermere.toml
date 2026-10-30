@@ -1,4 +1,4 @@
-# Buttermere. Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Buttermere. Desk check of the landowners' and park authorities' pages, 3 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-03
 how = "desk"
@@ -100,3 +100,10 @@ text = "The National Trust asks swimmers and paddlers to follow Check, Clean, Dr
 status = "confirmed"
 source = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/boating-and-fishing-in-the-buttermere-valley"
 source_name = "National Trust"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards need a permit on Buttermere. Day permits are sold at the car parks at Buttermere and Lanthwaite Wood."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
