@@ -26,4 +26,4 @@ def test_the_page_loads_passport_js_from_its_build_and_the_offline_copy_keeps_it
     assert bs.TEMPLATE.parent / "passport.js" in bs.SHELL_SOURCES
     privacy = (tmp_path / "privacy.html").read_text()
     assert "The swim passport on the Saved page is worked out from that journal" in privacy
-    assert "never a place or a date" in privacy
+    assert "never a place, a date or your name" in privacy
