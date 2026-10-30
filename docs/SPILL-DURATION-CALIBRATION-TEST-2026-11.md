@@ -170,7 +170,7 @@ forecast. The gate needed 0.03. By the statement, the 2026 file is not downloade
 download and the one 2026 score could proceed as written. As written, they follow only a passed gate, so neither was
 done. No 2026 event file exists on this machine; the scratch root prepared for it is empty.
 
-**Runtime.** The gate's Python process ran from about 19:03 to 19:58 UTC and exited 0. Fold times from its log:
+**Runtime.** The gate's Python process ran from 19:08:53 to 19:58:29 UTC (its log file's creation and last write) and exited 0. Fold times from its log:
 fold 0 161 s, fold 1 168 s, fold 2 594 s, fold 3 1,205 s, folds 4 to 7 144 to 170 s each, then the final fit.
 *Inferred:* folds 2 and 3 were slowed by other load on the machine; nothing failed. **One real fault, in the waiting,
 not the run:** four shells waiting for the gate used `pgrep -f` with a pattern that their own command lines matched,
