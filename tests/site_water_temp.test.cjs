@@ -103,3 +103,14 @@ test('never on a lake or the sea, never on another day, never without its figure
   assert.doesNotMatch(waterTile(bures, est, 'lake').say, /estimated/);             // the reading stays
   setToday(null);
 });
+
+test('the visible conditions summary retains measurement context and states missing readings', () => {
+  const c = vm.createContext({waterTile: () => ({fig: '16°', unit: 'C', live: true, say: 'Measured at Bures Mill, 10.9 km downstream, 2 h ago.'}), riverTile: () => null});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  const summary = vm.runInContext('conditionsSummary', c);
+  const h = summary({kind: 'river'});
+  assert.match(h, /Measured at Bures Mill, 10.9 km downstream, 2 h ago/);
+  assert.match(h, /warmer or colder than at the sensor/);
+  assert.match(h, /River level:<\/b> No gauge reading available/);
+  assert.match(summary({kind: 'lake'}), /Lake level:<\/b> No gauge reading available/);
+});
