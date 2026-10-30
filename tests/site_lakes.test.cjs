@@ -62,9 +62,13 @@ test('locations sharing a water body say so, by name, and are counted as locatio
   assert.equal(K.lakesShares(FULL, DOC), '');
   const t = plain(K.lakesSummary({ ...DOC, available: true }, '2026-10-30'));
   // Five locations, four named waters: the two Rutland locations are one water.
-  assert.match(t, /^5 monitoring locations on 4 named waters; 4 have a usable reading\. Every image was read at 4 of them; at the other one, only images near laboratory sample dates\./);
+  assert.match(t, /^Historical satellite observations[^]*?5 monitoring locations on 4 named waters; 4 have a usable reading\. Every image was read at 4 of them; at the other one, only images near laboratory sample dates\./);
   assert.match(t, /This is a historical dataset: images are read up to 30 Sept 2026, and to 30 Oct 2026 at 1 location read again later\. Nothing after that is in it\./);
-  assert.doesNotMatch(t, /\blakes?\b/i);
+  assert.doesNotMatch(t.replace(DOC.release.label, ''), /\blakes?\b/i);
+  // The export's release label comes first, in bold: a historical dataset, not the latest images.
+  const html = K.lakesSummary({ ...DOC, available: true }, '2026-10-30');
+  assert.ok(html.startsWith(`<p class="lk-release"><b>${DOC.release.label}</b></p>`));
+  assert.match(DOC.release.label, /Not the latest images/);
   assert.match(plain(K.lakesSummary({ available: false, why: 'no export in this build' }, '2026-10-30')), /No satellite observations are published in this update \(no export in this build\)\./);
 });
 

@@ -200,7 +200,9 @@ function lakesSummary(index, todayISO) {
   const bodies = new Set(L.map(x => String(x.water_body_key || x.water_body || x.lake_id).toLowerCase())).size;
   const full = L.filter(x => !lakesSelected(x)).length, base = (index.processing || {}).processed_to;
   const later = L.filter(x => x.processed_to && base && x.processed_to > base);
-  return `<p class="lk-sum">${lakesPlural(L.length, 'monitoring location')} on ${lakesPlural(bodies, 'named water')}; ${withR.length} have a usable reading. Every image was read at ${full} of them; at the other ${L.length - full === 1 ? 'one' : L.length - full}, only images near laboratory sample dates.`
+  // The export's own release label (1.1, `release`): what kind of dataset this is, first and plainly.
+  const rel = index.release && index.release.label ? `<p class="lk-release"><b>${lakesEsc(index.release.label)}</b></p>` : '';
+  return `${rel}<p class="lk-sum">${lakesPlural(L.length, 'monitoring location')} on ${lakesPlural(bodies, 'named water')}; ${withR.length} have a usable reading. Every image was read at ${full} of them; at the other ${L.length - full === 1 ? 'one' : L.length - full}, only images near laboratory sample dates.`
     + `${base ? ` This is a historical dataset: images are read up to ${lakesEsc(lakesDate(base))}${later.length ? `, and to ${lakesEsc(lakesDate(later.map(x => x.processed_to).sort().pop()))} at ${lakesPlural(later.length, 'location')} read again later` : ''}. Nothing after that is in it.` : ''}`
     + `${newest ? ` The newest image is from ${lakesEsc(lakesDate(newest))}, ${lakesAgeWords(lakesDays(newest, todayISO))}.` : ''}</p>`;
 }
