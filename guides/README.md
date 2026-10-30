@@ -52,7 +52,7 @@ checked = 2026-10-03     # a bare date, no quotes
 how = "desk"             # "desk" or "visit"
 
 [[fact]]
-topic = "parking"        # parking, path, entry, exit, toilets, changing, fees, hours, rules
+topic = "parking"        # parking, transport, path, entry, exit, toilets, changing, fees, hours, rules
 text = "Pay and display car park on Denton Road, a few minutes' walk from the river."
 status = "confirmed"
 source = "https://www.example.gov.uk/ilkley-bathing"
@@ -76,13 +76,20 @@ from = "Sam R."
 on = 2026-09-12
 ```
 
-Topics and their headings on the page, in this order: `parking` Parking, `path` Path to the water,
+Topics and their headings on the page, in this order: `parking` Parking, `transport` Bus and train, `path` Path to the water,
 `entry` Getting in, `exit` Getting out, `toilets` Toilets, `changing` Changing, `fees` Fees and booking,
 `hours` Opening times, `rules` Who can swim; then, for boats and boards, `launch` Launching a boat or board,
 `carry` Carrying to the water and `paddle` Paddling here (where you may land, zones to keep out of). A topic with
 no fact is listed under "Not in this guide yet", so a reader takes it as unknown rather than as none; the three
-paddling topics are not, since most spots are swim spots. Write "There are no toilets" only when a
-source says so.
+paddling topics are not, since most spots are swim spots, and nor is `transport`, which came later (30 October
+2026): listing it on every guide written before it would add the same gap to all of them. Write "There are no toilets"
+only when a source says so.
+
+`transport` is getting there without a car: a rail or bus operator's own page, or a council's or transport authority's
+timetable. Say what the page says (the station, the route, the usual journey time) and, as for parking, whether it
+names the swim spot; most do not. A journey planner such as Traveline is a link, not a source: it computes a
+journey rather than saying a fact. The arrival guide (`?arrive=1` on a spot's page, `src/dipcast/site/arrive.js`,
+docs/ARRIVAL-GUIDE-2026-10.md) shows the topics as a journey and lists `transport` as unknown where a guide lacks it.
 
 There is no free text without a source: every sentence on the tile is a fact with its status, or
 the page's own words. Keep each fact to one or two plain sentences (400 characters at most). Put prices and hours in the

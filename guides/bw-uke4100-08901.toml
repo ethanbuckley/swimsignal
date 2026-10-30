@@ -1,6 +1,7 @@
 # Wharfe at Cromwheel, Ilkley. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
+# Bus and train added from Northern's and First Bus's own pages, and every other fact rechecked against its page, 30 October 2026 (docs/ARRIVAL-GUIDE-2026-10.md).
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-20
+checked = 2026-10-30
 how = "desk"
 
 [[fact]]
@@ -30,6 +31,20 @@ text = "Denton Road car park, LS29 0BZ: 93 spaces, 4 for disabled drivers. £1 a
 status = "confirmed"
 source = "https://www.bradford.gov.uk/transport-and-travel/parking/car-parks-in-ilkley-addingham-and-burley-in-wharfedale/"
 source_name = "Bradford Council"
+
+[[fact]]
+topic = "transport"
+text = "Northern's page for Ilkley station (Station Plaza, LS29 8HF) lists direct trains to Leeds and to Bradford Forster Square, and says there is level access to both platforms. It lists no toilets at the station. The page does not mention the river or the bathing site."
+status = "confirmed"
+source = "https://www.northernrailway.co.uk/stations/ilkley"
+source_name = "Northern"
+
+[[fact]]
+topic = "transport"
+text = "First Bus says its X84 runs from Ilkley to Leeds city centre, and gives the usual travel time between them as 1 hour 25 minutes. The page names no stop near the bathing site."
+status = "confirmed"
+source = "https://www.firstbus.co.uk/west-yorkshire/your-services/featured-services/x84"
+source_name = "First Bus"
 
 [[fact]]
 topic = "toilets"

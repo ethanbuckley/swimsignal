@@ -43,6 +43,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   `journal.js?v=${BUILD}`,
   `passport.js?v=${BUILD}`,   // the swim passport on Saved
   `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
+  `arrive.js?v=${BUILD}`,   // the arrival guide (prototype, ?arrive=1 only); the guide is in the spot's own file
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 
 self.addEventListener('install', e => {

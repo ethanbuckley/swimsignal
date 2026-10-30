@@ -40,6 +40,10 @@ GUIDES = config.ROOT / "guides"
 # the same list). Anything else in a file is an error, so a typo cannot hide a fact.
 TOPICS = {
     "parking": "Parking",
+    # Bus and train (30 October 2026, docs/ARRIVAL-GUIDE-2026-10.md): an operator's or a council's own page about
+    # getting there without a car. Shown where a guide has it, and, like the paddling topics, never listed as missing
+    # on the tile (guide.js, GUIDE_OPTIONAL): every guide written before it would otherwise grow the same new gap.
+    "transport": "Bus and train",
     "path": "Path to the water",
     "entry": "Getting in",
     "exit": "Getting out",
