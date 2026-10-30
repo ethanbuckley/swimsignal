@@ -205,4 +205,94 @@ purpose), with its own approval. Nothing is deployed from this study.
 
 ## Results
 
-Not run.
+Run 30 October 2026 from harness commit 99ee70b3 (protocol pushed in it), offline, on the main checkout's caches.
+`atlas` under a minute; `run` 21:26:54 to 21:27:39 UTC, exit 0. Every censored fit converged (2 + 3 + 50 folds, two
+fits each); τ 0.23 to 0.38 and σ 0.47 to 0.52 (log10 units) across folds. Files beside this document: `-atlas.csv`,
+`-atlas-rows.csv`, `-predictions-fwd.csv`, `-predictions-loyo.csv`, `-predictions-cxy.csv`, `-scores.json`,
+`-checks.json`. **All of it is reused 2024-26 data: description and exploration, not confirmation.**
+
+### The misses atlas (production's form, refitted in each fold; retrospective, not issued)
+
+| Scheme | Water | Samples | Over 900 | Hits | False reassurance | False alarms | Brier | Between-site part | Within-site part |
+|---|---|---|---|---|---|---|---|---|---|
+| Forward | rivers | 616 | 93 | 38 | 55 | 27 | 0.105 | 0.008 | 0.097 |
+| Forward | lakes | 407 | 13 | 0 | 13 | 0 | 0.031 | 0.007 | 0.025 |
+| Leave one year out | rivers | 900 | 192 | 121 | 71 | 124 | 0.123 | 0.011 | 0.112 |
+| Leave one site out | rivers | 900 | 192 | 125 | 67 | 138 | 0.126 | 0.014 | 0.112 |
+
+- **Nearly all the error is within sites, over time.** The between-site part is 0.008 to 0.014 of a river Brier of
+  0.105 to 0.126. Ranking dirty against cleaner sites is not where the model loses.
+- **Most missed exceedances come on dry days.** Forward, all water: 50 of the 62 exceedances on dry days (48 h rain
+  of 10 mm or less) had a forecast under 0.25, against 18 of 44 on wet days.
+- **Where, forward in time (rivers):** false reassurance concentrates at Ilkley (10 of 11 exceedances missed; mean
+  forecast 0.09 against an observed share of 0.30), the Tone (5 of 12), the Nidd (5 of 7), the Swale (4 of 5, new in
+  2026) and the Frome (4 of 5). False alarms concentrate at Friars Meadow on the Stour (8 forward, 20 leave-one-year-out).
+- **Lakes:** every one of the 13 forward exceedances was missed, and 12 of the 16 in all years are at Derwent Water.
+- **By month:** September has the most false alarms in every scheme (13 forward, 39 leave-one-year-out).
+- **Coverage cannot be judged here:** every study row has complete upstream rain, because the row filter
+  (`MAX_MISSING_SHARE`) drops the others upstream of this study.
+- These are unexplained mismatches between forecast and sample. None is evidence against any overflow or source.
+
+### Verdict: not shown
+
+| Rule (rivers, forward, seen sites; 514 samples, 81 over 900) | Result |
+|---|---|
+| P1a candidate's Brier below background-only, interval below zero | **pass:** 0.1071 against 0.1729, difference [−0.082, −0.049] |
+| P1b candidate's Brier below production's form, interval below zero | **fail:** 0.1071 against 0.1069, difference [−0.013, +0.013] |
+| P2a log score above background-only, interval above zero | **pass:** −0.629 against −0.824, difference [+0.132, +0.257] |
+| P2b central 80% interval holds 70% to 90% | **pass:** 85.8% |
+
+### What else the run shows (reported, not rules)
+
+| Rivers | Candidate | Production's form | Rain + season | Background only |
+|---|---|---|---|---|
+| Forward, seen sites: Brier | 0.107 | 0.107 | 0.121 | 0.173 |
+| hits / false reassurance / false alarms at 0.25 | 59 / 22 / 104 | 36 / 45 / 26 | | |
+| within-site ρ (median of 14 rivers) | 0.31 | 0.31 | | |
+| Forward, new 2026 sites (102 samples): Brier | 0.095 | 0.095 | 0.102 | 0.138 |
+| Group and year held out (transfer, 900 samples): Brier | 0.132 | 0.126 | 0.147 | 0.186 |
+
+- **On rivers the candidate ties production's form.** Same Brier, same within-site ranking. It sits at another point
+  at the 0.25 line: it halves false reassurance (22 against 45) and quadruples false alarms (104 against 26). That is a
+  different threshold behaviour, not more skill.
+- **The site background is real but small next to within-site variation:** its spread τ is about 0.29 log10 units
+  (a factor of about 2), against within-site noise σ of about 0.5 (a factor of about 3) left after rain, exposure,
+  soil and season. The background-only model is far worse than production (0.173 against 0.107): what happens on the
+  day matters more than which site it is.
+- **Site by site, forward** (a description): the background corrects persistent under-forecasts at Ilkley (mean
+  forecast 0.23 against observed 0.30; production 0.09), the Tone, the Stour and the Frome, and overshoots where a
+  site was dirtier in 2024 than later, most at Sheep's Green on the Cam (0.45 against 0.22). Five rivers better, nine
+  worse. A background learned from one or two seasons carries a wet year forward.
+- **Transfer does not help:** at a held-out connected group in a held-out year the candidate has only the prior, and
+  is slightly worse than production's form (0.132 against 0.126; difference [−0.00003, +0.0116]).
+- **Lakes: better ranking, wrong spread.** Within a lake site the candidate's median ranks samples better than
+  production's chance of over 900 (median ρ 0.27 against −0.11 forward; 0.20 against −0.02 leave-one-year-out),
+  because it uses every count and the "<10" results rather than 16 exceedances. But its central 80% interval holds
+  only 65% of lake results (56% at held-out groups), with too many results in the top tenth: one noise level σ is
+  shared by rivers and lakes, and lake counts have a heavier upper tail. *Inferred, not tested:* lakes need their
+  own spread. That would be a second candidate, so it is not fitted here.
+
+### What this means
+
+- **The question as asked is answered for rivers, on these data: no.** Learning each site's background separately
+  does not improve future within-site predictions beyond production's form, and does not transfer. The atlas says
+  why: production's misses are within-site and mostly on dry days, and a site constant cannot see a dry-day spike.
+- **The concentration target itself is not the problem:** the censored model matches the over-900 classifier on
+  rivers while also giving a full distribution, a log score and calibrated intervals there (85.8%).
+- Nothing is adopted. The 2027 pre-registration and every production path are unchanged.
+
+### The data gap, and the smallest studies that could close it
+
+1. **What explains within-site variation on dry days.** Neither the model nor the earlier tests had an input for it.
+   Candidates with a physical reason: the river's level and whether it is rising or falling at the sample time
+   (stage at the nearest gauge), live spill status at the sample time rather than replayed exposure, and the time
+   since the last spill ended. The smallest observational study: at two or three rivers with many dry-day misses
+   (Ilkley, the Tone, the Nidd), with a partner, sample twice weekly through one season, logging gauge stage and the
+   live spill feed at each sample, plus several samples through two or three storms. Lab counts stay the reference.
+2. **Lakes, using data that already exist.** Most lake bathing waters have EA samples back to 1998, but only 2023
+   onwards is cached. A lake-only statement (its own spread, fitted on seasons before 2023 or on 2024-26, scored on
+   seasons this study never read) could test the better within-lake ranking honestly. It needs a bounded fetch from
+   the EA bathing-water service: about 18 lakes × 8 seasons × about 20 samples, a few dozen requests. It would need
+   its own approval, and production's lake model is not used for alerts today.
+3. **More seasons per river.** Fourteen rivers have three seasons and six have one. 2027 adds a season and is the
+   frozen evaluation year; nothing here touches it.
