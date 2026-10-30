@@ -3045,7 +3045,11 @@ function renderList() {
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
       + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
-    + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.</p>`
+    + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.`
+    // A first visit (nothing saved or planned, no spot opened yet): what to do here, in the same line, so the first
+    // spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over.
+    + `${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
+      ? ' Open a spot for why; save it to keep it at the top, and plan an outing with a backup.' : ''}</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   // What you do on the water (actsChips) at the foot of the saved spots, where a returning visitor sees it; a first look
