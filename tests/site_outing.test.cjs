@@ -185,4 +185,3 @@ test('official advice: whatever eatoday.js\'s compact line gives, above the leve
     main: {id: 'a', name: 'A', href: 'spot/a/', tone: 'low', headline: 'Low risk', official: '<p class="o-mark">MARK</p>', why: 'Why.', ev: ''}, alt: null});
   assert.match(h, /<p class="o-mark">MARK<\/p><p class="hl low">Low risk<\/p><p class="why">/);
 });
-
