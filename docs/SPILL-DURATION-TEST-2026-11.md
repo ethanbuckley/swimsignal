@@ -208,7 +208,7 @@ Open-Meteo calls, no setting changed. 2,952,154 events in both files became 802,
 
 ### Where condition 4 fails
 
-Condition 4 needs, at every company and horizon, C1's ECE no higher than B1's or at most 0.02. It fails in 25 of the
+Condition 4 needs, at every company and horizon, C1's ECE no higher than B1's or at most 0.02. It fails in 24 of the
 45 company-horizon cells:
 
 | Company | Horizons failing | C1 ECE at 24 h | B1 ECE at 24 h |
