@@ -186,3 +186,14 @@ test('the outing\'s watch: a reclassified notice says what changed, not the same
   const back = W.outingWatchLines(now, rec(neutral(), '2026-10-28T20:00:00Z', Date.parse('2026-10-28T20:05:00Z')));
   assert.match(back.lines[0], /^Official notice: .*\. Read it first\. Changed: it was shown as official advice to follow then\.$/);
 });
+
+test('low-risk discovery excludes only reviewed restrictions and its day counts agree', () => {
+  const spots = [restricting(), neutral(), legacy(), plain()];
+  const run = page(['lowEligible', 'lowOn'], {DATA: {spots}});
+  assert.equal(run('lowEligible', spots[0]), false);
+  for (const s of spots.slice(1)) assert.equal(run('lowEligible', s), true);
+  assert.equal(run('lowOn', DATES[0]), 3);
+  const src = pageSrc.join('\n');
+  assert.match(src, /VIEW\.lowOnly \|\| \(mapLevel\(s\) === 'low' && lowEligible\(s\)\)/);
+  assert.match(src, /Official advice restricts swimming<\/h2>/);
+});
