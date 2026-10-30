@@ -13,7 +13,7 @@
 // A plain script, as levels.js: globals in the page, exports in Node. It asks for the level rules
 // when it is called, so in the page it only has to load before it is used.
 const sinceRules = () => typeof level === 'function'
-  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart,
+  ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart, risk, dayBecause,
       ...(typeof eaTodayAdvice === 'function' ? { eaTodayAdvice, eaTodayBrief } : {}),
       ...(typeof eaTodayRestricts === 'function' ? { eaTodayRestricts } : {}) }
   : { ...require('./levels.js'), ...require('./experience.js'), ...require('./eatoday.js') };
@@ -42,7 +42,31 @@ function seenRecord(s, forecast, at) {
   // than say nothing). Added 26 Oct 2026; a note kept before then has none, and reads as no gap.
   const gap = !!(R.daily(s) && Number.isInteger(k) && !known);
   return { id: s.id, level: R.ORDER[l] !== undefined || l === R.NO_OVERFLOWS ? l : null, discharging: known ? k : null,
-    rating: rating && RATED.test(rating) ? rating : null, gap, official: seenOfficial(s), forecast, at };
+    rating: rating && RATED.test(rating) ? rating : null, gap, official: seenOfficial(s), forecast, at, ...seenInputs(s) };
+}
+// What each day's level rested on, for why it changed (whyFacts). Added 30 Oct 2026; a note from before has
+// none of these, and is explained by nothing. Per day: its level and the part that set it, in the page's words
+// (levels.js, risk and dayBecause: "sewage spills", "rated poor"); the sewage spill risk as the day's sheet shows
+// it, 0 to 100; the rain forecast here for the 48 hours to midday; the overflows upstream expected to spill that
+// day; and the share of the rain forecast upstream that was missing. Then the overflows whose spills ended within
+// 48 hours, right now's level and spill risk and when it was expected back to low risk (now.clears_at), the
+// latest lab sample's time and algae check's day, and the forecast's model stamp without its code part
+// (assumptions.version: a new build of the page is not a new model).
+const seenNum = v => typeof v === 'number' && Number.isFinite(v) ? v : null;
+function seenInputs(s) {
+  const R = sinceRules(), n = s.now || {}, v = (s.assumptions || {}).version;
+  const days = (s.days || []).slice(0, 5).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date || '')).map(x => {
+    const r = R.risk(s, x), sp = seenNum(x.risk);
+    return { date: x.date, level: r.level, by: r.level ? R.dayBecause(s, r).slice(0, 80) : null, score: sp === null ? null : Math.round(sp * 100),
+      rain: seenNum(x.rain_48h_mm), expect: seenNum(x.expected_spilling_overflows), missing: seenNum(x.rain_missing_share) };
+  });
+  const nowScore = R.daily(s) && R.ORDER[n.label] !== undefined ? seenNum(n.risk) : null;
+  return { days, recent: R.daily(s) && Number.isInteger(n.recent_upstream) && n.recent_upstream >= 0 ? n.recent_upstream : null,
+    nowLevel: nowScore === null ? null : n.label, nowScore: nowScore === null ? null : Math.round(nowScore * 100),
+    clears: nowScore !== null && typeof n.clears_at === 'string' && Number.isFinite(Date.parse(n.clears_at)) ? n.clears_at.slice(0, 40) : null,
+    sample: typeof (s.lab_sample || {}).taken_at === 'string' ? s.lab_sample.taken_at.slice(0, 40) : null,
+    algae: typeof (s.algae || {}).date === 'string' ? s.algae.date.slice(0, 10) : null,
+    model: typeof v === 'string' ? v.split(';').filter(p => !p.startsWith('code=')).join(';').slice(0, 200) : null };
 }
 // The official advice the spot showed (eatoday.js, #379: the reviewed notices in `official`): null for none,
 // else the first notice as the compact line says it (eaTodayBrief: "EA advice against bathing · since 19 Jun
@@ -75,7 +99,22 @@ function seenOK(x) {
     && (x.gap === undefined || typeof x.gap === 'boolean')
     && (x.official === undefined || x.official === null || (typeof x.official === 'object'
       && ['key', 'brief', 'publisher'].every(k => typeof x.official[k] === 'string' && x.official[k].length > 0 && x.official[k].length <= 300)
-      && (x.official.restricts === undefined || typeof x.official.restricts === 'boolean')));
+      && (x.official.restricts === undefined || typeof x.official.restricts === 'boolean')))
+    && seenInputsOK(x);
+}
+// The inputs (seenInputs), each absent in a note from before 30 Oct 2026, else as written there.
+const seenNumOK = v => v === null || (typeof v === 'number' && Number.isFinite(v));
+const seenStrOK = (v, n) => v === null || (typeof v === 'string' && v.length <= n);
+function seenInputsOK(x) {
+  const R = sinceRules();
+  return (x.days === undefined || (Array.isArray(x.days) && x.days.length <= 5 && x.days.every(d => !!d && typeof d === 'object'
+      && typeof d.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.date)
+      && (d.level === null || R.ORDER[d.level] !== undefined) && seenStrOK(d.by, 80)
+      && ['score', 'rain', 'expect', 'missing'].every(k => seenNumOK(d[k])))))
+    && ['recent', 'nowScore'].every(k => x[k] === undefined || x[k] === null || (Number.isInteger(x[k]) && x[k] >= 0))
+    && (x.nowLevel === undefined || x.nowLevel === null || R.ORDER[x.nowLevel] !== undefined)
+    && (x.clears === undefined || x.clears === null || (typeof x.clears === 'string' && x.clears.length <= 40 && Number.isFinite(Date.parse(x.clears))))
+    && [['sample', 40], ['algae', 10], ['model', 200]].every(([k, n]) => x[k] === undefined || seenStrOK(x[k], n));
 }
 const readSeen = text => new Map(sinceRules().storedList(text, seenOK).map(x => [x.id, x]));
 
@@ -199,6 +238,134 @@ function sinceOuting(id, planText) {
   return role === 'spot' ? `This is the spot of your outing ${w}.` : `This is the backup for your outing ${w}.`;
 }
 
+// ------------------------------------------------------------------------------ why it changed
+// Prototype, shown only with ?why=1 in the address (sinceWhyOn), so the page is unchanged without it
+// (docs/FORECAST-CHANGES-2026-10.md). A day whose level moved between the note and the forecast on screen
+// is explained from the inputs both notes kept (seenInputs), and from nothing else: a fact either note lacks
+// is not said, and no fact is said to have caused the move. Each fact is one of three kinds, because a
+// reader needs to know whether the water may have changed or only what SwimSignal knows about it:
+//   reported   something observed: overflows reported discharging or stopped, a new lab sample, a new algae
+//              check, a new rating, an official notice shown or gone
+//   forecast   the weather forecast and the spill forecast made from it, for that day and the day before
+//              (a spill's water takes hours to a couple of days to arrive)
+//   time       right now, worked out from spills upstream as their water moves on and dies off: it changes
+//              between forecasts with nothing new reported, and the model's own clearing time says when
+//   ours       SwimSignal's own information: a feed upstream back or lost, rain data missing or complete, a
+//              new model
+// The live statuses count towards right now, which raises today only (levels.js, risk), so the reported
+// spills are said for today alone. Rain and spill changes under these sizes are not said: the page rounds
+// rain to whole millimetres and expected spills to one decimal place.
+const WHY_RAIN_MM = 2, WHY_EXPECT = 0.5, WHY_MISSING = 0.1;
+// Where each level starts on the 0-100 sewage spill risk (src/dipcast/model/transport.py, SCORE_CUTS;
+// tests/test_since.py checks they agree), and the largest move called small when it crosses one of them.
+const WHY_CUTS = [[15, 'moderate'], [40, 'high'], [70, 'very high']], WHY_SMALL = 5;
+const WHY_MODEL = { spill: 'spill model', cal: 'calibration', ecoli: 'E. coli model', rain: 'weather source' };
+const whyDay = (note, date) => (note.days || []).find(x => x.date === date) || null;
+const whyMM = v => `${Math.round(v)} mm`;
+const whyIssueDay = iso => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date(iso));   // a forecast's UK day
+const whyStamp = v => new Map(String(v).split(';').map(p => p.split('=')).filter(p => p.length === 2));
+// The facts for one day (date), or null where either note has no inputs for it or its level did not move.
+function whyFacts(was, now, date) {
+  const a = was && whyDay(was, date), b = now && whyDay(now, date);
+  if (!a || !b || !a.level || !b.level || a.level === b.level) return null;
+  const R = sinceRules(), facts = [], fact = (kind, text) => facts.push({ kind, text });
+  // The day turned into today between the two (a note from Friday evening, Saturday's forecast now): today's
+  // level includes right now, a later day's does not (levels.js, risk).
+  const then = whyIssueDay(was.forecast);
+  if (date === R.today() && then < date && b.by !== a.by && /right now|recent/.test(b.by)) fact('time', `Then this day was ${
+    then === new Date(Date.parse(date + 'T12:00:00Z') - 864e5).toISOString().slice(0, 10) ? 'tomorrow' : 'a later day'}; today's level also counts right now, from spills upstream.`);
+  if (date === R.today()) {
+    const x = was.discharging, y = now.discharging;
+    if (Number.isInteger(x) && Number.isInteger(y) && x !== y) fact('reported', `Overflows upstream reported discharging: ${x} then, ${y} now.`);
+    const r = was.recent, q = now.recent;
+    if (Number.isInteger(r) && Number.isInteger(q) && r !== q) fact('reported', `Overflows upstream whose spills ended in the last 48 hours: ${r} then, ${q} now.`);
+    const p = was.nowScore, n = now.nowScore;
+    if (Number.isInteger(p) && Number.isInteger(n) && p !== n) {
+      const back = was.clears && n < p && Date.parse(was.clears) <= Date.parse(now.forecast) ? ` The model expected it back to low risk by ${issuedWords(was.clears)}.` : '';
+      fact('time', `Right now, worked out from spills upstream as their water moves on and dies off, was ${p} of 100 then and is ${n} now.${back}`);
+    }
+    if (typeof was.gap === 'boolean' && typeof now.gap === 'boolean' && was.gap !== now.gap) fact('ours', was.gap
+      ? 'A feed upstream was down or late then; every feed is reporting now.' : 'A feed upstream is down or late now, so its overflows are not counted.');
+  }
+  if (was.sample !== undefined && now.sample && was.sample !== now.sample) fact('reported', 'A new Environment Agency lab sample has arrived.');
+  if (was.algae !== undefined && now.algae && was.algae !== now.algae) fact('reported', 'A new algae check has arrived.');
+  if (was.rating && now.rating && was.rating !== now.rating) fact('reported', `The Environment Agency rating changed: ${ratingWords(was.rating)} then, ${ratingWords(now.rating)} now.`);
+  const o = officialChange(was, now);
+  if (o === 'shown' || o === 'other') fact('reported', `Official ${seenNoun(now.official)} is shown now: ${now.official.brief}.`);
+  else if (o === 'gone') fact('reported', `Official ${seenNoun(was.official)} shown then is no longer shown.`);
+  if (a.rain !== null && b.rain !== null && Math.abs(b.rain - a.rain) >= WHY_RAIN_MM)
+    fact('forecast', `Rain here in the 48 hours to midday: ${whyMM(a.rain)} forecast then, ${whyMM(b.rain)} now.`);
+  // That day and the day before, where both notes have them: its water may still be arriving.
+  const prev = new Date(Date.parse(date + 'T12:00:00Z') - 864e5).toISOString().slice(0, 10);
+  const spills = [[whyDay(was, prev), whyDay(now, prev), `${R.dayWord(prev)}, the day before`], [a, b, R.dayWord(date)]]
+    .filter(([x, y]) => x && y && x.expect !== null && y.expect !== null && Math.abs(y.expect - x.expect) >= WHY_EXPECT);
+  if (spills.length) fact('forecast', `Overflows upstream expected to spill ${spills.map(([x, y, w]) => `${w}: ${x.expect} then, ${y.expect} now`).join('; ')}.`);
+  if (a.missing !== null && b.missing !== null && Math.abs(b.missing - a.missing) >= WHY_MISSING) fact('ours', a.missing > b.missing
+    ? `Rain data was missing for ${Math.round(a.missing * 100)}% of the water upstream then, ${b.missing ? `${Math.round(b.missing * 100)}%` : 'none'} now.`
+    : `Rain data is missing for ${Math.round(b.missing * 100)}% of the water upstream now, against ${Math.round(a.missing * 100)}% then.`);
+  if (was.model && now.model && was.model !== now.model) {
+    const m = whyStamp(was.model), n = whyStamp(now.model), parts = [...new Set([...m.keys(), ...n.keys()])].filter(k => m.get(k) !== n.get(k));
+    fact('ours', `SwimSignal changed its ${parts.map(k => WHY_MODEL[k] || 'forecast').join(' and ')} between the two forecasts.`);
+  }
+  return { date, was: a, now: b, facts };
+}
+// The facts as one passage, or ''. First what set the level, where that changed; then the facts, under what
+// kind of change they are; and where no fact was found, the spill risk itself, called small where it moved by
+// WHY_SMALL or less across the line between two levels, and otherwise said to be unexplained by these inputs.
+function whySaid(was, now, date) {
+  const f = whyFacts(was, now, date);
+  if (!f) return '';
+  const { was: a, now: b } = f, out = [];
+  if (a.by !== b.by) out.push(`The level was set by ${a.by} then; it is now set by ${b.by}.`);
+  const of = k => f.facts.filter(x => x.kind === k).map(x => x.text), time = of('time'), ours = of('ours');
+  const real = [...of('reported'), ...of('forecast')];
+  if (real.length) out.push(`What changed: ${real.join(' ')}`);
+  if (time.length) out.push(`${real.length ? 'And time passed' : 'Time passed, with nothing new reported'}: ${time.join(' ')}`);
+  if (ours.length) out.push(`${real.length || time.length ? 'What SwimSignal knows changed too' : 'What SwimSignal knows changed, not necessarily the water'}: ${ours.join(' ')}`);
+  const sc = a.score !== null && b.score !== null && a.score !== b.score;
+  if (!f.facts.length && sc) {
+    const lo = Math.min(a.score, b.score), hi = Math.max(a.score, b.score), cut = WHY_CUTS.find(([c]) => lo < c && c <= hi);
+    out.push(hi - lo <= WHY_SMALL && cut && a.by === b.by
+      ? `A small change: sewage spill risk ${a.score} of 100 then, ${b.score} now, and ${cut[1]} risk starts at ${cut[0]}.`
+      : `None of the inputs kept here moved enough to explain it. Sewage spill risk: ${a.score} of 100 then, ${b.score} now.`);
+  } else if (sc && Math.abs(b.score - a.score) >= WHY_SMALL) out.push(`Sewage spill risk: ${a.score} of 100 then, ${b.score} now.`);
+  else if (!f.facts.length && a.by === b.by) out.push('None of the inputs kept here moved enough to explain it.');
+  return out.join(' ');
+}
+// Which day to explain under a line about the headline (sinceLine): today or tomorrow, whichever now has the
+// headline's level and changed, today first. The headline is the worst of right now, today and tomorrow.
+function whyHeadlineDay(was, now) {
+  const R = sinceRules(), t = R.today(), days = (now.days || []).filter(d => d.date >= t).slice(0, 2);
+  const moved = days.filter(d => { const a = whyDay(was, d.date); return a && a.level && d.level && a.level !== d.level; });
+  return (moved.find(d => d.level === now.level) || moved[0] || {}).date || null;
+}
+// Why the headline moved where no day under it did: the day that set it then has passed ("Then high risk was for
+// Thursday, which has passed."), and, where that forecast already had the days left at the level shown now, so.
+// Or ''. The headline is the worst of right now, today and tomorrow, so it moves when its window does.
+function whyHeadlinePassed(was, now) {
+  const R = sinceRules(), t = R.today(), gone = (was.days || []).find(d => d.date < t && d.level === was.level);
+  if (!gone || !was.level || !now.level || R.ORDER[was.level] === undefined || R.ORDER[now.level] === undefined) return '';
+  const left = (was.days || []).filter(d => d.date >= t).slice(0, 2), worst = left.reduce((w, d) => !w || R.ORDER[d.level] > R.ORDER[w] ? d.level : w, null);
+  const wd = new Date(gone.date + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' });
+  return `Then ${levelWords(was.level)} was for ${wd}, which has passed.` + (left.length === 2 && worst === now.level
+    ? ` That forecast already had today and tomorrow at ${levelWords(now.level)}.` : '');
+}
+// The day of the outing planned at this spot (the plan kept in this browser, as sinceOuting reads it), or null.
+function whyOutingDay(id, planText) {
+  if (!planText) return null;
+  const q = new URLSearchParams(String(planText).replace(/^#/, '')), day = q.get('day');
+  return (q.get('spot') === id || q.get('backup') === id) && /^\d{4}-\d{2}-\d{2}$/.test(day || '') && day >= sinceRules().today() ? day : null;
+}
+// A line for the outing's day when the headline did not move but that day did: "Saturday, the day of your
+// outing, was moderate risk when you looked today at 09:05; now high risk." Or ''.
+function whyDayLine(was, now, day) {
+  const a = was && whyDay(was, day), b = now && whyDay(now, day);
+  if (!a || !b || !a.level || !b.level || a.level === b.level || !(Date.parse(now.forecast) > Date.parse(was.forecast))) return '';
+  const d = sinceRules().dayWord(day).replace(/^on /, '');
+  return `${cap1(d)}, the day of your outing, was ${levelWords(a.level)} when you looked ${lookedWhen(was.at)}; now ${levelWords(b.level)}.`;
+}
+const sinceWhyOn = () => { try { return new URLSearchParams(location.search).get('why') === '1'; } catch (e) { return false; } };
+
 // ------------------------------------------------------------------------------ in the page
 // The notes, read on first use (the first card drawn), and a copy as they were then, which the lines
 // compare with for the rest of the visit.
@@ -225,18 +392,25 @@ function lookedAt(spots, forecast, saved) {
 // A card's line, as HTML (the words are this file's own), or ''.
 function sinceSaid(s, forecast) {
   seenStore();
-  const was = LOOKED.get(s.id), now = seenRecord(s, forecast, Date.now()), t = sinceLine(was, now);
-  if (!t) return '';
+  const was = LOOKED.get(s.id), now = seenRecord(s, forecast, Date.now());
   let plan = null;
   try { plan = localStorage.getItem(KEPT_PLAN_KEY); } catch (e) { /* no plan kept: no outing to read against */ }
+  // ?why=1 (prototype): the outing's day when only it moved, and under either line, why (whySaid).
+  const why = sinceWhyOn(), outing = why ? whyOutingDay(s.id, plan) : null;
+  // Only under a line about the level: a line about a spill or a notice already says what changed.
+  const moved = why && !!was && !!now && !!was.level && was.level !== now.level;
+  let t = sinceLine(was, now), day = t && moved ? whyHeadlineDay(was, now) : null;
+  if (!t && outing) { t = whyDayLine(was, now, outing); day = t ? outing : null; }
+  if (!t) return '';
+  const said = day ? whySaid(was, now, day) : t && moved ? whyHeadlinePassed(was, now) : '';
   const spills = sinceSpills(s), ev = sinceEvidence(was, now, Date.now(), { spills, outing: sinceOuting(s.id, plan) });
   // Discharging now but no names in this data (spots-lite.json): which ones, and since when, are on the spot's
   // page (its "Overflows that matter most"), one tap away, rather than names this card does not have.
   const which = now.discharging > 0 && !spills.length && typeof spotPath === 'function'
     ? ` <a href="${esc1(spotPath(s.id))}" data-id="${esc1(s.id)}">Which overflows: the spot's page</a>` : '';
-  return `<p class="place-since">${esc1(t)} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
+  return `<p class="place-since">${esc1(t)}${said ? ` <span class="since-why">Why: ${esc1(said)}</span>` : ''} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, SINCE_STALE_MIN, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { SEEN_KEY, SINCE_STALE_MIN, WHY_CUTS, whyFacts, whySaid, whyHeadlineDay, whyHeadlinePassed, whyOutingDay, whyDayLine, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }
