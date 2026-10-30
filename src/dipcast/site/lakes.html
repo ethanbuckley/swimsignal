@@ -21,7 +21,7 @@
   main.doc .lk-latest { margin-bottom:4px; }
   main.doc .lk-claim { font-size:var(--fs-note); border-left:3px solid var(--line); padding-left:8px; }
   main.doc .lk-reasons { font-size:var(--fs-note); }
-  main.doc .lk-scope-sel { font-size:var(--fs-note); }   /* a selected historical series: said beside its headline, plain */
+  main.doc .lk-scope-sel, main.doc .lk-exp, main.doc .lk-refresh, main.doc .lk-shares, main.doc .lk-quality { font-size:var(--fs-note); }   /* a selected historical series: said beside its headline, plain */
   .lk-seasons, .lk-labt { border-collapse:collapse; width:100%; font-size:var(--fs-note); margin:8px 0 16px; }
   .lk-seasons caption { text-align:left; color:var(--muted); padding-bottom:4px; }
   .lk-seasons th, .lk-seasons td, .lk-labt th, .lk-labt td { text-align:left; padding:5px 8px 5px 0; border-bottom:1px solid var(--line); vertical-align:top; }
@@ -31,6 +31,7 @@
   .lk-band { fill:var(--hover); }
   .lk-zero { stroke:var(--line); stroke-width:1; }
   .lk-dot { fill:var(--brand); }
+  .lk-dot-exp { fill:var(--card); stroke:var(--brand); stroke-width:1.5; }   /* out of season, experimental: hollow */
   .lk-yr, .lk-mo { font:600 11px var(--font-text); fill:var(--muted); }
   main.doc .lk-lab h3 { margin-top:8px; }
 </style>
@@ -55,7 +56,7 @@
 <p>For algae at a bathing water, the Environment Agency's own checks are on each spot's page. Look at the water and the signs before you swim.</p>
 
 <h2>How the readings are made</h2>
-<p>From Sentinel-2 images (Collection 1, Level-2A surface reflectance), May to September of each year read. Around each site, the water within 300 m is found from the images' own scene classification; a reading is made only where at least 9 of its 20 m pixels are open water with open water all round them, and only from an image in which at least 80% of those pixels are clear of cloud, haze and shadow. The reading is the median of the normalised difference chlorophyll index, NDCI = (B5 − B4) ÷ (B5 + B4), over those clear pixels. Each reading keeps its image's own date and time.</p>
+<p>From Sentinel-2 images (Collection 1, Level-2A surface reflectance), May to September of each year read; at a location read again later, newer images too, each outside May to September labelled experimental. Around each site, the water within 300 m is found from the images' own scene classification; a reading is made only where at least 9 of its 20 m pixels are open water with open water all round them, and only from an image in which at least 80% of those pixels are clear of cloud, haze and shadow. The reading is the median of the normalised difference chlorophyll index, NDCI = (B5 − B4) ÷ (B5 + B4), over those clear pixels. Each reading keeps its image's own date and time.</p>
 <p>Two tests compared the index with what was found in the water. Against laboratory chlorophyll at 38 lakes, it followed the measurements (correlation about 0.5) but missed its stated bar, so it is called promising, not validated. Against the samplers' visual algae checks and reported incidents, it was weak. So no reading here is turned into a chlorophyll figure or a warning.</p>
 <ul>
 <li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md">The laboratory chlorophyll test</a></li>
@@ -65,7 +66,7 @@
 </ul>
 
 <h2>Sources</h2>
-<p>Contains modified Copernicus Sentinel data 2020 to 2026, read from Earth Search's Sentinel-2 Collection 1 Level-2A archive and processed by SwimSignal. Laboratory values: Environment Agency Water Quality Archive, © Environment Agency, Open Government Licence v3.0. <a href="terms.html#data">Data credits</a>.</p>
+<p><span id="lk-attrib">Contains modified Copernicus Sentinel data [2020-2026]. Lab chlorophyll: Environment Agency Water Quality Archive, Open Government Licence v3.0.</span> Images read from Earth Search's Sentinel-2 Collection 1 Level-2A archive and processed by SwimSignal. <a href="terms.html#data">Data credits</a>.</p>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
 <p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>

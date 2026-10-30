@@ -19,7 +19,7 @@ def _build_site():
 def test_the_export_is_split_into_an_index_and_a_file_a_location(tmp_path):
     bs = _build_site()
     h = bs.write_lake_observations(tmp_path, SAMPLE)
-    assert h == {"available": True, "lakes": 3, "skipped_ids": 0, "version": "1.0.0", "processing": "s2c1-l2a.ndci-core-median.v1"}
+    assert h == {"available": True, "lakes": 5, "skipped_ids": 0, "version": "1.1.0", "processing": "s2c1-l2a.ndci-core-median.v1"}
     index = json.loads((tmp_path / "data" / "research" / "lakes.json").read_text())
     assert index["available"] is True and index["schema"] == "swimsignal.lake-observations"
     # The index carries what the list and the claim need, never the readings or the lab values.
