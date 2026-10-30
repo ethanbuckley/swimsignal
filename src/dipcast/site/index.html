@@ -4626,7 +4626,10 @@ const nowTiles = d => { const fx = facts(d).filter(o => o.live); if (!fx.length)
 // A short view of the selected spot's own conditions before alternatives. Reuse the same
 // source, location, age and measured/estimated wording as the detailed tiles.
 function conditionsSummary(d) {
-  const water = waterTile(d.water_temp, d.water_temp_est, d.kind), level = riverTile(d.river_state);
+  const rs = d.river_state, observed = rs && Date.parse(rs.observed_at);
+  const age = Number.isFinite(observed) ? Math.max(0, (Date.now() - observed) / 3600000) : null;
+  const water = waterTile(d.water_temp, d.water_temp_est, d.kind);
+  const level = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
   const line = (label, item, missing) => item
     ? `<p><b>${label}:</b> ${item.fig} ${item.unit || ''}${item.word ? `, ${item.word}` : ''}. ${item.say || ''}</p>`
     : `<p><b>${label}:</b> ${missing}</p>`;

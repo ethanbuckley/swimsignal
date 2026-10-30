@@ -114,3 +114,12 @@ test('the visible conditions summary retains measurement context and states miss
   assert.match(h, /River level:<\/b> No gauge reading available/);
   assert.match(summary({kind: 'lake'}), /Lake level:<\/b> No gauge reading available/);
 });
+
+test('the conditions summary does not show an old gauge as current', () => {
+  let seen;
+  const c = vm.createContext({waterTile: () => null, riverTile: rs => { seen = rs; return null; }});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  vm.runInContext('conditionsSummary', c)({kind: 'river', river_state: {observed_at: hoursAgo(48), stale: false, level_m: 1}});
+  assert.equal(seen.stale, true);
+  assert.ok(seen.age_hours >= 48);
+});
