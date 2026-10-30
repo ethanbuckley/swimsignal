@@ -202,15 +202,17 @@ def rain_sums(grid: dict, cell: np.ndarray, t: np.ndarray, spans: list[tuple[int
     return out
 
 
-def build_grid(sites: pd.DataFrame) -> dict:
-    rain = load_rain(cells_of(sites))
+def build_grid(sites: pd.DataFrame, tags=("2023", "2023dec", "2024", "2025"), end: str = "2026-01-02") -> dict:
+    """Hourly ERA5-Land rain for the sites' cells as running sums, from 2023-12-01 to `end`. The defaults are what
+    PR #459's run used; the calibration test (spill_duration_calibration_test.py) adds the 2026 tags."""
+    rain = load_rain(cells_of(sites), tags=tags)
     rain = rain.sort_values(["cell_lat", "cell_lon", "time"])
     rain = rain[~rain.duplicated(["cell_lat", "cell_lon", "time"], keep="last")]
     key = (np.round(rain["cell_lat"].to_numpy() * 10).astype(np.int64) * 100_000
            + np.round(rain["cell_lon"].to_numpy() * 10).astype(np.int64))
     keys = pd.Index(np.unique(key))
     t0 = pd.Timestamp("2023-12-01", tz="UTC")
-    n = int((pd.Timestamp("2026-01-02", tz="UTC") - t0) / pd.Timedelta(hours=1))
+    n = int((pd.Timestamp(end, tz="UTC") - t0) / pd.Timedelta(hours=1))
     mm = np.full((len(keys), n), np.nan, np.float32)
     hi = ((rain["time"] - t0) // pd.Timedelta(hours=1)).to_numpy()
     ok = (hi >= 0) & (hi < n)
