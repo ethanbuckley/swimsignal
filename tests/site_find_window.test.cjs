@@ -84,7 +84,7 @@ test('the tile: spots in the order given, the notice apart from the levels, days
 
 test('the page draws it on Saved, after the comparison, from the five days it has', () => {
   const page = fs.readFileSync(join(SITE, 'index.html'), 'utf8');
-  assert.match(page, /if \(spots\.length && typeof fwSection === 'function'\) v \+= fwSection\(spots, fiveDays\(\), s => spotPath\(s\.id\)\);/);
+  assert.match(page, /if \(spots\.length > 1 && typeof fwSection === 'function'\) v \+= fwSection\(spots, fiveDays\(\), s => spotPath\(s\.id\)\);/);   // for choosing between spots: two or more
   assert.ok(page.indexOf('compareSection(savedCompare(spots))') < page.indexOf('fwSection(spots, fiveDays()'));
   // After levels.js and eatoday.js, whose names it reads.
   for (const before of ['levels.js', 'eatoday.js']) assert.ok(page.indexOf(`<script src="${before}">`) < page.indexOf('<script src="findwindow.js">'), before);

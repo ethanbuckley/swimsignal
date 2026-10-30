@@ -3251,13 +3251,14 @@ function drawSpots() {
 // the list with its bookmark (aria-label: from, the list's name), and Undo puts it back in place. The
 // list shows the same cards, without the bookmark, on its day (iso), on one tile; a list someone shared
 // shows them without it, each a tile. With no day picked, what changed since you last looked (since.js).
-function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots', far = false) {
+// withWeek: the five days on a card that has its unsave button, for a list of one (renderSaved), where there is no grid.
+function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots', far = false, withWeek = false) {
   const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, far && dist(s) !== null ? away(dist(s)) : null].filter(Boolean).join(' · ');
   return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && iso !== today() && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + (typeof eaTodayTag === 'function' ? eaTodayTag(s, 'p') : '')   // official advice first, above the level
-    + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave ? '' : week(s)}</div>`
+    + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave && !withWeek ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
     + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
     // What has changed since you last looked, where the card gives the answer: no day picked, or today (Explore opens
@@ -3287,7 +3288,7 @@ function savedGrid(spots) {
     + `<div class="wg-scroll"><div class="wgrid" role="table" aria-labelledby="wg-h"><div class="wg-row wg-head" role="row"><span class="wg-name" role="columnheader">Spot</span>`
     + dates.map(iso => `<span role="columnheader">${shortDay(iso)}</span>`).join('') + `</div>${spots.map(row).join('')}</div></div></section>`;
 }
-const refreshGrid = () => { const host = document.getElementById('grid-host'); if (host) host.innerHTML = savedGrid(listSpots()); };
+const refreshGrid = () => { const host = document.getElementById('grid-host'), sp = listSpots(); if (host) host.innerHTML = sp.length > 1 ? savedGrid(sp) : ''; };   // one spot: its card has the days
 // ------------------------------------------------------------------------------ compare
 // Up to three spots side by side, in one table for Saved ("Compare your spots") and Plan a swim ("Compare
 // these spots", so a plan's spots can be compared over the five days without leaving it). Every
@@ -3399,6 +3400,9 @@ function bindActs() {
     if (row && note && !note.classList.contains('short')) { row.insertAdjacentHTML('afterend', actsChips().replace(/^[\s\S]*?<\/div>/, '')); note.remove(); }
   }));
 }
+// Under a list of one: the spot's page for why and what is at the water, and the planner on it (planHere).
+const savedOneNext = s => `<p class="small saved-one-next">Its page has why, and what it is like at the water: <a href="${esc(spotPath(s.id))}" data-id="${esc(s.id)}">${esc(s.name)}</a>.`
+  + (typeof canPlanHere === 'function' && canPlanHere(s) ? ` Going? <a href="${esc(planPath() + planHereHash(s))}" data-plan-here>Plan an outing here</a>.` : '') + '</p>';
 function renderSaved() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'saved';
   setView('saved');
@@ -3420,8 +3424,13 @@ function renderSaved() {
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
   h += '</div>';
-  let v = spots.length ? `<div id="grid-host">${savedGrid(spots)}</div>` : '';
-  if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from)).join('')}</ul>`
+  // One spot (30 Oct 2026): its five days once, on its card, with the ways on: its page, and planning an outing there.
+  // Before, the grid, the card and Find a window gave the same five days three times. Two or more keep the grid,
+  // the comparison and the windows, which are for choosing between them.
+  const one = spots.length === 1;
+  let v = spots.length > 1 ? `<div id="grid-host">${savedGrid(spots)}</div>` : '<div id="grid-host"></div>';
+  if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from, false, one)).join('')}</ul>`
+    + (one ? savedOneNext(spots[0]) : '')
     + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   // Empty: one tile, one sentence and the way to a spot. The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
@@ -3437,7 +3446,7 @@ function renderSaved() {
   // The cards answer first; comparing them, day by day, is for planning, under them.
   v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
   // Find a window (findwindow.js, a prototype): each spot's Low days in the next five, as ranges, in the list's order.
-  if (spots.length && typeof fwSection === 'function') v += fwSection(spots, fiveDays(), s => spotPath(s.id));
+  if (spots.length > 1 && typeof fwSection === 'function') v += fwSection(spots, fiveDays(), s => spotPath(s.id));
   if (DATA.spots.some(s => SAVED.has(s.id))) v += alertsCard();   // alerts cover every list
   if (spots.length) v += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
     + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`
@@ -3464,6 +3473,7 @@ function bindToAlerts() {
 }
 function bindSavedPage(l, spots) {
   bindActs();   // what you do on the water (actsChips)
+  if (spots.length === 1 && typeof planHere === 'function') planHere(spots[0]);   // savedOneNext's "Plan an outing here"
   const ul = document.getElementById('scards'), $ = id => document.getElementById(id), from = manyLists() ? l.name : 'saved spots';
   if (ul) ul.addEventListener('click', e => {
     const a = e.target.closest('a[data-id]'), un = e.target.closest('[data-unsave]'), undo = e.target.closest('[data-undo]'), day = e.target.closest('[data-day]');
