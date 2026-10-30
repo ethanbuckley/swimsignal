@@ -184,6 +184,12 @@
      the six keys in one line, and the overflows' key under them while overflows are on the map. */
   .map-legend { background:var(--float); border-radius:var(--radius); padding:6px 10px; font-size:var(--fs-meta); line-height:1.5; box-shadow:var(--lift); color:var(--ink); }
   .map-legend .keys { display:flex; flex-wrap:wrap; gap:2px 12px; }
+  .map-legend > summary { cursor:pointer; min-height:44px; display:flex; align-items:center; font-weight:600; }
+  .map-help { display:none; }
+  @media (max-width:800px) {
+    body.map-mode .map-help { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+    .map-help button { min-height:44px; border:0; border-radius:var(--radius); padding:8px 10px; background:var(--float); color:var(--ink); box-shadow:var(--lift); font:600 var(--fs-meta)/1.2 var(--font-text); }
+  }
   /* What to do next on the map (mapSay), above the colour key and in its style. */
   .map-say { max-width:260px; margin:0 0 8px; background:var(--float); border-radius:var(--radius); padding:8px 12px; font-size:var(--fs-note); font-weight:600; line-height:1.35; box-shadow:var(--lift); color:var(--ink); }
   .map-say[hidden] { display:none; }
@@ -2771,8 +2777,8 @@ map.on('moveend', () => loadOverflows().catch(() => { ovLayer.clearLayers(); ovK
 // overflows are on the map (loadOverflows), and not before, so the legend is one line until then.
 const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very high','Very high'], [NO_OVERFLOWS, COVER[NO_OVERFLOWS]], ['', 'No level']];
 const legend = L.control({ position: 'bottomleft' });
-legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
-  el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
+legend.onAdd = () => { const el = L.DomUtil.create('details', 'map-legend'); el.open = !PHONE.matches;
+  el.innerHTML = `<summary>Map key and official notices</summary><div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
     + '<span class="advkey" hidden><span class="dot adv"></span>Ringed: an official notice; open the spot to read it</span></div>'
     + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`
     + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
@@ -2799,6 +2805,15 @@ const TAP = () => TOUCH ? 'Tap' : 'Click';
 const TAPPED_KEY = 'dipcast.tapped';
 const mapTapped = () => { try { localStorage.setItem(TAPPED_KEY, '1'); } catch (e) { /* asked again next visit */ } };
 if (stored(TAPPED_KEY) !== '1') mapSay(`${TAP()} any river or lake for its forecast.`, true);
+// Returning users can rediscover selecting an unlisted water or return to the place search.
+const mapHelp = L.control({ position: 'bottomleft' });
+mapHelp.onAdd = () => { const el = L.DomUtil.create('div', 'map-help');
+  el.innerHTML = '<button type="button" id="map-help-water">Forecast for any water</button><button type="button" id="map-help-search">Search an area</button>';
+  L.DomEvent.disableClickPropagation(el);
+  el.querySelector('#map-help-water').addEventListener('click', () => mapSay(`${TAP()} the river or lake. If the map is zoomed out, it will zoom in first: then ${TAP().toLowerCase()} the water again. Coverage and missing data are explained in the result.`, true));
+  el.querySelector('#map-help-search').addEventListener('click', () => { openList(); const q = document.getElementById('q'); if (q) q.focus(); });
+  return el; };
+mapHelp.addTo(map);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
 // The river the forecast traced upstream of the open spot (build_site.write_traces, data/spot/<id>-trace.json;
 // docs/REVIEW-2026-10-16.md): the water that reaches the spot, every river and stream within 60 km
