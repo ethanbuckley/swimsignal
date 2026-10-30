@@ -4702,6 +4702,21 @@ function phoneFolds() {
   if (lim) for (const q of ['#answer-after .scope', '#result .stack p.check']) { const e = document.querySelector(q); if (e && !lim.contains(e)) lim.prepend(e); }
 }
 PHONE.addEventListener('change', () => { if (current && document.querySelector('#result .stack')) render(current); });   // folds on, or columns back
+// The arrival guide (prototype, docs/ARRIVAL-GUIDE-2026-10.md): the practical guide as a journey, from the stop or
+// the car park to the water, in and out, then who can swim and what nobody has checked. Only with ?arrive=1 in the
+// address, so the page is unchanged without it. arrive.js is asked for then, at the build's stamp as replay.js is,
+// and its tile takes the guide tile's place; on a phone the fold that holds it opens.
+const ARRIVE = new URLSearchParams(location.search).get('arrive') === '1';
+let arrivalScript = null;
+function mountArrival(d) {
+  const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
+  arrivalScript = arrivalScript || new Promise((ok, no) => { const s = document.createElement('script');
+    s.src = `arrive.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  arrivalScript.then(() => { const el = document.getElementById('guide'), html = el && current === d ? arrivalTile(d, serverToday) : '';
+    if (!html) return;
+    el.outerHTML = html; const box = document.getElementById('guide').closest('details'); if (box) box.open = true; })
+    .catch(() => {});   // without the script the usual guide stays
+}
 // Catchment replay (prototype, docs/CATCHMENT-REPLAY-2026-10.md): the last 48 hours upstream, only with
 // ?replay=1 in the address, so the page is unchanged without it. replay.js and the spot's
 // data/spot/<id>-replay.json (src/dipcast/replay.py) are asked for then, and not before.
@@ -4720,21 +4735,6 @@ function mountReplay(d) {
       if (!r) return said('No replay of the last 48 hours upstream for this spot in this update.');
       replayStyle(document); host.innerHTML = replayTile(r, Date.now(), host.clientWidth - 32); })   // the tile's inner width
     .catch(() => said('The replay of the last 48 hours upstream could not be loaded.'));
-}
-// The arrival guide (prototype, docs/ARRIVAL-GUIDE-2026-10.md): the practical guide as a journey, from the stop or
-// the car park to the water, in and out, then who can swim and what nobody has checked. Only with ?arrive=1 in the
-// address, so the page is unchanged without it. arrive.js is asked for then, at the build's stamp as replay.js is,
-// and its tile takes the guide tile's place; on a phone the fold that holds it opens.
-const ARRIVE = new URLSearchParams(location.search).get('arrive') === '1';
-let arrivalScript = null;
-function mountArrival(d) {
-  const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
-  arrivalScript = arrivalScript || new Promise((ok, no) => { const s = document.createElement('script');
-    s.src = `arrive.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-  arrivalScript.then(() => { const el = document.getElementById('guide'), html = el && current === d ? arrivalTile(d, serverToday) : '';
-    if (!html) return;
-    el.outerHTML = html; const box = document.getElementById('guide').closest('details'); if (box) box.open = true; })
-    .catch(() => {});   // without the script the usual guide stays
 }
 // Swimmers' reviews (reviews.js), notes on a visit (visits.js) and illness reports (illness.js), if those
 // scripts arrived: without them the rest of the spot still draws.
