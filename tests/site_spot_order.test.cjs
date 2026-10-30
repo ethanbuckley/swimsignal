@@ -45,7 +45,7 @@ test('the overflows fold whole, and what their figures mean stays inside the fol
   // The caption says what the order is (11 Oct 2026): it said "the 10 with the most reach" over a list
   // where 80% came above 98%.
   assert.match(ov, /<p class="sub">\$\{total > n \? `The \$\{n\} of the \$\{total\} overflows upstream that matter most this week`/);
-  assert.match(ov, /most first: `\n\s+\+ 'one matters more the more of a spill would reach here, the likelier it is to spill this week, and if it is discharging now\. '/);
+  assert.match(ov, /most first: `\n\s+\+ 'one matters more the larger its model weight here, the likelier it is to spill this week, and if it is discharging now\. '/);
   assert.doesNotMatch(ov, /with the most reach of/);
   assert.doesNotMatch(ov, /t-more/);   // its corner fold would sit on the fold's own chevron
 });

@@ -236,8 +236,12 @@ those sizes; they were taken off to keep the rule simple.)
     "It is a score, not a probability." Not "spill risk", "overflow exposure" or "the modelled
     chance", and not called a probability. Until 11 October 2026 the definition said "how likely
     sewage from upstream is to reach the spot", which read as a probability beside the Method
-    page's "not a probability". An overflow's reach is likewise a weight, the share of a spill's
-    bacteria the model expects to arrive, not "the chance a spill affects this spot".
+    page's "not a probability". An overflow's **weight** (30 October 2026; until then "reach", "the share of
+    a spill's bacteria the model expects to arrive") is a modelled relative contribution weight, from the
+    transport assumptions (travel time and die-off, and dilution): neither a measured bacterial
+    concentration nor a calibrated chance of contamination. Pages say "22% weight" or "model weight", define it
+    once in `levels.js` (`WEIGHT_SAID`), and never call it reach or a chance. File and column names
+    (`weight`, `reach` in the organisers' CSV) are kept.
     Its tile and rows keep their labels, "Sewage spills" and "Sewage spills upstream".
   - The E. coli figure is the **E. coli estimate** in prose, and its tile is **Water quality**.
     Not "E. coli chance", "E. coli risk", "E. coli > 900" or "water-quality estimate".
@@ -264,6 +268,15 @@ those sizes; they were taken off to keep the rule simple.)
   October" (or "Forecast for today"). The readings, Right now, River level, Water temperature and the
   algae check, sit apart under "Latest readings", which says they do not change with the day. An
   outside review had picked Saturday at Long Bridges and found the tiles below still on today.
+- The live status before the level (30 October 2026, review of PR #463; docs/EVIDENCE-MAP-2026-10.md). A
+  spot's answer opens, on today's view, with how many overflows upstream gave a status at the last poll, in
+  ink: "Live status from 13 of 16 overflows upstream: none spilling at the last poll; 3 do not report, so
+  could be spilling unseen." Where none did, it leads in bold with "Live sewage spill status unavailable",
+  and the level under it is labelled "Modelled forecast" with its inputs. The compact headline leads with
+  the status where right now is not known ("Live sewage spill status unavailable: low risk forecast"), and
+  a raised day with nothing reporting says "(modelled, no live status)". The words are `liveHead` and
+  `liveLine` in `levels.js`. "Forecast only: no overflow upstream reports live", under a big green "Low
+  risk", was read as an observation at the Wye at Symonds Yat.
 
 ### Icons
 

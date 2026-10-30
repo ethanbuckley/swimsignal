@@ -57,9 +57,9 @@ test('the counts leave out an overflow that carries too little weight to count, 
   const days = text(vm.runInContext('daysTile(S)', ctx)), tiles = text(vm.runInContext('dayTiles(S) + nowTiles(S)', ctx));
   assert.equal(text(vm.runInContext('daysSentence(S)', ctx)), 'About 1 of the 3 overflows upstream is expected to spill today, about 2 tomorrow.');
   // Under the five days, with what the level counts, so the sentence over them stays short on a phone (29 Oct 2026).
-  assert.match(days, /This forecast counts .* Grasmere sewage works overflow is upstream too, but too little of its water would reach here to count\./);
+  assert.match(days, /This forecast counts .* Grasmere sewage works overflow is upstream too, but its model weight here is too small to count\./);
   assert.doesNotMatch(days + tiles, /of the 4 overflows|0 of 4|4 of 4/);
-  assert.equal((days + tiles).split('would reach here to count').length - 1, 1);   // once
+  assert.equal((days + tiles).split('weight here is too small to count').length - 1, 1);   // once
   assert.match(tiles, /0 of 3 discharging/);
   assert.match(tiles, /3 of 3 report live\./);
 });
@@ -68,9 +68,9 @@ test('the overflow list keeps every row, and one with no reach says it does not 
   const ctx = page();
   ctx.S = waterhead();
   const ov = text(vm.runInContext('overflowTile(S, allUpstream(S))', ctx));
-  assert.match(ov, /Grasmere sewage works overflow .* 0% reach too little reaches here to count/);
-  assert.doesNotMatch(ov, /0% reach spill 82% today/);
-  assert.match(ov, /18% reach spill 61% today/);
+  assert.match(ov, /Grasmere sewage works overflow .* 0% weight too small to count/);
+  assert.doesNotMatch(ov, /0% weight spill 82% today/);
+  assert.match(ov, /18% weight spill 61% today/);
   assert.match(ov, /The 4 overflows upstream, most first/);
   // A list cut to the ten that matter most still gives the whole number upstream.
   ctx.S = waterhead({overflows: 59, too_far: 1});
@@ -78,9 +78,9 @@ test('the overflow list keeps every row, and one with no reach says it does not 
 });
 
 test('more than one left out: a number, not names', () => {
-  assert.equal(R.tooFarSaid(waterhead({overflows: 2, too_far: 4})), '4 more overflows are upstream, but too little of their water would reach here to count.');
+  assert.equal(R.tooFarSaid(waterhead({overflows: 2, too_far: 4})), '4 more overflows are upstream, but their model weight here is too small to count.');
   assert.equal(R.tooFarSaid(waterhead({overflows: 2, too_far: 1, too_far_overflow: {site_id: 'X1', site_name: null}})),
-    'One more overflow is upstream too, but too little of its water would reach here to count.');
+    'One more overflow is upstream too, but its model weight here is too small to count.');
   assert.equal(R.tooFarSaid(waterhead({overflows: 4})), '');
   assert.equal(R.allUpstream(waterhead({overflows: 2, too_far: 4})), 6);
 });

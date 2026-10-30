@@ -212,7 +212,7 @@ test('the overflow list says "at the spot" under 0.1 km and "under half an hour"
   const henley = {...culham, site_id: 'TWL00191', site_name: 'Friday Street (Henley) SPS', position_source: 'live', snap_m: 66};
   const rivadale = {...culham, site_id: 'YWS00674', site_name: 'RIVADALE VIEW/CSO', position_source: 'live', distance_km: 0.5, travel_h: 0.3};
   const far = {...culham, site_id: 'YWS1', site_name: 'ILKLEY WwTW', position_source: 'live', distance_km: 6.0, travel_h: 5.2};
-  const rows = plain(vm.runInContext('overflowTile', c)({id: 'x', contributors: [culham, henley, rivadale, far]}, 4)).split('reach');
+  const rows = plain(vm.runInContext('overflowTile', c)({id: 'x', contributors: [culham, henley, rivadale, far]}, 4)).split('weight');
   assert.match(rows[0], /Culham sewage works overflow.* · at the spot: its stream joins the river here, to within the map's precision \(checked on a map\)\d/);
   assert.match(rows[1], /Friday Street \(Henley\) pumping station overflow.* · at the spot\d/);
   assert.match(rows[2], /Rivadale View storm overflow.* · 0\.5 km upstream, under half an hour away\d/);

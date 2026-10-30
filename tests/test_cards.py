@@ -233,7 +233,10 @@ def test_build_never_stops_for_cards(tmp_path):
 
 # ------------------------------------------------------------------------------ a spot's share card
 HEADLINES = ["Low risk for the next five days", "Very high risk right now: sewage spills",
-             "Low risk forecast: the overflows that matter most here do not report live",   # the longest on 16 Oct 2026
+             # The live status first where right now is not known, and a raised day said as modelled where nothing
+             # upstream reports (review of PR #463, 30 Oct 2026): the longest forms, with a worse later day.
+             "Live status from 12 of 185 overflows upstream: low risk forecast · Moderate risk on Wednesday",
+             "Moderate risk tomorrow: sewage spills (modelled, no live status) · Very high risk on Wednesday",
              "No monitored overflow found upstream", "No forecast"]
 
 

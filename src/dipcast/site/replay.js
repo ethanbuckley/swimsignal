@@ -98,8 +98,8 @@ function replayQuietSaid(r) {
   if (n('no_history')) out.push(`${n('no_history')} counted overflow${n('no_history') === 1 ? ' has' : 's have'} no poll history, so whether ${n('no_history') === 1 ? 'it' : 'they'} spilled in these hours is not known.`);
   if (n('late_history')) out.push(`${n('late_history')} counted overflow${s('late_history')} first appear${n('late_history') === 1 ? 's' : ''} in the poll history part way through these hours, so earlier spills there are not known.`);
   if (r.more_with_events) out.push(r.truncated
-    ? `${r.more_with_events} more with reported spills or gaps, smaller reach, are left out to keep this small.`
-    : `${r.more_with_events} more with reported spills, smaller reach, are not listed.`);
+    ? `${r.more_with_events} more with reported spills or gaps, smaller model weight, are left out to keep this small.`
+    : `${r.more_with_events} more with reported spills, smaller model weight, are not listed.`);
   return out.join(' ');
 }
 // When the feeds were actually polled (replay.py, poll_coverage): never a promise of every 30 minutes.

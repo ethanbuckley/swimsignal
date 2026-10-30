@@ -233,6 +233,8 @@ def test_attach_flow_state_words_and_flood_alerts():
                                   sleep=clock.sleep, clock=clock, outline=lambda aid, timeout: area, lake_at=lambda x, y: None)
     by = {s["id"]: s for s in spots}
     assert by["high"]["flow_state"] == "high"
+    # Where the gauge is, from the EA station record the lookup matched (the evidence map draws it there).
+    assert (by["high"]["river_state"]["station_lat"], by["high"]["river_state"]["station_lon"]) == (53.94, -1.88)
     assert by["rising"]["flow_state"] == "rising fast"
     assert by["rising"]["river_state"]["rise_6h_m"] == 0.4
     assert (by["rising"]["river_state"]["rise_from"], by["rising"]["river_state"]["rise_to"]) == ("2026-10-03T07:45:00Z", "2026-10-03T13:30:00Z")

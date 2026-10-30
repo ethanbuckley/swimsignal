@@ -121,9 +121,9 @@ const Record = (() => {
   }
 
   // ------------------------------------------------------------------ 2. the level and why
-  // The overflows most likely to affect the spot on day j (spill chance times reach, as the spot page
-  // picks them), each with how far upstream and how long its sewage takes to arrive. Where none is
-  // likely, the three with the most reach. Names and distances from organisers.js's table rows.
+  // The overflows that count most on day j (spill chance times model weight, as the spot page picks
+  // them), each with how far upstream and how long its sewage takes to arrive. Where none counts for
+  // much, the three with the largest model weight. Names and distances from organisers.js's table rows.
   function topOverflows(s, j) {
     const rows = new Map(O.overflowRows(s).map(o => [o.site_id, o]));
     const spill = c => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spill_today : j === 1 ? c.p_spill_tomorrow : undefined;
@@ -132,8 +132,8 @@ const Record = (() => {
     const list = likely.length ? likely : all.slice().sort((a, b) => b.c.weight - a.c.weight).slice(0, 3);
     if (!list.length) return '';
     const one = ({ c, p, o }) => `<li><b>${esc(o.plain)}</b>${o.own ? ` (${esc(o.own)})` : ''}: ${esc(o.where)}, sewage arrives in ${away(o.travel_h)}. `
-      + `${nil(p) ? '' : `Spill chance ${pct(p)}, `}reach ${pct(o.reach)}.${c.status === 1 ? ' Discharging when the forecast was issued.' : ''}</li>`;
-    return (likely.length ? '' : 'None is likely to reach the spot that day. The ones with the most reach: ') + `<ul class="r-ovs">${list.map(one).join('')}</ul>`;
+      + `${nil(p) ? '' : `Spill chance ${pct(p)}, `}model weight ${pct(o.reach)}.${c.status === 1 ? ' Discharging when the forecast was issued.' : ''}</li>`;
+    return (likely.length ? '' : 'None stands out that day. The ones with the largest model weight: ') + `<ul class="r-ovs">${list.map(one).join('')}</ul>`;
   }
   function levelBlock(s, iso, w, data) {
     const x = w.x, j = w.j, total = (s.upstream_summary || {}).overflows || 0;

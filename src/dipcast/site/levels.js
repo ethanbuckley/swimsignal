@@ -119,8 +119,13 @@ const overflows = s => (s.upstream_summary || {}).overflows || 0;
 const tooFar = s => (s.upstream_summary || {}).too_far || 0;
 const allUpstream = s => overflows(s) + tooFar(s);
 const tooFarSaid = s => { const n = tooFar(s), o = (s.upstream_summary || {}).too_far_overflow;
-  return !n ? '' : n > 1 ? `${n} more overflows are upstream, but too little of their water would reach here to count.`
-    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but too little of its water would reach here to count.`; };
+  return !n ? '' : n > 1 ? `${n} more overflows are upstream, but their model weight here is too small to count.`
+    : `${o && o.site_name ? overflowNames(o).plain : 'One more overflow'} is upstream too, but its model weight here is too small to count.`; };
+// An overflow's weight in words, the one definition the pages give (the overflows tile, the organisers' table): a
+// modelled relative contribution weight from the transport assumptions (transport.py: travel time and die-off, and
+// dilution), not a measured concentration and not a calibrated chance. Until 30 Oct 2026 the pages called it "reach",
+// "the share of a spill's bacteria the model expects to arrive" or "the chance a spill there affects the spot".
+const WEIGHT_SAID = 'Weight: a modelled relative contribution weight, from 0 to 1 and shown as a percentage, for how much a spill there counts here. It comes from the model\'s assumptions on travel time and die-off on the way, and dilution by the river. It is neither a measured bacterial concentration nor a calibrated chance of contamination.';
 const classOf = s => s.classification && s.classification.class ? String(s.classification.class).toLowerCase() : null;
 const advisedAgainst = s => classOf(s) === 'poor';
 const daily = s => !s.error && overflows(s) > 0;   // a forecast that changes from day to day
@@ -188,6 +193,38 @@ const nowUnknown = s => { if (!daily(s) || !s.now || rank(s.now.label) >= 1 || (
 // Why right now is not known, after "Low risk forecast": none reports, or the ones that do matter little here.
 const nowUnknownWhy = s => !Math.min(overflows(s), (s.now || {}).monitored_upstream ?? overflows(s))
   ? 'no overflow upstream reports live' : 'the overflows that matter most here do not report live';
+// The live status behind a spot, in counts, said wherever a level is shown (review of PR #463, 30 Oct 2026:
+// at the Wye at Symonds Yat, "Low risk from sewage spills" over five low days read as an observation, though
+// none of its 14 overflows reports live). The statuses are what the companies' feeds said at the last poll
+// before the update, counted as forecast.live_counts counts them (monitored_upstream: discharging, a spill
+// lately, or a current "not discharging"), after the page has aged stale feeds (index.html, ageReadings).
+// kind: 'none' (no overflow upstream gives a current status), 'partial' or 'full'; null where there is no daily
+// forecast or the update gives no count. The modelled forecast is left as it is: a missing status never makes a
+// level, and a valid forecast is never taken away (nowUnknown already keeps a low right now from setting one).
+const LIVE_NONE = 'Live sewage spill status unavailable';
+const liveCover = s => { const n = s.now || {}, total = overflows(s);
+  if (!daily(s) || !total || !Number.isFinite(n.monitored_upstream)) return null;
+  const mon = Math.min(total, Math.max(0, n.monitored_upstream));
+  return { mon, total, kind: !mon ? 'none' : mon < total ? 'partial' : 'full' }; };
+// "Live sewage spill status unavailable", "Live status from 1 of 13 overflows upstream", "Live status from all 16
+// overflows upstream". '' where liveCover is null.
+const liveHead = s => { const c = liveCover(s); if (!c) return '';
+  return c.kind === 'none' ? LIVE_NONE : c.kind === 'partial' ? `Live status from ${c.mon} of ${c.total} overflows upstream`
+    : c.total === 1 ? 'Live status from the overflow upstream' : `Live status from all ${c.total} overflows upstream`; };
+// The same with what those statuses said, as at the last poll, and the ones with none said as unknown, never
+// as dry: the line at the top of a spot's answer, before the level, on today's view.
+const liveLine = s => { const c = liveCover(s); if (!c) return '';
+  const k = Math.min(c.mon, (s.now || {}).discharging_upstream || 0), rest = c.total - c.mon;
+  if (c.kind === 'none') return `${LIVE_NONE}: ${c.total === 1 ? 'the overflow upstream does not report live' : `none of the ${c.total} overflows upstream reports live`}, so whether any is spilling is not known`;
+  const said = c.total === 1 ? (k ? 'spilling at the last poll' : 'not spilling at the last poll') : `${k ? `${k} spilling` : 'none spilling'} at the last poll`;
+  return `${liveHead(s)}: ${said}${rest ? `; ${rest} ${rest === 1 ? 'does' : 'do'} not report, so could be spilling unseen` : ''}`; };
+// The live status over a level on today's view, for the spot's answer (index.html, answerParts): `live`, the line at the top
+// of the answer, in counts; `blind`, no overflow upstream gives a current status, when the answer leads with
+// "Live sewage spill status unavailable" and labels the level as the modelled forecast; `cardLive`, the
+// short form a saved card gives above its level where right now is not known (nowUnknown) or nothing reports.
+const MODELLED_FROM = "From the rain forecast and each overflow's past spills, not from live readings";
+const liveParts = (d, isToday) => { const c = isToday ? liveCover(d) : null;
+  return c ? { live: liveLine(d), blind: c.kind === 'none', cardLive: c.kind === 'none' || nowUnknown(d) ? liveHead(d) : '' } : { live: '', blind: false, cardLive: '' }; };
 // Right now's level from the live status, where it has one.
 const nowSpill = s => daily(s) && s.now && !nowUnknown(s) && ORDER[s.now.label] !== undefined ? s.now.label : null;
 // One day, or right now (isNow, from the live overflow status): the level and what set it, 'spill',
@@ -338,10 +375,14 @@ function headParts(s) {
       : advisedAgainst(s) ? poorReason(today()) : `rated ${classOf(s)} by the Environment Agency`, '']; }
   if (worstNear(s)[0].by === 'record') return [`${cap(l)} risk`, poorReason(today()), laterWords(s)];
   const [r, when] = worstNear(s);
-  if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, when === 'right now' ? nowBecause(s, r) : because(r), laterWords(s)];
+  // A raised day from the spill forecast where no overflow upstream reports live: modelled, and said so, so
+  // "Moderate risk today: sewage spills" is not read as spills seen.
+  const blind = (liveCover(s) || {}).kind === 'none' && r.by === 'spill' && !r.now;
+  if (rank(r.level) > 0) return [`${cap(r.level)} risk ${when}`, when === 'right now' ? nowBecause(s, r) : because(r) + (blind ? ' (modelled, no live status)' : ''), laterWords(s)];
   const later = laterWords(s);
-  // Right now not known: the forecast's low, and why it is not more (nowUnknown).
-  if (nowUnknown(s)) return ['Low risk forecast', nowUnknownWhy(s), later];
+  // Right now not known (nowUnknown): the live status leads, in counts (liveHead), then the forecast's low,
+  // named as a forecast, so a low is never read as a reading.
+  if (nowUnknown(s)) return [liveHead(s) || 'Live sewage spill status not known', 'low risk forecast', later];
   if (later) return [`Low risk now · ${later}`, '', ''];
   // Four days between midnight and the next build, when yesterday's has left them (fromDay).
   return [s.days.slice(0, 5).every(hasData) ? `Low risk for the next ${s.days.length === 4 ? 'four' : 'five'} days` : 'Low risk on every day with a forecast', '', ''];
@@ -786,7 +827,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,

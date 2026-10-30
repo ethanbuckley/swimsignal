@@ -87,7 +87,7 @@ test('overflows with no reading are counted, so silence is not read as no spill'
   const q = R.replayQuietSaid(replay({ quiet: { no_history: { n: 2 }, late_history: { n: 1 } }, more_with_events: 3, truncated: true }));
   assert.equal(q, '2 counted overflows have no poll history, so whether they spilled in these hours is not known. '
     + '1 counted overflow first appears in the poll history part way through these hours, so earlier spills there are not known. '
-    + '3 more with reported spills or gaps, smaller reach, are left out to keep this small.');
+    + '3 more with reported spills or gaps, smaller model weight, are left out to keep this small.');
 });
 
 test('the tile: names, data states, an accessible drawing and table, and no causal words', () => {

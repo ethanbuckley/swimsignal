@@ -70,7 +70,7 @@ def test_a_profile_page_joins_the_spots_overflows_to_their_returns(tmp_path):
     # overflowNames), with the phone layout's labels.
     a1, b2 = page.index("Grassington sewage works overflow"), page.index("Bridge Lane storm overflow")
     assert a1 < b2 and '<span class="muted">Grassington/STW · A1</span>' in page
-    assert '<td class="num" data-l="Reach">&lt;1%</td>' in page and '<td class="num" data-l="Monitor uptime 2025">67%</td>' in page
+    assert '<td class="num" data-l="Weight">&lt;1%</td>' in page and '<td class="num" data-l="Monitor uptime 2025">67%</td>' in page
     assert '<td class="num" data-l="Hours away">under 1</td>' in page and '<td class="num" data-l="Spills 2023">2</td>' in page
     # The short pages say why there is no list.
     short = {s["id"]: text((tmp_path / "spot" / s["id"] / "profile" / "index.html").read_text()) for s in SPOTS[1:]}
