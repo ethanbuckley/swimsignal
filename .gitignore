@@ -20,6 +20,8 @@ data/processed/*
 !data/processed/spill_model_holdout_2025.pkl
 # PR #254's live-status candidates, run in shadow only (model/live_status.py, docs/LIVE-STATUS-SHADOW-TEST-2026-10.md)
 !data/processed/live_status/
+# The regional routing shadow's frozen v2 model (shadow_regional.py, docs/REGIONAL-ROUTING-2026-11.md)
+!data/processed/regional/
 !data/processed/lead_calibration.json
 !data/processed/spill_day_ratio.json
 !data/processed/ecoli_model.json
