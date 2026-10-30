@@ -176,3 +176,76 @@ end to end. It is not evidence for or against the conditions, which are judged o
 
 **Approval.** Ethan approved the statement as written, 30 October 2026 about 17:50 UTC ("Approved, run it"), on
 statement head 2c8cae0. Nothing above the line was changed after that.
+
+**Run.** 30 October 2026, about 17:55-18:02 UTC, on main checkout data, commit 6cb3b5d. One run. No network, no
+Open-Meteo calls, no setting changed. 2,952,154 events in both files became 802,781 spills; 2,732,148 issue hours in
+2024 (training) and 1,582,953 in 2025 (scoring). Files: `-scores.csv`, `-checks.json`.
+
+### Verdict: C1 fails as stated (condition 4, reliability)
+
+| Condition | C1 |
+|---|---|
+| 1a gain, interval below zero | pass |
+| 1b gain at least 2% of B1 | pass (11.6%) |
+| 2 no horizon clearly worse | pass |
+| 3 no company clearly worse | pass |
+| 4 reliability | **fail** |
+| 5 not worse on new spills | pass |
+
+### Scores, 2025, all nine
+
+| Predictor | Integrated Brier | Difference from B1 | 95% interval |
+|---|---|---|---|
+| B0, stops now (the page's assumption) | 0.3544 | +0.1838 | |
+| B1, company × elapsed | 0.1705 | 0 | |
+| **C1** | **0.1507** | **−0.0198** | −0.0242 to −0.0148 |
+| C2, perfect future rain (reported only) | 0.1332 | −0.0373 | −0.0405 to −0.0338 |
+
+- **Every company gains**, each with its interval wholly below zero: from −0.0135 (Yorkshire) to −0.0292 (Thames).
+- **Every horizon gains:** −0.0083 at 1 h, −0.0189 at 3 h, −0.0260 at 6 h, −0.0279 at 12 h, −0.0179 at 24 h.
+- **New spills** (begun under 3 h before): −0.0245 (−0.0288 to −0.0203).
+- **One weight per spill** (reported): B1 0.1535, C1 0.1251. The gain does not come only from long spills.
+
+### Where condition 4 fails
+
+Condition 4 needs, at every company and horizon, C1's ECE no higher than B1's or at most 0.02. It fails in 25 of the
+45 company-horizon cells:
+
+| Company | Horizons failing | C1 ECE at 24 h | B1 ECE at 24 h |
+|---|---|---|---|
+| Anglian | all five | 0.086 | 0.069 |
+| Yorkshire | all five | 0.052 | 0.037 |
+| United Utilities | 3, 6, 12, 24 h | 0.050 | 0.016 |
+| Thames | 3, 6, 12, 24 h | 0.023 | 0.015 |
+| South West | 6, 12, 24 h | 0.066 | 0.015 |
+| Northumbrian, Severn Trent, Wessex | 24 h only | 0.026, 0.029, 0.032 | 0.025, 0.025, 0.006 |
+| Southern | none | 0.033 | 0.067 |
+
+All nine together, C1's ECE is 0.021 at 12 h and 0.030 at 24 h (B1: 0.014 and 0.019).
+
+**B1 is not well calibrated at every company either.** Its ECE is over 0.02 at Anglian, Southern, Yorkshire,
+Northumbrian and Severn Trent at the longer horizons (up to 0.070). All nine together, it stays under 0.02 at every
+horizon.
+
+*Not checked:* whether C1's chances are too high or too low where it misses. The run kept scores, not predictions.
+
+### What this means
+
+- **The page's assumption is the worst of everything scored.** "Stops now" scores 0.354, twice B1's 0.171. This is
+  the one firm product finding: the "if it stops now" time is the earliest possible, not a typical one.
+- **Duration is predictable beyond company and elapsed time.** The gain is large, holds at every company and horizon,
+  and holds on new spills. What fails is how well the chances match outcomes, mostly at 12 and 24 hours and at five
+  companies.
+- **By the statement, nothing is adopted.** C1 is not pursued as written. The statement said a fail of C1 with B1
+  well calibrated leaves B1 as an option; B1 is well calibrated for the nine together but not at every company.
+- **Perfect future rain roughly doubles the gain** (C2). Forecast rain would give less; how much is not tested.
+
+### What could follow (not decided, each needs its own statement)
+
+1. **A recalibrated C1:** C1 with a calibration step fitted on 2024 only (for example per company and horizon).
+   It cannot be judged on 2025, which has now judged C1. It would need 2026 data: the EA 2026 files when all nine are
+   out, or spills read from SwimSignal's own polls.
+2. **Page wording without a model:** a dated, plain sentence beside the clearing time, from 2024-25 counts only, for
+   example how often a spill already running is still running six hours later. That is a description, not a
+   forecast, and needs its own wording check.
+3. **Leave it.** The present wording already says "if it stops now".
