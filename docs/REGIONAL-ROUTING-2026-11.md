@@ -101,3 +101,16 @@ applies. It says the rule is worth a prospective look. It does not say how it wi
   population, not by rerunning this window.
 - **Too few known labels** (under 10,000 known overflow-days at the eight companies): extend by one further
   28-day window, stated now, then read.
+
+## Settled before the window opened (30 October 2026, about 23:10 UTC)
+
+Recorded before the first possible window day (31 October, UK time), with no shadow row read:
+- **Useful margin: 5%,** as proposed in section 4: the routed lead-0 Brier at the eight companies at least 5% below
+  production's as shown, with the 95% interval of the difference below zero.
+- **Guardrail: 5%,** as proposed: a company worse than production by more than 5% with its interval wholly above zero
+  goes to the fallback in any rollout proposal.
+- **First logged build (inferred, to be confirmed):** the publishing build of the merge, run 41140069210 (forecasts
+  22:48-22:55 UTC on 30 October, 109 spots, no shadow warning in its log). Its state stays in the build cache until
+  the release copy is next published (when it is over 12 hours old, after about 07:45 UTC on 31 October). The window
+  is whatever `scripts/regional_shadow_check.py` reports from the first logged rows: if that is this build, 31
+  October to 27 November, read on 28 November.
