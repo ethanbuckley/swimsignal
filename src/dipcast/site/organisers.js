@@ -97,6 +97,10 @@ const Organisers = (() => {
       else { const i = x.risk * 100, top = topOn(s, w.j);
         rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
           + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
+      // What the overflows upstream are doing at the issue time, whatever day is picked: a release can change things
+      // quickly, and its water takes hours to days to arrive (30 Oct 2026, from an event organiser's comment). The ones
+      // not reporting are said as unknown, never as dry; the forecast's own issue time is under the rows.
+      if (total) rows.push(row('Spills at the last update', orgNow(s.now || {}, total)));
       const band = R.ecoliBand(s, x);
       // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF).
       if (band && R.ecoliUntested(x)) rows.push(row('Water quality', esc(R.ECOLI_OFF_SAID)));
@@ -408,7 +412,16 @@ const Organisers = (() => {
     draw();
   }
 
-  return { when, view, forecast, overflows, overflowRows, csv, fromHash, toHash, spilling, howSure, start, STALE_MIN,
+  // The overflows upstream at the forecast's issue time, from the live feeds: how many of those reporting are discharging,
+  // and how many give no reading, which could be spilling unseen. What a monitor reports is under "Not known" on the spot's page.
+  function orgNow(now, total) {
+    const mon = Math.min(total, now.monitored_upstream ?? total), k = Math.min(mon, now.discharging_upstream || 0), off = total - mon;
+    if (!mon) return `None of the ${total} report live, so whether they are spilling is not known.`;
+    return `${k ? `<b>${k}</b> of the ${mon} that report live ${k === 1 ? 'was' : 'were'} discharging` : `None of the ${mon} that report live was discharging`}`
+      + `${off ? `; ${off} ${off === 1 ? 'gives' : 'give'} no live reading, so could be spilling unseen` : ''}. A spill's water takes hours to days to arrive, so look again the evening before and on the morning.`;
+  }
+
+  return { orgNow, when, view, forecast, overflows, overflowRows, csv, fromHash, toHash, spilling, howSure, start, STALE_MIN,
     realDate, monthBefore, eventDates, dateWords, ics, icsFold, dateAlert, keptDates, withDate, MAX_DATES };
 })();
 
