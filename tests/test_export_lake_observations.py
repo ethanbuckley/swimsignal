@@ -30,7 +30,8 @@ def _doc(as_of="2026-10-30"):
                           "every_scene", [], date.fromisoformat(as_of), "2026-09-30")
     lakes = [lk, small]
     return {"schema": m.SCHEMA, "version": m.VERSION, "generated_at": "2026-10-30T00:00:00+00:00", "as_of": as_of,
-            "processing": {}, "claim": m.CLAIM, "freshness_rules": {}, "lab_definition": m.LAB_DEFINITION,
+            "processing": {}, "claim": m.CLAIM, "freshness_rules": {}, "lab_definition": m.LAB_DEFINITION, "quality": {},
+            "attribution": ["Contains modified Copernicus Sentinel data [2026]"],
             "lakes": lakes, "coverage": m.coverage(lakes)}
 
 
@@ -43,6 +44,15 @@ def test_a_built_record_holds_the_contract_and_says_why():
     assert lk["latest"]["freshness"] == "older"
     assert lk["latest"]["reasons"] == ["season_closed", "not_refreshed"]
     assert small["latest"]["freshness"] == "none" and "too_small" in small["latest"]["reasons"]
+
+
+def test_one_primary_reading_a_date_by_the_most_clear_pixels():
+    f = _features([("2026-09-01", "B", "T2", 85, 100, True, 0.30), ("2026-09-01", "A", "T1", 95, 100, True, 0.01)])
+    base = {"lake_id": "bw-z", "name": "Z", "water_body": "Z", "lat": 54.0, "lon": -3.0, "site_ids": {}}
+    lk = m.lake_record(base, f, {"tiles": {"T1": {"n_core": 100, "passes": True}}}, {}, "every_scene", [],
+                       date(2026, 9, 5), "2026-09-30")
+    assert [x["primary"] for x in lk["series"]] == [True, False]
+    assert lk["latest"]["item_id"] == "A" and lk["latest"]["ndci"] == 0.01
 
 
 def test_freshness_limits():
@@ -85,6 +95,9 @@ def test_check_catches_what_it_should():
     bad["lakes"][0]["series_scope"] = "near_lab_samples"
     assert any("series_partial" in e for e in m.check(bad))
     bad = copy.deepcopy(d)
+    bad["lakes"][0]["series"][1]["primary"] = False
+    assert any("primary" in e for e in m.check(bad))
+    bad = copy.deepcopy(d)
     del bad["lab_definition"]
     assert any("lab_definition" in e for e in m.check(bad))
 
@@ -95,3 +108,58 @@ def test_the_committed_export_holds_the_contract():
     assert m.check(doc) == []
     assert doc["coverage"]["lakes"] == len(doc["lakes"])
     assert all(s["sha256"] for s in doc["processing"]["sources"])
+
+
+def _refresh_rows():
+    return pd.DataFrame([
+        # an October reading that passes every check
+        dict(bw_id="x", scene_date="2026-10-14", datetime="2026-10-14T11:09:39Z", item_id="R1", tile="T1",
+             processing_baseline="05.13", sun_elevation_deg=29.1, clear_core=95, n_core=100, usable=True, reading=0.07,
+             clear_core_not_water=2, clear_core_valid_index=95, core_snow_ice=0),
+        # same day, a fifth of the clear core classed as vegetation: excluded out of season
+        dict(bw_id="x", scene_date="2026-10-27", datetime="2026-10-27T11:24:23Z", item_id="R2", tile="T1",
+             processing_baseline="05.13", sun_elevation_deg=24.7, clear_core=90, n_core=100, usable=True, reading=0.06,
+             clear_core_not_water=20, clear_core_valid_index=90, core_snow_ice=0),
+        # snow in the core
+        dict(bw_id="x", scene_date="2026-10-28", datetime="2026-10-28T11:20:00Z", item_id="R3", tile="T1",
+             processing_baseline="05.13", sun_elevation_deg=24.0, clear_core=90, n_core=100, usable=True, reading=0.01,
+             clear_core_not_water=0, clear_core_valid_index=90, core_snow_ice=3),
+        # a band value missing at one clear pixel
+        dict(bw_id="x", scene_date="2026-10-29", datetime="2026-10-29T11:20:00Z", item_id="R4", tile="T1",
+             processing_baseline="05.13", sun_elevation_deg=24.0, clear_core=90, n_core=100, usable=True, reading=0.01,
+             clear_core_not_water=0, clear_core_valid_index=89, core_snow_ice=0),
+        # cloudy: not a reading, not listed as excluded
+        dict(bw_id="x", scene_date="2026-10-30", datetime="2026-10-30T11:20:00Z", item_id="R5", tile="T1",
+             processing_baseline="05.13", sun_elevation_deg=23.7, clear_core=0, n_core=100, usable=False, reading=None,
+             clear_core_not_water=0, clear_core_valid_index=None, core_snow_ice=0),
+    ])
+
+
+def test_refreshed_readings_are_checked_flagged_and_traced():
+    f = _features([("2026-09-20", "C", "T1", 95, 100, True, -0.02)])
+    base = {"lake_id": "bw-x", "name": "X", "water_body": "X", "lat": 52.6, "lon": -0.7, "site_ids": {}}
+    info = {"source": "refresh:test", "set": "bathing", "from": "2026-10-01", "to": "2026-10-30"}
+    lk = m.lake_record(base, f, {"tiles": {"T1": {"n_core": 100, "passes": True}}}, {}, "every_scene", [],
+                       date(2026, 10, 30), "2026-09-30", [(_refresh_rows(), info)])
+    shown = [x for x in lk["series"] if x["source"] == "refresh:test"]
+    assert [x["item_id"] for x in shown] == ["R1"]
+    assert shown[0]["season"] == "out_of_season" and shown[0]["experimental"] is True
+    assert {e["item_id"]: e["reason"] for e in lk["excluded"]} == {
+        "R2": "core_not_classed_water", "R3": "snow_or_ice_in_core", "R4": "invalid_band_values"}
+    assert lk["latest"]["item_id"] == "R1" and lk["latest"]["experimental"] is True and lk["latest"]["age_days"] == 16
+    assert lk["processed_to"] == "2026-10-30" and "not_refreshed" not in lk["latest"]["reasons"]
+    assert lk["refreshes"][0]["shown"] == 1
+
+
+def test_check_refuses_future_dates_and_untraced_experimental_readings():
+    d = _doc()
+    bad = copy.deepcopy(d)
+    bad["lakes"][0]["series"][-1]["date"] = "2026-11-05"
+    bad["lakes"][0]["latest"]["date"] = "2026-11-05"
+    assert any("after as_of" in e for e in m.check(bad))
+    bad = copy.deepcopy(d)
+    bad["lakes"][0]["series"][0].update(season="out_of_season", experimental=True)
+    assert any("from a refresh" in e for e in m.check(bad))
+    bad = copy.deepcopy(d)
+    bad["lakes"][0]["latest"]["age_days"] = -1
+    assert any("negative age_days" in e for e in m.check(bad))

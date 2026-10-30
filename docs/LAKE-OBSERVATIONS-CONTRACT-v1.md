@@ -4,9 +4,8 @@ Written 30 October 2026 for the satellite recovery (`docs/SATELLITE-RECOVERY-202
 product's Research/Labs page and lake viewer read. It is produced by `scripts/export_lake_observations.py` from the
 caches the satellite tests already made. No new imagery is needed to produce it.
 
-**Status: proposed.** The product chat was preparing a contract too. No product contract was on any branch or in
-any worktree when this was written, so this is offered as the single contract for both sides to review. Field names
-can change before release; after release, a change that removes or renames a field raises `version`'s major number.
+**Status: adopted** by the product chat (30 October 2026), which builds the page from it; amended to 1.1 below.
+Additive changes raise the minor version; removing or renaming a field raises the major version.
 
 ## What it may and may not say
 
@@ -17,6 +16,12 @@ can change before release; after release, a change that removes or renames a fie
   lab-chlorophyll test (#386) found a promising but unvalidated relation (pooled ρ 0.502, interval 0.300 to 0.667, the
   lower end just short of its 0.3 rule), and the visual-algae and incident tests (#377, #385) were weak.
 - Every reading carries its image date. An old reading is shown as old, never as current.
+- Readings vary as measurements. Two usable scenes of the same lake on the same date differ by a median of 0.03
+  NDCI and by 0.17 at the 90th percentile, against a typical within-lake spread (SD) of 0.10 (`quality`, 393
+  same-date pairs). The page shows the real observations and explains this variability, and does not read small
+  changes as biological trends. These figures describe variability; they are not an uncertainty bound.
+- Several sites can sit on one water body (four on Windermere, three on Coniston Water, two on Rutland Water). They
+  share imagery and weather and are not independent lakes: `water_body_key` and `shares_water_body_with` say which.
 - `claim.public_wording` holds the approved sentence. The UI shows it beside any reading.
 
 ## File
@@ -32,7 +37,9 @@ can change before release; after release, a change that removes or renames a fie
 | `processing` | object | how readings were made: `version` (`"s2c1-l2a.ndci-core-median.v1"`), `code` (the scripts and commit), `sources` (each cache file's path label and SHA-256) |
 | `claim` | object | `index`, `definition`, `public_wording`, `not_claimed` (list of strings) |
 | `freshness_rules` | object | the day limits below, as numbers |
+| `attribution` | list | notices the UI must show: "Contains modified Copernicus Sentinel data [years]" and the EA's Open Government Licence line |
 | `lab_definition` | object | what every `lab` value is: `target`, `determinand`, `unit`, `method_note`, `censoring`, `source` (below) |
+| `quality` | object | how far one reading can be trusted, measured on the data: `same_date_pairs`, `same_date_abs_difference_median` and `_p90` (two usable scenes of one site on one date), `within_site_sd_median`, and a `note` |
 | `lakes` | list | one record per lake site (below) |
 | `coverage` | object | counts over all lakes, for build health (below) |
 
@@ -49,15 +56,21 @@ can change before release; after release, a change that removes or renames a fie
 | `depth_m`, `lake_type` | number or null, string or null | HydroLAKES mean depth; `"shallow"` below 3 m, else `"deeper"` (#386's rule) |
 | `mask` | object | `site_radius_m` (300), `pixel_m` (20), `min_core_pixels` (9), `min_clear_share` (0.8), `tiles` (per Sentinel-2 tile: `n_core`, `passes`), `passes_size_rule` |
 | `series_scope` | string | `"every_scene"` (every image May-September of the years covered) or `"near_lab_samples"` (only images within a day of a lab sample: not a full record) |
-| `latest` | object | the most recent usable reading: `date`, `datetime`, `item_id`, `ndci`, `clear_share`, `age_days`, `freshness` (`recent`, `older`, `stale`, `none`), and `reasons` (list, below) |
+| `water_body_key`, `shares_water_body_with` | string, list | a key for the water body, and the other sites on it (not independent lakes) |
+| `coverage_label` | string | plain words for `series_scope`; for `near_lab_samples`: "selected historical coverage: only images within a day of a lab sample" |
+| `processed_to` | string | the last date this site's images were processed to (a refresh can extend it) |
+| `latest` | object | the most recent primary reading **in this dataset** (`scope: "latest_in_dataset"`), not the latest image available: `date`, `datetime`, `item_id`, `ndci`, `clear_share`, `season`, `experimental`, `age_days`, `freshness` (`recent`, `older`, `stale`, `none`), and `reasons` (list, below) |
 | `seasons` | list | per year: `scenes` (images over the site), `usable`, `usable_share`, `median_ndci` of usable readings, `first`, `last` usable dates |
-| `series` | list | every usable reading: `date`, `datetime`, `item_id`, `tile`, `processing_baseline`, `clear_core`, `n_core`, `ndci` |
+| `series` | list | every shown reading: `date`, `datetime`, `item_id`, `tile`, `processing_baseline`, `clear_core`, `n_core`, `ndci`, `primary` (true for one reading a date: the most clear core pixels, then the first item id, the test's own rule), `season` (`in_season` or `out_of_season`), `experimental`, `source` (`test_cache` or `refresh:<root>`); refreshed readings add `sun_elevation_deg` and `clear_water_share` |
+| `excluded` | list | refreshed scenes that were clear but not shown, each with `date`, `item_id`, `reason` (`invalid_band_values`, `snow_or_ice_in_core`, `sun_too_low`, `core_not_classed_water`) and `source` |
+| `refreshes` | list | each refresh applied to this site: `source`, `from`, `to`, `scenes`, `shown`, its features file's SHA-256, requests and bytes |
 | `lab` | list | laboratory measurements with an explicit target, method, date and censoring only (below); empty otherwise |
 
 ### Freshness and reasons
 
-`age_days` = `as_of` − the latest usable image date. `recent` ≤ 14 days, `older` 15 to 60, `stale` > 60, `none` when
-there is no usable reading. `reasons` explains every gap, from this fixed list:
+`age_days` and `freshness` are **as of the export** (`as_of`). The page must recompute them at viewing time from
+`latest.date` and `freshness_rules`, never show the exported values as current. `recent` ≤ 14 days, `older` 15 to 60,
+`stale` > 60, `none` when there is no usable reading. No reading may be dated after `as_of`, and no age may be negative. `reasons` explains every gap, from this fixed list:
 
 | Reason | Meaning |
 |---|---|
@@ -92,4 +105,28 @@ health check (`scripts/export_lake_observations.py check`) fails when the file b
 
 - `processing.version` changes whenever a reading could change (mask, clear rule, index, source collection).
 - `processing.sources` lists each input's SHA-256, so any reading can be traced to the cache it came from.
+- `processing.code.sha256` gives the SHA-256 of the exporter, the refresher and every reading script at export time;
+  these are the code provenance (a commit id read at export can predate uncommitted edits).
 - The export never writes to the caches it reads; it records their hashes before and after, and stops if they differ.
+
+## Amendment 1.1 (30 October 2026, prospective): dated out-of-season readings
+
+Decided by Codex for Ethan, 30 October 2026, before any October reading was displayed. May-September was the season
+in which the biological relation (NDCI against lab chlorophyll, algae checks) was tested; it is not a rule that a
+correctly extracted index from another month cannot be shown. So:
+
+- A **refresh** (`scripts/refresh_lake_observations.py`) may add newer readings, made with the test's code and saved
+  cores, from a separate research root that is never the test cache. The export takes refresh roots explicitly
+  (`--refresh`), checks their SHA256SUMS, and records each in `processing.refreshes` and the site's `refreshes`.
+- Every refreshed reading must meet the test's rule (at least 80% of core pixels clear) **and** have a valid index at
+  every clear core pixel, no snow or ice in the core, and the sun at least 15° up. A reading outside May-September
+  must also have at least 90% of its clear core pixels classed as water. A scene that fails is listed in `excluded`
+  with its reason, never shown.
+- A reading outside May-September is `season: "out_of_season"`, `experimental: true`. The page labels it as a dated,
+  out-of-season experimental index, with no chlorophyll or algae inference.
+- **Why 90% water:** in the first refresh (Rutland Water Sykes Lane, October 2026), one of two scenes on 27 October
+  had 31 of 162 clear core pixels (19%) classed as vegetation or bare ground and read 0.059 against −0.016 from the
+  other satellite the same day; the four other clear scenes had at most 4% not classed water. Set after seeing that
+  one case, as a display-quality rule; it is not a test result and changes no earlier reading.
+- **Unchanged:** the historical May-September series and its rule; the 2027 confirmation population and season
+  (`docs/SATELLITE-RECOVERY-2026-10.md`, section 5), which stays May-September.
