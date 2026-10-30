@@ -307,8 +307,22 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
                            "sources": [{"input": k, "sha256": v} for k, v in before.items()],
                            "refreshes": [info for _, info in refreshed]},
             "claim": CLAIM, "freshness_rules": {"recent_days": RECENT_DAYS, "older_days": OLDER_DAYS},
+            "release": release(lakes, processed_to),
             "attribution": attribution(sat_f, chl_f),
             "lab_definition": LAB_DEFINITION, "quality": quality(sat_f), "lakes": lakes, "coverage": coverage(lakes)}
+
+
+def release(lakes: list[dict], historical_to: str) -> dict:
+    """What kind of release this file is (docs/RESEARCH-WORKFLOW.md: a historical release says so prominently;
+    "latest observations" needs a running refresh and measured coverage)."""
+    refreshed = sorted(lk["lake_id"] for lk in lakes if lk["refreshes"])
+    return {"scope": "historical", "historical_to": historical_to, "refreshed_sites": refreshed,
+            "regular_refresh": False,
+            "label": "Historical satellite observations, May to September 2020 to "
+                     f"{historical_to[:4]}, with the date of every image. Not the latest images: no regular refresh "
+                     "runs yet." + (f" {len(refreshed)} site{'s' if len(refreshed) != 1 else ''} also "
+                                    f"{'have' if len(refreshed) != 1 else 'has'} experimental readings from a one-off "
+                                    "refresh after the season." if refreshed else "")}
 
 
 def attribution(*frames: pd.DataFrame) -> list[str]:
@@ -360,6 +374,11 @@ def git_commit() -> str | None:
 def check(doc: dict) -> list[str]:
     """Every way `doc` breaks docs/LAKE-OBSERVATIONS-CONTRACT-v1.md, as sentences; empty when it holds."""
     err = []
+    rel = doc.get("release", {})
+    if rel.get("scope") not in ("historical", "latest") or not rel.get("label"):
+        err.append("release must give a scope (historical or latest) and a label")
+    if rel.get("scope") == "latest" and not rel.get("regular_refresh"):
+        err.append("a 'latest' release needs a regular refresh")
     if not any("Copernicus Sentinel" in a for a in doc.get("attribution", [])):
         err.append("attribution must carry the Copernicus Sentinel notice")
     ld = doc.get("lab_definition", {})
@@ -367,8 +386,8 @@ def check(doc: dict) -> list[str]:
         err.append("lab_definition must give target, determinand, unit, method_note and source")
     if doc.get("schema") != SCHEMA or str(doc.get("version", "")).split(".")[0] != "1":
         err.append("schema or major version is not swimsignal.lake-observations 1.x")
-    for k in ("generated_at", "as_of", "processing", "claim", "freshness_rules", "attribution", "lab_definition",
-              "quality", "lakes", "coverage"):
+    for k in ("generated_at", "as_of", "processing", "claim", "freshness_rules", "release", "attribution",
+              "lab_definition", "quality", "lakes", "coverage"):
         if k not in doc:
             err.append(f"missing top-level field {k}")
     claim = doc.get("claim", {})

@@ -32,6 +32,7 @@ def _doc(as_of="2026-10-30"):
     return {"schema": m.SCHEMA, "version": m.VERSION, "generated_at": "2026-10-30T00:00:00+00:00", "as_of": as_of,
             "processing": {}, "claim": m.CLAIM, "freshness_rules": {}, "lab_definition": m.LAB_DEFINITION, "quality": {},
             "attribution": ["Contains modified Copernicus Sentinel data [2026]"],
+            "release": {"scope": "historical", "label": "Historical satellite observations", "regular_refresh": False},
             "lakes": lakes, "coverage": m.coverage(lakes)}
 
 
@@ -163,3 +164,10 @@ def test_check_refuses_future_dates_and_untraced_experimental_readings():
     bad = copy.deepcopy(d)
     bad["lakes"][0]["latest"]["age_days"] = -1
     assert any("negative age_days" in e for e in m.check(bad))
+
+
+def test_a_latest_release_needs_a_running_refresh():
+    bad = copy.deepcopy(_doc())
+    bad["release"] = {"scope": "latest", "label": "Latest", "regular_refresh": False}
+    assert any("regular refresh" in e for e in m.check(bad))
+    assert "Not the latest images" in m.release([], "2026-09-30")["label"]

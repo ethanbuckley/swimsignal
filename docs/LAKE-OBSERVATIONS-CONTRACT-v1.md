@@ -37,6 +37,7 @@ Additive changes raise the minor version; removing or renaming a field raises th
 | `processing` | object | how readings were made: `version` (`"s2c1-l2a.ndci-core-median.v1"`), `code` (the scripts and commit), `sources` (each cache file's path label and SHA-256) |
 | `claim` | object | `index`, `definition`, `public_wording`, `not_claimed` (list of strings) |
 | `freshness_rules` | object | the day limits below, as numbers |
+| `release` | object | `scope` (`"historical"` until a regular refresh runs and its coverage is measured; then `"latest"`), `historical_to`, `refreshed_sites`, `regular_refresh`, and a `label` the page shows prominently |
 | `attribution` | list | notices the UI must show: "Contains modified Copernicus Sentinel data [years]" and the EA's Open Government Licence line |
 | `lab_definition` | object | what every `lab` value is: `target`, `determinand`, `unit`, `method_note`, `censoring`, `source` (below) |
 | `quality` | object | how far one reading can be trusted, measured on the data: `same_date_pairs`, `same_date_abs_difference_median` and `_p90` (two usable scenes of one site on one date), `within_site_sd_median`, and a `note` |
