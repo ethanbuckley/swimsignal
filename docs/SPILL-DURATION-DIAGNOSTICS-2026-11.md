@@ -104,6 +104,10 @@ for spills under an hour old or over a day old (within 0.013). B1 is too high fo
 
 ## 4. The smallest credible next experiment (a draft, not approved)
 
+**Outcome, 30 October 2026:** approved with decision 2(b), stated in `docs/SPILL-DURATION-CALIBRATION-TEST-2026-11.md`,
+and stopped at its gate (0.027 against 0.03 needed). No 2026 file was downloaded; nothing was scored. The draft below
+is kept as written.
+
 **C1-cal: C1 with a calibration step, judged on January-August 2026.**
 
 - **Rows.** Issue hours when an EA event is running (a monitor would show "discharging"), first 72 h of each spill.
