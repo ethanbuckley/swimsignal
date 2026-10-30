@@ -854,6 +854,9 @@
   .outing-pack { margin-top:4px; }
   .since-ev { display:block; margin-top:2px; font-size:var(--fs-meta); }
   .since-why { display:block; margin-top:2px; color:var(--ink); }   /* since.js, ?why=1 only */
+  /* Since the last update (since.js, mountLast; ?why=1 only): a plain paragraph under the five days, no box. */
+  .since-last { margin:0 0 16px; font-size:var(--fs-note); line-height:1.4; }
+  .since-last p { margin:0 0 6px; }
   /* A plan row's Compare tick (planCompare), at the right of its name while the comparison is open. */
   #plan-results ul.spots li { position:relative; }
   .cmp-pick { display:none; }
@@ -4660,7 +4663,10 @@ function render(d) {
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
   // phone, where they are display:contents and the order is the stack's. What the page could not see
   // (unknownTile) comes straight after the five days.
-  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
+  // Since the last update (since.js, mountLast; ?why=1 only): under the five days it compares (and what is not known there),
+  // once the previous issue's file is in.
+  const lastOn = !DAY && typeof mountLast === 'function' && typeof sinceWhyOn === 'function' && sinceWhyOn();
+  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${lastOn ? '<div id="since-last-host"></div>' : ''}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
@@ -4683,6 +4689,7 @@ function render(d) {
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
   if (REPLAY) mountReplay(d);
+  if (lastOn) mountLast(d, DATA.generated_at, document.getElementById('since-last-host'));
   if (EV_MAP) mountEvMap(d);
   phoneFolds();
   if (ARRIVE) mountArrival(d);   // ?arrive=1 only, after the folds, so its tile stays where the guide's was

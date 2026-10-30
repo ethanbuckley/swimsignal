@@ -144,6 +144,11 @@ jobs:
           for f in state/live_coverage.parquet state/poll_log.parquet state/ecoli_samples.parquet state/ecoli_samples_status.json; do
             if [ -f "$f" ]; then files+=("$f"); fi   # later additions, uploaded once the build has written them
           done
+          # The issued-forecast history, one file a month (src/dipcast/issue_history.py): every month's, so a cold
+          # cache gets them all back from the release.
+          for f in state/issued-*.parquet; do
+            if [ -f "$f" ]; then files+=("$f"); fi
+          done
           # The files republish the water companies' feeds (CC BY 4.0) and EA samples (OGL v3), so the
           # notes carry the credits, and are rewritten on every publish.
           notes="Live polls, forecast log and live scores, replaced twice a day by the site workflow. Contains storm overflow status from the English water companies via the National Storm Overflow Hub (CC BY 4.0) and Environment Agency data (© Environment Agency copyright and/or database right, OGL v3.0), combined by SwimSignal. Full credits and licences: the site's terms page, section Data sources and credits."

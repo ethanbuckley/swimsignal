@@ -15,7 +15,7 @@
 const sinceRules = () => typeof level === 'function'
   ? { level, ORDER, NO_OVERFLOWS, NO_FORECAST, COVER, daily, today, dayWord, storedList, overflowNames, spillStart, risk, dayBecause,
       ...(typeof eaTodayAdvice === 'function' ? { eaTodayAdvice, eaTodayBrief } : {}),
-      ...(typeof eaTodayRestricts === 'function' ? { eaTodayRestricts } : {}) }
+      ...(typeof eaTodayRestricts === 'function' ? { eaTodayRestricts } : {}), ...(typeof liveCover === 'function' ? { liveCover } : {}) }
   : { ...require('./levels.js'), ...require('./experience.js'), ...require('./eatoday.js') };
 
 const SEEN_KEY = 'dipcast.seen';
@@ -61,7 +61,9 @@ function seenInputs(s) {
       rain: seenNum(x.rain_48h_mm), expect: seenNum(x.expected_spilling_overflows), missing: seenNum(x.rain_missing_share) };
   });
   const nowScore = R.daily(s) && R.ORDER[n.label] !== undefined ? seenNum(n.risk) : null;
-  return { days, recent: R.daily(s) && Number.isInteger(n.recent_upstream) && n.recent_upstream >= 0 ? n.recent_upstream : null,
+  // How many overflows upstream gave a live status at the last poll, of how many (levels.js, liveCover; 31 Oct 2026).
+  const cover = typeof R.liveCover === 'function' ? R.liveCover(s) : null;
+  return { days, reporting: cover ? cover.mon : null, upstream: cover ? cover.total : null, recent: R.daily(s) && Number.isInteger(n.recent_upstream) && n.recent_upstream >= 0 ? n.recent_upstream : null,
     nowLevel: nowScore === null ? null : n.label, nowScore: nowScore === null ? null : Math.round(nowScore * 100),
     clears: nowScore !== null && typeof n.clears_at === 'string' && Number.isFinite(Date.parse(n.clears_at)) ? n.clears_at.slice(0, 40) : null,
     sample: typeof (s.lab_sample || {}).taken_at === 'string' ? s.lab_sample.taken_at.slice(0, 40) : null,
@@ -111,7 +113,7 @@ function seenInputsOK(x) {
       && typeof d.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.date)
       && (d.level === null || R.ORDER[d.level] !== undefined) && seenStrOK(d.by, 80)
       && ['score', 'rain', 'expect', 'missing'].every(k => seenNumOK(d[k])))))
-    && ['recent', 'nowScore'].every(k => x[k] === undefined || x[k] === null || (Number.isInteger(x[k]) && x[k] >= 0))
+    && ['recent', 'nowScore', 'reporting', 'upstream'].every(k => x[k] === undefined || x[k] === null || (Number.isInteger(x[k]) && x[k] >= 0))
     && (x.nowLevel === undefined || x.nowLevel === null || R.ORDER[x.nowLevel] !== undefined)
     && (x.clears === undefined || x.clears === null || (typeof x.clears === 'string' && x.clears.length <= 40 && Number.isFinite(Date.parse(x.clears))))
     && [['sample', 40], ['algae', 10], ['model', 200]].every(([k, n]) => x[k] === undefined || seenStrOK(x[k], n));
@@ -243,7 +245,7 @@ function sinceOuting(id, planText) {
 // (docs/FORECAST-CHANGES-2026-10.md). Under a day whose level moved between the note and the forecast on
 // screen, the inputs both notes kept (seenInputs) that changed, and nothing else: a fact either note lacks is
 // not said. The model has no breakdown of a level by input, so these are what changed beside the level, never
-// proof of why it moved. Each fact is one of four kinds, because a reader needs to know whether the water may
+// proof of why it moved. Each fact is one of five kinds, because a reader needs to know whether the water may
 // have changed or only what SwimSignal knows about it:
 //   reported   something observed: overflows reported discharging or stopped, a new lab sample, a new algae
 //              check, a new rating, an official notice shown or gone
@@ -251,6 +253,7 @@ function sinceOuting(id, planText) {
 //              (the model's travel times run from hours to a couple of days)
 //   time       right now, modelled from spills upstream as their water moves on and dies off: it changes
 //              between forecasts with nothing new reported, and the model's own clearing time says when
+//   coverage   how many overflows upstream gave a live status, then and now (today only, as the statuses)
 //   ours       SwimSignal's own information: a feed upstream back or lost, rain data missing or complete, a
 //              new model
 // The live statuses count towards right now, which raises today only (levels.js, risk), so the reported
@@ -285,6 +288,9 @@ function whyFacts(was, now, date) {
       const back = was.clears && n < p && Date.parse(was.clears) <= Date.parse(now.forecast) ? ` The model expected it back to low risk by ${issuedWords(was.clears)}.` : '';
       fact('time', `Right now, as modelled from spills upstream while their water moves on and dies off, was ${p} of 100 then and is ${n} now.${back}`);
     }
+    const c = was.reporting, d = now.reporting;
+    if (Number.isInteger(c) && Number.isInteger(d) && (c !== d || was.upstream !== now.upstream))
+      fact('coverage', `Overflows upstream giving a live status: ${c} of ${was.upstream} then, ${d} of ${now.upstream} now.`);
     if (typeof was.gap === 'boolean' && typeof now.gap === 'boolean' && was.gap !== now.gap) fact('ours', was.gap
       ? 'A feed upstream was down or late then; every feed is reporting now.' : 'A feed upstream is down or late now, so its overflows are not counted.');
   }
@@ -318,7 +324,7 @@ function whySaid(was, now, date) {
   if (!f) return '';
   const { was: a, now: b } = f, out = [];
   if (a.by !== b.by) out.push(`The level was set by ${a.by} then; it is now set by ${b.by}.`);
-  const of = k => f.facts.filter(x => x.kind === k).map(x => x.text), time = of('time'), ours = of('ours');
+  const of = k => f.facts.filter(x => x.kind === k).map(x => x.text), time = of('time'), ours = [...of('coverage'), ...of('ours')];
   const real = [...of('reported'), ...of('forecast')];
   if (real.length) out.push(`Reported or forecast: ${real.join(' ')}`);
   if (time.length) out.push(`${real.length ? 'With time' : 'With time, and nothing new reported'}: ${time.join(' ')}`);
@@ -367,6 +373,57 @@ function whyDayLine(was, now, day) {
 }
 const sinceWhyOn = () => { try { return new URLSearchParams(location.search).get('why') === '1'; } catch (e) { return false; } };
 
+// ------------------------------------------------------------------------------ since the last update
+// For every visitor, no saved spot or earlier visit needed (docs/ISSUED-HISTORY-2026-10.md; prototype, ?why=1):
+// the build keeps each issue's records (src/dipcast/issue_history.py, the same seenRecord as the notes above, made
+// at issue time by scripts/issue_records.cjs) and publishes the previous successful issue's in
+// data/since-last.json. The spot's page compares that record with the forecast on screen, day by day, with the
+// facts above (whySaid): what changed beside a level, never why it moved.
+const LAST_DAYS_SAID = 3;   // at most this many days with a level that moved
+// How long before this issue the previous one was, in words: "30 min", "5 h 10 min", "1 day 2 h".
+function lastGap(ms) {
+  const m = Math.max(0, Math.round(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), r = m % 60;
+  return d ? `${d} day${d === 1 ? '' : 's'}${h ? ` ${h} h` : ''}` : h ? `${h} h${r ? ` ${r} min` : ''}` : `${r} min`;
+}
+// The days whose level moved between the two records, in date order: [{ date, was, now, said }].
+function lastChanges(prev, cur) {
+  return (cur.days || []).filter(d => { const a = whyDay(prev, d.date); return a && a.level && d.level && a.level !== d.level; })
+    .map(d => ({ date: d.date, was: whyDay(prev, d.date).level, now: d.level, said: whySaid(prev, cur, d.date) }));
+}
+// The passage for a spot, as { head, days } (lastParts) or one plain text (lastSaid), or '' where there is no file
+// to compare with. meta: since-last.json without its spots; prev: its record for this spot (null where the spot was
+// not in that issue); cur: this issue's record for it (seenRecord). Every case says what it compared with, so a
+// quiet line is never read as "nothing happened" without saying against what.
+function lastParts(meta, prev, cur) {
+  if (!meta || !cur) return null;
+  const R = sinceRules(), p = meta.previous;
+  if (!p) return { head: meta.why === 'stale' ? 'No earlier update within a day to compare with.' : 'No earlier update on record to compare with yet.', days: [] };
+  if (Date.parse(p.issued_at) >= Date.parse(cur.forecast)) return null;   // an old page against a newer file: say nothing
+  const head = `Since the update issued ${issuedWords(p.issued_at)}, ${lastGap(Date.parse(cur.forecast) - Date.parse(p.issued_at))} before this one:`;
+  if (!prev) return { head: `${head} this spot was not in that update, so there is nothing to compare.`, days: [] };
+  const moved = lastChanges(prev, cur);
+  if (!moved.length) return { head: `${head} no level changed.`, days: [] };
+  const days = moved.slice(0, LAST_DAYS_SAID).map(x => ({ day: cap1(R.dayWord(x.date).replace(/^on /, '')),
+    text: `${levelWords(x.was)} then, ${levelWords(x.now)} now.` + (x.said ? ` What changed in the inputs: ${x.said}` : ' The earlier update did not keep the inputs for this day.') }));
+  const more = moved.length - LAST_DAYS_SAID;
+  if (more > 0) days.push({ day: '', text: `${more} more day${more === 1 ? '' : 's'} changed too.` });
+  return { head, days };
+}
+function lastSaid(meta, prev, cur) {
+  const x = lastParts(meta, prev, cur);
+  return !x ? '' : [x.head, ...x.days.map(d => d.day ? `${d.day}: ${d.text}` : d.text)].join(' ');
+}
+// On the spot's page: the file once a visit (it is the same for every spot), then the passage into the host.
+let LAST_FILE = null;
+function mountLast(d, forecast, host) {
+  if (!host) return;
+  LAST_FILE = LAST_FILE || fetch('data/since-last.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+  LAST_FILE.then(f => { if (!host.isConnected || !f || f.issued_at !== forecast) return;   // a file from another issue than the page's: nothing
+    const x = lastParts(f, (f.spots || {})[d.id] || null, seenRecord(d, forecast, Date.now()));
+    host.innerHTML = !x ? '' : `<div class="since-last"><p>${esc1(x.head)}</p>`
+      + x.days.map(y => `<p>${y.day ? `<b>${esc1(y.day)}</b>: ` : ''}${esc1(y.text)}</p>`).join('') + '</div>'; });
+}
+
 // ------------------------------------------------------------------------------ in the page
 // The notes, read on first use (the first card drawn), and a copy as they were then, which the lines
 // compare with for the rest of the visit.
@@ -413,5 +470,5 @@ function sinceSaid(s, forecast) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { SEEN_KEY, SINCE_STALE_MIN, WHY_CUTS, whyFacts, whySaid, whyHeadlineDay, whyHeadlinePassed, whyOutingDay, whyDayLine, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { lastGap, lastChanges, lastParts, lastSaid, mountLast, LAST_DAYS_SAID, SEEN_KEY, SINCE_STALE_MIN, WHY_CUTS, whyFacts, whySaid, whyHeadlineDay, whyHeadlinePassed, whyOutingDay, whyDayLine, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }
