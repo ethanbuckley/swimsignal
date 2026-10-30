@@ -336,7 +336,10 @@
   .k { font-size:var(--fs-meta); color:var(--muted); line-height:1.35; }
   /* What a headline cannot count, under it in a row (headNote): ink, the meta size, never a level's colour. */
   .hl-note { font-size:var(--fs-meta); color:var(--ink); line-height:1.35; }
+  .week-preview { flex:none; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .week-label { color:var(--muted); font-size:var(--fs-meta); line-height:1; }
   .week { flex:none; display:flex; gap:4px; }
+  .wk .risk-code { font-size:9px; line-height:1; color:var(--ink); font-weight:700; }
   .wk { display:flex; flex-direction:column; align-items:center; gap:3px; }
   .wk i { display:block; width:10px; height:22px; background:var(--unknown); }   /* square, as the day strip's bars */
   .wk i.low { background:var(--low); } .wk i.moderate { background:var(--moderate); } .wk i.high { background:var(--high); } .wk i.veryhigh { background:var(--veryhigh); }
@@ -2011,14 +2014,19 @@ const UNLISTED_ECOLI = 'Not estimated for a point off the list: the estimate nee
 // reach the spot there is no level to colour, so the bars show the rain instead (40 mm fills one).
 const week = s => {
   if (!s.days || !s.days.length) return '';
-  // The day's letter ("T"), and its short name ("Tue") for the wide list, where there is room to read it.
+  const days = s.days.slice(0, 5);
+  const date = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
   const day = iso => `<span class="d1">${initial(iso)}</span><span class="d3">${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short'})}</span>`;
-  if (!daily(s)) { if (!s.days.some(x => !nil(x.rain_48h_mm))) return '';
-    return `<span class="week rain" aria-hidden="true" title="Rain in the 48 hours to midday each day">${s.days.slice(0, 5).map((x, i) =>
-      `<span class="wk${i ? '' : ' first'}"><i style="--h:${nil(x.rain_48h_mm) ? 3 : Math.round(3 + 21 * Math.min(1, x.rain_48h_mm / 40))}px"></i><b>${day(x.date)}</b></span>`).join('')}</span>`; }
+  if (!daily(s)) { if (!days.some(x => !nil(x.rain_48h_mm))) return '';
+    const summary = 'Rain in the 48 hours to midday: ' + days.map(x => `${date(x.date)}: ${nil(x.rain_48h_mm) ? 'unavailable' : Math.round(x.rain_48h_mm) + ' mm'}`).join('; ');
+    return `<span class="week-preview" role="img" aria-label="${esc(summary)}"><span class="week-label" aria-hidden="true">Rain mm</span><span class="week rain" aria-hidden="true">${days.map((x, i) =>
+      `<span class="wk${i ? '' : ' first'}"><i style="--h:${nil(x.rain_48h_mm) ? 3 : Math.round(3 + 21 * Math.min(1, x.rain_48h_mm / 40))}px"></i><b>${day(x.date)}</b></span>`).join('')}</span></span>`; }
   if (ORDER[level(s)] === undefined) return '';
-  return `<span class="week" aria-hidden="true">${s.days.slice(0, 5).map((x, i) => { const lv = risk(s, x).level;
-    return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><b>${day(x.date)}</b></span>`; }).join('')}</span>`; };
+  const levels = days.map(x => risk(s, x).level);
+  const summary = 'Daily pollution risk: ' + days.map((x, i) => `${date(x.date)}: ${levels[i] || 'no forecast'}`).join('; ');
+  const codes = {low: 'L', moderate: 'M', high: 'H', 'very high': 'VH'};
+  return `<span class="week-preview" role="img" aria-label="${esc(summary)}"><span class="week-label" aria-hidden="true">Risk L/M/H/VH</span><span class="week" aria-hidden="true">${days.map((x, i) => { const lv = levels[i];
+    return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><span class="risk-code">${codes[lv] || '–'}</span><b>${day(x.date)}</b></span>`; }).join('')}</span></span>`; };
 // A row's second line, where there is no level: the rain, which is what there is to go by.
 const rainMeta = s => { if (daily(s) || !s.days || !s.days.length) return '';
   const x = (VIEW.day && s.days.find(y => y.date === VIEW.day)) || s.days[0];
