@@ -3285,7 +3285,7 @@ function drawSpots() {
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
-    : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
+    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. <a href="coverage.html${VIEW.q.trim() ? `?q=${encodeURIComponent(VIEW.q.trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   bindClear();
