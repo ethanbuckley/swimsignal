@@ -59,7 +59,7 @@ test('at every designated bathing water the answer says the EA advice could not 
   // Since 20 Oct 2026 a clause of the line on what the forecast could read (coverLine), just above the issue
   // time, short, with where to look; what to do follows the five days (answerAfter).
   const h = vm.runInContext('answerWords', ctx)(frensham);
-  assert.match(h, /<p class="cover">The overflow upstream reports live\. Today's EA advice not checked: <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">see the EA's page<\/a> before you swim\.<\/p><p class="issued">/);
+  assert.match(h, /<p class="cover">The overflow upstream reports live, not spilling now\. Today's EA advice not checked: <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">see the EA's page<\/a> before you swim\.<\/p><p class="issued">/);
   // The embed card says it under what to do, and links the EA's page.
   const card = Embed.card(frensham, { generated_at: GEN }, NOW);
   assert.match(text(card), /Usual care: [^.]+\. The Environment Agency's advice for today could not be checked\. The Environment Agency’s page says when bathing is not advised\./);
@@ -512,10 +512,10 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const ctx = page(UNKNOWN_PAGE, { DATA: { generated_at: GEN } }), rows = vm.runInContext('unknowns', ctx);
   const said = s => JSON.parse(JSON.stringify(rows(s).map(([l, v, w]) => [l, v, text(w)])));   // out of the page's realm
   assert.deepEqual(said(longBridges), [
-    ['Live readings', '1 of 45 not reporting', '44 of 45 report live; the one that does not could be spilling unseen.'],
+    ['Live readings', '1 of 45 not reporting', '44 of 45 report live; the one that does not could be spilling unseen. Each overflow\'s monitor tells its water company\'s live feed when it is discharging, and when its last spill started and ended. It does not measure how much, or what is in it. With no reading, a spill is not known either way.'],
     ['Access', 'Not confirmed', 'Oxford City Council lists Longbridges among places receiving water-safety signs and discourages wild swimming. Check the current signs; listing this place does not confirm permission or a maintained entry point. Authority guidance . Desk check 2026-10-03; current signs have not been inspected.']]);
   assert.deepEqual(said(hereford), [
-    ['Live readings', '14 of 14 not reporting', '0 of 14 report live; the 14 that do not could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads.'],
+    ['Live readings', '14 of 14 not reporting', '0 of 14 report live; the 14 that do not could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads. Each overflow\'s monitor tells its water company\'s live feed when it is discharging, and when its last spill started and ended. It does not measure how much, or what is in it. With no reading, a spill is not known either way.'],
     ['Overflows in Wales', 'Not counted', 'Overflows in Wales are not counted: about 29% of the river within 60 km above this spot is in Wales.']]);
   assert.deepEqual(said(frensham), [["Today's EA advice", 'Not checked', "The Environment Agency's advice for today could not be checked. Open the EA's page before you swim: it says when bathing is not advised."]]);
   // Every overflow reporting, no access note, not a bathing water: no gap, and no tile.

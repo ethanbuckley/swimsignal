@@ -295,6 +295,7 @@
   /* Your places on Explore (renderList): one tile, the next outing then the saved spots, each with a plain heading. */
   .places-sub { font-size:var(--fs-body); font-weight:600; line-height:1.3; margin:0 0 6px; }
   .places-part + .places-part { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+  .drow .lsub { display:block; font-size:var(--fs-meta); font-weight:400; color:var(--muted); line-height:1.2; }   /* a rated-poor day's own spill forecast (dayRows) */
   .resume-said, .resume-apart { margin:0 0 6px; font-weight:400; color:var(--ink); }   /* Your outing: when, what for, the backup (outingResume) */
   .resume-open { display:inline-flex; align-items:center; min-height:44px; margin-top:4px; }
   .overview.foot:empty { display:none; }
@@ -2100,7 +2101,8 @@ function daysSentence(d) {
     : peak === known[0] ? '' : Math.round(e[0]) >= 1 ? `, about ${Math.round(most)} ${dayWord(peak.date)}`
     // "...possible today, about 8 on Thursday" left "8" with no noun (Greenholme).
     : `. About ${Math.round(most)} of the ${total} ${Math.round(most) === 1 ? 'is' : 'are'} expected to spill ${dayWord(peak.date)}`;
-  return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. ` : '')
+  return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. `
+      + (known[0].label ? `The sewage spill forecast on its own is ${known[0].label} ${dayWord(known[0].date)}, under each day below. ` : '') : '')
     + ((d.now || {}).discharging_upstream ? summary(d)[0] + ' ' : '')
     + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}`;
 }
@@ -2143,7 +2145,9 @@ const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1);
     const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40), band = on && !gone ? bandPlace(d, x, d.days.indexOf(x)) : null;
     const attrs = tag === 'button' ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
     return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="d">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
-      + `<span class="l">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}</span>`
+      + `<span class="l">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}`
+      // A poor rating keeps every day at high risk or more: the day's own sewage spill forecast under it, so it is seen apart.
+      + `${on && !gone && advisedAgainst(d) && hasData(x) && x.label ? `<span class="lsub">spills: ${esc(x.label)}</span>` : ''}</span>`
       + `<span class="dbar${on ? ' lv' : ''}" aria-hidden="true"><i style="width:${Math.max(on ? 3 : 2, Math.round(v * 100))}%"></i>`
       + (band ? `<b class="band" style="left:${(band.lo * 100).toFixed(1)}%;width:${((band.hi - band.lo) * 100).toFixed(1)}%"></b>` : '')
       + `</span>${band ? `<span class="sr">${bandSaid(x.band)}</span>` : ''}</${tag}>`; }).join('') + '</div>'; };
@@ -2405,7 +2409,10 @@ const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof ea
 // Not on a failed forecast's live readings (no forecast, nothing to read against). Empty with no gap.
 function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
-  if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)]);
+  if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)
+    // What a monitor tells its company's live feed, as the method page says it (methods.html: "The live feed shows any
+    // discharge its monitor records"); not how much, nor what is in it. No reading is not known to be dry (30 Oct 2026).
+    + ' Each overflow\'s monitor tells its water company\'s live feed when it is discharging, and when its last spill started and ended. It does not measure how much, or what is in it. With no reading, a spill is not known either way.']);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
   // The answer says what was checked and when (coverLine); here only where the latest is.
@@ -2441,9 +2448,12 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
 function coverWords(d, iso = null) {
   const out = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
   const said = !iso && nowUnknown(d) && rank(level(d)) === 0;   // "Forecast only: ..." under the level
-  if (daily(d) && total && !said && (!iso || iso === today())) out.push(mon >= total ? (total === 1 ? 'The overflow upstream reports live' : `All ${total} overflows upstream report live`)
-    : !mon ? (total === 1 ? 'The overflow upstream does not report live' : `None of the ${total} overflows upstream report live`)
-    : `${mon} of ${total} overflows upstream report live; ${total - mon} ${total - mon === 1 ? 'does' : 'do'} not`);
+  // With how many of those reporting are spilling now (30 Oct 2026, from a swimmer's question: the level did not say), and
+  // the ones not reporting said as unknown, never as dry.
+  const k = Math.min(mon, now.discharging_upstream || 0), spillNow = mon ? `, ${k ? `${k} spilling now` : 'none spilling now'}` : '';
+  if (daily(d) && total && !said && (!iso || iso === today())) out.push(mon >= total ? (total === 1 ? `The overflow upstream reports live${k ? ', spilling now' : ', not spilling now'}` : `All ${total} overflows upstream report live${spillNow}`)
+    : !mon ? (total === 1 ? 'The overflow upstream does not report live, so whether it is spilling is not known' : `None of the ${total} overflows upstream report live, so whether they are spilling is not known`)
+    : `${mon} of ${total} overflows upstream report live${spillNow}; ${total - mon} ${total - mon === 1 ? 'does' : 'do'} not, so could be spilling unseen`);
   const gone = daily(d) && !iso ? d.days.slice(0, 5).filter(x => !hasData(x)).map(x => dayName(x.date)) : [];
   if (gone.length && gone.length < 5) out.push(`No forecast for ${gone.length > 1 ? gone.slice(0, -1).join(', ') + ' or ' + gone[gone.length - 1] : gone[0]}`);
   if (walesWords(d, true)) out.push(esc(walesWords(d, true)));

@@ -122,7 +122,7 @@ test('the answer puts the line under where the week goes, for today and for a pi
   const s = week(['high', 'very high', 'low', 'low', 'low']);
   const h = words(s);
   // The spills set it, so the headline names them and the line says when (20 Oct 2026, levels.js HEAD_SCOPE).
-  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><\/div><div class="ci"><p class="cover">All 3 overflows upstream report live\.<\/p><p class="issued">/);
+  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><\/div><div class="ci"><p class="cover">All 3 overflows upstream report live, none spilling now\.<\/p><p class="issued">/);
   assert.doesNotMatch(h, /class="act"|class="scope"/);
   assert.match(after(s), /^<p class="act">Avoid swimming here tomorrow: choose a lower day or spot\.<\/p><p class="scope">/);
   assert.match(words(s, DATES[0]), /<p class="next">Today, Wednesday 30 September<\/p><\/div><div class="ci"><p class="cover">/);
