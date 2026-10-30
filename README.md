@@ -11,6 +11,10 @@ no accounts.
 
 It is a forecast, not a water test. A low risk does not mean the water is clean.
 
+Research and model development: [current recovery register](docs/RESEARCH-RECOVERY-2026-10.md) and
+[workflow from research to public use](docs/RESEARCH-WORKFLOW.md). Historical test verdicts are preserved;
+the register records what is being developed, running, published or archived next.
+
 ## How it works
 
 For each spot, SwimSignal:

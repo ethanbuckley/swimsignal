@@ -1,0 +1,176 @@
+# Research recovery register, 30 October 2026
+
+This is the **current development decision**, separate from each study's historical verdict. Ethan requested an
+audit of promising work that had been dropped, specifically the satellite algae project, and a route to getting
+useful features working publicly. Apply [RESEARCH-WORKFLOW.md](RESEARCH-WORKFLOW.md) to the work below.
+
+Audit baseline: main `2f36a1f4`, including #459, #461, #465 and #466 and the product batch #460/#462–464. Reviewed
+the tracked scientific/model and data-source records, the earlier noise audit, programme and source plans, and the
+GitHub PR history, including closed, unmerged #181, #187, #208, #219 and #396. This is an audit of the accessible repository,
+branches and project caches, not a claim to have recovered every untracked experiment from every past chat.
+Document dates are names, not proof of when an analysis ran: several “2026-11” records were already run in October.
+
+## Decisions now in force
+
+- **Recover satellite observations now.** Prepare data, a public observation viewer and fresh-data collection;
+  do not wait until spring to build. This supersedes the 27 October blanket satellite parking instruction for
+  development and observational display. Old verdicts and the fresh-data requirement for confirmation stand.
+- **Keep four promising model families in the development queue:** regional spill routing, lake concentration
+  and uncertainty, spill duration/calibration, and lake temperature with correctly matched sensors. No automatic
+  replacement of the production forecast follows from this register.
+- **Do not disturb active windows.** A scheduled study is not dropped. Keep its original read and log new
+  candidates separately.
+- **Archive variants with substantial negative evidence, not entire scientific subjects.** Each has a concrete
+  reopening condition below. Retain useful data/extraction and publish honest negative findings.
+- **Give useful work a public destination.** Research/Labs navigation and an actual satellite observation series
+  are the first release. A merged methods document or permanently hidden query flag is not completion.
+
+## Delivery ownership and milestones
+
+Session names identify the existing Claude chats; these are working assignments, not new human staffing.
+Codex sent both assignments on 30 October. Both chats have started: the research chat has fingerprinted caches
+and is building the contract/exporter on `research/satellite-recovery`; the product chat acknowledged
+UI/integration ownership and adoption of that single contract. Update this table with implementation PRs and
+actual public URLs as they appear.
+
+| Order / ID | Owner | Next reviewable deliverable | Completion check and subsequent route |
+|---|---|---|---|
+| 1 / SAT-OBS | Claude: **SwimSignal pollution event lifecycle** | Cached artifact manifest; one versioned observation contract and reproducible exporter; small historical dataset; operational coverage/missingness checks | Match source hashes and lake/date identities; disclose NDCI vs lab target; hand a committed contract/PR to product owner. Cached-first; state a capped refresh budget before fetching, no bulk imagery refetch |
+| 1 / LABS | Claude: **Outing tile: say how the backup's water is joined to the spot's** | Finish current publishing verification and issued-history #467, then a discoverable Research page/nav and satellite observation viewer | Use SAT-OBS contract; check exporter→file→page, mobile, cloudy/stale/empty states and wording; publish historical observations first if no refresh yet. Verify deployed URL/version before calling it live |
+| 2 / REGIONAL | Research chat, after SAT-OBS handoff | Regional nine-company v2 routing candidate, old-model fallback at UU and unsupported sites, versioned shadow plan | Treat eight-company selection as exploratory; freeze whole routing rule; prospective comparison with production and simple references before limited rollout |
+| 3 / LAKE-CONC | Research chat, next bounded modelling package | Lake-specific concentration/variance candidate, censoring and interval-coverage diagnostics, misses/false-alert tradeoff | Reused 2024–26 data are development only. Publish an evidence/misses explorer if useful; concentrations in guidance require calibration and new confirmation |
+| 4 / DURATION | Research chat, next bounded modelling package | A new direct-utility calibration protocol, saved-fit inventory, realistic polling/gap replay | Preserve #461 gate fail; do not rerun seeds or silently bypass its harness. State a new comparison before any unread outcomes; prospective shadow before public “ends by” claims |
+| 5 / LAKE-TEMP | Research chat, after the above or a new relevant sensor source | Sensor/depth/position inventory and a lake-type/local calibration candidate using historical buoy observations | Separate 0.5 m from 2 m targets and connected basins; hold out whole independent waterbodies. Public historical temperature observations can precede a forecast |
+
+Each row is a bounded deliverable, not an unlimited tuning licence. At handoff/readout, update the project stage,
+PR, data versions, next milestone and real blocker. The first two owners should converge on **one** data contract
+before separately implementing exporter and page. Codex owns this workflow/register, avoiding conflicting edits.
+
+## The satellite project: found, not lost
+
+The existing work is Sentinel-2 L2A spectral extraction and statistical evaluation, not a validated general-purpose
+AI harmful-algae detector. Its NDCI is `(B5 - B4) / (B5 + B4)`, with scene and water masks. Extraction and tests are
+on main in [lake_algae_sat_eval](../scripts/lake_algae_sat_eval/),
+[lake_chlorophyll_eval](../scripts/lake_chlorophyll_eval/) and
+[lake_algae_incident_eval](../scripts/lake_algae_incident_eval/).
+
+| Record | What it actually found | Why it is not a live forecast | Recovery decision |
+|---|---|---|---|
+| [#377: visual algae](LAKE-ALGAE-SATELLITE-TEST-2026-10.md) | “Algae seen” AUC 0.604 [0.394, 0.746]; adding NDCI worsened Brier against month + last check. Only 404/1,358 checks had a usable image within 3 days. “Objectionable” had only 20 events | Weak visual-target skill, uneven lake performance and image gaps, not merely one arbitrary cutoff. Small ponds lacked core water pixels | Retain extraction and coverage work. Public dated index/coverage, with no interpolation presented as an observed image and no cloudy=clear inference. Do not resurrect this visual classifier unchanged |
+| [#386: lab chlorophyll](LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md) | 207 pairs at 38 lakes; Spearman 0.502 [0.2997, 0.667]. Lower-bound rule missed by 0.0003. Within-lake/season placebo beaten. Overall held-out calibration skill 0.159 [−0.058, 0.325]; shallow-lake subset 0.301 [0.052, 0.475] | Promising association, uncertain general conversion; shallow subset was selected after results. EA acetone-extract determ. 7887 definition/phaeopigment correction remains partly unresolved | Primary recovery candidate. Show the index and accurately named dated lab observations; develop shallow-lake calibration and prepare independent prospective collection now. Do not turn index units into claimed toxin or validated chlorophyll concentrations |
+| [#385: harmful-algae incidents](LAKE-ALGAE-INCIDENT-TEST-2026-10.md) | Matched imagery at only 3 waterbodies; stratified score about 0.64 [0.33, 0.73]; seasonal-shift placebo not beaten; seasonal anomaly about 0.48 | Both inadequate event coverage and weak season-adjusted evidence | Keep incidents/official advice as a separate observed target. Better event collection and independent validation would be needed for a harmful-algae model |
+| [#396: forward plan](https://github.com/ethanbuckley/swimsignal/pull/396), closed unmerged | Withdrawn conditional on #386's fail; no prospective experiment resulted | Administrative dependency became a stop to further work | Recover the protocol's useful parts in a **new** prospective plan. Do not label #396 adopted or silently reopen its frozen rules |
+| [#407](https://github.com/ethanbuckley/swimsignal/pull/407), merged | Already said “promising, not validated” and cautioned about the tiny threshold miss | No implemented observation product or continuation work followed | This register adds delivery and ownership to that distinction; it does not claim to be the first recognition of the near miss |
+
+EA visual algae checks and reviewed official harmful-algae notices already exist on the site. They are distinct
+from satellite estimates. A satellite observation should say when it was captured and what part of the lake it
+represents. It cannot establish that a whole lake, shoreline, or future swimming time is free of harmful algae.
+
+### Recovered artifact manifest
+
+Verified locally on 30 October. Paths are relative to the existing, ignored project data directory
+`../swimsignal-private/` **beside the main `dipcast` checkout**; that is
+`/Users/ethanbuckley/Documents/GitHub/swimsignal-private` on the current host. Worktrees nested elsewhere must
+resolve this input path explicitly. The files themselves are not being committed or overwritten by this audit.
+Raw cache counts/byte estimates in earlier notes are download records, not a new inventory of bytes present now.
+
+| Existing file | Bytes | SHA-256 |
+|---|---:|---|
+| `lake-algae-sat/out/features.parquet` | 69,992 | `41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e` |
+| `lake-algae-sat/out/checks.parquet` | 19,306 | `f036b6ebf62e29a2569a9c6334f2305d1bed20068296b44322f29783e9a70413` |
+| `lake-algae-sat/out/score.json` | 23,856 | `fcde5d273e37e115c84f5a8990b822532cff687d9fff06deb353bfff32406d20` |
+| `lake-chlorophyll/out/features.parquet` | 26,421 | `58bce46681d7b9dd8e1cb2851528dd38f2d28bee0b5ed4d9095f367464af9f44` |
+| `lake-chlorophyll/out/values.parquet` | 23,599 | `8327417da5c5e512fd81cdbf4f2e71239560573b57e257240a46549b9f2648fa` |
+| `lake-chlorophyll/out/score.json` | 23,516 | `3f0a6d8db65542ec6d793c5d631f65180b92ae3772c80b458b1973ab95ec1935` |
+| `lake-algae-incident/out/incidents.json` | 85,487 | `68ca1552bea27546ad87256043e719e0c95cc223c718661b5548822a1b458d1b` |
+| `lake-algae-incident/out/score.json` | 22,402 | `e351e9e199b3d2e992e409b3491afeb0a50d2e73fd7a13f42c969c0bb19e3fb7` |
+
+Scene caches and fetch ledgers also remain in these directories. Presence and hashes establish recovery of the
+artifacts, not complete raw-imagery coverage or current operational freshness. The exporter must inspect the
+actual columns and mask/processing provenance before publishing a value. Preserve the originals.
+
+## Other promising work to recover or continue
+
+| Project / existing evidence | Historical result and limitation | Current decision and route to use |
+|---|---|---|
+| [Nine-company v1](NINE-COMPANY-MODEL-TEST-2026-10.md), [data check](NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md), [v2 #357](NINE-COMPANY-MODEL-V2-TEST-2026-11.md); `scripts/nine_v2_eval.py` | V2 offset arm 11–23% better at eight companies, 15% on Welsh set; pooled Brier gain −0.00550 [−0.00883, −0.00268]. UU +3.4% worse [positive loss interval], causing the all-company adoption fail | REGIONAL: preserve UU's current model and test a versioned regional routing candidate prospectively. The UU loss is real evidence for a fallback, not a reason to discard the eight-company development |
+| [Concentration #466](CONCENTRATION-STUDY-2026-11.md); `scripts/concentration_study.py` and committed predictions/atlas | River Brier 0.1071 vs 0.1069, interval spanning about ±0.013; no demonstrated river improvement. Lake within-site rho about 0.27 vs −0.11, but nominal 80% interval covered only about 65%. Alarm tradeoffs: 22 vs 45 misses, 104 vs 26 false alarms in the reported comparison | LAKE-CONC: develop lake variance/censoring and forecast distributions, not threshold-chase a river tie. The model has site intercepts with shared response coefficients, not learned catchment-specific spill responses. Surface the misses/evidence atlas as a research tool if understandable |
+| [Duration #459](SPILL-DURATION-TEST-2026-11.md), [diagnostics](SPILL-DURATION-DIAGNOSTICS-2026-11.md), [calibration #461](SPILL-DURATION-CALIBRATION-TEST-2026-11.md); `scripts/spill_duration_test.py`, `scripts/spill_duration_calibration_test.py` | Duration candidate improved aggregate Brier by about 11.6% (0.1507 vs 0.1705) but probabilities unreliable. Calibration symptom gate 0.027 vs 0.03 stopped its next evaluation; existing out-of-fold results also show underprediction | DURATION: inventory saved fits, assess calibration directly under a **new** development protocol. Use event-grouped/embargoed folds and actual polling gaps/unknown states. An “ends by” forecast needs prospective calibration and latency checks; a calibrated duration model is not automatically a validated downstream clearing time |
+| [Lake lower E. coli lines #342](LAKE-ECOLI-LINE-TEST-2026-10.md); `scripts/lake_ecoli_line_eval/` | 235 line passed 6/7, AUC 0.632 vs 0.65 bar (lower interval bound 0.534); 500 line only 0.535. These results do not define safe swimming cutoffs | Fold useful calibration/target lessons into LAKE-CONC; do not launch a traffic light simply by lowering the target until it passes. Separate measured concentrations from a health claim |
+| [Lake temperature #419](LAKE-TEMPERATURE-TEST-2026-10.md), [sensor audit](LAKE-TEMPERATURE-SENSORS-2026-10.md); `scripts/lake_temperature_eval/` | Broad model failed several checks and was worse for large/deep lakes. Historical Blelham 0.5 m buoy: RMSE 1.38 vs 1.77 for 7-day air in independent-lake holdout. Windermere 2 m benefit disappears when both connected basins are excluded from training | LAKE-TEMP: retain historical observations and develop local/lake-type models with explicit depth/season. No identified open live feed covering listed lakes in that audit. Do not call historical buoys or a nearby stream a live lake surface sensor |
+| [Live recalibration](LIVE-RECALIBRATION-TEST-2026-10.md), [current diagnostic](CALIBRATION-CHECK-2026-10.md), [winter plan #374](CALIBRATION-TEST-PROPOSAL-2026-11.md) | Earlier 4.3% gain missed 5% rule on a short window; later diagnostic found substantial overforecasting overall, with company differences | Already recovered into an approved winter fit/evaluation with a non-inferiority route. Prepare/log as scheduled; do not launch a duplicate study or alter its window |
+| [Dry spell #318](DRY-SPELL-TEST-2026-10.md) | Extra 72-hour rain gain 0.00049 vs 0.0005, interval includes zero | Inconclusive, small expected gain; keep reusable feature in low-priority development. Reopen when new data/target increases expected utility, not to change the last decimal |
+| [Sampling priorities #381](SAMPLING-PRIORITIES-SIM-2026-10.md) | Simulation information policy beat coverage in 58.5% of worlds vs a 60% condition; mean gain 0.000189 [0.000077, 0.000306]. No real-world policy validation | Useful coverage/cost planning research, not an adopted adaptive sampling policy. Expose a transparent coverage planner with simple coverage/wet-day references before any automated site allocation or claimed efficiency gain |
+| [Lake direction #313](LAKE-DIRECTION-TEST-2026-10.md); `scripts/lake_direction_eval/` | Passed all seven stated checks but not adopted after per-site point correlations fell, without intervals | A genuine pass-without-adoption case, not automatic proof to switch. Reassess paired site intervals and mechanism on new counts/samples; current `any` remains until a supported scoped change |
+| [Near-field #187](https://github.com/ethanbuckley/swimsignal/pull/187), closed unmerged | Forward Brier slightly better (about −0.00026); cross-site ranking worse, and Coniston Boating Centre exposure did not match observed high counts. Proposed 1 km decay was judgement, not fitted | Recover branch doc/code as a sensitivity study of near-shore plumes. Need source/shore hydrodynamics and paired observations before adopting a national rule; a research sensitivity visual is possible first |
+| [Outfall-channel #181](https://github.com/ethanbuckley/swimsignal/pull/181), closed unmerged | Junction variant uncertain gain; interval missed harm margin slightly. Named-outfall variant moved many joins and worsened particular spots | Preserve test; prefer checked join corrections and source-position evidence to a blanket national snapping rule. Reopen for specific verified cases with regression examples |
+
+## Active or scheduled: do not describe these as abandoned
+
+Dates below come from existing protocols and are not new promises of a positive result.
+
+| Work | Next agreed read/action | Useful outcome and boundary |
+|---|---|---|
+| [Live-status feature](LIVE-STATUS-FEATURE-TEST-2026-10.md) and [shadow](LIVE-STATUS-SHADOW-TEST-2026-10.md) | Read on/after **23 Nov** | Retrospective lead-0 Brier about 27% better; candidate is already running beside production. Needs real-poll confirmation and fallback; do not call it dropped or already adopted |
+| [Lead calibration B](LEAD-CALIBRATION-B-TEST-2026-10.md) | Window **18 Oct–14 Nov**, read **16 Nov** | Keep old rules; report intervals alongside them. New policy does not retroactively relax a running test |
+| [Company calibration A8](COMPANY-CALIBRATION-TEST-2026-11.md) | Window **26 Oct–22 Nov**, read **25 Nov** | Interval amendment was made before this window. Keep fitted offsets and evaluation immutable |
+| [Ensemble rain D4](ENSEMBLE-RAIN-TEST-2026-11.md) | Window **23 Oct–19 Nov**, read **21 Nov** | Judge probabilistic rain/forecast output by its agreed test; preserve current API allocation |
+| [Upgraded overflows option B](UPGRADED-OVERFLOWS-TEST-B-2026-10.md), [recency note](UPGRADED-OVERFLOWS-TEST-B-RECENCY-NOTE-2026-10.md) | Read/new-window decision **on/after 2 Dec** | Existing recency arm and comparison, not a forgotten redevelopment |
+| [Winter recalibration](CALIBRATION-TEST-PROPOSAL-2026-11.md) | Fit **on/after 10 Dec** to data through 6 Dec; judge **14 Dec–7 Mar 2027** | Approved staged route; secondary for 2027, not replacement of the frozen primary |
+| River rises, [AI programme](AI-PROGRAMME-2026-10.md) / [#383](https://github.com/ethanbuckley/swimsignal/pull/383) | Review/fetch **on/after 2 Nov** | Latency matters: retrospective median lead around 1.5 h can be consumed by polling/publication delay. No untested “early warning” promise |
+| [Missing event ends](MISSING-EVENT-END-2026-10.md) | Re-measure **on/after 9 Nov** | Only change handling if the stated effect warrants it; keep unknown events distinct from confirmed stops |
+| [2027 primary](PREREGISTRATION-2027.md), [spot rulings](SPOT-SCORING-RULINGS-2026-10.md) | May–September 2027 evaluation, read after season | Preserve original issued predictions and scoring; new models are separately labelled secondaries |
+
+## Useful data or new directions with a specific dependency
+
+| Work | What is reusable / why off | Concrete next step |
+|---|---|---|
+| [Sonde signal #403](SONDE-SIGNAL-TEST-2026-10.md); `scripts/sonde_signal_eval/` | 71 matched river rows at 4 sites vs gate 150; that gate was chosen after seeing coverage (disclosed). Unrun, not a negative result | Audit alignment/latency and grow paired data; show correctly located, dated sensor readings where useful. A limited exploratory analysis can inform design but cannot be relabelled the old confirmatory pass. Keep microbes distinct from proxy sensor readings |
+| [Radar rain #343](RADAR-RAIN-CHECK-2026-10.md); `scripts/radar_rain_eval/` | Radar quality passed; even perfect rain added little to the tested spill transfer. Cached radar and extraction remain valuable | Reuse for rise/nowcasting and event-timing questions where resolution matters. Do not promise that buying/fetching finer rain fixes a structural spill-model problem |
+| [GloFAS #255](GLOFAS-CHECK-2026-11.md) | Relative-flow check narrowly passed; not a validated discharge in m³/s at the swimming point | Test relative hydrologic-state inputs where timely and geographically matched. Do not show model-grid flow as an observed local gauge |
+| [Coastal sea temperature](COASTAL-SEA-TEMPERATURE-BRIEF-2026-10.md) | Product/data proposal, not failed science; additional live calls compete with current quota. Prior instruction waits until at least 22 Nov (6 Dec if D4 extends) | Offline contract/prototype preparation can proceed now. Revisit live-call allocation after the named read, or obtain an explicit paid-budget decision; no silent quota expansion |
+| [Sea currents/coastal model](SEA-CURRENTS-SCOPING-2026-10.md), [order draft](UKMCAS-ORDER-DRAFT-2026-10.md) | 32,874 coastal samples at 404 sites in the scoping record; no coastal model. 8 km currents do not resolve many near-shore plumes; finer archive/account and outlet identity matter | First build an auditable coastal sample/coverage explorer and compare several reasonable baselines. Weak spill-only association does **not** prove tides/currents cannot add skill: dilution/direction may modify the relationship. Any exposure-gated stop rule deserves a new scoped design before closing the subject. Account creation/outside orders remain Ethan's actions |
+| [Overflow sources](OVERFLOW-DATA-SOURCES-2026-10.md), [earlier history](EARLIER-SPILL-HISTORY-2026-10.md), [PE sources](PE-SOURCES-2026-10.md) | Open samples/sondes, historic feeds and improvement metadata have value; licence gaps and unavailable true outlet volume/upgrade dates limit other ideas | Build source coverage/provenance inventory first, favour actual loads/flow measurements over proxies when available. Re-check dated availability claims before planning a new fetch |
+| [Wales](WALES-PLAN-2026-10.md), [Scotland](SCOTLAND-PLAN-2026-10.md), [Ireland](IRELAND-PLAN-2026-10.md), [Scottish source](SOURCE-SCOTTISH-WATER-2026-10.md) | Directory/official data and forecast evidence differ; no scientific blanket rejection of these nations | Expand observations/evidence coverage first; licence/label alignment and local validation before forecasting. REGIONAL can investigate Welsh generalisation but its reused test is not a new national validation |
+
+## Variants with meaningful negative evidence
+
+Keep these in the searchable register; do not spend the recovery budget rerunning them unchanged.
+
+| Variant and records | Evidence / reason to stop this variant | Reopen when |
+|---|---|---|
+| [Neural challenger](NEURAL-CHALLENGER-TEST-2026-10.md), [multi-year](MULTI-YEAR-TEST-2026-10.md), [covariate-year](COVARIATE-YEAR-TEST-2026-10.md) | Neural network did not beat trees; adding older years did not explain most tree gains; hypothesised covariate-year leakage did not hold | A specific new representation/data source/mechanism justifies it. Preserve useful tree training/data-coverage findings for REGIONAL; “bigger neural net” alone is not a delivery plan |
+| [Dynamic flow dilution #404](FLOW-DILUTION-TEST-2026-10.md) | Overall gain about 0.00011, uncertain; placebo not beaten; real-time-gauge subset worse (gain about −0.0024). Archive gauges lagged badly | Timely matched discharge and a different defensible transport mechanism are available. Do not confuse this failure with the already adopted static transport fit |
+| [Urban dilution](URBAN-DILUTION-TEST-2026-10.md), [diagnosis](URBAN-DILUTION-DIAGNOSIS-2026-10.md), [spill hours](SPILL-SIZE-TEST-2026-10.md), [PE/dry-weather flow](PE-SIZE-TEST-2026-10.md) | Proxy size weighting failed; urban share pointed size the wrong way at important outlets; PE was not actually in the source | Actual measured discharge/load, correctly linked infrastructure or credible source corrections. No blanket conclusion that spill volume cannot matter |
+| [Weather die-off](DIEOFF-WEATHER-TEST-2026-10.md), [farm pressure](FARM-PRESSURE-TEST-2026-10.md), [lake wind](LAKE-WIND-TEST-2026-10.md) | Tested proxies/parameterisations failed multiple checks or showed losses | Direct microbial/irradiance/flow measurements, better agricultural event labels, or physically matched lake fetch/circulation data support a different model |
+| [Dry-weather spill history](DRY-WEATHER-SPILLS-TEST-2026-10.md) | Historical rate and added feature did not beat required references; not just a near cutoff | Changed infrastructure or longer reliable live labels identify a new use. An observed history panel is a separate descriptive product |
+| [Wider transport grid](TRANSPORT-FIT-2-TEST-2026-10.md) | Wider search did not improve the accepted fit | New samples/mechanism, not another grid expansion on the same outcome set |
+| [Global soil moisture](SOIL-MOISTURE-TEST-2026-10.md), [E. coli leads](SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.md), [Wales check](SOIL-MOISTURE-WALES-CHECK-2026-11.md) | Whole-population adoption and different targets are distinct questions; global spill addition had a real Anglian loss, and lake guardrails blocked a broad E. coli addition | Follow the supported target/population. River-only adoption below already demonstrates the right scoped route; do not call the entire soil-moisture programme rejected |
+
+## Already adopted, superseded, or an engineering/data correction
+
+These should remain discoverable but do not need “rescuing” as rejected models.
+
+| Records | Current role |
+|---|---|
+| [Transport fit](TRANSPORT-FIT-TEST-2026-10.md) | Accepted static river speed/T90/dilution settings |
+| [Lake path](LAKE-PATH-TEST-2026-10.md), [residence](LAKE-RESIDENCE-TEST-2026-10.md), [spill-time residence](LAKE-RESIDENCE-SPILL-2026-10.md), [water distance](LAKE-DISTANCE-2026-10.md) | Successive accepted lake-transport improvements; path/residence predecessors were superseded, not discarded negative research |
+| [Evaluation pins](EVAL-PINS-TEST-2026-10.md), [refit](ECOLI-REFIT-SITE-PINS-2026-10.md), [missing rain](MISSING-RAIN-CHECK-2026-10.md) | Evaluation/data consistency and accepted refit, not dormant feature ideas |
+| [River soil moisture](SOIL-MOISTURE-RIVERS-TEST-2026-11.md), [plan](SOIL-MOISTURE-ECOLI-PLAN-2026-10.md) | River-specific adoption in [#361](https://github.com/ethanbuckley/swimsignal/pull/361), after the broader test failed: useful precedent for limited rollout. The test record itself is not the adoption PR |
+| [River temperature model](WATER-TEMPERATURE-MODEL-TEST-2026-10.md), [sensor replay](WATER-TEMPERATURE-SENSOR-REPLAY-2026-10.md), [coverage](WATER-TEMPERATURE-2026-10.md) | River estimate shipped in #418, May–September only. Hidden in October because out of season; this is not a lost feature. Actual sensors and estimates remain distinct |
+| [Advisory finder](ADVISORY-FINDER-2026-10.md), [run sheet](ADVISORY-FINDER-RUN-SHEET.md), [anomalies](MONITOR-ANOMALIES-2026-10.md) | Already deployed observed-advice/data-quality features; official source reviews still need maintenance |
+| [Any-point records](ANYPOINT-LINES-2026-10.md), [lake clicks](ANYPOINT-LAKES-2026-10.md), [side-arm](ANYPOINT-SIDE-ARM-2026-10.md), [most](ANYPOINT-SIDE-ARM-MOST-2026-10.md), [floor](ANYPOINT-SIDE-ARM-FLOOR-2026-10.md), [length](ANYPOINT-SIDE-ARM-LENGTH-2026-10.md), [clicks](ANYPOINT-SIDE-ARM-CLICKS-2026-10.md) | Deterministic topology/placement issues and successors. Do not loosen correctness checks as if they were noisy scientific thresholds |
+| [Overflow positions](OVERFLOW-POSITIONS-2026-10.md), [sea outfalls](OVERFLOW-SEA-OUTFALLS-2026-10.md), [spot conflicts](OVERFLOW-SPOT-CONFLICTS-2026-10.md) | Verified corrections and open source-identity cases. Continue targeted evidence work; uncertainty is not permission to invent a join |
+| Closed [#208 side-arm](https://github.com/ethanbuckley/swimsignal/pull/208), [#219 catchment position](https://github.com/ethanbuckley/swimsignal/pull/219) | #208's successors are recorded above. #219 disagreed with settled positions in 6 of 16 decisive cases, against at most 2 allowed: a substantial correctness problem, not a tiny scientific near miss. Keep its branch `claude/overflow-catchments` and `docs/OVERFLOW-CATCHMENTS-2026-10.md` discoverable for independent source checking; do not deploy its automatic move rule |
+| [Swimmer testing](SWIMMER_TESTING.md), [current comprehension protocol](COMPREHENSION-TEST-2026-10.md), [task 3b wording](CLEAR-TIME-WORDING-2026-11.md) | Earlier plan superseded by current sessions; task 3b added by #465. User-comprehension evidence is still needed; merged materials are not completed sessions |
+
+## How we know this recovery worked
+
+1. SAT-OBS has a reproducible export/manifest PR and LABS has an integrated, discoverable observation feature.
+2. The feature is verified at its deployed URL with its actual data age and coverage. Historical-only and refreshed
+   operation are recorded separately; no implied toxin/safety prediction.
+3. REGIONAL, LAKE-CONC and DURATION each have a bounded next work package and explicit route to prospective
+   shadow/limited rollout; no “failed so do nothing” closure without a development decision.
+4. Active reads happen on their agreed dates; candidates and primary issued predictions remain distinguishable.
+5. Every future research readout updates this register with PR, stage, owner, next milestone or a specific reason
+   to archive. Public results include negative findings and useful observations, not just successful models.

@@ -3,6 +3,11 @@
 Checked 25 October 2026 on main `63e931e`, plus PR #334's branch for the day-boundary test. A record, not a test.
 No verdict below is changed. A test's verdict is what its own conditions said; a fairer rule is for a new test.
 
+**30 October supplement:** [RESEARCH-WORKFLOW.md](RESEARCH-WORKFLOW.md) distinguishes continuation, public
+observations, shadow comparisons and forecast adoption. Its route-specific criteria govern new work; the pooled
+superiority rule below is not a prerequisite for every exploratory analysis or observation feature. See the
+[recovery register](RESEARCH-RECOVERY-2026-10.md) for current decisions. Historical verdicts below remain unchanged.
+
 ## The question
 
 The nine-company model (`docs/NINE-COMPANY-MODEL-TEST-2026-10.md`) was rejected partly on conditions like "no

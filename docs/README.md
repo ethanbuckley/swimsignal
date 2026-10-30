@@ -4,6 +4,11 @@ Every file in this folder, grouped by kind. A test file states its conditions be
 results below a line at the end. The verdict given here is a short form of that results section; the file
 itself is the record. CSV and JSON files are the result tables of the test they are listed under.
 
+**Current research decisions (30 October):** [RESEARCH-RECOVERY-2026-10.md](RESEARCH-RECOVERY-2026-10.md)
+separates project status from historical test verdicts, locates the satellite artifacts, and assigns the recovery
+work. [RESEARCH-WORKFLOW.md](RESEARCH-WORKFLOW.md) governs new development and routes to public observations,
+shadow comparisons and forecasts. A fail in a historical record below is not, by itself, a decision to stop work.
+
 ## Plans and reviews
 
 - [ROADMAP-2026-10.md](ROADMAP-2026-10.md): the roadmap of 3 October 2026. More spots, what makes the app useful,
