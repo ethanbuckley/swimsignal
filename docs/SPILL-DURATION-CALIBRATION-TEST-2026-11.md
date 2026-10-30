@@ -128,4 +128,38 @@ event counts and gaps only.
 
 ## Results
 
-Not run.
+**Gate run.** 30 October 2026, from harness commit 1f636fcd (statement pushed in the same commit, before the run), on
+main checkout data, no network, no Open-Meteo calls. About 50 minutes (folds 2 and 3 ran slowly, inferred to be
+other load on the machine). Exit 0. Files: `-gate.json`, `-gate-reliability.csv`. 4,038,032 training rows running at
+the issue hour, of 4,325,636 issue hours.
+
+### Verdict: the gate fails. Nothing was downloaded and nothing was scored on 2026
+
+At 24 hours, all nine, the 134,299 out-of-fold rows forecast at 0.8 or more came true **0.027** less often than
+forecast. The gate needed 0.03. By the statement, the 2026 file is not downloaded, the saved fits are not used, and
+`run` refuses to start. The threshold is not changed after the fact.
+
+### What the out-of-fold forecasts show (seen after the gate; a description, not a test)
+
+- **C1 forecasts too low, at every company and every horizon.** Mean forecast minus observed share, all nine: −0.016
+  at 1 h, −0.027 at 3 h, −0.033 at 6 h, −0.038 at 12 h, −0.042 at 24 h. By company at 24 h, from −0.021 (United
+  Utilities) to −0.062 (Anglian, Wessex). ECE at 24 h: 0.044 for all nine, 0.029 to 0.064 by company.
+- **The shortfall sits in the low and middle forecasts, not at the top.** At 24 h, all nine: forecasts of 0.05 came
+  true 7.1% of the time, 0.15 came true 21.2%, 0.25 came true 32.3%; above 0.8 the gap is small (0.84 against 0.83,
+  0.92 against 0.86).
+- **So the fault #461 saw on 2025 (too sharp at the top) does not recur out of fold within 2024-25.** What does recur
+  is a general under-forecast of how long spills go on, which differs again from 2025's pattern (too high at
+  Anglian, Southern and Thames). *Inferred, not checked:* holding out a whole calendar quarter removes that season's
+  storms from training, and the model then under-rates persistence in it.
+- The in-sample ECE after calibration (0.0002 in `-gate.json`) is fitted and scored on the same rows. It says nothing
+  about how calibration would do on new data.
+
+### What this means
+
+- **Nothing is adopted, and nothing further runs under this statement.** The page's conditional clearing time stays
+  as it is; `docs/CLEAR-TIME-WORDING-2026-11.md` is unaffected, since it needs no model.
+- The statement said a failed gate means calibration fitted on these forecasts could not fix what failed. That is
+  true of the fault it tested. The out-of-fold forecasts are miscalibrated in another way, which a calibration step
+  might address. Testing that now would mean choosing a new gate after seeing these numbers, so it needs a new reason
+  and a new statement, and should not reuse this gate's figures to set its rule.
+- The January to August 2026 duration figures are still unseen. They remain a fresh period for any later attempt.
