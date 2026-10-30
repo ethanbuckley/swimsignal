@@ -158,5 +158,5 @@ test('the privacy notice says what an outing link holds and that opening one kee
   for (const said of ["the outing's day", 'its time', 'its spot and backup spot', 'what it is for', 'where to meet',
     "the forecast's issue time", "each spot's level for that day", 'never holds where you start from', 'no words anyone typed',
     'shows the outing without keeping it', '"Keep this outing"']) assert.ok(para.includes(said), said);
-  assert.ok(privacy.includes('Last updated 29 October 2026.'));
+  assert.ok(privacy.includes('Last updated 30 October 2026.'));
 });
