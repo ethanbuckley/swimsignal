@@ -4723,7 +4723,8 @@ function mountEvMap(d) {
   const get = p => fetch(p, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
   Promise.all([evMapScript, get(`data/${d.detail_file.replace(/\.json$/, '-trace.json')}`), get(`data/upstream/${encodeURIComponent(d.id)}.json`)])
     .then(([, trace, up]) => { if (!host.isConnected) return;
-      const w = host.clientWidth - 28, now = Date.now();   // the tile's inner width
+      // The tile's inner width; a host not laid out yet (0 wide: mid-resize, or a fold still shut) draws at a phone's.
+      const w = (host.clientWidth || 288) - 28, now = Date.now();
       evmapStyle(document); host.innerHTML = evmapTile(d, trace, up, now, DATA.generated_at, w); evmapBind(host, d, trace, up, now, DATA.generated_at, w); })
     .catch(() => said('The evidence map could not be loaded.'));
 }
