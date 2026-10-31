@@ -2659,7 +2659,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2987,6 +2987,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
     write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
+    write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
@@ -3680,6 +3681,158 @@ def write_waterhead(site: Path, token: str | None = None, root: str | None = Non
     (site / "waterhead.html").write_text(with_counter(with_share_meta(page, "waterhead.html", root or site_url()), token))
     return {"available": False, "why": why} if why else {"available": True, "samples": len(doc["samples"]),
                                                           "version": doc["version"]}
+
+
+# The sampling planner (docs/SAMPLING-PLANNER-CONTRACT-v1.md, issue #482): where the EA's E. coli samples behind the
+# model are thin, by spot, year, month and rain, and the sampling-priorities simulation's results (#381, failed) for its
+# four ways of spending a budget, from scripts/export_sampling_planner.py. Written whole, as the Waterhead page is;
+# sampling-planner.js only does the cost lines from the form, with the simulation's runs on the form. Suggests nothing
+# to anyone and allocates no sample. A file of another schema or major version is not published: the page says so.
+PLANNER = config.ROOT / "data" / "research" / "sampling_planner.v1.json"
+PLANNER_SCHEMA, PLANNER_MAJOR = "swimsignal.sampling-planner", "1"
+REWRITES += [('href="/sampling-planner"', 'href="sampling-planner.html"')]   # Research links the page
+
+
+def planner_body(doc: dict) -> str:
+    """The lead, then where samples are thin, the simulation's four policies and its verdict, the cost form and the
+    suggested priorities, kept apart from any plan."""
+    c, sim, n = doc["coverage"], doc["simulation"], lambda v, d=0: f"{v:,.{d}f}"
+    sites, sp, wet = c["sites"], c["spots"], c["wet"]
+    none = sp["total"] - sp["with_ea"] - sp["with_local"]
+    one = [s for s in sites if sum(1 for y in s["by_year"] if y) == 1]
+    rained = lambda k: [s for s in sites if s["kind"] == k and s["rain_rows"]]
+    wet_of = lambda ss: (sum(s["wet_rows"] for s in ss), sum(s["rain_rows"] for s in ss))
+    (rw, rn), (lw, ln) = wet_of(rained("river")), wet_of(rained("lake"))
+    names = lambda ss: "; ".join(escape(s["name"]) for s in ss[:-1]) + ("; and " if len(ss) > 1 else "") + escape(ss[-1]["name"])   # names hold commas
+    small = lambda v: f"{v:.6f}".replace("-", "−")
+    month = dict(zip(c["months"], c["by_month"]))
+    word = {"05": "May", "06": "June", "07": "July", "08": "August", "09": "September"}
+    parts = [f'<p class="lead">{escape(doc["claim"]["public_wording"])}</p>',
+             "<h2>Where samples are thin</h2>",
+             f'<p>SwimSignal\'s E. coli model learns only from lab samples. All of them are the Environment Agency\'s, at the '
+             f'{len(sites)} inland bathing waters: {n(c["samples"])} samples from {c["years"][0]} to {c["years"][-1]}.</p><ul>'
+             f'<li><b>Most spots have none.</b> {none} of SwimSignal\'s {sp["total"]} spots ({sp["none_rivers"]} rivers and '
+             f'{sp["none_lakes"]} lakes) have no lab samples here.'
+             + (f' {"One" if sp["with_local"] == 1 else sp["with_local"]} more has a local group\'s samples (<a href="waterhead.html">Waterhead</a>), which are '
+                'not part of the model\'s data.' if sp["with_local"] else "") + "</li>"
+             f'<li><b>Only May to September.</b> No sample here was taken from October to April. May ({n(month["05"])}) '
+             f'and September ({n(month["09"])}) have fewer than June ({n(month["06"])}) and July ({n(month["07"])}).</li>'
+             f'<li><b>{len(one)} bathing waters have one season.</b> {names(one)} have only {c["years"][-1]} samples here, '
+             'about 20 each.</li>'
+             f'<li><b>Few samples after rain.</b> Of the {n(wet["rows"])} samples from 2024 to 2026 with archived rain, '
+             f'{n(wet["wet_rows"])} ({round(100 * wet["wet_rows"] / wet["rows"])}%) came after more than {wet["mm_48h"]} mm '
+             f'in 48 hours: {rw} of {rn} at rivers and {lw} of {ln} at lakes. The {len(sites) - wet["sites"]} bathing waters '
+             'with no monitored overflow upstream have no rain figures here.</li></ul>']
+    parts.append('<div class="tw"><table class="sp-areas"><caption>SwimSignal\'s spots by area.</caption><thead><tr>'
+                 '<th scope="col">Area</th><th scope="col" class="num">Spots</th><th scope="col" class="num">With EA samples</th>'
+                 '<th scope="col" class="num">With none</th></tr></thead><tbody>'
+                 + "".join(f'<tr><th scope="row">{escape(a["area"])}</th><td class="num">{a["spots"]}</td>'
+                           f'<td class="num">{a["with_ea"]}</td><td class="num">{a["spots"] - a["with_ea"] - a["with_local"]}</td></tr>'
+                           for a in sp["by_area"]) + "</tbody></table></div>")
+    ordered = sorted(sites, key=lambda s: (s["samples"], s["name"]))
+    after = lambda s: f'{s["wet_rows"]} of {s["rain_rows"]}' if s["rain_rows"] else "–"
+    parts.append('<div class="tw"><table class="sp-sites"><caption>Each bathing water, fewest samples first. After rain: '
+                 f'samples after more than {wet["mm_48h"]} mm in 48 hours, of those with archived rain, 2024 to 2026.</caption>'
+                 '<thead><tr><th scope="col">Bathing water</th><th scope="col">Kind</th><th scope="col" class="num">Samples</th>'
+                 + "".join(f'<th scope="col" class="num">{y}</th>' for y in c["years"])
+                 + "".join(f'<th scope="col" class="num">{word[m][:3]}</th>' for m in c["months"])
+                 + '<th scope="col" class="num">After rain</th></tr></thead><tbody>'
+                 + "".join(f'<tr><th scope="row">{escape(s["name"])}</th><td>{escape(s["kind"])}</td>'
+                           f'<td class="num">{s["samples"]}</td>' + "".join(f'<td class="num">{y}</td>' for y in s["by_year"])
+                           + "".join(f'<td class="num">{m}</td>' for m in s["by_month"]) + f'<td class="num">{after(s)}</td></tr>'
+                           for s in ordered) + "</tbody></table></div>")
+    main, w = sim["runs"][0], sim["world"]
+    st, cov = main["strategies"], main["info_vs"]["COVER"]
+    rnd = main["info_vs"]["RANDOM"]
+    lower = lambda k: round(100 * (st["RANDOM"]["P"] - st[k]["P"]) / st["RANDOM"]["P"])
+    parts += ["<h2>Four ways to spend a budget, in a simulation</h2>",
+              f'<p>A simulation tried four ways of choosing where and when to take {main["budget"]} extra samples in one '
+              f'season. Its world was made up: {escape(w["note"])} Nothing here has been tried on real water.</p><dl class="fields">'
+              + "".join(f'<dt>{escape(p["name"])}</dt><dd>{escape(p["rule"])}</dd>' for p in doc["policies"]) + "</dl>",
+              '<div class="tw"><table class="sp-runs"><caption>The simulation\'s results, means over '
+              f'{main["replications"]} made-up worlds. Error is how far the model\'s rate for each site was from the true '
+              'rate in a later season: lower is better. A high result is a made-up sample over the line.</caption><thead><tr><th scope="col">Policy</th>'
+              '<th scope="col" class="num">Error</th><th scope="col" class="num">Lower than random</th>'
+              '<th scope="col" class="num">Error at sites never sampled before</th>'
+              f'<th scope="col" class="num">High results, of {main["budget"]}</th>'
+              '<th scope="col" class="num">Rain in the 48 hours before, mm</th></tr></thead><tbody>'
+              + "".join(f'<tr><th scope="row">{escape(p["name"])}</th><td class="num">{st[p["id"]]["P"]:.5f}</td>'
+                        f'<td class="num">{"–" if p["id"] == "RANDOM" else str(lower(p["id"])) + "%"}</td>'
+                        f'<td class="num">{st[p["id"]]["P_never"]:.5f}</td><td class="num">{st[p["id"]]["S4_exceedances"]:.1f}</td>'
+                        f'<td class="num">{st[p["id"]]["mean_rain48"]:.1f}</td></tr>' for p in doc["policies"])
+              + "</tbody></table></div>",
+              f'<p><b>The information policy failed its test.</b> It needed lower error than equal coverage in at least 60% '
+              f'of the {main["replications"]} worlds, and had it in {cov["share_info_lower"] * 100:.1f}%. Its mean gain over '
+              f'equal coverage was {small(cov["mean_gain"])} (95% interval {small(cov["ci95"][0])} to {small(cov["ci95"][1])}), '
+              f'about {round(100 * cov["mean_gain"] / st["COVER"]["P"])}% of equal coverage\'s error. Against random it '
+              f'had lower error in {rnd["share_info_lower"] * 100:.0f}%. Nothing was adopted, and this page does not change '
+              'that.</p>',
+              f'<p>Almost all of the difference was at sites never sampled before. Equal coverage and the information policy '
+              f'both went mostly there; the information policy also chose wetter days. The wettest, riskiest days caught the '
+              f'most samples over the line, but taught the model little more than random did.</p>']
+    near = lambda r: {"main": f'The test: {n(r["per_site"])} per new site', "tau0": f'Check: {n(r["per_site"])} per new '
+                      'site, sites truly alike', "budget120": f'Check: {n(r["per_site"])} per new site'}.get(r["run"], r["run"])
+    parts.append('<div class="tw"><table class="sp-runs"><caption>The information policy against equal coverage, in '
+                 'each simulated run. The runs other than the first were checks that decided nothing.</caption><thead><tr>'
+                 '<th scope="col">Run</th><th scope="col" class="num">Samples</th><th scope="col" class="num">Lower error in</th>'
+                 '<th scope="col" class="num">Mean gain</th><th scope="col">95% interval</th></tr></thead><tbody>'
+                 + "".join(f'<tr><th scope="row">{escape(near(r))}</th><td class="num">{r["budget"]}</td>'
+                           f'<td class="num">{r["info_vs"]["COVER"]["share_info_lower"] * 100:.1f}%</td>'
+                           f'<td class="num">{small(r["info_vs"]["COVER"]["mean_gain"])}</td>'
+                           f'<td>{small(r["info_vs"]["COVER"]["ci95"][0])} to {small(r["info_vs"]["COVER"]["ci95"][1])}</td></tr>'
+                           for r in sim["runs"]) + "</tbody></table></div>"
+                 '<p>With about 10 samples per new site, equal coverage caught up: the interval includes 0.</p>')
+    k, runs = doc["cost"], [{f: r[f] for f in ("run", "tau", "budget", "per_site", "replications", "info_vs")} for r in sim["runs"]]
+    parts += ["<h2>What a season would cost</h2>",
+              f'<p>Set the samples, the price of one sample and the sites to share them over. {escape(k["note"])}</p>',
+              f'<form class="sp-calc" id="sp-calc" data-runs="{escape(json.dumps(runs, separators=(",", ":")))}">'
+              f'<label>Samples in the season<input name="samples" type="number" inputmode="numeric" min="1" step="1" value="{k["samples"]}"></label>'
+              f'<label>Price per sample, £ (your assumption)<input name="price" type="number" inputmode="decimal" min="0" step="any" value="{k["per_sample_gbp"]}"></label>'
+              f'<label>Sites to share them over<input name="sites" type="number" inputmode="numeric" min="1" step="1" value="{k["sites"]}"></label></form>',
+              '<div id="sp-out" aria-live="polite"><noscript><p>The cost lines need JavaScript.</p></noscript></div>',
+              '<p class="sp-note">Every policy here takes the same number of samples, so the lab bill is the same. What '
+              'differs is which sites and which days.</p>']
+    by_none = sorted(sp["by_area"], key=lambda a: -(a["spots"] - a["with_ea"] - a["with_local"]))[:3]
+    dry = sorted((s for s in sites if s["kind"] == "river" and s["rain_rows"]), key=lambda s: (s["wet_rows"], s["name"]))[:4]
+    parts += ["<h2>Suggested priorities, not a plan</h2>",
+              '<p>If a sampler asks where one more sample would add most, the rule of thumb recorded on 26 October 2026 is: '
+              'the least-sampled sites, on wetter days. It comes from the simulation above, not from real water. On '
+              'these files it points to:</p><ul>'
+              f'<li>the {none} spots with no samples, most of them in '
+              + ", ".join(f'{escape(a["area"])} ({a["spots"] - a["with_ea"] - a["with_local"]})' for a in by_none) + "</li>"
+              f'<li>the bathing waters with one season of samples: {names(one)}</li>'
+              f'<li>the rivers with fewest samples after rain: ' + "; ".join(f'{escape(s["name"])} ({after(s)})' for s in dry)
+              + "</li></ul>",
+              '<p>These are things to talk about. SwimSignal does not choose where or when anyone samples, and sends no '
+              'list to a sampler. It has not shown that any of these choices teaches the model more than a fixed '
+              'schedule.</p>']
+    return "\n".join(parts)
+
+
+def write_sampling_planner(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
+    """sampling-planner.html and sampling-planner.js from the export (PLANNER unless path), or the page saying nothing
+    is shown. Returns the build's health entry."""
+    path, why = path or PLANNER, None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != PLANNER_SCHEMA or str(doc.get("version", "")).split(".")[0] != PLANNER_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {PLANNER_SCHEMA} {PLANNER_MAJOR}.x"
+    page = (TEMPLATE.parent / "sampling-planner.html").read_text()
+    js = TEMPLATE.parent / "sampling-planner.js"
+    body = '<p class="notice">No planning figures are published in this build.</p>' if why else planner_body(doc)
+    for marker, text in (("<!-- SP -->", body), ("<!-- SP-ATTRIB -->", "" if why else escape(" ".join(doc["attribution"])) + ".")):
+        if marker not in page:
+            raise ValueError(f"sampling-planner.html has lost {marker}, which write_sampling_planner fills")
+        page = page.replace(marker, text, 1)
+    tag = '<script src="sampling-planner.js"></script>'
+    if tag not in page:
+        raise ValueError(f"sampling-planner.html has lost {tag}, which the build versions")
+    page = page.replace(tag, f'<script src="sampling-planner.js?v={hashlib.sha256(js.read_bytes()).hexdigest()[:8]}"></script>', 1)
+    shutil.copy(js, site / "sampling-planner.js")
+    (site / "sampling-planner.html").write_text(with_counter(with_share_meta(page, "sampling-planner.html", root or site_url()), token))
+    return {"available": False, "why": why} if why else {"available": True, "version": doc["version"]}
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
