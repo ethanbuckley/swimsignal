@@ -2468,7 +2468,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2794,6 +2794,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
+    write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
@@ -2978,7 +2979,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3310,6 +3311,83 @@ def write_durations(site: Path, token: str | None = None, root: str | None = Non
     return write_scripted_page(site, "durations.html", ("durations.js",), ("durations.js",), token, root)
 
 
+# Every Environment Agency E. coli sample at the inland bathing waters (docs/ECOLI-EVIDENCE-CONTRACT-v1.md). The
+# research side exports one file, data/research/ecoli_evidence.v1.json (scripts/export_ecoli_evidence.py), with a
+# hindsight model estimate beside each sample that the site never showed (`issued: false`). The site splits it:
+# data/research/ecoli.json, every bathing water without its samples, for the viewer's list, with this build's EA
+# rating and the EA's profile page beside each; data/research/ecoli/<spot_id>.json, one bathing water whole, fetched
+# when it is picked (samples.html, samples.js). A file of another schema, or another major version, is not
+# published: the viewer then says no samples are published, rather than read fields it does not know. Only these
+# two paths are cleared, so the other research files in data/research/ are left to their own writers.
+ECOLI_EVIDENCE = config.ROOT / "data" / "research" / "ecoli_evidence.v1.json"
+ECOLI_SCHEMA, ECOLI_MAJOR = "swimsignal.ecoli-evidence", "1"
+EA_PROFILE = "https://environment.data.gov.uk/bwq/profiles/profile.html?site={}"
+BW_ID = re.compile(r"uk[a-z]\d{4}-\d{5}")
+REWRITES += [('href="/samples"', 'href="samples.html"')]   # the data page links the viewer
+
+
+def read_ecoli_evidence(path: Path = ECOLI_EVIDENCE) -> tuple[dict | None, str | None]:
+    """The research export and None, or None and why it is not published."""
+    if not path.is_file():
+        return None, "no export in this build"
+    doc = json.loads(path.read_text())
+    if doc.get("schema") != ECOLI_SCHEMA or str(doc.get("version", "")).split(".")[0] != ECOLI_MAJOR:
+        return None, f"export is {doc.get('schema')} {doc.get('version')}, not {ECOLI_SCHEMA} {ECOLI_MAJOR}.x"
+    return doc, None
+
+
+def ecoli_sites(doc: dict) -> list[dict]:
+    """The export's bathing waters whose ids can be file names and EA addresses."""
+    return [x for x in doc.get("sites") or [] if SPOT_ID.fullmatch(str(x.get("spot_id", ""))) and BW_ID.fullmatch(str(x.get("bw_id", "")))]
+
+
+def write_ecoli_evidence(site: Path, path: Path = ECOLI_EVIDENCE, results: list[dict] | None = None) -> dict:
+    """data/research/ecoli.json and data/research/ecoli/<spot_id>.json from the research export, or ecoli.json
+    saying none are published (`available` false, with why). results: this build's spots, whose EA rating each
+    bathing water carries in the index. Returns the build's health entry."""
+    out = site / "data" / "research"
+    (out / "ecoli.json").unlink(missing_ok=True)
+    shutil.rmtree(out / "ecoli", ignore_errors=True)
+    (out / "ecoli").mkdir(parents=True)
+    doc, why = read_ecoli_evidence(path)
+    if why:
+        (out / "ecoli.json").write_text(json.dumps({"schema": ECOLI_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    rated = {str(r["id"]): r.get("classification") for r in results or [] if r.get("classification")}
+    sites = ecoli_sites(doc)
+    for x in sites:
+        (out / "ecoli" / f"{x['spot_id']}.json").write_text(json.dumps(x, separators=(",", ":")))
+    index = {**{k: v for k, v in doc.items() if k != "sites"}, "available": True,
+             "sites": [{k: v for k, v in x.items() if k != "samples"} | {"profile": EA_PROFILE.format(x["bw_id"])}
+                       | ({"rating": {k: rated[x["spot_id"]].get(k) for k in ("class", "year")}} if x["spot_id"] in rated else {})
+                       for x in sites]}
+    (out / "ecoli.json").write_text(json.dumps(index, separators=(",", ":")))
+    return {"available": True, "sites": len(sites), "skipped_ids": len(doc.get("sites") or []) - len(sites), "version": doc["version"]}
+
+
+def attach_sample_history(results: list[dict], path: Path = ECOLI_EVIDENCE) -> int | None:
+    """On each bathing water in the export, `sample_history`: its first and last sample's dates and how many, for
+    the one link from its page's latest lab sample to every sample (evidence.js). A spot's own file only
+    (DETAIL_FIELDS). Returns how many spots got it, None without a publishable export."""
+    doc, why = read_ecoli_evidence(path)
+    if why:
+        return None
+    by = {x["spot_id"]: x for x in ecoli_sites(doc)}
+    n = 0
+    for r in results:
+        x = by.get(str(r["id"]))
+        if x and x.get("samples"):
+            r["sample_history"] = {"first": x["samples"][0]["t"][:10], "last": x["samples"][-1]["t"][:10], "samples": len(x["samples"])}
+            n += 1
+    return n
+
+
+def write_samples(site: Path, token: str | None = None, root: str | None = None, results: list[dict] | None = None) -> str:
+    """samples.html and samples.js beside the app, and the samples they read. Returns the script's version."""
+    write_ecoli_evidence(site, results=results)
+    return write_scripted_page(site, "samples.html", ("samples.js",), ("samples.js",), token, root)
+
+
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
 # upstream with its spills and spill hours each year 2021-2025, from the Environment Agency's annual returns
 # (data/processed/annual_returns.parquet, OGL v3, credited in the terms). The list is the spot's
@@ -3527,6 +3605,7 @@ def build(refresh: bool = True) -> dict:
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
+    n_history = attach_sample_history(results)   # from the research export, a file: no request
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
@@ -3558,6 +3637,7 @@ def build(refresh: bool = True) -> dict:
     health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}
     health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
+    health["sample_history"] = n_history
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
     else:
