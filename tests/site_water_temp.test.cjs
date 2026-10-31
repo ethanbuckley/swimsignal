@@ -171,3 +171,34 @@ test('no estimate because its inputs did not arrive: said, not left blank, and n
   setToday(null);
 });
 
+
+// #492 stage 2: a clicked river or lake point (anypoint.js, waterAt), from the nearest cached cell's 7-day air.
+const A = require('../src/dipcast/site/anypoint.js');
+const WA = { date: '2026-10-31', cells: { '54.4,-2.9': 9.31 }, months: [5, 6, 7, 8, 9], typical_c: { river: 1.85, lake: 1.93 },
+  curves: { river: [-0.41166947693946565, 34.999999993691574, 18.3677886247391, 0.08066342666976217], lake: [-0.08307401472541856, 34.999999999992696, 14.660334045119965, 0.10187070075502881] } };
+
+test('a clicked point: the curve on the nearest cell, its distance, and no error claimed outside May to September', () => {
+  const own = A.waterAt({ water_air: WA }, 54.38, -2.92, 'lake').est;
+  assert.deepEqual(own, { temp_c: 13, date: '2026-10-31', route: 'lake_air_curve', tested: false, typical_c: null, air_7d_c: 9.3, air_km: 0 });
+  const next = A.waterAt({ water_air: WA }, 54.5, -2.8, 'river').est;   // the square next to the point's
+  assert.equal(next.route, 'river_air_curve'); assert.equal(next.air_km, 13);
+  assert.deepEqual(A.waterAt({ water_air: WA }, 52.0, -1.0, 'river'), { miss: { why: 'air', date: '2026-10-31' } });   // no cell near
+  assert.deepEqual(A.waterAt({ water_air: WA }, 54.4, -2.9, 'coast'), {});   // not a river or lake: its own route (#479)
+  assert.deepEqual(A.waterAt({}, 54.4, -2.9, 'river'), {});                 // a file from before stage 2
+  // In the months it was tested in, the curve alone's measured error.
+  assert.equal(A.waterAt({ water_air: { ...WA, date: '2026-07-14' } }, 54.4, -2.9, 'river').est.typical_c, 1.85);
+});
+
+test('a clicked point on the page: said as a provisional estimate for an unlisted point, with the area\'s distance', () => {
+  setToday('2026-10-31');
+  const t = waterTile(null, { temp_c: 11, date: '2026-10-31', route: 'river_air_curve', tested: false, typical_c: null, air_km: 13 }, 'river');
+  assert.equal(t.say, 'About 11&nbsp;°C (provisional estimate, not yet checked in these months).');
+  assert.match(t.more, /for a point that is not a listed spot/);
+  assert.match(t.more, /nearest this point, about 13&nbsp;km away/);
+  assert.doesNotMatch(t.more, /typically [0-9.]+&nbsp;°C out/);
+  setToday('2026-07-14');
+  const s = waterTile(null, { temp_c: 17, date: '2026-07-14', route: 'lake_air_curve', tested: false, typical_c: 1.93, air_km: 0 }, 'lake');
+  assert.equal(s.say, 'About 17&nbsp;°C (provisional estimate; typical error 1.9&nbsp;°C at lakes in a summer test).');
+  assert.match(s.more, /typically 1\.9&nbsp;°C out/);
+  setToday(null);
+});

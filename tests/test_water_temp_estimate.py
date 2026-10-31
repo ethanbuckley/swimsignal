@@ -182,3 +182,18 @@ def test_every_estimate_is_saved_before_its_observations_arrive(tmp_path):
     assert build_site.log_water_temp_estimates(spots, pd.Timestamp("2026-10-31T10:30Z"), log) == 1   # only ever added to
     df = pd.read_parquet(log)
     assert len(df) == 2 and list(df["spot"]) == ["r", "r"] and df["sensor_c"].iloc[0] == 10.4 and df["route"].iloc[0] == "river_off_season"
+
+
+def test_the_click_anywhere_file_carries_each_cells_7_day_air_and_the_curves():
+    # #492 stage 2: the page estimates a clicked river or lake from these (anypoint.js, waterAt): no extra request.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    import build_any_point
+    t = pd.date_range("2026-10-20", "2026-11-01", freq="h", tz="UTC")
+    full = pd.DataFrame({"cell_lat": 54.4, "cell_lon": -2.9, "time": t, "air_c": 9.0})
+    short = pd.DataFrame({"cell_lat": 52.0, "cell_lon": -1.0, "time": t[-60:], "air_c": 12.0})   # not 7 whole days
+    w = build_any_point.water_air(pd.concat([full, short]), pd.Timestamp("2026-10-31T12:00", tz="Europe/London"))
+    assert w["date"] == "2026-10-31" and list(w["cells"]) == ["54.4,-2.9"]
+    m = water_temp.load()
+    assert w["cells"]["54.4,-2.9"] == pytest.approx(m.bridge[0] + m.bridge[1] * 9.0, abs=0.01)
+    assert w["curves"]["river"] == list(m.curves["river"]) and w["months"] == [5, 6, 7, 8, 9]
+    assert w["typical_c"] == {"river": 1.85, "lake": 1.93}

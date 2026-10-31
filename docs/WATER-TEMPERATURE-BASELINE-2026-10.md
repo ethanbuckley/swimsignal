@@ -86,10 +86,29 @@ Live data, 31 Oct 2026.
 | Scotland directory | 90 | not typed in the file | to classify, then by type | none yet |
 | Ireland directory | 243 | not typed in the file | to classify, then by type | none yet |
 | Northern Ireland directory | 33 | 32 coast, 1 inland | #479; inland by type | none yet |
-| Click-anywhere (any river or lake point) | any | river or lake | these routes, in the page, from the point's cell air | none yet |
+| Click-anywhere (any river or lake point) | any | river or lake | stage 2 (below): the type's 7-day air curve on the nearest cached cell | stage 2 PR |
 
 A partial rollout is progress, not the end of #492. Each remaining row is tracked on #477, #478 and #479 until it has a
 route and a published value.
+
+## Stage 2: click-anywhere (any river or lake point)
+
+- **Source.** A clicked point has no air of its own. The click-anywhere build already caches the forecast for every
+  overflow's 0.1° cell, air included (`any_point_rain`). It now publishes each cell's bridged 7-day air in
+  `overflow_days.json` (`water_air`; `water_temp.cell_air_7d`). This adds **no request**: the rain cache it reads is
+  the one already fetched.
+- **The page** (`anypoint.js`, `waterAt`). It takes the point's own 0.1° square, else the nearest of the eight around
+  it, with that cell's distance, as it already does for rain. It applies the river or lake curve, never below 0 °C.
+- **Error.** The curve alone, without the trees (it needs neither the river's size nor the lake's area):
+  - May to September: its typical error on the test's held-out rows was **1.85 °C at rivers and 1.93 °C at lakes**,
+    from the same cached predictions as the stage 1 figures;
+  - October to April: not measured, and the page says so.
+- **Labels.** The page names it a provisional estimate for a point that is not a listed spot, and gives the cell's
+  distance. A click with no cached cell nearby gets "No estimate in this update". Coasts and other water types return
+  nothing here; they are #479's route.
+- **Coverage.** Every river or lake point within about 15 km of a 0.1° cell with an overflow in it, that is, wherever
+  the click-anywhere rain is. The cache is refreshed on a rota (`RAIN_MAX_AGE_H`); a cell without 7 whole days of air
+  is left out, and that is said.
 
 ## Shown where
 

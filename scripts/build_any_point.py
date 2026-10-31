@@ -1147,6 +1147,25 @@ def cell_rain_48h(hourly: pd.DataFrame, days: pd.DatetimeIndex) -> dict[str, lis
     return out
 
 
+def water_air(hourly: pd.DataFrame, now: pd.Timestamp) -> dict | None:
+    """What the page needs to estimate the water at a clicked river or lake point (#492, stage 2; anypoint.js, waterAt):
+    the day, each cached cell's bridged 7-day air (water_temp.cell_air_7d, from the rain cache this build already reads:
+    no extra request), the river and lake curves, the months the model was tested in, and the curve-only route's error
+    measured in those months. None without the model; nothing here raises."""
+    from dipcast.model import water_temp
+    try:
+        model = water_temp.load()
+        if model is None:
+            return None
+        today = now.tz_convert("Europe/London").normalize().tz_localize(None)
+        return {"date": today.date().isoformat(), "cells": water_temp.cell_air_7d(model, hourly, today),
+                "curves": {k: list(model.curves[k]) for k in ("river", "lake")}, "months": sorted(model.months),
+                "typical_c": water_temp.AIR_CURVE_TYPICAL_C}
+    except Exception as e:  # noqa: BLE001 - the water beside the forecast must not stop the file
+        log.warning("any-point water air: %s", e)
+        return None
+
+
 def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, past: int, now: pd.Timestamp,
                         probabilities, credits: dict | None = None, rain=any_point_rain) -> dict:
     """overflow_days.json. `probabilities(ov, days, rain)` is forecast.spill_probabilities with the
@@ -1223,6 +1242,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "stale_rows": stale_rows, "last_running": last_running, "feed_updated": feed_updated,
         "rain_h": rain_h,
         "rain_48h": cell_rain_48h(hourly, days[past:]),
+        "water_air": water_air(hourly, now),   # a clicked river or lake's provisional water temperature (#492)
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,

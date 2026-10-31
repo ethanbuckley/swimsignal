@@ -2067,12 +2067,12 @@ const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
 // lake route whose summer test error is measured but which failed the lake test; or any water October to April, not yet
 // checked in those months. Each route is worded by what was measured for it and nothing more: no error is said where
 // none was measured. A sensor reading is a measurement, said as one, apart from the estimate. Only today's estimate shows.
-const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season']);
+const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season', 'river_air_curve', 'lake_air_curve']);   // *_air_curve: a clicked point (anypoint.js, waterAt)
 const waterEstOk = (x, kind) => !!x && (kind === 'river' || kind === 'lake') && typeof x.temp_c === 'number' && x.date === today()
   && (WT_ROUTES.has(x.route) || (!x.route && kind === 'river' && typeof x.within_c === 'number'));   // a file from before routes: the river model, rivers only
 const waterEstHow = x => !x.route || x.route === 'river_model' ? `estimated, typically within ${fmt(x.within_c ?? 2, 0)}&nbsp;°C`
-  : x.route.endsWith('_off_season') ? 'provisional estimate, not yet checked in these months'
-  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at lakes in a summer test`;
+  : x.route.endsWith('_off_season') || typeof x.typical_c !== 'number' ? 'provisional estimate, not yet checked in these months'
+  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at ${x.route.startsWith('river') ? 'rivers' : 'lakes'} in a summer test`;
 const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (${waterEstHow(x)}).`;
 // For a line elsewhere (the planner's columns): "water about 11 °C today, estimated", or ''.
 function waterEstShort(e, kind) { return waterEstOk(e, kind) ? `water about ${e.temp_c} °C today, ${!e.route || e.route === 'river_model' ? 'estimated' : 'provisional estimate'}` : ''; }
@@ -2082,6 +2082,9 @@ function waterEstMore(x) {
   const r = x.route || 'river_model';
   if (r === 'river_model') return `The estimate is not a measurement. ${WT_AIR}, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency's own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today's forecast itself was not checked.${WT_TAIL}`;
   if (r === 'lake_model' || r === 'lake_curve') return `A provisional estimate, not a measurement. ${WT_AIR}${r === 'lake_model' ? ' and the size of the lake' : ' alone, as for large lakes the fuller model did worse'}. The lake model did not pass its test: against the Environment Agency's samples at 307 lakes it had not seen, May to September 2023 to 2025, its typical error was 1.8&nbsp;°C, too cold early in the season and a little warm in September. For ${r === 'lake_model' ? 'lakes under 1&nbsp;km²' : 'lakes of 1&nbsp;km² or more'} the typical error was ${fmt(x.typical_c, 1)}&nbsp;°C. A deep lake's surface can lag the air by more than a month.${WT_TAIL}`;
+  if (r.endsWith('_air_curve')) return `A provisional estimate, not a measurement, for a point that is not a listed spot. It comes from a weather model's air temperature over the last 7 days for the area${x.air_km ? ` nearest this point, about ${x.air_km}&nbsp;km away` : ' around this point'}, through a relation between the air and ${r === 'lake_air_curve' ? 'lake' : 'river'} water fitted on the Environment Agency's May to September samples. `
+    + (typeof x.typical_c === 'number' ? `In a test on waters it had not seen, May to September 2023 to 2025, that relation alone was typically ${fmt(x.typical_c, 1)}&nbsp;°C out.` : 'It has not been checked from October to April, so how far out it is in these months is not known yet.')
+    + ` A listed spot's estimate also uses the river's size or the lake's area.${WT_TAIL}`;
   return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
 }
 function waterTile(w, e = null, kind = null, miss = null) {
