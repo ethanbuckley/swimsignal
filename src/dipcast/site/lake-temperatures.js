@@ -157,11 +157,10 @@ function ltMount(root) {
     const not = root.getElementById('lt-not'), attrib = root.getElementById('lt-attrib');
     if (not && index.claim && index.claim.not_claimed) not.innerHTML = index.claim.not_claimed.map(t => `<li>${ltEsc(t)}</li>`).join('');
     if (attrib && Array.isArray(index.attribution) && index.attribution.length) attrib.textContent = index.attribution.join('. ').replace(/\.?$/, '.');
-    // Version 1.1: the export's claim for a page of many lakes in place of the page's own lead, and its one plain
-    // sentence on how each figure is made under "How they were measured".
-    const lead = root.getElementById('lt-lead'), method = root.getElementById('lt-method');
+    // The export's own words for the page (1.1): a lead for any lake, and its method in one sentence, shown first.
+    const lead = root.getElementById('lt-lead'), said = root.getElementById('lt-method-said');
     if (lead && index.claim && index.claim.page_wording) lead.textContent = index.claim.page_wording;
-    if (method && index.method && index.method.public_sentence) { method.textContent = index.method.public_sentence; method.hidden = false; }
+    if (said && index.method && index.method.public_sentence) { said.textContent = index.method.public_sentence; said.hidden = false; }
     const pickId = () => decodeURIComponent((location.hash.match(/^#lake=([A-Za-z0-9_-]+)$/) || [])[1] || '');
     // The list once, so a keyboard keeps its place in it; the lake below it again at each pick.
     host.innerHTML = ltSummary(index) + (index.available ? ltPicker(index, pickId()) + '<div id="lt-one"></div>' : '');
