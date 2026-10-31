@@ -1,0 +1,58 @@
+{
+  "inputs": {
+    "live_history.parquet": "0109c0da3ada52ad7d236003e2adc742f8bfb7351485e542854691b8c8c57e15",
+    "live_coverage.parquet": "f66cb3b803247cf7cfd2625f9b25eacbbdefba36d0aae62f548bc505cae23497",
+    "poll_log.parquet": "f1491ef085e0f434bad82bc69f04d014a806ca9f7f37b1c4fe0ee71f0202ee07",
+    "SPILL-DURATION-LIVE-CHECK-2026-11-b1.csv": "d8c97292d0dacedfd20d5eafe91863b9dd2b9c2e8c6dfad167eb739c00e61c52"
+  },
+  "inputs_unchanged": true,
+  "window_from": "2026-09-28 17:00:00+00:00",
+  "last_poll": "2026-10-31 11:32:54.600633984+00:00",
+  "issue_rows": 28323,
+  "overflows": 4482,
+  "discharges": 11719,
+  "issue_rows_by_company": {
+    "United Utilities": 8579,
+    "South West Water": 5409,
+    "Yorkshire Water": 3574,
+    "Southern Water": 2805,
+    "Severn Trent Water": 2378,
+    "Wessex Water": 2041,
+    "Northumbrian Water": 1569,
+    "Anglian Water": 1372,
+    "Thames Water": 596
+  },
+  "censoring": {
+    "1h": {
+      "scored": 12739,
+      "no_fresh_poll": 15568,
+      "not_current": 16,
+      "feed_end_censored": 49
+    },
+    "3h": {
+      "scored": 15332,
+      "no_fresh_poll": 12911,
+      "not_current": 80,
+      "feed_end_censored": 63
+    },
+    "6h": {
+      "scored": 14461,
+      "no_fresh_poll": 13769,
+      "not_current": 93,
+      "feed_end_censored": 68
+    },
+    "12h": {
+      "scored": 9031,
+      "no_fresh_poll": 19169,
+      "not_current": 123,
+      "feed_end_censored": 82
+    },
+    "24h": {
+      "scored": 14662,
+      "no_fresh_poll": 13413,
+      "not_current": 248,
+      "feed_end_censored": 128
+    }
+  },
+  "elapsed_median_h": 2.902714729309082
+}
