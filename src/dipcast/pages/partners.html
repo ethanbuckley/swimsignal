@@ -10,8 +10,8 @@
 <header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
 <nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/research">Research</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
 <main class="doc" id="main">
-<!-- The partner page (docs/PARTNER-PROGRAMME-2026-11.md). The format is docs/PARTNER-SAMPLES-CONTRACT-v1.md; its
-     template and checker are in the repository. The upload form comes once the reviews Worker's partner route is
+<!-- The partner page (docs/PARTNER-PROGRAMME-2026-11.md). The format is samples/'s, version 2
+     (docs/PARTNER-SAMPLES-CONTRACT-v1.md); its template and scripts/add_samples.py are in the repository. The upload form comes once the reviews Worker's partner route is
      deployed and switched on (reviews/README.md, "Partner files"); until then results come by email.
      tests/test_partners_page.py checks the wording rules below. -->
 <h1>Sampling partners</h1>
@@ -22,7 +22,7 @@
 <p>The first partner is Ambleside Action for a Future. Its <a href="/waterhead">weekly samples at Waterhead, Windermere</a>, are on this site with its permission.</p>
 
 <h2>What you send</h2>
-<p>One spreadsheet row for each result: where and when the sample was taken, what was measured (E.&nbsp;coli, intestinal enterococci or something else), the result and its unit, the laboratory and its method, the method's detection limits, and the permissions below. The <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PARTNER-SAMPLES-CONTRACT-v1.md">format</a> explains each column, and there is a <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/partner-samples-template-v1.csv">blank template</a> to fill in.</p>
+<p>One spreadsheet row for each sample: where and when it was taken, the E.&nbsp;coli and intestinal enterococci results and whether each is a plate count or a most probable number, the laboratory and its method, the method's detection limits, and the permissions below. The <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PARTNER-SAMPLES-CONTRACT-v1.md">format</a> explains each column, and there is a <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/samples-template-v2.csv">blank template</a> to fill in. It is the same format SwimSignal uses for any lab results an organisation sends.</p>
 <ul>
 <li>Give the result as the laboratory reported it. If it says "less than 10", write that, not 0.</li>
 <li>Name the sampling point and give its position. If you are not sure of the exact point, say so.</li>

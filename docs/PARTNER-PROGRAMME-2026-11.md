@@ -4,11 +4,13 @@ Written 31 October 2026. Status: a plan with code, nothing live. The Worker rout
 contacted through it, and nothing here has been reviewed by a solicitor. Owner: Ethan. Register entry: WET in
 [the recovery register](RESEARCH-RECOVERY-2026-10.md).
 
-The parts:
+It builds on the intake that already exists for lab results from organisations (`samples/README.md`,
+`src/dipcast/samples.py`, `scripts/add_samples.py`, the spot page's Measured tile). Partners use the same format, the
+same two permissions and the same private folder; nothing here is a second system. The parts:
 
 | Part | Where | State on 31 Oct 2026 |
 |---|---|---|
-| Data contract, template, checker | [PARTNER-SAMPLES-CONTRACT-v1.md](PARTNER-SAMPLES-CONTRACT-v1.md), `scripts/partner_samples.py` | [#571](https://github.com/ethanbuckley/swimsignal/pull/571) open |
+| Data contract: version 2 of the existing `samples/` format, its checks in `samples.py` | [PARTNER-SAMPLES-CONTRACT-v1.md](PARTNER-SAMPLES-CONTRACT-v1.md), `scripts/add_samples.py` | [#571](https://github.com/ethanbuckley/swimsignal/pull/571) open |
 | Moderated intake | `reviews/` Worker, `POST /partners/samples`, `/moderate` | [#572](https://github.com/ethanbuckley/swimsignal/pull/572) open; not deployed, switch off |
 | Evidence timeline on the spot page | `src/dipcast/site/timeline.js` | [#573](https://github.com/ethanbuckley/swimsignal/pull/573) open |
 | This document and the partner page | `docs/PARTNER-PROGRAMME-2026-11.md`, `partners.html` | this PR |
@@ -53,7 +55,7 @@ personal-data consent.
 | What | How long | How it goes |
 |---|---|---|
 | A file and its contact details in the Worker | 90 days from arrival, accepted or not (`PARTNER_KEEP_DAYS`) | The daily cron deletes the row; the operator can delete sooner; the sender can withdraw it with their key at any time |
-| An accepted file | Kept in `swimsignal-private/partners/<partner_id>/`, outside the repository, while the partnership lasts and for one year after it ends, so a published score can be reproduced | Deleted by hand at that point; the register entry says when |
+| An accepted file | Kept by `add_samples.py` in the private samples folder (`swimsignal-private/samples/<supplier>.csv`), outside the repository, while the partnership lasts and for one year after it ends, so a published score can be reproduced | Deleted by hand at that point; the register entry says when |
 | The written agreement (email) | As long as any result it covers is published or used in a published score | Kept in the mailbox, referred to by `consent_ref`, never copied into the repository |
 | Published results | Until the partner withdraws publication | Removed from the public files at the next build after the private file changes |
 | Email correspondence | As for any email to hello@ | Ethan's mailbox |
@@ -67,14 +69,17 @@ page then says that some of its data has been withdrawn.
 Every file waits for Ethan. Nothing is published by the Worker, ever. The steps:
 
 1. Download the file on `/moderate`.
-2. Run `uv run python scripts/partner_samples.py check FILE.csv`. Errors go back to the partner, with the checker's
-   lines. Do not fix a partner's values by hand: a changed value is no longer theirs.
-3. Read the warnings with the partner: an unconfirmed site, no sampling time, a 0 whose meaning is not known. Record
-   their answers in the file's `notes` (labelled "partner:") or fix the column if they confirm a value.
+2. Run `uv run python scripts/add_samples.py --supplier NAME --received DAY --dry-run FILE.csv`, the existing intake
+   (`samples/README.md`). Errors go back to the partner, with its lines. Do not fix a partner's values by hand: a
+   changed value is no longer theirs.
+3. Read its notes with the partner: an unconfirmed site, no sampling time, a 0 whose meaning is not known. Fill the
+   column if they confirm a value.
 4. Confirm both permissions by email, row by row if they differ. A `holdout` row needs an agreement dated before its
    sampling day; anything else is `exploratory`.
-5. Move the file to the private folder and press Accept.
-6. Only then, and by pull request: a public copy of the rows with `publish_consent` `yes`, and a page or spot link.
+5. Run `add_samples.py` again without `--dry-run`: it keeps every row privately and writes `samples/<supplier>.csv`
+   with the rows whose `publish` is `true`. Press Accept.
+6. Only then, and by pull request: that public file. Its last 30 days show in the spot's Measured tile and the
+   evidence timeline from the next build. An emailed file takes the same steps from step 2.
 
 Things to turn down: a file of someone else's results without their permission; results that name or identify a
 person (a sampler, a landowner, a swimmer who fell ill); results that accuse a named person or business of causing
