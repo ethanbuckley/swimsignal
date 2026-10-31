@@ -32,7 +32,7 @@ def test_the_check_refuses_a_broken_export():
 
 def test_the_page_shows_every_sample_with_its_credit(tmp_path):
     bs = _mod("build_site")
-    assert bs.write_waterhead(tmp_path) == {"available": True, "samples": 59, "version": "1.0.0"}
+    assert bs.write_waterhead(tmp_path) == {"available": True, "samples": 59, "version": "1.1.0"}
     html = (tmp_path / "waterhead.html").read_text()
     assert "<title>Waterhead bacteria samples · SwimSignal</title>" in html and "<!-- WET" not in html
     assert html.count('<tr><th scope="row">') == 59
@@ -40,6 +40,15 @@ def test_the_page_shows_every_sample_with_its_credit(tmp_path):
     assert "Ambleside Action for a Future, Waterhead E. coli Testing (WET) project." in html
     assert "not today&#x27;s water" in html and "laboratory, method and time of day are not yet confirmed" in html
     assert json.loads((tmp_path / "data" / "research" / "waterhead_wet.json").read_text())["schema"] == "swimsignal.waterhead-wet"
+    # Newest first: 2026 before 2025, and the latest sample is the first row; the forecast is linked back to.
+    assert html.index("<h2>2026</h2>") < html.index("<h2>2025</h2>")
+    row = lambda d: html.index(f'<th scope="row">{d}</th>')
+    assert row("12 Oct 2026") < row("23 Mar 2026") < row("30 Oct 2025") and "at the time it was taken" in html
+    assert '<a href="spot/osm-windermere-waterhead/">' in html and "Mostly on Thursday mornings" in html
+    local = json.loads((tmp_path / "data" / "research" / "local-samples.json").read_text())
+    assert local == {"available": True, "spots": {"osm-windermere-waterhead": {
+        "href": "waterhead.html", "place": "Waterhead, Windermere", "by": "Ambleside Action for a Future",
+        "samples": 59, "first": "2025-04-16", "last": "2026-10-12"}}}
 
 
 def test_another_schema_is_not_published(tmp_path):
@@ -50,3 +59,4 @@ def test_another_schema_is_not_published(tmp_path):
     assert h["available"] is False and "not swimsignal.waterhead-wet 1.x" in h["why"]
     assert "No samples are published in this build." in (tmp_path / "waterhead.html").read_text()
     assert not (tmp_path / "data" / "research" / "waterhead_wet.json").exists()
+    assert json.loads((tmp_path / "data" / "research" / "local-samples.json").read_text())["available"] is False

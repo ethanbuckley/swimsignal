@@ -136,7 +136,7 @@ test("a lake spot's page has one link: past temperatures by month, the years, th
   assert.equal(ctx.lakeTempLine(null), '');
   assert.equal(ctx.lakeTempLine({ ...link(BRO, BRO.spots[0]), wb_id: 'x"><script>' }), '');
   // In the page: after the latest readings, on a phone too (PHONE_ORDER).
-  assert.match(page, /const tiles = dayTiles\(d, DAY\) \+ nowTiles\(d\) \+ lakeTempHost\(d\);/);
+  assert.match(page, /const tiles = dayTiles\(d, DAY\) \+ nowTiles\(d\) \+ lakeTempHost\(d\) \+ localSamplesHost\(d\);/);
   assert.match(page, /const PHONE_ORDER = \[[^\]]*'#now-tiles', '#lt-past',/);
 });
 

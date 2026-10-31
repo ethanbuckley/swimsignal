@@ -11,7 +11,7 @@ const fn = html.slice(html.indexOf('function phoneFolds() {'), html.indexOf('\n}
 
 test("no outer folds: the sections follow the nearby spots in a swimmer's order", () => {
   assert.doesNotMatch(html, /fold-group|const FOLDS = /);
-  assert.match(html, /const PHONE_ORDER = \['\.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'\];/);
+  assert.match(html, /const PHONE_ORDER = \['\.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'\];/);
   assert.match(html, /const PHONE_OPEN = \['#seasonal'\];/);
 });
 
