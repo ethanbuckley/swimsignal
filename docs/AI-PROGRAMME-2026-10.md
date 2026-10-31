@@ -3,6 +3,14 @@
 Started 26 October 2026, after Ethan accepted Codex's assessment of which AI systems are worth building. This is the
 one place that says what each piece is, where it stands and what is waiting on a decision.
 
+**30 October continuation decision:** the current cross-project status and delivery owners are now in
+[RESEARCH-RECOVERY-2026-10.md](RESEARCH-RECOVERY-2026-10.md), under
+[RESEARCH-WORKFLOW.md](RESEARCH-WORKFLOW.md). Ethan requested recovery of promising research and a route to public
+use. Satellite data/export development, a discoverable observation viewer and fresh-data collection preparation
+can proceed now; this supersedes the blanket satellite parking instruction below for those activities. The old
+verdicts, existing evaluation windows and restrictions on accounts, external contact and API allocations stand.
+The dated snapshots below remain historical records, not current stopping instructions.
+
 **Final snapshot at the close of the 26 October window, 27 October 00:21 UTC** (PR, run and live states read at 00:20-00:21). Merges were
 made by Codex under Ethan's delegation of routine decisions (from about 22:30 UTC); before that, Ethan approved the
 #377 statement (about 19:25 UTC) and adopted the recommendations of 26 October (about 20:15 UTC). No live model,

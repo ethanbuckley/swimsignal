@@ -47,11 +47,12 @@ td.bars { width:38%; padding-top:10px; }
 .bar-key i.o { background:var(--muted); margin-left:12px; }
 </style></head><body><a class="skip" href="#main">Skip to content</a>
 <header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a aria-current="page" href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
+<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a aria-current="page" href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/research">Research</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
 <main class="doc" id="main">
 <h1>How good is the forecast?</h1>
 <p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did. This page updates itself. It also shows the offline tests the model was built on. How the forecast is made is on the <a href="/methods">method page</a>.</p>
 
+<p>A warning can miss a spill, and a warning does not always precede one. These scores describe monitored overflows, not whether the water at a particular spot is safe. An older ranking test measures how well days were ordered; it is not a percentage of forecasts correct.</p>
 <div id="top"><p class="muted">Loading the scores…</p></div>
 <div id="answer"></div>
 <div id="short"></div>
@@ -66,7 +67,7 @@ td.bars { width:38%; padding-top:10px; }
 <p class="note">Model and verification code: open source under MIT. Live scores use the water companies' published overflow status; an overflow counts as spilling on a day if any published event overlaps it. An overflow-day counts as "no spill" only if that overflow was observed with a known status at least six times that day and once the next day; a poll gap, an offline monitor or a dead feed is a missing observation, not a dry day. The forecast scored for each day is the one available at 08:00 local time on the day it was issued.<br><br>Data: storm overflow status and United Utilities' event history from the water companies via the National Storm Overflow Hub and Stream, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Bathing water ratings, in-season samples and daily risk predictions © Environment Agency copyright and/or database right 2016, and E. coli results from the Water Quality Explorer © Environment Agency copyright and/or database right 2025, <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>. <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>, CC BY 4.0, from Met Office forecasts © Crown copyright, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, and ERA5-Land reanalysis (<a href="https://doi.org/10.24381/cds.e2161bac">doi:10.24381/cds.e2161bac</a>): contains modified Copernicus Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains. Scores are SwimSignal's; none of these bodies endorses it. <a href="/terms#data">All credits and licences</a>.</p>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
-<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/research">Research</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
 <script>
 const f = (x, d=4) => (x === null || x === undefined || Number.isNaN(x)) ? '–' : Number(x).toFixed(d);
 const pct = x => (x === null || x === undefined) ? '–' : (100*x).toFixed(1) + '%';
@@ -518,19 +519,21 @@ function summary(d) {
   const L = d.live || {}, W = L.warning_table || {}, ho = (d.holdout || [])[0], {skill, flatBy} = liveError(L);
   const tile = (v, l, dd) => `<div class="stat"><dt class="l">${l}</dt><dd class="v">${v}</dd><dd class="d">${dd}</dd></div>`;
   const live = !!W.n, spills = W.hits + W.misses, warnings = W.hits + W.false_alarms;
-  const tiles = [
+  const liveTiles = [
     tile(live && W.hit_rate !== null ? p0(W.hit_rate) : '–', 'Spills warned of', !live ? 'Nothing scored yet.' : !spills ? 'No spill to warn of yet.'
       : `Since ${day(W.first_day)}, ${n0(W.hits)} of ${n0(spills)} forecasts for a day with a spill gave a High risk warning.`),
     tile(live && W.warnings_true !== null ? p0(W.warnings_true) : '–', 'Warnings that came true', !live ? 'Nothing scored yet.' : !warnings ? 'It gave no warnings.'
       : `${n0(W.hits)} of ${n0(warnings)} warnings were followed by a spill, against ${pLow(W.base_rate)} of all forecasts.`),
-    // The AUC as pairs, not a percentage: "93%" beside a share of spills warned of read as the share of forecasts
-    // right, and 93% is also NSW Beachwatch's headline accuracy, a different measure.
-    tile(ho ? `${Math.round(100 * ho.auc)} in 100` : '–', 'Pairs ranked the right way round', ho ? 'A ranking of spill days above dry days, not a share of forecasts right: United Utilities, 2025, a year the model never saw.' : 'No offline test loaded.'),
     // A live error above the long-run rate is said as higher, never as a negative "lower".
     tile(skill === null ? '–' : `${Math.abs(skill)}%`, skill !== null && skill < 0 ? 'Higher error, live' : 'Lower error, live', skill === null ? 'Nothing scored yet.'
       : `Read as a chance, against each overflow's long-run rate${flatBy ? `, and ${flatBy} against a flat forecast at this period's own rate` : ''}.`),
   ].join('');
-  return `<dl class="stats">${tiles}</dl>${companyLine(W)}`;
+  const historical = tile(ho ? `${Math.round(100 * ho.auc)} in 100` : '–', 'Pairs ranked the right way round', ho ? 'A ranking of spill days above dry days, not a share of forecasts right: United Utilities, 2025, a year the model never saw.' : 'No offline test loaded.');
+  return `<section aria-labelledby="live-summary-h"><h2 id="live-summary-h">Issued forecasts: live results</h2>`
+    + `<p class="small muted">Monitored overflow spill forecasts${W.first_day ? `, ${day(W.first_day)}${W.last_day ? ` to ${day(W.last_day)}` : ' onwards'}` : ''}. Warnings and probability error are different measures.</p>`
+    + `<dl class="stats">${liveTiles}</dl>${companyLine(W)}</section>`
+    + `<section aria-labelledby="history-summary-h"><h2 id="history-summary-h">Historical development test</h2>`
+    + `<p class="small muted">A separate held-out ranking test, not the live results above.</p><dl class="stats">${historical}</dl></section>`;
 }
 // The warnings by company in one line: the share of spills warned of at the company the spill model learned from,
 // against the other companies together, and the range among those with enough spills for a share to mean

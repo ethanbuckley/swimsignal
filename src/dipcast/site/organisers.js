@@ -46,14 +46,15 @@ const Organisers = (() => {
 
   // How many of the overflows upstream are expected to spill on a day, as a clause, and how good a
   // forecast this far ahead has been: index.html's spilling() and howSure(), word for word, so that a
-  // day reads here as it does in the spot's own day detail. tests/site_organisers.test.cjs checks
-  // that index.html still has the same words.
+  // day reads here as it does in the spot's own day detail. This record gives howSure()'s figure in
+  // view; the spot's page puts it in words and folds the figure (#504). tests/site_organisers.test.cjs
+  // checks that index.html still has the same words.
   const spilling = (x, total) => { const e = x.expected_spilling_overflows; if (nil(e)) return '';
     const k = Math.round(e);
     return k >= total ? (total === 1 ? 'the overflow upstream is expected to spill' : `all ${total} overflows upstream are expected to spill`)
       : k >= 1 ? `about ${k} of the ${total} overflows upstream ${k === 1 ? 'is' : 'are'} expected to spill`
       : R.ORDER[x.label] ? 'a spill from a nearby overflow upstream is possible'
-      : `under one spill is expected from the ${total === 1 ? 'overflow' : `${total} overflows`} upstream`; };
+      : `a spill from ${total === 1 ? 'the overflow' : `one of the ${total} overflows`} upstream is possible, not expected`; };
   const r5 = x => Math.round(x * 20) * 5 + '%';
   const howSure = (k, j, water) => `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
     + (water ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '.';

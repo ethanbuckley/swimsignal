@@ -211,3 +211,26 @@ details.ea-today iframe { display: block; width: 100%; max-width: 343px; height:
   tr, li, dl.fields dd { break-inside: avoid; }
   h2, h3 { break-after: avoid; }
 }
+
+/* Match the app's phone navigation without taking a second header row. */
+.phone-nav { display:none; }
+/* More's list (build_site.phone_nav): hidden until its button opens it. The two rules are apart so that a
+   browser without popovers drops only the second and the list stays hidden; the foot has the same links. */
+.more-menu { display:none; }
+.more-menu:popover-open { display:block; }
+@media screen and (max-width:800px) {
+  .top nav { display:none; }
+  body { padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .phone-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(5, 1fr);
+    padding:4px 4px env(safe-area-inset-bottom, 0px); background:var(--card); box-shadow:var(--lift); }
+  .phone-nav > a, .phone-nav > button { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:48px;
+    border:0; background:none; font:inherit; cursor:pointer;
+    color:var(--ink); text-decoration:none; font-size:var(--fs-meta); font-weight:600; }
+  .phone-nav svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
+}
+/* Over the bar's right end, where More is. Outside the media query, so a phone turned wide and back keeps it placed. */
+.more-menu { position:fixed; inset:auto max(8px, env(safe-area-inset-right, 0px)) calc(64px + env(safe-area-inset-bottom, 0px)) auto;
+  margin:0 0 8px; padding:4px 0; min-width:180px; list-style:none; background:var(--card); color:var(--ink);
+  border:1px solid var(--line); border-radius:var(--radius); }
+.more-menu a { display:flex; align-items:center; min-height:44px; padding:0 16px; color:var(--ink); text-decoration:none; font-weight:600; }
+.more-menu li + li a { border-top:1px solid var(--line); }

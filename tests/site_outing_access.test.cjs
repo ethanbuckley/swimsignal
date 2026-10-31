@@ -26,7 +26,7 @@ const spot = (extra = {}) => ({ id: 'dove-dovedale', name: 'River Dove, Dovedale
 
 test('the four topics in the facts\' own words, each with who says so, under the guide\'s checked line', () => {
   const h = O.outingAccess(spot(), TODAY);
-  assert.ok(h.startsWith(`<p class="g-src">${G.guideChecked(GUIDE, TODAY)}</p>`), h);
+  assert.ok(h.startsWith(`<details class="fold"><summary>Arrival and access details</summary><p class="g-src">${G.guideChecked(GUIDE, TODAY)}</p>`), h);
   assert.match(h, /Checked 3 Oct 2026 from the published pages linked below, not on site\./);
   for (const f of GUIDE.facts.slice(0, 4)) assert.ok(h.includes(`<p class="g-text">${f.text}</p>`), f.text);
   // Who says so, as the spot page's guide draws it, link and all.

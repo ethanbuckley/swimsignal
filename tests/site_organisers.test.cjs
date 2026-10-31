@@ -155,7 +155,7 @@ test('names are escaped, and every link stays on this site', () => {
 
 test('the day detail\'s words are index.html\'s, so a day reads the same on both pages', () => {
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
-  for (const words of ['are expected to spill', 'a spill from a nearby overflow upstream is possible', 'under one spill is expected from the',
+  for (const words of ['are expected to spill', 'a spill from a nearby overflow upstream is possible', 'is possible, not expected',
     'In tests on past years, spill forecasts this far ahead were about', 'as good as same-day ones', 'The rainfall forecast for this day has not arrived, so there is no figure.',
     'after travel time, die-off and dilution']) {
     assert.ok(page.includes(words), words);
@@ -168,7 +168,7 @@ test('the day detail\'s words are index.html\'s, so a day reads the same on both
   assert.ok(page.includes('${WEIGHT_SAID}</p></details>'));
   assert.ok(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/organisers.js'), 'utf8').includes("R.WEIGHT_SAID.replace(/^Weight: /, '')"));
   for (const old of ["share of a spill\\'s bacteria", 'the chance a spill there affects', '<small> reach</small>']) assert.ok(!page.includes(old), old);
-  assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'low'}, 5), 'under one spill is expected from the 5 overflows upstream');
+  assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'low'}, 5), 'a spill from one of the 5 overflows upstream is possible, not expected');
   assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'high'}, 5), 'a spill from a nearby overflow upstream is possible');
   assert.equal(O.spilling({expected_spilling_overflows: 7, label: 'high'}, 5), 'all 5 overflows upstream are expected to spill');
 });

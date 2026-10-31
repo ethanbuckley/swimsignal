@@ -1,0 +1,111 @@
+name: Satellite observation pilot
+
+# The weekly satellite pilot (#472, docs/SATELLITE-PILOT-2026-11.md): five lake sites refreshed from
+# Sentinel-2 public data (Element84 Earth Search and the public COG bucket, no account), committed to
+# data/research/, and published to /lakes.html by the next scheduled site build. A push made with the
+# job's token does not start other workflows, so this never runs site.yml itself.
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays about 06:17 UTC; GitHub treats schedules as best effort
+  workflow_dispatch:       # the recovery run, for a missed or failed week
+    inputs:
+      days:
+        description: "Days back to look for scenes (1-14)"
+        required: false
+        default: "14"
+
+concurrency:
+  group: satellite-pilot
+  cancel-in-progress: false
+
+# As in site.yml: the checkout keeps no token, and only the commit step is given one.
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25   # the run stops itself at 20 minutes; this is the backstop
+    permissions:
+      contents: write     # the commit of the two data files
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --frozen
+
+      - name: Tests for the pilot
+        run: uv run pytest -q tests/test_satellite_pilot.py
+
+      # Caps per run (#472): 300 requests, 100 MiB, 20 minutes. A cap stops the run where it is and is
+      # recorded as a partial run; the publish and commit steps still run so the page shows it.
+      - name: Read the week's scenes
+        id: run
+        continue-on-error: true
+        env:
+          DAYS: ${{ github.event.inputs.days || '14' }}
+        run: |
+          case "$DAYS" in ''|*[!0-9]*) echo "days must be a whole number"; exit 1;; esac
+          if [ "$DAYS" -lt 1 ] || [ "$DAYS" -gt 14 ]; then echo "days must be 1-14"; exit 1; fi
+          uv run python scripts/satellite_pilot.py run "$RUNNER_TEMP/pilot" --days "$DAYS" \
+            --max-requests 300 --max-mb 100 --max-minutes 20
+
+      - name: Publish into the lake observation file
+        if: always()
+        run: uv run python scripts/satellite_pilot.py publish
+
+      - name: Report the run
+        if: always()
+        run: |
+          uv run python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r = json.load(open("data/research/satellite/pilot_runs.json"))[-1]
+          print(f"### Satellite pilot run {r['run_id']}: {r['status']}")
+          print(f"Window {r['window']['from']} to {r['window']['to']}; {r['requests']} requests, "
+                f"{r['megabytes']} MiB, {r['seconds']} s (caps {r['caps']}).")
+          if r["stop_reason"]:
+              print(f"\n**Stopped:** {r['stop_reason']}")
+          print("\n| site | scenes | already read | read | status |\n|---|---|---|---|---|")
+          for k, s in r["sites"].items():
+              print(f"| {k} | {s['scenes']} | {s.get('already_read', 0)} | {s['read']} | {s['status']} |")
+          EOF
+          status=$(uv run python -c 'import json; print(json.load(open("data/research/satellite/pilot_runs.json"))[-1]["status"])')
+          if [ "$status" != ok ]; then echo "::warning title=Satellite pilot::run ended $status (see the summary)"; fi
+
+      - name: Commit the data
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "dipcast-bot"; git config user.email "bot@dipcast.invalid"
+          git add data/research/satellite/pilot_runs.json data/research/lake_observations.v1.json
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Satellite pilot run ${GITHUB_RUN_ID}"
+          # site.yml's heartbeat can push in between; rebase onto it and try again, at most three times.
+          for i in 1 2 3; do
+            if git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" HEAD:main; then exit 0; fi
+            git pull --rebase "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" main
+          done
+          exit 1
+
+      # After publish and commit, so the page shows the partial or failed run first (#545). The run step exits
+      # nonzero for a recorded partial or failed refresh; the recorded status is checked too, in case it did not.
+      - name: Fail the job when the refresh did not complete
+        if: always()
+        env:
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+        run: |
+          status=$(uv run python -c 'import json; print(json.load(open("data/research/satellite/pilot_runs.json"))[-1]["status"])')
+          if [ "$RUN_OUTCOME" != success ] || [ "$status" != ok ]; then
+            echo "::error title=Satellite pilot::refresh did not complete (step $RUN_OUTCOME, recorded $status)"
+            exit 1
+          fi

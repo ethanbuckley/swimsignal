@@ -1,0 +1,167 @@
+{
+  "inputs": {
+    "ea_events_anglian_water.parquet": "9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505",
+    "ea_events_northumbrian_water.parquet": "db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237",
+    "ea_events_severn_trent_water.parquet": "750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504",
+    "ea_events_south_west_water.parquet": "b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51",
+    "ea_events_southern_water.parquet": "0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525",
+    "ea_events_thames_water.parquet": "4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e",
+    "ea_events_united_utilities.parquet": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+    "ea_events_wessex_water.parquet": "26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3",
+    "ea_events_yorkshire_water.parquet": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78",
+    "annual_returns.parquet": "9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065",
+    "poll_log.parquet": "78aa8a2fcef1df98bd8e3b45a255ef5af50f864426e9be38769012859b5ca742",
+    "rain_listing": "6d23a754052fc8e697399329358e89e17d597f486facee6bee49eee7905bf761",
+    "rain_files": 7542
+  },
+  "inputs_unchanged": true,
+  "seed": 0,
+  "polls": {
+    "real_polls": 399,
+    "real_from": "2026-09-28 16:51:59.853798016+00:00",
+    "real_gap_median_h": 0.9977246277703671,
+    "real_gap_p95_h": 6.241466044420666,
+    "laid_polls": 9850,
+    "laid_gap_median_h": 0.8207141930761281,
+    "laid_gap_p95_h": 6.046350312477443,
+    "stale_share_by_company": {
+      "Anglian Water": 0.0,
+      "Northumbrian Water": 0.0,
+      "Severn Trent Water": 0.0,
+      "South West Water": 0.24467005076142131,
+      "Southern Water": 0.047208121827411166,
+      "Thames Water": 0.0,
+      "United Utilities": 0.0,
+      "Wessex Water": 0.0,
+      "Yorkshire Water": 0.002131979695431472
+    },
+    "unknown_share_by_company": {
+      "Anglian Water": 0.03428153659046218,
+      "Northumbrian Water": 0.021005469551413802,
+      "Severn Trent Water": 0.004649307202004789,
+      "South West Water": 0.012465294923101368,
+      "Southern Water": 0.002900535885127583,
+      "Thames Water": 0.07882176805662598,
+      "United Utilities": 0.013517710220941611,
+      "Wessex Water": 0.010444402548386978,
+      "Yorkshire Water": 0.019355606922588045
+    }
+  },
+  "folds": {
+    "0": {
+      "held_months": [
+        0,
+        6,
+        12,
+        18
+      ],
+      "test_rows": 841856,
+      "train_rows": 2901127,
+      "embargoed_rows": 51339,
+      "inner_calibration_rows": 2901127
+    },
+    "1": {
+      "held_months": [
+        1,
+        7,
+        13,
+        19
+      ],
+      "test_rows": 640425,
+      "train_rows": 3066272,
+      "embargoed_rows": 87625,
+      "inner_calibration_rows": 3066272
+    },
+    "2": {
+      "held_months": [
+        2,
+        8,
+        14,
+        20
+      ],
+      "test_rows": 595571,
+      "train_rows": 3121268,
+      "embargoed_rows": 77483,
+      "inner_calibration_rows": 3121268
+    },
+    "3": {
+      "held_months": [
+        3,
+        9,
+        15,
+        21
+      ],
+      "test_rows": 478749,
+      "train_rows": 3211414,
+      "embargoed_rows": 104159,
+      "inner_calibration_rows": 3211414
+    },
+    "4": {
+      "held_months": [
+        4,
+        10,
+        16,
+        22
+      ],
+      "test_rows": 612664,
+      "train_rows": 3125161,
+      "embargoed_rows": 56497,
+      "inner_calibration_rows": 3125161
+    },
+    "5": {
+      "held_months": [
+        5,
+        11,
+        17,
+        23
+      ],
+      "test_rows": 625057,
+      "train_rows": 3081051,
+      "embargoed_rows": 88214,
+      "inner_calibration_rows": 3081051
+    }
+  },
+  "rows": 3794322,
+  "spills": 323767,
+  "rows_spill_already_ended": 734825,
+  "rows_elapsed_shorter_than_spill_by_1h": 625980,
+  "seen_label_known_share": {
+    "1h": 0.9910553189739827,
+    "3h": 0.9765196522593497,
+    "6h": 0.9619982173363252,
+    "12h": 0.9465327402365956,
+    "24h": 0.9356902234443993
+  },
+  "rain_missing_share": 0.0,
+  "train_share": 0.1,
+  "decision_rule": {
+    "keep_gain": 0.058,
+    "ece_ok": 0.02,
+    "most_cells": 23
+  },
+  "decision": {
+    "C1-cal": {
+      "gain_share_of_B1": 0.1547,
+      "interval": [
+        -0.03194,
+        -0.02857
+      ],
+      "keeps_gain": true,
+      "cells_ece_at_most_0.02": 44,
+      "calibrated_most_cells": true,
+      "write_shadow_statement": true
+    },
+    "C1 raw": {
+      "gain_share_of_B1": 0.1493,
+      "interval": [
+        -0.03186,
+        -0.02664
+      ],
+      "keeps_gain": true,
+      "cells_ece_at_most_0.02": 6,
+      "calibrated_most_cells": false,
+      "write_shadow_statement": false
+    }
+  },
+  "seconds": 745
+}
