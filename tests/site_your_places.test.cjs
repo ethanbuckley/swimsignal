@@ -1,5 +1,5 @@
 // Your places on Explore: saved cards say what has changed since you last looked, as on Saved, now that Explore opens
-// on today; the look is noted there; and what you do on the water sits at the foot of the saved spots.
+// on today; the look is noted there. What you do on the water is chosen on Plan a swim, not here (31 Oct 2026).
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,14 +11,10 @@ test('a saved card gives the change since your last look for no day or today, ne
   assert.match(app, /if \(!savedGroup\.hidden && \(!VIEW\.day \|\| VIEW\.day === today\(\)\) && typeof lookedAt === 'function'\) lookedAt\(/);
 });
 
-test('Explore\'s saved spots end with the activity choice, bound as on Saved', () => {
-  assert.match(app, /id="saved-list">\$\{saved\.map\(s => savedCard\(s, false, VIEW\.day\)\)\.join\(''\)\}<\/ul>\$\{actsChips\(undefined, true\)\}<\/div>` : ''\);/);
-  assert.match(app, /if \(saved\.length\) \{ bindItems\(document\.getElementById\('saved-list'\)\); bindActs\(\); \}/);
-});
-
-test('Explore says it in one line; Saved in full', () => {
-  assert.match(app, /What you do on the water, if you like: a boat or a board gets launching, carrying and places to finish\. The level is the same for everyone\./);
-  assert.match(app, /The level is for the water, the same for everyone in it, and official advice always shows\./);
+test('Explore\'s saved spots end with the cards: no activity choice, which changed nothing on them (31 Oct 2026)', () => {
+  assert.match(app, /id="saved-list">\$\{saved\.map\(s => savedCard\(s, false, VIEW\.day\)\)\.join\(''\)\}<\/ul><\/div>` : ''\);/);
+  assert.match(app, /if \(saved\.length\) bindItems\(document\.getElementById\('saved-list'\)\);/);
+  assert.doesNotMatch(app, /data-act="|aria-label="What you do on the water"/);
 });
 
 test('the next outing and the saved spots are one tile, Your places, hidden with both its parts', () => {

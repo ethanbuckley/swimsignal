@@ -53,7 +53,7 @@ const NAMES = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colou
   'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
   'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem', 'planItem'];
 const EXTRA = { ROOT: { pathname: '/' }, DATA: { generated_at: '2026-10-26T20:00:00Z' }, PLAN: { day: '2026-10-26' },
-  planWhy: () => '', planEvidence: () => '', milesAway: m => `${m} miles away` };
+  planWhy: () => '', planEvidence: () => '', planActLine: () => '', milesAway: m => `${m} miles away` };
 const DATES = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
 const frensham = (extra = {}) => ({ id: 'bw-ukj2310-11945', name: 'Frensham Great Pond', kind: 'lake', source: 'designated',
   classification: { class: 'excellent', year: 2025, url: PROFILE }, upstream_summary: { overflows: 2 }, assumptions: { max_upstream_km: 15 },
