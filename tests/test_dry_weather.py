@@ -133,7 +133,8 @@ def test_the_model_never_reads_the_counts():
     names = re.compile(r"dry_weather_spills|attach_dry_weather|read_dry_weather|\bDRY_WEATHER\b|dipcast\.dry_weather")
     readers = sorted(str(f.relative_to(ROOT)) for d in ("src", "scripts") for f in (ROOT / d).rglob("*.py")
                      if names.search(f.read_text()) and f.name != "dry_weather.py")
-    assert readers == ["scripts/build_site.py", "scripts/make_dry_weather_spills.py"]
+    # overflow_record.py writes the overflows' record pages, which show the same note: a page, not the model.
+    assert readers == ["scripts/build_site.py", "scripts/make_dry_weather_spills.py", "src/dipcast/overflow_record.py"]
     src = Path(build_site.__file__).read_text()
     body = src[src.index("\ndef build("):]
     assert body.index("forecast_point(") < body.index("attach_dry_weather(results)")

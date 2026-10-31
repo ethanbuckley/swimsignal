@@ -4723,12 +4723,14 @@ function dryWeatherNote(c) {
   if (!d || ![d.year, d.days, d.dry_days].every(Number.isInteger) || !(d.days > 0 && d.days <= d.dry_days)) return '';
   return `<div class="ov-meta">Spilled on ${d.days} of ${d.dry_days} <a href="methods.html#dry-weather">dry days</a> in ${d.year} (<a href="${EA_EVENTS}">EA records</a>).</div>`;
 }
+// Each overflow's name links its public record, overflow/<id>/ (build_site.write_overflow_pages), which the build writes
+// for every overflow with an annual-returns id upstream of a spot with a page.
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
     L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
       .bindTooltip(`${esc(nm.plain)}: ${far} km, weight ${reach}%`).addTo(contribLayer);
-    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
+    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${PAGE_ID.test(d.id) && /^[A-Z]{3}\d{5}$/.test(c.site_id) ? `<a href="overflow/${c.site_id}/">${esc(nm.plain)}</a>` : esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}${dryWeatherNote(c)}</div>`
       + `<div class="ov-reach"><b>${reach}%<small> weight</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too small to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');

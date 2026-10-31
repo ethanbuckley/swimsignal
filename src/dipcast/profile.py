@@ -138,6 +138,7 @@ def uptime(v) -> str:
 
 # ------------------------------------------------------------------ the site's page, spot/<id>/profile/
 TEMPLATE = Path(__file__).parent / "site" / "profile.html"
+OVERFLOW_PAGE = re.compile(r"[A-Z]{3}\d{5}")   # an id with a page of its own, overflow/<id>/ (overflow_record.py)
 SLOT = re.compile(r"\{\{(\w+)\}\}")
 SITE_CAVEAT = ("This page lists the monitored storm overflows upstream of this spot and how often each spilled in "
                "each year. It is not a water test, and it does not say whether the water is fit to swim in. It does "
@@ -168,7 +169,9 @@ def _table(head: list[tuple[str, bool]], rows: list[list[str]], label: str) -> s
 def _named(site_name, site_id) -> str:
     """The plain name, then the company's own and the id, as the site's other pages give them."""
     plain, own = overflow_names(None if site_name is None or pd.isna(site_name) else site_name, site_id)
-    return f'{escape(plain)}<br><span class="muted">{escape(own) + " · " if own else ""}{escape(str(site_id))}</span>'
+    name = (f'<a href="overflow/{escape(str(site_id))}/">{escape(plain)}</a>' if OVERFLOW_PAGE.fullmatch(str(site_id))
+            else escape(plain))   # its public record (overflow_record.py), which the build writes for every overflow listed here
+    return f'{name}<br><span class="muted">{escape(own) + " · " if own else ""}{escape(str(site_id))}</span>'
 
 
 # ------------------------------------------------------------------ spill lengths, 2024-25 (history)
