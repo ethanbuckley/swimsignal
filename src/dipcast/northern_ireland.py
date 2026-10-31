@@ -54,7 +54,7 @@ def parse(features: list) -> list[dict]:
     a changed layer cannot publish a partial list. An indicator not in DAERA's list is kept as given."""
     out, seen = [], set()
     for f in features:
-        a = (f or {}).get("attributes") or {}
+        a, g = (f or {}).get("attributes") or {}, (f or {}).get("geometry") or {}
         code, name = a.get("Unique_Site_ID_Code"), re.sub(r"\s+", " ", str(a.get("Site_name") or "")).strip()
         profile = str(a.get("Profile__URL") or "").strip()
         if not isinstance(code, int) or isinstance(code, bool) or code in seen or not name or not PROFILE.fullmatch(profile):
@@ -71,12 +71,21 @@ def parse(features: list) -> list[dict]:
                     "candidate": a.get("Status") == "Candidate", "inactive": a.get("Activity") == "Inactive",
                     "profile": profile,
                     "indicator": {"code": raw, "words": INDICATORS.get(raw)} if isinstance(raw, str) and raw.strip() else None,
-                    "sampled_at": sampled})
+                    "sampled_at": sampled, **_point(g)})
     return sorted(out, key=lambda s: s["name"].casefold())
 
 
+def _point(g: dict) -> dict:
+    """The layer's point (asked for in WGS84) as `lat`, `lon`, for the water temperature (#492); none if absent."""
+    try:
+        return {"lat": round(float(g["y"]), 5), "lon": round(float(g["x"]), 5)}
+    except (KeyError, TypeError, ValueError):
+        return {}
+
+
 def _read(client: httpx.Client) -> list[dict]:
-    r = client.get(LAYER, params={"where": "1=1", "outFields": FIELDS, "returnGeometry": "false", "f": "json"}, timeout=15)
+    r = client.get(LAYER, params={"where": "1=1", "outFields": FIELDS, "returnGeometry": "true", "outSR": "4326",
+                                  "f": "json"}, timeout=15)
     r.raise_for_status()
     body = r.json()
     features = body.get("features")
@@ -141,6 +150,7 @@ def _line(s: dict, today: date) -> str:
 def render(snapshot: dict) -> str:
     """The Northern Irish list, server-rendered and searchable on the page. Every indicator carries
     its sampling time."""
+    from dipcast.coastal import water_line
     if not snapshot or not snapshot.get("sites"):
         return (f'<p>The list for Northern Ireland could not be loaded for this build. Use '
                 f'<a href="{SOURCE}">DAERA\'s dashboard</a>.</p>')
@@ -156,6 +166,9 @@ def render(snapshot: dict) -> str:
         advice = SEASON_ADVICE.get(s.get("code"))
         if advice and today.year <= advice[0]:
             lines.append(f'{escape(advice[1])} <a href="{ABOUT}">DAERA\'s note</a>')
+        water = water_line(s)
+        if water:
+            lines.append(escape(water))
         cards.append(f'<li class="ni-site"><a href="{escape(s["profile"], quote=True)}">{escape(s["name"])}</a>'
                      f'<p class="small">{"<br>".join(lines)}</p></li>')
     inland = sum(s["kind"] == "inland" for s in snapshot["sites"])

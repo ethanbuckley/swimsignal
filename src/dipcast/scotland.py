@@ -29,6 +29,9 @@ CREDIT = ("Contains public sector information licensed under the Open Government
 RATINGS = {"Excellent", "Good", "Sufficient", "Poor"}
 PAGE = re.compile(r"https://bathingwaters\.sepa\.org\.uk/locations-and-results/results/?\?location=(\d{3,7})\Z")
 MAX_FEATURES = 1000   # the layer's own transfer limit; 90 waters on 3 Oct 2026
+# SEPA's layer does not type its waters. Of the 90 on 31 Oct 2026, one is inland: Loch Morlich, a freshwater loch
+# in the Cairngorms (by its name, checked on the map). The rest are on the coast. `kind_from` says it was a name.
+INLAND = {"Loch Morlich": "lake"}
 
 
 def parse(features: list) -> list[dict]:
@@ -50,7 +53,7 @@ def parse(features: list) -> list[dict]:
         out.append({"id": f"sepa-{link[1]}", "name": name.strip(), "page": link[0],
                      "rating": {"value": rating, "year": int(year)} if rating in RATINGS and isinstance(year, int) else None,
                      "unrated_year": int(year) if rating == "Unclassified" and isinstance(year, int) else None,
-                     "lat": lat, "lon": lon})
+                     "lat": lat, "lon": lon, "kind": INLAND.get(name.strip(), "coast"), "kind_from": "name"})
     return sorted(out, key=lambda s: s["name"].casefold())
 
 
@@ -80,6 +83,13 @@ def fetch(now: datetime | None = None, client: httpx.Client | None = None) -> di
             client.close()
 
 
+def _water(site: dict) -> str:
+    """The site's provisional water temperature line (coastal.water_line), after a break, or nothing."""
+    from dipcast.coastal import water_line
+    line = water_line(site)
+    return f'<br>{escape(line)}' if line else ''
+
+
 def render(snapshot: dict) -> str:
     """The Scottish list, server-rendered and searchable on the page. Ratings only: signs, samples
     and current advice are on each water's SEPA page."""
@@ -90,7 +100,8 @@ def render(snapshot: dict) -> str:
         rating = (f'{s["rating"]["year"]} rating: {s["rating"]["value"]}' if s["rating"]
                   else f'Not yet rated (SEPA: unclassified, {s["unrated_year"]})' if s.get("unrated_year") else "No rating listed")
         cards.append(f'<li class="scotland-site"><a href="{escape(s["page"], quote=True)}">{escape(s["name"])}</a>'
-                     f'<p class="small">{escape(rating)}<br>Signs, samples and current advice: on SEPA\'s page</p></li>')
+                     f'<p class="small">{escape(rating)}<br>Signs, samples and current advice: on SEPA\'s page'
+                     f'{_water(s)}</p></li>')
     return (f'<p class="small">{len(cards)} designated Scottish bathing waters, as SEPA listed them '
             f'{when(snapshot["fetched_at"])}. A rating covers up to four seasons of samples; it is not '
             'today\'s water quality.</p>'
