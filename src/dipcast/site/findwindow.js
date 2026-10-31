@@ -81,7 +81,8 @@ function fwRows(spots, dates, href, meta = null) {
     return `<li><a href="${fwEsc(href(s))}" data-id="${fwEsc(s.id)}" class="fw-nm">${fwEsc(s.name)}</a>`
       + (meta ? `<p class="fw-note">${fwEsc(meta(s))}</p>` : '')
       + (notice ? `${notice}<p class="fw-apart">${fwApart(s)}</p>` : '')
-      + fwWords(fwFind(s, dates)).map((t, i) => `<p class="${i ? 'fw-note' : 'fw-low'}">${fwEsc(t)}</p>`).join('') + '</li>';
+      + (fwRestricts()(s) ? '<p class="fw-note">Official advice restricts swimming, so no swimming window is suggested. Follow the advice above.</p><details><summary>Show the separate pollution forecast</summary>' : '')
+      + fwWords(fwFind(s, dates)).map((t, i) => `<p class="${i ? 'fw-note' : 'fw-low'}">${fwEsc(t)}</p>`).join('') + (fwRestricts()(s) ? '</details>' : '') + '</li>';
   }).join('');
 }
 const FW_LIMITS = 'Each day is taken on its own, so a later day may be higher. One level covers a whole day, not an hour. '
