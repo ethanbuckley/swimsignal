@@ -2724,7 +2724,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2973,7 +2973,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html",
-                 "research.html"]:
+                 "research.html", "partners.html"]:
         s = (STATIC / name).read_text()
         if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
             s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
@@ -4002,6 +4002,8 @@ def write_sampling_planner(site: Path, token: str | None = None, root: str | Non
 # written again from a downloaded data/ alone. A prose page with no script, in the sitemap beside the
 # spot's page; not in the offline copy, and not on the data page, which lists data files.
 REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, centres and leaders (About links it)
+# The page for sampling partners (docs/PARTNER-PROGRAMME-2026-11.md): groups and labs that share water-sample results.
+REWRITES += [('href="/partners"', 'href="partners.html"')]
 
 
 def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
