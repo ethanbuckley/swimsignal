@@ -55,6 +55,6 @@ test('dates as the reader reads them', () => {
 
 test('index.html draws the tile on Plan a swim only through askBox, and loads ask.js after plan.js', () => {
   const page = fs.readFileSync('src/dipcast/site/index.html', 'utf8');
-  assert.match(page, /cols\(\(typeof askBox === 'function' \? askBox\(DATA\) : ''\) \+ '<div id="plan-results"><\/div>'\)/);
+  assert.match(page, /cols\(\(typeof askBox === 'function' \? askBox\(DATA\) : ''\) \+ '<div id="plan-results"><\/div><div class="planner-note" id="plan-basis"><\/div>'\)/);
   assert.ok(page.indexOf('<script src="plan.js">') < page.indexOf('<script src="ask.js">'));
 });

@@ -11,6 +11,7 @@ const DP_SHOWN = 3;   // options: a few to choose between, not the list again
 const DP_BOAT = ['paddle', 'sup'];
 // The desk check of permission (access.py), short; the spot's page has it in full.
 const DP_PERMIT = { unconfirmed: 'Permission at this point not confirmed.', restricted_guidance: 'Park guidance restricts river swimming.' };
+const DP_UNKNOWN = '<span class="dp-unk">Not known</span>';
 const dpEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dpAgo = h => h < 1 ? 'under an hour ago' : h < 36 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`;
 const dpDate = iso => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
@@ -33,7 +34,7 @@ function dpOptions(groups, advised = () => false, act = null, n = DP_SHOWN) {
 // day; today: today's date; act: the plan's activity (null for a swim); byId: the listed spots, for finishes;
 // nowMs: now, for the ages.
 function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) {
-  const rows = [], missing = [], boat = DP_BOAT.includes(act), river = s.kind === 'river';
+  const rows = [], missing = [], unk = [], boat = DP_BOAT.includes(act), river = s.kind === 'river';
   // The water's temperature: a sensor's reading, or the build's estimate, which is for today only.
   const w = s.water_temp, t = w && Date.parse(w.observed_at), e = s.water_temp_est;
   if (w && typeof w.temp_c === 'number' && Number.isFinite(t))
@@ -54,39 +55,47 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
   const loading = s.detail_file && !s.detail_loaded && !s.detail_missing;
   const has = topics.filter(([k]) => facts.some(f => f && f.topic === k)).map(([, w]) => w);
   const lacks = topics.filter(([k]) => !facts.some(f => f && f.topic === k)).map(([, w]) => w);
-  const permit = a ? `${DP_PERMIT[a.status] || dpEsc(a.text)} <span class="muted">(checked from published sources${a.checked_at ? `, ${dpWhen(a.checked_at)}` : ''})</span>` : '';
+  const permitWords = (DP_PERMIT[a && a.status] || dpEsc(a && a.text)).replace(/\.\s*$/, '');
+  const permit = a ? `${permitWords} <span class="muted">(checked from published sources${a.checked_at ? `, ${dpWhen(a.checked_at)}` : ''})</span>.` : '';
   const guide = loading ? '<span class="muted">Loading its guide…</span>'
     : has.length ? `Its guide covers ${has.join(', ')}${g.checked ? ` <span class="muted">(checked ${dpWhen(g.checked)})</span>` : ''}.` : '';
   if (permit || guide) rows.push(['Access', [permit, guide].filter(Boolean).join(' ')]);
   if (!loading) missing.push(...(has.length ? lacks : [boat ? 'launching and access' : 'access']));
   if (boat) {
-    // The guide's first word on boats and boards (the lite file's boat_note, guides.py), with who says so.
-    const b = s.boat_note;
+    // For a boat or a board, launching, rules, the river, a finish and wind each have a row, "Not known" where nothing
+    // is: in the grey line under the facts the gaps read as small print beside a full table (31 Oct 2026). `unk` names
+    // them so the line under the facts does not say them again.
+    const b = s.boat_note, lf = facts.find(f => f && f.topic === 'launch');
     if (b && b.topic === 'paddle') rows.push(['Rules', `${dpEsc(b.text)} <span class="muted">(${dpEsc(b.source || 'its guide')})</span>`]);
-    else if (b) rows.push(['Launching', `${dpEsc(b.text)} <span class="muted">(${dpEsc(b.source || 'its guide')})</span>`]);
-    else missing.push('rules for boats and boards');
+    else { rows.push(['Rules', DP_UNKNOWN]); unk.push('rules for boats and boards'); }
+    if (b && b.topic !== 'paddle') rows.push(['Launching', `${dpEsc(b.text)} <span class="muted">(${dpEsc(b.source || 'its guide')})</span>`]);
+    else if (lf) rows.push(['Launching', `In its guide${g.checked ? ` <span class="muted">(checked ${dpWhen(g.checked)})</span>` : ''}`]);
+    else if (!loading) { rows.push(['Launching', DP_UNKNOWN]); unk.push('launching', 'launching and access'); }
+    if (!(b && b.topic === 'paddle')) missing.push('rules for boats and boards');
     // The river now, at the nearest gauge: an observation, not a forecast for the day.
     const rs = s.river_state;
     if (river && rs && !rs.stale && typeof rs.level_m === 'number') {
       const word = { low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || `${rs.level_m} m`;
       rows.push(['River level', `${word} at ${dpEsc(rs.station)}, read ${dpAgo(rs.age_hours ?? 0)}${day === today ? '' : '; a reading now, not a forecast'}`]);
-    } else if (river) missing.push('river level');
+    } else if (river) { missing.push('river level'); rows.push(['River level', DP_UNKNOWN]); unk.push('river level'); }
     // Finishes downstream (stretches.py), rivers only.
     const fins = (Array.isArray(s.downstream) ? s.downstream : []).filter(([id]) => byId.has(id)).slice(0, 2);
     if (fins.length) rows.push(['Finish', fins.map(([id, km]) => `${dpEsc(byId.get(id).name)} (${km < 10 ? km : Math.round(km)} km down)`).join(', ')]);
-    else if (river) missing.push('a finish downstream');
+    else if (river) { missing.push('a finish downstream'); rows.push(['Finish', DP_UNKNOWN]); unk.push('a finish downstream'); }
     missing.push('wind');   // SwimSignal has no wind forecast: it would need new weather requests
+    rows.push(['Wind', `${DP_UNKNOWN} <span class="muted">(SwimSignal has no wind forecast)</span>`]); unk.push('wind');
   }
-  return { rows, missing };
+  return { rows, missing, unk };
 }
 
 // One option, as HTML. o = {s, miles, level}; v = the page's words for it: { href, headline (HTML), tone, official
 // (HTML: a notice, first), meta (text), chosen (it is the plan's spot) }; c = dpConditions; backup: the name of the option that would be its backup.
 function dpOption(o, v, c, backup, i) {
+  const gaps = [...new Set(c.missing)].filter(w => !(c.unk || []).includes(w));   // not again what a row already says
   return `<li class="dp-opt"><h3 class="dp-nm"><a href="${dpEsc(v.href)}" data-id="${dpEsc(o.s.id)}">${dpEsc(o.s.name)}</a></h3>`
     + `<p class="k">${dpEsc(v.meta)}</p>${v.official || ''}<p class="hl ${dpEsc(v.tone)}">${v.headline}</p>`
     + (c.rows.length ? `<dl class="dp-facts">${c.rows.map(([k, t]) => `<div><dt>${k}</dt><dd>${t}</dd></div>`).join('')}</dl>` : '')
-    + (c.missing.length ? `<p class="dp-gap">Not known here: ${dpEsc([...new Set(c.missing)].join(', '))}.</p>` : '')
+    + (gaps.length ? `<p class="dp-gap">Not known here: ${dpEsc(gaps.join(', '))}.</p>` : '')
     + (v.chosen ? '<p class="dp-go small">In your plan, below.</p>'
       : `<p class="dp-go"><button type="button" class="btn${i === 0 ? ' primary' : ''}" data-dp-go="${dpEsc(o.s.id)}">Plan the day here</button>`
       + (backup ? ` <span class="small muted">with ${dpEsc(backup)} as backup</span>` : '') + '</p>') + '</li>';

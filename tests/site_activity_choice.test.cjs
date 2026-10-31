@@ -39,7 +39,7 @@ test('the choice is made on Plan a swim, not on the saved cards, and the page sa
   assert.doesNotMatch(app, /actsChips|bindActs|data-act="/);   // gone from Explore and Saved (31 Oct 2026)
   assert.match(app, /<div class="plan-row">\$\{planStrip\(planDates\(\), PLAN\.day\)\}<\/div>\$\{planActRow\(PLAN\.act\)\}<div class="plan-go">/);
   assert.match(app, /const PLAN_ACTS = \[\['', 'Swim'\], \['paddle', OUTING_ACT_WORDS\.paddle\[0\]\], \['sup', OUTING_ACT_WORDS\.sup\[0\]\]\];/);
-  assert.match(app, /The levels are the same: they are for the water, whoever is in it\./);
+  assert.match(app, /Pollution levels are the same whoever is on the water\./);
   assert.match(app, /\$\{ev\}\$\{planActLine\(s\)\}<\/li>`;/);   // each row of the plan
   // A choice kept from the Saved page is still read: the planner starts as it, but never over a link's own.
   assert.match(app, /if \(location\.hash\.length <= 1 && !PLAN\.act && actDefault\(acts\(\)\)\) PLAN\.act = actDefault\(acts\(\)\);/);
