@@ -40,3 +40,15 @@ should not show it as "no spills" without the annual return's own figure.
 - Beside the "If it stops now" clearing time: "Spills already running 3 hours were still running 6 hours later about
   7 times in 10 (2024-25 records)". That is a description, not a forecast for this spill; the comprehension sessions'
   task 3b tests wording near the clearing time first.
+
+## Version 1.1 (31 October 2026): additive, at the product owner's request
+
+- `absent_note`: what it means that an overflow is not listed (no spill in the 2024-25 records, or no record), and
+  that it is not "no spills".
+- `method.zero_length_note` and `method.events_same_start_stop`: a typical length shown as 0.0 hours means most spills
+  lasted under 18 seconds as recorded, or were recorded with the same start and stop time (1,110 such events in
+  2024-25, mostly Wessex Water and South West Water); not that nothing was discharged.
+- `company[].years` and `still_running[].years`: `"2024-2025"`.
+- `still_running[].label`: plain words for `running_at_least_h` ("any spill already running" for 0); `still_running[].spills`:
+  the number of spills behind each figure, beside `hours`. Only spills still running at a whole hour mark count, so
+  "any spill already running" rests on 580,213 of the 802,781 spills; the shortest spills never reach a figure.

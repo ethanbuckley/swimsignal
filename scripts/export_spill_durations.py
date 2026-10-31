@@ -25,7 +25,11 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 OUT = ROOT / "data" / "research" / "spill_durations.v1.json"
-SCHEMA, VERSION = "swimsignal.spill-durations", "1.0.0"
+SCHEMA, VERSION = "swimsignal.spill-durations", "1.1.0"
+YEARS_LABEL = "2024-2025"
+# 1.1: plain words the page can use
+ABSENT_NOTE = ("An overflow not listed had no spill in the Environment Agency's 2024 and 2025 start/stop records, or "
+               "has no record there. That is not the same as \"no spills\": check the annual return's own figure.")
 YEARS = (2024, 2025)
 GAP_H = 1.0
 FEW = 5                          # fewer spills than this: the overflow's typical length is marked `few`
@@ -44,6 +48,10 @@ def sha256(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
+def at_least_words(h: int) -> str:
+    return "any spill already running" if h == 0 else f"spills already running at least {h} hour{'s' if h != 1 else ''}"
+
+
 def still_running(sp: pd.DataFrame) -> list[dict]:
     """Per company (and all nine): of the whole hours at which a spill had run at least e hours, the share still
     running h hours later. Issue hours are every whole UTC hour a spill runs, in the first 72 hours of each spill."""
@@ -59,7 +67,8 @@ def still_running(sp: pd.DataFrame) -> list[dict]:
             k = m & (e >= lo)
             if k.sum() < 200:
                 continue
-            out.append({"company": c, "running_at_least_h": lo, "hours": int(k.sum()),
+            out.append({"company": c, "years": YEARS_LABEL, "running_at_least_h": lo, "label": at_least_words(lo),
+                        "hours": int(k.sum()), "spills": int(rows.loc[k, "spell"].nunique()),
                         **{f"still_after_{h}h": round(float(y[k, j].mean()), 3) for j, h in enumerate(HORIZONS)}})
     return out
 
@@ -73,6 +82,7 @@ def build() -> dict:
     before = {c: sha256(p) for c, p in sources.items()}
     ev = load_events(NINE)
     ev = ev[ev["event_start"].dt.year.isin(YEARS) & ev["site_id"].notna()]
+    same_start_stop = int((ev["event_end"] == ev["event_start"]).sum())
     sp = merge_spells(ev, GAP_H)
     sp["hours"] = (sp["end"] - sp["start"]).dt.total_seconds() / 3600
     sp["year"] = sp["start"].dt.year
@@ -93,7 +103,7 @@ def build() -> dict:
     comp = []
     for c, g in sp.groupby("company"):
         h = g["hours"]
-        comp.append({"company": c, "overflows": int(g["site_id"].nunique()), "spills": int(len(g)),
+        comp.append({"company": c, "years": YEARS_LABEL, "overflows": int(g["site_id"].nunique()), "spills": int(len(g)),
                      "median_h": round(float(h.median()), 2), "p90_h": round(float(h.quantile(0.9)), 2),
                      "share_over_6h": round(float((h > 6).mean()), 3),
                      "share_over_24h": round(float((h > 24).mean()), 3)})
@@ -104,13 +114,18 @@ def build() -> dict:
             "period": {"from": f"{YEARS[0]}-01-01", "to": f"{YEARS[-1]}-12-31"},
             "method": {"spill": "an overflow's monitor events joined when they overlap or start less than 1 hour "
                                 "after the last ended", "gap_h": GAP_H, "few_below": FEW,
+                       "zero_length_note": "A typical length shown as 0.0 hours means most of that overflow's spills "
+                                           "lasted under 18 seconds as recorded, or were recorded with the same start "
+                                           f"and stop time ({same_start_stop:,} such events in 2024-25, mostly at Wessex "
+                                           "Water and South West Water). It does not mean nothing was discharged.",
+                       "events_same_start_stop": same_start_stop,
                        "code_sha256": {f: sha256(ROOT / f) for f in ("scripts/export_spill_durations.py",
                                                                       "scripts/spill_duration_test.py")}},
             "sources": [{"company": c, "file": p.name, "sha256": h} for (c, p), h in
                         zip(sources.items(), before.values(), strict=True)],
             "attribution": ["Environment Agency, storm overflow EDM start/stop data 2024 and 2025, "
                             "Open Government Licence v3.0"],
-            "claim": CLAIM, "company": comp, "still_running": still_running(sp),
+            "claim": CLAIM, "absent_note": ABSENT_NOTE, "company": comp, "still_running": still_running(sp),
             "companies": companies, "overflows": per,
             "coverage": {"overflows": len(per["site_id"]), "spills": int(len(sp)), "overflows_few": int(sum(per["few"]))},
             "_root": str(config.ROOT)}
