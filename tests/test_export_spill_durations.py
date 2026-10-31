@@ -36,3 +36,9 @@ def test_check_catches_broken_files():
     bad = copy.deepcopy(d)
     bad["claim"]["public_wording"] = "How long spills will last."
     assert any("not a forecast" in e for e in m.check(bad))
+
+
+def test_persistence_rows_carry_years_words_and_counts():
+    for r in _doc()["still_running"]:
+        assert r["years"] == "2024-2025" and r["label"] and 0 < r["spills"] <= r["hours"]
+    assert _doc()["still_running"][0]["label"].startswith("any spill")

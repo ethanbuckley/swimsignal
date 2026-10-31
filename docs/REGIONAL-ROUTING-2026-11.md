@@ -114,3 +114,13 @@ Recorded before the first possible window day (31 October, UK time), with no sha
   the release copy is next published (when it is over 12 hours old, after about 07:45 UTC on 31 October). The window
   is whatever `scripts/regional_shadow_check.py` reports from the first logged rows: if that is this build, 31
   October to 27 November, read on 28 November.
+
+## Window confirmed (31 October 2026)
+
+`scripts/regional_shadow_check.py` on the state release copy published at 09:15:58 UTC on 31 October (code: an archive
+of main at 257b38bf), read only:
+- 35,640 shadow rows: 29,880 routed to v2, 5,760 to production; **checks hold** (every production-routed row carries
+  production's raw chance, the eight companies and only they go to v2, the frozen rule and model stamp throughout).
+- First logged build: **22:49 UTC on 30 October 2026**, the merge's publishing build (run 41140069210), as inferred.
+- **Window: 31 October to 27 November 2026; read on 28 November 2026.** Margin and guardrail 5%, settled before it
+  opened (#510). The read harness is due by 20 November.
