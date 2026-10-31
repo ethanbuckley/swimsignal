@@ -8,10 +8,10 @@ The parts:
 
 | Part | Where | State on 31 Oct 2026 |
 |---|---|---|
-| Data contract, template, checker | [PARTNER-SAMPLES-CONTRACT-v1.md](PARTNER-SAMPLES-CONTRACT-v1.md), `scripts/partner_samples.py` | PR open |
-| Moderated intake | `reviews/` Worker, `POST /partners/samples`, `/moderate` | PR open; not deployed, switch off |
-| Evidence timeline on the spot page | `src/dipcast/site/timeline.js` | PR open |
-| This document and the partner page | `docs/PARTNER-PROGRAMME-2026-11.md`, `partners.html` | PR open |
+| Data contract, template, checker | [PARTNER-SAMPLES-CONTRACT-v1.md](PARTNER-SAMPLES-CONTRACT-v1.md), `scripts/partner_samples.py` | [#571](https://github.com/ethanbuckley/swimsignal/pull/571) open |
+| Moderated intake | `reviews/` Worker, `POST /partners/samples`, `/moderate` | [#572](https://github.com/ethanbuckley/swimsignal/pull/572) open; not deployed, switch off |
+| Evidence timeline on the spot page | `src/dipcast/site/timeline.js` | [#573](https://github.com/ethanbuckley/swimsignal/pull/573) open |
+| This document and the partner page | `docs/PARTNER-PROGRAMME-2026-11.md`, `partners.html` | this PR |
 
 ## Why the programme exists
 
