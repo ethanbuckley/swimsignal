@@ -218,14 +218,15 @@ test('the count over the list still counts every spot with no monitored overflow
   // 24 of 105 on 16 Oct 2026: here 24 quiet spots among 30.
   const spots = Array.from({ length: 30 }, (_, i) => fc(`s${i}`, `Spot ${i}`, i < 24 ? 0 : 3));
   const ctx = listPage(spots);
-  assert.match(vm.runInContext('overview', ctx)(spots), / · 24 with no monitored overflow found upstream · /);
+  assert.match(vm.runInContext('overview', ctx)(spots), / · 24 with no monitored overflow found upstream[ .]/);
 });
 
-test('"Highest risk", "Near me" and "Low risk only" draw rows as before: only A–Z folds', () => {
+test('"Highest risk" and "Near me" draw rows as before; A–Z, and lowest risk with no search or place, fold by area', () => {
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
-  // areaGroups is A–Z alone; the other orders map every item to a row.
-  assert.match(page, /function areaGroups\(items\) \{\n\s+if \(VIEW\.sort !== 'name'/);
-  assert.match(page, /ul\.innerHTML = groups \? groups\.map\(\(\[a, xs\]\) => areaRows\(a, xs, spotItem, VIEW\.quiet, !words\.length\)\)\.join\(''\)\n\s+: items\.length \? items\.map\(spotItem\)\.join\(''\)/);
+  // areaGroups is A–Z, or lowest risk with no search and no place (byArea, 31 Oct 2026); the other orders map every item to a row.
+  assert.match(page, /const byArea = \(\) => VIEW\.sort === 'low' && !VIEW\.q\.trim\(\) && !VIEW\.here;/);
+  assert.match(page, /function areaGroups\(items\) \{\n\s+if \(!\(VIEW\.sort === 'name' \|\| byArea\(\)\)/);
+  assert.match(page, /ul\.innerHTML = groups \? groups\.map\(\(\[a, xs\]\) => byArea\(\) \? areaFold\(a, xs, spotItem\) : areaRows\(a, xs, spotItem, VIEW\.quiet, !words\.length\)\)\.join\(''\)\n\s+: items\.length \? items\.map\(spotItem\)\.join\(''\)/);
   // "Low risk only" keeps low spots alone, so none is behind the line.
   const ctx = listPage(cumbria);
   assert.equal(cumbria.filter(s => vm.runInContext('mapLevel', ctx)(s) === 'low').every(s => s.upstream_summary.overflows > 0), true);
