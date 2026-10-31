@@ -5,7 +5,7 @@
 export const MAX_PHOTOS = 3, MAX_TEXT = 1500, MAX_NAME = 40;
 // Requests a day from one connection. The page sends one request a review, so a swimmer never meets
 // these; a script that floods the queue does.
-export const LIMITS = { review: 10, report: 20, remove: 30, status: 60, visit: 10, confirm: 30, illness: 4 };
+export const LIMITS = { review: 10, report: 20, remove: 30, status: 60, visit: 10, confirm: 30, illness: 4, partner: 3 };
 // For everyone together. KV takes 1,000 writes a day on the free plan, two a photo, and holds 1 GB:
 // at most 300 photos a day and 300 reviews waiting for the operator. Published photos accumulate;
 // the operator must monitor storage and move to R2 before the store fills.
@@ -64,3 +64,24 @@ export const ILLNESS_KEEP_DAYS = 400;
 // Reports in one day, for one spot and for everyone together: more than any real outbreak at an inland
 // spot would send, few enough that a script cannot bury the counts in one day.
 export const ILLNESS_SPOT_DAY = 25, ILLNESS_PER_DAY = 300;
+
+// ---- partner sample files (migrations/0005_partner_samples.sql) ----
+// A group, club or lab sends a file of results in the samples/ format (samples/README.md), version 2 for partners
+// (docs/PARTNER-SAMPLES-CONTRACT-v1.md): the same format scripts/add_samples.py reads, so a file goes from the queue
+// into the existing intake unchanged. The columns are src/dipcast/samples.py's COLUMNS, and the template
+// docs/samples-template-v2.csv; a test keeps them the same. A version 1 file (the first 13) is accepted too. The Worker
+// checks only the shape (these columns, one supplier, a row count); the operator runs add_samples.py --dry-run on the
+// file before anything is used. Off until PARTNER_SAMPLES is "on".
+export const SAMPLE_COLUMNS_V1 = ['spot_id', 'sampled_at', 'timezone', 'ecoli_per_100ml', 'enterococci_per_100ml', 'lab', 'ukas_accredited',
+  'method', 'lab_ref', 'supplier', 'received', 'publish', 'evaluate'];
+export const SAMPLE_COLUMNS = [...SAMPLE_COLUMNS_V1, 'time_known', 'site_name', 'site_lat', 'site_lon', 'site_confirmed', 'ecoli_basis',
+  'enterococci_basis', 'ecoli_lower_limit', 'ecoli_upper_limit', 'enterococci_lower_limit', 'enterococci_upper_limit', 'limits_written',
+  'sampler', 'licence', 'attribution', 'publish_agreed', 'evaluate_use', 'evaluate_agreed'];
+// A season of weekly samples at a dozen points is about 300 rows and 100 KB; more is a file to send by email.
+export const MAX_PARTNER_CSV = 256 * 1024, MAX_PARTNER_ROWS = 2000;
+export const MAX_PARTNER_ORG = 120, MAX_PARTNER_NAME = 80, MAX_PARTNER_EMAIL = 254, MAX_PARTNER_MESSAGE = 1000;
+// Waiting for the operator, for everyone together: a few partners a season, so a script cannot fill D1 with files.
+export const MAX_PENDING_PARTNER = 30;
+// Every file, with the sender's contact details, is deleted this many days after it arrived, accepted or not: long
+// enough to reply, agree the permissions in writing and move an accepted file to the private folder, and no longer.
+export const PARTNER_KEEP_DAYS = 90;

@@ -108,9 +108,9 @@ const tile = (o = {}) => O.outingSection({day: '2026-11-01', when: 'morning', sp
 
 test('the tile offers what for and where to meet, and says them', () => {
   const h = tile({act: 'paddle', meet: 'parking'});
-  assert.match(h, /<label>What for<select data-outing="act"><option value="">Swim<\/option><option value="paddle" selected>Paddle<\/option><option value="sup">Paddleboard<\/option><\/select><\/label>/);
+  assert.match(h, /<label>What for<select data-outing="act"><option value="">Swim<\/option><option value="paddle" selected>Kayak\/canoe<\/option><option value="sup">Paddleboard<\/option><\/select><\/label>/);
   assert.match(h, /<label>Meet \(optional\)<select data-outing="meet"><option value="">Not set<\/option><option value="parking" selected>At the parking<\/option><option value="entry">Where you get in<\/option><\/select><\/label>/);
-  assert.match(h, /<p class="outing-said">Tomorrow morning, paddling: your spot and a backup, side by side\.<\/p>/);
+  assert.match(h, /<p class="outing-said">Tomorrow morning, kayaking or canoeing: your spot and a backup, side by side\.<\/p>/);
   assert.match(h, /Meet at the parking at Port Meadow: the Access part under it says what its guide knows\./);
   assert.match(h, /The level is for the water, the same whatever you do on it\./);
   // A swim, the default, says nothing new; and no spot yet, no meeting place to pick.

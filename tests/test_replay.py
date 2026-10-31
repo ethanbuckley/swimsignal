@@ -168,7 +168,7 @@ def test_the_page_asks_for_replay_js_at_the_builds_stamp_and_the_offline_copy_st
     assert bs.TEMPLATE.parent / "replay.js" in bs.SHELL_SOURCES
     sw = (bs.TEMPLATE.parent / "sw.js").read_text()
     assert "`replay.js?v=${BUILD}`" in sw
-    assert "/-(trace|replay)$/" in sw   # a replay file never sends the worker after a trace of its own
+    assert "/-(trace|replay|plume)$/" in sw   # a replay file (or a spill map's routes) never sends the worker after a trace of its own
 
 def contributor(i, **kw):
     return {"site_id": f"S{i}", "site_name": f"PLACE {i}/CSO", "company": "Yorkshire Water", "lat": 54.0, "lon": -1.8,

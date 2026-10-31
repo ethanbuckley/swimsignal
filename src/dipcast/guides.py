@@ -261,6 +261,22 @@ def load_guides(spot_ids: set[str] | None = None, root: Path = GUIDES, today: da
     return guides, warnings
 
 
+# The topics for boats and boards, in the order Plan a swim shows the first of them on a spot's row (index.html, planActLine):
+# whether you can launch at all comes before the rules on the water and carrying to it.
+BOAT_TOPICS = ("launch", "paddle", "carry")
+
+
+def boat_note(guide: dict | None) -> dict | None:
+    """The first confirmed fact for boats and boards, for the plan's list in data/spots-lite.json, which has no guides:
+    {"topic", "text", "source" (its source's name, or None), "more" (the other facts on those topics)}. None if there is none."""
+    facts = [f for f in (guide or {}).get("facts", []) if f.get("topic") in BOAT_TOPICS]
+    sure = sorted((f for f in facts if f.get("status") == "confirmed"), key=lambda f: BOAT_TOPICS.index(f["topic"]))
+    if not sure:
+        return None
+    f = sure[0]
+    return {"topic": f["topic"], "text": f["text"], "source": f.get("source_name"), "more": len(facts) - 1}
+
+
 def attach_guides(results: list[dict], root: Path = GUIDES, today: date | None = None) -> dict:
     """Each spot's guide onto its forecast, for spots.json. Returns the count and any warnings."""
     guides, warnings = load_guides({r["id"] for r in results}, root, today)

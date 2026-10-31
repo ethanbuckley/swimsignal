@@ -28,7 +28,7 @@ from dipcast import __version__, config
 from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
-from dipcast.guides import attach_guides, copy_photos
+from dipcast.guides import attach_guides, boat_note, copy_photos
 from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
@@ -122,8 +122,8 @@ SITE_URL_ENV = "DIPCAST_SITE_URL"
 # string is the privacy notice's own lead, so the terms page's date is not touched.
 COUNTER_TOKEN_ENV = "DIPCAST_CF_BEACON_TOKEN"
 COUNTER_JS = TEMPLATE.parent / "counter.js"
-NO_COUNTER = ("and what it does not. Last updated 30 October 2026.", "There is no analytics script and no third-party tracking.")
-WITH_COUNTER = ("and what it does not. Last updated 30 October 2026 (page-view counter).",
+NO_COUNTER = ("and what it does not. Last updated 31 October 2026.", "There is no analytics script and no third-party tracking.")
+WITH_COUNTER = ("and what it does not. Last updated 31 October 2026 (page-view counter).",
                 ("Page views are counted with Cloudflare Web Analytics. Cloudflare states that it sets no cookies, "
                  "uses no local storage and does not fingerprint visitors. It sees your IP address when the counter "
                  "loads, as any web server would, and its "
@@ -339,6 +339,51 @@ def email_config() -> dict | None:
     return {"url": url}
 
 
+# Ask SwimSignal (ask/, the Worker): on when DIPCAST_ASK_URL is set to the Worker's address. It puts
+# "ask": {"url": ...} in spots.json, which shows the question tile on Plan a swim (ask.js), and adds the
+# privacy notice's section. Set it only once the Worker is deployed and answering (ask/README.md).
+ASK_URL_ENV = "DIPCAST_ASK_URL"
+
+
+def ask_config() -> dict | None:
+    url = os.environ.get(ASK_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: Ask SwimSignal left off", ASK_URL_ENV)
+        return None
+    return {"url": url}
+
+
+# With Ask on, the privacy notice gains this section before "The server version", and "(Ask SwimSignal)"
+# after its date. What it says is what ask/src/index.js does: the question goes to the Worker and to
+# Anthropic; the Worker keeps a keyed hash of the connection and the day, deleted the day after, and the
+# day's total spend, and logs no question. Anthropic's own retention is its, under its commercial terms.
+ASK_PRIVACY = (
+    '<h2 id="ask">Ask SwimSignal</h2>\n<p>On Plan a swim you can ask a question in your own words. When you press Ask, '
+    "your question is sent to SwimSignal's Ask service, which runs on Cloudflare Workers, and from there to Anthropic, "
+    "whose AI model, Claude, reads SwimSignal's published data to answer it. Nothing else is sent: not your location, "
+    "your saved spots or your plan. Do not put your name or other personal details in a question. SwimSignal does not "
+    "keep your question or its answer. To limit how many questions one connection can ask in a day, the service keeps "
+    "a count under a keyed hash of your IP address and the day, never the address itself, and deletes it the day "
+    "after. It also keeps each day's total number of questions and what they cost, with nothing that links them to "
+    "anyone. Anthropic processes the question for SwimSignal and keeps it for a limited time under its own terms; "
+    '<a href="https://www.anthropic.com/legal/privacy">Anthropic\'s privacy policy</a> applies to that. Cloudflare '
+    "sees your IP address when you press Ask, as any web server would; "
+    '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that. Either '
+    "may handle the question outside the UK under its own safeguards. The basis is SwimSignal's legitimate interest "
+    "in answering the question you chose to ask. The answer is written by an AI model from SwimSignal's data and can "
+    "be wrong: check a spot's page and the signs at the water.</p>\n")
+
+
+def with_ask(html: str) -> str:
+    """The privacy notice with Ask SwimSignal on: its section before "The server version", and its name after the date."""
+    if "<h2>The server version</h2>" not in html:
+        raise ValueError("privacy.html has lost its heading The server version, before which Ask's section goes")
+    html = html.replace("<h2>The server version</h2>", ASK_PRIVACY + "<h2>The server version</h2>", 1)
+    return privacy_updated(html, "Ask SwimSignal")
+
+
 def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> str:
     """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
     else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES)."""
@@ -548,7 +593,7 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
 
 
 def privacy_updated(html: str, what: str) -> str:
-    """Say after the privacy notice's date what a setting added: "Last updated 30 October 2026
+    """Say after the privacy notice's date what a setting added: "Last updated 31 October 2026
     (page-view counter, tips)"."""
     return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
                   html, count=1)
@@ -2178,9 +2223,15 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# Ask SwimSignal on Plan a swim (ask.js): the question tile, shown only with DIPCAST_ASK_URL set (ask_config).
+SHELL_SOURCES.append(TEMPLATE.parent / "ask.js")
+VERSIONED_SCRIPTS += ('<script src="ask.js"></script>',)
 # A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
 VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
+# The day plan (dayplan.js): a few options with what is known at each, and the plan as a picture to send.
+SHELL_SOURCES.append(TEMPLATE.parent / "dayplan.js")
+VERSIONED_SCRIPTS += ('<script src="dayplan.js"></script>',)
 # A spot on a date (spotdate.js): the calendar file and the alerts for a date, which the outing and the
 # organisers' page share.
 SHELL_SOURCES.append(TEMPLATE.parent / "spotdate.js")
@@ -2219,6 +2270,10 @@ VERSIONED_SCRIPTS += ('<script src="passport.js"></script>',)
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
 VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
+# The evidence timeline (timeline.js): a spot's dated measurements, reports and forecast in one list, from files the
+# site already has, fetched when its fold is opened.
+SHELL_SOURCES.append(TEMPLATE.parent / "timeline.js")
+VERSIONED_SCRIPTS += ('<script src="timeline.js"></script>',)
 # A plan's outing kept for offline use (outingpack.js): the plan's page, its spots' pages and files, and the
 # offline copy's own files, in a cache of their own that sw.js answers from and a new build leaves alone.
 SHELL_SOURCES.append(TEMPLATE.parent / "outingpack.js")
@@ -2233,6 +2288,9 @@ SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
 # The evidence map (prototype, ?evidence=1 only, docs/EVIDENCE-MAP-2026-10.md): index.html adds evmap.js itself
 # when asked, as it does replay.js, at levels.js's ?v=<stamp> (mountEvMap); the offline copy stores it (sw.js SHELL).
 SHELL_SOURCES.append(TEMPLATE.parent / "evmap.js")
+# The spill map (docs/PLUME-MAP-2026-10.md): index.html adds plume.js itself when the map's place on a spot's page
+# comes near the screen, at levels.js's ?v=<stamp> (mountPlume); the offline copy stores it (sw.js SHELL).
+SHELL_SOURCES.append(TEMPLATE.parent / "plume.js")
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -2252,7 +2310,9 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "ask.js", site / "ask.js")   # Ask SwimSignal, on Plan a swim when on
     shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
+    shutil.copy(TEMPLATE.parent / "dayplan.js", site / "dayplan.js")   # the day plan: options, and the plan as a picture
     shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "outingwatch.js", site / "outingwatch.js")   # what would change a plan's outing
@@ -2265,10 +2325,12 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "passport.js", site / "passport.js")   # the swim passport, from the journal
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
+    shutil.copy(TEMPLATE.parent / "timeline.js", site / "timeline.js")   # the evidence timeline, newest first
     shutil.copy(TEMPLATE.parent / "outingpack.js", site / "outingpack.js")   # a plan's outing kept for offline use
     shutil.copy(TEMPLATE.parent / "arrive.js", site / "arrive.js")   # the arrival guide, ?arrive=1 only
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
     shutil.copy(TEMPLATE.parent / "evmap.js", site / "evmap.js")   # evidence map, ?evidence=1 only (prototype)
+    shutil.copy(TEMPLATE.parent / "plume.js", site / "plume.js")   # the spill map on a spot's page (src/dipcast/plume.py)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -2661,8 +2723,13 @@ def robots(root: str) -> str:
     return f"User-agent: *\nAllow: /\nSitemap: {root}sitemap.xml\n"
 
 
+<<<<<<< HEAD
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
     urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+=======
+def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+>>>>>>> origin/main
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2894,14 +2961,15 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
-                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None) -> int:
+                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
     provider (tile_config), or None for OpenStreetMap's. spot_cards: {id: alt} for the spots with a share
     card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
     gets this build's card rather than a cached one. overflows: this build's overflow table, for the
-    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives."""
+    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives.
+    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
@@ -2936,6 +3004,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.northern_ireland import render as render_ni
             s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
+        if name == "privacy.html" and ask:
+            s = with_ask(s)
         s = with_counter(with_push(s, push, email, push_dates) if name == "privacy.html" else s, token)
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
@@ -2980,10 +3050,11 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     paged = [r for r in results if r["id"] in set(ids)]
     write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
+    overflow_ids = write_overflow_pages(site, paged, token, root=root, generated=generated)   # overflow/<id>/, from the same files
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
-                                              extra=["support.html"] if support else []))
+                                              extra=["support.html"] if support else [], overflow_ids=overflow_ids))
     (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
@@ -3194,7 +3265,8 @@ def reach_by_company(contributors: list[dict]) -> list[list]:
 def write_app_data(site: Path, doc: dict) -> int:
     """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
     one file a spot. A lite spot names its file in `detail_file`, relative to data/, and gives whose its
-    overflows are in `reach_by_company` (reach_by_company), where it has any. A spot whose id
+    overflows are in `reach_by_company` (reach_by_company), where it has any, and its guide's first fact for boats and
+    boards in `boat_note` (guides.boat_note), where it has one. A spot whose id
     cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
     out = site / "data" / "spot"
     shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
@@ -3208,7 +3280,8 @@ def write_app_data(site: Path, doc: dict) -> int:
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
         lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json",
-                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {})})
+                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {}),
+                     **({"boat_note": note} if (note := boat_note(s.get("guide"))) else {})})   # Plan a swim's list, for a boat or a board
     # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
     (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
                                                               separators=(",", ":"), default=str))
@@ -3650,7 +3723,8 @@ def wet_link(doc: dict) -> dict:
     """What a linked spot's page says of the samples (index.html, localSamplesLine): where, who, how many and when."""
     s = doc["samples"]
     return {"href": "waterhead.html", "place": doc["site"]["name"], "by": "Ambleside Action for a Future",
-            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"]}
+            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"],
+            "data": "data/research/waterhead_wet.json"}   # every sample, for the spot's evidence timeline (timeline.js)
 
 
 def write_waterhead(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
@@ -4014,6 +4088,57 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
     return n
 
 
+# One page for each monitored overflow upstream of a spot with a page, overflow/<id>/ (src/dipcast/overflow_record.py):
+# its permit, spills each year, recent spills, the improvements recorded and a draft to send on, from open sources only.
+# Written from data/upstream/ like the profiles, so they too can be written again from a downloaded data/. Prose pages
+# with no script, in the sitemap; not in the offline copy, and not on the data page.
+
+
+def write_overflow_pages(site: Path, spots: list[dict], token: str | None = None, root: str | None = None,
+                         generated: pd.Timestamp | None = None, returns: Path | None = None, record: Path | None = None,
+                         winep: Path | None = None, upgrades: Path | None = None, dry: Path | None = None,
+                         lengths: Path | None = None) -> list[str]:
+    """overflow/<id>/index.html for every overflow in a spot's data/upstream/<id>.json whose id can be a folder name.
+    A missing or unreadable source leaves its part of each page saying so; nothing here stops the build. Returns the
+    ids written, sorted, for the sitemap."""
+    from dipcast import overflow_record as orec
+    root = root or site_url()
+    shutil.rmtree(site / "overflow", ignore_errors=True)   # an overflow no longer upstream of any spot loses its page
+    upstream = {}
+    for r in spots:
+        f = site / "data" / "upstream" / f"{r['id']}.json"
+        if SPOT_ID.fullmatch(str(r["id"])) and f.is_file():
+            upstream[r["id"]] = json.loads(f.read_text()).get("overflows") or []
+    found = orec.gather(upstream, {r["id"]: str(r["name"]) for r in spots})
+    if not found:
+        return []
+
+    def read(what: str, fn, default):
+        try:
+            return fn()
+        except Exception as e:  # noqa: BLE001 - a public record beside the forecast must not stop the site
+            announce(f"overflow pages without {what}: {e}")
+            return default
+    returns_by = read("the annual returns", lambda: orec.load_returns(returns or config.PROCESSED / "annual_returns.parquet", found), {})
+    record_by = read("the permits and improvement activity", lambda: orec.load_record(record or orec.RECORD), {})
+    actions = read("the WINEP deadlines", lambda: orec.winep_actions(pd.read_parquet(winep or orec.WINEP), record_by), None)
+    ups = read("the upgrade notes", lambda: read_upgrades(upgrades or UPGRADES), {})
+    drys = read("the dry-weather counts", lambda: read_dry_weather(dry or DRY_WEATHER), {})
+    spill = orec.spill_lengths(lengths or SPILL_DURATIONS)
+    as_of = (generated or pd.Timestamp.now(tz="Europe/London")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    template = orec.TEMPLATE.read_text()
+    for oid, o in found.items():
+        company = o["row"].get("company")
+        u = ups.get(oid)
+        d = drys.get(oid)
+        (site / "overflow" / oid).mkdir(parents=True, exist_ok=True)
+        (site / "overflow" / oid / "index.html").write_text(with_counter(with_phone_nav(orec.site_page(
+            oid, o, MARK, returns=returns_by.get(oid), record=record_by.get(oid), actions=None if actions is None else actions.get(oid, []),
+            upgrade=u if u and u.get("company") == company else None, dry=d if d and d.get("company") == company else None,
+            lengths=spill, root=root, as_of=as_of, template=template)), token))
+    return sorted(found)
+
+
 # Every spot, spots.html: the spots with a page of their own, each an ordinary link to it, by area
 # (spots.csv's `area`) A-Z and A-Z within each. The home list and the map are drawn by the page's script,
 # so until 24 Oct 2026 no page linked a spot's page in its HTML; search engines had the sitemap alone, and
@@ -4108,6 +4233,22 @@ def replay_files(site: Path, results: list[dict], upstream: dict[str, list[dict]
         out = write(site, results, upstream, generated.tz_convert("UTC"))
     except Exception as e:  # noqa: BLE001
         out = {"written": 0, "warning": f"catchment replay not written: {e}"}
+    if out.get("warning"):
+        announce(out["warning"])
+    return out
+
+
+def plume_files(site: Path, results: list[dict], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                write=None) -> dict:
+    """data/spot/<id>-plume.json, the routes the spill map moves the replay's spills along (src/dipcast/plume.py,
+    site/plume.js): from the river network and the replay files, so no request. After replay_files. A failure is
+    announced and recorded in the build health, as the replay's is: a map must never stop the site publishing."""
+    try:
+        if write is None:
+            from dipcast.plume import write_plumes as write
+        out = write(site, results, upstream, generated.tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001
+        out = {"written": 0, "warning": f"spill map routes not written: {e}"}
     if out.get("warning"):
         announce(out["warning"])
     return out
@@ -4277,15 +4418,16 @@ def build(refresh: bool = True) -> dict:
     for name, snap in nations.items():
         health[name]["water_temperature_estimate"] = attach_directory_water_temp(snap["sites"], air, nation=name)
         (SITE / "data" / f"{name}.json").write_text(json.dumps(snap))
-    push, email = push_config(), email_config()
+    push, email, ask = push_config(), email_config(), ask_config()
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
            "lead_skill": lead_skill(), "ecoli_check": ecoli_check(),
-           **({"push": push} if push else {}), **({"email": email} if email else {}),
+           **({"push": push} if push else {}), **({"email": email} if email else {}), **({"ask": ask} if ask else {}),
            "commit": code_commit(), "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits, cuts)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
     health["replay_files"] = replay_files(SITE, results, upstream, generated)   # ?replay=1 only; never stops the build
+    health["plume_files"] = plume_files(SITE, results, upstream, generated)   # the spill map's routes, from the replay files; never stops the build
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)
@@ -4307,7 +4449,7 @@ def build(refresh: bool = True) -> dict:
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
-                                       push_dates=bool(push and push.get("dates")),
+                                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.

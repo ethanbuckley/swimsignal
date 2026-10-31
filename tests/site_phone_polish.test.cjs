@@ -12,6 +12,6 @@ test('the stale notice gives the issue time as the rest of the site does', () =>
   assert.match(app, /old \(issued \$\{issued\(\)\}\)\./);
   assert.doesNotMatch(app, /issued \$\{new Date\(DATA\.generated_at\)\.toLocaleString\('en-GB'\)\}/);
 });
-test('with nothing saved, the activity note is one line, so the way to save a spot comes first', () => {
-  assert.match(app, /h \+= actsChips\(undefined, !spots\.length\);/);
+test('with nothing saved, no activity note comes before the way to save a spot', () => {
+  assert.doesNotMatch(app, /actsChips/);   // the choice moved to Plan a swim (31 Oct 2026)
 });
