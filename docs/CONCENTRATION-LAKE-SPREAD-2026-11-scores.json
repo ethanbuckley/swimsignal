@@ -1,0 +1,510 @@
+{
+ "rows": [
+  {
+   "scheme": "fwd",
+   "kind": "river",
+   "n": 616,
+   "over": 93,
+   "background_central80": 0.8117,
+   "background_pit_deciles": [
+    89,
+    91,
+    112,
+    97,
+    64,
+    53,
+    39,
+    25,
+    19,
+    27
+   ],
+   "background_logscore": -0.8501,
+   "background_brier": 0.16709,
+   "background_within_site_rho": {
+    "sites": 20,
+    "median": NaN,
+    "positive": 7
+   },
+   "candidate_central80": 0.8506,
+   "candidate_pit_deciles": [
+    33,
+    63,
+    71,
+    74,
+    66,
+    82,
+    73,
+    58,
+    37,
+    59
+   ],
+   "candidate_logscore": -0.6584,
+   "candidate_brier": 0.10505,
+   "candidate_within_site_rho": {
+    "sites": 20,
+    "median": 0.3166019338958991,
+    "positive": 18
+   },
+   "lake_sigma_central80": 0.7727,
+   "lake_sigma_pit_deciles": [
+    54,
+    63,
+    54,
+    65,
+    50,
+    58,
+    71,
+    60,
+    55,
+    86
+   ],
+   "lake_sigma_logscore": -0.6934,
+   "lake_sigma_brier": 0.10196,
+   "lake_sigma_within_site_rho": {
+    "sites": 20,
+    "median": 0.3015590608779247,
+    "positive": 18
+   },
+   "logscore_lake_sigma_minus_candidate_ci": [
+    -0.09391868145671445,
+    0.014435997490456428
+   ]
+  },
+  {
+   "scheme": "fwd",
+   "kind": "lake",
+   "n": 407,
+   "over": 13,
+   "background_central80": 0.6978,
+   "background_pit_deciles": [
+    55,
+    52,
+    23,
+    32,
+    23,
+    34,
+    25,
+    44,
+    51,
+    68
+   ],
+   "background_logscore": -1.1131,
+   "background_brier": 0.02932,
+   "background_within_site_rho": {
+    "sites": 12,
+    "median": 0.06567060115031198,
+    "positive": 8
+   },
+   "candidate_central80": 0.6437,
+   "candidate_pit_deciles": [
+    43,
+    37,
+    30,
+    35,
+    25,
+    31,
+    29,
+    36,
+    39,
+    102
+   ],
+   "candidate_logscore": -1.1791,
+   "candidate_brier": 0.03123,
+   "candidate_within_site_rho": {
+    "sites": 12,
+    "median": 0.27168647894705555,
+    "positive": 10
+   },
+   "lake_sigma_central80": 0.7322,
+   "lake_sigma_pit_deciles": [
+    38,
+    26,
+    31,
+    37,
+    26,
+    35,
+    39,
+    46,
+    58,
+    71
+   ],
+   "lake_sigma_logscore": -1.0437,
+   "lake_sigma_brier": 0.03049,
+   "lake_sigma_within_site_rho": {
+    "sites": 12,
+    "median": 0.28971914236455587,
+    "positive": 10
+   },
+   "logscore_lake_sigma_minus_candidate_ci": [
+    0.08361032370983455,
+    0.18292329028040386
+   ]
+  },
+  {
+   "scheme": "loyo",
+   "kind": "river",
+   "n": 900,
+   "over": 192,
+   "background_central80": 0.8389,
+   "background_pit_deciles": [
+    58,
+    91,
+    116,
+    131,
+    105,
+    104,
+    82,
+    75,
+    51,
+    87
+   ],
+   "background_logscore": -0.8306,
+   "background_brier": 0.16943,
+   "background_within_site_rho": {
+    "sites": 20,
+    "median": NaN,
+    "positive": 0
+   },
+   "candidate_central80": 0.8889,
+   "candidate_pit_deciles": [
+    45,
+    88,
+    127,
+    117,
+    119,
+    121,
+    99,
+    68,
+    61,
+    55
+   ],
+   "candidate_logscore": -0.6147,
+   "candidate_brier": 0.12451,
+   "candidate_within_site_rho": {
+    "sites": 20,
+    "median": 0.46411458150514484,
+    "positive": 19
+   },
+   "lake_sigma_central80": 0.8089,
+   "lake_sigma_pit_deciles": [
+    82,
+    112,
+    107,
+    95,
+    83,
+    92,
+    105,
+    77,
+    57,
+    90
+   ],
+   "lake_sigma_logscore": -0.5866,
+   "lake_sigma_brier": 0.12116,
+   "lake_sigma_within_site_rho": {
+    "sites": 20,
+    "median": 0.4721175147497494,
+    "positive": 19
+   },
+   "logscore_lake_sigma_minus_candidate_ci": [
+    0.002163322669520639,
+    0.05146786201337878
+   ]
+  },
+  {
+   "scheme": "loyo",
+   "kind": "lake",
+   "n": 637,
+   "over": 16,
+   "background_central80": 0.6923,
+   "background_pit_deciles": [
+    104,
+    78,
+    55,
+    43,
+    39,
+    46,
+    49,
+    66,
+    65,
+    92
+   ],
+   "background_logscore": -1.0908,
+   "background_brier": 0.02283,
+   "background_within_site_rho": {
+    "sites": 12,
+    "median": -0.1614905964734127,
+    "positive": 1
+   },
+   "candidate_central80": 0.6436,
+   "candidate_pit_deciles": [
+    131,
+    61,
+    50,
+    49,
+    52,
+    41,
+    43,
+    55,
+    59,
+    96
+   ],
+   "candidate_logscore": -1.1325,
+   "candidate_brier": 0.02544,
+   "candidate_within_site_rho": {
+    "sites": 12,
+    "median": 0.19884037608797095,
+    "positive": 8
+   },
+   "lake_sigma_central80": 0.7755,
+   "lake_sigma_pit_deciles": [
+    84,
+    61,
+    53,
+    55,
+    60,
+    68,
+    60,
+    64,
+    73,
+    59
+   ],
+   "lake_sigma_logscore": -1.024,
+   "lake_sigma_brier": 0.02512,
+   "lake_sigma_within_site_rho": {
+    "sites": 12,
+    "median": 0.18055844531322518,
+    "positive": 8
+   },
+   "logscore_lake_sigma_minus_candidate_ci": [
+    0.06684658842333469,
+    0.14882025291703346
+   ]
+  },
+  {
+   "scheme": "cxy",
+   "kind": "river",
+   "n": 900,
+   "over": 192,
+   "background_central80": 0.8478,
+   "background_pit_deciles": [
+    53,
+    84,
+    117,
+    120,
+    108,
+    110,
+    78,
+    76,
+    70,
+    84
+   ],
+   "background_logscore": -0.9131,
+   "background_brier": 0.18562,
+   "background_within_site_rho": {
+    "sites": 20,
+    "median": NaN,
+    "positive": 1
+   },
+   "candidate_central80": 0.8978,
+   "candidate_pit_deciles": [
+    45,
+    76,
+    113,
+    125,
+    128,
+    120,
+    110,
+    83,
+    53,
+    47
+   ],
+   "candidate_logscore": -0.7003,
+   "candidate_brier": 0.13203,
+   "candidate_within_site_rho": {
+    "sites": 20,
+    "median": 0.4971198297409648,
+    "positive": 19
+   },
+   "lake_sigma_central80": 0.8456,
+   "lake_sigma_pit_deciles": [
+    73,
+    88,
+    105,
+    109,
+    106,
+    89,
+    108,
+    90,
+    66,
+    66
+   ],
+   "lake_sigma_logscore": -0.6566,
+   "lake_sigma_brier": 0.12844,
+   "lake_sigma_within_site_rho": {
+    "sites": 20,
+    "median": 0.5110672054056947,
+    "positive": 19
+   },
+   "logscore_lake_sigma_minus_candidate_ci": [
+    0.0257005032998807,
+    0.060071097466813994
+   ]
+  },
+  {
+   "scheme": "cxy",
+   "kind": "lake",
+   "n": 637,
+   "over": 16,
+   "background_central80": 0.6468,
+   "background_pit_deciles": [
+    103,
+    104,
+    32,
+    50,
+    53,
+    31,
+    46,
+    44,
+    52,
+    122
+   ],
+   "background_logscore": -1.3101,
+   "background_brier": 0.02498,
+   "background_within_site_rho": {
+    "sites": 12,
+    "median": -0.007051746665678378,
+    "positive": 6
+   },
+   "candidate_central80": 0.551,
+   "candidate_pit_deciles": [
+    162,
+    67,
+    41,
+    43,
+    38,
+    41,
+    40,
+    32,
+    49,
+    124
+   ],
+   "candidate_logscore": -1.4408,
+   "candidate_brier": 0.02519,
+   "candidate_within_site_rho": {
+    "sites": 12,
+    "median": 0.2000922106785409,
+    "positive": 9
+   },
+   "lake_sigma_central80": 0.6939,
+   "lake_sigma_pit_deciles": [
+    113,
+    66,
+    61,
+    44,
+    51,
+    54,
+    49,
+    44,
+    73,
+    82
+   ],
+   "lake_sigma_logscore": -1.2221,
+   "lake_sigma_brier": 0.02575,
+   "lake_sigma_within_site_rho": {
+    "sites": 12,
+    "median": 0.19725441337184063,
+    "positive": 9
+   },
+   "logscore_lake_sigma_minus_candidate_ci": [
+    0.17754610706461904,
+    0.2575448312691966
+   ]
+  }
+ ],
+ "fits": {
+  "fwd": {
+   "sigma_river": [
+    0.355,
+    0.399
+   ],
+   "sigma_lake": [
+    0.655,
+    0.673
+   ],
+   "converged": 1.0
+  },
+  "loyo": {
+   "sigma_river": [
+    0.386,
+    0.397,
+    0.399
+   ],
+   "sigma_lake": [
+    0.673,
+    0.685,
+    0.728
+   ],
+   "converged": 1.0
+  },
+  "cxy": {
+   "sigma_river": [
+    0.369,
+    0.375,
+    0.383,
+    0.384,
+    0.385,
+    0.386,
+    0.387,
+    0.389,
+    0.391,
+    0.393,
+    0.394,
+    0.395,
+    0.396,
+    0.397,
+    0.398,
+    0.399,
+    0.401,
+    0.402,
+    0.403,
+    0.407,
+    0.408,
+    0.416
+   ],
+   "sigma_lake": [
+    0.658,
+    0.664,
+    0.666,
+    0.667,
+    0.669,
+    0.67,
+    0.671,
+    0.672,
+    0.673,
+    0.674,
+    0.675,
+    0.677,
+    0.679,
+    0.683,
+    0.685,
+    0.686,
+    0.687,
+    0.688,
+    0.689,
+    0.699,
+    0.71,
+    0.712,
+    0.714,
+    0.722,
+    0.724,
+    0.726,
+    0.728,
+    0.729,
+    0.73,
+    0.731,
+    0.762
+   ],
+   "converged": 1.0
+  }
+ }
+}
