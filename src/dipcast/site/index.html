@@ -518,6 +518,7 @@
   .t-lab .ic { width:15px; height:15px; vertical-align:0; }
   .t-fig { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 5px; margin:8px 0 0; font:300 var(--fs-level)/1 var(--font-text); font-variant-numeric:tabular-nums lining-nums; }
   .t-fig small { font:600 var(--fs-note)/1.2 var(--font-text); color:var(--muted); }
+  .t-fig.t-fig-words { font:500 var(--fs-head)/1.25 var(--font-text); }
   .t-fig.hot { color:var(--k-veryhigh); } .t-fig.low { color:var(--k-low); } .t-fig.moderate { color:var(--k-moderate); } .t-fig.high { color:var(--k-high); } .t-fig.veryhigh { color:var(--k-veryhigh); }
   .t-word { flex-basis:100%; margin-top:5px; font:700 var(--fs-note)/1.2 var(--font-text); color:var(--k-na); }
   .t-word.low { color:var(--k-low); } .t-word.moderate { color:var(--k-moderate); } .t-word.high { color:var(--k-high); } .t-word.veryhigh { color:var(--k-veryhigh); } .t-word.plain { color:var(--ink); }
@@ -699,6 +700,7 @@
      desktop column alike. At most 480 px, so a wide single column does not stretch them. */
   .actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:480px; margin:32px 0 8px; }
   .actions .btn { text-align:center; line-height:1.2; }   /* a label in two lines stays centred and compact */
+  .actions > .btn:last-child:nth-child(odd) { grid-column:1 / -1; }   /* an odd last button the row's width, not half of it */
   /* Folds: a chevron, not a text marker, and a 44 px target. A section that folds keeps its heading
      where an open section's sits: the target reaches up into the section's padding. */
   details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary, details.sec.tile > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
@@ -2511,7 +2513,9 @@ const sunPath = (w, dot = true) => { const m = s => { const [h, mm] = String(s).
 // A tile: the label with its icon, the figure (with its unit, and a level word under it), the drawing,
 // how the figure stands to the level above (rel: levels.js, tileLine), the sentence, the weather's credit where its figures are, and the rest folded in the corner.
 const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
-  + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
+  // A figure in words of more than one ("Out of season", "None seen") at the heading's size, not the number's: in
+  // the number's it was the largest text on the tile and said the least (31 Oct 2026).
+  + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}${typeof o.fig === 'string' && /^[A-Za-z]+ [A-Za-z ]+$/.test(o.fig) ? ' t-fig-words' : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
   + (o.vis || '') + (o.rel ? `<p class="t-say">${o.rel}</p>` : '') + (o.say ? `<p class="t-say">${o.say}</p>` : '')
   + (o.note ? `<p class="t-note">${o.note}</p>` : '')   // a quiet line: what the build could not check
   + (o.credit ? '<p class="t-credit"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>' : '')
