@@ -1671,3 +1671,28 @@ live site's data.
   and level words in the text shades. No text under 28 px, since the card is seen at about a third of
   its size; every text colour is 4.5:1 or more on its ground (a test checks). The foot gives the issue
   time and "A forecast, not a water test."; the storm card adds the overflow data's CC BY 4.0 credit.
+
+## The map's dots, the list's key and the folds (31 October 2026)
+
+From a walk through the live site at 375 px. What was measured, and what changed:
+
+- **A tap lists the spots under it.** At the zoom a phone opens on, 100 of the 109 dots overlapped
+  another (each 18 px across, the nearest a median 4 px away), and a tap opened whichever was drawn
+  last. Now every dot within 20 px of the tap is listed in a card at the map's foot, as the list's own
+  rows; a row opens its spot, and past three, "Zoom in" fits the map to them (the Lakes went from one
+  pile to a median 19 px apart). On a phone even a lone dot gives a card, so you see what you hit
+  before the map goes; with a mouse, which can hover for the name, a lone dot opens at once. The dots
+  are not grouped under a count: a cluster's one colour would hide a high level among lows.
+- **One float at the map's foot.** "Forecast for any water" and "Search an area" moved into the key,
+  now "Map key, notices and help". A returning visitor's phone map had three floats there, a first
+  visit four (with the first-tap line); now one, or two.
+- **The list's key once.** "Risk L/M/H/VH" (#519) is on the first row with risk bars, in the list and
+  in the map's card; rain rows keep "Rain mm", the exception. Every row's letters and its full
+  description for screen readers stay. The bars sit at the row's edge, so they line up without the key.
+  Six rows fit on a 375 px screen where five did.
+- **Every folded tile alike.** Saved's "Activity preferences and swim journal" and "Learn about water
+  conditions" had the browser's triangle in the text face, beside "Open a shared list" in the display
+  face with the chevron. Every `details.sec.tile` now opens on its name in the display face with the
+  chevron.
+- **Plan's place field** kept 52 px on its right for the location pin it does not have, and read
+  "Starting fror" at 375 px.

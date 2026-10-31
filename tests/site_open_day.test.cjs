@@ -20,7 +20,8 @@ test('today opens a spot on its own answer; another day opens on that day', () =
 
 test('rows, cards and the map\'s dots open through it, and the cards\' links follow the same rule', () => {
   assert.match(html, /e\.preventDefault\(\); select\(a\.dataset\.id, true, true, openDay\(\)\); \}\)\);/);   // bindItems: rows and cards
-  assert.match(html, /\.on\('click', \(\) => select\(s\.id, false, true, openDay\(\)\)\)/);   // the map's dots
+  assert.match(html, /\{ select\(s\.id, false, true, openDay\(\)\); return; \}/);   // the map's dots (tapSpot): a mouse on a lone one
+  assert.match(html, /closePick\(\); select\(a\.dataset\.id, false, true, openDay\(\)\); \}\)\);/);   // and the card's rows (pickSpots)
   assert.match(html, /href="\$\{esc\(iso && iso !== today\(\) && daily\(s\) \? spotPath\(s\.id\) \+ '#day=' \+ iso : spotPath\(s\.id\)\)\}"/);   // savedCard
   assert.match(def('listPath'), /openDay\(\) && daily\(s\) \? '#day=' \+ openDay\(\)/);
   assert.doesNotMatch(html, /select\([^)]*VIEW\.day\)/);
