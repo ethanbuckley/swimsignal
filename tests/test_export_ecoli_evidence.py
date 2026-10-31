@@ -33,3 +33,11 @@ def test_check_catches_broken_files():
     bad = copy.deepcopy(d)
     bad["sites"][0]["samples"].reverse()
     assert any("time order" in e for e in m.check(bad))
+
+
+def test_every_missing_hindsight_estimate_says_why():
+    d = _doc()
+    reasons = {x["hindsight_reason"] for s in d["sites"] for x in s["samples"] if x["hindsight"] is None}
+    assert reasons <= set(m.HINDSIGHT_REASONS) and None not in reasons
+    only = [x for s in d["sites"] for x in s["samples"] if x["hindsight_reason"] == "archive_only"]
+    assert only and all(x["src"] == "wqa" for x in only)

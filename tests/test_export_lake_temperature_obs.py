@@ -35,3 +35,9 @@ def test_check_catches_broken_files():
     bad = copy.deepcopy(d)
     bad["claim"]["public_wording"] = "The lake is 18 C."
     assert any("today's temperature" in e for e in m.check(bad))
+
+
+def test_points_carry_first_and_last_and_years_are_listed():
+    for lk in _doc()["lakes"]:
+        assert all(p["first"] <= p["last"] for p in lk["points"])
+        assert len(lk["summary"]["years_list"]) == lk["summary"]["years"]

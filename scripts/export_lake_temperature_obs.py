@@ -26,7 +26,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 WORK = Path.home() / "Documents" / "GitHub" / "swimsignal-private" / "water-temperature" / "lake-test" / "work"
 OUT = ROOT / "data" / "research" / "lake_temperature_obs.v1.json"
-SCHEMA, VERSION = "swimsignal.lake-temperature-obs", "1.0.0"
+SCHEMA, VERSION = "swimsignal.lake-temperature-obs", "1.1.0"
 MONTHS = (5, 6, 7, 8, 9)
 NEAR_M = 150.0
 RECENT = 12
@@ -35,7 +35,14 @@ CLAIM = {
                       "days it visited between May and September. A record of past measurements, not today's "
                       "temperature, and not measured where you get in: shallow edges can be warmer or colder.",
     "not_claimed": ["the temperature now", "the temperature at the swim spot", "a forecast", "that water is safe to swim"],
+    # 1.1: for a page listing many lakes, where "this lake" does not fit
+    "page_wording": "Water temperatures the Environment Agency measured in lakes, at its sampling points, on the days "
+                    "it visited between May and September. A record of past measurements, not today's temperature, "
+                    "and not measured where you get in: shallow edges can be warmer or colder.",
 }
+METHOD_SENTENCE = ("Each figure comes from Environment Agency water temperature readings taken at sampling points in the "
+                   "lake, May to September, 2000 to 2026: the middle value of all readings in that month, with the "
+                   "range of the middle half and how many readings it rests on.")
 
 
 def sha256(p: Path) -> str:
@@ -80,7 +87,8 @@ def build(work: Path) -> dict:
         p_ids = sorted(g["point"].unique())
         points = [{"point": pid, "label": g.loc[g["point"] == pid, "label"].iloc[0],
                    "lat": round(float(pts.loc[pid, "lat"]), 5), "lon": round(float(pts.loc[pid, "lon"]), 5),
-                   "readings": int((g["point"] == pid).sum()), "last": g.loc[g["point"] == pid, "date"].max()}
+                   "readings": int((g["point"] == pid).sum()), "first": g.loc[g["point"] == pid, "date"].min(),
+                   "last": g.loc[g["point"] == pid, "date"].max()}
                   for pid in p_ids]
         month = pd.to_datetime(g["date"]).dt.month
         monthly = []
@@ -104,7 +112,8 @@ def build(work: Path) -> dict:
             "depth_m": None if pd.isna(g["depth_m"].iloc[0]) else float(g["depth_m"].iloc[0]),
             "reservoir": bool(g["reservoir"].iloc[0]), "points": points, "spots": sorted(spot_rows, key=lambda x: x["spot_id"]),
             "summary": {"readings": int(len(g)), "first": g["date"].min(), "last": g["date"].max(),
-                        "years": int(pd.to_datetime(g["date"]).dt.year.nunique())},
+                        "years": int(pd.to_datetime(g["date"]).dt.year.nunique()),
+                        "years_list": sorted(int(y) for y in pd.to_datetime(g["date"]).dt.year.unique())},
             "monthly": monthly,
             "readings": {"date": g["date"].tolist(), "temp": [round(float(x), 1) for x in g["temp"]],
                          "point": [idx[p] for p in g["point"]]},
@@ -118,7 +127,7 @@ def build(work: Path) -> dict:
                                  "fetched May-September only by the lake temperature test (#419)",
                        "matching": "sampling points inside a WFD lake polygon, on the lake's own water, or on an OS "
                                    "lake link (#419's rows); one value per point per day",
-                       "spot_link_m": NEAR_M,
+                       "spot_link_m": NEAR_M, "public_sentence": METHOD_SENTENCE,
                        "code_sha256": {"scripts/export_lake_temperature_obs.py": sha256(ROOT / "scripts" / "export_lake_temperature_obs.py")}},
             "sources": [{"file": k, "sha256": v} for k, v in before.items()],
             "attribution": ["Environment Agency Water Quality Archive, Open Government Licence v3.0",
@@ -142,6 +151,8 @@ def check(doc: dict) -> list[str]:
         err.append("the claim must say it is not today's temperature")
     for lk in doc.get("lakes", []):
         r = lk["readings"]
+        if "years_list" in lk["summary"] and len(lk["summary"]["years_list"]) != lk["summary"]["years"]:
+            err.append(f"{lk['wb_id']}: years_list disagrees with years")
         if not (len(r["date"]) == len(r["temp"]) == len(r["point"]) == lk["summary"]["readings"]):
             err.append(f"{lk['wb_id']}: reading columns or count disagree")
         if r["date"] != sorted(r["date"]):
