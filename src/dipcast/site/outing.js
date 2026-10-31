@@ -298,9 +298,9 @@ function outingIcs(c, now = Date.now()) {
 // known: outingAlert), then the calendar file.
 const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>'
   + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button></p>'
-  + '<p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
+  + '<details class="fold"><summary>What the calendar and shared link contain</summary><p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
   + 'The shared link holds the day, the time, the spots, what for and where to meet, as you picked them, with the forecast\'s issue time and each spot\'s level when you share it, '
-  + 'and the plan around your spot: not where you start from, and no words of yours.</p>'
+  + 'and the plan around your spot: not where you start from, and no words of yours.</p></details>'
   + '<p class="small muted msg" id="outing-alert-msg" aria-live="polite"></p></div>';
 
 // ------------------------------------------------------------------------------ access at each spot
@@ -332,12 +332,12 @@ function outingAccess(s, today, act = null) {
   const by = new Map(TOPICS.map(k => [k, facts.filter(f => f && f.topic === k)]));
   const have = TOPICS.filter(k => by.get(k).length), gaps = TOPICS.filter(k => !by.get(k).length);
   const rest = G.GUIDE_TOPICS.map(([k]) => k).filter(k => !TOPICS.includes(k) && facts.some(f => f && f.topic === k));
-  return permit + `<p class="g-src">${G.guideChecked(g, today)}</p>`
+  return permit + `<details class="fold"${OUTING_BOAT.includes(act) ? ' open' : ''}><summary>Arrival and access details</summary><p class="g-src">${G.guideChecked(g, today)}</p>`
     + (have.length ? '<dl class="g-facts">' + have.map(k => `<div class="g-row"><dt>${label.get(k)}</dt>`
       + G.guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${outEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
       + '</div>').join('') + '</dl>' : '')
     + (gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '')
-    + (rest.length ? `<p class="small muted">Also in the guide on the spot's page: ${rest.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '');
+    + (rest.length ? `<p class="small muted">Also in the guide on the spot's page: ${rest.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '') + '</details>';
 }
 const outingAccessBox = (id, inner) => `<div class="outing-access" data-outing-access="${outEsc(id)}"><p class="outing-role">Access</p>${inner}</div>`;
 

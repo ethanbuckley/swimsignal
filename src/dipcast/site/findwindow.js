@@ -105,8 +105,9 @@ function fwPlanSection(items, dates, href, what, meta) {
   const near = [...items].sort((a, b) => a.miles - b.miles || a.s.name.localeCompare(b.s.name)), shown = near.slice(0, FW_PLAN_MAX);
   const more = near.length - shown.length;
   return '<section class="sec tile fw" id="plan-fw" aria-labelledby="plan-fw-h"><h2 class="sec-h" id="plan-fw-h">Find a window</h2>'
-    + `<p class="sub">The days in the next five when each of the ${fwEsc(what)} is at low risk, nearest first: an order by distance, not a ranking. `
-    + 'Why the other days are not low risk is under each, in the forecast\'s words. ' + FW_LIMITS + '</p>'
+    + `<p class="sub">The days at low risk in the next five, nearest spot first.</p>`
+    + `<details class="more"><summary>How these windows are found</summary><p>For each of the ${fwEsc(what)}: an order by distance, not a ranking. `
+    + 'Why the other days are not low risk is under each, in the forecast\'s words. ' + FW_LIMITS + '</p></details>'
     + `<ul class="fw-list">${fwRows(shown.map(o => o.s), dates, href, meta)}</ul>`
     + (more ? `<p class="small muted">And ${more} more further away: see them in the groups above.</p>` : '') + '</section>';
 }

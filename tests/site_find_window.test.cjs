@@ -133,7 +133,7 @@ test("Plan a swim: the plan's spots nearest first by distance, never by level, c
   const h = W.fwPlanSection(items, DATES, s => `spot/${s.id}/`, 'river spots within 10 miles of Oxford', s => `${s.id} miles`);
   const at = id => h.indexOf(`data-id="${id}"`);
   assert.ok(at('near') < at('mid') && at('mid') < at('far'));   // by distance: the all-low spot is last
-  assert.match(h, /each of the river spots within 10 miles of Oxford is at low risk, nearest first: an order by distance, not a ranking\./);
+  assert.match(h, /<p class="sub">The days at low risk in the next five, nearest spot first\.<\/p><details class="more"><summary>How these windows are found<\/summary><p>For each of the river spots within 10 miles of Oxford: an order by distance, not a ranking\./);
   assert.ok(h.includes('<p class="fw-note">near miles</p>'));
   // A restricting notice shows apart from the levels, and asks to follow it; the levels are as they are.
   assert.match(h, /The official advice is not part of these levels: follow it first\./);

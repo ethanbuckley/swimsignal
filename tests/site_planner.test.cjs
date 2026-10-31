@@ -438,7 +438,7 @@ test('a plan row says what the level rests on, and why a spill expected on a low
   s.days[2].expected_spilling_overflows = 0.3;
   assert.equal(why(s, DATES[3]), '');   // no spill figure that day, and nothing else to say
   // The rating, unless the headline already gives it; access not confirmed; nothing upstream.
-  assert.equal(why({...s, classification: {class: 'excellent', year: 2025}}, DATES[2]), 'Under one spill is expected from the 3 overflows upstream. Rated excellent by the Environment Agency for 2025.');
+  assert.equal(why({...s, classification: {class: 'excellent', year: 2025}}, DATES[2]), 'A spill from one of the 3 overflows upstream is possible, not expected. Rated excellent by the Environment Agency for 2025.');
   assert.doesNotMatch(why({...s, classification: {class: 'poor', year: 2025}}, DATES[2]), /Rated poor/);
   assert.match(why({...s, access: {status: 'unconfirmed'}}, DATES[2]), /Permission to swim at this point is not confirmed\.$/);
   assert.equal(why({...clearRiver}, DATES[2]), 'No monitored storm overflow within 60\u00a0km upstream.');
