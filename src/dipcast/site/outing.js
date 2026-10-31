@@ -81,7 +81,8 @@ function outingChanged(plan, k) {
 // ------------------------------------------------------------------------------ what for, and where to meet
 // Fixed choices (plan.js, OUTING_ACTS and OUTING_MEETS), said in words here. The level is for the water,
 // whatever is done on it (the clubs page says the same), so an activity changes only the words.
-const OUTING_ACT_WORDS = { swim: ['Swim', 'swimming'], paddle: ['Paddle', 'paddling'], sup: ['Paddleboard', 'paddleboarding'] };
+// 'paddle' is a kayak or a canoe: said "Kayak/canoe" (31 Oct 2026), since "Paddle" read as paddleboarding too. The key stays.
+const OUTING_ACT_WORDS = { swim: ['Swim', 'swimming'], paddle: ['Kayak/canoe', 'kayaking or canoeing'], sup: ['Paddleboard', 'paddleboarding'] };
 const OUTING_MEET_WORDS = { parking: 'at the parking', entry: 'where you get in' };
 // For a paddle or a board: some waters need a licence and some do not, and SwimSignal does not know which this is.
 // Paddle UK's own pages say which bodies' waterways need one and list launches and licences river by river
@@ -384,6 +385,24 @@ function outingStretch(o) {
     + 'Nothing here is about weirs, flow, or where you can get in and out.</p></div>';
 }
 
+// ------------------------------------------------------------------------------ the plan's list, for a boat or a board
+// Under each spot on Plan a swim, for a kayak or canoe or a paddleboard (index.html, planItem): the first confirmed fact
+// its guide has for boats and boards (the lite file's boat_note, guides.py), and up to three listed spots downstream to
+// finish at (outingFinishes), each a link that puts the start and that finish in the outing (finishHref(s, id) gives
+// its address). Where SwimSignal has neither, the row says "not known": no guide is not a no. '' for a swim.
+const OUTING_FINISHES_SHOWN = 3;
+function outingActLine(s, act, byId, finishHref) {
+  if (!OUTING_BOAT.includes(act)) return '';
+  const n = s.boat_note, label = new Map(outingGuide().GUIDE_TOPICS), fins = outingFinishes(s, byId).slice(0, OUTING_FINISHES_SHOWN);
+  const note = n && label.has(n.topic)
+    ? `<b>${label.get(n.topic)}:</b> ${outEsc(n.text)} <span class="muted">(${outEsc(n.source || 'its guide')}${n.more > 0 ? `; ${n.more} more on its page` : ''})</span>`
+    : '<b>Launching and rules for boats and boards:</b> not known.';
+  const fin = fins.length
+    ? `<b>Finish downstream:</b> ${fins.map(f => `<a href="${outEsc(finishHref(s, f.id))}" data-plan-start="${outEsc(s.id)}" data-plan-finish="${outEsc(f.id)}">${outEsc(f.name)}</a> (${outingKm(f.km)})`).join(', ')}.`
+    : '<b>Finish downstream:</b> not known.';
+  return `<p class="act-line">${note}</p><p class="act-line">${fin}</p>`;
+}
+
 // ------------------------------------------------------------------------------ the tile
 // A column for a spot: c = { id, name, href, tone, headline, why, ev, meta }, headline/why/ev already
 // HTML (the page's own words, escaped where they were made), the rest text.
@@ -604,6 +623,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { outingActLine, outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }

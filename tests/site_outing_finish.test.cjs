@@ -69,7 +69,7 @@ test('the build puts the stretches in each spot\'s own file and the finishes in 
   assert.match(build, /DETAIL_FIELDS = \("contributors", "guide", "measured", "linked", "seasonal", "stretches"[,)]/);   // sample_history follows it (31 Oct 2026)
   assert.match(build, /health\["stretches"\] = attach_stretches\(results, spots, upstream, _net\(\), _overflows\(\)\)/);
   const privacy = fs.readFileSync(path.join(__dirname, '../src/dipcast/pages/privacy.html'), 'utf8');
-  assert.ok(privacy.includes('the spot where a paddle finishes'));
+  assert.ok(privacy.includes('the spot where a kayak, canoe or paddleboard trip finishes'));
 });
 
 // ------------------------------------------------------------------------------ the finish is followed like the spot

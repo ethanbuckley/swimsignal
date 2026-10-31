@@ -28,7 +28,7 @@ from dipcast import __version__, config
 from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
-from dipcast.guides import attach_guides, copy_photos
+from dipcast.guides import attach_guides, boat_note, copy_photos
 from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
@@ -122,8 +122,8 @@ SITE_URL_ENV = "DIPCAST_SITE_URL"
 # string is the privacy notice's own lead, so the terms page's date is not touched.
 COUNTER_TOKEN_ENV = "DIPCAST_CF_BEACON_TOKEN"
 COUNTER_JS = TEMPLATE.parent / "counter.js"
-NO_COUNTER = ("and what it does not. Last updated 30 October 2026.", "There is no analytics script and no third-party tracking.")
-WITH_COUNTER = ("and what it does not. Last updated 30 October 2026 (page-view counter).",
+NO_COUNTER = ("and what it does not. Last updated 31 October 2026.", "There is no analytics script and no third-party tracking.")
+WITH_COUNTER = ("and what it does not. Last updated 31 October 2026 (page-view counter).",
                 ("Page views are counted with Cloudflare Web Analytics. Cloudflare states that it sets no cookies, "
                  "uses no local storage and does not fingerprint visitors. It sees your IP address when the counter "
                  "loads, as any web server would, and its "
@@ -548,7 +548,7 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
 
 
 def privacy_updated(html: str, what: str) -> str:
-    """Say after the privacy notice's date what a setting added: "Last updated 30 October 2026
+    """Say after the privacy notice's date what a setting added: "Last updated 31 October 2026
     (page-view counter, tips)"."""
     return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
                   html, count=1)
@@ -3194,7 +3194,8 @@ def reach_by_company(contributors: list[dict]) -> list[list]:
 def write_app_data(site: Path, doc: dict) -> int:
     """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
     one file a spot. A lite spot names its file in `detail_file`, relative to data/, and gives whose its
-    overflows are in `reach_by_company` (reach_by_company), where it has any. A spot whose id
+    overflows are in `reach_by_company` (reach_by_company), where it has any, and its guide's first fact for boats and
+    boards in `boat_note` (guides.boat_note), where it has one. A spot whose id
     cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
     out = site / "data" / "spot"
     shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
@@ -3208,7 +3209,8 @@ def write_app_data(site: Path, doc: dict) -> int:
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
         lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json",
-                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {})})
+                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {}),
+                     **({"boat_note": note} if (note := boat_note(s.get("guide"))) else {})})   # Plan a swim's list, for a boat or a board
     # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
     (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
                                                               separators=(",", ":"), default=str))
