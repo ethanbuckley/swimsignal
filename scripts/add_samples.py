@@ -132,6 +132,13 @@ def main(argv: list[str] | None = None) -> int:
         for r in checked:
             counts = "; ".join(f"{k} {r[c]}" for k, c in (("E. coli", "ecoli_per_100ml"), ("enterococci", "enterococci_per_100ml")) if r[c])
             print(f"  {r['spot_id']}  {r['sampled_at']}  {counts}")
+        # What the rows leave unknown (samples.notes): read them with the sender. A note on every row is said once.
+        said: dict[str, int] = {}
+        for r in checked:
+            for n in sm.notes(r):
+                said[n] = said.get(n, 0) + 1
+        for n, k in said.items():
+            print(f"  note: {n}" + (f" ({k} rows)" if k > 1 else ""))
         if a.dry_run:
             print("Dry run: nothing written.")
             return 0
