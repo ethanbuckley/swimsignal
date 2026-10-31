@@ -268,6 +268,9 @@ def main() -> None:
             record_crash(a.days, f"{type(e).__name__}: {e}"[:200])
             raise
         print(json.dumps({k: v for k, v in rec.items() if k != "rows"}, indent=1))
+        # Recorded first, then a nonzero exit, so a partial or failed refresh still fails the job (#545).
+        if rec["status"] != "ok":
+            sys.exit(1)
     else:
         print(json.dumps(publish(a.as_of), indent=1))
 

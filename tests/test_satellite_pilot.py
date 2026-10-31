@@ -142,3 +142,42 @@ def test_the_committed_pilot_sites_and_masks():
         assert all(int(np.sum(c)) > 0 for c in cores.values())
     runs = json.loads((ROOT / "data" / "research" / "satellite" / "pilot_runs.json").read_text())
     assert isinstance(runs, list)
+
+
+@pytest.mark.parametrize("state, code", [("ok", 0), ("partial", 1), ("failed", 1)])
+def test_the_run_command_exits_nonzero_unless_the_refresh_completed(state, code, monkeypatch, tmp_path, capsys):
+    """The CLI path the workflow runs (#545): a partial or failed refresh is recorded and printed, then fails the step.
+    An ok run with no clear image is still ok."""
+    rec = _run("201", [], status=state)
+    seen = {}
+
+    def fake_run(root, *a):
+        seen["root"] = root
+        return rec
+    monkeypatch.setattr(sp, "run", fake_run)
+    monkeypatch.setattr(sys, "argv", ["satellite_pilot.py", "run", str(tmp_path / "pilot")])
+    if code:
+        with pytest.raises(SystemExit) as e:
+            sp.main()
+        assert e.value.code == code
+    else:
+        sp.main()
+    assert json.loads(capsys.readouterr().out)["status"] == state
+    assert seen["root"] == tmp_path / "pilot"
+
+
+def test_a_crashed_run_is_recorded_as_failed_and_fails_the_step(files, monkeypatch, tmp_path):
+    obs, runs = files
+
+    def boom(*a):
+        raise RuntimeError("earth-search unreachable")
+    monkeypatch.setattr(sp, "run", boom)
+    monkeypatch.setattr(sys, "argv", ["satellite_pilot.py", "run", str(tmp_path / "pilot")])
+    with pytest.raises(RuntimeError):
+        sp.main()
+    last = json.loads(runs.read_text())[-1]
+    assert last["status"] == "failed" and "unreachable" in last["stop_reason"]
+    # Published, the site keeps its last reading and says the check failed.
+    sp.publish(date(2026, 11, 2))
+    lk = next(x for x in json.loads(obs.read_text())["lakes"] if x["lake_id"] == "bw-x")
+    assert lk["operation"]["last_status"] == "failed" and lk["latest"]["date"] == "2026-09-20"

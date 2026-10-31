@@ -97,6 +97,15 @@ jobs:
           done
           exit 1
 
-      - name: Fail the job when the run did not finish
-        if: steps.run.outcome != 'success'
-        run: exit 1
+      # After publish and commit, so the page shows the partial or failed run first (#545). The run step exits
+      # nonzero for a recorded partial or failed refresh; the recorded status is checked too, in case it did not.
+      - name: Fail the job when the refresh did not complete
+        if: always()
+        env:
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+        run: |
+          status=$(uv run python -c 'import json; print(json.load(open("data/research/satellite/pilot_runs.json"))[-1]["status"])')
+          if [ "$RUN_OUTCOME" != success ] || [ "$status" != ok ]; then
+            echo "::error title=Satellite pilot::refresh did not complete (step $RUN_OUTCOME, recorded $status)"
+            exit 1
+          fi
