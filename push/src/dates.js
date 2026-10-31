@@ -1,5 +1,5 @@
 // Alerts for a date (README.md, "Alerts for a date"): a browser with alerts on asks about up to
-// MAX_DATES pairs of a spot and a date, from the organisers' page. The cron tells it when that day
+// MAX_DATES pairs of a spot and a date, from the organisers' page or an outing on Plan a swim. The cron tells it when that day
 // first enters the forecast, and again each time the day's level or the spot's official notice
 // changes; a pair is forgotten once its date has passed.
 //
@@ -134,10 +134,11 @@ const join = (...parts) => parts.filter(Boolean).join(' ');
 
 // One pair: the spot and the day, then the day's headline (it comes first: Android shows about one
 // line until the notification is opened), what to do, and whether it is the first forecast or a
-// change. The site's worker adds the issue time. It opens the organisers' page at that spot and day.
+// change. The site's worker adds the issue time. It opens the spot's page on that day, where the
+// organiser and the swimmer both see the day's level and why; several pairs open the first one's.
 // Several pairs in one build: a line each.
 export function datePayload(lines, spots, siteUrl, issued) {
-  const link = ({ spot, date }) => `${siteUrl}organisers.html#spot=${encodeURIComponent(spot)}&date=${date}`;
+  const link = ({ spot, date }) => `${siteUrl}spot/${spot}/#day=${date}`;   // SPOT_ID is the pages' own id rule
   const name = (id) => spots[id]?.name ?? id;
   if (lines.length === 1) {
     const [{ spot, date, from, day }] = lines;

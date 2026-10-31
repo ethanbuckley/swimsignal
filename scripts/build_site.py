@@ -392,7 +392,8 @@ PUSH_DATES_SWAPS = [
      "its spot and its backup, each with the outing's day, but not its time or where you start from), and nothing else"),
     ("with the days of lowest pollution risk ahead at those spots. ",
      "with the days of lowest pollution risk ahead at those spots, and, for each spot and date you asked about, a "
-     "notification when that day's forecast first appears and again each time its level changes. Each spot and date "
+     "notification when that day's forecast first appears and again each time its level or the official notice at "
+     "that spot changes. Each spot and date "
      "is deleted once the date has passed. "),
     ("so that an unchanged list is sent again only about once a week. ",
      "so that an unchanged list is sent again only about once a week, and of the spots and dates it asked about, "
@@ -1925,6 +1926,62 @@ def attach_water_temperature_estimate(results: list[dict], forecast=None, model=
     return out
 
 
+BATHING_WATER_POINTS = ROOT / "data" / "raw" / "bathing_water_points.json"   # scripts/refresh_bathing_water_points.py
+
+
+def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model=None, points_file: Path | None = None,
+                                nation: str = "england") -> dict:
+    """The coastal directory's provisional water temperature (#492 stage 3, #479): at each coastal or estuary bathing
+    water, the sea curve in the 7-day air of the nearest cell the click-anywhere build cached (`water_air`, from
+    overflow_days.json: no extra request), placed by the site's sampling point (BATHING_WATER_POINTS). A site gets
+    `water_temp_est` (water_temp.sea_from_cells) or `water_temp_est_missing` with why: "point" (no sampling point on
+    file), "air" (no cached cell in its own or the eight around it) or "error". Returns the build's health entry."""
+    from dipcast.model import water_temp
+    out = {"estimated": 0, "routes": {}, "missing": {}}
+
+    def miss(s, why, day=None):
+        s["water_temp_est_missing"] = {"why": why, **({"date": day} if day else {})}
+        out["missing"][why] = out["missing"].get(why, 0) + 1
+    model = water_temp.load() if model is None else model
+    try:
+        points = json.loads((points_file or BATHING_WATER_POINTS).read_text())[nation]
+    except Exception as e:  # noqa: BLE001 - an estimate beside the directory must not sink the build
+        log.warning("bathing water points: %s", e)
+        points = {}
+    cells, day = (water_air or {}).get("cells") or {}, (water_air or {}).get("date")
+    for s in sites:
+        p = points.get(s.get("id"))
+        if model is None or not day:
+            miss(s, "air")
+            continue
+        if not p:
+            miss(s, "point", day)
+            continue
+        try:
+            est = water_temp.sea_from_cells(model, cells, day, p[0], p[1], s.get("kind", "coast"))
+        except Exception as e:  # noqa: BLE001
+            log.warning("directory water temperature for %s: %s", s.get("name"), e)
+            miss(s, "error", day)
+            continue
+        if est is None:
+            miss(s, "air", day)
+        else:
+            s["water_temp_est"] = est
+            out["estimated"] += 1
+            out["routes"][est["route"]] = out["routes"].get(est["route"], 0) + 1
+    log.info("directory water temperature (%s): %d sites %s, missing %s", nation, out["estimated"], out["routes"],
+             out["missing"])
+    return out
+
+
+def anypoint_water_air(site: Path) -> dict | None:
+    """The `water_air` this build's click-anywhere file published, or None (no file, or none in it)."""
+    try:
+        return json.loads((site / "data" / "anypoint" / "overflow_days.json").read_text()).get("water_air")
+    except Exception:  # noqa: BLE001
+        return None
+
+
 WATER_TEMP_LOG = "water_temp_estimates.parquet"   # in the state directory; the state release carries it (site.yml)
 
 
@@ -2154,6 +2211,16 @@ PAGE_TITLE = re.compile(r"<title>(.*?)</title>")
 PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 
 
+# The prose pages share the app's phone navigation. Links are relative to the built site root.
+PHONE_NAV = (
+    '<nav class="phone-nav" aria-label="Main">'
+    '<a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>'
+    '<a href="index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
+    '<a href="plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
+    '<a href="saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a></nav>'
+)
+
+
 def with_share_meta(page: str, path: str, root: str) -> str:
     """A prose page with page_meta's block in place of its own <title> and description: its canonical
     link and its share preview (og: and twitter: tags, with the shared icons/og.png), in the page's own
@@ -2165,7 +2232,7 @@ def with_share_meta(page: str, path: str, root: str) -> str:
         raise ValueError(f"{path} needs one <title>, one description, and no canonical link or share tags of its own")
     head = PAGE_DESCRIPTION.sub("", head, count=1)
     head = PAGE_TITLE.sub(lambda _: page_meta(unescape(titles[0]), unescape(descriptions[0]), root + path, root), head, count=1)
-    return head + sep + rest
+    return (head + sep + rest).replace("</body>", PHONE_NAV + "</body>", 1)
 
 
 def spot_blurb(spot: dict) -> str:
@@ -2458,7 +2525,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2774,6 +2841,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     paged = [r for r in results if r["id"] in set(ids)]
+    write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
@@ -2783,12 +2851,16 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
+    write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
+    write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
     write_organisers(site, token, root)
     write_sites(site, token, root)
     write_record(site, token, root)
+    write_lake_temperatures_page(site, token, root)   # measured lake temperatures (research): the viewer
+    write_durations(site, token, root)   # the spill durations viewer, from the files written before the profiles
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
@@ -2964,7 +3036,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3146,6 +3218,233 @@ def write_record(site: Path, token: str | None = None, root: str | None = None) 
     return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
 
+# Measured lake temperatures (docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md): the Environment Agency's water temperature
+# readings in lakes, May to September 2000-2026, as the research side exports them in one file,
+# data/research/lake_temperature_obs.v1.json (scripts/export_lake_temperature_obs.py, from cached readings: the build
+# fetches nothing). The site splits it into data/research/lake-temperatures/: index.json, every lake's name, summary
+# and linked spots without its readings, sampling points or size (its months' counts as `n`, May to September), with
+# the listed spots by spot id, which a lake spot's page reads for its one link (9 kB gzipped for 210 lakes, 30 Oct 2026); and lake/<wb_id>.json, one lake whole, fetched when it is picked.
+# A file of another schema, or another major version, is not published: the viewer then says so, rather than read
+# fields it does not know. Only this folder is replaced, so other research files beside it stay.
+LAKE_TEMPS = config.ROOT / "data" / "research" / "lake_temperature_obs.v1.json"
+LAKE_TEMP_SCHEMA, LAKE_TEMP_MAJOR = "swimsignal.lake-temperature-obs", "1"
+LAKE_TEMP_HEAVY = ("readings", "points", "monthly", "area_km2", "depth_m", "reservoir")   # per lake, only in its own file
+LAKE_TEMP_MONTHS = (5, 6, 7, 8, 9)   # the months fetched; the page shows no other
+REWRITES += [('href="/lake-temperatures"', 'href="lake-temperatures.html"')]   # the data page links the viewer
+
+
+def write_lake_temperatures(site: Path, path: Path | None = None) -> dict:
+    """data/research/lake-temperatures/index.json and lake/<wb_id>.json from the research export (LAKE_TEMPS unless
+    path), or index.json saying none are published (`available` false, with why). Returns the build's health entry."""
+    path = path or LAKE_TEMPS
+    out = site / "data" / "research" / "lake-temperatures"
+    shutil.rmtree(out, ignore_errors=True)   # no file left from a lake that has gone, or from an export now refused
+    (out / "lake").mkdir(parents=True)
+    why = None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != LAKE_TEMP_SCHEMA or str(doc.get("version", "")).split(".")[0] != LAKE_TEMP_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {LAKE_TEMP_SCHEMA} {LAKE_TEMP_MAJOR}.x"
+    if why:
+        (out / "index.json").write_text(json.dumps({"schema": LAKE_TEMP_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    lakes = [x for x in doc["lakes"] if SPOT_ID.fullmatch(str(x.get("wb_id", "")))]
+    for x in lakes:
+        (out / "lake" / f"{x['wb_id']}.json").write_text(json.dumps(x, separators=(",", ":")))
+    month_n = lambda x: [next((m.get("n", 0) for m in x.get("monthly") or [] if m.get("month") == k), 0) for k in LAKE_TEMP_MONTHS]
+    # The spots' links, by spot id: the lake, how far the spot is from its nearest sampling point, and the years.
+    spots = {s["spot_id"]: {"wb_id": x["wb_id"], "lake": x["name"], "nearest_point_m": s.get("nearest_point_m"),
+                            "outside_lake_m": s.get("outside_lake_m"), "first": (x.get("summary") or {}).get("first"),
+                            "last": (x.get("summary") or {}).get("last"), "readings": (x.get("summary") or {}).get("readings")}
+             for x in lakes for s in x.get("spots") or [] if SPOT_ID.fullmatch(str(s.get("spot_id", "")))}
+    index = {**{k: v for k, v in doc.items() if k not in ("lakes", "sources")}, "available": True,
+             "lakes": [{k: v for k, v in x.items() if k not in LAKE_TEMP_HEAVY} | {"n": month_n(x), "n_points": len(x.get("points") or [])}
+                       for x in lakes],
+             "spots": spots}
+    (out / "index.json").write_text(json.dumps(index, separators=(",", ":")))
+    return {"available": True, "lakes": len(lakes), "skipped_ids": len(doc["lakes"]) - len(lakes), "spots": len(spots),
+            "version": doc["version"]}
+
+
+def write_lake_temperatures_page(site: Path, token: str | None = None, root: str | None = None) -> str:
+    """lake-temperatures.html and lake-temperatures.js beside the app, which read data/research/lake-temperatures/
+    (write_lake_temperatures, run before the data page). Returns the script's version."""
+    return write_scripted_page(site, "lake-temperatures.html", ("lake-temperatures.js",), ("lake-temperatures.js",), token, root)
+
+
+# Spill durations (docs/SPILL-DURATIONS-CONTRACT-v1.md): how long each storm overflow's spills lasted in 2024 and 2025,
+# and, per company, how often a spill already running was still running hours later, from the Environment Agency's
+# start/stop records. The research side exports one file, data/research/spill_durations.v1.json
+# (scripts/export_spill_durations.py; about 600 kB, 12,908 overflows). A record of the past, never a forecast: it is
+# shown on durations.html and on each spot's overflow history, never on the spot's page or beside its "if it stops
+# now" line. The site splits it: data/research/spill_durations.json, the export without its overflows, with the spots
+# that have a file; data/research/spill_durations/<spot id>.json, the overflows in the spot's data/upstream/<id>.json
+# that the export has, which the viewer fetches when a spot is picked and write_profiles puts on spot/<id>/profile/.
+# Per spot, not per company or map tile, because both readers start from a spot: over the live 30 Oct 2026 data, 81 spot
+# files, the largest 36 kB (6 kB gzipped; Avon at Warleigh Weir) and the median 3 kB, 407 kB in all, and the index 22 kB
+# (5 kB gzipped), where one company's file would hold up to 2,192 overflows. An overflow upstream of no spot has no file of
+# its own. A file of another schema, or another major version, is not published: the index then says why, and the pages
+# say nothing is published. Only this dataset's files under data/research/ are replaced, so another research dataset
+# can share the folder.
+SPILL_DURATIONS = config.ROOT / "data" / "research" / "spill_durations.v1.json"
+DURATIONS_SCHEMA, DURATIONS_MAJOR = "swimsignal.spill-durations", "1"
+REWRITES += [('href="/durations"', 'href="durations.html"')]   # the Research page links the viewer
+DURATIONS_FIELDS = ("spills_2024", "spills_2025", "median_h", "p90_h", "longest_h", "share_over_6h", "few")
+DURATIONS_OUT = "spill_durations"   # data/research/<this>.json and data/research/<this>/
+
+
+def write_spill_durations(site: Path, spots: list[dict], path: Path | None = None) -> dict:
+    """data/research/spill_durations.json and data/research/spill_durations/<spot id>.json for each spot in `spots`
+    with a data/upstream/<id>.json, from the research export; or the index alone, saying none are published
+    (`available` false, with why). Only this dataset's own files are replaced. Returns the build's health entry."""
+    from dipcast.overflow_names import overflow_names
+    out = site / "data" / "research"
+    shutil.rmtree(out / DURATIONS_OUT, ignore_errors=True)   # a spot that lost its overflows loses its file
+    (out / DURATIONS_OUT).mkdir(parents=True)
+    why, doc, path = None, {}, path or SPILL_DURATIONS   # read at call time, so a test can point it elsewhere
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        try:
+            doc = json.loads(path.read_text())
+        except ValueError:
+            why = "export is not JSON"
+        else:
+            if doc.get("schema") != DURATIONS_SCHEMA or str(doc.get("version", "")).split(".")[0] != DURATIONS_MAJOR:
+                why = f"export is {doc.get('schema')} {doc.get('version')}, not {DURATIONS_SCHEMA} {DURATIONS_MAJOR}.x"
+    cols = doc.get("overflows") or {}
+    n = len(cols.get("site_id") or [])
+    if not why and any(len(cols.get(k) or []) != n for k in ("company", *DURATIONS_FIELDS)):
+        why = "export's overflow columns differ in length"
+    if why:
+        (out / f"{DURATIONS_OUT}.json").write_text(json.dumps({"schema": DURATIONS_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    companies, row_of = doc.get("companies") or [], {sid: i for i, sid in enumerate(cols["site_id"])}
+    listed = []
+    for s in spots:
+        f = site / "data" / "upstream" / f"{s['id']}.json"
+        if not SPOT_ID.fullmatch(str(s["id"])) or not f.is_file():
+            continue
+        rows, absent = [], []
+        for u in json.loads(f.read_text()).get("overflows") or []:   # the upstream file's order: largest weight first
+            plain, own = overflow_names(u.get("site_name"), u["site_id"])
+            named = {"site_id": u["site_id"], "name": plain, "own": own}
+            i = row_of.get(u["site_id"])
+            if i is None:
+                absent.append(named | {"company": u.get("company")})
+                continue
+            c = cols["company"][i]
+            rows.append(named | {"company": companies[c] if isinstance(c, int) and 0 <= c < len(companies) else None}
+                        | {k: cols[k][i] for k in DURATIONS_FIELDS})
+        (out / DURATIONS_OUT / f"{s['id']}.json").write_text(json.dumps(
+            {"id": s["id"], "name": s.get("name"), "period": doc.get("period"), "overflows": rows, "absent": absent},
+            separators=(",", ":"), ensure_ascii=False))
+        listed.append({"id": s["id"], "name": s.get("name"), "overflows": len(rows), "absent": len(absent)})
+    index = {k: v for k, v in doc.items() if k != "overflows"} | {"available": True, "spots": listed}
+    (out / f"{DURATIONS_OUT}.json").write_text(json.dumps(index, separators=(",", ":"), ensure_ascii=False))
+    return {"available": True, "version": doc.get("version"), "overflows": n, "spots": len(listed),
+            "spot_overflows": sum(x["overflows"] for x in listed)}
+
+
+def spill_durations_for(site: Path, spot_id: str) -> dict | None:
+    """What write_spill_durations wrote for one spot, with the export's claim, attribution and period, for its
+    overflow history page; None when no export is published or the spot has no file."""
+    try:
+        index = json.loads((site / "data" / "research" / f"{DURATIONS_OUT}.json").read_text())
+        if not index.get("available"):
+            return None
+        one = json.loads((site / "data" / "research" / DURATIONS_OUT / f"{spot_id}.json").read_text())
+    except (OSError, ValueError):
+        return None
+    return {"claim": index.get("claim") or {}, "attribution": index.get("attribution") or [], "period": index.get("period") or {},
+            "method": index.get("method") or {}, "overflows": one.get("overflows") or [], "absent": one.get("absent") or []}
+
+
+def write_durations(site: Path, token: str | None = None, root: str | None = None) -> str:
+    """durations.html and durations.js beside the app; write_spill_durations has written the files they read.
+    Returns the script's version."""
+    return write_scripted_page(site, "durations.html", ("durations.js",), ("durations.js",), token, root)
+
+
+# Every Environment Agency E. coli sample at the inland bathing waters (docs/ECOLI-EVIDENCE-CONTRACT-v1.md). The
+# research side exports one file, data/research/ecoli_evidence.v1.json (scripts/export_ecoli_evidence.py), with a
+# hindsight model estimate beside each sample that the site never showed (`issued: false`). The site splits it:
+# data/research/ecoli.json, every bathing water without its samples, for the viewer's list, with this build's EA
+# rating and the EA's profile page beside each; data/research/ecoli/<spot_id>.json, one bathing water whole, fetched
+# when it is picked (samples.html, samples.js). A file of another schema, or another major version, is not
+# published: the viewer then says no samples are published, rather than read fields it does not know. Only these
+# two paths are cleared, so the other research files in data/research/ are left to their own writers.
+ECOLI_EVIDENCE = config.ROOT / "data" / "research" / "ecoli_evidence.v1.json"
+ECOLI_SCHEMA, ECOLI_MAJOR = "swimsignal.ecoli-evidence", "1"
+EA_PROFILE = "https://environment.data.gov.uk/bwq/profiles/profile.html?site={}"
+BW_ID = re.compile(r"uk[a-z]\d{4}-\d{5}")
+REWRITES += [('href="/samples"', 'href="samples.html"')]   # the data page links the viewer
+
+
+def read_ecoli_evidence(path: Path = ECOLI_EVIDENCE) -> tuple[dict | None, str | None]:
+    """The research export and None, or None and why it is not published."""
+    if not path.is_file():
+        return None, "no export in this build"
+    doc = json.loads(path.read_text())
+    if doc.get("schema") != ECOLI_SCHEMA or str(doc.get("version", "")).split(".")[0] != ECOLI_MAJOR:
+        return None, f"export is {doc.get('schema')} {doc.get('version')}, not {ECOLI_SCHEMA} {ECOLI_MAJOR}.x"
+    return doc, None
+
+
+def ecoli_sites(doc: dict) -> list[dict]:
+    """The export's bathing waters whose ids can be file names and EA addresses."""
+    return [x for x in doc.get("sites") or [] if SPOT_ID.fullmatch(str(x.get("spot_id", ""))) and BW_ID.fullmatch(str(x.get("bw_id", "")))]
+
+
+def write_ecoli_evidence(site: Path, path: Path = ECOLI_EVIDENCE, results: list[dict] | None = None) -> dict:
+    """data/research/ecoli.json and data/research/ecoli/<spot_id>.json from the research export, or ecoli.json
+    saying none are published (`available` false, with why). results: this build's spots, whose EA rating each
+    bathing water carries in the index. Returns the build's health entry."""
+    out = site / "data" / "research"
+    (out / "ecoli.json").unlink(missing_ok=True)
+    shutil.rmtree(out / "ecoli", ignore_errors=True)
+    (out / "ecoli").mkdir(parents=True)
+    doc, why = read_ecoli_evidence(path)
+    if why:
+        (out / "ecoli.json").write_text(json.dumps({"schema": ECOLI_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    rated = {str(r["id"]): r.get("classification") for r in results or [] if r.get("classification")}
+    sites = ecoli_sites(doc)
+    for x in sites:
+        (out / "ecoli" / f"{x['spot_id']}.json").write_text(json.dumps(x, separators=(",", ":")))
+    index = {**{k: v for k, v in doc.items() if k != "sites"}, "available": True,
+             "sites": [{k: v for k, v in x.items() if k != "samples"} | {"profile": EA_PROFILE.format(x["bw_id"])}
+                       | ({"rating": {k: rated[x["spot_id"]].get(k) for k in ("class", "year")}} if x["spot_id"] in rated else {})
+                       for x in sites]}
+    (out / "ecoli.json").write_text(json.dumps(index, separators=(",", ":")))
+    return {"available": True, "sites": len(sites), "skipped_ids": len(doc.get("sites") or []) - len(sites), "version": doc["version"]}
+
+
+def attach_sample_history(results: list[dict], path: Path = ECOLI_EVIDENCE) -> int | None:
+    """On each bathing water in the export, `sample_history`: its first and last sample's dates and how many, for
+    the one link from its page's latest lab sample to every sample (evidence.js). A spot's own file only
+    (DETAIL_FIELDS). Returns how many spots got it, None without a publishable export."""
+    doc, why = read_ecoli_evidence(path)
+    if why:
+        return None
+    by = {x["spot_id"]: x for x in ecoli_sites(doc)}
+    n = 0
+    for r in results:
+        x = by.get(str(r["id"]))
+        if x and x.get("samples"):
+            r["sample_history"] = {"first": x["samples"][0]["t"][:10], "last": x["samples"][-1]["t"][:10], "samples": len(x["samples"])}
+            n += 1
+    return n
+
+
+def write_samples(site: Path, token: str | None = None, root: str | None = None, results: list[dict] | None = None) -> str:
+    """samples.html and samples.js beside the app, and the samples they read. Returns the script's version."""
+    write_ecoli_evidence(site, results=results)
+    return write_scripted_page(site, "samples.html", ("samples.js",), ("samples.js",), token, root)
+
+
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
 # upstream with its spills and spill hours each year 2021-2025, from the Environment Agency's annual returns
 # (data/processed/annual_returns.parquet, OGL v3, credited in the terms). The list is the spot's
@@ -3227,7 +3526,8 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "profile" / "index.html").write_text(
-            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root), token))
+            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
+                                           durations=spill_durations_for(site, r["id"]) if t is not None else None), token))
     return n
 
 
@@ -3362,6 +3662,7 @@ def build(refresh: bool = True) -> dict:
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
+    n_history = attach_sample_history(results)   # from the research export, a file: no request
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
@@ -3393,6 +3694,7 @@ def build(refresh: bool = True) -> dict:
     health["dry_weather_notes"] = {"overflows": dry["overflows"], "spots": dry["spots"]}
     health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
+    health["sample_history"] = n_history
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
     else:
@@ -3454,10 +3756,12 @@ def build(refresh: bool = True) -> dict:
     from dipcast.coastal import fetch as fetch_coastal
     # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
+    coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),
-                         "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"])}
+                         "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
+                         "water_temperature_estimate": coastal_water}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()

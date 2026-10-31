@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Measured lake temperatures: a prose page with the shared head, header and foot, written by scripts/build_site.py
+     (write_lake_temperatures_page) beside the app. lake-temperatures.js fills #lake-temps from
+     data/research/lake-temperatures/ (the research export, docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md, split by
+     write_lake_temperatures). What it may say is the contract's: lake-temperatures.js puts the export's own approved
+     sentence beside each lake's figures, its page sentence (1.1) into #lt-lead, its method sentence (1.1) into
+     #lt-method-said, and its list of what is not claimed and its credits into #lt-not and #lt-attrib; the words here are
+     the fallback for a page without them. The rest of the method is said here in plain words: the export's `method`
+     is otherwise written for the research record (#419's rows, polygons). A lake spot's page links here (#lake=<wb_id>). -->
+<title>Measured lake temperatures · SwimSignal</title>
+<meta name="description" content="Water temperatures the Environment Agency measured in English lakes on visits from May to September, 2000 to 2026: the median and middle half by month, with how many readings each rests on. Past measurements, not today's temperature.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens, tables and the prose page are page.css's. One lake: when, the months, the dots, the sampling points. */
+  main.doc .lt-pick { margin:16px 0 6px; }
+  main.doc .lt-lake h2 { margin-top:28px; }
+  main.doc .lt-meta, main.doc .lt-few, main.doc .lt-years, main.doc .lt-spots, main.doc .lt-claim, main.doc .lt-sum { font-size:var(--fs-note); }
+  main.doc .lt-meta, main.doc .lt-few, main.doc .lt-years { color:var(--muted); }
+  main.doc .lt-points { font-size:var(--fs-note); }
+  .lt-months th[scope="row"] { color:var(--ink); font-weight:400; }
+  .lt-months tbody tr:first-child th { border-bottom-color:var(--line); }   /* page.css inks a first row's th, meant for a header row */
+  .lt-months td:last-child { white-space:normal; }   /* the range may wrap, so the table fits a 320 px phone */
+  .lt-fig { margin:16px 0; max-width:100%; overflow:hidden; }
+  .lt-fig svg { display:block; max-width:100%; height:auto; }
+  .lt-fig figcaption { font-size:var(--fs-meta); color:var(--muted); margin-top:4px; }
+  .lt-grid { stroke:var(--line); stroke-width:1; }
+  .lt-ax { font:400 11px var(--font-text); fill:var(--muted); }
+  .lt-dot { fill:var(--brand); fill-opacity:.4; }
+  .lt-med { stroke:var(--ink); stroke-width:2.5; }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>Measured lake temperatures</h1>
+<p class="lead" id="lt-lead">Water temperatures the Environment Agency measured in English lakes, on the days it visited them between May and September. A record of past measurements by month, not today's temperature.</p>
+<noscript><p class="notice">This page needs JavaScript to read the measurements.</p></noscript>
+<div id="lake-temps" aria-live="polite"></div>
+
+<h2>What these readings do not tell you</h2>
+<ul id="lt-not">
+<li>the temperature now</li>
+<li>the temperature at the swim spot</li>
+<li>a forecast</li>
+<li>that water is safe to swim</li>
+</ul>
+
+<h2>How they were measured</h2>
+<p id="lt-method-said" hidden></p>
+<p>The Environment Agency measured the water's temperature at a lake's sampling points on the days it visited them. A lake can have several sampling points; each reading here keeps its point and its date, and a point has at most one reading a day. Only readings from May to September were collected for this record, so it has no figures for October to April.</p>
+<p class="small">Source: the Environment Agency Water Quality Archive, water temperature (determinand 0076). Sampling points are matched to a lake when they lie inside its outline or on its water.</p>
+<ul>
+<li><a href="https://environment.data.gov.uk/water-quality/">The Environment Agency Water Quality Archive</a>, where each sampling point's full record is kept</li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md">What this page's data holds, and what it may say</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/export_lake_temperature_obs.py">The script that makes the file</a></li>
+<li><a href="data.html#research">The files this page reads</a></li>
+</ul>
+
+<h2>Sources</h2>
+<p><span id="lt-attrib">Environment Agency Water Quality Archive, Open Government Licence v3.0. WFD lake outlines: Environment Agency, Open Government Licence v3.0. Lake depths: HydroLAKES (Messager et al. 2016), CC BY 4.0.</span> <a href="terms.html#data">Data credits</a>.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="lake-temperatures.js"></script>
+</body></html>

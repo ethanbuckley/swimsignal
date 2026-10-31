@@ -157,8 +157,8 @@ test('the calendar file, field by field: the time window, the spot, links back, 
   assert.ok(text.endsWith('END:VEVENT\r\nEND:VCALENDAR\r\n'));
   assert.equal(p.UID.value, 'outing-2026-11-01-frensham@swimsignal.co.uk');
   assert.equal(p.DTSTAMP.value, '20261031T093000Z');
-  // The swimmer's own time, on the device's clock: a local time, morning 06:00 to 12:00.
-  assert.deepEqual([p.DTSTART.value, p.DTEND.value], ['20261101T060000', '20261101T120000']);
+  // The swim spot's local time converted to fixed UTC instants.
+  assert.deepEqual([p.DTSTART.value, p.DTEND.value], ['20261101T060000Z', '20261101T120000Z']);
   assert.equal(p.SUMMARY.value, 'Swim: Frensham Great Pond');
   assert.equal(p.LOCATION.value, 'Frensham Great Pond');
   assert.equal(p.URL.value, CAL.main.url);
@@ -171,9 +171,9 @@ test('the calendar file, field by field: the time window, the spot, links back, 
 
 test('the calendar file: an hour, the whole day, no backup, and odd names escaped and folded by octets', () => {
   const hour = unfold(O.outingIcs({...CAL, when: '07'}, 0));
-  assert.deepEqual([hour.DTSTART.value, hour.DTEND.value], ['20261101T070000', '20261101T080000']);
+  assert.deepEqual([hour.DTSTART.value, hour.DTEND.value], ['20261101T070000Z', '20261101T080000Z']);
   const evening = unfold(O.outingIcs({...CAL, when: 'evening'}, 0));
-  assert.deepEqual([evening.DTSTART.value, evening.DTEND.value], ['20261101T170000', '20261101T210000']);
+  assert.deepEqual([evening.DTSTART.value, evening.DTEND.value], ['20261101T170000Z', '20261101T210000Z']);
   const day = unfold(O.outingIcs({...CAL, when: undefined, day: '2026-12-31'}, 0));
   assert.deepEqual([day.DTSTART.params, day.DTSTART.value, day.DTEND.value, day.TRANSP.value], [';VALUE=DATE', '20261231', '20270101', 'TRANSPARENT']);
   const solo = unfold(O.outingIcs({...CAL, backup: null}, 0));
@@ -223,4 +223,10 @@ test('the calendar file carries each spot\'s verified parking and getting-in fac
   const src = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/outing.js'), 'utf8');
   assert.match(src, /practical: outingPractical\(pair\.main\)/);
   assert.match(src, /practical: outingPractical\(pair\.backup\)/);
+});
+
+test('calendar times follow UK summer time and the clock-change dates', () => {
+  for (const [day, expected] of [['2026-03-28', '20260328T070000Z'], ['2026-03-29', '20260329T060000Z'], ['2026-10-24', '20261024T060000Z'], ['2026-10-25', '20261025T070000Z']]) {
+    assert.equal(unfold(O.outingIcs({...CAL, day, when: '07'}, 0)).DTSTART.value, expected);
+  }
 });

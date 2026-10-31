@@ -122,8 +122,8 @@ function shareHash(name, spots, day = null) {
   return `#list=${encodeURIComponent(listName(name))}${day ? `&day=${day}` : ''}&spots=${listIds(spots).map(encodeURIComponent).join(',')}`;
 }
 // What a link holds, or null when it is not a list. A link from before lists (#spots=a,b) has no
-// name and reads "Shared list". A day not among the forecast's dates (passed, or not a date) is left
-// out; a name or an id that cannot be read is dropped, and at most LINK_SPOTS_MAX spots are read.
+// name and reads "Shared list". Valid dates outside the forecast window remain as requestedDay;
+// malformed dates are ignored. Unreadable names or ids are dropped, and at most LINK_SPOTS_MAX spots are read.
 function readShared(hash, dates = []) {
   const parts = String(hash || '').replace(/^#/, '').split('&').map(p => { const i = p.indexOf('='); return i < 0 ? [p, ''] : [p.slice(0, i), p.slice(i + 1)]; });
   const raw = k => { const p = parts.find(([key]) => key === k); return p ? p[1] : null; };
@@ -132,7 +132,9 @@ function readShared(hash, dates = []) {
   const spots = listIds(raw('spots').split(',').map(dec)).slice(0, LINK_SPOTS_MAX);
   const name = listName(dec((raw('list') || '').replace(/\+/g, ' ')));
   const day = raw('day');
-  return { name: name || SHARED_LIST, spots, day: dates.includes(day) ? day : null };
+  const validDay = /^\d{4}-\d{2}-\d{2}$/.test(day || '') && !Number.isNaN(Date.parse(day)) && new Date(day).toISOString().slice(0, 10) === day;
+  return { name: name || SHARED_LIST, spots, day: dates.includes(day) ? day : null,
+    ...(validDay && dates.length && !dates.includes(day) ? { requestedDay: day } : {}) };
 }
 // A list's link, pasted on the Saved page. The Home Screen app on an iPhone has no address bar to open
 // a link in, and keeps its lists apart from Safari's (phone audit, 25 Oct 2026), so a link someone sent,

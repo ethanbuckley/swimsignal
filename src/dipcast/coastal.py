@@ -299,6 +299,24 @@ def sample_line(sample, since):
     return 'Sample results: see the official profile'
 
 
+def water_line(site):
+    """One line under a site: the provisional sea-surface estimate on its day (build_site.attach_directory_water_temp),
+    dated so a page that stops updating never passes it off as today's, or why there is none. Empty for a snapshot
+    built without estimates."""
+    e, miss = site.get("water_temp_est"), site.get("water_temp_est_missing")
+    if e:
+        day = pd.Timestamp(e["date"])
+        where = "this beach's square" if not e.get("air_km") else f'a point {e["air_km"]} km away'
+        how = (f'typical error {e["typical_c"]:.1f} °C at sea points in a summer test' if e.get("typical_c") is not None
+               else "estuaries were not in the test" if e["route"].startswith("estuary")
+               else "not yet checked in these months")
+        return (f'Water about {e["temp_c"]} °C on {day.day} {day:%b}: estimated from the last 7 days\' air temperature '
+                f'at {where}, not measured. Provisional: {how}')
+    if miss:
+        return 'No water temperature estimate in this update'
+    return ''
+
+
 def when(iso):
     """A source time as people read it, in UK time ("3 Oct 2026, 21:45"), in a <time> element that
     keeps the exact value. Unreadable values are shown as they came."""
@@ -331,6 +349,8 @@ def render(snapshot):
             stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
+        water = water_line(site)
+        sample += f'<br>{escape(water)}' if water else ''
         profile = escape(site["profile"], quote=True)
         # Today's advice, from the EA itself: coverage.html's script loads the EA's own panel for the
         # site into this fold when it is first opened. Without the script, the fold points to the profile.

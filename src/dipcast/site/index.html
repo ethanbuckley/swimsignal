@@ -184,6 +184,12 @@
      the six keys in one line, and the overflows' key under them while overflows are on the map. */
   .map-legend { background:var(--float); border-radius:var(--radius); padding:6px 10px; font-size:var(--fs-meta); line-height:1.5; box-shadow:var(--lift); color:var(--ink); }
   .map-legend .keys { display:flex; flex-wrap:wrap; gap:2px 12px; }
+  .map-legend > summary { cursor:pointer; min-height:44px; display:flex; align-items:center; font-weight:600; }
+  .map-help { display:none; }
+  @media (max-width:800px) {
+    body.map-mode .map-help { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px 10px; }
+    .map-help button { min-height:44px; border:0; border-radius:var(--radius); padding:8px 10px; background:var(--float); color:var(--ink); box-shadow:var(--lift); font:600 var(--fs-meta)/1.2 var(--font-text); }
+  }
   /* What to do next on the map (mapSay), above the colour key and in its style. */
   .map-say { max-width:260px; margin:0 0 8px; background:var(--float); border-radius:var(--radius); padding:8px 12px; font-size:var(--fs-note); font-weight:600; line-height:1.35; box-shadow:var(--lift); color:var(--ink); }
   .map-say[hidden] { display:none; }
@@ -336,7 +342,10 @@
   .k { font-size:var(--fs-meta); color:var(--muted); line-height:1.35; }
   /* What a headline cannot count, under it in a row (headNote): ink, the meta size, never a level's colour. */
   .hl-note { font-size:var(--fs-meta); color:var(--ink); line-height:1.35; }
+  .week-preview { flex:none; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .week-label { color:var(--muted); font-size:var(--fs-meta); line-height:1; }
   .week { flex:none; display:flex; gap:4px; }
+  .wk .risk-code { font-size:var(--fs-meta); line-height:1; color:var(--ink); font-weight:700; }
   .wk { display:flex; flex-direction:column; align-items:center; gap:3px; }
   .wk i { display:block; width:10px; height:22px; background:var(--unknown); }   /* square, as the day strip's bars */
   .wk i.low { background:var(--low); } .wk i.moderate { background:var(--moderate); } .wk i.high { background:var(--high); } .wk i.veryhigh { background:var(--veryhigh); }
@@ -416,6 +425,9 @@
   /* The two groups of tiles on a spot's page: the open day's forecast, then the latest readings. */
   .tiles > .grp-h { grid-column:1 / -1; margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }
   .tiles > .grp-sub { grid-column:1 / -1; margin:-4px 2px 0; color:var(--muted); font-size:var(--fs-note); }
+  /* A lake spot's one link to its lake's past measured temperatures (lakeTempLine), after the latest readings. */
+  .lt-past { margin:8px 2px 0; color:var(--muted); font-size:var(--fs-note); }
+  .lt-past[hidden] { display:none; }
   #nearby-host:empty { display:none; }
   #sources-host:empty { display:none; }
   .stack .loc { margin:0; }
@@ -1719,14 +1731,15 @@ function savedBadge() {
 }
 
 // How many of the overflows upstream are expected to spill on a day, as a clause. Under one on a
-// raised day means a nearby overflow. On a low day it says "under one": rounded to "none", it
-// would hide a real chance of a spill.
+// raised day means a nearby overflow. On a low day it says a spill is possible, not expected: under
+// half a spill expected, rounded to "none", would hide a real chance of one; "under one spill is
+// expected" (until 31 Oct 2026, #504) read as a fraction of a spill.
 const spilling = (x, total) => { const e = x.expected_spilling_overflows; if (nil(e)) return '';
   const k = Math.round(e);
   return k >= total ? (total === 1 ? 'the overflow upstream is expected to spill' : `all ${total} overflows upstream are expected to spill`)
     : k >= 1 ? `about ${k} of the ${total} overflows upstream ${k === 1 ? 'is' : 'are'} expected to spill`
     : ORDER[x.label] ? 'a spill from a nearby overflow upstream is possible'
-    : `under one spill is expected from the ${total === 1 ? 'overflow' : `${total} overflows`} upstream`; };
+    : `a spill from ${total === 1 ? 'the overflow' : `one of the ${total} overflows`} upstream is possible, not expected`; };
 // ------------------------------------------------------------------------------ alerts
 // A notification when a saved spot reaches high or very high risk (push/ sends them). Only where the build set up the
 // alert service (DATA.push), and only if asked: turning alerts on sends the push address and the
@@ -2012,14 +2025,19 @@ const UNLISTED_ECOLI = 'Not estimated for a point off the list: the estimate nee
 // reach the spot there is no level to colour, so the bars show the rain instead (40 mm fills one).
 const week = s => {
   if (!s.days || !s.days.length) return '';
-  // The day's letter ("T"), and its short name ("Tue") for the wide list, where there is room to read it.
+  const days = s.days.slice(0, 5);
+  const date = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
   const day = iso => `<span class="d1">${initial(iso)}</span><span class="d3">${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short'})}</span>`;
-  if (!daily(s)) { if (!s.days.some(x => !nil(x.rain_48h_mm))) return '';
-    return `<span class="week rain" aria-hidden="true" title="Rain in the 48 hours to midday each day">${s.days.slice(0, 5).map((x, i) =>
-      `<span class="wk${i ? '' : ' first'}"><i style="--h:${nil(x.rain_48h_mm) ? 3 : Math.round(3 + 21 * Math.min(1, x.rain_48h_mm / 40))}px"></i><b>${day(x.date)}</b></span>`).join('')}</span>`; }
+  if (!daily(s)) { if (!days.some(x => !nil(x.rain_48h_mm))) return '';
+    const summary = 'Rain in the 48 hours to midday: ' + days.map(x => `${date(x.date)}: ${nil(x.rain_48h_mm) ? 'unavailable' : Math.round(x.rain_48h_mm) + ' mm'}`).join('; ');
+    return `<span class="week-preview" role="img" aria-label="${esc(summary)}"><span class="week-label" aria-hidden="true">Rain mm</span><span class="week rain" aria-hidden="true">${days.map((x, i) =>
+      `<span class="wk${i ? '' : ' first'}"><i style="--h:${nil(x.rain_48h_mm) ? 3 : Math.round(3 + 21 * Math.min(1, x.rain_48h_mm / 40))}px"></i><b>${day(x.date)}</b></span>`).join('')}</span></span>`; }
   if (ORDER[level(s)] === undefined) return '';
-  return `<span class="week" aria-hidden="true">${s.days.slice(0, 5).map((x, i) => { const lv = risk(s, x).level;
-    return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><b>${day(x.date)}</b></span>`; }).join('')}</span>`; };
+  const levels = days.map(x => risk(s, x).level);
+  const summary = 'Daily pollution risk: ' + days.map((x, i) => `${date(x.date)}: ${levels[i] || 'no forecast'}`).join('; ');
+  const codes = {low: 'L', moderate: 'M', high: 'H', 'very high': 'VH'};
+  return `<span class="week-preview" role="img" aria-label="${esc(summary)}"><span class="week-label" aria-hidden="true">Risk L/M/H/VH</span><span class="week" aria-hidden="true">${days.map((x, i) => { const lv = levels[i];
+    return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><span class="risk-code">${codes[lv] || '–'}</span><b>${day(x.date)}</b></span>`; }).join('')}</span></span>`; };
 // A row's second line, where there is no level: the rain, which is what there is to go by.
 const rainMeta = s => { if (daily(s) || !s.days || !s.days.length) return '';
   const x = (VIEW.day && s.days.find(y => y.date === VIEW.day)) || s.days[0];
@@ -2049,12 +2067,12 @@ const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
 // lake route whose summer test error is measured but which failed the lake test; or any water October to April, not yet
 // checked in those months. Each route is worded by what was measured for it and nothing more: no error is said where
 // none was measured. A sensor reading is a measurement, said as one, apart from the estimate. Only today's estimate shows.
-const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season']);
+const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season', 'river_air_curve', 'lake_air_curve']);   // *_air_curve: a clicked point (anypoint.js, waterAt)
 const waterEstOk = (x, kind) => !!x && (kind === 'river' || kind === 'lake') && typeof x.temp_c === 'number' && x.date === today()
   && (WT_ROUTES.has(x.route) || (!x.route && kind === 'river' && typeof x.within_c === 'number'));   // a file from before routes: the river model, rivers only
 const waterEstHow = x => !x.route || x.route === 'river_model' ? `estimated, typically within ${fmt(x.within_c ?? 2, 0)}&nbsp;°C`
-  : x.route.endsWith('_off_season') ? 'provisional estimate, not yet checked in these months'
-  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at lakes in a summer test`;
+  : x.route.endsWith('_off_season') || typeof x.typical_c !== 'number' ? 'provisional estimate, not yet checked in these months'
+  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at ${x.route.startsWith('river') ? 'rivers' : 'lakes'} in a summer test`;
 const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (${waterEstHow(x)}).`;
 // For a line elsewhere (the planner's columns): "water about 11 °C today, estimated", or ''.
 function waterEstShort(e, kind) { return waterEstOk(e, kind) ? `water about ${e.temp_c} °C today, ${!e.route || e.route === 'river_model' ? 'estimated' : 'provisional estimate'}` : ''; }
@@ -2064,6 +2082,9 @@ function waterEstMore(x) {
   const r = x.route || 'river_model';
   if (r === 'river_model') return `The estimate is not a measurement. ${WT_AIR}, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency's own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today's forecast itself was not checked.${WT_TAIL}`;
   if (r === 'lake_model' || r === 'lake_curve') return `A provisional estimate, not a measurement. ${WT_AIR}${r === 'lake_model' ? ' and the size of the lake' : ' alone, as for large lakes the fuller model did worse'}. The lake model did not pass its test: against the Environment Agency's samples at 307 lakes it had not seen, May to September 2023 to 2025, its typical error was 1.8&nbsp;°C, too cold early in the season and a little warm in September. For ${r === 'lake_model' ? 'lakes under 1&nbsp;km²' : 'lakes of 1&nbsp;km² or more'} the typical error was ${fmt(x.typical_c, 1)}&nbsp;°C. A deep lake's surface can lag the air by more than a month.${WT_TAIL}`;
+  if (r.endsWith('_air_curve')) return `A provisional estimate, not a measurement, for a point that is not a listed spot. It comes from a weather model's air temperature over the last 7 days for the area${x.air_km ? ` nearest this point, about ${x.air_km}&nbsp;km away` : ' around this point'}, through a relation between the air and ${r === 'lake_air_curve' ? 'lake' : 'river'} water fitted on the Environment Agency's May to September samples. `
+    + (typeof x.typical_c === 'number' ? `In a test on waters it had not seen, May to September 2023 to 2025, that relation alone was typically ${fmt(x.typical_c, 1)}&nbsp;°C out.` : 'It has not been checked from October to April, so how far out it is in these months is not known yet.')
+    + ` A listed spot's estimate also uses the river's size or the lake's area.${WT_TAIL}`;
   return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
 }
 function waterTile(w, e = null, kind = null, miss = null) {
@@ -2083,8 +2104,30 @@ function waterTile(w, e = null, kind = null, miss = null) {
   }
   return { live: true, icon: wtIcon(), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
-    say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
+    say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${agoSpan(t)} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
     more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
+}
+// Past measured temperatures for a lake spot (lake-temperatures.html; build_site.write_lake_temperatures, from the
+// research export, docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md): one link, after the latest readings, to its lake's
+// readings by month. Never a figure here, so nothing on the spot's page reads as the water's temperature now: it says
+// the months and years, that the Environment Agency measured them, how far the sampling point is from the spot, and
+// that it is a different place from where you get in. The index is asked for only on a lake spot's page, once.
+const LT_INDEX = 'data/research/lake-temperatures/index.json';
+let ltIndex = null, ltAsked = null;
+const ltFar = m => typeof m !== 'number' || !isFinite(m) ? null : m < 10 ? 'under 10&nbsp;m' : m < 1000 ? `${Math.round(m / 10) * 10}&nbsp;m` : `${(m / 1000).toFixed(1)}&nbsp;km`;
+function lakeTempLine(link) {
+  if (!link || !/^[A-Za-z0-9_-]+$/.test(link.wb_id || '') || !link.first || !link.last || !ltFar(link.nearest_point_m)) return '';
+  const a = String(link.first).slice(0, 4), b = String(link.last).slice(0, 4);
+  return `<a href="lake-temperatures.html#lake=${link.wb_id}">Past water temperatures in ${esc(link.lake)}, by month</a>: measured by the Environment Agency between May and September, ${a === b ? a : `${a} to ${b}`}, at a sampling point ${ltFar(link.nearest_point_m)} from this spot. A different place from where you get in, and not today's temperature.`;
+}
+const lakeTempHost = d => { const html = d.kind === 'lake' && ltIndex && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
+  return `<p class="lt-past" id="lt-past"${html ? '' : ' hidden'}>${html}</p>`; };
+function lakeTempFor(d) {
+  if (d.kind !== 'lake' || d.unlisted || ltIndex) return;
+  ltAsked = ltAsked || fetch(LT_INDEX).then(r => r.ok ? r.json() : null).catch(() => null);
+  ltAsked.then(x => { ltIndex = x || { available: false };
+    const el = document.getElementById('lt-past'), html = current && current.id === d.id && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
+    if (el && html) { el.innerHTML = html; el.hidden = false; } });
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (docs/DESIGN.md): the answer as one big word, what set it
@@ -2419,7 +2462,7 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
     + (m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
     + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d)
-    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p></div>`
+    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${agoSpan()} ago`}</p></div>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
@@ -2548,7 +2591,8 @@ function bestDayNote(spots, yours = false) {
 }
 // The strip's count for a day: the spots at low risk that day, as Low risk only would show them (29 October
 // 2026: it replaced the line under the day picker, "This weekend, Sunday: 66 of 109 spots at low risk").
-const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low').length;
+const lowEligible = s => !(typeof eaTodayRestricts === 'function' && eaTodayRestricts(s));
+const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
 // The button hides once pressed, so the focus goes to the day picker, which now shows its day.
@@ -2664,14 +2708,17 @@ function dayOverflows(d, j) {
   return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><span><span class="sr">${esc(statusText(c.status, c))}: </span><b>${esc(overflowNames(c).plain)}</b>${ownName(c)}: `
     + `spill chance ${share(p)}, weight ${share(c.weight)}</span></li>`).join('')}</ul>` : '';
 }
-// How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json).
-// The figures stay in view; how they were measured, and that the rain can change, are folded.
+// How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json): in words
+// first, the share of a same-day forecast's skill folded with how it was measured (#504: "85% as good as
+// same-day ones" needed the fold to be read right). The words' bands are for reading, not a test's verdict.
+const aheadSaid = f => f >= 0.8 ? 'Forecasts this far ahead have been nearly as good as same-day ones.'
+  : f >= 0.6 ? 'Forecasts this far ahead have been less reliable than same-day ones.' : 'Forecasts this far ahead have been much less reliable than same-day ones.';
 function howSure(d, j) {
   const k = DATA.lead_skill, r5 = x => Math.round(x * 20) * 5 + '%';
   if (!j || !k) return '';
-  return factorRow('How far ahead', null, `${j} day${j === 1 ? '' : 's'}`, `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
-    + (ecoliTested(d) && !d.unlisted ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '.'
-    + explain('How this was measured', 'The comparison goes by how much each beat a guess from the usual rates. The rain forecast behind it can still change.'));
+  return factorRow('How far ahead', null, `${j} day${j === 1 ? '' : 's'}`, `${aheadSaid(k.spill[j])} The rain forecast behind it can still change.`
+    + explain('How this was measured', `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
+      + (ecoliTested(d) && !d.unlisted ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '. The comparison goes by how much each beat a guess from the usual rates.'));
 }
 function dayDetail(d, x) {
   const total = overflows(d), first = x.date === today(), rows = [], j = d.days.indexOf(x);
@@ -2797,8 +2844,8 @@ map.on('moveend', () => loadOverflows().catch(() => { ovLayer.clearLayers(); ovK
 // overflows are on the map (loadOverflows), and not before, so the legend is one line until then.
 const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very high','Very high'], [NO_OVERFLOWS, COVER[NO_OVERFLOWS]], ['', 'No level']];
 const legend = L.control({ position: 'bottomleft' });
-legend.onAdd = () => { const el = L.DomUtil.create('div', 'map-legend');
-  el.innerHTML = `<div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
+legend.onAdd = () => { const el = L.DomUtil.create('details', 'map-legend'); el.open = !PHONE.matches;
+  el.innerHTML = `<summary>Map key and official notices</summary><div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
     + '<span class="advkey" hidden><span class="dot adv"></span>Ringed: an official notice; open the spot to read it</span></div>'
     + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`
     + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
@@ -2825,6 +2872,15 @@ const TAP = () => TOUCH ? 'Tap' : 'Click';
 const TAPPED_KEY = 'dipcast.tapped';
 const mapTapped = () => { try { localStorage.setItem(TAPPED_KEY, '1'); } catch (e) { /* asked again next visit */ } };
 if (stored(TAPPED_KEY) !== '1') mapSay(`${TAP()} any river or lake for its forecast.`, true);
+// Returning users can rediscover selecting an unlisted water or return to the place search.
+const mapHelp = L.control({ position: 'bottomleft' });
+mapHelp.onAdd = () => { const el = L.DomUtil.create('div', 'map-help');
+  el.innerHTML = '<button type="button" id="map-help-water">Forecast for any water</button><button type="button" id="map-help-search">Search an area</button>';
+  L.DomEvent.disableClickPropagation(el);
+  el.querySelector('#map-help-water').addEventListener('click', () => mapSay(`${TAP()} the river or lake. If the map is zoomed out, it will zoom in first: then ${TAP().toLowerCase()} the water again. Coverage and missing data are explained in the result.`, true));
+  el.querySelector('#map-help-search').addEventListener('click', () => { openList(); const q = document.getElementById('q'); if (q) q.focus(); });
+  return el; };
+mapHelp.addTo(map);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
 // The river the forecast traced upstream of the open spot (build_site.write_traces, data/spot/<id>-trace.json;
 // docs/REVIEW-2026-10-16.md): the water that reaches the spot, every river and stream within 60 km
@@ -2864,11 +2920,11 @@ const mapLevel = s => VIEW.day ? dayLevel(s, VIEW.day) : level(s);
 const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
 const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
 // The low spots with official advice (eatoday.js): still shown, as their level is low, but said here and on their rows.
-const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
+const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s) && eaTodayAdvice(s).length).length : 0;
 // "Follow" only where every one counted restricts swimming (eatoday.js, eaTodayRestricts); else "read".
 const noticeVerb = spots => typeof eaTodayRestricts === 'function' && spots.every(s => eaTodayRestricts(s)) ? 'follow it first' : 'read it first';
-const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length))}.` : ''; };
-const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
+const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s) && eaTodayAdvice(s).length))}.` : ''; };
+const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings. Spots with official advice restricting swimming are excluded.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
 // A spot with an official notice (eatoday.js) keeps its level's colour, ringed in the notice's amber: a cue
 // to open the spot and read the notice, not a level or a safety score. The map shows it before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
 // The key's line for the ring shows only while a spot has one.
@@ -2879,7 +2935,7 @@ const markerTip = s => { const o = typeof eaTodayBrief === 'function' ? eaTodayB
   return o ? `${esc(s.name)}: ${esc(o)}<br>${listHeadline(s)}` : `${esc(s.name)}: ${listHeadline(s)}`; };   // official advice first
 function styleMarkers() {
   for (const s of DATA.spots) {
-    const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || lv === 'low'; if (!m) continue;
+    const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || (lv === 'low' && lowEligible(s)); if (!m) continue;
     m.setTooltipContent(markerTip(s));
     const adv = mapAdvised(s);
     m.setStyle(on ? { color: adv ? ADVICE_RING : PAPER, weight: adv ? 3.5 : 2, fillColor: colour(lv), fillOpacity: 1 }
@@ -2891,10 +2947,10 @@ function styleMarkers() {
   document.querySelectorAll('.map-legend .advkey').forEach(k => { k.hidden = !DATA.spots.some(mapAdvised); });
   const ln = document.getElementById('low-note-list'); if (ln) { ln.hidden = !VIEW.lowOnly; ln.textContent = lowListNote(); }
   const b = document.getElementById('lowbtn');
-  if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low').length; }
+  if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length; }
   document.querySelectorAll('[data-low]').forEach(x => x.setAttribute('aria-pressed', String(VIEW.lowOnly)));
   document.querySelectorAll('[data-low-t]').forEach(x => { x.textContent = lowLabel(); });
-  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
+  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution. Spots with official advice restricting swimming are excluded.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
 }
 function setMapDay(iso) {
   VIEW.day = iso || null;
@@ -2928,6 +2984,8 @@ lowCtl.addTo(map);
 const STALE_MIN = 8 * 60;
 const ageMin = () => (Date.now() - new Date(DATA.generated_at).getTime()) / 60000;
 const ago = m => { const t = Math.round(m); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };   // "6 h", not "6 h 0 min"
+// The same, from a time (ms; the forecast's issue by default), in a span the minute's check moves on (stillCurrent).
+const agoSpan = (fromMs = Date.parse(DATA.generated_at)) => `<span data-ago="${fromMs}">${ago(Math.max(0, (Date.now() - fromMs) / 60000))}</span>`;
 const issued = () => new Date(DATA.generated_at).toLocaleString('en-GB', {weekday:'short', hour:'2-digit', minute:'2-digit'});
 function freshness(spot = false) {
   const m = ageMin(); const b = DATA.build || {};
@@ -2937,6 +2995,7 @@ function freshness(spot = false) {
   if (typeof OutingPack === 'object') h += OutingPack.notice();   // a page of an outing kept for offline use, read from a stored copy
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
+  if (UPDATE) h += `<div class="notice quiet" role="status">${UPDATE_SAY[UPDATE]} <button type="button" class="linkbtn small" data-update>Update the page</button></div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${issued()}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
   return h;
 }
@@ -2954,8 +3013,8 @@ function gaps(d, list) {
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
 // while the page stays open. Only then: the stale notice is an alert, and a screen reader reads an
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
-let NOTICE = '';
-const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN}`;
+let NOTICE = '', UPDATE = '', FORECAST_STAMP = '';   // UPDATE: a reload on offer (stillCurrent)
+const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN} ${UPDATE}`;
 const notices = (d = null, list = false) => { NOTICE = noticeState(); return `<div data-notices${d ? ' data-spot' : ''}>${freshness(!!d)}</div>${gaps(d, list)}`; };
 function refreshNotices() {
   if (!DATA || noticeState() === NOTICE) return;
@@ -2963,7 +3022,6 @@ function refreshNotices() {
 }
 window.addEventListener('offline', refreshNotices);
 window.addEventListener('online', refreshNotices);
-setInterval(refreshNotices, 60 * 1000);
 // Redraw the panel. The map is parked in its column first, or replacing the HTML would destroy it.
 // The new view rises into place (#result.fresh, the day strip's own motion): the class comes off and
 // goes back on with a layout read between, so the animation runs again each time.
@@ -3100,6 +3158,9 @@ function outingResume() {
     + (typeof eaTodayApart === 'function' ? eaTodayApart(s).replace('class="gaps o-apart"', 'class="small resume-apart"') : '')
     + `<a class="linkbtn resume-open" href="${esc(planPath() + o.hash)}" data-plan-hash="${esc(o.hash)}">Open your plan</a></div>`;
 }
+// The way on from a search with no inland spot: the official coastal, Welsh, Scottish and Irish
+// directories (coverage.html), searched for the same words. Also under the offers of a town or water (offerOnMap).
+const regionalLink = q => `<a href="coverage.html${String(q || '').trim() ? `?q=${encodeURIComponent(String(q).trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast.`;
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
@@ -3272,7 +3333,7 @@ function drawSpots() {
   const words = fold(VIEW.q).split(' ').filter(Boolean);
   const found = s => { const t = searchText(s); return words.every(w => t.includes(w)); };
   const keep = s => found(s) && (VIEW.filter === 'all'
-    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
+    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || (mapLevel(s) === 'low' && lowEligible(s)));
   const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
     // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
@@ -3311,7 +3372,7 @@ function drawSpots() {
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
-    : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
+    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   bindClear();
@@ -3402,7 +3463,7 @@ function compareTable(spots, day, meta = null) {
   // The names again, for the pin (comparePin): hidden from screen readers, which have the table's own heads.
   const pin = `<div class="compare-pin" aria-hidden="true"><div><table class="compare-table" style="--cols:${n}"><thead><tr>`
     + spots.map(s => `<th>${esc(s.name)}${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('') + '</tr></thead></table></div></div>';
-  return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
+  return `<p class="small muted compare-note">Issued ${issued()} (${agoSpan()} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
     + pin + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
     + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
       + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}`
@@ -3520,7 +3581,7 @@ function renderSaved() {
       : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
-  h += actsChips(undefined, !spots.length);   // with nothing saved, one line, so the way to save one comes first
+  if (spots.length || many) h += actsChips(undefined, !spots.length);
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
@@ -3532,17 +3593,19 @@ function renderSaved() {
   let v = spots.length > 1 ? `<div id="grid-host">${savedGrid(spots)}</div>` : '<div id="grid-host"></div>';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from, false, one)).join('')}</ul>`
     + (one ? savedOneNext(spots[0]) : '')
-    + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+    + `<p class="small muted msg">Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   // Empty: one tile, one sentence and the way to a spot. The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
   else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
     + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
     + `${navigator.standalone ? ` Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here, or paste a list's link ${listsShown ? 'under Your lists, ' : ''}below.` : ''}</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
-    + `${swimsShown(spots) ? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal</button></p>'}</div>`;
+    + `${many && !swimsShown(spots) ? '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>' : ''}</div>`;
+  if (!spots.length && !many) v += `<details class="sec tile"><summary>Activity preferences and swim journal</summary>${actsChips(undefined, true)}`
+    + `${swimsShown(spots) ? '' : '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>'}</details>`;
   // Opening a list from its link is in Your lists; with nothing saved, Your lists is not shown (a Home
   // Screen app just added, say), so it has a tile of its own.
-  if (!listsShown) v += `<section class="sec tile lists">${importForm()}</section>`;
+  if (!listsShown) v += `<details class="sec tile lists"><summary>Open a shared list</summary>${importForm()}</details>`;
   if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
   // The cards answer first; comparing them, day by day, is for planning, under them.
   v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
@@ -3557,7 +3620,10 @@ function renderSaved() {
   v += (listsShown ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
   // The swim passport (passport.js), under the journal, once a swim is logged; before that, its Water-wise questions on
   // their own, so a new visitor can learn to read the forecast first. Private, on this device.
-  if (typeof passportSection === 'function') v += passportSection(DATA.spots);
+  if (typeof passportSection === 'function') {
+    const passport = passportSection(DATA.spots);
+    v += !spots.length && !many && !swimsShown(spots) ? `<details class="sec tile"><summary>Learn about water conditions</summary>${passport}</details>` : passport;
+  }
   // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
   // all on a wide desktop, where England's every spot said nothing about an empty list.
   setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));
@@ -3706,6 +3772,7 @@ function renderShared(sh) {
     + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}`
     + `${spots.length && !have && (DATA.push || DATA.email) ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p>`;
   if (sh.day && spots.length) h += `<p class="planner-note">Levels for ${dayName(sh.day)}, the day of the plan.</p>`;
+  if (sh.requestedDay && spots.length) h += `<p class="planner-note" role="status">The forecast for the plan's date, ${esc(new Date(sh.requestedDay + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${sh.requestedDay < planDates()[0] ? 'has expired' : 'is not available yet'}. The cards below show the available forecast for ${esc(planDates()[0])} to ${esc(planDates().at(-1))}. <a href="${esc(planPath())}">Choose a new date</a>.</p>`;
   // A link tapped in Facebook opens in Facebook's own browser: a list added there is not in Safari or
   // Chrome afterwards, and alerts cannot be had there at all. Said before the button, not after.
   if (IN_APP && spots.length && !have) h += `<p class="planner-note">You are in the ${IN_APP} app's browser. A list added here stays in the ${IN_APP} app, not in ${IOS ? 'Safari' : 'your own browser'}, and alerts cannot be turned on here. `
@@ -3716,7 +3783,7 @@ function renderShared(sh) {
   let v = '';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
     + `<p class="small muted msg">${gone ? `${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out. ` : ''}`
-    + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+    + `Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   else v += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
   setPanel(h + cols(v));
@@ -3787,7 +3854,7 @@ async function offerOnMap() {
   const empty = document.querySelector('#spots li.empty');
   if (empty) {
     empty.innerHTML = `<p class="below">No listed spot matches.${places.length ? '' : ' Any river or lake has a forecast on the map:'}</p>`;   // a plan comes first, under its own heading
-    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
+    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">${regionalLink(t)} Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
     bindClear();
   }
   box.querySelectorAll('[data-water]').forEach(b => b.addEventListener('click', () => { const w = waters[+b.dataset.water];
@@ -3887,7 +3954,9 @@ let PLAN_WARNINGS = null, PLAN_SHARED = '';
 function planBasis(shown) {
   const { line, n, m } = planShared(shown.map(o => evidenceCompanyLine(o.s, PLAN_WARNINGS)));
   PLAN_SHARED = line;
-  return line ? `${planSharedWho(n, m, shown.length)}: ${line}` : '';
+  // Folded (#504): whose spills the model learned from, and a share of other companies' spills, came
+  // before the outing on every plan; it is the evidence behind the levels, not a step in choosing.
+  return line ? explain('How the spill warnings have done here', `${planSharedWho(n, m, shown.length)}: ${line}`) : '';
 }
 function planEvidence(s) {
   const own = evidenceCompanyLine(s, PLAN_WARNINGS);
@@ -3935,7 +4004,7 @@ function renderPlan() {
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
-    + `<p class="planner-note" id="plan-basis"></p>` + notices() + '</div>'
+    + `<div class="planner-note" id="plan-basis"></div>` + notices() + '</div>'
     + cols('<div id="plan-results"></div>');
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();
@@ -3987,10 +4056,13 @@ function drawPlan(fit = false) {
     '', 'No forecast for the day, or out of the forecast\'s reach.'].map((t, i) => [planAdviceSub(adv[i], r.groups[i].length), t].filter(Boolean).join(' '));
   const next = r.nearest ? reachFor(r.nearest.miles) : null;
   document.getElementById('plan-basis').innerHTML = r.count ? planBasis(r.groups.flat()) : '';
-  box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
+  const restrictedLow = r.groups[0].filter(o => planAdvised(o.s));
+  const displayGroups = r.groups.map((g, i) => i === 0 ? g.filter(o => !planAdvised(o.s)) : g);
+  box.innerHTML = r.count ? displayGroups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
       + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
     : `<div class="empty-saved tile"><h2 class="sec-h">No ${planNoun(2)} ${reach}</h2>`
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
+  if (restrictedLow.length) box.insertAdjacentHTML('beforeend', `<section class="group tile" aria-labelledby="plan-restricted"><h2 class="group-head" id="plan-restricted">Official advice restricts swimming</h2><p class="sub">Follow the official advice. The sewage forecast is shown as separate information.</p><ul class="spots">${restrictedLow.map(planItem).join('')}</ul></section>`);
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
@@ -4055,20 +4127,24 @@ function planShare(open, on) {
   const out = open.filter(o => planAdvised(o.s)); open = open.filter(o => !planAdvised(o.s));
   const left = out.length ? ` ${out.length === 1 ? `${esc(out[0].s.name)} is` : `${out.length} spots are`} left out: ${out.length === 1 ? 'it has an official notice' : 'they have official notices'}.` : '';
   const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s), box = document.getElementById('plan-results');
+  const selected = PLAN.spot && DATA.spots.find(s => s.id === PLAN.spot);
+  const excluded = selected && !pick.some(s => s.id === selected.id)
+    ? ` Your selected outing spot, ${esc(selected.name)}, is not in this list. Use Share this outing to share it.` : '';
   // Every spot that would be shared has advice: the tile says why there is nothing, rather than not being there
   // (on the phone, 27 Oct 2026, Frensham was the plan's only low spot and the share was simply missing).
-  if (!pick.length) { if (out.length) box.insertAdjacentHTML('beforeend', '<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>'
+  if (!pick.length) { if (out.length) box.insertAdjacentHTML('beforeend', '<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share suggested spots</h2>'
     + `<p class="sub">Nothing to share ${on}: ${out.length === 1 ? `the only spot it would hold, ${esc(out[0].s.name)}, has` : `the ${out.length} spots it would hold all have`} `
-    + `${out.length === 1 ? 'an official notice' : 'official notices'}. A shared plan is a list of places to go.</p></section>`); return; }
+    + `${out.length === 1 ? 'an official notice' : 'official notices'}.${excluded} This suggested-spots list does not share your selected outing.</p></section>`); return; }
   const name = planListName(PLAN.day), n = pick.length;
   const low = top.filter(o => o.level === 'low').length, none = n - low;
   const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
-  box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>`
-    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list called “${esc(name)}”, which a friend can add to their own lists. `
-    + `It holds that name, the day and which spots are in it, nothing else: not where you start from.${left}</p>`
-    + `<button type="button" class="btn" id="plan-share">Share this plan</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
+  box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share suggested spots</h2>`
+    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list, “${esc(name)}”, for a friend to add. `
+    + `It holds the date and the spots, not your selected outing time or meeting place.${left}${excluded}</p>`
+    + `<details><summary>See the ${n} included ${n === 1 ? 'spot' : 'spots'}</summary><ul>${pick.map(s => `<li>${esc(s.name)}</li>`).join('')}</ul></details>`
+    + `<button type="button" class="btn" id="plan-share">Share suggested spots</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
   bindShareLink(document.getElementById('plan-share'), document.getElementById('plan-share-msg'),
-    new URL(savedPath(), location.origin).href + shareHash(name, pick.map(s => s.id), PLAN.day), `${name} · ${BRAND}`, 'Copy link to this plan');
+    new URL(savedPath(), location.origin).href + shareHash(name, pick.map(s => s.id), PLAN.day), `${name} · ${BRAND}`, 'Copy link to suggested spots');
 }
 function bindPlan() {
   const $ = id => document.getElementById(id), input = $('plan-from');
@@ -4649,6 +4725,22 @@ const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5)
 const nowTiles = d => { const fx = facts(d).filter(o => o.live); if (!fx.length) return '';
   return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
     + `<p class="grp-sub">Measured, not forecast: they stay the same whichever day you pick.</p>${fx.map(tile).join('')}</section>`; };
+// A short view of the selected spot's own conditions before alternatives. Reuse the same
+// source, location, age and measured/estimated wording as the detailed tiles.
+function conditionsSummary(d) {
+  const rs = d.river_state, observed = rs && Date.parse(rs.observed_at);
+  const age = Number.isFinite(observed) ? Math.max(0, (Date.now() - observed) / 3600000) : null;
+  const water = waterTile(d.water_temp, d.water_temp_est, d.kind);
+  const level = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
+  const line = (label, item, missing) => item
+    ? `<p><b>${label}:</b> ${item.fig}${item.unit ? (String(item.fig).endsWith('°') ? '' : ' ') + item.unit : ''}${item.word ? `, ${item.word}` : ''}. ${item.say || ''}</p>`
+    : `<p><b>${label}:</b> ${missing}</p>`;
+  return `<section class="tile" aria-labelledby="conditions-h"><h2 class="t-lab" id="conditions-h">Water conditions</h2><p class="small muted">Sensor and gauge readings are from the Environment Agency; estimates are labelled.</p>`
+    + line('Water temperature', water, 'No recent reading or estimate available here.')
+    + (water && water.live ? '<p class="small muted">The water where you swim can be warmer or colder than at the sensor.</p>' : '')
+    + line((d.river_state && d.river_state.water === 'lake') || d.kind === 'lake' ? 'Lake level' : 'River level', level, 'No gauge reading available here.')
+    + '</section>';
+}
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
 function render(d) {
@@ -4669,7 +4761,7 @@ function render(d) {
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
-  const tiles = dayTiles(d, DAY) + nowTiles(d);   // the open day's forecast, then the readings
+  const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
@@ -4678,7 +4770,7 @@ function render(d) {
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
+    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${conditionsSummary(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
       + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
     setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
     if (ARRIVE) mountArrival(d); return;
@@ -4686,7 +4778,7 @@ function render(d) {
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
   // phone, where they are display:contents and the order is the stack's. What the page could not see
   // (unknownTile) comes straight after the five days.
-  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
+  h += `<div class="stack"><div class="col-go">${daysTile(d)}${conditionsSummary(d)}${unknownTile(d)}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
@@ -4703,7 +4795,7 @@ function render(d) {
   if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
-  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);
+  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d);
   const moreBtn = document.getElementById('more-contrib');
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
@@ -4720,7 +4812,7 @@ function render(d) {
 // moves them again). Reviews, visit notes and illness reports mount at the end of "At the water".
 const FOLDS = [
   ['why', 'Why this level', ['#sources-host', '.spot-map-tile', '#day-tiles']],
-  ['water', 'At the water', ['#now-tiles', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
+  ['water', 'At the water', ['#now-tiles', '#lt-past', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
   ['limits', 'What this forecast cannot see', ['#unknowns', '.col-more > *']],
 ];
 // The line under a fold's title: the headings of what it holds, as this spot has them, so it never promises a
@@ -4815,10 +4907,12 @@ function bindBack() { const b = document.getElementById('back'); if (b) b.addEve
 // show "About these forecasts" as one line; a link into it opens it in place (about-open).
 document.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return;
   const el = document.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
-  e.preventDefault(); if (mapMode()) setMapMode(false); const box = el.closest('details'); if (box) box.open = true;
+  e.preventDefault(); if (mapMode()) setMapMode(false);
+  for (let box = el.closest('details'); box; box = box.parentElement && box.parentElement.closest('details')) box.open = true;
   if (el.closest('#about')) document.body.classList.add('about-open');
   el.scrollIntoView({ behavior: SCROLL(), block: 'start' });
-  if (el.hasAttribute('tabindex')) el.focus({ preventScroll: true }); });
+  const focus = el.matches('details') ? el.querySelector('summary') : el;
+  if (focus && (focus.hasAttribute('tabindex') || focus.matches('summary'))) focus.focus({ preventScroll: true }); });
 // "/" puts the focus in the search from anywhere on the list. Only where there is a search (not a
 // spot's page or the Saved page), not under the full map, and never while typing in a field.
 document.addEventListener('keydown', e => {
@@ -4843,7 +4937,7 @@ async function main() {
   // minutes. With the offline copy on, sw.js asks the same way. The head asked already (FORECAST).
   const res = await (window.FORECAST || fetch('data/spots-lite.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
-  DATA = await res.json();
+  DATA = await res.json(); FORECAST_STAMP = stamp(res);
   if (typeof OutingPack === 'object') OutingPack.seen(res);   // a stored copy, which the kept outing's pages then say
   setDays();
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
@@ -4867,6 +4961,12 @@ async function main() {
     FIT_ALL = !PHONE.matches;
     if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y);
       if (typing) { const box = document.getElementById('q'); box.focus(); box.setSelectionRange(box.value.length, box.value.length); } }
+  }
+  // Information pages can return directly to the app's map. Consume the request once so a
+  // later reload does not unexpectedly reopen it.
+  const url = new URL(location.href);
+  if (url.searchParams.get('map') === '1') {
+    url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);
   }
   // With the offline copy on (sw.js), the saved spots' own files too, once the page has drawn, so
   // that their overflows and guides are stored for the water's edge as the forecast is.
@@ -4894,15 +4994,78 @@ function reload() {
   try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...rest, sort: rest.sort === 'near' ? 'name' : rest.sort, y: shown === 'list' ? scrollPos() : 0 })); } catch (e) { /* starts afresh */ }
   location.reload();
 }
-// Not while something being written would be lost (a review: data-keep-page).
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - LOADED > 30 * 60 * 1000
-  && !document.querySelector('[data-keep-page]')) reload(); });
+// Not while something being written would be lost (held).
+document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') return;
+  if (Date.now() - LOADED > 30 * 60 * 1000 && !held()) reload(); else stillCurrent(); });
+// While the page stays open and in view. Each minute the notices are redrawn if their state has
+// changed (refreshNotices) and each "… ago" moves on in place: a change of text outside an alert,
+// so a screen reader does not read the Stale alert out again. Three things change what the rest of the
+// page says: a company's quiet feed passing six hours (ageReadings), midnight before the next build
+// (setDays), and a newer forecast on the server, asked for with a HEAD request every 10 minutes (its
+// Last-Modified or ETag against the one the page loaded). The first two make the page wrong ("not
+// discharging", "Today"), so they reload it, which keeps the view (reload, keptView), unless something
+// written would be lost or a field is in use (held). A newer forecast does not make it wrong, and a reload
+// would move a reader halfway down a spot's page back to its top, so it is only offered. An offer is a
+// quiet notice with a button, drawn once (refreshNotices), and the reader's to press.
+let CHECKED = Date.now();
+const CHECK_MS = 10 * 60 * 1000;
+const UPDATE_SAY = { newer: 'A newer forecast is out.',
+  aged: 'Some live overflow readings on this page are now over six hours old, and may no longer be current.',
+  day: 'It is past midnight: this page still counts its days from yesterday.' };
+const stamp = r => (r.headers && (r.headers.get('last-modified') || r.headers.get('etag'))) || '';
+const editing = () => { const a = document.activeElement; return !!a && a.matches('input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]'); };
+const drafting = () => [...DRAFTS.values()].some(d => d.photos || d.fields.some(f => f.value || f.checked));
+const held = () => !!document.querySelector('[data-keep-page]') || drafting() || editing();
+const newerOut = () => fetch('data/spots-lite.json', { method: 'HEAD', cache: 'no-cache' })
+  .then(r => { const t = r.ok ? stamp(r) : ''; return !!t && !!FORECAST_STAMP && t !== FORECAST_STAMP; }).catch(() => false);
+async function stillCurrent(nowMs = Date.now()) {
+  if (!DATA) return;
+  refreshNotices();
+  document.querySelectorAll('[data-ago]').forEach(el => { if (!el.closest('[role=alert]')) el.textContent = ago(Math.max(0, (nowMs - Number(el.dataset.ago)) / 60000)); });
+  if (document.visibilityState !== 'visible') return;
+  const aged = s => ((s.now && s.now.aged) || []).length, before = DATA.spots.reduce((n, s) => n + aged(s), 0);
+  for (const s of DATA.spots) ageReadings(s, nowMs);
+  let why = DATA.spots.reduce((n, s) => n + aged(s), 0) > before ? 'aged'
+    : readerDay(DATA.generated_at, nowMs, STALE_MIN) > today() ? 'day' : '';
+  if (!why && !UPDATE && navigator.onLine && nowMs - CHECKED >= CHECK_MS) { CHECKED = nowMs; if (await newerOut()) why = 'newer'; }
+  if (!why || UPDATE === why) return;
+  if (why !== 'newer' && !held()) { reload(); return; }
+  UPDATE = why; refreshNotices();
+}
+setInterval(stillCurrent, 60 * 1000);
+document.addEventListener('click', e => { if (!e.target.closest('[data-update]')) return;
+  if (drafting() && !confirm('Update the page? What you started writing in a form you left will be lost.')) return;
+  reload(); });
+// Drafts live only in this page's memory, keyed by spot and form; a full reload or tab close
+// clears them. Photos are not retained and must be selected again. Nothing is submitted.
+const DRAFTS = new Map();
+const draftKey = (form, spot) => `${spot}:${form.id}`;
+const draftFields = form => [...form.querySelectorAll('textarea, input:not([type=file]), select')]
+  .filter(el => el.name !== 'website' && el.name !== 'consent');
+function draftTrack(form, spot) {
+  const key = draftKey(form, spot), fields = draftFields(form), saved = DRAFTS.get(key);
+  const restored = saved && saved.fields.length === fields.length;
+  if (restored) {
+    fields.forEach((el, i) => { const v = saved.fields[i]; if (el.type === 'checkbox' || el.type === 'radio') el.checked = v.checked; else el.value = v.value; });
+    fields.forEach(el => el.dispatchEvent(new Event('change', {bubbles: true})));
+  }
+  form.insertAdjacentHTML('afterbegin', `<p class="small muted" role="status">${restored ? `Draft restored.${saved.photos ? ' Please add photos again.' : ''} ` : ''}Unsent answers stay in this tab's memory until it is closed or reloaded. Photos must be added again after leaving the page.</p>`);
+  let photos = !!(saved && saved.photos);
+  const save = () => DRAFTS.set(key, {photos, fields: fields.map(el => ({value: el.value, checked: !!el.checked}))});
+  form.addEventListener('input', save);
+  form.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) photos = true; save(); }, true);
+  form.addEventListener('click', e => { if (e.target.closest('button[id$="-cancel"]')) DRAFTS.delete(key); }, true);
+}
+const draftForget = (form, spot) => DRAFTS.delete(draftKey(form, spot));
 // Words typed into a review, a visit note, a journal entry or an illness report (data-keep-page) are lost by
 // leaving, so the page asks first: the browser's own question for closing, reloading or another page, and
 // this one for the controls that change the view in the page (Back, the header, the bottom bar, another
 // spot). The browser's Back button is not asked about: a popstate cannot be held.
 const unsent = () => [...document.querySelectorAll('form[data-keep-page]')].some(f =>
-  [...f.querySelectorAll('textarea, input[type=text]')].some(e => e.value.trim() && e.value !== e.defaultValue));
+  [...f.querySelectorAll('textarea, input, select')].some(e => e.type === 'checkbox' || e.type === 'radio'
+    ? e.checked !== e.defaultChecked : e.tagName === 'SELECT'
+      ? e.value !== ((e.querySelector('option[selected]') || e.options[0]) || {}).value
+      : e.type !== 'file' && e.value !== e.defaultValue) || !!f.querySelector('.rv-previews img'));
 let leaving = false;   // asked once already: a link to another page is not asked about again on unload
 document.addEventListener('input', () => { leaving = false; });   // typing again after a move in the page asks again
 window.addEventListener('beforeunload', e => { if (!leaving && unsent()) { e.preventDefault(); e.returnValue = ''; } });

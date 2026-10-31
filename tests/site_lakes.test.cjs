@@ -111,3 +111,30 @@ test('the picker groups full records first and calls each a monitoring location'
   assert.ok(html.indexOf('every image read') < html.indexOf('images near lab samples only'));
   assert.match(html, /value="wqa-AN-ANT160" selected/);
 });
+
+test('a pilot site says when its weekly check ran, over which days, and what it found, failures and gaps included', () => {
+  const op = { pilot: true, runs: 2, last_run_at: '2026-11-02T06:30:00+00:00', last_window: { from: '2026-10-20', to: '2026-11-02' },
+    last_status: 'no_new_clear_image', last_error: null, last_success_at: '2026-11-02T06:30:00+00:00', newest_pilot_reading: '2026-10-27' };
+  const site = { ...FULL, operation: op };
+  const t = plain(K.lakesOperation(site, '2026-11-03'));
+  assert.match(t, /^A pilot site, checked for new images weekly\. Last check 2 Nov 2026, 06:30 UTC, images from 20 Oct 2026 to 2 Nov 2026: there were new images, but none clear enough to read/);
+  assert.doesNotMatch(t, /last check that finished|No check has run/);
+  // A pilot site is read all year, so its season-closed reason gives way to the check.
+  assert.doesNotMatch(plain(K.lakesLatest(site, DOC, '2026-11-03')), /latest here is from the last season/);
+  assert.match(plain(K.lakesLatest(FULL, DOC, '2026-11-03')), /latest here is from the last season/);
+  const failed = plain(K.lakesOperation({ ...site, operation: { ...op, last_run_at: '2026-11-09T06:30:00+00:00', last_status: 'failed' } }, '2026-11-25'));
+  assert.match(failed, /the check failed, so no new images were read\. The last check that finished was 2 Nov 2026\. No check has run for 16 days\./);
+  assert.equal(K.lakesOperation(FULL, '2026-11-03'), '');
+  for (const s of ['new_reading', 'no_new_clear_image', 'no_new_scenes', 'no_scenes', 'partial', 'failed', 'not_reached']) assert.ok(K.LAKES_CHECK[s], s);
+  const weekly = plain(K.lakesRefreshed({ refreshes: [{ source: 'refresh:pilot-1', from: '2026-10-18', to: '2026-10-31', scenes: 9, shown: 0 },
+    { source: 'refresh:pilot-2', from: '2026-10-25', to: '2026-11-07', scenes: 2, shown: 1 }], excluded: [] }));
+  assert.equal(weekly.trim(), 'The weekly checks since 18 Oct 2026 have read 11 new images, 1 shown.');
+});
+
+test('a pilot site with a selected history says its latest is in the dataset, and from when every image is read', () => {
+  const op = { pilot: true, runs: 1, last_run_at: '2026-11-02T06:30:00+00:00', last_window: { from: '2026-10-20', to: '2026-11-02' },
+    last_status: 'new_reading', last_success_at: '2026-11-02T06:30:00+00:00' };
+  const site = { ...SEL, operation: op, refreshes: [{ source: 'refresh:pilot-9', from: '2026-10-20', to: '2026-11-02', scenes: 4, shown: 1 }] };
+  assert.match(plain(K.lakesLatest(site, DOC, '2026-11-03')), /^Latest in this dataset: /);
+  assert.match(plain(K.lakesOperation(site, '2026-11-03')), /weekly\. Every image from 20 Oct 2026 is read here; before that, only images near laboratory samples\. Last check/);
+});

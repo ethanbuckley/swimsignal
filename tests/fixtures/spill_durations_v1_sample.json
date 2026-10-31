@@ -1,0 +1,516 @@
+{
+ "schema": "swimsignal.spill-durations",
+ "version": "1.1.0",
+ "generated_at": "2026-10-31T08:52:52+00:00",
+ "period": {
+  "from": "2024-01-01",
+  "to": "2025-12-31"
+ },
+ "method": {
+  "spill": "an overflow's monitor events joined when they overlap or start less than 1 hour after the last ended",
+  "gap_h": 1.0,
+  "few_below": 5,
+  "zero_length_note": "A typical length shown as 0.0 hours means most of that overflow's spills lasted under 18 seconds as recorded, or were recorded with the same start and stop time (1,110 such events in 2024-25, mostly at Wessex Water and South West Water). It does not mean nothing was discharged.",
+  "events_same_start_stop": 1110,
+  "code_sha256": {
+   "scripts/export_spill_durations.py": "0a5ae1d387b2d802bed9969a43220b1e3392b89dd60efb081f53848c5785f302",
+   "scripts/spill_duration_test.py": "39dce94cee60908cc9221ee35c8a2cb04bbd9d96d58ebb8e755a8ec641b6f45b"
+  }
+ },
+ "sources": [
+  {
+   "company": "Anglian Water",
+   "file": "ea_events_anglian_water.parquet",
+   "sha256": "9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505"
+  },
+  {
+   "company": "Northumbrian Water",
+   "file": "ea_events_northumbrian_water.parquet",
+   "sha256": "db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237"
+  },
+  {
+   "company": "Severn Trent Water",
+   "file": "ea_events_severn_trent_water.parquet",
+   "sha256": "750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504"
+  },
+  {
+   "company": "South West Water",
+   "file": "ea_events_south_west_water.parquet",
+   "sha256": "b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51"
+  },
+  {
+   "company": "Southern Water",
+   "file": "ea_events_southern_water.parquet",
+   "sha256": "0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525"
+  },
+  {
+   "company": "Thames Water",
+   "file": "ea_events_thames_water.parquet",
+   "sha256": "4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e"
+  },
+  {
+   "company": "United Utilities",
+   "file": "ea_events_united_utilities.parquet",
+   "sha256": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c"
+  },
+  {
+   "company": "Wessex Water",
+   "file": "ea_events_wessex_water.parquet",
+   "sha256": "26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3"
+  },
+  {
+   "company": "Yorkshire Water",
+   "file": "ea_events_yorkshire_water.parquet",
+   "sha256": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78"
+  }
+ ],
+ "attribution": [
+  "Environment Agency, storm overflow EDM start/stop data 2024 and 2025, Open Government Licence v3.0"
+ ],
+ "claim": {
+  "public_wording": "How long this overflow's spills lasted in 2024 and 2025, from the water company's monitor records published by the Environment Agency. A record of the past, not a forecast. It says nothing of how much was discharged.",
+  "not_claimed": [
+   "a forecast of when a spill will end",
+   "the volume or strength of a discharge",
+   "that a short spill was harmless",
+   "that companies record events the same way"
+  ]
+ },
+ "absent_note": "An overflow not listed had no spill in the Environment Agency's 2024 and 2025 start/stop records, or has no record there. That is not the same as \"no spills\": check the annual return's own figure.",
+ "company": [
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "overflows": 535,
+   "spills": 28814,
+   "median_h": 3.08,
+   "p90_h": 26.5,
+   "share_over_6h": 0.347,
+   "share_over_24h": 0.107
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "overflows": 2089,
+   "spills": 161700,
+   "median_h": 1.11,
+   "p90_h": 10.33,
+   "share_over_6h": 0.164,
+   "share_over_24h": 0.038
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "overflows": 2027,
+   "spills": 144854,
+   "median_h": 1.0,
+   "p90_h": 10.0,
+   "share_over_6h": 0.154,
+   "share_over_24h": 0.04
+  }
+ ],
+ "still_running": [
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "running_at_least_h": 0,
+   "label": "any spill already running",
+   "hours": 283948,
+   "spills": 25550,
+   "still_after_1h": 0.913,
+   "still_after_3h": 0.797,
+   "still_after_6h": 0.678,
+   "still_after_12h": 0.525,
+   "still_after_24h": 0.365
+  },
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "running_at_least_h": 1,
+   "label": "spills already running at least 1 hour",
+   "hours": 258398,
+   "spills": 19002,
+   "still_after_1h": 0.93,
+   "still_after_3h": 0.823,
+   "still_after_6h": 0.707,
+   "still_after_12h": 0.552,
+   "still_after_24h": 0.389
+  },
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "running_at_least_h": 3,
+   "label": "spills already running at least 3 hours",
+   "hours": 223549,
+   "spills": 13731,
+   "still_after_1h": 0.943,
+   "still_after_3h": 0.849,
+   "still_after_6h": 0.742,
+   "still_after_12h": 0.586,
+   "still_after_24h": 0.423
+  },
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "running_at_least_h": 6,
+   "label": "spills already running at least 6 hours",
+   "hours": 187081,
+   "spills": 9617,
+   "still_after_1h": 0.954,
+   "still_after_3h": 0.873,
+   "still_after_6h": 0.771,
+   "still_after_12h": 0.621,
+   "still_after_24h": 0.462
+  },
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "running_at_least_h": 12,
+   "label": "spills already running at least 12 hours",
+   "hours": 138940,
+   "spills": 6460,
+   "still_after_1h": 0.96,
+   "still_after_3h": 0.888,
+   "still_after_6h": 0.801,
+   "still_after_12h": 0.683,
+   "still_after_24h": 0.517
+  },
+  {
+   "company": "Thames Water",
+   "years": "2024-2025",
+   "running_at_least_h": 24,
+   "label": "spills already running at least 24 hours",
+   "hours": 84610,
+   "spills": 3053,
+   "still_after_1h": 0.975,
+   "still_after_3h": 0.927,
+   "still_after_6h": 0.861,
+   "still_after_12h": 0.746,
+   "still_after_24h": 0.576
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "running_at_least_h": 0,
+   "label": "any spill already running",
+   "hours": 704234,
+   "spills": 118783,
+   "still_after_1h": 0.833,
+   "still_after_3h": 0.664,
+   "still_after_6h": 0.523,
+   "still_after_12h": 0.369,
+   "still_after_24h": 0.228
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "running_at_least_h": 1,
+   "label": "spills already running at least 1 hour",
+   "hours": 585451,
+   "spills": 70558,
+   "still_after_1h": 0.882,
+   "still_after_3h": 0.729,
+   "still_after_6h": 0.586,
+   "still_after_12h": 0.421,
+   "still_after_24h": 0.264
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "running_at_least_h": 3,
+   "label": "spills already running at least 3 hours",
+   "hours": 463582,
+   "spills": 40610,
+   "still_after_1h": 0.915,
+   "still_after_3h": 0.786,
+   "still_after_6h": 0.65,
+   "still_after_12h": 0.481,
+   "still_after_24h": 0.31
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "running_at_least_h": 6,
+   "label": "spills already running at least 6 hours",
+   "hours": 360724,
+   "spills": 25029,
+   "still_after_1h": 0.934,
+   "still_after_3h": 0.826,
+   "still_after_6h": 0.702,
+   "still_after_12h": 0.536,
+   "still_after_24h": 0.356
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "running_at_least_h": 12,
+   "label": "spills already running at least 12 hours",
+   "hours": 245946,
+   "spills": 13383,
+   "still_after_1h": 0.951,
+   "still_after_3h": 0.864,
+   "still_after_6h": 0.759,
+   "still_after_12h": 0.607,
+   "still_after_24h": 0.42
+  },
+  {
+   "company": "United Utilities",
+   "years": "2024-2025",
+   "running_at_least_h": 24,
+   "label": "spills already running at least 24 hours",
+   "hours": 135245,
+   "spills": 5992,
+   "still_after_1h": 0.965,
+   "still_after_3h": 0.901,
+   "still_after_6h": 0.816,
+   "still_after_12h": 0.68,
+   "still_after_24h": 0.501
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "running_at_least_h": 0,
+   "label": "any spill already running",
+   "hours": 631092,
+   "spills": 104360,
+   "still_after_1h": 0.837,
+   "still_after_3h": 0.676,
+   "still_after_6h": 0.545,
+   "still_after_12h": 0.4,
+   "still_after_24h": 0.258
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "running_at_least_h": 1,
+   "label": "spills already running at least 1 hour",
+   "hours": 526732,
+   "spills": 60298,
+   "still_after_1h": 0.888,
+   "still_after_3h": 0.746,
+   "still_after_6h": 0.613,
+   "still_after_12h": 0.456,
+   "still_after_24h": 0.299
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "running_at_least_h": 3,
+   "label": "spills already running at least 3 hours",
+   "hours": 422879,
+   "spills": 34198,
+   "still_after_1h": 0.922,
+   "still_after_3h": 0.804,
+   "still_after_6h": 0.679,
+   "still_after_12h": 0.518,
+   "still_after_24h": 0.346
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "running_at_least_h": 6,
+   "label": "spills already running at least 6 hours",
+   "hours": 336145,
+   "spills": 21211,
+   "still_after_1h": 0.941,
+   "still_after_3h": 0.843,
+   "still_after_6h": 0.73,
+   "still_after_12h": 0.572,
+   "still_after_24h": 0.392
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "running_at_least_h": 12,
+   "label": "spills already running at least 12 hours",
+   "hours": 237464,
+   "spills": 11873,
+   "still_after_1h": 0.956,
+   "still_after_3h": 0.877,
+   "still_after_6h": 0.78,
+   "still_after_12h": 0.637,
+   "still_after_24h": 0.451
+  },
+  {
+   "company": "Yorkshire Water",
+   "years": "2024-2025",
+   "running_at_least_h": 24,
+   "label": "spills already running at least 24 hours",
+   "hours": 136302,
+   "spills": 5695,
+   "still_after_1h": 0.968,
+   "still_after_3h": 0.909,
+   "still_after_6h": 0.829,
+   "still_after_12h": 0.699,
+   "still_after_24h": 0.519
+  },
+  {
+   "company": "all nine",
+   "years": "2024-2025",
+   "running_at_least_h": 0,
+   "label": "any spill already running",
+   "hours": 4400886,
+   "spills": 580213,
+   "still_after_1h": 0.871,
+   "still_after_3h": 0.729,
+   "still_after_6h": 0.602,
+   "still_after_12h": 0.454,
+   "still_after_24h": 0.302
+  },
+  {
+   "company": "all nine",
+   "years": "2024-2025",
+   "running_at_least_h": 1,
+   "label": "spills already running at least 1 hour",
+   "hours": 3820673,
+   "spills": 366458,
+   "still_after_1h": 0.907,
+   "still_after_3h": 0.78,
+   "still_after_6h": 0.655,
+   "still_after_12h": 0.499,
+   "still_after_24h": 0.336
+  },
+  {
+   "company": "all nine",
+   "years": "2024-2025",
+   "running_at_least_h": 3,
+   "label": "spills already running at least 3 hours",
+   "hours": 3174952,
+   "spills": 228078,
+   "still_after_1h": 0.932,
+   "still_after_3h": 0.825,
+   "still_after_6h": 0.708,
+   "still_after_12h": 0.549,
+   "still_after_24h": 0.378
+  },
+  {
+   "company": "all nine",
+   "years": "2024-2025",
+   "running_at_least_h": 6,
+   "label": "spills already running at least 6 hours",
+   "hours": 2585176,
+   "spills": 149120,
+   "still_after_1h": 0.947,
+   "still_after_3h": 0.857,
+   "still_after_6h": 0.749,
+   "still_after_12h": 0.595,
+   "still_after_24h": 0.421
+  },
+  {
+   "company": "all nine",
+   "years": "2024-2025",
+   "running_at_least_h": 12,
+   "label": "spills already running at least 12 hours",
+   "hours": 1870247,
+   "spills": 89713,
+   "still_after_1h": 0.958,
+   "still_after_3h": 0.883,
+   "still_after_6h": 0.79,
+   "still_after_12h": 0.654,
+   "still_after_24h": 0.477
+  },
+  {
+   "company": "all nine",
+   "years": "2024-2025",
+   "running_at_least_h": 24,
+   "label": "spills already running at least 24 hours",
+   "hours": 1096948,
+   "spills": 44111,
+   "still_after_1h": 0.97,
+   "still_after_3h": 0.915,
+   "still_after_6h": 0.84,
+   "still_after_12h": 0.717,
+   "still_after_24h": 0.545
+  }
+ ],
+ "companies": [
+  "Anglian Water",
+  "Northumbrian Water",
+  "Severn Trent Water",
+  "South West Water",
+  "Southern Water",
+  "Thames Water",
+  "United Utilities",
+  "Wessex Water",
+  "Yorkshire Water"
+ ],
+ "overflows": {
+  "site_id": [
+   "YWS00011",
+   "YWS00007",
+   "TWL00585",
+   "TWL00102",
+   "UUP00003",
+   "UUP00008"
+  ],
+  "company": [
+   8,
+   8,
+   5,
+   5,
+   6,
+   6
+  ],
+  "spills_2024": [
+   188,
+   2,
+   1,
+   145,
+   131,
+   32
+  ],
+  "spills_2025": [
+   34,
+   1,
+   0,
+   93,
+   96,
+   30
+  ],
+  "median_h": [
+   2.0,
+   0.5,
+   0.07,
+   3.0,
+   0.73,
+   1.57
+  ],
+  "p90_h": [
+   18.58,
+   1.3,
+   0.07,
+   19.25,
+   3.97,
+   11.43
+  ],
+  "longest_h": [
+   99.5,
+   1.5,
+   0.07,
+   1054.5,
+   9.83,
+   24.27
+  ],
+  "share_over_6h": [
+   0.261,
+   0.0,
+   0.0,
+   0.315,
+   0.04,
+   0.21
+  ],
+  "few": [
+   false,
+   true,
+   true,
+   false,
+   false,
+   false
+  ]
+ },
+ "coverage": {
+  "overflows": 12908,
+  "spills": 802781,
+  "overflows_few": 1606
+ }
+}

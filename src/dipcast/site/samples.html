@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Every Environment Agency E. coli sample at an inland bathing water, linked from each one's latest lab sample on
+     its spot's page (evidence.js): a prose page with the shared head, header and foot, written by
+     scripts/build_site.py (write_samples) beside the app. samples.js fills #samples from data/research/ (the research
+     export, docs/ECOLI-EVIDENCE-CONTRACT-v1.md, split by write_ecoli_evidence). What it may say is the contract's:
+     the list under "What these samples do not tell you" is its not_claimed list in the site's words, and samples.js
+     puts the export's own approved sentence beside each bathing water's samples. -->
+<title>E. coli samples · SwimSignal</title>
+<meta name="description" content="Every Environment Agency lab sample of E. coli at the inland bathing waters SwimSignal covers, with its date, and a model estimate worked out afterwards beside each. A historical record, not today's water.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's. One bathing water: the official word, the counts, the dots, the samples. */
+  .sm-pick { display:flex; flex-direction:column; gap:4px; margin:12px 0 16px; font-size:var(--fs-note); color:var(--muted); }
+  .sm-pick select { font:inherit; font-size:var(--fs-body); color:var(--ink); max-width:100%; min-height:44px; padding:8px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); }
+  main.doc .sm-site h2 { margin-top:8px; }
+  main.doc .sm-meta, main.doc .sm-note, main.doc .sm-cap, main.doc .sm-claim, main.doc .sm-hind { font-size:var(--fs-note); }
+  main.doc .sm-meta, main.doc .sm-note, main.doc .sm-cap, .sm-dash { color:var(--muted); }
+  main.doc .sm-meta { margin-bottom:8px; }
+  main.doc .sm-rating { font-size:var(--fs-head); margin-bottom:4px; }
+  .sm-table td:last-child, .sm-table th:last-child { padding-right:0; }
+  .sm-table td:first-child { white-space:nowrap; }
+  .sm-table th.sm-year { color:var(--ink); padding-top:16px; border-bottom-color:var(--ink); }
+  .sm-fig { margin:8px 0 16px; max-width:100%; overflow:hidden; }
+  .sm-fig svg { display:block; max-width:100%; height:auto; }
+  .sm-fig figcaption { font-size:var(--fs-meta); color:var(--muted); margin-top:4px; }
+  .sm-band { fill:var(--hover); }
+  .sm-grid { stroke:var(--line); stroke-width:1; }
+  .sm-line { stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3; }
+  .sm-dot { fill:var(--brand); }
+  .sm-dot-lim { fill:var(--card); stroke:var(--brand); stroke-width:1.5; }
+  .sm-yr { font:600 var(--fs-meta)/1 var(--font-text); fill:var(--ink); }
+  .sm-ax, .sm-mo, .sm-ax-in { font:400 var(--fs-meta)/1 var(--font-text); fill:var(--muted); }
+  .sm-ax { text-anchor:end; }
+  .sm-ax-line { font-weight:600; fill:var(--ink); }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>E. coli samples at bathing waters</h1>
+<p class="lead">Every Environment Agency lab sample of E. coli at the inland bathing waters this site covers, with the date each was taken. A historical record of the water at those times, not of the water today. For a bathing water's official rating and today's advice, the Environment Agency's own page comes first; each bathing water here links to it.</p>
+<noscript><p class="notice">This page needs JavaScript to read the samples.</p></noscript>
+<div id="samples" aria-live="polite"></div>
+
+<h2>What these samples do not tell you</h2>
+<ul id="sm-not">
+<li>One sample is the water at one place and time. It says nothing about the water on another day, or later the same day.</li>
+<li>The hindsight estimate is not the forecast the site issued that day. The site's issued forecasts are scored on the <a href="verification.html">Accuracy page</a>.</li>
+<li>A sample the model missed, or a warning with no high sample, does not point to any overflow, water company or other source.</li>
+</ul>
+
+<h2>How the hindsight estimate was made</h2>
+<p>After the samples were taken, the site's model was refitted once for each year, each time leaving out that year's samples, and run for each sample's day on the rain forecast archived for that day and the exposure to spills upstream, replayed for it. Its inputs are the ones the forecast uses: rain, the spills upstream, the season and, for rivers, how wet the soil was. The result is the chance the model gives of the count being over 900 per 100 ml. It was never shown on the site.</p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/ECOLI-EVIDENCE-CONTRACT-v1.md">What this page's data holds</a></li>
+<li><a href="methods.html">How the forecast works</a></li>
+</ul>
+
+<h2>Sources</h2>
+<p><span id="sm-attrib">Environment Agency bathing water quality data, Open Government Licence v3.0.</span> Samples from the Environment Agency's bathing water quality service, and from its Water Quality Archive for samples the service's copy lacked. <a href="terms.html#data">Data credits</a>.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="samples.js"></script>
+</body></html>

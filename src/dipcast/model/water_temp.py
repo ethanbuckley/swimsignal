@@ -248,3 +248,73 @@ def estimate_any(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.T
     if route == "river_model":
         out["within_c"] = model.within_c   # the page's tested wording, as before
     return out
+
+
+# ------------------------------------------------------------------------------ any point on the map (#492, stage 2)
+# A clicked river or lake point has no air of its own: the click-anywhere build caches the forecast for every overflow's
+# 0.1 degree cell, air included, and publishes each cell's bridged 7-day air (cell_air_7d); the page applies the water
+# type's curve to the nearest cell's (anypoint.js, waterAt). That is the curve alone, without the trees, so its error in
+# the 27 October test's held-out May-September rows is the curve's own (computed from the cached predictions, the same
+# rows as the routes above): rivers 1.85 C, lakes 1.93 C. October to April: not measured.
+AIR_CURVE_TYPICAL_C = {"river": 1.85, "lake": 1.93}
+# Stage 3, the coastal directory: the sea curve in the same cell air. In the test's held-out May-September sea rows its
+# typical error was 1.63 C (exploratory: the sea had no gate, and those rows' air was HadUK's at the beach, not a land
+# cell's a few km away). Estuaries were left out of the test (docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md), so an
+# estuary gets the sea curve with no error claimed.
+SEA_CURVE_TYPICAL_C = 1.63
+
+
+def nearest_cell_air(cells: dict[str, float], lat: float, lon: float) -> tuple[float, int] | None:
+    """(7-day air, km) of the point's own 0.1 degree cell, else the nearest of the eight around it, else None: the
+    rule anypoint.js's waterAt applies to a click, so a directory site and a click there say the same."""
+    def key(a, b):
+        return f"{a + 0.0:.1f},{b + 0.0:.1f}"
+    c = (round(lat * 10) / 10, round(lon * 10) / 10)
+    if isinstance(cells.get(key(*c)), (int, float)):
+        return float(cells[key(*c)]), 0
+    best = None
+    for i in (-1, 0, 1):
+        for j in (-1, 0, 1):
+            a, b = round((c[0] + i / 10) * 10) / 10, round((c[1] + j / 10) * 10) / 10
+            a7 = cells.get(key(a, b))
+            if (i or j) and isinstance(a7, (int, float)):
+                km = float(np.hypot((a - lat) * 111.2, (b - lon) * 111.2 * np.cos(np.radians(lat))))
+                if best is None or km < best[1]:
+                    best = (float(a7), km)
+    return None if best is None else (best[0], int(round(best[1])))
+
+
+def sea_from_cells(model: WaterTempModel, cells: dict[str, float], day: str, lat: float, lon: float,
+                   kind: str = "coast") -> dict | None:
+    """A provisional sea-surface estimate at a coastal (`coast`) or estuary bathing water: the sea curve in the nearest
+    cached cell's 7-day air (nearest_cell_air), never below 0 C, or None (no cell nearby). `typical_c` is the summer
+    test's sea figure for a coast in May-September, else None."""
+    near = nearest_cell_air(cells, lat, lon)
+    if near is None or "sea" not in model.curves:
+        return None
+    a7, km = near
+    t = float(mohseni(a7, *model.curves["sea"]))
+    if not np.isfinite(t):
+        return None
+    in_season = int(day[5:7]) in model.months
+    return {"temp_c": int(round(max(0.0, t))), "date": day, "route": f"{'estuary' if kind == 'estuary' else 'sea'}_air_curve",
+            "tested": False, "typical_c": SEA_CURVE_TYPICAL_C if in_season and kind != "estuary" else None,
+            "air_7d_c": round(a7, 1), "air_km": km}
+
+
+def cell_air_7d(model: WaterTempModel, hourly: pd.DataFrame, today: pd.Timestamp) -> dict[str, float]:
+    """Each cell's bridged mean air over the 7 days to `today` (London days, each whole), keyed "lat,lon" by the cell's
+    centre as anypoint.js keys its rain; a cell without all 7 days is left out. `hourly` has cell_lat, cell_lon, time,
+    air_c (the forecast cache's frame)."""
+    if hourly is None or hourly.empty or "air_c" not in hourly:
+        return {}
+    today = pd.Timestamp(pd.Timestamp(today).date())
+    days = pd.date_range(today - pd.Timedelta(days=6), today, freq="D")
+    c, d = model.bridge
+    out = {}
+    for (a, b), g in hourly.groupby(["cell_lat", "cell_lon"]):
+        s = daily_air(g[["time", "air_c"]]).reindex(days)
+        if s.isna().any():
+            continue
+        out[f"{float(a) + 0.0:.1f},{float(b) + 0.0:.1f}"] = round(float((c + d * s).mean()), 2)
+    return out

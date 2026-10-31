@@ -11,9 +11,10 @@
 <nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/research">Research</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
 <main class="doc" id="main"><h1>Coasts, Wales, Scotland, Ireland and algae</h1>
 <p>SwimSignal forecasts listed rivers and lakes in England. For the coast, Wales, Scotland and Ireland, use the official services below. Their observations and warnings answer different questions from our inland forecast.</p>
+<p id="regional-results" role="status" hidden></p>
 <h2>Coasts and estuaries in England</h2>
 <p><a href="https://environment.data.gov.uk/bwq/profiles/">Find an Environment Agency bathing water</a> for its rating, sample results and any pollution warning. Check the date and the signs at the beach. A four-season rating is not today's water test. Our inland river model does not account for tides or coastal transport and is not a coastal forecast. Opening "Today's EA advice" under a site in the directory loads the Environment Agency's own panel for that site, from your browser (<a href="/privacy">privacy</a>).</p>
-<details><summary>Search the English coastal directory</summary>
+<details id="coastal-directory"><summary>Search the English coastal directory</summary>
 <!-- COASTAL_DIRECTORY --><p>Use the EA link above if the directory is unavailable here.</p><!-- END_COASTAL_DIRECTORY -->
 </details>
 <h2>Wales</h2>
@@ -201,5 +202,29 @@ if (coastalList) coastalList.addEventListener('toggle', e => {   // 'toggle' doe
     eaToday(fold, Date.now());
   }
 }, true);
+// A search handed over from Explore searches each existing official directory. Open only
+// directories with a match, and keep every source's own dates and coverage explanation.
+if (typeof location !== 'undefined') {
+  const query = new URLSearchParams(location.search).get('q');
+  if (query && query.trim()) {
+    let matches = 0;
+    for (const region of ['coastal', 'wales', 'scotland', 'ireland', 'ni']) {
+      const input = document.getElementById(`${region}-search`);
+      if (!input) continue;
+      input.value = query.slice(0, 200);
+      input.dispatchEvent(new Event('input'));
+      const found = [...document.querySelectorAll(`.${region}-site`)].filter(site => !site.hidden).length;
+      matches += found;
+      const fold = document.getElementById(`${region}-directory`);
+      if (fold && found) fold.open = true;
+    }
+    const status = document.getElementById('regional-results');
+    if (status) {
+      status.hidden = false;
+      status.textContent = matches ? `${matches} official bathing-water ${matches === 1 ? 'site matches' : 'sites match'} “${query.slice(0, 200)}”. Matching directories are open below. These are official observations and advice, not SwimSignal forecasts.`
+        : `No available directory sites match “${query.slice(0, 200)}”. You can search the directories below or use the official services linked here.`;
+    }
+  }
+}
 </script>
 </body></html>

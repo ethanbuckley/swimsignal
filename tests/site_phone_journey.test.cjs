@@ -79,3 +79,23 @@ test("under \"Today and tomorrow\" a later weekend day is said to be the weekend
   assert.equal(L.lowAnswerWords(a), 'This weekend, Saturday: 1 of 1 spot at low risk');
   assert.equal(L.lowAnswerWords(L.lowAnswerDay(spots, dates, '2026-10-31')), 'Saturday: 1 of 1 spot at low risk');   // picked
 });
+
+test('suggested-spots share previews its own payload and explains a restricted selected outing', () => {
+  const vm = require('node:vm');
+  const lists = require('../src/dipcast/site/lists.js');
+  const body = PAGE.slice(PAGE.indexOf('function planShare('), PAGE.indexOf('function bindPlan('));
+  let html = '', url = '';
+  const ctx = vm.createContext({PLAN_SHARE_MAX: 20, PLAN: {day: '2026-10-31', spot: 'frensham'}, DATA: {spots: [{id: 'frensham', name: 'Frensham'}]},
+    planAdvised: s => !!s.restrict, esc: s => s, planListName: lists.planListName, shareHash: lists.shareHash,
+    document: {getElementById: id => id === 'plan-results' ? {insertAdjacentHTML: (_where, h) => {html = h;}} : {}},
+    bindShareLink: (_b, _m, link) => {url = link;}, savedPath: () => '/saved/', location: {origin: 'https://swimsignal.co.uk'}, URL, BRAND: 'SwimSignal'});
+  vm.runInContext(body, ctx);
+  vm.runInContext('planShare', ctx)([{s: {id: 'frensham', name: 'Frensham', restrict: true}, level: 'low'},
+    {s: {id: 'wey', name: 'River Wey'}, level: 'low'}], 'on Saturday');
+  assert.match(html, /Share suggested spots/);
+  assert.match(html, /Frensham is left out/);
+  assert.match(html, /Your selected outing spot, Frensham, is not in this list/);
+  assert.match(html, /not your selected outing time or meeting place/);
+  assert.match(html, /<li>River Wey<\/li>/);
+  assert.deepEqual(lists.readShared(new URL(url).hash, ['2026-10-31']).spots, ['wey']);
+});

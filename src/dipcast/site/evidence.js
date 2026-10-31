@@ -109,6 +109,17 @@ function evidenceSample(s, nowMs, html = false) {
     + (cmp ? `: ${html ? `<a href="#about-ecoli">${cmp}</a>` : cmp}` : '') + '.';
 }
 
+// The one link from the latest lab sample to every sample here (samples.html), where the build found this bathing
+// water in the research export (build_site.attach_sample_history, `sample_history`): " Every sample here since May
+// 2024." after the sample's sentence, in the tile only (evidenceTile; not the evidence map's copy of the row). Its
+// month is the first sample's. Empty without the field.
+function evidenceHistory(d) {
+  const h = d.sample_history;
+  if (!h || !/^\d{4}-\d{2}-\d{2}$/.test(h.first || '') || !/^[A-Za-z0-9_-]+$/.test(d.id || '')) return '';
+  const since = new Date(h.first + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return ` <a href="samples.html#spot=${d.id}">Every sample here since ${since}</a>.`;
+}
+
 // Runoff from farms, which the forecast does not model at a particular spot, where the Environment Agency
 // lists it on the spot's water body: agriculture and rural land management as a confirmed or probable
 // reason the water body does not reach good status, under "Pollution from rural areas", in the Catchment
@@ -166,7 +177,7 @@ function evidenceTile(d, nowMs, generatedAt) {
   if (!rows.length && !gaps.length) return '';
   return `<details class="tile fold" id="evidence"><summary><span class="t-lab" id="evidence-h">${evidenceIcon()}<span>What the level rests on</span></span></summary>`
     + (rows.length ? `<div class="factors">${rows.map(r => `<div class="factor"><div class="f-l">${r.what}</div><div class="f-v">${r.age}</div>`
-      + `<div class="f-d">${r.say}</div><div class="f-src">${r.src}.</div></div>`).join('')}</div>` : '')
+      + `<div class="f-d">${r.say}${r.what === 'Latest lab sample' ? evidenceHistory(d) : ''}</div><div class="f-src">${r.src}.</div></div>`).join('')}</div>` : '')
     + (gaps.length ? `<div class="ev-gap">${gaps.map(g => `<p>${g}</p>`).join('')}</div>` : '') + '</details>';
 }
 
@@ -229,6 +240,6 @@ const evidenceWarnings = () => EVIDENCE_WARNINGS || (EVIDENCE_WARNINGS = fetch(E
   .then(r => (r.ok ? r.json() : null)).then(v => ((v || {}).live || {}).warning_table || null).catch(() => null));
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceSince, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
+  module.exports = { evidenceTile, evidenceItems, evidenceHistory, evidenceAge, evidenceSince, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
     evidenceNowGap, evidenceCompanyLine };
 }

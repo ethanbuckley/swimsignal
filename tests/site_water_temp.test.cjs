@@ -19,7 +19,7 @@ function pageDefs(names) {
 }
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync(join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
-vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile']), ctx);
+vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'agoSpan', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile']), ctx);
 const waterTile = vm.runInContext('waterTile', ctx);
 
 const hoursAgo = h => new Date(Date.now() - h * 3600e3).toISOString();
@@ -29,11 +29,12 @@ const bures = { temp_c: 16.3, observed_at: hoursAgo(2), age_hours: 1.0, quality:
   distance_km: 8.1, direction: 'downstream', river_km: 10.9 };
 
 test('a reading is shown with where the sensor is, how far along the river and how old it is', () => {
-  const t = waterTile(bures);
+  const t = waterTile(bures), plain = x => x.replace(/<span data-ago="\d+">([^<]*)<\/span>/g, '$1');
   assert.equal(t.label, 'Water temperature');
   assert.equal(t.fig, '16°');
   assert.equal(t.unit, 'C');
-  assert.equal(t.say, 'Measured at Bures Mill on the Stour, 10.9&nbsp;km downstream, 2 h ago.');
+  assert.equal(plain(t.say), 'Measured at Bures Mill on the Stour, 10.9&nbsp;km downstream, 2 h ago.');
+  assert.match(t.say, /<span data-ago="\d+">2 h<\/span> ago\./);   // moved on while the page is open (stillCurrent)
   assert.match(t.more, /not yet checked/);
   assert.match(t.more, /href="https:\/\/environment\.data\.gov\.uk\/hydrology\/station\/E02254A"/);
   assert.match(t.more, /Not part of the pollution level\./);
@@ -42,8 +43,8 @@ test('a reading is shown with where the sensor is, how far along the river and h
 });
 
 test('the age is counted when the page is read, not when it was built', () => {
-  assert.match(waterTile({ ...bures, observed_at: hoursAgo(26) }).say, /, 26 h ago\.$/);
-  assert.match(waterTile({ ...bures, observed_at: hoursAgo(0.5) }).say, /, 30 min ago\.$/);
+  assert.match(waterTile({ ...bures, observed_at: hoursAgo(26) }).say, /, <span data-ago="\d+">26 h<\/span> ago\.$/);
+  assert.match(waterTile({ ...bures, observed_at: hoursAgo(0.5) }).say, /, <span data-ago="\d+">30 min<\/span> ago\.$/);
 });
 
 test('without a distance along the river, a direction or a time, nothing is shown', () => {
@@ -87,7 +88,7 @@ test('with a sensor, the reading comes first and the estimate after it, in the s
   const t = waterTile(bures, est, 'river');
   assert.equal(t.fig, '16°');
   assert.ok(t.live);
-  assert.match(t.say, /^Measured at Bures Mill on the Stour, 10\.9&nbsp;km downstream, 2 h ago\. At the spot: about 17&nbsp;°C \(estimated, typically within 2&nbsp;°C\)\.$/);
+  assert.match(t.say, /^Measured at Bures Mill on the Stour, 10\.9&nbsp;km downstream, <span data-ago="\d+">2 h<\/span> ago\. At the spot: about 17&nbsp;°C \(estimated, typically within 2&nbsp;°C\)\.$/);
   assert.match(t.more, /not a measurement/);
   setToday(null);
 });
@@ -102,6 +103,34 @@ test('never on the sea, never on another day, never without its figures', () => 
   assert.equal(waterTile(null, { ...est, route: 'sea_model' }, 'river'), null);    // a route this page does not know
   assert.doesNotMatch(waterTile(bures, est, 'lake').say, /estimated/);             // the reading stays
   setToday(null);
+});
+
+test('the visible conditions summary retains measurement context and states missing readings', () => {
+  const c = vm.createContext({waterTile: () => ({fig: '16°', unit: 'C', live: true, say: 'Measured at Bures Mill, 10.9 km downstream, 2 h ago.'}), riverTile: () => null});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  const summary = vm.runInContext('conditionsSummary', c);
+  const h = summary({kind: 'river'});
+  assert.match(h, /Measured at Bures Mill, 10.9 km downstream, 2 h ago/);
+  assert.match(h, /warmer or colder than at the sensor/);
+  assert.match(h, /River level:<\/b> No gauge reading available/);
+  assert.match(summary({kind: 'lake'}), /Lake level:<\/b> No gauge reading available/);
+});
+
+test('the conditions summary does not show an old gauge as current', () => {
+  let seen;
+  const c = vm.createContext({waterTile: () => null, riverTile: rs => { seen = rs; return null; }});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  vm.runInContext('conditionsSummary', c)({kind: 'river', river_state: {observed_at: hoursAgo(48), stale: false, level_m: 1}});
+  assert.equal(seen.stale, true);
+  assert.ok(seen.age_hours >= 48);
+});
+
+test('the conditions summary writes a temperature as 10°C, a level as 0.35 m', () => {
+  const c = vm.createContext({waterTile: () => ({fig: '10°', unit: 'C', say: ''}), riverTile: () => ({fig: '0.35', unit: 'm', say: ''})});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  const h = vm.runInContext('conditionsSummary', c)({kind: 'river'});
+  assert.match(h, /Water temperature:<\/b> 10°C\./);
+  assert.match(h, /River level:<\/b> 0\.35 m\./);
 });
 
 // #492 (Ethan, 30 October 2026): every river and lake spot, all year, each route worded by what was measured for it.
@@ -142,3 +171,34 @@ test('no estimate because its inputs did not arrive: said, not left blank, and n
   setToday(null);
 });
 
+
+// #492 stage 2: a clicked river or lake point (anypoint.js, waterAt), from the nearest cached cell's 7-day air.
+const A = require('../src/dipcast/site/anypoint.js');
+const WA = { date: '2026-10-31', cells: { '54.4,-2.9': 9.31 }, months: [5, 6, 7, 8, 9], typical_c: { river: 1.85, lake: 1.93 },
+  curves: { river: [-0.41166947693946565, 34.999999993691574, 18.3677886247391, 0.08066342666976217], lake: [-0.08307401472541856, 34.999999999992696, 14.660334045119965, 0.10187070075502881] } };
+
+test('a clicked point: the curve on the nearest cell, its distance, and no error claimed outside May to September', () => {
+  const own = A.waterAt({ water_air: WA }, 54.38, -2.92, 'lake').est;
+  assert.deepEqual(own, { temp_c: 13, date: '2026-10-31', route: 'lake_air_curve', tested: false, typical_c: null, air_7d_c: 9.3, air_km: 0 });
+  const next = A.waterAt({ water_air: WA }, 54.5, -2.8, 'river').est;   // the square next to the point's
+  assert.equal(next.route, 'river_air_curve'); assert.equal(next.air_km, 13);
+  assert.deepEqual(A.waterAt({ water_air: WA }, 52.0, -1.0, 'river'), { miss: { why: 'air', date: '2026-10-31' } });   // no cell near
+  assert.deepEqual(A.waterAt({ water_air: WA }, 54.4, -2.9, 'coast'), {});   // not a river or lake: its own route (#479)
+  assert.deepEqual(A.waterAt({}, 54.4, -2.9, 'river'), {});                 // a file from before stage 2
+  // In the months it was tested in, the curve alone's measured error.
+  assert.equal(A.waterAt({ water_air: { ...WA, date: '2026-07-14' } }, 54.4, -2.9, 'river').est.typical_c, 1.85);
+});
+
+test('a clicked point on the page: said as a provisional estimate for an unlisted point, with the area\'s distance', () => {
+  setToday('2026-10-31');
+  const t = waterTile(null, { temp_c: 11, date: '2026-10-31', route: 'river_air_curve', tested: false, typical_c: null, air_km: 13 }, 'river');
+  assert.equal(t.say, 'About 11&nbsp;°C (provisional estimate, not yet checked in these months).');
+  assert.match(t.more, /for a point that is not a listed spot/);
+  assert.match(t.more, /nearest this point, about 13&nbsp;km away/);
+  assert.doesNotMatch(t.more, /typically [0-9.]+&nbsp;°C out/);
+  setToday('2026-07-14');
+  const s = waterTile(null, { temp_c: 17, date: '2026-07-14', route: 'lake_air_curve', tested: false, typical_c: 1.93, air_km: 0 }, 'lake');
+  assert.equal(s.say, 'About 17&nbsp;°C (provisional estimate; typical error 1.9&nbsp;°C at lakes in a summer test).');
+  assert.match(s.more, /typically 1\.9&nbsp;°C out/);
+  setToday(null);
+});

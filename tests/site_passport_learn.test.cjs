@@ -68,7 +68,7 @@ test('after the first swim the questions are in the passport tile only: never tw
 test('Saved draws one of the two in one place, and the lesson needs nothing from the network or a position', () => {
   const page = fs.readFileSync(join(SITE, 'index.html'), 'utf8');
   assert.equal(count(page, /passportSection\(/g), 1);
-  assert.match(page, /if \(typeof passportSection === 'function'\) v \+= passportSection\(DATA\.spots\);/);
+  assert.match(page, /if \(typeof passportSection === 'function'\) \{/ );
   const js = fs.readFileSync(join(SITE, 'passport.js'), 'utf8');
   assert.doesNotMatch(js, /fetch\(|XMLHttpRequest|sendBeacon|navigator\.geolocation/);
   // The message after the last right answer says where the badge will be, before or after a swim.
