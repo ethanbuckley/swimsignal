@@ -2,7 +2,8 @@
 // the latest published, each with Publish, Keep or Delete; then the same for quick notes on a visit,
 // where a note of suspected pollution or algae can also be verified; then, once the illness table exists,
 // reports of illness as batches (one spot, one day), which can be deleted whole, and the reports per spot
-// and day of swimming to download. It is served by the Worker, so the
+// and day of swimming to download; then, once their table exists, partners' files of water-sample results, to
+// download, accept or delete, never to publish. It is served by the Worker, so the
 // queue it reads (/admin/queue) is on its own origin; it borrows the site's stylesheet and fonts
 // for its look. The admin token is pasted once and kept in this browser's local storage. Review
 // text is only ever set as text (textContent), never as markup, and the Content-Security-Policy
@@ -48,6 +49,14 @@ export function moderatePage(site) {
 <li>The CSV has the reports per spot and day of swimming, to test the forecast against. A row in it can be one person's health: keep it on this computer, and delete it when the test is done.</li>
 <li>Each report is deleted 400 days after it arrived. Reports hold no name, words, time of day or address, so you cannot tell who sent one; someone who asks to have theirs deleted can give the spot and the day they swam.</li>
 </ul></details>
+<details class="fold" id="partner-rules" hidden><summary>Partner files</summary>
+<ul>
+<li>Nothing here is published, by you or by the Worker. A file waits until you download it, check it and agree the permissions with the partner in writing.</li>
+<li>Check it on your computer: <code>uv run python scripts/partner_samples.py check FILE.csv</code>. Every error must be fixed by the partner, not by you: reply with the checker's lines.</li>
+<li>Before any result is used: confirm by email what the file's <code>publish_consent</code> and <code>test_use</code> say, row by row. A <code>holdout</code> result needs an agreement dated before it was sampled; anything else is <code>exploratory</code>.</li>
+<li>Accept once the file is in the private folder. Every file, with the sender's name and email, is deleted 90 days after it arrived, accepted or not; delete one sooner when it is done with.</li>
+<li>The email address is personal data. Use it to reply about this file, and for nothing else.</li>
+</ul></details>
 <form id="signin" class="panel" hidden>
 <label for="token">Admin token</label>
 <input id="token" type="password" autocomplete="current-password" required>
@@ -72,6 +81,11 @@ export function moderatePage(site) {
 <p id="illness-state"></p>
 <ol class="mq-list" id="illness-batches"></ol>
 <div class="actions"><button type="button" class="btn" id="illness-csv">Download the reports per spot and day of swimming (CSV)</button></div>
+</section>
+<section id="partners" hidden>
+<h2>Partner files <span class="muted" id="n-partners"></span></h2>
+<p id="partners-state"></p>
+<ol class="mq-list" id="partner-files"></ol>
 </section>
 <div class="actions"><button type="button" class="btn" id="reload">Check again</button><button type="button" class="btn" id="signout">Forget the token on this device</button></div>
 </div>
@@ -272,6 +286,51 @@ $('illness-csv').addEventListener('click', async () => {
   } catch (e) { say('The CSV could not be downloaded: ' + e.message); }
 });
 
+// A partner's file: who sent it and how to reply, what it holds, and Download, Accept and Delete. The sender's
+// words are text only, as a review's are.
+function partnerCard(f) {
+  const li = el('li', 'panel mq');
+  li.append(el('p', 'mq-head', f.organisation));
+  li.append(el('p', 'mq-v', f.rows + (f.rows === 1 ? ' result' : ' results') + ' from ' + f.partner_id
+    + (f.first_day ? ', sampled ' + day(f.first_day) + (f.last_day && f.last_day !== f.first_day ? ' to ' + day(f.last_day) : '') : '')));
+  li.append(el('p', 'mq-meta', (f.contact_name ? f.contact_name + ', ' : '') + f.email + ' · ' + f.filename + ' · arrived ' + day(f.created_at)
+    + (f.status === 'accepted' ? ' · accepted ' + day(f.decided_at) : '') + ' · SHA-256 ' + f.sha256.slice(0, 12)));
+  if (f.message) li.append(el('p', 'mq-text', f.message));
+  const acts = el('div', 'actions');
+  const button = (label, run) => { const b = el('button', 'btn', label); b.type = 'button'; b.addEventListener('click', () => run(b)); acts.append(b); };
+  button('Download the file', async () => {
+    try {
+      const res = await api('/admin/partners/' + f.id + '.csv'), url = URL.createObjectURL(await res.blob());
+      const a = el('a');
+      a.href = url; a.download = (/filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '') || [])[1] || 'partner.csv';
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) { say('The file could not be downloaded: ' + e.message); }
+  });
+  const decide = async (b, action) => {
+    if (action === 'delete' && !confirm('Delete this file, and the sender\'s name and email with it, for good?')) return;
+    b.disabled = true;
+    try {
+      await api('/admin/partners/decide', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id, action: action }) });
+      li.replaceChildren(el('p', 'mq-meta', action === 'accept' ? 'Accepted. It is deleted here ' + PARTNER_DAYS + ' days after it arrived.' : 'Deleted.'));
+    } catch (e) { b.disabled = false; say('Not done: ' + e.message); }
+  };
+  if (f.status === 'pending') button('Accept: checked and kept privately', (b) => decide(b, 'accept'));
+  button('Delete', (b) => decide(b, 'delete'));
+  li.append(acts);
+  return li;
+}
+let PARTNER_DAYS = 90;
+function fillPartners(p) {
+  $('partners').hidden = !p; $('partner-rules').hidden = !p;
+  if (!p) return;
+  PARTNER_DAYS = p.keep_days;
+  const all = p.pending.concat(p.accepted);
+  $('n-partners').textContent = '(' + p.pending.length + ' waiting, ' + p.accepted.length + ' accepted)';
+  $('partners-state').textContent = (p.on ? 'On: the partner page takes files. ' : 'Off: the partner page takes no files. ')
+    + 'Each file is deleted ' + p.keep_days + ' days after it arrived.';
+  $('partner-files').replaceChildren(...(all.length ? all.map(partnerCard) : [el('li', 'mq-meta', 'No files held.')]));
+}
+
 function fill(id, list, kind, empty, make) {
   $('n-' + id).textContent = '(' + list.length + ')';
   $(id).replaceChildren(...(list.length ? list.map((r) => (make || card)(r, kind)) : [el('li', 'mq-meta', empty)]));
@@ -286,7 +345,8 @@ async function load() {
       + (s.level === 'normal' ? '' : ' Storage is getting full. Make room before accepting more photos.')
       + (s.cleanup_pending ? ' ' + s.cleanup_pending + ' photo batches are waiting for automatic cleanup.' : '')
       + (s.estimated_reviews ? ' Older photos are counted at their maximum size.' : '');
-    const todo = q.summary.pending + q.summary.reported + (q.summary.visits_pending || 0) + (q.summary.visits_reported || 0);
+    const todo = q.summary.pending + q.summary.reported + (q.summary.visits_pending || 0) + (q.summary.visits_reported || 0)
+      + (q.partners ? q.partners.pending.length : 0);
     document.title = (todo ? '(' + todo + ') ' : '') + 'Reviews to check · SwimSignal';
     fill('pending', q.pending, 'pending', 'Nothing waiting.');
     fill('reported', q.reported, 'reported', 'Nothing reported.');
@@ -296,6 +356,7 @@ async function load() {
     fill('vreported', v.reported, 'reported', 'No notes reported.', vcard);
     fill('vpublished', v.published, 'published', 'No notes showing.', vcard);
     fillIllness(q.illness || null);
+    fillPartners(q.partners || null);
     $('find').value = '';
     $('queue').hidden = false; say('');
   } catch (e) { if (token) say('The queue could not be loaded: ' + e.message); }

@@ -3,7 +3,8 @@
 // so everything is gone when it stops. Not for production. README.md, "Try it on this computer".
 //
 //   node scripts/dev-server.mjs            (from reviews/; PORT, ALLOWED_ORIGIN, SITE_URL, ADMIN_TOKEN to change,
-//                                            ILLNESS_REPORTS=on to try reports of illness)
+//                                            ILLNESS_REPORTS=on to try reports of illness,
+//                                            PARTNER_SAMPLES=on to try partners' files)
 import { createServer } from 'node:http';
 import worker from '../src/index.js';
 import { FakeD1, FakeKV } from '../test/helpers.js';
@@ -15,6 +16,7 @@ const env = {
   SITE_URL: site, ALLOWED_ORIGIN: process.env.ALLOWED_ORIGIN || new URL(site).origin,
   ADMIN_TOKEN: process.env.ADMIN_TOKEN || 'local-admin-token',
   ILLNESS_REPORTS: process.env.ILLNESS_REPORTS || 'off',
+  PARTNER_SAMPLES: process.env.PARTNER_SAMPLES || 'off',
 };
 
 createServer(async (req, res) => {

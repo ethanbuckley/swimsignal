@@ -5,7 +5,7 @@
 export const MAX_PHOTOS = 3, MAX_TEXT = 1500, MAX_NAME = 40;
 // Requests a day from one connection. The page sends one request a review, so a swimmer never meets
 // these; a script that floods the queue does.
-export const LIMITS = { review: 10, report: 20, remove: 30, status: 60, visit: 10, confirm: 30, illness: 4 };
+export const LIMITS = { review: 10, report: 20, remove: 30, status: 60, visit: 10, confirm: 30, illness: 4, partner: 3 };
 // For everyone together. KV takes 1,000 writes a day on the free plan, two a photo, and holds 1 GB:
 // at most 300 photos a day and 300 reviews waiting for the operator. Published photos accumulate;
 // the operator must monitor storage and move to R2 before the store fills.
@@ -64,3 +64,21 @@ export const ILLNESS_KEEP_DAYS = 400;
 // Reports in one day, for one spot and for everyone together: more than any real outbreak at an inland
 // spot would send, few enough that a script cannot bury the counts in one day.
 export const ILLNESS_SPOT_DAY = 25, ILLNESS_PER_DAY = 300;
+
+// ---- partner sample files (migrations/0005_partner_samples.sql) ----
+// A group, club or lab sends a file of results in the partner contract's format (docs/PARTNER-SAMPLES-CONTRACT-v1.md).
+// The columns are the contract's template, docs/partner-samples-template-v1.csv; a test keeps the two the same. The
+// Worker checks only the shape (these columns, one partner, a row count); the operator runs the full checker,
+// scripts/partner_samples.py, on the file before anything is used. Off until PARTNER_SAMPLES is "on".
+export const PARTNER_COLUMNS = ['partner_id', 'sample_id', 'site_name', 'site_lat', 'site_lon', 'site_confirmed', 'sampled_on',
+  'sampled_time', 'timezone', 'determinand', 'result', 'qualifier', 'unit', 'method_type', 'method', 'lower_limit', 'upper_limit',
+  'limits_written', 'lab', 'lab_accredited', 'sampler', 'licence', 'attribution', 'publish_consent', 'publish_consent_on', 'test_use',
+  'test_consent_on', 'consent_ref', 'received_on', 'notes'];
+// A season of weekly samples at a dozen points is about 600 rows and 150 KB; more is a file to send by email.
+export const MAX_PARTNER_CSV = 256 * 1024, MAX_PARTNER_ROWS = 2000;
+export const MAX_PARTNER_ORG = 120, MAX_PARTNER_NAME = 80, MAX_PARTNER_EMAIL = 254, MAX_PARTNER_MESSAGE = 1000;
+// Waiting for the operator, for everyone together: a few partners a season, so a script cannot fill D1 with files.
+export const MAX_PENDING_PARTNER = 30;
+// Every file, with the sender's contact details, is deleted this many days after it arrived, accepted or not: long
+// enough to reply, agree the permissions in writing and move an accepted file to the private folder, and no longer.
+export const PARTNER_KEEP_DAYS = 90;

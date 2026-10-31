@@ -98,6 +98,52 @@ Set `ILLNESS_REPORTS = "off"` and deploy. The form, the counts and the data file
 npx wrangler d1 execute swimsignal-reviews --remote --command "DELETE FROM illness"
 ```
 
+## Partner files
+
+A group, club or lab that samples the water can send a file of results in the partner contract's format
+([docs/PARTNER-SAMPLES-CONTRACT-v1.md](../docs/PARTNER-SAMPLES-CONTRACT-v1.md)), with its name and an email address to
+reply to (`POST /partners/samples`, a form with the file). The code is at the end of `src/index.js`; the table is
+`migrations/0005_partner_samples.sql`; the rules and privacy are in
+[docs/PARTNER-PROGRAMME-2026-11.md](../docs/PARTNER-PROGRAMME-2026-11.md).
+
+- **Nothing is published.** No public route reads the table and `/published` does not mention it. A file waits on
+  `/moderate` under "Partner files", where you download it, Accept it (checked and kept privately) or Delete it.
+  Accept publishes nothing either: results reach the site only through a pull request you make, after the partner
+  has confirmed the permissions in writing.
+- **The Worker checks the shape only:** the template's columns (`PARTNER_COLUMNS` in `src/rules.js`, kept equal to
+  `docs/partner-samples-template-v1.csv` by a test), one `partner_id`, one to 2,000 results, at most 256 KB, UTF-8.
+  The full check is `uv run python scripts/partner_samples.py check FILE.csv` on your computer.
+- **Limits.** Three files a day from one connection; 30 waiting for everyone together, after which the form says to
+  email hello@swimsignal.co.uk instead.
+- **Kept 90 days** from arrival (`PARTNER_KEEP_DAYS`), accepted or not, then the daily cron deletes the file with
+  the sender's name and email. The sender's browser keeps a key that withdraws the file at any time
+  (`POST /partners/samples/delete`), switched on or off.
+- **Off** until `PARTNER_SAMPLES` is `"on"` in `wrangler.toml`. Off, the route answers 404 and nothing else changes.
+
+### Deploying partner files
+
+Not done yet. In this folder (`cd reviews`):
+
+1. Apply the migration to the live database:
+   ```
+   npx wrangler d1 migrations apply swimsignal-reviews --remote
+   ```
+   It lists `0005_partner_samples.sql`; answer yes. You will know it worked when
+   `npx wrangler d1 execute swimsignal-reviews --remote --command "SELECT count(*) FROM partner_submissions"` prints 0.
+2. Run the tests: `node --test test/*.test.js`. All pass.
+3. Deploy with the switch still off: `npx wrangler deploy`. Open `/moderate`: a "Partner files" section says
+   "Off: the partner page takes no files" and "No files held".
+4. When the partner page has its upload form (a later change: today the page asks for files by email), set
+   `PARTNER_SAMPLES = "on"` in `wrangler.toml` and deploy again. The section then says "On".
+
+The likely mistake is step 3 before step 1. Reviews and notes carry on, but `/moderate` shows no partner section and
+any file is refused with "The partner table is missing", because the Worker cannot find its table. Run step 1.
+
+To delete every file at once:
+```
+npx wrangler d1 execute swimsignal-reviews --remote --command "DELETE FROM partner_submissions"
+```
+
 ## What it stores
 
 - A review: the spot's id, yes or no, the day they swam, the text (at most 1,500 characters), the name to show (at most 40, may be empty), each photo's size, when it arrived and when it was published, and a SHA-256 hash of its key.
@@ -105,6 +151,7 @@ npx wrangler d1 execute swimsignal-reviews --remote --command "DELETE FROM illne
 - A note on a visit: the spot's id, the day (today or yesterday), the ticks, the text (at most 280 characters), one photo's size, when it arrived and was published, the day it was last confirmed and how many times, your verification source if any, its last day, and a SHA-256 hash of its key. No name. Deleted, with its photo, by the daily cron after its last day.
 - A report: the review's or note's id, the reason picked from a list, and the time. Cleared when you keep or delete the review.
 - A report of illness, when they are on: see "Illness reports" above.
+- A partner's file, when they are on: the organisation, an optional contact name, an email address, an optional message, the file as sent and its SHA-256, its partner_id, row count and first and last sampling day, when it arrived and was accepted, and a SHA-256 hash of its key. Deleted, with everything else, 90 days after it arrived. Three files a day from one connection.
 - Rate-limit counts: requests a day from one connection, under an HMAC of the IP address, the kind of request and the day, keyed with `ADMIN_TOKEN`. Never the address itself. The daily cron deletes days before yesterday. Ten reviews, 20 reports, 30 deletions, 60 status checks and four reports of illness a day from one connection (an IPv6 /64 or an IPv4 address). The service also caps photos at 300 a day and pending reviews at 300, including simultaneous submissions. Published photos accumulate, so monitor total storage.
 
 A review waiting for you is never public: `/published` lists only published ones, and a waiting review's photos answer only to the admin token.
@@ -219,7 +266,7 @@ Locally the moderation page shows spot ids rather than names and falls back to o
 
 ## Tests
 
-`node --test test/*.test.js` (or `npm test`) runs the Worker against real SQLite (Node's `node:sqlite`, Node 24 or later) with the migrations in `migrations/`; reports of illness are in `test/illness.test.js`. CI runs them on every change to this folder (`.github/workflows/reviews-tests.yml`). The page's parts are in `tests/site_reviews.test.cjs`, `tests/site_visits.test.cjs` and `tests/site_illness.test.cjs`, and the build's in `tests/test_reviews.py`.
+`node --test test/*.test.js` (or `npm test`) runs the Worker against real SQLite (Node's `node:sqlite`, Node 24 or later) with the migrations in `migrations/`; reports of illness are in `test/illness.test.js`, partners' files in `test/partners.test.js`. CI runs them on every change to this folder (`.github/workflows/reviews-tests.yml`). The page's parts are in `tests/site_reviews.test.cjs`, `tests/site_visits.test.cjs` and `tests/site_illness.test.cjs`, and the build's in `tests/test_reviews.py`.
 
 Before deploying a change, run it once in Cloudflare's own runtime as well: `npx wrangler d1 migrations apply swimsignal-reviews --local`, then `npx wrangler dev --local --var ALLOWED_ORIGIN:http://localhost:8771 --var SITE_URL:http://localhost:8771/ --var ADMIN_TOKEN:local-admin-token`. Node does not catch everything: on 3 Oct 2026 workerd refused to start a version whose `src/index.js` exported a number, which every Node test had passed (`src/rules.js` explains; a test now guards it).
 

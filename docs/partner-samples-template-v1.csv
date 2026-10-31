@@ -1,0 +1,1 @@
+partner_id,sample_id,site_name,site_lat,site_lon,site_confirmed,sampled_on,sampled_time,timezone,determinand,result,qualifier,unit,method_type,method,lower_limit,upper_limit,limits_written,lab,lab_accredited,sampler,licence,attribution,publish_consent,publish_consent_on,test_use,test_consent_on,consent_ref,received_on,notes
