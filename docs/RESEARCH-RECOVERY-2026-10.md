@@ -137,7 +137,10 @@ Dates below come from existing protocols and are not new promises of a positive 
 
 ## Variants with meaningful negative evidence
 
-Keep these in the searchable register; do not spend the recovery budget rerunning them unchanged.
+Keep these in the searchable register; do not spend the recovery budget rerunning them unchanged. Every record in
+this register is also in the public catalogue, `/research-catalogue.html` (issue #489,
+`data/research/research_catalogue.v1.json`, [contract](RESEARCH-CATALOGUE-CONTRACT-v1.md)), with the original verdict
+kept apart from the current stage and, where the two differ, a note of how this register's summary differs from the record.
 
 | Variant and records | Evidence / reason to stop this variant | Reopen when |
 |---|---|---|
