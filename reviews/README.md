@@ -100,19 +100,21 @@ npx wrangler d1 execute swimsignal-reviews --remote --command "DELETE FROM illne
 
 ## Partner files
 
-A group, club or lab that samples the water can send a file of results in the partner contract's format
-([docs/PARTNER-SAMPLES-CONTRACT-v1.md](../docs/PARTNER-SAMPLES-CONTRACT-v1.md)), with its name and an email address to
+A group, club or lab that samples the water can send a file of results in the `samples/` format
+([samples/README.md](../samples/README.md); version 2 for partners,
+[docs/PARTNER-SAMPLES-CONTRACT-v1.md](../docs/PARTNER-SAMPLES-CONTRACT-v1.md)), with its name and an email address to
 reply to (`POST /partners/samples`, a form with the file). The code is at the end of `src/index.js`; the table is
 `migrations/0005_partner_samples.sql`; the rules and privacy are in
 [docs/PARTNER-PROGRAMME-2026-11.md](../docs/PARTNER-PROGRAMME-2026-11.md).
 
 - **Nothing is published.** No public route reads the table and `/published` does not mention it. A file waits on
   `/moderate` under "Partner files", where you download it, Accept it (checked and kept privately) or Delete it.
-  Accept publishes nothing either: results reach the site only through a pull request you make, after the partner
-  has confirmed the permissions in writing.
-- **The Worker checks the shape only:** the template's columns (`PARTNER_COLUMNS` in `src/rules.js`, kept equal to
-  `docs/partner-samples-template-v1.csv` by a test), one `partner_id`, one to 2,000 results, at most 256 KB, UTF-8.
-  The full check is `uv run python scripts/partner_samples.py check FILE.csv` on your computer.
+  Accept publishes nothing either: results reach the site only the way any `samples/` result does, through
+  `scripts/add_samples.py` and a pull request you make, after the partner has confirmed the permissions in writing.
+- **The Worker checks the shape only:** the format's columns (`SAMPLE_COLUMNS` in `src/rules.js`, kept equal to
+  `docs/samples-template-v2.csv` by a test; version 1's 13 columns are accepted too), one `supplier`, one to 2,000
+  samples, at most 256 KB, UTF-8. The full check is `scripts/add_samples.py --dry-run` on your computer, the same
+  as for an emailed file.
 - **Limits.** Three files a day from one connection; 30 waiting for everyone together, after which the form says to
   email hello@swimsignal.co.uk instead.
 - **Kept 90 days** from arrival (`PARTNER_KEEP_DAYS`), accepted or not, then the daily cron deletes the file with
@@ -151,7 +153,7 @@ npx wrangler d1 execute swimsignal-reviews --remote --command "DELETE FROM partn
 - A note on a visit: the spot's id, the day (today or yesterday), the ticks, the text (at most 280 characters), one photo's size, when it arrived and was published, the day it was last confirmed and how many times, your verification source if any, its last day, and a SHA-256 hash of its key. No name. Deleted, with its photo, by the daily cron after its last day.
 - A report: the review's or note's id, the reason picked from a list, and the time. Cleared when you keep or delete the review.
 - A report of illness, when they are on: see "Illness reports" above.
-- A partner's file, when they are on: the organisation, an optional contact name, an email address, an optional message, the file as sent and its SHA-256, its partner_id, row count and first and last sampling day, when it arrived and was accepted, and a SHA-256 hash of its key. Deleted, with everything else, 90 days after it arrived. Three files a day from one connection.
+- A partner's file, when they are on: the organisation, an optional contact name, an email address, an optional message, the file as sent and its SHA-256, its supplier, row count and first and last sampling day, when it arrived and was accepted, and a SHA-256 hash of its key. Deleted, with everything else, 90 days after it arrived. Three files a day from one connection.
 - Rate-limit counts: requests a day from one connection, under an HMAC of the IP address, the kind of request and the day, keyed with `ADMIN_TOKEN`. Never the address itself. The daily cron deletes days before yesterday. Ten reviews, 20 reports, 30 deletions, 60 status checks and four reports of illness a day from one connection (an IPv6 /64 or an IPv4 address). The service also caps photos at 300 a day and pending reviews at 300, including simultaneous submissions. Published photos accumulate, so monitor total storage.
 
 A review waiting for you is never public: `/published` lists only published ones, and a waiting review's photos answer only to the admin token.

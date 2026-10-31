@@ -14,8 +14,8 @@ import { BadImage, cleanJpeg } from './jpeg.js';
 import { MODERATE_CSS, MODERATE_JS, moderatePage } from './moderate.js';
 import { ILLNESS_DAYS_BACK, ILLNESS_KEEP_DAYS, ILLNESS_MIN, ILLNESS_PER_DAY, ILLNESS_SPOT_DAY, ILLNESS_SYMPTOMS, LIMITS, MAX_NAME, MAX_PENDING,
   MAX_PENDING_PARTNER, MAX_PENDING_VISITS, MAX_PARTNER_CSV, MAX_PARTNER_EMAIL, MAX_PARTNER_MESSAGE, MAX_PARTNER_NAME, MAX_PARTNER_ORG,
-  MAX_PARTNER_ROWS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PARTNER_COLUMNS, PARTNER_KEEP_DAYS, PHOTOS_PER_DAY,
-  PHOTO_STORAGE_LIMIT, PHOTO_STORAGE_WARN, PUBLISHED_LISTED, PUBLISH_TICKS_AT_ONCE, REASONS, VISIT_KINDS, VISIT_REASONS } from './rules.js';
+  MAX_PARTNER_ROWS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PARTNER_KEEP_DAYS, PHOTOS_PER_DAY,
+  PHOTO_STORAGE_LIMIT, PHOTO_STORAGE_WARN, PUBLISHED_LISTED, PUBLISH_TICKS_AT_ONCE, REASONS, SAMPLE_COLUMNS, SAMPLE_COLUMNS_V1, VISIT_KINDS, VISIT_REASONS } from './rules.js';
 
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;   // the site's own rule for a spot's id (index.html PAGE_ID)
 const REVIEW_ID = /^[0-9a-f]{20}$/;
@@ -780,19 +780,20 @@ export async function forgetOldIllness(env, now = Date.now()) {
 }
 
 // ---- partners' water-sample files ----
-// A group, club or lab that samples the water sends a file of results in the partner contract's format
-// (docs/PARTNER-SAMPLES-CONTRACT-v1.md) from the partner page, with its name and an email address to reply to. The
-// Worker checks only the file's shape: the contract's columns (rules.js, PARTNER_COLUMNS), one partner_id, between
-// one and MAX_PARTNER_ROWS results. It keeps the file whole, waiting for the operator, and never publishes it: no
-// public route reads the table, and /published does not mention it. On /moderate the operator downloads the file,
-// runs scripts/partner_samples.py on it, and agrees the permissions with the partner in writing before any result
-// is used or shown; Accept then marks the file as taken, and Delete removes it. Every file, with the sender's
-// contact details, is deleted PARTNER_KEEP_DAYS after it arrived. The sender's browser keeps a key that withdraws it
-// at any time. Off until PARTNER_SAMPLES is "on"; the sender's delete, the operator's view and the daily deletion
-// work either way, so switching it off never strands what is held. docs/PARTNER-PROGRAMME-2026-11.md has the rest.
+// A group, club or lab that samples the water sends a file of results in the samples/ format (samples/README.md, version
+// 2 for partners, docs/PARTNER-SAMPLES-CONTRACT-v1.md) from the partner page, with its name and an email address to
+// reply to. It is the existing intake's format, not a new one: the operator takes a file from here into
+// scripts/add_samples.py as it is. The Worker checks only the file's shape: the format's columns (rules.js,
+// SAMPLE_COLUMNS, or version 1's), one supplier, between one and MAX_PARTNER_ROWS samples. It keeps the file whole,
+// waiting for the operator, and never publishes it: no public route reads the table, and /published does not mention
+// it. On /moderate the operator downloads the file, runs add_samples.py --dry-run on it, and agrees the permissions with
+// the partner in writing before any result is used or shown; Accept then marks the file as taken, and Delete removes
+// it. Every file, with the sender's contact details, is deleted PARTNER_KEEP_DAYS after it arrived. The sender's browser
+// keeps a key that withdraws it at any time. Off until PARTNER_SAMPLES is "on"; the sender's delete, the operator's view
+// and the daily deletion work either way, so switching it off never strands what is held.
+// docs/PARTNER-PROGRAMME-2026-11.md has the rest.
 
 const partnersOn = (env) => env.PARTNER_SAMPLES === 'on';
-const PARTNER_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const EMAIL = /^[^\s@<>"]{1,64}@[^\s@<>"]+\.[^\s@<>".]{2,}$/;
 const noPartnerTable = (err) => /no such table: partner_submissions/.test(String(err && err.message));
 async function withPartnerTable(run) {
@@ -828,26 +829,34 @@ export function parseCsv(text) {
   return rows;
 }
 
-// The shape the Worker checks: the contract's columns, each once, in any order; every row as long as the header; one
-// partner_id; one to MAX_PARTNER_ROWS results. Returns the partner_id, the row count and the first and last sampling
-// day. Everything else is for scripts/partner_samples.py, on the operator's computer.
+// A sampling day as the format writes it, "2026-10-17 08:30" or "17/10/2026", as YYYY-MM-DD; null if neither.
+const sampleDay = (v) => {
+  const s = String(v || '').trim(), iso = /^(\d{4}-\d{2}-\d{2})/.exec(s), uk = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(s);
+  const day = iso ? iso[1] : uk ? `${uk[3]}-${uk[2]}-${uk[1]}` : null;
+  return day && realDay(day) ? day : null;
+};
+
+// The shape the Worker checks: the format's columns, each once, in any order (version 2's, or version 1's); every row as
+// long as the header; one supplier; one to MAX_PARTNER_ROWS samples. Returns the supplier, the row count and the first
+// and last sampling day. Everything else is for scripts/add_samples.py, on the operator's computer.
 export function partnerShape(text) {
   const rows = parseCsv(text);
-  check(rows.length >= 2, 'the file needs the header row and at least one result');
+  check(rows.length >= 2, 'the file needs the header row and at least one sample');
   const head = rows[0].map((h) => h.trim());
-  const missing = PARTNER_COLUMNS.filter((c) => !head.includes(c)), extra = head.filter((h) => !PARTNER_COLUMNS.includes(h));
-  check(!missing.length && !extra.length && head.length === PARTNER_COLUMNS.length,
+  const cols = head.length === SAMPLE_COLUMNS_V1.length ? SAMPLE_COLUMNS_V1 : SAMPLE_COLUMNS;
+  const missing = cols.filter((c) => !head.includes(c)), extra = head.filter((h) => !cols.includes(h));
+  check(!missing.length && !extra.length && new Set(head).size === head.length,
     `the columns are not the template's${missing.length ? `: missing ${missing.join(', ')}` : ''}${extra.length ? `; not in the template: ${extra.join(', ')}` : ''}`);
   const body = rows.slice(1);
-  check(body.length <= MAX_PARTNER_ROWS, `at most ${MAX_PARTNER_ROWS} results in one file; send the rest in another`);
+  check(body.length <= MAX_PARTNER_ROWS, `at most ${MAX_PARTNER_ROWS} samples in one file; send the rest in another`);
   const bad = body.findIndex((r) => r.length !== head.length);
   check(bad < 0, `row ${bad + 2} has ${bad < 0 ? 0 : body[bad].length} cells, not ${head.length}`);
-  const at = (name) => head.indexOf(name), ids = new Set(body.map((r) => r[at('partner_id')].trim()));
-  check(ids.size === 1, 'one partner per file: every row needs the same partner_id');
-  const [partner] = ids;
-  check(PARTNER_ID.test(partner), 'partner_id must be lower case letters, digits and hyphens');
-  const days = body.map((r) => r[at('sampled_on')].trim()).filter(realDay).sort();
-  return { partner, rows: body.length, first: days[0] || null, last: days[days.length - 1] || null };
+  const at = (name) => head.indexOf(name), names = new Set(body.map((r) => r[at('supplier')].trim()));
+  check(names.size === 1, 'one supplier per file: every row needs the same supplier');
+  const [supplier] = names;
+  check(supplier && supplier.length <= 80, 'each row needs the supplier, the organisation the results are from');
+  const days = body.map((r) => sampleDay(r[at('sampled_at')])).filter(Boolean).sort();
+  return { supplier, rows: body.length, first: days[0] || null, last: days[days.length - 1] || null };
 }
 
 async function submitPartnerFile(request, env) {
@@ -882,9 +891,9 @@ async function submitPartnerFile(request, env) {
   return withPartnerTable(async () => {
     // Check and insert in one statement, so simultaneous files cannot both take the last place in the queue.
     const stored = await env.DB.prepare(`INSERT INTO partner_submissions (id, organisation, contact_name, email, message, filename, csv, sha256,
-      partner_id, rows, first_day, last_day, status, created_at, token_hash)
+      supplier, rows, first_day, last_day, status, created_at, token_hash)
       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ? WHERE (SELECT count(*) FROM partner_submissions WHERE status = 'pending') < ? RETURNING id`)
-      .bind(id, organisation, contactName, email, message, filename, text, await sha256(text), shape.partner, shape.rows, shape.first, shape.last,
+      .bind(id, organisation, contactName, email, message, filename, text, await sha256(text), shape.supplier, shape.rows, shape.first, shape.last,
         nowISO(), await sha256(token), MAX_PENDING_PARTNER).first();
     if (!stored) throw new Refused(503, 'Too many files are waiting to be checked just now. Send it to hello@swimsignal.co.uk instead');
     return { id, token, rows: shape.rows };
@@ -910,7 +919,7 @@ async function removeOwnPartnerFile(request, env) {
 // For /moderate: every file held, without its text, newest first, with the switch's state. Null before the migration.
 async function partnerQueue(env) {
   try {
-    const { results } = await env.DB.prepare(`SELECT id, organisation, contact_name, email, message, filename, sha256, partner_id, rows,
+    const { results } = await env.DB.prepare(`SELECT id, organisation, contact_name, email, message, filename, sha256, supplier, rows,
       first_day, last_day, status, created_at, decided_at FROM partner_submissions ORDER BY status = 'pending' DESC, created_at DESC LIMIT 100`).all();
     return { on: partnersOn(env), keep_days: PARTNER_KEEP_DAYS, pending: results.filter((r) => r.status === 'pending'),
       accepted: results.filter((r) => r.status === 'accepted') };
@@ -920,13 +929,16 @@ async function partnerQueue(env) {
   }
 }
 
+// A supplier's file name, as samples.py's slug: 'Example Swim Club' -> 'example-swim-club'.
+const slugOf = (name) => String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'partner';
+
 // The file as sent, for the operator to check and keep. Never cached, never shown as a page.
 async function servePartnerFile(env, id) {
   return withPartnerTable(async () => {
-    const row = await env.DB.prepare('SELECT csv, partner_id, created_at FROM partner_submissions WHERE id = ?').bind(id).first();
+    const row = await env.DB.prepare('SELECT csv, supplier, created_at FROM partner_submissions WHERE id = ?').bind(id).first();
     if (!row) return reply(404, 'Not found');
     return new Response(row.csv, { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'private, no-store',
-      'Content-Disposition': `attachment; filename="${row.partner_id}-${row.created_at.slice(0, 10)}-${id}.csv"`, ...SAFE } });
+      'Content-Disposition': `attachment; filename="${slugOf(row.supplier)}-${row.created_at.slice(0, 10)}-${id}.csv"`, ...SAFE } });
   });
 }
 

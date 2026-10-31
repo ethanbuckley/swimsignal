@@ -52,9 +52,9 @@ export function moderatePage(site) {
 <details class="fold" id="partner-rules" hidden><summary>Partner files</summary>
 <ul>
 <li>Nothing here is published, by you or by the Worker. A file waits until you download it, check it and agree the permissions with the partner in writing.</li>
-<li>Check it on your computer: <code>uv run python scripts/partner_samples.py check FILE.csv</code>. Every error must be fixed by the partner, not by you: reply with the checker's lines.</li>
-<li>Before any result is used: confirm by email what the file's <code>publish_consent</code> and <code>test_use</code> say, row by row. A <code>holdout</code> result needs an agreement dated before it was sampled; anything else is <code>exploratory</code>.</li>
-<li>Accept once the file is in the private folder. Every file, with the sender's name and email, is deleted 90 days after it arrived, accepted or not; delete one sooner when it is done with.</li>
+<li>Check it on your computer with the samples intake: <code>uv run python scripts/add_samples.py --supplier NAME --received DAY --dry-run FILE.csv</code> (samples/README.md). Every error must be fixed by the partner, not by you: reply with its lines.</li>
+<li>Before any result is used: confirm by email what the file's <code>publish</code>, <code>evaluate</code> and <code>evaluate_use</code> say, row by row. A <code>holdout</code> result needs an agreement dated before it was sampled; anything else is <code>exploratory</code>.</li>
+<li>Accept once add_samples.py has kept it in the private folder. Every file, with the sender's name and email, is deleted 90 days after it arrived, accepted or not; delete one sooner when it is done with.</li>
 <li>The email address is personal data. Use it to reply about this file, and for nothing else.</li>
 </ul></details>
 <form id="signin" class="panel" hidden>
@@ -291,7 +291,7 @@ $('illness-csv').addEventListener('click', async () => {
 function partnerCard(f) {
   const li = el('li', 'panel mq');
   li.append(el('p', 'mq-head', f.organisation));
-  li.append(el('p', 'mq-v', f.rows + (f.rows === 1 ? ' result' : ' results') + ' from ' + f.partner_id
+  li.append(el('p', 'mq-v', f.rows + (f.rows === 1 ? ' sample' : ' samples') + ' from ' + f.supplier
     + (f.first_day ? ', sampled ' + day(f.first_day) + (f.last_day && f.last_day !== f.first_day ? ' to ' + day(f.last_day) : '') : '')));
   li.append(el('p', 'mq-meta', (f.contact_name ? f.contact_name + ', ' : '') + f.email + ' · ' + f.filename + ' · arrived ' + day(f.created_at)
     + (f.status === 'accepted' ? ' · accepted ' + day(f.decided_at) : '') + ' · SHA-256 ' + f.sha256.slice(0, 12)));

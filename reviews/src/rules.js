@@ -66,15 +66,18 @@ export const ILLNESS_KEEP_DAYS = 400;
 export const ILLNESS_SPOT_DAY = 25, ILLNESS_PER_DAY = 300;
 
 // ---- partner sample files (migrations/0005_partner_samples.sql) ----
-// A group, club or lab sends a file of results in the partner contract's format (docs/PARTNER-SAMPLES-CONTRACT-v1.md).
-// The columns are the contract's template, docs/partner-samples-template-v1.csv; a test keeps the two the same. The
-// Worker checks only the shape (these columns, one partner, a row count); the operator runs the full checker,
-// scripts/partner_samples.py, on the file before anything is used. Off until PARTNER_SAMPLES is "on".
-export const PARTNER_COLUMNS = ['partner_id', 'sample_id', 'site_name', 'site_lat', 'site_lon', 'site_confirmed', 'sampled_on',
-  'sampled_time', 'timezone', 'determinand', 'result', 'qualifier', 'unit', 'method_type', 'method', 'lower_limit', 'upper_limit',
-  'limits_written', 'lab', 'lab_accredited', 'sampler', 'licence', 'attribution', 'publish_consent', 'publish_consent_on', 'test_use',
-  'test_consent_on', 'consent_ref', 'received_on', 'notes'];
-// A season of weekly samples at a dozen points is about 600 rows and 150 KB; more is a file to send by email.
+// A group, club or lab sends a file of results in the samples/ format (samples/README.md), version 2 for partners
+// (docs/PARTNER-SAMPLES-CONTRACT-v1.md): the same format scripts/add_samples.py reads, so a file goes from the queue
+// into the existing intake unchanged. The columns are src/dipcast/samples.py's COLUMNS, and the template
+// docs/samples-template-v2.csv; a test keeps them the same. A version 1 file (the first 13) is accepted too. The Worker
+// checks only the shape (these columns, one supplier, a row count); the operator runs add_samples.py --dry-run on the
+// file before anything is used. Off until PARTNER_SAMPLES is "on".
+export const SAMPLE_COLUMNS_V1 = ['spot_id', 'sampled_at', 'timezone', 'ecoli_per_100ml', 'enterococci_per_100ml', 'lab', 'ukas_accredited',
+  'method', 'lab_ref', 'supplier', 'received', 'publish', 'evaluate'];
+export const SAMPLE_COLUMNS = [...SAMPLE_COLUMNS_V1, 'time_known', 'site_name', 'site_lat', 'site_lon', 'site_confirmed', 'ecoli_basis',
+  'enterococci_basis', 'ecoli_lower_limit', 'ecoli_upper_limit', 'enterococci_lower_limit', 'enterococci_upper_limit', 'limits_written',
+  'sampler', 'licence', 'attribution', 'publish_agreed', 'evaluate_use', 'evaluate_agreed'];
+// A season of weekly samples at a dozen points is about 300 rows and 100 KB; more is a file to send by email.
 export const MAX_PARTNER_CSV = 256 * 1024, MAX_PARTNER_ROWS = 2000;
 export const MAX_PARTNER_ORG = 120, MAX_PARTNER_NAME = 80, MAX_PARTNER_EMAIL = 254, MAX_PARTNER_MESSAGE = 1000;
 // Waiting for the operator, for everyone together: a few partners a season, so a script cannot fill D1 with files.
