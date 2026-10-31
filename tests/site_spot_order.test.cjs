@@ -28,7 +28,7 @@ test("the EA's rating, with today's advice at its foot, leads the water, and the
   // The other tiles: the open day's forecast, then the latest readings (dayTiles, nowTiles), then a lake spot's one
   // link to its lake's past measured temperatures (lakeTempHost, tests/site_lake_temperatures.test.cjs).
   assert.match(render, /const tiles = dayTiles\(d, DAY\) \+ nowTiles\(d\) \+ lakeTempHost\(d\);/);
-  assert.match(html, /const fx = facts\(d, x \? x\.date : null\)\.filter\(o => o\.icon !== ICON\.rating && !o\.live\);/);
+  assert.match(html, /const fx = facts\(d, x \? x\.date : null\)\.filter\(o => o\.icon !== ICON\.rating && !o\.live && !IN_CONDITIONS\(o\)\);/);
   // A spot without a forecast keeps the same order: the water before the tiles, which start the
   // desktop's second column.
   assert.match(render, /\$\{where\}\$\{atWater\}<\/div><div class="col-why">\$\{tiles\}<\/div><div class="col-more">\$\{more\}/);

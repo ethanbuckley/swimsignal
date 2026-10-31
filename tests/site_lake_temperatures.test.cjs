@@ -135,9 +135,9 @@ test("a lake spot's page has one link: past temperatures by month, the years, th
   for (const t of [plain(win), bro]) assert.doesNotMatch(t, /°|\d+(\.\d)? ?C\b|median/);
   assert.equal(ctx.lakeTempLine(null), '');
   assert.equal(ctx.lakeTempLine({ ...link(BRO, BRO.spots[0]), wb_id: 'x"><script>' }), '');
-  // In the page: after the latest readings, and into "At the water" on a phone.
+  // In the page: after the latest readings, on a phone too (PHONE_ORDER).
   assert.match(page, /const tiles = dayTiles\(d, DAY\) \+ nowTiles\(d\) \+ lakeTempHost\(d\);/);
-  assert.match(page, /\['water', 'At the water', \['#now-tiles', '#lt-past',/);
+  assert.match(page, /const PHONE_ORDER = \[[^\]]*'#now-tiles', '#lt-past',/);
 });
 
 test("a sampling point's dates are its own first and last where the export gives them (1.1)", () => {

@@ -47,6 +47,12 @@ function seasonalTile(d) {
   if (!w) return '';
   let h = `<details class="tile fold" id="seasonal"><summary><span class="t-lab">${SEASONAL_ICON}<span>Past spills upstream, by month</span></span></summary>`
     + `<p class="t-say">${w.lead}</p>`;
+  // The twelve months as columns, this month in ink, so the year's shape is seen at once (31 Oct 2026); the table,
+  // the figures and the notes under it, one tap down. The columns are hidden from a screen reader, which reads the table.
+  const thisMonth = new Date().getMonth();
+  if (w.rows.length) h += `<div class="mchart" aria-hidden="true">${w.rows.map(([m, x], i) => `<span${i === thisMonth ? ' class="on"' : ''}>`
+    + `<em><i style="height:${x === null ? 0 : Math.max(2, Math.round(100 * x))}%"></i></em><b>${m[0]}</b></span>`).join('')}</div>`;
+  h += `<details class="s-more"><summary>Month by month, with notes</summary>`;
   if (w.rows.length) {
     h += `<table class="seasonal"><caption class="sr">Share of days with a spill reported upstream, by month</caption>`
       + `<tr><th scope="col">Month</th><th scope="col" class="num">Days with a spill</th><th scope="col" class="num">Of</th></tr>`
@@ -54,7 +60,7 @@ function seasonalTile(d) {
         + `<span style="width:${x === null ? 0 : Math.round(100 * x)}%"></span></span>${seasonalPct(x)}</td><td class="num">${seasonalN(k)} of ${seasonalN(n)}</td></tr>`).join('')
       + '</table>';
   }
-  return h + w.notes.map(p => `<p class="small muted">${p}</p>`).join('') + '</details>';
+  return h + w.notes.map(p => `<p class="small muted">${p}</p>`).join('') + '</details></details>';
 }
 
 if (typeof module === 'object' && module.exports) {
