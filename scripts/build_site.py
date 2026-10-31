@@ -2109,6 +2109,16 @@ PAGE_TITLE = re.compile(r"<title>(.*?)</title>")
 PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 
 
+# The prose pages share the app's phone navigation. Links are relative to the built site root.
+PHONE_NAV = (
+    '<nav class="phone-nav" aria-label="Main">'
+    '<a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>'
+    '<a href="index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
+    '<a href="plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
+    '<a href="saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a></nav>'
+)
+
+
 def with_share_meta(page: str, path: str, root: str) -> str:
     """A prose page with page_meta's block in place of its own <title> and description: its canonical
     link and its share preview (og: and twitter: tags, with the shared icons/og.png), in the page's own
@@ -2120,7 +2130,7 @@ def with_share_meta(page: str, path: str, root: str) -> str:
         raise ValueError(f"{path} needs one <title>, one description, and no canonical link or share tags of its own")
     head = PAGE_DESCRIPTION.sub("", head, count=1)
     head = PAGE_TITLE.sub(lambda _: page_meta(unescape(titles[0]), unescape(descriptions[0]), root + path, root), head, count=1)
-    return head + sep + rest
+    return (head + sep + rest).replace("</body>", PHONE_NAV + "</body>", 1)
 
 
 def spot_blurb(spot: dict) -> str:

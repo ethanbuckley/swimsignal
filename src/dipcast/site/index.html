@@ -4883,6 +4883,12 @@ async function main() {
     if (onSavedPage()) renderSaved(); else if (onPlanPage()) renderPlan(); else { renderList(); if (kept.y) scrollTop(kept.y);
       if (typing) { const box = document.getElementById('q'); box.focus(); box.setSelectionRange(box.value.length, box.value.length); } }
   }
+  // Information pages can return directly to the app's map. Consume the request once so a
+  // later reload does not unexpectedly reopen it.
+  const url = new URL(location.href);
+  if (url.searchParams.get('map') === '1') {
+    url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);
+  }
   // With the offline copy on (sw.js), the saved spots' own files too, once the page has drawn, so
   // that their overflows and guides are stored for the water's edge as the forecast is.
   if (navigator.serviceWorker && navigator.serviceWorker.controller) setTimeout(() => DATA.spots.filter(s => SAVED.has(s.id)).forEach(spotDetail), 4000);
