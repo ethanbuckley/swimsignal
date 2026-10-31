@@ -2328,8 +2328,11 @@ PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 # The prose pages share the app's phone navigation. Links are relative to the built site root, or start
 # with r on a page that has no <base> at the root (404.html). More holds the header's links that a phone
 # hides (Accuracy, About, Research, Feedback): a popover, so a tap outside or Escape closes it with no
-# script, and a browser without popovers keeps them in the foot (31 Oct 2026). index.html's bar has the same.
+# script. A browser without popovers (iOS before 17) ignores popovertarget, so MORE_FALLBACK opens the list as a plain
+# toggle there instead of leaving a button that does nothing (found on the live site, 31 Oct 2026). index.html's bar
+# has the same.
 MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("research.html", "Research"), ("feedback.html", "Feedback"))
+MORE_FALLBACK = "if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"
 MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 
 
@@ -2342,7 +2345,7 @@ def phone_nav(r: str = "") -> str:
         f'<a href="{r}index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
         f'<a href="{r}plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
         f'<a href="{r}saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a>'
-        f'<button type="button" popovertarget="more-menu" aria-label="More pages">{MORE_ICON}More</button>'
+        f'<button type="button" popovertarget="more-menu" aria-label="More pages" onclick="{MORE_FALLBACK}">{MORE_ICON}More</button>'
         f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>'
     )
 
@@ -2659,7 +2662,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2987,6 +2990,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
     write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
+    write_research_catalogue(site, token, root)   # every research record, its verdict and stage: before the data page lists data/research/
     write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
@@ -3683,6 +3687,93 @@ def write_waterhead(site: Path, token: str | None = None, root: str | None = Non
                                                           "version": doc["version"]}
 
 
+# The research catalogue (docs/RESEARCH-CATALOGUE-CONTRACT-v1.md): one entry per record in the recovery register
+# (docs/RESEARCH-RECOVERY-2026-10.md), each with its original verdict kept apart from its current stage, its scope, its
+# records and PRs (closed ones with their branch), and, for an archived version, what would reopen it. Edited by hand;
+# tests/test_research_catalogue.py checks every quote against its record. Every entry is written into the page, so it
+# reads with scripts off; the page's own few lines only hide entries a search or a stage leaves out.
+CATALOGUE = config.ROOT / "data" / "research" / "research_catalogue.v1.json"
+CATALOGUE_SCHEMA, CATALOGUE_MAJOR = "swimsignal.research-catalogue", "1"
+REWRITES += [('href="/research-catalogue"', 'href="research-catalogue.html"')]   # Research links the page
+REPO_BLOB = "https://github.com/ethanbuckley/swimsignal/blob/"
+
+
+def catalogue_entry(x: dict, doc: dict) -> str:
+    """One record: where it stands now, what its test found, its scope, what would reopen it, then its records and PRs.
+    data-text is what the search reads: every word shown, with the topics, PR numbers and branch names."""
+    prs = [doc["prs"][str(n)] for n in x["prs"]]
+    when = lambda iso: pd.Timestamp(iso).strftime("%-d %b %Y")
+    read = f' Next date: {escape(when(x["read_on"]))}.' if x.get("read_on") else ""
+    now = f'<b>Now: {escape(doc["stages"][x["stage"]].lower())}.</b> {escape(x["stage_note"])}{read}'
+    rows = [f'<p>{now}</p>', f'<p><b>What the test found when it was run:</b> {escape(x["verdict"])}</p>',
+            f'<p><b>What it covers:</b> {escape(x["scope"])}</p>']
+    if x.get("next"):
+        rows.append(f'<p><b>Next:</b> {escape(x["next"])}</p>')
+    if x.get("reopen_when"):
+        rows.append(f'<p><b>Reopen when:</b> {escape(x["reopen_when"])}</p>')
+    rows += [f'<p class="rc-links"><a href="{escape(a["href"])}">{escape(a["label"])}</a></p>' for a in x.get("links", [])]
+    seen, docs = set(), []
+    for r in x["records"]:
+        if r["doc"] in seen:
+            continue
+        seen.add(r["doc"])
+        where = r.get("branch", "main")
+        docs.append(f'<a href="{REPO_BLOB}{escape(where)}/{escape(r["doc"])}">{escape(r["doc"].rsplit("/", 1)[-1])}</a>'
+                    + (f' (on branch <code>{escape(where)}</code>)' if "branch" in r else ""))
+    words = {"merged": "merged", "closed": "closed, not merged", "open": "open"}
+    pr_links = [f'<a href="https://github.com/ethanbuckley/swimsignal/pull/{p["n"]}">#{p["n"]}</a> ({words.get(p["state"], escape(p["state"]))}'
+                + (f', branch <code>{escape(p["branch"])}</code>' if p["state"] != "merged" and p["branch_exists"] else "") + ")"
+                for p in prs]
+    rows.append(f'<p class="rc-links">Records: {", ".join(docs)}. Pull requests: {", ".join(pr_links)}.</p>')
+    if x.get("register_note"):
+        rows.append(f'<p class="rc-note">Where our summaries differ: {escape(x["register_note"])}</p>')
+    text = " ".join([x["id"], x["title"], x["verdict"], x["scope"], x["stage_note"], x.get("next", ""), x.get("reopen_when", ""),
+                     x.get("register_note", ""), x.get("project", ""), " ".join(x["topics"]), doc["stages"][x["stage"]],
+                     " ".join(f'#{p["n"]} {p["branch"]}' for p in prs), " ".join(r["doc"] for r in x["records"])])
+    return (f'<section class="rc-entry" id="{escape(x["id"])}" data-stage="{escape(x["stage"])}" data-text="{escape(text.lower())}">'
+            f'<h3>{escape(x["title"])}</h3>' + "".join(rows) + "</section>")
+
+
+def catalogue_body(doc: dict) -> str:
+    """The search and the stage choice, then the entries by the register's sections, in its order."""
+    stages = "".join(f'<option value="{escape(k)}">{escape(v)}</option>' for k, v in doc["stages"].items())
+    parts = ['<form class="rc-find" role="search" onsubmit="return false"><label for="rc-q">Search the records'
+             '<input id="rc-q" type="search" autocomplete="off" placeholder="satellite, #187, lakes"></label>'
+             f'<label for="rc-stage">Where it stands now<select id="rc-stage"><option value="">Every stage</option>{stages}</select></label></form>',
+             f'<p class="rc-count" id="rc-count" aria-live="polite">{len(doc["entries"])} records.</p>']
+    for key, name in doc["sections"].items():
+        items = [x for x in doc["entries"] if x["section"] == key]
+        if items:
+            parts.append(f'<div class="rc-section" data-section="{escape(key)}"><h2>{escape(name)}</h2>'
+                         + "".join(catalogue_entry(x, doc) for x in items) + "</div>")
+    return "\n".join(parts)
+
+
+def write_research_catalogue(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
+    """research-catalogue.html, and data/research/research_catalogue.json, from the catalogue (CATALOGUE unless path), or
+    the page saying none are shown. Returns the build's health entry."""
+    path = path or CATALOGUE
+    out = site / "data" / "research" / "research_catalogue.json"
+    out.unlink(missing_ok=True)
+    why = None
+    if not path.is_file():
+        why = "no catalogue in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != CATALOGUE_SCHEMA or str(doc.get("version", "")).split(".")[0] != CATALOGUE_MAJOR:
+            why = f"catalogue is {doc.get('schema')} {doc.get('version')}, not {CATALOGUE_SCHEMA} {CATALOGUE_MAJOR}.x"
+    page = (TEMPLATE.parent / "research-catalogue.html").read_text()
+    if why:
+        body = '<p class="notice">No records are published in this build.</p>'
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+        body = catalogue_body(doc)
+    if "<!-- CATALOGUE -->" not in page:
+        raise ValueError("research-catalogue.html has lost <!-- CATALOGUE -->, which write_research_catalogue fills")
+    page = page.replace("<!-- CATALOGUE -->", body, 1)
+    (site / "research-catalogue.html").write_text(with_counter(with_share_meta(page, "research-catalogue.html", root or site_url()), token))
+    return {"available": False, "why": why} if why else {"available": True, "entries": len(doc["entries"]), "version": doc["version"]}
 # The sampling planner (docs/SAMPLING-PLANNER-CONTRACT-v1.md, issue #482): where the EA's E. coli samples behind the
 # model are thin, by spot, year, month and rain, and the sampling-priorities simulation's results (#381, failed) for its
 # four ways of spending a budget, from scripts/export_sampling_planner.py. Written whole, as the Waterhead page is;

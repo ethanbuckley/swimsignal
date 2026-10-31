@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 25 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, sampling-planner.html and two profiles
+    assert sm.count("<url>") == 26 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -1182,6 +1182,9 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
     assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "research.html", "feedback.html"]
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
     assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
+    # Without popovers (iOS before 17) the button toggles the list itself, the same way in both bars.
+    assert f'onclick="{bs.MORE_FALLBACK}"' in app and f'onclick="{bs.MORE_FALLBACK}"' in page
+    assert ".more-menu.open { display:block; }" in app and ".more-menu.open { display:block; }" in (ROOT / "src/dipcast/pages/page.css").read_text()
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>' in page
     # The pages that had no bar on a phone, since page.css hides their header's links there.
     spot = SPOTS[0]["id"]

@@ -214,10 +214,11 @@ details.ea-today iframe { display: block; width: 100%; max-width: 343px; height:
 
 /* Match the app's phone navigation without taking a second header row. */
 .phone-nav { display:none; }
-/* More's list (build_site.phone_nav): hidden until its button opens it. The two rules are apart so that a
-   browser without popovers drops only the second and the list stays hidden; the foot has the same links. */
+/* More's list (build_site.phone_nav): hidden until its button opens it. The rules are apart so that a browser
+   without popovers drops only the :popover-open one; there the button's MORE_FALLBACK sets .open instead. */
 .more-menu { display:none; }
 .more-menu:popover-open { display:block; }
+.more-menu.open { display:block; }
 @media screen and (max-width:800px) {
   .top nav { display:none; }
   body { padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px)); }
