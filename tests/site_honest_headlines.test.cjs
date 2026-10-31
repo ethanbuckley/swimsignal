@@ -599,3 +599,19 @@ test('miniature previews identify their metric and provide daily values without 
   assert.match(rain, /Rain in the 48 hours to midday: Sun 11 Oct: 12 mm; Mon 12 Oct: unavailable/);
   assert.doesNotMatch(rain, /Daily pollution risk/);
 });
+
+// Grantchester, 31 Oct 2026: today moderate from 3 spills that stopped lately, none discharging, the rain forecast low.
+// The sentence over the five days said only "A spill ... is possible, not expected today", and then "is still passing",
+// though water from 2 of the 3 had passed: a spill counts until 48 hours after its water has passed.
+test('the five days say when spills that stopped lately set today, and how long they count', () => {
+  const s = week(['low', 'low', 'low', 'low', 'low'], {
+    now: { label: 'moderate', risk: 0.21, discharging_upstream: 0, recent_upstream: 3, monitored_upstream: 3, clears_at: '2026-10-12T12:02:00+01:00', clears_by: 'travel' } });
+  s.days.forEach(x => { x.expected_spilling_overflows = 0.1; });
+  const ctx = page(['esc', 'fmt', 'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence'], { DATA: { generated_at: GEN } });
+  const said = text(vm.runInContext('daysSentence', ctx)(s));
+  assert.match(said, /^3 spills upstream stopped lately; each counts until 48 hours after its water has passed here, so today is moderate risk\. A new spill from one of the 3 overflows upstream is possible, not expected today\./);
+  assert.doesNotMatch(said, /still passing/);
+  // With the rain forecast setting today, nothing is said of spills that stopped.
+  s.now = { label: 'low', risk: 0, discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 3 };
+  assert.match(text(vm.runInContext('daysSentence', ctx)(s)), /^A spill from one of the 3 overflows upstream is possible, not expected today\./);
+});
