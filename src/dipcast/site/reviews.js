@@ -346,10 +346,12 @@ function reviewOpenForm(sec, d, data) {
     const kept = reviewsKeep([...reviewsNow(), { id, token, spot: d.id, again: draft.again === 'yes', swam_on: draft.swam_on, text: draft.text,
       name: draft.name, photos: photos.length, sent_at: new Date().toISOString() }]);
     photos.forEach(p => URL.revokeObjectURL(p.url));
+    if (typeof draftForget === 'function') draftForget(f, d.id);
     drawReviews(sec, d, data, kept ? 'Thanks. Your review appears here once it has been checked, usually within a day or two.'
       : 'Thanks. Your review appears here once it has been checked. This browser is not keeping site data, so it cannot show you the review while it waits.');
     document.getElementById('rv-said')?.focus();
   });
+  if (typeof draftTrack === 'function') draftTrack(f, d.id);
   f.querySelector('input[name=again]').focus();
 }
 
