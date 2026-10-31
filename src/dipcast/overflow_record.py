@@ -339,8 +339,10 @@ def body(oid: str, o: dict, returns: pd.DataFrame | None, record: pd.DataFrame |
                    "differ from the annual returns' above." + escape(zero_said([d], lengths.get("method") or {}))
                    + ' <a href="durations.html">More on spill lengths</a>.</p>')
     held = UNLICENSED_EVENTS.get(company)
-    out.append("<p><b>Each spill's start and stop: not published here.</b> The Environment Agency publishes them for 2024 on, under "
-               f'the Open Government Licence (<a href="{EA_EVENTS}">its start/stop files</a>), but they are not part of this site\'s build.'
+    # The lengths above come from those files, so "not part of this site's build" contradicted them (31 Oct 2026): what is
+    # left out is the list of each spill's times, not the files.
+    out.append("<p><b>Each spill's start and stop times: not listed here.</b> The Environment Agency publishes them for 2024 on, under "
+               f'the Open Government Licence (<a href="{EA_EVENTS}">its start/stop files</a>)' + ('; this page gives only the summary above.' if lengths.get("rows", {}).get(oid) else '.')
                + (f" {escape(company)} publishes its own files from {held}; they carry no licence, so SwimSignal does not use them." if held else "")
                + "</p>")
 

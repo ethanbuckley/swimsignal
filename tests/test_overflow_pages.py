@@ -106,7 +106,7 @@ def test_a_page_for_every_overflow_upstream_of_a_spot_with_a_page(tmp_path):
     # Recent: the feed's status at the update and its last spill; events not published, and why.
     assert "its company's live feed showed it not discharging. The last spill the feed reported ended on 13 May 2026." in words
     assert "Typical spill 5 h Long end 30 h Longest 4.1 days Spills 2024 57 Spills 2025 40" in words
-    assert "Each spill's start and stop: not published here." in words and "Yorkshire Water publishes its own files from 2021; they carry no licence" in words
+    assert "Each spill's start and stop times: not listed here." in words and "Yorkshire Water publishes its own files from 2021; they carry no licence" in words
     # Improvements: the returns word for word; WINEP by permit and activity number; the company's own words.
     assert "2025 No improvement action in reporting period UWWTR investigation ongoing" in words
     assert "ADDINGHAM/NO 1 SPS (08YW100038, BW_IMP1): due 31 March 2026." in words
