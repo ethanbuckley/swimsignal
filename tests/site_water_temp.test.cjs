@@ -212,3 +212,11 @@ test('a clicked point in the hills, two squares from any cached air: its estimat
   assert.doesNotMatch(waterTile(null, { ...far, air_km: 13 }, 'river').more, /farther away than usual/);
   setToday(null);
 });
+
+test('an estimate in the conditions summary is said once, in its own words', () => {
+  const c = vm.createContext({waterTile: () => ({fig: '12°', unit: 'C, provisional estimate', say: 'About 12&nbsp;°C (provisional estimate, not yet checked in these months).'}), riverTile: () => null});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  const h = vm.runInContext('conditionsSummary', c)({kind: 'river'});
+  assert.match(h, /<p><b>Water temperature:<\/b> About 12&nbsp;°C \(provisional estimate, not yet checked in these months\)\.<\/p>/);
+  assert.doesNotMatch(h, /12°C, provisional estimate/);
+});
