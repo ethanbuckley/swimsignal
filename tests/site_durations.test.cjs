@@ -12,7 +12,7 @@ const D = require('../src/dipcast/site/durations.js');
 const DOC = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'spill_durations_v1_sample.json'), 'utf8'));
 const INDEX = { ...DOC, available: true, spots: [{ id: 'wharfe-ilkley', name: 'Wharfe at Ilkley', overflows: 4, absent: 1 }] };
 delete INDEX.overflows;
-const plain = h => h.replace(/\u00a0/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+const plain = h => h.replace(/\u00a0/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
 // One spot's file as build_site.write_spill_durations writes it: the export's rows for the overflows upstream, in the
 // upstream file's order, and the ones it lacks.
 const row = i => Object.fromEntries(['site_id', 'spills_2024', 'spills_2025', 'median_h', 'p90_h', 'longest_h', 'share_over_6h', 'few'].map(k => [k, DOC.overflows[k][i]]));
@@ -42,6 +42,7 @@ test('a missing or foreign export says nothing is published, and why', () => {
 
 test("each company's lengths, with the counts behind them", () => {
   const t = plain(D.durationsCompanies(INDEX));
+  assert.match(t, /Company Overflows Spills, 2024-25 Typical spill/);   // the rows' own years (1.1), in a visible header
   assert.match(t, /Thames Water 535 28,814 3.1 h 27 h 35% 11%/);
   assert.match(t, /United Utilities 2,089 161,700 1.1 h 10 h 16% 4%/);
   assert.match(D.durationsCompanies(INDEX), /aria-label="Spill lengths by company, 2024-25, scrolls sideways"/);
@@ -52,18 +53,24 @@ test('spills already running: the all-nine sentence names its years, its count a
   const nine = D.durationsRunning(INDEX, 3);
   assert.deepEqual(nine.map(r => r.company), ['Thames Water', 'United Utilities', 'Yorkshire Water', 'all nine']);   // all nine last
   assert.equal(D.durationsStillSentence(nine[3], 3, 6, DOC.period),
-    'Across all nine companies in 2024 and 2025, a spill that had already run at least 3 hours was still running 6 hours later at 71% of the 3,174,952 hours checked.');
+    'Across all nine companies in 2024 and 2025, a spill that had already run at least 3 hours was still running 6 hours later at 71% of the 3,174,952 hours checked, in 228,078 spills.');
   assert.equal(D.durationsStillSentence(nine[0], 3, 1, DOC.period),
-    "At Thames Water's overflows in 2024 and 2025, a spill that had already run at least 3 hours was still running 1 hour later at 94% of the 223,549 hours checked.");
+    "At Thames Water's overflows in 2024 and 2025, a spill that had already run at least 3 hours was still running 1 hour later at 94% of the 223,549 hours checked, in 13,731 spills.");
   const any = D.durationsRunning(INDEX, 0).find(r => r.company === 'all nine');
-  assert.match(D.durationsStillSentence(any, 0, 1, DOC.period), /a spill that was running was still running 1 hour later at 87% of the 4,400,886 hours checked\.$/);
+  assert.match(D.durationsStillSentence(any, 0, 1, DOC.period), /a spill that was running was still running 1 hour later at 87% of the 4,400,886 hours checked, in 580,213 spills\.$/);
   const block = plain(D.durationsStill(INDEX, 3));
   assert.ok(block.includes('That describes 2024 and 2025. It does not say when a spill running now will end.'), block);
-  // Every company's row gives the hours behind it, then the five later times.
-  assert.match(block, /All nine 3,174,952 93% 83% 71% 55% 38%/);
+  // Every company's row gives the spills and hours behind it, then the five later times.
+  assert.match(block, /All nine 228,078 3,174,952 93% 83% 71% 55% 38%/);
+  // Only spills reaching a whole hour count (1.1): "any spill already running" rests on 580,213 of the 802,781.
+  assert.match(plain(D.durationsStill(INDEX, 0)), /these figures rest on 580,213 of the 802,781 spills; the shortest never reach one\./);
+  assert.match(D.durationsStill(INDEX, 0), /aria-label="Still running, any spill already running, 2024-25, scrolls sideways"/);
   assert.equal(D.durationsStill(INDEX, 7), '');   // no such rows: nothing drawn
-  assert.match(D.durationsAtPicker(INDEX, 3), /<option value="3" selected>had already run at least 3 hours<\/option>/);
-  assert.match(D.durationsAtPicker(INDEX, 3), /<option value="0">were running, at any point<\/option>/);
+  // The export's own words for each length (1.1, label); without them, the page's.
+  assert.match(D.durationsAtPicker(INDEX, 3), /<option value="3" selected>Spills already running at least 3 hours<\/option>/);
+  assert.match(D.durationsAtPicker(INDEX, 3), /<option value="0">Any spill already running<\/option>/);
+  const bare = { ...INDEX, still_running: INDEX.still_running.map(({ label, ...r }) => r) };
+  assert.match(D.durationsAtPicker(bare, 3), /<option value="0">Spills that were running, at any point<\/option>/);
 });
 
 test("a spot's overflows: the export's sentence before the figures, few spills marked, no row never said as no spills", () => {
@@ -73,11 +80,25 @@ test("a spot's overflows: the export's sentence before the figures, few spills m
   assert.match(t, /Overflow 0 Own Name\/CSO · YWS00011 Yorkshire Water 2 h 19 h 4.1 days 188 34/);
   assert.match(t, /Overflow 1 YWS00007 Yorkshire Water 30 min, few spills 1.3 h 1.5 h 2 1/);
   assert.match(t, /Overflow 3 TWL00102 Thames Water 3 h 19 h 44 days 145 93/);
-  assert.match(t, /1 of the 5 overflows upstream has no spill in these 2024-25 records: none was recorded, or there is no record \(Dŵr Cymru Welsh Water's overflows are not in them\)\. That is not the same as no spills\./);
+  // An overflow without a row, in the export's own words (1.1, absent_note), never as no spills.
+  assert.ok(t.includes(`1 of the 5 overflows upstream has no spill in these 2024-25 records (Dŵr Cymru Welsh Water's overflows are not in them). ${DOC.absent_note}`), t);
+  assert.match(DOC.absent_note, /not the same as "no spills"/);
+  assert.match(plain(D.durationsSpot(SPOT, { ...INDEX, absent_note: undefined })), /That is not the same as no spills\./);
   assert.match(h, /<a href="spot\/wharfe-ilkley\/profile\/">Its overflow history<\/a>/);
   const none = plain(D.durationsSpot({ ...SPOT, overflows: [], absent: SPOT.absent.concat([{ site_id: 'X', company: 'Yorkshire Water' }]) }, INDEX));
   assert.match(none, /None of the 2 overflows upstream has a spill in these 2024-25 records/);
   assert.doesNotMatch(none, /Typical spill/);
+});
+
+test('a typical spill under a minute is explained from the export, never as nothing discharged', () => {
+  assert.equal(D.durationsZero(SPOT.overflows, INDEX), '');   // no such row here
+  const short = [{ ...SPOT.overflows[0], median_h: 0 }];
+  const z = plain(D.durationsZero(short, INDEX));
+  assert.match(z, /^A typical spill shown as under 1 min means most of that overflow's spills lasted under a minute as recorded, or were recorded with the same start and stop time \(1,110 such events in these records, mostly at Wessex Water and South West Water\)\. It does not mean nothing was discharged\.$/);
+  assert.equal(DOC.method.events_same_start_stop, 1110);
+  assert.ok(plain(D.durationsSpot({ ...SPOT, overflows: short }, INDEX)).includes('It does not mean nothing was discharged.'));
+  assert.equal(D.durationsRowYears([{ years: '2024-2025' }], D.durationsYears(DOC.period)), '2024-25');
+  assert.equal(D.durationsRowYears([], D.durationsYears(DOC.period)), '2024-25');
 });
 
 test('the picker lists the spots with a file, by name', () => {

@@ -120,18 +120,26 @@ def row_loglik(mu: np.ndarray, sigma: float, y: np.ndarray, cens: np.ndarray) ->
 
 
 class CensoredRI:
-    """y = Z beta + u_site + e; e ~ N(0, sigma^2), u ~ N(0, tau^2), y censored as the lab reports it."""
+    """y = Z beta + u_site + e; e ~ N(0, sigma^2), u ~ N(0, tau^2), y censored as the lab reports it.
+    With lake_sigma, lakes get their own noise level: sigma_lake = sigma * exp(theta_extra), one more parameter
+    (docs/CONCENTRATION-LAKE-SPREAD-2026-11.md); without it the model is #466's, unchanged."""
 
-    def __init__(self, cols: list[str], n_nodes: int = N_NODES):
-        self.cols = cols
+    def __init__(self, cols: list[str], n_nodes: int = N_NODES, lake_sigma: bool = False):
+        self.cols, self.lake_sigma = cols, lake_sigma
         x, w = np.polynomial.hermite.hermgauss(n_nodes)
         self.x, self.logw = x, np.log(w / np.sqrt(np.pi))
 
-    def _node_ll(self, theta, Z, y, cens):
+    def _sig(self, theta, p: int, lake: np.ndarray) -> np.ndarray:
+        """The noise level of each row, as an (n, 1) column."""
+        log_s = theta[p] + (theta[p + 2] * lake if self.lake_sigma else 0.0)
+        return np.broadcast_to(np.exp(log_s), lake.shape).reshape(-1, 1)
+
+    def _node_ll(self, theta, Z, y, cens, lake=None):
         p = Z.shape[1]
-        beta, sigma, tau = theta[:p], np.exp(theta[p]), np.exp(theta[p + 1])
+        lake = np.zeros(len(y)) if lake is None else lake
+        beta, tau = theta[:p], np.exp(theta[p + 1])
         mu = (Z @ beta)[:, None] + np.sqrt(2.0) * tau * self.x[None, :]
-        return row_loglik(mu, sigma, y, cens)
+        return row_loglik(mu, self._sig(theta, p, lake), y, cens)
 
     def _site_post(self, ll: np.ndarray, site: np.ndarray, n_sites: int) -> np.ndarray:
         """log weights over nodes per site: prior weight plus the site's summed log-likelihood."""
@@ -145,21 +153,28 @@ class CensoredRI:
         self.sites = pd.Index(np.unique(site))
         si = self.sites.get_indexer(site)
         ok = cens == 0
+        lake = X["lake"].to_numpy(dtype=float) if "lake" in X else np.zeros(len(y))
         b0 = np.linalg.lstsq(Z[ok], y[ok], rcond=None)[0]
         s0 = float(np.std(y[ok] - Z[ok] @ b0)) or 1.0
-        theta0 = np.concatenate([b0, [np.log(s0 * 0.8), np.log(s0 * 0.5)]])
+        theta0 = np.concatenate([b0, [np.log(s0 * 0.8), np.log(s0 * 0.5)], [0.0] if self.lake_sigma else []])
 
         def nll(theta):
-            post = self._site_post(self._node_ll(theta, Z, y, cens), si, len(self.sites))
+            post = self._site_post(self._node_ll(theta, Z, y, cens, lake), si, len(self.sites))
             return -float(logsumexp(post, axis=1).sum())
 
         p = Z.shape[1]
-        bounds = [(None, None)] * p + [(-5, 3), (-6, 2)]
+        bounds = [(None, None)] * p + [(-5, 3), (-6, 2)] + ([(-3, 3)] if self.lake_sigma else [])
         res = minimize(nll, theta0, method="L-BFGS-B", bounds=bounds)
         self.theta, self.converged, self.nll = res.x, bool(res.success), float(res.fun)
-        self.train_post = self._site_post(self._node_ll(self.theta, Z, y, cens), si, len(self.sites))
+        self.train_post = self._site_post(self._node_ll(self.theta, Z, y, cens, lake), si, len(self.sites))
+        self.p = p
         self.sigma, self.tau = float(np.exp(self.theta[p])), float(np.exp(self.theta[p + 1]))
+        self.sigma_lake = float(np.exp(self.theta[p] + (self.theta[p + 2] if self.lake_sigma else 0.0)))
         return self
+
+    def _sigma_rows(self, X: pd.DataFrame) -> np.ndarray:
+        lake = X["lake"].to_numpy(dtype=float) if "lake" in X else np.zeros(len(X))
+        return self._sig(self.theta, self.p, lake)
 
     def _weights_mu(self, X: pd.DataFrame, site: np.ndarray):
         Z = _std(X, self.cols, ref=self.ref)
@@ -172,15 +187,15 @@ class CensoredRI:
 
     def p_over(self, X: pd.DataFrame, site: np.ndarray, cut: float = CUT) -> np.ndarray:
         w, mu, u = self._weights_mu(X, site)
-        return (w * norm.sf((cut - mu[:, None] - u[None, :]) / self.sigma)).sum(1)
+        return (w * norm.sf((cut - mu[:, None] - u[None, :]) / self._sigma_rows(X))).sum(1)
 
     def cdf(self, X: pd.DataFrame, site: np.ndarray, yv: np.ndarray) -> np.ndarray:
         w, mu, u = self._weights_mu(X, site)
-        return (w * norm.cdf((yv[:, None] - mu[:, None] - u[None, :]) / self.sigma)).sum(1)
+        return (w * norm.cdf((yv[:, None] - mu[:, None] - u[None, :]) / self._sigma_rows(X))).sum(1)
 
     def log_score(self, X: pd.DataFrame, site: np.ndarray, y: np.ndarray, cens: np.ndarray) -> np.ndarray:
         w, mu, u = self._weights_mu(X, site)
-        ll = row_loglik(mu[:, None] + u[None, :], self.sigma, y, cens)
+        ll = row_loglik(mu[:, None] + u[None, :], self._sigma_rows(X), y, cens)
         return logsumexp(np.log(np.clip(w, 1e-300, None)) + ll, axis=1)
 
     def pit(self, X: pd.DataFrame, site: np.ndarray, y: np.ndarray, cens: np.ndarray, rng) -> np.ndarray:
@@ -225,7 +240,10 @@ def folds(df: pd.DataFrame, scheme: str):
                     yield f"{g}|{y}", (grp != g) & (yr != y), te
 
 
-def predict_all(df: pd.DataFrame, scheme: str, with_candidates: bool = True) -> pd.DataFrame:
+MODELS = (("background", BACKGROUND, False), ("candidate", CANDIDATE, False))
+
+
+def predict_all(df: pd.DataFrame, scheme: str, with_candidates: bool = True, models=MODELS) -> pd.DataFrame:
     """Out-of-fold P(>900) from every predictor, and the distribution scores of the two censored models."""
     rng = np.random.default_rng(0)
     out = []
@@ -238,15 +256,16 @@ def predict_all(df: pd.DataFrame, scheme: str, with_candidates: bool = True) -> 
         r["climatology_by_type"] = np.where(b["lake"].to_numpy() == 1, a.loc[a["lake"] == 1, "over"].mean(),
                                             a.loc[a["lake"] == 0, "over"].mean())
         if with_candidates:
-            for nm, cols in (("background", BACKGROUND), ("candidate", CANDIDATE)):
-                m = CensoredRI(cols).fit(a, a["y"].to_numpy(), a["cens"].to_numpy(), a["bw_id"].to_numpy())
+            for nm, cols, lake_sigma in models:
+                m = CensoredRI(cols, lake_sigma=lake_sigma).fit(a, a["y"].to_numpy(), a["cens"].to_numpy(),
+                                                               a["bw_id"].to_numpy())
                 s = b["bw_id"].to_numpy()
                 r[nm] = m.p_over(b, s)
                 r[f"{nm}_logscore"] = m.log_score(b, s, b["y"].to_numpy(), b["cens"].to_numpy())
                 r[f"{nm}_pit"] = m.pit(b, s, b["y"].to_numpy(), b["cens"].to_numpy(), rng)
                 r[f"{nm}_median"] = median_from(m, b, s)
                 r[f"{nm}_converged"] = m.converged
-                r[f"{nm}_tau"], r[f"{nm}_sigma"] = m.tau, m.sigma
+                r[f"{nm}_tau"], r[f"{nm}_sigma"], r[f"{nm}_sigma_lake"] = m.tau, m.sigma, m.sigma_lake
         out.append(r)
     return pd.concat(out, ignore_index=True).sort_values("row").reset_index(drop=True)
 
@@ -413,5 +432,44 @@ def stage_run() -> None:
     print(json.dumps(checks, indent=2))
 
 
+def stage_lake() -> None:
+    """Exploratory, on reused 2024-26 data (docs/CONCENTRATION-LAKE-SPREAD-2026-11.md): #466's candidate against the
+    same model with its own lake noise level, on #466's folds. Reports, per scheme and water type, interval coverage,
+    PIT deciles, log score and its difference (ISO-week bootstrap), Brier over 900 and within-site rho."""
+    df = load_rows()
+    models = (("background", BACKGROUND, False), ("candidate", CANDIDATE, False), ("lake_sigma", CANDIDATE, True))
+    out, fits = [], {}
+    for scheme in ("fwd", "loyo", "cxy"):
+        p = predict_all(df, scheme, models=models)
+        d = df.loc[p["row"]].reset_index(drop=True)
+        y, wk = d["over"].to_numpy(), d["week"].to_numpy()
+        fits[scheme] = {"sigma_river": sorted(set(np.round(p["lake_sigma_sigma"], 3))),
+                        "sigma_lake": sorted(set(np.round(p["lake_sigma_sigma_lake"], 3))),
+                        "converged": float(p["lake_sigma_converged"].mean())}
+        for kind in ("river", "lake"):
+            m = (d["kind"].to_numpy() == kind)
+            row = {"scheme": scheme, "kind": kind, "n": int(m.sum()), "over": int(y[m].sum())}
+            for nm, _, _ in models:
+                pit = p.loc[m, f"{nm}_pit"].to_numpy()
+                row[f"{nm}_central80"] = round(float(((pit >= 0.1) & (pit <= 0.9)).mean()), 4)
+                row[f"{nm}_pit_deciles"] = np.histogram(pit, bins=10, range=(0, 1))[0].tolist()
+                row[f"{nm}_logscore"] = round(float(p.loc[m, f"{nm}_logscore"].mean()), 4)
+                row[f"{nm}_brier"] = round(float(((p.loc[m, nm] - y[m]) ** 2).mean()), 5)
+                mm = np.zeros(len(df), bool)
+                mm[p.loc[m, "row"]] = True
+                med = pd.Series(p.set_index("row")[f"{nm}_median"]).reindex(range(len(df))).to_numpy()
+                row[f"{nm}_within_site_rho"] = within_site_rho(df, med, mm)
+            dl = (p.loc[m, "lake_sigma_logscore"] - p.loc[m, "candidate_logscore"]).to_numpy()
+            row["logscore_lake_sigma_minus_candidate_ci"] = boot_diff(dl, wk[m])
+            out.append(row)
+    stem = HERE.parent / "docs" / "CONCENTRATION-LAKE-SPREAD-2026-11"
+    with open(f"{stem}-scores.json", "w") as f:
+        json.dump({"rows": out, "fits": fits}, f, indent=1, default=float)
+    for r in out:
+        print(r["scheme"], r["kind"], r["n"], "central80:", r["candidate_central80"], "->", r["lake_sigma_central80"],
+              "| logscore:", r["candidate_logscore"], "->", r["lake_sigma_logscore"], r["logscore_lake_sigma_minus_candidate_ci"])
+    print(json.dumps(fits))
+
+
 if __name__ == "__main__":
-    {"audit": stage_audit, "atlas": stage_atlas, "run": stage_run}[sys.argv[1]]()
+    {"audit": stage_audit, "atlas": stage_atlas, "run": stage_run, "lake": stage_lake}[sys.argv[1]]()

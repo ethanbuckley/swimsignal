@@ -63,11 +63,18 @@ function durationsSummary(index) {
 function durationsCompanies(index) {
   const rows = (index && index.company) || [];
   if (!rows.length) return '';
-  const y = durationsYears(index.period);
-  return durationsTable([['Company', false], ['Overflows', true], ['Spills', true], ['Typical spill', true], ['Long end', true],
+  const y = durationsYears(index.period), years = durationsRowYears(rows, y);
+  return durationsTable([['Company', false], ['Overflows', true], [`Spills, ${years}`, true], ['Typical spill', true], ['Long end', true],
     ['Over 6 hours', true], ['Over 24 hours', true]],
   rows.map(r => [durationsEsc(durationsCompany(r.company)), durationsCount(r.overflows), durationsCount(r.spills), durationsHours(r.median_h),
-    durationsHours(r.p90_h), durationsPct(r.share_over_6h), durationsPct(r.share_over_24h)]), `Spill lengths by company, ${y.short}`);
+    durationsHours(r.p90_h), durationsPct(r.share_over_6h), durationsPct(r.share_over_24h)]), `Spill lengths by company, ${years}`);
+}
+// The years a set of rows names (1.1: `years`, "2024-2025", on each company and persistence row), as "2024-25"; else
+// the export's period.
+function durationsRowYears(rows, y) {
+  const ys = [...new Set((rows || []).map(r => r && r.years).filter(Boolean))];
+  const m = ys.length === 1 && /^(\d{4})-(\d{4})$/.exec(String(ys[0]));
+  return m ? (m[1] === m[2] ? m[1] : `${m[1]}-${m[2].slice(2)}`) : y.short;
 }
 
 // ------------------------------------------------------------------------------ spills already running
@@ -90,10 +97,20 @@ function durationsStillSentence(row, at, later, period) {
   if (typeof v !== 'number') return '';
   const who = row.company === DURATIONS_ALL ? 'Across all nine companies' : `At ${durationsCompany(row.company)}'s overflows`;
   return `${who} in ${y.said}, a spill that ${durationsAtSaid(at)} was still running ${durationsPlural(later, 'hour')} later at ${durationsPct(v)} `
-    + `of the ${durationsCount(row.hours)} hours checked.`;
+    + `of the ${durationsCount(row.hours)} hours checked${typeof row.spills === 'number' ? `, in ${durationsPlural(row.spills, 'spill')}` : ''}.`;
+}
+// Only spills still running at a whole hour count (1.1, `spills`): the shortest never reach a figure. Said under the
+// table, with how many of all the spills the row for all nine rests on.
+function durationsReach(index, row) {
+  const all = ((index && index.coverage) || {}).spills;
+  if (!row || typeof row.spills !== 'number' || typeof all !== 'number') return '';
+  return `<p class="du-reach">Only spills still running at a whole hour mark are counted, so these figures rest on ${durationsCount(row.spills)} of the ${durationsCount(all)} spills; the shortest never reach one.</p>`;
 }
 function durationsAtPicker(index, at) {
-  return `<label class="du-pick">Spills that<select id="du-at">${durationsAts(index).map(a => `<option value="${a}"${a === at ? ' selected' : ''}>${a > 0 ? `had already run at least ${durationsPlural(a, 'hour')}` : 'were running, at any point'}</option>`).join('')}</select></label>`;
+  // The export's own words for each length (1.1, `label`), else the page's.
+  const said = a => { const r = durationsRunning(index, a).find(x => x.label); return r ? r.label.charAt(0).toUpperCase() + r.label.slice(1)
+    : (a > 0 ? `Spills that had already run at least ${durationsPlural(a, 'hour')}` : 'Spills that were running, at any point'); };
+  return `<label class="du-pick">Which spills<select id="du-at">${durationsAts(index).map(a => `<option value="${a}"${a === at ? ' selected' : ''}>${durationsEsc(said(a))}</option>`).join('')}</select></label>`;
 }
 // The sentence for all nine, then each company's figures at every later time, with the hours behind each row.
 function durationsStill(index, at, later = 6) {
@@ -101,10 +118,11 @@ function durationsStill(index, at, later = 6) {
   if (!rows.length) return '';
   const y = durationsYears(index.period), all = rows.find(r => r.company === DURATIONS_ALL);
   return `<p class="du-still">${durationsEsc(durationsStillSentence(all, at, later, index.period))} That describes ${durationsEsc(y.said)}. It does not say when a spill running now will end.</p>`
-    + durationsTable([['Company', false], ['Hours checked', true], ...DURATIONS_LATER.map(h => [`${h} h later`, true])],
-      rows.map(r => [r.company === DURATIONS_ALL ? '<b>All nine</b>' : durationsEsc(durationsCompany(r.company)), durationsCount(r.hours),
+    + durationsTable([['Company', false], [`Spills, ${durationsRowYears(rows, y)}`, true], ['Hours checked', true], ...DURATIONS_LATER.map(h => [`${h} h later`, true])],
+      rows.map(r => [r.company === DURATIONS_ALL ? '<b>All nine</b>' : durationsEsc(durationsCompany(r.company)), durationsCount(r.spills), durationsCount(r.hours),
         ...DURATIONS_LATER.map(h => durationsPct(r[`still_after_${h}h`]))]),
-      `Still running, spills that ${durationsAtSaid(at)}, ${y.short}`);
+      `Still running, ${(all && all.label) || `spills that ${durationsAtSaid(at)}`}, ${durationsRowYears(rows, y)}`)
+    + durationsReach(index, all);
 }
 
 // ------------------------------------------------------------------------------ one spot's overflows
@@ -125,15 +143,29 @@ function durationsSpot(one, index) {
     rows.map(r => [`${durationsEsc(r.name || r.site_id)}<br><span class="muted">${r.own ? `${durationsEsc(r.own)} · ` : ''}${durationsEsc(r.site_id)}</span>`,
       durationsEsc(durationsCompany(r.company)), durationsHours(r.median_h) + (r.few ? ', few spills' : ''), durationsHours(r.p90_h), durationsHours(r.longest_h),
       durationsCount(r.spills_2024), durationsCount(r.spills_2025)]), `Spill lengths upstream of ${one.name || one.id}, ${y.short}`);
+    out += durationsZero(rows, index);
   }
   if (absent.length) {
     const k = absent.length, welsh = absent.some(a => /cymru/i.test(String(a.company || '')));
     const lead = rows.length ? `${durationsCount(k)} of the ${durationsCount(rows.length + k)} overflows upstream ${k === 1 ? 'has' : 'have'} no spill`
       : `None of the ${durationsCount(k)} overflows upstream has a spill`;
-    out += `<p class="du-absent">${lead} in these ${durationsEsc(y.short)} records: none was recorded, or there is no record${welsh ? " (Dŵr Cymru Welsh Water's overflows are not in them)" : ''}. `
-      + 'That is not the same as no spills.</p>';
+    const note = (index && index.absent_note) || 'None was recorded, or there is no record. That is not the same as no spills.';   // 1.1
+    out += `<p class="du-absent">${lead} in these ${durationsEsc(y.short)} records${welsh ? " (Dŵr Cymru Welsh Water's overflows are not in them)" : ''}. `
+      + `${durationsEsc(note)}</p>`;
   }
   return out + `<p class="du-more">${link}.</p>`;
+}
+
+// A typical spill shown as under a minute (the export's 0.0 hours): what it means, from the export's own note
+// (1.1, `method.zero_length_note`, with `events_same_start_stop`), in this page's words for the length. Never "nothing
+// was discharged".
+function durationsZero(rows, index) {
+  if (!(rows || []).some(r => typeof r.median_h === 'number' && r.median_h * 60 < 0.5)) return '';
+  const m = (index && index.method) || {}, n = m.events_same_start_stop;
+  if (!m.zero_length_note) return '';
+  return `<p class="du-zero">A typical spill shown as under 1 min means most of that overflow's spills lasted under a minute as recorded, `
+    + `or were recorded with the same start and stop time${typeof n === 'number' ? ` (${durationsCount(n)} such events in these records, mostly at Wessex Water and South West Water)` : ''}. `
+    + 'It does not mean nothing was discharged.</p>';
 }
 
 // ------------------------------------------------------------------------------ in the page
@@ -182,5 +214,6 @@ if (typeof document === 'object' && document.getElementById) durationsMount(docu
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { durationsHours, durationsYears, durationsSummary, durationsCompanies, durationsAts, durationsRunning, durationsStillSentence,
-    durationsAtPicker, durationsStill, durationsSpotPicker, durationsSpot, durationsCompany, durationsPct, DURATIONS_LATER };
+    durationsAtPicker, durationsStill, durationsSpotPicker, durationsSpot, durationsCompany, durationsPct, DURATIONS_LATER, durationsRowYears,
+    durationsReach, durationsZero };
 }

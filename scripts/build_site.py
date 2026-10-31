@@ -87,7 +87,8 @@ REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type
             ("fetch('/api/verification')", "fetch('data/verification.json')"),
             ('href="/methods"', 'href="methods.html"'), ('href="/methods#', 'href="methods.html#'),
             ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"'),
-            ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"')]   # the header's links, as the app's (29 Oct 2026)
+            ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"'),   # the header's links, as the app's (29 Oct 2026)
+            ('href="/research"', 'href="research.html"'), ('href="/lakes"', 'href="lakes.html"')]   # Research and its lake viewer (31 Oct 2026)
 BRAND = "SwimSignal"
 # The home page leads with the name, for search; every other page is "Page · SwimSignal" (docs/DESIGN.md, Words).
 HOME_TITLE = f"{BRAND} · pollution risk forecasts for swim spots"
@@ -2398,13 +2399,13 @@ def not_found_page(root: str) -> str:
         f'<link rel="preload" href="{r}fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>'
         f'<link rel="preload" href="{r}fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>\n'
         f'</head><body>\n<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a>'
-        f'<nav aria-label="Site"><a href="{r}plan/">Plan a swim</a><a href="{r}saved/">Saved</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a class="desk-only" href="{r}feedback.html">Feedback</a></nav></header>\n'
+        f'<nav aria-label="Site"><a href="{r}plan/">Plan a swim</a><a href="{r}saved/">Saved</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a class="desk-only" href="{r}research.html">Research</a><a class="desk-only" href="{r}feedback.html">Feedback</a></nav></header>\n'
         '<main class="doc"><h1>No page at this address</h1>\n'
         '<p class="lead">A spot changes address when it is renamed or removed, and a link can be copied or typed wrongly.</p>\n'
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'
         f'<li><a href="{r}feedback.html?type=spot">Ask for a spot to be added</a></li></ul></main>\n'
         f'<footer class="site-foot"><div class="rule"><p>{BRAND} is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test.</p>'
-        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a></p></div></footer></body></html>\n')
+        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research</a></p></div></footer></body></html>\n')
 
 
 def robots(root: str) -> str:
@@ -2412,7 +2413,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}durations.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}durations.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2659,7 +2660,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
-    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
+    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html",
+                 "research.html"]:
         s = (STATIC / name).read_text()
         if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
             s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
@@ -2736,6 +2738,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
+    write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
@@ -3052,6 +3055,50 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
     return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token, root)
 
 
+# Satellite lake observations (docs/LAKE-OBSERVATIONS-CONTRACT-v1.md; the Research page links to the viewer). The
+# research side exports one file, data/research/lake_observations.v1.json (scripts/export_lake_observations.py, from
+# the satellite tests' caches: no imagery is fetched by the build). The site splits it: data/research/lakes.json, every
+# lake without its readings and lab values, for the viewer's list; data/research/lake/<lake_id>.json, one lake whole,
+# fetched when it is picked. A file of another schema, or another major version, is not published: the viewer then
+# says no observations are published, rather than read fields it does not know.
+LAKE_OBSERVATIONS = config.ROOT / "data" / "research" / "lake_observations.v1.json"
+LAKE_SCHEMA, LAKE_MAJOR = "swimsignal.lake-observations", "1"
+LAKE_HEAVY = ("series", "lab")   # per lake, only in its own file
+
+
+def write_lake_observations(site: Path, path: Path = LAKE_OBSERVATIONS) -> dict:
+    """data/research/lakes.json and data/research/lake/<id>.json from the research export, or lakes.json saying
+    none are published (`available` false, with why). Returns the build's health entry."""
+    out = site / "data" / "research"   # shared with the other research observations: only this file's own are replaced
+    shutil.rmtree(out / "lake", ignore_errors=True)
+    (out / "lake").mkdir(parents=True)
+    why = None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != LAKE_SCHEMA or str(doc.get("version", "")).split(".")[0] != LAKE_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {LAKE_SCHEMA} {LAKE_MAJOR}.x"
+    if why:
+        (out / "lakes.json").write_text(json.dumps({"schema": LAKE_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    lakes = [x for x in doc["lakes"] if SPOT_ID.fullmatch(str(x.get("lake_id", "")))]
+    for x in lakes:
+        (out / "lake" / f"{x['lake_id']}.json").write_text(json.dumps(x, separators=(",", ":")))
+    index = {**{k: v for k, v in doc.items() if k != "lakes"}, "available": True,
+             "lakes": [{k: v for k, v in x.items() if k not in LAKE_HEAVY} | {"n_series": len(x.get("series") or []), "n_lab": len(x.get("lab") or [])}
+                       for x in lakes]}
+    (out / "lakes.json").write_text(json.dumps(index, separators=(",", ":")))
+    return {"available": True, "lakes": len(lakes), "skipped_ids": len(doc["lakes"]) - len(lakes), "version": doc["version"],
+            "processing": (doc.get("processing") or {}).get("version")}
+
+
+def write_lakes(site: Path, token: str | None = None, root: str | None = None) -> str:
+    """lakes.html and lakes.js beside the app, and the observations they read. Returns the scripts' version."""
+    write_lake_observations(site)
+    return write_scripted_page(site, "lakes.html", ("lakes.js",), ("lakes.js",), token, root)
+
+
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
     return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
@@ -3072,6 +3119,7 @@ def write_record(site: Path, token: str | None = None, root: str | None = None) 
 # can share the folder.
 SPILL_DURATIONS = config.ROOT / "data" / "research" / "spill_durations.v1.json"
 DURATIONS_SCHEMA, DURATIONS_MAJOR = "swimsignal.spill-durations", "1"
+REWRITES += [('href="/durations"', 'href="durations.html"')]   # the Research page links the viewer
 DURATIONS_FIELDS = ("spills_2024", "spills_2025", "median_h", "p90_h", "longest_h", "share_over_6h", "few")
 DURATIONS_OUT = "spill_durations"   # data/research/<this>.json and data/research/<this>/
 

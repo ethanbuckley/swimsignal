@@ -194,6 +194,18 @@ def hours_said(h) -> str:
     return (f"{d:.1f}".removesuffix(".0") if d < 10 else f"{round(d)}") + "\u00a0days"
 
 
+def zero_said(rows: list[dict], method: dict) -> str:
+    """When a typical length shows as under a minute (the export's 0.0 hours), what that means, from the export's
+    method.zero_length_note and events_same_start_stop (1.1); durations.js (durationsZero) says the same. Else ''."""
+    if not method.get("zero_length_note") or not any(
+            isinstance(r.get("median_h"), (int, float)) and r["median_h"] * 60 < 0.5 for r in rows):
+        return ""
+    n = method.get("events_same_start_stop")
+    events = f" ({n:,} such events in these records, mostly at Wessex Water and South West Water)" if isinstance(n, int) else ""
+    return (" A typical spill shown as under 1\u00a0min means most of that overflow's spills lasted under a minute as recorded, "
+            f"or were recorded with the same start and stop time{events}. It does not mean nothing was discharged.")
+
+
 def durations_section(d: dict) -> str:
     """The spot's overflows' spill lengths in 2024 and 2025: a heading and the years first, the export's own sentence,
     then the figures in a fold, after the annual returns. d: build_site.spill_durations_for."""
@@ -218,7 +230,8 @@ def durations_section(d: dict) -> str:
                    "one spill in ten lasted longer. Longest: its longest in the two years. A spill here is the monitor's events joined "
                    "when they overlap or start less than an hour apart, so these counts differ from the annual returns' counts above. "
                    "Few spills: fewer than 5 in the two years, so its typical length rests on little. Companies do not record spills "
-                   "the same way, so compare overflows of different companies with care.</p></details>")
+                   "the same way, so compare overflows of different companies with care."
+                   + zero_said(rows, d.get("method") or {}) + "</p></details>")
     if absent:
         welsh = any("cymru" in str(a.get("company") or "").lower() for a in absent)
         k = len(absent)

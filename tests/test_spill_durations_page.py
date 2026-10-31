@@ -45,7 +45,7 @@ def text(page: str) -> str:
 def test_the_export_is_split_into_an_index_and_a_file_a_spot(tmp_path):
     upstream(tmp_path)
     h = bs.write_spill_durations(tmp_path, SPOTS, SAMPLE)
-    assert h == {"available": True, "version": "1.0.0", "overflows": 6, "spots": 1, "spot_overflows": 3}
+    assert h == {"available": True, "version": "1.1.0", "overflows": 6, "spots": 1, "spot_overflows": 3}
     index = json.loads((tmp_path / "data" / "research" / "spill_durations.json").read_text())
     doc = json.loads(SAMPLE.read_text())
     # The index is the export without its 12,908 rows, with the spots that have a file; the tarn has no upstream file.
@@ -134,8 +134,9 @@ def test_the_viewer_is_written_with_its_script_and_listed(tmp_path, monkeypatch)
     assert not re.search(r"\bsafe\b|\bclean\b", words, re.I)
     assert "<loc>https://example.org/durations.html</loc>" in (tmp_path / "sitemap.xml").read_text()
     data = (tmp_path / "data.html").read_text()
-    assert '<tr data-file="research/"><td><a href="data/research/spill_durations.json">research/</a></td>' in data
+    assert "how long storm overflow spills lasted in 2024 and 2025" in data   # in the research/ row, which links the first research file (lakes.json)
     assert '<h2 id="research">research/</h2>' in data and "Not described here yet" not in data
+    assert '<h3><a href="durations.html">Spill durations</a></h3>' in (tmp_path / "research.html").read_text()   # under Observations
     assert json.loads((tmp_path / "data" / "research" / "spill_durations.json").read_text())["available"] is True
 
 
@@ -160,3 +161,19 @@ def test_a_spot_whose_overflows_are_all_missing_says_none_has_a_spill_in_the_rec
     assert ("None of the 14 overflows upstream has a spill in these 2024-25 records: none was recorded, or there is no record "
             "(Dŵr Cymru Welsh Water's overflows are not in them). That is not the same as no spills") in words
     assert "<details" not in html
+
+
+def test_a_typical_spill_under_a_minute_is_explained_and_never_said_as_nothing_discharged():
+    """1.1: method.zero_length_note and events_same_start_stop. A typical length shown as under 1 min (the export's 0.0
+    hours) gets the note; a page without such a row does not."""
+    doc = json.loads(SAMPLE.read_text())
+    method = doc["method"]
+    assert method["events_same_start_stop"] == 1110 and method["zero_length_note"]
+    row = {"site_id": "WSX1", "name": "A CSO", "own": "", "median_h": 0.0, "p90_h": 0.0, "longest_h": 0.2, "spills_2024": 9,
+           "spills_2025": 4, "few": False}
+    d = {"period": doc["period"], "claim": doc["claim"], "attribution": doc["attribution"], "method": method, "overflows": [row], "absent": []}
+    words = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", pf.durations_section(d)))).replace(" ", " ")
+    assert ("A typical spill shown as under 1 min means most of that overflow's spills lasted under a minute as recorded, or were "
+            "recorded with the same start and stop time (1,110 such events in these records, mostly at Wessex Water and South West "
+            "Water). It does not mean nothing was discharged.") in words
+    assert "under a minute" not in pf.durations_section(d | {"overflows": [row | {"median_h": 0.5}]})
